@@ -1,11 +1,18 @@
 Revision history for Perl extension Test::Simple
 
+0.32  Tue Oct 16 16:52:02 EDT 2001
+    * Finally added a seperate plan() function
+    * Adding a name field to isa_ok()
+      (Requested by Dave Rolsky)
+    - Test::More was using Carp.pm, causing the occasional false positive.
+      (Reported by Tatsuhiko Miyagawa)
+
 0.31  Mon Oct  8 19:24:53 EDT 2001
     * Added an import option to Test::More
     * Added no_ending and no_header options to Test::Builder
       (Thanks to Dave Rolsky for giving this a swift kick in the ass)
     * Added is_deeply().  Display of scalar refs not quite 100%
-      (Thanks to Stas Bekman and Apache::TestUtil idea thievery)
+      (Thanks to Stas Bekman for Apache::TestUtil idea thievery)
     - Fixed a minor warning with skip()
       (Thanks to Wolfgang Weisselberg for finding this one)
 
