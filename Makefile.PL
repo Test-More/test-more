@@ -52,6 +52,7 @@ WriteMakefile(
                         perl5.4.0
                         perl5.5.3
                         perl5.6.0
+                        perl5.6.1
                         perl
                         perl5.8.0
                        )
