@@ -557,7 +557,7 @@ Prints out the given $message.  Normally, it uses the failure_output()
 handle, but if this is for a TODO test, the todo_output() handle is
 used.
 
-Output will be indented and prepended with a # as not to interfere
+Output will be indented and marked with a # as not to interfere
 with test output.
 
 We encourage using this rather than calling print directly.
@@ -567,7 +567,7 @@ We encourage using this rather than calling print directly.
 sub diag {
     my($self, @msgs) = @_;
 
-    # Prevent printing headers when compiling (ie. -c)
+    # Prevent printing headers when compiling (i.e. -c)
     return if $^C;
 
     # Escape each line with a #.
@@ -954,14 +954,24 @@ END {
 
 At this point, Test::Simple and Test::More are your best examples.
 
-=head1 AUTHOR
+=head1 SEE ALSO
+
+Test::Simple, Test::More, Test::Harness
+
+=head1 AUTHORS
 
 Original code by chromatic, maintained by Michael G Schwern
 E<lt>schwern@pobox.comE<gt>
 
-=head1 SEE ALSO
+=head1 COPYRIGHT
 
-Test::Simple, Test::More, Test::Harness
+Copyright 2001 by chromatic E<lt>chromatic@wgz.orgE<gt>,
+                  Michael G Schwern E<lt>schwern@pobox.comE<gt>.
+
+This program is free software; you can redistribute it and/or 
+modify it under the same terms as Perl itself.
+
+See L<http://www.perl.com/perl/misc/Artistic.html>
 
 =cut
 
