@@ -33,7 +33,7 @@ WriteMakefile(
     NAME            => $PACKAGE,
     VERSION_FROM    => "lib/$PACKAGE_FILE.pm", # finds $VERSION
     PREREQ_PM       => { 
-                        Test::Harness   => 1.23,
+                        Test::Harness   => 2.03,
                         File::Spec      => 0.6,
                        },
 );
