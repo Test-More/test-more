@@ -15,6 +15,7 @@ t/fail-more.t
 t/fail.t
 t/missing.t
 t/no_plan.t
+t/output.t
 t/plan_is_noplan.t
 t/lib/Test/Simple/sample_tests/death.plx
 t/lib/Test/Simple/sample_tests/death_in_eval.plx
