@@ -1,5 +1,9 @@
 Revision history for Perl extension Test::Simple
 
+0.43
+    - TB->current_test() still not working when no tests were run via
+      TB itself.  Fixed by Dave Rolsky.
+
 0.42  Wed Mar  6 15:00:24 EST 2002
     - Setting Test::Builder->current_test() now works (see what happens
       when you forget to test things?)
