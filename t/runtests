@@ -1,5 +1,8 @@
 #!/usr/bin/perl -w
 
+# Test harness for Aegis' batch_test_command.  Not for general consumption.
+
+use File::Spec;
 use Test::Harness;
 use Getopt::Long;
 
@@ -18,7 +21,10 @@ print AEGIS_OUT <<"END";
 test_result = [
 END
 
-eval { runtests @ARGV; };
+{
+    local $ENV{AEGIS_TMPDIR} = File::Spec->tmpdir;
+    eval { runtests @ARGV; };
+}
 
 print AEGIS_OUT <<"END";
 ];

@@ -2,6 +2,19 @@
 
 # Test Test::Builder->reset;
 
+BEGIN {
+    if( $ENV{PERL_CORE} ) {
+        chdir 't';
+        @INC = ('../lib', 'lib');
+    }
+    else {
+        unshift @INC, 't/lib';
+    }
+}
+chdir 't';
+
+use Tmp;
+
 use Test::Builder;
 my $tb = Test::Builder->new;
 $tb->plan(tests => 14);
@@ -10,10 +23,12 @@ $tb->level(0);
 # Alter the state of Test::Builder as much as possible.
 $tb->ok(1, "Running a test to alter TB's state");
 
-$tb->output('foo');
-$tb->failure_output('foo');
-$tb->todo_output('foo');
-END { unlink 'foo' }
+my $tmpfile = tmpfile('foo');
+
+$tb->output($tmpfile);
+$tb->failure_output($tmpfile);
+$tb->todo_output($tmpfile);
+END { unlink $tmpfile }
 
 # This won't print since we just sent output off to oblivion.
 $tb->ok(0, "And a failure for fun");

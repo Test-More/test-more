@@ -9,6 +9,9 @@ BEGIN {
         unshift @INC, 't/lib';
     }
 }
+chdir 't';
+
+use Tmp;
 
 # Can't use Test.pm, that's a 5.005 thing.
 print "1..4\n";
@@ -33,7 +36,8 @@ use Test::Builder;
 my $Test = Test::Builder->new();
 
 my $result;
-my $out = $Test->output('foo');
+my $tmpfile = tmpfile('foo');
+my $out = $Test->output($tmpfile);
 
 ok( defined $out );
 
@@ -41,26 +45,26 @@ print $out "hi!\n";
 close *$out;
 
 undef $out;
-open(IN, 'foo') or die $!;
+open(IN, $tmpfile) or die $!;
 chomp(my $line = <IN>);
 close IN;
 
 ok($line eq 'hi!');
 
-open(FOO, ">>foo") or die $!;
+open(FOO, ">>$tmpfile") or die $!;
 $out = $Test->output(\*FOO);
 $old = select *$out;
 print "Hello!\n";
 close *$out;
 undef $out;
 select $old;
-open(IN, 'foo') or die $!;
+open(IN, $tmpfile) or die $!;
 my @lines = <IN>;
 close IN;
 
 ok($lines[1] =~ /Hello!/);
 
-unlink('foo');
+unlink($tmpfile);
 
 
 # Ensure stray newline in name escaping works.

@@ -50,6 +50,7 @@ WriteMakefile(
     VERSION_FROM    => "lib/$PACKAGE_FILE.pm", # finds $VERSION
     PREREQ_PM       => { 
                         Test::Harness   => 2.03,
+                        File::Spec      => 0.82,
                        },
     # Added to the core somewhere around 5.7.2.
     INSTALLDIRS     => $] >= 5.00702 ? 'perl' : 'site'
