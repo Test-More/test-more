@@ -24,14 +24,12 @@ END
 {
     local $ENV{AEGIS_TMPDIR} = File::Spec->tmpdir;
     eval { runtests @ARGV; };
-    warn $@;
+    warn $@ if $@;
 }
 
 print AEGIS_OUT <<"END";
 ];
 END
-
-exit( $@ ? 1 : 0 );  # translate dies into an exit of 1
 
 
 package Test::Harness::Straps::Aegis;
@@ -44,10 +42,12 @@ sub analyze_file {
 
     my %results = $self->SUPER::analyze_file(@_);
 
+    # 0 is pass, 1 is fail, anything else is not understood.
+    my $exit = $results{exit} ? 1 : 0;
     print ::AEGIS_OUT <<"END";
     {
         file_name       = "$file";
-        exit_status     = $results{exit};
+        exit_status     = $exit;
     },
 END
 
