@@ -146,3 +146,83 @@ ok(...) || print "...";
 
 =head2 How can I simulate failures to make sure that my code does the Right Thing in the face of them?
 
+
+=head2 Why use an ok() function?
+
+On Tue, Aug 28, 2001 at 02:12:46PM +0100, Robin Houston wrote:
+> Michael Schwern wrote:
+> > Ah HA!  I've been wondering why nobody ever thinks to write a simple
+> > ok() function for their tests!  perlhack has bad testing advice.
+> 
+> Could you explain the advantage of having a "simple ok() function"?
+
+Because writing:
+
+    print "not " unless some thing worked;
+    print "ok $test\n";  $test++;
+
+gets rapidly annoying.  This is why we made up subroutines in the
+first place.  It also looks like hell and obscures the real purpose.
+
+Besides, that will cause problems on VMS.
+
+
+> As somebody who has spent many painful hours debugging test failures,
+> I'm intimately familiar with the _disadvantages_. When you run the
+> test, you know that "test 113 failed". That's all you know, in general.
+
+Second advantage is you can easily upgrade the ok() function to fix
+this, either by slapping this line in:
+
+        printf "# Failed test at line %d\n", (caller)[2];
+
+or simply junking the whole thing and switching to Test::Simple or
+Test::More, which does all sorts of nice diagnostics-on-failure for
+you.  It's ok() function is backwards compatible with the above.
+
+There's some issues with using Test::Simple to test really basic Perl
+functionality, you have to choose on a per test basis.  Since
+Test::Simple doesn't use pack() it's safe for t/op/pack.t to use
+Test::Simple.  I just didn't want to make the perlhack patching
+example too complicated.
+
+
+=head2 Dummy Mode
+
+> One compromise would be to use a test-generating script, which allows
+> the tests to be structured simply and _generates_ the actual test
+> code. One could then grep the generated test script to locate the
+> failing code.
+
+This is a very interesting, and very common, response to the problem.
+I'm going to make some observations about reactions to testing,
+they're not specific to you.
+
+If you've ever read the Bastard Operator From Hell series, you'll
+recall the Dummy Mode.
+
+    The words "power surging" and "drivers" have got her.  People hear
+    words like that and go into Dummy Mode and do ANYTHING you say.  I
+    could tell her to run naked across campus with a powercord rammed
+    up her backside and she'd probably do it...  Hmmm...
+
+There seems to be a Dummy Mode WRT testing.  An otherwise competent
+person goes to write a test and they suddenly forget all basic
+programming practice.
+
+
+The reasons for using an ok() function above are the same reasons to
+use functions in general, we should all know them.  We'd laugh our
+heads off at code that repeated as much as your average test does.
+These are newbie mistakes.
+
+And the normal 'can do' flair seems to disappear.  I know Robin.  I
+*know* that in any other situation he would have come up with the
+caller() trick in about 15 seconds flat.  Instead weird, elaborate,
+inelegant hacks are thought up to solve the simplest problems.
+
+
+I guess there are certain programming idioms that are foreign enough
+to throw your brain into reverse if you're not ready for them.  Like
+trying to think in Lisp, for example.  Or being presented with OO for
+the first time.  I guess writing test is one of those.
