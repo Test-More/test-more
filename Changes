@@ -1,5 +1,14 @@
 Revision history for Perl extension Test::Simple
 
+0.30  Thu Sep 27 22:10:04 EDT 2001
+    * Added Test::Builder
+    * Diagnostics are back to using STDERR *unless* it's from a todo
+      test.  Those go to STDOUT.
+    - Fixed it so nothing is printed if a test is run with a -c flag.
+      Handy when a test is being deparsed with B::Deparse.
+
+0.20  *UNRELEASED*
+
 0.19  Tue Sep 18 17:48:32 EDT 2001
     * Test::Simple and Test::More no longer print their diagnostics
       to STDERR.  It instead goes to STDOUT.
