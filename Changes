@@ -1,6 +1,6 @@
 Revision history for Perl extension Test::Simple
 
-0.46
+0.46  Sat Jul 20 19:57:40 EDT 2002
     - Noted eq_set() isn't really a set comparision.
     - Test fix, exit codes are broken on MacPerl (bleadperl@16868)
     - Make Test::Simple install itself into the core for >= 5.8

@@ -30,3 +30,5 @@
     Add test name to diagnostic output
 
     Put a newline before the first diagnostic failure when in Test::Harness
+
+    Trap bare exit() calls.
