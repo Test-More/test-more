@@ -10,6 +10,8 @@ Revision history for Perl extension Test::Simple
       off all diag() statements.
     * Test::Builder/More no longer automatically loads threads.pm
       when threads are enabled.  The user must now do this manually.
+    * Alex Francis added reset() reset the state of Test::Builder in 
+      persistent environments.
 
 0.47  Mon Aug 26 03:54:22 PDT 2002 
     * Tatsuhiko Miyagawa noticed Test::Builder was accidentally storing 

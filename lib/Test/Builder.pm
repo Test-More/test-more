@@ -7,9 +7,8 @@ use 5.004;
 $^C ||= 0;
 
 use strict;
-use vars qw($VERSION $CLASS);
+use vars qw($VERSION);
 $VERSION = '0.18';
-$CLASS = __PACKAGE__;
 
 my $IsVMS = $^O eq 'VMS';
 
@@ -28,14 +27,6 @@ BEGIN {
         *lock  = sub { 0 };
     }
 }
-
-use vars qw($Level);
-my($Test_Died) = 0;
-my($Have_Plan) = 0;
-my $Original_Pid = $$;
-my $Curr_Test = 0;      share($Curr_Test);
-my @Test_Results = ();  share(@Test_Results);
-my @Test_Details = ();  share(@Test_Details);
 
 
 =head1 NAME
@@ -94,11 +85,67 @@ getting the same object.  (This is called a singleton).
 
 =cut
 
-my $Test;
+my $Test = Test::Builder->new;
 sub new {
     my($class) = shift;
     $Test ||= bless ['Move along, nothing to see here'], $class;
     return $Test;
+}
+
+=item B<reset>
+
+  $Test->reset;
+
+Reinitializes the Test::Builder singleton to its original state.
+Mostly useful for tests run in persistent environments where the same
+test might be run multiple times in the same process.
+
+=cut
+
+my $Test_Died;
+my $Have_Plan;
+my $No_Plan;
+my $Curr_Test;     share($Curr_Test);
+use vars qw($Level);
+my $Original_Pid;
+my @Test_Results;  share(@Test_Results);
+my @Test_Details;  share(@Test_Details);
+
+my $Exported_To;
+my $Expected_Tests;
+
+my $Skip_All;
+
+my $Use_Nums;
+
+my($No_Header, $No_Ending);
+
+$Test->reset;
+
+sub reset {
+    my ($self) = @_;
+
+    $Test_Died = 0;
+    $Have_Plan = 0;
+    $No_Plan   = 0;
+    $Curr_Test = 0;
+    $Level     = 1;
+    $Original_Pid = $$;
+    @Test_Results = ();
+    @Test_Details = ();
+
+    $Exported_To    = undef;
+    $Expected_Tests = 0;
+
+    $Skip_All = 0;
+
+    $Use_Nums = 1;
+
+    ($No_Header, $No_Ending) = (0,0);
+
+    $self->_dup_stdhandles unless $^C;
+
+    return undef;
 }
 
 =back
@@ -120,7 +167,6 @@ This is important for getting TODO tests right.
 
 =cut
 
-my $Exported_To;
 sub exported_to {
     my($self, $pack) = @_;
 
@@ -190,7 +236,6 @@ the appropriate headers.
 
 =cut
 
-my $Expected_Tests = 0;
 sub expected_tests {
     my($self, $max) = @_;
 
@@ -212,7 +257,6 @@ Declares that this test will run an indeterminate # of tests.
 
 =cut
 
-my($No_Plan) = 0;
 sub no_plan {
     $No_Plan    = 1;
     $Have_Plan  = 1;
@@ -242,7 +286,6 @@ Skips all the tests, using the given $reason.  Exits immediately with 0.
 
 =cut
 
-my $Skip_All = 0;
 sub skip_all {
     my($self, $reason) = @_;
 
@@ -773,8 +816,6 @@ sub level {
     return $Level;
 }
 
-$CLASS->level(1);
-
 
 =item B<use_numbers>
 
@@ -801,7 +842,6 @@ Defaults to on.
 
 =cut
 
-my $Use_Nums = 1;
 sub use_numbers {
     my($self, $use_nums) = @_;
 
@@ -828,7 +868,6 @@ If this is true, none of that will be done.
 
 =cut
 
-my($No_Header, $No_Ending) = (0,0);
 sub no_header {
     my($self, $no_header) = @_;
 
@@ -942,6 +981,7 @@ sub _print {
 
 =item B<output>
 
+    my $fh = $Test->output;
     $Test->output($fh);
     $Test->output($file);
 
@@ -951,6 +991,7 @@ Defaults to STDOUT.
 
 =item B<failure_output>
 
+    my $fh = $Test->failure_output;
     $Test->failure_output($fh);
     $Test->failure_output($file);
 
@@ -960,6 +1001,7 @@ Defaults to STDERR.
 
 =item B<todo_output>
 
+    my $fh = $Test->todo_output;
     $Test->todo_output($fh);
     $Test->todo_output($file);
 
@@ -1013,11 +1055,19 @@ sub _new_fh {
     return $fh;
 }
 
-unless( $^C ) {
-    # We dup STDOUT and STDERR so people can change them in their
-    # test suites while still getting normal test output.
-    open(TESTOUT, ">&STDOUT") or die "Can't dup STDOUT:  $!";
-    open(TESTERR, ">&STDERR") or die "Can't dup STDERR:  $!";
+sub _autoflush {
+    my($fh) = shift;
+    my $old_fh = select $fh;
+    $| = 1;
+    select $old_fh;
+}
+
+
+my $Opened_Testhandles = 0;
+sub _dup_stdhandles {
+    my $self = shift;
+
+    $self->_open_testhandles unless $Opened_Testhandles;
 
     # Set everything to unbuffered else plain prints to STDOUT will
     # come out in the wrong order from our own prints.
@@ -1026,16 +1076,17 @@ unless( $^C ) {
     _autoflush(\*TESTERR);
     _autoflush(\*STDERR);
 
-    $CLASS->output(\*TESTOUT);
-    $CLASS->failure_output(\*TESTERR);
-    $CLASS->todo_output(\*TESTOUT);
+    $Test->output(\*TESTOUT);
+    $Test->failure_output(\*TESTERR);
+    $Test->todo_output(\*TESTOUT);
 }
 
-sub _autoflush {
-    my($fh) = shift;
-    my $old_fh = select $fh;
-    $| = 1;
-    select $old_fh;
+sub _open_testhandles {
+    # We dup STDOUT and STDERR so people can change them in their
+    # test suites while still getting normal test output.
+    open(TESTOUT, ">&STDOUT") or die "Can't dup STDOUT:  $!";
+    open(TESTERR, ">&STDERR") or die "Can't dup STDERR:  $!";
+    $Opened_Testhandles = 1;
 }
 
 
