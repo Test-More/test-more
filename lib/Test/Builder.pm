@@ -441,25 +441,57 @@ sub unlike {
     $self->_regex_ok($this, $regex, '!~', $name);
 }
 
+=item B<maybe_regex>
+
+  $Test->maybe_regex(qr/$regex/);
+  $Test->maybe_regex('/$regex/');
+
+Convenience method for building testing functions that take regular
+expressions as arguments, but need to work before perl 5.005.
+
+Takes a quoted regular expression produced by qr//, or a string
+representing a regular expression.
+
+Returns a Perl value which may be used instead of the corresponding
+regular expression, or undef if it's argument is not recognised.
+
+For example, a version of like(), sans the useful diagnostic messages,
+could be written as:
+
+  sub laconic_like {
+      my ($self, $this, $regex, $name) = @_;
+      my $usable_regex = $self->maybe_regex($regex);
+      die "expecting regex, found '$regex'\n"
+          unless $usable_regex;
+      $self->ok($this =~ m/$usable_regex/, $name);
+  }
+
+=cut
+
+
+sub maybe_regex {
+	my ($self, $regex) = @_;
+    my $usable_regex = undef;
+    if( ref $regex eq 'Regexp' ) {
+        $usable_regex = $regex;
+    }
+    # Check if it looks like '/foo/'
+    elsif( my($re, $opts) = $regex =~ m{^ /(.*)/ (\w*) $ }sx ) {
+        $usable_regex = length $opts ? "(?$opts)$re" : $re;
+    };
+    return($usable_regex)
+};
+
 sub _regex_ok {
     my($self, $this, $regex, $cmp, $name) = @_;
 
     local $Level = $Level + 1;
 
     my $ok = 0;
-    my $usable_regex;
-    if( ref $regex eq 'Regexp' ) {
-        $usable_regex = $regex;
-    }
-    # Check if it looks like '/foo/'
-    elsif( my($re, $opts) = $regex =~ m{^ /(.*)/ (\w*) $ }sx ) {
-        $usable_regex = "(?$opts)$re";
-    }
-    else {
+    my $usable_regex = $self->maybe_regex($regex);
+    unless (defined $usable_regex) {
         $ok = $self->ok( 0, $name );
-
         $self->diag("    '$regex' doesn't look much like a regex to me.");
-
         return $ok;
     }
 
