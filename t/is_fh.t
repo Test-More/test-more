@@ -17,7 +17,7 @@ use TieOut;
 ok( !Test::Builder::_is_fh("foo"), 'string is not a filehandle' );
 
 ok( open(FILE, '>foo') );
-END { unlink 'foo' }
+END { close FILE; unlink 'foo' }
 
 ok( Test::Builder::_is_fh(*FILE) );
 ok( Test::Builder::_is_fh(\*FILE) );
