@@ -12,7 +12,7 @@ BEGIN {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT);
-$VERSION = '0.08';
+$VERSION = '0.09';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like
@@ -267,13 +267,20 @@ which is an alias of isnt().
 sub is ($$;$) {
     my($this, $that, $name) = @_;
 
-    my $ok = @_ == 3 ? ok($this eq $that, $name)
-                     : ok($this eq $that);
+    my $test;
+    {
+        local $^W = 0;   # so is(undef, undef) works quietly.
+        $test = $this eq $that;
+    }
+    my $ok = @_ == 3 ? ok($test, $name)
+                     : ok($test);
 
     unless( $ok ) {
-        my_print *TESTERR, <<DIAGNOSTIC;
-#          got: '$this'
-#     expected: '$that'
+        $this = defined $this ? "'$this'" : 'undef';
+        $that = defined $that ? "'$that'" : 'undef';
+        my_print *TESTERR, sprintf <<DIAGNOSTIC, $this, $that;
+#          got: %s
+#     expected: %s
 DIAGNOSTIC
 
     }
@@ -284,12 +291,20 @@ DIAGNOSTIC
 sub isnt ($$;$) {
     my($this, $that, $name) = @_;
 
-    my $ok = @_ == 3 ? ok($this ne $that, $name)
-                     : ok($this ne $that);
+    my $test;
+    {
+        local $^W = 0;   # so isnt(undef, undef) works quietly.
+        $test = $this ne $that;
+    }
+
+    my $ok = @_ == 3 ? ok($test, $name)
+                     : ok($test);
 
     unless( $ok ) {
-        my_print *TESTERR, <<DIAGNOSTIC;
-#     it should not be '$that'
+        $that = defined $that ? "'$that'" : 'undef';
+
+        my_print *TESTERR, sprintf <<DIAGNOSTIC, $that;
+#     it should not be %s
 #     but it is.
 DIAGNOSTIC
 
@@ -336,11 +351,13 @@ sub like ($$;$) {
 
     my $ok = 0;
     if( ref $regex eq 'Regexp' ) {
+        local $^W = 0;
         $ok = @_ == 3 ? ok( $this =~ $regex ? 1 : 0, $name )
                       : ok( $this =~ $regex ? 1 : 0 );
     }
     # Check if it looks like '/foo/i'
     elsif( my($re, $opts) = $regex =~ m{^ /(.*)/ (\w*) $ }sx ) {
+        local $^W = 0;
         $ok = @_ == 3 ? ok( $this =~ /(?$opts)$re/ ? 1 : 0, $name )
                       : ok( $this =~ /(?$opts)$re/ ? 1 : 0 );
     }
@@ -357,8 +374,9 @@ ERR
     }
 
     unless( $ok ) {
-        my_print *TESTERR, <<DIAGNOSTIC;
-#                   '$this'
+        $this = defined $this ? "'$this'" : 'undef';
+        my_print *TESTERR, sprintf <<DIAGNOSTIC, $this;
+#                   %s
 #     doesn't match '$regex'
 DIAGNOSTIC
 
@@ -636,7 +654,14 @@ sub _deep_check {
     my($e1, $e2) = @_;
     my $ok = 0;
 
-    if($e1 eq $e2) {
+    my $eq;
+    { 
+        # Shut up uninitalized value warning.
+        local $^W = 0; 
+        $eq = $e1 eq $e2 
+    }
+
+    if( $eq ) {
         $ok = 1;
     }
     else {
@@ -695,7 +720,7 @@ applies to the top level.
 # We must make sure that references are treated neutrally.  It really
 # doesn't matter how we sort them, as long as both arrays are sorted
 # with the same algorithm.
-sub _bogus_sort { ref $a ? 0 : $a cmp $b }
+sub _bogus_sort { local $^W = 0;  ref $a ? 0 : $a cmp $b }
 
 sub eq_set  {
     my($a1, $a2) = @_;
