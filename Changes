@@ -7,6 +7,7 @@ Revision history for Perl extension Test::Simple
     - Minor bug in ok()'s test name diagnostics made it think a blank
       name was a number.
     - ok() less draconian about test names
+    - Added temporary special case for Parrot::Test
 
 0.18  Wed Sep  5 20:35:24 EDT 2001
     * ***API CHANGE*** can_ok() only counts as one test
