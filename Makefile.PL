@@ -28,14 +28,16 @@ CHANGE_WARN
 WriteMakefile(
     NAME            => $PACKAGE,
     VERSION_FROM    => "lib/$PACKAGE_FILE.pm", # finds $VERSION
-    PREREQ_PM       => { },  # Test::Simple should have *no* dependencies.
+    PREREQ_PM       => { 
+                        Test::Harness   => 1.23,
+                       },
     'dist'          => { COMPRESS   => 'gzip -9',
                          SUFFIX     => '.gz',
                          DIST_DEFAULT   => 'all tardist',
                        },
 );
 
-# Older versions of Test::Simple were very naught about being required and
+# Older versions of Test::Simple were very naughty about being required and
 # exitted with 255.  This overrides that behavior so it builds from CPAN.
 END {
     exit(0);
