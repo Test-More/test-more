@@ -1,5 +1,9 @@
 Revision history for Perl extension Test::Simple
 
+0.36  Thu Nov 29 14:07:39 EST 2001
+    - Matthias Urlichs found that intermixed prints to STDOUT and test 
+      output came out in the wrong order when piped.
+
 0.35  Tue Nov 27 19:57:03 EST 2001
     - Little glitch in the test suite.  No actual bug.
 
