@@ -10,6 +10,8 @@
     - isnt() giving wrong diagnostics and warning if given any undefs.
     * Give unlike() the right prototype [rt.cpan.org 4944]
     - Change from CVS to Aegis
+    - is_deeply() will now do some basic argument checks to guard against
+      accidentally passing in a whole array instead of its reference.
 
 0.48_02  * UNRELEASED *
     - Mentioning Test::Differences, Test::Deep and Bundle::Test.
