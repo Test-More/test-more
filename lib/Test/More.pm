@@ -1344,7 +1344,8 @@ L<Bundle::Test> installs a whole bunch of useful test modules.
 
 Michael G Schwern E<lt>schwern@pobox.comE<gt> with much inspiration
 from Joshua Pritikin's Test module and lots of help from Barrie
-Slaymaker, Tony Bowden, blackstar.co.uk, chromatic and the perl-qa gang.
+Slaymaker, Tony Bowden, blackstar.co.uk, chromatic, Fergal Daly and
+the perl-qa gang.
 
 
 =head1 COPYRIGHT
