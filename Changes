@@ -1,12 +1,12 @@
 0.52
-    - eq_set() could cause problems under threads due to a weird sort bug
+    * eq_set() could cause problems under threads due to a weird sort bug
       [rt.cpan.org 6782]
-    - undef no longer equals '' in is_deeply() [rt.cpan.org 6837]
-    - is_deeply() would sometimes compare references as strings.
+    * undef no longer equals '' in is_deeply() [rt.cpan.org 6837]
+    * is_deeply() would sometimes compare references as strings.
       [rt.cpan.org 7031]
     - eq_array() and eq_hash() could hold onto references if they failed
       keeping them in memory and preventing DESTROY.  [rt.cpan.org 7032]
-    - is_deeply() could confuse [] with a non-existing value
+    * is_deeply() could confuse [] with a non-existing value
       [rt.cpan.org 7030]
     - is_deeply() diagnostics a little off when scalar refs were inside
       an array or hash ref [rt.cpan.org 7033]
