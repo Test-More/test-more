@@ -9,7 +9,6 @@ BEGIN {
         unshift @INC, 't/lib';
     }
 }
-chdir 't';
 
 use strict;
 
