@@ -18,7 +18,7 @@ sub _carp {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS $TODO);
-$VERSION = '0.32';
+$VERSION = '0.33';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like is_deeply
@@ -997,7 +997,7 @@ by Perl.
 
 L<Test::Unit> describes a very featureful unit testing interface.
 
-L<Pod::Tests> shows the idea of embedded testing.
+L<Test::Inline> shows the idea of embedded testing.
 
 L<SelfTest> is another approach to embedded testing.
 

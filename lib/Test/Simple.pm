@@ -4,7 +4,7 @@ use 5.004;
 
 use strict 'vars';
 use vars qw($VERSION);
-$VERSION = '0.32';
+$VERSION = '0.33';
 
 
 use Test::Builder;
@@ -203,7 +203,7 @@ The original Perl testing module.
 
 Elaborate unit testing.
 
-=item L<Pod::Tests>, L<SelfTest>
+=item L<Test::Inline>, L<SelfTest>
 
 Embed tests in your code!
 
