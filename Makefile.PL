@@ -38,6 +38,25 @@ WriteMakefile(
 );
 
 
+{
+    package MY;
+
+    sub test_via_harness {
+        my($self, $orig_perl, $tests) = @_;
+
+        my @perls = ($orig_perl);
+        push @perls, qw(perl5.00503 perl5.004) if $ENV{PERL_TEST_ALL};
+
+        my $out;
+        foreach my $perl (@perls) {
+            $out .= $self->SUPER::test_via_harness($perl, $tests);
+        }
+
+        return $out;
+    }
+}
+
+
 # Older versions of Test::Simple were very naughty about being required and
 # exitted with 255.  This overrides that behavior so it builds from CPAN.
 END {
