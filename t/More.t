@@ -1,6 +1,12 @@
 #!perl -w
 
-use Test::More tests => 35;
+use Test::More tests => 37;
+
+# Make sure we don't mess with $@ or $!.  Test at bottom.
+my $Err   = "this should not be touched";
+my $Errno = 42;
+$@ = $Err;
+$! = $Errno;
 
 use_ok('Text::Soundex');
 require_ok('Test::More');
@@ -113,3 +119,8 @@ cmp_ok(0, '||', 1,          '       ||');
     sub new { bless {} }
 }
 isa_ok( Wibble->new, 'Wibblemeister' );
+
+
+# These two tests must remain at the end.
+is( $@, $Err,               '$@ untouched' );
+cmp_ok( $!, '==', $Errno,   '$! untouched' );
