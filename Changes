@@ -1,5 +1,14 @@
 Revision history for Perl extension Test::Simple
 
+0.31  Mon Oct  8 19:24:53 EDT 2001
+    * Added an import option to Test::More
+    * Added no_ending and no_header options to Test::Builder
+      (Thanks to Dave Rolsky for giving this a swift kick in the ass)
+    * Added is_deeply().  Display of scalar refs not quite 100%
+      (Thanks to Stas Bekman and Apache::TestUtil idea thievery)
+    - Fixed a minor warning with skip()
+      (Thanks to Wolfgang Weisselberg for finding this one)
+
 0.30  Thu Sep 27 22:10:04 EDT 2001
     * Added Test::Builder
     * Diagnostics are back to using STDERR *unless* it's from a todo
