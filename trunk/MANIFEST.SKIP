@@ -1,0 +1,27 @@
+# Avoid version control files.
+\bRCS\b
+\bCVS\b
+,\w$
+
+# Avoid Makemaker generated and utility files.
+^MANIFEST\.
+^Makefile$
+^blib/
+^MakeMaker-\d
+^pm_to_blib$
+\.ts$
+
+# Avoid temp and backup files.
+~$
+\.old$
+\#$
+^\.#
+
+# Avoid this one test that doesn't work yet
+^t/strays.t
+
+# Don't distribute Test::Harness
+^t/lib/Test/Harness
+
+# Test::FAQ is not complete.
+^lib/Test/FAQ

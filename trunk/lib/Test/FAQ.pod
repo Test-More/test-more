@@ -1,0 +1,253 @@
+=head1 NAME
+
+Test::FAQ - Frequently Asked Questions about testing with Perl
+
+
+=head1 DESCRIPTION
+
+Frequently Asked Questions about testing in general and specific
+issues with Perl.
+
+=head2 Is there any tutorial on testing?
+
+Test::Tutorial
+
+=head2 Are there any modules for testing?
+
+A whole bunch.  Start with Test::Simple then move onto Test::More.
+
+=head2 Are there any modules for testing web pages/CGI programs?
+
+=head2 Are there any modules for testing external programs?
+
+Test::Cmd?
+
+=head2 Can you do XUnit/JUnit style testing in Perl?
+
+Yep.  The Test::Inline (aka Pod::Tests) module gives you the same
+effect, but in a different way.
+
+Test::Unit is a more faithful port of the XUnit style to Perl, but
+isn't quite ready for prime-time.
+
+=head2 How do I test my module is backwards/forwards compatible?
+
+First, install a bunch of perls of commonly used versions.  At the
+moment, you could try these
+
+    5.7.2
+    5.6.1
+    5.005_03
+    5.004_05
+
+if you're feeling brave, you might want to have on hand these
+
+    bleadperl
+    5.6.0
+    5.004_04
+    5.004
+
+going back beyond 5.003 is probably beyond the call of duty.
+
+You can then add something like this to your Makefile.PL.  It
+overrides the MakeMaker test_via_harness() method to run the tests
+against several different versions of Perl.
+
+    # If PERL_TEST_ALL is set, run "make test" against 
+    # other perls as well as the current perl.
+    {
+        package MY;
+
+        sub test_via_harness {
+            my($self, $orig_perl, $tests) = @_;
+
+            # names of your other perl binaries.
+            my @other_perls = qw(perl5.004_05 perl5.005_03 perl5.7.2);
+
+            my @perls = ($orig_perl);
+            push @perls, @other_perls if $ENV{PERL_TEST_ALL};
+
+            my $out;
+            foreach my $perl (@perls) {
+                $out .= $self->SUPER::test_via_harness($perl, $tests);
+            }
+
+            return $out;
+        }
+    }
+
+and re-run your Makefile.PL with the PERL_TEST_ALL environment
+variable set
+
+    PERL_TEST_ALL=1 perl Makefile.PL
+
+now "make test" will run against each of your other perls.
+
+
+=head2 If I'm testing Foo::Bar, where do I put tests for Foo::Bar::Baz?
+
+=head2 How do I know when my tests are good enough?
+
+A: Use tools for measuring the code coverage of your tests, e.g. how many of
+your source code lines/subs/expressions/paths are executed (aka covered) by
+the test suite. The more, the better, of course, although you may not
+be able achive 100%. If your testsuite covers under 100%, then
+the rest of your code is, basically, untested. Which means it may work in
+surprising ways (e.g. doesn't do things like they are intended or
+documented), have bugs (e.g. return wrong results) or it may not work at
+all.
+
+=head2 How do I measure the coverage of my test suite?
+
+Devel::Cover
+
+=head2 How do I get tests to run in a certain order?
+
+=head2 What should I name my tests?
+
+=head2 How do I deal with tests that sometimes pass and sometimes fail?
+
+=head2 How do I test with a database/network/server that the user may or may not have?
+
+=head2 What's a good way to test lists?
+
+=head2 Is there such a thing as untestable code?
+
+There's always compile/export checks.
+
+Code must be written with testabilty in mind.  Seperation of form and
+functionality.
+
+=head2 What do I do when I can't make the code do the same thing twice?
+
+Force it to do the same thing twice.
+
+Even a random number generator can be tested.
+
+=head2 How do I test a GUI?
+
+=head2 How do I test an image generator?
+
+=head2 How do I test that my code handles failures gracefully?
+
+Forcing resource failure.
+
+=head2 How do I check the right warnings are issued?
+
+=head2 How do I test code that prints?
+
+=head2 I want to test that my code dies when I do X
+
+use eval { ... };
+
+=head2 I want to print out more diagnostic info on failure.
+
+ok(...) || print "...";
+
+=head2 How can I simulate failures to make sure that my code does the Right Thing in the face of them?
+
+
+=head2 Why use an ok() function?
+
+On Tue, Aug 28, 2001 at 02:12:46PM +0100, Robin Houston wrote:
+> Michael Schwern wrote:
+> > Ah HA!  I've been wondering why nobody ever thinks to write a simple
+> > ok() function for their tests!  perlhack has bad testing advice.
+> 
+> Could you explain the advantage of having a "simple ok() function"?
+
+Because writing:
+
+    print "not " unless some thing worked;
+    print "ok $test\n";  $test++;
+
+gets rapidly annoying.  This is why we made up subroutines in the
+first place.  It also looks like hell and obscures the real purpose.
+
+Besides, that will cause problems on VMS.
+
+
+> As somebody who has spent many painful hours debugging test failures,
+> I'm intimately familiar with the _disadvantages_. When you run the
+> test, you know that "test 113 failed". That's all you know, in general.
+
+Second advantage is you can easily upgrade the ok() function to fix
+this, either by slapping this line in:
+
+        printf "# Failed test at line %d\n", (caller)[2];
+
+or simply junking the whole thing and switching to Test::Simple or
+Test::More, which does all sorts of nice diagnostics-on-failure for
+you.  It's ok() function is backwards compatible with the above.
+
+There's some issues with using Test::Simple to test really basic Perl
+functionality, you have to choose on a per test basis.  Since
+Test::Simple doesn't use pack() it's safe for t/op/pack.t to use
+Test::Simple.  I just didn't want to make the perlhack patching
+example too complicated.
+
+
+=head2 Dummy Mode
+
+> One compromise would be to use a test-generating script, which allows
+> the tests to be structured simply and _generates_ the actual test
+> code. One could then grep the generated test script to locate the
+> failing code.
+
+This is a very interesting, and very common, response to the problem.
+I'm going to make some observations about reactions to testing,
+they're not specific to you.
+
+If you've ever read the Bastard Operator From Hell series, you'll
+recall the Dummy Mode.
+
+    The words "power surging" and "drivers" have got her.  People hear
+    words like that and go into Dummy Mode and do ANYTHING you say.  I
+    could tell her to run naked across campus with a powercord rammed
+    up her backside and she'd probably do it...  Hmmm...
+
+There seems to be a Dummy Mode WRT testing.  An otherwise competent
+person goes to write a test and they suddenly forget all basic
+programming practice.
+
+
+The reasons for using an ok() function above are the same reasons to
+use functions in general, we should all know them.  We'd laugh our
+heads off at code that repeated as much as your average test does.
+These are newbie mistakes.
+
+And the normal 'can do' flair seems to disappear.  I know Robin.  I
+*know* that in any other situation he would have come up with the
+caller() trick in about 15 seconds flat.  Instead weird, elaborate,
+inelegant hacks are thought up to solve the simplest problems.
+
+
+I guess there are certain programming idioms that are foreign enough
+to throw your brain into reverse if you're not ready for them.  Like
+trying to think in Lisp, for example.  Or being presented with OO for
+the first time.  I guess writing test is one of those.
+
+
+=head2 How do I use Test::More without depending on it?
+
+=head2 How do I deal with threads and forking?
+
+=head2 Why do I need more than ok?
+
+=head2 What's wrong with C<print $test ? "ok" : "not ok">?
+
+=head2 How do I check for an infinite loop
+
+On Mon, Mar 18, 2002 at 03:57:55AM -0500, Mark-Jason Dominus wrote:
+> 
+> Michael The Schwern <schwern@pobox.com> says:
+> > Use alarm and skip the test if $Config{d_alarm} is false (see
+> > t/op/alarm.t for an example).  If you think the infinite loop is due
+> > to a programming glitch, as opposed to a cross-platform issue, this
+> > will be enough.
+> 
+> Thanks very much!
+> 
+
+=head2 How can I check that flock works?
+
