@@ -12,8 +12,8 @@
       [rt.cpan.org 7030]
     - is_deeply() diagnostics a little off when scalar refs were inside
       an array or hash ref [rt.cpan.org 7033]
-    - Thanks to Fergal Daly for ferretting out all these is_deeply and eq_*
-      tests.
+    - Thanks to Fergal Daly for ferretting out all these long standing 
+      is_deeply and eq_* bugs.
 
 0.51  Tue Nov 23 04:51:12 EST 2004
     - Fixed bug in fail_one.t on Windows (not a real bug).
