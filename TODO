@@ -34,3 +34,7 @@
 
     Decide if the exit code behavior on failure is a useful default
     case.
+
+    unlike()
+
+    is_op()
