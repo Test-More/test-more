@@ -501,7 +501,7 @@ sub can_ok ($@) {
   isa_ok($object, $class, $object_name);
   isa_ok($ref,    $type,  $ref_name);
 
-Checks to see if the given $object->isa($class).  Also checks to make
+Checks to see if the given C<< $object->isa($class) >>.  Also checks to make
 sure the object was defined in the first place.  Handy for this sort
 of thing:
 
@@ -1155,7 +1155,7 @@ While the order of elements does not matter, duplicate elements do.
 # We must make sure that references are treated neutrally.  It really
 # doesn't matter how we sort them, as long as both arrays are sorted
 # with the same algorithm.
-sub _bogus_sort { local $^W = 0;  ref $a ? 0 : $a cmp $b }
+sub _bogus_sort { local $^W = 0;  ref $a ? -1 : ref $b ? 1 : $a cmp $b }
 
 sub eq_set  {
     my($a1, $a2) = @_;
