@@ -31,7 +31,7 @@ sub ok ($;$) {
 package main;
 
 require Test::More;
-Test::More->import(tests => 15);
+Test::More->import(tests => 16);
 
 # Preserve the line numbers.
 #line 38
@@ -53,13 +53,14 @@ can_ok('Mooble::Hooble::Yooble', qw(this that));
 isa_ok(bless([], "Foo"), "Wibble");
 isa_ok(42,    "Wibble", "My Wibble");
 isa_ok(undef, "Wibble", "Another Wibble");
+isa_ok([],    "HASH");
 
 use_ok('Hooble::mooble::yooble');
 require_ok('ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble');
 
 END {
     My::Test::ok($$out eq <<OUT, 'failing output');
-1..15
+1..16
 not ok 1 - failing
 not ok 2 - foo is bar?
 not ok 3 - undef is empty string?
@@ -73,8 +74,9 @@ not ok 10 - Mooble::Hooble::Yooble->can(...)
 not ok 11 - The object isa Wibble
 not ok 12 - My Wibble isa Wibble
 not ok 13 - Another Wibble isa Wibble
-not ok 14 - use Hooble::mooble::yooble;
-not ok 15 - require ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble;
+not ok 14 - The object isa HASH
+not ok 15 - use Hooble::mooble::yooble;
+not ok 16 - require ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble;
 OUT
 
     my $err_re = <<ERR;
@@ -92,11 +94,13 @@ OUT
 #          got: ''
 #     expected: '0'
 #     Failed test ($0 at line 45)
-#     it should not be 'foo'
-#     but it is.
+#     'foo'
+#         ne
+#     'foo'
 #     Failed test ($0 at line 46)
-#     it should not be 'foo'
-#     but it is.
+#     'foo'
+#         ne
+#     'foo'
 #     Failed test ($0 at line 48)
 #                   'foo'
 #     doesn't match '/that/'
@@ -105,22 +109,24 @@ OUT
 #     Mooble::Hooble::Yooble->can('this') failed
 #     Mooble::Hooble::Yooble->can('that') failed
 #     Failed test ($0 at line 53)
-#     The object isn't a 'Wibble'
+#     The object isn't a 'Wibble' its a 'Foo'
 #     Failed test ($0 at line 54)
 #     My Wibble isn't a reference
 #     Failed test ($0 at line 55)
 #     Another Wibble isn't defined
+#     Failed test ($0 at line 56)
+#     The object isn't a 'HASH' its a 'ARRAY'
 ERR
 
    my $filename = quotemeta $0;
    my $more_err_re = <<ERR;
-#     Failed test \\($filename at line 57\\)
+#     Failed test \\($filename at line 58\\)
 #     Tried to use 'Hooble::mooble::yooble'.
 #     Error:  Can't locate Hooble.* in \\\@INC .*
-#     Failed test \\($filename at line 58\\)
+#     Failed test \\($filename at line 59\\)
 #     Tried to require 'ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble'.
 #     Error:  Can't locate ALL.* in \\\@INC .*
-# Looks like you failed 15 tests of 15.
+# Looks like you failed 16 tests of 16.
 ERR
 
     unless( My::Test::ok($$err =~ /^\Q$err_re\E$more_err_re$/, 
