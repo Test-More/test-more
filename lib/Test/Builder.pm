@@ -639,7 +639,7 @@ sub todo_skip {
 
     my $out = "not ok";
     $out   .= " $Curr_Test" if $self->use_numbers;
-    $out   .= " # TODO $why\n";
+    $out   .= " # TODO & SKIP $why\n";
 
     $Test->_print($out);
 
@@ -850,6 +850,15 @@ sub _print {
 
     local($\, $", $,) = (undef, ' ', '');
     my $fh = $self->output;
+
+    # Escape each line after the first with a # so we don't
+    # confuse Test::Harness.
+    foreach (@msgs) {
+        s/\n(.)/\n# $1/sg;
+    }
+
+    push @msgs, "\n" unless $msgs[-1] =~ /\n\Z/;
+
     print $fh @msgs;
 }
 
