@@ -59,15 +59,13 @@ WriteMakefile(
 {
     package MY;
 
-    use File::Spec;
-
     sub test_via_harness {
         my($self, $orig_perl, $tests) = @_;
 
-        my $tlib = File::Spec->rel2abs('t/lib/');
-
         my @perls = ();
         if( $ENV{PERL_TEST_ALL} ) {
+            require File::Spec;
+            my $tlib = File::Spec->rel2abs('t/lib/');
             push @perls, 
               map "PERL5LIB=$tlib $_",
                 qw(
