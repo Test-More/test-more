@@ -4,6 +4,7 @@ Makefile.PL
 TODO
 lib/Test/More.pm
 lib/Test/Simple.pm
+lib/Test/Tutorial.pod
 lib/Test/Utils.pm
 t/Catch.pm
 t/Catch/More.pm
