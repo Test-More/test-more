@@ -8,7 +8,7 @@ $^C ||= 0;
 
 use strict;
 use vars qw($VERSION $CLASS);
-$VERSION = '0.12';
+$VERSION = '0.13';
 $CLASS = __PACKAGE__;
 
 my $IsVMS = $^O eq 'VMS';
@@ -239,7 +239,8 @@ sub ok {
     my($self, $test, $name) = @_;
 
     unless( $Have_Plan ) {
-        die "You tried to run a test without a plan!  Gotta have a plan.\n";
+        require Carp;
+        Carp::croak("You tried to run a test without a plan!  Gotta have a plan.");
     }
 
     $Curr_Test++;
@@ -564,7 +565,8 @@ sub skip {
     $why ||= '';
 
     unless( $Have_Plan ) {
-        die "You tried to run tests without a plan!  Gotta have a plan.\n";
+        require Carp;
+        Carp::croak("You tried to run tests without a plan!  Gotta have a plan.");
     }
 
     $Curr_Test++;
@@ -598,7 +600,8 @@ sub todo_skip {
     $why ||= '';
 
     unless( $Have_Plan ) {
-        die "You tried to run tests without a plan!  Gotta have a plan.\n";
+        require Carp;
+        Carp::croak("You tried to run tests without a plan!  Gotta have a plan.");
     }
 
     $Curr_Test++;
@@ -933,9 +936,16 @@ sub current_test {
     my($self, $num) = @_;
 
     if( defined $num ) {
+
+        unless( $Have_Plan ) {
+            require Carp;
+            Carp::croak("Can't change the current test number without a plan!");
+        }
+
         $Curr_Test = $num;
         if( $num > @Test_Results ) {
-            for ($#Test_Results..$num-1) {
+            my $start = @Test_Results ? $#Test_Results : 0;
+            for ($start..$num-1) {
                 $Test_Results[$_] = 1;
             }
         }
