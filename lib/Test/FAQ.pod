@@ -1,0 +1,142 @@
+=head1 NAME
+
+Test::FAQ - Frequently Asked Questions about testing with Perl
+
+
+=head1 DESCRIPTION
+
+Frequently Asked Questions about testing in general and specific
+issues with Perl.
+
+=head2 Is there any tutorial on testing?
+
+Test::Tutorial
+
+=head2 Are there any modules for testing?
+
+A whole bunch.  Start with Test::Simple then move onto Test::More.
+
+=head2 Are there any modules for testing web pages/CGI programs?
+
+=head2 Are there any modules for testing external programs?
+
+Test::Cmd?
+
+=head2 Can you do XUnit/JUnit style testing in Perl?
+
+Yep.  The Test::Inline (aka Pod::Tests) module gives you the same
+effect, but in a different way.
+
+Test::Unit is a more faithful port of the XUnit style to Perl, but
+isn't quite ready for prime-time.
+
+=head2 How do I test my module is backwards/forwards compatible?
+
+First, install a bunch of perls of commonly used versions.  At the
+moment, you could try these
+
+    5.7.2
+    5.6.1
+    5.005_03
+    5.004_05
+
+if you're feeling brave, you might want to have on hand these
+
+    bleadperl
+    5.6.0
+    5.004_04
+    5.004
+
+going back beyond 5.003 is probably beyond the call of duty.
+
+You can then add something like this to your Makefile.PL.  It
+overrides the MakeMaker test_via_harness() method to run the tests
+against several different versions of Perl.
+
+    # If PERL_TEST_ALL is set, run "make test" against 
+    # other perls as well as the current perl.
+    {
+        package MY;
+
+        sub test_via_harness {
+            my($self, $orig_perl, $tests) = @_;
+
+            # names of your other perl binaries.
+            my @other_perls = qw(perl5.004_05 perl5.005_03 perl5.7.2);
+
+            my @perls = ($orig_perl);
+            push @perls, @other_perls if $ENV{PERL_TEST_ALL};
+
+            my $out;
+            foreach my $perl (@perls) {
+                $out .= $self->SUPER::test_via_harness($perl, $tests);
+            }
+
+            return $out;
+        }
+    }
+
+and re-run your Makefile.PL with the PERL_TEST_ALL environment
+variable set
+
+    PERL_TEST_ALL=1 perl Makefile.PL
+
+now "make test" will run against each of your other perls.
+
+
+=head2 If I'm testing Foo::Bar, where do I put tests for Foo::Bar::Baz?
+
+=head2 How do I know when my tests are good enough?
+
+A: Use tools for measuring the code coverage of your tests, e.g. how many of
+your source code lines/subs/expressions/paths are executed (aka covered) by
+the test suite. The more, the better, of course, although you may not
+be able achive 100%. If your testsuite covers under 100%, then
+the rest of your code is, basically, untested. Which means it may work in
+surprising ways (e.g. doesn't do things like they are intended or
+documented), have bugs (e.g. return wrong results) or it may not work at
+all.
+
+=head2 How do I measure the coverage of my test suite?
+
+Devel::Cover
+
+=head2 How do I get tests to run in a certain order?
+
+=head2 What should I name my tests?
+
+=head2 How do I deal with tests that sometimes pass and sometimes fail?
+
+=head2 How do I test with a database/network/server that the user may or may not have?
+
+=head2 What's a good way to test lists?
+
+=head2 Is there such a thing as untestable code?
+
+There's always compile/export checks.
+
+Code must be written with testabilty in mind.  Seperation of form and
+functionality.
+
+=head2 What do I do when I can't make the code do the same thing twice?
+
+Force it to do the same thing twice.
+
+Even a random number generator can be tested.
+
+=head2 How do I test a GUI?
+
+=head2 How do I test an image generator?
+
+=head2 How do I test that my code handles failures gracefully?
+
+Forcing resource failure.
+
+=head2 How do I check the right warnings are issued?
+
+=head2 How do I test code that prints?
+
+=head2 I want to test that my code dies when I do X
+
+use eval { ... };
+
