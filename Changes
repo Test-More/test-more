@@ -1,4 +1,8 @@
 0.49
+    * Overloaded objects as names now won't blow up under threads
+      [rt.cpan.org 4218 and 4232]
+    * Overloaded objects which stringify to undef used as test names
+      now won't cause internal uninit warnings. [rt.cpan.org 4232]
     * Failure diagnostics now come out on their own line when run in 
       Test::Harness.
     - eq_set() sometimes wasn't giving the right results if nested refs 

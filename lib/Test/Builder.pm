@@ -334,6 +334,17 @@ sub ok {
     lock $Curr_Test;
     $Curr_Test++;
 
+    # In case $name is a string overloaded object, force it to stringify.
+    local($@,$!);
+    eval { 
+        if( defined $name ) {
+            require overload;
+            if( my $string_meth = overload::Method($name, '""') ) {
+                $name = $name->$string_meth();
+            }
+        }
+    };
+
     $self->diag(<<ERR) if defined $name and $name =~ /^[\d\s]+$/;
     You named your test '$name'.  You shouldn't use numbers for your test names.
     Very confusing.
