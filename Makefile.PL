@@ -16,7 +16,8 @@ $LAST_API_CHANGE = 0.18;
 eval "require $PACKAGE";
 
 unless ($@) { # Make sure we did find the module.
-    print <<"CHANGE_WARN" if ${$PACKAGE.'::VERSION'} < $LAST_API_CHANGE;
+    if( ${$PACKAGE.'::VERSION'} < $LAST_API_CHANGE ) {
+        print <<"CHANGE_WARN";
 
 NOTE: There have been API changes between this version and any older
 than version $LAST_API_CHANGE!  Please read the Changes file if you
@@ -24,7 +25,8 @@ are upgrading from a version older than $LAST_API_CHANGE.
 
 CHANGE_WARN
 
-    sleep 5;
+        sleep 5;
+    }
 }
 
 WriteMakefile(
