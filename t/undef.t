@@ -1,16 +1,19 @@
 use strict;
-use Test::More tests => 10;
+use Test::More tests => 12;
 
 BEGIN { $^W = 1; }
 
 my $warnings = '';
-local $SIG{__WARN__} = sub { $warnings = join '', @_ };
+local $SIG{__WARN__} = sub { $warnings .= join '', @_ };
 
 is( undef, undef,           'undef is undef');
 is( $warnings, '',          '  no warnings' );
 
 isnt( undef, 'foo',         'undef isnt foo');
 is( $warnings, '',          '  no warnings' );
+
+isnt( undef, '',            'undef isnt an empty string' );
+isnt( undef, 0,             'undef isnt zero' );
 
 like( undef, '/.*/',        'undef is like anything' );
 is( $warnings, '',          '  no warnings' );
