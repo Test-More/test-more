@@ -1,23 +1,16 @@
 package Test::Simple;
 
+use strict 'vars';
 require 5.004;
+use Test::Utils;
 
-$Test::Simple::VERSION = '0.08';
+use vars qw($VERSION);
+
+$VERSION = '0.09';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
 my($Have_Plan) = 0;
-
-
-# Special print function to guard against $\ and -l munging.
-sub _print (*@) {
-    my($fh, @args) = @_;
-
-    local $\;
-    print $fh @args;
-}
-
-sub print { die "DON'T USE PRINT!  Use _print instead" }
 
 
 # I'd like to have Test::Simple interfere with the program being
@@ -56,8 +49,9 @@ sub plan {
 
     $Have_Plan = 1;
 
-    _print *TESTOUT, "1..$Planned_Tests\n";
+    my_print *TESTOUT, "1..$Planned_Tests\n";
 
+    no strict 'refs';
     my($caller) = caller;
     *{$caller.'::ok'} = \&ok;
 
@@ -68,6 +62,7 @@ sub no_plan {
     $Have_Plan = 1;
 
     my($caller) = caller;
+    no strict 'refs';
     *{$caller.'::ok'} = \&ok;
 }
 
@@ -98,7 +93,9 @@ Test::Simple - Basic utilities for writing tests.
 =head1 DESCRIPTION
 
 This is an extremely simple, extremely basic module for writing tests
-suitable for CPAN modules and other pursuits.
+suitable for CPAN modules and other pursuits.  If you wish to do more
+complicated testing, use the Test::More module (a drop-in replacement
+for this one).
 
 The basic unit of Perl testing is the ok.  For each thing you want to
 test your program will print out an "ok" or "not ok" to indicate pass
@@ -153,41 +150,69 @@ sub ok ($;$) {
 
     $Num_Tests++;
 
-    # Make sure the print doesn't get interfered with.
-    local($\, $,);
-
-    _print *TESTERR, <<ERR if defined $name and $name !~ /\D/;
+    my_print *TESTERR, <<ERR if defined $name and $name !~ /\D/;
 You named your test '$name'.  You shouldn't use numbers for your test names.
 Very confusing.
 ERR
 
 
+    my($pack, $file, $line) = caller;
+    if( $pack eq 'Test::More' ) {   # special case for Test::More's calls
+        ($pack, $file, $line) = caller(1);
+    }
+
+    my($is_todo)  = ${$pack.'::TODO'} ? 1 : 0;
+
     # We must print this all in one shot or else it will break on VMS
     my $msg;
     unless( $test ) {
         $msg .= "not ";
-        $Test_Results[$Num_Tests-1] = 0;
+        $Test_Results[$Num_Tests-1] = $is_todo ? 1 : 0;
     }
     else {
         $Test_Results[$Num_Tests-1] = 1;
     }
     $msg   .= "ok $Num_Tests";
     $msg   .= " - $name" if @_ == 2;
+    if( $is_todo ) {
+        my $what_todo = ${$pack.'::TODO'};
+        $msg   .= " # TODO $what_todo";
+    }
     $msg   .= "\n";
 
-    _print *TESTOUT, $msg;
+    my_print *TESTOUT, $msg;
 
     #'#
-    unless( $test ) {
-        my($pack, $file, $line) = (caller)[0,1,2];
-        if( $pack eq 'Test::More' ) {
-            ($file, $line) = (caller(1))[1,2];
-        }
-        _print *TESTERR, "#     Failed test ($file at line $line)\n";
+    unless( $test or $is_todo ) {
+        my_print *TESTERR, "#     Failed test ($file at line $line)\n";
     }
 
     return $test;
 }
+
+
+sub _skipped {
+    my($why) = shift;
+
+    unless( $Have_Plan ) {
+        die "You tried to use ok() without a plan!  Gotta have a plan.\n".
+            "  use Test::Simple tests => 23;   for example.\n";
+    }
+
+    $Num_Tests++;
+
+    # XXX Set this to "Skip" instead?
+    $Test_Results[$Num_Tests-1] = 1;
+
+    # We must print this all in one shot or else it will break on VMS
+    my $msg;
+    $msg   .= "ok $Num_Tests # skip $why\n";
+
+    my_print *TESTOUT, $msg;
+
+    return 1;
+}
+
 
 =back
 
@@ -301,7 +326,7 @@ END {
     if( $Num_Tests ) {
         # The plan?  We have no plan.
         unless( $Planned_Tests ) {
-            _print *TESTOUT, "1..$Num_Tests\n";
+            my_print *TESTOUT, "1..$Num_Tests\n";
             $Planned_Tests = $Num_Tests;
         }
 
@@ -309,24 +334,24 @@ END {
         $num_failed += abs($Planned_Tests - @Test_Results);
 
         if( $Num_Tests < $Planned_Tests ) {
-            _print *TESTERR, <<"FAIL";
+            my_print *TESTERR, <<"FAIL";
 # Looks like you planned $Planned_Tests tests but only ran $Num_Tests.
 FAIL
         }
         elsif( $Num_Tests > $Planned_Tests ) {
             my $num_extra = $Num_Tests - $Planned_Tests;
-            _print *TESTERR, <<"FAIL";
+            my_print *TESTERR, <<"FAIL";
 # Looks like you planned $Planned_Tests tests but ran $num_extra extra.
 FAIL
         }
         elsif ( $num_failed ) {
-            _print *TESTERR, <<"FAIL";
+            my_print *TESTERR, <<"FAIL";
 # Looks like you failed $num_failed tests of $Planned_Tests.
 FAIL
         }
 
         if( $Test_Died ) {
-            _print *TESTERR, <<"FAIL";
+            my_print *TESTERR, <<"FAIL";
 # Looks like your test died just after $Num_Tests.
 FAIL
 
@@ -339,7 +364,7 @@ FAIL
         _my_exit( 0 ) && return;
     }
     else {
-        _print *TESTERR, "# No tests run!\n";
+        my_print *TESTERR, "# No tests run!\n";
         _my_exit( 255 ) && return;
     }
 }
@@ -379,7 +404,9 @@ It will produce output like this:
     ok 2 - Title() get
     ok 3 - Director() get
     not ok 4 - Rating() get
+    #    Failed test (t/film.t at line 14)
     ok 5 - NumExplodingSheep() get
+    # Looks like you failed 1 tests of 5
 
 Indicating the Film::Rating() method is broken.
 
