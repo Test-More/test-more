@@ -1307,7 +1307,7 @@ Slaymaker, Tony Bowden, chromatic and the perl-qa gang.
 
 =head1 COPYRIGHT
 
-Copyright 2001 by Michael G Schwern E<lt>schwern@pobox.comE<gt>.
+Copyright 2001, 2002 by Michael G Schwern E<lt>schwern@pobox.comE<gt>.
 
 This program is free software; you can redistribute it and/or 
 modify it under the same terms as Perl itself.
