@@ -229,3 +229,10 @@ the first time.  I guess writing test is one of those.
 
 
 =head2 How do I use Test::More without depending on it?
+
+=head2 How do I deal with threads and forking?
+
+=head2 Why do I need more than ok?
+
+=head2 What's wrong with C<print $test ? "ok" : "not ok">?
+
