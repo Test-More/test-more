@@ -7,7 +7,7 @@ use Test::Utils;
 
 use vars qw($VERSION);
 
-$VERSION = '0.15';
+$VERSION = '0.16';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
@@ -301,19 +301,9 @@ doesn't actually exit, that's your job.
 =cut
 
 sub _my_exit {
-  my $code = $_[0];
+    $? = $_[0];
 
-  if( $IsVMS ) {
-      # VMS exit codes don't work like the rest of the universe.
-      $? = $code == 0   ? 0 :   # Success -> 0
-           $code == 255 ? 2 :   # Abort   -> 2
-                          1 ;   # Failure -> 1
-  }
-  else {
-      $? = $code;
-  }
-
-  return 1;
+    return 1;
 }
 
 
@@ -438,11 +428,19 @@ code.  If this is a problem, you probably have a huge test script.
 Split it into multiple files.  (Otherwise blame the Unix folks for
 using an unsigned short integer as the exit status).
 
-VMS's exit codes act a little differently.  It works like this:
+Because VMS's exit codes are much, much different than the rest of the
+universe, and perl does horrible mangling to them that gets in my way,
+it works like this on VMS.
 
-    0                 all tests successful
-    1                 test failed
-    2                 test died
+    0     SS$_NORMAL        all tests successful
+    4     SS$_ABORT         something went wrong
+
+Unfortunately, I can't differentiate any further.
+
+
+=head1 NOTES
+
+Test::Simple is B<explicitly> tested all the way back to perl 5.004.
 
 
 =head1 HISTORY
