@@ -236,3 +236,18 @@ the first time.  I guess writing test is one of those.
 
 =head2 What's wrong with C<print $test ? "ok" : "not ok">?
 
+=head2 How do I check for an infinite loop
+
+On Mon, Mar 18, 2002 at 03:57:55AM -0500, Mark-Jason Dominus wrote:
+> 
+> Michael The Schwern <schwern@pobox.com> says:
+> > Use alarm and skip the test if $Config{d_alarm} is false (see
+> > t/op/alarm.t for an example).  If you think the infinite loop is due
+> > to a programming glitch, as opposed to a cross-platform issue, this
+> > will be enough.
+> 
+> Thanks very much!
+> 
+
+=head2 How can I check that flock works?
+
