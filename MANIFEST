@@ -63,6 +63,7 @@ t/reset.t
 t/simple.t
 t/skip.t
 t/skipall.t
+t/sort_bug.t
 t/thread_taint.t
 t/threads.t
 t/todo.t

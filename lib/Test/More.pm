@@ -1197,17 +1197,22 @@ While the order of elements does not matter, duplicate elements do.
 
 =cut
 
-# We must make sure that references are treated neutrally.  It really
-# doesn't matter how we sort them, as long as both arrays are sorted
-# with the same algorithm.
-sub _bogus_sort { local $^W = 0;  ref $a ? -1 : ref $b ? 1 : $a cmp $b }
-
 sub eq_set  {
     my($a1, $a2) = @_;
     return 0 unless @$a1 == @$a2;
 
     # There's faster ways to do this, but this is easiest.
-    return eq_array( [sort _bogus_sort @$a1], [sort _bogus_sort @$a2] );
+    local $^W = 0;
+
+    # We must make sure that references are treated neutrally.  It really
+    # doesn't matter how we sort them, as long as both arrays are sorted
+    # with the same algorithm.
+    # Have to inline the sort routine due to a threading/sort bug.
+    # See [rt.cpan.org 6782]
+    return eq_array(
+           [sort { ref $a ? -1 : ref $b ? 1 : $a cmp $b } @$a1],
+           [sort { ref $a ? -1 : ref $b ? 1 : $a cmp $b } @$a2]
+    );
 }
 
 =back
