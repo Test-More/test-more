@@ -1,7 +1,10 @@
 # Can't use Test.pm, that's a 5.005 thing.
 package My::Test;
 
-use File::Spec;
+unless( eval { require File::Spec } ) {
+    print "1..0 # Skip Need File::Spec to run this test\n";
+    exit(0);
+}
 
 my $test_num = 1;
 # Utility testing functions.
@@ -44,7 +47,7 @@ while( my($test_name, $exit_codes) = each %Tests ) {
     my($exit_code) = $exit_codes->[$IsVMS ? 1 : 0];
 
     my $file = File::Spec->catfile($lib, $test_name);
-    my $wait_stat = system(qq{$^X $file});
+    my $wait_stat = system(qq{$^X -I"blib/lib" $file});
     my $actual_exit = $wait_stat >> 8;
 
     My::Test::ok( $actual_exit == $exit_code, 

@@ -1,6 +1,3 @@
-Write _print_comment() utility routine to make sure comments come out
-right, newlines handled, etc...
-
 Test use_ok() with imports better.
 
 Rejigger the internals to be an OO singleton.
@@ -22,3 +19,9 @@ have to do:
 Make a way to control exported functions
 
 Make a way to ask "Are we passing so far?"
+
+eval_ok().
+
+isa_ok() name.
+
+Support unnumbered tests.

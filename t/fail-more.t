@@ -1,4 +1,11 @@
+#!perl -w
+
 use strict;
+use lib 't/lib';
+
+require Test::Simple::Catch;
+my($out, $err) = Test::Simple::Catch::caught();
+
 
 # Can't use Test.pm, that's a 5.005 thing.
 package My::Test;
@@ -24,11 +31,6 @@ sub ok ($;$) {
 package main;
 
 require Test::More;
-
-push @INC, 't/lib';
-require Test::Simple::Catch::More;
-my($out, $err) = Test::Simple::Catch::More::caught();
-
 Test::More->import(tests => 10);
 
 # Preserve the line numbers.
@@ -90,11 +92,9 @@ ERR
 #     Failed test \\($filename at line 43\\)
 #     Tried to use 'Hooble::mooble::yooble'.
 #     Error:  Can't locate Hooble.* in \\\@INC .*
-
 #     Failed test \\($filename at line 44\\)
 #     Tried to require 'ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble'.
 #     Error:  Can't locate ALL.* in \\\@INC .*
-
 # Looks like you failed 10 tests of 10.
 ERR
 

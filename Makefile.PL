@@ -32,6 +32,7 @@ WriteMakefile(
     VERSION_FROM    => "lib/$PACKAGE_FILE.pm", # finds $VERSION
     PREREQ_PM       => { 
                         Test::Harness   => 1.23,
+                        File::Spec      => 0.6,
                        },
     'dist'          => { COMPRESS   => 'gzip -9',
                          SUFFIX     => '.gz',
@@ -47,8 +48,13 @@ WriteMakefile(
         my($self, $orig_perl, $tests) = @_;
 
         my @perls = ($orig_perl);
-        push @perls, qw(perl5.004 perl5.004_04 perl5.004_05 
-                        perl5.005_03 bleadperl) 
+        push @perls, qw(bleadperl 
+                        perl5.6.1 
+                        perl5.005_03 
+                        perl5.004_05
+                        perl5.004_04
+                        perl5.004
+                       )
           if $ENV{PERL_TEST_ALL};
 
         my $out;

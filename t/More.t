@@ -1,3 +1,5 @@
+#!perl -w
+
 use Test::More tests => 22;
 
 use_ok('Text::Soundex');

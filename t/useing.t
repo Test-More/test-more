@@ -1,5 +1,5 @@
-use Test::More tests => 2;
+use Test::More tests => 3;
 
-use_ok("Test::More");
-
-use_ok("Test::Simple");
+require_ok('Test::Builder');
+require_ok("Test::More");
+require_ok("Test::Simple");

@@ -1,3 +1,5 @@
+#!perl -w
+
 BEGIN {
     require Test::Harness;
     require Test::More;

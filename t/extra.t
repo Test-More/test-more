@@ -1,3 +1,5 @@
+#!perl -w
+
 # Can't use Test.pm, that's a 5.005 thing.
 package My::Test;
 

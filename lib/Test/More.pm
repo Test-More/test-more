@@ -4,17 +4,12 @@ use 5.004;
 
 use strict;
 use Carp;
-use Test::Utils;
+use Test::Builder;
 
-BEGIN {
-    require Test::Simple;
-    *TESTOUT = \*Test::Simple::TESTOUT;
-    *TESTERR = \*Test::Simple::TESTERR;
-}
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT $TODO);
-$VERSION = '0.20';
+$VERSION = '0.30';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like
@@ -26,27 +21,15 @@ $VERSION = '0.20';
              can_ok  isa_ok
             );
 
+my $Test = Test::Builder->new;
 
 sub import {
-    my($class, $plan, @args) = @_;
+    my($class, @plan) = @_;
 
-    if( defined $plan ) {
-        if( $plan eq 'skip_all' ) {
-            $Test::Simple::Skip_All = 1;
-            my $out = "1..0";
-            $out .= " # Skip @args" if @args;
-            $out .= "\n";
+    my $caller = caller;
 
-            my_print *TESTOUT, $out;
-            exit(0);
-        }
-        else {
-            Test::Simple->import($plan => @args);
-        }
-    }
-    else {
-        Test::Simple->import;
-    }
+    $Test->exported_to($caller);
+    $Test->plan(@plan);
 
     __PACKAGE__->_export_to_level(1, __PACKAGE__);
 }
@@ -219,7 +202,10 @@ This is actually Test::Simple's ok() routine.
 
 =cut
 
-# We get ok() from Test::Simple's import().
+sub ok ($;$) {
+    my($test, $name) = @_;
+    $Test->ok($test, $name);
+}
 
 =item B<is>
 
@@ -281,27 +267,7 @@ function which is an alias of isnt().
 =cut
 
 sub is ($$;$) {
-    my($this, $that, $name) = @_;
-
-    my $test;
-    {
-        local $^W = 0;   # so is(undef, undef) works quietly.
-        $test = $this eq $that;
-    }
-    my $ok = @_ == 3 ? ok($test, $name)
-                     : ok($test);
-
-    unless( $ok ) {
-        $this = defined $this ? "'$this'" : 'undef';
-        $that = defined $that ? "'$that'" : 'undef';
-        diagnostic *TESTERR, sprintf <<DIAGNOSTIC, $this, $that;
-#          got: %s
-#     expected: %s
-DIAGNOSTIC
-
-    }
-
-    return $ok;
+    $Test->is_eq(@_);
 }
 
 sub isnt ($$;$) {
@@ -313,15 +279,14 @@ sub isnt ($$;$) {
         $test = $this ne $that;
     }
 
-    my $ok = @_ == 3 ? ok($test, $name)
-                     : ok($test);
+    my $ok = $Test->ok($test, $name);
 
     unless( $ok ) {
         $that = defined $that ? "'$that'" : 'undef';
 
-        diagnostic *TESTERR, sprintf <<DIAGNOSTIC, $that;
-#     it should not be %s
-#     but it is.
+        $Test->diag(sprintf <<DIAGNOSTIC, $that);
+it should not be %s
+but it is.
 DIAGNOSTIC
 
     }
@@ -363,42 +328,7 @@ diagnostics on failure.
 =cut
 
 sub like ($$;$) {
-    my($this, $regex, $name) = @_;
-
-    my $ok = 0;
-    if( ref $regex eq 'Regexp' ) {
-        local $^W = 0;
-        $ok = @_ == 3 ? ok( $this =~ $regex ? 1 : 0, $name )
-                      : ok( $this =~ $regex ? 1 : 0 );
-    }
-    # Check if it looks like '/foo/i'
-    elsif( my($re, $opts) = $regex =~ m{^ /(.*)/ (\w*) $ }sx ) {
-        local $^W = 0;
-        $ok = @_ == 3 ? ok( $this =~ /(?$opts)$re/ ? 1 : 0, $name )
-                      : ok( $this =~ /(?$opts)$re/ ? 1 : 0 );
-    }
-    else {
-        # Can't use fail() here, the call stack will be fucked.
-        my $ok = @_ == 3 ? ok(0, $name )
-                         : ok(0);
-
-        diagnostic *TESTERR, <<ERR;
-#     '$regex' doesn't look much like a regex to me.  Failing the test.
-ERR
-
-        return $ok;
-    }
-
-    unless( $ok ) {
-        $this = defined $this ? "'$this'" : 'undef';
-        diagnostic *TESTERR, sprintf <<DIAGNOSTIC, $this;
-#                   %s
-#     doesn't match '$regex'
-DIAGNOSTIC
-
-    }
-
-    return $ok;
+    $Test->like(@_);
 }
 
 =item B<can_ok>
@@ -437,11 +367,11 @@ sub can_ok ($@) {
     $name = @methods == 1 ? "$class->can($methods[0])" 
                           : "$class->can(...)";
     
-    ok( !@nok, $name );
+    my $ok = $Test->ok( !@nok, $name );
 
-    diagnostic *TESTERR, map "#     $class->can('$_') failed\n", @nok;
+    $Test->diag(map "$class->can('$_') failed\n", @nok);
 
-    return !@nok;
+    return $ok;
 }
 
 =item B<isa_ok>
@@ -479,15 +409,16 @@ sub isa_ok ($$) {
         $diag = "The object isn't a '$class'";
     }
 
+    my $ok;
     if( $diag ) {
-        ok( 0, $name );
-        diagnostic *TESTERR, "#     $diag\n";
-        return 0;
+        $ok = $Test->ok( 0, $name );
+        $Test->diag("$diag\n");
     }
     else {
-        ok( 1, $name );
-        return 1;
+        $ok = $Test->ok( 1, $name );
     }
+
+    return $ok;
 }
 
 
@@ -509,15 +440,11 @@ Use these very, very, very sparingly.
 =cut
 
 sub pass (;$) {
-    my($name) = @_;
-    return @_ == 1 ? ok(1, $name)
-                   : ok(1);
+    $Test->ok(1, @_);
 }
 
 sub fail (;$) {
-    my($name) = @_;
-    return @_ == 1 ? ok(0, $name)
-                   : ok(0);
+    $Test->ok(0, @_);
 }
 
 =back
@@ -563,13 +490,13 @@ require $module;
 $module->import(\@imports);
 USE
 
-    my $ok = ok( !$@, "use $module;" );
+    my $ok = $Test->ok( !$@, "use $module;" );
 
     unless( $ok ) {
         chomp $@;
-        diagnostic *TESTERR, <<DIAGNOSTIC;
-#     Tried to use '$module'.
-#     Error:  $@
+        $Test->diag(<<DIAGNOSTIC);
+Tried to use '$module'.
+Error:  $@
 DIAGNOSTIC
 
     }
@@ -595,11 +522,11 @@ package $pack;
 require $module;
 REQUIRE
 
-    my $ok = ok( !$@, "require $module;" );
+    my $ok = $Test->ok( !$@, "require $module;" );
 
     unless( $ok ) {
         chomp $@;
-        diagnostic *TESTERR, <<DIAGNOSTIC;
+        $Test->diag(<<DIAGNOSTIC);
 #     Tried to require '$module'.
 #     Error:  $@
 DIAGNOSTIC
@@ -681,7 +608,7 @@ sub skip {
     }
 
     for( 1..$how_many ) {
-        Test::Simple::_skipped($why);
+        $Test->skip($why);
     }
 
     local $^W = 0;
