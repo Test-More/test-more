@@ -5,7 +5,7 @@ package My::Test;
 BEGIN {
     require Test::Harness;
     if( $Test::Harness::VERSION < 1.20 ) {
-        print "1..0\n";
+        print "1..0 # Skipped: Need Test::Harness 1.20 or up\n";
         exit(0);
     }
 }
