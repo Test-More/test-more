@@ -1,5 +1,11 @@
 Revision history for Perl extension Test::Simple
 
+0.15  Tue Aug 28 06:18:35 EDT 2001
+    * Now using sensible exit codes on VMS.
+
+0.14  Wed Aug 22 17:26:28 EDT 2001
+    * Added a first cut at Test::Tutorial
+
 0.13  Tue Aug 14 15:30:10 EDT 2001
     * Added a reason to the skip_all interface
     - Fixed a bug to allow 'use Test::More;' to work.
