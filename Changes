@@ -1,5 +1,12 @@
 Revision history for Perl extension Test::Simple
 
+0.18  Wed Sep  5 20:35:24 EDT 2001
+    * ***API CHANGE*** can_ok() only counts as one test
+    - can_ok() has better diagnostics
+    - Minor POD fixes from mjd
+    - adjusting the internal layout to make it easier to put it into
+      the core
+
 0.17  Wed Aug 29 20:16:28 EDT 2001
     * Added can_ok() and isa_ok() to Test::More
 
