@@ -33,6 +33,7 @@ $VERSION = '0.48';
             );
 
 my $Test = Test::Builder->new;
+my $Show_Diag = 1;
 
 
 # 5.004's Exporter doesn't have export_to_level.
@@ -177,16 +178,25 @@ sub plan {
 
     $Test->exported_to($caller);
 
+    my @cleaned_plan;
     my @imports = ();
-    foreach my $idx (0..$#plan) {
+    my $idx = 0;
+    while( $idx <= $#plan ) {
         if( $plan[$idx] eq 'import' ) {
-            my($tag, $imports) = splice @plan, $idx, 2;
-            @imports = @$imports;
-            last;
+            @imports = @{$plan[$idx+1]};
+            $idx += 2;
+        }
+        elsif( $plan[$idx] eq 'no_diag' ) {
+            $Show_Diag = 0;
+            $idx++;
+        }
+        else {
+            push @cleaned_plan, $plan[$idx];
+            $idx++;
         }
     }
 
-    $Test->plan(@plan);
+    $Test->plan(@cleaned_plan);
 
     __PACKAGE__->_export_to_level(1, __PACKAGE__, @imports);
 }
@@ -619,6 +629,12 @@ which would produce:
 You might remember C<ok() or diag()> with the mnemonic C<open() or
 die()>.
 
+All diag()s can be made silent by passing the "no_diag" option to
+Test::More.  C<use Test::More tests => 1, 'no_diag'>.  This is useful
+if you have diagnostics for personal testing but then wish to make
+them silent for release without commenting out each individual
+statement.
+
 B<NOTE> The exact formatting of the diagnostic output is still
 changing, but it is guaranteed that whatever you throw at it it won't
 interfere with the test.
@@ -626,6 +642,7 @@ interfere with the test.
 =cut
 
 sub diag {
+    return unless $Show_Diag;
     $Test->diag(@_);
 }
 
