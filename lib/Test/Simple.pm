@@ -7,7 +7,7 @@ use Test::Utils;
 
 use vars qw($VERSION);
 
-$VERSION = '0.19';
+$VERSION = '0.20';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
@@ -155,7 +155,7 @@ sub ok ($;$) {
 
     $Num_Tests++;
 
-    my_print *TESTERR, <<ERR if defined $name and $name =~ /^[\d\s]+$/;
+    diagnostic *TESTERR, <<ERR if defined $name and $name =~ /^[\d\s]+$/;
 You named your test '$name'.  You shouldn't use numbers for your test names.
 Very confusing.
 ERR
@@ -195,7 +195,7 @@ ERR
     #'#
     unless( $test ) {
         my $msg = $is_todo ? "Failed (TODO)" : "Failed";
-        my_print *TESTERR, "#     $msg test ($file at line $line)\n";
+        diagnostic *TESTERR, "#     $msg test ($file at line $line)\n";
     }
 
     return $test ? 1 : 0;
@@ -346,24 +346,24 @@ END {
         $num_failed += abs($Planned_Tests - @Test_Results);
 
         if( $Num_Tests < $Planned_Tests ) {
-            my_print *TESTERR, <<"FAIL";
+            diagnostic *TESTERR, <<"FAIL";
 # Looks like you planned $Planned_Tests tests but only ran $Num_Tests.
 FAIL
         }
         elsif( $Num_Tests > $Planned_Tests ) {
             my $num_extra = $Num_Tests - $Planned_Tests;
-            my_print *TESTERR, <<"FAIL";
+            diagnostic *TESTERR, <<"FAIL";
 # Looks like you planned $Planned_Tests tests but ran $num_extra extra.
 FAIL
         }
         elsif ( $num_failed ) {
-            my_print *TESTERR, <<"FAIL";
+            diagnostic *TESTERR, <<"FAIL";
 # Looks like you failed $num_failed tests of $Planned_Tests.
 FAIL
         }
 
         if( $Test_Died ) {
-            my_print *TESTERR, <<"FAIL";
+            diagnostic *TESTERR, <<"FAIL";
 # Looks like your test died just after $Num_Tests.
 FAIL
 
@@ -376,7 +376,7 @@ FAIL
         _my_exit( 0 ) && return;
     }
     else {
-        my_print *TESTERR, "# No tests run!\n";
+        diagnostic *TESTERR, "# No tests run!\n";
         _my_exit( 255 ) && return;
     }
 }
