@@ -862,7 +862,7 @@ If set to true, no "1..N" header will be printed.
     $Test->no_ending($no_ending);
 
 Normally, Test::Builder does some extra diagnostics when the test
-ends.  It also changes the exit code as described in Test::Simple.
+ends.  It also changes the exit code as described below.
 
 If this is true, none of that will be done.
 
@@ -1414,6 +1414,25 @@ FAIL
 END {
     $Test->_ending if defined $Test and !$Test->no_ending;
 }
+
+=head1 EXIT CODES
+
+If all your tests passed, Test::Builder will exit with zero (which is
+normal).  If anything failed it will exit with how many failed.  If
+you run less (or more) tests than you planned, the missing (or extras)
+will be considered failures.  If no tests were ever run Test::Builder
+will throw a warning and exit with 255.  If the test died, even after
+having successfully completed all its tests, it will still be
+considered a failure and will exit with 255.
+
+So the exit codes are...
+
+    0                   all tests successful
+    255                 test died
+    any other number    how many failed (including missing or extras)
+
+If you fail more than 254 tests, it will be reported as 254.
+
 
 =head1 THREADS
 

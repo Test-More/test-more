@@ -1193,6 +1193,25 @@ sub builder {
 =back
 
 
+=head1 EXIT CODES
+
+If all your tests passed, Test::Builder will exit with zero (which is
+normal).  If anything failed it will exit with how many failed.  If
+you run less (or more) tests than you planned, the missing (or extras)
+will be considered failures.  If no tests were ever run Test::Builder
+will throw a warning and exit with 255.  If the test died, even after
+having successfully completed all its tests, it will still be
+considered a failure and will exit with 255.
+
+So the exit codes are...
+
+    0                   all tests successful
+    255                 test died
+    any other number    how many failed (including missing or extras)
+
+If you fail more than 254 tests, it will be reported as 254.
+
+
 =head1 NOTES
 
 Test::More is B<explicitly> tested all the way back to perl 5.004.

@@ -12,6 +12,8 @@ Revision history for Perl extension Test::Simple
       when threads are enabled.  The user must now do this manually.
     * Alex Francis added reset() reset the state of Test::Builder in 
       persistent environments.
+    - David Hand noted that Test::Builder/More exit code behavior was
+      not documented.  Only Test::Simple.
 
 0.47  Mon Aug 26 03:54:22 PDT 2002 
     * Tatsuhiko Miyagawa noticed Test::Builder was accidentally storing 
