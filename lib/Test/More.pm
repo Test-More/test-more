@@ -1139,6 +1139,8 @@ sub _deep_check {
         # Quiet uninitialized value warnings when comparing undefs.
         local $^W = 0; 
 
+        $Test->_unoverload(\$e1, \$e2);
+
         # Either they're both references or both not.
         my $same_ref = !(!ref $e1 xor !ref $e2);
 
@@ -1319,7 +1321,27 @@ If you fail more than 254 tests, it will be reported as 254.
 
 =head1 NOTES
 
-Test::More is B<explicitly> tested all the way back to perl 5.004.
+=over 4
+
+=item *
+
+Test::More works with Perls as old as 5.004_05.
+
+=item *
+
+String overloaded objects are compared B<as strings>.  This prevents
+Test::More from piercing an object's interface allowing better blackbox
+testing.  So if a function starts returning overloaded objects instead of
+bare strings your tests won't notice the difference.  This is good.
+
+However, it does mean that functions like is_deeply() cannot be used to
+test the internals of string overloaded objects.  In this case I would
+suggest Test::Deep which contains more flexible testing functions for
+complex data structures.
+
+
+=back
+
 
 =head1 BUGS and CAVEATS
 

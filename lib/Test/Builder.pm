@@ -370,7 +370,7 @@ sub ok {
     $Curr_Test++;
 
     # In case $name is a string overloaded object, force it to stringify.
-    _unoverload(\$name);
+    $self->_unoverload(\$name);
 
     $self->diag(<<ERR) if defined $name and $name =~ /^[\d\s]+$/;
     You named your test '$name'.  You shouldn't use numbers for your test names.
@@ -380,7 +380,7 @@ ERR
     my($pack, $file, $line) = $self->caller;
 
     my $todo = $self->todo($pack);
-    _unoverload(\$todo);
+    $self->_unoverload(\$todo);
 
     my $out;
     my $result = &share({});
@@ -431,16 +431,21 @@ ERR
 
 
 sub _unoverload {
-    my $thing = shift;
+    my $self  = shift;
+
     local($@,$!);
-    eval { 
-        if( defined $$thing ) {
-            require overload;
-            if( my $string_meth = overload::Method($$thing, '""') ) {
-                $$thing = $$thing->$string_meth();
+
+    eval { require overload } || return;
+
+    foreach my $thing (@_) {
+        eval { 
+            if( defined $$thing ) {
+                if( my $string_meth = overload::Method($$thing, '""') ) {
+                    $$thing = $$thing->$string_meth();
+                }
             }
-        }
-    };
+        };
+    }
 }
 
 
@@ -751,7 +756,7 @@ Skips the current test, reporting $why.
 sub skip {
     my($self, $why) = @_;
     $why ||= '';
-    _unoverload(\$why);
+    $self->_unoverload(\$why);
 
     unless( $Have_Plan ) {
         require Carp;
