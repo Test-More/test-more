@@ -8,7 +8,7 @@ $^C ||= 0;
 
 use strict;
 use vars qw($VERSION $CLASS);
-$VERSION = '0.10';
+$VERSION = '0.11';
 $CLASS = __PACKAGE__;
 
 my $IsVMS = $^O eq 'VMS';
@@ -245,8 +245,8 @@ sub ok {
     $Curr_Test++;
     
     $self->diag(<<ERR) if defined $name and $name =~ /^[\d\s]+$/;
-You named your test '$name'.  You shouldn't use numbers for your test names.
-Very confusing.
+    You named your test '$name'.  You shouldn't use numbers for your test names.
+    Very confusing.
 ERR
 
     my($pack, $file, $line) = $self->caller;
@@ -281,7 +281,7 @@ ERR
 
     unless( $test ) {
         my $msg = $todo ? "Failed (TODO)" : "Failed";
-        $self->diag("$msg test ($file at line $line)\n");
+        $self->diag("    $msg test ($file at line $line)\n");
     } 
 
     return $test ? 1 : 0;
@@ -355,8 +355,8 @@ sub _is_diag {
     }
 
     $self->diag(sprintf <<DIAGNOSTIC, $got, $expect);
-     got: %s
-expected: %s
+         got: %s
+    expected: %s
 DIAGNOSTIC
 
 }    
@@ -460,7 +460,7 @@ sub _regex_ok {
     else {
         $ok = $self->ok( 0, $name );
 
-        $self->diag("'$regex' doesn't look much like a regex to me.");
+        $self->diag("    '$regex' doesn't look much like a regex to me.");
 
         return $ok;
     }
@@ -476,8 +476,8 @@ sub _regex_ok {
         $this = defined $this ? "'$this'" : 'undef';
         my $match = $cmp eq '=~' ? "doesn't match" : "matches";
         $self->diag(sprintf <<DIAGNOSTIC, $this, $match, $regex);
-              %s
-%13s '%s'
+                  %s
+    %13s '%s'
 DIAGNOSTIC
 
     }
@@ -501,6 +501,8 @@ sub cmp_ok {
     my $test;
     {
         local $^W = 0;
+        local($@,$!);   # don't interfere with $@
+                        # eval() sometimes resets $!
         $test = eval "\$got $type \$expect";
     }
     local $Level = $Level + 1;
@@ -523,9 +525,9 @@ sub _cmp_diag {
     $got    = defined $got    ? "'$got'"    : 'undef';
     $expect = defined $expect ? "'$expect'" : 'undef';
     $self->diag(sprintf <<DIAGNOSTIC, $got, $type, $expect);
-%s
     %s
-%s
+        %s
+    %s
 DIAGNOSTIC
 }
 
@@ -774,8 +776,7 @@ sub diag {
 
     # Escape each line with a #.
     foreach (@msgs) {
-        s/^([^#])/#     $1/;
-        s/\n([^#])/\n#     $1/g;
+        s/^/# /gms;
     }
 
     push @msgs, "\n" unless $msgs[-1] =~ /\n\Z/;
@@ -1122,24 +1123,24 @@ sub _ending {
 
         if( $Curr_Test < $Expected_Tests ) {
             $self->diag(<<"FAIL");
-# Looks like you planned $Expected_Tests tests but only ran $Curr_Test.
+Looks like you planned $Expected_Tests tests but only ran $Curr_Test.
 FAIL
         }
         elsif( $Curr_Test > $Expected_Tests ) {
             my $num_extra = $Curr_Test - $Expected_Tests;
             $self->diag(<<"FAIL");
-# Looks like you planned $Expected_Tests tests but ran $num_extra extra.
+Looks like you planned $Expected_Tests tests but ran $num_extra extra.
 FAIL
         }
         elsif ( $num_failed ) {
             $self->diag(<<"FAIL");
-# Looks like you failed $num_failed tests of $Expected_Tests.
+Looks like you failed $num_failed tests of $Expected_Tests.
 FAIL
         }
 
         if( $Test_Died ) {
             $self->diag(<<"FAIL");
-# Looks like your test died just after $Curr_Test.
+Looks like your test died just after $Curr_Test.
 FAIL
 
             _my_exit( 255 ) && return;
@@ -1151,7 +1152,7 @@ FAIL
         _my_exit( 0 ) && return;
     }
     else {
-        $self->diag("# No tests run!\n");
+        $self->diag("No tests run!\n");
         _my_exit( 255 ) && return;
     }
 }
