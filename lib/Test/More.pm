@@ -14,14 +14,13 @@ BEGIN {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT $TODO);
-$VERSION = '0.19';
+$VERSION = '0.20';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like
              skip todo
              pass fail
              eq_array eq_hash eq_set
-             skip
              $TODO
              plan
              can_ok  isa_ok
@@ -295,7 +294,7 @@ sub is ($$;$) {
     unless( $ok ) {
         $this = defined $this ? "'$this'" : 'undef';
         $that = defined $that ? "'$that'" : 'undef';
-        my_print *TESTERR, sprintf <<DIAGNOSTIC, $this, $that;
+        diagnostic *TESTERR, sprintf <<DIAGNOSTIC, $this, $that;
 #          got: %s
 #     expected: %s
 DIAGNOSTIC
@@ -320,7 +319,7 @@ sub isnt ($$;$) {
     unless( $ok ) {
         $that = defined $that ? "'$that'" : 'undef';
 
-        my_print *TESTERR, sprintf <<DIAGNOSTIC, $that;
+        diagnostic *TESTERR, sprintf <<DIAGNOSTIC, $that;
 #     it should not be %s
 #     but it is.
 DIAGNOSTIC
@@ -383,7 +382,7 @@ sub like ($$;$) {
         my $ok = @_ == 3 ? ok(0, $name )
                          : ok(0);
 
-        my_print *TESTERR, <<ERR;
+        diagnostic *TESTERR, <<ERR;
 #     '$regex' doesn't look much like a regex to me.  Failing the test.
 ERR
 
@@ -392,7 +391,7 @@ ERR
 
     unless( $ok ) {
         $this = defined $this ? "'$this'" : 'undef';
-        my_print *TESTERR, sprintf <<DIAGNOSTIC, $this;
+        diagnostic *TESTERR, sprintf <<DIAGNOSTIC, $this;
 #                   %s
 #     doesn't match '$regex'
 DIAGNOSTIC
@@ -440,7 +439,7 @@ sub can_ok ($@) {
     
     ok( !@nok, $name );
 
-    my_print *TESTERR, map "#     $class->can('$_') failed\n", @nok;
+    diagnostic *TESTERR, map "#     $class->can('$_') failed\n", @nok;
 
     return !@nok;
 }
@@ -482,7 +481,7 @@ sub isa_ok ($$) {
 
     if( $diag ) {
         ok( 0, $name );
-        my_print *TESTERR, "#     $diag\n";
+        diagnostic *TESTERR, "#     $diag\n";
         return 0;
     }
     else {
@@ -567,7 +566,8 @@ USE
     my $ok = ok( !$@, "use $module;" );
 
     unless( $ok ) {
-        my_print *TESTERR, <<DIAGNOSTIC;
+        chomp $@;
+        diagnostic *TESTERR, <<DIAGNOSTIC;
 #     Tried to use '$module'.
 #     Error:  $@
 DIAGNOSTIC
@@ -598,7 +598,8 @@ REQUIRE
     my $ok = ok( !$@, "require $module;" );
 
     unless( $ok ) {
-        my_print *TESTERR, <<DIAGNOSTIC;
+        chomp $@;
+        diagnostic *TESTERR, <<DIAGNOSTIC;
 #     Tried to require '$module'.
 #     Error:  $@
 DIAGNOSTIC
@@ -656,7 +657,8 @@ If pigs cannot fly, the whole block of tests will be skipped
 completely.  Test::More will output special ok's which Test::Harness
 interprets as skipped tests.  Its important to include $how_many tests
 are in the block so the total number of tests comes out right (unless
-you're using C<no_plan>).
+you're using C<no_plan>, in which case you can leave $how_many off if
+you like).
 
 You'll typically use this when a feature is missing, like an optional
 module is not installed or the operating system doesn't have some
