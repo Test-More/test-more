@@ -8,7 +8,7 @@ $^C ||= 0;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.21_01';
+$VERSION = '0.22';
 $VERSION = eval $VERSION;    # make the alpha version come out as a number
 
 # Make Test::Builder thread-safe for ithreads.
@@ -1151,10 +1151,13 @@ sub _new_fh {
 sub _is_fh {
     my $maybe_fh = shift;
 
-    return UNIVERSAL::isa($maybe_fh,         'GLOB')         ||
-           UNIVERSAL::isa($maybe_fh,         'IO::Handle')   ||
-           UNIVERSAL::can(tied($maybe_fh),   'TIEHANDLE')    ||
-           fileno($maybe_fh);
+    return 1 if ref \$maybe_fh eq 'GLOB'; # its a glob
+
+    return UNIVERSAL::isa($maybe_fh,               'GLOB')       ||
+           UNIVERSAL::isa($maybe_fh,               'IO::Handle') ||
+
+           # 5.5.4's tied() and can() doesn't like getting undef
+           UNIVERSAL::can((tied($maybe_fh) || ''), 'TIEHANDLE');
 }
 
 
