@@ -938,8 +938,8 @@ sub diag {
     push @msgs, "\n" unless $msgs[-1] =~ /\n\Z/;
 
     local $Level = $Level + 1;
-    my $fh = $self->todo ? $self->todo_output : $self->failure_output;
     local($\, $", $,) = (undef, ' ', '');
+    my $fh = $self->todo ? $self->todo_output : $self->failure_output;
     print $fh @msgs;
 
     return 0;
@@ -1401,6 +1401,7 @@ FAIL
         $self->diag(<<'FAIL');
 Looks like your test died before it could output anything.
 FAIL
+        _my_exit( 255 ) && return;
     }
     else {
         $self->diag("No tests run!\n");
