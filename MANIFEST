@@ -13,6 +13,7 @@ t/extra.t
 t/fail-like.t
 t/fail-more.t
 t/fail.t
+t/filehandles.t
 t/import.t
 t/is_deeply.t
 t/lib/Test/Simple/Catch.pm
