@@ -24,7 +24,7 @@ BEGIN {
         plan skip_all => "needs overload.pm";
     }
     else {
-        plan tests => 3;
+        plan tests => 5;
     }
 }
 
@@ -51,3 +51,16 @@ my $undef = Overloaded->new(undef);
 pass( $undef );
 
 is( $warnings, '' );
+
+
+TODO: {
+    my $obj = Overloaded->new('not really todo, testing overloaded reason');
+    local $TODO = $obj;
+    fail("Just checking todo as an overloaded value");
+}
+
+
+SKIP: {
+    my $obj = Overloaded->new('not really skipped, testing overloaded reason');
+    skip $obj, 1;
+}

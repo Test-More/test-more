@@ -18,7 +18,44 @@ BEGIN {
     # Load threads::shared when threads are turned on
     if( $] >= 5.008 && $Config{useithreads} && $INC{'threads.pm'}) {
         require threads::shared;
-        threads::shared->import;
+
+        # Hack around YET ANOTHER threads::shared bug.  It would 
+        # occassionally forget the contents of the variable when sharing it.
+        # So we first copy the data, then share, then put our copy back.
+        *share = sub (\[$@%]) {
+            my $type = ref $_[0];
+            my $data;
+
+            if( $type eq 'HASH' ) {
+                %$data = %{$_[0]};
+            }
+            elsif( $type eq 'ARRAY' ) {
+                @$data = @{$_[0]};
+            }
+            elsif( $type eq 'SCALAR' ) {
+                $$data = ${$_[0]};
+            }
+            else {
+                die "Unknown type: ".$type;
+            }
+
+            $_[0] = &threads::shared::share($_[0]);
+
+            if( $type eq 'HASH' ) {
+                %{$_[0]} = %$data;
+            }
+            elsif( $type eq 'ARRAY' ) {
+                @{$_[0]} = @$data;
+            }
+            elsif( $type eq 'SCALAR' ) {
+                ${$_[0]} = $$data;
+            }
+            else {
+                die "Unknown type: ".$type;
+            }
+
+            return $_[0];
+        };
     }
     # 5.8.0's threads::shared is busted when threads are off.
     # We emulate it here.
@@ -335,15 +372,7 @@ sub ok {
     $Curr_Test++;
 
     # In case $name is a string overloaded object, force it to stringify.
-    local($@,$!);
-    eval { 
-        if( defined $name ) {
-            require overload;
-            if( my $string_meth = overload::Method($name, '""') ) {
-                $name = $name->$string_meth();
-            }
-        }
-    };
+    _unoverload(\$name);
 
     $self->diag(<<ERR) if defined $name and $name =~ /^[\d\s]+$/;
     You named your test '$name'.  You shouldn't use numbers for your test names.
@@ -353,6 +382,7 @@ ERR
     my($pack, $file, $line) = $self->caller;
 
     my $todo = $self->todo($pack);
+    _unoverload(\$todo);
 
     my $out;
     my $result = &share({});
@@ -378,9 +408,8 @@ ERR
     }
 
     if( $todo ) {
-        my $what_todo = $todo;
-        $out   .= " # TODO $what_todo";
-        $result->{reason} = $what_todo;
+        $out   .= " # TODO $todo";
+        $result->{reason} = $todo;
         $result->{type}   = 'todo';
     }
     else {
@@ -401,6 +430,21 @@ ERR
 
     return $test ? 1 : 0;
 }
+
+
+sub _unoverload {
+    my $thing = shift;
+    local($@,$!);
+    eval { 
+        if( defined $$thing ) {
+            require overload;
+            if( my $string_meth = overload::Method($$thing, '""') ) {
+                $$thing = $$thing->$string_meth();
+            }
+        }
+    };
+}
+
 
 =item B<is_eq>
 
@@ -709,6 +753,7 @@ Skips the current test, reporting $why.
 sub skip {
     my($self, $why) = @_;
     $why ||= '';
+    _unoverload(\$why);
 
     unless( $Have_Plan ) {
         require Carp;

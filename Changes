@@ -1,8 +1,12 @@
 0.51
-    * Fixed bug in fail_one.t on Windows (not a real bug).
+    - Fixed bug in fail_one.t on Windows (not a real bug).
+    - TODO reasons as overloaded objects now won't blow up under threads.
+      [Autrijus Tang]
+    - skip() in 0.50 tickled yet another bug in threads::shared.  Hacked
+      around it.
 
 0.50  Sat Nov 20 00:28:44 EST 2004
-    * Fixed bug in fail-more test on Windows (not a real bug).
+    - Fixed bug in fail-more test on Windows (not a real bug).
       [rt.cpan.org 8022]
     - Change from CVS to SVK.  Hopefully this is the last time I move
       version control systems.
