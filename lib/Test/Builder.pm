@@ -1368,19 +1368,22 @@ sub _ending {
         $num_failed += abs($Expected_Tests - @Test_Results);
 
         if( $Curr_Test < $Expected_Tests ) {
+            my $s = $Expected_Tests == 1 ? '' : 's';
             $self->diag(<<"FAIL");
-Looks like you planned $Expected_Tests tests but only ran $Curr_Test.
+Looks like you planned $Expected_Tests test$s but only ran $Curr_Test.
 FAIL
         }
         elsif( $Curr_Test > $Expected_Tests ) {
             my $num_extra = $Curr_Test - $Expected_Tests;
+            my $s = $Expected_Tests == 1 ? '' : 's';
             $self->diag(<<"FAIL");
-Looks like you planned $Expected_Tests tests but ran $num_extra extra.
+Looks like you planned $Expected_Tests test$s but ran $num_extra extra.
 FAIL
         }
         elsif ( $num_failed ) {
+            my $s = $num_failed == 1 ? '' : 's';
             $self->diag(<<"FAIL");
-Looks like you failed $num_failed tests of $Expected_Tests.
+Looks like you failed $num_failed test$s of $Expected_Tests.
 FAIL
         }
 
