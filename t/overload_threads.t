@@ -44,9 +44,12 @@ package main;
 
 my $warnings = '';
 local $SIG{__WARN__} = sub { $warnings = join '', @_ };
+
+# overloaded object as name
 my $obj = Overloaded->new('foo');
 ok( 1, $obj );
 
+# overloaded object which returns undef as name
 my $undef = Overloaded->new(undef);
 pass( $undef );
 
