@@ -222,6 +222,7 @@ my $bar = {
 
 #line 198
 is_deeply( $foo, $bar, 'deep structures' );
+ok( @Test::More::Data_Stack == 0, '@Data_Stack not holding onto things' );
 is( $out, "not ok 11 - deep structures\n",  'deep structures' );
 is( $err, <<ERR,                            '    right diagnostic' );
 #     Failed test ($0 at line 198)

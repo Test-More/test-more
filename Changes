@@ -2,6 +2,8 @@
     - undef no longer equals '' in is_deeply() [rt.cpan.org 6837]
     - is_deeply() would sometimes compare references as strings.
       [rt.cpan.org 7031]
+    - eq_array() and eq_hash() could hold onto references if they failed
+      keeping them in memory and preventing DESTROY.  [rt.cpan.org 7032]
 
 0.51  Tue Nov 23 04:51:12 EST 2004
     - Fixed bug in fail_one.t on Windows (not a real bug).

@@ -1058,8 +1058,19 @@ multi-level structures are handled correctly.
 =cut
 
 #'#
-sub eq_array  {
+sub eq_array {
+    local @Data_Stack;
+    _eq_array(@_);
+}
+
+sub _eq_array  {
     my($a1, $a2) = @_;
+
+    if( grep !UNIVERSAL::isa($_, 'ARRAY'), $a1, $a2 ) {
+        warn "eq_array passed a non-array ref";
+        return 0;
+    }
+
     return 1 if $a1 eq $a2;
 
     my $ok = 1;
@@ -1074,6 +1085,7 @@ sub eq_array  {
 
         last unless $ok;
     }
+
     return $ok;
 }
 
@@ -1098,12 +1110,12 @@ sub _deep_check {
             if( UNIVERSAL::isa($e1, 'ARRAY') and
                 UNIVERSAL::isa($e2, 'ARRAY') )
             {
-                $ok = eq_array($e1, $e2);
+                $ok = _eq_array($e1, $e2);
             }
             elsif( UNIVERSAL::isa($e1, 'HASH') and
                    UNIVERSAL::isa($e2, 'HASH') )
             {
-                $ok = eq_hash($e1, $e2);
+                $ok = _eq_hash($e1, $e2);
             }
             elsif( UNIVERSAL::isa($e1, 'REF') and
                    UNIVERSAL::isa($e2, 'REF') )
@@ -1139,7 +1151,18 @@ is a deep check.
 =cut
 
 sub eq_hash {
+    local @Data_Stack;
+    return _eq_hash(@_);
+}
+
+sub _eq_hash {
     my($a1, $a2) = @_;
+
+    if( grep !UNIVERSAL::isa($_, 'HASH'), $a1, $a2 ) {
+        warn "eq_hash passed a non-hash ref";
+        return 0;
+    }
+
     return 1 if $a1 eq $a2;
 
     my $ok = 1;
