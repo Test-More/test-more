@@ -805,7 +805,7 @@ sub _is_module_name {
     # End with an alphanumeric.
     # The rest is an alphanumeric or ::
     $module =~ s/\b::\b//g;
-    $module =~ /^[a-zA-Z]\w+$/;
+    $module =~ /^[a-zA-Z]\w*$/;
 }
 
 =back

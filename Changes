@@ -1,6 +1,7 @@
 0.60
     * Test::Builder now has a create() method which allows you to create
       a brand spanking new Test::Builder object.
+    * require_ok() was not working for single letter module names.
 
 0.54  Wed Dec 15 04:18:43 EST 2004
     * $how_many is optional for skip() and todo_skip().  Thanks to 
