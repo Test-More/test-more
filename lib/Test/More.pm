@@ -176,15 +176,17 @@ sub plan {
     my $caller = caller;
 
     $Test->exported_to($caller);
-    $Test->plan(@plan);
 
     my @imports = ();
     foreach my $idx (0..$#plan) {
         if( $plan[$idx] eq 'import' ) {
-            @imports = @{$plan[$idx+1]};
+            my($tag, $imports) = splice @plan, $idx, 2;
+            @imports = @$imports;
             last;
         }
     }
+
+    $Test->plan(@plan);
 
     __PACKAGE__->_export_to_level(1, __PACKAGE__, @imports);
 }

@@ -149,6 +149,12 @@ sub plan {
             die "You said to run 0 tests!  You've got to run something.\n";
         }
     }
+    else {
+        require Carp;
+        my @args = grep { defined } ($cmd, $arg);
+        Carp::croak("plan() doesn't understand @args");
+    }
+        
 }
 
 =item B<expected_tests>
