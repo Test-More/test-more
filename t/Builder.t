@@ -30,7 +30,7 @@ print "ok $test_num - current_test() set\n";
 $Test->ok( 1, 'counter still good' );
 
 eval { $Test->plan(7); };
-$Test->like( $@, qr/^\Qplan() doesn't understand 7/, 'bad plan()' );
+$Test->like( $@, q{/^plan\(\) doesn't understand 7/}, 'bad plan()' );
 
 eval { $Test->plan(wibble => 7); };
-$Test->like( $@, qr/^\Qplan() doesn't understand wibble 7/, 'bad plan()' );
+$Test->like( $@, q{/^plan\(\) doesn't understand wibble 7/}, 'bad plan()' );
