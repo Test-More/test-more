@@ -27,4 +27,6 @@
 
     Document that everything goes through Test::Builder->ok()
 
+    Add test name to diagnostic output
 
+    Put a newline before the first diagnostic failure when in Test::Harness

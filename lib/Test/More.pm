@@ -773,10 +773,10 @@ the easiest way to illustrate:
         skip "HTML::Lint not installed", 2 if $@;
 
         my $lint = new HTML::Lint;
-        ok( $lint, "Created object" );
+        isa_ok( $lint, "HTML::Lint" );
 
         $lint->parse( $html );
-        is( scalar $lint->errors, 0, "No errors found in HTML" );
+        is( $lint->errors, 0, "No errors found in HTML" );
     }
 
 If the user does not have HTML::Lint installed, the whole block of

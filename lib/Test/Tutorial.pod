@@ -436,6 +436,7 @@ Thumbing through the Date::ICal man page, I came across this:
 the date in the Date::ICal test suite.  So I'll write one.
 
     use Test::More tests => 1;
+    use Date::ICal;
 
     my $ical = Date::ICal->new;
     $ical->ical('20201231Z');

@@ -2,6 +2,9 @@ Revision history for Perl extension Test::Simple
 
 0.46
     - Noted eq_set() isn't really a set comparision.
+    - Test fix, exit codes are broken on MacPerl (bleadperl@16868)
+    - Make Test::Simple install itself into the core for >= 5.8
+    - Small fixes to Test::Tutorial and skip examples
 
 0.45  Wed Jun 19 18:41:12 EDT 2002
     - Andy Lester made the SKIP & TODO docs a bit clearer.

@@ -36,6 +36,8 @@ WriteMakefile(
                         Test::Harness   => 2.03,
                         File::Spec      => 0.6,
                        },
+    # Added to the core somewhere around 5.7.2.
+    INSTALLDIRS     => $] >= 5.00702 ? 'perl' : 'site'
 );
 
 
