@@ -145,7 +145,6 @@ my $Curr_Test;     share($Curr_Test);
 use vars qw($Level);
 my $Original_Pid;
 my @Test_Results;  share(@Test_Results);
-my @Test_Details;  share(@Test_Details);
 
 my $Exported_To;
 my $Expected_Tests;
@@ -168,7 +167,6 @@ sub reset {
     $Level     = 1;
     $Original_Pid = $$;
     @Test_Results = ();
-    @Test_Details = ();
 
     $Exported_To    = undef;
     $Expected_Tests = 0;
