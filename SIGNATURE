@@ -14,14 +14,14 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 89b42b22228949d905a306751eb07900a2ea0740 Changes
+SHA1 83f6b0e9e26271ef0026941d09871ec6d9372d56 Changes
 SHA1 a7b44fb6849b137f1d2e4d27c69fc10fb8d81699 MANIFEST
 SHA1 96b5890cd577ed4672b7c2e07f459d6218a60046 META.yml
 SHA1 fec7c34f87744c0c9ec94de82b87ed13a677d1e6 Makefile.PL
 SHA1 2e4baac155d4e4d784ea6dcf153878c9b6c66765 README
 SHA1 ad761920d29c767f09160ff59ce3a186abcae143 TODO
 SHA1 94180026e0623ea9e6b4e5206ec3f61d8bbab095 lib/Test/Builder.pm
-SHA1 b6fb4e197e95328978add18b639371d1de4f6c74 lib/Test/More.pm
+SHA1 137e2d357da383924cf3177b82b3777a2a06b74b lib/Test/More.pm
 SHA1 61219601fdc92d11987c7e4235fb66e65063b293 lib/Test/Simple.pm
 SHA1 23537c5ecebd2e0fefa6986c106b994f5d1c8e7a lib/Test/Tutorial.pod
 SHA1 ad7d30f2b8e7f62006bd64a64759049af0cd97bb t/00signature.t
@@ -39,7 +39,7 @@ SHA1 2e914e90fdc8e47c8bdad3e45a83b4a6f2ab691a t/exit.t
 SHA1 36d6fce04753c7c5ccab2b996839395709e215ea t/extra.t
 SHA1 fc240b70ea0a0b8daf95fce8ec9ad1230346ccba t/extra_one.t
 SHA1 db4f90163bee305f4de6e82ae1126d76817d8264 t/fail-like.t
-SHA1 99b784f442f0ba2238782fa4691b12d57d5bf2b2 t/fail-more.t
+SHA1 c313a019bf84c4de76ae7cfcc3a9af0520ab6101 t/fail-more.t
 SHA1 32fb0087712230801810d8f4483b08b2d669ab4f t/fail.t
 SHA1 b3b117b8df4d1c2b00ca60063e533715a6544b13 t/fail_one.t
 SHA1 efa817d1b1a2e0b81cbbdac1bda96b15584293dd t/filehandles.t
@@ -48,7 +48,7 @@ SHA1 509ae886950a8437681c016583af292c15e61210 t/harness_active.t
 SHA1 9176d80a2bdcbb0d924875ce7db7f8ed48bb567c t/has_plan.t
 SHA1 9c82f844673cd6be2e159767f3eb161094b194dc t/has_plan2.t
 SHA1 79abdda4bc9a6f345272ea0bed532c2b014b7589 t/import.t
-SHA1 1729f42503d2ed728f918a78d8ebc9a4339f2c9f t/is_deeply.t
+SHA1 dd37e0ab61abbd41121f12e6c21e919e44ad24f6 t/is_deeply.t
 SHA1 360628af62c178c14d3c8d789e297e0b2ee56118 t/is_fh.t
 SHA1 8402cffef120e850cbb19a65683b69dfb192c9c8 t/lib/NoExporter.pm
 SHA1 d6720b79d3fb10113de5717f7ff3e1cc5efa0e9a t/lib/Test/Simple/Catch.pm
@@ -77,7 +77,7 @@ SHA1 e16d771fc9142824bc2f9b216f96b2db0c2130fa t/overload_threads.t
 SHA1 50c4071efb8d2a272d6714f4b06e9245fee061db t/plan.t
 SHA1 eea822704f613bbbaefe0d31f69d51f52a68fdaa t/plan_bad.t
 SHA1 fa6ef0e9a794b77929d144be4047e6fecd22a823 t/plan_is_noplan.t
-SHA1 69ee93eb16fff6895d80d7a78054b861845f1dee t/plan_no_plan.t
+SHA1 488afc9bc9523544c5f8580981f4b299fa40c5f5 t/plan_no_plan.t
 SHA1 84167106fd893e16a5e8a881e0ef2383d36357cf t/plan_shouldnt_import.t
 SHA1 a1c2e27ac994c6f76edbd6a799158518924f793f t/plan_skip_all.t
 SHA1 c93f4ed46eded17dedde0db3a2d168084c66c16d t/require_ok.t
@@ -88,14 +88,14 @@ SHA1 6c7e909f400766c3c33d15bd290a2e2cf9a5c64c t/skipall.t
 SHA1 7b5196e33f81197422d59b2ff8b3f4f1f03927ca t/sort_bug.t
 SHA1 318802d754ad4cf97b712aada7ee2cdd5d44450a t/thread_taint.t
 SHA1 e1ac82322c95ff4d7a09f79226a742757667fbec t/threads.t
-SHA1 4bc9cbf2e981ea6a09f63d739acf45d01463c753 t/todo.t
+SHA1 3afb2b13458745934724cfdf4636a54dbc1feecf t/todo.t
 SHA1 7fb9e2b89dd38c0259769e5a9da92f6f5da10d97 t/undef.t
 SHA1 6b1696441b4bcac045fb8ddb371230b89be4d7a7 t/use_ok.t
 SHA1 59a63c5dd14da4c29bd87f2e33dcda1515396253 t/useing.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.4 (Darwin)
 
-iD8DBQFBu4rMT4Li3Cw/PzQRAqnqAJ9gNkwRNvjsyrVuMLZGowOycfr1fwCffQ8X
-3nLnnnIp8xB0Ncrp19fwH3o=
-=8g+6
+iD8DBQFBvq9FT4Li3Cw/PzQRAq7NAJ0ZGrSSIZ37lJF5OxG0+tKEf9Y5QgCgpyBQ
+Ii2fvWpypEqIuxo6h+XSCd4=
+=L3kl
 -----END PGP SIGNATURE-----
