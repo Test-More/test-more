@@ -1,5 +1,11 @@
 Revision history for Perl extension Test::Simple
 
+0.13  Tue Aug 14 15:30:10 EDT 2001
+    * Added a reason to the skip_all interface
+    - Fixed a bug to allow 'use Test::More;' to work.
+      (Thanks to Tatsuhiko Miyagawa again)
+    - Now always testing backwards compatibility.
+
 0.12  Tue Aug 14 11:02:39 EDT 2001
     * Fixed some compatibility bugs with older Perls
       (Thanks to Tatsuhiko Miyagawa)
