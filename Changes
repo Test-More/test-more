@@ -7,6 +7,7 @@ Revision history for Perl extension Test::Simple
     - Small fixes to Test::Tutorial and skip examples
     * Added TB->has_plan() from Adrian Howard
     - Clarified the meaning of 'actual_ok' from TB->details
+    * Added TB->details() from chromatic
 
 0.45  Wed Jun 19 18:41:12 EDT 2002
     - Andy Lester made the SKIP & TODO docs a bit clearer.

@@ -296,12 +296,14 @@ ERR
     my $todo = $self->todo($pack);
 
     my $out;
+    my $result = {};
+
     unless( $test ) {
         $out .= "not ";
-        $Test_Results[$Curr_Test-1] = $todo ? 1 : 0;
+        @$result{ 'ok', 'actual_ok' } = ( ( $todo ? 1 : 0 ), 0 );
     }
     else {
-        $Test_Results[$Curr_Test-1] = 1;
+        @$result{ 'ok', 'actual_ok' } = ( 1, $test );
     }
 
     $out .= "ok";
@@ -310,13 +312,24 @@ ERR
     if( defined $name ) {
         $name =~ s|#|\\#|g;     # # in a name can confuse Test::Harness.
         $out   .= " - $name";
+        $result->{name} = $name;
+    }
+    else {
+        $result->{name} = '';
     }
 
     if( $todo ) {
         my $what_todo = $todo;
         $out   .= " # TODO $what_todo";
+        $result->{reason} = $what_todo;
+        $result->{type}   = 'todo';
+    }
+    else {
+        $result->{reason} = '';
+        $result->{type}   = '';
     }
 
+    $Test_Results[$Curr_Test-1] = $result;
     $out .= "\n";
 
     $self->_print($out);
@@ -645,7 +658,13 @@ sub skip {
     lock($Curr_Test);
     $Curr_Test++;
 
-    $Test_Results[$Curr_Test-1] = 1;
+    $Test_Results[$Curr_Test-1] = {
+        ok        => 1,
+        actual_ok => 1,
+        name      => '',
+        type      => 'skip',
+        reason    => $why,
+    };
 
     my $out = "ok";
     $out   .= " $Curr_Test" if $self->use_numbers;
@@ -681,7 +700,13 @@ sub todo_skip {
     lock($Curr_Test);
     $Curr_Test++;
 
-    $Test_Results[$Curr_Test-1] = 1;
+    $Test_Results[$Curr_Test-1] = {
+        ok        => 1,
+        actual_ok => 0,
+        name      => '',
+        type      => 'todo_skip',
+        reason    => $why,
+    };
 
     my $out = "not ok";
     $out   .= " $Curr_Test" if $self->use_numbers;
@@ -1039,9 +1064,10 @@ sub current_test {
 
         $Curr_Test = $num;
         if( $num > @Test_Results ) {
-            my $start = @Test_Results ? $#Test_Results : 0;
+            my $start = @Test_Results ? $#Test_Results + 1 : 0;
             for ($start..$num-1) {
-                $Test_Results[$_] = 1;
+                @{ $Test_Results[$_]}{qw( ok actual_ok reason type name)} = 
+                    ( 1, undef, 'incrementing test number', 'unknown', undef );
             }
         }
     }
@@ -1063,10 +1089,10 @@ Of course, test #1 is $tests[0], etc...
 sub summary {
     my($self) = shift;
 
-    return @Test_Results;
+    return map { $_->{ok} } @Test_Results;
 }
 
-=item B<details>  I<UNIMPLEMENTED>
+=item B<details>
 
     my @tests = $Test->details;
 
@@ -1076,13 +1102,33 @@ Like summary(), but with a lot more detail.
             { ok         => is the test considered a pass?
               actual_ok  => did it literally say 'ok'?
               name       => name of the test (if any)
-              type       => 'skip' or 'todo' (if any)
+              type       => type of test (if any, see below).
               reason     => reason for the above (if any)
             };
 
-'actual_ok' is a reflection of whether or not the test said 'ok' or
-'not ok'.  This is for examining the result of 'todo' tests.  For
-example "not ok 23 - hole count # TODO insufficient donuts" would
+'ok' is true if Test::Harness will consider the test to be a pass.
+
+'actual_ok' is a reflection of whether or not the test literally
+printed 'ok' or 'not ok'.  This is for examining the result of 'todo'
+tests.  
+
+'name' is the name of the test.
+
+'type' indicates if it was a special test.  Normal tests have a type
+of ''.  Type can be one of the following:
+
+    skip        see skip()
+    todo        see todo()
+    todo_skip   see todo_skip()
+    unknown     see below
+
+Sometimes the Test::Builder test counter is incremented without it
+printing any test output, for example, when current_test() is changed.
+In these cases, Test::Builder doesn't know the result of the test, so
+it's type is 'unkown'.  These details for these tests are filled in.
+They are considered ok, but the name and actual_ok is left undef.
+
+For example "not ok 23 - hole count # TODO insufficient donuts" would
 result in this structure:
 
     $tests[22] =    # 23 - 1, since arrays start from 0.
@@ -1092,6 +1138,12 @@ result in this structure:
         type      => 'todo',
         reason    => 'insufficient donuts'
       };
+
+=cut
+
+sub details {
+    return @Test_Results;
+}
 
 =item B<todo>
 
@@ -1246,7 +1298,7 @@ sub _ending {
         $Test_Results[$Expected_Tests-1] = undef
           unless defined $Test_Results[$Expected_Tests-1];
 
-        my $num_failed = grep !$_, @Test_Results[0..$Expected_Tests-1];
+        my $num_failed = grep !$_->{ok}, @Test_Results[0..$Expected_Tests-1];
         $num_failed += abs($Expected_Tests - @Test_Results);
 
         if( $Curr_Test < $Expected_Tests ) {
