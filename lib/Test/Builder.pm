@@ -2,6 +2,10 @@ package Test::Builder;
 
 use 5.004;
 
+# $^C was only introduced in 5.005-ish.  We do this to prevent
+# use of uninitialized value warnings in older perls.
+$^C ||= 0;
+
 use strict;
 use vars qw($VERSION $CLASS);
 $VERSION = 0.01_01;
@@ -523,6 +527,9 @@ We encourage using this rather than calling print directly.
 sub diag {
     my($self, @msgs) = @_;
 
+    # Prevent printing headers when compiling (ie. -c)
+    return if $^C;
+
     # Escape each line with a #.
     foreach (@msgs) {
         s/^([^#])/#     $1/;
@@ -549,6 +556,10 @@ Prints to the output() filehandle.
 
 sub _print {
     my($self, @msgs) = @_;
+
+    # Prevent printing headers when only compiling.  Mostly for when
+    # tests are deparsed with B::Deparse
+    return if $^C;
 
     local($\, $", $,) = (undef, ' ', '');
     my $fh = $self->output;
@@ -868,6 +879,9 @@ END {
     $Test->_ending if defined $Test;
 }
 
+=head1 EXAMPLES
+
+At this point, Test::Simple and Test::More are your best examples.
 
 =head1 AUTHOR
 
