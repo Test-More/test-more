@@ -46,7 +46,7 @@ WriteMakefile(
         my($self, $orig_perl, $tests) = @_;
 
         my @perls = ($orig_perl);
-        push @perls, qw(bleadperl
+        push @perls, qw(
                         perl
                         perl5.004
                         perl5.6.0

@@ -1,6 +1,6 @@
 Revision history for Perl extension Test::Simple
 
-0.44
+0.44  Thu Apr 25 00:27:27 EDT 2002
     - names containing newlines no longer produce confusing output
       (from chromatic)
     - chromatic provided a fix so can_ok() honors can() overrides.
