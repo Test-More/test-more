@@ -1,6 +1,7 @@
 Changes
 MANIFEST
 Makefile.PL
+README
 TODO
 lib/Test/Builder.pm
 lib/Test/More.pm
