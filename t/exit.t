@@ -37,11 +37,10 @@ my %Tests = (
 
 print "1..".keys(%Tests)."\n";
 
-chdir 't' if -d 't';
 while( my($test_name, $exit_codes) = each %Tests ) {
     my($exit_code) = $exit_codes->[$IsVMS ? 1 : 0];
 
-    my $wait_stat = system(qq{$^X -"I../blib/lib" sample_tests/$test_name});
+    my $wait_stat = system(qq{$^X t/sample_tests/$test_name});
     my $actual_exit = $wait_stat >> 8;
 
     My::Test::ok( $actual_exit == $exit_code, 
