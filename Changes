@@ -1,5 +1,10 @@
 Revision history for Perl extension Test::Simple
 
+0.07  Tue Jun 12 15:55:54 BST 2001
+    - 'use Test::Simple' by itself no longer causes death
+    - Yet more fixes for death in eval
+    - Limiting max failures reported via exit code to 254.
+
 0.06  Wed May  9 23:38:17 BST 2001
     - Whoops, left a private method in the public docs.
 

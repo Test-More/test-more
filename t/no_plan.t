@@ -29,8 +29,7 @@ eval {
 
 My::Test::ok($$out eq '');
 My::Test::ok($$err eq '');
-My::Test::ok($@ =~ 
-             /You have to tell Test::Simple how many tests you plan to run/);
+My::Test::ok($@    eq '');
 
 eval {
     Test::Simple->import(tests => undef);
@@ -56,7 +55,7 @@ My::Test::ok( $@ =~ /You tried to use ok\(\) without a plan!/);
 
 END {
     My::Test::ok($$out eq '');
-    My::Test::ok($$err eq "# No tests run!\n");
+    My::Test::ok($$err eq "");
 
     # Prevent Test::Simple from exiting with non zero.
     exit 0;

@@ -2,19 +2,29 @@ package Test::Simple;
 
 require 5.004;
 
-$Test::Simple::VERSION = '0.06';
+$Test::Simple::VERSION = '0.07';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
-my($Import_Run) = 0;
+my($Have_Plan) = 0;
 
 # I'd like to have Test::Simple interfere with the program being
 # tested as little as possible.  This includes using Exporter or
 # anything else (including strict).
 sub import {
-    my($class, %config) = @_;
+    # preserve caller()
+    if( @_ > 1 ) {
+        if( $_[1] eq 'no_plan' ) {
+            goto &no_plan;
+        }
+        else {
+            goto &plan
+        }
+    }
+}
 
-    $Import_Run = 1;
+sub plan {
+    my($class, %config) = @_;
 
     if( !exists $config{tests} ) {
         die "You have to tell $class how many tests you plan to run.\n".
@@ -32,12 +42,24 @@ sub import {
         $Planned_Tests = $config{tests};
     }
 
+    $Have_Plan = 1;
+
     print TESTOUT "1..$Planned_Tests\n";
 
     my($caller) = caller;
     *{$caller.'::ok'} = \&ok;
 
 }
+
+
+sub no_plan {
+    $Have_Plan = 1;
+
+    my($caller) = caller;
+    *{$caller.'::ok'} = \&ok;
+}
+
+
 
 $| = 1;
 open(*TESTOUT, ">&STDOUT") or _whoa(1, "Can't dup STDOUT!");
@@ -112,7 +134,7 @@ will do what you mean (fail if stuff is empty).
 sub ok ($;$) {
     my($test, $name) = @_;
 
-    unless( $Planned_Tests ) {
+    unless( $Have_Plan ) {
         die "You tried to use ok() without a plan!  Gotta have a plan.\n".
             "  use Test::Simple tests => 23;   for example.\n";
     }
@@ -176,6 +198,7 @@ So the exit codes are...
     255                 test died
     any other number    how many failed (including missing or extras)
 
+If you fail more than 254 tests, it will be reported as 254.
 
 =begin _private
 
@@ -194,7 +217,7 @@ error message.
 #'#
 sub _sanity_check {
     _whoa($Num_Tests < 0,  'Says here you ran a negative number of tests!');
-    _whoa(!$Planned_Tests and $Num_Tests, 
+    _whoa(!$Have_Plan and $Num_Tests, 
           'Somehow your tests ran without a plan!');
     _whoa($Num_Tests != @Test_Results,
           'Somehow you got a different number of results than tests ran!');
@@ -229,8 +252,6 @@ and 5.6.1 both seem to do odd things.  Instead, this function edits $?
 directly.  It should ONLY be called from inside an END block.  It
 doesn't actually exit, that's your job.
 
-=end _private
-
 =cut
 
 sub _my_exit {
@@ -241,6 +262,8 @@ sub _my_exit {
 
 =back
 
+=end _private
+
 =cut
 
 $SIG{__DIE__} = sub {
@@ -248,8 +271,11 @@ $SIG{__DIE__} = sub {
     # totally reliable.  5.005_03 and 5.6.1 both do the wrong thing
     # with it.  Instead, we use caller.  This also means it runs under
     # 5.004!
-    my($subroutine) = (caller(1))[3];
-    $Test_Died = 1 unless $subroutine eq '(eval)';
+    my $in_eval = 0;
+    for( my $stack = 1;  my $sub = (caller($stack))[3];  $stack++ ) {
+        $in_eval = 1 if $sub =~ /^\(eval\)/;
+    }
+    $Test_Died = 1 unless $in_eval;
 };
 
 END {
@@ -257,10 +283,16 @@ END {
 
     # Bailout if import() was never called.  This is so
     # "require Test::Simple" doesn't puke.
-    do{ _my_exit(0) && return } unless $Import_Run;
+    do{ _my_exit(0) && return } if !$Have_Plan and !$Num_Tests;
 
     # Figure out if we passed or failed and print helpful messages.
     if( $Num_Tests ) {
+        # The plan?  We have no plan.
+        unless( $Planned_Tests ) {
+            print TESTOUT "1..$Num_Tests\n";
+            $Planned_Tests = $Num_Tests;
+        }
+
         my $num_failed = grep !$_, @Test_Results[0..$Planned_Tests-1];
         $num_failed += abs($Planned_Tests - @Test_Results);
 
@@ -289,7 +321,7 @@ FAIL
             _my_exit( 255 ) && return;
         }
 
-        _my_exit( $num_failed ) && return;
+        _my_exit( $num_failed <= 254 ? $num_failed : 254  ) && return;
     }
     elsif ( $Test::Simple::Skip_All ) {
         _my_exit( 0 ) && return;
@@ -340,11 +372,12 @@ It will produce output like this:
 Indicating the Film::Rating() method is broken.
 
 
-=head1 NOTES
+=head1 CAVEATS
 
-What if you have more than 254 failures?  That's probably a huge test
-script.  Split it into multiple files.  (Otherwise blame the Unix
-folks for using an unsigned short integer as the exit status).
+Test::Simple will only report a maximum of 254 failures in its exit
+code.  If this is a problem, you probably have a huge test script.
+Split it into multiple files.  (Otherwise blame the Unix folks for
+using an unsigned short integer as the exit status).
 
 
 =head1 HISTORY
