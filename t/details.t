@@ -89,4 +89,5 @@ my @details = $Test->details();
 $Test->is_num( scalar @details, 6,
     'details() should return a list of all test details');
 
+$Test->level(1);
 is_deeply( \@details, \@Expected_Details );
