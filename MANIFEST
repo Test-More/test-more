@@ -31,7 +31,10 @@ t/no_ending.t
 t/no_header.t
 t/no_plan.t
 t/output.t
+t/plan.t
 t/plan_is_noplan.t
+t/plan_no_plan.t
+t/plan_skip_all.t
 t/simple.t
 t/skip.t
 t/skipall.t
