@@ -1079,7 +1079,7 @@ sub current_test {
             for ($start..$num-1) {
                 my %result;
                 share(%result);
-                %result = ( ok        => 1, 
+                %result = ( 'ok'      => 1, 
                             actual_ok => undef, 
                             reason    => 'incrementing test number', 
                             type      => 'unknown', 
@@ -1315,12 +1315,12 @@ sub _ending {
             $Expected_Tests = $Curr_Test;
         }
 
-        # 5.8.0 threads bug.  Shared arrays will not be auto-extended 
-        # by a slice.  Worse, we have to fill in every entry else
-        # we'll get an "Invalid value for shared scalar" error
-        for my $idx ($#Test_Results..$Expected_Tests-1) {
-            my %empty_result = ();
-            share(%empty_result);
+        # Auto-extended arrays and elements which aren't explicitly
+        # filled in with a shared reference will puke under 5.8.0
+        # ithreads.  So we have to fill them in by hand. :(
+        my %empty_result = ();
+        share(%empty_result);
+        for my $idx ( 0..$Expected_Tests-1 ) {
             $Test_Results[$idx] = \%empty_result
               unless defined $Test_Results[$idx];
         }
