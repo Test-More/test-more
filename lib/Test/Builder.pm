@@ -16,13 +16,15 @@ my $IsVMS = $^O eq 'VMS';
 # Make Test::Builder thread-safe for ithreads.
 BEGIN {
     use Config;
-    if( $] >= 5.008 && $Config{useithreads} ) {
-        require threads;
+    # Load threads::shared when threads are turned on
+    if( $] >= 5.008 && $Config{useithreads} && $INC{'threads.pm'}) {
         require threads::shared;
         threads::shared->import;
     }
+    # 5.8.0's threads::shared is busted when threads are off.
+    # We emulate it here.
     else {
-        *share = sub { 0 };
+        *share = sub { return $_[0] };
         *lock  = sub { 0 };
     }
 }
@@ -299,8 +301,7 @@ ERR
     my $todo = $self->todo($pack);
 
     my $out;
-    my $result = {};
-    share($result);
+    my $result = &share({});
 
     unless( $test ) {
         $out .= "not ";
@@ -662,16 +663,13 @@ sub skip {
     lock($Curr_Test);
     $Curr_Test++;
 
-    my %result;
-    share(%result);
-    %result = (
+    $Test_Results[$Curr_Test-1] = &share({
         'ok'      => 1,
         actual_ok => 1,
         name      => '',
         type      => 'skip',
         reason    => $why,
-    );
-    $Test_Results[$Curr_Test-1] = \%result;
+    });
 
     my $out = "ok";
     $out   .= " $Curr_Test" if $self->use_numbers;
@@ -707,17 +705,13 @@ sub todo_skip {
     lock($Curr_Test);
     $Curr_Test++;
 
-    my %result;
-    share(%result);
-    %result = (
+    $Test_Results[$Curr_Test-1] = &share({
         'ok'      => 1,
         actual_ok => 0,
         name      => '',
         type      => 'todo_skip',
         reason    => $why,
-    );
-
-    $Test_Results[$Curr_Test-1] = \%result;
+    });
 
     my $out = "not ok";
     $out   .= " $Curr_Test" if $self->use_numbers;
@@ -1077,15 +1071,13 @@ sub current_test {
         if( $num > @Test_Results ) {
             my $start = @Test_Results ? $#Test_Results + 1 : 0;
             for ($start..$num-1) {
-                my %result;
-                share(%result);
-                %result = ( 'ok'      => 1, 
-                            actual_ok => undef, 
-                            reason    => 'incrementing test number', 
-                            type      => 'unknown', 
-                            name      => undef 
-                          );
-                $Test_Results[$_] = \%result;
+                $Test_Results[$_] = &share({
+                    'ok'      => 1, 
+                    actual_ok => undef, 
+                    reason    => 'incrementing test number', 
+                    type      => 'unknown', 
+                    name      => undef 
+                });
             }
         }
     }
@@ -1318,10 +1310,9 @@ sub _ending {
         # Auto-extended arrays and elements which aren't explicitly
         # filled in with a shared reference will puke under 5.8.0
         # ithreads.  So we have to fill them in by hand. :(
-        my %empty_result = ();
-        share(%empty_result);
+        my $empty_result = &share({});
         for my $idx ( 0..$Expected_Tests-1 ) {
-            $Test_Results[$idx] = \%empty_result
+            $Test_Results[$idx] = $empty_result
               unless defined $Test_Results[$idx];
         }
 
@@ -1378,6 +1369,9 @@ END {
 In perl 5.8.0 and later, Test::Builder is thread-safe.  The test
 number is shared amongst all threads.  This means if one thread sets
 the test number using current_test() they will all be effected.
+
+Test::Builder is only thread-aware if threads.pm is loaded I<before>
+Test::Builder.
 
 =head1 EXAMPLES
 
