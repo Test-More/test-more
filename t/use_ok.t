@@ -3,11 +3,14 @@
 BEGIN {
     if( $ENV{PERL_CORE} ) {
         chdir 't';
-        @INC = '../lib';
+        @INC = ('../lib', 'lib');
+    }
+    else {
+        unshift @INC, 't/lib';
     }
 }
 
-use Test::More tests => 10;
+use Test::More tests => 13;
 
 # Using Symbol because it's core and exports lots of stuff.
 {
@@ -35,4 +38,19 @@ use Test::More tests => 10;
     ::use_ok("constant", qw(foo bar));
     ::ok( defined &foo, 'constant' );
     ::is( $warn, undef, 'no warning');
+}
+
+{
+    package Foo::five;
+    ::use_ok("Symbol", 1.02);
+}
+
+{
+    package Foo::six;
+    ::use_ok("NoExporter", 1.02);
+}
+
+{
+    package Foo::seven;
+    ::use_ok("Test::More", 0.47);
 }
