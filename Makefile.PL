@@ -34,7 +34,6 @@ WriteMakefile(
     VERSION_FROM    => "lib/$PACKAGE_FILE.pm", # finds $VERSION
     PREREQ_PM       => { 
                         Test::Harness   => 2.03,
-                        File::Spec      => 0.6,
                        },
     # Added to the core somewhere around 5.7.2.
     INSTALLDIRS     => $] >= 5.00702 ? 'perl' : 'site'
@@ -45,20 +44,20 @@ WriteMakefile(
     package MY;
 
     use File::Spec;
-
-    my $lib  = File::Spec->rel2abs('lib/'); 
-    my $tlib = File::Spec->rel2abs('t/lib/');
-
     use Config;
+
     sub test_via_harness {
         my($self, $orig_perl, $tests) = @_;
 
-        my @perls = ($orig_perl);
+        my $tlib = File::Spec->rel2abs('t/lib/');
+
+        my @perls = ();
         if( $ENV{PERL_TEST_ALL} ) {
             push @perls, 
-              map "PERL5LIB=$lib$Config{path_sep}$tlib $_",
+              map "PERL5LIB=$tlib $_",
                 qw(
                    perl5.4.0
+                   perl5.4.5
                    perl5.5.3
                    perl5.6.0
                    perl5.6.1
@@ -71,6 +70,9 @@ WriteMakefile(
                  perl5.8.0-ithreads
                  bleadperl
                 );
+        }
+        else {
+            push @perls, $orig_perl;
         }
 
         my $out;
