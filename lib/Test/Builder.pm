@@ -789,7 +789,9 @@ sub skip {
 
     my $out = "ok";
     $out   .= " $Curr_Test" if $self->use_numbers;
-    $out   .= " # skip $why\n";
+    $out   .= " # skip";
+    $out   .= " $why"       if length $why;
+    $out   .= "\n";
 
     $Test->_print($out);
 
