@@ -8,7 +8,7 @@ $^C ||= 0;
 
 use strict;
 use vars qw($VERSION $CLASS);
-$VERSION = 0.06;
+$VERSION = 0.07;
 $CLASS = __PACKAGE__;
 
 my $IsVMS = $^O eq 'VMS';
@@ -748,8 +748,14 @@ unless( $^C ) {
     # test suites while still getting normal test output.
     open(TESTOUT, ">&STDOUT") or die "Can't dup STDOUT:  $!";
     open(TESTERR, ">&STDERR") or die "Can't dup STDERR:  $!";
+
+    # Set everything to unbuffered else plain prints to STDOUT will
+    # come out in the wrong order from our own prints.
     _autoflush(\*TESTOUT);
+    _autoflush(\*STDOUT);
     _autoflush(\*TESTERR);
+    _autoflush(\*STDERR);
+
     $CLASS->output(\*TESTOUT);
     $CLASS->failure_output(\*TESTERR);
     $CLASS->todo_output(\*TESTOUT);
