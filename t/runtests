@@ -18,7 +18,7 @@ print AEGIS_OUT <<"END";
 test_result = [
 END
 
-runtests @ARGV;
+eval { runtests @ARGV; };
 
 print AEGIS_OUT <<"END";
 ];
