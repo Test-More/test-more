@@ -12,7 +12,7 @@ BEGIN {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT);
-$VERSION = '0.10';
+$VERSION = '0.11';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like
@@ -21,19 +21,29 @@ $VERSION = '0.10';
              eq_array eq_hash eq_set
              skip
              $TODO
+             plan
             );
 
 
 sub import {
     my($class, $plan, @args) = @_;
 
-    if( $plan eq 'skip_all' ) {
-        $Test::Simple::Skip_All = 1;
-        my_print *TESTOUT, "1..0\n";
-        exit(0);
+    if( defined $plan ) {
+        if( $plan eq 'skip_all' ) {
+            $Test::Simple::Skip_All = 1;
+            my $out = "1..0";
+            $out .= " # Skip @args" if @args;
+            $out .= "\n";
+
+            my_print *TESTOUT, $out;
+            exit(0);
+        }
+        else {
+            Test::Simple->import($plan => @args);
+        }
     }
     else {
-        Test::Simple->import($plan => @args);
+        Test::Simple->import;
     }
 
     __PACKAGE__->_export_to_level(1, __PACKAGE__);
@@ -60,7 +70,7 @@ Test::More - yet another framework for writing test scripts
   # or
   use Test::More qw(no_plan);
   # or
-  use Test::More qw(skip_all);
+  use Test::More skip_all => $reason;
 
   BEGIN { use_ok( 'Some::Module' ); }
   require_ok( 'Some::Module' );
@@ -130,10 +140,11 @@ have no plan.  (Try to avoid using this as it weakens your test.)
 
 In some cases, you'll want to completely skip an entire testing script.
 
-  use Test::More qw(skip_all);
+  use Test::More skip_all => $skip_reason;
 
-Your script will declare a skip and exit immediately with a zero
-(success).  See L<Test::Harness> for details.
+Your script will declare a skip with the reason why you skipped and
+exit immediately with a zero (success).  See L<Test::Harness> for
+details.
 
 
 =head2 Test names
