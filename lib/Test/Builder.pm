@@ -8,7 +8,7 @@ $^C ||= 0;
 
 use strict;
 use vars qw($VERSION $CLASS);
-$VERSION = '0.14';
+$VERSION = '0.15';
 $CLASS = __PACKAGE__;
 
 my $IsVMS = $^O eq 'VMS';
