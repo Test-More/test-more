@@ -27,3 +27,7 @@
     Trap bare exit() calls.
 
     Add diag() to details().
+
+    Add is_passing() method to check if we're passing?
+
+    Add at_end() callback?
