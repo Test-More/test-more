@@ -14,11 +14,18 @@
         is($@, '',                  'didn't explode');
         is($result, 'something',    'and it ran');
 
-    Expose Test::Builder->diag in Test::More.
-
     Finish (start?) Test::FAQ
 
     Expand the Test::Tutorial
 
+    Restructure the Test::More synopsis.
+
     Decide if the exit code behavior on failure is a useful default
     case.
+
+    Disallow double plans.
+
+    $^C exception control?
+
+    Document that everything goes through Test::Builder->ok()
+
