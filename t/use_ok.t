@@ -52,5 +52,9 @@ use Test::More tests => 13;
 
 {
     package Foo::seven;
+    local $SIG{__WARN__} = sub {
+        # Old perls will warn on X.YY_ZZ style versions.  Not our problem
+        warn @_ unless $_[0] =~ /^Argument "\d+\.\d+_\d+" isn't numeric/;
+    };
     ::use_ok("Test::More", 0.47);
 }
