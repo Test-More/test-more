@@ -55,6 +55,7 @@ WriteMakefile(
                         perl5.6.1
                         perl
                         perl5.8.0
+                        perl5.8.0-ithreads
                         bleadperl
                        )
           if $ENV{PERL_TEST_ALL};
