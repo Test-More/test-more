@@ -1,4 +1,9 @@
-Revision history for Perl extension Test::Simple
+0.48_02
+    - Mentioning Test::Differences, Test::Deep and Bundle::Test.
+    - Removed dependency on File::Spec.
+    - Fixing the grammar of diagnostic outputs when only a single test
+      is run or failed (ie. "Looks like you failed 1 tests").
+      [Darren Chamberlain]
 
 0.48_01  Mon Nov 11 02:36:43 EST 2002
     - Mention Test::Class in Test::More's SEE ALSO
