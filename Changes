@@ -1,12 +1,13 @@
 Revision history for Perl extension Test::Simple
 
-0.47  Sat Aug 24 23:29:58 PDT 2002
+0.47  Mon Aug 26 03:54:22 PDT 2002 
     * Tatsuhiko Miyagawa noticed Test::Builder was accidentally storing 
       objects passed into test functions causing problems with tests 
       relying on object destruction.
     - Added example of calculating the number of tests to Test::Tutorial
     - Peter Scott made the ending logic not fire on child processes when
       forking.
+    * Test::Builder is once again ithread safe.
 
 0.46  Sat Jul 20 19:57:40 EDT 2002
     - Noted eq_set() isn't really a set comparision.
