@@ -1,16 +1,19 @@
 package Test::Simple;
 
+use 5.004;
+
 use strict 'vars';
-require 5.004;
 use Test::Utils;
 
 use vars qw($VERSION);
 
-$VERSION = '0.14';
+$VERSION = '0.15';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
 my($Have_Plan) = 0;
+
+my $IsVMS = $^O eq 'VMS';
 
 
 # I'd like to have Test::Simple interfere with the program being
@@ -138,7 +141,7 @@ All tests are run in scalar context.  So this:
 
     ok( @stuff, 'I have some stuff' );
 
-will do what you mean (fail if stuff is empty).
+will do what you mean (fail if stuff is empty)
 
 =cut
 
@@ -298,7 +301,18 @@ doesn't actually exit, that's your job.
 =cut
 
 sub _my_exit {
-  $? = $_[0];
+  my $code = $_[0];
+
+  if( $IsVMS ) {
+      # VMS exit codes don't work like the rest of the universe.
+      $? = $code == 0   ? 0 :   # Success -> 0
+           $code == 255 ? 2 :   # Abort   -> 2
+                          1 ;   # Failure -> 1
+  }
+  else {
+      $? = $code;
+  }
+
   return 1;
 }
 
@@ -423,6 +437,12 @@ Test::Simple will only report a maximum of 254 failures in its exit
 code.  If this is a problem, you probably have a huge test script.
 Split it into multiple files.  (Otherwise blame the Unix folks for
 using an unsigned short integer as the exit status).
+
+VMS's exit codes act a little differently.  It works like this:
+
+    0                 all tests successful
+    1                 test failed
+    2                 test died
 
 
 =head1 HISTORY
