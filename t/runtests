@@ -43,7 +43,7 @@ sub analyze_file {
     my %results = $self->SUPER::analyze_file(@_);
 
     # 0 is pass, 1 is fail, anything else is not understood.
-    my $exit = $results{exit} ? 1 : 0;
+    my $exit = $results{passing} ? 0 : 1;
     print ::AEGIS_OUT <<"END";
     {
         file_name       = "$file";
