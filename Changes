@@ -1,6 +1,6 @@
 Revision history for Perl extension Test::Simple
 
-0.17
+0.17  Wed Aug 29 20:16:28 EDT 2001
     * Added can_ok() and isa_ok() to Test::More
 
 0.16  Tue Aug 28 19:52:11 EDT 2001
