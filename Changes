@@ -1,5 +1,9 @@
 Revision history for Perl extension Test::Simple
 
+0.41  Mon Dec 17 22:45:20 EST 2001
+    * chromatic added diag()
+    - Internal eval()'s sometimes interfering with $@ and $!.  Fixed.
+
 0.40  Fri Dec 14 15:41:39 EST 2001
     * isa_ok() now accepts unblessed references gracefully
     - Nick Clark found a bug with like() and a regex with % in it.
