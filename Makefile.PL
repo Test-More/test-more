@@ -36,10 +36,6 @@ WriteMakefile(
                         Test::Harness   => 1.23,
                         File::Spec      => 0.6,
                        },
-    'dist'          => { COMPRESS   => 'gzip -9',
-                         SUFFIX     => '.gz',
-                         DIST_DEFAULT   => 'all tardist',
-                       },
 );
 
 
