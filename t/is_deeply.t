@@ -23,7 +23,7 @@ local $ENV{HARNESS_ACTIVE} = 0;
 # Can't use Test.pm, that's a 5.005 thing.
 package main;
 
-print "1..32\n";
+print "1..34\n";
 
 my $test_num = 1;
 # Utility testing functions.
@@ -267,3 +267,15 @@ ok !is_deeply([$a], [$a.'']),   "  even deep inside";
 # [rt.cpan.org 7030]
 ok !is_deeply( {}, {key => []} ),  '[] could match non-existent values';
 ok !is_deeply( [], [[]] );
+
+
+#line 273
+$$err = $$out = '';
+is_deeply( [\'a', 'b'], [\'a', 'c'] );
+is( $out, "not ok 20\n",  'scalar refs in an array' );
+is( $err, <<ERR,        '    right diagnostic' );
+#     Failed test ($0 at line 274)
+#     Structures begin differing at:
+#          \$got->[1] = 'b'
+#     \$expected->[1] = 'c'
+ERR

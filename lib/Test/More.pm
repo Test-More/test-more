@@ -1132,6 +1132,7 @@ sub _deep_check {
             {
                 push @Data_Stack, { type => 'REF', vals => [$e1, $e2] };
                 $ok = _deep_check($$e1, $$e2);
+                pop @Data_Stack if $ok;
             }
             else {
                 push @Data_Stack, { vals => [$e1, $e2] };
