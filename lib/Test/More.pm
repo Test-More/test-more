@@ -177,36 +177,51 @@ or for deciding between running the tests at all:
 sub plan {
     my(@plan) = @_;
 
-    my $caller = caller;
-
-    $Test->exported_to($caller);
-
-    my @cleaned_plan;
-    my @imports = ();
     my $idx = 0;
+    my @cleaned_plan;
     while( $idx <= $#plan ) {
-        if( $plan[$idx] eq 'import' ) {
-            @imports = @{$plan[$idx+1]};
-            $idx += 2;
-        }
-        elsif( $plan[$idx] eq 'no_diag' ) {
+        my $item = $plan[$idx];
+
+        if( $item eq 'no_diag' ) {
             $Show_Diag = 0;
-            $idx++;
         }
         else {
-            push @cleaned_plan, $plan[$idx];
-            $idx++;
+            push @cleaned_plan, $item;
         }
+
+        $idx++;
     }
 
     $Test->plan(@cleaned_plan);
-
-    __PACKAGE__->_export_to_level(1, __PACKAGE__, @imports);
 }
 
 sub import {
     my($class) = shift;
-    goto &plan;
+
+    my $caller = caller;
+
+    $Test->exported_to($caller);
+
+    my $idx = 0;
+    my @plan;
+    my @imports;
+    while( $idx <= $#_ ) {
+        my $item = $_[$idx];
+
+        if( $item eq 'import' ) {
+            push @imports, @{$_[$idx+1]};
+            $idx++;
+        }
+        else {
+            push @plan, $item;
+        }
+
+        $idx++;
+    }
+
+    plan(@plan);
+
+    __PACKAGE__->_export_to_level(1, __PACKAGE__, @imports);
 }
 
 
