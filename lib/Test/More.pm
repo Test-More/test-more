@@ -986,7 +986,10 @@ WARNING
     my($this, $that, $name) = @_;
 
     my $ok;
-    if( !ref $this || !ref $that ) {
+    if( !ref $this xor !ref $that ) {  # one's a reference, one isn't
+        $ok = 0;
+    }
+    if( !ref $this and !ref $that ) {
         $ok = $Test->is_eq($this, $that, $name);
     }
     else {
@@ -1082,10 +1085,13 @@ sub _deep_check {
         # Quiet uninitialized value warnings when comparing undefs.
         local $^W = 0; 
 
+        # Either they're both references or both not.
+        my $same_ref = !(!ref $e1 xor !ref $e2);
+
         if( defined $e1 xor defined $e2 ) {
             $ok = 0;
         }
-        elsif ( $e1 eq $e2 ) {
+        elsif ( $same_ref and ($e1 eq $e2) ) {
             $ok = 1;
         }
         else {
