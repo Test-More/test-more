@@ -489,7 +489,7 @@ sub isnt_eq {
         my $test = defined $got || defined $dont_expect;
 
         $self->ok($test, $name);
-        $self->_cmp_diag('ne', $got, $dont_expect) unless $test;
+        $self->_cmp_diag($got, 'ne', $dont_expect) unless $test;
         return $test;
     }
 
@@ -505,7 +505,7 @@ sub isnt_num {
         my $test = defined $got || defined $dont_expect;
 
         $self->ok($test, $name);
-        $self->_cmp_diag('!=', $got, $dont_expect) unless $test;
+        $self->_cmp_diag($got, '!=', $dont_expect) unless $test;
         return $test;
     }
 
