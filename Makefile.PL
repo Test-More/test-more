@@ -5,9 +5,9 @@
 # - Fill in your dependencies in PREREQ_PM
 # Alternatively, you can say the hell with this and use h2xs.
 
-use ExtUtils::MakeMaker;
+use 5.004;
 
-require 5.004;
+use ExtUtils::MakeMaker;
 
 $PACKAGE = 'Test::Simple';
 ($PACKAGE_FILE = $PACKAGE) =~ s|::|/|g;
