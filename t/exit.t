@@ -24,13 +24,13 @@ print "# Ahh!  I see you're running VMS.\n" if $IsVMS;
 my %Tests = (
              #                      Everyone Else   VMS
              'success.plx'              => [0,      0],
-             'one_fail.plx'             => [1,      1],
-             'two_fail.plx'             => [2,      1],
-             'five_fail.plx'            => [5,      1],
-             'extras.plx'               => [3,      1],
-             'too_few.plx'              => [4,      1],
-             'death.plx'                => [255,    2],
-             'last_minute_death.plx'    => [255,    2],
+             'one_fail.plx'             => [1,      4],
+             'two_fail.plx'             => [2,      4],
+             'five_fail.plx'            => [5,      4],
+             'extras.plx'               => [3,      4],
+             'too_few.plx'              => [4,      4],
+             'death.plx'                => [255,    4],
+             'last_minute_death.plx'    => [255,    4],
              'death_in_eval.plx'        => [0,      0],
              'require.plx'              => [0,      0],
             );
