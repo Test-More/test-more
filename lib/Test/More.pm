@@ -18,7 +18,7 @@ sub _carp {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS $TODO);
-$VERSION = '0.33';
+$VERSION = '0.34';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like is_deeply
@@ -320,27 +320,7 @@ sub is ($$;$) {
 }
 
 sub isnt ($$;$) {
-    my($this, $that, $name) = @_;
-
-    my $test;
-    {
-        local $^W = 0;   # so isnt(undef, undef) works quietly.
-        $test = $this ne $that;
-    }
-
-    my $ok = $Test->ok($test, $name);
-
-    unless( $ok ) {
-        $that = defined $that ? "'$that'" : 'undef';
-
-        $Test->diag(sprintf <<DIAGNOSTIC, $that);
-it should not be %s
-but it is.
-DIAGNOSTIC
-
-    }
-
-    return $ok;
+    $Test->isnt_eq(@_);
 }
 
 *isn't = \&isnt;
