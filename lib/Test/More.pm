@@ -396,7 +396,7 @@ given pattern.
 
 =cut
 
-sub unlike {
+sub unlike ($$;$) {
     $Test->unlike(@_);
 }
 
