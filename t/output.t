@@ -66,6 +66,7 @@ unlink('foo');
 # Ensure stray newline in name escaping works.
 $out = tie *FAKEOUT, 'TieOut';
 $Test->output(\*FAKEOUT);
+$Test->exported_to(__PACKAGE__);
 $Test->no_ending(1);
 $Test->plan(tests => 5);
 

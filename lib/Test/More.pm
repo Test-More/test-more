@@ -671,7 +671,7 @@ sub use_ok ($;@) {
     eval <<USE;
 package $pack;
 require $module;
-$module->import(\@imports);
+'$module'->import(\@imports);
 USE
 
     my $ok = $Test->ok( !$@, "use $module;" );
