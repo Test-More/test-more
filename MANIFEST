@@ -14,6 +14,7 @@ t/fail-like.t
 t/fail-more.t
 t/fail.t
 t/import.t
+t/is_deeply.t
 t/lib/Test/Simple/Catch.pm
 t/lib/Test/Simple/sample_tests/death.plx
 t/lib/Test/Simple/sample_tests/death_in_eval.plx
