@@ -1,5 +1,19 @@
 Revision history for Perl extension Test::Simple
 
+0.40  Fri Dec 14 15:41:39 EST 2001
+    * isa_ok() now accepts unblessed references gracefully
+    - Nick Clark found a bug with like() and a regex with % in it.
+    - exit.t was hanging on 5.005_03 VMS perl.  Test now skipped.
+    - can_ok() would pass if no methods were given.  Now fails.
+    - isnt() diagnostic output format changed
+    * Added some docs about embedding and extending Test::More
+    * Added Test::More->builder
+    * Added cmp_ok()
+    * Added todo_skip()
+    * Added unlike()
+    - Piers pointed out that sometimes people override isa().
+      isa_ok() now accounts for that.
+
 0.36  Thu Nov 29 14:07:39 EST 2001
     - Matthias Urlichs found that intermixed prints to STDOUT and test 
       output came out in the wrong order when piped.
