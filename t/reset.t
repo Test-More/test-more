@@ -66,4 +66,5 @@ $tb->no_ending(1);
 $tb->no_header(1);
 $tb->plan(tests => 14);
 $tb->current_test(13);
+$tb->level(0);
 $tb->ok(1, 'final test to make sure output was reset');
