@@ -1,4 +1,5 @@
 0.52
+    * diag @msgs would insert # between arguments. [rt.cpan.org 8392]
     * eq_set() could cause problems under threads due to a weird sort bug
       [rt.cpan.org 6782]
     * undef no longer equals '' in is_deeply() [rt.cpan.org 6837]

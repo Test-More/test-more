@@ -24,7 +24,7 @@ BEGIN {
 
 use strict;
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 
 my $Test = Test::More->builder;
 
@@ -59,3 +59,14 @@ ok( !$ret, 'diag returns false' );
 $Test->failure_output(\*STDERR);
 is( $output->read, "# # foo\n", "diag() adds # even if there's one already" );
 ok( !$ret,  'diag returns false' );
+
+
+# [rt.cpan.org 8392]
+{
+    $Test->failure_output(\*FAKEOUT);
+    diag(qw(one two));
+}
+$Test->failure_output(\*STDERR);
+is( $output->read, <<'DIAG' );
+# onetwo
+DIAG

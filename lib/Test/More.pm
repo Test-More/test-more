@@ -618,7 +618,10 @@ messages which are safer than just C<print STDERR>.
   diag(@diagnostic_message);
 
 Prints a diagnostic message which is guaranteed not to interfere with
-test output.  Handy for this sort of thing:
+test output.  Like C<print> @diagnostic_message is simply concatinated
+together.
+
+Handy for this sort of thing:
 
     ok( grep(/foo/, @users), "There's a foo user" ) or
         diag("Since there's no foo, check that /etc/bar is set up right");
