@@ -1,6 +1,6 @@
 package Test::Simple;
 
-require 5.005;
+require 5.004;
 
 $Test::Simple::VERSION = '0.05';
 

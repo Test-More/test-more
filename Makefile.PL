@@ -7,7 +7,7 @@
 
 use ExtUtils::MakeMaker;
 
-require 5.005;
+require 5.004;
 
 $PACKAGE = 'Test::Simple';
 ($PACKAGE_FILE = $PACKAGE) =~ s|::|/|g;

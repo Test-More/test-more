@@ -4,7 +4,8 @@ Revision history for Perl extension Test::Simple
     - Forgot to include the exit tests.
     - Trouble with exiting properly under 5.005_03 and 5.6.1 fixed
     - Turned off buffering
-    - Now explicitly tested with 5.005_03
+    - 5.004 new minimum version
+    - Now explicitly tested with 5.6.1, 5.6.0, 5.005_03 and 5.004
 
 0.04  Mon Apr  2 11:05:01 BST 2001
     - Fixed "require Test::Simple" so it doesn't bitch and exit 255
