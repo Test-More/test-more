@@ -1,5 +1,21 @@
-require Test;
-Test::plan(tests => 12);
+# Can't use Test.pm, that's a 5.005 thing.
+package My::Test;
+
+print "1..12\n";
+
+my $test_num = 1;
+# Utility testing functions.
+sub ok ($;$) {
+    my($test, $name) = @_;
+    print "not " unless $test;
+    print "ok $test_num";
+    print " - $name" if defined $name;
+    print "\n";
+    $test_num++;
+}
+
+
+package main;
 
 require Test::Simple;
 
@@ -11,36 +27,36 @@ eval {
     Test::Simple->import;
 };
 
-Test::ok($$out, '');
-Test::ok($$err, '');
-Test::ok($@, '/You have to tell Test::Simple how many tests you plan to run/');
+My::Test::ok($$out eq '');
+My::Test::ok($$err eq '');
+My::Test::ok($@ =~ 
+             /You have to tell Test::Simple how many tests you plan to run/);
 
 eval {
     Test::Simple->import(tests => undef);
 };
 
-Test::ok($$out, '');
-Test::ok($$err, '');
-Test::ok($@,
-         '/Got an undefined number of tests/');
+My::Test::ok($$out eq '');
+My::Test::ok($$err eq '');
+My::Test::ok($@ =~ /Got an undefined number of tests/);
 
 eval {
     Test::Simple->import(tests => 0);
 };
 
-Test::ok($$out, '');
-Test::ok($$err, '');
-Test::ok($@, '/You told Test::Simple you plan to run 0 tests!/');
+My::Test::ok($$out eq '');
+My::Test::ok($$err eq '');
+My::Test::ok($@ =~ /You told Test::Simple you plan to run 0 tests!/);
 
 eval {
     Test::Simple::ok(1);
 };
-Test::ok( $@, '/You tried to use ok\(\) without a plan!/');
+My::Test::ok( $@ =~ /You tried to use ok\(\) without a plan!/);
 
 
 END {
-    Test::ok($$out, '');
-    Test::ok($$err, "# No tests run!\n");
+    My::Test::ok($$out eq '');
+    My::Test::ok($$err eq "# No tests run!\n");
 
     # Prevent Test::Simple from exiting with non zero.
     exit 0;

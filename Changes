@@ -1,0 +1,13 @@
+Revision history for Perl extension Test::Simple
+
+0.02  Fri Mar 30 05:12:14 BST 2001
+    - exit codes tested
+    * exit code on abnormal exit changed to 255 (thanks to Tim Bunce for
+      pointing out that Unix can't do negative exit codes)
+    - abnormal exits now better caught.
+    - No longer using Test.pm to test this, but still minimum of 5.005
+      due to needing $^S.
+
+0.01  Wed Mar 28 06:44:44 BST 2001
+    - First working version released to CPAN
+

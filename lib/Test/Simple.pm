@@ -2,10 +2,10 @@ package Test::Simple;
 
 require 5.005;
 
-$Test::Simple::VERSION = '0.01';
+$Test::Simple::VERSION = '0.02';
 
 my(@Test_Results) = ();
-my($Num_Tests, $Planned_Tests) = (0,0);
+my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
 
 # I'd like to have Test::Simple interfere with the program being
 # tested as little as possible.  This includes using Exporter or
@@ -140,7 +140,16 @@ If all your tests passed, Test::Simple will exit with zero (which is
 normal).  If anything failed it will exit with how many failed.  If
 you run less (or more) tests than you planned, the missing (or extras)
 will be considered failures.  If no tests were ever run Test::Simple
-will throw a warning and exit with -1.
+will throw a warning and exit with 255.  If the test died, even after
+having successfully completed all its tests, it will still be
+considered a failure and will exit with 255.
+
+So the exit codes are...
+
+    0                   all tests successful
+    255                 test died
+    any other number    how many failed (including missing or extras)
+
 
 =begin _private
 
@@ -191,6 +200,11 @@ WHOA
 
 =cut
 
+$SIG{__DIE__} = sub {
+    return if $^S;      # don't muck with a deah in an eval;
+    $Test_Died = 1;
+};
+
 END {
     _sanity_check();
 
@@ -216,11 +230,19 @@ FAIL
 FAIL
         }
 
+        if( $Test_Died ) {
+            print TESTERR <<"FAIL";
+# Looks like your tied died just after $Num_Tests.
+FAIL
+
+            exit( 255 );
+        }
+
         exit( $num_failed );
     }
     else {
         print TESTERR "# No tests run!\n";
-        exit( -1 );
+        exit( 255 );
     }
 }
 
@@ -261,6 +283,13 @@ It will produce output like this:
     ok 5 - NumExplodingSheep() get
 
 Indicating the Film::Rating() method is broken.
+
+
+=head1 NOTES
+
+What if you have more than 254 failures?  That's probably a huge test
+script.  Split it into multiple files.  (Otherwise blame the Unix
+folks for using an unsigned short integer as the exit status).
 
 
 =head1 HISTORY

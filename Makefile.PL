@@ -11,7 +11,7 @@ require 5.005;
 
 $PACKAGE = 'Test::Simple';
 ($PACKAGE_FILE = $PACKAGE) =~ s|::|/|g;
-$LAST_API_CHANGE = 0;
+$LAST_API_CHANGE = 0.02;
 
 eval "require $PACKAGE";
 

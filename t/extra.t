@@ -1,5 +1,21 @@
-require Test;
-Test::plan(tests => 2);
+# Can't use Test.pm, that's a 5.005 thing.
+package My::Test;
+
+print "1..2\n";
+
+my $test_num = 1;
+# Utility testing functions.
+sub ok ($;$) {
+    my($test, $name) = @_;
+    print "not " unless $test;
+    print "ok $test_num";
+    print " - $name" if defined $name;
+    print "\n";
+    $test_num++;
+}
+
+
+package main;
 
 require Test::Simple;
 
@@ -16,7 +32,7 @@ ok(1, 'Car');
 ok(0, 'Sar');
 
 END {
-    Test::ok($$out, <<OUT);
+    My::Test::ok($$out eq <<OUT);
 1..3
 ok 1 - Foo
 not ok 2 - Bar
@@ -25,7 +41,7 @@ ok 4 - Car
 not ok 5 - Sar
 OUT
 
-    Test::ok($$err, <<ERR);
+    My::Test::ok($$err eq <<ERR);
 # Looks like you planned 3 tests but ran 2 extra.
 ERR
 

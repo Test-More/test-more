@@ -1,7 +1,23 @@
 use strict;
 
-require Test;
-Test::plan(tests => 2);
+# Can't use Test.pm, that's a 5.005 thing.
+package My::Test;
+
+print "1..2\n";
+
+my $test_num = 1;
+# Utility testing functions.
+sub ok ($;$) {
+    my($test, $name) = @_;
+    print "not " unless $test;
+    print "ok $test_num";
+    print " - $name" if defined $name;
+    print "\n";
+    $test_num++;
+}
+
+
+package main;
 
 require Test::Simple;
 
@@ -19,7 +35,7 @@ ok( 0, 'damnit' );
 
 
 END {
-    Test::ok($$out, <<OUT);
+    My::Test::ok($$out eq <<OUT);
 1..5
 ok 1 - passing
 ok 2 - passing still
@@ -28,7 +44,7 @@ not ok 4 - oh no!
 not ok 5 - damnit
 OUT
 
-    Test::ok($$err, <<ERR);
+    My::Test::ok($$err eq <<ERR);
 # Looks like you failed 2 tests of 5.
 ERR
 
