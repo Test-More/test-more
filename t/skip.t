@@ -1,5 +1,12 @@
 #!perl -w
 
+BEGIN {
+    if( $ENV{PERL_CORE} ) {
+        chdir 't';
+        @INC = '../lib';
+    }
+}
+
 use Test::More tests => 15;
 
 # If we skip with the same name, Test::Harness will report it back and

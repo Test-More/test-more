@@ -1,6 +1,13 @@
 # Can't use Test.pm, that's a 5.005 thing.
 package My::Test;
 
+BEGIN {
+    if( $ENV{PERL_CORE} ) {
+        chdir 't';
+        @INC = '../lib';
+    }
+}
+
 unless( eval { require File::Spec } ) {
     print "1..0 # Skip Need File::Spec to run this test\n";
     exit 0;
@@ -47,7 +54,8 @@ my %Tests = (
 
 print "1..".keys(%Tests)."\n";
 
-my $lib = File::Spec->catdir(qw(t lib Test Simple sample_tests));
+chdir 't';
+my $lib = File::Spec->catdir(qw(lib Test Simple sample_tests));
 while( my($test_name, $exit_codes) = each %Tests ) {
     my($exit_code) = $exit_codes->[$IsVMS ? 1 : 0];
 
@@ -63,7 +71,7 @@ while( my($test_name, $exit_codes) = each %Tests ) {
     }
 
     my $file = File::Spec->catfile($lib, $test_name);
-    my $wait_stat = system(qq{$Perl -"Iblib/lib" $file});
+    my $wait_stat = system(qq{$Perl -"I../blib/lib" -"I../lib" -"I../t/lib" $file});
     my $actual_exit = $wait_stat >> 8;
 
     My::Test::ok( $actual_exit == $exit_code, 

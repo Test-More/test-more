@@ -1,6 +1,13 @@
 #!perl -w
 
 BEGIN {
+    if( $ENV{PERL_CORE} ) {
+        chdir 't';
+        @INC = '../lib';
+    }
+}
+
+BEGIN {
     require Test::Harness;
     use Test::More;
 

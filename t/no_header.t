@@ -1,3 +1,10 @@
+BEGIN {
+    if( $ENV{PERL_CORE} ) {
+        chdir 't';
+        @INC = '../lib';
+    }
+}
+
 use Test::Builder;
 
 # STDOUT must be unbuffered else our prints might come out after

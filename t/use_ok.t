@@ -1,3 +1,10 @@
+BEGIN {
+    if( $ENV{PERL_CORE} ) {
+        chdir 't';
+        @INC = '../lib';
+    }
+}
+
 use Test::More tests => 7;
 
 # Using Symbol because it's core and exports lots of stuff.

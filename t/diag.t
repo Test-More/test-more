@@ -1,5 +1,12 @@
 #!perl -w
 
+BEGIN {
+    if( $ENV{PERL_CORE} ) {
+        chdir 't';
+        @INC = '../lib';
+    }
+}
+
 use strict;
 
 use Test::More tests => 5;

@@ -7,12 +7,20 @@ BEGIN {
     }
 }
 
+BEGIN {
+    if( $ENV{PERL_CORE} ) {
+        chdir 't';
+        @INC = ('../lib', 'lib');
+    }
+    else {
+        unshift @INC, 't/lib';
+    }
+}
 
 # There was a bug with like() involving a qr// not failing properly.
 # This tests against that.
 
 use strict;
-use lib 't/lib';
 
 require Test::Simple::Catch;
 my($out, $err) = Test::Simple::Catch::caught();

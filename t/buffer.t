@@ -1,5 +1,12 @@
 #!/usr/bin/perl
 
+BEGIN {
+    if( $ENV{PERL_CORE} ) {
+        chdir 't';
+        @INC = '../lib';
+    }
+}
+
 # Ensure that intermixed prints to STDOUT and tests come out in the
 # right order (ie. no buffering problems).
 

@@ -1,4 +1,17 @@
+BEGIN {
+    if( $ENV{PERL_CORE} ) {
+        chdir 't';
+        @INC = '../lib';
+    }
+}
+
 use Test::More;
+
+BEGIN {
+    if( !$ENV{HARNESS_ACTIVE} && $ENV{PERL_CORE} ) {
+        plan skip_all => "Won't work with t/TEST";
+    }
+}
 
 BEGIN {
     require Test::Harness;

@@ -1,7 +1,16 @@
 #!/usr/bin/perl -w
 
+BEGIN {
+    if( $ENV{PERL_CORE} ) {
+        chdir 't';
+        @INC = ('../lib', 'lib');
+    }
+    else {
+        unshift @INC, 't/lib';
+    }
+}
+
 use strict;
-use lib qw(t/lib);
 
 use Test::Builder;
 require Test::Simple::Catch;
