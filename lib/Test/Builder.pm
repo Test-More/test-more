@@ -217,6 +217,21 @@ sub no_plan {
     $Have_Plan  = 1;
 }
 
+=item B<has_plan>
+
+  $plan = $Test->has_plan
+  
+Find out whether a plan has been defined. $plan is either C<undef> (no plan has been set), C<no_plan> (indeterminate # of tests) or an integer (the number of expected tests).
+
+=cut
+
+sub has_plan {
+	return($Expected_Tests) if $Expected_Tests;
+	return('no_plan') if $No_Plan;
+	return(undef);
+};
+
+
 =item B<skip_all>
 
   $Test->skip_all;
@@ -1058,12 +1073,25 @@ sub summary {
 Like summary(), but with a lot more detail.
 
     $tests[$test_num - 1] = 
-            { ok         => is the test considered ok?
+            { ok         => is the test considered a pass?
               actual_ok  => did it literally say 'ok'?
               name       => name of the test (if any)
               type       => 'skip' or 'todo' (if any)
               reason     => reason for the above (if any)
             };
+
+'actual_ok' is a reflection of whether or not the test said 'ok' or
+'not ok'.  This is for examining the result of 'todo' tests.  For
+example "not ok 23 - hole count # TODO insufficient donuts" would
+result in this structure:
+
+    $tests[22] =    # 23 - 1, since arrays start from 0.
+      { ok        => 1,   # logically, the test passed since it's todo
+        actual_ok => 0,   # in absolute terms, it failed
+        name      => 'hole count',
+        type      => 'todo',
+        reason    => 'insufficient donuts'
+      };
 
 =item B<todo>
 
@@ -1283,7 +1311,7 @@ E<lt>schwern@pobox.comE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2001 by chromatic E<lt>chromatic@wgz.orgE<gt>,
+Copyright 2002 by chromatic E<lt>chromatic@wgz.orgE<gt>,
                   Michael G Schwern E<lt>schwern@pobox.comE<gt>.
 
 This program is free software; you can redistribute it and/or 

@@ -51,3 +51,5 @@ t/todo.t
 t/undef.t
 t/use_ok.t
 t/useing.t
+t/has_plan.t
+t/has_plan2.t

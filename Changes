@@ -5,6 +5,8 @@ Revision history for Perl extension Test::Simple
     - Test fix, exit codes are broken on MacPerl (bleadperl@16868)
     - Make Test::Simple install itself into the core for >= 5.8
     - Small fixes to Test::Tutorial and skip examples
+    * Added TB->has_plan() from Adrian Howard
+    - Clarified the meaning of 'actual_ok' from TB->details
 
 0.45  Wed Jun 19 18:41:12 EDT 2002
     - Andy Lester made the SKIP & TODO docs a bit clearer.
