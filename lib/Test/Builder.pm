@@ -8,7 +8,7 @@ $^C ||= 0;
 
 use strict;
 use vars qw($VERSION $CLASS);
-$VERSION = 0.07;
+$VERSION = 0.08;
 $CLASS = __PACKAGE__;
 
 my $IsVMS = $^O eq 'VMS';
@@ -475,6 +475,41 @@ sub skip {
 
     return 1;
 }
+
+
+=item B<todo_skip>
+
+  $Test->todo_skip;
+  $Test->todo_skip($why);
+
+Like skip(), only it will declare the test as failing and TODO.  Similar
+to
+
+    print "not ok $tnum # TODO $why\n";
+
+=cut
+
+sub todo_skip {
+    my($self, $why) = @_;
+    $why ||= '';
+
+    unless( $Have_Plan ) {
+        die "You tried to run tests without a plan!  Gotta have a plan.\n";
+    }
+
+    $Curr_Test++;
+
+    $Test_Results[$Curr_Test-1] = 1;
+
+    my $out = "not ok";
+    $out   .= " $Curr_Test" if $self->use_numbers;
+    $out   .= " # TODO $why\n";
+
+    $Test->_print($out);
+
+    return 1;
+}
+
 
 =begin _unimplemented
 
