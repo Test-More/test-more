@@ -8,6 +8,12 @@ if (!eval { require Module::Signature; 1 }) {
       "Next time around, consider installing Module::Signature, ".
       "so you can verify the integrity of this distribution.";
 }
+elsif ( !-e 'SIGNATURE' ) {
+    plan skip_all => "SIGNATURE not found";
+}
+elsif ( -s 'SIGNATURE' == 0 ) {
+    plan skip_all => "SIGNATURE file empty";
+}
 elsif (!eval { require Socket; Socket::inet_aton('pgp.mit.edu') }) {
     plan skip_all => "Cannot connect to the keyserver to check module ".
                      "signature";
@@ -15,6 +21,6 @@ elsif (!eval { require Socket; Socket::inet_aton('pgp.mit.edu') }) {
 else {
     plan tests => 1;
 }
-	
+
 is(Module::Signature::verify(), Module::Signature::SIGNATURE_OK(), 
                                                          "Valid signature" );
