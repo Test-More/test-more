@@ -31,3 +31,7 @@
     Add is_passing() method to check if we're passing?
 
     Add at_end() callback?
+
+    Combine all *output methods into outputs().
+
+    Change *output* to return the old FH, not the new one when setting.
