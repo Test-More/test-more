@@ -1,6 +1,10 @@
 Revision history for Perl extension Test::Simple
 
-0.15  Tue Aug 28 06:18:35 EDT 2001
+0.16  Tue Aug 28 19:52:11 EDT 2001
+    * vmsperl foiled my sensisble exit codes.  Reverting to a much more
+      coarse scheme.
+
+0.15  Tue Aug 28 06:18:35 EDT 2001  *UNRELEASED*
     * Now using sensible exit codes on VMS.
 
 0.14  Wed Aug 22 17:26:28 EDT 2001
