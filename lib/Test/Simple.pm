@@ -7,7 +7,7 @@ use Test::Utils;
 
 use vars qw($VERSION);
 
-$VERSION = '0.16';
+$VERSION = '0.17';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
