@@ -1,6 +1,13 @@
 # Can't use Test.pm, that's a 5.005 thing.
 package My::Test;
 
+# This feature requires a fairly new version of Test::Harness
+require Test::Harness;
+if( $Test::Harness::VERSION < 1.20 ) {
+    print "1..0\n";
+    exit(0);
+}
+
 print "1..2\n";
 
 my $test_num = 1;

@@ -45,8 +45,8 @@ not ok 5 - damnit
 OUT
 
     My::Test::ok($$err eq <<ERR);
-# Failed test ($0 at line 33)
-# Failed test ($0 at line 34)
+#     Failed test ($0 at line 33)
+#     Failed test ($0 at line 34)
 # Looks like you failed 2 tests of 5.
 ERR
 

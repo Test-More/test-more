@@ -8,6 +8,7 @@ t/extra.t
 t/fail.t
 t/missing.t
 t/no_plan.t
+t/plan_is_noplan.t
 t/sample_tests/death.plx
 t/sample_tests/death_in_eval.plx
 t/sample_tests/extras.plx

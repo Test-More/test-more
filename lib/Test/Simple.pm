@@ -2,11 +2,23 @@ package Test::Simple;
 
 require 5.004;
 
-$Test::Simple::VERSION = '0.07';
+$Test::Simple::VERSION = '0.08';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
 my($Have_Plan) = 0;
+
+
+# Special print function to guard against $\ and -l munging.
+sub _print (*@) {
+    my($fh, @args) = @_;
+
+    local $\;
+    print $fh @args;
+}
+
+sub print { die "DON'T USE PRINT!  Use _print instead" }
+
 
 # I'd like to have Test::Simple interfere with the program being
 # tested as little as possible.  This includes using Exporter or
@@ -44,7 +56,7 @@ sub plan {
 
     $Have_Plan = 1;
 
-    print TESTOUT "1..$Planned_Tests\n";
+    _print *TESTOUT, "1..$Planned_Tests\n";
 
     my($caller) = caller;
     *{$caller.'::ok'} = \&ok;
@@ -144,7 +156,7 @@ sub ok ($;$) {
     # Make sure the print doesn't get interfered with.
     local($\, $,);
 
-    print TESTERR <<ERR if defined $name and $name !~ /\D/;
+    _print *TESTERR, <<ERR if defined $name and $name !~ /\D/;
 You named your test '$name'.  You shouldn't use numbers for your test names.
 Very confusing.
 ERR
@@ -163,7 +175,7 @@ ERR
     $msg   .= " - $name" if @_ == 2;
     $msg   .= "\n";
 
-    print TESTOUT $msg;
+    _print *TESTOUT, $msg;
 
     #'#
     unless( $test ) {
@@ -171,7 +183,7 @@ ERR
         if( $pack eq 'Test::More' ) {
             ($file, $line) = (caller(1))[1,2];
         }
-        print TESTERR "# Failed test ($file at line $line)\n";
+        _print *TESTERR, "#     Failed test ($file at line $line)\n";
     }
 
     return $test;
@@ -289,7 +301,7 @@ END {
     if( $Num_Tests ) {
         # The plan?  We have no plan.
         unless( $Planned_Tests ) {
-            print TESTOUT "1..$Num_Tests\n";
+            _print *TESTOUT, "1..$Num_Tests\n";
             $Planned_Tests = $Num_Tests;
         }
 
@@ -297,24 +309,24 @@ END {
         $num_failed += abs($Planned_Tests - @Test_Results);
 
         if( $Num_Tests < $Planned_Tests ) {
-            print TESTERR <<"FAIL";
+            _print *TESTERR, <<"FAIL";
 # Looks like you planned $Planned_Tests tests but only ran $Num_Tests.
 FAIL
         }
         elsif( $Num_Tests > $Planned_Tests ) {
             my $num_extra = $Num_Tests - $Planned_Tests;
-            print TESTERR <<"FAIL";
+            _print *TESTERR, <<"FAIL";
 # Looks like you planned $Planned_Tests tests but ran $num_extra extra.
 FAIL
         }
         elsif ( $num_failed ) {
-            print TESTERR <<"FAIL";
+            _print *TESTERR, <<"FAIL";
 # Looks like you failed $num_failed tests of $Planned_Tests.
 FAIL
         }
 
         if( $Test_Died ) {
-            print TESTERR <<"FAIL";
+            _print *TESTERR, <<"FAIL";
 # Looks like your test died just after $Num_Tests.
 FAIL
 
@@ -327,7 +339,7 @@ FAIL
         _my_exit( 0 ) && return;
     }
     else {
-        print TESTERR "# No tests run!\n";
+        _print *TESTERR, "# No tests run!\n";
         _my_exit( 255 ) && return;
     }
 }

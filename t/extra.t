@@ -42,8 +42,8 @@ not ok 5 - Sar
 OUT
 
     My::Test::ok($$err eq <<ERR);
-# Failed test ($0 at line 29)
-# Failed test ($0 at line 32)
+#     Failed test ($0 at line 29)
+#     Failed test ($0 at line 32)
 # Looks like you planned 3 tests but ran 2 extra.
 ERR
 
