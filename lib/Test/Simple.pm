@@ -92,6 +92,8 @@ Test::Simple - Basic utilities for writing tests.
 
 =head1 DESCRIPTION
 
+** If you are unfamiliar with testing B<read Test::Tutorial> first! **
+
 This is an extremely simple, extremely basic module for writing tests
 suitable for CPAN modules and other pursuits.  If you wish to do more
 complicated testing, use the Test::More module (a drop-in replacement
