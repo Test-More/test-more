@@ -11,7 +11,7 @@ use ExtUtils::MakeMaker;
 
 $PACKAGE = 'Test::Simple';
 ($PACKAGE_FILE = $PACKAGE) =~ s|::|/|g;
-$LAST_API_CHANGE = 0.18;
+$LAST_API_CHANGE = 0.34;
 
 eval "require $PACKAGE";
 
@@ -46,8 +46,7 @@ WriteMakefile(
         my($self, $orig_perl, $tests) = @_;
 
         my @perls = ($orig_perl);
-        push @perls, qw(bleadperl
-                        perl5.6.1
+        push @perls, qw(perl
                         perl5.6.0
                         perl5.005_03
                         perl5.004_05
@@ -58,8 +57,9 @@ WriteMakefile(
 
         my $out;
         foreach my $perl (@perls) {
-            $out .= $self->SUPER::test_via_harness($perl, $tests);
+            $out .= $self->SUPER::test_via_harness($perl, $tests) . "\n";
         }
+        $out =~ s{-I\$\(PERL_\w*LIB\)}{}g;
 
         return $out;
     }
