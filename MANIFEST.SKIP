@@ -2,6 +2,8 @@
 \bRCS\b
 \bCVS\b
 ,\w$
+^aegis\.
+^t/runtests$
 
 # Avoid Makemaker generated and utility files.
 ^MANIFEST\.
@@ -9,6 +11,7 @@
 ^blib/
 ^MakeMaker-\d
 ^pm_to_blib$
+\.ts$
 
 # Avoid temp and backup files.
 ~$

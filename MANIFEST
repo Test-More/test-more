@@ -13,6 +13,7 @@ t/Builder.t
 t/curr_test.t
 t/details.t
 t/diag.t
+t/eq_set.t
 t/exit.t
 t/extra.t
 t/extra_one.t
@@ -22,6 +23,7 @@ t/fail.t
 t/fail_one.t
 t/filehandles.t
 t/fork.t
+t/harness_active.t
 t/has_plan.t
 t/has_plan2.t
 t/import.t
@@ -40,6 +42,7 @@ t/lib/Test/Simple/sample_tests/success.plx
 t/lib/Test/Simple/sample_tests/too_few.plx
 t/lib/Test/Simple/sample_tests/two_fail.plx
 t/lib/TieOut.pm
+t/lib/Tmp.pm
 t/maybe_regex.t
 t/missing.t
 t/More.t
@@ -49,6 +52,7 @@ t/no_header.t
 t/no_plan.t
 t/ok_obj.t
 t/output.t
+t/overload.t
 t/plan.t
 t/plan_is_noplan.t
 t/plan_no_plan.t
