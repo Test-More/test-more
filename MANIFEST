@@ -13,6 +13,7 @@ t/00test_harness_check.t
 t/bad_plan.t
 t/buffer.t
 t/Builder.t
+t/circular_data.t
 t/curr_test.t
 t/details.t
 t/diag.t

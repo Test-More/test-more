@@ -968,8 +968,7 @@ Not everything is a simple eq check or regex.  There are times you
 need to see if two arrays are equivalent, for instance.  For these
 instances, Test::More provides a handful of useful functions.
 
-B<NOTE> These are NOT well-tested on circular references.  Nor am I
-quite sure what will happen with filehandles.
+B<NOTE> I'm not quite sure what will happen with filehandles.
 
 =over 4
 
@@ -987,7 +986,7 @@ along these lines.
 
 =cut
 
-use vars qw(@Data_Stack);
+use vars qw(@Data_Stack %Refs_Seen);
 my $DNE = bless [], 'Does::Not::Exist';
 sub is_deeply {
     unless( @_ == 2 or @_ == 3 ) {
@@ -1012,6 +1011,7 @@ WARNING
     }
     else {
         local @Data_Stack = ();
+        local %Refs_Seen  = ();
         if( _deep_check($this, $that) ) {
             $ok = $Test->ok(1, $name);
         }
@@ -1078,6 +1078,7 @@ multi-level structures are handled correctly.
 #'#
 sub eq_array {
     local @Data_Stack;
+    local %Refs_Seen;
     _eq_array(@_);
 }
 
@@ -1090,6 +1091,13 @@ sub _eq_array  {
     }
 
     return 1 if $a1 eq $a2;
+
+    if($Refs_Seen{$a1}) {
+        return $Refs_Seen{$a1} eq $a2;
+    }
+    else {
+        $Refs_Seen{$a1} = "$a2";
+    }
 
     my $ok = 1;
     my $max = $#$a1 > $#$a2 ? $#$a1 : $#$a2;
@@ -1174,6 +1182,7 @@ is a deep check.
 
 sub eq_hash {
     local @Data_Stack;
+    local %Refs_Seen;
     return _eq_hash(@_);
 }
 
@@ -1186,6 +1195,13 @@ sub _eq_hash {
     }
 
     return 1 if $a1 eq $a2;
+
+    if( $Refs_Seen{$a1} ) {
+        return $Refs_Seen{$a1} eq $a2;
+    }
+    else {
+        $Refs_Seen{$a1} = "$a2";
+    }
 
     my $ok = 1;
     my $bigger = keys %$a1 > keys %$a2 ? $a1 : $a2;
