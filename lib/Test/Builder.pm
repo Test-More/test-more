@@ -55,9 +55,6 @@ Test::Builder - Backend for building test libraries
 
 =head1 DESCRIPTION
 
-I<THIS IS ALPHA GRADE SOFTWARE>  Meaning the underlying code is well
-tested, yet the interface is subject to change.
-
 Test::Simple and Test::More have proven to be popular testing modules,
 but they're not always flexible enough.  Test::Builder provides the a
 building block upon which to write your own test libraries I<which can
@@ -355,7 +352,7 @@ sub _is_diag {
         }
     }
 
-    $self->diag(sprintf <<DIAGNOSTIC, $got, $expect);
+    return $self->diag(sprintf <<DIAGNOSTIC, $got, $expect);
          got: %s
     expected: %s
 DIAGNOSTIC
@@ -525,7 +522,7 @@ sub _cmp_diag {
     
     $got    = defined $got    ? "'$got'"    : 'undef';
     $expect = defined $expect ? "'$expect'" : 'undef';
-    $self->diag(sprintf <<DIAGNOSTIC, $got, $type, $expect);
+    return $self->diag(sprintf <<DIAGNOSTIC, $got, $type, $expect);
     %s
         %s
     %s
@@ -768,6 +765,14 @@ already.
 
 We encourage using this rather than calling print directly.
 
+Returns false.  Why?  Because diag() is often used in conjunction with
+a failing test (C<ok() || diag()>) it "passes through" the failure.
+
+    return ok(...) || diag(...);
+
+=for blame transfer
+Mark Fowler <mark@twoshortplanks.com>
+
 =cut
 
 sub diag {
@@ -788,6 +793,8 @@ sub diag {
     my $fh = $self->todo ? $self->todo_output : $self->failure_output;
     local($\, $", $,) = (undef, ' ', '');
     print $fh @msgs;
+
+    return 0;
 }
 
 =begin _private

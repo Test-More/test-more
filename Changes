@@ -1,6 +1,8 @@
 Revision history for Perl extension Test::Simple
 
 0.43
+    - Adding Mark Fowler's suggestion to make diag() return
+      false.
     - TB->current_test() still not working when no tests were run via
       TB itself.  Fixed by Dave Rolsky.
 
