@@ -658,6 +658,20 @@ is like doing this:
 
    use Some::Module qw(foo bar);
 
+don't try to do this:
+
+   BEGIN {
+       use_ok('Some::Module');
+
+       ...some code that depends on the use...
+       ...happening at compile time...
+   }
+
+instead, you want:
+
+  BEGIN { use_ok('Some::Module') }
+  BEGIN { ...some code that depends on the use... }
+
 
 =cut
 

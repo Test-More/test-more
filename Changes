@@ -5,6 +5,7 @@ Revision history for Perl extension Test::Simple
     - Explicitly disallowing double plans. (RT #553)
     - Kicking up the minimum version of Test::Harness to one that's
       fairly bug free.
+    - Made clear a common problem with use_ok and BEGIN blocks.
 
 0.44  Thu Apr 25 00:27:27 EDT 2002
     - names containing newlines no longer produce confusing output
