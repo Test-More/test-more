@@ -760,8 +760,9 @@ DIAGNOSTIC
 =item B<require_ok>
 
    require_ok($module);
+   require_ok($file);
 
-Like use_ok(), except it requires the $module.
+Like use_ok(), except it requires the $module or $file.
 
 =cut
 
@@ -769,6 +770,10 @@ sub require_ok ($) {
     my($module) = shift;
 
     my $pack = caller;
+
+    # Try to deterine if we've been given a module name or file.
+    # Module names must be barewords, files not.
+    $module = qq['$module'] unless _is_module_name($module);
 
     local($!, $@); # eval sometimes interferes with $!
     eval <<REQUIRE;
@@ -788,6 +793,17 @@ DIAGNOSTIC
     }
 
     return $ok;
+}
+
+
+sub _is_module_name {
+    my $module = shift;
+
+    # Module names start with a letter.
+    # End with an alphanumeric.
+    # The rest is an alphanumeric or ::
+    $module =~ s/\b::\b//g;
+    $module =~ /^[a-zA-Z]\w+$/;
 }
 
 =back

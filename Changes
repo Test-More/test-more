@@ -1,6 +1,7 @@
 0.52
     * is_deeply() and all the eq_* functions now handle circular data
       structures.  [rt.cpan.org 7289]
+    * require_ok() now handles filepaths in addition to modules.
 
 0.51_01  Fri Nov 26 02:59:30 EST 2004
     - plan() was accidentally exporting functions [rt.cpan.org 8385]
