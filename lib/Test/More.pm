@@ -327,14 +327,14 @@ You are encouraged to use is() and isnt() over ok() where possible,
 however do not be tempted to use them to find out if something is
 true or false!
 
-  # XXX BAD!  $pope->isa('Catholic') eq 1
-  is( $pope->isa('Catholic'), 1,        'Is the Pope Catholic?' );
+  # XXX BAD!
+  is( exists $brooklyn{tree}, 1, 'A tree grows in Brooklyn' );
 
-This does not check if C<$pope->isa('Catholic')> is true, it checks if
+This does not check if C<exists $brooklyn{tree}> is true, it checks if
 it returns 1.  Very different.  Similar caveats exist for false and 0.
 In these cases, use ok().
 
-  ok( $pope->isa('Catholic'),         'Isa the Pope Catholic?' );
+  ok( exists $brooklyn{tree},    'A tree grows in Brooklyn' );
 
 For those grammatical pedants out there, there's an C<isn't()>
 function which is an alias of isnt().
