@@ -23,11 +23,8 @@
     Decide if the exit code behavior on failure is a useful default
     case.
 
-    Disallow double plans.
-
     $^C exception control?
 
     Document that everything goes through Test::Builder->ok()
 
-    Check for sanity (trailing newlines) in test names and skip messages
 
