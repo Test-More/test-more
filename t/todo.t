@@ -1,8 +1,21 @@
-use Test::More 'no_plan';
+use Test::More tests => 5;
 
-use strict;
+$Why = 'Just testing the todo interface.';
 
-test_these {
-    print "Foo";
-    skip "Because";
+TODO: {
+    local $TODO = $Why;
+
+    fail("Expected failure");
+    fail("Another expected failure");
 }
+
+pass("This is not todo");
+
+
+TODO: {
+    local $TODO = $Why;
+
+    fail("Yet another failure");
+}
+
+pass("This is still not todo");

@@ -20,14 +20,17 @@ sub ok ($;$) {
 
 
 package main;
+
 require Test::More;
 
 push @INC, 't', '.';
-require Catch;
-my($out, $err) = Catch::caught();
+require Catch::More;
+my($out, $err) = Catch::More::caught();
 
 Test::More->import(tests => 8);
 
+# Preserve the line numbers.
+#line 31
 ok( 0, 'failing' );
 is(  "foo", "bar", 'foo is bar?');
 isnt("foo", "foo", 'foo isnt foo?' );

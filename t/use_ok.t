@@ -1,5 +1,6 @@
 use Test::More tests => 7;
 
+# Using Symbol because it's core and exports lots of stuff.
 {
     package Foo::1;
     ::use_ok("Symbol");

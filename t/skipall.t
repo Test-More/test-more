@@ -23,8 +23,8 @@ package main;
 require Test::More;
 
 push @INC, 't', '.';
-require Catch;
-my($out, $err) = Catch::caught();
+require Catch::More;
+my($out, $err) = Catch::More::caught();
 
 Test::More->import('skip_all');
 
