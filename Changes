@@ -1,5 +1,8 @@
 Revision history for Perl extension Test::Simple
 
+0.17
+    * Added can_ok() and isa_ok() to Test::More
+
 0.16  Tue Aug 28 19:52:11 EDT 2001
     * vmsperl foiled my sensisble exit codes.  Reverting to a much more
       coarse scheme.

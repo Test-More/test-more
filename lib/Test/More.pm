@@ -24,7 +24,7 @@ $VERSION = '0.16';
              skip
              $TODO
              plan
-             can_ok
+             can_ok  isa_ok
             );
 
 
@@ -100,6 +100,7 @@ Test::More - yet another framework for writing test scripts
   };
 
   can_ok($module, @methods);
+  isa_ok($object, $class);
 
   pass($test_name);
   fail($test_name);
@@ -405,7 +406,8 @@ DIAGNOSTIC
 
   can_ok($module, @methods);
 
-Checks to make sure the $module can do these @methods.
+Checks to make sure the $module can do these @methods (works with
+functions, too).
 
     can_ok('Foo', qw(this that whatever));
 
@@ -422,7 +424,7 @@ Each method counts as a seperate test.
 
 =cut
 
-sub can_ok {
+sub can_ok ($@) {
     my($module, @methods) = @_;
 
     my $all_ok = 1;
@@ -433,6 +435,53 @@ sub can_ok {
 
     return $all_ok;
 }
+
+=item B<isa_ok>
+
+  isa_ok($object, $class);
+
+Checks to see if the given $object->isa($class).  Also checks to make
+sure the object was defined in the first place.  Handy for this sort
+of thing:
+
+    my $obj = Some::Module->new;
+    isa_ok( $obj, 'Some::Module' );
+
+where you'd otherwise have to write
+
+    my $obj = Some::Module->new;
+    ok( defined $obj && $obj->isa('Some::Module') );
+
+to safeguard against your test script blowing up.
+
+=cut
+
+sub isa_ok ($$) {
+    my($object, $class) = @_;
+
+    my $diag;
+    my $name = "object->isa('$class')";
+    if( !defined $object ) {
+        $diag = "The object isn't defined";
+    }
+    elsif( !ref $object ) {
+        $diag = "The object isn't a reference";
+    }
+    elsif( !$object->isa($class) ) {
+        $diag = "The object isn't a '$class'";
+    }
+
+    if( $diag ) {
+        ok( 0, $name );
+        my_print *TESTERR, "#     $diag\n";
+        return 0;
+    }
+    else {
+        ok( 1, $name );
+        return 1;
+    }
+}
+
 
 =item B<pass>
 

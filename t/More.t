@@ -1,4 +1,4 @@
-use Test::More tests => 31;
+use Test::More tests => 32;
 
 use_ok('Text::Soundex');
 require_ok('Test::More');
@@ -15,6 +15,9 @@ like("FooBle", '/foo/i',   'foo is like FooBle');
 
 can_ok('Test::More', qw(require_ok use_ok ok is isnt like skip can_ok
                         pass fail eq_array eq_hash eq_set));
+
+isa_ok(bless([], "Foo"), "Foo");
+
 
 pass('pass() passed');
 
