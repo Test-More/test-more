@@ -23,10 +23,23 @@ local $ENV{HARNESS_ACTIVE} = 0;
 # Can't use Test.pm, that's a 5.005 thing.
 package main;
 
-print "1..25\n";
+print "1..26\n";
 
 my $test_num = 1;
 # Utility testing functions.
+sub ok ($;$) {
+    my($test, $name) = @_;
+    my $ok = '';
+    $ok .= "not " unless $test;
+    $ok .= "ok $test_num";
+    $ok .= " - $name" if defined $name;
+    $ok .= "\n";
+    print $ok;
+    $test_num++;
+
+    return $test;
+}
+
 sub is ($$;$) {
     my($this, $that, $name) = @_;
     my $test = $$this eq $that;
@@ -50,7 +63,7 @@ sub is ($$;$) {
 
 sub like ($$;$) {
     my($this, $regex, $name) = @_;
-    
+
     $regex = qr/$regex/ unless ref $regex;
     my $test = $$this =~ $regex;
 
@@ -234,3 +247,9 @@ foreach my $test (@tests) {
     like \$warning, 
          qr/^is_deeply\(\) takes two or three args, you gave $num_args\.\n/;
 }
+
+
+#line 240
+# [rt.cpan.org 6837]
+ok !is_deeply([{Foo => undef}],[{Foo => ""}]), 'undef != ""';
+

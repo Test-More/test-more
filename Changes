@@ -1,3 +1,6 @@
+0.52
+    - undef no longer equals '' in is_deeply() [rt.cpan.org 6837]
+
 0.51  Tue Nov 23 04:51:12 EST 2004
     - Fixed bug in fail_one.t on Windows (not a real bug).
     - TODO reasons as overloaded objects now won't blow up under threads.

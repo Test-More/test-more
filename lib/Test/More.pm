@@ -1078,12 +1078,14 @@ sub _deep_check {
     my($e1, $e2) = @_;
     my $ok = 0;
 
-    my $eq;
     {
         # Quiet uninitialized value warnings when comparing undefs.
         local $^W = 0; 
 
-        if( $e1 eq $e2 ) {
+        if( defined $e1 xor defined $e2 ) {
+            $ok = 0;
+        }
+        elsif ( $e1 eq $e2 ) {
             $ok = 1;
         }
         else {
