@@ -8,7 +8,7 @@ $^C ||= 0;
 
 use strict;
 use vars qw($VERSION $CLASS);
-$VERSION = 0.05;
+$VERSION = 0.06;
 $CLASS = __PACKAGE__;
 
 my $IsVMS = $^O eq 'VMS';
@@ -294,7 +294,7 @@ string version.
 
 =item B<is_num>
 
-  $Test->is_num($get, $expected, $name);
+  $Test->is_num($got, $expected, $name);
 
 Like Test::More's is().  Checks if $got == $expected.  This is the
 numeric version.
@@ -318,9 +318,14 @@ sub _is {
 
     my $test;
     {
-        local $^W = 0;      # so we can compare undef quietly
-        $test = $type eq 'eq' ? $got eq $expect
-                              : $got == $expect;
+        if( !defined $got || !defined $expect ) {
+            # undef only matches undef and nothing else
+            $test = !defined $got && !defined $expect;
+        }
+        else {
+            $test = $type eq 'eq' ? $got eq $expect
+                                  : $got == $expect;
+        }
     }
     local $Level = $Level + 1;
     my $ok = $self->ok($test, $name);
@@ -336,6 +341,64 @@ DIAGNOSTIC
 
     return $ok;
 }
+
+=item B<isnt_eq>
+
+  $Test->isnt_eq($got, $dont_expect, $name);
+
+Like Test::More's isnt().  Checks if $got ne $dont_expect.  This is
+the string version.
+
+=item B<is_num>
+
+  $Test->is_num($got, $dont_expect, $name);
+
+Like Test::More's isnt().  Checks if $got ne $dont_expect.  This is
+the numeric version.
+
+=cut
+
+sub isnt_eq {
+    my $self = shift;
+    local $Level = $Level + 1;
+    return $self->_isnt('ne', @_);
+}
+
+sub isnt_num {
+    my $self = shift;
+    local $Level = $Level + 1;
+    return $self->_isnt('==', @_);
+}
+
+sub _isnt {
+    my($self, $type, $got, $dont_expect, $name) = @_;
+
+    my $test;
+    {
+        if( !defined $got || !defined $dont_expect ) {
+            # undef only matches undef and nothing else
+            $test = defined $got || defined $dont_expect;
+        }
+        else {
+            $test = $type eq 'ne' ? $got ne $dont_expect
+                                  : $got != $dont_expect;
+        }
+    }
+    local $Level = $Level + 1;
+    my $ok = $self->ok($test, $name);
+
+    unless( $ok ) {
+        $dont_expect = defined $dont_expect ? "'$dont_expect'" : 'undef';
+
+        $self->diag(sprintf <<DIAGNOSTIC, $dont_expect);
+it should not be %s
+but it is.
+DIAGNOSTIC
+    }        
+
+    return $ok;
+}
+
 
 =item B<like>
 
@@ -545,7 +608,7 @@ sub no_ending {
 Controlling where the test output goes.
 
 It's ok for your test to change where STDOUT and STDERR point to,
-Test::Builder's default output settings will not be effected.
+Test::Builder's default output settings will not be affected.
 
 =over 4
 
@@ -557,7 +620,7 @@ Prints out the given $message.  Normally, it uses the failure_output()
 handle, but if this is for a TODO test, the todo_output() handle is
 used.
 
-Output will be indented and marked with a # as not to interfere
+Output will be indented and marked with a # so as not to interfere
 with test output.
 
 We encourage using this rather than calling print directly.
