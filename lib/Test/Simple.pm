@@ -6,7 +6,7 @@ use Test::Utils;
 
 use vars qw($VERSION);
 
-$VERSION = '0.12';
+$VERSION = '0.13';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
@@ -54,7 +54,7 @@ sub plan {
     no strict 'refs';
     my($caller) = caller;
     *{$caller.'::ok'} = \&ok;
-
+    
 }
 
 
