@@ -14,7 +14,7 @@ BEGIN {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT);
-$VERSION = '0.12';
+$VERSION = '0.13';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like
@@ -747,6 +747,10 @@ sub eq_set  {
 
 
 =back
+
+=head1 NOTES
+
+Test::More is B<explicitly> tested all the way back to perl 5.004.
 
 =head1 BUGS and CAVEATS
 
