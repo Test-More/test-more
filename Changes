@@ -1,6 +1,6 @@
 Revision history for Perl extension Test::Simple
 
-0.48
+0.48_01  Mon Nov 11 02:36:43 EST 2002
     - Mention Test::Class in Test::More's SEE ALSO
     * use_ok() now DWIM for version checks
     - More problems with ithreads fixed.

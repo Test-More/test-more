@@ -4,7 +4,7 @@ use 5.004;
 
 use strict 'vars';
 use vars qw($VERSION);
-$VERSION = '0.48';
+$VERSION = '0.48_01';
 
 
 use Test::Builder;
