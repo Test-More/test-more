@@ -18,7 +18,7 @@ sub _carp {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS $TODO);
-$VERSION = '0.40';
+$VERSION = '0.41';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like unlike is_deeply
@@ -29,6 +29,7 @@ $VERSION = '0.40';
              $TODO
              plan
              can_ok  isa_ok
+             diag
             );
 
 my $Test = Test::Builder->new;
@@ -65,6 +66,9 @@ Test::More - yet another framework for writing test scripts
 
   is  ($this, $that,    $test_name);
   isnt($this, $that,    $test_name);
+
+  # Rather than print STDERR "# here's what went wrong\n"
+  diag("here's what went wrong");
 
   like  ($this, qr/that/, $test_name);
   unlike($this, qr/that/, $test_name);
@@ -455,13 +459,15 @@ sub can_ok ($@) {
 
     unless( @methods ) {
         my $ok = $Test->ok( 0, "$class->can(...)" );
-        $Test->diag('can_ok() called with no methods');
+        $Test->diag('    can_ok() called with no methods');
         return $ok;
     }
 
     my @nok = ();
     foreach my $method (@methods) {
         my $test = "'$class'->can('$method')";
+        local($!, $@);  # don't interfere with caller's $@
+                        # eval sometimes resets $!
         eval $test || push @nok, $method;
     }
 
@@ -471,7 +477,7 @@ sub can_ok ($@) {
     
     my $ok = $Test->ok( !@nok, $name );
 
-    $Test->diag(map "$class->can('$_') failed\n", @nok);
+    $Test->diag(map "    $class->can('$_') failed\n", @nok);
 
     return $ok;
 }
@@ -519,6 +525,7 @@ sub isa_ok ($$;$) {
     }
     else {
         # We can't use UNIVERSAL::isa because we want to honor isa() overrides
+        local($@, $!);  # eval sometimes resets $!
         my $rslt = eval { $object->isa($class) };
         if( $@ ) {
             if( $@ =~ /^Can't call method "isa" on unblessed reference/ ) {
@@ -546,7 +553,7 @@ WHOA
     my $ok;
     if( $diag ) {
         $ok = $Test->ok( 0, $name );
-        $Test->diag("$diag\n");
+        $Test->diag("    $diag\n");
     }
     else {
         $ok = $Test->ok( 1, $name );
@@ -580,6 +587,47 @@ sub pass (;$) {
 sub fail (;$) {
     $Test->ok(0, @_);
 }
+
+=back
+
+=head2 Diagnostics
+
+If you pick the right test function, you'll usually get a good idea of
+what went wrong when it failed.  But sometimes it doesn't work out
+that way.  So here we have ways for you to write your own diagnostic
+messages which are safer than just C<print STDERR>.
+
+=over 4
+
+=item B<diag>
+
+  diag(@diagnostic_message);
+
+Prints a diagnostic message which is guaranteed not to interfere with
+test output.  Handy for this sort of thing:
+
+    ok( grep(/foo/, @users), "There's a foo user" ) or
+        diag("Since there's no foo, check that /etc/bar is set up right");
+
+which would produce:
+
+    not ok 42 - There's a foo user
+    #     Failed test (foo.t at line 52)
+    # Since there's no foo, check that /etc/bar is set up right.
+
+You might remember C<ok() or diag()> with the mnemonic C<open() or
+die()>.
+
+B<NOTE> The exact formatting of the diagnostic output is still
+changing, but it is guaranteed that whatever you throw at it it won't
+interfere with the test.
+
+=cut
+
+sub diag {
+    $Test->diag(@_);
+}
+
 
 =back
 
@@ -618,6 +666,7 @@ sub use_ok ($;@) {
 
     my $pack = caller;
 
+    local($@,$!);   # eval sometimes interferes with $!
     eval <<USE;
 package $pack;
 require $module;
@@ -629,8 +678,8 @@ USE
     unless( $ok ) {
         chomp $@;
         $Test->diag(<<DIAGNOSTIC);
-Tried to use '$module'.
-Error:  $@
+    Tried to use '$module'.
+    Error:  $@
 DIAGNOSTIC
 
     }
@@ -651,6 +700,7 @@ sub require_ok ($) {
 
     my $pack = caller;
 
+    local($!, $@); # eval sometimes interferes with $!
     eval <<REQUIRE;
 package $pack;
 require $module;
@@ -661,8 +711,8 @@ REQUIRE
     unless( $ok ) {
         chomp $@;
         $Test->diag(<<DIAGNOSTIC);
-#     Tried to require '$module'.
-#     Error:  $@
+    Tried to require '$module'.
+    Error:  $@
 DIAGNOSTIC
 
     }
@@ -919,6 +969,7 @@ sub _format_stack {
     $out .= "$vars[0] = $vals[0]\n";
     $out .= "$vars[1] = $vals[1]\n";
 
+    $out =~ s/^/    /msg;
     return $out;
 }
 
