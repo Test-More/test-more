@@ -1,0 +1,10 @@
+Write _print_comment() utility routine to make sure comments come out
+right, newlines handled, etc...
+
+Test use_ok() with imports better.
+
+Rejigger the internals to be an OO singleton.
+
+Make Test::Simple and Test::More less incestuous.
+
+Add BAIL_OUT()
