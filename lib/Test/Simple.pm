@@ -6,7 +6,7 @@ use Test::Utils;
 
 use vars qw($VERSION);
 
-$VERSION = '0.10';
+$VERSION = '0.11';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
@@ -173,7 +173,11 @@ ERR
         $Test_Results[$Num_Tests-1] = 1;
     }
     $msg   .= "ok $Num_Tests";
-    $msg   .= " - $name" if @_ == 2;
+
+    if( @_ == 2 ) {
+        $name =~ s|#|\\#|g;     # # in a name can confuse Test::Harness.
+        $msg   .= " - $name";
+    }
     if( $is_todo ) {
         my $what_todo = ${$pack.'::TODO'};
         $msg   .= " # TODO $what_todo";
@@ -187,7 +191,7 @@ ERR
         my_print *TESTERR, "#     Failed test ($file at line $line)\n";
     }
 
-    return $test;
+    return $test ? 1 : 0;
 }
 
 
@@ -393,7 +397,7 @@ Here's an example of a simple .t file for the fictional Film module.
     ok( defined($btaste) and ref $btaste eq 'Film',     'new() works' );
 
     ok( $btaste->Title      eq 'Bad Taste',     'Title() get'    );
-    ok( $btsate->Director   eq 'Peter Jackson', 'Director() get' );
+    ok( $btaste->Director   eq 'Peter Jackson', 'Director() get' );
     ok( $btaste->Rating     eq 'R',             'Rating() get'   );
     ok( $btaste->NumExplodingSheep == 1,        'NumExplodingSheep() get' );
 
