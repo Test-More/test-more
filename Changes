@@ -1,4 +1,6 @@
 0.49
+    * eq_set() sometimes wasn't giving the right results if nested refs 
+      were involved [rt.cpan.org 3747]
     - isnt() giving wrong diagnostics and warning if given any undefs.
     * Give unlike() the right prototype [rt.cpan.org 4944]
     - Change from CVS to Aegis
