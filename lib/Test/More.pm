@@ -658,7 +658,12 @@ is like doing this:
 
    use Some::Module qw(foo bar);
 
-don't try to do this:
+Version numbers can be checked like so:
+
+   # Just like "use Some::Module 1.02"
+   BEGIN { use_ok('Some::Module', 1.02) }
+
+Don't try to do this:
 
    BEGIN {
        use_ok('Some::Module');
@@ -667,7 +672,7 @@ don't try to do this:
        ...happening at compile time...
    }
 
-instead, you want:
+because the notion of "compile-time" is relative.  Instead, you want:
 
   BEGIN { use_ok('Some::Module') }
   BEGIN { ...some code that depends on the use... }
@@ -679,19 +684,31 @@ sub use_ok ($;@) {
     my($module, @imports) = @_;
     @imports = () unless @imports;
 
-    my $pack = caller;
+    my($pack,$filename,$line) = caller;
 
     local($@,$!);   # eval sometimes interferes with $!
-    eval <<USE;
+
+    if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
+        # probably a version check.  Perl needs to see the bare number
+        # for it to work with non-Exporter based modules.
+        eval <<USE;
 package $pack;
-require $module;
-'$module'->import(\@imports);
+use $module $imports[0];
 USE
+    }
+    else {
+        eval <<USE;
+package $pack;
+use $module \@imports;
+USE
+    }
 
     my $ok = $Test->ok( !$@, "use $module;" );
 
     unless( $ok ) {
         chomp $@;
+        $@ =~ s{^BEGIN failed--compilation aborted at .*$}
+                {BEGIN failed--compilation aborted at $filename line $line.}m;
         $Test->diag(<<DIAGNOSTIC);
     Tried to use '$module'.
     Error:  $@
@@ -1220,7 +1237,9 @@ been distributed with Perl since 5.004_05.
 L<Test::Harness> for details on how your test results are interpreted
 by Perl.
 
-L<Test::Unit> describes a very featureful unit testing interface.
+L<Test::Unit> is XUnit style testing.
+
+L<Test::Class> is like XUnit but more perlish.
 
 L<Test::Inline> shows the idea of embedded testing.
 
