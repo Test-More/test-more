@@ -2,8 +2,6 @@
 \bRCS\b
 \bCVS\b
 ,\w$
-^aegis\.
-^t/runtests$
 
 # Avoid Makemaker generated and utility files.
 ^MANIFEST\.

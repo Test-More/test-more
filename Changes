@@ -1,3 +1,6 @@
+0.50
+    - Change from Aegis back to CVS
+
 0.49  Thu Oct 14 21:58:50 EDT 2004
     - t/harness_active.t would fail for frivolous reasons with older
       MakeMakers (test bug) [thanks Bill Moseley for noticing]
