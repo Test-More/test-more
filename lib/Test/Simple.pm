@@ -162,7 +162,8 @@ ERR
 
 
     my($pack, $file, $line) = caller;
-    if( $pack eq 'Test::More' ) {   # special case for Test::More's calls
+    # temporary special case for Test::More & Parrot::Test's calls.
+    if( $pack eq 'Test::More' || $pack eq 'Parrot::Test' ) {
         ($pack, $file, $line) = caller(1);
     }
 
