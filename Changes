@@ -1,5 +1,9 @@
 Revision history for Perl extension Test::Simple
 
+0.12  Tue Aug 14 11:02:39 EDT 2001
+    * Fixed some compatibility bugs with older Perls
+      (Thanks to Tatsuhiko Miyagawa)
+
 0.11  Sat Aug 11 23:05:19 EDT 2001
     * Will no longer warn about testing undef values
     - Escaping # in test names

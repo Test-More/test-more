@@ -12,7 +12,7 @@ BEGIN {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT);
-$VERSION = '0.09';
+$VERSION = '0.10';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like
@@ -570,7 +570,9 @@ sub skip {
         $how_many = 1;
     }
 
-    Test::Simple::_skipped($why) for 1..$how_many;
+    for( 1..$how_many ) {
+        Test::Simple::_skipped($why);
+    }
 
     local $^W = 0;
     last SKIP;
@@ -655,30 +657,30 @@ sub _deep_check {
     my $ok = 0;
 
     my $eq;
-    { 
-        # Shut up uninitalized value warning.
+    {
+        # Quiet unintialized value warnings when comparing undefs.
         local $^W = 0; 
-        $eq = $e1 eq $e2 
-    }
 
-    if( $eq ) {
-        $ok = 1;
-    }
-    else {
-        if( UNIVERSAL::isa($e1, 'ARRAY') and
-            UNIVERSAL::isa($e2, 'ARRAY') )
-        {
-            $ok = eq_array($e1, $e2);
-        }
-        elsif( UNIVERSAL::isa($e1, 'HASH') and
-               UNIVERSAL::isa($e2, 'HASH') )
-        {
-            $ok = eq_hash($e1, $e2);
+        if( $e1 eq $e2 ) {
+            $ok = 1;
         }
         else {
-            $ok = 0;
+            if( UNIVERSAL::isa($e1, 'ARRAY') and
+                UNIVERSAL::isa($e2, 'ARRAY') )
+            {
+                $ok = eq_array($e1, $e2);
+            }
+            elsif( UNIVERSAL::isa($e1, 'HASH') and
+                   UNIVERSAL::isa($e2, 'HASH') )
+            {
+                $ok = eq_hash($e1, $e2);
+            }
+            else {
+                $ok = 0;
+            }
         }
     }
+
     return $ok;
 }
 
