@@ -1,5 +1,7 @@
 package Test::More;
 
+use 5.004;
+
 use strict;
 use Carp;
 use Test::Utils;
@@ -12,7 +14,7 @@ BEGIN {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT);
-$VERSION = '0.11';
+$VERSION = '0.12';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like
@@ -748,13 +750,37 @@ sub eq_set  {
 
 =head1 BUGS and CAVEATS
 
-The eq_* family have some caveats.
+=over 4
 
-todo() and skip() are unimplemented.
+=item Making your own ok()
 
-The no_plan feature depends on new Test::Harness feature.  If you're going
-to distribute tests that use no_plan your end-users will have to upgrade
-Test::Harness to the latest one on CPAN.
+This will not do what you mean:
+
+    sub my_ok {
+        ok( @_ );
+    }
+
+    my_ok( 2 + 2 == 5, 'Basic addition' );
+
+since ok() takes it's arguments as scalars, it will see the length of
+@_ (2) and always pass the test.  You want to do this instead:
+
+    sub my_ok {
+        ok( $_[0], $_[1] );
+    }
+
+The other functions act similiarly.
+
+=item The eq_* family have some caveats.
+
+=item Test::Harness upgrades
+
+no_plan and todo depend on new Test::Harness features and fixes.  If
+you're going to distribute tests that use no_plan your end-users will
+have to upgrade Test::Harness to the latest one on CPAN.
+
+If you simply depend on Test::More, it's own dependencies will cause a
+Test::Harness upgrade.
 
 =head1 AUTHOR
 
