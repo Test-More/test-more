@@ -170,7 +170,7 @@ sub expected_tests {
         $Expected_Tests = $max;
         $Have_Plan      = 1;
 
-        $self->_print("1..$max\n");
+        $self->_print("1..$max\n") unless $self->no_header;
     }
     return $Expected_Tests;
 }
@@ -209,7 +209,7 @@ sub skip_all {
 
     $Skip_All = 1;
 
-    $self->_print($out);
+    $self->_print($out) unless $self->no_header;
     exit(0);
 }
 
@@ -500,6 +500,43 @@ sub use_numbers {
     }
     return $Use_Nums;
 }
+
+=item B<no_header>
+
+    $Test->no_header($no_header);
+
+If set to true, no "1..N" header will be printed.
+
+=item B<no_ending>
+
+    $Test->no_ending($no_ending);
+
+Normally, Test::Builder does some extra diagnostics when the test
+ends.  It also changes the exit code as described in Test::Simple.
+
+If this is true, none of that will be done.
+
+=cut
+
+my($No_Header, $No_Ending) = (0,0);
+sub no_header {
+    my($self, $no_header) = @_;
+
+    if( defined $no_header ) {
+        $No_Header = $no_header;
+    }
+    return $No_Header;
+}
+
+sub no_ending {
+    my($self, $no_ending) = @_;
+
+    if( defined $no_ending ) {
+        $No_Ending = $no_ending;
+    }
+    return $No_Ending;
+}
+
 
 =back
 
@@ -848,7 +885,7 @@ sub _ending {
     if( @Test_Results ) {
         # The plan?  We have no plan.
         if( $No_Plan ) {
-            $self->_print("1..$Curr_Test\n");
+            $self->_print("1..$Curr_Test\n") unless $self->no_header;
             $Expected_Tests = $Curr_Test;
         }
 
@@ -892,7 +929,7 @@ FAIL
 }
 
 END {
-    $Test->_ending if defined $Test;
+    $Test->_ending if defined $Test and !$Test->no_ending;
 }
 
 =head1 EXAMPLES
