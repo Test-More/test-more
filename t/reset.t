@@ -13,7 +13,6 @@ BEGIN {
 }
 chdir 't';
 
-use Tmp;
 
 use Test::Builder;
 my $tb = Test::Builder->new;
@@ -23,7 +22,7 @@ $tb->level(0);
 # Alter the state of Test::Builder as much as possible.
 $tb->ok(1, "Running a test to alter TB's state");
 
-my $tmpfile = tmpfile('foo');
+my $tmpfile = 'foo.tmp';
 
 $tb->output($tmpfile);
 $tb->failure_output($tmpfile);

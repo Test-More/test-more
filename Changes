@@ -1,4 +1,5 @@
 0.50
+    - Again removing File::Spec dependency (came back in 0.48_02)
     - Change from Aegis back to CVS
 
 0.49  Thu Oct 14 21:58:50 EDT 2004

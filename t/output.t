@@ -11,7 +11,6 @@ BEGIN {
 }
 chdir 't';
 
-use Tmp;
 
 # Can't use Test.pm, that's a 5.005 thing.
 print "1..4\n";
@@ -36,8 +35,9 @@ use Test::Builder;
 my $Test = Test::Builder->new();
 
 my $result;
-my $tmpfile = tmpfile('foo');
+my $tmpfile = 'foo.tmp';
 my $out = $Test->output($tmpfile);
+END { unlink($tmpfile) }
 
 ok( defined $out );
 
@@ -64,7 +64,6 @@ close IN;
 
 ok($lines[1] =~ /Hello!/);
 
-unlink($tmpfile);
 
 
 # Ensure stray newline in name escaping works.

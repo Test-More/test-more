@@ -42,7 +42,6 @@ t/lib/Test/Simple/sample_tests/success.plx
 t/lib/Test/Simple/sample_tests/too_few.plx
 t/lib/Test/Simple/sample_tests/two_fail.plx
 t/lib/TieOut.pm
-t/lib/Tmp.pm
 t/maybe_regex.t
 t/missing.t
 t/More.t
