@@ -334,7 +334,7 @@ This does not check if C<$pope->isa('Catholic')> is true, it checks if
 it returns 1.  Very different.  Similar caveats exist for false and 0.
 In these cases, use ok().
 
-  ok( $pope->isa('Catholic') ),         'Is the Pope Catholic?' );
+  ok( $pope->isa('Catholic'),         'Isa the Pope Catholic?' );
 
 For those grammatical pedants out there, there's an C<isn't()>
 function which is an alias of isnt().
