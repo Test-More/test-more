@@ -1023,18 +1023,19 @@ sub _print {
     # tests are deparsed with B::Deparse
     return if $^C;
 
+    my $msg = join '', @msgs;
+
     local($\, $", $,) = (undef, ' ', '');
     my $fh = $self->output;
 
     # Escape each line after the first with a # so we don't
     # confuse Test::Harness.
-    foreach (@msgs) {
-        s/\n(.)/\n# $1/sg;
-    }
+    $msg =~ s/\n(.)/\n# $1/sg;
 
-    push @msgs, "\n" unless $msgs[-1] =~ /\n\Z/;
+    # Stick a newline on the end if it needs it.
+    $msg .= "\n" unless $msg =~ /\n\Z/;
 
-    print $fh @msgs;
+    print $fh $msg;
 }
 
 
