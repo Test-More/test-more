@@ -1319,15 +1319,16 @@ So the exit codes are...
 If you fail more than 254 tests, it will be reported as 254.
 
 
-=head1 NOTES
+=head1 CAVEATS and NOTES
 
 =over 4
 
-=item *
+=item Backwards compatibility
 
 Test::More works with Perls as old as 5.004_05.
 
-=item *
+
+=item Overloaded objects
 
 String overloaded objects are compared B<as strings>.  This prevents
 Test::More from piercing an object's interface allowing better blackbox
@@ -1339,13 +1340,6 @@ test the internals of string overloaded objects.  In this case I would
 suggest Test::Deep which contains more flexible testing functions for
 complex data structures.
 
-
-=back
-
-
-=head1 BUGS and CAVEATS
-
-=over 4
 
 =item Threads
 
@@ -1360,12 +1354,6 @@ This may cause problems:
     use Test::More
     use threads;
 
-=item Making your own ok()
-
-If you are trying to extend Test::More, don't.  Use Test::Builder
-instead.
-
-=item The eq_* family has some caveats.
 
 =item Test::Harness upgrade
 
@@ -1427,6 +1415,11 @@ Michael G Schwern E<lt>schwern@pobox.comE<gt> with much inspiration
 from Joshua Pritikin's Test module and lots of help from Barrie
 Slaymaker, Tony Bowden, blackstar.co.uk, chromatic, Fergal Daly and
 the perl-qa gang.
+
+
+=head1 BUGS
+
+See F<http://rt.cpan.org> to report and view bugs.
 
 
 =head1 COPYRIGHT
