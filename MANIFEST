@@ -20,6 +20,8 @@ t/fail-like.t
 t/fail-more.t
 t/fail.t
 t/filehandles.t
+t/has_plan.t
+t/has_plan2.t
 t/import.t
 t/is_deeply.t
 t/lib/Test/Simple/Catch.pm
@@ -40,6 +42,7 @@ t/missing.t
 t/no_ending.t
 t/no_header.t
 t/no_plan.t
+t/ok_obj.t
 t/output.t
 t/plan.t
 t/plan_is_noplan.t
@@ -53,5 +56,3 @@ t/todo.t
 t/undef.t
 t/use_ok.t
 t/useing.t
-t/has_plan.t
-t/has_plan2.t

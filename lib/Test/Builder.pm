@@ -278,6 +278,10 @@ like Test::Simple's ok().
 sub ok {
     my($self, $test, $name) = @_;
 
+    # $test might contain an object which we don't want to accidentally
+    # store, so we turn it into a boolean.
+    $test = $test ? 1 : 0;
+
     unless( $Have_Plan ) {
         require Carp;
         Carp::croak("You tried to run a test without a plan!  Gotta have a plan.");

@@ -1,5 +1,11 @@
 Revision history for Perl extension Test::Simple
 
+0.47  Sat Aug 24 23:29:58 PDT 2002
+    * Tatsuhiko Miyagawa noticed Test::Builder was accidentally storing 
+      objects passed into test functions causing problems with tests 
+      relying on object destruction.
+    - Added example of calculating the number of tests to Test::Tutorial
+
 0.46  Sat Jul 20 19:57:40 EDT 2002
     - Noted eq_set() isn't really a set comparision.
     - Test fix, exit codes are broken on MacPerl (bleadperl@16868)
