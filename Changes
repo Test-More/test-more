@@ -1,3 +1,7 @@
+0.52
+    - plan() now better checks that the given plan is valid. 
+      [rt.cpan.org 2597]
+
 0.51_02  Sat Nov 27 01:25:25 EST 2004
     * is_deeply() and all the eq_* functions now handle circular data
       structures.  [rt.cpan.org 7289]

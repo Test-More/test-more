@@ -58,6 +58,7 @@ t/output.t
 t/overload.t
 t/overload_threads.t
 t/plan.t
+t/plan_bad.t
 t/plan_is_noplan.t
 t/plan_no_plan.t
 t/plan_shouldnt_import.t
