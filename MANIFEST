@@ -32,3 +32,4 @@ t/skipall.t
 t/todo.t
 t/undef.t
 t/use_ok.t
+t/useing.t
