@@ -35,6 +35,7 @@ print "1..".keys(%Tests)."\n";
 chdir 't' if -d 't';
 while( my($test_name, $exit_code) = each %Tests ) {
     my $wait_stat = system(qq{$^X -"I../blib/lib" sample_tests/$test_name});
-    My::Test::ok( $wait_stat >> 8 == $exit_code, 
-                  "$test_name exited with $exit_code" );
+    my $actual_exit = $wait_stat >> 8;
+    My::Test::ok( $actual_exit == $exit_code, 
+                  "$test_name exited with $actual_exit (expected $exit_code)");
 }
