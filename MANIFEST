@@ -27,6 +27,8 @@ t/sample_tests/success.plx
 t/sample_tests/too_few.plx
 t/sample_tests/two_fail.plx
 t/simple.t
+t/skip.t
 t/skipall.t
 t/todo.t
+t/undef.t
 t/use_ok.t
