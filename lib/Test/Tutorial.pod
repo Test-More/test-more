@@ -184,9 +184,12 @@ things I<exactly> the way Test::Simple does.  You can literally swap
 Test::Simple out and put Test::More in its place.  That's just what
 we're going to do.
 
-Test::More provides more informative ways to say 'ok'.  C<ok()> is nice
-and generic, you can write almost any test with it, but it can't tell
-you what went wrong.  For that, we use the C<is()> function.
+Test::More does more than Test::Simple.  The most important difference
+at this point is it provides more informative ways to say "ok".
+Although you can write almost any test with a generic C<ok()>, it
+can't tell you what went wrong.  Instead, we'll use the C<is()>
+function, which lets us declare that something is supposed to be the
+same as something else:
 
     #!/usr/bin/perl -w
 
@@ -325,6 +328,9 @@ itself we're trying out to the name.  So you get results like:
 if something in there fails, you'll know which one it was and that
 will make tracking down the problem easier.  So try to put a bit of
 debugging information into the test names.
+
+Describe what the tests test, to make debugging a failed test easier
+for you or for the next person who runs your test.
 
 
 =head2 Skipping tests
@@ -479,7 +485,7 @@ C<local $TODO> and turn it into a real test.
 
 =head2 Testing with taint mode.
 
-Taint mode is a funny thing.  It's the most global of all global
+Taint mode is a funny thing.  It's the globalest of all global
 features.  Once you turn it on it effects I<all> code in your program
 and I<all> modules used (and all the modules they use).  If a single
 piece of code isn't taint clean, the whole thing explodes.  With that
@@ -565,7 +571,7 @@ bugs!
 
 =head1 AUTHORS
 
-Michael G Schwern E<lt>schwern@pobox.comE<gt>.
+Michael G Schwern E<lt>schwern@pobox.comE<gt> and the perl-qa dancers!
 
 =head1 COPYRIGHT
 
