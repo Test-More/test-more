@@ -855,8 +855,10 @@ the easiest way to illustrate:
 If the user does not have HTML::Lint installed, the whole block of
 code I<won't be run at all>.  Test::More will output special ok's
 which Test::Harness interprets as skipped, but passing, tests.
+
 It's important that $how_many accurately reflects the number of tests
 in the SKIP block so the # of tests run will match up with your plan.
+If your plan is C<no_plan> $how_many is optional and will default to 1.
 
 It's perfectly safe to nest SKIP blocks.  Each SKIP block must have
 the label C<SKIP>, or Test::More can't work its magic.
@@ -874,7 +876,7 @@ sub skip {
     unless( defined $how_many ) {
         # $how_many can only be avoided when no_plan is in use.
         _carp "skip() needs to know \$how_many tests are in the block"
-          unless $Test::Builder::No_Plan;
+          unless $Test->has_plan eq 'no_plan';
         $how_many = 1;
     }
 
@@ -954,7 +956,7 @@ sub todo_skip {
     unless( defined $how_many ) {
         # $how_many can only be avoided when no_plan is in use.
         _carp "todo_skip() needs to know \$how_many tests are in the block"
-          unless $Test::Builder::No_Plan;
+          unless $Test->has_plan eq 'no_plan';
         $how_many = 1;
     }
 
