@@ -2,14 +2,8 @@ Test use_ok() with imports better.
 
 Add BAIL_OUT()
 
-Make a way to control exported functions
-
 Make a way to ask "Are we passing so far?"
 
 eval_ok().
 
-isa_ok() name.
-
-Allow importing functions without headers.
-
-Allow suppression of the _ending prints.
+Test::More->builder to avoid direct access to Test::Builder
