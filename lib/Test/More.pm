@@ -1109,6 +1109,9 @@ Similar to eq_array(), except the order of the elements is B<not>
 important.  This is a deep check, but the irrelevancy of order only
 applies to the top level.
 
+B<NOTE> By historical accident, this is not a true set comparision.
+While the order of elements does not matter, duplicate elements do.
+
 =cut
 
 # We must make sure that references are treated neutrally.  It really
