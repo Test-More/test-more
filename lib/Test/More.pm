@@ -415,7 +415,7 @@ compare two arguments using any binary perl operator.
     cmp_ok( $this, '==', $that, 'this == that' );
 
     # ok( $this && $that );
-    cmp_ok( $this, '&&', $that, 'this || that' );
+    cmp_ok( $this, '&&', $that, 'this && that' );
     ...etc...
 
 Its advantage over ok() is when the test fails you'll know what $this
