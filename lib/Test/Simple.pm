@@ -2,7 +2,7 @@ package Test::Simple;
 
 require 5.005;
 
-$Test::Simple::VERSION = '0.04';
+$Test::Simple::VERSION = '0.05';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
@@ -39,8 +39,16 @@ sub import {
 
 }
 
+$| = 1;
 open(*TESTOUT, ">&STDOUT") or _whoa(1, "Can't dup STDOUT!");
 open(*TESTERR, ">&STDERR") or _whoa(1, "Can't dup STDERR!");
+{
+    my $orig_fh = select TESTOUT;
+    $| = 1;
+    select TESTERR;
+    $| = 1;
+    select $orig_fh;
+}
 
 =head1 NAME
 
@@ -214,13 +222,33 @@ WHOA
     }
 }
 
+=item B<_my_exit>
+
+  _my_exit($exit_num);
+
+Perl seems to have some trouble with exiting inside an END block.  5.005_03
+and 5.6.1 both seem to do odd things.  Instead, this function edits $?
+directly.  It should ONLY be called from inside an END block.  It
+doesn't actually exit, that's your job.
+
+=cut
+
+sub _my_exit {
+  $? = $_[0];
+  return 1;
+}
+
+
 =back
 
 =cut
 
 $SIG{__DIE__} = sub {
-    return if $^S or !defined $^S;   # don't muck with a death in an eval;
-    $Test_Died = 1;
+    # We don't want to muck with death in an eval, but $^S isn't
+    # totally reliable.  5.005_03 and 5.6.1 both do the wrong thing
+    # with it.  Instead, we use caller.
+    my($subroutine) = (caller(1))[3];
+    $Test_Died = 1 unless $subroutine eq '(eval)';
 };
 
 END {
@@ -228,7 +256,7 @@ END {
 
     # Bailout if import() was never called.  This is so
     # "require Test::Simple" doesn't puke.
-    exit 0 unless $Import_Run;
+    do{ _my_exit(0) && return } unless $Import_Run;
 
     # Figure out if we passed or failed and print helpful messages.
     if( $Num_Tests ) {
@@ -257,19 +285,20 @@ FAIL
 # Looks like your test died just after $Num_Tests.
 FAIL
 
-            exit( 255 );
+            _my_exit( 255 ) && return;
         }
 
-        exit( $num_failed );
+        _my_exit( $num_failed ) && return;
     }
     elsif ( $Test::Simple::Skip_All ) {
-        exit( 0 );
+        _my_exit( 0 ) && return;
     }
     else {
         print TESTERR "# No tests run!\n";
-        exit( 255 );
+        _my_exit( 255 ) && return;
     }
 }
+
 
 =pod
 
