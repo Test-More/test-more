@@ -5,7 +5,10 @@ lib/Test/Simple.pm
 lib/Test/Tutorial.pod
 Makefile.PL
 MANIFEST
+META.yml			Module meta-data (added by MakeMaker)
 README
+SIGNATURE			Public-key signature (added by MakeMaker)
+t/00signature.t
 t/00test_harness_check.t
 t/bad_plan.t
 t/buffer.t
