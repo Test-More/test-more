@@ -1,5 +1,6 @@
 #!/usr/bin/perl -w
 
+use Test::Harness;
 use Getopt::Long;
 
 my %Opts;
@@ -7,96 +8,39 @@ GetOptions(\%Opts, "aegis_output=s");
 die "Usage: runtests --aegis_output=\${Output} \${File_Name}\n"
   unless $Opts{aegis_output};
 
+my $strap = Test::Harness::Straps::Aegis->new;
+$strap->{callback} = $Test::Harness::Strap->{callback};
+$Test::Harness::Strap = $strap;
+
 open AEGIS_OUT, ">$Opts{aegis_output}" or 
     die "Can't open $Opts{aegis_output}: $!";
 print AEGIS_OUT <<"END";
 test_result = [
 END
 
+runtests @ARGV;
 
-$| = 1;
-
-my $s = My::Strap->new;
-
-%handlers = (
-    bailout     => sub {
-        my($self, $line, $type, $totals) = @_;
-
-        die sprintf "FAILED--Further testing stopped%s\n",
-          $self->{bailout_reason} ? ": $self->{bailout_reason}" : '';
-    },
-    test        => sub {
-        my($self, $line, $type, $totals) = @_;
-        my $curr = $totals->{seen};
-
-        if( $totals->{details}[-1]{ok} ) {
-            $self->_display("$self->{ml}ok $curr/$totals->{max}")
-              unless $ENV{HARNESS_NOTTY};
-        }
-        else {
-            $self->_display("$self->{ml}NOK $curr");
-        }
-
-        if( $curr > $self->{'next'} ) {
-            $self->_print("Test output counter mismatch [test $curr]\n");
-        }
-        elsif( $curr < $self->{'next'} ) {
-            $self->_print("Confused test output: test $curr answered after ".
-                          "test ", $self->{next} - 1, "\n");
-#            $self->{'next'} = $curr;
-        }
-    },
-);
-
-$s->{callback} = sub {
-    my($self, $line, $type, $totals) = @_;
-    print $line if $Test::Harness::Verbose;
-
-    $handlers{$type}->($self, $line, $type, $totals) if $handlers{$type};
-};
+print AEGIS_OUT <<"END";
+];
+END
 
 
-my $width = Test::Harness::_leader_width(@ARGV);
-foreach my $file (@ARGV) {
-    my($leader, $ml) = Test::Harness::_mk_leader($file, $width);
-    $s->{ml} = $ml;
-    print $leader;
-    my %result = $s->analyze_file($file);
-    $s->_display($result{passing} ? 'ok        ' : 'FAILED');
-    print "\n";
+package Test::Harness::Straps::Aegis;
 
-    _append_aegis_out($file, \%result);
-}
+use base 'Test::Harness::Straps';
 
-print AEGIS_OUT "];\n";
-close AEGIS_OUT;
+sub analyze_file {
+    my $self = shift;
+    my $file = $_[0];
 
+    my %results = $self->SUPER::analyze_file(@_);
 
-sub _append_aegis_out {
-    my($file, $result) = @_;
-
-    print AEGIS_OUT <<"END";
+    print ::AEGIS_OUT <<"END";
     {
-        file_name    = "$file";
-        exit_status  = $result->{exit};
+        file_name       = "$file";
+        exit_status     = $results{exit};
     },
 END
-}
 
-
-BEGIN {
-package My::Strap;
-use Test::Harness;
-use Test::Harness::Straps;
-@ISA = qw(Test::Harness::Straps);
-
-sub _display {
-    my($self, $out) = @_;
-    print $self->{ml}. "$out";
-}
-
-sub _print {
-    my($self) = shift;
-    print @_;
-}
+    return %results;
 }
