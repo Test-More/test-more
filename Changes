@@ -1,4 +1,4 @@
-0.52
+0.51_01  Fri Nov 26 02:59:30 EST 2004
     - plan() was accidentally exporting functions [rt.cpan.org 8385]
     * diag @msgs would insert # between arguments. [rt.cpan.org 8392]
     * eq_set() could cause problems under threads due to a weird sort bug
