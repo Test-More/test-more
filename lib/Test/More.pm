@@ -1160,6 +1160,8 @@ sub builder {
 
 Test::More is B<explicitly> tested all the way back to perl 5.004.
 
+Test::More is thread-safe for perl 5.8.0 and up.
+
 =head1 BUGS and CAVEATS
 
 =over 4

@@ -171,6 +171,7 @@ Unfortunately, I can't differentiate any further.
 
 Test::Simple is B<explicitly> tested all the way back to perl 5.004.
 
+Test::Simple is thread-safe in perl 5.8.0 and up.
 
 =head1 HISTORY
 

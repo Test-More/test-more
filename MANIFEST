@@ -9,6 +9,7 @@ lib/Test/Simple.pm
 lib/Test/Tutorial.pod
 t/Builder.t
 t/More.t
+t/bad_plan.t
 t/buffer.t
 t/curr_test.t
 t/diag.t
@@ -45,6 +46,7 @@ t/plan_skip_all.t
 t/simple.t
 t/skip.t
 t/skipall.t
+t/threads.t
 t/todo.t
 t/undef.t
 t/use_ok.t
