@@ -1,7 +1,7 @@
 # Avoid version control files.
 \bRCS\b
 \bCVS\b
-,v$
+,\w$
 
 # Avoid Makemaker generated and utility files.
 ^MANIFEST\.

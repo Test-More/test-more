@@ -60,6 +60,7 @@ WriteMakefile(
 {
     package MY;
 
+    use File::Basename;
     sub test_via_harness {
         my($self, $orig_perl, $tests) = @_;
 
@@ -96,6 +97,22 @@ WriteMakefile(
         $out =~ s{-I\$\(PERL_\w*LIB\)}{}g;
 
         return $out;
+    }
+}
+
+
+{
+    package MY;
+
+    sub libscan {
+        my($self, $path) = @_;
+
+        return unless $self->SUPER::libscan($path);
+
+        my $file = basename($path);
+        return '' if $file =~ /,\w$/;   # aegis meta file.
+
+        return $path;
     }
 }
 
