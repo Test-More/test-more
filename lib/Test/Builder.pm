@@ -8,7 +8,7 @@ $^C ||= 0;
 
 use strict;
 use vars qw($VERSION $CLASS);
-$VERSION = 0.01_01;
+$VERSION = 0.02;
 $CLASS = __PACKAGE__;
 
 my $IsVMS = $^O eq 'VMS';
@@ -570,7 +570,7 @@ sub _print {
 =item B<output>
 
     $Test->output($fh);
-    $Test->output($file);   # UNIMPLEMENTED
+    $Test->output($file);
 
 Where normal "ok/not ok" test output should go.
 
@@ -579,7 +579,7 @@ Defaults to STDOUT.
 =item B<failure_output>
 
     $Test->failure_output($fh);
-    $Test->failure_otuput($file);   # UNIMPLEMENTED
+    $Test->failure_output($file);
 
 Where diagnostic output on test failures and diag() should go.
 
@@ -588,7 +588,7 @@ Defaults to STDERR.
 =item B<todo_output>
 
     $Test->todo_output($fh);
-    $Test->todo_output($file);  # UNIMPLEMENTED
+    $Test->todo_output($file);
 
 Where diagnostics about todo test failures and diag() should go.
 
@@ -601,7 +601,7 @@ sub output {
     my($self, $fh) = @_;
 
     if( defined $fh ) {
-        $Out_FH = $fh;
+        $Out_FH = _new_fh($fh);
     }
     return $Out_FH;
 }
@@ -610,7 +610,7 @@ sub failure_output {
     my($self, $fh) = @_;
 
     if( defined $fh ) {
-        $Fail_FH = $fh;
+        $Fail_FH = _new_fh($fh);
     }
     return $Fail_FH;
 }
@@ -619,9 +619,25 @@ sub todo_output {
     my($self, $fh) = @_;
 
     if( defined $fh ) {
-        $Todo_FH = $fh;
+        $Todo_FH = _new_fh($fh);
     }
     return $Todo_FH;
+}
+
+sub _new_fh {
+    my($file_or_fh) = shift;
+
+    my $fh;
+    unless( UNIVERSAL::isa($file_or_fh, 'GLOB') ) {
+        $fh = do { local *FH };
+        open $fh, ">$file_or_fh" or 
+            die "Can't open test output log $file_or_fh: $!";
+    }
+    else {
+        $fh = $file_or_fh;
+    }
+
+    return $fh;
 }
 
 $CLASS->output(\*STDOUT);
@@ -885,7 +901,8 @@ At this point, Test::Simple and Test::More are your best examples.
 
 =head1 AUTHOR
 
-Michael G Schwern E<lt>schwern@pobox.comE<gt>
+Original code by chromatic, maintained by Michael G Schwern
+E<lt>schwern@pobox.comE<gt>
 
 =head1 SEE ALSO
 
