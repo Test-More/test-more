@@ -44,21 +44,34 @@ WriteMakefile(
 {
     package MY;
 
+    use File::Spec;
+
+    my $lib  = File::Spec->rel2abs('lib/'); 
+    my $tlib = File::Spec->rel2abs('t/lib/');
+
+    use Config;
     sub test_via_harness {
         my($self, $orig_perl, $tests) = @_;
 
         my @perls = ($orig_perl);
-        push @perls, qw(
-                        perl5.4.0
-                        perl5.5.3
-                        perl5.6.0
-                        perl5.6.1
-                        perl
-                        perl5.8.0
-                        perl5.8.0-ithreads
-                        bleadperl
-                       )
-          if $ENV{PERL_TEST_ALL};
+        if( $ENV{PERL_TEST_ALL} ) {
+            push @perls, 
+              map "PERL5LIB=$lib$Config{path_sep}$tlib $_",
+                qw(
+                   perl5.4.0
+                   perl5.5.3
+                   perl5.6.0
+                   perl5.6.1
+                  );
+
+            push @perls,
+              qw(
+                 perl
+                 perl5.8.0
+                 perl5.8.0-ithreads
+                 bleadperl
+                );
+        }
 
         my $out;
         foreach my $perl (@perls) {
