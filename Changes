@@ -1,4 +1,6 @@
 0.50
+    * Fixed bug in fail-more test on Windows (not a real bug).
+      [rt.cpan.org 8022]
     - Again removing File::Spec dependency (came back in 0.48_02)
     - Change from Aegis back to CVS
 

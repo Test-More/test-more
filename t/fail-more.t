@@ -254,7 +254,7 @@ OUT
 #     Failed test \\($filename at line 84\\)
 #     Tried to use 'Hooble::mooble::yooble'.
 #     Error:  Can't locate Hooble.* in \\\@INC .*
-# BEGIN failed--compilation aborted at $0 line 84.
+# BEGIN failed--compilation aborted at $filename line 84.
 #     Failed test \\($filename at line 85\\)
 #     Tried to require 'ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble'.
 #     Error:  Can't locate ALL.* in \\\@INC .*
