@@ -501,7 +501,7 @@ sub can_ok ($@) {
   isa_ok($object, $class, $object_name);
   isa_ok($ref,    $type,  $ref_name);
 
-Checks to see if the given C<< $object->isa($class) >>.  Also checks to make
+Checks to see if the given $object->isa($class).  Also checks to make
 sure the object was defined in the first place.  Handy for this sort
 of thing:
 
