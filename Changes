@@ -1,3 +1,7 @@
+0.54
+    - sort_bug.t wasn't checking for threads properly.  Would fail on
+      5.6 that had ithreads compiled in. [rt.cpan.org 8765]
+
 0.53  Mon Nov 29 04:43:24 EST 2004
     - Apparently its possible to have Module::Signature installed without
       it being functional.  Fixed the signature test to account for this.
