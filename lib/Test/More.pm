@@ -13,8 +13,8 @@ BEGIN {
 }
 
 require Exporter;
-use vars qw($VERSION @ISA @EXPORT);
-$VERSION = '0.18';
+use vars qw($VERSION @ISA @EXPORT $TODO);
+$VERSION = '0.19';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like

@@ -18,3 +18,7 @@ have to do:
             eval q{use Test::More skip_all => $why};
         }
     }
+
+Make a way to control exported functions
+
+Make a way to ask "Are we passing so far?"

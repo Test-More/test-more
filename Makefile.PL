@@ -11,7 +11,7 @@ use ExtUtils::MakeMaker;
 
 $PACKAGE = 'Test::Simple';
 ($PACKAGE_FILE = $PACKAGE) =~ s|::|/|g;
-$LAST_API_CHANGE = 0.02;
+$LAST_API_CHANGE = 0.18;
 
 eval "require $PACKAGE";
 
@@ -23,6 +23,8 @@ than version $LAST_API_CHANGE!  Please read the Changes file if you
 are upgrading from a version older than $LAST_API_CHANGE.
 
 CHANGE_WARN
+
+    sleep 5;
 }
 
 WriteMakefile(

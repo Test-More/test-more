@@ -1,6 +1,8 @@
 # Can't use Test.pm, that's a 5.005 thing.
 package My::Test;
 
+use File::Spec;
+
 my $test_num = 1;
 # Utility testing functions.
 sub ok ($;$) {
@@ -37,10 +39,12 @@ my %Tests = (
 
 print "1..".keys(%Tests)."\n";
 
+my $lib = File::Spec->catdir(qw(t lib Test Simple sample_tests));
 while( my($test_name, $exit_codes) = each %Tests ) {
     my($exit_code) = $exit_codes->[$IsVMS ? 1 : 0];
 
-    my $wait_stat = system(qq{$^X t/sample_tests/$test_name});
+    my $file = File::Spec->catfile($lib, $test_name);
+    my $wait_stat = system(qq{$^X $file});
     my $actual_exit = $wait_stat >> 8;
 
     My::Test::ok( $actual_exit == $exit_code, 

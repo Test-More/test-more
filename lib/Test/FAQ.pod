@@ -226,3 +226,6 @@ I guess there are certain programming idioms that are foreign enough
 to throw your brain into reverse if you're not ready for them.  Like
 trying to think in Lisp, for example.  Or being presented with OO for
 the first time.  I guess writing test is one of those.
+
+
+=head2 How do I use Test::More without depending on it?
