@@ -1,10 +1,13 @@
 Revision history for Perl extension Test::Simple
 
+0.06  Wed May  9 23:38:17 BST 2001
+    - Whoops, left a private method in the public docs.
+
 0.05  Wed May  9 20:40:35 BST 2001
     - Forgot to include the exit tests.
     - Trouble with exiting properly under 5.005_03 and 5.6.1 fixed
     - Turned off buffering
-    - 5.004 new minimum version
+    * 5.004 new minimum version
     - Now explicitly tested with 5.6.1, 5.6.0, 5.005_03 and 5.004
 
 0.04  Mon Apr  2 11:05:01 BST 2001

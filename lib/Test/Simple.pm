@@ -2,7 +2,7 @@ package Test::Simple;
 
 require 5.004;
 
-$Test::Simple::VERSION = '0.05';
+$Test::Simple::VERSION = '0.06';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
@@ -208,8 +208,6 @@ A sanity check, similar to assert().  If the $check is true, something
 has gone horribly wrong.  It will die with the given $description and
 a note to contact the author.
 
-=end _private
-
 =cut
 
 sub _whoa {
@@ -231,6 +229,8 @@ and 5.6.1 both seem to do odd things.  Instead, this function edits $?
 directly.  It should ONLY be called from inside an END block.  It
 doesn't actually exit, that's your job.
 
+=end _private
+
 =cut
 
 sub _my_exit {
@@ -246,7 +246,8 @@ sub _my_exit {
 $SIG{__DIE__} = sub {
     # We don't want to muck with death in an eval, but $^S isn't
     # totally reliable.  5.005_03 and 5.6.1 both do the wrong thing
-    # with it.  Instead, we use caller.
+    # with it.  Instead, we use caller.  This also means it runs under
+    # 5.004!
     my($subroutine) = (caller(1))[3];
     $Test_Died = 1 unless $subroutine eq '(eval)';
 };
