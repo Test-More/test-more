@@ -21,7 +21,7 @@ use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS $TODO);
 $VERSION = '0.40';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
-             is isnt like is_deeply
+             is isnt like unlike is_deeply
              cmp_ok
              skip todo todo_skip
              pass fail
@@ -65,7 +65,11 @@ Test::More - yet another framework for writing test scripts
 
   is  ($this, $that,    $test_name);
   isnt($this, $that,    $test_name);
-  like($this, qr/that/, $test_name);
+
+  like  ($this, qr/that/, $test_name);
+  unlike($this, qr/that/, $test_name);
+
+  cmp_ok($this, '==', $that, $test_name);
 
   is_deeply($complex_structure1, $complex_structure2, $test_name);
 
@@ -328,10 +332,6 @@ sub isnt ($$;$) {
 
 *isn't = \&isnt;
 
-sub cmp_ok($$$;$) {
-    my($this, $op, $that, $name) = @_;
-    $Test->cmp_ok($op, $this, $that, $name);
-}
 
 =item B<like>
 
@@ -366,6 +366,59 @@ diagnostics on failure.
 sub like ($$;$) {
     $Test->like(@_);
 }
+
+
+=item B<unlike>
+
+  unlike( $this, qr/that/, $test_name );
+
+Works exactly as like(), only it checks if $this B<does not> match the
+given pattern.
+
+=cut
+
+sub unlike {
+    $Test->unlike(@_);
+}
+
+
+=item B<cmp_ok>
+
+  cmp_ok( $this, $op, $that, $test_name );
+
+Halfway between ok() and is() lies cmp_ok().  This allows you to
+compare two arguments using any binary perl operator.
+
+    # ok( $this eq $that );
+    cmp_ok( $this, 'eq', $that, 'this eq that' );
+
+    # ok( $this == $that );
+    cmp_ok( $this, '==', $that, 'this == that' );
+
+    # ok( $this && $that );
+    cmp_ok( $this, '&&', $that, 'this || that' );
+    ...etc...
+
+Its advantage over ok() is when the test fails you'll know what $this
+and $that were:
+
+    not ok 1
+    #     Failed test (foo.t at line 12)
+    #     '23'
+    #         &&
+    #     undef
+
+Its also useful in those cases where you are comparing numbers and
+is()'s use of C<eq> will interfere:
+
+    cmp_ok( $big_hairy_number, '==', $another_big_hairy_number );
+
+=cut
+
+sub cmp_ok($$$;$) {
+    $Test->cmp_ok(@_);
+}
+
 
 =item B<can_ok>
 
@@ -464,10 +517,31 @@ sub isa_ok ($$;$) {
     elsif( !ref $object ) {
         $diag = "$obj_name isn't a reference";
     }
-    elsif( !UNIVERSAL::isa($object,$class) ) {
-        my $ref = ref $object;
-        $diag = "$obj_name isn't a '$class' its a '$ref'";
+    else {
+        # We can't use UNIVERSAL::isa because we want to honor isa() overrides
+        my $rslt = eval { $object->isa($class) };
+        if( $@ ) {
+            if( $@ =~ /^Can't call method "isa" on unblessed reference/ ) {
+                if( !UNIVERSAL::isa($object, $class) ) {
+                    my $ref = ref $object;
+                    $diag = "$obj_name isn't a '$class' its a '$ref'";
+                }
+            } else {
+                die <<WHOA;
+WHOA! I tried to call ->isa on your object and got some weird error.
+This should never happen.  Please contact the author immediately.
+Here's the error.
+$@
+WHOA
+            }
+        }
+        elsif( !$rslt ) {
+            my $ref = ref $object;
+            $diag = "$obj_name isn't a '$class' its a '$ref'";
+        }
     }
+            
+      
 
     my $ok;
     if( $diag ) {
@@ -991,6 +1065,8 @@ same program>.
 If you simply want to do a little tweaking of how the tests behave,
 you can access the underlying Test::Builder object like so:
 
+=over 4
+
 =item B<builder>
 
     my $test_builder = Test::More->builder;
@@ -1087,7 +1163,7 @@ Copyright 2001 by Michael G Schwern E<lt>schwern@pobox.comE<gt>.
 This program is free software; you can redistribute it and/or 
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See F<http://www.perl.com/perl/misc/Artistic.html>
 
 =cut
 
