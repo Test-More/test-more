@@ -56,6 +56,7 @@ t/simple.t
 t/skip.t
 t/skipall.t
 t/threads.t
+t/thread_taint.t
 t/todo.t
 t/undef.t
 t/use_ok.t

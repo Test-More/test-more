@@ -7,26 +7,42 @@
 
 use 5.004;
 
+use Config;
 use ExtUtils::MakeMaker;
 
 $PACKAGE = 'Test::Simple';
 ($PACKAGE_FILE = $PACKAGE) =~ s|::|/|g;
-$LAST_API_CHANGE = 0.34;
+$LAST_API_CHANGE    = 0.48;
+$LAST_THREAD_CHANGE = 0.48;
 
 eval "require $PACKAGE";
 
 unless ($@) { # Make sure we did find the module.
     if( ${$PACKAGE.'::VERSION'} < $LAST_API_CHANGE ) {
-        print <<"CHANGE_WARN";
+        printf <<"CHANGE_WARN", $LAST_API_CHANGE;
 
 NOTE: There have been API changes between this version and any older
-than version $LAST_API_CHANGE!  Please read the Changes file if you
-are upgrading from a version older than $LAST_API_CHANGE.
+than version %s!  Please see the Changes file for details.
 
 CHANGE_WARN
 
         sleep 5;
     }
+    if( $] >= 5.008 && $Config{useithreads} &&
+        ${$PACKAGE.'::VERSION'} < $LAST_THREAD_CHANGE 
+      ) 
+    {
+        printf <<"THREAD_WARN", $LAST_THREAD_CHANGE;
+
+NOTE: The behavior of Test::More and threads has changed between this
+version and any older than version %s!  Please see the Changes file
+for details.
+
+THREAD_WARN
+
+        sleep 5;
+    }
+
 }
 
 WriteMakefile(
@@ -44,7 +60,6 @@ WriteMakefile(
     package MY;
 
     use File::Spec;
-    use Config;
 
     sub test_via_harness {
         my($self, $orig_perl, $tests) = @_;

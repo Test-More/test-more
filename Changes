@@ -8,6 +8,8 @@ Revision history for Perl extension Test::Simple
       many problems when the T::H upgrade didn't work.
     * Drew Taylor added a 'no_diag' option to Test::More to switch
       off all diag() statements.
+    * Test::Builder/More no longer automatically loads threads.pm
+      when threads are enabled.  The user must now do this manually.
 
 0.47  Mon Aug 26 03:54:22 PDT 2002 
     * Tatsuhiko Miyagawa noticed Test::Builder was accidentally storing 
