@@ -8,7 +8,7 @@ $^C ||= 0;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.21';
+$VERSION = '0.21_01';
 $VERSION = eval $VERSION;    # make the alpha version come out as a number
 
 # Make Test::Builder thread-safe for ithreads.
@@ -637,16 +637,26 @@ could be written as:
 
 
 sub maybe_regex {
-	my ($self, $regex) = @_;
+    my ($self, $regex) = @_;
     my $usable_regex = undef;
+
+    return $usable_regex unless defined $regex;
+
+    my($re, $opts);
+
+    # Check for qr/foo/
     if( ref $regex eq 'Regexp' ) {
         $usable_regex = $regex;
     }
-    # Check if it looks like '/foo/'
-    elsif( my($re, $opts) = $regex =~ m{^ /(.*)/ (\w*) $ }sx ) {
+    # Check for '/foo/' or 'm,foo,'
+    elsif( ($re, $opts)        = $regex =~ m{^ /(.*)/ (\w*) $ }sx           or
+           (undef, $re, $opts) = $regex =~ m,^ m([^\w\s]) (.+) \1 (\w*) $,sx
+         )
+    {
         $usable_regex = length $opts ? "(?$opts)$re" : $re;
-    };
-    return($usable_regex)
+    }
+
+    return $usable_regex;
 };
 
 sub _regex_ok {

@@ -1,3 +1,7 @@
+0.55
+    - maybe_regex() now handles undef gracefully.
+    - maybe_regex() now handles 'm,foo,' style regexes.
+
 0.54
     - sort_bug.t wasn't checking for threads properly.  Would fail on
       5.6 that had ithreads compiled in. [rt.cpan.org 8765]
