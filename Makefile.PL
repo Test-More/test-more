@@ -50,9 +50,10 @@ WriteMakefile(
         my($self, $orig_perl, $tests) = @_;
 
         my @perls = ($orig_perl);
-        push @perls, qw(bleadperl 
-                        perl5.6.1 
-                        perl5.005_03 
+        push @perls, qw(bleadperl
+                        perl5.6.1
+                        perl5.6.0
+                        perl5.005_03
                         perl5.004_05
                         perl5.004_04
                         perl5.004
