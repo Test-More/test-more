@@ -1,5 +1,9 @@
 use Test::Builder;
 
+# STDOUT must be unbuffered else our prints might come out after
+# Test::More's.
+$| = 1;
+
 BEGIN {
     Test::Builder->new->no_header(1);
 }
