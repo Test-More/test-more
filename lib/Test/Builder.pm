@@ -659,7 +659,7 @@ sub skip {
     $Curr_Test++;
 
     $Test_Results[$Curr_Test-1] = {
-        ok        => 1,
+        'ok'      => 1,
         actual_ok => 1,
         name      => '',
         type      => 'skip',
@@ -701,7 +701,7 @@ sub todo_skip {
     $Curr_Test++;
 
     $Test_Results[$Curr_Test-1] = {
-        ok        => 1,
+        'ok'      => 1,
         actual_ok => 0,
         name      => '',
         type      => 'todo_skip',
@@ -1089,7 +1089,7 @@ Of course, test #1 is $tests[0], etc...
 sub summary {
     my($self) = shift;
 
-    return map { $_->{ok} } @Test_Results;
+    return map { $_->{'ok'} } @Test_Results;
 }
 
 =item B<details>
@@ -1099,7 +1099,7 @@ sub summary {
 Like summary(), but with a lot more detail.
 
     $tests[$test_num - 1] = 
-            { ok         => is the test considered a pass?
+            { 'ok'       => is the test considered a pass?
               actual_ok  => did it literally say 'ok'?
               name       => name of the test (if any)
               type       => type of test (if any, see below).
@@ -1298,7 +1298,7 @@ sub _ending {
         $Test_Results[$Expected_Tests-1] = undef
           unless defined $Test_Results[$Expected_Tests-1];
 
-        my $num_failed = grep !$_->{ok}, @Test_Results[0..$Expected_Tests-1];
+        my $num_failed = grep !$_->{'ok'}, @Test_Results[0..$Expected_Tests-1];
         $num_failed += abs($Expected_Tests - @Test_Results);
 
         if( $Curr_Test < $Expected_Tests ) {

@@ -1,4 +1,11 @@
-#! /usr/bin/perl -Tw
+#!/usr/bin/perl -w
+
+BEGIN {
+    if( $ENV{PERL_CORE} ) {
+        chdir 't';
+        @INC = ('../lib');
+    }
+}
 
 use strict;
 use Test::Builder;
