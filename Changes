@@ -1,6 +1,9 @@
-0.54
+0.54  
     * $how_many is optional for skip() and todo_skip().  Thanks to 
       Devel::Cover for pointing this out.
+    - Removed a user defined function called err() in the tests to placate
+      users of older versions of the dor patch before err() was weakend.
+      [rt.cpan.org 8734]
 
 0.53_01  Sat Dec 11 19:02:18 EST 2004
     - current_test() can now be set backward.
