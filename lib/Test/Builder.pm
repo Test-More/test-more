@@ -8,7 +8,7 @@ $^C ||= 0;
 
 use strict;
 use vars qw($VERSION $CLASS);
-$VERSION = 0.10;
+$VERSION = '0.10';
 $CLASS = __PACKAGE__;
 
 my $IsVMS = $^O eq 'VMS';
@@ -316,7 +316,7 @@ sub is_eq {
         return $test;
     }
 
-    return $self->cmp_ok('eq', $got, $expect, $name);
+    return $self->cmp_ok($got, 'eq', $expect, $name);
 }
 
 sub is_num {
@@ -332,7 +332,7 @@ sub is_num {
         return $test;
     }
 
-    return $self->cmp_ok('==', $got, $expect, $name);
+    return $self->cmp_ok($got, '==', $expect, $name);
 }
 
 sub _is_diag {
@@ -340,7 +340,14 @@ sub _is_diag {
 
     foreach my $val (\$got, \$expect) {
         if( defined $$val ) {
-            $$val = "'$$val'" if $type eq 'eq';
+            if( $type eq 'eq' ) {
+                # quote and force string context
+                $$val = "'$$val'"
+            }
+            else {
+                # force numeric context
+                $$val = $$val+0;
+            }
         }
         else {
             $$val = 'undef';
@@ -354,8 +361,142 @@ DIAGNOSTIC
 
 }    
 
+=item B<isnt_eq>
+
+  $Test->isnt_eq($got, $dont_expect, $name);
+
+Like Test::More's isnt().  Checks if $got ne $dont_expect.  This is
+the string version.
+
+=item B<isnt_num>
+
+  $Test->is_num($got, $dont_expect, $name);
+
+Like Test::More's isnt().  Checks if $got ne $dont_expect.  This is
+the numeric version.
+
+=cut
+
+sub isnt_eq {
+    my($self, $got, $dont_expect, $name) = @_;
+    local $Level = $Level + 1;
+
+    if( !defined $got || !defined $dont_expect ) {
+        # undef only matches undef and nothing else
+        my $test = defined $got || defined $dont_expect;
+
+        $self->ok($test, $name);
+        $self->_cmp_diag('ne', $got, $dont_expect) unless $test;
+        return $test;
+    }
+
+    return $self->cmp_ok($got, 'ne', $dont_expect, $name);
+}
+
+sub isnt_num {
+    my($self, $got, $dont_expect, $name) = @_;
+    local $Level = $Level + 1;
+
+    if( !defined $got || !defined $dont_expect ) {
+        # undef only matches undef and nothing else
+        my $test = defined $got || defined $dont_expect;
+
+        $self->ok($test, $name);
+        $self->_cmp_diag('!=', $got, $dont_expect) unless $test;
+        return $test;
+    }
+
+    return $self->cmp_ok($got, '!=', $dont_expect, $name);
+}
+
+
+=item B<like>
+
+  $Test->like($this, qr/$regex/, $name);
+  $Test->like($this, '/$regex/', $name);
+
+Like Test::More's like().  Checks if $this matches the given $regex.
+
+You'll want to avoid qr// if you want your tests to work before 5.005.
+
+=item B<unlike>
+
+  $Test->unlike($this, qr/$regex/, $name);
+  $Test->unlike($this, '/$regex/', $name);
+
+Like Test::More's unlike().  Checks if $this B<does not match> the
+given $regex.
+
+=cut
+
+sub like {
+    my($self, $this, $regex, $name) = @_;
+
+    local $Level = $Level + 1;
+    $self->_regex_ok($this, $regex, '=~', $name);
+}
+
+sub unlike {
+    my($self, $this, $regex, $name) = @_;
+
+    local $Level = $Level + 1;
+    $self->_regex_ok($this, $regex, '!~', $name);
+}
+
+sub _regex_ok {
+    my($self, $this, $regex, $cmp, $name) = @_;
+
+    local $Level = $Level + 1;
+
+    my $ok = 0;
+    my $usable_regex;
+    if( ref $regex eq 'Regexp' ) {
+        $usable_regex = $regex;
+    }
+    # Check if it looks like '/foo/'
+    elsif( my($re, $opts) = $regex =~ m{^ /(.*)/ (\w*) $ }sx ) {
+        $usable_regex = "(?$opts)$re";
+    }
+    else {
+        $ok = $self->ok( 0, $name );
+
+        $self->diag("'$regex' doesn't look much like a regex to me.");
+
+        return $ok;
+    }
+
+    {
+        local $^W = 0;
+        my $test = $this =~ /$usable_regex/ ? 1 : 0;
+        $test = !$test if $cmp eq '!~';
+        $ok = $self->ok( $test, $name );
+    }
+
+    unless( $ok ) {
+        $this = defined $this ? "'$this'" : 'undef';
+        my $match = $cmp eq '=~' ? "doesn't match" : "matches";
+        $self->diag(sprintf <<DIAGNOSTIC, $this, $match, $regex);
+              %s
+%13s '%s'
+DIAGNOSTIC
+
+    }
+
+    return $ok;
+}
+
+=item B<cmp_ok>
+
+  $Test->cmp_ok($this, $type, $that, $name);
+
+Works just like Test::More's cmp_ok().
+
+    $Test->cmp_ok($big_num, '!=', $other_big_num);
+
+=cut
+
 sub cmp_ok {
-    my($self, $type, $got, $expect, $name) = @_;
+    my($self, $got, $type, $expect, $name) = @_;
 
     my $test;
     {
@@ -388,99 +529,23 @@ sub _cmp_diag {
 DIAGNOSTIC
 }
 
-=item B<isnt_eq>
+=item B<BAILOUT>
 
-  $Test->isnt_eq($got, $dont_expect, $name);
+    $Test->BAILOUT($reason);
 
-Like Test::More's isnt().  Checks if $got ne $dont_expect.  This is
-the string version.
+Indicates to the Test::Harness that things are going so badly all
+testing should terminate.  This includes running any additional test
+scripts.
 
-=item B<is_num>
-
-  $Test->is_num($got, $dont_expect, $name);
-
-Like Test::More's isnt().  Checks if $got ne $dont_expect.  This is
-the numeric version.
+It will exit with 255.
 
 =cut
 
-sub isnt_eq {
-    my($self, $got, $dont_expect, $name) = @_;
-    local $Level = $Level + 1;
+sub BAILOUT {
+    my($self, $reason) = @_;
 
-    if( !defined $got || !defined $dont_expect ) {
-        # undef only matches undef and nothing else
-        my $test = defined $got || defined $dont_expect;
-
-        $self->ok($test, $name);
-        $self->_cmp_diag('ne', $got, $dont_expect) unless $test;
-        return $test;
-    }
-
-    return $self->cmp_ok('ne', $got, $dont_expect, $name);
-}
-
-sub isnt_num {
-    my($self, $got, $dont_expect, $name) = @_;
-    local $Level = $Level + 1;
-
-    if( !defined $got || !defined $dont_expect ) {
-        # undef only matches undef and nothing else
-        my $test = defined $got || defined $dont_expect;
-
-        $self->ok($test, $name);
-        $self->_cmp_diag('!=', $got, $dont_expect) unless $test;
-        return $test;
-    }
-
-    return $self->cmp_ok('!=', @_);
-}
-
-
-=item B<like>
-
-  $Test->like($this, qr/$regex/, $name);
-  $Test->like($this, '/$regex/', $name);
-
-Like Test::More's like().  Checks if $this matches the given $regex.
-
-You'll want to avoid qr// if you want your tests to work before 5.005.
-
-=cut
-
-sub like {
-    my($self, $this, $regex, $name) = @_;
-
-    local $Level = $Level + 1;
-
-    my $ok = 0;
-    if( ref $regex eq 'Regexp' ) {
-        local $^W = 0;
-        $ok = $self->ok( $this =~ $regex ? 1 : 0, $name );
-    }
-    # Check if it looks like '/foo/'
-    elsif( my($re, $opts) = $regex =~ m{^ /(.*)/ (\w*) $ }sx ) {
-        local $^W = 0;
-        $ok = $self->ok( $this =~ /(?$opts)$re/ ? 1 : 0, $name );
-    }
-    else {
-        $ok = $self->ok( 0, $name );
-
-        $self->diag("'$regex' doesn't look much like a regex to me.");
-
-        return $ok;
-    }
-
-    unless( $ok ) {
-        $this = defined $this ? "'$this'" : 'undef';
-        $self->diag(sprintf <<DIAGNOSTIC, $this, $regex);
-              %s
-doesn't match '%s'
-DIAGNOSTIC
-
-    }
-
-    return $ok;
+    $self->_print("Bail out!  $reason");
+    exit 255;
 }
 
 =item B<skip>
@@ -713,7 +778,7 @@ sub diag {
         s/\n([^#])/\n#     $1/g;
     }
 
-    push @msgs, "\n" unless $msgs[-1] =~ /\n\z/;
+    push @msgs, "\n" unless $msgs[-1] =~ /\n\Z/;
 
     local $Level = $Level + 1;
     my $fh = $self->todo ? $self->todo_output : $self->failure_output;
@@ -1116,7 +1181,7 @@ Copyright 2001 by chromatic E<lt>chromatic@wgz.orgE<gt>,
 This program is free software; you can redistribute it and/or 
 modify it under the same terms as Perl itself.
 
-See L<http://www.perl.com/perl/misc/Artistic.html>
+See F<http://www.perl.com/perl/misc/Artistic.html>
 
 =cut
 
