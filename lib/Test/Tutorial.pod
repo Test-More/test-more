@@ -514,8 +514,6 @@ in C<#!> and use them to run your tests.
 
     #!/usr/bin/perl -Tw
 
-    use Test::More 'no_plan';
-
     ...test normally here...
 
 So when you say C<make test> it will be run with taint mode and
