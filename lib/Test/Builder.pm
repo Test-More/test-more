@@ -384,6 +384,7 @@ ERR
 
     unless( $test ) {
         my $msg = $todo ? "Failed (TODO)" : "Failed";
+        $self->_print_diag("\n") if $ENV{HARNESS_ACTIVE};
         $self->diag("    $msg test ($file at line $line)\n");
     } 
 
@@ -938,9 +939,7 @@ sub diag {
     push @msgs, "\n" unless $msgs[-1] =~ /\n\Z/;
 
     local $Level = $Level + 1;
-    local($\, $", $,) = (undef, ' ', '');
-    my $fh = $self->todo ? $self->todo_output : $self->failure_output;
-    print $fh @msgs;
+    $self->_print_diag(@msgs);
 
     return 0;
 }
@@ -978,6 +977,22 @@ sub _print {
     print $fh @msgs;
 }
 
+
+=item B<_print_diag>
+
+    $Test->_print_diag(@msg);
+
+Like _print, but prints to the current diagnostic filehandle.
+
+=cut
+
+sub _print_diag {
+    my $self = shift;
+
+    local($\, $", $,) = (undef, ' ', '');
+    my $fh = $self->todo ? $self->todo_output : $self->failure_output;
+    print $fh @_;
+}    
 
 =item B<output>
 
