@@ -7,7 +7,7 @@ use Test::Utils;
 
 use vars qw($VERSION);
 
-$VERSION = '0.17';
+$VERSION = '0.18';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
@@ -458,7 +458,7 @@ he wasn't in Tony's kitchen).  This is it.
 =head1 AUTHOR
 
 Idea by Tony Bowden and Paul Johnson, code by Michael G Schwern
-<schwern@pobox.com>, wardrobe by Calvin Klein.
+E<lt>schwern@pobox.comE<gt>, wardrobe by Calvin Klein.
 
 
 =head1 SEE ALSO
