@@ -14,7 +14,7 @@ BEGIN {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT);
-$VERSION = '0.13';
+$VERSION = '0.16';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like
@@ -24,6 +24,7 @@ $VERSION = '0.13';
              skip
              $TODO
              plan
+             can_ok
             );
 
 
@@ -97,6 +98,8 @@ Test::More - yet another framework for writing test scripts
       ok( foo(),       $test_name );
       is( foo(42), 23, $test_name );
   };
+
+  can_ok($module, @methods);
 
   pass($test_name);
   fail($test_name);
@@ -396,6 +399,39 @@ DIAGNOSTIC
     }
 
     return $ok;
+}
+
+=item B<can_ok>
+
+  can_ok($module, @methods);
+
+Checks to make sure the $module can do these @methods.
+
+    can_ok('Foo', qw(this that whatever));
+
+is almost exactly like saying:
+
+    ok( Foo->can('this') );
+    ok( Foo->can('that') );
+    ok( Foo->can('whatever') );
+
+only without all the typing.  Handy for quickly enforcing an
+interface.
+
+Each method counts as a seperate test.
+
+=cut
+
+sub can_ok {
+    my($module, @methods) = @_;
+
+    my $all_ok = 1;
+    foreach my $method (@methods) {
+        my $test = "$module->can('$method')";
+        ok( eval $test, $test ) or $all_ok = 0;
+    }
+
+    return $all_ok;
 }
 
 =item B<pass>

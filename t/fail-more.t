@@ -29,7 +29,7 @@ push @INC, 't', '.';
 require Catch::More;
 my($out, $err) = Catch::More::caught();
 
-Test::More->import(tests => 8);
+Test::More->import(tests => 10);
 
 # Preserve the line numbers.
 #line 31
@@ -42,20 +42,24 @@ like( "foo", '/that/',  'is foo like that' );
 
 fail('fail()');
 
+can_ok('Mooble::Hooble::Yooble', qw(this that));
+
 use_ok('Hooble::mooble::yooble');
 require_ok('ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble');
 
 END {
     My::Test::ok($$out eq <<OUT, 'failing output');
-1..8
+1..10
 not ok 1 - failing
 not ok 2 - foo is bar?
 not ok 3 - foo isnt foo?
 not ok 4 - foo isn't foo?
 not ok 5 - is foo like that
 not ok 6 - fail()
-not ok 7 - use Hooble::mooble::yooble;
-not ok 8 - require ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble;
+not ok 7 - Mooble::Hooble::Yooble->can('this')
+not ok 8 - Mooble::Hooble::Yooble->can('that')
+not ok 9 - use Hooble::mooble::yooble;
+not ok 10 - require ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble;
 OUT
 
     my $err_re = <<ERR;
@@ -73,19 +77,21 @@ OUT
 #                   'foo'
 #     doesn't match '/that/'
 #     Failed test ($0 at line 38)
+#     Failed test ($0 at line 40)
+#     Failed test ($0 at line 40)
 ERR
 
    my $filename = quotemeta $0;
    my $more_err_re = <<ERR;
-#     Failed test \\($filename at line 40\\)
+#     Failed test \\($filename at line 42\\)
 #     Tried to use 'Hooble::mooble::yooble'.
 #     Error:  Can't locate Hooble.* in \\\@INC .*
 
-#     Failed test \\($filename at line 41\\)
+#     Failed test \\($filename at line 43\\)
 #     Tried to require 'ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble'.
 #     Error:  Can't locate ALL.* in \\\@INC .*
 
-# Looks like you failed 8 tests of 8.
+# Looks like you failed 10 tests of 10.
 ERR
 
     unless( My::Test::ok($$err =~ /^\Q$err_re\E$more_err_re$/, 
