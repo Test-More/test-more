@@ -981,7 +981,6 @@ sub _print {
 
 =item B<output>
 
-    my $fh = $Test->output;
     $Test->output($fh);
     $Test->output($file);
 
@@ -991,7 +990,6 @@ Defaults to STDOUT.
 
 =item B<failure_output>
 
-    my $fh = $Test->failure_output;
     $Test->failure_output($fh);
     $Test->failure_output($file);
 
@@ -1001,7 +999,6 @@ Defaults to STDERR.
 
 =item B<todo_output>
 
-    my $fh = $Test->todo_output;
     $Test->todo_output($fh);
     $Test->todo_output($file);
 
