@@ -7,3 +7,5 @@ Make a way to ask "Are we passing so far?"
 eval_ok().
 
 Test::More->builder to avoid direct access to Test::Builder
+
+Expose diag().
