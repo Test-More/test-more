@@ -10,8 +10,6 @@ use strict;
 use vars qw($VERSION);
 $VERSION = '0.20_01';
 
-my $IsVMS = $^O eq 'VMS';
-
 # Make Test::Builder thread-safe for ithreads.
 BEGIN {
     use Config;
