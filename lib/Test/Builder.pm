@@ -131,6 +131,11 @@ sub plan {
 
     return unless $cmd;
 
+    if( $Have_Plan ) {
+        die sprintf "You tried to plan twice!  Second plan at %s line %d\n",
+          ($self->caller)[1,2];
+    }
+
     if( $cmd eq 'no_plan' ) {
         $self->no_plan;
     }
