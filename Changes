@@ -1,4 +1,4 @@
-0.52
+0.52  Sun Nov 28 21:41:03 EST 2004
     - plan() now better checks that the given plan is valid. 
       [rt.cpan.org 2597]
 
