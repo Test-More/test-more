@@ -1,6 +1,6 @@
 #!perl -w
 
-use Test::More tests => 11;
+use Test::More tests => 15;
 
 # If we skip with the same name, Test::Harness will report it back and
 # we won't get lots of false bug reports.
@@ -60,3 +60,20 @@ SKIP: {
                   "block at $0 line 56\n",
         'skip without $how_many warning' );
 }
+
+
+SKIP: {
+    skip "Not skipping here.", 4 if 0;
+
+    pass("This is supposed to run");
+
+    # Testing out nested skips.
+    SKIP: {
+        skip $Why, 2;
+        fail("AHHH!");
+        fail("You're a failure");
+    }
+
+    pass("This is supposed to run, too");
+}
+
