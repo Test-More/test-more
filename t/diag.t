@@ -12,9 +12,9 @@ BEGIN {
 # lots of threading bugs.
 use Config;
 BEGIN {
-    unless ($Config{'useithreads'} and eval { require threads; 1 }) {
-        print "1..0 # Skip: no threads\n";
-        exit 0;
+    if( $] >= 5.008 && $Config{useithreads} ) {
+        require threads;
+        'threads'->import;
     }
 }
 
