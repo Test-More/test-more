@@ -142,6 +142,12 @@ Your script will declare a skip with the reason why you skipped and
 exit immediately with a zero (success).  See L<Test::Harness> for
 details.
 
+If you want to control what functions Test::More will export, you
+have to use the 'import' option.  For example, to import everything
+but 'fail', you'd do:
+
+  use Test::More tests => 23, import => ['!fail'];
+
 
 =head2 Test names
 
