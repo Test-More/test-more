@@ -1,12 +1,12 @@
 This file contains message digests of all files listed in MANIFEST,
-signed via the Module::Signature module, version 0.41.
+signed via the Module::Signature module, version 0.42.
 
 To verify the content in this distribution, first make sure you have
 Module::Signature installed, then type:
 
     % cpansign -v
 
-It would check each file's integrity, as well as the signature's
+It will check each file's integrity, as well as the signature's
 validity.  If "==> Signature verified OK! <==" is not displayed,
 the distribution may already have been compromised, and you should
 not run its Makefile.PL or Build.PL.
@@ -14,15 +14,15 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 997774e80f6c0e8af2e16f576d86b5326759bbd7 Changes
-SHA1 74876bad9437c03e929e31b8bd4242012a358678 MANIFEST
-SHA1 cd68ace8cecdb5eb103b04a7c354632908b2b58d META.yml
+SHA1 89b42b22228949d905a306751eb07900a2ea0740 Changes
+SHA1 a7b44fb6849b137f1d2e4d27c69fc10fb8d81699 MANIFEST
+SHA1 96b5890cd577ed4672b7c2e07f459d6218a60046 META.yml
 SHA1 fec7c34f87744c0c9ec94de82b87ed13a677d1e6 Makefile.PL
 SHA1 2e4baac155d4e4d784ea6dcf153878c9b6c66765 README
 SHA1 ad761920d29c767f09160ff59ce3a186abcae143 TODO
-SHA1 b6f5d1fb26eb16c2cfe4a87d494e68263cdf518d lib/Test/Builder.pm
-SHA1 de48fe3c8cf8bc6e762b6496c11009ebf32ddfae lib/Test/More.pm
-SHA1 f1892bdef5d7e40ddb56d06fafd5670a8292e429 lib/Test/Simple.pm
+SHA1 94180026e0623ea9e6b4e5206ec3f61d8bbab095 lib/Test/Builder.pm
+SHA1 b6fb4e197e95328978add18b639371d1de4f6c74 lib/Test/More.pm
+SHA1 61219601fdc92d11987c7e4235fb66e65063b293 lib/Test/Simple.pm
 SHA1 23537c5ecebd2e0fefa6986c106b994f5d1c8e7a lib/Test/Tutorial.pod
 SHA1 ad7d30f2b8e7f62006bd64a64759049af0cd97bb t/00signature.t
 SHA1 f614fee1686807c5eebe63e5db53559c465a9d68 t/00test_harness_check.t
@@ -32,7 +32,7 @@ SHA1 a79a3f2bd3c887679edf1c1ecd6ced1c31fc3fe1 t/bad_plan.t
 SHA1 d140d2e0b4b5c2efbc8a1d20298b8bf21cb1dd0f t/buffer.t
 SHA1 3121ed299c54bdbfee91a8505b1819e64d43f3c2 t/circular_data.t
 SHA1 a35e5244565a255c65f35ba7a46ba44fb0520332 t/curr_test.t
-SHA1 564ed3b73527fc204ecb5fcddd605397e8b18771 t/details.t
+SHA1 7db7368882cdf693c165ea33429f631ba3292da0 t/details.t
 SHA1 5fb0afee0ddbcad1d841fdd84e5bdd571790df0b t/diag.t
 SHA1 818e3716fb04c72d0940a90e88123e77faad8e48 t/eq_set.t
 SHA1 2e914e90fdc8e47c8bdad3e45a83b4a6f2ab691a t/exit.t
@@ -49,6 +49,7 @@ SHA1 9176d80a2bdcbb0d924875ce7db7f8ed48bb567c t/has_plan.t
 SHA1 9c82f844673cd6be2e159767f3eb161094b194dc t/has_plan2.t
 SHA1 79abdda4bc9a6f345272ea0bed532c2b014b7589 t/import.t
 SHA1 1729f42503d2ed728f918a78d8ebc9a4339f2c9f t/is_deeply.t
+SHA1 360628af62c178c14d3c8d789e297e0b2ee56118 t/is_fh.t
 SHA1 8402cffef120e850cbb19a65683b69dfb192c9c8 t/lib/NoExporter.pm
 SHA1 d6720b79d3fb10113de5717f7ff3e1cc5efa0e9a t/lib/Test/Simple/Catch.pm
 SHA1 fb6841b529dc60b00abf891415c64ac9680ee755 t/lib/Test/Simple/sample_tests/death.plx
@@ -63,7 +64,7 @@ SHA1 af0640900719e4d09850f63c0813c243e442be9d t/lib/Test/Simple/sample_tests/suc
 SHA1 89678c92dd95907a9d393df26dcd37a82c437cf1 t/lib/Test/Simple/sample_tests/too_few.plx
 SHA1 423b99311683daef3ff777e86e51a194847fe5de t/lib/Test/Simple/sample_tests/two_fail.plx
 SHA1 71d24bef212921ad82a8de33a05de7434cc306ba t/lib/TieOut.pm
-SHA1 659cfb531a4606ae5f609a573360e6970627c7f7 t/maybe_regex.t
+SHA1 8f0a9b25449c80ece716fd1a05daed77665005d5 t/maybe_regex.t
 SHA1 c3069e12b9fb6bf01fa6d2ef1d3e56c0198bc468 t/missing.t
 SHA1 5da9316c04f66e2e8c845c2ba6cf2b590ca832e8 t/no_diag.t
 SHA1 ccb9c184d8165c76e9bc2189b26533a9ceafda2b t/no_ending.t
@@ -84,17 +85,17 @@ SHA1 d6fb740981e2ceaf6cecabc02f0211ed601ee3a4 t/reset.t
 SHA1 713d0d3a3f82fe8d54f6ac57b3ff4613c5a5df20 t/simple.t
 SHA1 37cc419744acdf94a6b1e66e23e01fac38d5c410 t/skip.t
 SHA1 6c7e909f400766c3c33d15bd290a2e2cf9a5c64c t/skipall.t
-SHA1 bd2ba3909abeb03d2b1b1a5ef4f649eb1f12af66 t/sort_bug.t
+SHA1 7b5196e33f81197422d59b2ff8b3f4f1f03927ca t/sort_bug.t
 SHA1 318802d754ad4cf97b712aada7ee2cdd5d44450a t/thread_taint.t
 SHA1 e1ac82322c95ff4d7a09f79226a742757667fbec t/threads.t
 SHA1 4bc9cbf2e981ea6a09f63d739acf45d01463c753 t/todo.t
-SHA1 b3d1e3879d97e93ed4bb9f8a313c08b8fadb53d7 t/undef.t
+SHA1 7fb9e2b89dd38c0259769e5a9da92f6f5da10d97 t/undef.t
 SHA1 6b1696441b4bcac045fb8ddb371230b89be4d7a7 t/use_ok.t
 SHA1 59a63c5dd14da4c29bd87f2e33dcda1515396253 t/useing.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.4 (Darwin)
 
-iD8DBQFBqu/vT4Li3Cw/PzQRAsFfAJ9g0XjJVdGJyKS2sCwpPCZA4XurLQCfS3+v
-i3jXAWKBW0FQ2mku9lzzvlU=
-=q1n7
+iD8DBQFBu4rMT4Li3Cw/PzQRAqnqAJ9gNkwRNvjsyrVuMLZGowOycfr1fwCffQ8X
+3nLnnnIp8xB0Ncrp19fwH3o=
+=8g+6
 -----END PGP SIGNATURE-----

@@ -1,10 +1,8 @@
-0.55
+0.53_01  Sat Dec 11 19:02:18 EST 2004
     - current_test() can now be set backward.
     - *output() methods now handle tied handles and *FOO{IO} properly.
     - maybe_regex() now handles undef gracefully.
     - maybe_regex() now handles 'm,foo,' style regexes.
-
-0.54
     - sort_bug.t wasn't checking for threads properly.  Would fail on
       5.6 that had ithreads compiled in. [rt.cpan.org 8765]
 
