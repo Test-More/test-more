@@ -29,3 +29,5 @@
 
     Document that everything goes through Test::Builder->ok()
 
+    Check for sanity (trailing newlines) in test names and skip messages
+
