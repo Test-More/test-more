@@ -8,7 +8,7 @@ $^C ||= 0;
 
 use strict;
 use vars qw($VERSION $CLASS);
-$VERSION = 0.08;
+$VERSION = 0.10;
 $CLASS = __PACKAGE__;
 
 my $IsVMS = $^O eq 'VMS';
@@ -55,11 +55,13 @@ Test::Builder - Backend for building test libraries
 
 =head1 DESCRIPTION
 
-I<THIS IS ALPHA GRADE SOFTWARE>  The interface will change.
+I<THIS IS ALPHA GRADE SOFTWARE>  Meaning the underlying code is well
+tested, yet the interface is subject to change.
 
 Test::Simple and Test::More have proven to be popular testing modules,
-but they're not always flexible enough.  Test::Builder provides the
-a building block upon which to write your own test libraries.
+but they're not always flexible enough.  Test::Builder provides the a
+building block upon which to write your own test libraries I<which can
+work together>.
 
 =head2 Construction
 
@@ -302,44 +304,88 @@ numeric version.
 =cut
 
 sub is_eq {
-    my $self = shift;
+    my($self, $got, $expect, $name) = @_;
     local $Level = $Level + 1;
-    return $self->_is('eq', @_);
+
+    if( !defined $got || !defined $expect ) {
+        # undef only matches undef and nothing else
+        my $test = !defined $got && !defined $expect;
+
+        $self->ok($test, $name);
+        $self->_is_diag($got, 'eq', $expect) unless $test;
+        return $test;
+    }
+
+    return $self->cmp_ok('eq', $got, $expect, $name);
 }
 
 sub is_num {
-    my $self = shift;
+    my($self, $got, $expect, $name) = @_;
     local $Level = $Level + 1;
-    return $self->_is('==', @_);
+
+    if( !defined $got || !defined $expect ) {
+        # undef only matches undef and nothing else
+        my $test = !defined $got && !defined $expect;
+
+        $self->ok($test, $name);
+        $self->_is_diag($got, '==', $expect) unless $test;
+        return $test;
+    }
+
+    return $self->cmp_ok('==', $got, $expect, $name);
 }
 
-sub _is {
+sub _is_diag {
+    my($self, $got, $type, $expect) = @_;
+
+    foreach my $val (\$got, \$expect) {
+        if( defined $$val ) {
+            $$val = "'$$val'" if $type eq 'eq';
+        }
+        else {
+            $$val = 'undef';
+        }
+    }
+
+    $self->diag(sprintf <<DIAGNOSTIC, $got, $expect);
+     got: %s
+expected: %s
+DIAGNOSTIC
+
+}    
+
+sub cmp_ok {
     my($self, $type, $got, $expect, $name) = @_;
 
     my $test;
     {
-        if( !defined $got || !defined $expect ) {
-            # undef only matches undef and nothing else
-            $test = !defined $got && !defined $expect;
-        }
-        else {
-            $test = $type eq 'eq' ? $got eq $expect
-                                  : $got == $expect;
-        }
+        local $^W = 0;
+        $test = eval "\$got $type \$expect";
     }
     local $Level = $Level + 1;
     my $ok = $self->ok($test, $name);
 
     unless( $ok ) {
-        $got    = defined $got    ? "'$got'"    : 'undef';
-        $expect = defined $expect ? "'$expect'" : 'undef';
-        $self->diag(sprintf <<DIAGNOSTIC, $got, $expect);
-     got: %s
-expected: %s
-DIAGNOSTIC
-    }        
-
+        if( $type =~ /^(eq|==)$/ ) {
+            $self->_is_diag($got, $type, $expect);
+        }
+        else {
+            $self->_cmp_diag($got, $type, $expect);
+        }
+    }
     return $ok;
+}
+
+sub _cmp_diag {
+    my($self, $got, $type, $expect) = @_;
+    
+    $got    = defined $got    ? "'$got'"    : 'undef';
+    $expect = defined $expect ? "'$expect'" : 'undef';
+    $self->diag(sprintf <<DIAGNOSTIC, $got, $type, $expect);
+%s
+    %s
+%s
+DIAGNOSTIC
 }
 
 =item B<isnt_eq>
@@ -359,44 +405,35 @@ the numeric version.
 =cut
 
 sub isnt_eq {
-    my $self = shift;
+    my($self, $got, $dont_expect, $name) = @_;
     local $Level = $Level + 1;
-    return $self->_isnt('ne', @_);
+
+    if( !defined $got || !defined $dont_expect ) {
+        # undef only matches undef and nothing else
+        my $test = defined $got || defined $dont_expect;
+
+        $self->ok($test, $name);
+        $self->_cmp_diag('ne', $got, $dont_expect) unless $test;
+        return $test;
+    }
+
+    return $self->cmp_ok('ne', $got, $dont_expect, $name);
 }
 
 sub isnt_num {
-    my $self = shift;
+    my($self, $got, $dont_expect, $name) = @_;
     local $Level = $Level + 1;
-    return $self->_isnt('==', @_);
-}
 
-sub _isnt {
-    my($self, $type, $got, $dont_expect, $name) = @_;
+    if( !defined $got || !defined $dont_expect ) {
+        # undef only matches undef and nothing else
+        my $test = defined $got || defined $dont_expect;
 
-    my $test;
-    {
-        if( !defined $got || !defined $dont_expect ) {
-            # undef only matches undef and nothing else
-            $test = defined $got || defined $dont_expect;
-        }
-        else {
-            $test = $type eq 'ne' ? $got ne $dont_expect
-                                  : $got != $dont_expect;
-        }
+        $self->ok($test, $name);
+        $self->_cmp_diag('!=', $got, $dont_expect) unless $test;
+        return $test;
     }
-    local $Level = $Level + 1;
-    my $ok = $self->ok($test, $name);
 
-    unless( $ok ) {
-        $dont_expect = defined $dont_expect ? "'$dont_expect'" : 'undef';
-
-        $self->diag(sprintf <<DIAGNOSTIC, $dont_expect);
-it should not be %s
-but it is.
-DIAGNOSTIC
-    }        
-
-    return $ok;
+    return $self->cmp_ok('!=', @_);
 }
 
 
@@ -436,9 +473,9 @@ sub like {
 
     unless( $ok ) {
         $this = defined $this ? "'$this'" : 'undef';
-        $self->diag(sprintf <<DIAGNOSTIC, $this);
+        $self->diag(sprintf <<DIAGNOSTIC, $this, $regex);
               %s
-doesn't match '$regex'
+doesn't match '%s'
 DIAGNOSTIC
 
     }
@@ -656,7 +693,8 @@ handle, but if this is for a TODO test, the todo_output() handle is
 used.
 
 Output will be indented and marked with a # so as not to interfere
-with test output.
+with test output.  A newline will be put on the end if there isn't one
+already.
 
 We encourage using this rather than calling print directly.
 
@@ -664,6 +702,7 @@ We encourage using this rather than calling print directly.
 
 sub diag {
     my($self, @msgs) = @_;
+    return unless @msgs;
 
     # Prevent printing headers when compiling (i.e. -c)
     return if $^C;
@@ -673,6 +712,8 @@ sub diag {
         s/^([^#])/#     $1/;
         s/\n([^#])/\n#     $1/g;
     }
+
+    push @msgs, "\n" unless $msgs[-1] =~ /\n\z/;
 
     local $Level = $Level + 1;
     my $fh = $self->todo ? $self->todo_output : $self->failure_output;
