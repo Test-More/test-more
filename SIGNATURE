@@ -20,11 +20,11 @@ SHA1 a3b560b0a6494a7428de77b1b1d0f846ace09f9a META.yml
 SHA1 fec7c34f87744c0c9ec94de82b87ed13a677d1e6 Makefile.PL
 SHA1 2e4baac155d4e4d784ea6dcf153878c9b6c66765 README
 SHA1 ad761920d29c767f09160ff59ce3a186abcae143 TODO
-SHA1 7cac0e251200647cee73e0c53610d6f74f042919 lib/Test/Builder.pm
+SHA1 3811981d72bc41f93362f73d7e6681730eea5cd7 lib/Test/Builder.pm
 SHA1 6960aa7d0ccc55d4d57a63750093aee84acf1c61 lib/Test/More.pm
 SHA1 c67a4c71a1276f27a2f143d6e4b98b0130b97904 lib/Test/Simple.pm
 SHA1 23537c5ecebd2e0fefa6986c106b994f5d1c8e7a lib/Test/Tutorial.pod
-SHA1 ad7d30f2b8e7f62006bd64a64759049af0cd97bb t/00signature.t
+SHA1 a19d2b0b35e352b9224f7c11159c81b426ea4336 t/00signature.t
 SHA1 f614fee1686807c5eebe63e5db53559c465a9d68 t/00test_harness_check.t
 SHA1 809c6b08f9b1024b0cf3dde10057d625120824b2 t/Builder.t
 SHA1 4a6f2fb4bc879a4b245dde720e2523ef23d11d2b t/More.t
@@ -43,13 +43,13 @@ SHA1 eb9334a7ed1c25f3ee828fe10e4535442013cd0e t/fail-more.t
 SHA1 32fb0087712230801810d8f4483b08b2d669ab4f t/fail.t
 SHA1 b3b117b8df4d1c2b00ca60063e533715a6544b13 t/fail_one.t
 SHA1 efa817d1b1a2e0b81cbbdac1bda96b15584293dd t/filehandles.t
-SHA1 eaecc72ced15fe31f8f596d77dbd36e7d5a15406 t/fork.t
+SHA1 0a8327db65489d8f64cc1a67d023a0a3a0ff9e22 t/fork.t
 SHA1 5e7271678b4226d31656c0a9b77886bf1f520e56 t/harness_active.t
-SHA1 9176d80a2bdcbb0d924875ce7db7f8ed48bb567c t/has_plan.t
-SHA1 9c82f844673cd6be2e159767f3eb161094b194dc t/has_plan2.t
+SHA1 e36e82a3a96d49e5592189af8e93b3e2a2af5e79 t/has_plan.t
+SHA1 5028f21763c7f338bbac8888c27bd08479d0cb10 t/has_plan2.t
 SHA1 79abdda4bc9a6f345272ea0bed532c2b014b7589 t/import.t
 SHA1 dd37e0ab61abbd41121f12e6c21e919e44ad24f6 t/is_deeply.t
-SHA1 360628af62c178c14d3c8d789e297e0b2ee56118 t/is_fh.t
+SHA1 4de268a3433f0e6ec8b66f855209bf38deeba260 t/is_fh.t
 SHA1 8402cffef120e850cbb19a65683b69dfb192c9c8 t/lib/NoExporter.pm
 SHA1 d6720b79d3fb10113de5717f7ff3e1cc5efa0e9a t/lib/Test/Simple/Catch.pm
 SHA1 fb6841b529dc60b00abf891415c64ac9680ee755 t/lib/Test/Simple/sample_tests/death.plx
@@ -95,7 +95,7 @@ SHA1 59a63c5dd14da4c29bd87f2e33dcda1515396253 t/useing.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.4 (Darwin)
 
-iD8DBQFBwCCiT4Li3Cw/PzQRAqZIAJoDxKjzeGjdyUfv8Ldl8b2fYy7jPACeJwQ3
-8VaStGnmv+vmegPhIXKAi38=
-=wZGh
+iD8DBQFBwT+nT4Li3Cw/PzQRAoaeAJ9Hm76xEqb+O4D9ZJ3wjOgV/mkgAACgnm2z
+xJy04CGXiCcFzecRgJfaaZo=
+=pre6
 -----END PGP SIGNATURE-----
