@@ -18,7 +18,7 @@ if( $th_version < 2.03 ) {
     exit;
 }
 
-plan tests => 16;
+plan tests => 18;
 
 
 $Why = 'Just testing the todo interface.';
@@ -68,4 +68,21 @@ TODO: {
     fail("Just testing todo");
     die "todo_skip should prevent this";
     pass("Again");
+}
+
+
+{
+    my $warning;
+    local $SIG{__WARN__} = sub { $warning = join "", @_ };
+    TODO: {
+        # perl gets the line number a little wrong on the first
+        # statement inside a block.
+        1 == 1;
+#line 82
+        todo_skip "Just testing todo_skip";
+        fail("So very failed");
+    }
+    is( $warning, "todo_skip() needs to know \$how_many tests are in the ".
+                  "block at $0 line 82\n",
+        'todo_skip without $how_many warning' );
 }
