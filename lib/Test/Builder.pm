@@ -8,7 +8,7 @@ $^C ||= 0;
 
 use strict;
 use vars qw($VERSION $CLASS);
-$VERSION = 0.03;
+$VERSION = 0.04;
 $CLASS = __PACKAGE__;
 
 my $IsVMS = $^O eq 'VMS';
@@ -544,6 +544,9 @@ sub no_ending {
 
 Controlling where the test output goes.
 
+It's ok for your test to change where STDOUT and STDERR point to,
+Test::Builder's default output settings will not be effected.
+
 =over 4
 
 =item B<diag>
@@ -677,9 +680,24 @@ sub _new_fh {
     return $fh;
 }
 
-$CLASS->output(\*STDOUT);
-$CLASS->failure_output(\*STDERR);
-$CLASS->todo_output(\*STDOUT);
+unless( $^C ) {
+    # We dup STDOUT and STDERR so people can change them in their
+    # test suites while still getting normal test output.
+    open(TESTOUT, ">&STDOUT") or die "Can't dup STDOUT:  $!";
+    open(TESTERR, ">&STDERR") or die "Can't dup STDERR:  $!";
+    _autoflush(\*TESTOUT);
+    _autoflush(\*TESTERR);
+    $CLASS->output(\*TESTOUT);
+    $CLASS->failure_output(\*TESTERR);
+    $CLASS->todo_output(\*TESTOUT);
+}
+
+sub _autoflush {
+    my($fh) = shift;
+    my $old_fh = select $fh;
+    $| = 1;
+    select $old_fh;
+}
 
 
 =back
