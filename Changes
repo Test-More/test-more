@@ -1,4 +1,5 @@
 0.49
+    - isnt() giving wrong diagnostics and warning if given any undefs.
     * Give unlike() the right prototype [rt.cpan.org 4944]
     - Change from CVS to Aegis
 
