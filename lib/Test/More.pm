@@ -32,24 +32,6 @@ $VERSION = '0.32';
 
 my $Test = Test::Builder->new;
 
-sub import {
-    my($class, @plan) = @_;
-
-    my $caller = caller;
-
-    $Test->exported_to($caller);
-    $Test->plan(@plan);
-
-    my @imports = ();
-    foreach my $idx (0..$#plan) {
-        if( $plan[$idx] eq 'import' ) {
-            @imports = @{$plan[$idx+1]};
-            last;
-        }
-    }
-
-    __PACKAGE__->_export_to_level(1, __PACKAGE__, @imports);
-}
 
 # 5.004's Exporter doesn't have export_to_level.
 sub _export_to_level
@@ -158,6 +140,48 @@ have to use the 'import' option.  For example, to import everything
 but 'fail', you'd do:
 
   use Test::More tests => 23, import => ['!fail'];
+
+Alternatively, you can use the plan() function.  Useful for when you
+have to calculate the number of tests.
+
+  use Test::More;
+  plan tests => keys %Stuff * 3;
+
+or for deciding between running the tests at all:
+
+  use Test::More;
+  if( $^O eq 'MacOS' ) {
+      plan skip_all => 'Test irrelevent on MacOS';
+  }
+  else {
+      plan tests => 42;
+  }
+
+=cut
+
+sub plan {
+    my(@plan) = @_;
+
+    my $caller = caller;
+
+    $Test->exported_to($caller);
+    $Test->plan(@plan);
+
+    my @imports = ();
+    foreach my $idx (0..$#plan) {
+        if( $plan[$idx] eq 'import' ) {
+            @imports = @{$plan[$idx+1]};
+            last;
+        }
+    }
+
+    __PACKAGE__->_export_to_level(1, __PACKAGE__, @imports);
+}
+
+sub import {
+    my($class) = shift;
+    goto &plan;
+}
 
 
 =head2 Test names
