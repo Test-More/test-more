@@ -63,7 +63,7 @@ OUT
 #     Failed test \\(.*\\)
 #                   'foo'
 #     doesn't match '\\(\\?-xism:that\\)'
-# Looks like you failed 1 tests of 1\\.
+# Looks like you failed 1 test of 1\\.
 ERR
 
 
