@@ -18,7 +18,9 @@ sub _carp {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS $TODO);
-$VERSION = '0.51_01';
+$VERSION = '0.51_02';
+$VERSION = eval $VERSION;    # make the alpha version come out as a number
+
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like unlike is_deeply

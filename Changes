@@ -1,4 +1,4 @@
-0.52
+0.51_02  Sat Nov 27 01:25:25 EST 2004
     * is_deeply() and all the eq_* functions now handle circular data
       structures.  [rt.cpan.org 7289]
     * require_ok() now handles filepaths in addition to modules.

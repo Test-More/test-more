@@ -4,7 +4,8 @@ use 5.004;
 
 use strict 'vars';
 use vars qw($VERSION);
-$VERSION = '0.51_01';
+$VERSION = '0.51_02';
+$VERSION = eval $VERSION;    # make the alpha version come out as a number
 
 
 use Test::Builder;
