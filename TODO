@@ -9,3 +9,7 @@ Make a way to ask "Are we passing so far?"
 eval_ok().
 
 isa_ok() name.
+
+Allow importing functions without headers.
+
+Allow suppression of the _ending prints.
