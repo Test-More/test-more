@@ -2,7 +2,6 @@
 
 Test::Tutorial - A tutorial about writing really basic tests
 
-
 =head1 DESCRIPTION
 
     AHHHHHHH!!!!  NOT B<TESTING>!  Anything but testing!  
@@ -172,7 +171,7 @@ test in the debugger or throw in some print statements to find out.
 Instead, we'll switch from Test::Simple to Test::More.  Test::More
 does everything Test::Simple does, and more!  In fact, Test::More does
 things I<exactly> the way Test::Simple does.  You can literally swap
-Test::Simple out and put Test::More in it's place.  That's just what
+Test::Simple out and put Test::More in its place.  That's just what
 we're going to do.
 
 Test::More provides more informative ways to say 'ok'.  ok() is nice
@@ -198,8 +197,8 @@ you what went wrong.  For that, we use the is() function.
     is( $ical->month,   10,       '  month()' );
     is( $ical->year,    1964,     '  year()'  );
 
-"Is $ical->sec 47?"  "Is $ical->min 12?"  With is() in place, you get
-some more information
+"Is C<$ical->sec> 47?"  "Is C<$ical->min> 12?"  With is() in place,
+you get some more information
 
     1..8
     ok 1 - new() returned something
@@ -216,7 +215,7 @@ some more information
     # Looks like you failed 1 tests of 8.
 
 letting us know that $ical->day returned 16, but we expected 17.  A
-quick check shows that the code is working fine, we make a mistake
+quick check shows that the code is working fine, we made a mistake
 when writing up the tests.  Just change it to:
 
     is( $ical->day,     16,       '  day()'   );
@@ -470,7 +469,7 @@ C<local $TODO> and turn it into a real test.
 
 =head2 Testing with taint mode.
 
-Taint mode is a funny thing.  It's the globalist of all global
+Taint mode is a funny thing.  It's the globalest of all global
 features.  Once you turn it on it effects B<all> code in your program
 and B<all> modules used (and all the modules they use).  If a single
 piece of code isn't taint clean, the whole thing explodes.  With that
