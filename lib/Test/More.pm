@@ -304,7 +304,7 @@ test:
 Will produce something like this:
 
     not ok 17 - Is foo the same as bar?
-    #     Failed test 1 (foo.t at line 139)
+    #     Failed test (foo.t at line 139)
     #          got: 'waffle'
     #     expected: 'yarblokos'
 
