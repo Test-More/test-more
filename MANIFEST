@@ -10,6 +10,7 @@ lib/Test/Tutorial.pod
 t/Builder.t
 t/More.t
 t/buffer.t
+t/diag.t
 t/exit.t
 t/extra.t
 t/fail-like.t
