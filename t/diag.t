@@ -7,6 +7,18 @@ BEGIN {
     }
 }
 
+
+# Turn on threads here, if available, since this test tends to find
+# lots of threading bugs.
+use Config;
+BEGIN {
+    unless ($Config{'useithreads'} and eval { require threads; 1 }) {
+        print "1..0 # Skip: no threads\n";
+        exit 0;
+    }
+}
+
+
 use strict;
 
 use Test::More tests => 7;

@@ -8,13 +8,14 @@ BEGIN {
 }
 
 use Config;
-unless ($Config{'useithreads'} and eval { require threads; 1 }) {
-    print "1..0 # Skip: no threads\n";
-    exit 0;
+BEGIN {
+    unless ($Config{'useithreads'} and eval { require threads; 1 }) {
+        print "1..0 # Skip: no threads\n";
+        exit 0;
+    }
 }
 
 use strict;
-require threads;
 use Test::Builder;
 
 my $Test = Test::Builder->new;
