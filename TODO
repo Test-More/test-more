@@ -14,19 +14,7 @@
         is($@, '',                  'didn't explode');
         is($result, 'something',    'and it ran');
 
-    Add something like Test::More->builder to replace direct calls to
-    Test::Builder->new.
-
-    Decide if there's any reason why Test::Builder shouldn't
-    be a singleton.
-
     Expose Test::Builder->diag in Test::More.
-
-    Write a numeric equivalent to is().
-
-    Write a version of like() that can emulate:
-
-        ok( $foo !~ /bar/ );
 
     Finish (start?) Test::FAQ
 
@@ -34,7 +22,3 @@
 
     Decide if the exit code behavior on failure is a useful default
     case.
-
-    unlike()
-
-    is_op()
