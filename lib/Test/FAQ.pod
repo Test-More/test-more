@@ -140,3 +140,9 @@ Forcing resource failure.
 
 use eval { ... };
 
+=head2 I want to print out more diagnostic info on failure.
+
+ok(...) || print "...";
+
+=head2 How can I simulate failures to make sure that my code does the Right Thing in the face of them?
+
