@@ -1,5 +1,11 @@
 Revision history for Perl extension Test::Simple
 
+0.11  Sat Aug 11 23:05:19 EDT 2001
+    * Will no longer warn about testing undef values
+    - Escaping # in test names
+    - Ensuring that ok() returns true or false and not undef
+    - Minor doc typo in the example
+
 0.10  Tue Jul 31 15:01:11 EDT 2001
     * Test::More is now distributed in this tarball.
     * skip and todo tests work!
