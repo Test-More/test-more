@@ -2,13 +2,13 @@
 
 BEGIN {
     require Test::Harness;
-    require Test::More;
+    use Test::More;
 
     if( $Test::Harness::VERSION < 1.23 ) {
-        Test::More->import(skip_all => 'Need Test::Harness 1.23 or up');
+        plan skip_all => 'Need Test::Harness 1.23 or up';
     }
     else {
-        Test::More->import(tests => 13);
+        plan tests => 15;
     }
 }
 
@@ -47,4 +47,13 @@ TODO: {
     isa_ok('Fooble', 'yarble');
     use_ok('Fooble');
     require_ok('Fooble');
+}
+
+
+TODO: {
+    todo_skip "Just testing todo_skip", 2;
+
+    fail("Just testing todo");
+    die "todo_skip should prevent this";
+    pass("Again");
 }
