@@ -7,13 +7,6 @@
     Add a way to ask "Are we passing so far?".  Probably a
     Test::Builder method.
 
-    eval_ok().  A replacement for this sort of thing.  My main concern
-    is that it not screw up caller().
-
-        my $result = eval { some_stuff };
-        is($@, '',                  'didn't explode');
-        is($result, 'something',    'and it ran');
-
     Finish (start?) Test::FAQ
 
     Expand the Test::Tutorial
