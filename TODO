@@ -8,3 +8,13 @@ Rejigger the internals to be an OO singleton.
 Make Test::Simple and Test::More less incestuous.
 
 Add BAIL_OUT()
+
+Crack plan() out into it's own routine so things like selectively
+determining if you should skip the whole test is easier.  Right now you
+have to do:
+
+    BEGIN {
+        if( $some_condition ) {
+            eval q{use Test::More skip_all => $why};
+        }
+    }
