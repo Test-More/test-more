@@ -14,7 +14,7 @@ BEGIN {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT);
-$VERSION = '0.17';
+$VERSION = '0.18';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like
@@ -229,9 +229,9 @@ This is actually Test::Simple's ok() routine.
   is  ( $this, $that, $test_name );
   isnt( $this, $that, $test_name );
 
-Similar to ok(), is() and isnt() compare their two arguments with
-C<eq> and C<ne> respectively and use the result of that to determine
-if the test succeeded or failed.  So these:
+Similar to ok(), is() and isnt() compare their two arguments
+with C<eq> and C<ne> respectively and use the result of that to
+determine if the test succeeded or failed.  So these:
 
     # Is the ultimate answer 42?
     is( ultimate_answer(), 42,          "Meaning of Life" );
@@ -249,7 +249,7 @@ are similar to these:
 So why use these?  They produce better diagnostics on failure.  ok()
 cannot know what you are testing for (beyond the name), but is() and
 isnt() know what the test was and why it failed.  For example this
- test:
+test:
 
     my $foo = 'waffle';  my $bar = 'yarblokos';
     is( $foo, $bar,   'Is foo the same as bar?' );
@@ -276,8 +276,8 @@ In these cases, use ok().
 
   ok( $pope->isa('Catholic') ),         'Is the Pope Catholic?' );
 
-For those grammatical pedants out there, there's an isn't() function
-which is an alias of isnt().
+For those grammatical pedants out there, there's an C<isn't()>
+function which is an alias of isnt().
 
 =cut
 
@@ -350,7 +350,7 @@ is similar to:
 (Mnemonic "This is like that".)
 
 The second argument is a regular expression.  It may be given as a
-regex reference (ie. qr//) or (for better compatibility with older
+regex reference (ie. C<qr//>) or (for better compatibility with older
 perls) as a string that looks like a regex (alternative delimiters are
 currently not supported):
 
@@ -405,35 +405,44 @@ DIAGNOSTIC
 =item B<can_ok>
 
   can_ok($module, @methods);
+  can_ok($object, @methods);
 
-Checks to make sure the $module can do these @methods (works with
-functions, too).
+Checks to make sure the $module or $object can do these @methods
+(works with functions, too).
 
     can_ok('Foo', qw(this that whatever));
 
 is almost exactly like saying:
 
-    ok( Foo->can('this') );
-    ok( Foo->can('that') );
-    ok( Foo->can('whatever') );
+    ok( Foo->can('this') && 
+        Foo->can('that') && 
+        Foo->can('whatever') 
+      );
 
-only without all the typing.  Handy for quickly enforcing an
-interface.
-
-Each method counts as a seperate test.
+only without all the typing and with a better interface.  Handy for
+quickly testing an interface.
 
 =cut
 
 sub can_ok ($@) {
-    my($module, @methods) = @_;
+    my($proto, @methods) = @_;
+    my $class= ref $proto || $proto;
 
-    my $all_ok = 1;
+    my @nok = ();
     foreach my $method (@methods) {
-        my $test = "$module->can('$method')";
-        ok( eval $test, $test ) or $all_ok = 0;
+        my $test = "$class->can('$method')";
+        eval $test || push @nok, $method;
     }
 
-    return $all_ok;
+    my $name;
+    $name = @methods == 1 ? "$class->can($methods[0])" 
+                          : "$class->can(...)";
+    
+    ok( !@nok, $name );
+
+    my_print *TESTERR, map "#     $class->can('$_') failed\n", @nok;
+
+    return !@nok;
 }
 
 =item B<isa_ok>
@@ -609,8 +618,8 @@ is subject to change B<WITHOUT NOTICE>!  Use at your peril.
 Sometimes running a test under certain conditions will cause the
 test script to die.  A certain function or method isn't implemented
 (such as fork() on MacOS), some resource isn't available (like a 
-net connection) or a module isn't available.  In these cases its
-necessary to skip test, or declare that they are supposed to fail
+net connection) or a module isn't available.  In these cases it's
+necessary to skip tests, or declare that they are supposed to fail
 but will work in the future (a todo test).
 
 For more details on skip and todo tests see L<Test::Harness>.
@@ -654,6 +663,7 @@ module is not installed or the operating system doesn't have some
 feature (like fork() or symlinks) or maybe you need an Internet
 connection and one isn't available.
 
+=for _Future
 See L</Why are skip and todo so weird?>
 
 =cut
@@ -871,6 +881,8 @@ have to upgrade Test::Harness to the latest one on CPAN.
 If you simply depend on Test::More, it's own dependencies will cause a
 Test::Harness upgrade.
 
+=back
+
 =head1 AUTHOR
 
 Michael G Schwern E<lt>schwern@pobox.comE<gt> with much inspiration from
@@ -881,7 +893,7 @@ Slaymaker and the perl-qa gang.
 =head1 HISTORY
 
 This is a case of convergent evolution with Joshua Pritikin's Test
-module.  I was actually largely unware of its existance when I'd first
+module.  I was largely unware of its existence when I'd first
 written my own ok() routines.  This module exists because I can't
 figure out how to easily wedge test names into Test's interface (along
 with a few other problems).
