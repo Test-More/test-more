@@ -8,8 +8,8 @@ use Test::Builder;
 
 
 require Exporter;
-use vars qw($VERSION @ISA @EXPORT $TODO);
-$VERSION = '0.30';
+use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS $TODO);
+$VERSION = '0.31';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like
@@ -31,7 +31,15 @@ sub import {
     $Test->exported_to($caller);
     $Test->plan(@plan);
 
-    __PACKAGE__->_export_to_level(1, __PACKAGE__);
+    my @imports = ();
+    foreach my $idx (0..$#plan) {
+        if( $plan[$idx] eq 'import' ) {
+            @imports = @{$plan[$idx+1]};
+            last;
+        }
+    }
+
+    __PACKAGE__->_export_to_level(1, __PACKAGE__, @imports);
 }
 
 # 5.004's Exporter doesn't have export_to_level.
@@ -600,7 +608,8 @@ See L</Why are skip and todo so weird?>
 #'#
 sub skip {
     my($why, $how_many) = @_;
-    unless( $how_many >= 1 ) {
+
+    unless( defined $how_many ) {
         # $how_many can only be avoided when no_plan is in use.
         carp "skip() needs to know \$how_many tests are in the block"
           if $Test::Simple::Planned_Tests;
