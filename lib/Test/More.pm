@@ -1103,6 +1103,9 @@ sub _deep_check {
         if( defined $e1 xor defined $e2 ) {
             $ok = 0;
         }
+        elsif ( $e1 == $DNE xor $e2 == $DNE ) {
+            $ok = 0;
+        }
         elsif ( $same_ref and ($e1 eq $e2) ) {
             $ok = 1;
         }

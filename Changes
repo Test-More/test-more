@@ -4,6 +4,8 @@
       [rt.cpan.org 7031]
     - eq_array() and eq_hash() could hold onto references if they failed
       keeping them in memory and preventing DESTROY.  [rt.cpan.org 7032]
+    - is_deeply() could confuse [] with a non-existing value
+      [rt.cpan.org 7030]
     - Thanks to Fergal Daly for ferretting out all these is_deeply and eq_*
       tests.
 

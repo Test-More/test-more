@@ -23,7 +23,7 @@ local $ENV{HARNESS_ACTIVE} = 0;
 # Can't use Test.pm, that's a 5.005 thing.
 package main;
 
-print "1..28\n";
+print "1..32\n";
 
 my $test_num = 1;
 # Utility testing functions.
@@ -253,6 +253,7 @@ foreach my $test (@tests) {
 #line 240
 # [rt.cpan.org 6837]
 ok !is_deeply([{Foo => undef}],[{Foo => ""}]), 'undef != ""';
+ok( @Test::More::Data_Stack == 0, '@Data_Stack not holding onto things' );
 
 
 #line 258
@@ -261,3 +262,8 @@ my $a = [];
 ok !is_deeply($a, $a.''),       "don't compare refs like strings";
 ok !is_deeply([$a], [$a.'']),   "  even deep inside";
 
+
+#line 265
+# [rt.cpan.org 7030]
+ok !is_deeply( {}, {key => []} ),  '[] could match non-existent values';
+ok !is_deeply( [], [[]] );
