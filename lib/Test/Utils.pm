@@ -1,12 +1,12 @@
 package Test::Utils;
 
-require 5.004;
+use 5.004;
 
 use strict;
 require Exporter;
 use vars qw($VERSION @EXPORT @EXPORT_TAGS @ISA);
 
-$VERSION = '0.01';
+$VERSION = '0.02';
 
 @ISA = qw(Exporter);
 @EXPORT = qw( my_print print );
