@@ -16,6 +16,8 @@ sub ok ($;$) {
     $ok .= "\n";
     print $ok;
     $test_num++;
+
+    return $test;
 }
 
 
@@ -86,7 +88,10 @@ ERR
 # Looks like you failed 8 tests of 8.
 ERR
 
-    My::Test::ok($$err =~ /^\Q$err_re\E$more_err_re$/, 'failing errors');
+    unless( My::Test::ok($$err =~ /^\Q$err_re\E$more_err_re$/, 
+                         'failing errors') ) {
+        print map "# $_", $$err;
+    }
 
     exit(0);
 }
