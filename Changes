@@ -5,6 +5,8 @@ Revision history for Perl extension Test::Simple
       objects passed into test functions causing problems with tests 
       relying on object destruction.
     - Added example of calculating the number of tests to Test::Tutorial
+    - Peter Scott made the ending logic not fire on child processes when
+      forking.
 
 0.46  Sat Jul 20 19:57:40 EDT 2002
     - Noted eq_set() isn't really a set comparision.

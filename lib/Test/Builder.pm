@@ -19,6 +19,7 @@ my @Test_Details = ();
 my($Test_Died) = 0;
 my($Have_Plan) = 0;
 my $Curr_Test = 0;
+my $Original_Pid = $$;
 
 # Make Test::Builder thread-safe for ithreads.
 BEGIN {
@@ -1284,6 +1285,10 @@ sub _ending {
     my $self = shift;
 
     _sanity_check();
+
+    # Don't bother with an ending if this is a forked copy.  Only the parent
+    # should do the ending.
+    do{ _my_exit($?) && return } if $Original_Pid != $$;
 
     # Bailout if plan() was never called.  This is so
     # "require Test::Simple" doesn't puke.
