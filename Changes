@@ -1,5 +1,9 @@
 Revision history for Perl extension Test::Simple
 
+0.34  Tue Nov 27 15:43:56 EST 2001
+    * Empty string no longer matches undef in is() and isnt().
+    * Added isnt_eq and isnt_num to Test::Builder.
+
 0.33  Mon Oct 22 21:05:47 EDT 2001
     * It's now officially safe to redirect STDOUT and STDERR without
       affecting test output.
