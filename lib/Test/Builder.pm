@@ -822,6 +822,7 @@ sub diag {
 
     # Escape each line with a #.
     foreach (@msgs) {
+        $_ = 'undef' unless defined;
         s/^/# /gms;
     }
 

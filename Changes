@@ -8,6 +8,7 @@ Revision history for Perl extension Test::Simple
       the skipping part.
     - Making plan() vomit if it gets something it doesn't understand.
     - Tatsuhiko Miyagawa fixed use_ok() with pragmata on older perls.
+    - quieting diag(undef)
 
 0.43  Thu Apr 11 22:55:23 EDT 2002
     - Adrian Howard added TB->maybe_regex()
