@@ -32,6 +32,7 @@ t/has_plan.t
 t/has_plan2.t
 t/import.t
 t/is_deeply.t
+t/is_fh.t
 t/lib/NoExporter.pm
 t/lib/Test/Simple/Catch.pm
 t/lib/Test/Simple/sample_tests/death.plx

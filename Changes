@@ -1,4 +1,5 @@
 0.55
+    - *output() methods now handle tied handles and *FOO{IO} properly.
     - maybe_regex() now handles undef gracefully.
     - maybe_regex() now handles 'm,foo,' style regexes.
 

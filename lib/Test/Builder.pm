@@ -1128,21 +1128,33 @@ sub todo_output {
     return $Todo_FH;
 }
 
+
 sub _new_fh {
     my($file_or_fh) = shift;
 
     my $fh;
-    unless( UNIVERSAL::isa($file_or_fh, 'GLOB') ) {
+    if( _is_fh($file_or_fh) ) {
+        $fh = $file_or_fh;
+    }
+    else {
         $fh = do { local *FH };
         open $fh, ">$file_or_fh" or 
             die "Can't open test output log $file_or_fh: $!";
     }
-    else {
-        $fh = $file_or_fh;
-    }
 
     return $fh;
 }
+
+
+sub _is_fh {
+    my $maybe_fh = shift;
+
+    return UNIVERSAL::isa($maybe_fh,         'GLOB')         ||
+           UNIVERSAL::isa($maybe_fh,         'IO::Handle')   ||
+           UNIVERSAL::can(tied($maybe_fh),   'TIEHANDLE')    ||
+           fileno($maybe_fh);
+}
+
 
 sub _autoflush {
     my($fh) = shift;
