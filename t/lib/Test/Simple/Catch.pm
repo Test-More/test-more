@@ -14,6 +14,8 @@ $t->todo_output($err_fh);
 
 sub caught { return($out, $err) }
 
+sub CLOSE { }
+
 sub PRINT  {
     my $self = shift;
     $$self .= join '', @_;
