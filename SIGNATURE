@@ -14,17 +14,17 @@ not run its Makefile.PL or Build.PL.
 -----BEGIN PGP SIGNED MESSAGE-----
 Hash: SHA1
 
-SHA1 582c459d4b2b06193bdce7d0e46e46f7810e76d1 Changes
+SHA1 997774e80f6c0e8af2e16f576d86b5326759bbd7 Changes
 SHA1 74876bad9437c03e929e31b8bd4242012a358678 MANIFEST
-SHA1 0f7840798d940cb3c52898ca8d819de6c2742e1f META.yml
+SHA1 cd68ace8cecdb5eb103b04a7c354632908b2b58d META.yml
 SHA1 fec7c34f87744c0c9ec94de82b87ed13a677d1e6 Makefile.PL
 SHA1 2e4baac155d4e4d784ea6dcf153878c9b6c66765 README
 SHA1 ad761920d29c767f09160ff59ce3a186abcae143 TODO
 SHA1 b6f5d1fb26eb16c2cfe4a87d494e68263cdf518d lib/Test/Builder.pm
-SHA1 ad5cf836ae3c863da82d8fe56e38c8fe34d57aac lib/Test/More.pm
-SHA1 1f9ffcb1345b82a1d2f327bd6b1914689756c47e lib/Test/Simple.pm
+SHA1 de48fe3c8cf8bc6e762b6496c11009ebf32ddfae lib/Test/More.pm
+SHA1 f1892bdef5d7e40ddb56d06fafd5670a8292e429 lib/Test/Simple.pm
 SHA1 23537c5ecebd2e0fefa6986c106b994f5d1c8e7a lib/Test/Tutorial.pod
-SHA1 e0ff9fb6f4d30adf9a3f40b53d996f58dbb856b2 t/00signature.t
+SHA1 ad7d30f2b8e7f62006bd64a64759049af0cd97bb t/00signature.t
 SHA1 f614fee1686807c5eebe63e5db53559c465a9d68 t/00test_harness_check.t
 SHA1 809c6b08f9b1024b0cf3dde10057d625120824b2 t/Builder.t
 SHA1 4a6f2fb4bc879a4b245dde720e2523ef23d11d2b t/More.t
@@ -94,7 +94,7 @@ SHA1 59a63c5dd14da4c29bd87f2e33dcda1515396253 t/useing.t
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.2.4 (Darwin)
 
-iD8DBQFBqpXYT4Li3Cw/PzQRAo3GAJ9lA62Gi2cMuryebFISfrcjPBbLMACfaJb6
-JCmy+msaWNco5Ffm6Hs1Tss=
-=cBFJ
+iD8DBQFBqu/vT4Li3Cw/PzQRAsFfAJ9g0XjJVdGJyKS2sCwpPCZA4XurLQCfS3+v
+i3jXAWKBW0FQ2mku9lzzvlU=
+=q1n7
 -----END PGP SIGNATURE-----

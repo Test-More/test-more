@@ -4,7 +4,7 @@ use 5.004;
 
 use strict 'vars';
 use vars qw($VERSION);
-$VERSION = '0.52';
+$VERSION = '0.53';
 $VERSION = eval $VERSION;    # make the alpha version come out as a number
 
 
