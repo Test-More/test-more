@@ -1,6 +1,10 @@
 Revision history for Perl extension Test::Simple
 
-0.02  Fri Mar 30 05:12:14 BST 2001
+0.03  Fri Mar 30 08:08:33 BST 2001
+    - ok() now prints on what line and file it failed.
+    - eval 'die' was considered abnormal.  Fixed.
+
+0.02  Fri Mar 30 05:12:14 BST 2001      *UNRELEASED*
     - exit codes tested
     * exit code on abnormal exit changed to 255 (thanks to Tim Bunce for
       pointing out that Unix can't do negative exit codes)

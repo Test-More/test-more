@@ -2,7 +2,7 @@ package Test::Simple;
 
 require 5.005;
 
-$Test::Simple::VERSION = '0.02';
+$Test::Simple::VERSION = '0.03';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
@@ -111,6 +111,12 @@ sub ok ($;$) {
     # Make sure the print doesn't get interfered with.
     local($\, $,);
 
+    print TESTERR <<ERR if defined $name and $name !~ /\D/;
+You named your test '$name'.  You shouldn't use numbers for your test names.
+Very confusing.
+ERR
+
+
     # We must print this all in one shot or else it will break on VMS
     my $msg;
     unless( $test ) {
@@ -125,6 +131,15 @@ sub ok ($;$) {
     $msg   .= "\n";
 
     print TESTOUT $msg;
+
+    #'#
+    unless( $test ) {
+        my($pack, $file, $line) = (caller)[0,1,2];
+        if( $pack eq 'Test::More' ) {
+            ($file, $line) = (caller(1))[1,2];
+        }
+        print TESTERR "# Failed test ($file at line $line)\n";
+    }
 
     return $test;
 }
@@ -201,7 +216,7 @@ WHOA
 =cut
 
 $SIG{__DIE__} = sub {
-    return if $^S;      # don't muck with a deah in an eval;
+    return if $^S or !defined $^S;   # don't muck with a death in an eval;
     $Test_Died = 1;
 };
 
@@ -232,13 +247,16 @@ FAIL
 
         if( $Test_Died ) {
             print TESTERR <<"FAIL";
-# Looks like your tied died just after $Num_Tests.
+# Looks like your test died just after $Num_Tests.
 FAIL
 
             exit( 255 );
         }
 
         exit( $num_failed );
+    }
+    elsif ( $Test::Simple::Skip_All ) {
+        exit( 0 );
     }
     else {
         print TESTERR "# No tests run!\n";
@@ -300,13 +318,14 @@ complicated feature into the new Testing module.  He observed that the
 main problem is not dealing with these edge cases but that people hate
 to write tests B<at all>.  What was needed was a dead simple module
 that took all the hard work out of testing and was really, really easy
-to learn.  This is it.
+to learn.  Paul Johnson simultaneously had this idea (unfortunately,
+he wasn't in Tony's kitchen).  This is it.
 
 
 =head1 AUTHOR
 
-Idea by Tony Bowden, code by Michael G Schwern <schwern@pobox.com>,
-wardrobe by Calvin Klein.
+Idea by Tony Bowden and Paul Johnson, code by Michael G Schwern
+<schwern@pobox.com>, wardrobe by Calvin Klein.
 
 
 =head1 SEE ALSO
@@ -316,7 +335,9 @@ wardrobe by Calvin Klein.
 =item L<Test::More>
 
 More testing functions!  Once you outgrow Test::Simple, look at
-Test::More.
+Test::More.  Test::Simple is 100% forward compatible with Test::More
+(ie. you can just use Test::More instead of Test::Simple in your
+programs and things will still work).
 
 =item L<Test>
 
