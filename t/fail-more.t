@@ -82,13 +82,13 @@ OUT
 #     Failed test ($0 at line 40)
 #          got: 'foo'
 #     expected: 'bar'
-#     Failed test (t/fail-more.t at line 41)
+#     Failed test ($0 at line 41)
 #          got: undef
 #     expected: ''
-#     Failed test (t/fail-more.t at line 42)
+#     Failed test ($0 at line 42)
 #          got: undef
 #     expected: '0'
-#     Failed test (t/fail-more.t at line 43)
+#     Failed test ($0 at line 43)
 #          got: ''
 #     expected: '0'
 #     Failed test ($0 at line 45)
