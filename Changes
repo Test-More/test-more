@@ -1,4 +1,8 @@
-0.48_02
+0.49
+    * Give unlike() the right prototype [rt.cpan.org 4944]
+    - Change from CVS to Aegis
+
+0.48_02  * UNRELEASED *
     - Mentioning Test::Differences, Test::Deep and Bundle::Test.
     - Removed dependency on File::Spec.
     - Fixing the grammar of diagnostic outputs when only a single test
