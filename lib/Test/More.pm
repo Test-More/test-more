@@ -11,17 +11,18 @@ use Test::Builder;
 # actually happened.
 sub _carp {
     my($file, $line) = (caller(1))[1,2];
-    warn @_, sprintf " at $file line $line\n";
+    warn @_, " at $file line $line\n";
 }
 
 
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS $TODO);
-$VERSION = '0.37';
+$VERSION = '0.40';
 @ISA    = qw(Exporter);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like is_deeply
+             cmp_ok
              skip todo todo_skip
              pass fail
              eq_array eq_hash eq_set
@@ -38,7 +39,7 @@ sub _export_to_level
 {
       my $pkg = shift;
       my $level = shift;
-      (undef) = shift;                  # XXX redundant arg
+      (undef) = shift;                  # redundant arg
       my $callpkg = caller($level);
       $pkg->export($callpkg, @_);
 }
@@ -327,6 +328,10 @@ sub isnt ($$;$) {
 
 *isn't = \&isnt;
 
+sub cmp_ok($$$;$) {
+    my($this, $op, $that, $name) = @_;
+    $Test->cmp_ok($op, $this, $that, $name);
+}
 
 =item B<like>
 
@@ -382,11 +387,24 @@ is almost exactly like saying:
 only without all the typing and with a better interface.  Handy for
 quickly testing an interface.
 
+No matter how many @methods you check, a single can_ok() call counts
+as one test.  If you desire otherwise, use:
+
+    foreach my $meth (@methods) {
+        can_ok('Foo', $meth);
+    }
+
 =cut
 
 sub can_ok ($@) {
     my($proto, @methods) = @_;
     my $class= ref $proto || $proto;
+
+    unless( @methods ) {
+        my $ok = $Test->ok( 0, "$class->can(...)" );
+        $Test->diag('can_ok() called with no methods');
+        return $ok;
+    }
 
     my @nok = ();
     foreach my $method (@methods) {
@@ -408,6 +426,7 @@ sub can_ok ($@) {
 =item B<isa_ok>
 
   isa_ok($object, $class, $object_name);
+  isa_ok($ref,    $type,  $ref_name);
 
 Checks to see if the given $object->isa($class).  Also checks to make
 sure the object was defined in the first place.  Handy for this sort
@@ -422,6 +441,10 @@ where you'd otherwise have to write
     ok( defined $obj && $obj->isa('Some::Module') );
 
 to safeguard against your test script blowing up.
+
+It works on references, too:
+
+    isa_ok( $array_ref, 'ARRAY' );
 
 The diagnostics of this test normally just refer to 'the object'.  If
 you'd like them to be more specific, you can supply an $object_name
@@ -441,8 +464,9 @@ sub isa_ok ($$;$) {
     elsif( !ref $object ) {
         $diag = "$obj_name isn't a reference";
     }
-    elsif( !$object->isa($class) ) {
-        $diag = "$obj_name isn't a '$class'";
+    elsif( !UNIVERSAL::isa($object,$class) ) {
+        my $ref = ref $object;
+        $diag = "$obj_name isn't a '$class' its a '$ref'";
     }
 
     my $ok;
@@ -754,6 +778,9 @@ references, it does a deep comparison walking each data structure to
 see if they are equivalent.  If the two structures are different, it
 will display the place where they start differing.
 
+Barrie Slaymaker's Test::Differences module provides more in-depth
+functionality along these lines, and it plays well with Test::More.
+
 B<NOTE> Display of scalar refs is not quite 100%
 
 =cut
@@ -950,8 +977,35 @@ sub eq_set  {
     return eq_array( [sort _bogus_sort @$a1], [sort _bogus_sort @$a2] );
 }
 
+=back
+
+
+=head2 Extending and Embedding Test::More
+
+Sometimes the Test::More interface isn't quite enough.  Fortunately,
+Test::More is built on top of Test::Builder which provides a single,
+unified backend for any test library to use.  This means two test
+libraries which both use Test::Builder B<can be used together in the
+same program>.
+
+If you simply want to do a little tweaking of how the tests behave,
+you can access the underlying Test::Builder object like so:
+
+=item B<builder>
+
+    my $test_builder = Test::More->builder;
+
+Returns the Test::Builder object underlying Test::More for you to play
+with.
+
+=cut
+
+sub builder {
+    return Test::Builder->new;
+}
 
 =back
+
 
 =head1 NOTES
 
@@ -963,30 +1017,18 @@ Test::More is B<explicitly> tested all the way back to perl 5.004.
 
 =item Making your own ok()
 
-This will not do what you mean:
+If you are trying to extend Test::More, don't.  Use Test::Builder
+instead.
 
-    sub my_ok {
-        ok( @_ );
-    }
-
-    my_ok( 2 + 2 == 5, 'Basic addition' );
-
-since ok() takes it's arguments as scalars, it will see the length of
-@_ (2) and always pass the test.  You want to do this instead:
-
-    sub my_ok {
-        ok( $_[0], $_[1] );
-    }
-
-The other functions act similarly.
-
-=item The eq_* family have some caveats.
+=item The eq_* family has some caveats.
 
 =item Test::Harness upgrades
 
 no_plan and todo depend on new Test::Harness features and fixes.  If
-you're going to distribute tests that use no_plan your end-users will
-have to upgrade Test::Harness to the latest one on CPAN.
+you're going to distribute tests that use no_plan or todo your
+end-users will have to upgrade Test::Harness to the latest one on
+CPAN.  If you avoid no_plan and TODO tests, the stock Test::Harness
+will work fine.
 
 If you simply depend on Test::More, it's own dependencies will cause a
 Test::Harness upgrade.
@@ -1015,7 +1057,11 @@ L<Test::Simple> if all this confuses you and you just want to write
 some tests.  You can upgrade to Test::More later (its forward
 compatible).
 
-L<Test> for a similar testing module.
+L<Test::Differences> for more ways to test complex data structures.
+And it plays well with Test::More.
+
+L<Test> is the old testing module.  Its main benefit is that it has
+been distributed with Perl since 5.004_05.
 
 L<Test::Harness> for details on how your test results are interpreted
 by Perl.
@@ -1029,9 +1075,9 @@ L<SelfTest> is another approach to embedded testing.
 
 =head1 AUTHORS
 
-Michael G Schwern E<lt>schwern@pobox.comE<gt> with much inspiration from
-Joshua Pritikin's Test module and lots of discussion with Barrie
-Slaymaker and the perl-qa gang.
+Michael G Schwern E<lt>schwern@pobox.comE<gt> with much inspiration
+from Joshua Pritikin's Test module and lots of help from Barrie
+Slaymaker, Tony Bowden, chromatic and the perl-qa gang.
 
 
 =head1 COPYRIGHT
