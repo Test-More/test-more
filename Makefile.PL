@@ -34,3 +34,9 @@ WriteMakefile(
                          DIST_DEFAULT   => 'all tardist',
                        },
 );
+
+# Older versions of Test::Simple were very naught about being required and
+# exitted with 255.  This overrides that behavior so it builds from CPAN.
+END {
+    exit(0);
+}

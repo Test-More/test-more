@@ -2,16 +2,19 @@ package Test::Simple;
 
 require 5.005;
 
-$Test::Simple::VERSION = '0.03';
+$Test::Simple::VERSION = '0.04';
 
 my(@Test_Results) = ();
 my($Num_Tests, $Planned_Tests, $Test_Died) = (0,0,0);
+my($Import_Run) = 0;
 
 # I'd like to have Test::Simple interfere with the program being
 # tested as little as possible.  This includes using Exporter or
 # anything else (including strict).
 sub import {
     my($class, %config) = @_;
+
+    $Import_Run = 1;
 
     if( !exists $config{tests} ) {
         die "You have to tell $class how many tests you plan to run.\n".
@@ -222,6 +225,10 @@ $SIG{__DIE__} = sub {
 
 END {
     _sanity_check();
+
+    # Bailout if import() was never called.  This is so
+    # "require Test::Simple" doesn't puke.
+    exit 0 unless $Import_Run;
 
     # Figure out if we passed or failed and print helpful messages.
     if( $Num_Tests ) {

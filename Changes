@@ -1,5 +1,9 @@
 Revision history for Perl extension Test::Simple
 
+0.04  Mon Apr  2 11:05:01 BST 2001
+    - Fixed "require Test::Simple" so it doesn't bitch and exit 255
+    - Now installable with the CPAN shell.
+
 0.03  Fri Mar 30 08:08:33 BST 2001
     - ok() now prints on what line and file it failed.
     - eval 'die' was considered abnormal.  Fixed.

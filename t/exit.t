@@ -25,6 +25,7 @@ my %Tests = (
              'death.plx'                => 255,
              'last_minute_death.plx'    => 255,
              'death_in_eval.plx'        => 0,
+             'require.plx'              => 0,
             );
 
 print "1..".keys(%Tests)."\n";
