@@ -264,6 +264,8 @@ ERR
     unless( My::Test::ok($$err =~ /^$more_err_re$/, 
                          'failing errors') ) {
         print $$err;
+        print "regex:\n";
+        print $more_err_re;
     }
 
     exit(0);
