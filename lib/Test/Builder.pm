@@ -1283,7 +1283,7 @@ sub _ending {
 
     # Bailout if plan() was never called.  This is so
     # "require Test::Simple" doesn't puke.
-    do{ _my_exit(0) && return } if !$Have_Plan;
+    do{ _my_exit(0) && return } if !$Have_Plan && !$Test_Died;
 
     # Figure out if we passed or failed and print helpful messages.
     if( @Test_Results ) {
@@ -1330,6 +1330,11 @@ FAIL
     }
     elsif ( $Skip_All ) {
         _my_exit( 0 ) && return;
+    }
+    elsif ( $Test_Died ) {
+        $self->diag(<<'FAIL');
+Looks like your test died before it could output anything.
+FAIL
     }
     else {
         $self->diag("No tests run!\n");

@@ -29,6 +29,7 @@ t/lib/Test/Simple/sample_tests/extras.plx
 t/lib/Test/Simple/sample_tests/five_fail.plx
 t/lib/Test/Simple/sample_tests/last_minute_death.plx
 t/lib/Test/Simple/sample_tests/one_fail.plx
+t/lib/Test/Simple/sample_tests/pre_plan_death.plx
 t/lib/Test/Simple/sample_tests/require.plx
 t/lib/Test/Simple/sample_tests/success.plx
 t/lib/Test/Simple/sample_tests/too_few.plx

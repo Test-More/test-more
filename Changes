@@ -9,6 +9,7 @@ Revision history for Perl extension Test::Simple
     - Clarified the meaning of 'actual_ok' from TB->details
     * Added TB->details() from chromatic
     - Neil Watkiss fixed a pre-5.8 test glitch with threads.t
+    * If the test died before a plan, it would exit with 0 [ID 20020716.013]
 
 0.45  Wed Jun 19 18:41:12 EDT 2002
     - Andy Lester made the SKIP & TODO docs a bit clearer.
