@@ -964,10 +964,8 @@ references, it does a deep comparison walking each data structure to
 see if they are equivalent.  If the two structures are different, it
 will display the place where they start differing.
 
-Barrie Slaymaker's Test::Differences module provides more in-depth
-functionality along these lines, and it plays well with Test::More.
-
-B<NOTE> Display of scalar refs is not quite 100%
+Test::Differences and Test::Deep provide more in-depth functionality
+along these lines.
 
 =cut
 
@@ -1280,22 +1278,24 @@ L<Test::Simple> if all this confuses you and you just want to write
 some tests.  You can upgrade to Test::More later (it's forward
 compatible).
 
-L<Test::Differences> for more ways to test complex data structures.
-And it plays well with Test::More.
-
 L<Test> is the old testing module.  Its main benefit is that it has
 been distributed with Perl since 5.004_05.
 
 L<Test::Harness> for details on how your test results are interpreted
 by Perl.
 
-L<Test::Unit> is XUnit style testing.
+L<Test::Differences> for more ways to test complex data structures.
+And it plays well with Test::More.
 
 L<Test::Class> is like XUnit but more perlish.
 
+L<Test::Deep> gives you more powerful complex data structure testing.
+
+L<Test::Unit> is XUnit style testing.
+
 L<Test::Inline> shows the idea of embedded testing.
 
-L<SelfTest> is another approach to embedded testing.
+L<Bundle::Test> installs a whole bunch of useful test modules.
 
 
 =head1 AUTHORS
