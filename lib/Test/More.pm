@@ -375,7 +375,7 @@ sub can_ok ($@) {
 
     my @nok = ();
     foreach my $method (@methods) {
-        my $test = "$class->can('$method')";
+        my $test = "'$class'->can('$method')";
         eval $test || push @nok, $method;
     }
 
@@ -725,7 +725,7 @@ sub _format_stack {
     my $did_arrow = 0;
     foreach my $entry (@Stack) {
         my $type = $entry->{type} || '';
-        my $idx  = $entry->{index};
+        my $idx  = $entry->{'idx'};
         if( $type eq 'HASH' ) {
             $var .= "->" unless $did_arrow++;
             $var .= "{$idx}";
@@ -779,7 +779,7 @@ sub eq_array  {
         my $e1 = $_ > $#$a1 ? $DNE : $a1->[$_];
         my $e2 = $_ > $#$a2 ? $DNE : $a2->[$_];
 
-        push @Data_Stack, { type => 'ARRAY', index => $_, vals => [$e1, $e2] };
+        push @Data_Stack, { type => 'ARRAY', idx => $_, vals => [$e1, $e2] };
         $ok = _deep_check($e1,$e2);
         pop @Data_Stack if $ok;
 
@@ -854,7 +854,7 @@ sub eq_hash {
         my $e1 = exists $a1->{$k} ? $a1->{$k} : $DNE;
         my $e2 = exists $a2->{$k} ? $a2->{$k} : $DNE;
 
-        push @Data_Stack, { type => 'HASH', index => $k, vals => [$e1, $e2] };
+        push @Data_Stack, { type => 'HASH', idx => $k, vals => [$e1, $e2] };
         $ok = _deep_check($e1, $e2);
         pop @Data_Stack if $ok;
 
