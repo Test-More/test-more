@@ -1,3 +1,8 @@
+0.53  Mon Nov 29 04:43:24 EST 2004
+    - Apparently its possible to have Module::Signature installed without
+      it being functional.  Fixed the signature test to account for this.
+      (not a real bug)
+
 0.52  Sun Nov 28 21:41:03 EST 2004
     - plan() now better checks that the given plan is valid. 
       [rt.cpan.org 2597]

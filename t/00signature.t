@@ -22,5 +22,10 @@ else {
     plan tests => 1;
 }
 
-is(Module::Signature::verify(), Module::Signature::SIGNATURE_OK(), 
-                                                         "Valid signature" );
+my $ret = Module::Signature::verify();
+SKIP: {
+    skip "Module::Signature cannot verify", 1 
+      if $ret eq Module::Signature::CANNOT_VERIFY();
+
+    cmp_ok $ret, '==', Module::Signature::SIGNATURE_OK(), "Valid signature";
+}
