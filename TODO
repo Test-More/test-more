@@ -1,11 +1,36 @@
-Test use_ok() with imports better.
+    Test use_ok() with imports better.
 
-Add BAIL_OUT()
+    Add BAIL_OUT() (little known Test::Harness feature that basically
+    declares that the universe has turned out all wrong and the test
+    will now stop what it's doing and just go back to bed.)
 
-Make a way to ask "Are we passing so far?"
+    Add a way to ask "Are we passing so far?".  Probably a
+    Test::Builder method.
 
-eval_ok().
+    eval_ok().  A replacement for this sort of thing.  My main concern
+    is that it not screw up caller().
 
-Test::More->builder to avoid direct access to Test::Builder
+        my $result = eval { some_stuff };
+        is($@, '',                  'didn't explode');
+        is($result, 'something',    'and it ran');
 
-Expose diag().
+    Add something like Test::More->builder to replace direct calls to
+    Test::Builder->new.
+
+    Decide if there's any reason why Test::Builder shouldn't
+    be a singleton.
+
+    Expose Test::Builder->diag in Test::More.
+
+    Write a numeric equivalent to is().
+
+    Write a version of like() that can emulate:
+
+        ok( $foo !~ /bar/ );
+
+    Finish (start?) Test::FAQ
+
+    Expand the Test::Tutorial
+
+    Decide if the exit code behavior on failure is a useful default
+    case.
