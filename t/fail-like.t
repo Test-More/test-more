@@ -36,9 +36,9 @@ package main;
 
 require Test::More;
 
-push @INC, 't', '.';
-require Catch::More;
-my($out, $err) = Catch::More::caught();
+push @INC, 't/lib';
+require Test::Simple::Catch::More;
+my($out, $err) = Test::Simple::Catch::More::caught();
 
 Test::More->import(tests => 1);
 
