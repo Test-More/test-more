@@ -24,11 +24,14 @@ END
 {
     local $ENV{AEGIS_TMPDIR} = File::Spec->tmpdir;
     eval { runtests @ARGV; };
+    warn $@;
 }
 
 print AEGIS_OUT <<"END";
 ];
 END
+
+exit( $@ ? 1 : 0 );  # translate dies into an exit of 1
 
 
 package Test::Harness::Straps::Aegis;
