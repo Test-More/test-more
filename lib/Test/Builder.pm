@@ -1203,9 +1203,12 @@ sub _open_testhandles {
     my $curr_test = $Test->current_test;
     $Test->current_test($num);
 
-Gets/sets the current test # we're on.
+Gets/sets the current test number we're on.  You usually shouldn't
+have to set this.
 
-You usually shouldn't have to set this.
+If set forward, the details of the missing tests are filled in as 'unknown'.
+if set backward, the details of the intervening tests are deleted.  You
+can erase history if you really want to.
 
 =cut
 
@@ -1220,6 +1223,8 @@ sub current_test {
         }
 
         $Curr_Test = $num;
+
+        # If the test counter is being pushed forward fill in the details.
         if( $num > @Test_Results ) {
             my $start = @Test_Results ? $#Test_Results + 1 : 0;
             for ($start..$num-1) {
@@ -1231,6 +1236,10 @@ sub current_test {
                     name      => undef 
                 });
             }
+        }
+        # If backward, wipe history.  Its their funeral.
+        elsif( $num < @Test_Results ) {
+            $#Test_Results = $num - 1;
         }
     }
     return $Curr_Test;
