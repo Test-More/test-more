@@ -15,3 +15,12 @@
 \.old$
 \#$
 ^\.#
+
+# Avoid this one test that doesn't work yet
+^t/strays.t
+
+# Don't distribute Test::Harness
+^t/lib/Test/Harness
+
+# Test::FAQ is not complete.
+^lib/Test/FAQ
