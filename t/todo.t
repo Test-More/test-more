@@ -7,17 +7,19 @@ BEGIN {
     }
 }
 
-BEGIN {
-    require Test::Harness;
-    use Test::More;
+require Test::Harness;
+use Test::More;
 
-    if( $Test::Harness::VERSION < 1.23 ) {
-        plan skip_all => 'Need Test::Harness 1.23 or up';
-    }
-    else {
-        plan tests => 15;
-    }
+# This feature requires a fairly new version of Test::Harness
+if( $Test::Harness::VERSION < 2.03 ) {
+    plan tests => 1;
+    diag "Need Test::Harness 2.03 or up.  You have $Test::Harness::VERSION.";
+    fail 'Need Test::Harness 2.03 or up';
+    exit;
 }
+
+plan tests => 15;
+
 
 $Why = 'Just testing the todo interface.';
 

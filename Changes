@@ -4,6 +4,8 @@ Revision history for Perl extension Test::Simple
     - Mention Test::Class in Test::More's SEE ALSO
     * use_ok() now DWIM for version checks
     - More problems with ithreads fixed.
+    * Test::Harness upgrade no longer optional.  It was causing too
+      many problems when the T::H upgrade didn't work.
 
 0.47  Mon Aug 26 03:54:22 PDT 2002 
     * Tatsuhiko Miyagawa noticed Test::Builder was accidentally storing 
