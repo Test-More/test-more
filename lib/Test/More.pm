@@ -1018,13 +1018,14 @@ WARNING
     my($this, $that, $name) = @_;
 
     my $ok;
-    if( !ref $this xor !ref $that ) {  # one's a reference, one isn't
-        $ok = 0;
-    }
-    if( !ref $this and !ref $that ) {
+    if( !ref $this and !ref $that ) {  		# neither is a reference
         $ok = $Test->is_eq($this, $that, $name);
     }
-    else {
+    elsif( !ref $this xor !ref $that ) {  	# one's a reference, one isn't
+        $ok = $Test->ok(0, $name);
+	$Test->diag( _format_stack({ vals => [ $this, $that ] }) );
+    }
+    else {			       		# both references
         local @Data_Stack = ();
         local %Refs_Seen  = ();
         if( _deep_check($this, $that) ) {

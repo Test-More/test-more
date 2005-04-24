@@ -23,7 +23,7 @@ local $ENV{HARNESS_ACTIVE} = 0;
 # Can't use Test.pm, that's a 5.005 thing.
 package main;
 
-print "1..38\n";
+print "1..41\n";
 
 my $test_num = 1;
 # Utility testing functions.
@@ -271,7 +271,7 @@ ok !is_deeply( [], [[]] );
 
 #line 273
 $$err = $$out = '';
-is_deeply( [\'a', 'b'], [\'a', 'c'] );
+ok !is_deeply( [\'a', 'b'], [\'a', 'c'] );
 is( $out, "not ok 20\n",  'scalar refs in an array' );
 is( $err, <<ERR,        '    right diagnostic' );
 #     Failed test ($0 at line 274)
@@ -283,7 +283,7 @@ ERR
 
 #line 285
 my $ref = \23;
-is_deeply( 23, $ref );
+ok !is_deeply( 23, $ref );
 is( $out, "not ok 21\n", 'scalar vs ref' );
 is( $err, <<ERR,        '  right diagnostic');
 #     Failed test ($0 at line 286)
@@ -293,7 +293,7 @@ is( $err, <<ERR,        '  right diagnostic');
 ERR
 
 #line 296
-is_deeply( $ref, 23 );
+ok !is_deeply( $ref, 23 );
 is( $out, "not ok 22\n", 'ref vs scalar' );
 is( $err, <<ERR,        '  right diagnostic');
 #     Failed test ($0 at line 296)
