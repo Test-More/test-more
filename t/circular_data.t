@@ -13,7 +13,7 @@ BEGIN {
 }
 
 use strict;
-use Test::More tests => 5;
+use Test::More tests => 6;
 
 my $a1 = [ 1, 2, 3 ];
 push @$a1, $a1;
@@ -31,3 +31,10 @@ $h2->{4} = $h2;
 
 is_deeply $h1, $h2;
 ok( eq_hash  ($h1, $h2) );
+
+my ($r, $s);
+
+$r = \$r;
+$s = \$s;
+
+ok( eq_array ([$s], [$r]) );

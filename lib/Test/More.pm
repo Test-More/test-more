@@ -1112,7 +1112,7 @@ multi-level structures are handled correctly.
 sub eq_array {
     local @Data_Stack;
     local %Refs_Seen;
-    _eq_array(@_);
+    _deep_check(@_);
 }
 
 sub _eq_array  {
@@ -1124,13 +1124,6 @@ sub _eq_array  {
     }
 
     return 1 if $a1 eq $a2;
-
-    if($Refs_Seen{$a1}) {
-        return $Refs_Seen{$a1} eq $a2;
-    }
-    else {
-        $Refs_Seen{$a1} = "$a2";
-    }
 
     my $ok = 1;
     my $max = $#$a1 > $#$a2 ? $#$a1 : $#$a2;
@@ -1171,6 +1164,13 @@ sub _deep_check {
             $ok = 1;
         }
         else {
+            if( $Refs_Seen{$e1} ) {
+                return $Refs_Seen{$e1} eq $e2;
+            }
+            else {
+                $Refs_Seen{$e1} = "$e2";
+            }
+
             my $type = _type($e1);
             $type = '' unless _type($e2) eq $type;
 
@@ -1213,7 +1213,7 @@ is a deep check.
 sub eq_hash {
     local @Data_Stack;
     local %Refs_Seen;
-    return _eq_hash(@_);
+    return _deep_check(@_);
 }
 
 sub _eq_hash {
@@ -1225,13 +1225,6 @@ sub _eq_hash {
     }
 
     return 1 if $a1 eq $a2;
-
-    if( $Refs_Seen{$a1} ) {
-        return $Refs_Seen{$a1} eq $a2;
-    }
-    else {
-        $Refs_Seen{$a1} = "$a2";
-    }
 
     my $ok = 1;
     my $bigger = keys %$a1 > keys %$a2 ? $a1 : $a2;
