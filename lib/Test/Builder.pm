@@ -1476,11 +1476,14 @@ sub _ending {
 
     # Don't bother with an ending if this is a forked copy.  Only the parent
     # should do the ending.
-    do{ _my_exit($?) && return } if $self->{Original_Pid} != $$;
-
-    # Bailout if plan() was never called.  This is so
-    # "require Test::Simple" doesn't puke.
-    do{ _my_exit(0) && return } if !$self->{Have_Plan} && !$self->{Test_Died};
+    # Exit if plan() was never called.  This is so "require Test::Simple" 
+    # doesn't puke.
+    if( ($self->{Original_Pid} != $$) or
+	(!$self->{Have_Plan} && !$self->{Test_Died}) )
+    {
+	_my_exit($?);
+	return;
+    }
 
     # Figure out if we passed or failed and print helpful messages.
     my $test_results = $self->{Test_Results};
