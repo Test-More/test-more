@@ -23,7 +23,7 @@ local $ENV{HARNESS_ACTIVE} = 0;
 # Can't use Test.pm, that's a 5.005 thing.
 package main;
 
-print "1..41\n";
+print "1..44\n";
 
 my $test_num = 1;
 # Utility testing functions.
@@ -300,4 +300,14 @@ is( $err, <<ERR,        '  right diagnostic');
 #     Structures begin differing at:
 #          \$got = '$ref'
 #     \$expected = '23'
+ERR
+
+#line 306
+ok !is_deeply( undef, [] );
+is( $out, "not ok 23\n", 'is_deeply and undef [RT 9441]' );
+like( $err, <<ERR,	 '  right diagnostic' );
+#     Failed test \\($0 at line 306\\)
+#     Structures begin differing at:
+#          \\\$got = undef
+#     \\\$expected = 'ARRAY\\(0x[0-9a-f]+\\)'
 ERR

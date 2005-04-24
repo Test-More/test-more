@@ -6,6 +6,7 @@
       (Thanks Fergal)
     - Use of eq_* now officially discouraged.
     - Removed eq_* from the SYNOPSIS.
+    - is_deeply(undef, $not_undef); now works. [rt.cpan.org 9441]
 
 0.54  Wed Dec 15 04:18:43 EST 2004
     * $how_many is optional for skip() and todo_skip().  Thanks to 
