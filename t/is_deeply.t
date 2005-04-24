@@ -23,7 +23,7 @@ local $ENV{HARNESS_ACTIVE} = 0;
 # Can't use Test.pm, that's a 5.005 thing.
 package main;
 
-print "1..44\n";
+print "1..58\n";
 
 my $test_num = 1;
 # Utility testing functions.
@@ -93,7 +93,7 @@ Test::More->import(tests => 11, import => ['is_deeply']);
 my $Filename = quotemeta $0;
 
 #line 68
-is_deeply('foo', 'bar', 'plain strings');
+ok !is_deeply('foo', 'bar', 'plain strings');
 is( $out, "not ok 1 - plain strings\n",     'plain strings' );
 is( $err, <<ERR,                            '    right diagnostic' );
 #     Failed test ($0 at line 68)
@@ -103,7 +103,7 @@ ERR
 
 
 #line 78
-is_deeply({}, [], 'different types');
+ok !is_deeply({}, [], 'different types');
 is( $out, "not ok 2 - different types\n",   'different types' );
 like( $err, <<ERR,                          '   right diagnostic' );
 #     Failed test \\($Filename at line 78\\)
@@ -113,7 +113,7 @@ like( $err, <<ERR,                          '   right diagnostic' );
 ERR
 
 #line 88
-is_deeply({ this => 42 }, { this => 43 }, 'hashes with different values');
+ok !is_deeply({ this => 42 }, { this => 43 }, 'hashes with different values');
 is( $out, "not ok 3 - hashes with different values\n", 
                                         'hashes with different values' );
 is( $err, <<ERR,                        '   right diagnostic' );
@@ -124,7 +124,7 @@ is( $err, <<ERR,                        '   right diagnostic' );
 ERR
 
 #line 99
-is_deeply({ that => 42 }, { this => 42 }, 'hashes with different keys');
+ok !is_deeply({ that => 42 }, { this => 42 }, 'hashes with different keys');
 is( $out, "not ok 4 - hashes with different keys\n",
                                         'hashes with different keys' );
 is( $err, <<ERR,                        '    right diagnostic' );
@@ -135,7 +135,7 @@ is( $err, <<ERR,                        '    right diagnostic' );
 ERR
 
 #line 110
-is_deeply([1..9], [1..10],    'arrays of different length');
+ok !is_deeply([1..9], [1..10],    'arrays of different length');
 is( $out, "not ok 5 - arrays of different length\n",
                                         'arrays of different length' );
 is( $err, <<ERR,                        '    right diagnostic' );
@@ -146,7 +146,7 @@ is( $err, <<ERR,                        '    right diagnostic' );
 ERR
 
 #line 121
-is_deeply([undef, undef], [undef], 'arrays of undefs' );
+ok !is_deeply([undef, undef], [undef], 'arrays of undefs' );
 is( $out, "not ok 6 - arrays of undefs\n",  'arrays of undefs' );
 is( $err, <<ERR,                            '    right diagnostic' );
 #     Failed test ($0 at line 121)
@@ -156,7 +156,7 @@ is( $err, <<ERR,                            '    right diagnostic' );
 ERR
 
 #line 131
-is_deeply({ foo => undef }, {},    'hashes of undefs' );
+ok !is_deeply({ foo => undef }, {},    'hashes of undefs' );
 is( $out, "not ok 7 - hashes of undefs\n",  'hashes of undefs' );
 is( $err, <<ERR,                            '    right diagnostic' );
 #     Failed test ($0 at line 131)
@@ -166,7 +166,7 @@ is( $err, <<ERR,                            '    right diagnostic' );
 ERR
 
 #line 141
-is_deeply(\42, \23,   'scalar refs');
+ok !is_deeply(\42, \23,   'scalar refs');
 is( $out, "not ok 8 - scalar refs\n",   'scalar refs' );
 is( $err, <<ERR,                        '    right diagnostic' );
 #     Failed test ($0 at line 141)
@@ -176,7 +176,7 @@ is( $err, <<ERR,                        '    right diagnostic' );
 ERR
 
 #line 151
-is_deeply([], \23,    'mixed scalar and array refs');
+ok !is_deeply([], \23,    'mixed scalar and array refs');
 is( $out, "not ok 9 - mixed scalar and array refs\n",
                                         'mixed scalar and array refs' );
 like( $err, <<ERR,                      '    right diagnostic' );
@@ -196,7 +196,7 @@ $b1 = \$b2;  $b2 = \$b3;
 $b3 = 23;
 
 #line 173
-is_deeply($a1, $b1, 'deep scalar refs');
+ok !is_deeply($a1, $b1, 'deep scalar refs');
 is( $out, "not ok 10 - deep scalar refs\n",     'deep scalar refs' );
 is( $err, <<ERR,                              '    right diagnostic' );
 #     Failed test ($0 at line 173)
@@ -221,7 +221,7 @@ my $bar = {
           };
 
 #line 198
-is_deeply( $foo, $bar, 'deep structures' );
+ok !is_deeply( $foo, $bar, 'deep structures' );
 ok( @Test::More::Data_Stack == 0, '@Data_Stack not holding onto things' );
 is( $out, "not ok 11 - deep structures\n",  'deep structures' );
 is( $err, <<ERR,                            '    right diagnostic' );
@@ -243,7 +243,7 @@ foreach my $test (@tests) {
 
     my $warning;
     local $SIG{__WARN__} = sub { $warning .= join '', @_; };
-    is_deeply(@$test);
+    ok !is_deeply(@$test);
 
     like \$warning, 
          qr/^is_deeply\(\) takes two or three args, you gave $num_args\.\n/;

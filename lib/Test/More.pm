@@ -1013,6 +1013,8 @@ WARNING
         chop $msg;   # clip off newline so carp() will put in line/file
 
         _carp sprintf $msg, scalar @_;
+
+	return $Test->ok(0);
     }
 
     my($this, $that, $name) = @_;
