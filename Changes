@@ -4,6 +4,8 @@
     * require_ok() was not working for single letter module names.
     - is_deeply() and eq_* now work with circular scalar references
       (Thanks Fergal)
+    - Use of eq_* now officially discouraged.
+    - Removed eq_* from the SYNOPSIS.
 
 0.54  Wed Dec 15 04:18:43 EST 2004
     * $how_many is optional for skip() and todo_skip().  Thanks to 

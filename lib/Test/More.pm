@@ -100,11 +100,6 @@ Test::More - yet another framework for writing test scripts
   pass($test_name);
   fail($test_name);
 
-  # Utility comparison functions.
-  eq_array(\@this, \@that);
-  eq_hash(\%this, \%that);
-  eq_set(\@this, \@that);
-
   # UNIMPLEMENTED!!!
   my @status = Test::More::status;
 
@@ -982,11 +977,11 @@ but want to put tests in your testing script (always a good idea).
 
 =back
 
-=head2 Comparison functions
+=head2 Complex data structures
 
 Not everything is a simple eq check or regex.  There are times you
-need to see if two arrays are equivalent, for instance.  For these
-instances, Test::More provides a handful of useful functions.
+need to see if two data structures are equivalent.  For these
+instances Test::More provides a handful of useful functions.
 
 B<NOTE> I'm not quite sure what will happen with filehandles.
 
@@ -1099,9 +1094,28 @@ sub _type {
 }
 
 
+=head2 Discouraged comparison functions
+
+The use of the following functions is discouraged as they are not
+actually testing functions and produce no diagnostics to help figure
+out what went wrong.  They were written before is_deeply() existed
+because I couldn't figure out how to display a useful diff of two
+arbitrary data structures.
+
+These functions are usually used inside an ok().
+
+    ok( eq_array(\@this, \@that) );
+
+C<is_deeply()> can do that better and with diagnostics.  
+
+    is_deeply( \@this, \@that );
+
+They may be deprecated in future versions.
+
+
 =item B<eq_array>
 
-  eq_array(\@this, \@that);
+  my $is_eq = eq_array(\@this, \@that);
 
 Checks if two arrays are equivalent.  This is a deep check, so
 multi-level structures are handled correctly.
@@ -1203,7 +1217,7 @@ sub _deep_check {
 
 =item B<eq_hash>
 
-  eq_hash(\%this, \%that);
+  my $is_eq = eq_hash(\%this, \%that);
 
 Determines if the two hashes contain the same keys and values.  This
 is a deep check.
@@ -1244,14 +1258,22 @@ sub _eq_hash {
 
 =item B<eq_set>
 
-  eq_set(\@this, \@that);
+  my $is_eq = eq_set(\@this, \@that);
 
 Similar to eq_array(), except the order of the elements is B<not>
 important.  This is a deep check, but the irrelevancy of order only
 applies to the top level.
 
+    ok( eq_set(\@this, \@that) );
+
+Is better written:
+
+    is_deeply( [sort @this], [sort @that] );
+
 B<NOTE> By historical accident, this is not a true set comparision.
 While the order of elements does not matter, duplicate elements do.
+
+Test::Deep contains much better set comparison functions.
 
 =cut
 
@@ -1322,6 +1344,8 @@ So the exit codes are...
     any other number    how many failed (including missing or extras)
 
 If you fail more than 254 tests, it will be reported as 254.
+
+B<NOTE>  This behavior may go away in future versions.
 
 
 =head1 CAVEATS and NOTES
