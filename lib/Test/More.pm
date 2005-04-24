@@ -1029,7 +1029,6 @@ WARNING
     }
     else {			       		# both references
         local @Data_Stack = ();
-        local %Refs_Seen  = ();
         if( _deep_check($this, $that) ) {
             $ok = $Test->ok(1, $name);
         }
@@ -1128,7 +1127,6 @@ multi-level structures are handled correctly.
 #'#
 sub eq_array {
     local @Data_Stack;
-    local %Refs_Seen;
     _deep_check(@_);
 }
 
@@ -1161,6 +1159,11 @@ sub _eq_array  {
 sub _deep_check {
     my($e1, $e2) = @_;
     my $ok = 0;
+
+    # Effectively turn %Refs_Seen into a stack.  This avoids picking up
+    # the same referenced used twice (such as [\$a, \$a]) to be considered
+    # circular.
+    local %Refs_Seen = %Refs_Seen;
 
     {
         # Quiet uninitialized value warnings when comparing undefs.
@@ -1229,7 +1232,6 @@ is a deep check.
 
 sub eq_hash {
     local @Data_Stack;
-    local %Refs_Seen;
     return _deep_check(@_);
 }
 
