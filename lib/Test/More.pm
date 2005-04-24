@@ -1032,7 +1032,7 @@ WARNING
         }
         else {
             $ok = $Test->ok(0, $name);
-            $ok = $Test->diag(_format_stack(@Data_Stack));
+            $Test->diag(_format_stack(@Data_Stack));
         }
     }
 
