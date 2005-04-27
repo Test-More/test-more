@@ -1115,32 +1115,31 @@ Defaults to STDOUT.
 
 =cut
 
-my($Out_FH, $Fail_FH, $Todo_FH);
 sub output {
     my($self, $fh) = @_;
 
     if( defined $fh ) {
-        $Out_FH = _new_fh($fh);
+        $self->{Out_FH} = _new_fh($fh);
     }
-    return $Out_FH;
+    return $self->{Out_FH};
 }
 
 sub failure_output {
     my($self, $fh) = @_;
 
     if( defined $fh ) {
-        $Fail_FH = _new_fh($fh);
+        $self->{Fail_FH} = _new_fh($fh);
     }
-    return $Fail_FH;
+    return $self->{Fail_FH};
 }
 
 sub todo_output {
     my($self, $fh) = @_;
 
     if( defined $fh ) {
-        $Todo_FH = _new_fh($fh);
+        $self->{Todo_FH} = _new_fh($fh);
     }
-    return $Todo_FH;
+    return $self->{Todo_FH};
 }
 
 
