@@ -12,6 +12,8 @@
       [rt.cpan.org 11623]
     - Loading Test::Builder but not using it would interfere with the
       exit code if the code exited. [rt.cpan.org 12310]
+    - is_deeply() diagnostics now disambiguate between stringified references
+      and references. [rt.cpan.org 8865]
 
 0.54  Wed Dec 15 04:18:43 EST 2004
     * $how_many is optional for skip() and todo_skip().  Thanks to 

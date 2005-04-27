@@ -1070,9 +1070,10 @@ sub _format_stack {
     my $out = "Structures begin differing at:\n";
     foreach my $idx (0..$#vals) {
         my $val = $vals[$idx];
-        $vals[$idx] = !defined $val ? 'undef' : 
-                      $val eq $DNE  ? "Does not exist"
-                                    : "'$val'";
+        $vals[$idx] = !defined $val ? 'undef'          :
+                      $val eq $DNE  ? "Does not exist" :
+	              ref $val      ? "$val"           :
+                                      "'$val'";
     }
 
     $out .= "$vars[0] = $vals[0]\n";
@@ -1173,6 +1174,7 @@ sub _deep_check {
 
         # Either they're both references or both not.
         my $same_ref = !(!ref $e1 xor !ref $e2);
+	my $not_ref  = (!ref $e1 and !ref $e2);
 
         if( defined $e1 xor defined $e2 ) {
             $ok = 0;
@@ -1183,6 +1185,10 @@ sub _deep_check {
         elsif ( $same_ref and ($e1 eq $e2) ) {
             $ok = 1;
         }
+	elsif ( $not_ref ) {
+	    push @Data_Stack, { type => '', vals => [$e1, $e2] };
+	    $ok = 0;
+	}
         else {
             if( $Refs_Seen{$e1} ) {
                 return $Refs_Seen{$e1} eq $e2;
@@ -1192,10 +1198,10 @@ sub _deep_check {
             }
 
             my $type = _type($e1);
-            $type = '' unless _type($e2) eq $type;
+            $type = 'DIFFERENT' unless _type($e2) eq $type;
 
-            if( !$type ) {
-                push @Data_Stack, { vals => [$e1, $e2] };
+            if( $type eq 'DIFFERENT' ) {
+                push @Data_Stack, { type => $type, vals => [$e1, $e2] };
                 $ok = 0;
             }
             elsif( $type eq 'ARRAY' ) {
@@ -1205,7 +1211,7 @@ sub _deep_check {
                 $ok = _eq_hash($e1, $e2);
             }
             elsif( $type eq 'REF' ) {
-                push @Data_Stack, { type => 'REF', vals => [$e1, $e2] };
+                push @Data_Stack, { type => $type, vals => [$e1, $e2] };
                 $ok = _deep_check($$e1, $$e2);
                 pop @Data_Stack if $ok;
             }
@@ -1214,10 +1220,24 @@ sub _deep_check {
                 $ok = _deep_check($$e1, $$e2);
                 pop @Data_Stack if $ok;
             }
+	    else {
+		_whoa(1, "No type in _deep_check");
+	    }
         }
     }
 
     return $ok;
+}
+
+
+sub _whoa {
+    my($check, $desc) = @_;
+    if( $check ) {
+        die <<WHOA;
+WHOA!  $desc
+This should never happen!  Please contact the author immediately!
+WHOA
+    }
 }
 
 

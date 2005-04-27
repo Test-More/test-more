@@ -23,67 +23,34 @@ local $ENV{HARNESS_ACTIVE} = 0;
 # Can't use Test.pm, that's a 5.005 thing.
 package main;
 
-print "1..58\n";
 
-my $test_num = 1;
+my $TB = Test::Builder->create;
+$TB->plan(tests => 58);
+
 # Utility testing functions.
 sub ok ($;$) {
-    my($test, $name) = @_;
-    my $ok = '';
-    $ok .= "not " unless $test;
-    $ok .= "ok $test_num";
-    $ok .= " - $name" if defined $name;
-    $ok .= "\n";
-    print $ok;
-    $test_num++;
-
-    return $test;
+    return $TB->ok(@_);
 }
 
 sub is ($$;$) {
     my($this, $that, $name) = @_;
-    my $test = $$this eq $that;
-    my $ok = '';
-    $ok .= "not " unless $test;
-    $ok .= "ok $test_num";
-    $ok .= " - $name" if defined $name;
-    $ok .= "\n";
-    print $ok;
 
-    unless( $test ) {
-        print "# got      \n$$this";
-        print "# expected \n$that";
-    }
-    $test_num++;
+    my $ok = $TB->is_eq($$this, $that, $name);
 
     $$this = '';
 
-    return $test;
+    return $ok;
 }
 
 sub like ($$;$) {
     my($this, $regex, $name) = @_;
-
     $regex = qr/$regex/ unless ref $regex;
-    my $test = $$this =~ $regex;
 
-    my $ok = '';
-    $ok .= "not " unless $test;
-    $ok .= "ok $test_num";
-    $ok .= " - $name" if defined $name;
-    $ok .= "\n";
-    print $ok;
-
-    unless( $test ) {
-        print "# got      \n$$this";
-        print "# expected \n$regex";
-    }
-    $test_num++;
+    my $ok = $TB->like($$this, $regex, $name);
 
     $$this = '';
 
-
-    return $test;
+    return $ok;
 }
 
 
@@ -108,8 +75,8 @@ is( $out, "not ok 2 - different types\n",   'different types' );
 like( $err, <<ERR,                          '   right diagnostic' );
 #     Failed test \\($Filename at line 78\\)
 #     Structures begin differing at:
-#          \\\$got = 'HASH\\(0x[0-9a-f]+\\)'
-#     \\\$expected = 'ARRAY\\(0x[0-9a-f]+\\)'
+#          \\\$got = HASH\\(0x[0-9a-f]+\\)
+#     \\\$expected = ARRAY\\(0x[0-9a-f]+\\)
 ERR
 
 #line 88
@@ -182,8 +149,8 @@ is( $out, "not ok 9 - mixed scalar and array refs\n",
 like( $err, <<ERR,                      '    right diagnostic' );
 #     Failed test \\($Filename at line 151\\)
 #     Structures begin differing at:
-#          \\\$got = 'ARRAY\\(0x[0-9a-f]+\\)'
-#     \\\$expected = 'SCALAR\\(0x[0-9a-f]+\\)'
+#          \\\$got = ARRAY\\(0x[0-9a-f]+\\)
+#     \\\$expected = SCALAR\\(0x[0-9a-f]+\\)
 ERR
 
 
@@ -289,7 +256,7 @@ is( $err, <<ERR,        '  right diagnostic');
 #     Failed test ($0 at line 286)
 #     Structures begin differing at:
 #          \$got = '23'
-#     \$expected = '$ref'
+#     \$expected = $ref
 ERR
 
 #line 296
@@ -298,7 +265,7 @@ is( $out, "not ok 22\n", 'ref vs scalar' );
 is( $err, <<ERR,        '  right diagnostic');
 #     Failed test ($0 at line 296)
 #     Structures begin differing at:
-#          \$got = '$ref'
+#          \$got = $ref
 #     \$expected = '23'
 ERR
 
@@ -306,8 +273,60 @@ ERR
 ok !is_deeply( undef, [] );
 is( $out, "not ok 23\n", 'is_deeply and undef [RT 9441]' );
 like( $err, <<ERR,	 '  right diagnostic' );
-#     Failed test \\($0 at line 306\\)
+#     Failed test \\($Filename at line 306\\)
 #     Structures begin differing at:
 #          \\\$got = undef
-#     \\\$expected = 'ARRAY\\(0x[0-9a-f]+\\)'
+#     \\\$expected = ARRAY\\(0x[0-9a-f]+\\)
 ERR
+
+
+# rt.cpan.org 8865
+{
+    my $array = [];
+    my $hash  = {};
+
+#line 321
+    ok !is_deeply( $array, $hash );
+    is( $out, "not ok 24\n", 'is_deeply and different reference types' );
+    is( $err, <<ERR, 	     '  right diagnostic' );
+#     Failed test ($0 at line 321)
+#     Structures begin differing at:
+#          \$got = $array
+#     \$expected = $hash
+ERR
+
+#line 332
+    ok !is_deeply( [$array], [$hash] );
+    is( $out, "not ok 25\n", 'nested different ref types' );
+    is( $err, <<ERR,	     '  right diagnostic' );
+#     Failed test ($0 at line 332)
+#     Structures begin differing at:
+#          \$got->[0] = $array
+#     \$expected->[0] = $hash
+ERR
+
+
+    if( eval { require overload } ) {
+	my $foo = bless [], "Foo";
+	my $bar = bless {}, "Bar";
+
+	{
+	    package Bar;
+	    overload->import(q[""] => sub { "wibble" });
+	}
+
+#line 353
+	ok !is_deeply( [$foo], [$bar] );
+	is( $out, "not ok 26\n", 'different string overloaded ref types' );
+	is( $err, <<ERR,	     '  right diagnostic' );
+#     Failed test ($0 at line 353)
+#     Structures begin differing at:
+#          \$got->[0] = $foo
+#     \$expected->[0] = $bar
+ERR
+
+    }
+    else {
+	$TB->skip("Needs overload.pm") for 1..3;
+    }
+}
