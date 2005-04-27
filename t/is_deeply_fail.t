@@ -317,12 +317,12 @@ ERR
 
 #line 353
 	ok !is_deeply( [$foo], [$bar] );
-	is( $out, "not ok 26\n", 'different string overloaded ref types' );
+	is( $out, "not ok 26\n", 'string overloaded refs respected in diag' );
 	is( $err, <<ERR,	     '  right diagnostic' );
 #     Failed test ($0 at line 353)
 #     Structures begin differing at:
 #          \$got->[0] = $foo
-#     \$expected->[0] = $bar
+#     \$expected->[0] = 'wibble'
 ERR
 
     }
