@@ -1154,6 +1154,7 @@ sub _new_fh {
         $fh = do { local *FH };
         open $fh, ">$file_or_fh" or 
             die "Can't open test output log $file_or_fh: $!";
+	_autoflush($fh);
     }
 
     return $fh;
@@ -1345,9 +1346,9 @@ will be considered 'todo' (see Test::More and Test::Harness for
 details).  Returns the reason (ie. the value of $TODO) if running as
 todo tests, false otherwise.
 
-todo() is pretty part about finding the right package to look for
-$TODO in.  It uses the exported_to() package to find it.  If that's
-not set, it's pretty good at guessing the right package to look at.
+todo() is about finding the right package to look for $TODO in.  It
+uses the exported_to() package to find it.  If that's not set, it's
+pretty good at guessing the right package to look at based on $Level.
 
 Sometimes there is some confusion about where todo() should be looking
 for the $TODO variable.  If you want to be sure, tell it explicitly
@@ -1358,7 +1359,8 @@ what $pack to use.
 sub todo {
     my($self, $pack) = @_;
 
-    $pack = $pack || $self->exported_to || $self->caller(1);
+    $pack = $pack || $self->exported_to || $self->caller($Level);
+    return 0 unless $pack;
 
     no strict 'refs';
     return defined ${$pack.'::TODO'} ? ${$pack.'::TODO'}
