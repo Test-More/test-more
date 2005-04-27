@@ -12,6 +12,7 @@ t/bad_plan.t
 t/buffer.t
 t/Builder.t
 t/circular_data.t
+t/create.t
 t/curr_test.t
 t/details.t
 t/diag.t
@@ -35,6 +36,7 @@ t/lib/NoExporter.pm
 t/lib/Test/Simple/Catch.pm
 t/lib/Test/Simple/sample_tests/death.plx
 t/lib/Test/Simple/sample_tests/death_in_eval.plx
+t/lib/Test/Simple/sample_tests/exit.plx
 t/lib/Test/Simple/sample_tests/extras.plx
 t/lib/Test/Simple/sample_tests/five_fail.plx
 t/lib/Test/Simple/sample_tests/last_minute_death.plx
