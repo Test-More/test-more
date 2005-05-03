@@ -8,7 +8,7 @@ $^C ||= 0;
 
 use strict;
 use vars qw($VERSION);
-$VERSION = '0.29_01';
+$VERSION = '0.30';
 $VERSION = eval $VERSION;    # make the alpha version come out as a number
 
 # Make Test::Builder thread-safe for ithreads.
@@ -115,9 +115,14 @@ work together>.
 Returns a Test::Builder object representing the current state of the
 test.
 
-Since you only run one test per program, there is B<one and only one>
+Since you only run one test per program C<new> always returns the same
 Test::Builder object.  No matter how many times you call new(), you're
-getting the same object.  (This is called a singleton).
+getting the same object.  This is called a singleton.  This is done so that
+multiple modules share such global information as the test counter and
+where test output is going.
+
+If you want a completely new Test::Builder object different from the
+singleton, use C<create>.
 
 =cut
 
@@ -135,7 +140,11 @@ sub new {
 
 Ok, so there can be more than one Test::Builder object and this is how
 you get it.  You might use this instead of C<new()> if you're testing
-a Test::Builder based module.
+a Test::Builder based module, but otherwise you probably want C<new>.
+
+B<NOTE>: the implementation is not complete.  C<level>, for example, is
+still shared amongst B<all> Test::Builder objects, even ones created using
+this method.  Also, the method name may change in the future.
 
 =cut
 
@@ -1182,11 +1191,10 @@ sub _autoflush {
 }
 
 
-my $Opened_Testhandles = 0;
 sub _dup_stdhandles {
     my $self = shift;
 
-    $self->_open_testhandles unless $Opened_Testhandles;
+    $self->_open_testhandles;
 
     # Set everything to unbuffered else plain prints to STDOUT will
     # come out in the wrong order from our own prints.
@@ -1200,7 +1208,10 @@ sub _dup_stdhandles {
     $self->todo_output(\*TESTOUT);
 }
 
+
+my $Opened_Testhandles = 0;
 sub _open_testhandles {
+    return unless $Opened_Testhandles;
     # We dup STDOUT and STDERR so people can change them in their
     # test suites while still getting normal test output.
     open(TESTOUT, ">&STDOUT") or die "Can't dup STDOUT:  $!";
