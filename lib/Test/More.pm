@@ -32,6 +32,7 @@ $VERSION = eval $VERSION;    # make the alpha version come out as a number
              plan
              can_ok  isa_ok
              diag
+	     BAIL_OUT
             );
 
 my $Test = Test::Builder->new;
@@ -100,11 +101,10 @@ Test::More - yet another framework for writing test scripts
   pass($test_name);
   fail($test_name);
 
-  # UNIMPLEMENTED!!!
-  my @status = Test::More::status;
+  BAIL_OUT($why);
 
   # UNIMPLEMENTED!!!
-  BAIL_OUT($why);
+  my @status = Test::More::status;
 
 
 =head1 DESCRIPTION
@@ -1099,6 +1099,34 @@ B<If it's something the programmer hasn't done yet>, use TODO.  This
 is for any code you haven't written yet, or bugs you have yet to fix,
 but want to put tests in your testing script (always a good idea).
 
+
+=back
+
+
+=head2 Test control
+
+=over 4
+
+=item B<BAIL_OUT>
+
+    BAIL_OUT($reason);
+
+Incidates to the harness that things are going so badly all testing
+should terminate.  This includes the running any additional test scripts.
+
+This is typically used when testing cannot continue such as a critical
+module failing to compile or a necessary external utility not being
+available such as a database connection failing.
+
+The test will exit with 255.
+
+=cut
+
+sub BAIL_OUT {
+    my $reason = shift;
+
+    $Test->BAIL_OUT($reason);
+}
 
 =back
 

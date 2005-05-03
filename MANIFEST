@@ -9,6 +9,7 @@ README
 t/00signature.t
 t/00test_harness_check.t
 t/bad_plan.t
+t/bail_out.t
 t/buffer.t
 t/Builder.t
 t/circular_data.t

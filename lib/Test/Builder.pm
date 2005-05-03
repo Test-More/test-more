@@ -760,9 +760,9 @@ sub _cmp_diag {
 DIAGNOSTIC
 }
 
-=item B<BAILOUT>
+=item B<BAIL_OUT>
 
-    $Test->BAILOUT($reason);
+    $Test->BAIL_OUT($reason);
 
 Indicates to the Test::Harness that things are going so badly all
 testing should terminate.  This includes running any additional test
@@ -772,12 +772,19 @@ It will exit with 255.
 
 =cut
 
-sub BAILOUT {
+sub BAIL_OUT {
     my($self, $reason) = @_;
 
+    $self->{Bailed_Out} = 1;
     $self->_print("Bail out!  $reason");
     exit 255;
 }
+
+=for deprecated
+BAIL_OUT() used to be BAILOUT()
+
+*BAILOUT = \&BAIL_OUT;
+
 
 =item B<skip>
 
@@ -1490,8 +1497,11 @@ sub _ending {
     # should do the ending.
     # Exit if plan() was never called.  This is so "require Test::Simple" 
     # doesn't puke.
-    if( ($self->{Original_Pid} != $$) or
-	(!$self->{Have_Plan} && !$self->{Test_Died}) )
+    # Don't do an ending if we bailed out.
+    if( ($self->{Original_Pid} != $$) 			or
+	(!$self->{Have_Plan} && !$self->{Test_Died}) 	or
+	$self->{Bailed_Out}
+      )
     {
 	_my_exit($?);
 	return;

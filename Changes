@@ -1,6 +1,9 @@
 0.61
     - Moved the docs around a little to better group all the testing
       functions together. [rt.cpan.org 8388]
+    * Added a BAIL_OUT() function to Test::More [rt.cpan.org 8381]
+    - Changed Test::Builder->BAILOUT to BAIL_OUT to match other method's
+      naming conventions.  BAILOUT remains but is deprecated.
 
 0.60  Tue May  3 14:20:34 PDT 2005
 
