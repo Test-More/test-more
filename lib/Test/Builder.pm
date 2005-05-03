@@ -1211,7 +1211,7 @@ sub _dup_stdhandles {
 
 my $Opened_Testhandles = 0;
 sub _open_testhandles {
-    return unless $Opened_Testhandles;
+    return if $Opened_Testhandles;
     # We dup STDOUT and STDERR so people can change them in their
     # test suites while still getting normal test output.
     open(TESTOUT, ">&STDOUT") or die "Can't dup STDOUT:  $!";
