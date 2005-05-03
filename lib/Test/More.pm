@@ -137,7 +137,7 @@ have no plan.  (Try to avoid using this as it weakens your test.)
   use Test::More qw(no_plan);
 
 B<NOTE>: using no_plan requires a Test::Harness upgrade else it will
-think everything has failed.  See L<BUGS and CAVEATS>)
+think everything has failed.  See L<CAVEATS and NOTES>).
 
 In some cases, you'll want to completely skip an entire testing script.
 
@@ -616,56 +616,6 @@ sub fail (;$) {
 
 =back
 
-=head2 Diagnostics
-
-If you pick the right test function, you'll usually get a good idea of
-what went wrong when it failed.  But sometimes it doesn't work out
-that way.  So here we have ways for you to write your own diagnostic
-messages which are safer than just C<print STDERR>.
-
-=over 4
-
-=item B<diag>
-
-  diag(@diagnostic_message);
-
-Prints a diagnostic message which is guaranteed not to interfere with
-test output.  Like C<print> @diagnostic_message is simply concatinated
-together.
-
-Handy for this sort of thing:
-
-    ok( grep(/foo/, @users), "There's a foo user" ) or
-        diag("Since there's no foo, check that /etc/bar is set up right");
-
-which would produce:
-
-    not ok 42 - There's a foo user
-    #     Failed test (foo.t at line 52)
-    # Since there's no foo, check that /etc/bar is set up right.
-
-You might remember C<ok() or diag()> with the mnemonic C<open() or
-die()>.
-
-All diag()s can be made silent by passing the "no_diag" option to
-Test::More.  C<use Test::More tests => 1, 'no_diag'>.  This is useful
-if you have diagnostics for personal testing but then wish to make
-them silent for release without commenting out each individual
-statement.
-
-B<NOTE> The exact formatting of the diagnostic output is still
-changing, but it is guaranteed that whatever you throw at it it won't
-interfere with the test.
-
-=cut
-
-sub diag {
-    return unless $Show_Diag;
-    $Test->diag(@_);
-}
-
-
-=back
 
 =head2 Module tests
 
@@ -805,177 +755,6 @@ sub _is_module_name {
 
 =back
 
-=head2 Conditional tests
-
-Sometimes running a test under certain conditions will cause the
-test script to die.  A certain function or method isn't implemented
-(such as fork() on MacOS), some resource isn't available (like a 
-net connection) or a module isn't available.  In these cases it's
-necessary to skip tests, or declare that they are supposed to fail
-but will work in the future (a todo test).
-
-For more details on the mechanics of skip and todo tests see
-L<Test::Harness>.
-
-The way Test::More handles this is with a named block.  Basically, a
-block of tests which can be skipped over or made todo.  It's best if I
-just show you...
-
-=over 4
-
-=item B<SKIP: BLOCK>
-
-  SKIP: {
-      skip $why, $how_many if $condition;
-
-      ...normal testing code goes here...
-  }
-
-This declares a block of tests that might be skipped, $how_many tests
-there are, $why and under what $condition to skip them.  An example is
-the easiest way to illustrate:
-
-    SKIP: {
-        eval { require HTML::Lint };
-
-        skip "HTML::Lint not installed", 2 if $@;
-
-        my $lint = new HTML::Lint;
-        isa_ok( $lint, "HTML::Lint" );
-
-        $lint->parse( $html );
-        is( $lint->errors, 0, "No errors found in HTML" );
-    }
-
-If the user does not have HTML::Lint installed, the whole block of
-code I<won't be run at all>.  Test::More will output special ok's
-which Test::Harness interprets as skipped, but passing, tests.
-
-It's important that $how_many accurately reflects the number of tests
-in the SKIP block so the # of tests run will match up with your plan.
-If your plan is C<no_plan> $how_many is optional and will default to 1.
-
-It's perfectly safe to nest SKIP blocks.  Each SKIP block must have
-the label C<SKIP>, or Test::More can't work its magic.
-
-You don't skip tests which are failing because there's a bug in your
-program, or for which you don't yet have code written.  For that you
-use TODO.  Read on.
-
-=cut
-
-#'#
-sub skip {
-    my($why, $how_many) = @_;
-
-    unless( defined $how_many ) {
-        # $how_many can only be avoided when no_plan is in use.
-        _carp "skip() needs to know \$how_many tests are in the block"
-          unless $Test->has_plan eq 'no_plan';
-        $how_many = 1;
-    }
-
-    for( 1..$how_many ) {
-        $Test->skip($why);
-    }
-
-    local $^W = 0;
-    last SKIP;
-}
-
-
-=item B<TODO: BLOCK>
-
-    TODO: {
-        local $TODO = $why if $condition;
-
-        ...normal testing code goes here...
-    }
-
-Declares a block of tests you expect to fail and $why.  Perhaps it's
-because you haven't fixed a bug or haven't finished a new feature:
-
-    TODO: {
-        local $TODO = "URI::Geller not finished";
-
-        my $card = "Eight of clubs";
-        is( URI::Geller->your_card, $card, 'Is THIS your card?' );
-
-        my $spoon;
-        URI::Geller->bend_spoon;
-        is( $spoon, 'bent',    "Spoon bending, that's original" );
-    }
-
-With a todo block, the tests inside are expected to fail.  Test::More
-will run the tests normally, but print out special flags indicating
-they are "todo".  Test::Harness will interpret failures as being ok.
-Should anything succeed, it will report it as an unexpected success.
-You then know the thing you had todo is done and can remove the
-TODO flag.
-
-The nice part about todo tests, as opposed to simply commenting out a
-block of tests, is it's like having a programmatic todo list.  You know
-how much work is left to be done, you're aware of what bugs there are,
-and you'll know immediately when they're fixed.
-
-Once a todo test starts succeeding, simply move it outside the block.
-When the block is empty, delete it.
-
-B<NOTE>: TODO tests require a Test::Harness upgrade else it will
-treat it as a normal failure.  See L<BUGS and CAVEATS>)
-
-
-=item B<todo_skip>
-
-    TODO: {
-        todo_skip $why, $how_many if $condition;
-
-        ...normal testing code...
-    }
-
-With todo tests, it's best to have the tests actually run.  That way
-you'll know when they start passing.  Sometimes this isn't possible.
-Often a failing test will cause the whole program to die or hang, even
-inside an C<eval BLOCK> with and using C<alarm>.  In these extreme
-cases you have no choice but to skip over the broken tests entirely.
-
-The syntax and behavior is similar to a C<SKIP: BLOCK> except the
-tests will be marked as failing but todo.  Test::Harness will
-interpret them as passing.
-
-=cut
-
-sub todo_skip {
-    my($why, $how_many) = @_;
-
-    unless( defined $how_many ) {
-        # $how_many can only be avoided when no_plan is in use.
-        _carp "todo_skip() needs to know \$how_many tests are in the block"
-          unless $Test->has_plan eq 'no_plan';
-        $how_many = 1;
-    }
-
-    for( 1..$how_many ) {
-        $Test->todo_skip($why);
-    }
-
-    local $^W = 0;
-    last TODO;
-}
-
-=item When do I use SKIP vs. TODO?
-
-B<If it's something the user might not be able to do>, use SKIP.
-This includes optional modules that aren't installed, running under
-an OS that doesn't have some feature (like fork() or symlinks), or maybe
-you need an Internet connection and one isn't available.
-
-B<If it's something the programmer hasn't done yet>, use TODO.  This
-is for any code you haven't written yet, or bugs you have yet to fix,
-but want to put tests in your testing script (always a good idea).
-
-
-=back
 
 =head2 Complex data structures
 
@@ -1096,6 +875,233 @@ sub _type {
     return '';
 }
 
+=back
+
+
+=head2 Diagnostics
+
+If you pick the right test function, you'll usually get a good idea of
+what went wrong when it failed.  But sometimes it doesn't work out
+that way.  So here we have ways for you to write your own diagnostic
+messages which are safer than just C<print STDERR>.
+
+=over 4
+
+=item B<diag>
+
+  diag(@diagnostic_message);
+
+Prints a diagnostic message which is guaranteed not to interfere with
+test output.  Like C<print> @diagnostic_message is simply concatinated
+together.
+
+Handy for this sort of thing:
+
+    ok( grep(/foo/, @users), "There's a foo user" ) or
+        diag("Since there's no foo, check that /etc/bar is set up right");
+
+which would produce:
+
+    not ok 42 - There's a foo user
+    #     Failed test (foo.t at line 52)
+    # Since there's no foo, check that /etc/bar is set up right.
+
+You might remember C<ok() or diag()> with the mnemonic C<open() or
+die()>.
+
+All diag()s can be made silent by passing the "no_diag" option to
+Test::More.  C<use Test::More tests => 1, 'no_diag'>.  This is useful
+if you have diagnostics for personal testing but then wish to make
+them silent for release without commenting out each individual
+statement.
+
+B<NOTE> The exact formatting of the diagnostic output is still
+changing, but it is guaranteed that whatever you throw at it it won't
+interfere with the test.
+
+=cut
+
+sub diag {
+    return unless $Show_Diag;
+    $Test->diag(@_);
+}
+
+
+=back
+
+
+=head2 Conditional tests
+
+Sometimes running a test under certain conditions will cause the
+test script to die.  A certain function or method isn't implemented
+(such as fork() on MacOS), some resource isn't available (like a 
+net connection) or a module isn't available.  In these cases it's
+necessary to skip tests, or declare that they are supposed to fail
+but will work in the future (a todo test).
+
+For more details on the mechanics of skip and todo tests see
+L<Test::Harness>.
+
+The way Test::More handles this is with a named block.  Basically, a
+block of tests which can be skipped over or made todo.  It's best if I
+just show you...
+
+=over 4
+
+=item B<SKIP: BLOCK>
+
+  SKIP: {
+      skip $why, $how_many if $condition;
+
+      ...normal testing code goes here...
+  }
+
+This declares a block of tests that might be skipped, $how_many tests
+there are, $why and under what $condition to skip them.  An example is
+the easiest way to illustrate:
+
+    SKIP: {
+        eval { require HTML::Lint };
+
+        skip "HTML::Lint not installed", 2 if $@;
+
+        my $lint = new HTML::Lint;
+        isa_ok( $lint, "HTML::Lint" );
+
+        $lint->parse( $html );
+        is( $lint->errors, 0, "No errors found in HTML" );
+    }
+
+If the user does not have HTML::Lint installed, the whole block of
+code I<won't be run at all>.  Test::More will output special ok's
+which Test::Harness interprets as skipped, but passing, tests.
+
+It's important that $how_many accurately reflects the number of tests
+in the SKIP block so the # of tests run will match up with your plan.
+If your plan is C<no_plan> $how_many is optional and will default to 1.
+
+It's perfectly safe to nest SKIP blocks.  Each SKIP block must have
+the label C<SKIP>, or Test::More can't work its magic.
+
+You don't skip tests which are failing because there's a bug in your
+program, or for which you don't yet have code written.  For that you
+use TODO.  Read on.
+
+=cut
+
+#'#
+sub skip {
+    my($why, $how_many) = @_;
+
+    unless( defined $how_many ) {
+        # $how_many can only be avoided when no_plan is in use.
+        _carp "skip() needs to know \$how_many tests are in the block"
+          unless $Test->has_plan eq 'no_plan';
+        $how_many = 1;
+    }
+
+    for( 1..$how_many ) {
+        $Test->skip($why);
+    }
+
+    local $^W = 0;
+    last SKIP;
+}
+
+
+=item B<TODO: BLOCK>
+
+    TODO: {
+        local $TODO = $why if $condition;
+
+        ...normal testing code goes here...
+    }
+
+Declares a block of tests you expect to fail and $why.  Perhaps it's
+because you haven't fixed a bug or haven't finished a new feature:
+
+    TODO: {
+        local $TODO = "URI::Geller not finished";
+
+        my $card = "Eight of clubs";
+        is( URI::Geller->your_card, $card, 'Is THIS your card?' );
+
+        my $spoon;
+        URI::Geller->bend_spoon;
+        is( $spoon, 'bent',    "Spoon bending, that's original" );
+    }
+
+With a todo block, the tests inside are expected to fail.  Test::More
+will run the tests normally, but print out special flags indicating
+they are "todo".  Test::Harness will interpret failures as being ok.
+Should anything succeed, it will report it as an unexpected success.
+You then know the thing you had todo is done and can remove the
+TODO flag.
+
+The nice part about todo tests, as opposed to simply commenting out a
+block of tests, is it's like having a programmatic todo list.  You know
+how much work is left to be done, you're aware of what bugs there are,
+and you'll know immediately when they're fixed.
+
+Once a todo test starts succeeding, simply move it outside the block.
+When the block is empty, delete it.
+
+B<NOTE>: TODO tests require a Test::Harness upgrade else it will
+treat it as a normal failure.  See L<CAVEATS and NOTES>).
+
+
+=item B<todo_skip>
+
+    TODO: {
+        todo_skip $why, $how_many if $condition;
+
+        ...normal testing code...
+    }
+
+With todo tests, it's best to have the tests actually run.  That way
+you'll know when they start passing.  Sometimes this isn't possible.
+Often a failing test will cause the whole program to die or hang, even
+inside an C<eval BLOCK> with and using C<alarm>.  In these extreme
+cases you have no choice but to skip over the broken tests entirely.
+
+The syntax and behavior is similar to a C<SKIP: BLOCK> except the
+tests will be marked as failing but todo.  Test::Harness will
+interpret them as passing.
+
+=cut
+
+sub todo_skip {
+    my($why, $how_many) = @_;
+
+    unless( defined $how_many ) {
+        # $how_many can only be avoided when no_plan is in use.
+        _carp "todo_skip() needs to know \$how_many tests are in the block"
+          unless $Test->has_plan eq 'no_plan';
+        $how_many = 1;
+    }
+
+    for( 1..$how_many ) {
+        $Test->todo_skip($why);
+    }
+
+    local $^W = 0;
+    last TODO;
+}
+
+=item When do I use SKIP vs. TODO?
+
+B<If it's something the user might not be able to do>, use SKIP.
+This includes optional modules that aren't installed, running under
+an OS that doesn't have some feature (like fork() or symlinks), or maybe
+you need an Internet connection and one isn't available.
+
+B<If it's something the programmer hasn't done yet>, use TODO.  This
+is for any code you haven't written yet, or bugs you have yet to fix,
+but want to put tests in your testing script (always a good idea).
+
+
+=back
+
 
 =head2 Discouraged comparison functions
 
@@ -1115,6 +1121,7 @@ C<is_deeply()> can do that better and with diagnostics.
 
 They may be deprecated in future versions.
 
+=over 4
 
 =item B<eq_array>
 
