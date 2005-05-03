@@ -1,10 +1,10 @@
-0.60
+0.59_01  Tue Apr 26 21:51:12 PDT 2005
     * Test::Builder now has a create() method which allows you to create
       a brand spanking new Test::Builder object.
     * require_ok() was not working for single letter module names.
-    - is_deeply() and eq_* now work with circular scalar references
+    * is_deeply() and eq_* now work with circular scalar references
       (Thanks Fergal)
-    - Use of eq_* now officially discouraged.
+    * Use of eq_* now officially discouraged.
     - Removed eq_* from the SYNOPSIS.
     - is_deeply(undef, $not_undef); now works. [rt.cpan.org 9441]
     - is_deeply() was mistakenly interpeting the same reference used twice

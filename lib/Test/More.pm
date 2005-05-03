@@ -18,7 +18,7 @@ sub _carp {
 
 require Exporter;
 use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS $TODO);
-$VERSION = '0.54';
+$VERSION = '0.59_01';
 $VERSION = eval $VERSION;    # make the alpha version come out as a number
 
 @ISA    = qw(Exporter);
