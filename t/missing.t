@@ -49,7 +49,8 @@ not ok 2 - Bar
 OUT
 
     My::Test::ok($$err eq <<ERR);
-#     Failed test ($0 at line 31)
+#   Failed test 'Bar'
+#   in $0 at line 31.
 # Looks like you planned 5 tests but only ran 2.
 ERR
 

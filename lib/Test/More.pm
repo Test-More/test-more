@@ -283,7 +283,8 @@ but we B<very> strongly encourage its use.
 Should an ok() fail, it will produce some diagnostics:
 
     not ok 18 - sufficient mucus
-    #     Failed test 18 (foo.t at line 42)
+    #   Failed test 'sufficient mucus'
+    #   in foo.t at line 42.
 
 This is actually Test::Simple's ok() routine.
 
@@ -329,7 +330,8 @@ test:
 Will produce something like this:
 
     not ok 17 - Is foo the same as bar?
-    #     Failed test (foo.t at line 139)
+    #   Failed test 'Is foo the same as bar?'
+    #   in foo.t at line 139.
     #          got: 'waffle'
     #     expected: 'yarblokos'
 
@@ -434,7 +436,7 @@ Its advantage over ok() is when the test fails you'll know what $this
 and $that were:
 
     not ok 1
-    #     Failed test (foo.t at line 12)
+    #   Failed test in foo.t at line 12.
     #     '23'
     #         &&
     #     undef
@@ -798,6 +800,8 @@ WARNING
 
     my($this, $that, $name) = @_;
 
+    $Test->_unoverload(\$that, \$this);
+
     my $ok;
     if( !ref $this and !ref $that ) {  		# neither is a reference
         $ok = $Test->is_eq($this, $that, $name);
@@ -903,7 +907,8 @@ Handy for this sort of thing:
 which would produce:
 
     not ok 42 - There's a foo user
-    #     Failed test (foo.t at line 52)
+    #   Failed test 'There's a foo user'
+    #   in foo.t at line 52.
     # Since there's no foo, check that /etc/bar is set up right.
 
 You might remember C<ok() or diag()> with the mnemonic C<open() or

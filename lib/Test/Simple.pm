@@ -144,7 +144,8 @@ It will produce output like this:
     ok 2 - Title() get
     ok 3 - Director() get
     not ok 4 - Rating() get
-    #    Failed test (t/film.t at line 14)
+    #   Failed test 'Rating() get'
+    #   in t/film.t at line 14.
     ok 5 - NumExplodingSheep() get
     # Looks like you failed 1 tests of 5
 

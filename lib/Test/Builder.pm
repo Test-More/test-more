@@ -448,7 +448,14 @@ ERR
     unless( $test ) {
         my $msg = $todo ? "Failed (TODO)" : "Failed";
         $self->_print_diag("\n") if $ENV{HARNESS_ACTIVE};
-        $self->diag("    $msg test ($file at line $line)\n");
+
+	if( defined $name ) {
+	    $self->diag(qq[  $msg test '$name'\n]);
+	    $self->diag(qq[  in $file at line $line.\n]);
+	}
+	else {
+	    $self->diag(qq[  $msg test in $file at line $line.\n]);
+	}
     } 
 
     return $test ? 1 : 0;
