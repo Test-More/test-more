@@ -5,6 +5,7 @@
     - Changed Test::Builder->BAILOUT to BAIL_OUT to match other method's
       naming conventions.  BAILOUT remains but is deprecated.
     * Changed the standard failure diagnostics to include the test name.
+      [rt.cpan.org 12490]
 
 0.60  Tue May  3 14:20:34 PDT 2005
 
