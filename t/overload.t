@@ -18,7 +18,7 @@ BEGIN {
         plan skip_all => "needs overload.pm";
     }
     else {
-        plan tests => 7;
+        plan tests => 8;
     }
 }
 
@@ -27,8 +27,7 @@ package Overloaded;
 
 use overload
         q{""}    => sub { $_[0]->{string} },
-        q{0}     => sub { $_[0]->{num} },
-        fallback => 1;
+        q{0}     => sub { $_[0]->{num} };
 
 sub new {
     my $class = shift;
@@ -48,3 +47,6 @@ cmp_ok $obj, '==', 'foo',  'cmp_ok() with number overloading';
 is_deeply [$obj], ['foo'],                 'is_deeply with string overloading';
 ok eq_array([$obj], ['foo']),              'eq_array ...';
 ok eq_hash({foo => $obj}, {foo => 'foo'}), 'eq_hash ...';
+
+# rt.cpan.org 13506
+is_deeply $obj, 'foo',        'is_deeply with string overloading at the top';

@@ -6,6 +6,10 @@
       naming conventions.  BAILOUT remains but is deprecated.
     * Changed the standard failure diagnostics to include the test name.
       [rt.cpan.org 12490]
+    - is_deeply() was broken for overloaded objects in the top level in
+      0.59_01.  [rt.cpan.org 13506]
+    - String overloaded objects without an 'eq' or '==' method are now
+      handled in cmp_ok() and is().
 
 0.60  Tue May  3 14:20:34 PDT 2005
 
