@@ -395,7 +395,7 @@ sub ok {
     $self->{Curr_Test}++;
 
     # In case $name is a string overloaded object, force it to stringify.
-    $self->_unoverload(\$name);
+    $self->_unoverload_str(\$name);
 
     $self->diag(<<ERR) if defined $name and $name =~ /^[\d\s]+$/;
     You named your test '$name'.  You shouldn't use numbers for your test names.
@@ -405,7 +405,7 @@ ERR
     my($pack, $file, $line) = $self->caller;
 
     my $todo = $self->todo($pack);
-    $self->_unoverload(\$todo);
+    $self->_unoverload_str(\$todo);
 
     my $out;
     my $result = &share({});
@@ -464,6 +464,7 @@ ERR
 
 sub _unoverload {
     my $self  = shift;
+    my $type  = shift;
 
     local($@,$!);
 
@@ -472,13 +473,42 @@ sub _unoverload {
     foreach my $thing (@_) {
         eval { 
             if( defined $$thing ) {
-                if( my $string_meth = overload::Method($$thing, '""') ) {
+                if( my $string_meth = overload::Method($$thing, $type) ) {
                     $$thing = $$thing->$string_meth();
                 }
             }
         };
     }
 }
+
+
+sub _unoverload_str {
+    my $self = shift;
+
+    $self->_unoverload(q[""], @_);
+}    
+
+sub _unoverload_num {
+    my $self = shift;
+
+    $self->_unoverload('0+', @_);
+
+    for my $val (@_) {
+        next unless $self->_is_dualvar($$val);
+        $$val = $$val+0;
+    }
+}
+
+
+# This is a hack to detect a dualvar such as $!
+sub _is_dualvar {
+    my($self, $val) = @_;
+
+    local $^W = 0;
+    my $numval = $val+0;
+    return 1 if $numval != 0 and $numval ne $val;
+}
+
 
 
 =item B<is_eq>
@@ -501,7 +531,7 @@ sub is_eq {
     my($self, $got, $expect, $name) = @_;
     local $Level = $Level + 1;
 
-    $self->_unoverload(\$got, \$expect);
+    $self->_unoverload_str(\$got, \$expect);
 
     if( !defined $got || !defined $expect ) {
         # undef only matches undef and nothing else
@@ -519,7 +549,7 @@ sub is_num {
     my($self, $got, $expect, $name) = @_;
     local $Level = $Level + 1;
 
-    $self->_unoverload(\$got, \$expect);
+    $self->_unoverload_num(\$got, \$expect);
 
     if( !defined $got || !defined $expect ) {
         # undef only matches undef and nothing else
@@ -544,7 +574,7 @@ sub _is_diag {
             }
             else {
                 # force numeric context
-                $$val = $$val+0;
+                $self->_unoverload_num($val);
             }
         }
         else {
@@ -695,8 +725,6 @@ sub maybe_regex {
 sub _regex_ok {
     my($self, $this, $regex, $cmp, $name) = @_;
 
-    local $Level = $Level + 1;
-
     my $ok = 0;
     my $usable_regex = $self->maybe_regex($regex);
     unless (defined $usable_regex) {
@@ -706,9 +734,14 @@ sub _regex_ok {
     }
 
     {
-        local $^W = 0;
-        my $test = $this =~ /$usable_regex/ ? 1 : 0;
+        my $test;
+        my $code = $self->_caller_context;
+
+        local($@, $!);
+        eval $code.q{$test = $this =~ /$usable_regex/ ? 1 : 0};
         $test = !$test if $cmp eq '!~';
+
+        local $Level = $Level + 1;
         $ok = $self->ok( $test, $name );
     }
 
@@ -735,17 +768,30 @@ Works just like Test::More's cmp_ok().
 
 =cut
 
+
+my %numeric_cmps = map { ($_, 1) } 
+                       ("<",  "<=", ">",  ">=", "==", "!=", "<=>");
+
 sub cmp_ok {
     my($self, $got, $type, $expect, $name) = @_;
 
-    $self->_unoverload(\$got, \$expect);
+    # Treat overloaded objects as numbers if we're asked to do a
+    # numeric comparison.
+    my $unoverload = $numeric_cmps{$type} ? '_unoverload_num'
+                                          : '_unoverload_str';
+
+    $self->$unoverload(\$got, \$expect);
+
 
     my $test;
     {
-        local $^W = 0;
         local($@,$!);   # don't interfere with $@
                         # eval() sometimes resets $!
-        $test = eval "\$got $type \$expect";
+
+        my $code = $self->_caller_context;
+
+        $test = eval $code . "\$got $type \$expect;";
+
     }
     local $Level = $Level + 1;
     my $ok = $self->ok($test, $name);
@@ -772,6 +818,19 @@ sub _cmp_diag {
     %s
 DIAGNOSTIC
 }
+
+
+sub _caller_context {
+    my $self = shift;
+
+    my($pack, $file, $line) = $self->caller(1);
+
+    my $code = '';
+    $code .= "#line $line $file\n" if defined $file and defined $line;
+
+    return $code;
+}
+
 
 =item B<BAIL_OUT>
 
@@ -811,7 +870,7 @@ Skips the current test, reporting $why.
 sub skip {
     my($self, $why) = @_;
     $why ||= '';
-    $self->_unoverload(\$why);
+    $self->_unoverload_str(\$why);
 
     unless( $self->{Have_Plan} ) {
         require Carp;

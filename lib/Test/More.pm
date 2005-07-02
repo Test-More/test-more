@@ -800,7 +800,7 @@ WARNING
 
     my($this, $that, $name) = @_;
 
-    $Test->_unoverload(\$that, \$this);
+    $Test->_unoverload_str(\$that, \$this);
 
     my $ok;
     if( !ref $this and !ref $that ) {  		# neither is a reference
@@ -1210,7 +1210,7 @@ sub _deep_check {
         # Quiet uninitialized value warnings when comparing undefs.
         local $^W = 0; 
 
-        $Test->_unoverload(\$e1, \$e2);
+        $Test->_unoverload_str(\$e1, \$e2);
 
         # Either they're both references or both not.
         my $same_ref = !(!ref $e1 xor !ref $e2);

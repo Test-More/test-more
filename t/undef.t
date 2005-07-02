@@ -11,7 +11,7 @@ BEGIN {
 }
 
 use strict;
-use Test::More tests => 16;
+use Test::More tests => 18;
 use TieOut;
 
 BEGIN { $^W = 1; }
@@ -24,6 +24,12 @@ sub no_warnings {
     $TB->is_eq($warnings, '', '  no warnings');
     $warnings = '';
 }
+
+sub warnings_is {
+    $TB->is_eq($warnings, $_[0], '  no warnings');
+    $warnings = '';
+}
+
    
 
 is( undef, undef,           'undef is undef');
@@ -35,8 +41,9 @@ no_warnings;
 isnt( undef, '',            'undef isnt an empty string' );
 isnt( undef, 0,             'undef isnt zero' );
 
+#line 45
 like( undef, '/.*/',        'undef is like anything' );
-no_warnings;
+warnings_is("Use of uninitialized value in pattern match (m//) at $0 line 45.\n");
 
 eq_array( [undef, undef], [undef, 23] );
 no_warnings;
@@ -51,7 +58,13 @@ no_warnings;
 
 eq_hash ( { foo => undef, bar => { baz => undef, moo => 23 } },
           { foo => undef, bar => { baz => undef, moo => 23 } } );
-no_warnings
+no_warnings;
+
+
+#line 64
+cmp_ok( undef, '<=', 2, '  undef <= 2' );
+warnings_is("Use of uninitialized value in numeric le (<=) at $0 line 64.\n");
+
 
 
 my $tb = Test::More->builder;

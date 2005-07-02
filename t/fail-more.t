@@ -24,10 +24,14 @@ package My::Test;
 # Test::Builder's own and the ending diagnostics don't come out right.
 require Test::Builder;
 my $TB = Test::Builder->create;
-$TB->plan(tests => 14);
+$TB->plan(tests => 17);
 
 sub like ($$;$) {
     $TB->like(@_);
+}
+
+sub is ($$;$) {
+    $TB->is_eq(@_);
 }
 
 sub main::err_ok ($) {
@@ -41,7 +45,7 @@ sub main::err_ok ($) {
 package main;
 
 require Test::More;
-my $Total = 29;
+my $Total = 28;
 Test::More->import(tests => $Total);
 
 my $tb = Test::More->builder;
@@ -170,9 +174,6 @@ cmp_ok( 'foo', 'eq', 'bar', 'cmp_ok eq' );
 cmp_ok( 42.1,  '==', 23,  , '       ==' );
 cmp_ok( 42,    '!=', 42   , '       !=' );
 cmp_ok( 1,     '&&', 0    , '       &&' );
-cmp_ok( 42,    '==', "foo", '       == with strings' );
-cmp_ok( 42,    'eq', "foo", '       eq with numbers' );
-cmp_ok( undef, 'eq', 'foo', '       eq with undef' );
 err_ok( <<ERR );
 #   Failed test 'cmp_ok eq'
 #   in $0 at line 68.
@@ -192,19 +193,36 @@ err_ok( <<ERR );
 #     '1'
 #         &&
 #     '0'
-#   Failed test '       == with strings'
-#   in $0 at line 72.
-#          got: 42
-#     expected: 0
+ERR
+
+
+# line 196
+cmp_ok( 42,    'eq', "foo", '       eq with numbers' );
+err_ok( <<ERR );
 #   Failed test '       eq with numbers'
-#   in $0 at line 73.
+#   in $0 at line 196.
 #          got: '42'
 #     expected: 'foo'
-#   Failed test '       eq with undef'
-#   in $0 at line 74.
-#          got: undef
-#     expected: 'foo'
 ERR
+
+
+{
+    my $warnings;
+    local $SIG{__WARN__} = sub { $warnings .= join '', @_ };
+
+# line 211
+    cmp_ok( 42,    '==', "foo", '       == with strings' );
+    err_ok( <<ERR );
+#   Failed test '       == with strings'
+#   in $0 at line 211.
+#          got: 42
+#     expected: foo
+ERR
+    My::Test::like $warnings,
+     qq[/^Argument "foo" isn't numeric in numeric eq (\\\(==\\\) )?at $0 line 211\\\.\n\$/];
+
+}
+
 
 # generate a $!, it changes its value by context.
 -e "wibblehibble";
@@ -277,9 +295,8 @@ not ok - cmp_ok eq
 not ok -        ==
 not ok -        !=
 not ok -        &&
-not ok -        == with strings
 not ok -        eq with numbers
-not ok -        eq with undef
+not ok -        == with strings
 not ok -        eq with stringified errno
 not ok -        eq with numerified errno
 not ok - use Hooble::mooble::yooble;

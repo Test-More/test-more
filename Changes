@@ -10,6 +10,14 @@
       0.59_01.  [rt.cpan.org 13506]
     - String overloaded objects without an 'eq' or '==' method are now
       handled in cmp_ok() and is().
+    - cmp_ok() will now treat overloaded objects as numbers if the comparison
+      operator is numeric.
+    - cmp_ok(), like() and unlike will now throw uninit warnings if their
+      arguments are undefined.
+    - cmp_ok() will now throw warnings as if the comparison were run 
+      normally, for example cmp_ok(2, '==', 'foo') will warn about 'foo' 
+      not being numeric.  Previously all warnings in the comparison were
+      supressed.
 
 0.60  Tue May  3 14:20:34 PDT 2005
 
