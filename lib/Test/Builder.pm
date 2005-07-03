@@ -1251,6 +1251,7 @@ sub _new_fh {
 
 sub _is_fh {
     my $maybe_fh = shift;
+    return 0 unless defined $maybe_fh;
 
     return 1 if ref \$maybe_fh eq 'GLOB'; # its a glob
 

@@ -43,7 +43,7 @@ isnt( undef, 0,             'undef isnt zero' );
 
 #line 45
 like( undef, '/.*/',        'undef is like anything' );
-warnings_is("Use of uninitialized value in pattern match (m//) at $0 line 45.\n");
+warnings_is("Use of uninitialized value.* at $0 line 45.\n");
 
 eq_array( [undef, undef], [undef, 23] );
 no_warnings;
@@ -63,7 +63,7 @@ no_warnings;
 
 #line 64
 cmp_ok( undef, '<=', 2, '  undef <= 2' );
-warnings_is("Use of uninitialized value in numeric le (<=) at $0 line 64.\n");
+warnings_is("Use of uninitialized value.* at $0 line 64.\n");
 
 
 

@@ -25,8 +25,16 @@ my $TB = Test::More->builder;
 $TB->output(\*FAKEOUT);
 
 my $Test = Test::Builder->create;
-$Test->plan(tests => 2);
 $Test->level(0);
+
+if( $] >= 5.005 ) {
+    $Test->plan(tests => 2);
+}
+else {
+    $Test->plan(skip_all => 
+          'CORE::GLOBAL::exit, introduced in 5.005, is needed for testing');
+}
+
 
 plan tests => 4;
 

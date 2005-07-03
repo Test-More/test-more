@@ -219,7 +219,7 @@ ERR
 #     expected: foo
 ERR
     My::Test::like $warnings,
-     qq[/^Argument "foo" isn't numeric in numeric eq (\\\(==\\\) )?at $0 line 211\\\.\n\$/];
+     qq[/^Argument "foo" isn't numeric in .* at $0 line 211\\\.\n\$/];
 
 }
 

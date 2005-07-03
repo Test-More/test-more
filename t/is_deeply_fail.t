@@ -44,7 +44,7 @@ sub is ($$;$) {
 
 sub like ($$;$) {
     my($this, $regex, $name) = @_;
-    $regex = qr/$regex/ unless ref $regex;
+    $regex = "/$regex/" if !ref $regex and $regex !~ m{^/.*/$}s;
 
     my $ok = $TB->like($$this, $regex, $name);
 
@@ -224,7 +224,7 @@ foreach my $test (@tests) {
     ok !is_deeply(@$test);
 
     like \$warning, 
-         qr/^is_deeply\(\) takes two or three args, you gave $num_args\.\n/;
+         "/^is_deeply\\(\\) takes two or three args, you gave $num_args\.\n/";
 }
 
 
@@ -323,7 +323,7 @@ ERR
 
 	{
 	    package Bar;
-	    overload->import(q[""] => sub { "wibble" });
+	    "overload"->import(q[""] => sub { "wibble" });
 	}
 
 #line 353
