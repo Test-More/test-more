@@ -1349,14 +1349,17 @@ sub eq_set  {
     # There's faster ways to do this, but this is easiest.
     local $^W = 0;
 
-    # We must make sure that references are treated neutrally.  It really
-    # doesn't matter how we sort them, as long as both arrays are sorted
-    # with the same algorithm.
+    # It really doesn't matter how we sort them, as long as both arrays are 
+    # sorted with the same algorithm.
+    #
+    # Ensure that references are not accidentally treated the same as a
+    # string containing the reference.
+    #
     # Have to inline the sort routine due to a threading/sort bug.
     # See [rt.cpan.org 6782]
     return eq_array(
-           [sort { ref $a ? -1 : ref $b ? 1 : $a cmp $b } @$a1],
-           [sort { ref $a ? -1 : ref $b ? 1 : $a cmp $b } @$a2]
+           [sort( grep(ref, @$a1) ), sort( grep(!ref, @$a1) )],
+           [sort( grep(ref, @$a2) ), sort( grep(!ref, @$a2) )],
     );
 }
 

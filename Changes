@@ -25,6 +25,7 @@
     - Missing or extra tests are not considered failures for the purposes
       of calculating the exit code.  Should there be no failures but the
       wrong number of tests the exit code will be 254.
+    - Avoiding an unbalanced sort in eq_set() [bugs.perl.org 36354]
 
 0.60  Tue May  3 14:20:34 PDT 2005
 
