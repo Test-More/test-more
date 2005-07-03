@@ -107,7 +107,7 @@ considered a failure and will exit with 255.
 So the exit codes are...
 
     0                   all tests successful
-    255                 test died
+    255                 test died or all passed but wrong # of tests run
     any other number    how many failed (including missing or extras)
 
 If you fail more than 254 tests, it will be reported as 254.

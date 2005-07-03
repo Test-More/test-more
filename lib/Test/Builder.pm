@@ -1598,26 +1598,31 @@ sub _ending {
         }
 
         my $num_failed = grep !$_->{'ok'}, 
-                              @{$test_results}[0..$self->{Expected_Tests}-1];
-        $num_failed += abs($self->{Expected_Tests} - @$test_results);
+                              @{$test_results}[0..$self->{Curr_Test}-1];
 
-        if( $self->{Curr_Test} < $self->{Expected_Tests} ) {
+        my $num_extra = $self->{Curr_Test} - $self->{Expected_Tests};
+
+        if( $num_extra < 0 ) {
             my $s = $self->{Expected_Tests} == 1 ? '' : 's';
             $self->diag(<<"FAIL");
 Looks like you planned $self->{Expected_Tests} test$s but only ran $self->{Curr_Test}.
 FAIL
         }
-        elsif( $self->{Curr_Test} > $self->{Expected_Tests} ) {
-            my $num_extra = $self->{Curr_Test} - $self->{Expected_Tests};
+        elsif( $num_extra > 0 ) {
             my $s = $self->{Expected_Tests} == 1 ? '' : 's';
             $self->diag(<<"FAIL");
 Looks like you planned $self->{Expected_Tests} test$s but ran $num_extra extra.
 FAIL
         }
-        elsif ( $num_failed ) {
+
+        if ( $num_failed ) {
+            my $num_tests = $self->{Curr_Test};
             my $s = $num_failed == 1 ? '' : 's';
+
+            my $qualifier = $num_extra == 0 ? '' : ' run';
+
             $self->diag(<<"FAIL");
-Looks like you failed $num_failed test$s of $self->{Expected_Tests}.
+Looks like you failed $num_failed test$s of $num_tests$qualifier.
 FAIL
         }
 
@@ -1629,7 +1634,18 @@ FAIL
             _my_exit( 255 ) && return;
         }
 
-        _my_exit( $num_failed <= 254 ? $num_failed : 254  ) && return;
+        my $exit_code;
+        if( $num_failed ) {
+            $exit_code = $num_failed <= 254 ? $num_failed : 254;
+        }
+        elsif( $num_extra != 0 ) {
+            $exit_code = 255;
+        }
+        else {
+            $exit_code = 0;
+        }
+
+        _my_exit( $exit_code ) && return;
     }
     elsif ( $self->{Skip_All} ) {
         _my_exit( 0 ) && return;
@@ -1663,7 +1679,7 @@ considered a failure and will exit with 255.
 So the exit codes are...
 
     0                   all tests successful
-    255                 test died
+    255                 test died or all passed but wrong # of tests run
     any other number    how many failed (including missing or extras)
 
 If you fail more than 254 tests, it will be reported as 254.

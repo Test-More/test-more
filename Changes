@@ -18,6 +18,13 @@
       normally, for example cmp_ok(2, '==', 'foo') will warn about 'foo' 
       not being numeric.  Previously all warnings in the comparison were
       supressed. [rt.cpan.org 13155]
+    - Tests will now report *both* the number of tests failed and if the
+      wrong number of tests were run.  Previously if tests failed and the
+      wrong number were run it would only report the latter. 
+      [rt.cpan.org 13494]
+    - Missing or extra tests are not considered failures for the purposes
+      of calculating the exit code.  Should there be no failures but the
+      wrong number of tests the exit code will be 254.
 
 0.60  Tue May  3 14:20:34 PDT 2005
 

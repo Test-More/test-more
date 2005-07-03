@@ -52,6 +52,7 @@ OUT
 #   Failed test 'Sar'
 #   in $0 at line 34.
 # Looks like you planned 3 tests but ran 2 extra.
+# Looks like you failed 2 tests of 5 run.
 ERR
 
     exit 0;
