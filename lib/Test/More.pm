@@ -1338,6 +1338,11 @@ Is better written:
 B<NOTE> By historical accident, this is not a true set comparision.
 While the order of elements does not matter, duplicate elements do.
 
+B<NOTE> eq_set() does not know how to deal with references at the top
+level.  The following is an example of a comparison which might not work:
+
+    eq_set([\1, \2], [\2, \1]);
+
 Test::Deep contains much better set comparison functions.
 
 =cut
@@ -1357,9 +1362,12 @@ sub eq_set  {
     #
     # Have to inline the sort routine due to a threading/sort bug.
     # See [rt.cpan.org 6782]
+    #
+    # I don't know how references would be sorted so we just don't sort
+    # them.  This means eq_set doesn't really work with refs.
     return eq_array(
-           [sort( grep(ref, @$a1) ), sort( grep(!ref, @$a1) )],
-           [sort( grep(ref, @$a2) ), sort( grep(!ref, @$a2) )],
+           [grep(ref, @$a1), sort( grep(!ref, @$a1) )],
+           [grep(ref, @$a2), sort( grep(!ref, @$a2) )],
     );
 }
 
