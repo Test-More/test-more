@@ -738,7 +738,12 @@ sub _regex_ok {
         my $code = $self->_caller_context;
 
         local($@, $!);
-        eval $code.q{$test = $this =~ /$usable_regex/ ? 1 : 0};
+
+        # Yes, it has to look like this or 5.4.5 won't see the #line directive.
+        # Don't ask me, man, I just work here.
+        $test = eval "
+$code" . q{$test = $this =~ /$usable_regex/ ? 1 : 0};
+
         $test = !$test if $cmp eq '!~';
 
         local $Level = $Level + 1;
@@ -790,7 +795,10 @@ sub cmp_ok {
 
         my $code = $self->_caller_context;
 
-        $test = eval $code . "\$got $type \$expect;";
+        # Yes, it has to look like this or 5.4.5 won't see the #line directive.
+        # Don't ask me, man, I just work here.
+        $test = eval "
+$code" . "\$got $type \$expect;";
 
     }
     local $Level = $Level + 1;

@@ -26,10 +26,17 @@ sub no_warnings {
 }
 
 sub warnings_is {
-    $TB->is_eq($warnings, $_[0], '  no warnings');
+    $TB->is_eq($warnings, $_[0]);
     $warnings = '';
 }
 
+sub warnings_like {
+    $TB->like($warnings, "/$_[0]/");
+    $warnings = '';
+}
+
+
+my $Filename = quotemeta $0;
    
 
 is( undef, undef,           'undef is undef');
@@ -43,7 +50,7 @@ isnt( undef, 0,             'undef isnt zero' );
 
 #line 45
 like( undef, '/.*/',        'undef is like anything' );
-warnings_is("Use of uninitialized value.* at $0 line 45.\n");
+warnings_like("Use of uninitialized value.* at $Filename line 45\\.\n");
 
 eq_array( [undef, undef], [undef, 23] );
 no_warnings;
@@ -63,7 +70,7 @@ no_warnings;
 
 #line 64
 cmp_ok( undef, '<=', 2, '  undef <= 2' );
-warnings_is("Use of uninitialized value.* at $0 line 64.\n");
+warnings_like("Use of uninitialized value.* at $Filename line 64\\.\n");
 
 
 

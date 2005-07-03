@@ -28,6 +28,7 @@
     - Avoiding an unbalanced sort in eq_set() [bugs.perl.org 36354]
     - Documenting that eq_set() doesn't deal well with refs.
     - Clarified how is_deeply() compares a bit.
+    * Once again working on 5.4.5.
 
 0.60  Tue May  3 14:20:34 PDT 2005
 
