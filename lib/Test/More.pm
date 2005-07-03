@@ -772,10 +772,14 @@ B<NOTE> I'm not quite sure what will happen with filehandles.
 
   is_deeply( $this, $that, $test_name );
 
-Similar to is(), except that if $this and $that are hash or array
-references, it does a deep comparison walking each data structure to
-see if they are equivalent.  If the two structures are different, it
-will display the place where they start differing.
+Similar to is(), except that if $this and $that are references, it
+does a deep comparison walking each data structure to see if they are
+equivalent.  If the two structures are different, it will display the
+place where they start differing.
+
+is_deeply() compares the dereferenced values of references, the
+references themselves (except for their type) are ignored.  This means
+aspects such as blessing and ties are not considered "different".
 
 Test::Differences and Test::Deep provide more in-depth functionality
 along these lines.
@@ -1435,10 +1439,12 @@ Test::More works with Perls as old as 5.004_05.
 
 =item Overloaded objects
 
-String overloaded objects are compared B<as strings>.  This prevents
-Test::More from piercing an object's interface allowing better blackbox
-testing.  So if a function starts returning overloaded objects instead of
-bare strings your tests won't notice the difference.  This is good.
+String overloaded objects are compared B<as strings> (or in cmp_ok()'s
+case, strings or numbers as appropriate to the comparison op).  This
+prevents Test::More from piercing an object's interface allowing
+better blackbox testing.  So if a function starts returning overloaded
+objects instead of bare strings your tests won't notice the
+difference.  This is good.
 
 However, it does mean that functions like is_deeply() cannot be used to
 test the internals of string overloaded objects.  In this case I would
