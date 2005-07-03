@@ -27,7 +27,7 @@ ok( eq_set( [$ref, "$ref", "$ref", $ref],
           ) );
 
 TODO: {
-    local $TODO = 'eq_set() doesn't really handle references';
+    local $TODO = q[eq_set() doesn't really handle references];
 
     ok( eq_set( [\1, \2, \3], [\2, \3, \1] ) );
 }
