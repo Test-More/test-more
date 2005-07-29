@@ -252,7 +252,7 @@ my $more_err_re = <<ERR;
 #   in $Filename at line 84\\.
 #     Tried to use 'Hooble::mooble::yooble'.
 #     Error:  Can't locate Hooble.* in \\\@INC .*
-# BEGIN failed--compilation aborted at $filename line 84.
+# BEGIN failed--compilation aborted at $Filename line 84.
 ERR
 
 My::Test::like($err->read, "/^$more_err_re/");
@@ -262,7 +262,7 @@ My::Test::like($err->read, "/^$more_err_re/");
 require_ok('ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble');
 $more_err_re = <<ERR;
 #   Failed test 'require ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble;'
-#   in $filename at line 85\\.
+#   in $Filename at line 85\\.
 #     Tried to require 'ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble'.
 #     Error:  Can't locate ALL.* in \\\@INC .*
 ERR
