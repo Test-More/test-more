@@ -171,24 +171,7 @@ or for deciding between running the tests at all:
 =cut
 
 sub plan {
-    my(@plan) = @_;
-
-    my $idx = 0;
-    my @cleaned_plan;
-    while( $idx <= $#plan ) {
-        my $item = $plan[$idx];
-
-        if( $item eq 'no_diag' ) {
-            $Test->no_diag(1);
-        }
-        else {
-            push @cleaned_plan, $item;
-        }
-
-        $idx++;
-    }
-
-    $Test->plan(@cleaned_plan);
+    $Test->plan(@_);
 }
 
 sub import {
@@ -207,6 +190,9 @@ sub import {
         if( $item eq 'import' ) {
             push @imports, @{$_[$idx+1]};
             $idx++;
+        }
+        elsif( $item eq 'no_diag' ) {
+            $Test->no_diag(1);
         }
         else {
             push @plan, $item;
