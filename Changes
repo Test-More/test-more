@@ -1,4 +1,4 @@
-0.61
+0.60_01  Sun Jul  3 18:11:58 PDT 2005
     - Moved the docs around a little to better group all the testing
       functions together. [rt.cpan.org 8388]
     * Added a BAIL_OUT() function to Test::More [rt.cpan.org 8381]
