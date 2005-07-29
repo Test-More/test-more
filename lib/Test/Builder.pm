@@ -1035,11 +1035,13 @@ sub use_numbers {
     return $self->{Use_Nums};
 }
 
-=item B<no_header>
 
-    $Test->no_header($no_header);
+=item B<no_diag>
 
-If set to true, no "1..N" header will be printed.
+    $Test->no_diag($no_diag);
+
+If set true no diagnostics will be printed.  This includes calls to
+diag().
 
 =item B<no_ending>
 
@@ -1050,24 +1052,28 @@ ends.  It also changes the exit code as described below.
 
 If this is true, none of that will be done.
 
+=item B<no_header>
+
+    $Test->no_header($no_header);
+
+If set to true, no "1..N" header will be printed.
+
 =cut
 
-sub no_header {
-    my($self, $no_header) = @_;
+foreach my $attribute (qw(No_Header No_Ending No_Diag)) {
+    my $method = lc $attribute;
 
-    if( defined $no_header ) {
-        $self->{No_Header} = $no_header;
-    }
-    return $self->{No_Header};
-}
+    my $code = sub {
+        my($self, $no) = @_;
 
-sub no_ending {
-    my($self, $no_ending) = @_;
+        if( defined $no ) {
+            $self->{$attribute} = $no;
+        }
+        return $self->{$attribute};
+    };
 
-    if( defined $no_ending ) {
-        $self->{No_Ending} = $no_ending;
-    }
-    return $self->{No_Ending};
+    no strict 'refs';
+    *{__PACKAGE__.'::'.$method} = $code;
 }
 
 
@@ -1110,6 +1116,8 @@ Mark Fowler <mark@twoshortplanks.com>
 
 sub diag {
     my($self, @msgs) = @_;
+
+    return if $self->no_diag;
     return unless @msgs;
 
     # Prevent printing headers when compiling (i.e. -c)

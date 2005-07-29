@@ -1,5 +1,7 @@
 0.61
     - Minor Win32 testing nit in fail-more.t
+    - Added no_diag() method to Test::Builder and changed Test::More's
+      no_diag internals to use that. [rt.cpan.org 8655]
 
 0.60_01  Sun Jul  3 18:11:58 PDT 2005
     - Moved the docs around a little to better group all the testing

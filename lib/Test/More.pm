@@ -36,7 +36,6 @@ $VERSION = eval $VERSION;    # make the alpha version come out as a number
             );
 
 my $Test = Test::Builder->new;
-my $Show_Diag = 1;
 
 
 # 5.004's Exporter doesn't have export_to_level.
@@ -180,7 +179,7 @@ sub plan {
         my $item = $plan[$idx];
 
         if( $item eq 'no_diag' ) {
-            $Show_Diag = 0;
+            $Test->no_diag(1);
         }
         else {
             push @cleaned_plan, $item;
@@ -931,7 +930,6 @@ interfere with the test.
 =cut
 
 sub diag {
-    return unless $Show_Diag;
     $Test->diag(@_);
 }
 
