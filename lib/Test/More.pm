@@ -3,7 +3,6 @@ package Test::More;
 use 5.004;
 
 use strict;
-use Test::Builder;
 
 
 # Can't use Carp because it might cause use_ok() to accidentally succeed
@@ -16,12 +15,12 @@ sub _carp {
 
 
 
-require Exporter;
 use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS $TODO);
 $VERSION = '0.60_01';
 $VERSION = eval $VERSION;    # make the alpha version come out as a number
 
-@ISA    = qw(Exporter);
+use Test::Builder::Module;
+@ISA    = qw(Test::Builder::Module);
 @EXPORT = qw(ok use_ok require_ok
              is isnt like unlike is_deeply
              cmp_ok
@@ -35,18 +34,7 @@ $VERSION = eval $VERSION;    # make the alpha version come out as a number
 	     BAIL_OUT
             );
 
-my $Test = Test::Builder->new;
-
-
-# 5.004's Exporter doesn't have export_to_level.
-sub _export_to_level
-{
-      my $pkg = shift;
-      my $level = shift;
-      (undef) = shift;                  # redundant arg
-      my $callpkg = caller($level);
-      $pkg->export($callpkg, @_);
-}
+my $Test = Test::More->builder;
 
 
 =head1 NAME
@@ -172,38 +160,6 @@ or for deciding between running the tests at all:
 
 sub plan {
     $Test->plan(@_);
-}
-
-sub import {
-    my($class) = shift;
-
-    my $caller = caller;
-
-    $Test->exported_to($caller);
-
-    my $idx = 0;
-    my @plan;
-    my @imports;
-    while( $idx <= $#_ ) {
-        my $item = $_[$idx];
-
-        if( $item eq 'import' ) {
-            push @imports, @{$_[$idx+1]};
-            $idx++;
-        }
-        elsif( $item eq 'no_diag' ) {
-            $Test->no_diag(1);
-        }
-        else {
-            push @plan, $item;
-        }
-
-        $idx++;
-    }
-
-    plan(@plan);
-
-    __PACKAGE__->_export_to_level(1, __PACKAGE__, @imports);
 }
 
 
@@ -1382,11 +1338,6 @@ you can access the underlying Test::Builder object like so:
 Returns the Test::Builder object underlying Test::More for you to play
 with.
 
-=cut
-
-sub builder {
-    return Test::Builder->new;
-}
 
 =back
 
