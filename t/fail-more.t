@@ -51,6 +51,8 @@ Test::More->import(tests => $Total);
 my $tb = Test::More->builder;
 $tb->use_numbers(0);
 
+my $Filename = quotemeta $0;
+
 # Preserve the line numbers.
 #line 38
 ok( 0, 'failing' );
@@ -219,7 +221,7 @@ ERR
 #     expected: foo
 ERR
     My::Test::like $warnings,
-     qq[/^Argument "foo" isn't numeric in .* at $0 line 211\\\.\n\$/];
+     qq[/^Argument "foo" isn't numeric in .* at $Filename line 211\\\.\n\$/];
 
 }
 
@@ -245,10 +247,9 @@ ERR
 #line 84
 use_ok('Hooble::mooble::yooble');
 
-my $filename = quotemeta $0;
 my $more_err_re = <<ERR;
 #   Failed test 'use Hooble::mooble::yooble;'
-#   in $filename at line 84\\.
+#   in $Filename at line 84\\.
 #     Tried to use 'Hooble::mooble::yooble'.
 #     Error:  Can't locate Hooble.* in \\\@INC .*
 # BEGIN failed--compilation aborted at $filename line 84.
