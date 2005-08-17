@@ -15,6 +15,30 @@ my $_export_to_level = sub {
 };
 
 
+=head1 NAME
+
+Test::Builder::Module - Base class for test modules
+
+=head1 SYNOPSIS
+
+  # Emulates Test::Simple
+  package My::Test::Simple;
+
+  my $CLASS = __PACKAGE__;
+
+  use base 'Test::Builder::Module';
+  @EXPORT = qw(ok);
+
+  sub ok ($;$) {
+      my $tb = $CLASS->builder;
+      return $tb->ok(@_);
+  }
+  
+  1;
+
+=cut
+
+
 sub import {
     my($class) = shift;
 
