@@ -163,6 +163,31 @@ sub plan {
 }
 
 
+# This implements "use Test::More 'no_diag'" but the behavior is
+# deprecated.
+sub import_extra {
+    my $class = shift;
+    my $list  = shift;
+
+    my @other = ();
+    my $idx = 0;
+    while( $idx <= $#{$list} ) {
+        my $item = $list->[$idx];
+
+        if( defined $item and $item eq 'no_diag' ) {
+            $class->builder->no_diag(1);
+        }
+        else {
+            push @other, $item;
+        }
+
+        $idx++;
+    }
+
+    @$list = @other;
+}
+
+
 =head2 Test names
 
 By convention, each test is assigned a number in order.  This is
@@ -858,12 +883,6 @@ which would produce:
 
 You might remember C<ok() or diag()> with the mnemonic C<open() or
 die()>.
-
-All diag()s can be made silent by passing the "no_diag" option to
-Test::More.  C<use Test::More tests => 1, 'no_diag'>.  This is useful
-if you have diagnostics for personal testing but then wish to make
-them silent for release without commenting out each individual
-statement.
 
 B<NOTE> The exact formatting of the diagnostic output is still
 changing, but it is guaranteed that whatever you throw at it it won't
