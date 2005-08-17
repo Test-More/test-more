@@ -11,7 +11,7 @@ use Test::Builder::Module;
 @ISA    = qw(Test::Builder::Module);
 @EXPORT = qw(ok);
 
-my $Test = Test::Simple->builder;
+my $CLASS = __PACKAGE__;
 
 
 =head1 NAME
@@ -78,7 +78,7 @@ will do what you mean (fail if stuff is empty)
 =cut
 
 sub ok ($;$) {
-    $Test->ok(@_);
+    $CLASS->builder->ok(@_);
 }
 
 
