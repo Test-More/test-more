@@ -765,6 +765,9 @@ is_deeply() compares the dereferenced values of references, the
 references themselves (except for their type) are ignored.  This means
 aspects such as blessing and ties are not considered "different".
 
+is_deeply() current has very limited handling of function reference
+and globs.  It merely checks if they have the same referent.
+
 Test::Differences and Test::Deep provide more in-depth functionality
 along these lines.
 
@@ -862,7 +865,7 @@ sub _type {
 
     return '' if !ref $thing;
 
-    for my $type (qw(ARRAY HASH REF SCALAR GLOB Regexp)) {
+    for my $type (qw(ARRAY HASH REF SCALAR GLOB CODE Regexp)) {
         return $type if UNIVERSAL::isa($thing, $type);
     }
 
@@ -1249,6 +1252,10 @@ sub _deep_check {
                 push @Data_Stack, { type => 'REF', vals => [$e1, $e2] };
                 $ok = _deep_check($$e1, $$e2);
                 pop @Data_Stack if $ok;
+            }
+            elsif( $type ) {
+                push @Data_Stack, { type => $type, vals => [$e1, $e2] };
+                $ok = 0;
             }
 	    else {
 		_whoa(1, "No type in _deep_check");
