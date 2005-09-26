@@ -1,4 +1,4 @@
-0.61
+0.61  Fri Sep 23 23:26:05 PDT 2005
     - create.t was trying to read from a file before it had been closed
       (and thus the changes may not have yet been written).
     * is_deeply() would call stringification methods on non-object strings

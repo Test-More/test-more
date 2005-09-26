@@ -5,7 +5,7 @@ use Test::Builder;
 require Exporter;
 @ISA = qw(Exporter);
 
-$VERSION = '0.01_01';
+$VERSION = '0.02';
 
 use strict;
 
