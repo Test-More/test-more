@@ -472,13 +472,20 @@ sub _unoverload {
 
     foreach my $thing (@_) {
         eval { 
-            if( defined $$thing ) {
+            if( _is_object($$thing) ) {
                 if( my $string_meth = overload::Method($$thing, $type) ) {
                     $$thing = $$thing->$string_meth();
                 }
             }
         };
     }
+}
+
+
+sub _is_object {
+    my $thing = shift;
+
+    return eval { ref $thing && $thing->isa('UNIVERSAL') } ? 1 : 0;
 }
 
 

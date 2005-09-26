@@ -18,7 +18,7 @@ BEGIN {
         plan skip_all => "needs overload.pm";
     }
     else {
-        plan tests => 10;
+        plan tests => 13;
     }
 }
 
@@ -53,3 +53,16 @@ is_deeply $obj, 'foo',        'is_deeply with string overloading at the top';
 
 Test::More->builder->is_num($obj, 42);
 Test::More->builder->is_eq ($obj, "foo");
+
+
+{
+    # rt.cpan.org 14675
+    package TestPackage;
+    use overload q{""} => sub { ::fail("This should not be called") };
+
+    package Foo;
+    ::is_deeply(['TestPackage'], ['TestPackage']);
+    ::is_deeply({'TestPackage' => 'TestPackage'}, 
+                {'TestPackage' => 'TestPackage'});
+    ::is_deeply('TestPackage', 'TestPackage');
+}
