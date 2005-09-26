@@ -5,6 +5,8 @@ use Test::Builder;
 require Exporter;
 @ISA = qw(Exporter);
 
+$VERSION = '0.01_01';
+
 use strict;
 
 # 5.004's Exporter doesn't have export_to_level.

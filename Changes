@@ -1,6 +1,10 @@
-0.61
+0.60_02  Tue Aug  9 00:27:41 PDT 2005
+    * Added Test::Builder::Module.
+    - Changed Test::More and Test::Simple to use Test::Builder::Module
     - Minor Win32 testing nit in fail-more.t
-    - Added no_diag() method to Test::Builder and changed Test::More's
+    - create.t was trying to read from a file before it had been closed
+      (and thus the changes may not have yet been written).
+    * Added no_diag() method to Test::Builder and changed Test::More's
       no_diag internals to use that. [rt.cpan.org 8655]
     * Deprecated no_diag() as an option to "use Test::More".  Call the
       Test::Builder method instead.
