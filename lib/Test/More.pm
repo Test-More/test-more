@@ -766,7 +766,8 @@ references themselves (except for their type) are ignored.  This means
 aspects such as blessing and ties are not considered "different".
 
 is_deeply() current has very limited handling of function reference
-and globs.  It merely checks if they have the same referent.
+and globs.  It merely checks if they have the same referent.  This may
+improve in the future.
 
 Test::Differences and Test::Deep provide more in-depth functionality
 along these lines.
