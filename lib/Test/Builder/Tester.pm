@@ -19,7 +19,7 @@ Test::Builder
     use Test::More;
 
     test_out("not ok 1 - foo");
-    test_err("# Failed test ($0 at line ".line_num(+1).")");
+    test_fail(+1);
     fail("foo");
     test_test("fail works");
 
@@ -208,8 +208,9 @@ sub test_err(@)
 
 Because the standard failure message that B<Test::Builder> produces
 whenever a test fails will be a common occurrence in your test error
-output, rather than forcing you to call C<test_err> with the string
-all the time like so
+output, and because has changed between Test::Builder versions, rather
+than forcing you to call C<test_err> with the string all the time like
+so
 
     test_err("# Failed test ($0 at line ".line_num(+1).")");
 
