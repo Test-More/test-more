@@ -506,7 +506,7 @@ sub _translate_Failed_check
     my($self, $check) = @_;
 
     if( $check =~ /\A(.*)#     Failed test \((.*?) at line (\d+)\)\z/ ) {
-        $check = qr/$1#\s+Failed test.*\n?.*\Q$2\E at line \Q$3\E.*\n?/;
+        $check = qr/$1#\s+Failed test.*?\n?.*?\Q$2\E at line \Q$3\E.*\n?/;
     }
 
     return $check;
