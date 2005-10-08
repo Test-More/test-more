@@ -505,8 +505,8 @@ sub _translate_Failed_check
 {
     my($self, $check) = @_;
 
-    if( $check =~ /\A(.*)#     Failed test \((.*?) at line (\d+)\)\z/ ) {
-        $check = qr/$1#\s+Failed test.*?\n?.*?\Q$2\E at line \Q$3\E.*\n?/;
+    if( $check =~ /\A(.*)#     (Failed .*test) \((.*?) at line (\d+)\)\z/ ) {
+        $check = qr/\Q$1\E#\s+\Q$2\E.*?\n?.*?\Q$3\E at line \Q$4\E.*\n?/;
     }
 
     return $check;
@@ -542,7 +542,7 @@ sub complaint
     my $self = shift;
     my $type   = $self->type;
     my $got    = $self->got;
-    my $wanted = join '', @{$self->wanted};
+    my $wanted = join "\n", @{$self->wanted};
 
     # are we running in colour mode?
     if (Test::Builder::Tester::color)

@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-use Test::Builder::Tester tests => 8;
+use Test::Builder::Tester tests => 9;
 use Test::More;
 
 ok(1,"This is a basic test");
@@ -43,3 +43,13 @@ test_fail(+2);
 test_fail(+1);
 fail("name");  fail("name");
 test_test("testing failing on the same line with the same name");
+
+
+test_out("not ok 1 - name # TODO Something");
+test_err("#     Failed (TODO) test ($0 at line 52)");
+TODO: { 
+    local $TODO = "Something";
+    fail("name");
+}
+test_test("testing failing with todo");
+
