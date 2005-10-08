@@ -2,7 +2,7 @@ package Test::Builder::Tester;
 
 use strict;
 use vars qw(@EXPORT $VERSION @ISA);
-$VERSION = "1.01";
+$VERSION = "1.02";
 
 use Test::Builder;
 use Symbol;
@@ -128,7 +128,7 @@ sub _start_testing
 {
     # even if we're running under Test::Harness pretend we're not
     # for now.  This needed so Test::Builder doesn't add extra spaces
-    $original_harness_env = $ENV{HARNESS_ACTIVE};
+    $original_harness_env = $ENV{HARNESS_ACTIVE} || 0;
     $ENV{HARNESS_ACTIVE} = 0;
 
     # remember what the handles were set to
@@ -492,8 +492,26 @@ package Test::Tester::Tie;
 sub expect
 {
     my $self = shift;
-    $self->[2] .= join '', map { "$_\n" } @_;
+
+    my @checks = @_;
+    foreach my $check (@checks) {
+        $check = $self->_translate_Failed_check($check);
+        push @{$self->[2]}, ref $check ? $check : "$check\n";
+    }
 }
+
+
+sub _translate_Failed_check 
+{
+    my($self, $check) = @_;
+
+    if( $check =~ /\A(.*)#     Failed test \((.*?) at line (\d+)\)\z/ ) {
+        $check = qr/$1#\s+Failed test.*\n?.*\Q$2\E at line \Q$3\E.*\n?/;
+    }
+
+    return $check;
+}
+
 
 ##
 # return true iff the expected data matches the got data
@@ -505,7 +523,14 @@ sub check
     # turn off warnings as these might be undef
     local $^W = 0;
 
-    $self->[1] eq $self->[2];
+    my @checks = @{$self->[2]};
+    my $got = $self->[1];
+    foreach my $check (@checks) {
+        $check = qr/^\Q$check\E/ unless ref $check;
+        return 0 unless $got =~ s/^$check//;
+    }
+
+    return length $got == 0;
 }
 
 ##
@@ -515,7 +540,9 @@ sub check
 sub complaint
 {
     my $self = shift;
-    my ($type, $got, $wanted) = @$self;
+    my $type   = $self->type;
+    my $got    = $self->got;
+    my $wanted = join '', @{$self->wanted};
 
     # are we running in colour mode?
     if (Test::Builder::Tester::color)
@@ -564,7 +591,26 @@ sub complaint
 sub reset
 {
     my $self = shift;
-    @$self = ($self->[0]);
+    @$self = ($self->[0], '', []);
+}
+
+
+sub got
+{
+    my $self = shift;
+    return $self->[1];
+}
+
+sub wanted
+{
+    my $self = shift;
+    return $self->[2];
+}
+
+sub type
+{
+    my $self = shift;
+    return $self->[0];
 }
 
 ###
@@ -577,9 +623,12 @@ sub PRINT  {
 }
 
 sub TIEHANDLE {
-    my $class = shift;
-    my $self = [shift()];
-    return bless $self, $class;
+    my($class, $type) = @_;
+
+    my $self = bless [$type], $class;
+    $self->reset;
+
+    return $self;
 }
 
 sub READ {}

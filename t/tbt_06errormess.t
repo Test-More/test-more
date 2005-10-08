@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-use Test::More tests => 12;
+use Test::More tests => 8;
 use Symbol;
 use Test::Builder;
 use Test::Builder::Tester;
@@ -18,8 +18,8 @@ my $output_handle = gensym;
 my $error_handle  = gensym;
 
 # and tie them to this package
-my $out = tie *$output_handle, "Test::Tester::Tie2", "STDOUT";
-my $err = tie *$error_handle,  "Test::Tester::Tie2", "STDERR";
+my $out = tie *$output_handle, "Test::Tester::Tie", "STDOUT";
+my $err = tie *$error_handle,  "Test::Tester::Tie", "STDERR";
 
 # ooooh, use the test suite
 my $t = Test::Builder->new;
@@ -78,15 +78,10 @@ sub my_test_test
   my $wanted;
 
   # stdout
-  ($wanted, $got) = $out->both;
-  $t->is_eq($got, $wanted, "STDOUT $text");
+  $t->ok($out->check, "STDOUT $text");
 
   # stderr
-  ($got, $wanted) = $err->both;
-  $got    =~ s/ /+/g;
-  $wanted =~ s/ /+/g;
-  $t->ok($got eq $wanted, "STDERR $text")
-   or $t->diag("HEY THERE, I GOT '$got' not '$wanted'");
+  $t->ok($err->check, "STDERR $text");
 }
 
 ####################################################################
@@ -123,143 +118,3 @@ test_test("bar");
 my_test_test("meta meta test with tbt2 ");
 
 ####################################################################
-# Actual meta tests
-####################################################################
-
-# test that when something doesn't match the expected output we
-# get the correct error message
-
-# turn off colour
-Test::Builder::Tester::color(0);
-
-# declare the colours empty 
-my ($red, $reset, $green) = ("","","");
-
-# set up the outer wrapper again
-start_testing();
-$out->expect("not ok 1 - bar");
-$err->expect("#     Failed test ($0 at line ".line_num(+24).")");
-$err->expect("# STDERR is:",
-             "# ${green}#     Failed test ($0 at line ".line_num(+19).")$reset",
-             "# ${green}#          got: 'php'$reset",
-             "# ${green}#     expected: '${red}Perl'$reset",
-             "# $reset",
-             "# not:",
-             "# ${green}#     Failed test ($0 at line ".line_num(+19).")$reset",
-             "# ${green}#          got: 'php'$reset",
-             "# ${green}#     expected: '${red}perl'$reset",
-             "# $reset",
-             "# as expected");
-
-# set up what the inner wrapper expects (which it won't get);
-test_out("not ok 1 - foo");
-test_err("#     Failed test ($0 at line ".line_num(+5).")",
-         "#          got: 'php'",
-         "#     expected: 'perl'");
-
-# the actual test function that we are testing (which fails)
-is("php","Perl","foo");
-
-# the test wrapper which will fail in turn as in the diagnostics
-# from the first fail we get "Perl" where we expected "perl"
-test_test("bar");
-
-# finally check that we got the correct diagnostics about our
-# diagnostics failing out
-my_test_test("meta test b&w");
-
-############################################
-
-# load the module and get colours if we can
-eval "require Term::ANSIColor";
-unless ($@) {
-  $red   = Term::ANSIColor::color("black") .
-           Term::ANSIColor::color("on_red");
-  $reset = Term::ANSIColor::color("reset");
-  $green = Term::ANSIColor::color("black").
-           Term::ANSIColor::color("on_green");
-}
-
-# turn colour mode on
-Test::Builder::Tester::color(1);
-
-# set up the outer wrapper again
-start_testing();
-$out->expect("not ok 1 - bar");
-$err->expect("#     Failed test ($0 at line ".line_num(+24).")");
-$err->expect("# STDERR is:",
-             "# ${green}#     Failed test ($0 at line ".line_num(+19).")$reset",
-             "# ${green}#          got: 'php'$reset",
-             "# ${green}#     expected: '${red}Perl'$reset",
-             "# ${red}$reset",
-             "# not:",
-             "# ${green}#     Failed test ($0 at line ".line_num(+19).")$reset",
-             "# ${green}#          got: 'php'$reset",
-             "# ${green}#     expected: '${red}perl'$reset",
-             "# ${red}$reset",
-             "# as expected");
-
-# set up what the inner wrapper expects (which it won't get);
-test_out("not ok 1 - foo");
-test_err("#     Failed test ($0 at line ".line_num(+5).")",
-	 "#          got: 'php'",
-	 "#     expected: 'perl'");
-
-# the actual test function that we are testing (which fails)
-is("php","Perl","foo");
-
-# the test wrapper which will fail in turn as in the diagnostics 
-# from the first fail we get "Perl" where we expected "perl"
-test_test("bar");
-
-# finally check that we got the correct diagnostics about our
-# diagnostics failing out
-my_test_test("meta test color");
-
-####################################################################
-
-package Test::Tester::Tie2;
-
-##
-# add line(s) to be expected
-
-sub expect
-{
-    my $self = shift;
-    $self->[2] .= join '', map { "$_\n" } @_;
-}
-
-sub both
-{
-  my $self = shift;
-  return ($self->[1], $self->[2]);
-}
-
-##
-# forget all expected and got data
-
-sub reset
-{
-    my $self = shift;
-    @$self = ($self->[0]);
- }
-
-###
-# tie interface
-###
-
-sub PRINT  {
-    my $self = shift;
-    $self->[1] .= join '', @_;
-}
-
-sub TIEHANDLE {
-    my $class = shift;
-    my $self = [shift()];
-    return bless $self, $class;
-}
-
-sub READ {}
-sub READLINE {}
-sub GETC {}
-sub FILENO {}

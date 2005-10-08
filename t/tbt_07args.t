@@ -18,8 +18,8 @@ my $output_handle = gensym;
 my $error_handle  = gensym;
 
 # and tie them to this package
-my $out = tie *$output_handle, "Test::Tester::Tie2", "STDOUT";
-my $err = tie *$error_handle,  "Test::Tester::Tie2", "STDERR";
+my $out = tie *$output_handle, "Test::Tester::Tie", "STDOUT";
+my $err = tie *$error_handle,  "Test::Tester::Tie", "STDERR";
 
 # ooooh, use the test suite
 my $t = Test::Builder->new;
@@ -78,15 +78,10 @@ sub my_test_test
   my $wanted;
 
   # stdout
-  ($wanted, $got) = $out->both;
-  $t->is_eq($got, $wanted, "STDOUT $text");
+  $t->ok($out->check, "STDOUT $text");
 
   # stderr
-  ($got, $wanted) = $err->both;
-  $got    =~ s/ /+/g;
-  $wanted =~ s/ /+/g;
-  $t->ok($got eq $wanted, "STDERR $text")
-   or $t->diag("HEY THERE, I GOT '$got' not '$wanted'");
+  $t->ok($err->check, "STDERR $text");
 }
 
 ####################################################################
@@ -218,49 +213,3 @@ test_test(skip_err => 1, name => "bar");
 my_test_test("meta test skip_err");
 
 ####################################################################
-
-package Test::Tester::Tie2;
-
-##
-# add line(s) to be expected
-
-sub expect
-{
-    my $self = shift;
-    $self->[2] .= join '', map { "$_\n" } @_;
-}
-
-sub both
-{
-  my $self = shift;
-  return ($self->[1], $self->[2]);
-}
-
-##
-# forget all expected and got data
-
-sub reset
-{
-    my $self = shift;
-    @$self = ($self->[0]);
- }
-
-###
-# tie interface
-###
-
-sub PRINT  {
-    my $self = shift;
-    $self->[1] .= join '', @_;
-}
-
-sub TIEHANDLE {
-    my $class = shift;
-    my $self = [shift()];
-    return bless $self, $class;
-}
-
-sub READ {}
-sub READLINE {}
-sub GETC {}
-sub FILENO {}
