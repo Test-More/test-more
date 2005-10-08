@@ -870,6 +870,8 @@ sub BAIL_OUT {
 =for deprecated
 BAIL_OUT() used to be BAILOUT()
 
+=cut
+
 *BAILOUT = \&BAIL_OUT;
 
 
