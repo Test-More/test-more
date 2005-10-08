@@ -1,4 +1,4 @@
-0.62
+0.62  Sat Oct  8 01:25:03 PDT 2005
     * Aborbed Test::Builder::Tester.  The last release broke it because its
       screen scraping Test::More and the failure output changed.  By
       distributing them together we ensure TBT won't break again.
