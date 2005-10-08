@@ -3,8 +3,6 @@
       screen scraping Test::More and the failure output changed.  By
       distributing them together we ensure TBT won't break again.
     * Test::Builder->BAILOUT() was missing.
-
-0.61_01
     - is_deeply() can now handle function and code refs in a very limited
       way.  It simply looks to see if they have the same referent.
       [rt.cpan.org 14746]
