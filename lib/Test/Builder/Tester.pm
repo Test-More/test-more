@@ -18,10 +18,17 @@ Test::Builder
     use Test::Builder::Tester tests => 1;
     use Test::More;
 
-    test_out("not ok 1 - foo");
-    test_fail(+1);
+    test_fail(+1, "foo");
     fail("foo");
     test_test("fail works");
+
+    test_pass("baz");
+    ok(1, "baz");
+    test_test("pass works");
+
+    test_out("not ok 1 - bar");
+    ok(0, "bar");
+    test_test("output checking works");
 
 =head1 DESCRIPTION
 
@@ -58,7 +65,7 @@ my $t = Test::Builder->new;
 use Exporter;
 @ISA = qw(Exporter);
 
-@EXPORT = qw(test_out test_err test_fail test_diag test_test line_num);
+@EXPORT = qw(test_out test_err test_fail test_diag test_test line_num test_pass);
 
 # _export_to_level and import stolen directly from Test::More.  I am
 # the king of cargo cult programming ;-)
@@ -156,7 +163,7 @@ sub _start_testing
 
 =head2 Methods
 
-These are the six methods that are exported as default.
+These are the seven methods that are exported as default.
 
 =over 4
 
@@ -179,12 +186,12 @@ which is even the same as
    test_out("ok 1");
    test_out("ok 2");
 
-Once C<test_out> or C<test_err> (or C<test_fail> or C<test_diag>) have
-been called once all further output from B<Test::Builder> will be
-captured by B<Test::Builder::Tester>.  This means that your will not
-be able perform further tests to the normal output in the normal way
-until you call C<test_test> (well, unless you manually meddle with the
-output filehandles)
+Once C<test_out> or C<test_err> (or C<test_fail>, C<test_pass>, or
+C<test_diag>) have been called once all further output from B<Test::Builder>
+will be captured by B<Test::Builder::Tester>.  This means that your will not be
+able perform further tests to the normal output in the normal way until you
+call C<test_test> (well, unless you manually meddle with the output
+filehandles)
 
 =cut
 
@@ -233,14 +240,41 @@ more simply as:
 sub test_fail
 {
     # do we need to do any setup?
-    _start_testing() unless $testing;
+    _start_testing() unless $testing++;
 
     # work out what line we should be on
     my ($package, $filename, $line) = caller;
     $line = $line + (shift() || 0); # prevent warnings
 
+    my $mess = "not ok $testing";
+    $mess .= ' - ' . shift if @_;
+    $out->expect( $mess );
+
     # expect that on stderr
     $err->expect("#     Failed test ($0 at line $line)");
+}
+
+=item test_pass
+
+Because the standard success message that B<Test::Builder> produces
+whenever a test passes will be common in your test error
+output, rather than forcing you to call C<test_out> with the string
+all the time like so
+
+    test_out("ok 1 - some test name here");
+
+C<test_pass> exists as a convenience method that you can call instead.  It
+takes one optional argument, the test description from the test you expect to
+pass.
+
+=cut
+
+sub test_pass(;$)
+{
+    _start_testing() unless $testing++;
+    my $mess = "ok $testing";
+    $mess .= ' - ' . shift if @_;
+    $out->expect( $mess, @_ );
 }
 
 =item test_diag
@@ -358,7 +392,6 @@ sub test_test
                     && ($args{skip_err} || $err->check),
                    $mess))
     {
-      # print out the diagnostic information about why this
       # test failed
 
       local $_;
@@ -543,7 +576,7 @@ sub complaint
     my $self = shift;
     my $type   = $self->type;
     my $got    = $self->got;
-    my $wanted = join "\n", @{$self->wanted};
+    my $wanted = join '', @{$self->wanted};
 
     # are we running in colour mode?
     if (Test::Builder::Tester::color)
