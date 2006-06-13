@@ -605,7 +605,7 @@ the string version.
 
 =item B<isnt_num>
 
-  $Test->is_num($got, $dont_expect, $name);
+  $Test->isnt_num($got, $dont_expect, $name);
 
 Like Test::More's isnt().  Checks if $got ne $dont_expect.  This is
 the numeric version.
