@@ -1107,7 +1107,7 @@ but want to put tests in your testing script (always a good idea).
 
     BAIL_OUT($reason);
 
-Incidates to the harness that things are going so badly all testing
+Indicates to the harness that things are going so badly all testing
 should terminate.  This includes the running any additional test scripts.
 
 This is typically used when testing cannot continue such as a critical
