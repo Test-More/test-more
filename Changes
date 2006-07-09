@@ -3,6 +3,10 @@
       Submitted by "Pete Krawczyk" <perl@bsod.net>
       Implemented by "Richard Foley" <richard.foley@rfi.net>
       [rt.cpan.org 15654]
+    * Added test_pass() to Test::Builder::Tester rather than having to
+      call test_out("ok 1 - foo"). <chromatic@wgz.org> [rt.cpan.org 11317]
+    * test_fail() now accepts a test diagnostic rather than having to
+      call test_out() separately. <chromatic@wgz.org> [rt.cpan.org 11319]
 
 0.62  Sat Oct  8 01:25:03 PDT 2005
     * Absorbed Test::Builder::Tester.  The last release broke it because its
