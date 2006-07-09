@@ -7,6 +7,8 @@
       call test_out("ok 1 - foo"). <chromatic@wgz.org> [rt.cpan.org 11317]
     * test_fail() now accepts a test diagnostic rather than having to
       call test_out() separately. <chromatic@wgz.org> [rt.cpan.org 11319]
+    - Changed Test::Builder::Tester docs to show best practice using
+      test_fail() and test_pass().
     - isnt_num() doc example wrongly showed is_num(). <chromatic@wgz.org>
     - Fixed a minor typo in the BAIL_OUT() docs. <Jeff Deifik>
 

@@ -26,9 +26,12 @@ Test::Builder
     ok(1, "baz");
     test_test("pass works");
 
-    test_out("not ok 1 - bar");
-    ok(0, "bar");
-    test_test("output checking works");
+    test_fail(+3, "is foo bar?");
+    test_err("#          got: 'foo'",
+             "#     expected: 'bar'");
+    is("foo", "bar", "is foo bar?");
+    test_test("diagnostic checking works");
+
 
 =head1 DESCRIPTION
 
@@ -37,8 +40,8 @@ B<Test::Builder>.
 
 The testing system is designed to be used by performing a three step
 process for each test you wish to test.  This process starts with using
-C<test_out> and C<test_err> in advance to declare what the testsuite you
-are testing will output with B<Test::Builder> to stdout and stderr.
+Test::Builder::Tester functions to declare what the testsuite you
+are testing will output with B<Test::Builder>.
 
 You then can run the test(s) from your test suite that call
 B<Test::Builder>.  At this point the output of B<Test::Builder> is
@@ -163,55 +166,43 @@ sub _start_testing
 
 =head2 Functions
 
-These are the seven functions that are exported as default.
+These are the functions exported by default.
 
 =over 4
 
-=item test_out
+=item test_pass
 
-=item test_err
+    test_pass();
+    test_pass($description);
 
-Procedures for predeclaring the output that your test suite is
-expected to produce until C<test_test> is called.  These procedures
-automatically assume that each line terminates with "\n".  So
+Because the standard success message that B<Test::Builder> produces
+whenever a test passes will be common in your test error
+output, rather than forcing you to call C<test_out> with the string
+all the time like so
 
-   test_out("ok 1","ok 2");
+    test_out("ok 1 - some test name here");
 
-is the same as
+C<test_pass> exists as a convenience function that you can call instead.  It
+takes one optional argument, the test description from the test you expect to
+pass.  The following is equivalent to the above C<test_out> call.
 
-   test_out("ok 1\nok 2");
-
-which is even the same as
-
-   test_out("ok 1");
-   test_out("ok 2");
-
-Once C<test_out> or C<test_err> (or C<test_fail>, C<test_pass>, or
-C<test_diag>) have been called once all further output from B<Test::Builder>
-will be captured by B<Test::Builder::Tester>.  This means that your will not be
-able perform further tests to the normal output in the normal way until you
-call C<test_test> (well, unless you manually meddle with the output
-filehandles)
+    test_pass("some test name here");
 
 =cut
 
-sub test_out(@)
+sub test_pass(;$)
 {
-    # do we need to do any setup?
-    _start_testing() unless $testing;
-
-    $out->expect(@_)
+    _start_testing() unless $testing++;
+    my $mess = "ok $testing";
+    $mess .= ' - ' . shift if @_;
+    $out->expect( $mess, @_ );
 }
 
-sub test_err(@)
-{
-    # do we need to do any setup?
-    _start_testing() unless $testing;
-
-    $err->expect(@_)
-}
 
 =item test_fail
+
+    test_fail($line_num_offset);
+    test_fail($line_num_offset, $description);
 
 Because the standard failure message that B<Test::Builder> produces
 whenever a test fails will be a common occurrence in your test error
@@ -226,14 +217,12 @@ instead.  It takes one argument, the offset from the current line that
 the line that causes the fail is on.
 
     test_fail(+1);
+    ok(0);
 
-This means that the example in the synopsis could be rewritten
-more simply as:
+It optionally takes the $description of the test.
 
-   test_out("not ok 1 - foo");
-   test_fail(+1);
-   fail("foo");
-   test_test("fail works");
+    test_fail(+1, "kaboom");
+    fail("kaboom");
 
 =cut
 
@@ -254,28 +243,54 @@ sub test_fail
     $err->expect("#     Failed test ($0 at line $line)");
 }
 
-=item test_pass
 
-Because the standard success message that B<Test::Builder> produces
-whenever a test passes will be common in your test error
-output, rather than forcing you to call C<test_out> with the string
-all the time like so
+=item test_out
 
-    test_out("ok 1 - some test name here");
+    test_out(@output);
 
-C<test_pass> exists as a convenience function that you can call instead.  It
-takes one optional argument, the test description from the test you expect to
-pass.
+=item test_err
+
+    test_err(@diagnostic_output);
+
+Procedures for predeclaring the output that your test suite is
+expected to produce until C<test_test> is called.  These procedures
+automatically assume that each line terminates with "\n".  So
+
+   test_out("foo","bar");
+
+is the same as
+
+   test_out("foo\nbar");
+
+which is even the same as
+
+   test_out("foo");
+   test_out("bar");
+
+Once C<test_out> or C<test_err> (or C<test_fail>, C<test_pass>, or
+C<test_diag>) have been called once all further output from B<Test::Builder>
+will be captured by B<Test::Builder::Tester>.  This means that your will not be
+able perform further tests to the normal output in the normal way until you
+call C<test_test>.
 
 =cut
 
-sub test_pass(;$)
+sub test_out(@)
 {
-    _start_testing() unless $testing++;
-    my $mess = "ok $testing";
-    $mess .= ' - ' . shift if @_;
-    $out->expect( $mess, @_ );
+    # do we need to do any setup?
+    _start_testing() unless $testing;
+
+    $out->expect(@_)
 }
+
+sub test_err(@)
+{
+    # do we need to do any setup?
+    _start_testing() unless $testing;
+
+    $err->expect(@_)
+}
+
 
 =item test_diag
 
