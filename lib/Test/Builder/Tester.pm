@@ -161,9 +161,9 @@ sub _start_testing
     $t->no_ending(1);
 }
 
-=head2 Methods
+=head2 Functions
 
-These are the seven methods that are exported as default.
+These are the seven functions that are exported as default.
 
 =over 4
 
@@ -221,7 +221,7 @@ so
 
     test_err("# Failed test ($0 at line ".line_num(+1).")");
 
-C<test_fail> exists as a convenience method that can be called
+C<test_fail> exists as a convenience function that can be called
 instead.  It takes one argument, the offset from the current line that
 the line that causes the fail is on.
 
@@ -263,7 +263,7 @@ all the time like so
 
     test_out("ok 1 - some test name here");
 
-C<test_pass> exists as a convenience method that you can call instead.  It
+C<test_pass> exists as a convenience function that you can call instead.  It
 takes one optional argument, the test description from the test you expect to
 pass.
 
@@ -409,7 +409,7 @@ sub test_test
 A utility function that returns the line number that the function was
 called on.  You can pass it an offset which will be added to the
 result.  This is very useful for working out the correct text of
-diagnostic methods that contain line numbers.
+diagnostic functions that contain line numbers.
 
 Essentially this is the same as the C<__LINE__> macro, but the
 C<line_num(+3)> idiom is arguably nicer.
@@ -475,10 +475,10 @@ sub color
 
 =head1 BUGS
 
-Calls B<Test::Builder>'s C<no_ending> method turning off the ending
-tests.  This is needed as otherwise it will trip out because we've run
-more tests than we strictly should have and it'll register any
-failures we had that we were testing for as real failures.
+Calls C<<Test::Builder->no_ending>> turning off the ending tests.
+This is needed as otherwise it will trip out because we've run more
+tests than we strictly should have and it'll register any failures we
+had that we were testing for as real failures.
 
 The color function doesn't work unless B<Term::ANSIColor> is installed
 and is compatible with your terminal.
