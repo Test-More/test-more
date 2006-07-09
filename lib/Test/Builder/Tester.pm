@@ -112,8 +112,8 @@ my $output_handle = gensym;
 my $error_handle  = gensym;
 
 # and tie them to this package
-my $out = tie *$output_handle, "Test::Tester::Tie", "STDOUT";
-my $err = tie *$error_handle,  "Test::Tester::Tie", "STDERR";
+my $out = tie *$output_handle, "Test::Builder::Tester::Tie", "STDOUT";
+my $err = tie *$error_handle,  "Test::Builder::Tester::Tie", "STDERR";
 
 ####
 # exported functions
@@ -533,7 +533,7 @@ L<Test::Builder>, L<Test::Builder::Tester::Color>, L<Test::More>.
 ####################################################################
 # Helper class that is used to remember expected and received data
 
-package Test::Tester::Tie;
+package Test::Builder::Tester::Tie;
 
 ##
 # add line(s) to be expected
