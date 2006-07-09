@@ -8,6 +8,7 @@
     * test_fail() now accepts a test diagnostic rather than having to
       call test_out() separately. <chromatic@wgz.org> [rt.cpan.org 11319]
     - isnt_num() doc example wrongly showed is_num(). <chromatic@wgz.org>
+    - Fixed a minor typo in the BAIL_OUT() docs. <Jeff Deifik>
 
 0.62  Sat Oct  8 01:25:03 PDT 2005
     * Absorbed Test::Builder::Tester.  The last release broke it because its
