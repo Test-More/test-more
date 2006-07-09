@@ -1,4 +1,4 @@
-0.63
+0.63  Sun Jul  9 02:36:36 PDT 2006
     * Fixed can_ok() to gracefully handle no class name.
       Submitted by "Pete Krawczyk" <perl@bsod.net>
       Implemented by "Richard Foley" <richard.foley@rfi.net>
