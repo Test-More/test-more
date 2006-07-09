@@ -1,7 +1,7 @@
-0.63  Wed May 31 19:54:49 CEST 2006
-      Patch to address undefined method name in can_ok().
+0.63
+    * Fixed can_ok() to gracefully handle no class name.
       Submitted by "Pete Krawczyk" <perl@bsod.net>
-      Implemented by "Richard Foley" <richard.foley@rfi.net> inc. fail-more.t test.
+      Implemented by "Richard Foley" <richard.foley@rfi.net>
       [rt.cpan.org 15654]
 
 0.62  Sat Oct  8 01:25:03 PDT 2005
