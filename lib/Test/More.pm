@@ -465,6 +465,12 @@ sub can_ok ($@) {
     my $class = ref $proto || $proto;
     my $tb = Test::More->builder;
 
+	unless( $class ) {
+		my $ok = $tb->ok( 0, "->can(...)" );
+		$tb->diag('    can_ok() called with empty class or reference');
+		return $ok;
+	}
+
     unless( @methods ) {
         my $ok = $tb->ok( 0, "$class->can(...)" );
         $tb->diag('    can_ok() called with no methods');
