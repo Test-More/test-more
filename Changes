@@ -11,6 +11,8 @@
       test_fail() and test_pass().
     - isnt_num() doc example wrongly showed is_num(). <chromatic@wgz.org>
     - Fixed a minor typo in the BAIL_OUT() docs. <Jeff Deifik>
+    - Removed the LICENSE field from the Makefile.PL as the release of
+      MakeMaker with that feature has been delayed.
 
 0.62  Sat Oct  8 01:25:03 PDT 2005
     * Absorbed Test::Builder::Tester.  The last release broke it because its

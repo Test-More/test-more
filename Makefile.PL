@@ -48,7 +48,6 @@ THREAD_WARN
 WriteMakefile(
     NAME            => $PACKAGE,
     VERSION_FROM    => "lib/$PACKAGE_FILE.pm", # finds $VERSION
-    LICENSE         => 'perl',
     PREREQ_PM       => { 
                         Test::Harness   => 2.03,
                        },
