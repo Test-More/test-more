@@ -1,4 +1,7 @@
 0.64
+    * 0.63's change to test_fail() broke backwards compatibility.  They
+      have been removed for the time being.  test_pass() went with it.
+      This is [rt.cpan.org 11317] and [rt.cpan.org 11319].
     - skip() will now warn if you get the args backwards.
 
 0.63  Sun Jul  9 02:36:36 PDT 2006
