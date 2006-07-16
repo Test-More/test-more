@@ -1,4 +1,4 @@
-0.64
+0.64  Sun Jul 16 02:47:29 PDT 2006
     * 0.63's change to test_fail() broke backwards compatibility.  They
       have been removed for the time being.  test_pass() went with it.
       This is [rt.cpan.org 11317] and [rt.cpan.org 11319].
