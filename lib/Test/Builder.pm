@@ -14,8 +14,9 @@ $VERSION = eval $VERSION;    # make the alpha version come out as a number
 # Make Test::Builder thread-safe for ithreads.
 BEGIN {
     use Config;
-    # Load threads::shared when threads are turned on
-    if( $] >= 5.008 && $Config{useithreads} && $INC{'threads.pm'}) {
+    # Load threads::shared when threads are turned on.
+    # 5.8.0's threads are so busted we no longer support them.
+    if( $] >= 5.008001 && $Config{useithreads} && $INC{'threads.pm'}) {
         require threads::shared;
 
         # Hack around YET ANOTHER threads::shared bug.  It would 
@@ -56,11 +57,9 @@ BEGIN {
             return $_[0];
         };
     }
-    # 5.8.0's threads::shared is busted when threads are off.
-    # We emulate it here.
     else {
-        *share = sub { return $_[0] };
-        *lock  = sub { 0 };
+        require threads::shared;
+        threads::shared->import;
     }
 }
 
@@ -1750,9 +1749,12 @@ If you fail more than 254 tests, it will be reported as 254.
 
 =head1 THREADS
 
-In perl 5.8.0 and later, Test::Builder is thread-safe.  The test
+In perl 5.8.1 and later, Test::Builder is thread-safe.  The test
 number is shared amongst all threads.  This means if one thread sets
 the test number using current_test() they will all be effected.
+
+While versions earlier than 5.8.1 had threads they contain too many
+bugs to support.
 
 Test::Builder is only thread-aware if threads.pm is loaded I<before>
 Test::Builder.

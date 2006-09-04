@@ -11,6 +11,7 @@
       match Perl's for easier integration with Perl aware editors.
       (so its "at $file line $line_num." now)
       [rt.cpan.org #20639]
+    * 5.8.0 threads are no longer supported.  There's too many bugs.
 
 0.64  Sun Jul 16 02:47:29 PDT 2006
     * 0.63's change to test_fail() broke backwards compatibility.  They

@@ -1465,6 +1465,8 @@ This may cause problems:
     use Test::More
     use threads;
 
+5.8.1 and above are supported.  Anything below that has too many bugs.
+
 
 =item Test::Harness upgrade
 

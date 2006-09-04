@@ -28,7 +28,7 @@ CHANGE_WARN
 
         sleep 5;
     }
-    if( $] >= 5.008 && $Config{useithreads} &&
+    if( $] >= 5.008001 && $Config{useithreads} &&
         ${$PACKAGE.'::VERSION'} < $LAST_THREAD_CHANGE 
       ) 
     {
