@@ -17,12 +17,12 @@ $tb->level(0);
 
 #line 19
 ok !eval { $tb->plan(tests => undef) };
-is($@, "Got an undefined number of tests at $0 line 19\n");
+is($@, "Got an undefined number of tests at $0 line 19.\n");
 
 #line 23
 ok !eval { $tb->plan(tests => 0) };
-is($@, "You said to run 0 tests at $0 line 23\n");
+is($@, "You said to run 0 tests at $0 line 23.\n");
 
 #line 27
 ok !eval { $tb->ok(1) };
-is( $@, "You tried to run a test without a plan at $0 line 27\n");
+is( $@, "You tried to run a test without a plan at $0 line 27.\n");

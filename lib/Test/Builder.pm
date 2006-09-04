@@ -1340,7 +1340,7 @@ sub _message_at_caller {
 
     local $Level = $Level + 2;
     my($pack, $file, $line) = $self->caller;
-    return join("", @_) . " at $file line $line\n";
+    return join("", @_) . " at $file line $line.\n";
 }
 
 sub carp {
