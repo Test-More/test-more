@@ -446,10 +446,10 @@ ERR
 
 	if( defined $name ) {
 	    $self->diag(qq[  $msg test '$name'\n]);
-	    $self->diag(qq[  in $file at line $line.\n]);
+	    $self->diag(qq[  at $file line $line.\n]);
 	}
 	else {
-	    $self->diag(qq[  $msg test in $file at line $line.\n]);
+	    $self->diag(qq[  $msg test at $file line $line.\n]);
 	}
     } 
 

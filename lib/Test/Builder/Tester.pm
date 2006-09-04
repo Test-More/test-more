@@ -502,12 +502,12 @@ sub expect
 }
 
 
-sub _translate_Failed_check 
+sub _translate_Failed_check
 {
     my($self, $check) = @_;
 
     if( $check =~ /\A(.*)#     (Failed .*test) \((.*?) at line (\d+)\)\z/ ) {
-        $check = qr/\Q$1\E#\s+\Q$2\E.*?\n?.*?\Q$3\E at line \Q$4\E.*\n?/;
+        $check = qr/\Q$1\E#\s+\Q$2\E.*?\n?.*?\Qat $3\E line \Q$4\E.*\n?/;
     }
 
     return $check;
