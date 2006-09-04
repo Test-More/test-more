@@ -1182,12 +1182,15 @@ sub _print {
     print $fh $msg;
 }
 
+=begin private
 
 =item B<_print_diag>
 
     $Test->_print_diag(@msg);
 
 Like _print, but prints to the current diagnostic filehandle.
+
+=end private
 
 =cut
 
