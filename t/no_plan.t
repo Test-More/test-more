@@ -10,52 +10,19 @@ BEGIN {
     }
 }
 
-use Test::Builder;
+use Test::More tests => 6;
+
 my $tb = Test::Builder->create;
 $tb->level(0);
-$tb->plan( tests => 12 );
 
-package main;
+#line 19
+ok !eval { $tb->plan(tests => undef) };
+is($@, "Got an undefined number of tests at $0 line 19\n");
 
-require Test::Simple;
+#line 23
+ok !eval { $tb->plan(tests => 0) };
+is($@, "You said to run 0 tests at $0 line 23\n");
 
-require Test::Simple::Catch;
-my($out, $err) = Test::Simple::Catch::caught();
-
-eval {
-    Test::Simple->import;
-};
-
-$tb->is_eq($$out, '');
-$tb->is_eq($$err, '');
-$tb->is_eq($@, '');
-
-eval {
-    Test::Simple->import(tests => undef);
-};
-
-$tb->is_eq($$out, '');
-$tb->is_eq($$err, '');
-$tb->like($@, '/Got an undefined number of tests/');
-
-eval {
-    Test::Simple->import(tests => 0);
-};
-
-$tb->is_eq($$out, '');
-$tb->is_eq($$err, '');
-$tb->like($@, '/You said to run 0 tests!/');
-
-eval {
-    Test::Simple::ok(1);
-};
-$tb->like( $@, '/You tried to run a test without a plan!/');
-
-
-END {
-    $tb->is_eq($$out, '');
-    $tb->is_eq($$err, "");
-
-    # Prevent Test::Simple from exiting with non zero.
-    exit 0;
-}
+#line 27
+ok !eval { $tb->ok(1) };
+is( $@, "You tried to run a test without a plan at $0 line 27\n");

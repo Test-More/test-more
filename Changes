@@ -5,6 +5,8 @@
       users.  Not a real bug.  [rt.cpan.org 21310]
     - _print_diag() accidentally leaked into the public documentation.
       It is a private method.
+    * Made most of the error messages report in the caller's context.
+      [rt.cpan.org #20639]
 
 0.64  Sun Jul 16 02:47:29 PDT 2006
     * 0.63's change to test_fail() broke backwards compatibility.  They
