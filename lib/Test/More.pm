@@ -41,7 +41,7 @@ Test::More - yet another framework for writing test scripts
 
 =head1 SYNOPSIS
 
-  use Test::More tests => $Num_Tests;
+  use Test::More tests => 23;
   # or
   use Test::More qw(no_plan);
   # or
@@ -113,7 +113,7 @@ failure.
 
 The preferred way to do this is to declare a plan when you C<use Test::More>.
 
-  use Test::More tests => $Num_Tests;
+  use Test::More tests => 23;
 
 There are rare cases when you will not know beforehand how many tests
 your script is going to run.  In this case, you can declare that you

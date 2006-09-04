@@ -1,3 +1,7 @@
+0.65
+    - Small improvement to the docs to avoid user confusion over
+      "use Test::More tests => $num_tests" (Thanks Eric Wilhelm)
+
 0.64  Sun Jul 16 02:47:29 PDT 2006
     * 0.63's change to test_fail() broke backwards compatibility.  They
       have been removed for the time being.  test_pass() went with it.
