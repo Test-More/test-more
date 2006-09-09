@@ -57,9 +57,11 @@ BEGIN {
             return $_[0];
         };
     }
+    # 5.8.0's threads::shared is busted when threads are off
+    # and earlier Perls just don't have that module at all.
     else {
-        require threads::shared;
-        threads::shared->import;
+        *share = sub { return $_[0] };
+        *lock  = sub { 0 };
     }
 }
 

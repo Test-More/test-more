@@ -1,3 +1,6 @@
+0.64_02
+    - Last release broke Perls earlier than 5.8.
+
 0.64_01  Mon Sep  4 04:40:42 EDT 2006
     - Small improvement to the docs to avoid user confusion over
       "use Test::More tests => $num_tests" (Thanks Eric Wilhelm)
