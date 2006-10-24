@@ -2,6 +2,7 @@
     - Tests will no longer warn when run against an alpha version of
       Test::Harness [rt.cpan.org #20501]
     - Now testing our POD and POD coverage.
+    - Added a LICENSE field.
 
 0.64_02  Sat Sep  9 12:16:56 EDT 2006
     - Last release broke Perls earlier than 5.8.
