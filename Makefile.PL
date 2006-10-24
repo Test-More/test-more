@@ -52,7 +52,8 @@ WriteMakefile(
                         Test::Harness   => 2.03,
                        },
     # Added to the core somewhere around 5.7.2.
-    INSTALLDIRS     => $] >= 5.00702 ? 'perl' : 'site'
+    INSTALLDIRS     => $] >= 5.00702 ? 'perl' : 'site',
+    ($ExtUtils::MakeMaker::VERSION <= 6.31 ? (LICENSE         => 'perl') : ()),
 );
 
 
