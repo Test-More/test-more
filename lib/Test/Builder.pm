@@ -1339,7 +1339,7 @@ point where the original test function was called (C<$tb->caller>).
 sub _message_at_caller {
     my $self = shift;
 
-    local $Level = $Level + 2;
+    local $Level = $Level + 1;
     my($pack, $file, $line) = $self->caller;
     return join("", @_) . " at $file line $line.\n";
 }

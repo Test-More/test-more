@@ -15,6 +15,7 @@ t/bad_plan.t
 t/bail_out.t
 t/buffer.t
 t/Builder.t
+t/carp.t
 t/circular_data.t
 t/create.t
 t/curr_test.t
