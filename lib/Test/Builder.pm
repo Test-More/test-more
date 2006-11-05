@@ -1021,8 +1021,6 @@ or this if false
 Most useful when you can't depend on the test output order, such as
 when threads or forking is involved.
 
-Test::Harness will accept either, but avoid mixing the two styles.
-
 Defaults to on.
 
 =cut
