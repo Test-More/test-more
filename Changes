@@ -1,4 +1,4 @@
-0.64_03
+0.64_03  Sun Nov  5 13:09:55 EST 2006
     - Tests will no longer warn when run against an alpha version of
       Test::Harness [rt.cpan.org #20501]
     - Now testing our POD and POD coverage.
