@@ -3,6 +3,11 @@
       Test::Harness [rt.cpan.org #20501]
     - Now testing our POD and POD coverage.
     - Added a LICENSE field.
+    - Removed warning from the docs about mixing numbered and unnumbered
+      tests.  There's nothing wrong with that. [rt.cpan.org 21358]
+    - Change doc examples to talk about $got and $expected rather than
+      $this and $that to correspond better to the diagnostic output
+      [rt.cpan.org 2655]
 
 0.64_02  Sat Sep  9 12:16:56 EDT 2006
     - Last release broke Perls earlier than 5.8.
