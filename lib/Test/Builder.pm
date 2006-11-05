@@ -247,6 +247,8 @@ sub plan {
 
     return unless $cmd;
 
+    local $Level = $Level + 1;
+
     if( $self->{Have_Plan} ) {
         $self->croak("You tried to plan twice");
     }
@@ -1358,7 +1360,7 @@ sub _plan_check {
     my $self = shift;
 
     unless( $self->{Have_Plan} ) {
-        local $Level = $Level + 1;
+        local $Level = $Level + 2;
         $self->croak("You tried to run a test without a plan");
     }
 }
