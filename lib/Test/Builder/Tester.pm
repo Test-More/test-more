@@ -507,7 +507,7 @@ sub _translate_Failed_check
     my($self, $check) = @_;
 
     if( $check =~ /\A(.*)#     (Failed .*test) \((.*?) at line (\d+)\)\z/ ) {
-        $check = qr/\Q$1\E#\s+\Q$2\E.*?\n?.*?\Qat $3\E line \Q$4\E.*\n?/;
+        $check = "/\Q$1\E#\\s+\Q$2\E.*?\\n?.*?\Qat $3\E line \Q$4\E.*\\n?/";
     }
 
     return $check;
@@ -527,7 +527,7 @@ sub check
     my @checks = @{$self->{wanted}};
     my $got = $self->{got};
     foreach my $check (@checks) {
-        $check = qr/^\Q$check\E/ unless ref $check;
+        $check = "\Q$check\E" unless ($check =~ s,^/(.*)/$,$1, or ref $check);
         return 0 unless $got =~ s/^$check//;
     }
 

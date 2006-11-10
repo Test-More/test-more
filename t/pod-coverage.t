@@ -11,10 +11,10 @@ plan tests => scalar @modules;
 
 my %coverage_params = (
     "Test::Builder" => {
-        also_private => [ qr/^(share|lock|BAILOUT)$/ ]
+        also_private => [ '^(share|lock|BAILOUT)$' ]
     },
     "Test::More" => {
-        trustme => [ qr/^(skip|todo)$/ ]
+        trustme => [ '^(skip|todo)$' ]
     },
 );
 
