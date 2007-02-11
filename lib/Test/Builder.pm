@@ -465,18 +465,16 @@ sub _unoverload {
     my $self  = shift;
     my $type  = shift;
 
-    local($@,$!);
+    local($@,$!,$SIG{__DIE__});
 
     eval { require overload } || return;
 
     foreach my $thing (@_) {
-        eval { 
-            if( _is_object($$thing) ) {
-                if( my $string_meth = overload::Method($$thing, $type) ) {
-                    $$thing = $$thing->$string_meth();
-                }
+        if( _is_object($$thing) ) {
+            if( my $string_meth = overload::Method($$thing, $type) ) {
+                $$thing = $$thing->$string_meth();
             }
-        };
+        }
     }
 }
 
@@ -484,6 +482,7 @@ sub _unoverload {
 sub _is_object {
     my $thing = shift;
 
+    local $SIG{__DIE__};
     return eval { ref $thing && $thing->isa('UNIVERSAL') } ? 1 : 0;
 }
 

@@ -481,6 +481,7 @@ sub can_ok ($@) {
     foreach my $method (@methods) {
         local($!, $@);  # don't interfere with caller's $@
                         # eval sometimes resets $!
+        local $SIG{__DIE__};
         eval { $proto->can($method) } || push @nok, $method;
     }
 
@@ -540,6 +541,7 @@ sub isa_ok ($$;$) {
     else {
         # We can't use UNIVERSAL::isa because we want to honor isa() overrides
         local($@, $!);  # eval sometimes resets $!
+        local $SIG{__DIE__};
         my $rslt = eval { $object->isa($class) };
         if( $@ ) {
             if( $@ =~ /^Can't call method "isa" on unblessed reference/ ) {
@@ -663,6 +665,7 @@ sub use_ok ($;@) {
     my($pack,$filename,$line) = caller;
 
     local($@,$!);   # eval sometimes interferes with $!
+    local $SIG{__DIE__};
 
     if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
         # probably a version check.  Perl needs to see the bare number
@@ -715,6 +718,7 @@ sub require_ok ($) {
     $module = qq['$module'] unless _is_module_name($module);
 
     local($!, $@); # eval sometimes interferes with $!
+    local $SIG{__DIE__};
     eval <<REQUIRE;
 package $pack;
 require $module;
