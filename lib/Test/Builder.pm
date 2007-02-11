@@ -760,7 +760,7 @@ sub _caller_context {
 
 These are methods which are used in the course of writing a test but are not themselves tests.
 
-=cut
+=over 4
 
 =item B<BAIL_OUT>
 
@@ -983,6 +983,9 @@ DIAGNOSTIC
 
     return $ok;
 }
+
+
+=back
 
 =cut
 
