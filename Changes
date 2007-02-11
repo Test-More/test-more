@@ -1,4 +1,4 @@
-0.67
+0.67  Mon Jan 22 13:27:40 PST 2007
     Test fixes
     - t/pod_coverage.t would fail if Test::Pod::Coverage between 1.07 and
       1.00 were installed as it depended on all_modules being exported.
