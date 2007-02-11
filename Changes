@@ -1,3 +1,15 @@
+0.68
+    Documentation improvements
+    * Documented the return value of Test::Builder's test methods
+    - Split out TB's method documentation to differenciate between test
+      methods (ok, is_eq...), methods useful in testing (skip, BAILOUT...)
+      and methods useful for building your own tests (maybe_regex...).
+
+    Bug fixes
+    * If your code has a $SIG{__DIE__} handler in some cases functions like
+      use_ok(), require_ok(), can_ok() and isa_ok() could trigger that
+      handler. [rt.cpan.org 23509]
+
 0.67  Mon Jan 22 13:27:40 PST 2007
     Test fixes
     - t/pod_coverage.t would fail if Test::Pod::Coverage between 1.07 and
