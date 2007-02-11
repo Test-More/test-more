@@ -1,3 +1,9 @@
+0.67
+    Test fixes
+    - t/pod_coverage.t would fail if Test::Pod::Coverage between 1.07 and
+      1.00 were installed as it depended on all_modules being exported.
+      [rt.cpan.org 24483]
+
 0.66  Sun Dec  3 15:25:45 PST 2006
     - Restore 5.4.5 compatibility (unobe@cpan.org) [rt.cpan.org 20513]
 
