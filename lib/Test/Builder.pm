@@ -465,12 +465,10 @@ sub _unoverload {
     my $self  = shift;
     my $type  = shift;
 
-    local($@,$!,$SIG{__DIE__});
-
-    eval { require overload } || return;
+    $self->_try(sub { require overload } ) || return;
 
     foreach my $thing (@_) {
-        if( _is_object($$thing) ) {
+        if( $self->_is_object($$thing) ) {
             if( my $string_meth = overload::Method($$thing, $type) ) {
                 $$thing = $$thing->$string_meth();
             }
@@ -480,10 +478,9 @@ sub _unoverload {
 
 
 sub _is_object {
-    my $thing = shift;
+    my($self, $thing) = @_;
 
-    local $SIG{__DIE__};
-    return eval { ref $thing && $thing->isa('UNIVERSAL') } ? 1 : 0;
+    return $self->_try(sub { ref $thing && $thing->isa('UNIVERSAL') }) ? 1 : 0;
 }
 
 
@@ -985,9 +982,37 @@ DIAGNOSTIC
 }
 
 
-=back
+# I'm not ready to publish this.  It doesn't deal with array return
+# values from the code or context.
+=begin private
+
+=item B<_try>
+
+    my $return_from_code          = $Test->try(sub { code });
+    my($return_from_code, $error) = $Test->try(sub { code });
+
+Works like eval BLOCK except it ensures it has no effect on the rest of the test (ie. $@ is not set) nor is effected by outside interference (ie. $SIG{__DIE__}) and works around some quirks in older Perls.
+
+$error is what would normally be in $@.
+
+It is suggested you use this in place of eval BLOCK.
 
 =cut
+
+sub _try {
+    my($self, $code) = @_;
+    
+    local $!;               # eval can mess up $!
+    local $@;               # don't set $@ in the test
+    local $SIG{__DIE__};    # don't trip an outside DIE handler.
+    my $return = eval { $code->() };
+    
+    return wantarray ? ($return, $@) : $return;
+}
+
+=end private
+
+=back
 
 
 =head2 Test style

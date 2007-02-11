@@ -479,10 +479,7 @@ sub can_ok ($@) {
 
     my @nok = ();
     foreach my $method (@methods) {
-        local($!, $@);  # don't interfere with caller's $@
-                        # eval sometimes resets $!
-        local $SIG{__DIE__};
-        eval { $proto->can($method) } || push @nok, $method;
+        $tb->_try(sub { $proto->can($method) }) or push @nok, $method;
     }
 
     my $name;
@@ -540,11 +537,9 @@ sub isa_ok ($$;$) {
     }
     else {
         # We can't use UNIVERSAL::isa because we want to honor isa() overrides
-        local($@, $!);  # eval sometimes resets $!
-        local $SIG{__DIE__};
-        my $rslt = eval { $object->isa($class) };
-        if( $@ ) {
-            if( $@ =~ /^Can't call method "isa" on unblessed reference/ ) {
+        my($rslt, $error) = $tb->_try(sub { $object->isa($class) });
+        if( $error ) {
+            if( $error =~ /^Can't call method "isa" on unblessed reference/ ) {
                 if( !UNIVERSAL::isa($object, $class) ) {
                     my $ref = ref $object;
                     $diag = "$obj_name isn't a '$class' it's a '$ref'";
@@ -554,7 +549,7 @@ sub isa_ok ($$;$) {
 WHOA! I tried to call ->isa on your object and got some weird error.
 This should never happen.  Please contact the author immediately.
 Here's the error.
-$@
+$error
 WHOA
             }
         }
