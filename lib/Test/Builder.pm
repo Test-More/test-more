@@ -364,8 +364,9 @@ sub skip_all {
 
 =head2 Running tests
 
-These actually run the tests, analogous to the functions in
-Test::More.
+These actually run the tests, analogous to the functions in Test::More.
+
+They all return true if the test passed, false if the test failed.
 
 $name is always optional.
 
