@@ -701,8 +701,7 @@ sub cmp_ok {
 
     my $test;
     {
-        local($@,$!);   # don't interfere with $@
-                        # eval() sometimes resets $!
+        local($@,$!,$SIG{__DIE__});  # isolate eval
 
         my $code = $self->_caller_context;
 
@@ -955,7 +954,7 @@ sub _regex_ok {
         my $test;
         my $code = $self->_caller_context;
 
-        local($@, $!);
+        local($@, $!, $SIG{__DIE__}); # isolate eval
 
         # Yes, it has to look like this or 5.4.5 won't see the #line directive.
         # Don't ask me, man, I just work here.
