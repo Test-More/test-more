@@ -11,6 +11,8 @@
       can be used as a filehandle.
 
     Documentation improvements
+    - Improved the docs for $Test::Builder::Level showing the encouraged
+      use (increment, don't set)
     - Documented the return value of Test::Builder's test methods
     - Split out TB's method documentation to differenciate between test
       methods (ok, is_eq...), methods useful in testing (skip, BAILOUT...)
