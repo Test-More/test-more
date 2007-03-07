@@ -3,6 +3,8 @@
     * If your code has a $SIG{__DIE__} handler in some cases functions like
       use_ok(), require_ok(), can_ok() and isa_ok() could trigger that
       handler. [rt.cpan.org 23509]
+    - Minor improvement to TB's filehandle detection in the case of overridden
+      isa(). [rt.cpan.org 20890]
 
     Documentation improvements
     - Documented the return value of Test::Builder's test methods
