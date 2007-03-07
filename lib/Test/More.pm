@@ -540,6 +540,7 @@ sub isa_ok ($$;$) {
         my($rslt, $error) = $tb->_try(sub { $object->isa($class) });
         if( $error ) {
             if( $error =~ /^Can't call method "isa" on unblessed reference/ ) {
+                # Its an unblessed reference
                 if( !UNIVERSAL::isa($object, $class) ) {
                     my $ref = ref $object;
                     $diag = "$obj_name isn't a '$class' it's a '$ref'";
@@ -547,7 +548,6 @@ sub isa_ok ($$;$) {
             } else {
                 die <<WHOA;
 WHOA! I tried to call ->isa on your object and got some weird error.
-This should never happen.  Please contact the author immediately.
 Here's the error.
 $error
 WHOA
