@@ -1321,11 +1321,10 @@ sub _is_fh {
 
     return 1 if ref \$maybe_fh eq 'GLOB'; # its a glob
 
-    return UNIVERSAL::isa($maybe_fh,               'GLOB')       ||
-           UNIVERSAL::isa($maybe_fh,               'IO::Handle') ||
-
+    return eval { $maybe_fh->isa("GLOB") }       ||
+           eval { $maybe_fh->isa("IO::Handle") } ||
            # 5.5.4's tied() and can() doesn't like getting undef
-           UNIVERSAL::can((tied($maybe_fh) || ''), 'TIEHANDLE');
+           eval { (tied($maybe_fh) || '')->can('TIEHANDLE') };
 }
 
 
