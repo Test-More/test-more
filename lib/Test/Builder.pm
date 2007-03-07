@@ -1051,13 +1051,17 @@ test failed.
 
 Defaults to 1.
 
-Setting $Test::Builder::Level overrides.  This is typically useful
+Setting L<$Test::Builder::Level> overrides.  This is typically useful
 localized:
 
-    {
-        local $Test::Builder::Level = 2;
-        $Test->ok($test);
+    sub my_ok {
+        my $test = shift;
+
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        $TB->ok($test);
     }
+
+To be polite to other functions wrapping your own you usually want to increment C<$Level> rather than set it to a constant.
 
 =cut
 
