@@ -1011,6 +1011,29 @@ sub _try {
 
 =end private
 
+
+=item B<is_fh>
+
+    my $is_fh = $Test->is_fh($thing);
+
+Determines if the given $thing can be used as a filehandle.
+
+=cut
+
+sub is_fh {
+    my $self = shift;
+    my $maybe_fh = shift;
+    return 0 unless defined $maybe_fh;
+
+    return 1 if ref \$maybe_fh eq 'GLOB'; # its a glob
+
+    return eval { $maybe_fh->isa("GLOB") }       ||
+           eval { $maybe_fh->isa("IO::Handle") } ||
+           # 5.5.4's tied() and can() doesn't like getting undef
+           eval { (tied($maybe_fh) || '')->can('TIEHANDLE') };
+}
+
+
 =back
 
 
@@ -1300,7 +1323,7 @@ sub _new_fh {
     my($file_or_fh) = shift;
 
     my $fh;
-    if( $self->_is_fh($file_or_fh) ) {
+    if( $self->is_fh($file_or_fh) ) {
         $fh = $file_or_fh;
     }
     else {
@@ -1311,20 +1334,6 @@ sub _new_fh {
     }
 
     return $fh;
-}
-
-
-sub _is_fh {
-    my $self = shift;
-    my $maybe_fh = shift;
-    return 0 unless defined $maybe_fh;
-
-    return 1 if ref \$maybe_fh eq 'GLOB'; # its a glob
-
-    return eval { $maybe_fh->isa("GLOB") }       ||
-           eval { $maybe_fh->isa("IO::Handle") } ||
-           # 5.5.4's tied() and can() doesn't like getting undef
-           eval { (tied($maybe_fh) || '')->can('TIEHANDLE') };
 }
 
 

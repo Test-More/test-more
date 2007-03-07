@@ -6,6 +6,10 @@
     - Minor improvement to TB's filehandle detection in the case of overridden
       isa(). [rt.cpan.org 20890]
 
+    New Features
+    - Test::Builder->is_fh() provides a way to determine if a thing
+      can be used as a filehandle.
+
     Documentation improvements
     - Documented the return value of Test::Builder's test methods
     - Split out TB's method documentation to differenciate between test
