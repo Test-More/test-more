@@ -18,6 +18,10 @@
       methods (ok, is_eq...), methods useful in testing (skip, BAILOUT...)
       and methods useful for building your own tests (maybe_regex...).
 
+    Test fixes
+    - We required too old a version of Test::Pod::Coverage.  Need 1.08 and not
+      1.00. [rt.cpan.org 25351]
+
 0.67  Mon Jan 22 13:27:40 PST 2007
     Test fixes
     - t/pod_coverage.t would fail if Test::Pod::Coverage between 1.07 and
