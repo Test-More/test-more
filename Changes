@@ -1,4 +1,4 @@
-0.68
+0.68  Tue Mar 13 17:27:26 PDT 2007
     Bug fixes
     * If your code has a $SIG{__DIE__} handler in some cases functions like
       use_ok(), require_ok(), can_ok() and isa_ok() could trigger that
