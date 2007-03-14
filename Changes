@@ -5,6 +5,8 @@
       handler. [rt.cpan.org 23509]
     - Minor improvement to TB's filehandle detection in the case of overridden
       isa(). [rt.cpan.org 20890]
+    - Will now install as a core module in 5.6.2 which ships with Test::More.
+      [rt.cpan.org 25163]
 
     New Features
     - Test::Builder->is_fh() provides a way to determine if a thing

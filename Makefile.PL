@@ -51,8 +51,8 @@ WriteMakefile(
     PREREQ_PM       => { 
                         Test::Harness   => 2.03,
                        },
-    # Added to the core somewhere around 5.7.2.
-    INSTALLDIRS     => $] >= 5.00702 ? 'perl' : 'site',
+    # Added to the core in 5.7.3 and also 5.6.2.
+    INSTALLDIRS     => $] >= 5.006002 ? 'perl' : 'site',
     ($ExtUtils::MakeMaker::VERSION <= 6.31 ? (LICENSE         => 'perl') : ()),
 );
 
