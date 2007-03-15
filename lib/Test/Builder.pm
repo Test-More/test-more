@@ -1025,10 +1025,10 @@ sub is_fh {
     my $maybe_fh = shift;
     return 0 unless defined $maybe_fh;
 
-    return 1 if ref \$maybe_fh eq 'GLOB'; # its a glob
+    return 1 if ref $maybe_fh  eq 'GLOB'; # its a glob
+    return 1 if ref \$maybe_fh eq 'GLOB'; # its a glob ref
 
-    return eval { $maybe_fh->isa("GLOB") }       ||
-           eval { $maybe_fh->isa("IO::Handle") } ||
+    return eval { $maybe_fh->isa("IO::Handle") } ||
            # 5.5.4's tied() and can() doesn't like getting undef
            eval { (tied($maybe_fh) || '')->can('TIEHANDLE') };
 }
