@@ -53,8 +53,8 @@ Test::More - yet another framework for writing test scripts
   # Various ways to say "ok"
   ok($got eq $expected, $test_name);
 
-  is  ($got, $exptected, $test_name);
-  isnt($got, $expected,  $test_name);
+  is  ($got, $expected, $test_name);
+  isnt($got, $expected, $test_name);
 
   # Rather than print STDERR "# here's what went wrong\n"
   diag("here's what went wrong");
