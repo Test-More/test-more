@@ -37,6 +37,7 @@ t/has_plan2.t
 t/import.t
 t/is_deeply_fail.t
 t/is_fh.t
+t/lib/Dummy.pm
 t/lib/NoExporter.pm
 t/lib/Test/Simple/Catch.pm
 t/lib/Test/Simple/sample_tests/death.plx
