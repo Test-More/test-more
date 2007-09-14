@@ -18,6 +18,7 @@ t/buffer.t
 t/Builder.t
 t/carp.t
 t/circular_data.t
+t/cmp_ok.t
 t/create.t
 t/curr_test.t
 t/details.t
@@ -41,6 +42,7 @@ t/is_deeply_fail.t
 t/is_deeply_with_threads.t
 t/is_fh.t
 t/lib/Dummy.pm
+t/lib/MyOverload.pm
 t/lib/NoExporter.pm
 t/lib/Test/Simple/Catch.pm
 t/lib/Test/Simple/sample_tests/death.plx
@@ -91,6 +93,7 @@ t/tbt_07args.t
 t/thread_taint.t
 t/threads.t
 t/todo.t
+t/try.t
 t/undef.t
 t/use_ok.t
 t/useing.t
