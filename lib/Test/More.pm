@@ -780,6 +780,12 @@ along these lines.
 
 use vars qw(@Data_Stack %Refs_Seen);
 my $DNE = bless [], 'Does::Not::Exist';
+
+sub _dne {
+    ref $_[0] eq ref $DNE;
+}
+
+
 sub is_deeply {
     my $tb = Test::More->builder;
 
@@ -852,8 +858,8 @@ sub _format_stack {
     foreach my $idx (0..$#vals) {
         my $val = $vals[$idx];
         $vals[$idx] = !defined $val ? 'undef'          :
-                      $val eq $DNE  ? "Does not exist" :
-	              ref $val      ? "$val"           :
+                      _dne($val)    ? "Does not exist" :
+                      ref $val      ? "$val"           :
                                       "'$val'";
     }
 
@@ -1222,7 +1228,7 @@ sub _deep_check {
         if( defined $e1 xor defined $e2 ) {
             $ok = 0;
         }
-        elsif ( $e1 == $DNE xor $e2 == $DNE ) {
+        elsif ( _dne($e1) xor _dne($e2) ) {
             $ok = 0;
         }
         elsif ( $same_ref and ($e1 eq $e2) ) {

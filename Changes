@@ -1,4 +1,8 @@
 0.71
+    Bug fixes
+    - Fixed an obscure problem with is_deeply() and overloading ==
+      [rt.cpan.org 20768].  Thanks Sisyphus.
+
     Test fixes
     - Removed dependency on Text::Soundex [rt.cpan.org 25022]
 
