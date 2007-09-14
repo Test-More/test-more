@@ -1,5 +1,7 @@
 0.71
     Bug fixes
+    - Fixed a problem with BEGIN { use_ok } silently failing when there's no
+      plan set.  [rt.cpan.org 28345]  Thanks Adriano Ferreira and Yitzchak.
     - Fixed an obscure problem with is_deeply() and overloading ==
       [rt.cpan.org 20768].  Thanks Sisyphus.
 
