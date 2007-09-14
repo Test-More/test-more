@@ -8,6 +8,9 @@
     Test fixes
     - Removed dependency on Text::Soundex [rt.cpan.org 25022]
     - Fixed a 5.5.x failure in fail-more.t
+    * Got rid of the annoying sort_bug.t test that revealed problems with some
+      threaded perls.  It was testing the deprecated eq_* functions and not worth the
+      bother.  Now it tests is_deeply().  [rt.cpan.org 17791]
 
     Doc fixes
     - Minor POD mistake in Test::Builder [rt.cpan.org 28869]
