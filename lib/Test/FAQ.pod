@@ -16,19 +16,27 @@ Test::Tutorial
 
 A whole bunch.  Start with Test::Simple then move onto Test::More.
 
+Then go onto L<http://search.cpan.org> and search for "Test".
+
 =head2 Are there any modules for testing web pages/CGI programs?
+
+Test::WWW::Mechanize, Test::WWW::Selenium
 
 =head2 Are there any modules for testing external programs?
 
-Test::Cmd?
+Test::Cmd
 
 =head2 Can you do XUnit/JUnit style testing in Perl?
 
-Yep.  The Test::Inline (aka Pod::Tests) module gives you the same
-effect, but in a different way.
+Yes, Test::Class allows you to write test methods while continuing to use
+all the usual CPAN testing modules.
 
-Test::Unit is a more faithful port of the XUnit style to Perl, but
-isn't quite ready for prime-time.
+Test::Unit is a more direct port of XUnit to Perl, but it does not use the
+Perl conventions and does not play well with other CPAN testing modules.
+
+The Test::Inline (aka Pod::Tests) is worth mentioning as it allows you to
+put tests into the POD in the same file as the code.
+
 
 =head2 How do I test my module is backwards/forwards compatible?
 
@@ -103,6 +111,11 @@ Devel::Cover
 
 =head2 How do I get tests to run in a certain order?
 
+Tests run in alphabetical order, so simply name your test files in the order
+you want them to run.  Numbering your test files works, too.
+
+To achieve a specific order, try Test::Manifest.
+
 =head2 What should I name my tests?
 
 =head2 How do I deal with tests that sometimes pass and sometimes fail?
@@ -110,6 +123,8 @@ Devel::Cover
 =head2 How do I test with a database/network/server that the user may or may not have?
 
 =head2 What's a good way to test lists?
+
+is_deeply() from Test::More as well as Test::Deep.
 
 =head2 Is there such a thing as untestable code?
 
@@ -130,19 +145,21 @@ Even a random number generator can be tested.
 
 =head2 How do I test that my code handles failures gracefully?
 
-Forcing resource failure.
-
 =head2 How do I check the right warnings are issued?
+
+Test::Warn
 
 =head2 How do I test code that prints?
 
+Test::Output
+
 =head2 I want to test that my code dies when I do X
 
-use eval { ... };
+Test::Exception
 
 =head2 I want to print out more diagnostic info on failure.
 
-ok(...) || print "...";
+ok(...) || diag "...";
 
 =head2 How can I simulate failures to make sure that my code does the Right Thing in the face of them?
 
@@ -230,6 +247,9 @@ the first time.  I guess writing test is one of those.
 
 =head2 How do I use Test::More without depending on it?
 
+Install Test::More into t/lib under your source directory.  Then in your tests
+say C<use lib 't/lib'>.
+
 =head2 How do I deal with threads and forking?
 
 =head2 Why do I need more than ok?
@@ -251,3 +271,25 @@ On Mon, Mar 18, 2002 at 03:57:55AM -0500, Mark-Jason Dominus wrote:
 
 =head2 How can I check that flock works?
 
+=head2 How do I use the comparison functions of a testing module without it being a test?
+
+Any testing function based on Test::Builder, most are, can be quieted so it does not do any testing.  It simply returns true or false.  Use the following code...
+
+    use Test::More;     # or any testing module
+    
+    use Test::Builder;
+    use File::Spec;
+
+    # Get the internal Test::Builder object
+    my $tb = Test::Builder->new;
+
+    $tb->plan("no_plan");
+    
+    # Keep Test::Builder from displaying anything
+    $tb->no_diag(1);
+    $tb->no_ending(1);
+    $tb->no_header(1);
+    $tb->output( File::Spec->devnull );
+
+    # Now you can use the testing function.
+    print is_deeply( "foo", "bar" ) ? "Yes" : "No";
