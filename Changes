@@ -4,6 +4,7 @@
 
     Doc fixes
     - Minor POD mistake in Test::Builder [rt.cpan.org 28869]
+    * Test::FAQ has been updated with some more answers.
 
 0.70  Thu Mar 15 15:53:05 PDT 2007
     Bug Fixes
