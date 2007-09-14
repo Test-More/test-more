@@ -1,4 +1,4 @@
-0.71
+0.71  Thu Sep 13 20:42:36 PDT 2007
     Bug fixes
     - Fixed a problem with BEGIN { use_ok } silently failing when there's no
       plan set.  [rt.cpan.org 28345]  Thanks Adriano Ferreira and Yitzchak.
