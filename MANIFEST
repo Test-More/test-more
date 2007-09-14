@@ -38,6 +38,7 @@ t/has_plan2.t
 t/import.t
 t/is_deeply_dne_bug.t
 t/is_deeply_fail.t
+t/is_deeply_with_threads.t
 t/is_fh.t
 t/lib/Dummy.pm
 t/lib/NoExporter.pm
@@ -80,7 +81,6 @@ t/reset.t
 t/simple.t
 t/skip.t
 t/skipall.t
-t/sort_bug.t
 t/tbt_01basic.t
 t/tbt_02fhrestore.t
 t/tbt_03die.t
