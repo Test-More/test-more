@@ -6,6 +6,10 @@
     - Minor POD mistake in Test::Builder [rt.cpan.org 28869]
     * Test::FAQ has been updated with some more answers.
 
+    Install fixes
+    - Fixed the "LICENSE is not a known MakeMaker parameter name" warning
+      on older MakeMakers for real this time.
+
 0.70  Thu Mar 15 15:53:05 PDT 2007
     Bug Fixes
     * The change to is_fh() in 0.68 broke the case where a reference to
