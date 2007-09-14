@@ -2,6 +2,9 @@
     Test fixes
     - Removed dependency on Text::Soundex [rt.cpan.org 25022]
 
+    Doc fixes
+    - Minor POD mistake in Test::Builder [rt.cpan.org 28869]
+
 0.70  Thu Mar 15 15:53:05 PDT 2007
     Bug Fixes
     * The change to is_fh() in 0.68 broke the case where a reference to
