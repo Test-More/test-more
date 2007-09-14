@@ -5,6 +5,7 @@
 
     Test fixes
     - Removed dependency on Text::Soundex [rt.cpan.org 25022]
+    - Fixed a 5.5.x failure in fail-more.t
 
     Doc fixes
     - Minor POD mistake in Test::Builder [rt.cpan.org 28869]
