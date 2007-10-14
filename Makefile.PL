@@ -1,9 +1,4 @@
-# A template for Makefile.PL used by Arena Networks.
-# - Set the $PACKAGE variable to the name of your module.
-# - Set $LAST_API_CHANGE to reflect the last version you changed the API 
-#   of your module.
-# - Fill in your dependencies in PREREQ_PM
-# Alternatively, you can say the hell with this and use h2xs.
+#!/usr/bin/perl -w
 
 use 5.004;
 
