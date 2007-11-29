@@ -1,3 +1,7 @@
+0.74  Thu Nov 29 15:39:57 PST 2007
+    Misc
+    - Add abstract and author to the meta information.
+
 0.73_01  Mon Oct 15 20:35:15 EDT 2007
     Bug fixes
     * Put the use_ok() fix from 0.71 back.
