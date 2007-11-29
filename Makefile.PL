@@ -42,7 +42,11 @@ THREAD_WARN
 
 WriteMakefile(
     NAME            => $PACKAGE,
-    VERSION_FROM    => "lib/$PACKAGE_FILE.pm", # finds $VERSION
+
+    VERSION_FROM    => "lib/$PACKAGE_FILE.pm",
+    ABSTRACT_FROM   => "lib/$PACKAGE_FILE.pm",
+    AUTHOR          => 'Michael G Schwern <schwern@pobox.com>',
+
     PREREQ_PM       => { 
                         Test::Harness   => 2.03,
                        },
