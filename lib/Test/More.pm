@@ -659,30 +659,37 @@ sub use_ok ($;@) {
 
     my($pack,$filename,$line) = caller;
 
-    # Work around a glitch in $@ and eval
+    my $code;
+    if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
+        # probably a version check.  Perl needs to see the bare number
+        # for it to work with non-Exporter based modules.
+        $code = <<USE;
+package $pack;
+use $module $imports[0];
+1;
+USE
+    }
+    else {
+        $code = <<USE;
+package $pack;
+use $module \@imports;
+1;
+USE
+    }
+
+
+    # Work around oddities surrounding resetting of $@ by immediately
+    # storing it.
+    my $eval_result;
     my $eval_error;
     {
         local($@,$!,$SIG{__DIE__});   # isolate eval
-
-        if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
-            # probably a version check.  Perl needs to see the bare number
-            # for it to work with non-Exporter based modules.
-            eval <<USE;
-package $pack;
-use $module $imports[0];
-USE
-        }
-        else {
-            eval <<USE;
-package $pack;
-use $module \@imports;
-USE
-        }
-        $eval_error = $@;
+        $eval_result = eval $code;
+        $eval_error  = $@;
     }
 
-    my $ok = $tb->ok( !$eval_error, "use $module;" );
-
+    my $ok = $tb->ok( $eval_result, "use $module;" );
+    
     unless( $ok ) {
         chomp $eval_error;
         $@ =~ s{^BEGIN failed--compilation aborted at .*$}
