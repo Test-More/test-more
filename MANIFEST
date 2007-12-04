@@ -13,6 +13,7 @@ t/00signature.t
 t/00test_harness_check.t
 t/bad_plan.t
 t/bail_out.t
+t/BEGIN_require_ok.t
 t/BEGIN_use_ok.t
 t/buffer.t
 t/Builder.t
