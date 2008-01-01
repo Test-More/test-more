@@ -401,9 +401,7 @@ sub ok {
     Very confusing.
 ERR
 
-    my($pack, $file, $line) = $self->caller;
-
-    my $todo = $self->todo($pack);
+    my $todo = $self->todo();
     $self->_unoverload_str(\$todo);
 
     my $out;
@@ -448,13 +446,14 @@ ERR
         my $msg = $todo ? "Failed (TODO)" : "Failed";
         $self->_print_diag("\n") if $ENV{HARNESS_ACTIVE};
 
-	if( defined $name ) {
-	    $self->diag(qq[  $msg test '$name'\n]);
-	    $self->diag(qq[  at $file line $line.\n]);
-	}
-	else {
-	    $self->diag(qq[  $msg test at $file line $line.\n]);
-	}
+    my(undef, $file, $line) = $self->caller;
+        if( defined $name ) {
+            $self->diag(qq[  $msg test '$name'\n]);
+            $self->diag(qq[  at $file line $line.\n]);
+        }
+        else {
+            $self->diag(qq[  $msg test at $file line $line.\n]);
+        }
     } 
 
     return $test ? 1 : 0;

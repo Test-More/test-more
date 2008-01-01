@@ -1,6 +1,8 @@
 0.75
     Bug fixes
     - Turns out require_ok() had the same bug as use_ok() in a BEGIN block.
+    - ok() was not honoring exported_to() when looking for $TODO as it
+      should be.
 
 0.74  Thu Nov 29 15:39:57 PST 2007
     Misc
