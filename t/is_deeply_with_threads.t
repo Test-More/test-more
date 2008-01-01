@@ -27,7 +27,7 @@ use Test::More;
 
 my $Num_Threads = 5;
 
-plan tests => $Num_Threads * 100 + 5;
+plan tests => $Num_Threads * 100 + 6;
 
 
 sub do_one_thread {
@@ -56,3 +56,5 @@ for my $t (@kids) {
     my $rc = $t->join();
     cmp_ok( $rc, '==', 42, "threads exit status is $rc" );
 }
+
+pass("End of test");
