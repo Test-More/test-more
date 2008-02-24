@@ -1,3 +1,11 @@
+0.77
+    Bug fixes
+    * The default test output filehandles will NOT use utf8.
+      They will now copy the IO layers from STDOUT and STDERR.
+      This means if :utf8 is on then it will honor it and not
+      warn about wide characters.
+
+
 0.76_01  Sat Feb 23 20:44:32 PST 2008
     Bug fixes
     * Test::Builder no longer uses a __DIE__ handler.  This resolves a number

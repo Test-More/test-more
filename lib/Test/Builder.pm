@@ -1384,15 +1384,24 @@ sub _open_testhandles {
     # test suites while still getting normal test output.
     open( $Testout, ">&STDOUT") or die "Can't dup STDOUT:  $!";
     open( $Testerr, ">&STDERR") or die "Can't dup STDERR:  $!";
-    
-    $self->_try(sub {
-        binmode $Testout, ":utf8";
-        binmode $Testerr, ":utf8";
-    });
+
+    $self->_copy_io_layers( \*STDOUT, $Testout );
+    $self->_copy_io_layers( \*STDERR, $Testerr );
     
     $Opened_Testhandles = 1;
 }
 
+
+sub _copy_io_layers {
+    my($self, $src, $dest) = @_;
+    
+    $self->_try(sub {
+        require PerlIO;
+        my @layers = PerlIO::get_layers($src);
+        
+        binmode $dest, join " ", map ":$_", @layers if @layers;
+    });
+}
 
 =item carp
 
