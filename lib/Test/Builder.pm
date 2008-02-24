@@ -1355,6 +1355,7 @@ sub _autoflush {
 }
 
 
+my($Testout, $Testerr);
 sub _dup_stdhandles {
     my $self = shift;
 
@@ -1362,24 +1363,25 @@ sub _dup_stdhandles {
 
     # Set everything to unbuffered else plain prints to STDOUT will
     # come out in the wrong order from our own prints.
-    _autoflush(\*TESTOUT);
+    _autoflush($Testout);
     _autoflush(\*STDOUT);
-    _autoflush(\*TESTERR);
+    _autoflush($Testerr);
     _autoflush(\*STDERR);
 
-    $self->output(\*TESTOUT);
-    $self->failure_output(\*TESTERR);
-    $self->todo_output(\*TESTOUT);
+    $self->output        ($Testout);
+    $self->failure_output($Testerr);
+    $self->todo_output   ($Testout);
 }
 
 
 my $Opened_Testhandles = 0;
 sub _open_testhandles {
     return if $Opened_Testhandles;
+    
     # We dup STDOUT and STDERR so people can change them in their
     # test suites while still getting normal test output.
-    open(TESTOUT, ">&STDOUT") or die "Can't dup STDOUT:  $!";
-    open(TESTERR, ">&STDERR") or die "Can't dup STDERR:  $!";
+    open( $Testout, ">&STDOUT") or die "Can't dup STDOUT:  $!";
+    open( $Testerr, ">&STDERR") or die "Can't dup STDERR:  $!";
     $Opened_Testhandles = 1;
 }
 
