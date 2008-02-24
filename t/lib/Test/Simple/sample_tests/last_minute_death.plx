@@ -15,4 +15,4 @@ ok(1);
 ok(1);
 ok(1);
 
-die "Almost there...";
+die "This is a test";

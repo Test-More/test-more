@@ -15,4 +15,4 @@ tie *STDERR, 'Dev::Null';
 
 ok(1);
 ok(1);
-die;
+die "This is a test";
