@@ -1,3 +1,7 @@
+0.76
+    Test fixes
+    - Remove the signature test.  Adds no security and just generates failures.
+
 0.75  Sat Feb 23 19:03:38 PST 2008
     Incompatibilities
     * The minimum version is now 5.6.0.
