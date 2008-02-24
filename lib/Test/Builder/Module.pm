@@ -7,7 +7,7 @@ use Test::Builder;
 require Exporter;
 our @ISA = qw(Exporter);
 
-our $VERSION = '0.76';
+our $VERSION = '0.76_01';
 
 # 5.004's Exporter doesn't have export_to_level.
 my $_export_to_level = sub {

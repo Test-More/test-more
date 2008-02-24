@@ -1,4 +1,4 @@
-0.76
+0.76_01  Sat Feb 23 20:44:32 PST 2008
     Bug fixes
     * Test::Builder no longer uses a __DIE__ handler.  This resolves a number
       of problems with exit codes being swallowed or other module's handlers
