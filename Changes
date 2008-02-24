@@ -1,4 +1,4 @@
-0.77
+0.76_02  Sun Feb 24 13:12:55 PST 2008
     Bug fixes
     * The default test output filehandles will NOT use utf8.
       They will now copy the IO layers from STDOUT and STDERR.
