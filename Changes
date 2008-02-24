@@ -1,6 +1,12 @@
 0.76
+    Bug fixes
+    * Test::Builder no longer uses a __DIE__ handler.  This resolves a number
+      of problems with exit codes being swallowed or other module's handlers
+      being interfered with.  [rt.cpan.org 25294]
+
     Test fixes
     - Remove the signature test.  Adds no security and just generates failures.
+
 
 0.75  Sat Feb 23 19:03:38 PST 2008
     Incompatibilities

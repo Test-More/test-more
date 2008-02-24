@@ -50,7 +50,8 @@ my %Tests = (
              'pre_plan_death.plx'       => ['not zero',    'not zero'],
              'death_in_eval.plx'        => [0,      0],
              'require.plx'              => [0,      0],
-	     'exit.plx'                 => [1,      4],
+             'death_with_handler.plx'   => [255,    4],
+             'exit.plx'                 => [1,      4],
             );
 
 $TB->plan( tests => scalar keys(%Tests) );
