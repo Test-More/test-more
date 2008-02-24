@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-use 5.004;
+use 5.006;
 
 use Config;
 use ExtUtils::MakeMaker;
@@ -52,56 +52,5 @@ WriteMakefile(
                        },
     # Added to the core in 5.7.3 and also 5.6.2.
     INSTALLDIRS     => $] >= 5.006002 ? 'perl' : 'site',
-    ($ExtUtils::MakeMaker::VERSION >= 6.31 ? (LICENSE         => 'perl') : ()),
+    ($ExtUtils::MakeMaker::VERSION >= 6.31 ? (LICENSE => 'perl') : ()),
 );
-
-
-{
-    package MY;
-
-    use File::Basename;
-    sub test_via_harness {
-        my($self, $orig_perl, $tests) = @_;
-
-        my @perls = ();
-        if( $ENV{PERL_TEST_ALL} ) {
-            require File::Spec;
-            my $tlib = File::Spec->rel2abs('t/lib/');
-            push @perls, 
-              map "PERL5LIB=$tlib $_",
-                qw(
-                   perl5.4.0
-                   perl5.4.5
-                   perl5.5.3
-                   perl5.6.0
-                   perl5.6.1
-                  );
-
-            push @perls,
-              qw(
-                 perl
-                 perl5.8.0
-                 perl5.8.0-ithreads
-                 bleadperl
-                );
-        }
-        else {
-            push @perls, $orig_perl;
-        }
-
-        my $out;
-        foreach my $perl (@perls) {
-            $out .= $self->SUPER::test_via_harness($perl, $tests) . "\n";
-        }
-        $out =~ s{-I\$\(PERL_\w*LIB\)}{}g;
-
-        return $out;
-    }
-}
-
-
-# Older versions of Test::Simple were very naughty about being required and
-# exitted with 255.  This overrides that behavior so it builds from CPAN.
-END {
-    exit(0);
-}

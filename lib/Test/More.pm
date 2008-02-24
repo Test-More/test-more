@@ -1,7 +1,6 @@
 package Test::More;
 
-use 5.004;
-
+use 5.006;
 use strict;
 
 
@@ -1455,7 +1454,7 @@ B<NOTE>  This behavior may go away in future versions.
 
 =item Backwards compatibility
 
-Test::More works with Perls as old as 5.004_05.
+Test::More works with Perls as old as 5.6.0.
 
 
 =item Overloaded objects
