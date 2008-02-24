@@ -1376,12 +1376,20 @@ sub _dup_stdhandles {
 
 my $Opened_Testhandles = 0;
 sub _open_testhandles {
+    my $self = shift;
+    
     return if $Opened_Testhandles;
     
     # We dup STDOUT and STDERR so people can change them in their
     # test suites while still getting normal test output.
     open( $Testout, ">&STDOUT") or die "Can't dup STDOUT:  $!";
     open( $Testerr, ">&STDERR") or die "Can't dup STDERR:  $!";
+    
+    $self->_try(sub {
+        binmode $Testout, ":utf8";
+        binmode $Testerr, ":utf8";
+    });
+    
     $Opened_Testhandles = 1;
 }
 
