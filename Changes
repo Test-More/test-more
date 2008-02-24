@@ -3,6 +3,7 @@
     * Test::Builder no longer uses a __DIE__ handler.  This resolves a number
       of problems with exit codes being swallowed or other module's handlers
       being interfered with.  [rt.cpan.org 25294]
+    - Allow maybe_regex() to detect blessed regexes.  [bleadperl @32880]
 
     Test fixes
     - Remove the signature test.  Adds no security and just generates failures.

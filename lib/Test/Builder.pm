@@ -919,7 +919,7 @@ sub maybe_regex {
     my($re, $opts);
 
     # Check for qr/foo/
-    if( ref $regex eq 'Regexp' ) {
+    if( _is_qr($regex) ) {
         $usable_regex = $regex;
     }
     # Check for '/foo/' or 'm,foo,'
@@ -931,7 +931,18 @@ sub maybe_regex {
     }
 
     return $usable_regex;
-};
+}
+
+
+sub _is_qr {
+    my $regex = shift;
+    
+    # is_regexp() checks for regexes in a robust manner, say if they're
+    # blessed.
+    return re::is_regexp($regex) if defined &re::is_regexp;
+    return ref $regex eq 'Regexp';
+}
+
 
 sub _regex_ok {
     my($self, $this, $regex, $cmp, $name) = @_;
