@@ -7,6 +7,11 @@
     - ok() was not honoring exported_to() when looking for $TODO as it
       should be.
     
+    Test fixes
+    * is_deeply_with_threads.t will not run unless AUTHOR_TESTING is set.
+      This is because it tickles intermittent threading bugs in many perls
+      and causes a lot of bug reports about which I can do nothing.
+    
     Misc
     - Ran through perlcritic and did some cleaning.
 
