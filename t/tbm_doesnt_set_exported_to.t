@@ -1,5 +1,16 @@
 #!/usr/bin/perl -w
 
+BEGIN {
+    if( $ENV{PERL_CORE} ) {
+        chdir 't';
+        @INC = '../lib';
+    }
+}
+
+use strict;
+use warnings;
+
+# Can't use Test::More, that would set exported_to()
 use Test::Builder;
 use Test::Builder::Module;
 
