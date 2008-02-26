@@ -1,3 +1,8 @@
+0.76_03
+    Bug fixes
+    - "use Test::Builder::Module" no longer sets exported_to() or does
+      any other importing.
+
 0.76_02  Sun Feb 24 13:12:55 PST 2008
     Bug fixes
     * The default test output filehandles will NOT use utf8.
