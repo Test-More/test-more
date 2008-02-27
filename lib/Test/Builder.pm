@@ -204,25 +204,6 @@ are.  You usually only want to call one of these methods.
 
 =over 4
 
-=item B<exported_to>
-
-  my $pack = $Test->exported_to;
-  $Test->exported_to($pack);
-
-Tells Test::Builder what package you exported your functions to.
-This is important for getting TODO tests right.
-
-=cut
-
-sub exported_to {
-    my($self, $pack) = @_;
-
-    if( defined $pack ) {
-        $self->{Exported_To} = $pack;
-    }
-    return $self->{Exported_To};
-}
-
 =item B<plan>
 
   $Test->plan('no_plan');
@@ -352,6 +333,29 @@ sub skip_all {
 
     $self->_print($out) unless $self->no_header;
     exit(0);
+}
+
+
+=item B<exported_to>
+
+  my $pack = $Test->exported_to;
+  $Test->exported_to($pack);
+
+Tells Test::Builder what package you exported your functions to.
+
+This method isn't terribly useful since modules which share the same
+Test::Builder object might get exported to different packages and only
+the last one will be honored.
+
+=cut
+
+sub exported_to {
+    my($self, $pack) = @_;
+
+    if( defined $pack ) {
+        $self->{Exported_To} = $pack;
+    }
+    return $self->{Exported_To};
 }
 
 =back
