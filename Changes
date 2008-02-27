@@ -1,4 +1,4 @@
-0.77
+0.77  Wed Feb 27 01:55:55 PST 2008
     Bug fixes
     - "use Test::Builder::Module" no longer sets exported_to() or does
       any other importing.
