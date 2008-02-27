@@ -79,11 +79,10 @@ TODO: {
 }
 
 
-{
+TODO: {
     Test::More->builder->exported_to("Wibble");
-    $Wibble::TODO = '';     # shut up used only once warning
-    TODO: {
-        local $Wibble::TODO = $Why;
-        fail("TODO honors exported_to()");
-    }
+    
+    local $TODO = "testing \$TODO with an incorrect exported_to()";
+    
+    fail("Just testing todo");
 }

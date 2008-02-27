@@ -177,6 +177,8 @@ sub reset {
     $self->{No_Header}  = 0;
     $self->{No_Ending}  = 0;
 
+    $self->{TODO}       = undef;
+
     $self->_dup_stdhandles unless $^C;
 
     return;
@@ -387,6 +389,11 @@ sub ok {
 ERR
 
     my $todo = $self->todo();
+    
+    # Capture the value of $TODO for the rest of this ok() call
+    # so it can more easily be found by other routines.
+    local $self->{TODO} = $todo;
+
     $self->_unoverload_str(\$todo);
 
     my $out;
@@ -568,6 +575,7 @@ sub _is_diag {
         }
     }
 
+    local $Level = $Level + 1;
     return $self->diag(sprintf <<DIAGNOSTIC, $got, $expect);
          got: %s
     expected: %s
@@ -715,6 +723,8 @@ sub _cmp_diag {
     
     $got    = defined $got    ? "'$got'"    : 'undef';
     $expect = defined $expect ? "'$expect'" : 'undef';
+    
+    local $Level = $Level + 1;
     return $self->diag(sprintf <<DIAGNOSTIC, $got, $type, $expect);
     %s
         %s
@@ -967,6 +977,8 @@ $code" . q{$test = $this =~ /$usable_regex/ ? 1 : 0};
     unless( $ok ) {
         $this = defined $this ? "'$this'" : 'undef';
         my $match = $cmp eq '=~' ? "doesn't match" : "matches";
+
+        local $Level = $Level + 1;
         $self->diag(sprintf <<DIAGNOSTIC, $this, $match, $regex);
                   %s
     %13s '%s'
@@ -1573,9 +1585,10 @@ will be considered 'todo' (see Test::More and Test::Harness for
 details).  Returns the reason (ie. the value of $TODO) if running as
 todo tests, false otherwise.
 
-todo() is about finding the right package to look for $TODO in.  It
-uses the exported_to() package to find it.  If that's not set, it's
-pretty good at guessing the right package to look at based on $Level.
+todo() is about finding the right package to look for $TODO in.  It's
+pretty good at guessing the right package to look at.  It first looks for
+the caller based on C<$Level + 1>, since C<todo()> is usually called inside
+a test function.  As a last resort it will use C<exported_to()>.
 
 Sometimes there is some confusion about where todo() should be looking
 for the $TODO variable.  If you want to be sure, tell it explicitly
@@ -1586,7 +1599,9 @@ what $pack to use.
 sub todo {
     my($self, $pack) = @_;
 
-    $pack = $pack || $self->exported_to || $self->caller($Level);
+    return $self->{TODO} if defined $self->{TODO};
+
+    $pack = $pack || $self->caller(1) || $self->exported_to;
     return 0 unless $pack;
 
     no strict 'refs';   ## no critic
@@ -1601,6 +1616,8 @@ sub todo {
     my($pack, $file, $line) = $Test->caller($height);
 
 Like the normal caller(), except it reports according to your level().
+
+C<$height> will be added to the level().
 
 =cut
 
