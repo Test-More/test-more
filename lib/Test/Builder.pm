@@ -68,28 +68,15 @@ Test::Builder - Backend for building test libraries
 =head1 SYNOPSIS
 
   package My::Test::Module;
-  use Test::Builder;
-  require Exporter;
-  @ISA = qw(Exporter);
-  @EXPORT = qw(ok);
+  use base 'Test::Builder::Module';
 
-  my $Test = Test::Builder->new;
-  $Test->output('my_logfile');
-
-  sub import {
-      my($self) = shift;
-      my $pack = caller;
-
-      $Test->exported_to($pack);
-      $Test->plan(@_);
-
-      $self->export_to_level(1, $self, 'ok');
-  }
+  my $CLASS = __PACKAGE__;
 
   sub ok {
       my($test, $name) = @_;
+      my $tb = $CLASS->builder;
 
-      $Test->ok($test, $name);
+      $tb->ok($test, $name);
   }
 
 
