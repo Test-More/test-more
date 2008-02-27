@@ -1,3 +1,8 @@
+0.78  Wed Feb 27 01:59:09 PST 2008
+    Bug fixes
+    * Whoops, the version of Test::Builder::Tester got moved backwards.
+
+
 0.77  Wed Feb 27 01:55:55 PST 2008
     Bug fixes
     - "use Test::Builder::Module" no longer sets exported_to() or does
