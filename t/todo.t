@@ -69,12 +69,12 @@ TODO: {
         # perl gets the line number a little wrong on the first
         # statement inside a block.
         1 == 1;
-#line 82
+#line 73
         todo_skip "Just testing todo_skip";
         fail("So very failed");
     }
     is( $warning, "todo_skip() needs to know \$how_many tests are in the ".
-                  "block at $0 line 82\n",
+                  "block at $0 line 73\n",
         'todo_skip without $how_many warning' );
 }
 
