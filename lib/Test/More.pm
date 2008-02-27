@@ -30,7 +30,7 @@ use Test::Builder::Module;
              plan
              can_ok  isa_ok
              diag
-	     BAIL_OUT
+             BAIL_OUT
             );
 
 
