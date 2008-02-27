@@ -1388,8 +1388,8 @@ sub _open_testhandles {
     open( $Testout, ">&STDOUT") or die "Can't dup STDOUT:  $!";
     open( $Testerr, ">&STDERR") or die "Can't dup STDERR:  $!";
 
-    $self->_copy_io_layers( \*STDOUT, $Testout );
-    $self->_copy_io_layers( \*STDERR, $Testerr );
+#    $self->_copy_io_layers( \*STDOUT, $Testout );
+#    $self->_copy_io_layers( \*STDERR, $Testerr );
     
     $Opened_Testhandles = 1;
 }

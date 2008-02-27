@@ -1,9 +1,11 @@
-0.76_03
+0.77
     Bug fixes
     - "use Test::Builder::Module" no longer sets exported_to() or does
       any other importing.
     - Fix the $TODO finding code so it can find $TODO without the benefit
       of exported_to(), which is often wrong.
+    - Turn off the filehandle locale stuff for the moment, there's a 
+      problem on 5.10.  We'll try it again next release.
       
     Doc improvements
     - Improve the Test::Builder SYNOPSIS to use Test::Builder::Module
