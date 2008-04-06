@@ -21,8 +21,8 @@ BEGIN {
         1;
     ];
 }
-#use Test::More tests => 5;
-use Test::More skip_all => 'Not yet implemented';
+use Test::More tests => 5;
+#use Test::More skip_all => 'Not yet implemented';
 
 SKIP: {
     skip( "Need PerlIO for this feature", 3 )
@@ -39,8 +39,8 @@ SKIP: {
         
         my $dest = Test::More->builder->$method;
         
-        is_deeply [PerlIO::get_layers($dest)],
-                  [PerlIO::get_layers($src)],
+        is_deeply { map { $_ => 1 } PerlIO::get_layers($dest) },
+                  { map { $_ => 1 } PerlIO::get_layers($src)  },
                   "layers copied to $method";
     }
 }

@@ -1,3 +1,9 @@
+0.79_01
+    Bug fixes
+    - Let's try the IO layer copying again, this time with the test
+      fixed for 5.10.
+
+
 0.78  Wed Feb 27 01:59:09 PST 2008
     Bug fixes
     * Whoops, the version of Test::Builder::Tester got moved backwards.
