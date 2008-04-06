@@ -10,6 +10,7 @@ BEGIN {
 use strict;
 use warnings;
 
+use Test::More skip_all => 'Not yet implemented';
 
 my $have_perlio;
 BEGIN {
@@ -21,8 +22,15 @@ BEGIN {
         1;
     ];
 }
-use Test::More tests => 5;
-#use Test::More skip_all => 'Not yet implemented';
+
+use Test::More;
+
+if( !$have_perlio ) {
+    plan skip_all => "Don't have PerlIO";
+}
+else {
+    plan tests => 5;
+}
 
 SKIP: {
     skip( "Need PerlIO for this feature", 3 )

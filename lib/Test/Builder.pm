@@ -3,7 +3,7 @@ package Test::Builder;
 use 5.006;
 use strict;
 
-our $VERSION = '0.79_01';
+our $VERSION = '0.80';
 $VERSION = eval { $VERSION }; # make the alpha version come out as a number
 
 # Make Test::Builder thread-safe for ithreads.
@@ -1388,8 +1388,8 @@ sub _open_testhandles {
     open( $Testout, ">&STDOUT") or die "Can't dup STDOUT:  $!";
     open( $Testerr, ">&STDERR") or die "Can't dup STDERR:  $!";
 
-    $self->_copy_io_layers( \*STDOUT, $Testout );
-    $self->_copy_io_layers( \*STDERR, $Testerr );
+#    $self->_copy_io_layers( \*STDOUT, $Testout );
+#    $self->_copy_io_layers( \*STDERR, $Testerr );
     
     $Opened_Testhandles = 1;
 }
