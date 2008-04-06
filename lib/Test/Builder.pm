@@ -3,7 +3,7 @@ package Test::Builder;
 use 5.006;
 use strict;
 
-our $VERSION = '0.77';
+our $VERSION = '0.78';
 $VERSION = eval { $VERSION }; # make the alpha version come out as a number
 
 # Make Test::Builder thread-safe for ithreads.
