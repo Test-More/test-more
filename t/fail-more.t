@@ -24,7 +24,7 @@ package My::Test;
 # Test::Builder's own and the ending diagnostics don't come out right.
 require Test::Builder;
 my $TB = Test::Builder->create;
-$TB->plan(tests => 17);
+$TB->plan(tests => 24);
 
 sub like ($$;$) {
     $TB->like(@_);
@@ -41,11 +41,18 @@ sub main::err_ok ($) {
     return $TB->is_eq( $got, $expect );
 }
 
+sub main::err_like ($) {
+    my($expect) = @_;
+    my $got = $err->read;
+
+    return $TB->like( $got, qr/$expect/ );
+}
+
 
 package main;
 
 require Test::More;
-my $Total = 30;
+my $Total = 37;
 Test::More->import(tests => $Total);
 
 # This should all work in the presence of a __DIE__ handler.
@@ -180,6 +187,68 @@ err_ok( <<ERR );
 #     The object isn't a 'HASH' it's a 'ARRAY'
 ERR
 
+
+#line 188
+new_ok(undef);
+err_like( <<ERR );
+#   Failed test 'new\\(\\) died'
+#   at $Filename line 188.
+#     Error was:  Can't call method "new" on an undefined value at .*
+ERR
+
+#line 203
+new_ok();
+err_like( <<ERR );
+#   Failed test 'new\\(\\) died'
+#   at $Filename line 203.
+#     Error was:  Can't call method "new" on an undefined value at .*
+ERR
+
+#line 211
+new_ok( "Does::Not::Exist" );
+err_like( <<ERR );
+#   Failed test 'new\\(\\) died'
+#   at $Filename line 211.
+#     Error was:  Can't locate object method "new" via package "Does::Not::Exist" .*
+ERR
+
+{ package Foo; sub new { } }
+{ package Bar; sub new { {} } }
+{ package Baz; sub new { bless {}, "Wibble" } }
+
+#line 219
+new_ok( "Foo" );
+err_ok( <<ERR );
+#   Failed test 'The object isa Foo'
+#   at $0 line 219.
+#     The object isn't defined
+ERR
+
+# line 231
+new_ok( "Bar" );
+err_ok( <<ERR );
+#   Failed test 'The object isa Bar'
+#   at $0 line 231.
+#     The object isn't a 'Bar' it's a 'HASH'
+ERR
+
+#line 239
+new_ok( "Baz" );
+err_ok( <<ERR );
+#   Failed test 'The object isa Baz'
+#   at $0 line 239.
+#     The object isn't a 'Baz' it's a 'Wibble'
+ERR
+
+#line 247
+new_ok( "Baz", [], "no args" );
+err_ok( <<ERR );
+#   Failed test 'no args isa Baz'
+#   at $0 line 247.
+#     no args isn't a 'Baz' it's a 'Wibble'
+ERR
+
+
 #line 68
 cmp_ok( 'foo', 'eq', 'bar', 'cmp_ok eq' );
 cmp_ok( 42.1,  '==', 23,  , '       ==' );
@@ -301,6 +370,13 @@ not ok - The object isa Wibble
 not ok - My Wibble isa Wibble
 not ok - Another Wibble isa Wibble
 not ok - The object isa HASH
+not ok - new() died
+not ok - new() died
+not ok - new() died
+not ok - The object isa Foo
+not ok - The object isa Bar
+not ok - The object isa Baz
+not ok - no args isa Baz
 not ok - cmp_ok eq
 not ok -        ==
 not ok -        !=

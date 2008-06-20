@@ -1017,7 +1017,10 @@ DIAGNOSTIC
     my $return_from_code          = $Test->try(sub { code });
     my($return_from_code, $error) = $Test->try(sub { code });
 
-Works like eval BLOCK except it ensures it has no effect on the rest of the test (ie. $@ is not set) nor is effected by outside interference (ie. $SIG{__DIE__}) and works around some quirks in older Perls.
+Works like eval BLOCK except it ensures it has no effect on the rest
+of the test (ie. $@ is not set) nor is effected by outside
+interference (ie. $SIG{__DIE__}) and works around some quirks in older
+Perls.
 
 $error is what would normally be in $@.
 

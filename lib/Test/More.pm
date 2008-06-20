@@ -28,7 +28,7 @@ use Test::Builder::Module;
              eq_array eq_hash eq_set
              $TODO
              plan
-             can_ok  isa_ok
+             can_ok isa_ok new_ok
              diag
              BAIL_OUT
             );
@@ -557,8 +557,7 @@ WHOA
             $diag = "$obj_name isn't a '$class' it's a '$ref'";
         }
     }
-            
-      
+
 
     my $ok;
     if( $diag ) {
@@ -570,6 +569,49 @@ WHOA
     }
 
     return $ok;
+}
+
+
+=item B<new_ok>
+
+  my $obj = new_ok( $class );
+  my $obj = new_ok( $class => \@args );
+  my $obj = new_ok( $class => \@args, $object_name );
+
+A convenience function which combines creating an object and calling
+isa_ok() on that object.
+
+It is basically equivalent to:
+
+    my $obj = $class->new(@args);
+    isa_ok $obj, $class, $object_name;
+
+If @args is not given, an empty list will be used.
+
+This function only works on new() and it assumes new() will return
+just a single object which isa C<$class>.
+
+=cut
+
+sub new_ok {
+    my($class, $args, $object_name) = @_;
+    my $tb = Test::More->builder;
+
+    $args ||= [];
+    $object_name = "The object" unless defined $object_name;
+
+    my $obj;
+    my($success, $error) = $tb->_try( sub { $obj = $class->new(@$args); 1 } );
+    if( $success ) {
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        isa_ok $obj, $class, $object_name;
+    }
+    else {
+        $tb->ok(0, "new() died");
+        $tb->diag("    Error was:  $error");
+    }
+
+    return $obj;
 }
 
 
@@ -713,6 +755,7 @@ sub _eval {
 
     return($eval_result, $eval_error);
 }
+
 
 =item B<require_ok>
 

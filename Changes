@@ -1,3 +1,8 @@
+0.81_01
+    New Features
+    * Adam Kennedy bribed me to add new_ok().  The price was one DEFCON license key.
+
+
 0.80  Sun Apr  6 17:25:01 CEST 2008
     Test fixes
     - Completely disable the utf8 test.  It was causing perl to panic on some OS's.
