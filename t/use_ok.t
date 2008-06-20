@@ -10,7 +10,7 @@ BEGIN {
     }
 }
 
-use Test::More tests => 13;
+use Test::More tests => 15;
 
 # Using Symbol because it's core and exports lots of stuff.
 {
@@ -57,4 +57,10 @@ use Test::More tests => 13;
         warn @_ unless $_[0] =~ /^Argument "\d+\.\d+_\d+" isn't numeric/;
     };
     ::use_ok("Test::More", 0.47);
+}
+
+{
+    package Foo::eight;
+    ::use_ok("SigDie");
+    ::ok(defined $SIG{__DIE__}, '  SIG{__DIE__} preserved');
 }
