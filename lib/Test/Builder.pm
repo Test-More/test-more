@@ -556,24 +556,28 @@ sub is_num {
     return $self->cmp_ok($got, '==', $expect, $name);
 }
 
+sub _diag_fmt {
+    my ($self, $type, $val) = @_;
+
+    if( defined $$val ) {
+        if( $type eq 'eq' or $type eq 'ne' ) {
+            # quote and force string context
+            $$val = "'$$val'"
+        }
+        else {
+            # force numeric context
+            $self->_unoverload_num($val);
+        }
+    }
+    else {
+        $$val = 'undef';
+    }
+}
+
 sub _is_diag {
     my($self, $got, $type, $expect) = @_;
 
-    foreach my $val (\$got, \$expect) {
-        if( defined $$val ) {
-            if( $type eq 'eq' ) {
-                # quote and force string context
-                $$val = "'$$val'"
-            }
-            else {
-                # force numeric context
-                $self->_unoverload_num($val);
-            }
-        }
-        else {
-            $$val = 'undef';
-        }
-    }
+    $self->_diag_fmt($type, $_) for \$got, \$expect;
 
     local $Level = $Level + 1;
     return $self->diag(sprintf <<DIAGNOSTIC, $got, $expect);
@@ -582,6 +586,18 @@ sub _is_diag {
 DIAGNOSTIC
 
 }    
+
+sub _isnt_diag {
+    my ($self, $got, $type) = @_;
+
+    $self->_diag_fmt($type, \$got);
+
+    local $Level = $Level + 1;
+    return $self->diag(sprintf <<DIAGNOSTIC, $got);
+         got: %s
+    expected: anything else
+DIAGNOSTIC
+}
 
 =item B<isnt_eq>
 
@@ -608,7 +624,7 @@ sub isnt_eq {
         my $test = defined $got || defined $dont_expect;
 
         $self->ok($test, $name);
-        $self->_cmp_diag($got, 'ne', $dont_expect) unless $test;
+        $self->_isnt_diag($got, 'ne') unless $test;
         return $test;
     }
 
@@ -624,7 +640,7 @@ sub isnt_num {
         my $test = defined $got || defined $dont_expect;
 
         $self->ok($test, $name);
-        $self->_cmp_diag($got, '!=', $dont_expect) unless $test;
+        $self->_isnt_diag($got, '!=') unless $test;
         return $test;
     }
 
@@ -710,8 +726,9 @@ $code" . "\$got $type \$expect;";
     unless( $ok ) {
         if( $type =~ /^(eq|==)$/ ) {
             $self->_is_diag($got, $type, $expect);
-        }
-        else {
+        } elsif ( $type =~ /^(ne|!=)$/ ) {
+            $self->_isnt_diag($got, $type);
+        } else {
             $self->_cmp_diag($got, $type, $expect);
         }
     }

@@ -96,19 +96,16 @@ isnt(undef, undef, 'undef isnt undef?');
 err_ok( <<ERR );
 #   Failed test 'foo isnt foo?'
 #   at $0 line 45.
-#     'foo'
-#         ne
-#     'foo'
+#          got: 'foo'
+#     expected: anything else
 #   Failed test 'foo isn\'t foo?'
 #   at $0 line 46.
-#     'foo'
-#         ne
-#     'foo'
+#          got: 'foo'
+#     expected: anything else
 #   Failed test 'undef isnt undef?'
 #   at $0 line 47.
-#     undef
-#         ne
-#     undef
+#          got: undef
+#     expected: anything else
 ERR
 
 #line 48
@@ -199,9 +196,8 @@ err_ok( <<ERR );
 #     expected: 23
 #   Failed test '       !='
 #   at $0 line 70.
-#     '42'
-#         !=
-#     '42'
+#          got: 42
+#     expected: anything else
 #   Failed test '       &&'
 #   at $0 line 71.
 #     '1'
