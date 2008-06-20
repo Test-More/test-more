@@ -1,6 +1,7 @@
 0.81_01
     New Features
     * Adam Kennedy bribed me to add new_ok().  The price was one DEFCON license key.
+      [rt.cpan.org 8891]
 
 
 0.80  Sun Apr  6 17:25:01 CEST 2008
