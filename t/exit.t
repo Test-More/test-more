@@ -64,12 +64,12 @@ else {
     *exitstatus = sub { POSIX::WEXITSTATUS($_[0]) }
 }
 
+my $Perl = File::Spec->rel2abs($^X);
+
 chdir 't';
 my $lib = File::Spec->catdir(qw(lib Test Simple sample_tests));
 while( my($test_name, $exit_codes) = each %Tests ) {
     my($exit_code) = $exit_codes->[$IsVMS ? 1 : 0];
-
-    my $Perl = $^X;
 
     if( $^O eq 'VMS' ) {
         # VMS can't use its own $^X in a system call until almost 5.8
