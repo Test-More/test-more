@@ -3,6 +3,12 @@
     * Adam Kennedy bribed me to add new_ok().  The price was one DEFCON license key.
       [rt.cpan.org 8891]
 
+    Bug fixes
+    - RT#34050: using a relative path to perl broke tests
+    - RT#34065: use_ok() broke $SIG{__DIE__} in the used module
+    - RT#33642: diagnostics for isnt() were confusing on failure
+    - RT#33626: warnings when MakeMaker's version contained _
+    - RT#28836: add explicit test that non-integer plans die correctly
 
 0.80  Sun Apr  6 17:25:01 CEST 2008
     Test fixes
