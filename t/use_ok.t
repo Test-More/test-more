@@ -61,6 +61,7 @@ use Test::More tests => 15;
 
 {
     package Foo::eight;
+    local $SIG{__DIE__};
     ::use_ok("SigDie");
     ::ok(defined $SIG{__DIE__}, '  SIG{__DIE__} preserved');
 }
