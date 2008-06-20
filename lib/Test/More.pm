@@ -701,9 +701,15 @@ sub _eval {
 
     # Work around oddities surrounding resetting of $@ by immediately
     # storing it.
-    local($@,$!,$SIG{__DIE__});   # isolate eval
-    my $eval_result = eval $code;
-    my $eval_error  = $@;
+    my ($sigdie, $eval_result, $eval_error);
+    {
+      local($@,$!,$SIG{__DIE__});   # isolate eval
+      $eval_result = eval $code;
+      $eval_error  = $@;
+      $sigdie = $SIG{__DIE__} || undef;
+    }
+    # make sure that $code got a chance to set $SIG{__DIE__}
+    $SIG{__DIE__} = $sigdie if defined $sigdie;
 
     return($eval_result, $eval_error);
 }
