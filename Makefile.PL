@@ -40,6 +40,12 @@ THREAD_WARN
 
 }
 
+my $mm_ver = $ExtUtils::MakeMaker::VERSION;
+if ($mm_ver =~ /_/) { # dev version
+  $mm_ver = eval $mm_ver;
+  die $@ if $@;
+}
+
 WriteMakefile(
     NAME            => $PACKAGE,
 
@@ -52,5 +58,5 @@ WriteMakefile(
                        },
     # Added to the core in 5.7.3 and also 5.6.2.
     INSTALLDIRS     => $] >= 5.006002 ? 'perl' : 'site',
-    ($ExtUtils::MakeMaker::VERSION >= 6.31 ? (LICENSE => 'perl') : ()),
+    ($mm_ver >= 6.31 ? (LICENSE => 'perl') : ()),
 );
