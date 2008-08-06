@@ -15,6 +15,7 @@
     - warnings when MakeMaker's version contained _          [rt.cpan.org 33626]
     - add explicit test that non-integer plans die correctly [rt.cpan.org 28836]
       (Thanks to Hans Dieter Pearcey [confound] for fixing the above)
+    - die if no_plan is given an argument                    [rt.cpan.org 27429]
 
 
 0.80  Sun Apr  6 17:25:01 CEST 2008

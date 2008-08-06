@@ -218,6 +218,7 @@ sub plan {
     }
 
     if( $cmd eq 'no_plan' ) {
+        $self->croak("no_plan takes no arguments") if $arg;
         $self->no_plan;
     }
     elsif( $cmd eq 'skip_all' ) {
