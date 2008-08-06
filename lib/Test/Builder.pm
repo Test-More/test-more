@@ -1769,16 +1769,10 @@ sub _ending {
 
         my $num_extra = $self->{Curr_Test} - $self->{Expected_Tests};
 
-        if( $num_extra < 0 ) {
+        if( $num_extra != 0) {
             my $s = $self->{Expected_Tests} == 1 ? '' : 's';
             $self->diag(<<"FAIL");
-Looks like you planned $self->{Expected_Tests} test$s but only ran $self->{Curr_Test}.
-FAIL
-        }
-        elsif( $num_extra > 0 ) {
-            my $s = $self->{Expected_Tests} == 1 ? '' : 's';
-            $self->diag(<<"FAIL");
-Looks like you planned $self->{Expected_Tests} test$s but ran $num_extra extra.
+Looks like you planned $self->{Expected_Tests} test$s but ran $self->{Curr_Test}.
 FAIL
         }
 

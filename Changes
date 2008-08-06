@@ -3,6 +3,11 @@
     * Adam Kennedy bribed me to add new_ok().  The price was one DEFCON license key.
       [rt.cpan.org 8891]
 
+    Features Changed
+    * Changed the message for extra tests run to show the number of tests run rather than
+      the number extra to avoid the user having to do mental math.
+      [rt.cpan.org 7022]    
+
     Bug fixes
     - using a relative path to perl broke tests              [rt.cpan.org 34050]
     - use_ok() broke $SIG{__DIE__} in the used module        [rt.cpan.org 34065]
