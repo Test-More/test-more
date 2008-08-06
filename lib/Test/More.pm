@@ -1246,7 +1246,7 @@ sub eq_array {
 sub _eq_array  {
     my($a1, $a2) = @_;
 
-    if( grep !_type($_) eq 'ARRAY', $a1, $a2 ) {
+    if( grep _type($_) ne 'ARRAY', $a1, $a2 ) {
         warn "eq_array passed a non-array ref";
         return 0;
     }
@@ -1376,7 +1376,7 @@ sub eq_hash {
 sub _eq_hash {
     my($a1, $a2) = @_;
 
-    if( grep !_type($_) eq 'HASH', $a1, $a2 ) {
+    if( grep _type($_) ne 'HASH', $a1, $a2 ) {
         warn "eq_hash passed a non-hash ref";
         return 0;
     }
