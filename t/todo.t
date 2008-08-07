@@ -9,7 +9,7 @@ BEGIN {
 
 use Test::More;
 
-plan tests => 19;
+plan tests => 30;
 
 
 $Why = 'Just testing the todo interface.';
@@ -78,11 +78,46 @@ TODO: {
         'todo_skip without $how_many warning' );
 }
 
-
+my $builder = Test::More->builder;
+my $exported_to = $builder->exported_to;
 TODO: {
-    Test::More->builder->exported_to("Wibble");
+    $builder->exported_to("Wibble");
     
     local $TODO = "testing \$TODO with an incorrect exported_to()";
     
     fail("Just testing todo");
 }
+
+$builder->exported_to($exported_to);
+
+$builder->todo_start('Expected failures');
+fail('Testing todo_start()');
+ok 0, 'Testing todo_start() with more than one failure';
+$is_todo = $builder->todo;
+$builder->todo_end;
+is $is_todo, 'Expected failures',
+  'todo_start should have the correct TODO message';
+ok 1, 'todo_end() should not leak TODO behavior';
+
+my @nested_todo;
+my ( $level1, $level2 ) = ( 'failure level 1', 'failure_level 2' );
+TODO: {
+    local $TODO = 'Nesting TODO';
+    fail('fail 1');
+    $builder->todo_start($level1);
+    fail('fail 2');
+    push @nested_todo => $builder->todo;
+    $builder->todo_start($level2);
+    fail('fail 3');
+    push @nested_todo => $builder->todo;
+    $builder->todo_end;
+    fail('fail 4');
+    push @nested_todo => $builder->todo;
+    $builder->todo_end;
+    $is_todo = $builder->todo;
+    fail('fail 4');
+}
+is_deeply \@nested_todo, [ $level1, $level2, $level1 ],
+  'Nested TODO message should be correct';
+is $is_todo, 'Nesting TODO',
+  '... and original TODO message should be correct';

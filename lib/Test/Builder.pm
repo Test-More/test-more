@@ -3,7 +3,7 @@ package Test::Builder;
 use 5.006;
 use strict;
 
-our $VERSION = '0.80';
+our $VERSION = '0.80_01';
 $VERSION = eval { $VERSION }; # make the alpha version come out as a number
 
 # Make Test::Builder thread-safe for ithreads.
@@ -178,6 +178,8 @@ sub reset {
     $self->{No_Ending}  = 0;
 
     $self->{TODO}       = undef;
+    $self->{TODO_STACK} = [];
+    $self->{START_TODO} = 0;
 
     $self->_dup_stdhandles unless $^C;
 
@@ -1628,6 +1630,86 @@ sub todo {
     no strict 'refs';   ## no critic
     return defined ${$pack.'::TODO'} ? ${$pack.'::TODO'}
                                      : 0;
+}
+
+=item B<todo_start>
+
+    $Test->todo_start($message);
+
+This method allows you declare all subsequent tests as TODO tests, up until
+the C<todo_end> method has been called.  Calling it without a message is
+fatal.
+
+The C<TODO:> and C<$TODO> syntax is generally pretty good about figuring out
+whether or not we're in a TODO test.  However, often we find that this is not
+possible to determine (such as when we want to use C<$TODO> but
+the tests are being executed in other packages which can't be inferred
+beforehand).
+
+Note that you can use this to nest "todo" tests
+
+ $Test->todo_start('working on this');
+ # lots of code
+ $Test->todo_start('working on that');
+ # more code
+ $Test->todo_end;
+ $Test->todo_end;
+
+This is generally not recommended, but large testing systems often have weird
+internal needs.
+
+We've tried to make this also work with the TODO: syntax, but it's not
+guaranteed and its use is also discouraged:
+
+ TODO: {
+     local $TODO = 'We have work to do!';
+     $Test->todo_start('working on this');
+     # lots of code
+     $Test->todo_start('working on that');
+     # more code
+     $Test->todo_end;
+     $Test->todo_end;
+ }
+
+Pick one style or another of "TODO" to be on the safe side.
+
+=cut
+
+sub todo_start {
+    my ( $self, $message ) = @_;
+    unless ( defined $message ) { 
+        $self->diag('todo_start() requires a message!');
+        _my_exit( 255 ) && return;
+    }
+    $self->{START_TODO}++;
+    if ( my $todo = $self->todo ) {
+        push @{ $self->{TODO_STACK} } => $todo;
+    }
+    $self->{TODO} = $message;
+}
+
+=item C<todo_end>
+
+ $Test->todo_end;
+
+Stops running tests as "TODO" tests.  This method is fatal if called without a
+preceding C<todo_start> method call.
+
+=cut
+
+sub todo_end {
+    my $self = shift;
+    unless ( $self->{START_TODO}) { 
+        $self->diag('todo_end() called without todo_start!');
+        _my_exit( 255 ) && return;
+    }
+    $self->{START_TODO}--;
+    if ( $self->{START_TODO} && @{ $self->{TODO_STACK} } ) {
+        $self->{TODO} = pop @{ $self->{TODO_STACK} };
+    }
+    else {
+        delete $self->{TODO};
+    }
 }
 
 =item B<caller>
