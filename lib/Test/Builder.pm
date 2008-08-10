@@ -262,7 +262,7 @@ sub expected_tests {
 
     if( @_ ) {
         $self->croak("Number of tests must be a positive integer.  You gave it '$max'")
-          unless $max =~ /^\+?\d+$/ and $max > 0;
+          unless $max =~ /^\+?\d+$/;
 
         $self->{Expected_Tests} = $max;
         $self->{Have_Plan}      = 1;
