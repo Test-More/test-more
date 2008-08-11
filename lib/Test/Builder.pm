@@ -234,7 +234,7 @@ sub plan {
         elsif( !defined $arg ) {
             $self->croak("Got an undefined number of tests");
         }
-        elsif( !$arg ) {
+        else {
             $self->croak("You said to run 0 tests");
         }
     }
