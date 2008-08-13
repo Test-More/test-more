@@ -3,6 +3,11 @@ package Test::More;
 use 5.006;
 use strict;
 
+#---- perlcritic exemptions. ----#
+
+# We use a lot of subroutine prototypes
+## no critic (Subroutines::ProhibitSubroutinePrototypes)
+
 
 # Can't use Carp because it might cause use_ok() to accidentally succeed
 # even though the module being used forgot to use Carp.  Yes, this
@@ -13,25 +18,23 @@ sub _carp {
 }
 
 
-
-use vars qw($VERSION @ISA @EXPORT %EXPORT_TAGS $TODO);
-$VERSION = '0.80';
-$VERSION = eval $VERSION;    # make the alpha version come out as a number
+our $VERSION = '0.80';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Builder::Module;
-@ISA    = qw(Test::Builder::Module);
-@EXPORT = qw(ok use_ok require_ok
-             is isnt like unlike is_deeply
-             cmp_ok
-             skip todo todo_skip
-             pass fail
-             eq_array eq_hash eq_set
-             $TODO
-             plan
-             can_ok isa_ok new_ok
-             diag
-             BAIL_OUT
-            );
+our @ISA    = qw(Test::Builder::Module);
+our @EXPORT = qw(ok use_ok require_ok
+                 is isnt like unlike is_deeply
+                 cmp_ok
+                 skip todo todo_skip
+                 pass fail
+                 eq_array eq_hash eq_set
+                 $TODO
+                 plan
+                 can_ok isa_ok new_ok
+                 diag
+                 BAIL_OUT
+                );
 
 
 =head1 NAME
@@ -746,7 +749,7 @@ sub _eval {
     my ($sigdie, $eval_result, $eval_error);
     {
       local($@,$!,$SIG{__DIE__});   # isolate eval
-      $eval_result = eval $code;
+      $eval_result = eval $code;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
       $eval_error  = $@;
       $sigdie = $SIG{__DIE__} || undef;
     }

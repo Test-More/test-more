@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 
 our $VERSION = '0.80_01';
-$VERSION = eval { $VERSION }; # make the alpha version come out as a number
+$VERSION = eval $VERSION;  ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 # Make Test::Builder thread-safe for ithreads.
 BEGIN {
@@ -286,6 +286,8 @@ sub no_plan {
 
     $self->{No_Plan}   = 1;
     $self->{Have_Plan} = 1;
+
+    return 1;
 }
 
 =item B<has_plan>
@@ -712,6 +714,8 @@ sub cmp_ok {
 
     my $test;
     {
+        ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
         local($@,$!,$SIG{__DIE__});  # isolate eval
 
         my $code = $self->_caller_context;
@@ -977,6 +981,8 @@ sub _regex_ok {
     }
 
     {
+        ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
         my $test;
         my $code = $self->_caller_context;
 
@@ -1577,7 +1583,7 @@ of ''.  Type can be one of the following:
 Sometimes the Test::Builder test counter is incremented without it
 printing any test output, for example, when current_test() is changed.
 In these cases, Test::Builder doesn't know the result of the test, so
-it's type is 'unkown'.  These details for these tests are filled in.
+it's type is 'unknown'.  These details for these tests are filled in.
 They are considered ok, but the name and actual_ok is left undef.
 
 For example "not ok 23 - hole count # TODO insufficient donuts" would

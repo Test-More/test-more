@@ -2,14 +2,14 @@ package Test::Simple;
 
 use 5.004;
 
-use strict 'vars';
-use vars qw($VERSION @ISA @EXPORT);
-$VERSION = '0.80';
-$VERSION = eval $VERSION;    # make the alpha version come out as a number
+use strict;
+
+our $VERSION = '0.80';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Builder::Module;
-@ISA    = qw(Test::Builder::Module);
-@EXPORT = qw(ok);
+our @ISA    = qw(Test::Builder::Module);
+our @EXPORT = qw(ok);
 
 my $CLASS = __PACKAGE__;
 
@@ -77,7 +77,7 @@ will do what you mean (fail if stuff is empty)
 
 =cut
 
-sub ok ($;$) {
+sub ok ($;$) {                ## no critic (Subroutines::ProhibitSubroutinePrototypes)
     $CLASS->builder->ok(@_);
 }
 
