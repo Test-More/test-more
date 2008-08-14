@@ -919,7 +919,7 @@ Takes a quoted regular expression produced by qr//, or a string
 representing a regular expression.
 
 Returns a Perl value which may be used instead of the corresponding
-regular expression, or undef if it's argument is not recognised.
+regular expression, or undef if its argument is not recognised.
 
 For example, a version of like(), sans the useful diagnostic messages,
 could be written as:
@@ -1583,7 +1583,7 @@ of ''.  Type can be one of the following:
 Sometimes the Test::Builder test counter is incremented without it
 printing any test output, for example, when current_test() is changed.
 In these cases, Test::Builder doesn't know the result of the test, so
-it's type is 'unknown'.  These details for these tests are filled in.
+its type is 'unknown'.  These details for these tests are filled in.
 They are considered ok, but the name and actual_ok is left undef.
 
 For example "not ok 23 - hole count # TODO insufficient donuts" would
