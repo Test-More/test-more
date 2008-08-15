@@ -2,6 +2,7 @@ package Test::Builder;
 
 use 5.006;
 use strict;
+use warnings;
 
 our $VERSION = '0.80_01';
 $VERSION = eval $VERSION;  ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -470,6 +471,8 @@ sub _unoverload {
             }
         }
     }
+
+    return;
 }
 
 
@@ -483,7 +486,7 @@ sub _is_object {
 sub _unoverload_str {
     my $self = shift;
 
-    $self->_unoverload(q[""], @_);
+    return $self->_unoverload(q[""], @_);
 }    
 
 sub _unoverload_num {
@@ -495,6 +498,8 @@ sub _unoverload_num {
         next unless $self->_is_dualvar($$val);
         $$val = $$val+0;
     }
+
+    return;
 }
 
 
@@ -502,9 +507,9 @@ sub _unoverload_num {
 sub _is_dualvar {
     my($self, $val) = @_;
 
-    local $^W = 0;
+    no warnings;
     my $numval = $val+0;
-    return 1 if $numval != 0 and $numval ne $val;
+    return $numval != 0 and $numval ne $val ? 1 : 0;
 }
 
 
@@ -577,6 +582,8 @@ sub _diag_fmt {
     else {
         $$val = 'undef';
     }
+
+    return;
 }
 
 sub _is_diag {
@@ -676,14 +683,14 @@ sub like {
     my($self, $this, $regex, $name) = @_;
 
     local $Level = $Level + 1;
-    $self->_regex_ok($this, $regex, '=~', $name);
+    return $self->_regex_ok($this, $regex, '=~', $name);
 }
 
 sub unlike {
     my($self, $this, $regex, $name) = @_;
 
     local $Level = $Level + 1;
-    $self->_regex_ok($this, $regex, '!~', $name);
+    return $self->_regex_ok($this, $regex, '!~', $name);
 }
 
 
@@ -1281,7 +1288,7 @@ sub _print {
     # Stick a newline on the end if it needs it.
     $msg .= "\n" unless $msg =~ /\n\Z/;
 
-    print $fh $msg;
+    return print $fh $msg;
 }
 
 =begin private
@@ -1301,7 +1308,7 @@ sub _print_diag {
 
     local($\, $", $,) = (undef, ' ', '');
     my $fh = $self->todo ? $self->todo_output : $self->failure_output;
-    print $fh @_;
+    return print $fh @_;
 }    
 
 =item B<output>
@@ -1384,6 +1391,8 @@ sub _autoflush {
     my $old_fh = select $fh;
     $| = 1;
     select $old_fh;
+
+    return;
 }
 
 
@@ -1403,6 +1412,8 @@ sub _dup_stdhandles {
     $self->output        ($Testout);
     $self->failure_output($Testerr);
     $self->todo_output   ($Testout);
+
+    return;
 }
 
 
@@ -1421,6 +1432,8 @@ sub _open_testhandles {
 #    $self->_copy_io_layers( \*STDERR, $Testerr );
     
     $Opened_Testhandles = 1;
+
+    return;
 }
 
 
@@ -1433,6 +1446,8 @@ sub _copy_io_layers {
 
         binmode $dst, join " ", map ":$_", @src_layers if @src_layers;
     });
+
+    return;
 }
 
 =item carp
@@ -1461,12 +1476,12 @@ sub _message_at_caller {
 
 sub carp {
     my $self = shift;
-    warn $self->_message_at_caller(@_);
+    return warn $self->_message_at_caller(@_);
 }
 
 sub croak {
     my $self = shift;
-    die $self->_message_at_caller(@_);
+    return die $self->_message_at_caller(@_);
 }
 
 sub _plan_check {
@@ -1476,6 +1491,8 @@ sub _plan_check {
         local $Level = $Level + 2;
         $self->croak("You tried to run a test without a plan");
     }
+
+    return;
 }
 
 =back
@@ -1692,6 +1709,8 @@ sub todo_start {
         push @{ $self->{TODO_STACK} } => $todo;
     }
     $self->{TODO} = $message;
+
+    return;
 }
 
 =item C<todo_end>
@@ -1716,6 +1735,8 @@ sub todo_end {
     else {
         delete $self->{TODO};
     }
+
+    return;
 }
 
 =item B<caller>
@@ -1765,6 +1786,8 @@ sub _sanity_check {
           'Somehow your tests ran without a plan!');
     $self->_whoa($self->{Curr_Test} != @{ $self->{Test_Results} },
           'Somehow you got a different number of results than tests ran!');
+
+    return;
 }
 
 =item B<_whoa>
@@ -1786,6 +1809,8 @@ WHOA!  $desc
 This should never happen!  Please contact the author immediately!
 WHOA
     }
+
+    return;
 }
 
 =item B<_my_exit>
@@ -1800,7 +1825,7 @@ doesn't actually exit, that's your job.
 =cut
 
 sub _my_exit {
-    $? = $_[0];
+    $? = $_[0];  ## no critic (Variables::RequireLocalizedPunctuationVars)
 
     return 1;
 }
@@ -1910,6 +1935,8 @@ FAIL
         $self->diag("No tests run!\n");
         _my_exit( 255 ) && return;
     }
+
+    $self->_whoa(1, "We fell off the end of _ending()");
 }
 
 END {

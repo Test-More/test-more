@@ -1,2 +1,16 @@
 # Change the default message to show the policy name so we can shut it up if necessary
 verbose         = %m [%p] at %f line %l, near '%r'\n
+
+# Force perlcritic to use color, even when run through a pager.
+color           = 1
+
+# Use a pager.
+pager           = $PAGER
+
+# Nuthin wrong with the expression form of map and grep.
+[-BuiltinFunctions::RequireBlockMap]
+[-BuiltinFunctions::RequireBlockGrep]
+
+# Extend the ability to play with @_ to 3 line subroutines.
+[Subroutines::RequireArgUnpacking]
+short_subroutine_statements = 3
