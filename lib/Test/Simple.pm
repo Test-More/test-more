@@ -78,7 +78,7 @@ will do what you mean (fail if stuff is empty)
 =cut
 
 sub ok ($;$) {                ## no critic (Subroutines::ProhibitSubroutinePrototypes)
-    $CLASS->builder->ok(@_);
+    return $CLASS->builder->ok(@_);
 }
 
 
