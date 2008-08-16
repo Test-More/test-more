@@ -507,7 +507,7 @@ sub _unoverload_num {
 sub _is_dualvar {
     my($self, $val) = @_;
 
-    no warnings;
+    no warnings 'numeric';
     my $numval = $val+0;
     return $numval != 0 and $numval ne $val ? 1 : 0;
 }

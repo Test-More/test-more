@@ -15,7 +15,7 @@ use warnings;
 # actually happened.
 sub _carp {
     my($file, $line) = (caller(1))[1,2];
-    warn @_, " at $file line $line\n";
+    return warn @_, " at $file line $line\n";
 }
 
 
@@ -162,7 +162,7 @@ or for deciding between running the tests at all:
 sub plan {
     my $tb = Test::More->builder;
 
-    $tb->plan(@_);
+    return $tb->plan(@_);
 }
 
 
@@ -188,6 +188,8 @@ sub import_extra {
     }
 
     @$list = @other;
+
+    return;
 }
 
 
@@ -263,7 +265,7 @@ sub ok ($;$) {
     my($test, $name) = @_;
     my $tb = Test::More->builder;
 
-    $tb->ok($test, $name);
+    return $tb->ok($test, $name);
 }
 
 =item B<is>
@@ -329,13 +331,13 @@ function which is an alias of isnt().
 sub is ($$;$) {
     my $tb = Test::More->builder;
 
-    $tb->is_eq(@_);
+    return $tb->is_eq(@_);
 }
 
 sub isnt ($$;$) {
     my $tb = Test::More->builder;
 
-    $tb->isnt_eq(@_);
+    return $tb->isnt_eq(@_);
 }
 
 *isn't = \&isnt;
@@ -374,7 +376,7 @@ diagnostics on failure.
 sub like ($$;$) {
     my $tb = Test::More->builder;
 
-    $tb->like(@_);
+    return $tb->like(@_);
 }
 
 
@@ -390,7 +392,7 @@ given pattern.
 sub unlike ($$;$) {
     my $tb = Test::More->builder;
 
-    $tb->unlike(@_);
+    return $tb->unlike(@_);
 }
 
 
@@ -430,7 +432,7 @@ is()'s use of C<eq> will interfere:
 sub cmp_ok($$$;$) {
     my $tb = Test::More->builder;
 
-    $tb->cmp_ok(@_);
+    return $tb->cmp_ok(@_);
 }
 
 
@@ -638,12 +640,14 @@ Use these very, very, very sparingly.
 
 sub pass (;$) {
     my $tb = Test::More->builder;
-    $tb->ok(1, @_);
+
+    return $tb->ok(1, @_);
 }
 
 sub fail (;$) {
     my $tb = Test::More->builder;
-    $tb->ok(0, @_);
+
+    return $tb->ok(0, @_);
 }
 
 =back
@@ -742,8 +746,7 @@ DIAGNOSTIC
 
 
 sub _eval {
-    my($code) = shift;
-    my @args = @_;
+    my($code, @args) = @_;
 
     # Work around oddities surrounding resetting of $@ by immediately
     # storing it.
@@ -809,7 +812,8 @@ sub _is_module_name {
     # End with an alphanumeric.
     # The rest is an alphanumeric or ::
     $module =~ s/\b::\b//g;
-    $module =~ /^[a-zA-Z]\w*$/;
+
+    return $module =~ /^[a-zA-Z]\w*$/ ? 1 : 0;
 }
 
 =back
@@ -851,10 +855,11 @@ use vars qw(@Data_Stack %Refs_Seen);
 my $DNE = bless [], 'Does::Not::Exist';
 
 sub _dne {
-    ref $_[0] eq ref $DNE;
+    return ref $_[0] eq ref $DNE;
 }
 
 
+## no critic (Subroutines::RequireArgUnpacking)
 sub is_deeply {
     my $tb = Test::More->builder;
 
@@ -996,7 +1001,7 @@ interfere with the test.
 sub diag {
     my $tb = Test::More->builder;
 
-    $tb->diag(@_);
+    return $tb->diag(@_);
 }
 
 
@@ -1062,7 +1067,7 @@ use TODO.  Read on.
 
 =cut
 
-#'#
+## no critic (Subroutines::RequireFinalReturn)
 sub skip {
     my($why, $how_many) = @_;
     my $tb = Test::More->builder;
@@ -1083,7 +1088,7 @@ sub skip {
         $tb->skip($why);
     }
 
-    no warnings;
+    no warnings 'exiting';
     last SKIP;
 }
 
@@ -1164,7 +1169,7 @@ sub todo_skip {
         $tb->todo_skip($why);
     }
 
-    no warnings;
+    no warnings 'exiting';
     last TODO;
 }
 
@@ -1433,8 +1438,7 @@ sub eq_set  {
     my($a1, $a2) = @_;
     return 0 unless @$a1 == @$a2;
 
-    # There's faster ways to do this, but this is easiest.
-    no warnings;
+    no warnings 'uninitialized';
 
     # It really doesn't matter how we sort them, as long as both arrays are 
     # sorted with the same algorithm.
