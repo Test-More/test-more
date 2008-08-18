@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# $Id$
 
 # [rt.cpan.org 28345]
 #

@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# $Id$
 
 use Test::More tests => 8;
 use Symbol;

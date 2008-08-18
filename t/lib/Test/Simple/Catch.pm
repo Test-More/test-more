@@ -1,4 +1,5 @@
 # For testing Test::Simple;
+# $Id$
 package Test::Simple::Catch;
 
 use Symbol;

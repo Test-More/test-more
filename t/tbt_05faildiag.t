@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+# $Id$
 
 use Test::Builder::Tester tests => 5;
 use Test::More;

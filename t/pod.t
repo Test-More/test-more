@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# $Id$
 
 use Test::More;
 eval "use Test::Pod 1.00";

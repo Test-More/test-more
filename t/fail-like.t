@@ -1,5 +1,6 @@
 # qr// was introduced in 5.004-devel.  Skip this test if we're not
 # of high enough version.
+# $Id$
 BEGIN { 
     if( $] < 5.005 ) {
         print "1..0 # Skipped Test requires qr//\n";

@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# $Id$
 
 # Test to see if is_deeply() plays well with threads.
 

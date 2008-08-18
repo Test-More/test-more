@@ -1,4 +1,5 @@
 package Test::More;
+# $Id$
 
 use 5.006;
 use strict;

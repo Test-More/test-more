@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+# $Id$
 
 # A test to make sure the new Test::Harness was installed properly.
 
