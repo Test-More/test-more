@@ -11,6 +11,9 @@ pager           = $PAGER
 [-BuiltinFunctions::RequireBlockMap]
 [-BuiltinFunctions::RequireBlockGrep]
 
+# Can't use Carp
+[-ErrorHandling::RequireCarping]
+
 # Extend the ability to play with @_ to 3 line subroutines.
 [Subroutines::RequireArgUnpacking]
 short_subroutine_statements = 3

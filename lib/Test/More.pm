@@ -852,7 +852,7 @@ along these lines.
 
 =cut
 
-use vars qw(@Data_Stack %Refs_Seen);
+our( @Data_Stack, %Refs_Seen );
 my $DNE = bless [], 'Does::Not::Exist';
 
 sub _dne {
@@ -865,7 +865,7 @@ sub is_deeply {
     my $tb = Test::More->builder;
 
     unless( @_ == 2 or @_ == 3 ) {
-        my $msg = <<WARNING;
+        my $msg = <<'WARNING';
 is_deeply() takes two or three args, you gave %d.
 This usually means you passed an array or hash instead 
 of a reference to it
@@ -882,14 +882,14 @@ WARNING
     $tb->_unoverload_str(\$expected, \$got);
 
     my $ok;
-    if( !ref $got and !ref $expected ) {  		# neither is a reference
+    if( !ref $got and !ref $expected ) {        # neither is a reference
         $ok = $tb->is_eq($got, $expected, $name);
     }
-    elsif( !ref $got xor !ref $expected ) {  	# one's a reference, one isn't
+    elsif( !ref $got xor !ref $expected ) {     # one's a reference, one isn't
         $ok = $tb->ok(0, $name);
 	$tb->diag( _format_stack({ vals => [ $got, $expected ] }) );
     }
-    else {			       		# both references
+    else {                                      # both references
         local @Data_Stack = ();
         if( _deep_check($got, $expected) ) {
             $ok = $tb->ok(1, $name);
@@ -1249,7 +1249,7 @@ multi-level structures are handled correctly.
 
 #'#
 sub eq_array {
-    local @Data_Stack;
+    local @Data_Stack = ();
     _deep_check(@_);
 }
 
@@ -1361,7 +1361,7 @@ sub _deep_check {
 sub _whoa {
     my($check, $desc) = @_;
     if( $check ) {
-        die <<WHOA;
+        die <<"WHOA";
 WHOA!  $desc
 This should never happen!  Please contact the author immediately!
 WHOA
@@ -1379,7 +1379,7 @@ is a deep check.
 =cut
 
 sub eq_hash {
-    local @Data_Stack;
+    local @Data_Stack = ();
     return _deep_check(@_);
 }
 

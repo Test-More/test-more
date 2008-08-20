@@ -152,9 +152,9 @@ test might be run multiple times in the same process.
 
 =cut
 
-use vars qw($Level);
+our $Level;
 
-sub reset {
+sub reset {  ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my ($self) = @_;
 
     # We leave this a global because it has to be localized and localizing
@@ -390,7 +390,7 @@ sub ok {
     # In case $name is a string overloaded object, force it to stringify.
     $self->_unoverload_str(\$name);
 
-    $self->diag(<<ERR) if defined $name and $name =~ /^[\d\s]+$/;
+    $self->diag(<<"ERR") if defined $name and $name =~ /^[\d\s]+$/;
     You named your test '$name'.  You shouldn't use numbers for your test names.
     Very confusing.
 ERR
