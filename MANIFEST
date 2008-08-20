@@ -1,3 +1,5 @@
+.perlcriticrc
+.perltidyrc
 Changes
 lib/Test/Builder.pm
 lib/Test/Builder/Module.pm
@@ -46,6 +48,7 @@ t/lib/Dev/Null.pm
 t/lib/Dummy.pm
 t/lib/MyOverload.pm
 t/lib/NoExporter.pm
+t/lib/SigDie.pm
 t/lib/Test/Simple/Catch.pm
 t/lib/Test/Simple/sample_tests/death.plx
 t/lib/Test/Simple/sample_tests/death_in_eval.plx
@@ -65,6 +68,7 @@ t/lib/TieOut.pm
 t/maybe_regex.t
 t/missing.t
 t/More.t
+t/new_ok.t
 t/no_diag.t
 t/no_ending.t
 t/no_header.t
