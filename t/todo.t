@@ -10,7 +10,7 @@ BEGIN {
 
 use Test::More;
 
-plan tests => 30;
+plan tests => 33;
 
 
 $Why = 'Just testing the todo interface.';
@@ -70,12 +70,12 @@ TODO: {
         # perl gets the line number a little wrong on the first
         # statement inside a block.
         1 == 1;
-#line 73
+#line 74
         todo_skip "Just testing todo_skip";
         fail("So very failed");
     }
     is( $warning, "todo_skip() needs to know \$how_many tests are in the ".
-                  "block at $0 line 73\n",
+                  "block at $0 line 74\n",
         'todo_skip without $how_many warning' );
 }
 
@@ -105,14 +105,18 @@ my ( $level1, $level2 ) = ( 'failure level 1', 'failure_level 2' );
 TODO: {
     local $TODO = 'Nesting TODO';
     fail('fail 1');
+
     $builder->todo_start($level1);
     fail('fail 2');
+
     push @nested_todo => $builder->todo;
     $builder->todo_start($level2);
     fail('fail 3');
+
     push @nested_todo => $builder->todo;
     $builder->todo_end;
     fail('fail 4');
+
     push @nested_todo => $builder->todo;
     $builder->todo_end;
     $is_todo = $builder->todo;
@@ -122,3 +126,14 @@ is_deeply \@nested_todo, [ $level1, $level2, $level1 ],
   'Nested TODO message should be correct';
 is $is_todo, 'Nesting TODO',
   '... and original TODO message should be correct';
+
+{
+    $builder->todo_start;
+    fail("testing todo_start() with no message");
+    my $reason  = $builder->todo;
+    my $in_todo = $builder->in_todo;
+    $builder->todo_end;
+
+    is $reason, '', "  todo() reports no reason";
+    ok $in_todo,    "  but we're in_todo()";
+}

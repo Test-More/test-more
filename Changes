@@ -3,9 +3,10 @@
     New Features
     * Adam Kennedy bribed me to add new_ok().  The price was one DEFCON license key.
       [rt.cpan.org 8891]
-    * Improved 'todo' support.
-      TODO tests can now start and end with 'todo_start' and 'todo_end'
-      methods called on the Test::Builder singleton. [rt.cpan.org 38018]
+    * TODO tests can now start and end with 'todo_start' and 'todo_end'
+      Test::Builder methods. [rt.cpan.org 38018]
+    * Added Test::Builder->in_todo() for a safe way to check if a test is inside a
+      TODO block.  This allows TODO tests with no reason.
 
     Features Changed
     * Changed the message for extra tests run to show the number of tests run rather than

@@ -395,11 +395,11 @@ sub ok {
     Very confusing.
 ERR
 
-    my $todo = $self->todo();
-    
     # Capture the value of $TODO for the rest of this ok() call
     # so it can more easily be found by other routines.
-    local $self->{Todo} = $todo;
+    my $todo    = $self->todo();
+    my $in_todo = $self->in_todo;
+    local $self->{Todo} = $todo if $in_todo;
 
     $self->_unoverload_str(\$todo);
 
@@ -408,7 +408,7 @@ ERR
 
     unless( $test ) {
         $out .= "not ";
-        @$result{ 'ok', 'actual_ok' } = ( ( $todo ? 1 : 0 ), 0 );
+        @$result{ 'ok', 'actual_ok' } = ( ( $self->in_todo ? 1 : 0 ), 0 );
     }
     else {
         @$result{ 'ok', 'actual_ok' } = ( 1, $test );
@@ -426,7 +426,7 @@ ERR
         $result->{name} = '';
     }
 
-    if( $todo ) {
+    if( $self->in_todo ) {
         $out   .= " # TODO $todo";
         $result->{reason} = $todo;
         $result->{type}   = 'todo';
@@ -442,7 +442,7 @@ ERR
     $self->_print($out);
 
     unless( $test ) {
-        my $msg = $todo ? "Failed (TODO)" : "Failed";
+        my $msg = $self->in_todo ? "Failed (TODO)" : "Failed";
         $self->_print_diag("\n") if $ENV{HARNESS_ACTIVE};
 
     my(undef, $file, $line) = $self->caller;
@@ -1308,7 +1308,7 @@ sub _print_diag {
     my $self = shift;
 
     local($\, $", $,) = (undef, ' ', '');
-    my $fh = $self->todo ? $self->todo_output : $self->failure_output;
+    my $fh = $self->in_todo ? $self->todo_output : $self->failure_output;
     return print $fh @_;
 }    
 
@@ -1627,10 +1627,13 @@ sub details {
     my $todo_reason = $Test->todo;
     my $todo_reason = $Test->todo($pack);
 
-todo() looks for a $TODO variable in your tests.  If set, all tests
-will be considered 'todo' (see Test::More and Test::Harness for
-details).  Returns the reason (ie. the value of $TODO) if running as
-todo tests, false otherwise.
+If the current tests are considered "TODO" it will return the reason,
+if any.  This reason can come from a $TODO variable or the last call
+to C<<todo_start()>>.
+
+Since a TODO test does not need a reason, this function can return an
+empty string even when inside a TODO block.  Use C<<$Test->in_todo>>
+to determine if you are currently inside a TODO block.
 
 todo() is about finding the right package to look for $TODO in.  It's
 pretty good at guessing the right package to look at.  It first looks for
@@ -1648,21 +1651,57 @@ sub todo {
 
     return $self->{Todo} if defined $self->{Todo};
 
+    local $Level = $Level + 1;
+    my $todo = $self->find_TODO($pack);
+    return $todo         if defined $todo;
+
+    return '';
+}
+
+
+=item B<find_TODO>
+
+    my $todo_reason = $Test->find_TODO();
+    my $todo_reason = $Test->find_TODO($pack):
+
+Like C<<todo()>> but only returns the value of C<<$TODO>> ignoring
+C<<todo_start()>>.
+
+=cut
+
+sub find_TODO {
+    my($self, $pack) = @_;
+
     $pack = $pack || $self->caller(1) || $self->exported_to;
-    return 0 unless $pack;
+    return unless $pack;
 
     no strict 'refs';   ## no critic
-    return defined ${$pack.'::TODO'} ? ${$pack.'::TODO'}
-                                     : 0;
+    return ${$pack.'::TODO'};
+}
+
+
+=item B<in_todo>
+
+    my $in_todo = $Test->in_todo;
+
+Returns true if the test is currently inside a TODO block.
+
+=cut
+
+sub in_todo {
+    my $self = shift;
+
+    local $Level = $Level + 1;
+    return (grep { defined } $self->{Todo}, $self->find_TODO) ? 1 : 0;
 }
 
 =item B<todo_start>
 
+    $Test->todo_start();
     $Test->todo_start($message);
 
 This method allows you declare all subsequent tests as TODO tests, up until
-the C<todo_end> method has been called.  Calling it without a message is
-fatal.
+the C<todo_end> method has been called.
 
 The C<TODO:> and C<$TODO> syntax is generally pretty good about figuring out
 whether or not we're in a TODO test.  However, often we find that this is not
@@ -1700,14 +1739,12 @@ Pick one style or another of "TODO" to be on the safe side.
 =cut
 
 sub todo_start {
-    my ( $self, $message ) = @_;
-    unless ( defined $message ) { 
-        $self->diag('todo_start() requires a message!');
-        _my_exit( 255 ) && return;
-    }
+    my $self = shift;
+    my $message = @_ ? shift : '';
+
     $self->{Start_Todo}++;
-    if ( my $todo = $self->todo ) {
-        push @{ $self->{Todo_Stack} } => $todo;
+    if ( $self->in_todo ) {
+        push @{ $self->{Todo_Stack} } => $self->todo;
     }
     $self->{Todo} = $message;
 
