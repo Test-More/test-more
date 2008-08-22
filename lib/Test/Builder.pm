@@ -453,7 +453,7 @@ ERR
         else {
             $self->diag(qq[  $msg test at $file line $line.\n]);
         }
-    } 
+    }
 
     return $test ? 1 : 0;
 }
@@ -488,7 +488,7 @@ sub _unoverload_str {
     my $self = shift;
 
     return $self->_unoverload(q[""], @_);
-}    
+}
 
 sub _unoverload_num {
     my $self = shift;
@@ -593,12 +593,12 @@ sub _is_diag {
     $self->_diag_fmt($type, $_) for \$got, \$expect;
 
     local $Level = $Level + 1;
-    return $self->diag(sprintf <<DIAGNOSTIC, $got, $expect);
-         got: %s
-    expected: %s
+    return $self->diag(<<"DIAGNOSTIC");
+         got: $got
+    expected: $expect
 DIAGNOSTIC
 
-}    
+}
 
 sub _isnt_diag {
     my ($self, $got, $type) = @_;
@@ -606,8 +606,8 @@ sub _isnt_diag {
     $self->_diag_fmt($type, \$got);
 
     local $Level = $Level + 1;
-    return $self->diag(sprintf <<DIAGNOSTIC, $got);
-         got: %s
+    return $self->diag(<<"DIAGNOSTIC");
+         got: $got
     expected: anything else
 DIAGNOSTIC
 }
@@ -706,7 +706,7 @@ Works just like Test::More's cmp_ok().
 =cut
 
 
-my %numeric_cmps = map { ($_, 1) } 
+my %numeric_cmps = map { ($_, 1) }
                        ("<",  "<=", ">",  ">=", "==", "!=", "<=>");
 
 sub cmp_ok {
@@ -757,10 +757,10 @@ sub _cmp_diag {
     $expect = defined $expect ? "'$expect'" : 'undef';
     
     local $Level = $Level + 1;
-    return $self->diag(sprintf <<DIAGNOSTIC, $got, $type, $expect);
-    %s
-        %s
-    %s
+    return $self->diag(<<"DIAGNOSTIC");
+    $got
+        $type
+    $expect
 DIAGNOSTIC
 }
 
@@ -969,7 +969,7 @@ sub maybe_regex {
 
 sub _is_qr {
     my $regex = shift;
-    
+
     # is_regexp() checks for regexes in a robust manner, say if they're
     # blessed.
     return re::is_regexp($regex) if defined &re::is_regexp;
@@ -1013,7 +1013,7 @@ $code" . q{$test = $this =~ /$usable_regex/ ? 1 : 0};
         my $match = $cmp eq '=~' ? "doesn't match" : "matches";
 
         local $Level = $Level + 1;
-        $self->diag(sprintf <<DIAGNOSTIC, $this, $match, $regex);
+        $self->diag(sprintf <<'DIAGNOSTIC', $this, $match, $regex);
                   %s
     %13s '%s'
 DIAGNOSTIC
@@ -1310,7 +1310,7 @@ sub _print_diag {
     local($\, $", $,) = (undef, ' ', '');
     my $fh = $self->in_todo ? $self->todo_output : $self->failure_output;
     return print $fh @_;
-}    
+}
 
 =item B<output>
 
@@ -1423,7 +1423,7 @@ sub _open_testhandles {
     my $self = shift;
     
     return if $Opened_Testhandles;
-    
+
     # We dup STDOUT and STDERR so people can change them in their
     # test suites while still getting normal test output.
     open( $Testout, ">&STDOUT") or die "Can't dup STDOUT:  $!";
@@ -1522,9 +1522,8 @@ sub current_test {
 
     lock($self->{Curr_Test});
     if( defined $num ) {
-        unless( $self->{Have_Plan} ) {
-            $self->croak("Can't change the current test number without a plan!");
-        }
+        $self->croak("Can't change the current test number without a plan!")
+          unless $self->{Have_Plan};
 
         $self->{Curr_Test} = $num;
 
@@ -1534,11 +1533,11 @@ sub current_test {
             my $start = @$test_results ? @$test_results : 0;
             for ($start..$num-1) {
                 $test_results->[$_] = &share({
-                    'ok'      => 1, 
-                    actual_ok => undef, 
-                    reason    => 'incrementing test number', 
-                    type      => 'unknown', 
-                    name      => undef 
+                    'ok'      => 1,
+                    actual_ok => undef,
+                    reason    => 'incrementing test number',
+                    type      => 'unknown',
+                    name      => undef
                 });
             }
         }
@@ -1762,12 +1761,15 @@ preceding C<todo_start> method call.
 
 sub todo_end {
     my $self = shift;
-    unless ( $self->{Start_Todo}) { 
+
+    if( !$self->{Start_Todo} ) {
         $self->diag('todo_end() called without todo_start!');
         _my_exit( 255 ) && return;
     }
+
     $self->{Start_Todo}--;
-    if ( $self->{Start_Todo} && @{ $self->{Todo_Stack} } ) {
+
+    if( $self->{Start_Todo} && @{ $self->{Todo_Stack} } ) {
         $self->{Todo} = pop @{ $self->{Todo_Stack} };
     }
     else {
@@ -1789,7 +1791,7 @@ C<$height> will be added to the level().
 
 =cut
 
-sub caller {
+sub caller {  ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my($self, $height) = @_;
     $height ||= 0;
 
@@ -1820,7 +1822,7 @@ sub _sanity_check {
     my $self = shift;
 
     $self->_whoa($self->{Curr_Test} < 0,  'Says here you ran a negative number of tests!');
-    $self->_whoa(!$self->{Have_Plan} and $self->{Curr_Test}, 
+    $self->_whoa(!$self->{Have_Plan} and $self->{Curr_Test},
           'Somehow your tests ran without a plan!');
     $self->_whoa($self->{Curr_Test} != @{ $self->{Test_Results} },
           'Somehow you got a different number of results than tests ran!');
@@ -1886,7 +1888,7 @@ sub _ending {
     if( $self->{Original_Pid} != $$ ) {
         return;
     }
-    
+
     # Exit if plan() was never called.  This is so "require Test::Simple" 
     # doesn't puke.
     if( !$self->{Have_Plan} ) {
@@ -1916,7 +1918,7 @@ sub _ending {
               unless defined $test_results->[$idx];
         }
 
-        my $num_failed = grep !$_->{'ok'}, 
+        my $num_failed = grep !$_->{'ok'},
                               @{$test_results}[0..$self->{Curr_Test}-1];
 
         my $num_extra = $self->{Curr_Test} - $self->{Expected_Tests};
