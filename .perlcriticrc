@@ -14,6 +14,10 @@ pager           = $PAGER
 # Can't use Carp
 [-ErrorHandling::RequireCarping]
 
+# We realize that localizing a variable does not retain it's original value,
+# thanks.
+[-Variables::RequireInitializationForLocalVars]
+
 # Extend the ability to play with @_ to 3 line subroutines.
 [Subroutines::RequireArgUnpacking]
 short_subroutine_statements = 3
