@@ -179,9 +179,9 @@ sub reset {  ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{No_Header}  = 0;
     $self->{No_Ending}  = 0;
 
-    $self->{TODO}       = undef;
-    $self->{TODO_STACK} = [];
-    $self->{START_TODO} = 0;
+    $self->{Todo}       = undef;
+    $self->{Todo_Stack} = [];
+    $self->{Start_Todo} = 0;
 
     $self->_dup_stdhandles unless $^C;
 
@@ -399,7 +399,7 @@ ERR
     
     # Capture the value of $TODO for the rest of this ok() call
     # so it can more easily be found by other routines.
-    local $self->{TODO} = $todo;
+    local $self->{Todo} = $todo;
 
     $self->_unoverload_str(\$todo);
 
@@ -1646,7 +1646,7 @@ what $pack to use.
 sub todo {
     my($self, $pack) = @_;
 
-    return $self->{TODO} if defined $self->{TODO};
+    return $self->{Todo} if defined $self->{Todo};
 
     $pack = $pack || $self->caller(1) || $self->exported_to;
     return 0 unless $pack;
@@ -1705,11 +1705,11 @@ sub todo_start {
         $self->diag('todo_start() requires a message!');
         _my_exit( 255 ) && return;
     }
-    $self->{START_TODO}++;
+    $self->{Start_Todo}++;
     if ( my $todo = $self->todo ) {
-        push @{ $self->{TODO_STACK} } => $todo;
+        push @{ $self->{Todo_Stack} } => $todo;
     }
-    $self->{TODO} = $message;
+    $self->{Todo} = $message;
 
     return;
 }
@@ -1725,16 +1725,16 @@ preceding C<todo_start> method call.
 
 sub todo_end {
     my $self = shift;
-    unless ( $self->{START_TODO}) { 
+    unless ( $self->{Start_Todo}) { 
         $self->diag('todo_end() called without todo_start!');
         _my_exit( 255 ) && return;
     }
-    $self->{START_TODO}--;
-    if ( $self->{START_TODO} && @{ $self->{TODO_STACK} } ) {
-        $self->{TODO} = pop @{ $self->{TODO_STACK} };
+    $self->{Start_Todo}--;
+    if ( $self->{Start_Todo} && @{ $self->{Todo_Stack} } ) {
+        $self->{Todo} = pop @{ $self->{Todo_Stack} };
     }
     else {
-        delete $self->{TODO};
+        delete $self->{Todo};
     }
 
     return;
