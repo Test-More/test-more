@@ -874,7 +874,7 @@ WARNING
 
         _carp sprintf $msg, scalar @_;
 
-	return $tb->ok(0);
+        return $tb->ok(0);
     }
 
     my($got, $expected, $name) = @_;
@@ -887,7 +887,7 @@ WARNING
     }
     elsif( !ref $got xor !ref $expected ) {     # one's a reference, one isn't
         $ok = $tb->ok(0, $name);
-	$tb->diag( _format_stack({ vals => [ $got, $expected ] }) );
+        $tb->diag( _format_stack({ vals => [ $got, $expected ] }) );
     }
     else {                                      # both references
         local @Data_Stack = ();
@@ -1298,7 +1298,7 @@ sub _deep_check {
 
         # Either they're both references or both not.
         my $same_ref = !(!ref $e1 xor !ref $e2);
-	my $not_ref  = (!ref $e1 and !ref $e2);
+        my $not_ref  = (!ref $e1 and !ref $e2);
 
         if( defined $e1 xor defined $e2 ) {
             $ok = 0;
@@ -1309,10 +1309,10 @@ sub _deep_check {
         elsif ( $same_ref and ($e1 eq $e2) ) {
             $ok = 1;
         }
-	elsif ( $not_ref ) {
-	    push @Data_Stack, { type => '', vals => [$e1, $e2] };
-	    $ok = 0;
-	}
+        elsif ( $not_ref ) {
+            push @Data_Stack, { type => '', vals => [$e1, $e2] };
+            $ok = 0;
+        }
         else {
             if( $Refs_Seen{$e1} ) {
                 return $Refs_Seen{$e1} eq $e2;
@@ -1348,9 +1348,9 @@ sub _deep_check {
                 push @Data_Stack, { type => $type, vals => [$e1, $e2] };
                 $ok = 0;
             }
-	    else {
-		_whoa(1, "No type in _deep_check");
-	    }
+            else {
+                _whoa(1, "No type in _deep_check");
+            }
         }
     }
 
