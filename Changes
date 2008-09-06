@@ -6,6 +6,8 @@
       Test::Builder methods. [rt.cpan.org 38018]
     * Added Test::Builder->in_todo() for a safe way to check if a test is inside a
       TODO block.  This allows TODO tests with no reason.
+    * Added note() and explain() to both Test::More and Test::Builder.
+      [rt.cpan.org 14764] [test-more.googlecode.com 3]
 
     Features Changed
     * Changed the message for extra tests run to show the number of tests run rather than

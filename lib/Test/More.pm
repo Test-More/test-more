@@ -34,7 +34,7 @@ our @EXPORT = qw(ok use_ok require_ok
                  $TODO
                  plan
                  can_ok isa_ok new_ok
-                 diag
+                 diag note explain
                  BAIL_OUT
                 );
 
@@ -978,6 +978,8 @@ Prints a diagnostic message which is guaranteed not to interfere with
 test output.  Like C<print> @diagnostic_message is simply concatenated
 together.
 
+Returns false, so as to preserve failure.
+
 Handy for this sort of thing:
 
     ok( grep(/foo/, @users), "There's a foo user" ) or
@@ -997,14 +999,49 @@ B<NOTE> The exact formatting of the diagnostic output is still
 changing, but it is guaranteed that whatever you throw at it it won't
 interfere with the test.
 
+=item B<note>
+
+  note(@diagnostic_message);
+
+Like diag(), except the message will not be seen when the test is run
+in a harness.  It will only be visible in the verbose TAP stream.
+
+Handy for putting in notes which might be useful for debugging, but
+don't indicate a problem.
+
+    note("Tempfile is $tempfile");
+
 =cut
 
 sub diag {
-    my $tb = Test::More->builder;
-
-    return $tb->diag(@_);
+    return Test::More->builder->diag(@_);
 }
 
+sub note {
+    return Test::More->builder->note(@_);
+}
+
+=item B<explain>
+
+  my @dump = explain @diagnostic_message;
+
+Will dump the contents of any references in a human readable format.
+Usually you want to pass this into C<note> or C<dump>.
+
+Handy for things like...
+
+    is_deeply($have, $want) || diag explain $have;
+
+or
+
+    note explain \%args;
+    Some::Class->method(%args);
+
+=cut
+
+sub explain {
+    return Test::More->builder->explain(@_);
+}
 
 =back
 
