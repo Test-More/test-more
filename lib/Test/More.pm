@@ -20,7 +20,7 @@ sub _carp {
 }
 
 
-our $VERSION = '0.80';
+our $VERSION = '0.81_01';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Builder::Module;
