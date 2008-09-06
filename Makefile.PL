@@ -55,11 +55,22 @@ WriteMakefile(
     ABSTRACT_FROM   => "lib/$PACKAGE_FILE.pm",
     AUTHOR          => 'Michael G Schwern <schwern@pobox.com>',
 
+    ($mm_ver >= 6.31 ? (LICENSE => 'perl') : ()),
+
     PREREQ_PM       => { 
         Test::Harness   => 2.03,
     },
 
     # Added to the core in 5.7.3 and also 5.6.2.
     INSTALLDIRS     => $] >= 5.006002 ? 'perl' : 'site',
-    ($mm_ver >= 6.31 ? (LICENSE => 'perl') : ()),
+
+    ($mm_ver <= 6.44 ? () : (META_MERGE => {
+        resources => {
+            license     =>      'http://dev.perl.org/licenses/',
+            homepage    =>      'http://test-more.googlecode.com',
+            bugtracker  =>      'http://code.google.com/p/test-more/issues',
+            repository  =>      'http://test-more.googlecode.com/svn/',
+            MailingList =>    'http://groups.google.com/group/test-more-users',
+        },
+    }))
 );
