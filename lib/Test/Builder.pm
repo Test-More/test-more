@@ -443,7 +443,7 @@ ERR
 
     unless( $test ) {
         my $msg = $self->in_todo ? "Failed (TODO)" : "Failed";
-        $self->_print_diag("\n") if $ENV{HARNESS_ACTIVE};
+        $self->_print_to_fh($self->_diag_fh, "\n") if $ENV{HARNESS_ACTIVE};
 
     my(undef, $file, $line) = $self->caller;
         if( defined $name ) {
@@ -1234,7 +1234,36 @@ Mark Fowler <mark@twoshortplanks.com>
 =cut
 
 sub diag {
-    my($self, @msgs) = @_;
+    my $self = shift;
+
+    $self->_print_comment($self->_diag_fh, @_);
+}
+
+
+=item B<note>
+
+    $Test->note(@msgs);
+
+Like diag(), but it prints to the C<output()> handle so it will not
+normally be seen by the user except in verbose mode.
+
+=cut
+
+sub note {
+    my $self = shift;
+
+    $self->_print_comment($self->output, @_);
+}
+
+sub _diag_fh {
+    my $self = shift;
+
+    local $Level = $Level + 1;
+    return $self->in_todo ? $self->todo_output : $self->failure_output;
+}
+
+sub _print_comment {
+    my($self, $fh, @msgs) = @_;
 
     return if $self->no_diag;
     return unless @msgs;
@@ -1246,17 +1275,48 @@ sub diag {
     # Convert undef to 'undef' so its readable.
     my $msg = join '', map { defined($_) ? $_ : 'undef' } @msgs;
 
-    # Escape each line with a #.
-    $msg =~ s/^/# /gm;
-
-    # Stick a newline on the end if it needs it.
-    $msg .= "\n" unless $msg =~ /\n\Z/;
+    # Escape the beginning, _print will take care of the rest.
+    $msg =~ s/^/# /;
 
     local $Level = $Level + 1;
-    $self->_print_diag($msg);
+    $self->_print_to_fh($fh, $msg);
 
     return 0;
 }
+
+
+=item B<explain>
+
+    my @dump = $Test->explain(@msgs);
+
+Will dump the contents of any references in a human readable format.
+Handy for things like...
+
+    is_deeply($have, $want) || diag explain $have;
+
+or
+
+    is_deeply($have, $want) || note explain $have;
+
+=cut
+
+sub explain {
+    my $self = shift;
+
+    return map {
+        ref $_
+          ? do {
+              require Data::Dumper;
+
+              my $dumper = Data::Dumper->new([$_]);
+              $dumper->Indent(1)->Terse(1);
+              $dumper->Sortkeys(1) if $dumper->can("Sortkeys");
+              $dumper->Dump;
+          }
+          : $_
+    } @_
+}
+
 
 =begin _private
 
@@ -1271,7 +1331,12 @@ Prints to the output() filehandle.
 =cut
 
 sub _print {
-    my($self, @msgs) = @_;
+    my $self = shift;
+    return $self->_print_to_fh($self->output, @_);
+}
+
+sub _print_to_fh {
+    my($self, $fh, @msgs) = @_;
 
     # Prevent printing headers when only compiling.  Mostly for when
     # tests are deparsed with B::Deparse
@@ -1280,7 +1345,6 @@ sub _print {
     my $msg = join '', @msgs;
 
     local($\, $", $,) = (undef, ' ', '');
-    my $fh = $self->output;
 
     # Escape each line after the first with a # so we don't
     # confuse Test::Harness.
@@ -1292,25 +1356,6 @@ sub _print {
     return print $fh $msg;
 }
 
-=begin private
-
-=item B<_print_diag>
-
-    $Test->_print_diag(@msg);
-
-Like _print, but prints to the current diagnostic filehandle.
-
-=end private
-
-=cut
-
-sub _print_diag {
-    my $self = shift;
-
-    local($\, $", $,) = (undef, ' ', '');
-    my $fh = $self->in_todo ? $self->todo_output : $self->failure_output;
-    return print $fh @_;
-}
 
 =item B<output>
 
