@@ -25,3 +25,6 @@
 
 # Test::FAQ is not complete.
 ^lib/Test/FAQ
+
+# Avoid Devel::Cover stuff
+^cover_db/

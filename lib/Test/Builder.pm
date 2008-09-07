@@ -983,6 +983,7 @@ sub _regex_ok {
     my $ok = 0;
     my $usable_regex = $self->maybe_regex($regex);
     unless (defined $usable_regex) {
+        local $Level = $Level + 1;
         $ok = $self->ok( 0, $name );
         $self->diag("    '$regex' doesn't look much like a regex to me.");
         return $ok;
@@ -1825,8 +1826,7 @@ sub todo_end {
     my $self = shift;
 
     if( !$self->{Start_Todo} ) {
-        $self->diag('todo_end() called without todo_start!');
-        _my_exit( 255 ) && return;
+        $self->croak('todo_end() called without todo_start()');
     }
 
     $self->{Start_Todo}--;
@@ -2005,10 +2005,10 @@ FAIL
 
         if( $real_exit_code ) {
             $self->diag(<<"FAIL");
-Looks like your test died just after $self->{Curr_Test}.
+Looks like your test exited with $real_exit_code just after $self->{Curr_Test}.
 FAIL
 
-            _my_exit( 255 ) && return;
+            _my_exit( $real_exit_code ) && return;
         }
 
         my $exit_code;
@@ -2028,10 +2028,10 @@ FAIL
         _my_exit( 0 ) && return;
     }
     elsif ( $real_exit_code ) {
-        $self->diag(<<'FAIL');
-Looks like your test died before it could output anything.
+        $self->diag(<<"FAIL");
+Looks like your test exited with $real_exit_code before it could output anything.
 FAIL
-        _my_exit( 255 ) && return;
+        _my_exit( $real_exit_code ) && return;
     }
     else {
         $self->diag("No tests run!\n");

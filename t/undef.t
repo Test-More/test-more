@@ -12,7 +12,7 @@ BEGIN {
 }
 
 use strict;
-use Test::More tests => 18;
+use Test::More tests => 20;
 use TieOut;
 
 BEGIN { $^W = 1; }
@@ -48,6 +48,9 @@ no_warnings;
 
 isnt( undef, '',            'undef isnt an empty string' );
 isnt( undef, 0,             'undef isnt zero' );
+
+Test::More->builder->is_num(undef, undef, 'is_num()');
+Test::More->builder->isnt_num(23, undef,  'isnt_num()');
 
 #line 45
 like( undef, '/.*/',        'undef is like anything' );

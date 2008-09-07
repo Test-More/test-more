@@ -26,9 +26,11 @@ t/create.t
 t/curr_test.t
 t/details.t
 t/diag.t
+t/died.t
 t/dont_overwrite_die_handler.t
 t/eq_set.t
 t/exit.t
+t/explain.t
 t/extra.t
 t/extra_one.t
 t/fail-like.t
@@ -75,6 +77,8 @@ t/no_diag.t
 t/no_ending.t
 t/no_header.t
 t/no_plan.t
+t/no_tests.t
+t/note.t
 t/ok_obj.t
 t/output.t
 t/overload.t
@@ -89,6 +93,7 @@ t/pod-coverage.t
 t/pod.t
 t/require_ok.t
 t/reset.t
+t/reset_outputs.t
 t/simple.t
 t/skip.t
 t/skipall.t

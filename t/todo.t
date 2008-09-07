@@ -10,7 +10,7 @@ BEGIN {
 
 use Test::More;
 
-plan tests => 33;
+plan tests => 34;
 
 
 $Why = 'Just testing the todo interface.';
@@ -137,3 +137,8 @@ is $is_todo, 'Nesting TODO',
     is $reason, '', "  todo() reports no reason";
     ok $in_todo,    "  but we're in_todo()";
 }
+
+eval {
+    $builder->todo_end;
+};
+is $@, sprintf "todo_end() called without todo_start() at %s line %d.\n", $0, __LINE__ - 2;

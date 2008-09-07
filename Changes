@@ -3,6 +3,16 @@
     * Test::Builder->reset_outputs() to reset all the output methods back to
       their defaults.
 
+    Bug Fixes
+    - Fixed the file and line number reported by like when it gets a bad
+      regex.
+
+    Features Changed
+    - Now preserves the tests' exit code if it exits abnormally, rather than
+      setting it to 255.
+    - Changed the "Looks like your test died" message to
+      "Looks like your test exited with $exit_code"
+
 
 0.81_01  Sat Sep  6 15:13:50 PDT 2008
     New Features
