@@ -1494,7 +1494,7 @@ sub _copy_io_layers {
     return;
 }
 
-=item reset_output
+=item reset_outputs
 
   $tb->reset_outputs;
 
