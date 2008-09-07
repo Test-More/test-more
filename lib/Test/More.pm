@@ -601,8 +601,10 @@ just a single object which isa C<$class>.
 =cut
 
 sub new_ok {
-    my($class, $args, $object_name) = @_;
     my $tb = Test::More->builder;
+    $tb->croak("new_ok() must be given at least a class") unless @_;
+
+    my($class, $args, $object_name) = @_;
 
     $args ||= [];
     $object_name = "The object" unless defined $object_name;

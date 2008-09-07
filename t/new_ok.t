@@ -2,7 +2,7 @@
 
 use strict;
 
-use Test::More tests => 12;
+use Test::More tests => 13;
 
 {
     package Bar;
@@ -34,3 +34,9 @@ use Test::More tests => 12;
     is_deeply $obj, {};
     isa_ok $obj, "Foo";
 }
+
+# And what if we give it nothing?
+eval {
+    new_ok();
+};
+is $@, sprintf "new_ok() must be given at least a class at %s line %d.\n", $0, __LINE__ - 2;
