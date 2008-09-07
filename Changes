@@ -1,3 +1,9 @@
+0.81_02
+    New Features
+    * Test::Builder->reset_outputs() to reset all the output methods back to
+      their defaults.
+
+
 0.81_01  Sat Sep  6 15:13:50 PDT 2008
     New Features
     * Adam Kennedy bribed me to add new_ok().  The price was one DEFCON license key.

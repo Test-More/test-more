@@ -1455,9 +1455,7 @@ sub _dup_stdhandles {
     _autoflush($Testerr);
     _autoflush(\*STDERR);
 
-    $self->output        ($Testout);
-    $self->failure_output($Testerr);
-    $self->todo_output   ($Testout);
+    $self->reset_outputs;
 
     return;
 }
@@ -1495,6 +1493,25 @@ sub _copy_io_layers {
 
     return;
 }
+
+=item reset_output
+
+  $tb->reset_outputs;
+
+Resets all the output filehandles back to their defaults.
+
+=cut
+
+sub reset_outputs {
+    my $self = shift;
+
+    $self->output        ($Testout);
+    $self->failure_output($Testerr);
+    $self->todo_output   ($Testout);
+
+    return;
+}
+
 
 =item carp
 
