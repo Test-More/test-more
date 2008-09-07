@@ -5,6 +5,7 @@ lib/Test/Builder.pm
 lib/Test/Builder/Module.pm
 lib/Test/Builder/Tester.pm
 lib/Test/Builder/Tester/Color.pm
+lib/Test/Builder2/History.pm
 lib/Test/More.pm
 lib/Test/Simple.pm
 lib/Test/Tutorial.pod
@@ -39,6 +40,7 @@ t/fork.t
 t/harness_active.t
 t/has_plan.t
 t/has_plan2.t
+t/history.t
 t/import.t
 t/is_deeply_dne_bug.t
 t/is_deeply_fail.t
