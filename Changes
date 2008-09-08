@@ -12,6 +12,8 @@
       setting it to 255.
     - Changed the "Looks like your test died" message to
       "Looks like your test exited with $exit_code"
+    - no_plan now only warns if given an argument.  There were a lot of people
+      doing that, and it's a sensible mistake.  [test-more.googlecode.com 13]
 
 
 0.81_01  Sat Sep  6 15:13:50 PDT 2008
