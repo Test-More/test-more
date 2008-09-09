@@ -14,6 +14,8 @@ my $new_ok = sub {
     return $result;
 };
 
+
+# Pass
 {
     my $result = $new_ok->( raw_passed => 1 );
     isa_ok $result, "Test::Builder2::Result::Pass";
@@ -22,6 +24,8 @@ my $new_ok = sub {
     ok $result->raw_passed;
 }
 
+
+# Fail
 {
     my $result = $new_ok->( raw_passed => 0 );
     isa_ok $result, "Test::Builder2::Result::Fail";
@@ -30,6 +34,8 @@ my $new_ok = sub {
     ok !$result->raw_passed;
 }
 
+
+# Skip
 {
     my $result = $new_ok->(
         directive => 'skip',
@@ -41,6 +47,8 @@ my $new_ok = sub {
     is $result->directive,      'skip';
 }
 
+
+# TODO
 {
     my $result = $new_ok->(
         directive       => 'todo',
@@ -53,3 +61,32 @@ my $new_ok = sub {
     is $result->directive,      'todo';
 }
 
+
+# Unknown directive, pass
+{
+    my $result = $new_ok->(
+        directive       => 'omega',
+        raw_passed      => 1
+    );
+
+    isa_ok $result, "Test::Builder2::Result::Pass";
+
+    ok $result->passed;
+    ok $result->raw_passed;
+    is $result->directive,      'omega';
+}
+
+
+# Unknown directive, fail
+{
+    my $result = $new_ok->(
+        directive       => 'omega',
+        raw_passed      => 0
+    );
+
+    isa_ok $result, "Test::Builder2::Result::Fail";
+
+    ok !$result->passed;
+    ok !$result->raw_passed;
+    is $result->directive,      'omega';
+}
