@@ -9,28 +9,54 @@ my $CLASS = "Test::Builder2::History";
 require_ok 'Test::Builder2::History';
 
 
+my $create_ok = sub {
+    my $history = $CLASS->create;
+    isa_ok $history, $CLASS;
+    return $history;
+};
+
+
 # Testing initialization
 {
-    my $history = new_ok $CLASS;
+    my $history = $create_ok->();
 
-    is $history->last_test_number,      0;
-    is_deeply $history->history,        [];
+    is $history->next_test_number,      1;
+    is_deeply $history->results,        [];
     ok $history->should_keep_history;
+}
+
+
+# Test the singleton nature
+{
+    my $history1 = new_ok($CLASS);
+    my $history2 = new_ok($CLASS);
+
+    is $history1, $history2,            "new() is a singleton";
+    is $history1, $CLASS->singleton,    "singleton() get";
+
+    my @results = ({ ok => 1 }, { ok => 0 });
+    $history1->add_test_history(@results);
+
+    is_deeply $history1->results, $history2->results;
+
+    $CLASS->singleton($create_ok->());
+    isnt $history1,       $CLASS->singleton,  "singleton() set";
+    is   new_ok($CLASS),  $CLASS->singleton,  "new() changed";
 }
 
 
 # increment_test_number()
 {
-    my $history = new_ok $CLASS;
+    my $history = $create_ok->();
 
     $history->increment_test_number;
-    is $history->last_test_number, 1;
+    is $history->next_test_number, 2;
 
     $history->increment_test_number(2);
-    is $history->last_test_number, 3;
+    is $history->next_test_number, 4;
 
     $history->increment_test_number(-3);
-    is $history->last_test_number, 0;
+    is $history->next_test_number, 1;
 
     ok !eval {
         $history->increment_test_number(1.1);
@@ -41,26 +67,26 @@ require_ok 'Test::Builder2::History';
 
 
 {
-    my $history = new_ok $CLASS;
+    my $history = $create_ok->();
 
     $history->add_test_history( { ok => 1 } );
-    is_deeply $history->history, [{ ok => 1 }];
+    is_deeply $history->results, [{ ok => 1 }];
     is_deeply [$history->summary], [1];
 
-    is $history->last_test_number, 1;
+    is $history->next_test_number, 2;
     ok $history->is_passing;
 
     $history->add_test_history( { ok => 1 }, { ok => 0 } );
-    is_deeply $history->history, [
+    is_deeply $history->results, [
         { ok => 1 }, { ok => 1 }, { ok => 0 }
     ];
     is_deeply [$history->summary], [1, 1, 0];
 
-    is $history->last_test_number, 3;
+    is $history->next_test_number, 4;
     ok !$history->is_passing;
 
     # Try a history replacement
-    $history->last_test_number(2);
+    $history->next_test_number(3);
     $history->add_test_history( { ok => 1 }, { ok => 1 } );
     is_deeply [$history->summary], [1, 1, 1, 1];
 }
@@ -68,10 +94,10 @@ require_ok 'Test::Builder2::History';
 
 # should_keep_history
 {
-    my $history = new_ok $CLASS;
+    my $history = $create_ok->();
 
     $history->should_keep_history(0);
     $history->add_test_history( { ok => 1 } );
-    is $history->last_test_number, 1;
-    is_deeply $history->history, [];
+    is $history->next_test_number, 2;
+    is_deeply $history->results, [];
 }
