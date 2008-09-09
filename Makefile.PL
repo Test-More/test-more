@@ -67,6 +67,10 @@ WriteMakefile(
     # Added to the core in 5.7.3 and also 5.6.2.
     INSTALLDIRS     => $] >= 5.006002 ? 'perl' : 'site',
 
+    test        => {
+        TESTS           => 't/*.t t/*/*.t',
+    },
+
     ($mm_ver <= 6.44 ? () : (META_MERGE => {
         resources => {
             license     =>      'http://dev.perl.org/licenses/',
