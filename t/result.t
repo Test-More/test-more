@@ -90,3 +90,24 @@ my $new_ok = sub {
     ok !$result->raw_passed;
     is $result->directive,      'omega';
 }
+
+
+# as_hash
+{
+    my $result = $new_ok->(
+        raw_passed      => 1,
+        description     => 'something something something test result',
+        test_number     => 23,
+        location        => 'foo.t',
+        id              => 0,
+    );
+
+    is_deeply $result->as_hash, {
+        raw_passed      => 1,
+        description     => 'something something something test result',
+        test_number     => 23,
+        passed          => 1,
+        location        => 'foo.t',
+        id              => 0,
+    }, 'as_hash';
+}

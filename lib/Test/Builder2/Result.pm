@@ -38,12 +38,13 @@ use Mouse;
 
     sub as_hash {
         my $self = shift;
-        my @values = grep { defined $_ }
-                     map  { $self->$_() } @keys;
-
-        my %hash;
-        @hash{@keys} = @values;
-        return \%hash;
+        return { 
+            map  {
+                my $val = $self->$_();
+                defined $val ? ($_ => $val) : ()
+            }
+            @keys
+        };
     }
 }
 
