@@ -59,10 +59,6 @@ WriteMakefile(
 
     PREREQ_PM       => { 
         Test::Harness   => 2.03,
-
-        # This is a temporary dep to play with a real OO system.
-        # Make sure this gets removed before release.
-        Mouse           => 0.06,
     },
 
     # Added to the core in 5.7.3 and also 5.6.2.
