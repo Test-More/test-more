@@ -28,3 +28,7 @@
 
 # Avoid Devel::Cover stuff
 ^cover_db/
+
+# TB2 isn't ready to ship.
+^lib/Test/Builder2/
+^t/Builder2/
