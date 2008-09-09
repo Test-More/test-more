@@ -113,7 +113,8 @@ has next_test_number => (
 
 =head3 results
 
-An array ref of the test history.  Remember that test 1 is index 0.
+An array ref of the test history expressed as Result objects.
+Remember that test 1 is index 0.
 
     # The result of test #4.
     my $result = $history->results->[3];
@@ -152,6 +153,8 @@ Adds the @results to the existing test history at the point indicated
 by next_test_number().  That's usually the end of the history, but if
 next_test_number() is moved backwards it will overlay existing history.
 
+@results is a list of Result objects.
+
 next_test_number() will be incremented by the number of @results.
 
 =cut
@@ -159,6 +162,9 @@ next_test_number() will be incremented by the number of @results.
 
 sub add_test_history {
     my $self    = shift;
+
+    croak "add_test_history() takes Result objects"
+      if grep { !eval { $_->isa("Test::Builder2::Result::Base") } } @_;
 
     my $last_test = $self->next_test_number - 1;
     $self->increment_test_number(scalar @_);
@@ -206,7 +212,7 @@ it passed or failed.
 sub summary {
     my $self = shift;
 
-    return map { $_->{ok} } @{ $self->results };
+    return map { $_->passed } @{ $self->results };
 }
 
 
@@ -221,7 +227,7 @@ Returns true if all the tests passed, false otherwise.
 sub is_passing {
     my $self = shift;
 
-    return (grep { !$_->{ok} } @{ $self->results }) ? 0 : 1;
+    return (grep { !$_->passed } @{ $self->results }) ? 0 : 1;
 }
 
 1;
