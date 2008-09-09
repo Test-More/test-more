@@ -31,6 +31,14 @@ This object stores and manages the history of test results.
 
 =head3 new
 
+    my $history = Test::Builder2::History->new;
+
+Gets the instance of the history object.
+
+Test::Builder2::History is a singleton.  new() will return the same
+object every time so all users can have a shared history.  If you want
+your own history, call create() instead.
+
 =cut
 
 sub new {
@@ -41,6 +49,10 @@ sub new {
 
 
 =head3 create
+
+    my $history = Test::Builder2::History->create;
+
+Creates a new, unique History object.
 
 =cut
 
@@ -62,8 +74,10 @@ Unless otherwise stated, these are all accessor methods of the form:
     my $history = Test::Builder2::History->singleton;
     Test::Builder2::History->singleton($history);
 
-Gets/sets the History singleton.  Normally you should never have to
-call this, but instead get the singleton through new().
+Gets/sets the History singleton.
+
+Normally you should never have to call this, but instead get the
+singleton through new().
 
 =cut
 
@@ -84,7 +98,9 @@ call this, but instead get the singleton through new().
 
 =head3 next_test_number
 
-The number of the next test to be run (starts at 1).
+The number of the next test to be run.
+
+Defaults to 1.
 
 =cut
 
@@ -113,6 +129,11 @@ has results => (
 
 =head3 should_keep_history
 
+If set to false, no history will be recorded.  This is handy for very
+long running tests that might consume a lot of memeory.
+
+Defaults to true.
+
 =cut
 
 has should_keep_history => (
@@ -124,6 +145,14 @@ has should_keep_history => (
 =head2 Other Methods
 
 =head3 add_test_history
+
+    $history->add_test_history(@results);
+
+Adds the @results to the existing test history at the point indicated
+by next_test_number().  That's usually the end of the history, but if
+next_test_number() is moved backwards it will overlay existing history.
+
+next_test_number() will be incremented by the number of @results.
 
 =cut
 
@@ -144,6 +173,13 @@ sub add_test_history {
 
 =head3 increment_test_number
 
+    $history->increment_test_number;
+    $history->increment_test_number($by_how_much);
+
+A convenience method for incrementing next_test_number().
+
+If $by_how_much is not given it will increment by 1.
+
 =cut
 
 sub increment_test_number {
@@ -160,6 +196,11 @@ sub increment_test_number {
 
 =head3 summary
 
+    my @summary = $history->results;
+
+Returns a list of true/false values for each test result indicating if
+it passed or failed.
+
 =cut
 
 sub summary {
@@ -170,6 +211,10 @@ sub summary {
 
 
 =head3 is_passing
+
+    my $is_passing = $history->is_passing;
+
+Returns true if all the tests passed, false otherwise.
 
 =cut
 
