@@ -26,14 +26,15 @@ Test::WWW::Mechanize, Test::WWW::Selenium
 
 Test::Cmd
 
-=head2 Can you do XUnit/JUnit style testing in Perl?
+=head2 Can you do xUnit/JUnit style testing in Perl?
 
-Yes, Test::Class allows you to write test methods while continuing to use
-all the usual CPAN testing modules.
+Yes, Test::Class allows you to write test methods while continuing to
+use all the usual CPAN testing modules.  It is the best and most
+perlish way to do xUnit style testing.
 
-Test::Unit is a more direct port of XUnit to Perl, but it does not use the
-Perl conventions and does not play well with other CPAN testing modules.  It
-is also abandoned.  B<Do not use>.
+Test::Unit is a more direct port of XUnit to Perl, but it does not use
+the Perl conventions and does not play well with other CPAN testing
+modules.  As of this writing, it is abandoned.  B<Do not use>.
 
 The Test::Inline (aka Pod::Tests) is worth mentioning as it allows you to
 put tests into the POD in the same file as the code.

@@ -1619,20 +1619,20 @@ L<Test::Simple> if all this confuses you and you just want to write
 some tests.  You can upgrade to Test::More later (it's forward
 compatible).
 
-L<Test> is the old testing module.  Its main benefit is that it has
-been distributed with Perl since 5.004_05.
+L<Test::Harness> is the test runner and output interpreter for Perl.
+It's the thing that powers C<make test> and where the C<prove> utility
+comes from.
 
-L<Test::Harness> for details on how your test results are interpreted
-by Perl.
+L<Test::Legacy> tests written with Test.pm, the original testing
+module, do not play well with other testing libraries.  Test::Legacy
+emulates the Test.pm interface and does play well with others.
 
 L<Test::Differences> for more ways to test complex data structures.
 And it plays well with Test::More.
 
-L<Test::Class> is like XUnit but more perlish.
+L<Test::Class> is like xUnit but more perlish.
 
 L<Test::Deep> gives you more powerful complex data structure testing.
-
-L<Test::Unit> is XUnit style testing, but it's abandoned.  B<Do not use>.
 
 L<Test::Inline> shows the idea of embedded testing.
 

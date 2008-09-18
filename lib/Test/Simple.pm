@@ -192,29 +192,9 @@ Test::More.  Test::Simple is 100% forward compatible with Test::More
 (i.e. you can just use Test::More instead of Test::Simple in your
 programs and things will still work).
 
-=item L<Test>
-
-The original Perl testing module.
-
-=item L<Test::Unit>
-
-Abandoned.  B<Do not use>.  If you need xUnit style testing, see
-L<Test::Class>.
-
-=item L<Test::Class>
-
-xUnit style testing for Perl.  It has a few (documented) differences, but
-those are necessary for the conversion between the xUnit/TAP world.
-
-=item L<Test::Inline>, L<SelfTest>
-
-Embed tests in your code!
-
-=item L<Test::Harness>
-
-Interprets the output of your test program.
-
 =back
+
+Look in Test::More's SEE ALSO for more testing modules.
 
 
 =head1 AUTHORS
