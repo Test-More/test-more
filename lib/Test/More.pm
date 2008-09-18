@@ -1632,7 +1632,7 @@ L<Test::Class> is like XUnit but more perlish.
 
 L<Test::Deep> gives you more powerful complex data structure testing.
 
-L<Test::Unit> is XUnit style testing.
+L<Test::Unit> is XUnit style testing, but it's abandoned.  B<Do not use>.
 
 L<Test::Inline> shows the idea of embedded testing.
 

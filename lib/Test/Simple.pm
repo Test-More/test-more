@@ -198,7 +198,13 @@ The original Perl testing module.
 
 =item L<Test::Unit>
 
-Elaborate unit testing.
+Abandoned.  B<Do not use>.  If you need xUnit style testing, see
+L<Test::Class>.
+
+=item L<Test::Class>
+
+xUnit style testing for Perl.  It has a few (documented) differences, but
+those are necessary for the conversion between the xUnit/TAP world.
 
 =item L<Test::Inline>, L<SelfTest>
 

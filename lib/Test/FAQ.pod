@@ -32,7 +32,8 @@ Yes, Test::Class allows you to write test methods while continuing to use
 all the usual CPAN testing modules.
 
 Test::Unit is a more direct port of XUnit to Perl, but it does not use the
-Perl conventions and does not play well with other CPAN testing modules.
+Perl conventions and does not play well with other CPAN testing modules.  It
+is also abandoned.  B<Do not use>.
 
 The Test::Inline (aka Pod::Tests) is worth mentioning as it allows you to
 put tests into the POD in the same file as the code.
