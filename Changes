@@ -1,3 +1,8 @@
+0.81_03
+    Bug Fixes
+    - 0.81_01 broke $TODO such that $TODO = '' was considered todo.
+
+
 0.81_02  Tue Sep  9 04:35:40 PDT 2008
     New Features
     * Test::Builder->reset_outputs() to reset all the output methods back to

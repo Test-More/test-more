@@ -1753,7 +1753,7 @@ sub in_todo {
     my $self = shift;
 
     local $Level = $Level + 1;
-    return (grep { defined } $self->{Todo}, $self->find_TODO) ? 1 : 0;
+    return (defined $self->{Todo} || $self->find_TODO) ? 1 : 0;
 }
 
 =item B<todo_start>

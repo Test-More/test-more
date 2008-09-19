@@ -10,7 +10,7 @@ BEGIN {
 
 use Test::More;
 
-plan tests => 34;
+plan tests => 36;
 
 
 $Why = 'Just testing the todo interface.';
@@ -142,3 +142,17 @@ eval {
     $builder->todo_end;
 };
 is $@, sprintf "todo_end() called without todo_start() at %s line %d.\n", $0, __LINE__ - 2;
+
+
+{
+    my($reason, $in_todo);
+
+    TODO: {
+        local $TODO = '';
+        $reason  = $builder->todo;
+        $in_todo = $builder->in_todo;
+    }
+
+    is $reason, '';
+    ok !$in_todo, '$TODO = "" is not considered TODO';
+}
