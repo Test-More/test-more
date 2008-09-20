@@ -183,7 +183,7 @@ sub reset {  ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Todo_Stack} = [];
     $self->{Start_Todo} = 0;
 
-    $self->_dup_stdhandles unless $^C;
+    $self->_dup_stdhandles;
 
     return;
 }
