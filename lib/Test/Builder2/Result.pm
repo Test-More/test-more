@@ -3,25 +3,65 @@ package Test::Builder2::Result;
 
 use Carp;
 use Mouse;
+my $CLASS = __PACKAGE__;
+
+my %Result_Type_Map = ();
 
 sub new {
     my($class, %args) = @_;
 
-    my $directive = $args{directive} || '';
+    $args{directive}  ||= '';
 
-    my $result_class = 
-      $directive eq 'todo' ? "Test::Builder2::Result::Todo" :
-      $directive eq 'skip' ? "Test::Builder2::Result::Skip" :
-      $args{raw_passed}    ? "Test::Builder2::Result::Pass" :
-                             "Test::Builder2::Result::Fail" ;
+    my $result_class = $class->result_class_for(\%args);
+
+    # Fall through defaults, because there's no other way to say
+    # "if nobody else handled it".
+    $result_class ||=
+      $args{raw_passed}    ? "Test::Builder2::Result::Pass"   :
+                             "Test::Builder2::Result::Fail"   ;
 
     return $result_class->new(%args);
+}
+
+
+sub register_result_class {
+    my($class, $result_class, $check) = @_;
+
+    $class->result_type_map->{$result_class} = $check;
+
+    return;
+}
+
+
+sub result_class_for {
+    my($class, $args) = @_;
+
+    my $result_class;
+    my $map = $class->result_type_map;
+    while(($result_class, my($check)) = each %$map) {
+        last if $check->($args);
+    }
+
+    return $result_class;
+}
+
+
+sub result_type_map {
+    return \%Result_Type_Map;
 }
 
 
 package Test::Builder2::Result::Base;
 
 use Mouse;
+
+sub register_result {
+    my($class, $check) = @_;
+
+    Test::Builder2::Result->register_result_class($class, $check);
+
+    return;
+}
 
 {
     my @keys = qw(
@@ -116,6 +156,9 @@ has diagnostic  => (
     has '+raw_passed' => (
         default     => 1
     );
+
+    # This is special cased.
+    __PACKAGE__->register_result(sub {});
 }
 
 
@@ -131,6 +174,9 @@ has diagnostic  => (
     has '+raw_passed' => (
         default     => 0
     );
+
+    # This is special cased.
+    __PACKAGE__->register_result(sub {});
 }
 
 
@@ -145,6 +191,11 @@ has diagnostic  => (
     has '+directive' => (
         default     => 'skip'
     );
+
+    __PACKAGE__->register_result(sub {
+        my $args = shift;
+        return $args->{directive} eq 'skip';
+    });
 }
 
 
@@ -159,6 +210,11 @@ has diagnostic  => (
     has '+directive' => (
         default     => 'todo'
     );
+
+    __PACKAGE__->register_result(sub {
+        my $args = shift;
+        return $args->{directive} eq 'todo';
+    });
 }
 
 1;

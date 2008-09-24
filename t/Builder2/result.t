@@ -100,6 +100,7 @@ my $new_ok = sub {
         test_number     => 23,
         location        => 'foo.t',
         id              => 0,
+        directive       => '',
     );
 
     is_deeply $result->as_hash, {
@@ -109,5 +110,43 @@ my $new_ok = sub {
         passed          => 1,
         location        => 'foo.t',
         id              => 0,
+        directive       => '',
     }, 'as_hash';
+}
+
+
+# Register a new result type
+{
+    {
+        package TB2::Result::NoTest;
+
+        use Mouse;
+
+        extends 'Test::Builder2::Result::TODO';
+
+        __PACKAGE__->register_result(sub {
+            my $args = shift;
+            return $args->{directive} eq 'notest';
+        });
+    }
+
+    my $result = $new_ok->(
+        raw_passed      => 1,
+        description     => 'something something something test result',
+        test_number     => 23,
+        location        => 'foo.t',
+        id              => 0,
+        directive       => '',
+    );
+
+    is_deeply $result->as_hash, {
+        raw_passed      => 1,
+        description     => 'something something something test result',
+        test_number     => 23,
+        passed          => 1,
+        location        => 'foo.t',
+        id              => 0,
+        directive       => '',
+    }, 'as_hash';
+);
 }
