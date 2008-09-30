@@ -5,8 +5,6 @@ use Carp;
 use Mouse;
 my $CLASS = __PACKAGE__;
 
-my %Result_Type_Map = ();
-
 sub new {
     my($class, %args) = @_;
 
@@ -24,20 +22,37 @@ sub new {
 }
 
 
+=head3 register_result_class
+
+    $class->register_result_class($result_class, \&when_to_use);
+
+Tells the Result factory that it should use the $result_class when
+&when_to_use returns true.
+
+=cut
+
 sub register_result_class {
     my($class, $result_class, $check) = @_;
 
-    $class->result_type_map->{$result_class} = $check;
+    $class->_result_type_map->{$result_class} = $check;
 
     return;
 }
 
 
+=head3 result_class_for
+
+    my $result_class = $class->result_class_for(\%args);
+
+Returns the $result_class which should be used for the %args to new().
+
+=cut
+
 sub result_class_for {
     my($class, $args) = @_;
 
     my $result_class;
-    my $map = $class->result_type_map;
+    my $map = $class->_result_type_map;
     while(($result_class, my($check)) = each %$map) {
         last if $check->($args);
     }
@@ -46,7 +61,8 @@ sub result_class_for {
 }
 
 
-sub result_type_map {
+my %Result_Type_Map = ();
+sub _result_type_map {
     return \%Result_Type_Map;
 }
 
