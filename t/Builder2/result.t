@@ -122,7 +122,7 @@ my $new_ok = sub {
 
         use Mouse;
 
-        extends 'Test::Builder2::Result::TODO';
+        extends 'Test::Builder2::Result::Todo';
 
         __PACKAGE__->register_result(sub {
             my $args = shift;
@@ -148,5 +148,4 @@ my $new_ok = sub {
         id              => 0,
         directive       => '',
     }, 'as_hash';
-);
 }
