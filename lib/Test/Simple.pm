@@ -14,7 +14,6 @@ our @EXPORT = qw(ok);
 
 my $CLASS = __PACKAGE__;
 
-
 =head1 NAME
 
 Test::Simple - Basic utilities for writing tests.
@@ -78,10 +77,9 @@ will do what you mean (fail if stuff is empty)
 
 =cut
 
-sub ok ($;$) {                ## no critic (Subroutines::ProhibitSubroutinePrototypes)
+sub ok ($;$) {    ## no critic (Subroutines::ProhibitSubroutinePrototypes)
     return $CLASS->builder->ok(@_);
 }
-
 
 =back
 

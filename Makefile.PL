@@ -81,3 +81,18 @@ WriteMakefile(
         },
     }))
 );
+
+
+{
+    package MY;
+
+    sub postamble {
+        return <<'MAKE';
+
+perltidy:
+	find . -name '*.pm' | xargs perltidy -b
+	find . -name '*.pm.bak' | xargs rm
+
+MAKE
+    }
+}

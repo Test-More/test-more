@@ -5,7 +5,6 @@ use Carp;
 # Can't depend on Mouse, but want to see where we can go with a real OO system.
 use Mouse;
 
-
 =head1 NAME
 
 Test::Builder2::History - Manage the history of test results
@@ -44,9 +43,8 @@ your own history, call create() instead.
 sub new {
     my $class = shift;
 
-    return $class->singleton || $class->singleton($class->create);
+    return $class->singleton || $class->singleton( $class->create );
 }
-
 
 =head3 create
 
@@ -60,7 +58,6 @@ sub create {
     my $class = shift;
     return $class->SUPER::new(@_);
 }
-
 
 =head2 Accessors
 
@@ -85,15 +82,16 @@ singleton through new().
 # accessor by hand, bleh.
 {
     my $singleton;
+
     sub singleton {
         my $class = shift;
 
-        if( @_ ) {
+        if(@_) {
             $singleton = shift;
         }
 
         return $singleton;
-    }        
+    }
 }
 
 =head3 next_test_number
@@ -105,11 +103,10 @@ Defaults to 1.
 =cut
 
 has next_test_number => (
-    is          => 'rw',
-    isa         => 'Int',
-    default     => 1,
+    is      => 'rw',
+    isa     => 'Int',
+    default => 1,
 );
-
 
 =head3 results
 
@@ -122,11 +119,10 @@ Remember that test 1 is index 0.
 =cut
 
 has results => (
-    is          => 'rw',
-    isa         => 'ArrayRef',
-    default     => sub { [] },
+    is      => 'rw',
+    isa     => 'ArrayRef',
+    default => sub { [] },
 );
-
 
 =head3 should_keep_history
 
@@ -138,9 +134,9 @@ Defaults to true.
 =cut
 
 has should_keep_history => (
-    is          => 'rw',
-    isa         => 'Bool',
-    default     => 1,
+    is      => 'rw',
+    isa     => 'Bool',
+    default => 1,
 );
 
 =head2 Other Methods
@@ -159,23 +155,23 @@ next_test_number() will be incremented by the number of @results.
 
 =cut
 
-
 sub add_test_history {
-    my $self    = shift;
+    my $self = shift;
 
     croak "add_test_history() takes Result objects"
-      if grep { !eval { $_->isa("Test::Builder2::Result::Base") } } @_;
+      if grep {
+              !eval { $_->isa("Test::Builder2::Result::Base") }
+      } @_;
 
     my $last_test = $self->next_test_number - 1;
-    $self->increment_test_number(scalar @_);
+    $self->increment_test_number( scalar @_ );
 
     return 0 unless $self->should_keep_history;
 
-    splice @{$self->results}, $last_test, scalar @_, @_;
+    splice @{ $self->results }, $last_test, scalar @_, @_;
 
     return 1;
 }
-
 
 =head3 increment_test_number
 
@@ -189,16 +185,15 @@ If $by_how_much is not given it will increment by 1.
 =cut
 
 sub increment_test_number {
-    my $self      = shift;
+    my $self = shift;
     my $increment = @_ ? shift : 1;
 
     croak "increment_test_number() takes an integer, not '$increment'"
       unless $increment =~ /^[+-]?\d+$/;
 
     my $num = $self->next_test_number;
-    return $self->next_test_number($num + $increment);
+    return $self->next_test_number( $num + $increment );
 }
-
 
 =head3 summary
 
@@ -214,7 +209,6 @@ sub summary {
 
     return map { $_->passed } @{ $self->results };
 }
-
 
 =head3 is_passing
 
