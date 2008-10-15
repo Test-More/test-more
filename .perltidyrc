@@ -12,5 +12,6 @@
 --no-blanks-before-comments
 --blanks-before-subs
 --blanks-before-blocks
+--maximum-consecutive-blank-lines=2     # Allow two blanks between subroutines
 --nospace-after-keyword="my local our and or eq ne if else elsif until unless while for foreach return switch case given when"
 --want-break-before="% + - * / x != == >= <= =~ !~ < > | & >= < = **= += *= &= <<= &&= -= /= |= >>= ||= .= %= ^= x="
