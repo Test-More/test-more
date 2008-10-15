@@ -2,7 +2,7 @@ package Test::Builder::Tester;
 # $Id$
 
 use strict;
-our $VERSION = "1.14_02";
+our $VERSION = "1.15";
 
 use Test::Builder;
 use Symbol;
