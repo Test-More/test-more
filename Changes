@@ -1,3 +1,8 @@
+0.84  Wed Oct 15 09:06:12 EDT 2008
+    Other
+    * 0.82 accidentally shipped with experimental Mouse dependency.
+
+
 0.82  Tue Oct 14 23:06:56 EDT 2008
     Bug Fixes
     - 0.81_01 broke $TODO such that $TODO = '' was considered todo.
