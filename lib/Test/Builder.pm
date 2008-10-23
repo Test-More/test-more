@@ -499,6 +499,9 @@ sub _unoverload_num {
 sub _is_dualvar {
     my( $self, $val ) = @_;
 
+    # Objects are not dualvars.
+    return 0 if ref $val;
+
     no warnings 'numeric';
     my $numval = $val + 0;
     return $numval != 0 and $numval ne $val ? 1 : 0;
@@ -697,16 +700,8 @@ my %numeric_cmps = map { ( $_, 1 ) } ( "<", "<=", ">", ">=", "==", "!=", "<=>" )
 sub cmp_ok {
     my( $self, $got, $type, $expect, $name ) = @_;
 
-    # Treat overloaded objects as numbers if we're asked to do a
-    # numeric comparison.
-    my $unoverload
-      = $numeric_cmps{$type}
-      ? '_unoverload_num'
-      : '_unoverload_str';
-
-    $self->$unoverload( \$got, \$expect );
-
     my $test;
+    my $error;
     {
         ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
@@ -719,12 +714,28 @@ sub cmp_ok {
         # Don't ask me, man, I just work here.
         $test = eval "
 $code" . "\$got $type \$expect;";
-
+        $error = $@;
     }
     local $Level = $Level + 1;
     my $ok = $self->ok( $test, $name );
 
+    # Treat overloaded objects as numbers if we're asked to do a
+    # numeric comparison.
+    my $unoverload
+      = $numeric_cmps{$type}
+      ? '_unoverload_num'
+      : '_unoverload_str';
+
+    $self->diag(<<"END") if $error;
+An error occurred while using $type:
+------------------------------------
+$error
+------------------------------------
+END
+
     unless($ok) {
+        $self->$unoverload( \$got, \$expect );
+
         if( $type =~ /^(eq|==)$/ ) {
             $self->_is_diag( $got, $type, $expect );
         }
@@ -1326,10 +1337,10 @@ sub _print_to_fh {
 
     # Escape each line after the first with a # so we don't
     # confuse Test::Harness.
-    $msg =~ s/\n(.)/\n# $1/sg;
+    $msg =~ s{\n(?!\z)}{\n# }sg;
 
     # Stick a newline on the end if it needs it.
-    $msg .= "\n" unless $msg =~ /\n\Z/;
+    $msg .= "\n" unless $msg =~ /\n\z/;
 
     return print $fh $msg;
 }

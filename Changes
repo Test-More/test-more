@@ -1,3 +1,15 @@
+0.85_01
+    New Features
+    * cmp_ok() now displays the error if the comparison throws one.
+      For example, broken overloaded objects.
+
+    Bug Fixes
+    * cmp_ok() no longer stringifies or numifies its arguments before comparing.
+      This makes cmp_ok() properly test overloaded ops.
+      [rt.cpan.org 24186] [code.google.com 16]
+    * diag() properly escapes blank lines.
+
+
 0.84  Wed Oct 15 09:06:12 EDT 2008
     Other
     * 0.82 accidentally shipped with experimental Mouse dependency.

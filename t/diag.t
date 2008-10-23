@@ -25,7 +25,7 @@ BEGIN {
 
 use strict;
 
-use Test::More tests => 5;
+use Test::More tests => 7;
 
 my $test = Test::Builder->create;
 
@@ -61,8 +61,23 @@ $test->reset_outputs();
 $test->failure_output(\*FAKEOUT);
 {
     $test->diag("# foo");
-
     is( $output->read, "# # foo\n", "diag() adds # even if there's one already" );
+
+    $test->diag("foo\n\nbar");
+    is( $output->read, <<'DIAG', "  blank lines get escaped" );
+# foo
+# 
+# bar
+DIAG
+
+
+    $test->diag("foo\n\nbar\n\n");
+    is( $output->read, <<'DIAG', "  even at the end" );
+# foo
+# 
+# bar
+# 
+DIAG
 }
 
 

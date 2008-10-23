@@ -19,7 +19,7 @@ BEGIN {
         plan skip_all => "needs overload.pm";
     }
     else {
-        plan tests => 13;
+        plan tests => 15;
     }
 }
 
@@ -27,12 +27,20 @@ BEGIN {
 package Overloaded;
 
 use overload
-        q{""}    => sub { $_[0]->{string} },
-        q{0+}    => sub { $_[0]->{num} };
+  q{eq}    => sub { $_[0]->{string} },
+  q{==}    => sub { $_[0]->{num} },
+  q{""}    => sub { $_[0]->{stringfy}++; $_[0]->{string} },
+  q{0+}    => sub { $_[0]->{numify}++;   $_[0]->{num}    }
+;
 
 sub new {
     my $class = shift;
-    bless { string => shift, num => shift }, $class;
+    bless {
+        string  => shift,
+        num     => shift,
+        stringify       => 0,
+        numify          => 0,
+    }, $class;
 }
 
 
@@ -49,7 +57,9 @@ isa_ok $obj, 'Overloaded';
 
 is $obj, 'foo',            'is() with string overloading';
 cmp_ok $obj, 'eq', 'foo',  'cmp_ok() ...';
+is $obj->{stringify}, 0, 'cmp_ok() eq does not stringify';
 cmp_ok $obj, '==', 42,     'cmp_ok() with number overloading';
+is $obj->{numify}, 0,    'cmp_ok() == does not numify';
 
 is_deeply [$obj], ['foo'],                 'is_deeply with string overloading';
 ok eq_array([$obj], ['foo']),              'eq_array ...';

@@ -30,19 +30,19 @@ sub try_cmp_ok {
     $expect{error} =~ s/ at .*\n?//;
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
-    my $ok = cmp_ok($left, $cmp, $right);
-    $TB->is_num(!!$ok, !!$expect{ok});
+    my $ok = cmp_ok($left, $cmp, $right, "cmp_ok");
+    $TB->is_num(!!$ok, !!$expect{ok}, "  right return");
     
     my $diag = $err->read;
     if( !$ok and $expect{error} ) {
         $diag =~ s/^# //mg;
-        $TB->like( $diag, "/\Q$expect{error}\E/" );
+        $TB->like( $diag, qr/\Q$expect{error}\E/, "  expected error" );
     }
     elsif( $ok ) {
-        $TB->is_eq( $diag, '' );
+        $TB->is_eq( $diag, '', "  passed without diagnostic" );
     }
     else {
-        $TB->ok(1);
+        $TB->ok(1, "  failed without diagnostic");
     }
 }
 
@@ -60,8 +60,7 @@ my @Tests = (
 );
 
 # These don't work yet.
-if( 0 ) {
-#if( eval { require overload } ) {
+if( eval { require overload } ) {
     require MyOverload;
     
     my $cmp = Overloaded::Compare->new("foo", 42);
