@@ -4,7 +4,7 @@
 BEGIN {
     if( $ENV{PERL_CORE} ) {
         chdir 't';
-        @INC = '../lib';
+        @INC = qw(../lib ../lib/Test/Simple/t/lib);
     }
 }
 
