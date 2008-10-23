@@ -457,7 +457,7 @@ sub _unoverload {
     my $self = shift;
     my $type = shift;
 
-    $self->_try( sub { require overload } ) || return;
+    $self->_try(sub { require overload; }, die_on_fail => 1);
 
     foreach my $thing (@_) {
         if( $self->_is_object($$thing) ) {
@@ -1042,14 +1042,21 @@ It is suggested you use this in place of eval BLOCK.
 =cut
 
 sub _try {
-    my( $self, $code ) = @_;
+    my( $self, $code, %opts ) = @_;
 
-    local $!;               # eval can mess up $!
-    local $@;               # don't set $@ in the test
-    local $SIG{__DIE__};    # don't trip an outside DIE handler.
-    my $return = eval { $code->() };
+    my $error;
+    my $return;
+    {
+        local $!;               # eval can mess up $!
+        local $@;               # don't set $@ in the test
+        local $SIG{__DIE__};    # don't trip an outside DIE handler.
+        $return = eval { $code->() };
+        $error = $@;
+    }
 
-    return wantarray ? ( $return, $@ ) : $return;
+    die $error if $error and $opts{die_on_fail};
+
+    return wantarray ? ( $return, $error ) : $return;
 }
 
 =end private
@@ -1296,7 +1303,7 @@ sub explain {
     return map {
         ref $_
           ? do {
-            require Data::Dumper;
+            $self->_try(sub { require Data::Dumper }, die_on_fail => 1);
 
             my $dumper = Data::Dumper->new( [$_] );
             $dumper->Indent(1)->Terse(1);
