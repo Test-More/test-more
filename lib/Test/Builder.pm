@@ -707,13 +707,12 @@ sub cmp_ok {
 
         local( $@, $!, $SIG{__DIE__} );    # isolate eval
 
-        my $code = $self->_caller_context;
+        my($pack, $file, $line) = $self->caller();
 
-        # Yes, it has to look like this or 5.4.5 won't see the #line
-        # directive.
-        # Don't ask me, man, I just work here.
-        $test = eval "
-$code" . "\$got $type \$expect;";
+        $test = eval qq[
+#line 1 "cmp_ok [from $file line $line]"
+\$got $type \$expect;
+];
         $error = $@;
     }
     local $Level = $Level + 1;
@@ -1842,13 +1841,20 @@ Like the normal caller(), except it reports according to your level().
 
 C<$height> will be added to the level().
 
+If caller() winds up off the top of the stack it report the highest context.
+
 =cut
 
 sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my( $self, $height ) = @_;
     $height ||= 0;
 
-    my @caller = CORE::caller( $self->level + $height + 1 );
+    my $level = $self->level + $height + 1;
+    my @caller;
+    do {
+        @caller = CORE::caller( $level );
+        $level--;
+    } until @caller;
     return wantarray ? @caller : $caller[0];
 }
 

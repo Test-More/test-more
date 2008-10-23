@@ -9,6 +9,12 @@
       [rt.cpan.org 24186] [code.google.com 16]
     * diag() properly escapes blank lines.
 
+    Feature Changes
+    * cmp_ok() now reports warnings and errors as coming from inside cmp_ok,
+      as well as reporting the caller's file and line.  This let's the user
+      know where cmp_ok() was called from while reminding them that it is
+      being run in a different context.
+
 
 0.84  Wed Oct 15 09:06:12 EDT 2008
     Other
