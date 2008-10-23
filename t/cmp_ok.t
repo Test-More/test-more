@@ -50,6 +50,10 @@ sub try_cmp_ok {
 use Test::More;
 Test::More->builder->no_ending(1);
 
+require MyOverload;
+my $cmp = Overloaded::Compare->new("foo", 42);
+my $ify = Overloaded::Ify->new("bar", 23);
+
 my @Tests = (
     [1, '==', 1],
     [1, '==', 2],
@@ -57,22 +61,12 @@ my @Tests = (
     ["a", "eq", "a"],
     [1, "+", 1],
     [1, "-", 1],
-);
 
-# These don't work yet.
-if( eval { require overload } ) {
-    require MyOverload;
-    
-    my $cmp = Overloaded::Compare->new("foo", 42);
-    my $ify = Overloaded::Ify->new("bar", 23);
-    
-    push @Tests, (
-        [$cmp, '==', 42],
-        [$cmp, 'eq', "foo"],
-        [$ify, 'eq', "bar"],
-        [$ify, "==", 23],
-    );
-}
+    [$cmp, '==', 42],
+    [$cmp, 'eq', "foo"],
+    [$ify, 'eq', "bar"],
+    [$ify, "==", 23],
+);
 
 plan tests => scalar @Tests;
 $TB->plan(tests => @Tests * 2);
