@@ -1,4 +1,4 @@
-0.85_01
+0.85_01  Thu Oct 23 18:57:38 PDT 2008
     New Features
     * cmp_ok() now displays the error if the comparison throws one.
       For example, broken overloaded objects.
@@ -14,6 +14,10 @@
       as well as reporting the caller's file and line.  This let's the user
       know where cmp_ok() was called from while reminding them that it is
       being run in a different context.
+
+    Other
+    * Dependency on ExtUtils::MakeMaker 6.27 only on Windows otherwise the
+      nested tests won't run.
 
 
 0.84  Wed Oct 15 09:06:12 EDT 2008
