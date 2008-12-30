@@ -192,7 +192,8 @@ sub increment_test_number {
       unless $increment =~ /^[+-]?\d+$/;
 
     my $num = $self->next_test_number;
-    return $self->next_test_number( $num + $increment );
+    $self->next_test_number( $num + $increment );
+    return;
 }
 
 =head3 summary

@@ -11,6 +11,9 @@ BEGIN {
     }
 }
 
+print STDOUT "1..0 # Skip exit codes not implemented\n";
+exit;
+
 unless( eval { require File::Spec } ) {
     print "1..0 # Skip Need File::Spec to run this test\n";
     exit 0;
