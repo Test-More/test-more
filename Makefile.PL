@@ -59,9 +59,7 @@ WriteMakefile(
 
     PREREQ_PM       => { 
         Test::Harness   => 2.03,
-
-        # Make sure this gets removed before release.
-#        Mouse           => 0.06,
+        Mouse           => 0.13,
     },
 
     # Added to the core in 5.7.3 and also 5.6.2.
