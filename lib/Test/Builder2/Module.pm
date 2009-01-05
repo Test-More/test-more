@@ -33,7 +33,7 @@ Test::Builder2::Module - Write a test module
     our @EXPORT = qw(ok);
 
     # ok( 1 + 1 == 2 );
-    install-test( ok => sub {
+    install_test( ok => sub {
         my $test = shift;
         return $Builder-ok($test);
     });
