@@ -48,6 +48,14 @@ if ($mm_ver =~ /_/) { # dev version
     die $@ if $@;
 }
 
+
+# Windows does not expand *.t and MakeMaker only started working around
+# that for TESTS in 6.27.  This does not introduce a circular dep
+# because MakeMaker ships with its own Test::More.
+my %Prereqs;
+$Prereqs{'ExtUtils::MakeMaker'} = 6.27 if $^O eq 'MSWin32';
+
+
 WriteMakefile(
     NAME            => $PACKAGE,
 
@@ -60,6 +68,7 @@ WriteMakefile(
     PREREQ_PM       => { 
         Test::Harness   => 2.03,
         Mouse           => 0.13,
+        %Prereqs
     },
 
     # Added to the core in 5.7.3 and also 5.6.2.
@@ -69,7 +78,7 @@ WriteMakefile(
         TESTS           => 't/*.t t/*/*.t',
     },
 
-    ($mm_ver <= 6.44 ? () : (META_MERGE => {
+    ($mm_ver <= 6.45 ? () : (META_MERGE => {
         resources => {
             license     =>      'http://dev.perl.org/licenses/',
             homepage    =>      'http://test-more.googlecode.com',

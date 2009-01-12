@@ -1,21 +1,39 @@
+
+#!start included /usr/local/perl/5.10.0/lib/5.10.0/ExtUtils/MANIFEST.SKIP
 # Avoid version control files.
 \bRCS\b
 \bCVS\b
-,\w$
+\bSCCS\b
+,v$
+\B\.svn\b
+\B\.git\b
+\B\.gitignore\b
+\b_darcs\b
 
 # Avoid Makemaker generated and utility files.
-^MANIFEST\.
-^Makefile$
-^blib/
-^MakeMaker-\d
-^pm_to_blib$
-\.ts$
+\bMANIFEST\.bak
+\bMakefile$
+\bblib/
+\bMakeMaker-\d
+\bpm_to_blib\.ts$
+\bpm_to_blib$
+\bblibdirs\.ts$         # 6.18 through 6.25 generated this
+
+# Avoid Module::Build generated and utility files.
+\bBuild$
+\b_build/
 
 # Avoid temp and backup files.
 ~$
 \.old$
 \#$
-^\.#
+\b\.#
+\.bak$
+
+# Avoid Devel::Cover files.
+\bcover_db\b
+#!end included /usr/local/perl/5.10.0/lib/5.10.0/ExtUtils/MANIFEST.SKIP
+
 
 # Avoid this one test that doesn't work yet
 ^t/strays.t
@@ -28,7 +46,3 @@
 
 # Avoid Devel::Cover stuff
 ^cover_db/
-
-# TB2 isn't ready to ship.
-^lib/Test/Builder2/
-^t/Builder2/
