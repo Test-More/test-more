@@ -8,9 +8,6 @@ use Test::Builder2::History;
 use Test::Builder2::Result;
 
 
-sub assert { confess "Assert failed" unless $_[0] };
-
-
 =head1 NAME
 
 Test::Builder2 - 2nd Generation test library builder
@@ -161,5 +158,21 @@ sub ok {
 
     return $test ? 1 : 0;
 }
+
+
+=begin private
+
+=head3 assert
+
+    assert EXPRESSION;
+
+A simple assert function.  Pass it an expression you expect to be true.
+
+=end private
+
+=cut
+
+sub assert { confess "Assert failed" unless $_[0] };
+
 
 1;
