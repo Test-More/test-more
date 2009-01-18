@@ -10,7 +10,7 @@ use Test::Builder2;
 use base 'Exporter';
 
 our $Builder = Test::Builder2->new;
-our @EXPORT = qw($Builder install_test import);
+our @EXPORT = qw($Builder install_test import builder);
 
 sub import {
     my $class = shift;
@@ -42,7 +42,7 @@ Test::Builder2::Module - Write a test module
 
 A module to declare test functions to make writing a test library easier.
 
-=head2 METHODS
+=head2 FUNCTIONS
 
 =head3 install_test
 
@@ -96,6 +96,21 @@ sub install_test {
     _install($caller, $name, $code);
 
     return $code;
+}
+
+
+=head2 METHODS
+
+=head3 builder
+
+    my $builder = Your::Test->builder;
+
+Returns the Test::Builder2 object.
+
+=cut
+
+sub builder {
+    return $Builder;
 }
 
 1;
