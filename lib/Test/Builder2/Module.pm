@@ -9,17 +9,33 @@ our $CLASS = __PACKAGE__;
 use Test::Builder2;
 use base 'Exporter';
 
-our $Builder = Test::Builder2->new;
-our @EXPORT = qw($Builder install_test import builder);
+our @EXPORT = qw(install_test builder);
 
 sub import {
     my $class = shift;
     my $caller = caller;
 
-    return $class->export_to_level(1, $class, @EXPORT) if $class eq $CLASS;
+    $class->export_to_level(1, $class, @EXPORT);
 
-    $Builder->plan(@_);
-    _install($caller, "ok", $class->can("ok"));
+    $caller->builder(Test::Builder2->new);
+
+    no strict 'refs';
+
+    # XXX Don't like doing this.  Haven't found a better way.
+    unshift @{$caller .'::ISA'}, 'Exporter';
+
+    # Give them the import() routine for modules.
+    *{$caller .'::import'} = \&_module_import;
+}
+
+
+sub _module_import {
+    my $class  = shift;
+    my $caller = caller;
+
+    $class->builder->plan(@_);
+
+    $class->export_to_level(1, $class);
 }
 
 
@@ -73,7 +89,7 @@ sub install_test {
 
     my $code = sub {
         # Fire any before-test actions.
-        $Builder->test_start();
+        $caller->builder->test_start();
 
         # Call the original routine, but retain context.
         my @ret;
@@ -88,7 +104,7 @@ sub install_test {
         }
 
         # And after-test.
-        $Builder->test_end(@ret);
+        $caller->builder->test_end(@ret);
 
         return wantarray ? @ret : $ret[0];
     };
@@ -110,7 +126,16 @@ Returns the Test::Builder2 object.
 =cut
 
 sub builder {
-    return $Builder;
+    my $proto = shift;
+    my $class = ref $proto || $proto;
+
+    no strict 'refs';
+    if( @_ ) {
+        my $builder = shift;
+        *{$class . '::Builder'} = \$builder;
+    }
+
+    return ${$class . '::Builder'};
 }
 
 1;
