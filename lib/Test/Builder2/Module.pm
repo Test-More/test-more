@@ -69,7 +69,8 @@ name { ... } >> with two differences.
 
 1. Declaring the test in this manner enables pre and post test actions,
    such as aborting the test on failure.
-2. The $Builder object is available inside your $code.
+2. The $Builder object is available inside your $code which is just a
+   shortcut for C<<$class->builder>>
 
 =cut
 
@@ -120,8 +121,9 @@ sub install_test {
 =head3 builder
 
     my $builder = Your::Test->builder;
+    Your::Test->builder($builder);
 
-Returns the Test::Builder2 object.
+Gets/sets the Test::Builder2 for Your::Test.  Also changes C<$Builder> for Your::Test.
 
 =cut
 
