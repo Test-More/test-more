@@ -97,11 +97,8 @@ sub install_test {
         if( wantarray ) {
             @ret = $test_code->(@_);
         }
-        elsif( defined wantarray ) {
-            $ret[0] = $test_code->(@_);
-        }
         else {
-            $test_code->(@_);
+            $ret[0] = $test_code->(@_);
         }
 
         # And after-test.
