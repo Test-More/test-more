@@ -34,7 +34,6 @@ $tb->failure_output(\*FAKEOUT);
 }
 
 my $Test = Test::Builder->new;
-$Test->plan( tests => 1 );
 $Test->level(0);
 $Test->is_eq($output->read, <<"END");
 1..3
@@ -45,3 +44,7 @@ ok 3
 ok 4
 ok 5
 END
+$Test->ok(1);
+$Test->ok(1);
+$Test->ok(1);
+$Test->done_testing();
