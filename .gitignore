@@ -1,0 +1,6 @@
+Makefile
+blib/
+cover_db/
+pm_to_blib
+*.bak
+*~
