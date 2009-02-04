@@ -216,14 +216,17 @@ sub plan {
 
     local $Level = $Level + 1;
 
-    $self->croak("You tried to plan twice")
-      if $self->{Have_Plan};
-
     if( $cmd eq 'no_plan' ) {
+        $self->croak("You tried to plan twice")
+          if $self->{Have_Plan};
+
         $self->carp("no_plan takes no arguments") if $arg;
         $self->no_plan;
     }
     elsif( $cmd eq 'skip_all' ) {
+        $self->croak("You tried to plan twice")
+          if $self->{Have_Plan};
+
         return $self->skip_all($arg);
     }
     elsif( $cmd eq 'tests' ) {
@@ -264,10 +267,16 @@ sub expected_tests {
         $self->croak("Number of tests must be a positive integer.  You gave it '$max'")
           unless $max =~ /^\+?\d+$/;
 
-        $self->{Expected_Tests} = $max;
         $self->{Have_Plan}      = 1;
 
-        $self->_print("1..$max\n") unless $self->no_header;
+        if($self->{Expected_Tests} == 0) {
+            $self->{Expected_Tests} = $max;
+            $self->_print("1..$max\n") unless $self->no_header;
+        } else {
+            my $old_expected_tests = $self->{Expected_Tests};
+            $self->{Expected_Tests} += $max;
+            $self->_print($old_expected_tests . ".." . $self->{Expected_Tests} . "\n") unless $self->no_header;
+        }
     }
     return $self->{Expected_Tests};
 }
@@ -283,6 +292,7 @@ Declares that this test will run an indeterminate # of tests.
 sub no_plan {
     my $self = shift;
 
+    $self->{Expected_Tests} = 0;
     $self->{No_Plan}   = 1;
     $self->{Have_Plan} = 1;
 
@@ -336,17 +346,22 @@ sub done_testing {
 
     $self->{Done_Testing} = [caller];
 
-    if( $self->expected_tests && $num_tests != $self->expected_tests ) {
+    if( defined ($self->expected_tests) && $num_tests > $self->expected_tests ) {
+        if( $self->{Expected_Tests} == 0 ) {
+            $self->_print("1.." . $num_tests);
+        } else {
+            $self->_print($self->{Expected_Tests} . ".." . $num_tests);
+        }
+
+        $self->{Expected_Tests} += $num_tests;
+    } elsif( defined ($self->expected_tests) && $num_tests < $self->expected_tests ) {
+        # If $num_tests is LESS than the expected tests, that's an error.
         $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".
                      "but done_testing() expects $num_tests");
     }
-    else {
-        $self->{Expected_Tests} = $num_tests;
-    }
-
-    $self->_print("1..$num_tests\n") unless $self->{Have_Plan};
 
     $self->{Have_Plan} = 1;
+    $self->{No_Plan} = 0;
 
     return 1;
 }
