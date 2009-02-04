@@ -19,11 +19,9 @@ use Test::More;
 
 my $result;
 BEGIN {
-    eval {
-        use_ok("Wibble");
-    };
-    $result = $@;
+    $result = use_ok("strict");
 }
 
-plan tests => 1;
-like $result, '/^You tried to run a test without a plan/';
+ok( $result, "use_ok() ran" );
+done_testing(2);
+

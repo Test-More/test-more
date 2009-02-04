@@ -31,6 +31,7 @@ our @EXPORT = qw(ok use_ok require_ok
   eq_array eq_hash eq_set
   $TODO
   plan
+  done_testing
   can_ok isa_ok new_ok
   diag note explain
   BAIL_OUT
@@ -44,9 +45,9 @@ Test::More - yet another framework for writing test scripts
 
   use Test::More tests => 23;
   # or
-  use Test::More qw(no_plan);
-  # or
   use Test::More skip_all => $reason;
+  # or
+  use Test::More;   # see done_testing()
 
   BEGIN { use_ok( 'Some::Module' ); }
   require_ok( 'Some::Module' );
@@ -116,14 +117,19 @@ The preferred way to do this is to declare a plan when you C<use Test::More>.
 
   use Test::More tests => 23;
 
-There are rare cases when you will not know beforehand how many tests
-your script is going to run.  In this case, you can declare that you
-have no plan.  (Try to avoid using this as it weakens your test.)
+There are cases when you will not know beforehand how many tests your
+script is going to run.  In this case, you can declare your tests at
+the end.
 
-  use Test::More qw(no_plan);
+  use Test::More;
 
-B<NOTE>: using no_plan requires a Test::Harness upgrade else it will
-think everything has failed.  See L<CAVEATS and NOTES>).
+  ... run your tests ...
+
+  done_testing( $number_of_tests_run );
+
+Sometimes you really don't know how many tests were run, or it's too
+difficult to calculate.  In which case you can leave off
+$number_of_tests_run.
 
 In some cases, you'll want to completely skip an entire testing script.
 
@@ -187,6 +193,32 @@ sub import_extra {
     @$list = @other;
 
     return;
+}
+
+=over 4
+
+=item B<done_testing>
+
+    done_testing();
+    done_testing($number_of_tests);
+
+If you don't know how many tests you're going to run, you can issue
+the plan when you're done running tests.
+
+$number_of_tests is the same as plan(), it's the number of tests you
+expected to run.  You can omit this, in which case the number of tests
+you ran doesn't matter, just the fact that your tests ran to
+conclusion.
+
+This is safer than and replaces the "no_plan" plan.
+
+=back
+
+=cut
+
+sub done_testing {
+    my $tb = Test::More->builder;
+    $tb->done_testing(@_);
 }
 
 =head2 Test names
@@ -1568,11 +1600,11 @@ This may cause problems:
 
 =item Test::Harness upgrade
 
-no_plan and todo depend on new Test::Harness features and fixes.  If
-you're going to distribute tests that use no_plan or todo your
-end-users will have to upgrade Test::Harness to the latest one on
-CPAN.  If you avoid no_plan and TODO tests, the stock Test::Harness
-will work fine.
+no_plan, todo and done_testing() depend on new Test::Harness features
+and fixes.  If you're going to distribute tests that use no_plan or
+todo your end-users will have to upgrade Test::Harness to the latest
+one on CPAN.  If you avoid no_plan and TODO tests, the stock
+Test::Harness will work fine.
 
 Installing Test::More should also upgrade Test::Harness.
 

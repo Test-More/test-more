@@ -23,6 +23,12 @@ t/Builder/carp.t
 t/Builder/create.t
 t/Builder/curr_test.t
 t/Builder/details.t
+t/Builder/done_testing.t
+t/Builder/done_testing_double.t
+t/Builder/done_testing_plan_mismatch.t
+t/Builder/done_testing_with_no_plan.t
+t/Builder/done_testing_with_number.t
+t/Builder/done_testing_with_plan.t
 t/Builder/has_plan.t
 t/Builder/has_plan2.t
 t/Builder/is_fh.t
@@ -30,6 +36,7 @@ t/Builder/maybe_regex.t
 t/Builder/no_diag.t
 t/Builder/no_ending.t
 t/Builder/no_header.t
+t/Builder/no_plan_at_all.t
 t/Builder/ok_obj.t
 t/Builder/output.t
 t/Builder/reset.t

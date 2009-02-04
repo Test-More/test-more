@@ -289,6 +289,69 @@ sub no_plan {
     return 1;
 }
 
+=item B<done_testing>
+
+  $Test->done_testing();
+  $Test->done_testing($num_tests);
+
+Declares that you are done testing, no more tests will be run after this point.
+
+If a plan has not yet been output, it will do so.
+
+$num_tests is the number of tests you planned to run.  If a numbered
+plan was already declared, and if this contradicts, a failing test
+will be run to reflect the planning mistake.  If no_plan was declared,
+this will override.
+
+If done_testing() is called twice, the second call will issue a
+failing test.
+
+If $num_tests is omitted, the number of tests run will be used, like
+no_plan.
+
+done_testing() is, in effect, used when you'd want to use no_plan, but safer.
+You'd use it like so:
+
+    $Test->ok($a == $b);
+    $Test->done_testing();
+
+Or to plan a variable number of tests:
+
+    for my $test (@tests) {
+        $Test->ok($test);
+    }
+    $Test->done_testing(@tests);
+
+=cut
+
+sub done_testing {
+    my $self  = shift;
+    my $num_tests = @_ ? shift : $self->current_test;
+
+    if( $self->{Done_Testing} ) {
+        my($file, $line) = @{$self->{Done_Testing}}[1,2];
+        $self->ok(0, "done_testing() was already called at line $line");
+        return;
+    }
+
+    $self->{Done_Testing} = [caller];
+
+    if( $self->expected_tests && $num_tests != $self->expected_tests ) {
+        $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".
+                     "but done_testing() expects $num_tests");
+    }
+    else {
+        $self->{Expected_Tests} = $num_tests;
+    }
+
+    $self->_print("1..$num_tests\n") unless $self->{Have_Plan};
+
+    $self->{Have_Plan} = 1;
+
+    return 1;
+}
+
+
 =item B<has_plan>
 
   $plan = $Test->has_plan
@@ -376,8 +439,6 @@ sub ok {
     # $test might contain an object which we don't want to accidentally
     # store, so we turn it into a boolean.
     $test = $test ? 1 : 0;
-
-    $self->_plan_check;
 
     lock $self->{Curr_Test};
     $self->{Curr_Test}++;
@@ -823,8 +884,6 @@ sub skip {
     $why ||= '';
     $self->_unoverload_str( \$why );
 
-    $self->_plan_check;
-
     lock( $self->{Curr_Test} );
     $self->{Curr_Test}++;
 
@@ -864,8 +923,6 @@ to
 sub todo_skip {
     my( $self, $why ) = @_;
     $why ||= '';
-
-    $self->_plan_check;
 
     lock( $self->{Curr_Test} );
     $self->{Curr_Test}++;
@@ -1539,16 +1596,6 @@ sub croak {
     return die $self->_message_at_caller(@_);
 }
 
-sub _plan_check {
-    my $self = shift;
-
-    unless( $self->{Have_Plan} ) {
-        local $Level = $Level + 2;
-        $self->croak("You tried to run a test without a plan");
-    }
-
-    return;
-}
 
 =back
 
@@ -1881,8 +1928,6 @@ sub _sanity_check {
     my $self = shift;
 
     $self->_whoa( $self->{Curr_Test} < 0, 'Says here you ran a negative number of tests!' );
-    $self->_whoa( !$self->{Have_Plan} and $self->{Curr_Test},
-        'Somehow your tests ran without a plan!' );
     $self->_whoa( $self->{Curr_Test} != @{ $self->{Test_Results} },
         'Somehow you got a different number of results than tests ran!' );
 
@@ -1939,12 +1984,16 @@ sub _ending {
     my $self = shift;
 
     my $real_exit_code = $?;
-    $self->_sanity_check();
 
     # Don't bother with an ending if this is a forked copy.  Only the parent
     # should do the ending.
     if( $self->{Original_Pid} != $$ ) {
         return;
+    }
+
+    # Ran tests but never declared a plan or hit done_testing
+    if( !$self->{Have_Plan} and $self->{Curr_Test} ) {
+        $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
     }
 
     # Exit if plan() was never called.  This is so "require Test::Simple"
