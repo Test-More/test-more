@@ -269,14 +269,9 @@ sub expected_tests {
 
         $self->{Have_Plan}      = 1;
 
-        if($self->{Expected_Tests} == 0) {
-            $self->{Expected_Tests} = $max;
-            $self->_print("1..$max\n") unless $self->no_header;
-        } else {
-            my $old_expected_tests = $self->{Expected_Tests};
-            $self->{Expected_Tests} += $max;
-            $self->_print($old_expected_tests . ".." . $self->{Expected_Tests} . "\n") unless $self->no_header;
-        }
+        my $old_expected_tests = $self->{Expected_Tests} + 1;
+        $self->{Expected_Tests} += $max;
+        $self->_print($old_expected_tests . ".." . $self->{Expected_Tests} . "\n") unless $self->no_header;
     }
     return $self->{Expected_Tests};
 }
@@ -347,13 +342,8 @@ sub done_testing {
     $self->{Done_Testing} = [caller];
 
     if( defined ($self->expected_tests) && $num_tests > $self->expected_tests ) {
-        if( $self->{Expected_Tests} == 0 ) {
-            $self->_print("1.." . $num_tests);
-        } else {
-            $self->_print($self->{Expected_Tests} . ".." . $num_tests);
-        }
-
-        $self->{Expected_Tests} += $num_tests;
+        $self->_print(($self->{Expected_Tests} + 1) . ".." . $num_tests) unless $self->no_header;
+        $self->{Expected_Tests} = $num_tests;
     } elsif( defined ($self->expected_tests) && $num_tests < $self->expected_tests ) {
         # If $num_tests is LESS than the expected tests, that's an error.
         $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".

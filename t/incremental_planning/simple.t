@@ -1,6 +1,13 @@
 #!/usr/bin/perl -w
 # $Id$
 
+=pod
+In this branch, I'm trying out setting up "incremental planning".
+I want C<Test::Builder> to emit partial plans every time C<plan()>
+is called; the testing harness can later combine plans to come up
+with a single 'conclusive' plan.
+=cut
+
 use strict;
 use lib 't/lib';
 
@@ -17,25 +24,24 @@ $tb->failure_output(\*FAKEOUT);
     # Normalize test output
     local $ENV{HARNESS_ACTIVE};
 
-    $tb->plan( tests => 4 );
-    $tb->plan( tests => 4 );
+    $tb->plan( tests => 3 );
     $tb->ok(1);
     $tb->ok(1);
     $tb->ok(1);
-
-    eval { $tb->plan('no_plan')  };
-    $tb->ok($@ eq sprintf("You tried to plan twice at %s line %d.\n", $0, __LINE__ -1),
-      'disallow changing plan' );
+    $tb->plan( tests => 2 );
+    $tb->ok(1);
+    $tb->ok(1);
 }
 
 my $Test = Test::Builder->new;
 $Test->plan( tests => 1 );
 $Test->level(0);
 $Test->is_eq($output->read, <<"END");
-1..4
-5..8
+1..3
 ok 1
 ok 2
 ok 3
-ok 4 - disallow changing plan
+4..5
+ok 4
+ok 5
 END
