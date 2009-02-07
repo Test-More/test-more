@@ -1,5 +1,4 @@
 package Overloaded;
-# $Id$
 
 sub new {
     my $class = shift;

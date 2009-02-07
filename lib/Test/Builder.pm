@@ -1,5 +1,4 @@
 package Test::Builder;
-# $Id$
 
 use 5.006;
 use strict;

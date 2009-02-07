@@ -1,5 +1,4 @@
 package Test::Builder::Tester::Color;
-# $Id$
 
 use strict;
 

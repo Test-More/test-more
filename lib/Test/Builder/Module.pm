@@ -1,5 +1,4 @@
 package Test::Builder::Module;
-# $Id$
 
 use strict;
 
