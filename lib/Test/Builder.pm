@@ -7,6 +7,13 @@ use warnings;
 our $VERSION = '0.86';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
+BEGIN {
+    if( $] < 5.008 ) {
+        require Test::Builder::IO::Scalar;
+    }
+}
+
+
 # Make Test::Builder thread-safe for ithreads.
 BEGIN {
     use Config;
@@ -1409,28 +1416,32 @@ sub _print_to_fh {
 
 =item B<output>
 
-    $Test->output($fh);
-    $Test->output($file);
-
-Where normal "ok/not ok" test output should go.
-
-Defaults to STDOUT.
-
 =item B<failure_output>
-
-    $Test->failure_output($fh);
-    $Test->failure_output($file);
-
-Where diagnostic output on test failures and diag() should go.
-
-Defaults to STDERR.
 
 =item B<todo_output>
 
-    $Test->todo_output($fh);
-    $Test->todo_output($file);
+    my $filehandle = $Test->output;
+    $Test->output($filehandle);
+    $Test->output($filename);
+    $Test->output(\$scalar);
 
-Where diagnostics about todo test failures and diag() should go.
+These methods control where Test::Builder will print it's output.
+They take either an open $filehandle, a $filename to open and write to
+or a $scalar reference to append to.  It will always return a $filehandle.
+
+B<output> is where normal "ok/not ok" test output goes.
+
+Defaults to STDOUT.
+
+B<failure_output> is where diagnostic output on test failures and
+diag() goes.  It is normally not read by Test::Harness and instead is
+displayed to the user.
+
+Defaults to STDERR.
+
+B<todo_output> is used instead of C<<failure_output()>> for the
+diagnostics of a failing TODO test.  These will not be seen by the
+user.
 
 Defaults to STDOUT.
 
@@ -1470,6 +1481,18 @@ sub _new_fh {
     my $fh;
     if( $self->is_fh($file_or_fh) ) {
         $fh = $file_or_fh;
+    }
+    elsif( ref $file_or_fh eq 'SCALAR' ) {
+        # Scalar refs as filehandles was added in 5.8.
+        if( $] >= 5.008 ) {
+            open $fh, ">", $file_or_fh
+              or $self->croak("Can't open scalar ref $file_or_fh: $!");
+        }
+        # Emulate scalar ref filehandles with a tie.
+        else {
+            $fh = Test::Builder::IO::Scalar->new($file_or_fh)
+              or $self->croak("Can't tie scalar ref $file_or_fh");
+        }
     }
     else {
         open $fh, ">", $file_or_fh

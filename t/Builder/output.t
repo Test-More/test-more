@@ -13,13 +13,11 @@ BEGIN {
 }
 chdir 't';
 
-
-use TieOut;
 use Test::Builder;
 
 # The real Test::Builder
 my $Test = Test::Builder->new;
-$Test->plan( tests => 4 );
+$Test->plan( tests => 5 );
 
 
 # The one we're going to test.
@@ -62,10 +60,20 @@ END { 1 while unlink($tmpfile) }
 }
 
 
+# Test output to a scalar ref
+{
+    my $scalar = '';
+    my $out = $tb->output(\$scalar);
+
+    print $out "Hey hey hey!\n";
+    $Test->is_eq($scalar, "Hey hey hey!\n");
+}
+
+
 # Ensure stray newline in name escaping works.
 {
-    my $out = tie *FAKEOUT, 'TieOut';
-    $tb->output(\*FAKEOUT);
+    my $fakeout = '';
+    my $out = $tb->output(\$fakeout);
     $tb->exported_to(__PACKAGE__);
     $tb->no_ending(1);
     $tb->plan(tests => 5);
@@ -76,8 +84,7 @@ END { 1 while unlink($tmpfile) }
     $tb->skip("wibble\nmoof");
     $tb->todo_skip("todo\nskip\n");
 
-    my $output = $out->read;
-    $Test->is_eq( $output, <<OUTPUT ) || print STDERR $output;
+    $Test->is_eq( $fakeout, <<OUTPUT ) || print STDERR $fakeout;
 1..5
 ok 1 - ok
 ok 2 - ok
