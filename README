@@ -13,3 +13,7 @@ perl Makefile.PL
 make
 make test
 make install
+
+* More Info
+
+More information can be found at http://test-more.googlecode.com/

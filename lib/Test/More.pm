@@ -1664,6 +1664,12 @@ the perl-qa gang.
 See F<http://rt.cpan.org> to report and view bugs.
 
 
+=head1 SOURCE
+
+The source code repository for Test::More can be found at
+F<http://github.com/schwern/test-more/>.
+
+
 =head1 COPYRIGHT
 
 Copyright 2001-2008 by Michael G Schwern E<lt>schwern@pobox.comE<gt>.
