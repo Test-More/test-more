@@ -1,5 +1,7 @@
 #!perl -w
 
+use strict;
+
 BEGIN {
     if( $ENV{PERL_CORE} ) {
         chdir 't';
@@ -12,75 +14,70 @@ BEGIN {
 chdir 't';
 
 
-# Can't use Test.pm, that's a 5.005 thing.
-print "1..4\n";
-
-my $test_num = 1;
-# Utility testing functions.
-sub ok ($;$) {
-    my($test, $name) = @_;
-    my $ok = '';
-    $ok .= "not " unless $test;
-    $ok .= "ok $test_num";
-    $ok .= " - $name" if defined $name;
-    $ok .= "\n";
-    print $ok;
-    $test_num++;
-
-    return $test;
-}
-
 use TieOut;
 use Test::Builder;
-my $Test = Test::Builder->new();
 
-my $result;
+# The real Test::Builder
+my $Test = Test::Builder->new;
+$Test->plan( tests => 4 );
+
+
+# The one we're going to test.
+my $tb = Test::Builder->create();
+
 my $tmpfile = 'foo.tmp';
-my $out = $Test->output($tmpfile);
 END { 1 while unlink($tmpfile) }
 
-ok( defined $out );
+# Test output to a file
+{
+    my $out = $tb->output($tmpfile);
+    $Test->ok( defined $out );
 
-print $out "hi!\n";
-close *$out;
+    print $out "hi!\n";
+    close *$out;
 
-undef $out;
-open(IN, $tmpfile) or die $!;
-chomp(my $line = <IN>);
-close IN;
+    undef $out;
+    open(IN, $tmpfile) or die $!;
+    chomp(my $line = <IN>);
+    close IN;
 
-ok($line eq 'hi!');
+    $Test->is_eq($line, 'hi!');
+}
 
-open(FOO, ">>$tmpfile") or die $!;
-$out = $Test->output(\*FOO);
-$old = select *$out;
-print "Hello!\n";
-close *$out;
-undef $out;
-select $old;
-open(IN, $tmpfile) or die $!;
-my @lines = <IN>;
-close IN;
 
-ok($lines[1] =~ /Hello!/);
+# Test output to a filehandle
+{
+    open(FOO, ">>$tmpfile") or die $!;
+    my $out = $tb->output(\*FOO);
+    my $old = select *$out;
+    print "Hello!\n";
+    close *$out;
+    undef $out;
+    select $old;
+    open(IN, $tmpfile) or die $!;
+    my @lines = <IN>;
+    close IN;
 
+    $Test->like($lines[1], qr/Hello!/);
+}
 
 
 # Ensure stray newline in name escaping works.
-$out = tie *FAKEOUT, 'TieOut';
-$Test->output(\*FAKEOUT);
-$Test->exported_to(__PACKAGE__);
-$Test->no_ending(1);
-$Test->plan(tests => 5);
+{
+    my $out = tie *FAKEOUT, 'TieOut';
+    $tb->output(\*FAKEOUT);
+    $tb->exported_to(__PACKAGE__);
+    $tb->no_ending(1);
+    $tb->plan(tests => 5);
 
-$Test->ok(1, "ok");
-$Test->ok(1, "ok\n");
-$Test->ok(1, "ok, like\nok");
-$Test->skip("wibble\nmoof");
-$Test->todo_skip("todo\nskip\n");
+    $tb->ok(1, "ok");
+    $tb->ok(1, "ok\n");
+    $tb->ok(1, "ok, like\nok");
+    $tb->skip("wibble\nmoof");
+    $tb->todo_skip("todo\nskip\n");
 
-my $output = $out->read;
-ok( $output eq <<OUTPUT ) || print STDERR $output;
+    my $output = $out->read;
+    $Test->is_eq( $output, <<OUTPUT ) || print STDERR $output;
 1..5
 ok 1 - ok
 ok 2 - ok
@@ -93,3 +90,4 @@ not ok 5 # TODO & SKIP todo
 # skip
 # 
 OUTPUT
+}
