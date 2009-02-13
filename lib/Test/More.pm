@@ -451,6 +451,12 @@ is()'s use of C<eq> will interfere:
 
     cmp_ok( $big_hairy_number, '==', $another_big_hairy_number );
 
+It's especially useful when comparing greater-than or smaller-than 
+relation between values:
+
+    cmp_ok( $some_value, '<=', $upper_limit );
+
+
 =cut
 
 sub cmp_ok($$$;$) {
