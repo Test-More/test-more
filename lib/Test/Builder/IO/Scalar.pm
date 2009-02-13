@@ -474,13 +474,16 @@ Return the current position in the stream, as a numeric offset.
 sub tell { *{shift()}->{Pos} }
 
 #------------------------------
-#
-# use_RS [YESNO]
-#
-# I<Instance method.>
-# Obey the curent setting of $/, like IO::Handle does?
-# Default is false in 1.x, but cold-welded true in 2.x and later.
-#
+
+=item  use_RS [YESNO]
+
+I<Instance method.>
+B<Deprecated and ignored.>
+Obey the curent setting of $/, like IO::Handle does?
+Default is false in 1.x, but cold-welded true in 2.x and later.
+
+=cut
+
 sub use_RS {
     my ($self, $yesno) = @_;
     carp "use_RS is deprecated and ignored; \$/ is always consulted\n";
