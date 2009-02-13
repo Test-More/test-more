@@ -350,6 +350,17 @@ In these cases, use ok().
 
   ok( exists $brooklyn{tree},    'A tree grows in Brooklyn' );
 
+A simple call to isnt() usually does not provide a strong test but there
+are cases when you cannot say much more about a value than that it is
+different from some other value:
+
+  new_ok $obj, "Foo";
+
+  my $clone = $obj->clone;
+  isa_ok $obj, "Foo", "Foo->clone";
+
+  isnt $obj, $clone, "clone() produces a different object";
+
 For those grammatical pedants out there, there's an C<isn't()>
 function which is an alias of isnt().
 
