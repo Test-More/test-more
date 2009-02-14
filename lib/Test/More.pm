@@ -877,7 +877,7 @@ is_deeply() compares the dereferenced values of references, the
 references themselves (except for their type) are ignored.  This means
 aspects such as blessing and ties are not considered "different".
 
-is_deeply() current has very limited handling of function reference
+is_deeply() currently has very limited handling of function reference
 and globs.  It merely checks if they have the same referent.  This may
 improve in the future.
 
@@ -1059,7 +1059,7 @@ sub note {
   my @dump = explain @diagnostic_message;
 
 Will dump the contents of any references in a human readable format.
-Usually you want to pass this into C<note> or C<dump>.
+Usually you want to pass this into C<note> or C<diag>.
 
 Handy for things like...
 
