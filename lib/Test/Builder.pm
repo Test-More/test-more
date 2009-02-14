@@ -215,6 +215,15 @@ If you call plan(), don't call any of the other methods below.
 
 =cut
 
+my %plan_cmds = (
+    no_plan     => \&no_plan,
+    skip_all    => \&skip_all,
+    tests       => \&_plan_tests,
+    add         => \&_plan_add,
+);
+
+my %call_once = map { $_ => 1 } qw(no_plan skip_all tests);
+
 sub plan {
     my( $self, $cmd, $arg ) = @_;
 
@@ -222,35 +231,11 @@ sub plan {
 
     local $Level = $Level + 1;
 
-    if( $cmd eq 'no_plan' ) {
-        $self->croak("You tried to plan twice") if $self->{Have_Plan};
+    $self->croak("You tried to plan twice") if $call_once{$cmd} and $self->{Have_Plan};
 
-        $self->carp("no_plan takes no arguments") if $arg;
-        $self->no_plan;
-    }
-    elsif( $cmd eq 'skip_all' ) {
-        $self->croak("You tried to plan twice") if $self->{Have_Plan};
-
-        return $self->skip_all($arg);
-    }
-    elsif( $cmd eq 'tests' ) {
-        $self->croak("You tried to plan twice") if $self->{Have_Plan};
-
-        if($arg) {
-            local $Level = $Level + 1;
-            return $self->expected_tests($arg);
-        }
-        elsif( !defined $arg ) {
-            $self->croak("Got an undefined number of tests");
-        }
-        else {
-            $self->croak("You said to run 0 tests");
-        }
-    }
-    elsif( $cmd eq 'add' ) {
-        $self->{Expected_Tests} = $self->{Expected_Tests} + $arg;
-        $self->{Have_Plan}      = 1;
-        $self->no_plan;
+    if( my $method = $plan_cmds{$cmd} ) {
+        local $Level = $Level + 1;
+        $self->$method($arg);
     }
     else {
         my @args = grep { defined } ( $cmd, $arg );
@@ -258,6 +243,35 @@ sub plan {
     }
 
     return 1;
+}
+
+
+sub _plan_tests {
+    my($self, $arg) = @_;
+
+    if($arg) {
+        local $Level = $Level + 1;
+        return $self->expected_tests($arg);
+    }
+    elsif( !defined $arg ) {
+        $self->croak("Got an undefined number of tests");
+    }
+    else {
+        $self->croak("You said to run 0 tests");
+    }
+
+    return;
+}
+
+
+sub _plan_add {
+    my($self, $arg) = @_;
+
+    $self->{Expected_Tests} = $self->{Expected_Tests} + $arg;
+    $self->{Have_Plan}      = 1;
+    $self->no_plan;
+
+    return;
 }
 
 =item B<expected_tests>
@@ -295,7 +309,9 @@ Declares that this test will run an indeterminate # of tests.
 =cut
 
 sub no_plan {
-    my $self = shift;
+    my($self, $arg) = @_;
+
+    $self->carp("no_plan takes no arguments") if $arg;
 
     $self->{No_Plan}   = 1;
     $self->{Have_Plan} = 1;
