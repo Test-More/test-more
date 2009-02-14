@@ -222,17 +222,20 @@ sub plan {
 
     local $Level = $Level + 1;
 
-    $self->croak("You tried to plan twice")
-      if $self->{Have_Plan};
-
     if( $cmd eq 'no_plan' ) {
+        $self->croak("You tried to plan twice") if $self->{Have_Plan};
+
         $self->carp("no_plan takes no arguments") if $arg;
         $self->no_plan;
     }
     elsif( $cmd eq 'skip_all' ) {
+        $self->croak("You tried to plan twice") if $self->{Have_Plan};
+
         return $self->skip_all($arg);
     }
     elsif( $cmd eq 'tests' ) {
+        $self->croak("You tried to plan twice") if $self->{Have_Plan};
+
         if($arg) {
             local $Level = $Level + 1;
             return $self->expected_tests($arg);
@@ -243,6 +246,11 @@ sub plan {
         else {
             $self->croak("You said to run 0 tests");
         }
+    }
+    elsif( $cmd eq 'add' ) {
+        $self->{Expected_Tests} = $self->{Expected_Tests} + $arg;
+        $self->{Have_Plan}      = 1;
+        $self->no_plan;
     }
     else {
         my @args = grep { defined } ( $cmd, $arg );
