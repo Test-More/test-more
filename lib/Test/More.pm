@@ -96,7 +96,7 @@ Test::More - yet another framework for writing test scripts
 =head1 DESCRIPTION
 
 B<STOP!> If you're just getting started writing tests, have a look at
-Test::Simple first.  This is a drop in replacement for Test::Simple
+L<Test::Simple> first.  This is a drop in replacement for Test::Simple
 which you can switch to once you get the hang of basic testing.
 
 The purpose of this module is to provide a wide range of testing
@@ -881,7 +881,7 @@ is_deeply() currently has very limited handling of function reference
 and globs.  It merely checks if they have the same referent.  This may
 improve in the future.
 
-Test::Differences and Test::Deep provide more in-depth functionality
+L<Test::Differences> and L<Test::Deep> provide more in-depth functionality
 along these lines.
 
 =cut
@@ -1276,6 +1276,8 @@ available such as a database connection failing.
 
 The test will exit with 255.
 
+For even better control look at L<Test::Most>.
+
 =cut
 
 sub BAIL_OUT {
@@ -1499,7 +1501,7 @@ level.  The following is an example of a comparison which might not work:
 
     eq_set([\1, \2], [\2, \1]);
 
-Test::Deep contains much better set comparison functions.
+L<Test::Deep> contains much better set comparison functions.
 
 =cut
 
@@ -1594,7 +1596,7 @@ difference.  This is good.
 
 However, it does mean that functions like is_deeply() cannot be used to
 test the internals of string overloaded objects.  In this case I would
-suggest Test::Deep which contains more flexible testing functions for
+suggest L<Test::Deep> which contains more flexible testing functions for
 complex data structures.
 
 
