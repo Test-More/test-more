@@ -1,10 +1,14 @@
 #!/usr/bin/perl -w
 
-use Test::More;
+use Test::Builder;
 
-plan add => 2;
-pass();
-pass();
+my $tb = Test::Builder->new;
+$tb->level(0);
 
-plan add => 1;
-pass();
+$tb->plan( add => 2 );
+$tb->ok(1);
+$tb->ok(1);
+
+$tb->plan( add => 1 );
+$tb->ok(1);
+
