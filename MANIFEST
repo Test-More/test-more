@@ -40,6 +40,7 @@ t/Builder/no_header.t
 t/Builder/no_plan_at_all.t
 t/Builder/ok_obj.t
 t/Builder/output.t
+t/Builder/plan_add.t
 t/Builder/reset.t
 t/Builder/reset_outputs.t
 t/Builder/try.t
@@ -95,7 +96,6 @@ t/note.t
 t/overload.t
 t/overload_threads.t
 t/plan.t
-t/plan_add.t
 t/plan_bad.t
 t/plan_is_noplan.t
 t/plan_no_plan.t
