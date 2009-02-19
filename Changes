@@ -9,6 +9,10 @@
     * You can now run a test without first declaring a plan.  This allows
       done_testing() to work.
 
+    Bug Fixes
+    * skip_all() with no reason would output "1..0" which is invalid TAP.  It will
+      now always include the SKIP directive.
+
     Other
     * Repository moved to github.
 

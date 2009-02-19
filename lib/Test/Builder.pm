@@ -410,8 +410,8 @@ Skips all the tests, using the given $reason.  Exits immediately with 0.
 sub skip_all {
     my( $self, $reason ) = @_;
 
-    my $out = "1..0";
-    $out .= " # Skip $reason" if $reason;
+    my $out = "1..0 # SKIP";
+    $out .= " $reason" if $reason;
     $out .= "\n";
 
     $self->{Skip_All} = 1;

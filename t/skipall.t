@@ -15,16 +15,19 @@ use strict;
 use Test::More;
 
 my $Test = Test::Builder->create;
-my $tb = Test::More->builder;
+$Test->plan(tests => 2);
 
 my $out = '';
 my $err = '';
-$tb->output(\$out);
-$tb->failure_output(\$err);
+{
+    my $tb = Test::More->builder;
+    $tb->output(\$out);
+    $tb->failure_output(\$err);
 
-plan 'skip_all';
+    plan 'skip_all';
+}
 
 END {
-    $Test->is_eq($out, "1..0\n");
+    $Test->is_eq($out, "1..0 # SKIP\n");
     $Test->is_eq($err, "");
 }
