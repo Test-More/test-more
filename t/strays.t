@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w 
 
-# Check that stray newlines in test output are probably handed.
+# Check that stray newlines in test output are properly handed.
 
 BEGIN {
     print "1..0 # Skip not completed\n";
