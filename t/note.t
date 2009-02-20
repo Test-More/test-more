@@ -13,23 +13,21 @@ BEGIN {
 use strict;
 use warnings;
 
-use TieOut;
-
 use Test::More tests => 2;
 
 {
-    my $test = Test::More->builder;
+    my $tb = Test::More->builder;
 
-    my $output          = tie *FAKEOUT, "TieOut";
-    my $fail_output     = tie *FAKEERR, "TieOut";
-    $test->output        (*FAKEOUT);
-    $test->failure_output(*FAKEERR);
+    my $out = '';
+    my $err = '';
+    $tb->output        (\$out);
+    $tb->failure_output(\$err);
 
     note("foo");
 
-    $test->reset_outputs;
+    $tb->reset_outputs;
 
-    is $output->read,      "# foo\n";
-    is $fail_output->read, '';
+    is $out, "# foo\n";
+    is $err, '';
 }
 

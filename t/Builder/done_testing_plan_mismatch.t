@@ -6,13 +6,9 @@ use strict;
 use lib 't/lib';
 
 use Test::Builder;
-use TieOut;
+use Test::Builder::NoOutput;
 
-my $tb = Test::Builder->create;
-
-my $output = tie *FAKEOUT, "TieOut";
-$tb->output(\*FAKEOUT);
-$tb->failure_output(\*FAKEOUT);
+my $tb = Test::Builder::NoOutput->create;
 
 {
     # Normalize test output
@@ -30,7 +26,7 @@ $tb->failure_output(\*FAKEOUT);
 my $Test = Test::Builder->new;
 $Test->plan( tests => 1 );
 $Test->level(0);
-$Test->is_eq($output->read, <<"END");
+$Test->is_eq($tb->read, <<"END");
 1..3
 ok 1
 ok 2

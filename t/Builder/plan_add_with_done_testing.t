@@ -3,17 +3,16 @@
 # plan( add => # ) could confuse done_testing() into not outputting a header
 # immediately.
 
+use lib 't/lib';
+
 use Test::Builder;
+use Test::Builder::NoOutput;
 
 my $Test = Test::Builder->new;
 
 {
-    my $tb = Test::Builder->create;
+    my $tb = Test::Builder::NoOutput->create;
     $tb->level(0);
-
-    my $output = '';
-    $tb->output(\$output);
-    $tb->failure_output(\$output);
 
     $tb->plan( add => 2 );
     $tb->ok(1);
@@ -24,7 +23,7 @@ my $Test = Test::Builder->new;
 
     $tb->done_testing(3);
 
-    $Test->is_eq($output, <<'END', "done_testing() should output a header immediately");
+    $Test->is_eq($tb->read, <<'END', "done_testing() should output a header immediately");
 ok 1
 ok 2
 ok 3

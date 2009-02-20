@@ -18,11 +18,10 @@ BEGIN {
 
 use Test::Builder;
 use Test::More;
-use TieOut;
 
-my $output = tie *FAKEOUT, 'TieOut';
+my $output;
 my $TB = Test::More->builder;
-$TB->output(\*FAKEOUT);
+$TB->output(\$output);
 
 my $Test = Test::Builder->create;
 $Test->level(0);
@@ -41,7 +40,7 @@ plan tests => 4;
 BAIL_OUT("ROCKS FALL! EVERYONE DIES!");
 
 
-$Test->is_eq( $output->read, <<'OUT' );
+$Test->is_eq( $output, <<'OUT' );
 1..4
 Bail out!  ROCKS FALL! EVERYONE DIES!
 OUT
