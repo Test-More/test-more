@@ -1711,9 +1711,6 @@ sub current_test {
 
     lock( $self->{Curr_Test} );
     if( defined $num ) {
-        $self->croak("Can't change the current test number without a plan!")
-          unless $self->{Have_Plan};
-
         $self->{Curr_Test} = $num;
 
         # If the test counter is being pushed forward fill in the details.

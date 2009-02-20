@@ -8,6 +8,7 @@
     Feature Changes
     * You can now run a test without first declaring a plan.  This allows
       done_testing() to work.
+    * You can now call current_test() without first declaring a plan.
 
     Bug Fixes
     * skip_all() with no reason would output "1..0" which is invalid TAP.  It will
