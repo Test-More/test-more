@@ -17,7 +17,7 @@ use Test::Builder;
 
 # The real Test::Builder
 my $Test = Test::Builder->new;
-$Test->plan( tests => 5 );
+$Test->plan( tests => 6 );
 
 
 # The one we're going to test.
@@ -67,6 +67,19 @@ END { 1 while unlink($tmpfile) }
 
     print $out "Hey hey hey!\n";
     $Test->is_eq($scalar, "Hey hey hey!\n");
+}
+
+
+# Test we can output to the same scalar ref
+{
+    my $scalar = '';
+    my $out = $tb->output(\$scalar);
+    my $err = $tb->failure_output(\$scalar);
+
+    print $out "To output ";
+    print $err "and beyond!";
+
+    $Test->is_eq($scalar, "To output and beyond!", "One scalar, two filehandles");
 }
 
 

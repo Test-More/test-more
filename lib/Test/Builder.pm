@@ -1551,7 +1551,7 @@ sub _new_fh {
     elsif( ref $file_or_fh eq 'SCALAR' ) {
         # Scalar refs as filehandles was added in 5.8.
         if( $] >= 5.008 ) {
-            open $fh, ">", $file_or_fh
+            open $fh, ">>", $file_or_fh
               or $self->croak("Can't open scalar ref $file_or_fh: $!");
         }
         # Emulate scalar ref filehandles with a tie.
