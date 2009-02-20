@@ -295,7 +295,7 @@ sub expected_tests {
         $self->{Expected_Tests} = $max;
         $self->{Have_Plan}      = 1;
 
-        $self->_print("1..$max\n") unless $self->no_header;
+        $self->_output_plan($max) unless $self->no_header;
     }
     return $self->{Expected_Tests};
 }
@@ -317,6 +317,45 @@ sub no_plan {
     $self->{Have_Plan} = 1;
 
     return 1;
+}
+
+
+=begin private
+
+=item B<_output_plan>
+
+  $tb->_output_plan($max);
+  $tb->_output_plan($max, $directive);
+  $tb->_output_plan($max, $directive => $reason);
+
+Handles displaying the test plan.
+
+If a $directive and/or $reason are given they will be output with the
+plan.  So here's what skipping all tests looks like:
+
+    $tb->_output_plan(0, "SKIP", "Because I said so");
+
+It sets $tb->{Have_Output_Plan} and will croak if the plan was already
+output.
+
+=end private
+
+=cut
+
+sub _output_plan {
+    my($self, $max, $directive, $reason) = @_;
+
+    $self->carp("The plan was already output") if $self->{Have_Output_Plan};
+
+    my $plan = "1..$max";
+    $plan .= " # $directive" if defined $directive;
+    $plan .= " $reason"      if defined $reason;
+
+    $self->_print("$plan\n");
+
+    $self->{Have_Output_Plan} = 1;
+
+    return;
 }
 
 =item B<done_testing>
@@ -355,8 +394,15 @@ Or to plan a variable number of tests:
 =cut
 
 sub done_testing {
-    my $self  = shift;
-    my $num_tests = @_ ? shift : $self->current_test;
+    my($self, $num_tests) = @_;
+
+    # If done_testing() specified the number of tests, shut off no_plan.
+    if( defined $num_tests ) {
+        $self->{No_Plan} = 0;
+    }
+    else {
+        $num_tests = $self->current_test;
+    }
 
     if( $self->{Done_Testing} ) {
         my($file, $line) = @{$self->{Done_Testing}}[1,2];
@@ -374,7 +420,7 @@ sub done_testing {
         $self->{Expected_Tests} = $num_tests;
     }
 
-    $self->_print("1..$num_tests\n") unless $self->{Have_Plan};
+    $self->_output_plan($num_tests) unless $self->{Have_Output_Plan};
 
     $self->{Have_Plan} = 1;
 
@@ -410,13 +456,9 @@ Skips all the tests, using the given $reason.  Exits immediately with 0.
 sub skip_all {
     my( $self, $reason ) = @_;
 
-    my $out = "1..0 # SKIP";
-    $out .= " $reason" if $reason;
-    $out .= "\n";
-
     $self->{Skip_All} = 1;
 
-    $self->_print($out) unless $self->no_header;
+    $self->_output_plan(0, "SKIP", $reason) unless $self->no_header;
     exit(0);
 }
 
@@ -2058,7 +2100,7 @@ sub _ending {
     if(@$test_results) {
         # The plan?  We have no plan.
         if( $self->{No_Plan} ) {
-            $self->_print("1..$self->{Curr_Test}\n") unless $self->no_header;
+            $self->_output_plan($self->{Curr_Test}) unless $self->no_header;
             $self->{Expected_Tests} = $self->{Curr_Test};
         }
 
