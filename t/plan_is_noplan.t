@@ -12,28 +12,21 @@ BEGIN {
 
 use strict;
 
-use Test::More tests => 2;
+use Test::More tests => 1;
 
-use Test::Builder;
-my $tb = Test::Builder->create;
+use Test::Builder::NoOutput;
 
-my($out, $err) = ('', '');
 {
-    $tb->output(\$out);
-    $tb->failure_output(\$err);
+    my $tb = Test::Builder::NoOutput->create;
 
     $tb->plan('no_plan');
 
     $tb->ok(1, 'foo');
     $tb->_ending;
-}
 
-{
-    is($out, <<OUT);
+    is($tb->read, <<OUT);
 ok 1 - foo
 1..1
 OUT
-
-    is($err, <<ERR);
-ERR
 }
+

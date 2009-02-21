@@ -27,37 +27,96 @@ It is mostly useful for testing Test::Builder.
 
 =head3 read
 
-    my $output = $tb->read;
+    my $all_output = $tb->read;
+    my $output     = $tb->read($stream);
 
 Returns all the output (including failure and todo output) collected
 so far.  It is destructive, each call to read clears the output
 buffer.
 
-=cut
+If $stream is given it will return just the output from that stream.
+$stream's are...
 
-my $Output = '';
+    out         output()
+    err         failure_output()
+    todo        todo_output()
+    all         all outputs
+
+Defaults to 'all'.
+
+=cut
 
 my $Test = __PACKAGE__->new;
 
 sub create {
     my $class = shift;
-    my $test = $class->SUPER::create(@_);
+    my $self = $class->SUPER::create(@_);
 
-    $test->output           (\$Output);
-    $test->failure_output   (\$Output);
-    $test->todo_output      (\$Output);
+    my %outputs = (
+        all  => '',
+        out  => '',
+        err  => '',
+        todo => '',
+    );
+    $self->{_outputs} = \%outputs;
 
-    return $test;
+    tie *OUT,  "Test::Builder::NoOutput::Tee", \$outputs{all}, \$outputs{out};
+    tie *ERR,  "Test::Builder::NoOutput::Tee", \$outputs{all}, \$outputs{err};
+    tie *TODO, "Test::Builder::NoOutput::Tee", \$outputs{all}, \$outputs{todo};
+
+    $self->output(*OUT);
+    $self->failure_output(*ERR);
+    $self->todo_output(*TODO);
+
+    return $self;
 }
 
 sub read {
     my $self = shift;
+    my $stream = @_ ? shift : 'all';
 
-    my $out = $Output;
+    my $out = $self->{_outputs}{$stream};
 
-    $Output = '';
+    $self->{_outputs}{$stream} = '';
+
+    # Clear all the streams if 'all' is read.
+    if( $stream eq 'all' ) {
+        my @keys = keys %{$self->{_outputs}};
+        $self->{_outputs}{$_} = '' for @keys;
+    }
 
     return $out;
+}
+
+
+package Test::Builder::NoOutput::Tee;
+
+# A cheap implementation of IO::Tee.
+
+sub TIEHANDLE {
+    my($class, @refs) = @_;
+
+    my @fhs;
+    for my $ref (@refs) {
+        open my $fh, ">>", $ref or die $!;
+        push @fhs, $fh;
+    }
+
+    my $self = [@fhs];
+    return bless $self, $class;
+}
+
+sub PRINT {
+    my $self = shift;
+
+    print $_ @_ for @$self;
+}
+
+sub PRINTF {
+    my $self   = shift;
+    my $format = shift;
+
+    printf $_ @_ for @$self;
 }
 
 1;

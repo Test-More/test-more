@@ -13,21 +13,18 @@ BEGIN {
 use strict;
 use warnings;
 
+use Test::Builder::NoOutput;
+
 use Test::More tests => 2;
 
 {
-    my $tb = Test::More->builder;
+    my $tb = Test::Builder::NoOutput->create;
 
-    my $out = '';
-    my $err = '';
-    $tb->output        (\$out);
-    $tb->failure_output(\$err);
-
-    note("foo");
+    $tb->note("foo");
 
     $tb->reset_outputs;
 
-    is $out, "# foo\n";
-    is $err, '';
+    is $tb->read('out'), "# foo\n";
+    is $tb->read('err'), '';
 }
 

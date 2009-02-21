@@ -18,14 +18,13 @@ use strict;
 local $ENV{HARNESS_ACTIVE} = 0;
 
 use Test::Builder;
+use Test::Builder::NoOutput;
+
+my $Test = Test::Builder->new;
 
 # Set up a builder to record some failing tests.
-my($out, $err);
 {
-    my $tb = Test::Builder->create;
-    $tb->output(\$out);
-    $tb->failure_output(\$err);
-
+    my $tb = Test::Builder::NoOutput->create;
     $tb->plan( tests => 5 );
 
 #line 28
@@ -35,13 +34,8 @@ my($out, $err);
     $tb->ok( 0, 'oh no!' );
     $tb->ok( 0, 'damnit' );
     $tb->_ending;
-}
 
-# Check that we got the right failure output.
-{
-    my $test = Test::Builder->new;
-
-    $test->is_eq($out, <<OUT);
+    $Test->is_eq($tb->read('out'), <<OUT);
 1..5
 ok 1 - passing
 ok 2 - passing still
@@ -50,7 +44,7 @@ not ok 4 - oh no!
 not ok 5 - damnit
 OUT
 
-    $test->is_eq($err, <<ERR);
+    $Test->is_eq($tb->read('err'), <<ERR);
 #   Failed test 'oh no!'
 #   at $0 line 31.
 #   Failed test 'damnit'
@@ -58,5 +52,5 @@ OUT
 # Looks like you failed 2 tests of 5.
 ERR
 
-    $test->done_testing(2);
+    $Test->done_testing(2);
 }
