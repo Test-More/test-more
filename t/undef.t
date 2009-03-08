@@ -51,7 +51,7 @@ Test::More->builder->is_num(undef, undef, 'is_num()');
 Test::More->builder->isnt_num(23, undef,  'isnt_num()');
 
 #line 45
-like( undef, '/.*/',        'undef is like anything' );
+like( undef, qr/.*/,        'undef is like anything' );
 warnings_like(qr/Use of uninitialized value.* at $Filename line 45\.\n/);
 
 eq_array( [undef, undef], [undef, 23] );

@@ -42,7 +42,7 @@ TODO: {
 
     ok( 'this' eq 'that',   'ok' );
 
-    like( 'this', '/that/', 'like' );
+    like( 'this', qr/that/, 'like' );
     is(   'this', 'that',   'is' );
     isnt( 'this', 'this',   'isnt' );
 
