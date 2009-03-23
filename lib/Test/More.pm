@@ -1,5 +1,4 @@
 package Test::More;
-# $Id$
 
 use 5.006;
 use strict;
@@ -31,6 +30,7 @@ our @EXPORT = qw(ok use_ok require_ok
   eq_array eq_hash eq_set
   $TODO
   plan
+  done_testing
   can_ok isa_ok new_ok
   diag note explain
   BAIL_OUT
@@ -44,9 +44,9 @@ Test::More - yet another framework for writing test scripts
 
   use Test::More tests => 23;
   # or
-  use Test::More qw(no_plan);
-  # or
   use Test::More skip_all => $reason;
+  # or
+  use Test::More;   # see done_testing()
 
   BEGIN { use_ok( 'Some::Module' ); }
   require_ok( 'Some::Module' );
@@ -96,7 +96,7 @@ Test::More - yet another framework for writing test scripts
 =head1 DESCRIPTION
 
 B<STOP!> If you're just getting started writing tests, have a look at
-Test::Simple first.  This is a drop in replacement for Test::Simple
+L<Test::Simple> first.  This is a drop in replacement for Test::Simple
 which you can switch to once you get the hang of basic testing.
 
 The purpose of this module is to provide a wide range of testing
@@ -116,14 +116,19 @@ The preferred way to do this is to declare a plan when you C<use Test::More>.
 
   use Test::More tests => 23;
 
-There are rare cases when you will not know beforehand how many tests
-your script is going to run.  In this case, you can declare that you
-have no plan.  (Try to avoid using this as it weakens your test.)
+There are cases when you will not know beforehand how many tests your
+script is going to run.  In this case, you can declare your tests at
+the end.
 
-  use Test::More qw(no_plan);
+  use Test::More;
 
-B<NOTE>: using no_plan requires a Test::Harness upgrade else it will
-think everything has failed.  See L<CAVEATS and NOTES>).
+  ... run your tests ...
+
+  done_testing( $number_of_tests_run );
+
+Sometimes you really don't know how many tests were run, or it's too
+difficult to calculate.  In which case you can leave off
+$number_of_tests_run.
 
 In some cases, you'll want to completely skip an entire testing script.
 
@@ -187,6 +192,32 @@ sub import_extra {
     @$list = @other;
 
     return;
+}
+
+=over 4
+
+=item B<done_testing>
+
+    done_testing();
+    done_testing($number_of_tests);
+
+If you don't know how many tests you're going to run, you can issue
+the plan when you're done running tests.
+
+$number_of_tests is the same as plan(), it's the number of tests you
+expected to run.  You can omit this, in which case the number of tests
+you ran doesn't matter, just the fact that your tests ran to
+conclusion.
+
+This is safer than and replaces the "no_plan" plan.
+
+=back
+
+=cut
+
+sub done_testing {
+    my $tb = Test::More->builder;
+    $tb->done_testing(@_);
 }
 
 =head2 Test names
@@ -319,6 +350,17 @@ In these cases, use ok().
 
   ok( exists $brooklyn{tree},    'A tree grows in Brooklyn' );
 
+A simple call to isnt() usually does not provide a strong test but there
+are cases when you cannot say much more about a value than that it is
+different from some other value:
+
+  new_ok $obj, "Foo";
+
+  my $clone = $obj->clone;
+  isa_ok $obj, "Foo", "Foo->clone";
+
+  isnt $obj, $clone, "clone() produces a different object";
+
 For those grammatical pedants out there, there's an C<isn't()>
 function which is an alias of isnt().
 
@@ -419,6 +461,12 @@ It's also useful in those cases where you are comparing numbers and
 is()'s use of C<eq> will interfere:
 
     cmp_ok( $big_hairy_number, '==', $another_big_hairy_number );
+
+It's especially useful when comparing greater-than or smaller-than 
+relation between values:
+
+    cmp_ok( $some_value, '<=', $upper_limit );
+
 
 =cut
 
@@ -829,11 +877,11 @@ is_deeply() compares the dereferenced values of references, the
 references themselves (except for their type) are ignored.  This means
 aspects such as blessing and ties are not considered "different".
 
-is_deeply() current has very limited handling of function reference
+is_deeply() currently has very limited handling of function reference
 and globs.  It merely checks if they have the same referent.  This may
 improve in the future.
 
-Test::Differences and Test::Deep provide more in-depth functionality
+L<Test::Differences> and L<Test::Deep> provide more in-depth functionality
 along these lines.
 
 =cut
@@ -1011,7 +1059,7 @@ sub note {
   my @dump = explain @diagnostic_message;
 
 Will dump the contents of any references in a human readable format.
-Usually you want to pass this into C<note> or C<dump>.
+Usually you want to pass this into C<note> or C<diag>.
 
 Handy for things like...
 
@@ -1227,6 +1275,8 @@ module failing to compile or a necessary external utility not being
 available such as a database connection failing.
 
 The test will exit with 255.
+
+For even better control look at L<Test::Most>.
 
 =cut
 
@@ -1451,7 +1501,7 @@ level.  The following is an example of a comparison which might not work:
 
     eq_set([\1, \2], [\2, \1]);
 
-Test::Deep contains much better set comparison functions.
+L<Test::Deep> contains much better set comparison functions.
 
 =cut
 
@@ -1546,7 +1596,7 @@ difference.  This is good.
 
 However, it does mean that functions like is_deeply() cannot be used to
 test the internals of string overloaded objects.  In this case I would
-suggest Test::Deep which contains more flexible testing functions for
+suggest L<Test::Deep> which contains more flexible testing functions for
 complex data structures.
 
 
@@ -1568,11 +1618,11 @@ This may cause problems:
 
 =item Test::Harness upgrade
 
-no_plan and todo depend on new Test::Harness features and fixes.  If
-you're going to distribute tests that use no_plan or todo your
-end-users will have to upgrade Test::Harness to the latest one on
-CPAN.  If you avoid no_plan and TODO tests, the stock Test::Harness
-will work fine.
+no_plan, todo and done_testing() depend on new Test::Harness features
+and fixes.  If you're going to distribute tests that use no_plan or
+todo your end-users will have to upgrade Test::Harness to the latest
+one on CPAN.  If you avoid no_plan and TODO tests, the stock
+Test::Harness will work fine.
 
 Installing Test::More should also upgrade Test::Harness.
 
@@ -1631,6 +1681,12 @@ the perl-qa gang.
 =head1 BUGS
 
 See F<http://rt.cpan.org> to report and view bugs.
+
+
+=head1 SOURCE
+
+The source code repository for Test::More can be found at
+F<http://github.com/schwern/test-more/>.
 
 
 =head1 COPYRIGHT

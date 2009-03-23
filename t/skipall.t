@@ -1,4 +1,5 @@
-# $Id$
+#!/usr/bin/perl -w
+
 BEGIN {
     if( $ENV{PERL_CORE} ) {
         chdir 't';
@@ -11,20 +12,22 @@ BEGIN {
 
 use strict;
 
-use Test::Builder;
-my $TB = Test::Builder->create;
-$TB->plan( tests => 2 );
+use Test::More;
 
-package main;
-require Test::More;
+my $Test = Test::Builder->create;
+$Test->plan(tests => 2);
 
-require Test::Simple::Catch;
-my($out, $err) = Test::Simple::Catch::caught();
+my $out = '';
+my $err = '';
+{
+    my $tb = Test::More->builder;
+    $tb->output(\$out);
+    $tb->failure_output(\$err);
 
-Test::More->import('skip_all');
-
+    plan 'skip_all';
+}
 
 END {
-    $TB->is_eq($$out, "1..0\n");
-    $TB->is_eq($$err, "");
+    $Test->is_eq($out, "1..0 # SKIP\n");
+    $Test->is_eq($err, "");
 }

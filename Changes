@@ -1,3 +1,23 @@
+0.87_01
+    New Features
+    * done_testing() allows you to declare that you have finished running tests,
+      and how many you ran.  It is a safer no_plan and effectively replaces it.
+    * output() now supports scalar references.
+    * plan( add => # ) now allows you to add to the plan as you go.
+
+    Feature Changes
+    * You can now run a test without first declaring a plan.  This allows
+      done_testing() to work.
+    * You can now call current_test() without first declaring a plan.
+
+    Bug Fixes
+    * skip_all() with no reason would output "1..0" which is invalid TAP.  It will
+      now always include the SKIP directive.
+
+    Other
+    * Repository moved to github.
+
+
 0.86  Sun Nov  9 01:09:05 PST 2008
     Same as 0.85_01
 

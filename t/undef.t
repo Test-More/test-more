@@ -1,5 +1,4 @@
 #!/usr/bin/perl -w
-# $Id$
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {
@@ -12,8 +11,7 @@ BEGIN {
 }
 
 use strict;
-use Test::More tests => 20;
-use TieOut;
+use Test::More tests => 19;
 
 BEGIN { $^W = 1; }
 
@@ -80,17 +78,14 @@ warnings_like(qr/Use of uninitialized value.* at cmp_ok \[from $Filename line 64
 
 my $tb = Test::More->builder;
 
-use TieOut;
-my $caught = tie *CATCH, 'TieOut';
-my $old_fail = $tb->failure_output;
-$tb->failure_output(\*CATCH);
+my $err;
+$tb->failure_output(\$err);
 diag(undef);
-$tb->failure_output($old_fail);
+$tb->reset_outputs;
 
-is( $caught->read, "# undef\n" );
+is( $err, "# undef\n" );
 no_warnings;
 
 
 $tb->maybe_regex(undef);
-is( $caught->read, '' );
 no_warnings;

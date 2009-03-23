@@ -1,5 +1,4 @@
 package NoExporter;
-# $Id$
 
 $VERSION = 1.02;
 

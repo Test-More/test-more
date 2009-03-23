@@ -1,5 +1,4 @@
 package Test::Builder;
-# $Id$
 
 use 5.006;
 use strict;
@@ -7,6 +6,13 @@ use warnings;
 
 our $VERSION = '0.86';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
+BEGIN {
+    if( $] < 5.008 ) {
+        require Test::Builder::IO::Scalar;
+    }
+}
+
 
 # Make Test::Builder thread-safe for ithreads.
 BEGIN {
@@ -209,6 +215,15 @@ If you call plan(), don't call any of the other methods below.
 
 =cut
 
+my %plan_cmds = (
+    no_plan     => \&no_plan,
+    skip_all    => \&skip_all,
+    tests       => \&_plan_tests,
+    add         => \&_plan_add,
+);
+
+my %call_once = map { $_ => 1 } qw(no_plan skip_all tests);
+
 sub plan {
     my( $self, $cmd, $arg ) = @_;
 
@@ -216,27 +231,11 @@ sub plan {
 
     local $Level = $Level + 1;
 
-    $self->croak("You tried to plan twice")
-      if $self->{Have_Plan};
+    $self->croak("You tried to plan twice") if $call_once{$cmd} and $self->{Have_Plan};
 
-    if( $cmd eq 'no_plan' ) {
-        $self->carp("no_plan takes no arguments") if $arg;
-        $self->no_plan;
-    }
-    elsif( $cmd eq 'skip_all' ) {
-        return $self->skip_all($arg);
-    }
-    elsif( $cmd eq 'tests' ) {
-        if($arg) {
-            local $Level = $Level + 1;
-            return $self->expected_tests($arg);
-        }
-        elsif( !defined $arg ) {
-            $self->croak("Got an undefined number of tests");
-        }
-        else {
-            $self->croak("You said to run 0 tests");
-        }
+    if( my $method = $plan_cmds{$cmd} ) {
+        local $Level = $Level + 1;
+        $self->$method($arg);
     }
     else {
         my @args = grep { defined } ( $cmd, $arg );
@@ -244,6 +243,35 @@ sub plan {
     }
 
     return 1;
+}
+
+
+sub _plan_tests {
+    my($self, $arg) = @_;
+
+    if($arg) {
+        local $Level = $Level + 1;
+        return $self->expected_tests($arg);
+    }
+    elsif( !defined $arg ) {
+        $self->croak("Got an undefined number of tests");
+    }
+    else {
+        $self->croak("You said to run 0 tests");
+    }
+
+    return;
+}
+
+
+sub _plan_add {
+    my($self, $arg) = @_;
+
+    $self->{Expected_Tests} = $self->{Expected_Tests} + $arg;
+    $self->{Have_Plan}      = 1;
+    $self->no_plan;
+
+    return;
 }
 
 =item B<expected_tests>
@@ -267,7 +295,7 @@ sub expected_tests {
         $self->{Expected_Tests} = $max;
         $self->{Have_Plan}      = 1;
 
-        $self->_print("1..$max\n") unless $self->no_header;
+        $self->_output_plan($max) unless $self->no_header;
     }
     return $self->{Expected_Tests};
 }
@@ -281,13 +309,124 @@ Declares that this test will run an indeterminate # of tests.
 =cut
 
 sub no_plan {
-    my $self = shift;
+    my($self, $arg) = @_;
+
+    $self->carp("no_plan takes no arguments") if $arg;
 
     $self->{No_Plan}   = 1;
     $self->{Have_Plan} = 1;
 
     return 1;
 }
+
+
+=begin private
+
+=item B<_output_plan>
+
+  $tb->_output_plan($max);
+  $tb->_output_plan($max, $directive);
+  $tb->_output_plan($max, $directive => $reason);
+
+Handles displaying the test plan.
+
+If a $directive and/or $reason are given they will be output with the
+plan.  So here's what skipping all tests looks like:
+
+    $tb->_output_plan(0, "SKIP", "Because I said so");
+
+It sets $tb->{Have_Output_Plan} and will croak if the plan was already
+output.
+
+=end private
+
+=cut
+
+sub _output_plan {
+    my($self, $max, $directive, $reason) = @_;
+
+    $self->carp("The plan was already output") if $self->{Have_Output_Plan};
+
+    my $plan = "1..$max";
+    $plan .= " # $directive" if defined $directive;
+    $plan .= " $reason"      if defined $reason;
+
+    $self->_print("$plan\n");
+
+    $self->{Have_Output_Plan} = 1;
+
+    return;
+}
+
+=item B<done_testing>
+
+  $Test->done_testing();
+  $Test->done_testing($num_tests);
+
+Declares that you are done testing, no more tests will be run after this point.
+
+If a plan has not yet been output, it will do so.
+
+$num_tests is the number of tests you planned to run.  If a numbered
+plan was already declared, and if this contradicts, a failing test
+will be run to reflect the planning mistake.  If no_plan was declared,
+this will override.
+
+If done_testing() is called twice, the second call will issue a
+failing test.
+
+If $num_tests is omitted, the number of tests run will be used, like
+no_plan.
+
+done_testing() is, in effect, used when you'd want to use no_plan, but safer.
+You'd use it like so:
+
+    $Test->ok($a == $b);
+    $Test->done_testing();
+
+Or to plan a variable number of tests:
+
+    for my $test (@tests) {
+        $Test->ok($test);
+    }
+    $Test->done_testing(@tests);
+
+=cut
+
+sub done_testing {
+    my($self, $num_tests) = @_;
+
+    # If done_testing() specified the number of tests, shut off no_plan.
+    if( defined $num_tests ) {
+        $self->{No_Plan} = 0;
+    }
+    else {
+        $num_tests = $self->current_test;
+    }
+
+    if( $self->{Done_Testing} ) {
+        my($file, $line) = @{$self->{Done_Testing}}[1,2];
+        $self->ok(0, "done_testing() was already called at line $line");
+        return;
+    }
+
+    $self->{Done_Testing} = [caller];
+
+    if( $self->expected_tests && $num_tests != $self->expected_tests ) {
+        $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".
+                     "but done_testing() expects $num_tests");
+    }
+    else {
+        $self->{Expected_Tests} = $num_tests;
+    }
+
+    $self->_output_plan($num_tests) unless $self->{Have_Output_Plan};
+
+    $self->{Have_Plan} = 1;
+
+    return 1;
+}
+
 
 =item B<has_plan>
 
@@ -317,13 +456,9 @@ Skips all the tests, using the given $reason.  Exits immediately with 0.
 sub skip_all {
     my( $self, $reason ) = @_;
 
-    my $out = "1..0";
-    $out .= " # Skip $reason" if $reason;
-    $out .= "\n";
-
     $self->{Skip_All} = 1;
 
-    $self->_print($out) unless $self->no_header;
+    $self->_output_plan(0, "SKIP", $reason) unless $self->no_header;
     exit(0);
 }
 
@@ -376,8 +511,6 @@ sub ok {
     # $test might contain an object which we don't want to accidentally
     # store, so we turn it into a boolean.
     $test = $test ? 1 : 0;
-
-    $self->_plan_check;
 
     lock $self->{Curr_Test};
     $self->{Curr_Test}++;
@@ -823,8 +956,6 @@ sub skip {
     $why ||= '';
     $self->_unoverload_str( \$why );
 
-    $self->_plan_check;
-
     lock( $self->{Curr_Test} );
     $self->{Curr_Test}++;
 
@@ -864,8 +995,6 @@ to
 sub todo_skip {
     my( $self, $why ) = @_;
     $why ||= '';
-
-    $self->_plan_check;
 
     lock( $self->{Curr_Test} );
     $self->{Curr_Test}++;
@@ -1353,28 +1482,32 @@ sub _print_to_fh {
 
 =item B<output>
 
-    $Test->output($fh);
-    $Test->output($file);
-
-Where normal "ok/not ok" test output should go.
-
-Defaults to STDOUT.
-
 =item B<failure_output>
-
-    $Test->failure_output($fh);
-    $Test->failure_output($file);
-
-Where diagnostic output on test failures and diag() should go.
-
-Defaults to STDERR.
 
 =item B<todo_output>
 
-    $Test->todo_output($fh);
-    $Test->todo_output($file);
+    my $filehandle = $Test->output;
+    $Test->output($filehandle);
+    $Test->output($filename);
+    $Test->output(\$scalar);
 
-Where diagnostics about todo test failures and diag() should go.
+These methods control where Test::Builder will print it's output.
+They take either an open $filehandle, a $filename to open and write to
+or a $scalar reference to append to.  It will always return a $filehandle.
+
+B<output> is where normal "ok/not ok" test output goes.
+
+Defaults to STDOUT.
+
+B<failure_output> is where diagnostic output on test failures and
+diag() goes.  It is normally not read by Test::Harness and instead is
+displayed to the user.
+
+Defaults to STDERR.
+
+B<todo_output> is used instead of C<<failure_output()>> for the
+diagnostics of a failing TODO test.  These will not be seen by the
+user.
 
 Defaults to STDOUT.
 
@@ -1414,6 +1547,18 @@ sub _new_fh {
     my $fh;
     if( $self->is_fh($file_or_fh) ) {
         $fh = $file_or_fh;
+    }
+    elsif( ref $file_or_fh eq 'SCALAR' ) {
+        # Scalar refs as filehandles was added in 5.8.
+        if( $] >= 5.008 ) {
+            open $fh, ">>", $file_or_fh
+              or $self->croak("Can't open scalar ref $file_or_fh: $!");
+        }
+        # Emulate scalar ref filehandles with a tie.
+        else {
+            $fh = Test::Builder::IO::Scalar->new($file_or_fh)
+              or $self->croak("Can't tie scalar ref $file_or_fh");
+        }
     }
     else {
         open $fh, ">", $file_or_fh
@@ -1539,16 +1684,6 @@ sub croak {
     return die $self->_message_at_caller(@_);
 }
 
-sub _plan_check {
-    my $self = shift;
-
-    unless( $self->{Have_Plan} ) {
-        local $Level = $Level + 2;
-        $self->croak("You tried to run a test without a plan");
-    }
-
-    return;
-}
 
 =back
 
@@ -1576,9 +1711,6 @@ sub current_test {
 
     lock( $self->{Curr_Test} );
     if( defined $num ) {
-        $self->croak("Can't change the current test number without a plan!")
-          unless $self->{Have_Plan};
-
         $self->{Curr_Test} = $num;
 
         # If the test counter is being pushed forward fill in the details.
@@ -1881,8 +2013,6 @@ sub _sanity_check {
     my $self = shift;
 
     $self->_whoa( $self->{Curr_Test} < 0, 'Says here you ran a negative number of tests!' );
-    $self->_whoa( !$self->{Have_Plan} and $self->{Curr_Test},
-        'Somehow your tests ran without a plan!' );
     $self->_whoa( $self->{Curr_Test} != @{ $self->{Test_Results} },
         'Somehow you got a different number of results than tests ran!' );
 
@@ -1939,12 +2069,16 @@ sub _ending {
     my $self = shift;
 
     my $real_exit_code = $?;
-    $self->_sanity_check();
 
     # Don't bother with an ending if this is a forked copy.  Only the parent
     # should do the ending.
     if( $self->{Original_Pid} != $$ ) {
         return;
+    }
+
+    # Ran tests but never declared a plan or hit done_testing
+    if( !$self->{Have_Plan} and $self->{Curr_Test} ) {
+        $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
     }
 
     # Exit if plan() was never called.  This is so "require Test::Simple"
@@ -1963,7 +2097,7 @@ sub _ending {
     if(@$test_results) {
         # The plan?  We have no plan.
         if( $self->{No_Plan} ) {
-            $self->_print("1..$self->{Curr_Test}\n") unless $self->no_header;
+            $self->_output_plan($self->{Curr_Test}) unless $self->no_header;
             $self->{Expected_Tests} = $self->{Curr_Test};
         }
 
