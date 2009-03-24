@@ -148,15 +148,20 @@ sub plan {
 sub ok {
     my $self = shift;
     my $test = shift;
+    my $name = @_ ? " - ".shift : '';
 
     my $num = $self->history->next_test_number;
-    print $test ? "ok $num\n" : "not ok $num\n";
+    print $test ? "ok $num$name\n" : "not ok $num$name\n";
 
-    $self->history->add_test_history( Test::Builder2::Result::Pass->new(
-        test_number => $num
-    ) );
+    my $result = Test::Builder2::Result->new(
+        test_number     => $num,
+        description     => $name,
+        raw_passed      => $test ? 1 : 0,
+        passed          => $test ? 1 : 0,
+    );
+    $self->history->add_test_history( $result );
 
-    return $test ? 1 : 0;
+    return $result;
 }
 
 

@@ -12,7 +12,7 @@ use strict;
         my $self   = shift;
         my $result = shift;
 
-        die "Assert failed" unless $result;
+        die if $result->description =~ /\b die \b/x;
     }
 }
 
@@ -23,17 +23,22 @@ use strict;
     use Test::Builder2::Module;
     __PACKAGE__->builder(TB2::Assert::Builder->new);
 
-    our @EXPORT = qw(assert);
+    our @EXPORT = qw(assert ok);
 
     install_test( assert => sub {
-        my $test = shift;
-        return $Builder->ok($test);
+        my($name) = @_;
+        return $Builder->ok(1, $name);
+    });
+
+    install_test( ok => sub {
+        my($test, $name) = @_;
+        return $Builder->ok($test, $name);
     });
 }
 
 TB2::Assert->import( tests => 3 );
-assert(1);
+assert("pass");
 
-assert( !eval {
-    assert(0);
-});
+ok( !eval {
+    assert("die die die!");
+}, "assert() dies on fail");
