@@ -2,8 +2,23 @@
 package Test::Builder2::Result;
 
 use Carp;
-use Mouse;
 my $CLASS = __PACKAGE__;
+
+
+=head1 NAME
+
+Test::Builder2::Result
+
+=head1 SYNOPSIS
+
+    use Test::Builder2::Result;
+
+    my $result = Test::Builder2::Result->new(%test_data);
+
+
+=head1 DESCRIPTION
+
+=cut
 
 sub new {
     my( $class, %args ) = @_;
@@ -66,8 +81,6 @@ sub _result_type_map {
 
 package Test::Builder2::Result::Base;
 
-use Mouse;
-
 sub register_result {
     my( $class, $check ) = @_;
 
@@ -76,8 +89,14 @@ sub register_result {
     return;
 }
 
+sub new {
+    my $class = shift;
+    my %args = @_;
+    return bless \%args, $class;
+}
+
 {
-    my @keys = qw(
+    my @attributes = qw(
       passed
       raw_passed
       test_number
@@ -89,15 +108,38 @@ sub register_result {
       diagnostic
     );
 
+    for my $key (@attributes) {
+        my $code = sub {
+            my $self = shift;
+            if( @_ ) {
+                $self->{$key} = shift;
+                return $self;
+            }
+            return exists $self->{$key} ? $self->{$key} : $self->_defaults->{$key};
+        };
+
+        # A private one to remain pure
+        __PACKAGE__->_alias("_${key}_accessor" => $code);
+
+        # A public one which may be overriden.
+        __PACKAGE__->_alias($key => $code) unless defined &{$key};
+    }
+
     sub as_hash {
         my $self = shift;
         return {
             map {
                 my $val = $self->$_();
                 defined $val ? ( $_ => $val ) : ()
-              } @keys
+              } @attributes
         };
     }
+}
+
+
+# Defaults for various accessors.
+sub _defaults {
+    return {}
 }
 
 # This is the interpreted result of the test.
@@ -105,70 +147,34 @@ sub register_result {
 sub passed {
     my $self = shift;
 
-    return $self->raw_passed;
+    # Default to using the raw passed value
+    return $self->raw_passed if !@_ and defined $self->_passed_accessor;
+
+    return $self->_passed_accessor(@_);
 }
 
-# This is the raw result of the test with no further interpretation.
-# For example "not ok 1 # TODO" is false.
-has raw_passed => (
-    is       => 'ro',
-    isa      => 'Bool',
-    required => 1,
-);
+# Short aliases for these common things
+__PACKAGE__->_alias(name => \&description);
+__PACKAGE__->_alias(diag => \&diagnostic);
 
-has test_number => (
-    is  => 'ro',
-    isa => 'Int',
-);
 
-has description => (
-    is  => 'ro',
-    isa => 'Str',
-);
+sub _alias {
+    my($class, $name, $code) = @_;
 
-# Instead of "file" use the more generic "location"
-has location => (
-    is  => 'ro',
-    isa => 'Str',
-);
+    no strict 'refs';
+    *{$class . "::" . $name} = $code;
+}
 
-# Instead of "line number", the more generic "id".
-has id => (
-    is  => 'ro',
-    isa => 'Str',
-);
-
-# skip, todo, etc...
-has directive => (
-    is  => 'ro',
-    isa => 'Str',
-);
-
-# the reason associated with the directive
-has reason => (
-    is  => 'ro',
-    isa => 'Str',
-);
-
-# a place to store YAML diagnostics associated with a test
-has diagnostic => (
-    is  => 'rw',
-    isa => 'Test::Builder2::Diagnostic'
-);
 
 {
 
     package Test::Builder2::Result::Pass;
 
-    use Mouse;
-
-    extends 'Test::Builder2::Result::Base';
+    use base 'Test::Builder2::Result::Base';
 
     sub passed { 1 }
 
-    has '+raw_passed' => (
-        default => 1
-    );
+    sub raw_passed { 1 }
 
     # This is special cased.
     __PACKAGE__->register_result( sub { } );
@@ -178,15 +184,11 @@ has diagnostic => (
 
     package Test::Builder2::Result::Fail;
 
-    use Mouse;
-
-    extends 'Test::Builder2::Result::Base';
+    use base 'Test::Builder2::Result::Base';
 
     sub passed { 0 }
 
-    has '+raw_passed' => (
-        default => 0
-    );
+    sub raw_passed { 0 }
 
     # This is special cased.
     __PACKAGE__->register_result( sub { } );
@@ -196,14 +198,12 @@ has diagnostic => (
 
     package Test::Builder2::Result::Skip;
 
-    use Mouse;
-
     # Skip tests always pass
-    extends 'Test::Builder2::Result::Pass';
+    use base 'Test::Builder2::Result::Pass';
 
-    has '+directive' => (
-        default => 'skip'
-    );
+    sub directive {
+        return 'skip';
+    }
 
     __PACKAGE__->register_result(
         sub {
@@ -217,14 +217,14 @@ has diagnostic => (
 
     package Test::Builder2::Result::Todo;
 
-    use Mouse;
-
     # Todo tests always pass
-    extends 'Test::Builder2::Result::Pass';
+    use base 'Test::Builder2::Result::Pass';
 
-    has '+directive' => (
-        default => 'todo'
-    );
+    sub directive {
+        return 'todo'
+    }
+
+    __PACKAGE__->_alias( raw_passed => __PACKAGE__->can("_raw_passed_accessor") );
 
     __PACKAGE__->register_result(sub {
         my $args = shift;
