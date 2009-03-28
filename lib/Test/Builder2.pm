@@ -6,6 +6,7 @@ use Carp qw(confess);
 
 use Test::Builder2::History;
 use Test::Builder2::Result;
+use Test::Builder2::ResultWrapper;
 use Test::Builder2::Output;
 use Test::Builder2::Output::TAP::v13;
 
@@ -166,7 +167,6 @@ sub ok {
     my $name = @_ ? " - ".shift : '';
 
     my $num = $self->history->next_test_number;
-    #print $test ? "ok $num$name\n" : "not ok $num$name\n";
 
     my $result = Test::Builder2::Result->new(
         test_number     => $num,
@@ -174,10 +174,12 @@ sub ok {
         raw_passed      => $test ? 1 : 0,
         passed          => $test ? 1 : 0,
     );
-    $self->output->result($result);
+    my $wrapper = Test::Builder2::ResultWrapper->new(
+        _result => $result, _output => $self->output
+        );
     $self->history->add_test_history( $result );
 
-    return $result;
+    return $wrapper;
 }
 
 
