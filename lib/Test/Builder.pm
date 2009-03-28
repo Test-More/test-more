@@ -139,16 +139,9 @@ this method.  Also, the method name may change in the future.
 =cut
 
 sub create {
-    my $proto  = shift;
-    my $class  = ref $proto || $proto;
-    my $indent = ref $proto 
-        ? $proto->_indent . '    '
-        : '';
-    my $self = bless {
-       Indent => $indent, 
-    }, $class;
+    my $class = shift;
+    my $self = bless {}, $class;
     $self->reset;
-
     return $self;
 }
 
@@ -171,7 +164,12 @@ sub child {
     if( $self->{Child_Name} ) {
         $self->croak("You already have a child named ($self->{Child_Name}) running");
     }
-    my $child = $self->create;
+    my $indent = $self->_indent . '    ';
+    my $child = bless {
+       Indent => $indent, 
+    }, ref $self;
+    $child->reset;
+    $child->{$_} = $self->{$_} foreach qw{Out_FH Todo_FH Fail_FH};
     $child->{Child_Error} = $?;
     $?                    = 0;
     $child->{Parent}      = $self;
@@ -192,6 +190,9 @@ and tell the parent your pass/fail status.
 sub finalize {
     my $self = shift;
     return unless $self->parent;
+    if( $self->{Child_Name} ) {
+        $self->croak("Can't call &finalize with child ($self->{Child_Name}) active");
+    }
     $self->_ending;
     #$self->_print( $self->{Pass} ? "PASS\n" : "FAIL\n" );
     $self->parent->ok( $self->{Pass}, $self->name );
@@ -273,6 +274,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{No_Plan}      = 0;
     $self->{Original_Pid} = $$;
     $self->{Child_Name}   = undef;
+    $self->{Indent}     ||= '';
 
     share( $self->{Curr_Test} );
     $self->{Curr_Test} = 0;
