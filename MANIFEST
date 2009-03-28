@@ -9,6 +9,9 @@ lib/Test/Builder/Tester/Color.pm
 lib/Test/Builder2.pm
 lib/Test/Builder2/History.pm
 lib/Test/Builder2/Module.pm
+lib/Test/Builder2/Output.pm
+lib/Test/Builder2/Output/TAP.pm
+lib/Test/Builder2/Output/TAP/v13.pm
 lib/Test/Builder2/Result.pm
 lib/Test/More.pm
 lib/Test/Simple.pm
@@ -26,7 +29,8 @@ t/buffer.t
 t/Builder/Builder.t
 t/Builder/carp.t
 t/Builder/create.t
-t/Builder/curr_test.t
+t/Builder/current_test.t
+t/Builder/current_test_without_plan.t
 t/Builder/details.t
 t/Builder/done_testing.t
 t/Builder/done_testing_double.t
@@ -45,11 +49,15 @@ t/Builder/no_plan_at_all.t
 t/Builder/ok_obj.t
 t/Builder/output.t
 t/Builder/plan_add.t
+t/Builder/plan_add_with_done_testing.t
 t/Builder/reset.t
 t/Builder/reset_outputs.t
 t/Builder/try.t
+t/Builder2/assert.t
 t/Builder2/history.t
 t/Builder2/result.t
+t/Builder2/result_accessors.t
+t/Builder2/TAP.t
 t/Builder2/top.t
 t/c_flag.t
 t/circular_data.t
@@ -64,7 +72,6 @@ t/extra.t
 t/extra_one.t
 t/fail-like.t
 t/fail-more.t
-t/fail.t
 t/fail_one.t
 t/filehandles.t
 t/fork.t
@@ -78,6 +85,8 @@ t/lib/Dummy.pm
 t/lib/MyOverload.pm
 t/lib/NoExporter.pm
 t/lib/SigDie.pm
+t/lib/Test/Builder/NoOutput.pm
+t/lib/Test/Builder/Tee.pm
 t/lib/Test/Simple/Catch.pm
 t/lib/Test/Simple/sample_tests/death.plx
 t/lib/Test/Simple/sample_tests/death_in_eval.plx
@@ -111,7 +120,9 @@ t/plan_skip_all.t
 t/pod-coverage.t
 t/pod.t
 t/require_ok.t
-t/simple.t
+t/Simple/builder.t
+t/Simple/fail.t
+t/Simple/pass.t
 t/skip.t
 t/skipall.t
 t/tbm_doesnt_set_exported_to.t
