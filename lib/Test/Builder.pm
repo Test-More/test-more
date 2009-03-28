@@ -219,10 +219,7 @@ my %plan_cmds = (
     no_plan     => \&no_plan,
     skip_all    => \&skip_all,
     tests       => \&_plan_tests,
-    add         => \&_plan_add,
 );
-
-my %call_once = map { $_ => 1 } qw(no_plan skip_all tests);
 
 sub plan {
     my( $self, $cmd, $arg ) = @_;
@@ -231,7 +228,7 @@ sub plan {
 
     local $Level = $Level + 1;
 
-    $self->croak("You tried to plan twice") if $call_once{$cmd} and $self->{Have_Plan};
+    $self->croak("You tried to plan twice") if $self->{Have_Plan};
 
     if( my $method = $plan_cmds{$cmd} ) {
         local $Level = $Level + 1;
@@ -263,16 +260,6 @@ sub _plan_tests {
     return;
 }
 
-
-sub _plan_add {
-    my($self, $arg) = @_;
-
-    $self->{Expected_Tests} = $self->{Expected_Tests} + $arg;
-    $self->{Have_Plan}      = 1;
-    $self->no_plan;
-
-    return;
-}
 
 =item B<expected_tests>
 
