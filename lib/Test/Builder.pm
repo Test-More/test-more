@@ -116,7 +116,7 @@ singleton, use C<create>.
 
 =cut
 
-my $Test = Test::Builder->new;
+our $Test = Test::Builder->new;
 
 sub new {
     my($class) = shift;
@@ -152,15 +152,97 @@ sub create {
     return $self;
 }
 
+=item B<child>
+
+ my $child = $builder->child($name_of_child);
+ $child->plan( tests => 4 );
+ $child->ok(some_code());
+ ...
+ $child->finalize;
+
+Returns a new instance of C<Test::Builder>.  Any output from this child will
+indented four spaces more than the parent's indentation.  When done, the
+C<finalize> method I<must> be called explicitly.
+
+=cut
+
 sub child {
     my( $self, $name ) = @_;
+    if( $self->{Child_Name} ) {
+        $self->croak("You already have a child named ($self->{Child_Name}) running");
+    }
     my $child = $self->create;
-    $child->{Name}   = $name;
-    $child->{Parent} = $self;
+    $child->{Parent}    = $self;
+    $child->{Name}      = $name || "Child of " . $self->name;
+    $self->{Child_Name} = $child->name;
     return $child;
 }
 
-sub _indent { shift->{Indent} }
+=item B<finalize>
+
+ $child->finalize;
+
+When your child is done running tests, you must call C<finalize> to clean up
+and tell the parent your pass/fail status.
+
+=cut
+
+sub finalize {
+    my $self = shift;
+    return unless $self->parent;
+    $self->_ending;
+    #$self->_print( $self->{Pass} ? "PASS\n" : "FAIL\n" );
+    $self->parent->ok($self->{Pass}, $self->name);
+    $self->{Child_Name} = undef;
+    delete $self->{Parent};
+}
+
+=item B<suite_passed>
+
+ $builder->suite_passed;
+
+Boolean indicating if the test suite passed.
+
+=cut
+
+sub suite_passed { shift->{Pass} }
+sub _indent      { shift->{Indent} }
+
+=item B<parent>
+
+ if ( my $parent = $builder->parent ) {
+     ...
+ }
+
+Returns the parent C<Test::Builder> instance, if any.  Only used with child
+builders for nested TAP.
+
+=cut
+
+sub parent       { shift->{Parent} }
+
+=item B<name>
+
+ diag $builder->name;
+
+Returns the name of the current builder.  Top level builders default to C<$0>
+(the name of the executable).  Child builders are named via the C<child>
+method.  If no name is supplied, will be named "Child of $parent->name".
+
+=cut
+
+sub name         { shift->{Name} }
+
+sub DESTROY {
+    my $self = shift;
+    if ( $self->parent ) {
+        my $name = $self->name;
+        $self->diag(<<"FAIL");
+Child ($name) exited without calling &finalize
+FAIL
+        $self->parent->ok(0, $self->name);
+    }
+}
 
 =item B<reset>
 
@@ -181,11 +263,13 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     # hash keys is just asking for pain.  Also, it was documented.
     $Level = 1;
 
+    $self->{Name}         = $0;
     $self->{Pass}         = 1;
     $self->{Ending}       = 0;
     $self->{Have_Plan}    = 0;
     $self->{No_Plan}      = 0;
     $self->{Original_Pid} = $$;
+    $self->{Child_Name}   = undef;
 
     share( $self->{Curr_Test} );
     $self->{Curr_Test} = 0;
@@ -958,7 +1042,10 @@ BAIL_OUT() used to be BAILOUT()
 
 =cut
 
-*BAILOUT = \&BAIL_OUT;
+{
+    no warnings 'once';
+    *BAILOUT = \&BAIL_OUT;
+}
 
 =item B<skip>
 
@@ -2098,6 +2185,7 @@ sub _ending {
 
     # Ran tests but never declared a plan or hit done_testing
     if( !$self->{Have_Plan} and $self->{Curr_Test} ) {
+        $self->{Pass} = 0;
         $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
     }
 
@@ -2109,6 +2197,7 @@ sub _ending {
 
     # Don't do an ending if we bailed out.
     if( $self->{Bailed_Out} ) {
+        $self->{Pass} = 0;
         return;
     }
 
@@ -2139,6 +2228,7 @@ sub _ending {
             $self->diag(<<"FAIL");
 Looks like you planned $self->{Expected_Tests} test$s but ran $self->{Curr_Test}.
 FAIL
+            $self->{Pass} = 0;
         }
 
         if($num_failed) {
@@ -2150,13 +2240,14 @@ FAIL
             $self->diag(<<"FAIL");
 Looks like you failed $num_failed test$s of $num_tests$qualifier.
 FAIL
+            $self->{Pass} = 0;
         }
 
         if($real_exit_code) {
             $self->diag(<<"FAIL");
 Looks like your test exited with $real_exit_code just after $self->{Curr_Test}.
 FAIL
-
+            $self->{Pass} = 0;
             _my_exit($real_exit_code) && return;
         }
 
@@ -2180,22 +2271,17 @@ FAIL
         $self->diag(<<"FAIL");
 Looks like your test exited with $real_exit_code before it could output anything.
 FAIL
+        $self->{Pass} = 0;
         _my_exit($real_exit_code) && return;
     }
     else {
         $self->diag("No tests run!\n");
+        $self->{Pass} = 0;
         _my_exit(255) && return;
     }
 
+    $self->{Pass} = 0;
     $self->_whoa( 1, "We fell off the end of _ending()" );
-}
-
-sub finalize {
-    my $self = shift;
-    return unless $self->{Parent};
-    $self->_ending;
-    $self->_print( $self->{Pass} ? "PASS\n" : "FAIL\n" );
-    $self->{Parent}->ok($self->{Pass}, $self->{Name});
 }
 
 END {

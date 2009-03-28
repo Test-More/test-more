@@ -5,6 +5,7 @@
     * output() now supports scalar references.
     * plan( add => # ) now allows you to add to the plan as you go.
     * Experimental support for nested TAP.
+    * Test::More now exports a 'subtest' function to allow nested TAP.
 
     Feature Changes
     * You can now run a test without first declaring a plan.  This allows

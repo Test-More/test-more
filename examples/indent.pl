@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use lib '../lib';
 use Test::Builder;
 
 =head1 NOTES
@@ -17,15 +18,15 @@ What happens if you call ->finalize with open children
 =cut
 
 my $builder = Test::Builder->new;
-$builder->plan('no_plan');
+$builder->plan(tests => 7);
 for( 1 .. 3 ) {
     $builder->ok( $_, "We're on $_" );
     $builder->diag("We ran $_");
 }
 {
-    my $indented = $builder->child("First nest");;
-    $indented->plan( tests => 3);
-    for( 4 .. 6 ) {
+    my $indented = $builder->child;
+    $indented->plan('no_plan');
+    for( 1 .. 1+int(rand(5))  ) {
         $indented->ok( 1, "We're on $_" );
     }
     $indented->finalize;
@@ -33,4 +34,3 @@ for( 1 .. 3 ) {
 for( 7, 8, 9 ) {
     $builder->ok( $_, "We're on $_" );
 }
-$builder->ok(0);
