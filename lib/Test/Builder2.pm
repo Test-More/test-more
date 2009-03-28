@@ -6,6 +6,8 @@ use Carp qw(confess);
 
 use Test::Builder2::History;
 use Test::Builder2::Result;
+use Test::Builder2::Output;
+use Test::Builder2::Output::TAP::v13;
 
 
 =head1 NAME
@@ -41,6 +43,19 @@ has planned_tests =>
   is            => 'rw',
   isa           => 'Int',
   default       => 0;
+
+=head3 output
+
+Output object.  Defaults to a TAP parser but can be replaces by anything.
+
+=cut
+
+has output =>
+  is            => 'rw',
+  #isa           => '',
+  default       => sub {
+      Test::Builder2::Output::TAP::v13->new();
+  };
 
 =head3 top
 
@@ -138,7 +153,7 @@ sub plan {
 
     $self->planned_tests( $args{tests} );
 
-    print "1..$args{tests}\n";
+    $self->output->begin(%args);
 }
 
 =head3 ok
@@ -151,7 +166,7 @@ sub ok {
     my $name = @_ ? " - ".shift : '';
 
     my $num = $self->history->next_test_number;
-    print $test ? "ok $num$name\n" : "not ok $num$name\n";
+    #print $test ? "ok $num$name\n" : "not ok $num$name\n";
 
     my $result = Test::Builder2::Result->new(
         test_number     => $num,
@@ -159,6 +174,7 @@ sub ok {
         raw_passed      => $test ? 1 : 0,
         passed          => $test ? 1 : 0,
     );
+    $self->output->result($result);
     $self->history->add_test_history( $result );
 
     return $result;
