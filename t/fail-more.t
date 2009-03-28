@@ -24,7 +24,7 @@ package My::Test;
 # Test::Builder's own and the ending diagnostics don't come out right.
 require Test::Builder;
 my $TB = Test::Builder->create;
-$TB->plan(tests => 75);
+$TB->plan(tests => 78);
 
 sub like ($$;$) {
     $TB->like(@_);
@@ -50,7 +50,8 @@ sub main::out_like ($$) {
 package main;
 
 require Test::More;
-my $Total = 36;
+our $TODO;
+my $Total = 37;
 Test::More->import(tests => $Total);
 $out->read;  # clear the plan from $out
 
@@ -396,9 +397,8 @@ OUT
 #     expected: 'foo'
 ERR
 
-
 {
-    my $warnings;
+    my $warnings = '';
     local $SIG{__WARN__} = sub { $warnings .= join '', @_ };
 
 # line 404
@@ -414,6 +414,36 @@ ERR
     My::Test::like(
         $warnings,
         qr/^Argument "foo" isn't numeric in .* at cmp_ok \[from $Filename line 404\] line 1\.\n$/
+    );
+    $warnings = '';
+}
+
+
+{
+    my $warnings = '';
+    local $SIG{__WARN__} = sub { $warnings .= join '', @_ };
+
+#line 426
+    cmp_ok( undef, "ne", "", "undef ne empty string" );
+
+    $TB->is_eq( $out->read, <<OUT );
+not ok - undef ne empty string
+OUT
+
+    TODO: {
+        local $::TODO = 'cmp_ok() gives the wrong "expected" for undef';
+
+        $TB->is_eq( $err->read, <<ERR );
+#   Failed test 'undef ne empty string'
+#   at $0 line 426.
+#          got: undef
+#     expected: ''
+ERR
+    }
+
+    My::Test::like(
+        $warnings,
+        qr/^Use of uninitialized value.* in string ne at cmp_ok \[from $Filename line 426\] line 1\.\n\z/
     );
 }
 
