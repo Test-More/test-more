@@ -4,6 +4,7 @@
       and how many you ran.  It is a safer no_plan and effectively replaces it.
     * output() now supports scalar references.
     * plan( add => # ) now allows you to add to the plan as you go.
+    * Experimental support for nested TAP.
 
     Feature Changes
     * You can now run a test without first declaring a plan.  This allows

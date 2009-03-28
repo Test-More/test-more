@@ -139,13 +139,28 @@ this method.  Also, the method name may change in the future.
 =cut
 
 sub create {
-    my $class = shift;
-
-    my $self = bless {}, $class;
+    my $proto  = shift;
+    my $class  = ref $proto || $proto;
+    my $indent = ref $proto 
+        ? $proto->_indent . '    '
+        : '';
+    my $self = bless {
+       Indent => $indent, 
+    }, $class;
     $self->reset;
 
     return $self;
 }
+
+sub child {
+    my( $self, $name ) = @_;
+    my $child = $self->create;
+    $child->{Name}   = $name;
+    $child->{Parent} = $self;
+    return $child;
+}
+
+sub _indent { shift->{Indent} }
 
 =item B<reset>
 
@@ -166,6 +181,8 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     # hash keys is just asking for pain.  Also, it was documented.
     $Level = 1;
 
+    $self->{Pass}         = 1;
+    $self->{Ending}       = 0;
     $self->{Have_Plan}    = 0;
     $self->{No_Plan}      = 0;
     $self->{Original_Pid} = $$;
@@ -583,6 +600,7 @@ ERR
         }
     }
 
+    $self->{Pass} = 0 unless $test;
     return $test ? 1 : 0;
 }
 
@@ -1477,7 +1495,7 @@ sub _print_to_fh {
     # Stick a newline on the end if it needs it.
     $msg .= "\n" unless $msg =~ /\n\z/;
 
-    return print $fh $msg;
+    return print $fh $self->_indent, $msg;
 }
 
 =item B<output>
@@ -2067,6 +2085,8 @@ sub _my_exit {
 
 sub _ending {
     my $self = shift;
+    return if $self->no_ending;
+    return if $self->{Ending}++;
 
     my $real_exit_code = $?;
 
@@ -2170,8 +2190,16 @@ FAIL
     $self->_whoa( 1, "We fell off the end of _ending()" );
 }
 
+sub finalize {
+    my $self = shift;
+    return unless $self->{Parent};
+    $self->_ending;
+    $self->_print( $self->{Pass} ? "PASS\n" : "FAIL\n" );
+    $self->{Parent}->ok($self->{Pass}, $self->{Name});
+}
+
 END {
-    $Test->_ending if defined $Test and !$Test->no_ending;
+    $Test->_ending if defined $Test;
 }
 
 =head1 EXIT CODES
