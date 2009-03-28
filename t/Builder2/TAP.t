@@ -72,8 +72,8 @@ END
 
 # test skipping
 {
-    $output->begin(skip_all=>10);
-    is $output->read, "TAP version 13\n1..0 # skip 10", "skip_all";
+    $output->begin(skip_all=>"bored already");
+    is $output->read, "TAP version 13\n1..0 # skip bored already", "skip_all";
 }
 
 # no plan
