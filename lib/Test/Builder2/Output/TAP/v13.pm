@@ -6,6 +6,8 @@ use strict;
 use Mouse;
 use Carp;
 
+extends 'Test::Builder2::Output';
+
 
 =head1 NAME
 
@@ -27,97 +29,11 @@ Output Test::Builder2::Result's as TAP version 13.
 
 =head1 METHODS
 
-=head3 new
-
-  my $output = Test::Builder2::Output::TAP::v13->new(%args);
-
-Sets up a new output object to feed results.
-
-All %args are optional.
-
-    output_fh     a filehandle to send test output
-                  [default STDOUT]
-    failure_fh    a filehandle to send failure information
-                  [default STDERR]
-    error_fh      a filehandle to send errors
-                  [default STDERR]
-
-NOTE:  Might turn these into output objects later.
-
-=cut
-
-has output_fh =>
-  is            => 'rw',
-#  isa           => 'FileHandle',  # Mouse has a bug
-  default       => *STDOUT;
-
-has failure_fh =>
-  is            => 'rw',
-#  isa           => 'FileHandle',
-  default       => *STDERR;
-
-has error_fh =>
-  is            => 'rw',
-#  isa           => 'FileHandle',
-  default       => *STDERR;
-
-
-=head3 trap_output
-
-  $output->trap_output;
-
-=cut
-
-sub trap_output {
-    my $self = shift;
-
-    my %outputs = (
-        all  => '',
-        out  => '',
-        err  => '',
-        todo => '',
-    );
-    $self->{_outputs} = \%outputs;
-
-    require Test::Builder::Tee;
-    tie *OUT,  "Test::Builder::Tee", \$outputs{all}, \$outputs{out};
-    tie *ERR,  "Test::Builder::Tee", \$outputs{all}, \$outputs{err};
-    tie *TODO, "Test::Builder::Tee", \$outputs{all}, \$outputs{todo};
-
-    $self->output_fh(*OUT);
-    $self->failure_fh(*ERR);
-    $self->error_fh(*TODO);
-
-    return;
-}
-
-sub read {
-    my $self = shift;
-    my $stream = @_ ? shift : 'all';
-
-    my $out = $self->{_outputs}{$stream};
-
-    $self->{_outputs}{$stream} = '';
-
-    # Clear all the streams if 'all' is read.
-    if( $stream eq 'all' ) {
-        my @keys = keys %{$self->{_outputs}};
-        $self->{_outputs}{$_} = '' for @keys;
-    }
-
-    return $out;
-}
-
+As Test::Builder2::Object with the following changes and additions.
 
 =head3 begin
 
-  $output->begin;
-  $output->begin(%plan);
-
-Indicates that testing is going to begin.  Gives $output the
-opportunity to output a plan.
-
-A %plan can be given.  It can be one and only one of...
+The %plan can be one and only one of...
 
   tests => $number_of_tests
 
@@ -133,13 +49,13 @@ sub begin {
 
     croak "begin() takes only one pair of arguments" if keys %args > 1;
 
-    $self->_out("TAP version 13\n");
+    $self->out("TAP version 13\n");
 
     if( exists $args{tests} ) {
-        $self->_out("1..$args{tests}\n");
+        $self->out("1..$args{tests}\n");
     }
     elsif( exists $args{skip_all} ) {
-        $self->_out("1..0 # skip $args{skip_all}");
+        $self->out("1..0 # skip $args{skip_all}");
     }
     elsif( exists $args{no_plan} ) {
         # ...do nothing...
@@ -155,28 +71,11 @@ sub begin {
 }
 
 
-sub _out {
-    my $self = shift;
-    my $fh = $self->output_fh;
-    print $fh @_;
-}
-
-=head3 result
-
-  $output->result($result);
-
-Outputs a $result.
-
-If begin() has not yet been called it will be.
-
 =head3 end
 
-  $output->end;
-  $output->end(%plan);
+Similar to C<begin()>, it takes either no or one and only one pair of arguments.
 
-Indicates that testing is done.
-
-The %plan arguments are the same as begin().
+  tests => $number_of_tests
 
 =cut
 
@@ -188,7 +87,7 @@ sub end {
     croak "end() takes only one pair of arguments" if keys %args > 1;
 
     if( exists $args{tests} ) {
-        $self->_out("1..$args{tests}\n");
+        $self->out("1..$args{tests}\n");
     }
     elsif( keys %args == 1 ) {
         croak "Unknown argument @{[ keys %args ]} to begin()";
