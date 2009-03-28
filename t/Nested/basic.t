@@ -15,7 +15,7 @@ use warnings;
 
 use Test::Builder::NoOutput;
 
-use Test::More 'no_plan';    # tests => 2;
+use Test::More tests => 10;
 
 {
     my $tb = Test::Builder::NoOutput->create;
@@ -100,3 +100,65 @@ ok 3 - We're on 7
 END
 }
 
+{
+    my $tb = Test::Builder::NoOutput->create;
+
+    if(1) {
+        my $child = $tb->child('expected to fail');
+        $child->plan( tests => 3 );
+        $child->ok(1);
+        $child->ok(0);
+        $child->ok(3);
+        $child->finalize;
+    }
+
+    {
+        my $child = $tb->child('expected to pass');
+        $child->plan( tests => 3 );
+        $child->ok(1);
+        $child->ok(2);
+        $child->ok(3);
+        $child->finalize;
+    }
+    $tb->reset_outputs;
+    is $tb->read, <<'END', 'Previous child failures should not force subsequent failures';
+    1..3
+    ok 1
+    not ok 2
+    
+    #   Failed test at t/Nested/basic.t line 110.
+    ok 3
+    # Looks like you failed 1 test of 3.
+not ok 1 - expected to fail
+
+#   Failed test 'expected to fail'
+#   at t/Nested/basic.t line 112.
+    1..3
+    ok 1
+    ok 2
+    ok 3
+ok 2 - expected to pass
+END
+}
+{
+    my $tb    = Test::Builder::NoOutput->create;
+    my $child = $tb->child('one');
+    is "$child->{$_}", "$tb->{$_}", "The child should copy the ($_) filehandle"
+        foreach qw{Out_FH Todo_FH Fail_FH};
+    $child->finalize;
+}
+{
+    ok defined &subtest, 'subtest() should be exported to our namespace';
+    is prototype('subtest'), '$&', '... with the appropriate prototype';
+
+    subtest 'subtest with plan', sub {
+        plan tests => 2;
+        ok 1, 'planned subtests should work';
+        ok 1, '... and support more than one test';
+    };
+    subtest 'subtest without plan', sub {
+        plan 'no_plan';
+        ok 1, 'no_plan subtests should work';
+        ok 1, '... and support more than one plan';
+    };
+}
