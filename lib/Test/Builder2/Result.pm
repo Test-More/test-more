@@ -18,6 +18,12 @@ Test::Builder2::Result
 
 =head1 DESCRIPTION
 
+=head3 new
+
+  my $result = Test::Builder2::Result->new(%test_data);
+
+new() is a factory method which returns a $result based on your test data.
+
 =cut
 
 sub new {
