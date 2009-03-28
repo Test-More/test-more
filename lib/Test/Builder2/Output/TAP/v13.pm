@@ -121,11 +121,7 @@ A %plan can be given.  It can be one and only one of...
 
   tests => $number_of_tests
 
-or
-
   no_plan => 1
-
-or
 
   skip_all => $reason
 
@@ -183,5 +179,25 @@ Indicates that testing is done.
 The %plan arguments are the same as begin().
 
 =cut
+
+sub end {
+    my $self = shift;
+
+    my %args = @_;
+
+    croak "end() takes only one pair of arguments" if keys %args > 1;
+
+    if( exists $args{tests} ) {
+        $self->_out("1..$args{tests}\n");
+    }
+    elsif( keys %args == 1 ) {
+        croak "Unknown argument @{[ keys %args ]} to begin()";
+    }
+    else {
+        # ...do nothing...
+    }
+
+    return;    
+}
 
 1;

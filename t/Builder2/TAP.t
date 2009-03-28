@@ -26,11 +26,22 @@ $output->trap_output;
 # Test begin
 {
     $output->begin( tests => 99 );
-    is $output->read, <<'END', "begin( tests => 99 )";
+    is $output->read, <<'END', "begin( tests => # )";
 TAP version 13
 1..99
 END
 
+}
+
+# Test end
+{
+    $output->end();
+    is $output->read, "", "end() does nothing";
+
+    $output->end( tests => 42 );
+    is $output->read, <<END, "end( tests => # )";
+1..42
+END
 }
 
 done_testing();
