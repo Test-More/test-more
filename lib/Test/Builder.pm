@@ -172,9 +172,11 @@ sub child {
         $self->croak("You already have a child named ($self->{Child_Name}) running");
     }
     my $child = $self->create;
-    $child->{Parent}    = $self;
-    $child->{Name}      = $name || "Child of " . $self->name;
-    $self->{Child_Name} = $child->name;
+    $child->{Child_Error} = $?;
+    $?                    = 0;
+    $child->{Parent}      = $self;
+    $child->{Name}        = $name || "Child of " . $self->name;
+    $self->{Child_Name}   = $child->name;
     return $child;
 }
 
@@ -192,8 +194,9 @@ sub finalize {
     return unless $self->parent;
     $self->_ending;
     #$self->_print( $self->{Pass} ? "PASS\n" : "FAIL\n" );
-    $self->parent->ok($self->{Pass}, $self->name);
-    $self->{Child_Name} = undef;
+    $self->parent->ok( $self->{Pass}, $self->name );
+    $self->parent->{Child_Name} = undef;
+    $? = $self->{Child_Error};
     delete $self->{Parent};
 }
 
