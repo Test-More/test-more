@@ -12,6 +12,9 @@ support scalar references as filehandles on Perl 5.6.
 
 =cut
 
+# This is copied code, I don't care.
+##no critic
+
 use Carp;
 use strict;
 use vars qw($VERSION @ISA);
