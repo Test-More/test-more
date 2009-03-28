@@ -44,4 +44,67 @@ END
 END
 }
 
+# Test read
+{
+    $output->begin();
+    is $output->read('all'), "TAP version 13\n", "check all stream";
+}
+
+# output Test read output
+{
+    $output->begin();
+    is $output->read('out'), "TAP version 13\n", "check out stream";
+}
+
+# output Test read output
+{
+    $output->begin();
+    is $output->read('err'), "", "check err stream";
+    $output->read; # clear the buffer
+}
+
+# output Test read output
+{
+    $output->begin();
+    is $output->read('todo'), "", "check todo stream";
+    $output->read; # clear the buffer
+}
+
+# test skipping
+{
+    $output->begin(skip_all=>10);
+    is $output->read, "TAP version 13\n1..0 # skip 10", "skip_all";
+}
+
+# no plan
+{
+    $output->begin(no_plan => 1);
+    is $output->read, "TAP version 13\n", "no_plan";
+}
+
+
+# Test >1 pair of args
+{
+    ok(!eval {
+        $output->end( tests => 32, moredata => 1 );
+    });
+    like $@, qr/\Qend() takes only one pair of arguments/, "more args";
+}
+
+# more params and no right one
+{
+    ok(!eval {
+        $output->end( test => 32, moredata => 1 );
+    });
+    like $@, qr/\Qend() takes only one pair of arguments/, "more and wrong args";
+}
+
+# wrong param
+{
+    ok(!eval {
+        $output->end( test => 32 );
+    });
+    like $@, qr/\QUnknown argument test to end()/, "wrong args";
+}
+
 done_testing();
