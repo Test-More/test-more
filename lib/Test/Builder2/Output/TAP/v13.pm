@@ -90,7 +90,7 @@ sub end {
         $self->out("1..$args{tests}\n");
     }
     elsif( keys %args == 1 ) {
-        croak "Unknown argument @{[ keys %args ]} to begin()";
+        croak "Unknown argument @{[ keys %args ]} to end()";
     }
     else {
         # ...do nothing...
