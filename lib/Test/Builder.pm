@@ -157,6 +157,9 @@ Returns a new instance of C<Test::Builder>.  Any output from this child will
 indented four spaces more than the parent's indentation.  When done, the
 C<finalize> method I<must> be called explicitly.
 
+Trying to create a new child with a previous child still active (i.e.,
+C<&finalize> not called) will C<croak>.
+
 =cut
 
 sub child {
@@ -185,6 +188,11 @@ sub child {
 When your child is done running tests, you must call C<finalize> to clean up
 and tell the parent your pass/fail status.
 
+Calling finalize on a child with open children will C<croak>.
+
+If the child falls out of scope before C<&finalize> is called, a failure
+diagnostic will be issued and the child is considered to have failed.
+
 =cut
 
 sub finalize {
@@ -194,8 +202,10 @@ sub finalize {
         $self->croak("Can't call &finalize with child ($self->{Child_Name}) active");
     }
     $self->_ending;
+
+    # XXX This will only be necessary for TAP envelopes (we think)
     #$self->_print( $self->{Pass} ? "PASS\n" : "FAIL\n" );
-    $self->parent->ok( $self->{Pass}, $self->name );
+    $self->parent->ok( $self->suite_passed, $self->name );
     $self->parent->{Child_Name} = undef;
     $? = $self->{Child_Error};
     delete $self->{Parent};
