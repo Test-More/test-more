@@ -110,6 +110,45 @@ my $new_ok = sub {
     ok $result, "truth check";
 }
 
+# TODO after the fact
+{
+    my $result = $new_ok->(
+        raw_passed => 0
+    );
+    $result->todo('Must do');
+    ok $result, 'Setting todo after creation';
+    ok $result->todo, 'Check todo set';
+}
+
+# TODO after the fact chained
+{
+    my $result = $new_ok->(
+        raw_passed => 0
+    );
+    ok $result->todo('Must do'), 'Chained todo';
+    ok $result->todo, 'Check todo set';
+}
+
+# Skip after the fact chained
+{
+    my $result = $new_ok->(
+        raw_passed => 0
+    );
+    ok !$result->skip('No chance'), 'Chained skip';
+    ok !$result->todo;
+    ok $result->skip, 'Check skip set';
+}
+
+# skip todo
+{
+    my $result = $new_ok->(
+        raw_passed => 0
+    );
+    ok $result->skip('Far too flaky')->todo('Implement'), 
+                                                'Chained skip';
+    ok $result->todo;
+    ok $result->skip, 'Check skip set';
+}
 
 # as_hash
 {
