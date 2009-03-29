@@ -15,7 +15,7 @@ use warnings;
 
 use Test::Builder::NoOutput;
 
-use Test::More tests => 10;
+use Test::More tests => 17;
 
 {
     my $tb = Test::Builder::NoOutput->create;
@@ -143,7 +143,7 @@ END
 {
     my $tb    = Test::Builder::NoOutput->create;
     my $child = $tb->child('one');
-    is "$child->{$_}", "$tb->{$_}", "The child should copy the ($_) filehandle"
+    is $child->{$_}, $tb->{$_}, "The child should copy the ($_) filehandle"
         foreach qw{Out_FH Todo_FH Fail_FH};
     $child->finalize;
 }
@@ -159,6 +159,22 @@ END
     subtest 'subtest without plan', sub {
         plan 'no_plan';
         ok 1, 'no_plan subtests should work';
-        ok 1, '... and support more than one plan';
+        ok 1, '... and support more than one test';
+        ok 1, '... no matter how many tests are run';
     };
+}
+{
+    my $tb    = Test::Builder::NoOutput->create;
+    my $child = $tb->child('one');
+    can_ok $child, 'parent';
+    is $child->parent, $tb, '... and it should return the parent of the child';
+    ok !defined $tb->parent, '... but top level builders should not have parents';
+
+    can_ok $tb, 'name';
+    is $tb->name, $0, 'The top level name should be $0';
+    is $child->name, 'one', '... but child names should be whatever we set them to';
+    $child->finalize;
+    $child = $tb->child;
+    is $child->name, 'Child of '.$tb->name, '... or at least have a sensible default';
+    $child->finalize;
 }
