@@ -1,6 +1,7 @@
 package NoExporter;
 
-$VERSION = 1.02;
+use strict;
+our $VERSION = 1.02;
 
 sub import {
     shift;

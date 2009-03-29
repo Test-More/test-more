@@ -1,6 +1,9 @@
-Makefile
-blib/
-cover_db/
-pm_to_blib
 *.bak
 *~
+*.old
+Makefile
+blib/
+pm_to_blib
+Build
+_build
+cover_db/

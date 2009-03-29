@@ -46,3 +46,6 @@
 
 # Avoid Devel::Cover stuff
 ^cover_db/
+
+# Don't include our dist director
+^Test-Simple-

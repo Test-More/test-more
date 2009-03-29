@@ -1,9 +1,8 @@
-0.87_01
+0.87_01  Sun Mar 29 09:56:52 BST 2009
     New Features
     * done_testing() allows you to declare that you have finished running tests,
       and how many you ran.  It is a safer no_plan and effectively replaces it.
     * output() now supports scalar references.
-    * plan( add => # ) now allows you to add to the plan as you go.
     * Experimental support for nested TAP.
     * Test::More now exports a 'subtest' function to allow nested TAP.
 
