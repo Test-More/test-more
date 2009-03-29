@@ -178,8 +178,8 @@ sub ok {
         passed          => $test ? 1 : 0,
     );
     my $wrapper = Test::Builder2::ResultWrapper->new(
-        _result => $result, _output => $self->output
-        );
+        result => $result, output => $self->output
+    );
     $self->history->add_test_history( $result );
 
     return $wrapper;
