@@ -25,6 +25,28 @@ $builder->output->trap_output;
     is($builder->output->read, "not ok 2 - should fail\n", 'failure output');
 }
 
+{
+    my $result = $builder->ok(0, "should fail, and add diagnostics");
+    if(!$result->passed)
+    {
+        $result->diagnostic("we really made a fine mess this time");
+    }
+    is($result->diagnostic, "we really made a fine mess this time", "diagnostic check");
+    $result = undef;
+    is($builder->output->read, "not ok 3 - should fail, and add diagnostics\n", 'diagnostic output');
+}
+
+{
+    my $result = $builder->ok(0, "should fail, and add diagnostics");
+    if(!$result->passed)
+    {
+        $result->diagnostic("we really made a fine mess this time");
+    }
+    is($result->diagnostic, "we really made a fine mess this time", "diagnostic check");
+    $result = undef;
+    is($builder->output->read, "not ok 3 - should fail, and add diagnostics\n", 'diagnostic output');
+}
+
 
 done_testing();
 

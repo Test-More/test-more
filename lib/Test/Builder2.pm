@@ -5,6 +5,7 @@ use Mouse;
 use Carp qw(confess);
 
 use Test::Builder2::Result;
+use Test::Builder2::ResultWrapper;
 
 
 =head1 NAME
@@ -176,10 +177,12 @@ sub ok {
         raw_passed      => $test ? 1 : 0,
         passed          => $test ? 1 : 0,
     );
-    $self->output->result($result);
+    my $wrapper = Test::Builder2::ResultWrapper->new(
+        _result => $result, _output => $self->output
+        );
     $self->history->add_test_history( $result );
 
-    return $result;
+    return $wrapper;
 }
 
 
