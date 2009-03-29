@@ -167,12 +167,14 @@ sub child {
     if( $self->{Child_Name} ) {
         $self->croak("You already have a child named ($self->{Child_Name}) running");
     }
-    my $indent = $self->_indent . '    ';
-    my $child = bless {
-       Indent => $indent, 
-    }, ref $self;
+
+    my $child = bless {}, ref $self;
     $child->reset;
+    $child->{Indent} = $self->_indent . '    ';
     $child->{$_} = $self->{$_} foreach qw{Out_FH Todo_FH Fail_FH};
+
+    # This will be reset in finalize. We do this here lest one child failure
+    # cause all children to fail.
     $child->{Child_Error} = $?;
     $?                    = 0;
     $child->{Parent}      = $self;
@@ -192,6 +194,11 @@ Calling finalize on a child with open children will C<croak>.
 
 If the child falls out of scope before C<&finalize> is called, a failure
 diagnostic will be issued and the child is considered to have failed.
+
+No attempt to call methods on a child after C<&finalize> is called is
+guaranteed to succeed.
+
+Calling this on the root builder is a no-op.
 
 =cut
 
@@ -233,7 +240,7 @@ builders for nested TAP.
 
 =cut
 
-sub parent       { shift->{Parent} }
+sub parent { shift->{Parent} }
 
 =item B<name>
 
@@ -245,7 +252,7 @@ method.  If no name is supplied, will be named "Child of $parent->name".
 
 =cut
 
-sub name         { shift->{Name} }
+sub name { shift->{Name} }
 
 sub DESTROY {
     my $self = shift;
