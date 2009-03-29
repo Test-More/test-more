@@ -36,17 +36,20 @@ $builder->output->trap_output;
     is($builder->output->read, "not ok 3 - should fail, and add diagnostics\n", 'diagnostic output');
 }
 
-{
-    my $result = $builder->ok(0, "should fail, and add diagnostics");
-    if(!$result->passed)
-    {
-        $result->diagnostic("we really made a fine mess this time");
-    }
-    is($result->diagnostic, "we really made a fine mess this time", "diagnostic check");
-    $result = undef;
-    is($builder->output->read, "not ok 3 - should fail, and add diagnostics\n", 'diagnostic output');
-}
 
+TODO: {
+    local $TODO = "implement todo";
+    # FIXME: shouldn't fail.
+    #
+    # currently the code needs changing to support this
+    # syntax
+    # since we have the 'Todo' as a seperate type.
+    # unless we go changing types on the fly
+    eval {
+        $builder->ok(0, "some test")->todo("test todo feature");
+    };
+    is($builder->output->read, "not ok 4 # test todo feature\n");
+}
 
 done_testing();
 
