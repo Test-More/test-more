@@ -43,11 +43,26 @@ $builder->output->trap_output;
 # from the perspective of the caller and as if it were a Result
 {
     my $ok = $builder->ok(0, "foo");
-#line 44
+    $builder->output->read;     # flush the buffer to not screw up later tests
+
+#line 49
     ok !eval {
         $ok->i_do_not_exist;
     };
-    like $@, qr{^Can't locate object method "i_do_not_exist" via package "Test::Builder2::Result.*?" at \Q$0 line 45.\E\n$};
+    like $@, qr{^Can't locate object method "i_do_not_exist" via package "Test::Builder2::Result.*?" at \Q$0 line 50.\E\n$};
+}
+
+
+# ResultWrapper should look and act like a Result subclass.
+{
+    my $ok = $builder->ok(0);
+
+    TODO: {
+        local $TODO = "Results do not yet inherit from TB2::Result";
+        isa_ok $ok, "Test::Builder2::Result";
+    }
+    can_ok $ok, "passed";
+    can_ok $ok, "diagnostic";
 }
 
 

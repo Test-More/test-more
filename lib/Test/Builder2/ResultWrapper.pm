@@ -59,6 +59,17 @@ sub new {
     }
 }
 
+# Delegate both isa() and can() so that we look like a subclass
+sub isa {
+    my $self = shift;
+    return $self->{_result}->isa(@_);
+}
+
+sub can {
+    my $self = shift;
+    return $self->{_result}->can(@_);
+}
+
 sub DESTROY
 {
     my $self = shift;
