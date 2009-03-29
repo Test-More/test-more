@@ -39,7 +39,7 @@ my $new_ok = sub {
 {
     my $result = $new_ok->(
         raw_passed      => 1,
-        skip => '1',
+        skip            => 1,
     );
     isa_ok $result, "Test::Builder2::Result";
 
