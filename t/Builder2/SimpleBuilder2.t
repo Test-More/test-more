@@ -31,9 +31,11 @@ $builder->output->trap_output;
     {
         $result->diagnostic("we really made a fine mess this time");
     }
-    is($result->diagnostic, "we really made a fine mess this time", "diagnostic check");
+    is($result->diagnostic, "we really made a fine mess this time", 
+            "diagnostic check");
     $result = undef;
-    is($builder->output->read, "not ok 3 - should fail, and add diagnostics\n", 'diagnostic output');
+    is($builder->output->read, "not ok 3 - should fail, and add diagnostics\n", 
+            'diagnostic output');
 }
 
 
