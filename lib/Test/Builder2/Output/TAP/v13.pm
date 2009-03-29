@@ -81,14 +81,23 @@ sub result {
     my $self = shift;
     my $result = shift;
 
-    if(!$result->raw_passed)
-    {
-        $self->out("not ");
-    }
-    # FIXME: there is a lot more detail in the 
-    # result object that I ought to do deal with.
-    $self->out("ok " . $result->test_number . $result->description . "\n");
+    my $out = "";
 
+    $out .= "not " unless $result->raw_passed;
+    $out .= "ok";
+    $out .= " ".$result->test_number   if defined $result->test_number;
+
+    my $name = $result->description;
+    $out .= " - $name" if defined $name and length $name;
+
+    # XXX Need to add a reason
+    $out .= sprintf " # @{[$result->directive]}" if $result->directive;
+
+    $out .= "\n";
+
+    $self->out($out);
+
+    return;
 }
 
 =head3 end

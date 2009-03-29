@@ -130,8 +130,8 @@ END
     $result->test_number(3);
     $result->description('');
     $output->result($result);
-    # FIXME: this should be different
-    is($output->read, "not ok 3\n", "testing todo");
+    # XXX Need to add the reason
+    is($output->read, "not ok 3 # todo\n", "testing todo");
 }
 
 {
@@ -140,8 +140,8 @@ END
     $result->description('');
     $result->raw_passed(1);
     $output->result($result);
-    # FIXME: this should be different
-    is($output->read, "ok 4\n", "testing todo");
+    # XXX Need to add the reason
+    is($output->read, "ok 4 # todo\n", "testing todo");
 }
 
 {
@@ -157,7 +157,7 @@ END
     $result->description(' - a royal pain');
     $result->test_number(6);
     $output->result($result);
-    is($output->read, "not ok 6 - a royal pain\n", "test description");
+    is($output->read, "not ok 6 -  - a royal pain\n", "test description");
 }
 
 done_testing();
