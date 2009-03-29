@@ -713,7 +713,7 @@ ERR
         }
     }
 
-    $self->{Pass} = 0 unless $test;
+    $self->{Pass} = 0 unless $test || $self->in_todo;
     return $test ? 1 : 0;
 }
 
