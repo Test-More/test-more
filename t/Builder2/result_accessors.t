@@ -12,7 +12,7 @@ my $result = Test::Builder2::Result->new(
     want => 42
 ]);
 
-isa_ok $result, "Test::Builder2::Result::Base";
+isa_ok $result, "Test::Builder2::Result";
 is_deeply $result->diagnostic, [have => 23, want => 42];
 
 done_testing();
