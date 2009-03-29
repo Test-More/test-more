@@ -150,6 +150,16 @@ my $new_ok = sub {
     ok $result->skip, 'Check skip set';
 }
 
+TODO: {
+    local $TODO = "Need to implement";
+    my $result = $new_ok->(
+        raw_passed => 0
+    );
+    ok $result->todo(), 'Todo with no message';
+    # solution might be an is_todo
+    ok $result->todo;
+}
+
 # as_hash
 {
     my $result = $new_ok->(
