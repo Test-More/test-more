@@ -4,11 +4,8 @@ use 5.006;
 use Mouse;
 use Carp qw(confess);
 
-use Test::Builder2::History;
 use Test::Builder2::Result;
 use Test::Builder2::ResultWrapper;
-use Test::Builder2::Output;
-use Test::Builder2::Output::TAP::v13;
 
 
 =head1 NAME
@@ -32,7 +29,10 @@ Contains the Test::Builder2::History object.
 has history =>
   is            => 'rw',
   isa           => 'Test::Builder2::History',
-  default       => sub { Test::Builder2::History->new };
+  default       => sub {
+      require Test::Builder2::History;
+      Test::Builder2::History->new
+  };
 
 =head3 planned_tests
 
@@ -47,15 +47,18 @@ has planned_tests =>
 
 =head3 output
 
-Output object.  Defaults to a TAP parser but can be replaces by anything.
+A Test::Builder2::Output object used to output results.
+
+Defaults to Test::Builder2::Output::TAP.
 
 =cut
 
 has output =>
   is            => 'rw',
-  #isa           => '',
+  isa           => 'Test::Builder2::Output',
   default       => sub {
-      Test::Builder2::Output::TAP::v13->new();
+      require Test::Builder2::Output::TAP;
+      Test::Builder2::Output::TAP->new();
   };
 
 =head3 top
