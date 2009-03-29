@@ -41,8 +41,6 @@ t/Builder/no_header.t
 t/Builder/no_plan_at_all.t
 t/Builder/ok_obj.t
 t/Builder/output.t
-t/Builder/plan_add.t
-t/Builder/plan_add_with_done_testing.t
 t/Builder/reset.t
 t/Builder/reset_outputs.t
 t/Builder/try.t
