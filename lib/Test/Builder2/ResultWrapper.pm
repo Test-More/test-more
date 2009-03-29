@@ -55,8 +55,8 @@ the correct order.
 =cut
 
 has result =>
-  is  =>'ro';
-#  isa => 'Test::Builder2::Result';  # XXX TB2::Result's don't inherit from Result yet
+  is  =>'ro',
+  isa => 'Test::Builder2::Result'; 
 
 has output =>
   is  => 'ro',
