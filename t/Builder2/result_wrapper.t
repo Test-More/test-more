@@ -26,7 +26,7 @@ require_ok $WRAPPERCLASS;
 
 my $new_ok = sub {
     my $inner = $CLASS->new(@_);
-    my $result = $WRAPPERCLASS->new(_result => $inner, _output => $output);
+    my $result = $WRAPPERCLASS->new(result => $inner, output => $output);
     isa_ok $result, 'Test::Builder2::Result';
     return $result;
 };
