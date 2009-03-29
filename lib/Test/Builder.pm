@@ -212,7 +212,12 @@ sub finalize {
 
     # XXX This will only be necessary for TAP envelopes (we think)
     #$self->_print( $self->{Pass} ? "PASS\n" : "FAIL\n" );
-    $self->parent->ok( $self->suite_passed, $self->name );
+    if ( $self->{Skip_All} ) {
+        $self->parent->skip($self->{Skip_All});
+    }
+    else {
+        $self->parent->ok( $self->suite_passed, $self->name );
+    }
     $self->parent->{Child_Name} = undef;
     $? = $self->{Child_Error};
     delete $self->{Parent};
@@ -335,6 +340,18 @@ A convenient way to set up your tests.  Call this and Test::Builder
 will print the appropriate headers and take the appropriate actions.
 
 If you call plan(), don't call any of the other methods below.
+
+If a child calls "skip_all" in the plan, a C<Test::Builder::Exception> is
+thrown.  Trap this error, call C<&finalize> and don't run any more tests on
+the child.
+
+ my $child = $Test->child('some child');
+ eval { $child->plan( $condition ? ( skip_all => $reason ) : ( tests => 3 )  ) };
+ if ( eval { $@->isa('Test::Builder::Exception') } ) {
+    $child->finalize;
+    return;
+ }
+ # run your tests
 
 =cut
 
@@ -579,9 +596,12 @@ Skips all the tests, using the given $reason.  Exits immediately with 0.
 sub skip_all {
     my( $self, $reason ) = @_;
 
-    $self->{Skip_All} = 1;
+    $self->{Skip_All} = $self->parent ? $reason : 1;
 
     $self->_output_plan(0, "SKIP", $reason) unless $self->no_header;
+    if ( $self->parent ) {
+        die bless {} => 'Test::Builder::Exception';
+    }
     exit(0);
 }
 
