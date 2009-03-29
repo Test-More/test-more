@@ -110,7 +110,7 @@ END
 
 # result testing.
 {
-    my $result = Test::Builder2::Result::Fail->new();
+    my $result = Test::Builder2::Result->new( raw_passed => 0 );
     $result->test_number(1);
     $result->description('');
     $output->result($result);
@@ -118,7 +118,7 @@ END
 }
 
 {
-    my $result = Test::Builder2::Result::Pass->new();
+    my $result = Test::Builder2::Result->new( raw_passed => 1 );
     $result->test_number(2);
     $result->description('');
     $output->result($result);
@@ -126,7 +126,7 @@ END
 }
 
 {
-    my $result = Test::Builder2::Result::Todo->new();
+    my $result = Test::Builder2::Result->new( raw_passed => 0, todo => "reason" );
     $result->test_number(3);
     $result->description('');
     $output->result($result);
@@ -135,7 +135,7 @@ END
 }
 
 {
-    my $result = Test::Builder2::Result::Todo->new();
+    my $result = Test::Builder2::Result->new( raw_passed => 1, todo => "reason" );
     $result->test_number(4);
     $result->description('');
     $result->raw_passed(1);
@@ -145,7 +145,7 @@ END
 }
 
 {
-    my $result = Test::Builder2::Result::Fail->new();
+    my $result = Test::Builder2::Result->new( raw_passed => 0 );
     $result->description('');
     $result->test_number(1);
     $output->result($result);
@@ -153,7 +153,7 @@ END
 }
 
 {
-    my $result = Test::Builder2::Result::Fail->new();
+    my $result = Test::Builder2::Result->new( raw_passed => 0 );
     $result->description(' - a royal pain');
     $result->test_number(6);
     $output->result($result);
