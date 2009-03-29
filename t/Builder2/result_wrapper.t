@@ -5,15 +5,31 @@ use warnings;
 
 use Test::More 'no_plan';
 
+{
+    package TB2::Output::Noop;
+
+    use Mouse;
+
+    extends 'Test::Builder2::Output';
+
+    sub end { }
+    sub result {} 
+    sub begin {}
+}
+
+my $output = TB2::Output::Noop->new();
+
 my $CLASS = 'Test::Builder2::Result';
+my $WRAPPERCLASS = 'Test::Builder2::ResultWrapper';
 require_ok $CLASS;
+require_ok $WRAPPERCLASS;
 
 my $new_ok = sub {
-    my $result = $CLASS->new(@_);
+    my $inner = $CLASS->new(@_);
+    my $result = $WRAPPERCLASS->new(_result => $inner, _output => $output);
     isa_ok $result, 'Test::Builder2::Result';
     return $result;
 };
-
 
 # Pass
 {
@@ -108,6 +124,17 @@ my $new_ok = sub {
     );
     isa_ok $result, "Test::Builder2::Result";
     ok $result, "truth check";
+}
+
+# setting todo
+# FIXME: try setting a todo with an empty value
+{
+    my $result = $new_ok->(
+        raw_passed => 1
+    );
+    $result->todo('implement me');
+    ok $result->passed, "set todo";
+    ok $result->todo, "set todo";
 }
 
 
