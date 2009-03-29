@@ -1,13 +1,12 @@
-# A factory for test results.
 package Test::Builder2::Result;
 
-use Carp;
-my $CLASS = __PACKAGE__;
+use strict;
+use Mouse;
 
 
 =head1 NAME
 
-Test::Builder2::Result
+Test::Builder2::Result - Represent the result of a test
 
 =head1 SYNOPSIS
 
@@ -18,6 +17,12 @@ Test::Builder2::Result
 
 =head1 DESCRIPTION
 
+An object to store the result of a test.  Used both for historical
+reasons and by Test::Builder2::Output objects to format the result.
+
+Result objects are overloaded to return true or false in boolean
+context to indicate if theypr passed or failed.
+
 =head3 new
 
   my $result = Test::Builder2::Result->new(%test_data);
@@ -27,13 +32,6 @@ new() is a method which returns a $result based on your test data.
 =cut
 
 
-sub new {
-    my $class = shift;
-    my %args = @_;
-    $args{directive} ||= '';
-    return bless \%args, $class;
-}
-
 {
     my @attributes = qw(
       description
@@ -41,7 +39,6 @@ sub new {
       directive
       id
       location
-      passed
       raw_passed
       reason
       skip
@@ -50,17 +47,20 @@ sub new {
     );
 
     for my $key (@attributes) {
+        my $accessor = "_${key}_accessor";
+        has $accessor =>
+          is            => 'rw',
+          init_arg      => $key;
+
+        # Mouse accessors can't be changed to return itself on set.
         my $code = sub {
             my $self = shift;
             if( @_ ) {
-                $self->{$key} = shift;
+                $self->$accessor(@_);
                 return $self;
             }
-            return $self->{$key};
+            return $self->$accessor;
         };
-
-        # A private one to remain pure
-        __PACKAGE__->_alias("_${key}_accessor" => $code);
 
         # A public one which may be overriden.
         __PACKAGE__->_alias($key => $code) unless defined &{$key};
@@ -72,7 +72,7 @@ sub new {
             map {
                 my $val = $self->$_();
                 defined $val ? ( $_ => $val ) : ()
-              } @attributes
+              } @attributes, "passed"
         };
     }
 
@@ -98,12 +98,15 @@ sub passed {
     return $self->todo || $self->raw_passed;
 }
 
+# Having tests modified by a directive is an unwieldy concept.
+# POSIX tests make pass, fail, unimplemented and todo as first
+# class test results.  This may make more sense and leave
+# the whole directive business to Output::TAP.
 sub directive {
     my $self = shift;
 
-    return $self->_directive_accessor if($self->_directive_accessor);
-    # think about POSIX tests PASS, FAIL, XFAIL, 
-    # UNRESOLVED, UNSUPPORTED, UNTESTED
+    return $self->_directive_accessor if $self->_directive_accessor;
+
     return 'todo' if $self->todo;
     return 'skip' if $self->skip;
     return '';

@@ -57,10 +57,7 @@ $builder->output->trap_output;
 {
     my $ok = $builder->ok(0);
 
-    TODO: {
-        local $TODO = "Results do not yet inherit from TB2::Result";
-        isa_ok $ok, "Test::Builder2::Result";
-    }
+    isa_ok $ok, "Test::Builder2::Result";
     can_ok $ok, "passed";
     can_ok $ok, "diagnostic";
 }
