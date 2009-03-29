@@ -1,13 +1,11 @@
-# A factory for test results.
 package Test::Builder2::Result;
 
-use Carp;
-my $CLASS = __PACKAGE__;
+use strict;
 
 
 =head1 NAME
 
-Test::Builder2::Result
+Test::Builder2::Result - Represent the result of a test
 
 =head1 SYNOPSIS
 
@@ -17,6 +15,12 @@ Test::Builder2::Result
 
 
 =head1 DESCRIPTION
+
+An object to store the result of a test.  Used both for historical
+reasons and by Test::Builder2::Output objects to format the result.
+
+Result objects are overloaded to return true or false in boolean
+context to indicate if theypr passed or failed.
 
 =head3 new
 
