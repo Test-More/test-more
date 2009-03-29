@@ -56,7 +56,7 @@ sub new {
                 $self->{$key} = shift;
                 return $self;
             }
-            return exists $self->{$key} ? $self->{$key} : $self->_defaults->{$key};
+            return $self->{$key};
         };
 
         # A private one to remain pure
@@ -90,11 +90,6 @@ sub new {
 }
 
 
-# Defaults for various accessors.
-sub _defaults {
-    return { todo => '', skip => '' }
-}
-
 # This is the interpreted result of the test.
 # For example "not ok 1 # TODO" is true.
 sub passed {
@@ -111,7 +106,7 @@ sub directive {
     # UNRESOLVED, UNSUPPORTED, UNTESTED
     return 'todo' if $self->todo;
     return 'skip' if $self->skip;
-    return 'normal';
+    return '';
 }
 
 # Short aliases for these common things

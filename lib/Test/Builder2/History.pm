@@ -160,7 +160,7 @@ sub add_test_history {
 
     croak "add_test_history() takes Result objects"
       if grep {
-              !eval { $_->isa("Test::Builder2::Result::Base") }
+              !eval { $_->isa("Test::Builder2::Result") }
       } @_;
 
     my $last_test = $self->next_test_number - 1;
