@@ -39,6 +39,18 @@ $builder->output->trap_output;
 }
 
 
+# Test that the error message from a missing ResultWrapper method dies
+# from the perspective of the caller and as if it were a Result
+{
+    my $ok = $builder->ok(0, "foo");
+#line 44
+    ok !eval {
+        $ok->i_do_not_exist;
+    };
+    like $@, qr{^Can't locate object method "i_do_not_exist" via package "Test::Builder2::Result.*?" at \Q$0 line 45.\E\n$};
+}
+
+
 TODO: {
     local $TODO = "implement todo";
     # FIXME: shouldn't fail.

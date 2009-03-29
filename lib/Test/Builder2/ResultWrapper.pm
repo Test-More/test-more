@@ -6,7 +6,7 @@ my $CLASS = __PACKAGE__;
 
 Test::Builder2::ResultWrapper
 
-==head1 SYNOPSIS
+=head1 SYNOPSIS
 
     use Test::Builder2::Result;
 
@@ -37,18 +37,26 @@ sub new {
     return bless \%args, $class;
 }
 
+# Delegate all our method calls to the result object
 {
-
-    # stolen (and probably broken)
-    # from perl critic Document.pm
     our $AUTOLOAD;
-    sub AUTOLOAD {  
-        my ( $function_name ) = $AUTOLOAD =~ m/ ([^:\']+) \z /xms;
-        return if $function_name eq 'DESTROY';
+    sub AUTOLOAD {
         my $self = shift;
-        return $self->{_result}->$function_name(@_);
-    }
 
+        my ( $class, $method_name ) = $AUTOLOAD =~ m/^ (.*) :: ([^:]+) $/x;
+
+        unshift @_, $self->{_result};
+        my $code = $self->{_result}->can($method_name);
+
+        if( !$code ) {
+            my($caller, $file, $line) = caller;
+
+            die sprintf qq[Can't locate object method "%s" via package "%s" at %s line %d.\n],
+              $method_name, ref $self->{_result}, $file, $line;
+        }
+
+        goto &$code;
+    }
 }
 
 sub DESTROY
