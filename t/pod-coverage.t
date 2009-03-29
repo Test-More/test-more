@@ -13,11 +13,14 @@ plan tests => scalar @modules;
 
 my %coverage_params = (
     "Test::Builder" => {
-        also_private => [ '^(share|lock|BAILOUT)$' ]
+        also_private => [qw(share lock BAILOUT)]
     },
     "Test::More" => {
-        trustme => [ '^(skip|todo)$' ]
+        trustme => [qw(skip todo)]
     },
+    "Test::Builder2::ResultWrapper" => {
+        also_private => [qw( can isa )]
+    }
 );
 
 for my $module (@modules) {
