@@ -83,6 +83,18 @@ has output =>
 
         goto &$code;
     }
+
+    use overload(
+        q{bool} => sub {
+            my $self = shift;
+            return $self->passed;
+        },
+        q{""} => sub {
+            my $self = shift;
+            return $self->passed ? "ok" : "not ok";
+        },
+        fallback => 1,
+    );
 }
 
 # Delegate both isa() and can() so that we look like a subclass
