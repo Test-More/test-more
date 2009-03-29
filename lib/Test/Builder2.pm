@@ -4,7 +4,6 @@ use 5.006;
 use Mouse;
 use Carp qw(confess);
 
-use Test::Builder2::History;
 use Test::Builder2::Result;
 
 
@@ -29,7 +28,10 @@ Contains the Test::Builder2::History object.
 has history =>
   is            => 'rw',
   isa           => 'Test::Builder2::History',
-  default       => sub { Test::Builder2::History->new };
+  default       => sub {
+      require Test::Builder2::History;
+      Test::Builder2::History->new
+  };
 
 =head3 planned_tests
 
@@ -41,6 +43,22 @@ has planned_tests =>
   is            => 'rw',
   isa           => 'Int',
   default       => 0;
+
+=head3 output
+
+A Test::Builder2::Output object used to output results.
+
+Defaults to Test::Builder2::Output::TAP.
+
+=cut
+
+has output =>
+  is            => 'rw',
+  isa           => 'Test::Builder2::Output',
+  default       => sub {
+      require Test::Builder2::Output::TAP;
+      Test::Builder2::Output::TAP->new();
+  };
 
 =head3 top
 
@@ -138,7 +156,7 @@ sub plan {
 
     $self->planned_tests( $args{tests} );
 
-    print "1..$args{tests}\n";
+    $self->output->begin(%args);
 }
 
 =head3 ok
@@ -151,7 +169,6 @@ sub ok {
     my $name = @_ ? " - ".shift : '';
 
     my $num = $self->history->next_test_number;
-    print $test ? "ok $num$name\n" : "not ok $num$name\n";
 
     my $result = Test::Builder2::Result->new(
         test_number     => $num,
@@ -159,6 +176,7 @@ sub ok {
         raw_passed      => $test ? 1 : 0,
         passed          => $test ? 1 : 0,
     );
+    $self->output->result($result);
     $self->history->add_test_history( $result );
 
     return $result;

@@ -70,6 +70,26 @@ sub begin {
     return;
 }
 
+=head3 result
+
+Takes a C<Test::Builder2::Result> as an argument and displays the
+result details.
+
+=cut
+
+sub result {
+    my $self = shift;
+    my $result = shift;
+
+    if(!$result->raw_passed)
+    {
+        $self->out("not ");
+    }
+    # FIXME: there is a lot more detail in the 
+    # result object that I ought to do deal with.
+    $self->out("ok " . $result->test_number . $result->description . "\n");
+
+}
 
 =head3 end
 

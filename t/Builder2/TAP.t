@@ -2,6 +2,7 @@
 
 use strict;
 use Test::Builder2::Output::TAP;
+use Test::Builder2::Result;
 use lib 't/lib';
 
 use Test::More;
@@ -105,6 +106,58 @@ END
         $output->end( test => 32 );
     });
     like $@, qr/\QUnknown argument test to end()/, "wrong args";
+}
+
+# result testing.
+{
+    my $result = Test::Builder2::Result::Fail->new();
+    $result->test_number(1);
+    $result->description('');
+    $output->result($result);
+    is($output->read, "not ok 1\n", "testing not okay");
+}
+
+{
+    my $result = Test::Builder2::Result::Pass->new();
+    $result->test_number(2);
+    $result->description('');
+    $output->result($result);
+    is($output->read, "ok 2\n", "testing okay");
+}
+
+{
+    my $result = Test::Builder2::Result::Todo->new();
+    $result->test_number(3);
+    $result->description('');
+    $output->result($result);
+    # FIXME: this should be different
+    is($output->read, "not ok 3\n", "testing todo");
+}
+
+{
+    my $result = Test::Builder2::Result::Todo->new();
+    $result->test_number(4);
+    $result->description('');
+    $result->raw_passed(1);
+    $output->result($result);
+    # FIXME: this should be different
+    is($output->read, "ok 4\n", "testing todo");
+}
+
+{
+    my $result = Test::Builder2::Result::Fail->new();
+    $result->description('');
+    $result->test_number(1);
+    $output->result($result);
+    is($output->read, "not ok 1\n", "testing not okay");
+}
+
+{
+    my $result = Test::Builder2::Result::Fail->new();
+    $result->description(' - a royal pain');
+    $result->test_number(6);
+    $output->result($result);
+    is($output->read, "not ok 6 - a royal pain\n", "test description");
 }
 
 done_testing();
