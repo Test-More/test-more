@@ -208,7 +208,7 @@ it passed or failed.
 sub summary {
     my $self = shift;
 
-    return map { !$_->is_fail } @{ $self->results };
+    return map { $_->is_fail ? 0 : 1 } @{ $self->results };
 }
 
 =head3 is_passing
