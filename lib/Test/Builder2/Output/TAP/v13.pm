@@ -43,7 +43,7 @@ The %plan can be one and only one of...
 
 =cut
 
-sub begin {
+sub INNER_begin {
     my $self = shift;
     my %args = @_;
 
@@ -77,7 +77,7 @@ result details.
 
 =cut
 
-sub result {
+sub INNER_result {
     my $self = shift;
     my $result = shift;
 
@@ -85,19 +85,18 @@ sub result {
     # result object that I ought to do deal with.
 
     my $out = "";
-    if(!$result->raw_passed)
-    {
-        $out .= "not ";
-    }
-    $out .= "ok ";
-    $out .= $result->test_number . $result->description;
+    $out .= "not " unless $result->raw_passed;
+    $out .= "ok";
+    $out .= " ".$result->test_number   if defined $result->test_number;
+    my $name = $result->description;
+    $out .= " - $name" if defined $name and length $name;
     my $todo = $result->todo;
-    if($todo)
-    {
-        $out .= " # TODO $todo";
-    }
-    $self->out($out . "\n");
+    $out .= " # TODO $todo" if($todo);
+    $out .= "\n";
 
+    $self->out($out);
+
+    return;
 }
 
 =head3 end
@@ -108,7 +107,7 @@ Similar to C<begin()>, it takes either no or one and only one pair of arguments.
 
 =cut
 
-sub end {
+sub INNER_end {
     my $self = shift;
 
     my %args = @_;

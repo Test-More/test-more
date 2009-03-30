@@ -12,8 +12,10 @@ use_ok 'Test::Builder2::Output::POSIX';
 my $posix = Test::Builder2::Output::POSIX->new;
 $posix->trap_output;
 
-$posix->begin;
-is $posix->read, "Running $0\n", "begin()";
+{
+    $posix->begin;
+    is $posix->read, "Running $0\n", "begin()";
+}
 
 {
     my $result = Test::Builder2::Result->new(
@@ -24,7 +26,9 @@ is $posix->read, "Running $0\n", "begin()";
     is $posix->read, "PASS: basset hounds got long ears\n";
 }
 
-$posix->end;
-is $posix->read, "";
+{
+    $posix->end;
+    is $posix->read, "";
+}
 
 done_testing(4);

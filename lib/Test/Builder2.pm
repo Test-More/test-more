@@ -167,7 +167,7 @@ sub plan {
 sub ok {
     my $self = shift;
     my $test = shift;
-    my $name = @_ ? " - ".shift : '';
+    my $name = shift;
 
     my $num = $self->history->next_test_number;
 

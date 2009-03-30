@@ -60,7 +60,7 @@ the correct order.
 
 has result =>
   is  =>'ro',
-  isa => 'Test::Builder2::Result'; 
+  isa => 'Test::Builder2::Result';
 
 has output =>
   is  => 'ro',
