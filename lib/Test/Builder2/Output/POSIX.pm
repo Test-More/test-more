@@ -5,12 +5,12 @@ use Mouse;
 
 extends 'Test::Builder2::Output';
 
-sub begin {
+sub INNER_begin {
     my $self = shift;
     $self->out("Running $0\n");
 }
 
-sub result {
+sub INNER_result {
     my($self, $result) = @_;
 
     if( $result->passed ) {
@@ -23,7 +23,7 @@ sub result {
     return;
 }
 
-sub end {
+sub INNER_end {
 }
 
 1;

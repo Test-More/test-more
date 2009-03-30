@@ -43,7 +43,7 @@ The %plan can be one and only one of...
 
 =cut
 
-sub begin {
+sub INNER_begin {
     my $self = shift;
     my %args = @_;
 
@@ -77,7 +77,7 @@ result details.
 
 =cut
 
-sub result {
+sub INNER_result {
     my $self = shift;
     my $result = shift;
 
@@ -108,7 +108,7 @@ Similar to C<begin()>, it takes either no or one and only one pair of arguments.
 
 =cut
 
-sub end {
+sub INNER_end {
     my $self = shift;
 
     my %args = @_;

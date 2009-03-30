@@ -58,6 +58,74 @@ has error_fh =>
   default       => *STDERR;
 
 
+=head3 begin
+
+  $output->begin;
+  $output->begin(%plan);
+
+Indicates that testing is going to begin.  Gives $output the
+opportunity to output a plan, do setup or output opening tags and
+headers.
+
+A %plan can be given, but there are currently no common attributes.
+
+=cut
+
+has begin_called =>
+  is    => 'rw',
+  isa   => 'Int',
+  default => 0;
+
+sub begin {
+    my $self = shift;
+
+    $self->begin_called(1);
+    $self->INNER_begin(@_);
+
+    return;
+}
+
+
+=head3 result
+
+  $output->result($result);
+
+Outputs a $result.
+
+If begin() has not yet been called it will be.
+
+=cut
+
+sub result {
+    my $self = shift;
+    $self->begin() unless $self->begin_called;
+
+    $self->INNER_result(@_);
+
+    return;
+}
+
+
+=head3 end
+
+  $output->end;
+  $output->end(%plan);
+
+Indicates that testing is done.  Gives $output the opportunity to
+clean up, output closing tags, save the results or whatever.
+
+No further results should be output after end().
+
+=cut
+
+sub end {
+    my $self = shift;
+    $self->INNER_end(@_);
+
+    return;
+}
+
+
 =head3 out
 
   $output->out(@text);
@@ -190,36 +258,6 @@ sub read {
 
 These methods must be defined by the subclasser.
 
-=head3 begin
-
-  $output->begin;
-  $output->begin(%plan);
-
-Indicates that testing is going to begin.  Gives $output the
-opportunity to output a plan, do setup or output opening tags and
-headers.
-
-A %plan can be given, but there are currently no common attributes.
-
-=head3 result
-
-  $output->result($result);
-
-Outputs a $result.
-
-If begin() has not yet been called it will be.
-
-=head3 end
-
-  $output->end;
-  $output->end(%plan);
-
-Indicates that testing is done.  Gives $output the opportunity to
-clean up, output closing tags, save the results or whatever.
-
-No further results should be output after end().
-
 =cut
-
 
 1;
