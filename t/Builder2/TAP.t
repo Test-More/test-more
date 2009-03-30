@@ -110,7 +110,7 @@ END
 
 # result testing.
 {
-    my $result = Test::Builder2::Result->new( raw_passed => 0 );
+    my $result = Test::Builder2::Result->new( type => 'fail' );
     $result->test_number(1);
     $result->description('');
     $output->result($result);
@@ -118,7 +118,7 @@ END
 }
 
 {
-    my $result = Test::Builder2::Result->new( raw_passed => 1 );
+    my $result = Test::Builder2::Result->new( type => 'pass' );
     $result->test_number(2);
     $result->description('');
     $output->result($result);
@@ -126,7 +126,7 @@ END
 }
 
 {
-    my $result = Test::Builder2::Result->new( raw_passed => 0, todo => "reason" );
+    my $result = Test::Builder2::Result->new( type => 'todo', reason => "reason" );
     $result->test_number(3);
     $result->description('');
     $output->result($result);
@@ -134,25 +134,23 @@ END
 }
 
 {
-    my $result = Test::Builder2::Result->new( raw_passed => 1, todo => "reason" );
+    my $result = Test::Builder2::Result->new( type => 'todo', reason => "reason" );
     $result->test_number(4);
     $result->description('');
-    $result->raw_passed(1);
     $output->result($result);
     is($output->read, "ok 4 # TODO reason\n", "testing todo");
 }
 
 {
-    my $result = Test::Builder2::Result->new( raw_passed => 1, todo => "reason" );
+    my $result = Test::Builder2::Result->new( type => 'todo', reason => "reason" );
     $result->test_number(4);
     $result->description('a fine test');
-    $result->raw_passed(1);
     $output->result($result);
     is($output->read, "ok 4 - a fine test # TODO reason\n", "testing todo");
 }
 
 {
-    my $result = Test::Builder2::Result->new( raw_passed => 0 );
+    my $result = Test::Builder2::Result->new( type => 'fail' );
     $result->description('');
     $result->test_number(1);
     $output->result($result);
@@ -160,7 +158,7 @@ END
 }
 
 {
-    my $result = Test::Builder2::Result->new( raw_passed => 0 );
+    my $result = Test::Builder2::Result->new( type => 'fail' );
     $result->description(' - a royal pain');
     $result->test_number(6);
     $output->result($result);
@@ -168,7 +166,7 @@ END
 }
 
 SKIP: {
-    my $result = Test::Builder2::Result->new( raw_passed => 0 );
+    my $result = Test::Builder2::Result->new( type => 'fail' );
     $result->description('skip test');
     $result->test_number(7);
     $result->skip('Not gonna work');
