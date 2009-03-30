@@ -130,8 +130,7 @@ END
     $result->test_number(3);
     $result->description('');
     $output->result($result);
-    # FIXME: this should be different
-    is($output->read, "not ok 3\n", "testing todo");
+    is($output->read, "not ok 3 # TODO reason\n", "testing todo");
 }
 
 {
@@ -140,8 +139,16 @@ END
     $result->description('');
     $result->raw_passed(1);
     $output->result($result);
-    # FIXME: this should be different
-    is($output->read, "ok 4\n", "testing todo");
+    is($output->read, "ok 4 # TODO reason\n", "testing todo");
+}
+
+{
+    my $result = Test::Builder2::Result->new( raw_passed => 1, todo => "reason" );
+    $result->test_number(4);
+    $result->description(' - a fine test');
+    $result->raw_passed(1);
+    $output->result($result);
+    is($output->read, "ok 4 - a fine test # TODO reason\n", "testing todo");
 }
 
 {

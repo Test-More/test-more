@@ -3,6 +3,7 @@ package Test::Builder2::ResultWrapper;
 use strict;
 use Mouse;
 
+use Test::Builder2::Result;
 
 =head1 NAME
 
@@ -31,6 +32,9 @@ enables this sort of thing:
 
 This is a private class of Test::Builder2.  Do not use it outside of
 the Test::Builder2 internals.
+
+It's required so that we have an object that *will* be destroyed
+at the correct time.
 
 =head1 METHODS
 
@@ -65,6 +69,25 @@ has output =>
 
 # Delegate all our method calls to the result object
 {
+
+    # setup the accessors because we need to make sure that
+    # we return this object rather than letting the accessor
+    # return the Result object we are using behind the facade
+    my $attributes = Test::Builder2::Result->get_attributes();
+    for my $key (@$attributes) {
+
+        my $code = sub {
+            my $self = shift;
+            if( @_ ) {
+                $self->result->$key(@_);
+                return $self;
+            }
+            return $self->result->$key;
+        };
+
+        __PACKAGE__->_alias($key => $code) unless defined &{$key};
+    }
+
     our $AUTOLOAD;
     sub AUTOLOAD {
         my $self = shift;
@@ -113,5 +136,13 @@ sub DESTROY
     my $self = shift;
     $self->output->result($self->result);
 }
+
+sub _alias {
+    my($class, $name, $code) = @_;
+
+    no strict 'refs';
+    *{$class . "::" . $name} = $code;
+}
+
 
 1;

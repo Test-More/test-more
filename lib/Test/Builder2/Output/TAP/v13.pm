@@ -81,13 +81,22 @@ sub result {
     my $self = shift;
     my $result = shift;
 
-    if(!$result->raw_passed)
-    {
-        $self->out("not ");
-    }
     # FIXME: there is a lot more detail in the 
     # result object that I ought to do deal with.
-    $self->out("ok " . $result->test_number . $result->description . "\n");
+
+    my $out = "";
+    if(!$result->raw_passed)
+    {
+        $out .= "not ";
+    }
+    $out .= "ok ";
+    $out .= $result->test_number . $result->description;
+    my $todo = $result->todo;
+    if($todo)
+    {
+        $out .= " # TODO $todo";
+    }
+    $self->out($out . "\n");
 
 }
 

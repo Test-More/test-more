@@ -62,19 +62,32 @@ $builder->output->trap_output;
     can_ok $ok, "diagnostic";
 }
 
+# check destructor called in correct place
+{
+    $builder->output->read;     # flush the buffer 
+    # FIXME: skip should alter output
+    {
+        # this convoluted set of nesting ensures that if
+        # we aren't returning back the wrapper after each
+        # accessor we will end up destroying the wrapper
+        # at the wrong point and the output will be displayed
+        # before the information has been associated
+        # with the result.
+        my $result;
+        {
+            $result = $builder->ok(0)->skip('skippy');
+            ok !$result, "Check destructor";
+        }
+        $result->todo('please');
+        ok $result, "Check destructor";
+    }
+    is($builder->output->read, "not ok 6 # TODO please\n");     # flush the buffer 
+}
 
-TODO: {
-    local $TODO = "implement todo";
-    # FIXME: shouldn't fail.
-    #
-    # currently the code needs changing to support this
-    # syntax
-    # since we have the 'Todo' as a seperate type.
-    # unless we go changing types on the fly
-    eval {
-        $builder->ok(0, "some test")->todo("test todo feature");
-    };
-    is($builder->output->read, "not ok 4 # test todo feature\n");
+{
+    $builder->output->read;     # flush the buffer 
+    $builder->ok(0, "some test")->todo("test todo feature");
+    is($builder->output->read, "not ok 7 - some test # TODO test todo feature\n");
 }
 
 done_testing();

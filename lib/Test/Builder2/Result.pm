@@ -32,20 +32,25 @@ new() is a method which returns a $result based on your test data.
 =cut
 
 
-{
-    my @attributes = qw(
-      description
-      diagnostic
-      directive
-      id
-      location
-      raw_passed
-      reason
-      skip
-      test_number
-      todo
-    );
+our @attributes = qw(
+  description
+  diagnostic
+  directive
+  id
+  location
+  raw_passed
+  reason
+  skip
+  test_number
+  todo
+);
 
+sub get_attributes
+{
+    return \@attributes;
+}
+
+{
     for my $key (@attributes) {
         my $accessor = "_${key}_accessor";
         has $accessor =>
