@@ -19,7 +19,7 @@ $posix->trap_output;
 
 {
     my $result = Test::Builder2::Result->new(
-        raw_passed      => 1,
+        type            => 'pass',
         description     => "basset hounds got long ears",
     );
     $posix->result($result);

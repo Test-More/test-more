@@ -110,11 +110,11 @@ has output =>
     use overload(
         q{bool} => sub {
             my $self = shift;
-            return $self->passed;
+            return !$self->is_fail;
         },
         q{""} => sub {
             my $self = shift;
-            return $self->passed ? "ok" : "not ok";
+            return $self->as_string;
         },
         fallback => 1,
     );
