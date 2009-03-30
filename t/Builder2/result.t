@@ -5,182 +5,137 @@ use warnings;
 
 use Test::More 'no_plan';
 
-my $CLASS = 'Test::Builder2::Result';
-require_ok $CLASS;
+{
+    package TB2::Output::Noop;
 
-my $new_ok = sub {
-    my $result = $CLASS->new(@_);
+    use Mouse;
+
+    extends 'Test::Builder2::Output';
+
+    sub end { }
+    sub result {} 
+    sub begin {}
+}
+
+my $CLASS = 'Test::Builder2::Result';
+my $WRAPPERCLASS = 'Test::Builder2::ResultWrapper';
+require_ok $CLASS;
+require_ok $WRAPPERCLASS;
+
+note("Running tests using $CLASS");
+tests(sub { new_ok($CLASS, @_) });
+
+note("Running tests using $WRAPPERCLASS");
+my $output = TB2::Output::Noop->new();
+tests(sub {
+    my $inner = $CLASS->new(@{$_[0]});
+    my $result = $WRAPPERCLASS->new(result => $inner, output => $output);
     isa_ok $result, 'Test::Builder2::Result';
     return $result;
-};
+});
 
 
-# Pass
-{
-    my $result = $new_ok->( raw_passed => 1 );
-    isa_ok $result, "Test::Builder2::Result";
+sub tests {
+    my $new_ok = shift;
 
-    ok $result->passed;
-    ok $result->raw_passed;
+    # Pass
+    {
+        my $result = $new_ok->([ type => "pass" ]);
+
+        is $result->type, 'pass';
+        ok $result;
+    }
+
+
+    # Fail
+    {
+        my $result = $new_ok->([ type => "fail" ]);
+
+        is $result->type, 'fail';
+        ok !$result;
+    }
+
+
+    # Skip
+    {
+        my $result = $new_ok->([ type => 'skip' ]);
+
+        is $result->type, 'skip';
+        is $result->reason, undef;
+        ok $result->is_skip;
+        ok $result;
+    }
+
+
+    # TODO
+    {
+        my $result = $new_ok->([ type => 'todo_pass' ]);
+
+        is $result->type, 'todo_pass';
+        ok $result->is_todo;
+        ok $result;
+    }
+
+
+    # TODO after a pass
+    {
+        my $result = $new_ok->([ type => 'pass' ])
+          ->todo('Must do');
+
+        ok $result->is_todo;
+        is $result->type, 'todo_pass';
+        is $result->reason, 'Must do';
+        ok $result;
+    }
+
+    # TODO after a fail
+    {
+        my $result = $new_ok->([ type => 'fail' ])
+          ->todo('Must do');
+
+        ok $result->is_todo;
+        is $result->type, 'todo_fail';
+        is $result->reason, 'Must do';
+        ok $result;
+    }
+
+    # skip todo
+    {
+        my $result = $new_ok->([ type    => 'skip' ])
+          ->todo('Implement');
+
+        ok $result, 'Chained skip';
+        is $result->type, 'todo_skip';
+        ok $result->is_todo;
+        ok $result->is_skip;
+    }
+
+    # TODO with no message
+    {
+        my $result = $new_ok->([ type => 'fail' ])
+          ->todo();
+
+        ok $result->is_todo(), 'Todo with no message';
+        is $result->reason, undef;
+        ok $result;
+    }
+
+    # as_hash
+    {
+        my $result = $new_ok->([
+            type            => 'pass',
+            description     => 'something something something test result',
+            test_number     => 23,
+            location        => 'foo.t',
+            id              => 0,
+        ]);
+
+        is_deeply $result->as_hash, {
+            type            => 'pass',
+            description     => 'something something something test result',
+            test_number     => 23,
+            location        => 'foo.t',
+            id              => 0,
+        }, 'as_hash';
+    }
 }
-
-
-# Fail
-{
-    my $result = $new_ok->( raw_passed => 0 );
-    isa_ok $result, "Test::Builder2::Result";
-
-    ok !$result->passed;
-    ok !$result->raw_passed;
-}
-
-
-# Skip
-{
-    my $result = $new_ok->(
-        raw_passed      => 1,
-        skip            => 1,
-    );
-    isa_ok $result, "Test::Builder2::Result";
-
-    ok $result->passed;
-    ok $result->raw_passed;
-    is $result->directive,      'skip';
-}
-
-
-# TODO
-{
-    my $result = $new_ok->(
-        raw_passed      => 0,
-        todo            => 1,
-    );
-    isa_ok $result, "Test::Builder2::Result";
-
-    ok $result->passed;
-    ok !$result->raw_passed;
-    is $result->directive,      'todo';
-}
-
-
-# Unknown directive, pass
-{
-    my $result = $new_ok->(
-        directive       => 'omega',
-        raw_passed      => 1
-    );
-
-    isa_ok $result, "Test::Builder2::Result";
-
-    ok $result->passed;
-    ok $result->raw_passed;
-    is $result->directive,      'omega';
-}
-
-
-# Unknown directive, fail
-{
-    my $result = $new_ok->(
-        directive       => 'omega',
-        raw_passed      => 0
-    );
-
-    isa_ok $result, "Test::Builder2::Result";
-
-    ok !$result->passed;
-    ok !$result->raw_passed;
-    is $result->directive,      'omega';
-}
-
-# truthiness (FALSE)
-{
-    my $result = $new_ok->(
-        raw_passed => 0
-    );
-    isa_ok $result, "Test::Builder2::Result";
-    ok !$result, "truth check";
-}
-
-# truthiness (TRUE)
-{
-    my $result = $new_ok->(
-        raw_passed => 1
-    );
-    isa_ok $result, "Test::Builder2::Result";
-    ok $result, "truth check";
-}
-
-# TODO after the fact
-{
-    my $result = $new_ok->(
-        raw_passed => 0
-    );
-    $result->todo('Must do');
-    ok $result, 'Setting todo after creation';
-    ok $result->todo, 'Check todo set';
-}
-
-# TODO after the fact chained
-{
-    my $result = $new_ok->(
-        raw_passed => 0
-    );
-    ok $result->todo('Must do'), 'Chained todo';
-    ok $result->todo, 'Check todo set';
-}
-
-# Skip after the fact chained
-{
-    my $result = $new_ok->(
-        raw_passed => 0
-    );
-    ok !$result->skip('No chance'), 'Chained skip';
-    ok !$result->todo;
-    ok $result->skip, 'Check skip set';
-}
-
-# skip todo
-{
-    my $result = $new_ok->(
-        raw_passed => 0
-    );
-    ok $result->skip('Far too flaky')->todo('Implement'), 
-                                                'Chained skip';
-    ok $result->todo;
-    ok $result->skip, 'Check skip set';
-}
-
-TODO: {
-    my $result = $new_ok->(
-        raw_passed => 0
-    );
-
-    local $TODO = "Need to implement";
-    ok $result->todo(), 'Todo with no message';
-    # solution might be an is_todo
-    ok $result->todo;
-}
-
-# as_hash
-{
-    my $result = $new_ok->(
-        raw_passed      => 1,
-        description     => 'something something something test result',
-        test_number     => 23,
-        location        => 'foo.t',
-        id              => 0,
-        directive       => '',
-    );
-
-    is_deeply $result->as_hash, {
-        raw_passed      => 1,
-        description     => 'something something something test result',
-        test_number     => 23,
-        passed          => 1,
-        location        => 'foo.t',
-        id              => 0,
-        directive       => '',
-    }, 'as_hash';
-}
-
-

@@ -33,17 +33,15 @@ new() is a method which returns a $result based on your test data.
 
 
 our @attributes = qw(
+  type
   description
   diagnostic
-  directive
   id
   location
-  raw_passed
   reason
-  skip
   test_number
-  todo
 );
+
 
 sub get_attributes
 {
@@ -77,50 +75,62 @@ sub get_attributes
             map {
                 my $val = $self->$_();
                 defined $val ? ( $_ => $val ) : ()
-              } @attributes, "passed"
+              } @attributes
         };
     }
 
     use overload(
         q{bool} => sub {
             my $self = shift;
-            return $self->passed;
+            return !$self->is_fail;
         },
         q{""} => sub {
             my $self = shift;
-            return $self->passed ? "ok" : "not ok";
+            return $self->as_string;
         },
         fallback => 1,
     );
 }
 
 
-# This is the interpreted result of the test.
-# For example "not ok 1 # TODO" is true.
-sub passed {
+# Some aliases and convenience methods.
+sub is_fail {
     my $self = shift;
-
-    return $self->todo || $self->raw_passed;
+    return $self->type eq 'fail';
 }
 
-# Having tests modified by a directive is an unwieldy concept.
-# POSIX tests make pass, fail, unimplemented and todo as first
-# class test results.  This may make more sense and leave
-# the whole directive business to Output::TAP.
-sub directive {
+sub is_todo {
     my $self = shift;
-
-    return $self->_directive_accessor if $self->_directive_accessor;
-
-    return 'todo' if $self->todo;
-    return 'skip' if $self->skip;
-    return '';
+    return $self->type =~ qr/todo/x;
 }
 
-# Short aliases for these common things
+sub is_skip {
+    my $self = shift;
+    return $self->type =~ qr/skip/x;
+}
+
+sub todo {
+    my $self = shift;
+    my $reason = shift;
+
+    $self->is_fail              ? $self->type("todo_fail") :
+    $self->type eq 'skip'       ? $self->type("todo_skip") :
+                                  $self->type("todo_pass") ;
+    $self->reason($reason);
+
+    return $self;
+}
+
 __PACKAGE__->_alias(name => \&description);
 __PACKAGE__->_alias(diag => \&diagnostic);
+__PACKAGE__->_alias(file => \&location);
+__PACKAGE__->_alias(line => \&id);
 
+sub as_string {
+    my $self = shift;
+
+    return $self->type;
+}
 
 sub _alias {
     my($class, $name, $code) = @_;

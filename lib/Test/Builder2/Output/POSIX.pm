@@ -10,15 +10,21 @@ sub INNER_begin {
     $self->out("Running $0\n");
 }
 
+# Map Result types to POSIX types
+my %type_map = (
+    pass        => "PASS",
+    fail        => "FAIL",
+    todo_pass   => 'XPASS',
+    todo_fail   => 'XFAIL',
+    skip        => 'UNTESTED',
+    todo_skip   => 'UNTESTED',
+);
+
 sub INNER_result {
     my($self, $result) = @_;
 
-    if( $result->passed ) {
-        $self->out("PASS: @{[$result->description]}\n");
-    }
-    else {
-        $self->out("FAIL: @{[$result->description]}\n");
-    }
+    my $type = $type_map{$result->type};
+    $self->out("$type: @{[$result->description]}\n");
 
     return;
 }
