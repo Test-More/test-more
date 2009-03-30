@@ -71,15 +71,9 @@ A %plan can be given, but there are currently no common attributes.
 
 =cut
 
-has begin_called =>
-  is    => 'rw',
-  isa   => 'Int',
-  default => 0;
-
 sub begin {
     my $self = shift;
 
-    $self->begin_called(1);
     $self->INNER_begin(@_);
 
     return;
@@ -98,7 +92,6 @@ If begin() has not yet been called it will be.
 
 sub result {
     my $self = shift;
-    $self->begin() unless $self->begin_called;
 
     $self->INNER_result(@_);
 
@@ -120,6 +113,7 @@ No further results should be output after end().
 
 sub end {
     my $self = shift;
+
     $self->INNER_end(@_);
 
     return;

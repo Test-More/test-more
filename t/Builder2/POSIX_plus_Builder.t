@@ -18,7 +18,6 @@ $test->output($posix);
 
 $test->ok(1, "this is a pass");
 is $posix->read, <<"END";
-Running $0
 PASS: this is a pass
 END
 
