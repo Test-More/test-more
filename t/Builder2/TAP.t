@@ -167,4 +167,15 @@ END
     is($output->read, "not ok 6 -  - a royal pain\n", "test description");
 }
 
+SKIP: {
+    my $result = Test::Builder2::Result->new( raw_passed => 0 );
+    $result->description('skip test');
+    $result->test_number(7);
+    $result->skip('Not gonna work');
+    $output->result($result);
+
+    skip 'Skip output not done yet', 1;
+    is($output->read, "not ok 7 - skip test # skip Not gonna work\n", "test description");
+}
+
 done_testing();
