@@ -208,7 +208,7 @@ it passed or failed.
 sub summary {
     my $self = shift;
 
-    return map { $_->passed } @{ $self->results };
+    return map { !$_->is_fail } @{ $self->results };
 }
 
 =head3 is_passing
@@ -222,7 +222,7 @@ Returns true if all the tests passed, false otherwise.
 sub is_passing {
     my $self = shift;
 
-    return (grep { !$_->passed } @{ $self->results }) ? 0 : 1;
+    return (grep { $_->is_fail } @{ $self->results }) ? 0 : 1;
 }
 
 1;

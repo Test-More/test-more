@@ -13,11 +13,11 @@ require_ok 'Test::Builder2::History';
 
 
 my $Pass = Test::Builder2::Result->new(
-    raw_passed => 1
+    type => 'pass'
 );
 
 my $Fail = Test::Builder2::Result->new(
-    raw_passed => 0
+    type => 'fail'
 );
 
 my $create_ok = sub {
