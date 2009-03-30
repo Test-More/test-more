@@ -50,10 +50,26 @@ sub get_attributes
 
 {
     for my $key (@attributes) {
+
         my $accessor = "_${key}_accessor";
-        has $accessor =>
-          is            => 'rw',
-          init_arg      => $key;
+
+        # do a special case for type
+        # to ensure a) it's filled in
+        # b) it's within the list of expected
+        #    values
+        if($key eq "type")
+        {
+            has $accessor =>
+              is            => 'rw',
+              required      => 1,
+              init_arg      => $key;
+        }
+        else
+        {
+            has $accessor =>
+              is            => 'rw',
+              init_arg      => $key;
+        }
 
         # Mouse accessors can't be changed to return itself on set.
         my $code = sub {
@@ -67,6 +83,10 @@ sub get_attributes
 
         # A public one which may be overriden.
         __PACKAGE__->_alias($key => $code) unless defined &{$key};
+    }
+
+    sub valid_status {
+        my $self = shift;
     }
 
     sub as_hash {
@@ -116,6 +136,18 @@ sub todo {
     $self->is_fail              ? $self->type("todo_fail") :
     $self->type eq 'skip'       ? $self->type("todo_skip") :
                                   $self->type("todo_pass") ;
+    $self->reason($reason);
+
+    return $self;
+}
+
+sub skip {
+    my $self = shift;
+    my $reason = shift;
+
+    $self->is_fail              ? $self->type("skip_fail") :
+    $self->type eq 'todo'       ? $self->type("todo_skip") :
+                                  $self->type("skip_pass") ;
     $self->reason($reason);
 
     return $self;

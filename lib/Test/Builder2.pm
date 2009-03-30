@@ -171,11 +171,11 @@ sub ok {
 
     my $num = $self->history->next_test_number;
 
+
     my $result = Test::Builder2::Result->new(
         test_number     => $num,
         description     => $name,
-        raw_passed      => $test ? 1 : 0,
-        passed          => $test ? 1 : 0,
+        type            => $test ? 'pass' : 'fail',
     );
     my $wrapper = Test::Builder2::ResultWrapper->new(
         result => $result, output => $self->output

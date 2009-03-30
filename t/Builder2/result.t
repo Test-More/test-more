@@ -120,6 +120,13 @@ sub tests {
         ok $result;
     }
 
+    TODO: {
+        local $TODO = "Should validate TB2::Result->type values";
+        ok !eval {
+            my $result = $new_ok->([ type => 'spam' ]);
+        }, 'Check type validation';
+    }
+
     # as_hash
     {
         my $result = $new_ok->([

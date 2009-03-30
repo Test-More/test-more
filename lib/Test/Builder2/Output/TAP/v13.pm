@@ -85,13 +85,13 @@ sub INNER_result {
     # result object that I ought to do deal with.
 
     my $out = "";
-    $out .= "not " unless $result->raw_passed;
+    $out .= "not " if $result->is_fail;
     $out .= "ok";
     $out .= " ".$result->test_number   if defined $result->test_number;
     my $name = $result->description;
     $out .= " - $name" if defined $name and length $name;
-    my $todo = $result->todo;
-    $out .= " # TODO $todo" if($todo);
+    my $todo = $result->reason;
+    $out .= " # TODO $todo" if($result->is_todo);
     $out .= "\n";
 
     $self->out($out);

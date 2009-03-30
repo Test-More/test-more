@@ -27,7 +27,7 @@ $builder->output->trap_output;
 
 {
     my $result = $builder->ok(0, "should fail, and add diagnostics");
-    if(!$result->passed)
+    if($result->is_fail)
     {
         $result->diagnostic("we really made a fine mess this time");
     }
@@ -58,7 +58,7 @@ $builder->output->trap_output;
     my $ok = $builder->ok(0);
 
     isa_ok $ok, "Test::Builder2::Result";
-    can_ok $ok, "passed";
+    can_ok $ok, "is_fail";
     can_ok $ok, "diagnostic";
 }
 
@@ -76,7 +76,7 @@ $builder->output->trap_output;
         my $result;
         {
             $result = $builder->ok(0)->skip('skippy');
-            ok !$result, "Check destructor";
+            ok $result, "Check destructor";
         }
         $result->todo('please');
         ok $result, "Check destructor";

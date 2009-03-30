@@ -42,3 +42,4 @@ assert("pass");
 ok( !eval {
     assert("die die die!");
 }, "assert() dies on fail");
+
