@@ -151,10 +151,11 @@ my $new_ok = sub {
 }
 
 TODO: {
-    local $TODO = "Need to implement";
     my $result = $new_ok->(
         raw_passed => 0
     );
+
+    local $TODO = "Need to implement";
     ok $result->todo(), 'Todo with no message';
     # solution might be an is_todo
     ok $result->todo;
