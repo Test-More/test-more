@@ -258,6 +258,16 @@ sub read {
 
 These methods must be defined by the subclasser.
 
+Do not override begin, result and end.  Override these instead.
+
+=head3 INNER_begin
+
+=head3 INNER_result
+
+=head3 INNER_end
+
+These implement the guts of begin, result and end.
+
 =cut
 
 1;
