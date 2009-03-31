@@ -133,9 +133,9 @@ sub todo {
     my $self = shift;
     my $reason = shift;
 
-    $self->is_fail              ? $self->type("todo_fail") :
-    $self->type eq 'skip'       ? $self->type("todo_skip") :
-                                  $self->type("todo_pass") ;
+    $self->is_fail       ? $self->type("todo_fail") :
+    $self->is_skip       ? $self->type("todo_skip") :
+                           $self->type("todo_pass") ;
     $self->reason($reason);
 
     return $self;
@@ -146,7 +146,7 @@ sub skip {
     my $reason = shift;
 
     $self->is_fail              ? $self->type("skip_fail") :
-    $self->type eq 'todo'       ? $self->type("todo_skip") :
+    $self->is_todo              ? $self->type("todo_skip") :
                                   $self->type("skip_pass") ;
     $self->reason($reason);
 

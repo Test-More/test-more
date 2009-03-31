@@ -87,11 +87,18 @@ sub INNER_result {
     my $out = "";
     $out .= "not " if $result->type =~ /fail/;
     $out .= "ok";
+
     $out .= " ".$result->test_number   if defined $result->test_number;
+
     my $name = $result->description;
     $out .= " - $name" if defined $name and length $name;
-    my $todo = $result->reason;
-    $out .= " # TODO $todo" if($result->is_todo);
+
+    my $reason = $result->reason;
+    my @directives;
+    push @directives, "TODO" if $result->is_todo;
+    push @directives, "SKIP" if $result->is_skip;
+
+    $out .= " # @{[ join ' ', @directives ]} $reason" if @directives;
     $out .= "\n";
 
     $self->out($out);

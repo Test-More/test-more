@@ -75,13 +75,14 @@ $builder->output->trap_output;
         # with the result.
         my $result;
         {
-            $result = $builder->ok(0)->skip('skippy');
+            $result = $builder->ok(1)->name('skippy');
             ok $result, "Check destructor";
         }
-        $result->todo('please');
+
+        $result->name('please');
         ok $result, "Check destructor";
     }
-    is($builder->output->read, "not ok 6 # TODO please\n");     # flush the buffer 
+    is($builder->output->read, "ok 6 - please\n");     # flush the buffer 
 }
 
 {

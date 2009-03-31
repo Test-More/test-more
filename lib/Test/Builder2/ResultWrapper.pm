@@ -69,12 +69,11 @@ has output =>
 
 # Delegate all our method calls to the result object
 {
-
     # setup the accessors because we need to make sure that
     # we return this object rather than letting the accessor
     # return the Result object we are using behind the facade
     my $attributes = Test::Builder2::Result->get_attributes();
-    for my $key (@$attributes) {
+    for my $key (@$attributes, qw(todo skip name diag file line)) {
 
         my $code = sub {
             my $self = shift;
