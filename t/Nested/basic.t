@@ -15,7 +15,7 @@ use warnings;
 
 use Test::Builder::NoOutput;
 
-use Test::More tests => 21;
+use Test::More tests => 22;
 
 {
     my $tb = Test::Builder::NoOutput->create;
@@ -194,4 +194,26 @@ END
     };
     is +Test::Builder->new->{Test_Results}[-1]{type}, 'skip',
         'Subtests which "skip_all" are reported as skipped tests';
+}
+
+# to do tests
+{
+    my $tb = Test::Builder::NoOutput->create;
+    $tb->plan( tests => 1 );
+    my $child = $tb->child;
+    $child->plan( tests => 1 );
+    $child->todo_start( 'message' );
+    $child->ok( 0 );
+    $child->todo_end;
+    $child->finalize;
+    $tb->_ending;
+    $tb->reset_outputs;
+    is $tb->read, <<'END', 'TODO tests should not make the surrounding test ';
+1..1
+    1..1
+    not ok 1 # TODO message
+    
+    #   Failed (TODO) test at t/Nested/basic.t line 206.
+ok 1 - Child of t/Nested/basic.t
+END
 }
