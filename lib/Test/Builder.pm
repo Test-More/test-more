@@ -378,7 +378,6 @@ sub plan {
         my @args = grep { defined } ( $cmd, $arg );
         $self->croak("plan() doesn't understand @args");
     }
-
     return 1;
 }
 
@@ -2229,7 +2228,6 @@ sub _ending {
         $self->{Pass} = 0;
         return;
     }
-
     # Figure out if we passed or failed and print helpful messages.
     my $test_results = $self->{Test_Results};
     if(@$test_results) {
