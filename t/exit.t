@@ -81,12 +81,12 @@ while( my($test_name, $exit_code) = each %Tests ) {
     my $actual_exit = exitstatus($wait_stat);
 
     if( $exit_code eq 'not zero' ) {
-        $TB->isnt_num( $Exit_Map{$actual_exit}, 0,
+        $TB->isnt_num( $actual_exit, $Exit_Map{0},
                       "$test_name exited with $actual_exit ".
                       "(expected $exit_code)");
     }
     else {
-        $TB->is_num( $Exit_Map{$actual_exit}, $exit_code, 
+        $TB->is_num( $actual_exit, $Exit_Map{$exit_code}, 
                       "$test_name exited with $actual_exit ".
                       "(expected $exit_code)");
     }
