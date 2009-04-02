@@ -2,6 +2,9 @@
     Test Fixes
     * Some filesystems don't like it when you open a file for writing multiple
       times.  Fixes t/Builder/reset.t. [rt.cpan.org 17298]
+    * Check how an operating system is going to map exit codes.  Some OS'
+      will map them... sometimes.  [rt.cpan.org 42148]
+
 
 0.87_01  Sun Mar 29 09:56:52 BST 2009
     New Features

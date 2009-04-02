@@ -22,29 +22,15 @@ $TB->level(0);
 
 package main;
 
-my $IsVMS = $^O eq 'VMS';
+my $Perl = File::Spec->rel2abs($^X);
+if( $^O eq 'VMS' ) {
+    # VMS can't use its own $^X in a system call until almost 5.8
+    $Perl = "MCR $^X" if $] < 5.007003;
 
-print "# Ahh!  I see you're running VMS.\n" if $IsVMS;
+    # Quiet noisy 'SYS$ABORT'
+    $Perl .= q{ -"Mvmsish=hushed"};
+}
 
-my %Tests = (
-             #                      Everyone Else   VMS
-             'success.plx'              => [0,      0],
-             'one_fail.plx'             => [1,      4],
-             'two_fail.plx'             => [2,      4],
-             'five_fail.plx'            => [5,      4],
-             'extras.plx'               => [2,      4],
-             'too_few.plx'              => [255,    4],
-             'too_few_fail.plx'         => [2,      4],
-             'death.plx'                => [255,    4],
-             'last_minute_death.plx'    => [255,    4],
-             'pre_plan_death.plx'       => ['not zero',    'not zero'],
-             'death_in_eval.plx'        => [0,      0],
-             'require.plx'              => [0,      0],
-             'death_with_handler.plx'   => [255,    4],
-             'exit.plx'                 => [1,      4],
-            );
-
-$TB->plan( tests => scalar keys(%Tests) );
 
 eval { require POSIX; &POSIX::WEXITSTATUS(0) };
 if( $@ ) {
@@ -54,33 +40,53 @@ else {
     *exitstatus = sub { POSIX::WEXITSTATUS($_[0]) }
 }
 
-my $Perl = File::Spec->rel2abs($^X);
+
+# Some OS' will alter the exit code to their own native sense...
+# sometimes.  Rather than deal with the exception we'll just
+# build up the mapping.
+print "# Building up a map of exit codes.  May take a while.\n";
+my %Exit_Map;
+for my $exit (0..255) {
+    my $wait = system(qq[$Perl -e "exit $exit"]);
+    $Exit_Map{$exit} = exitstatus($wait);
+}
+print "# Done.\n";
+
+
+my %Tests = (
+             # File                        Exit Code
+             'success.plx'              => 0,
+             'one_fail.plx'             => 1,
+             'two_fail.plx'             => 2,
+             'five_fail.plx'            => 5,
+             'extras.plx'               => 2,
+             'too_few.plx'              => 255,
+             'too_few_fail.plx'         => 2,
+             'death.plx'                => 255,
+             'last_minute_death.plx'    => 255,
+             'pre_plan_death.plx'       => 'not zero',
+             'death_in_eval.plx'        => 0,
+             'require.plx'              => 0,
+             'death_with_handler.plx'   => 255,
+             'exit.plx'                 => 1,
+            );
+
+$TB->plan( tests => scalar keys(%Tests) );
 
 chdir 't';
 my $lib = File::Spec->catdir(qw(lib Test Simple sample_tests));
-while( my($test_name, $exit_codes) = each %Tests ) {
-    my($exit_code) = $exit_codes->[$IsVMS ? 1 : 0];
-
-    if( $^O eq 'VMS' ) {
-        # VMS can't use its own $^X in a system call until almost 5.8
-        $Perl = "MCR $^X" if $] < 5.007003;
-
-        # Quiet noisy 'SYS$ABORT'.  'hushed' only exists in 5.6 and up,
-        # but it doesn't do any harm on eariler perls.
-        $Perl .= q{ -"Mvmsish=hushed"};
-    }
-
+while( my($test_name, $exit_code) = each %Tests ) {
     my $file = File::Spec->catfile($lib, $test_name);
     my $wait_stat = system(qq{$Perl -"I../blib/lib" -"I../lib" -"I../t/lib" $file});
     my $actual_exit = exitstatus($wait_stat);
 
     if( $exit_code eq 'not zero' ) {
-        $TB->isnt_num( $actual_exit, 0,
+        $TB->isnt_num( $Exit_Map{$actual_exit}, 0,
                       "$test_name exited with $actual_exit ".
                       "(expected $exit_code)");
     }
     else {
-        $TB->is_num( $actual_exit, $exit_code, 
+        $TB->is_num( $Exit_Map{$actual_exit}, $exit_code, 
                       "$test_name exited with $actual_exit ".
                       "(expected $exit_code)");
     }
