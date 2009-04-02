@@ -23,11 +23,10 @@ my %Original_Output;
 $Original_Output{$_} = $tb->$_ for qw(output failure_output todo_output);
 
 # Alter the state of Test::Builder as much as possible.
-my $tmpfile = 'foo.tmp';
-END { 1 while unlink $tmpfile }
-$tb->output($tmpfile);
-$tb->failure_output($tmpfile);
-$tb->todo_output($tmpfile);
+my $output = '';
+$tb->output(\$output);
+$tb->failure_output(\$output);
+$tb->todo_output(\$output);
 
 $tb->plan(tests => 14);
 $tb->level(0);
