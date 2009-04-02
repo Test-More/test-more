@@ -15,16 +15,6 @@ unless( eval { require File::Spec } ) {
     exit 0;
 }
 
-if( $^O eq 'VMS' && $] <= 5.00503 ) {
-    print "1..0 # Skip test will hang on older VMS perls\n";
-    exit 0;
-}
-
-if( $^O eq 'MacOS' ) {
-    print "1..0 # Skip exit status broken on Mac OS\n";
-    exit 0;
-}
-
 require Test::Builder;
 my $TB = Test::Builder->create();
 $TB->level(0);
