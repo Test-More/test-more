@@ -106,7 +106,7 @@ Returns a Test::Builder object representing the current state of the
 test.
 
 Since you only run one test per program C<new> always returns the same
-Test::Builder object.  No matter how many times you call new(), you're
+Test::Builder object.  No matter how many times you call C<new()>, you're
 getting the same object.  This is called a singleton.  This is done so that
 multiple modules share such global information as the test counter and
 where test output is going.
@@ -211,7 +211,7 @@ are.  You usually only want to call one of these methods.
 A convenient way to set up your tests.  Call this and Test::Builder
 will print the appropriate headers and take the appropriate actions.
 
-If you call plan(), don't call any of the other methods below.
+If you call C<plan()>, don't call any of the other methods below.
 
 =cut
 
@@ -266,7 +266,7 @@ sub _plan_tests {
     my $max = $Test->expected_tests;
     $Test->expected_tests($max);
 
-Gets/sets the # of tests we expect this test to run and prints out
+Gets/sets the number of tests we expect this test to run and prints out
 the appropriate headers.
 
 =cut
@@ -291,7 +291,7 @@ sub expected_tests {
 
   $Test->no_plan;
 
-Declares that this test will run an indeterminate # of tests.
+Declares that this test will run an indeterminate number of tests.
 
 =cut
 
@@ -317,12 +317,12 @@ sub no_plan {
 
 Handles displaying the test plan.
 
-If a $directive and/or $reason are given they will be output with the
+If a C<$directive> and/or C<$reason> are given they will be output with the
 plan.  So here's what skipping all tests looks like:
 
     $tb->_output_plan(0, "SKIP", "Because I said so");
 
-It sets $tb->{Have_Output_Plan} and will croak if the plan was already
+It sets C<< $tb->{Have_Output_Plan} >> and will croak if the plan was already
 output.
 
 =end private
@@ -356,17 +356,17 @@ If a plan has not yet been output, it will do so.
 
 $num_tests is the number of tests you planned to run.  If a numbered
 plan was already declared, and if this contradicts, a failing test
-will be run to reflect the planning mistake.  If no_plan was declared,
+will be run to reflect the planning mistake.  If C<no_plan> was declared,
 this will override.
 
-If done_testing() is called twice, the second call will issue a
+If C<done_testing()> is called twice, the second call will issue a
 failing test.
 
-If $num_tests is omitted, the number of tests run will be used, like
+If C<$num_tests> is omitted, the number of tests run will be used, like
 no_plan.
 
-done_testing() is, in effect, used when you'd want to use no_plan, but safer.
-You'd use it like so:
+C<done_testing()> is, in effect, used when you'd want to use C<no_plan>, but
+safer. You'd use it like so:
 
     $Test->ok($a == $b);
     $Test->done_testing();
@@ -419,7 +419,9 @@ sub done_testing {
 
   $plan = $Test->has_plan
 
-Find out whether a plan has been defined. $plan is either C<undef> (no plan has been set), C<no_plan> (indeterminate # of tests) or an integer (the number of expected tests).
+Find out whether a plan has been defined. C<$plan> is either C<undef> (no plan
+has been set), C<no_plan> (indeterminate # of tests) or an integer (the number
+of expected tests).
 
 =cut
 
@@ -436,7 +438,7 @@ sub has_plan {
   $Test->skip_all;
   $Test->skip_all($reason);
 
-Skips all the tests, using the given $reason.  Exits immediately with 0.
+Skips all the tests, using the given C<$reason>.  Exits immediately with 0.
 
 =cut
 
@@ -479,7 +481,7 @@ These actually run the tests, analogous to the functions in Test::More.
 
 They all return true if the test passed, false if the test failed.
 
-$name is always optional.
+C<$name> is always optional.
 
 =over 4
 
@@ -487,8 +489,8 @@ $name is always optional.
 
   $Test->ok($test, $name);
 
-Your basic test.  Pass if $test is true, fail if $test is false.  Just
-like Test::Simple's ok().
+Your basic test.  Pass if C<$test> is true, fail if $test is false.  Just
+like Test::Simple's C<ok()>.
 
 =cut
 
@@ -631,14 +633,14 @@ sub _is_dualvar {
 
   $Test->is_eq($got, $expected, $name);
 
-Like Test::More's is().  Checks if $got eq $expected.  This is the
+Like Test::More's C<is()>.  Checks if C<$got eq $expected>.  This is the
 string version.
 
 =item B<is_num>
 
   $Test->is_num($got, $expected, $name);
 
-Like Test::More's is().  Checks if $got == $expected.  This is the
+Like Test::More's C<is()>.  Checks if C<$got == $expected>.  This is the
 numeric version.
 
 =cut
@@ -728,14 +730,14 @@ DIAGNOSTIC
 
   $Test->isnt_eq($got, $dont_expect, $name);
 
-Like Test::More's isnt().  Checks if $got ne $dont_expect.  This is
+Like Test::More's C<isnt()>.  Checks if C<$got ne $dont_expect>.  This is
 the string version.
 
 =item B<isnt_num>
 
   $Test->isnt_num($got, $dont_expect, $name);
 
-Like Test::More's isnt().  Checks if $got ne $dont_expect.  This is
+Like Test::More's C<isnt()>.  Checks if C<$got ne $dont_expect>.  This is
 the numeric version.
 
 =cut
@@ -777,17 +779,17 @@ sub isnt_num {
   $Test->like($this, qr/$regex/, $name);
   $Test->like($this, '/$regex/', $name);
 
-Like Test::More's like().  Checks if $this matches the given $regex.
+Like Test::More's C<like()>.  Checks if $this matches the given C<$regex>.
 
-You'll want to avoid qr// if you want your tests to work before 5.005.
+You'll want to avoid C<qr//> if you want your tests to work before 5.005.
 
 =item B<unlike>
 
   $Test->unlike($this, qr/$regex/, $name);
   $Test->unlike($this, '/$regex/', $name);
 
-Like Test::More's unlike().  Checks if $this B<does not match> the
-given $regex.
+Like Test::More's C<unlike()>.  Checks if $this B<does not match> the
+given C<$regex>.
 
 =cut
 
@@ -809,7 +811,7 @@ sub unlike {
 
   $Test->cmp_ok($this, $type, $that, $name);
 
-Works just like Test::More's cmp_ok().
+Works just like Test::More's C<cmp_ok()>.
 
     $Test->cmp_ok($big_num, '!=', $other_big_num);
 
@@ -934,7 +936,7 @@ BAIL_OUT() used to be BAILOUT()
     $Test->skip;
     $Test->skip($why);
 
-Skips the current test, reporting $why.
+Skips the current test, reporting C<$why>.
 
 =cut
 
@@ -972,7 +974,7 @@ sub skip {
   $Test->todo_skip;
   $Test->todo_skip($why);
 
-Like skip(), only it will declare the test as failing and TODO.  Similar
+Like C<skip()>, only it will declare the test as failing and TODO.  Similar
 to
 
     print "not ok $tnum # TODO $why\n";
@@ -1012,10 +1014,10 @@ sub todo_skip {
   $Test->skip_rest;
   $Test->skip_rest($reason);
 
-Like skip(), only it skips all the rest of the tests you plan to run
+Like C<skip()>, only it skips all the rest of the tests you plan to run
 and terminates the test.
 
-If you're running under no_plan, it skips once and terminates the
+If you're running under C<no_plan>, it skips once and terminates the
 test.
 
 =end _unimplemented
@@ -1037,13 +1039,13 @@ These methods are useful when writing your own test methods.
 Convenience method for building testing functions that take regular
 expressions as arguments, but need to work before perl 5.005.
 
-Takes a quoted regular expression produced by qr//, or a string
+Takes a quoted regular expression produced by C<qr//>, or a string
 representing a regular expression.
 
 Returns a Perl value which may be used instead of the corresponding
-regular expression, or undef if its argument is not recognised.
+regular expression, or C<undef> if its argument is not recognised.
 
-For example, a version of like(), sans the useful diagnostic messages,
+For example, a version of C<like()>, sans the useful diagnostic messages,
 could be written as:
 
   sub laconic_like {
@@ -1146,11 +1148,11 @@ DIAGNOSTIC
     my($return_from_code, $error) = $Test->try(sub { code });
 
 Works like eval BLOCK except it ensures it has no effect on the rest
-of the test (ie. $@ is not set) nor is effected by outside
-interference (ie. $SIG{__DIE__}) and works around some quirks in older
+of the test (ie. C<$@> is not set) nor is effected by outside
+interference (ie. C<$SIG{__DIE__}>) and works around some quirks in older
 Perls.
 
-$error is what would normally be in $@.
+C<$error> is what would normally be in C<$@>.
 
 It is suggested you use this in place of eval BLOCK.
 
@@ -1181,7 +1183,7 @@ sub _try {
 
     my $is_fh = $Test->is_fh($thing);
 
-Determines if the given $thing can be used as a filehandle.
+Determines if the given C<$thing> can be used as a filehandle.
 
 =cut
 
@@ -1210,7 +1212,7 @@ sub is_fh {
 
     $Test->level($how_high);
 
-How far up the call stack should $Test look when reporting where the
+How far up the call stack should C<$Test> look when reporting where the
 test failed.
 
 Defaults to 1.
@@ -1275,7 +1277,7 @@ sub use_numbers {
     $Test->no_diag($no_diag);
 
 If set true no diagnostics will be printed.  This includes calls to
-diag().
+C<diag()>.
 
 =item B<no_ending>
 
@@ -1325,11 +1327,11 @@ Test::Builder's default output settings will not be affected.
 
     $Test->diag(@msgs);
 
-Prints out the given @msgs.  Like C<print>, arguments are simply
+Prints out the given C<@msgs>.  Like C<print>, arguments are simply
 appended together.
 
-Normally, it uses the failure_output() handle, but if this is for a
-TODO test, the todo_output() handle is used.
+Normally, it uses the C<failure_output()> handle, but if this is for a
+TODO test, the C<todo_output()> handle is used.
 
 Output will be indented and marked with a # so as not to interfere
 with test output.  A newline will be put on the end if there isn't one
@@ -1337,7 +1339,7 @@ already.
 
 We encourage using this rather than calling print directly.
 
-Returns false.  Why?  Because diag() is often used in conjunction with
+Returns false.  Why?  Because C<diag()> is often used in conjunction with
 a failing test (C<ok() || diag()>) it "passes through" the failure.
 
     return ok(...) || diag(...);
@@ -1357,7 +1359,7 @@ sub diag {
 
     $Test->note(@msgs);
 
-Like diag(), but it prints to the C<output()> handle so it will not
+Like C<diag()>, but it prints to the C<output()> handle so it will not
 normally be seen by the user except in verbose mode.
 
 =cut
@@ -1435,7 +1437,7 @@ sub explain {
 
     $Test->_print(@msgs);
 
-Prints to the output() filehandle.
+Prints to the C<output()> filehandle.
 
 =end _private
 
@@ -1478,21 +1480,21 @@ sub _print_to_fh {
     $Test->output($filename);
     $Test->output(\$scalar);
 
-These methods control where Test::Builder will print it's output.
-They take either an open $filehandle, a $filename to open and write to
-or a $scalar reference to append to.  It will always return a $filehandle.
+These methods control where Test::Builder will print its output.
+They take either an open C<$filehandle>, a C<$filename> to open and write to
+or a C<$scalar> reference to append to.  It will always return a C<$filehandle>.
 
 B<output> is where normal "ok/not ok" test output goes.
 
 Defaults to STDOUT.
 
 B<failure_output> is where diagnostic output on test failures and
-diag() goes.  It is normally not read by Test::Harness and instead is
+C<diag()> goes.  It is normally not read by Test::Harness and instead is
 displayed to the user.
 
 Defaults to STDERR.
 
-B<todo_output> is used instead of C<<failure_output()>> for the
+C<todo_output> is used instead of C<failure_output()> for the
 diagnostics of a failing TODO test.  These will not be seen by the
 user.
 
@@ -1642,14 +1644,14 @@ sub reset_outputs {
   $tb->carp(@message);
 
 Warns with C<@message> but the message will appear to come from the
-point where the original test function was called (C<$tb->caller>).
+point where the original test function was called (C<< $tb->caller >>).
 
 =item croak
 
   $tb->croak(@message);
 
 Dies with C<@message> but the message will appear to come from the
-point where the original test function was called (C<$tb->caller>).
+point where the original test function was called (C<< $tb->caller >>).
 
 =cut
 
@@ -1745,7 +1747,7 @@ sub summary {
 
     my @tests = $Test->details;
 
-Like summary(), but with a lot more detail.
+Like C<summary()>, but with a lot more detail.
 
     $tests[$test_num - 1] = 
             { 'ok'       => is the test considered a pass?
@@ -1759,7 +1761,7 @@ Like summary(), but with a lot more detail.
 
 'actual_ok' is a reflection of whether or not the test literally
 printed 'ok' or 'not ok'.  This is for examining the result of 'todo'
-tests.  
+tests.
 
 'name' is the name of the test.
 
@@ -1772,16 +1774,16 @@ of ''.  Type can be one of the following:
     unknown     see below
 
 Sometimes the Test::Builder test counter is incremented without it
-printing any test output, for example, when current_test() is changed.
+printing any test output, for example, when C<current_test()> is changed.
 In these cases, Test::Builder doesn't know the result of the test, so
 its type is 'unknown'.  These details for these tests are filled in.
-They are considered ok, but the name and actual_ok is left undef.
+They are considered ok, but the name and actual_ok is left C<undef>.
 
 For example "not ok 23 - hole count # TODO insufficient donuts" would
 result in this structure:
 
     $tests[22] =    # 23 - 1, since arrays start from 0.
-      { ok        => 1,   # logically, the test passed since it's todo
+      { ok        => 1,   # logically, the test passed since its todo
         actual_ok => 0,   # in absolute terms, it failed
         name      => 'hole count',
         type      => 'todo',
@@ -1801,20 +1803,20 @@ sub details {
     my $todo_reason = $Test->todo($pack);
 
 If the current tests are considered "TODO" it will return the reason,
-if any.  This reason can come from a $TODO variable or the last call
-to C<<todo_start()>>.
+if any.  This reason can come from a C<$TODO> variable or the last call
+to C<todo_start()>.
 
 Since a TODO test does not need a reason, this function can return an
-empty string even when inside a TODO block.  Use C<<$Test->in_todo>>
+empty string even when inside a TODO block.  Use C<< $Test->in_todo >>
 to determine if you are currently inside a TODO block.
 
-todo() is about finding the right package to look for $TODO in.  It's
+C<todo()> is about finding the right package to look for C<$TODO> in.  It's
 pretty good at guessing the right package to look at.  It first looks for
 the caller based on C<$Level + 1>, since C<todo()> is usually called inside
 a test function.  As a last resort it will use C<exported_to()>.
 
 Sometimes there is some confusion about where todo() should be looking
-for the $TODO variable.  If you want to be sure, tell it explicitly
+for the C<$TODO> variable.  If you want to be sure, tell it explicitly
 what $pack to use.
 
 =cut
@@ -1836,8 +1838,8 @@ sub todo {
     my $todo_reason = $Test->find_TODO();
     my $todo_reason = $Test->find_TODO($pack):
 
-Like C<<todo()>> but only returns the value of C<<$TODO>> ignoring
-C<<todo_start()>>.
+Like C<todo()> but only returns the value of C<$TODO> ignoring
+C<todo_start()>.
 
 =cut
 
@@ -1956,11 +1958,11 @@ sub todo_end {
     my($pack, $file, $line) = $Test->caller;
     my($pack, $file, $line) = $Test->caller($height);
 
-Like the normal caller(), except it reports according to your level().
+Like the normal C<caller()>, except it reports according to your C<level()>.
 
-C<$height> will be added to the level().
+C<$height> will be added to the C<level()>.
 
-If caller() winds up off the top of the stack it report the highest context.
+If C<caller()> winds up off the top of the stack it report the highest context.
 
 =cut
 
@@ -2010,8 +2012,8 @@ sub _sanity_check {
 
   $self->_whoa($check, $description);
 
-A sanity check, similar to assert().  If the $check is true, something
-has gone horribly wrong.  It will die with the given $description and
+A sanity check, similar to C<assert()>.  If the C<$check> is true, something
+has gone horribly wrong.  It will die with the given C<$description> and
 a note to contact the author.
 
 =cut
@@ -2033,9 +2035,9 @@ WHOA
 
   _my_exit($exit_num);
 
-Perl seems to have some trouble with exiting inside an END block.  5.005_03
-and 5.6.1 both seem to do odd things.  Instead, this function edits $?
-directly.  It should ONLY be called from inside an END block.  It
+Perl seems to have some trouble with exiting inside an C<END> block.  5.005_03
+and 5.6.1 both seem to do odd things.  Instead, this function edits C<$?>
+directly.  It should B<only> be called from inside an C<END> block.  It
 doesn't actually exit, that's your job.
 
 =cut
@@ -2179,12 +2181,11 @@ So the exit codes are...
 
 If you fail more than 254 tests, it will be reported as 254.
 
-
 =head1 THREADS
 
 In perl 5.8.1 and later, Test::Builder is thread-safe.  The test
 number is shared amongst all threads.  This means if one thread sets
-the test number using current_test() they will all be effected.
+the test number using C<current_test()> they will all be effected.
 
 While versions earlier than 5.8.1 had threads they contain too many
 bugs to support.
@@ -2211,7 +2212,7 @@ E<lt>schwern@pobox.comE<gt>
 Copyright 2002-2008 by chromatic E<lt>chromatic@wgz.orgE<gt> and
                        Michael G Schwern E<lt>schwern@pobox.comE<gt>.
 
-This program is free software; you can redistribute it and/or 
+This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
 See F<http://www.perl.com/perl/misc/Artistic.html>
