@@ -216,10 +216,10 @@ sub finalize {
         $self->parent->skip($self->{Skip_All});
     }
     elsif ( not @{ $self->{Test_Results} } ) {
-        $self->parent->ok( 0, "No tests run for ". $self->name );
+        $self->parent->ok( 0, "[subtest] No tests run for ". $self->name );
     }
     else {
-        $self->parent->ok( $self->suite_passed, $self->name );
+        $self->parent->ok( $self->suite_passed, '[subtest] ' . $self->name );
     }
     $self->parent->{Child_Name} = undef;
     $? = $self->{Child_Error};

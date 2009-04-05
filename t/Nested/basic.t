@@ -15,7 +15,7 @@ use warnings;
 
 use Test::Builder::NoOutput;
 
-use Test::More 'no_plan'; # tests => 22;
+use Test::More tests => 23;
 
 {
     my $tb = Test::Builder::NoOutput->create;
@@ -50,7 +50,7 @@ ok 3 - We're on 3
     ok 2 - We're on 2
     ok 3 - We're on 3
     1..3
-ok 4 - Child of t/Nested/basic.t
+ok 4 - [subtest] Child of t/Nested/basic.t
 ok 5 - We're on 7
 ok 6 - We're on 8
 ok 7 - We're on 9
@@ -91,10 +91,10 @@ ok 1 - We're on 1
         1..2
         ok 1 - We're on 2.1
         ok 2 - We're on 2.1
-    ok 2 - with name
+    ok 2 - [subtest] with name
     ok 3 - after child
     1..3
-ok 2 - Child of t/Nested/basic.t
+ok 2 - [subtest] Child of t/Nested/basic.t
 ok 3 - We're on 7
 1..3
 END
@@ -129,15 +129,15 @@ END
     #   Failed test at t/Nested/basic.t line 110.
     ok 3
     # Looks like you failed 1 test of 3.
-not ok 1 - expected to fail
+not ok 1 - [subtest] expected to fail
 
-#   Failed test 'expected to fail'
+#   Failed test '[subtest] expected to fail'
 #   at t/Nested/basic.t line 112.
     1..3
     ok 1
     ok 2
     ok 3
-ok 2 - expected to pass
+ok 2 - [subtest] expected to pass
 END
 }
 {
@@ -208,13 +208,13 @@ END
     $child->finalize;
     $tb->_ending;
     $tb->reset_outputs;
-    is $tb->read, <<'END', 'TODO tests should not make the surrounding test ';
+    is $tb->read, <<'END', 'TODO tests should not make the parent test fail';
 1..1
     1..1
     not ok 1 # TODO message
     
     #   Failed (TODO) test at t/Nested/basic.t line 206.
-ok 1 - Child of t/Nested/basic.t
+ok 1 - [subtest] Child of t/Nested/basic.t
 END
 }
 {
@@ -226,7 +226,7 @@ END
     $tb->reset_outputs;
     my $expected = <<'END';
 1..1
-not ok 1 - No tests run for Child of t/Nested/basic.t
+not ok 1 - [subtest] No tests run for Child of t/Nested/basic.t
 END
     like $tb->read, qr/\Q$expected/,
         'Not running subtests should make the parent test fail';
