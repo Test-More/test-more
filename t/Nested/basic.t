@@ -15,7 +15,7 @@ use warnings;
 
 use Test::Builder::NoOutput;
 
-use Test::More tests => 22;
+use Test::More 'no_plan'; # tests => 22;
 
 {
     my $tb = Test::Builder::NoOutput->create;
@@ -216,4 +216,18 @@ END
     #   Failed (TODO) test at t/Nested/basic.t line 206.
 ok 1 - Child of t/Nested/basic.t
 END
+}
+{
+    my $tb = Test::Builder::NoOutput->create;
+    $tb->plan( tests => 1 );
+    my $child = $tb->child;
+    $child->finalize;
+    $tb->_ending;
+    $tb->reset_outputs;
+    my $expected = <<'END';
+1..1
+not ok 1 - No tests run for Child of t/Nested/basic.t
+END
+    like $tb->read, qr/\Q$expected/,
+        'Not running subtests should make the parent test fail';
 }

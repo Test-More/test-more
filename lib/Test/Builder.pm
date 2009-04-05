@@ -215,6 +215,9 @@ sub finalize {
     if ( $self->{Skip_All} ) {
         $self->parent->skip($self->{Skip_All});
     }
+    elsif ( not @{ $self->{Test_Results} } ) {
+        $self->parent->ok( 0, "No tests run for ". $self->name );
+    }
     else {
         $self->parent->ok( $self->suite_passed, $self->name );
     }
