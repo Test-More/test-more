@@ -4,6 +4,7 @@
       times.  Fixes t/Builder/reset.t. [rt.cpan.org 17298]
     * Check how an operating system is going to map exit codes.  Some OS'
       will map them... sometimes.  [rt.cpan.org 42148]
+    * Fix Test::Builder::NoOutput on 5.6.2.
 
 
 0.87_01  Sun Mar 29 09:56:52 BST 2009

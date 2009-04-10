@@ -98,7 +98,7 @@ sub TIEHANDLE {
 
     my @fhs;
     for my $ref (@refs) {
-        open my $fh, ">>", $ref or die $!;
+        my $fh = Test::Builder->_new_fh($ref);
         push @fhs, $fh;
     }
 
