@@ -83,11 +83,11 @@ while( my($test_name, $exit_code) = each %Tests ) {
     if( $exit_code eq 'not zero' ) {
         $TB->isnt_num( $actual_exit, $Exit_Map{0},
                       "$test_name exited with $actual_exit ".
-                      "(expected $exit_code)");
+                      "(expected non-zero)");
     }
     else {
         $TB->is_num( $actual_exit, $Exit_Map{$exit_code}, 
                       "$test_name exited with $actual_exit ".
-                      "(expected $exit_code)");
+                      "(expected $Exit_Map{$exit_code})");
     }
 }
