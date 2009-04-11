@@ -46,9 +46,21 @@ else {
 # build up the mapping.
 print "# Building up a map of exit codes.  May take a while.\n";
 my %Exit_Map;
+
+open my $fh, ">", "exit_map_test" or die $!;
+print $fh <<'DONE';
+my $exit = shift;
+print "exit $exit\n";
+END { $? = $exit };
+DONE
+
+close $fh;
+END { 1 while unlink "exit_map_test" }
+
 for my $exit (0..255) {
     # This correctly emulates Test::Builder's behavior.
-    qx[$Perl -e "print qq[exit $exit]; END { \$? = $exit }"];
+    my $out = qx[$Perl exit_map_test $exit];
+    $TB->like( $out, qr/^exit $exit\n/, "exit map test for $exit" );
     $Exit_Map{$exit} = exitstatus($?);
 }
 print "# Done.\n";
@@ -72,8 +84,6 @@ my %Tests = (
              'exit.plx'                 => 1,
             );
 
-$TB->plan( tests => scalar keys(%Tests) );
-
 chdir 't';
 my $lib = File::Spec->catdir(qw(lib Test Simple sample_tests));
 while( my($test_name, $exit_code) = each %Tests ) {
@@ -92,3 +102,5 @@ while( my($test_name, $exit_code) = each %Tests ) {
                       "(expected $Exit_Map{$exit_code})");
     }
 }
+
+$TB->done_testing( scalar keys(%Tests) + 256 );
