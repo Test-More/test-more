@@ -47,8 +47,9 @@ else {
 print "# Building up a map of exit codes.  May take a while.\n";
 my %Exit_Map;
 for my $exit (0..255) {
-    my $wait = system(qq[$Perl -e "exit $exit"]);
-    $Exit_Map{$exit} = exitstatus($wait);
+    # This correctly emulates Test::Builder's behavior.
+    qx[$Perl -e "print qq[exit $exit]; END { \$? = $exit }"];
+    $Exit_Map{$exit} = exitstatus($?);
 }
 print "# Done.\n";
 
