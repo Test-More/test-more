@@ -1,4 +1,4 @@
-0.87_02
+0.87_02  Sat Apr 11 12:54:14 PDT 2009
     Test Fixes
     * Some filesystems don't like it when you open a file for writing multiple
       times.  Fixes t/Builder/reset.t. [rt.cpan.org 17298]
