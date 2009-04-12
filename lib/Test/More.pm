@@ -539,8 +539,9 @@ sub can_ok ($@) {
 
 =item B<isa_ok>
 
-  isa_ok($object, $class, $object_name);
-  isa_ok($ref,    $type,  $ref_name);
+  isa_ok($object,   $class, $object_name);
+  isa_ok($subclass, $class, $object_name);
+  isa_ok($ref,      $type,  $ref_name);
 
 Checks to see if the given C<< $object->isa($class) >>.  Also checks to make
 sure the object was defined in the first place.  Handy for this sort
@@ -555,6 +556,10 @@ where you'd otherwise have to write
     ok( defined $obj && $obj->isa('Some::Module') );
 
 to safeguard against your test script blowing up.
+
+You can also test a class, to make sure that it has the right ancestor:
+
+    isa_ok( 'Vole', 'Rodent' );
 
 It works on references, too:
 
@@ -571,39 +576,46 @@ sub isa_ok ($$;$) {
     my $tb = Test::More->builder;
 
     my $diag;
-    $obj_name = 'The object' unless defined $obj_name;
-    my $name = "$obj_name isa $class";
+
     if( !defined $object ) {
+        $obj_name = 'The thing' unless defined $obj_name;
         $diag = "$obj_name isn't defined";
     }
-    elsif( !ref $object ) {
-        $diag = "$obj_name isn't a reference";
-    }
     else {
+        my $whatami = ref $object ? 'object' : 'class';
         # We can't use UNIVERSAL::isa because we want to honor isa() overrides
         my( $rslt, $error ) = $tb->_try( sub { $object->isa($class) } );
         if($error) {
             if( $error =~ /^Can't call method "isa" on unblessed reference/ ) {
                 # Its an unblessed reference
+                $obj_name = 'The reference' unless defined $obj_name;
                 if( !UNIVERSAL::isa( $object, $class ) ) {
                     my $ref = ref $object;
                     $diag = "$obj_name isn't a '$class' it's a '$ref'";
                 }
             }
+            elsif( $error =~ /Can't call method "isa" without a package/ ) {
+                # It's something that can't even be a class
+                $diag = "$obj_name isn't a class or reference";
+            }
             else {
                 die <<WHOA;
-WHOA! I tried to call ->isa on your object and got some weird error.
+WHOA! I tried to call ->isa on your $whatami and got some weird error.
 Here's the error.
 $error
 WHOA
             }
         }
-        elsif( !$rslt ) {
-            my $ref = ref $object;
-            $diag = "$obj_name isn't a '$class' it's a '$ref'";
+        else {
+            $obj_name = "The $whatami" unless defined $obj_name;
+            if( !$rslt ) {
+                my $ref = ref $object;
+                $diag = "$obj_name isn't a '$class' it's a '$ref'";
+            }
         }
     }
 
+    my $name = "$obj_name isa $class";
     my $ok;
     if($diag) {
         $ok = $tb->ok( 0, $name );

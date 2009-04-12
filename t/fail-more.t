@@ -253,7 +253,7 @@ not ok - My Wibble isa Wibble
 OUT
 #   Failed test 'My Wibble isa Wibble'
 #   at $0 line 248.
-#     My Wibble isn't a reference
+#     My Wibble isn't a class or reference
 ERR
 
 #line 258
@@ -269,11 +269,11 @@ ERR
 #line 268
 isa_ok([],    "HASH");
 out_ok( <<OUT, <<ERR );
-not ok - The object isa HASH
+not ok - The reference isa HASH
 OUT
-#   Failed test 'The object isa HASH'
+#   Failed test 'The reference isa HASH'
 #   at $0 line 268.
-#     The object isn't a 'HASH' it's a 'ARRAY'
+#     The reference isn't a 'HASH' it's a 'ARRAY'
 ERR
 
 #line 278

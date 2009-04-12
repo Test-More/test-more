@@ -1,3 +1,8 @@
+0.87_03
+    New Features
+    * isa_ok() now works on classes. (Peter Scott)
+
+
 0.87_02  Sat Apr 11 12:54:14 PDT 2009
     Test Fixes
     * Some filesystems don't like it when you open a file for writing multiple
