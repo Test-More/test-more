@@ -13,7 +13,7 @@ BEGIN {
 use strict;
 use warnings;
 use Test::Builder::NoOutput;
-use Test::More tests => 5;
+use Test::More tests => 7;
 
 {
     my $tb = Test::Builder::NoOutput->create;
@@ -38,5 +38,26 @@ use Test::More tests => 5;
     undef $child;
     like $tb->read, qr/\QChild (one) exited without calling &finalize/,
       'Failing to call finalize should issue an appropriate diagnostic';
+    ok !$tb->suite_passed, '... and should cause the test suite to fail';
+}
+{
+    my $tb = Test::Builder::NoOutput->create;
+
+    $tb->plan( tests => 7 );
+    for( 1 .. 3 ) {
+        $tb->ok( $_, "We're on $_" );
+        $tb->diag("We ran $_");
+    }
+    {
+        my $indented = $tb->child;
+        $indented->plan('no_plan');
+        $indented->ok( 1, "We're on 1" );
+        eval { $tb->ok( 1, 'This should throw an exception' ) };
+        $indented->finalize;
+    }
+
+    my $error = $@;
+    like $error, qr/\QCannot run test (This should throw an exception) with active children/,
+      'Running a test with active children should fail';
     ok !$tb->suite_passed, '... and should cause the test suite to fail';
 }

@@ -160,6 +160,9 @@ C<finalize> method I<must> be called explicitly.
 Trying to create a new child with a previous child still active (i.e.,
 C<&finalize> not called) will C<croak>.
 
+Trying to run a test when you have an open child will also C<croak> and cause
+the test suite to fail.
+
 =cut
 
 sub child {
@@ -212,6 +215,8 @@ sub finalize {
 
     # XXX This will only be necessary for TAP envelopes (we think)
     #$self->_print( $self->{Pass} ? "PASS\n" : "FAIL\n" );
+
+    $self->parent->{Child_Name} = undef;
     if ( $self->{Skip_All} ) {
         $self->parent->skip($self->{Skip_All});
     }
@@ -221,7 +226,6 @@ sub finalize {
     else {
         $self->parent->ok( $self->suite_passed, '[subtest] ' . $self->name );
     }
-    $self->parent->{Child_Name} = undef;
     $? = $self->{Child_Error};
     delete $self->{Parent};
 }
@@ -269,7 +273,8 @@ sub DESTROY {
         $self->diag(<<"FAIL");
 Child ($name) exited without calling &finalize
 FAIL
-        $self->parent->ok(0, $self->name);
+        $self->parent->{In_Destroy} = 1;
+        $self->parent->ok(0, $name);
     }
 }
 
@@ -640,6 +645,11 @@ like Test::Simple's ok().
 sub ok {
     my( $self, $test, $name ) = @_;
 
+    if ( $self->{Child_Name} and not $self->{In_Destroy} ) {
+        $name = 'unnamed test' unless defined $name;
+        $self->{Pass} = 0;
+        $self->croak("Cannot run test ($name) with active children");
+    }
     # $test might contain an object which we don't want to accidentally
     # store, so we turn it into a boolean.
     $test = $test ? 1 : 0;
