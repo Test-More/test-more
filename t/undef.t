@@ -11,7 +11,7 @@ BEGIN {
 }
 
 use strict;
-use Test::More tests => 19;
+use Test::More tests => 21;
 
 BEGIN { $^W = 1; }
 
@@ -89,3 +89,10 @@ no_warnings;
 
 $tb->maybe_regex(undef);
 no_warnings;
+
+
+# test-more.googlecode.com #42
+{
+    is_deeply([ undef ], [ undef ]);
+    no_warnings;
+}

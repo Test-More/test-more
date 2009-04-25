@@ -1387,6 +1387,10 @@ sub _deep_check {
         if( defined $e1 xor defined $e2 ) {
             $ok = 0;
         }
+        elsif( !defined $e1 and !defined $e2 ) {
+            # Shortcut if they're both defined.
+            $ok = 1;
+        }
         elsif( _dne($e1) xor _dne($e2) ) {
             $ok = 0;
         }
