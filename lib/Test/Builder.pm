@@ -187,6 +187,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Todo}       = undef;
     $self->{Todo_Stack} = [];
     $self->{Start_Todo} = 0;
+    $self->{Opened_Testhandles} = 0;
 
     $self->_dup_stdhandles;
 
@@ -1586,12 +1587,10 @@ sub _dup_stdhandles {
     return;
 }
 
-my $Opened_Testhandles = 0;
-
 sub _open_testhandles {
     my $self = shift;
 
-    return if $Opened_Testhandles;
+    return if $self->{Opened_Testhandles};
 
     # We dup STDOUT and STDERR so people can change them in their
     # test suites while still getting normal test output.
@@ -1601,7 +1600,7 @@ sub _open_testhandles {
     #    $self->_copy_io_layers( \*STDOUT, $Testout );
     #    $self->_copy_io_layers( \*STDERR, $Testerr );
 
-    $Opened_Testhandles = 1;
+    $self->{Opened_Testhandles} = 1;
 
     return;
 }
