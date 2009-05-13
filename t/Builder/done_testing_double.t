@@ -30,10 +30,10 @@ ok 1
 ok 2
 ok 3
 1..3
-not ok 4 - done_testing() was already called at line 24
-#   Failed test 'done_testing() was already called at line 24'
+not ok 4 - done_testing() was already called at $0 line 24
+#   Failed test 'done_testing() was already called at $0 line 24'
 #   at $0 line 25.
-not ok 5 - done_testing() was already called at line 24
-#   Failed test 'done_testing() was already called at line 24'
+not ok 5 - done_testing() was already called at $0 line 24
+#   Failed test 'done_testing() was already called at $0 line 24'
 #   at $0 line 26.
 END

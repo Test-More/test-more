@@ -396,7 +396,7 @@ sub done_testing {
 
     if( $self->{Done_Testing} ) {
         my($file, $line) = @{$self->{Done_Testing}}[1,2];
-        $self->ok(0, "done_testing() was already called at line $line");
+        $self->ok(0, "done_testing() was already called at $file line $line");
         return;
     }
 
