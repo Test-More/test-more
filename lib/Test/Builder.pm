@@ -168,6 +168,8 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Have_Plan}    = 0;
     $self->{No_Plan}      = 0;
+    $self->{Have_Output_Plan} = 0;
+
     $self->{Original_Pid} = $$;
 
     share( $self->{Curr_Test} );
