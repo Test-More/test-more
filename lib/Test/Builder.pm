@@ -2192,6 +2192,21 @@ bugs to support.
 Test::Builder is only thread-aware if threads.pm is loaded I<before>
 Test::Builder.
 
+=head1 MEMORY
+
+An informative hash, accessable via C<<details()>>, is stored for each
+test you perform.  So memory usage will scale linearly with each test
+run. Although this is not a problem for most test suites, it can
+become an issue if you do large (hundred thousands to million)
+combinatorics tests in the same run.
+
+In such cases, you are advised to either split the test file into smaller
+ones, or use a reverse approach, doing "normal" (code) compares and
+triggering fail() should anything go unexpected.
+
+Future versions of Test::Builder will have a way to turn history off.
+
+
 =head1 EXAMPLES
 
 CPAN can provide the best examples.  Test::Simple, Test::More,
