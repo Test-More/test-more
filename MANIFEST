@@ -31,6 +31,7 @@ t/Builder/done_testing_plan_mismatch.t
 t/Builder/done_testing_with_no_plan.t
 t/Builder/done_testing_with_number.t
 t/Builder/done_testing_with_plan.t
+t/Builder/fork_with_new_stdout.t
 t/Builder/has_plan.t
 t/Builder/has_plan2.t
 t/Builder/is_fh.t

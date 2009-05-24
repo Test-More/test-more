@@ -1,4 +1,4 @@
-0.87_03
+0.87_03  Sun May 24 13:41:40 PDT 2009
     New Features
     * isa_ok() now works on classes. (Peter Scott)
 
