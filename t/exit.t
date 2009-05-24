@@ -10,17 +10,17 @@ BEGIN {
     }
 }
 
-unless( eval { require File::Spec } ) {
-    print "1..0 # Skip Need File::Spec to run this test\n";
-    exit 0;
-}
-
 require Test::Builder;
 my $TB = Test::Builder->create();
 $TB->level(0);
 
 
 package main;
+
+use Cwd;
+use File::Spec;
+
+my $Orig_Dir = cwd;
 
 my $Perl = File::Spec->rel2abs($^X);
 if( $^O eq 'VMS' ) {
@@ -104,3 +104,6 @@ while( my($test_name, $exit_code) = each %Tests ) {
 }
 
 $TB->done_testing( scalar keys(%Tests) + 256 );
+
+# So any END block file cleanup works.
+chdir $Orig_Dir;
