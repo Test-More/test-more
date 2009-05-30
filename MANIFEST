@@ -1,6 +1,7 @@
 .perlcriticrc
 .perltidyrc
 Changes
+examples/indent.pl
 lib/Test/Builder.pm
 lib/Test/Builder/IO/Scalar.pm
 lib/Test/Builder/Module.pm
@@ -91,6 +92,8 @@ t/lib/Test/Simple/sample_tests/two_fail.plx
 t/lib/TieOut.pm
 t/missing.t
 t/More.t
+t/Nested/basic.t
+t/Nested/exceptions.t
 t/new_ok.t
 t/no_plan.t
 t/no_tests.t

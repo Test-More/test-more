@@ -116,7 +116,7 @@ singleton, use C<create>.
 
 =cut
 
-my $Test = Test::Builder->new;
+our $Test = Test::Builder->new;
 
 sub new {
     my($class) = shift;
@@ -140,11 +140,142 @@ this method.  Also, the method name may change in the future.
 
 sub create {
     my $class = shift;
-
     my $self = bless {}, $class;
     $self->reset;
-
     return $self;
+}
+
+=item B<child>
+
+ my $child = $builder->child($name_of_child);
+ $child->plan( tests => 4 );
+ $child->ok(some_code());
+ ...
+ $child->finalize;
+
+Returns a new instance of C<Test::Builder>.  Any output from this child will
+indented four spaces more than the parent's indentation.  When done, the
+C<finalize> method I<must> be called explicitly.
+
+Trying to create a new child with a previous child still active (i.e.,
+C<&finalize> not called) will C<croak>.
+
+Trying to run a test when you have an open child will also C<croak> and cause
+the test suite to fail.
+
+=cut
+
+sub child {
+    my( $self, $name ) = @_;
+    if( $self->{Child_Name} ) {
+        $self->croak("You already have a child named ($self->{Child_Name}) running");
+    }
+
+    my $child = bless {}, ref $self;
+    $child->reset;
+    $child->{Indent} = $self->_indent . '    ';
+    $child->{$_} = $self->{$_} foreach qw{Out_FH Todo_FH Fail_FH};
+
+    # This will be reset in finalize. We do this here lest one child failure
+    # cause all children to fail.
+    $child->{Child_Error} = $?;
+    $?                    = 0;
+    $child->{Parent}      = $self;
+    $child->{Name}        = $name || "Child of " . $self->name;
+    $self->{Child_Name}   = $child->name;
+    return $child;
+}
+
+=item B<finalize>
+
+ $child->finalize;
+
+When your child is done running tests, you must call C<finalize> to clean up
+and tell the parent your pass/fail status.
+
+Calling finalize on a child with open children will C<croak>.
+
+If the child falls out of scope before C<&finalize> is called, a failure
+diagnostic will be issued and the child is considered to have failed.
+
+No attempt to call methods on a child after C<&finalize> is called is
+guaranteed to succeed.
+
+Calling this on the root builder is a no-op.
+
+=cut
+
+sub finalize {
+    my $self = shift;
+    return unless $self->parent;
+    if( $self->{Child_Name} ) {
+        $self->croak("Can't call &finalize with child ($self->{Child_Name}) active");
+    }
+    $self->_ending;
+
+    # XXX This will only be necessary for TAP envelopes (we think)
+    #$self->_print( $self->{Pass} ? "PASS\n" : "FAIL\n" );
+
+    $self->parent->{Child_Name} = undef;
+    if ( $self->{Skip_All} ) {
+        $self->parent->skip($self->{Skip_All});
+    }
+    elsif ( not @{ $self->{Test_Results} } ) {
+        $self->parent->ok( 0, "[subtest] No tests run for ". $self->name );
+    }
+    else {
+        $self->parent->ok( $self->suite_passed, '[subtest] ' . $self->name );
+    }
+    $? = $self->{Child_Error};
+    delete $self->{Parent};
+}
+
+=item B<suite_passed>
+
+ $builder->suite_passed;
+
+Boolean indicating if the test suite passed.
+
+=cut
+
+sub suite_passed { shift->{Pass} }
+sub _indent      { shift->{Indent} }
+
+=item B<parent>
+
+ if ( my $parent = $builder->parent ) {
+     ...
+ }
+
+Returns the parent C<Test::Builder> instance, if any.  Only used with child
+builders for nested TAP.
+
+=cut
+
+sub parent { shift->{Parent} }
+
+=item B<name>
+
+ diag $builder->name;
+
+Returns the name of the current builder.  Top level builders default to C<$0>
+(the name of the executable).  Child builders are named via the C<child>
+method.  If no name is supplied, will be named "Child of $parent->name".
+
+=cut
+
+sub name { shift->{Name} }
+
+sub DESTROY {
+    my $self = shift;
+    if ( $self->parent ) {
+        my $name = $self->name;
+        $self->diag(<<"FAIL");
+Child ($name) exited without calling &finalize
+FAIL
+        $self->parent->{In_Destroy} = 1;
+        $self->parent->ok(0, $name);
+    }
 }
 
 =item B<reset>
@@ -166,11 +297,16 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     # hash keys is just asking for pain.  Also, it was documented.
     $Level = 1;
 
+    $self->{Name}         = $0;
+    $self->{Pass}         = 1;
+    $self->{Ending}       = 0;
     $self->{Have_Plan}    = 0;
     $self->{No_Plan}      = 0;
     $self->{Have_Output_Plan} = 0;
 
     $self->{Original_Pid} = $$;
+    $self->{Child_Name}   = undef;
+    $self->{Indent}     ||= '';
 
     share( $self->{Curr_Test} );
     $self->{Curr_Test} = 0;
@@ -216,6 +352,18 @@ will print the appropriate headers and take the appropriate actions.
 
 If you call C<plan()>, don't call any of the other methods below.
 
+If a child calls "skip_all" in the plan, a C<Test::Builder::Exception> is
+thrown.  Trap this error, call C<&finalize> and don't run any more tests on
+the child.
+
+ my $child = $Test->child('some child');
+ eval { $child->plan( $condition ? ( skip_all => $reason ) : ( tests => 3 )  ) };
+ if ( eval { $@->isa('Test::Builder::Exception') } ) {
+    $child->finalize;
+    return;
+ }
+ # run your tests
+
 =cut
 
 my %plan_cmds = (
@@ -241,7 +389,6 @@ sub plan {
         my @args = grep { defined } ( $cmd, $arg );
         $self->croak("plan() doesn't understand @args");
     }
-
     return 1;
 }
 
@@ -448,9 +595,12 @@ Skips all the tests, using the given C<$reason>.  Exits immediately with 0.
 sub skip_all {
     my( $self, $reason ) = @_;
 
-    $self->{Skip_All} = 1;
+    $self->{Skip_All} = $self->parent ? $reason : 1;
 
     $self->_output_plan(0, "SKIP", $reason) unless $self->no_header;
+    if ( $self->parent ) {
+        die bless {} => 'Test::Builder::Exception';
+    }
     exit(0);
 }
 
@@ -500,6 +650,11 @@ like Test::Simple's C<ok()>.
 sub ok {
     my( $self, $test, $name ) = @_;
 
+    if ( $self->{Child_Name} and not $self->{In_Destroy} ) {
+        $name = 'unnamed test' unless defined $name;
+        $self->{Pass} = 0;
+        $self->croak("Cannot run test ($name) with active children");
+    }
     # $test might contain an object which we don't want to accidentally
     # store, so we turn it into a boolean.
     $test = $test ? 1 : 0;
@@ -575,6 +730,7 @@ ERR
         }
     }
 
+    $self->{Pass} = 0 unless $test || $self->in_todo;
     return $test ? 1 : 0;
 }
 
@@ -932,7 +1088,10 @@ BAIL_OUT() used to be BAILOUT()
 
 =cut
 
-*BAILOUT = \&BAIL_OUT;
+{
+    no warnings 'once';
+    *BAILOUT = \&BAIL_OUT;
+}
 
 =item B<skip>
 
@@ -1469,7 +1628,7 @@ sub _print_to_fh {
     # Stick a newline on the end if it needs it.
     $msg .= "\n" unless $msg =~ /\n\z/;
 
-    return print $fh $msg;
+    return print $fh $self->_indent, $msg;
 }
 
 =item B<output>
@@ -2057,6 +2216,8 @@ sub _my_exit {
 
 sub _ending {
     my $self = shift;
+    return if $self->no_ending;
+    return if $self->{Ending}++;
 
     my $real_exit_code = $?;
 
@@ -2068,6 +2229,7 @@ sub _ending {
 
     # Ran tests but never declared a plan or hit done_testing
     if( !$self->{Have_Plan} and $self->{Curr_Test} ) {
+        $self->{Pass} = 0;
         $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
     }
 
@@ -2079,9 +2241,9 @@ sub _ending {
 
     # Don't do an ending if we bailed out.
     if( $self->{Bailed_Out} ) {
+        $self->{Pass} = 0;
         return;
     }
-
     # Figure out if we passed or failed and print helpful messages.
     my $test_results = $self->{Test_Results};
     if(@$test_results) {
@@ -2109,6 +2271,7 @@ sub _ending {
             $self->diag(<<"FAIL");
 Looks like you planned $self->{Expected_Tests} test$s but ran $self->{Curr_Test}.
 FAIL
+            $self->{Pass} = 0;
         }
 
         if($num_failed) {
@@ -2120,13 +2283,14 @@ FAIL
             $self->diag(<<"FAIL");
 Looks like you failed $num_failed test$s of $num_tests$qualifier.
 FAIL
+            $self->{Pass} = 0;
         }
 
         if($real_exit_code) {
             $self->diag(<<"FAIL");
 Looks like your test exited with $real_exit_code just after $self->{Curr_Test}.
 FAIL
-
+            $self->{Pass} = 0;
             _my_exit($real_exit_code) && return;
         }
 
@@ -2150,18 +2314,21 @@ FAIL
         $self->diag(<<"FAIL");
 Looks like your test exited with $real_exit_code before it could output anything.
 FAIL
+        $self->{Pass} = 0;
         _my_exit($real_exit_code) && return;
     }
     else {
         $self->diag("No tests run!\n");
+        $self->{Pass} = 0;
         _my_exit(255) && return;
     }
 
+    $self->{Pass} = 0;
     $self->_whoa( 1, "We fell off the end of _ending()" );
 }
 
 END {
-    $Test->_ending if defined $Test and !$Test->no_ending;
+    $Test->_ending if defined $Test;
 }
 
 =head1 EXIT CODES

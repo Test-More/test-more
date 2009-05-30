@@ -33,6 +33,7 @@ our @EXPORT = qw(ok use_ok require_ok
   done_testing
   can_ok isa_ok new_ok
   diag note explain
+  subtest
   BAIL_OUT
 );
 
@@ -242,7 +243,6 @@ exponential".
 
 All test functions take a name argument.  It's optional, but highly
 suggested that you use it.
-
 
 =head2 I'm ok, you're not ok.
 
@@ -670,6 +670,63 @@ sub new_ok {
     }
 
     return $obj;
+}
+
+=item B<subtest>
+
+ use Test::More tests => 3;
+ 
+ ok 1;
+ subtest 'some name' => sub {
+     my $num_tests = 1 + int( rand(10) );
+     plan tests => $num_tests;
+     ok 1 for 1 .. $num_tests;
+ };
+ ok 1;
+
+A subtest takes a name and a code reference.  The subtests are run as nested
+TAP.  For example, in the above code, if C<$num_tests> is 3, you might see TAP
+like the following.
+
+ 1..3
+ ok 1
+     1..3
+     ok 1
+     ok 2
+     ok 3
+ ok 2 - some name
+ ok 3
+ ok
+ All tests successful.
+ Files=1, Tests=3,  0 wallclock secs ( 0.03 usr  0.00 sys +  0.02 cusr  0.00 csys =  0.05 CPU)
+ Result: PASS
+
+A subtest may call "skip_all".  No tests will be run, but the subtest is
+considered a skip.
+
+ subtest 'skippy' => sub {
+     plan skip_all => 'cuz I said so';
+     ok 1, 'this test will never be run';
+ };
+
+=cut
+
+sub subtest($&) {
+    my ($name, $subtests) = @_;
+
+    my $tb = Test::More->builder;
+    unless ('CODE' eq ref $subtests) {
+        $tb->croak("subtest() second argument must be a code ref") unless @_;
+    }
+
+    my $child = $tb->child($name);
+    local $Test::Builder::Test = $child;
+
+    eval { $subtests->() };
+    if ( my $error= $@ ) {
+        die $error unless eval { $error->isa('Test::Builder::Exception') };
+    }
+    $child->finalize;
 }
 
 =item B<pass>
