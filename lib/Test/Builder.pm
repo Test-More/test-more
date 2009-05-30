@@ -140,18 +140,20 @@ this method.  Also, the method name may change in the future.
 
 sub create {
     my $class = shift;
+
     my $self = bless {}, $class;
     $self->reset;
+
     return $self;
 }
 
 =item B<child>
 
- my $child = $builder->child($name_of_child);
- $child->plan( tests => 4 );
- $child->ok(some_code());
- ...
- $child->finalize;
+  my $child = $builder->child($name_of_child);
+  $child->plan( tests => 4 );
+  $child->ok(some_code());
+  ...
+  $child->finalize;
 
 Returns a new instance of C<Test::Builder>.  Any output from this child will
 indented four spaces more than the parent's indentation.  When done, the
@@ -167,13 +169,16 @@ the test suite to fail.
 
 sub child {
     my( $self, $name ) = @_;
+
     if( $self->{Child_Name} ) {
         $self->croak("You already have a child named ($self->{Child_Name}) running");
     }
 
     my $child = bless {}, ref $self;
     $child->reset;
-    $child->{Indent} = $self->_indent . '    ';
+
+    # Add to our indentation
+    $child->_indent( $self->_indent . '    ' );
     $child->{$_} = $self->{$_} foreach qw{Out_FH Todo_FH Fail_FH};
 
     # This will be reset in finalize. We do this here lest one child failure
@@ -186,19 +191,48 @@ sub child {
     return $child;
 }
 
+
+=item B<subtest>
+
+    $builder->subtest($name, \&subtests);
+
+See documentation of C<subtest> in Test::More.
+
+=cut
+
+sub subtest {
+    my $self = shift;
+    my($name, $subtests) = @_;
+
+    unless ('CODE' eq ref $subtests) {
+        $self->croak("subtest() second argument must be a code ref") unless @_;
+    }
+
+    my $child = $self->child($name);
+    local $Test::Builder::Test = $child;
+
+    eval { $subtests->() };
+    if ( my $error= $@ ) {
+        die $error unless eval { $error->isa('Test::Builder::Exception') };
+    }
+
+    return $child->finalize;
+}
+
+
 =item B<finalize>
 
- $child->finalize;
+  my $ok = $child->finalize;
 
 When your child is done running tests, you must call C<finalize> to clean up
 and tell the parent your pass/fail status.
 
 Calling finalize on a child with open children will C<croak>.
 
-If the child falls out of scope before C<&finalize> is called, a failure
+If the child falls out of scope before C<finalize> is called, a failure
 diagnostic will be issued and the child is considered to have failed.
 
-No attempt to call methods on a child after C<&finalize> is called is
+No attempt to call methods on a child after C<finalize> is called is
 guaranteed to succeed.
 
 Calling this on the root builder is a no-op.
@@ -207,6 +241,7 @@ Calling this on the root builder is a no-op.
 
 sub finalize {
     my $self = shift;
+
     return unless $self->parent;
     if( $self->{Child_Name} ) {
         $self->croak("Can't call &finalize with child ($self->{Child_Name}) active");
@@ -214,32 +249,56 @@ sub finalize {
     $self->_ending;
 
     # XXX This will only be necessary for TAP envelopes (we think)
-    #$self->_print( $self->{Pass} ? "PASS\n" : "FAIL\n" );
+    #$self->_print( $self->suite_passed ? "PASS\n" : "FAIL\n" );
 
+    my $ok = 1;
     $self->parent->{Child_Name} = undef;
     if ( $self->{Skip_All} ) {
+        $ok = 1;
         $self->parent->skip($self->{Skip_All});
     }
     elsif ( not @{ $self->{Test_Results} } ) {
-        $self->parent->ok( 0, "[subtest] No tests run for ". $self->name );
+        $ok = 0;
+        $self->parent->ok( $ok, "[subtest] No tests run for ". $self->name );
     }
     else {
-        $self->parent->ok( $self->suite_passed, '[subtest] ' . $self->name );
+        $ok = $self->suite_passed;
+        $self->parent->ok( $ok, '[subtest] ' . $self->name );
     }
     $? = $self->{Child_Error};
     delete $self->{Parent};
+
+    return $ok;
 }
+
 
 =item B<suite_passed>
 
- $builder->suite_passed;
+ my $passed = $builder->suite_passed;
 
 Boolean indicating if the test suite passed.
 
 =cut
 
-sub suite_passed { shift->{Pass} }
-sub _indent      { shift->{Indent} }
+sub suite_passed {
+    my $self = shift;
+
+    if( @_ ) {
+        $self->{Suite_Passed} = shift;
+    }
+
+    return $self->{Suite_Passed};
+}
+
+sub _indent      {
+    my $self = shift;
+
+    if( @_ ) {
+        $self->{Indent} = shift;
+    }
+
+    return $self->{Indent};
+}
 
 =item B<parent>
 
@@ -298,7 +357,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $Level = 1;
 
     $self->{Name}         = $0;
-    $self->{Pass}         = 1;
+    $self->suite_passed(1);
     $self->{Ending}       = 0;
     $self->{Have_Plan}    = 0;
     $self->{No_Plan}      = 0;
@@ -389,6 +448,7 @@ sub plan {
         my @args = grep { defined } ( $cmd, $arg );
         $self->croak("plan() doesn't understand @args");
     }
+
     return 1;
 }
 
@@ -652,7 +712,7 @@ sub ok {
 
     if ( $self->{Child_Name} and not $self->{In_Destroy} ) {
         $name = 'unnamed test' unless defined $name;
-        $self->{Pass} = 0;
+        $self->suite_passed(0);
         $self->croak("Cannot run test ($name) with active children");
     }
     # $test might contain an object which we don't want to accidentally
@@ -730,7 +790,7 @@ ERR
         }
     }
 
-    $self->{Pass} = 0 unless $test || $self->in_todo;
+    $self->suite_passed(0) unless $test || $self->in_todo;
     return $test ? 1 : 0;
 }
 
@@ -2229,7 +2289,7 @@ sub _ending {
 
     # Ran tests but never declared a plan or hit done_testing
     if( !$self->{Have_Plan} and $self->{Curr_Test} ) {
-        $self->{Pass} = 0;
+        $self->suite_passed(0);
         $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
     }
 
@@ -2241,7 +2301,7 @@ sub _ending {
 
     # Don't do an ending if we bailed out.
     if( $self->{Bailed_Out} ) {
-        $self->{Pass} = 0;
+        $self->suite_passed(0);
         return;
     }
     # Figure out if we passed or failed and print helpful messages.
@@ -2271,7 +2331,7 @@ sub _ending {
             $self->diag(<<"FAIL");
 Looks like you planned $self->{Expected_Tests} test$s but ran $self->{Curr_Test}.
 FAIL
-            $self->{Pass} = 0;
+            $self->suite_passed(0);
         }
 
         if($num_failed) {
@@ -2283,14 +2343,14 @@ FAIL
             $self->diag(<<"FAIL");
 Looks like you failed $num_failed test$s of $num_tests$qualifier.
 FAIL
-            $self->{Pass} = 0;
+            $self->suite_passed(0);
         }
 
         if($real_exit_code) {
             $self->diag(<<"FAIL");
 Looks like your test exited with $real_exit_code just after $self->{Curr_Test}.
 FAIL
-            $self->{Pass} = 0;
+            $self->suite_passed(0);
             _my_exit($real_exit_code) && return;
         }
 
@@ -2314,16 +2374,16 @@ FAIL
         $self->diag(<<"FAIL");
 Looks like your test exited with $real_exit_code before it could output anything.
 FAIL
-        $self->{Pass} = 0;
+        $self->suite_passed(0);
         _my_exit($real_exit_code) && return;
     }
     else {
         $self->diag("No tests run!\n");
-        $self->{Pass} = 0;
+        $self->suite_passed(0);
         _my_exit(255) && return;
     }
 
-    $self->{Pass} = 0;
+    $self->suite_passed(0);
     $self->_whoa( 1, "We fell off the end of _ending()" );
 }
 

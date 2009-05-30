@@ -715,18 +715,7 @@ sub subtest($&) {
     my ($name, $subtests) = @_;
 
     my $tb = Test::More->builder;
-    unless ('CODE' eq ref $subtests) {
-        $tb->croak("subtest() second argument must be a code ref") unless @_;
-    }
-
-    my $child = $tb->child($name);
-    local $Test::Builder::Test = $child;
-
-    eval { $subtests->() };
-    if ( my $error= $@ ) {
-        die $error unless eval { $error->isa('Test::Builder::Exception') };
-    }
-    $child->finalize;
+    return $tb->subtest(@_);
 }
 
 =item B<pass>
