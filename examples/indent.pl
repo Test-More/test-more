@@ -21,7 +21,7 @@ my $builder = Test::Builder->new;
 $builder->plan(tests => 7);
 for( 1 .. 3 ) {
     $builder->ok( $_, "We're on $_" );
-    $builder->diag("We ran $_");
+    $builder->note("We ran $_");
 }
 {
     my $indented = $builder->child;
