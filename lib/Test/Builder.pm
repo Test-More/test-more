@@ -160,7 +160,7 @@ indented four spaces more than the parent's indentation.  When done, the
 C<finalize> method I<must> be called explicitly.
 
 Trying to create a new child with a previous child still active (i.e.,
-C<&finalize> not called) will C<croak>.
+C<finalize> not called) will C<croak>.
 
 Trying to run a test when you have an open child will also C<croak> and cause
 the test suite to fail.
@@ -244,7 +244,7 @@ sub finalize {
 
     return unless $self->parent;
     if( $self->{Child_Name} ) {
-        $self->croak("Can't call &finalize with child ($self->{Child_Name}) active");
+        $self->croak("Can't call finalize() with child ($self->{Child_Name}) active");
     }
     $self->_ending;
 
@@ -330,7 +330,7 @@ sub DESTROY {
     if ( $self->parent ) {
         my $name = $self->name;
         $self->diag(<<"FAIL");
-Child ($name) exited without calling &finalize
+Child ($name) exited without calling finalize()
 FAIL
         $self->parent->{In_Destroy} = 1;
         $self->parent->ok(0, $name);
@@ -412,7 +412,7 @@ will print the appropriate headers and take the appropriate actions.
 If you call C<plan()>, don't call any of the other methods below.
 
 If a child calls "skip_all" in the plan, a C<Test::Builder::Exception> is
-thrown.  Trap this error, call C<&finalize> and don't run any more tests on
+thrown.  Trap this error, call C<finalize()> and don't run any more tests on
 the child.
 
  my $child = $Test->child('some child');

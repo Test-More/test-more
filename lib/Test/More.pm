@@ -709,6 +709,8 @@ considered a skip.
      ok 1, 'this test will never be run';
  };
 
+Returns true if the subtest passed, false otherwise.
+
 =cut
 
 sub subtest($&) {
