@@ -204,8 +204,8 @@ sub subtest {
     my $self = shift;
     my($name, $subtests) = @_;
 
-    unless ('CODE' eq ref $subtests) {
-        $self->croak("subtest() second argument must be a code ref") unless @_;
+    if ('CODE' ne ref $subtests) {
+        $self->croak("subtest()'s second argument must be a code ref");
     }
 
     my $child = $self->child($name);

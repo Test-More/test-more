@@ -114,6 +114,7 @@ t/require_ok.t
 t/simple.t
 t/skip.t
 t/skipall.t
+t/subtest/args.t
 t/subtest/basic.t
 t/subtest/exceptions.t
 t/tbm_doesnt_set_exported_to.t
