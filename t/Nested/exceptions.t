@@ -29,16 +29,16 @@ use Test::More tests => 7;
     ok my $child2 = $child->child('two'), 'Trying to create nested children should succeed';
     eval { $child->finalize };
     my $error = $@;
-    like $error, qr/\QCan't call &finalize with child (two) active/,
+    like $error, qr/\QCan't call finalize() with child (two) active/,
       '... but trying to finalize() a child with open children should fail';
 }
 {
     my $tb    = Test::Builder::NoOutput->create;
     my $child = $tb->child('one');
     undef $child;
-    like $tb->read, qr/\QChild (one) exited without calling &finalize/,
+    like $tb->read, qr/\QChild (one) exited without calling finalize()/,
       'Failing to call finalize should issue an appropriate diagnostic';
-    ok !$tb->suite_passed, '... and should cause the test suite to fail';
+    ok !$tb->is_passing, '... and should cause the test suite to fail';
 }
 {
     my $tb = Test::Builder::NoOutput->create;
@@ -59,5 +59,5 @@ use Test::More tests => 7;
     my $error = $@;
     like $error, qr/\QCannot run test (This should throw an exception) with active children/,
       'Running a test with active children should fail';
-    ok !$tb->suite_passed, '... and should cause the test suite to fail';
+    ok !$tb->is_passing, '... and should cause the test suite to fail';
 }

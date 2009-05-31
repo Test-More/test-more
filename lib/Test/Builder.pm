@@ -249,45 +249,23 @@ sub finalize {
     $self->_ending;
 
     # XXX This will only be necessary for TAP envelopes (we think)
-    #$self->_print( $self->suite_passed ? "PASS\n" : "FAIL\n" );
+    #$self->_print( $self->is_passing ? "PASS\n" : "FAIL\n" );
 
     my $ok = 1;
     $self->parent->{Child_Name} = undef;
     if ( $self->{Skip_All} ) {
-        $ok = 1;
         $self->parent->skip($self->{Skip_All});
     }
     elsif ( not @{ $self->{Test_Results} } ) {
-        $ok = 0;
-        $self->parent->ok( $ok, "[subtest] No tests run for ". $self->name );
+        $self->parent->ok( 0, "[subtest] No tests run for ". $self->name );
     }
     else {
-        $ok = $self->suite_passed;
-        $self->parent->ok( $ok, '[subtest] ' . $self->name );
+        $self->parent->ok( $self->is_passing, '[subtest] ' . $self->name );
     }
     $? = $self->{Child_Error};
     delete $self->{Parent};
 
-    return $ok;
-}
-
-
-=item B<suite_passed>
-
- my $passed = $builder->suite_passed;
-
-Boolean indicating if the test suite passed.
-
-=cut
-
-sub suite_passed {
-    my $self = shift;
-
-    if( @_ ) {
-        $self->{Suite_Passed} = shift;
-    }
-
-    return $self->{Suite_Passed};
+    return $self->is_passing;
 }
 
 sub _indent      {
@@ -357,7 +335,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $Level = 1;
 
     $self->{Name}         = $0;
-    $self->suite_passed(1);
+    $self->is_passing(1);
     $self->{Ending}       = 0;
     $self->{Have_Plan}    = 0;
     $self->{No_Plan}      = 0;
@@ -621,6 +599,12 @@ sub done_testing {
 
     $self->{Have_Plan} = 1;
 
+    # The wrong number of tests were run
+    $self->is_passing(0) if $self->{Expected_Tests} != $self->{Curr_Test};
+
+    # No tests were run
+    $self->is_passing(0) if $self->{Curr_Test} == 0;
+
     return 1;
 }
 
@@ -712,7 +696,7 @@ sub ok {
 
     if ( $self->{Child_Name} and not $self->{In_Destroy} ) {
         $name = 'unnamed test' unless defined $name;
-        $self->suite_passed(0);
+        $self->is_passing(0);
         $self->croak("Cannot run test ($name) with active children");
     }
     # $test might contain an object which we don't want to accidentally
@@ -790,9 +774,26 @@ ERR
         }
     }
 
-    $self->suite_passed(0) unless $test || $self->in_todo;
+    $self->is_passing(0) unless $test || $self->in_todo;
+
+    # Check that we haven't violated the plan
+    $self->_check_is_passing_plan();
+
     return $test ? 1 : 0;
 }
+
+
+# Check that we haven't yet violated the plan and set
+# is_passing() accordingly
+sub _check_is_passing_plan {
+    my $self = shift;
+
+    my $plan = $self->has_plan;
+    return unless defined $plan;        # no plan yet defined
+    return unless $plan !~ /\D/;        # no numeric plan
+    $self->is_passing(0) if $plan < $self->{Curr_Test};
+}
+
 
 sub _unoverload {
     my $self = shift;
@@ -1946,6 +1947,34 @@ sub current_test {
     return $self->{Curr_Test};
 }
 
+=item B<is_passing>
+
+   my $ok = $builder->is_passing;
+
+Indicates if the test suite is currently passing.
+
+More formally, it will be false if anything has happened which makes
+it impossible for the test suite to pass.  True otherwise.
+
+For example, if no tests have run C<is_passing()> will be true because
+even though a suite with no tests is a failure you can add a passing
+test to it and start passing.
+
+Don't think about it too much.
+
+=cut
+
+sub is_passing {
+    my $self = shift;
+
+    if( @_ ) {
+        $self->{Is_Passing} = shift;
+    }
+
+    return $self->{Is_Passing};
+}
+
+
 =item B<summary>
 
     my @tests = $Test->summary;
@@ -2289,7 +2318,7 @@ sub _ending {
 
     # Ran tests but never declared a plan or hit done_testing
     if( !$self->{Have_Plan} and $self->{Curr_Test} ) {
-        $self->suite_passed(0);
+        $self->is_passing(0);
         $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
     }
 
@@ -2301,7 +2330,7 @@ sub _ending {
 
     # Don't do an ending if we bailed out.
     if( $self->{Bailed_Out} ) {
-        $self->suite_passed(0);
+        $self->is_passing(0);
         return;
     }
     # Figure out if we passed or failed and print helpful messages.
@@ -2331,7 +2360,7 @@ sub _ending {
             $self->diag(<<"FAIL");
 Looks like you planned $self->{Expected_Tests} test$s but ran $self->{Curr_Test}.
 FAIL
-            $self->suite_passed(0);
+            $self->is_passing(0);
         }
 
         if($num_failed) {
@@ -2343,14 +2372,14 @@ FAIL
             $self->diag(<<"FAIL");
 Looks like you failed $num_failed test$s of $num_tests$qualifier.
 FAIL
-            $self->suite_passed(0);
+            $self->is_passing(0);
         }
 
         if($real_exit_code) {
             $self->diag(<<"FAIL");
 Looks like your test exited with $real_exit_code just after $self->{Curr_Test}.
 FAIL
-            $self->suite_passed(0);
+            $self->is_passing(0);
             _my_exit($real_exit_code) && return;
         }
 
@@ -2374,16 +2403,16 @@ FAIL
         $self->diag(<<"FAIL");
 Looks like your test exited with $real_exit_code before it could output anything.
 FAIL
-        $self->suite_passed(0);
+        $self->is_passing(0);
         _my_exit($real_exit_code) && return;
     }
     else {
         $self->diag("No tests run!\n");
-        $self->suite_passed(0);
+        $self->is_passing(0);
         _my_exit(255) && return;
     }
 
-    $self->suite_passed(0);
+    $self->is_passing(0);
     $self->_whoa( 1, "We fell off the end of _ending()" );
 }
 

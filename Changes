@@ -1,3 +1,9 @@
+0.89_01
+    New Features
+    * Test::Builder->is_passing() will let you check if the test is
+      currently passing.
+
+
 0.88  Sat May 30 12:31:24 PDT 2009
     Turing 0.87_03 into a stable release.
 
