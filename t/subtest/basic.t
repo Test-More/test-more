@@ -17,6 +17,9 @@ use Test::Builder::NoOutput;
 
 use Test::More tests => 23;
 
+# Formatting may change if we're running under Test::Harness.
+$ENV{HARNESS_ACTIVE} = 0;
+
 {
     my $tb = Test::Builder::NoOutput->create;
 
@@ -38,7 +41,7 @@ use Test::More tests => 23;
     }
 
     $tb->reset_outputs;
-    is $tb->read, <<'END', 'Output should nest properly';
+    is $tb->read, <<"END", 'Output should nest properly';
 1..7
 ok 1 - We're on 1
 # We ran 1
@@ -50,7 +53,7 @@ ok 3 - We're on 3
     ok 2 - We're on 2
     ok 3 - We're on 3
     1..3
-ok 4 - Child of t/Nested/basic.t
+ok 4 - Child of $0
 ok 5 - We're on 7
 ok 6 - We're on 8
 ok 7 - We're on 9
@@ -84,7 +87,7 @@ END
 
     $tb->_ending;
     $tb->reset_outputs;
-    is $tb->read, <<'END', 'We should allow arbitrary nesting';
+    is $tb->read, <<"END", 'We should allow arbitrary nesting';
 ok 1 - We're on 1
 # We ran 1
     ok 1 - We're on 1
@@ -94,13 +97,14 @@ ok 1 - We're on 1
     ok 2 - with name
     ok 3 - after child
     1..3
-ok 2 - Child of t/Nested/basic.t
+ok 2 - Child of $0
 ok 3 - We're on 7
 1..3
 END
 }
 
 {
+#line 108
     my $tb = Test::Builder::NoOutput->create;
 
     {
@@ -121,18 +125,16 @@ END
         $child->finalize;
     }
     $tb->reset_outputs;
-    is $tb->read, <<'END', 'Previous child failures should not force subsequent failures';
+    is $tb->read, <<"END", 'Previous child failures should not force subsequent failures';
     1..3
     ok 1
     not ok 2
-    
-    #   Failed test at t/Nested/basic.t line 110.
+    #   Failed test at $0 line 114.
     ok 3
     # Looks like you failed 1 test of 3.
 not ok 1 - expected to fail
-
 #   Failed test 'expected to fail'
-#   at t/Nested/basic.t line 112.
+#   at $0 line 116.
     1..3
     ok 1
     ok 2
@@ -198,6 +200,7 @@ END
 
 # to do tests
 {
+#line 204
     my $tb = Test::Builder::NoOutput->create;
     $tb->plan( tests => 1 );
     my $child = $tb->child;
@@ -208,13 +211,12 @@ END
     $child->finalize;
     $tb->_ending;
     $tb->reset_outputs;
-    is $tb->read, <<'END', 'TODO tests should not make the parent test fail';
+    is $tb->read, <<"END", 'TODO tests should not make the parent test fail';
 1..1
     1..1
     not ok 1 # TODO message
-    
-    #   Failed (TODO) test at t/Nested/basic.t line 206.
-ok 1 - Child of t/Nested/basic.t
+    #   Failed (TODO) test at $0 line 209.
+ok 1 - Child of $0
 END
 }
 {
@@ -224,9 +226,9 @@ END
     $child->finalize;
     $tb->_ending;
     $tb->reset_outputs;
-    my $expected = <<'END';
+    my $expected = <<"END";
 1..1
-not ok 1 - No tests run for subtest "Child of t/Nested/basic.t"
+not ok 1 - No tests run for subtest "Child of $0"
 END
     like $tb->read, qr/\Q$expected/,
         'Not running subtests should make the parent test fail';
