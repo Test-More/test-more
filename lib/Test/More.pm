@@ -674,28 +674,27 @@ sub new_ok {
 
 =item B<subtest>
 
- use Test::More tests => 3;
+  use Test::More tests => 3;
  
- ok 1;
- subtest 'some name' => sub {
-     my $num_tests = 1 + int( rand(10) );
-     plan tests => $num_tests;
-     ok 1 for 1 .. $num_tests;
- };
- ok 1;
+  pass("First test");
+  subtest 'some name' => sub {
+      plan tests => 2;
+      pass("This is a subtest");
+      pass("So is this");
+  };
+  pass("Third test");
 
 A subtest takes a name and a code reference.  The subtests are run as nested
 TAP.  For example, in the above code, if C<$num_tests> is 3, you might see TAP
 like the following.
 
  1..3
- ok 1
-     1..3
-     ok 1
-     ok 2
-     ok 3
- ok 2 - some name
- ok 3
+ ok 1 - First test
+     1..2
+     ok 1 - This is a subtest
+     ok 2 - So is this
+ ok 2 - [subtest] some name
+ ok 3 - Third test
  ok
  All tests successful.
  Files=1, Tests=3,  0 wallclock secs ( 0.03 usr  0.00 sys +  0.02 cusr  0.00 csys =  0.05 CPU)

@@ -1,5 +1,6 @@
 0.89_01
     New Features
+    * subtest() allows you to run more tests in their own plan.
     * Test::Builder->is_passing() will let you check if the test is
       currently passing.
 
