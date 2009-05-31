@@ -674,19 +674,27 @@ sub new_ok {
 
 =item B<subtest>
 
+    subtest $name => \&code;
+
+subtest() runs the &code as its own little test with its own plan and
+its own result.  The main test counts this as a single test using the
+result of the whole subtest to determine if its ok or not ok.
+
+For example...
+
   use Test::More tests => 3;
  
   pass("First test");
+
   subtest 'some name' => sub {
       plan tests => 2;
       pass("This is a subtest");
       pass("So is this");
   };
+
   pass("Third test");
 
-A subtest takes a name and a code reference.  The subtests are run as nested
-TAP.  For example, in the above code, if C<$num_tests> is 3, you might see TAP
-like the following.
+This would produce.
 
   1..3
   ok 1 - First test
@@ -695,17 +703,13 @@ like the following.
       ok 2 - So is this
   ok 2 - [subtest] some name
   ok 3 - Third test
-  ok
-  All tests successful.
-  Files=1, Tests=3,  0 wallclock secs ( 0.03 usr  0.00 sys +  0.02 cusr  0.00 csys =  0.05 CPU)
-  Result: PASS
 
 A subtest may call "skip_all".  No tests will be run, but the subtest is
 considered a skip.
 
   subtest 'skippy' => sub {
       plan skip_all => 'cuz I said so';
-      ok 1, 'this test will never be run';
+      pass('this test will never be run');
   };
 
 Returns true if the subtest passed, false otherwise.
