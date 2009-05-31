@@ -686,8 +686,9 @@ For example...
  
   pass("First test");
 
-  subtest 'some name' => sub {
+  subtest 'An example subtest' => sub {
       plan tests => 2;
+
       pass("This is a subtest");
       pass("So is this");
   };
@@ -701,7 +702,7 @@ This would produce.
       1..2
       ok 1 - This is a subtest
       ok 2 - So is this
-  ok 2 - [subtest] some name
+  ok 2 - An example subtest
   ok 3 - Third test
 
 A subtest may call "skip_all".  No tests will be run, but the subtest is

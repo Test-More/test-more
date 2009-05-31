@@ -211,8 +211,8 @@ sub subtest {
     my $child = $self->child($name);
     local $Test::Builder::Test = $child;
 
-    eval { $subtests->() };
-    if ( my $error= $@ ) {
+    unless( eval { $subtests->(); 1 } ) {
+        my $error = $@;
         die $error unless eval { $error->isa('Test::Builder::Exception') };
     }
 
@@ -257,10 +257,10 @@ sub finalize {
         $self->parent->skip($self->{Skip_All});
     }
     elsif ( not @{ $self->{Test_Results} } ) {
-        $self->parent->ok( 0, "[subtest] No tests run for ". $self->name );
+        $self->parent->ok( 0, sprintf q[No tests run for subtest "%s"], $self->name );
     }
     else {
-        $self->parent->ok( $self->is_passing, '[subtest] ' . $self->name );
+        $self->parent->ok( $self->is_passing, $self->name );
     }
     $? = $self->{Child_Error};
     delete $self->{Parent};
