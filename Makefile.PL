@@ -100,4 +100,33 @@ perltidy:
 
 MAKE
     }
+
+
+    # Test with multiple versions of perl before releasing
+    sub dist_test {
+        my $self = shift;
+
+        my $make = $self->SUPER::dist_test(@_);
+        return $make unless $ENV{AUTHOR_TESTING} and $ENV{AUTHOR_TESTING} eq 'MSCHWERN';
+
+        # Strip off all the whitespace at the end, we'll put our own in.
+        $make =~ s{\s+\z}{\n};
+
+        my @perls = qw(
+            perl5.8.9
+            perl5.8.8
+            perl5.6.2
+            perl5.6.1
+        );
+
+        for my $perl (@perls) {
+            $make .= sprintf <<'END', $perl;
+	cd $(DISTVNAME) && $(MAKE) clean && %s Makefile.PL && $(MAKE) test $(PASTHRU)
+END
+        }
+
+        $make .= "\n";
+
+        return $make;
+    }
 }
