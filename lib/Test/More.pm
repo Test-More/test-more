@@ -1601,6 +1601,24 @@ B<NOTE>  This behavior may go away in future versions.
 Test::More works with Perls as old as 5.6.0.
 
 
+=item utf8 / "Wide character in print"
+
+If you use utf8 or other non-ASCII characters with Test::More you
+might get a "Wide character in print" warning.  Using C<binmode
+STDOUT, ":utf8"> will not fix it.  Test::Builder (which powers
+Test::More) duplicates STDOUT and STDERR.  So any changes to them,
+including changing their output disciplines, will not be seem by
+Test::More.
+
+The work around is to change the filehandles used by Test::Builder
+directly.
+
+    my $builder = Test::More->builder;
+    binmode $builder->output,         ":utf8";
+    binmode $builder->failure_output, ":utf8";
+    binmode $builder->todo_output,    ":utf8";
+
+
 =item Overloaded objects
 
 String overloaded objects are compared B<as strings> (or in cmp_ok()'s

@@ -1,3 +1,9 @@
+0.89_01
+    Docs
+    * Finally added a note about the "Wide character in print" warning and
+      how to work around it.
+
+
 0.88  Sat May 30 12:31:24 PDT 2009
     Turing 0.87_03 into a stable release.
 
