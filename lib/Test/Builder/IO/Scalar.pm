@@ -8,7 +8,11 @@ Test::Builder::IO::Scalar - A copy of IO::Scalar for Test::Builder
 =head1 DESCRIPTION
 
 This is a copy of IO::Scalar which ships with Test::Builder to
-support scalar references as filehandles on Perl 5.6.
+support scalar references as filehandles on Perl 5.6.  Newer
+versions of Perl simply use C<<open()>>'s built in support.
+
+Test::Builder can not have dependencies on other modules without
+careful consideration, so its simply been copied into the distribution.
 
 =cut
 
