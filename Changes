@@ -1,4 +1,4 @@
-0.89_01
+0.89_01  Tue Jun 23 15:13:16 EDT 2009
     New Features
     * subtest() allows you to run more tests in their own plan.
       (Thanks Ovid!)
