@@ -1,6 +1,8 @@
 .perlcriticrc
 .perltidyrc
 Changes
+examples/indent.pl
+examples/subtest.t
 lib/Test/Builder.pm
 lib/Test/Builder/IO/Scalar.pm
 lib/Test/Builder/Module.pm
@@ -35,6 +37,7 @@ t/Builder/fork_with_new_stdout.t
 t/Builder/has_plan.t
 t/Builder/has_plan2.t
 t/Builder/is_fh.t
+t/Builder/is_passing.t
 t/Builder/maybe_regex.t
 t/Builder/no_diag.t
 t/Builder/no_ending.t
@@ -91,6 +94,8 @@ t/lib/Test/Simple/sample_tests/two_fail.plx
 t/lib/TieOut.pm
 t/missing.t
 t/More.t
+t/Nested/basic.t
+t/Nested/exceptions.t
 t/new_ok.t
 t/no_plan.t
 t/no_tests.t
@@ -109,6 +114,12 @@ t/require_ok.t
 t/simple.t
 t/skip.t
 t/skipall.t
+t/subtest/args.t
+t/subtest/basic.t
+t/subtest/die.t
+t/subtest/do.t
+t/subtest/exceptions.t
+t/subtest/for_do_t.test
 t/tbm_doesnt_set_exported_to.t
 t/Tester/tbt_01basic.t
 t/Tester/tbt_02fhrestore.t

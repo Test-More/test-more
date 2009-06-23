@@ -33,6 +33,7 @@ our @EXPORT = qw(ok use_ok require_ok
   done_testing
   can_ok isa_ok new_ok
   diag note explain
+  subtest
   BAIL_OUT
 );
 
@@ -242,7 +243,6 @@ exponential".
 
 All test functions take a name argument.  It's optional, but highly
 suggested that you use it.
-
 
 =head2 I'm ok, you're not ok.
 
@@ -670,6 +670,58 @@ sub new_ok {
     }
 
     return $obj;
+}
+
+=item B<subtest>
+
+    subtest $name => \&code;
+
+subtest() runs the &code as its own little test with its own plan and
+its own result.  The main test counts this as a single test using the
+result of the whole subtest to determine if its ok or not ok.
+
+For example...
+
+  use Test::More tests => 3;
+ 
+  pass("First test");
+
+  subtest 'An example subtest' => sub {
+      plan tests => 2;
+
+      pass("This is a subtest");
+      pass("So is this");
+  };
+
+  pass("Third test");
+
+This would produce.
+
+  1..3
+  ok 1 - First test
+      1..2
+      ok 1 - This is a subtest
+      ok 2 - So is this
+  ok 2 - An example subtest
+  ok 3 - Third test
+
+A subtest may call "skip_all".  No tests will be run, but the subtest is
+considered a skip.
+
+  subtest 'skippy' => sub {
+      plan skip_all => 'cuz I said so';
+      pass('this test will never be run');
+  };
+
+Returns true if the subtest passed, false otherwise.
+
+=cut
+
+sub subtest($&) {
+    my ($name, $subtests) = @_;
+
+    my $tb = Test::More->builder;
+    return $tb->subtest(@_);
 }
 
 =item B<pass>
