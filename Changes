@@ -1,13 +1,19 @@
-0.89_01
+0.90
     Docs
     * Finally added a note about the "Wide character in print" warning and
       how to work around it.
+    * Note the IO::Stringy license in our copy of it.
+      [test-more.googlecode.com 47]
 
     Test Fixes
     * Small fixes for integration with the Perl core
       [bleadperl eaa0815147e13cd4ab5b3d6ca8f26544a9f0c3b4]
     * exit code tests could be effected by errno when PERLIO=stdio
       [bleadperl c76230386fc5e6fba9fdbeab473abbf4f4adcbe3]
+
+    Other
+    * This is a stable release for 5.10.1.  It does not include
+      the subtest() work in 0.89_01.
 
 
 0.88  Sat May 30 12:31:24 PDT 2009
