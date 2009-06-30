@@ -1,3 +1,9 @@
+0.90
+    Docs
+    * Note the IO::Stringy license in our copy of it.
+      [test-more.googlecode.com 47]
+
+
 0.89_01  Tue Jun 23 15:13:16 EDT 2009
     New Features
     * subtest() allows you to run more tests in their own plan.
