@@ -3,10 +3,23 @@ use strict;
 use warnings;
 use IO::Pipe;
 use Test::Builder;
+use Config;
 
 my $b = Test::Builder->new;
 $b->reset;
-$b->plan('tests' => 2);
+
+my $Can_Fork = $Config{d_fork} ||
+               (($^O eq 'MSWin32' || $^O eq 'NetWare') and
+                $Config{useithreads} and
+                $Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/
+               );
+
+if( !$Can_Fork ) {
+    $b->plan('skip_all' => "This system cannot fork");
+}
+else {
+    $b->plan('tests' => 2);
+}
 
 my $pipe = IO::Pipe->new;
 if ( my $pid = fork ) {

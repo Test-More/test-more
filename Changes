@@ -1,3 +1,9 @@
+0.92
+    Test Fixes
+    * Silence noise on VMS in exit.t (Craig Berry)
+    * Skip Builder/fork_with_new_stdout.t on systems without fork (Craig Berry)
+    
+
 0.90  Thu Jul  2 13:18:25 PDT 2009
     Docs
     * Finally added a note about the "Wide character in print" warning and
