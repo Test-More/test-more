@@ -1,4 +1,4 @@
-0.92
+0.92  Fri Jul  3 11:08:56 PDT 2009
     Test Fixes
     * Silence noise on VMS in exit.t (Craig Berry)
     * Skip Builder/fork_with_new_stdout.t on systems without fork (Craig Berry)
