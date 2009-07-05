@@ -2,6 +2,8 @@
     Test Fixes
     * Silence noise on VMS in exit.t (Craig Berry)
     * Skip Builder/fork_with_new_stdout.t on systems without fork (Craig Berry)
+    * Make sure that subtest works with Test:: modules which call
+      Test::Builder->new at the top of their code.
 
 
 0.90  Thu Jul  2 13:18:25 PDT 2009
