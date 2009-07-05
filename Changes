@@ -1,4 +1,4 @@
-0.92
+0.92  Fri Jul  3 11:08:56 PDT 2009
     Test Fixes
     * Silence noise on VMS in exit.t (Craig Berry)
     * Skip Builder/fork_with_new_stdout.t on systems without fork (Craig Berry)
@@ -8,6 +8,10 @@
     Docs
     * Note the IO::Stringy license in our copy of it.
       [test-more.googlecode.com 47]
+
+    Other
+    * This is a stable release for 5.10.1.  It does not include
+      the subtest() work in 0.89_01.
 
 
 0.89_01  Tue Jun 23 15:13:16 EDT 2009
