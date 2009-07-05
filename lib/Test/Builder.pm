@@ -147,9 +147,9 @@ sub create {
     return $self;
 }
 
-=item B<child>
+=item B<new_child>
 
-  my $child = $builder->child($name_of_child);
+  my $child = $builder->new_child($name_of_child);
   $child->plan( tests => 4 );
   $child->ok(some_code());
   ...
@@ -167,11 +167,12 @@ the test suite to fail.
 
 =cut
 
-sub child {
+sub new_child {
     my( $self, $name ) = @_;
 
-    if( $self->{Child_Name} ) {
-        $self->croak("You already have a child named ($self->{Child_Name}) running");
+    if( my $child = $self->child ) {
+        my $name = $child->name;
+        $self->croak("You already have a child named ($name) running");
     }
 
     my $child = bless {}, ref $self;
@@ -185,9 +186,9 @@ sub child {
     # cause all children to fail.
     $child->{Child_Error} = $?;
     $?                    = 0;
-    $child->{Parent}      = $self;
     $child->{Name}        = $name || "Child of " . $self->name;
-    $self->{Child_Name}   = $child->name;
+    $child->{Parent}      = $self;
+    $self->{Child}        = $child;   # XXX note the circular reference!
     return $child;
 }
 
@@ -208,13 +209,16 @@ sub subtest {
         $self->croak("subtest()'s second argument must be a code ref");
     }
 
-    my $child = $self->child($name);
+    my $child = $self->new_child($name);
     local $Test::Builder::Test = $child;
 
+    $self->{In_Subtest} = 1;
     unless( eval { $subtests->(); 1 } ) {
         my $error = $@;
+        $self->{In_Subtest} = 0;
         die $error unless eval { $error->isa('Test::Builder::Exception') };
     }
+    $self->{In_Subtest} = 0;
 
     return $child->finalize;
 }
@@ -243,8 +247,9 @@ sub finalize {
     my $self = shift;
 
     return unless $self->parent;
-    if( $self->{Child_Name} ) {
-        $self->croak("Can't call finalize() with child ($self->{Child_Name}) active");
+    if( my $child = $self->child ) {
+        my $name = $child->name;
+        $self->croak("Can't call finalize() with child ($name) active");
     }
     $self->_ending;
 
@@ -252,7 +257,7 @@ sub finalize {
     #$self->_print( $self->is_passing ? "PASS\n" : "FAIL\n" );
 
     my $ok = 1;
-    $self->parent->{Child_Name} = undef;
+    $self->parent->{Child} = undef;
     if ( $self->{Skip_All} ) {
         $self->parent->skip($self->{Skip_All});
     }
@@ -263,7 +268,7 @@ sub finalize {
         $self->parent->ok( $self->is_passing, $self->name );
     }
     $? = $self->{Child_Error};
-    delete $self->{Parent};
+    $self->{Parent} = undef;
 
     return $self->is_passing;
 }
@@ -290,6 +295,32 @@ builders for nested TAP.
 =cut
 
 sub parent { shift->{Parent} }
+
+=item B<child>
+
+ if ( my $child = $builder->child ) {
+     ...
+ }
+
+Returns the child C<Test::Builder> instance, if any.  Only used with child
+builders for nested TAP.
+
+=cut
+
+sub child { shift->{Child} }
+
+=item B<in_subtest>
+
+ if ( $builder->in_subtest ) {
+     ...
+ }
+
+Returns a boolean value indicating whether or not a builder is running in a
+subtest.
+
+=cut
+
+sub in_subtest { shift->{In_Subtest} }
 
 =item B<name>
 
@@ -342,7 +373,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Have_Output_Plan} = 0;
 
     $self->{Original_Pid} = $$;
-    $self->{Child_Name}   = undef;
+    $self->{Child}        = undef;
     $self->{Indent}     ||= '';
 
     share( $self->{Curr_Test} );
@@ -694,7 +725,11 @@ like Test::Simple's C<ok()>.
 sub ok {
     my( $self, $test, $name ) = @_;
 
-    if ( $self->{Child_Name} and not $self->{In_Destroy} ) {
+    if ( $self->in_subtest ) {
+        $self = $self->child;
+    }
+
+    if ( $self->child and not $self->{In_Destroy} ) {
         $name = 'unnamed test' unless defined $name;
         $self->is_passing(0);
         $self->croak("Cannot run test ($name) with active children");
@@ -1574,6 +1609,8 @@ Mark Fowler <mark@twoshortplanks.com>
 
 sub diag {
     my $self = shift;
+
+    $self = $self->child if $self->in_subtest;
 
     $self->_print_comment( $self->_diag_fh, @_ );
 }
