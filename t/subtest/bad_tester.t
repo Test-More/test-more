@@ -18,8 +18,8 @@ use Test::More tests => 3;
 
     package Test::Bad;
 
-    use base 'Test::Builder::Module';
-    my $TB = __PACKAGE__->builder;
+    use Test::Builder;
+    my $TB = Test::Builder->new;
 
     sub is_bad_test ($;$) {
         my( $val, $name ) = @_;
