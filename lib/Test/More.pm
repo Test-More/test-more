@@ -596,6 +596,7 @@ sub isa_ok ($$;$) {
             }
             elsif( $error =~ /Can't call method "isa" without a package/ ) {
                 # It's something that can't even be a class
+                $obj_name = 'The thing' unless defined $obj_name;
                 $diag = "$obj_name isn't a class or reference";
             }
             else {
