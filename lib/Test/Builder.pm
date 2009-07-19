@@ -163,8 +163,8 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Original_Pid} = $$;
 
-    share( $self->{Curr_Test} );
-    $self->{Curr_Test} = 0;
+    require Test::Builder2::Counter;
+    $self->{Counter} = shared_clone(Test::Builder2::Counter->create);
     $self->{Test_Results} = &share( [] );
 
     $self->{Exported_To}    = undef;
@@ -495,8 +495,8 @@ sub ok {
     # store, so we turn it into a boolean.
     $test = $test ? 1 : 0;
 
-    lock $self->{Curr_Test};
-    $self->{Curr_Test}++;
+    lock $self->{Counter};
+    my $test_num = $self->{Counter}->increment;
 
     # In case $name is a string overloaded object, force it to stringify.
     $self->_unoverload_str( \$name );
@@ -526,7 +526,7 @@ ERR
     }
 
     $out .= "ok";
-    $out .= " $self->{Curr_Test}" if $self->use_numbers;
+    $out .= " $test_num" if $self->use_numbers;
 
     if( defined $name ) {
         $name =~ s|#|\\#|g;    # # in a name can confuse Test::Harness.
@@ -547,7 +547,7 @@ ERR
         $result->{type}   = '';
     }
 
-    $self->{Test_Results}[ $self->{Curr_Test} - 1 ] = $result;
+    $self->{Test_Results}[ $test_num - 1 ] = $result;
     $out .= "\n";
 
     $self->_print($out);
@@ -937,10 +937,10 @@ sub skip {
     $why ||= '';
     $self->_unoverload_str( \$why );
 
-    lock( $self->{Curr_Test} );
-    $self->{Curr_Test}++;
+    lock( $self->{Counter} );
+    my $test_num = $self->{Counter}->increment;
 
-    $self->{Test_Results}[ $self->{Curr_Test} - 1 ] = &shared_clone(
+    $self->{Test_Results}[ $test_num - 1 ] = &shared_clone(
         {
             'ok'      => 1,
             actual_ok => 1,
@@ -951,7 +951,7 @@ sub skip {
     );
 
     my $out = "ok";
-    $out .= " $self->{Curr_Test}" if $self->use_numbers;
+    $out .= " $test_num" if $self->use_numbers;
     $out .= " # skip";
     $out .= " $why"               if length $why;
     $out .= "\n";
@@ -977,10 +977,10 @@ sub todo_skip {
     my( $self, $why ) = @_;
     $why ||= '';
 
-    lock( $self->{Curr_Test} );
-    $self->{Curr_Test}++;
+    lock( $self->{Counter} );
+    my $test_num = $self->{Counter}->increment;
 
-    $self->{Test_Results}[ $self->{Curr_Test} - 1 ] = &shared_clone(
+    $self->{Test_Results}[ $test_num - 1 ] = &shared_clone(
         {
             'ok'      => 1,
             actual_ok => 0,
@@ -991,7 +991,7 @@ sub todo_skip {
     );
 
     my $out = "not ok";
-    $out .= " $self->{Curr_Test}" if $self->use_numbers;
+    $out .= " $test_num" if $self->use_numbers;
     $out .= " # TODO & SKIP $why\n";
 
     $self->_print($out);
@@ -1686,9 +1686,9 @@ can erase history if you really want to.
 sub current_test {
     my( $self, $num ) = @_;
 
-    lock( $self->{Curr_Test} );
+    lock( $self->{Counter} );
     if( defined $num ) {
-        $self->{Curr_Test} = $num;
+        $self->{Counter}->set($num);
 
         # If the test counter is being pushed forward fill in the details.
         my $test_results = $self->{Test_Results};
@@ -1711,7 +1711,7 @@ sub current_test {
             $#{$test_results} = $num - 1;
         }
     }
-    return $self->{Curr_Test};
+    return $self->{Counter}->get;
 }
 
 =item B<summary>
@@ -1989,8 +1989,8 @@ error message.
 sub _sanity_check {
     my $self = shift;
 
-    $self->_whoa( $self->{Curr_Test} < 0, 'Says here you ran a negative number of tests!' );
-    $self->_whoa( $self->{Curr_Test} != @{ $self->{Test_Results} },
+    $self->_whoa( $self->{Counter}->get < 0, 'Says here you ran a negative number of tests!' );
+    $self->_whoa( $self->{Counter}->get != @{ $self->{Test_Results} },
         'Somehow you got a different number of results than tests ran!' );
 
     return;
@@ -2054,7 +2054,7 @@ sub _ending {
     }
 
     # Ran tests but never declared a plan or hit done_testing
-    if( !$self->{Have_Plan} and $self->{Curr_Test} ) {
+    if( !$self->{Have_Plan} and $self->{Counter}->get ) {
         $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
     }
 
@@ -2074,8 +2074,8 @@ sub _ending {
     if(@$test_results) {
         # The plan?  We have no plan.
         if( $self->{No_Plan} ) {
-            $self->_output_plan($self->{Curr_Test}) unless $self->no_header;
-            $self->{Expected_Tests} = $self->{Curr_Test};
+            $self->_output_plan($self->{Counter}->get) unless $self->no_header;
+            $self->{Expected_Tests} = $self->{Counter}->get;
         }
 
         # Auto-extended arrays and elements which aren't explicitly
@@ -2087,19 +2087,19 @@ sub _ending {
               unless defined $test_results->[$idx];
         }
 
-        my $num_failed = grep !$_->{'ok'}, @{$test_results}[ 0 .. $self->{Curr_Test} - 1 ];
+        my $num_failed = grep !$_->{'ok'}, @{$test_results}[ 0 .. $self->{Counter}->get - 1 ];
 
-        my $num_extra = $self->{Curr_Test} - $self->{Expected_Tests};
+        my $num_extra = $self->{Counter}->get - $self->{Expected_Tests};
 
         if( $num_extra != 0 ) {
             my $s = $self->{Expected_Tests} == 1 ? '' : 's';
             $self->diag(<<"FAIL");
-Looks like you planned $self->{Expected_Tests} test$s but ran $self->{Curr_Test}.
+Looks like you planned $self->{Expected_Tests} test$s but ran @{[ $self->{Counter}->get ]}
 FAIL
         }
 
         if($num_failed) {
-            my $num_tests = $self->{Curr_Test};
+            my $num_tests = $self->{Counter}->get;
             my $s = $num_failed == 1 ? '' : 's';
 
             my $qualifier = $num_extra == 0 ? '' : ' run';
@@ -2111,7 +2111,7 @@ FAIL
 
         if($real_exit_code) {
             $self->diag(<<"FAIL");
-Looks like your test exited with $real_exit_code just after $self->{Curr_Test}.
+Looks like your test exited with $real_exit_code just after @{[ $self->{Counter}->get ]}.
 FAIL
 
             _my_exit($real_exit_code) && return;
