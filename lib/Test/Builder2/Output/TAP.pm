@@ -1,6 +1,6 @@
 package Test::Builder2::Output::TAP;
 
-use 5.006;
+use 5.008001;
 use strict;
 
 use Mouse;
