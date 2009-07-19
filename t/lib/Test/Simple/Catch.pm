@@ -1,6 +1,8 @@
 # For testing Test::Simple;
 package Test::Simple::Catch;
 
+use strict;
+
 use Symbol;
 use TieOut;
 my( $out_fh, $err_fh ) = ( gensym, gensym );

@@ -1,8 +1,10 @@
 *.bak
 *~
+*.old
 Makefile
-blib
+blib/
 pm_to_blib
 Build
 _build
-cover_db
+cover_db/
+

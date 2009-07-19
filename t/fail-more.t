@@ -24,7 +24,7 @@ package My::Test;
 # Test::Builder's own and the ending diagnostics don't come out right.
 require Test::Builder;
 my $TB = Test::Builder->create;
-$TB->plan(tests => 75);
+$TB->plan(tests => 80);
 
 sub like ($$;$) {
     $TB->like(@_);
@@ -50,7 +50,8 @@ sub main::out_like ($$) {
 package main;
 
 require Test::More;
-my $Total = 36;
+our $TODO;
+my $Total = 38;
 Test::More->import(tests => $Total);
 $out->read;  # clear the plan from $out
 
@@ -252,7 +253,17 @@ not ok - My Wibble isa Wibble
 OUT
 #   Failed test 'My Wibble isa Wibble'
 #   at $0 line 248.
-#     My Wibble isn't a reference
+#     My Wibble isn't a class or reference
+ERR
+
+#line 248
+isa_ok(42,    "Wibble");
+out_ok( <<OUT, <<ERR );
+not ok - The thing isa Wibble
+OUT
+#   Failed test 'The thing isa Wibble'
+#   at $0 line 248.
+#     The thing isn't a class or reference
 ERR
 
 #line 258
@@ -268,11 +279,11 @@ ERR
 #line 268
 isa_ok([],    "HASH");
 out_ok( <<OUT, <<ERR );
-not ok - The object isa HASH
+not ok - The reference isa HASH
 OUT
-#   Failed test 'The object isa HASH'
+#   Failed test 'The reference isa HASH'
 #   at $0 line 268.
-#     The object isn't a 'HASH' it's a 'ARRAY'
+#     The reference isn't a 'HASH' it's a 'ARRAY'
 ERR
 
 #line 278
@@ -396,9 +407,8 @@ OUT
 #     expected: 'foo'
 ERR
 
-
 {
-    my $warnings;
+    my $warnings = '';
     local $SIG{__WARN__} = sub { $warnings .= join '', @_ };
 
 # line 404
@@ -414,6 +424,36 @@ ERR
     My::Test::like(
         $warnings,
         qr/^Argument "foo" isn't numeric in .* at cmp_ok \[from $Filename line 404\] line 1\.\n$/
+    );
+    $warnings = '';
+}
+
+
+{
+    my $warnings = '';
+    local $SIG{__WARN__} = sub { $warnings .= join '', @_ };
+
+#line 426
+    cmp_ok( undef, "ne", "", "undef ne empty string" );
+
+    $TB->is_eq( $out->read, <<OUT );
+not ok - undef ne empty string
+OUT
+
+    TODO: {
+        local $::TODO = 'cmp_ok() gives the wrong "expected" for undef';
+
+        $TB->is_eq( $err->read, <<ERR );
+#   Failed test 'undef ne empty string'
+#   at $0 line 426.
+#          got: undef
+#     expected: ''
+ERR
+    }
+
+    My::Test::like(
+        $warnings,
+        qr/^Use of uninitialized value.* in string ne at cmp_ok \[from $Filename line 426\] line 1\.\n\z/
     );
 }
 

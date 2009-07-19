@@ -8,9 +8,27 @@ Test::Builder::IO::Scalar - A copy of IO::Scalar for Test::Builder
 =head1 DESCRIPTION
 
 This is a copy of IO::Scalar which ships with Test::Builder to
-support scalar references as filehandles on Perl 5.6.
+support scalar references as filehandles on Perl 5.6.  Newer
+versions of Perl simply use C<<open()>>'s built in support.
+
+Test::Builder can not have dependencies on other modules without
+careful consideration, so its simply been copied into the distribution.
+
+=head1 COPYRIGHT and LICENSE
+
+This file came from the "IO-stringy" Perl5 toolkit.
+
+Copyright (c) 1996 by Eryq.  All rights reserved.
+Copyright (c) 1999,2001 by ZeeGee Software Inc.  All rights reserved.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
 
 =cut
+
+# This is copied code, I don't care.
+##no critic
 
 use Carp;
 use strict;

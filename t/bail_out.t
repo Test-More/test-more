@@ -26,14 +26,7 @@ $TB->output(\$output);
 my $Test = Test::Builder->create;
 $Test->level(0);
 
-if( $] >= 5.005 ) {
-    $Test->plan(tests => 3);
-}
-else {
-    $Test->plan(skip_all => 
-          'CORE::GLOBAL::exit, introduced in 5.005, is needed for testing');
-}
-
+$Test->plan(tests => 3);
 
 plan tests => 4;
 

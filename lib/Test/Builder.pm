@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '0.86';
+our $VERSION = '0.92';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 BEGIN {
@@ -168,6 +168,8 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Have_Plan}    = 0;
     $self->{No_Plan}      = 0;
+    $self->{Have_Output_Plan} = 0;
+
     $self->{Original_Pid} = $$;
 
     share( $self->{Curr_Test} );
@@ -187,6 +189,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Todo}       = undef;
     $self->{Todo_Stack} = [];
     $self->{Start_Todo} = 0;
+    $self->{Opened_Testhandles} = 0;
 
     $self->_dup_stdhandles;
 
@@ -219,10 +222,7 @@ my %plan_cmds = (
     no_plan     => \&no_plan,
     skip_all    => \&skip_all,
     tests       => \&_plan_tests,
-    add         => \&_plan_add,
 );
-
-my %call_once = map { $_ => 1 } qw(no_plan skip_all tests);
 
 sub plan {
     my( $self, $cmd, $arg ) = @_;
@@ -231,7 +231,7 @@ sub plan {
 
     local $Level = $Level + 1;
 
-    $self->croak("You tried to plan twice") if $call_once{$cmd} and $self->{Have_Plan};
+    $self->croak("You tried to plan twice") if $self->{Have_Plan};
 
     if( my $method = $plan_cmds{$cmd} ) {
         local $Level = $Level + 1;
@@ -263,16 +263,6 @@ sub _plan_tests {
     return;
 }
 
-
-sub _plan_add {
-    my($self, $arg) = @_;
-
-    $self->{Expected_Tests} = $self->{Expected_Tests} + $arg;
-    $self->{Have_Plan}      = 1;
-    $self->no_plan;
-
-    return;
-}
 
 =item B<expected_tests>
 
@@ -406,7 +396,7 @@ sub done_testing {
 
     if( $self->{Done_Testing} ) {
         my($file, $line) = @{$self->{Done_Testing}}[1,2];
-        $self->ok(0, "done_testing() was already called at line $line");
+        $self->ok(0, "done_testing() was already called at $file line $line");
         return;
     }
 
@@ -1599,12 +1589,10 @@ sub _dup_stdhandles {
     return;
 }
 
-my $Opened_Testhandles = 0;
-
 sub _open_testhandles {
     my $self = shift;
 
-    return if $Opened_Testhandles;
+    return if $self->{Opened_Testhandles};
 
     # We dup STDOUT and STDERR so people can change them in their
     # test suites while still getting normal test output.
@@ -1614,7 +1602,7 @@ sub _open_testhandles {
     #    $self->_copy_io_layers( \*STDOUT, $Testout );
     #    $self->_copy_io_layers( \*STDERR, $Testerr );
 
-    $Opened_Testhandles = 1;
+    $self->{Opened_Testhandles} = 1;
 
     return;
 }
@@ -2205,6 +2193,21 @@ bugs to support.
 
 Test::Builder is only thread-aware if threads.pm is loaded I<before>
 Test::Builder.
+
+=head1 MEMORY
+
+An informative hash, accessable via C<<details()>>, is stored for each
+test you perform.  So memory usage will scale linearly with each test
+run. Although this is not a problem for most test suites, it can
+become an issue if you do large (hundred thousands to million)
+combinatorics tests in the same run.
+
+In such cases, you are advised to either split the test file into smaller
+ones, or use a reverse approach, doing "normal" (code) compares and
+triggering fail() should anything go unexpected.
+
+Future versions of Test::Builder will have a way to turn history off.
+
 
 =head1 EXAMPLES
 
