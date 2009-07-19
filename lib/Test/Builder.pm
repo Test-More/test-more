@@ -21,50 +21,41 @@ BEGIN {
     # 5.8.0's threads are so busted we no longer support them.
     if( $] >= 5.008001 && $Config{useithreads} && $INC{'threads.pm'} ) {
         require threads::shared;
+        threads::shared->import();
 
-        # Hack around YET ANOTHER threads::shared bug.  It would
-        # occassionally forget the contents of the variable when sharing it.
-        # So we first copy the data, then share, then put our copy back.
-        *share = sub (\[$@%]) {
-            my $type = ref $_[0];
-            my $data;
+        # shared_clone() was introduced to threads::shared pretty
+        # recently (2008) so we'll duplicate its functionality here.
+        *shared_clone = sub {
+            require Data::Dumper;
 
-            if( $type eq 'HASH' ) {
-                %$data = %{ $_[0] };
+            my($dump) = Test::Builder->explain( $_[0] );
+
+            local $@;
+            my $copy = eval $dump;
+            die "Couldn't clone $dump: $@" if $@;
+
+            share($_[0]);
+
+            if( ref $_[0] eq 'HASH' ) {
+                %{$_[0]} = %$copy;
             }
-            elsif( $type eq 'ARRAY' ) {
-                @$data = @{ $_[0] };
+            elsif( ref $_[0] eq 'ARRAY' ) {
+                @{$_[0]} = @$copy;
             }
-            elsif( $type eq 'SCALAR' ) {
-                $$data = ${ $_[0] };
+            elsif( ref $_[0] eq 'SCALAR' ) {
+                ${$_[0]} = $$copy;
             }
             else {
-                die( "Unknown type: " . $type );
-            }
-
-            $_[0] = &threads::shared::share( $_[0] );
-
-            if( $type eq 'HASH' ) {
-                %{ $_[0] } = %$data;
-            }
-            elsif( $type eq 'ARRAY' ) {
-                @{ $_[0] } = @$data;
-            }
-            elsif( $type eq 'SCALAR' ) {
-                ${ $_[0] } = $$data;
-            }
-            else {
-                die( "Unknown type: " . $type );
+                %{$_[0]} = %$copy;
             }
 
             return $_[0];
-        };
+        } if !defined &shared_clone;
     }
-    # 5.8.0's threads::shared is busted when threads are off
-    # and earlier Perls just don't have that module at all.
     else {
-        *share = sub { return $_[0] };
-        *lock  = sub { 0 };
+        *share        = sub { return $_[0] };
+        *shared_clone = sub { return $_[0] };
+        *lock         = sub { 0 };
     }
 }
 
@@ -949,7 +940,7 @@ sub skip {
     lock( $self->{Curr_Test} );
     $self->{Curr_Test}++;
 
-    $self->{Test_Results}[ $self->{Curr_Test} - 1 ] = &share(
+    $self->{Test_Results}[ $self->{Curr_Test} - 1 ] = &shared_clone(
         {
             'ok'      => 1,
             actual_ok => 1,
@@ -989,7 +980,7 @@ sub todo_skip {
     lock( $self->{Curr_Test} );
     $self->{Curr_Test}++;
 
-    $self->{Test_Results}[ $self->{Curr_Test} - 1 ] = &share(
+    $self->{Test_Results}[ $self->{Curr_Test} - 1 ] = &shared_clone(
         {
             'ok'      => 1,
             actual_ok => 0,
@@ -1704,7 +1695,7 @@ sub current_test {
         if( $num > @$test_results ) {
             my $start = @$test_results ? @$test_results : 0;
             for( $start .. $num - 1 ) {
-                $test_results->[$_] = &share(
+                $test_results->[$_] = &shared_clone(
                     {
                         'ok'      => 1,
                         actual_ok => undef,
