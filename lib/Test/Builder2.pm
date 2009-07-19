@@ -31,7 +31,7 @@ has history =>
   isa           => 'Test::Builder2::History',
   default       => sub {
       require Test::Builder2::History;
-      Test::Builder2::History->new
+      Test::Builder2::History->singleton;
   };
 
 =head3 planned_tests

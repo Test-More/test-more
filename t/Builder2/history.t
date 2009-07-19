@@ -39,8 +39,10 @@ my $create_ok = sub {
 
 # Test the singleton nature
 {
-    my $history1 = new_ok($CLASS);
-    my $history2 = new_ok($CLASS);
+    my $history1 = $CLASS->singleton;
+    isa_ok $history1, $CLASS;
+    my $history2 = $CLASS->singleton;
+    isa_ok $history2, $CLASS;
 
     is $history1, $history2,            "new() is a singleton";
     is $history1, $CLASS->singleton,    "singleton() get";
@@ -49,9 +51,9 @@ my $create_ok = sub {
 
     is_deeply $history1->results, $history2->results;
 
-    $CLASS->singleton($create_ok->());
-    isnt $history1,       $CLASS->singleton,  "singleton() set";
-    is   new_ok($CLASS),  $CLASS->singleton,  "new() changed";
+    my $new_history = $create_ok->();
+    $CLASS->singleton($new_history);
+    is   $CLASS->singleton,  $new_history,  "singleton() set";
 }
 
 

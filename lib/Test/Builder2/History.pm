@@ -1,9 +1,9 @@
 package Test::Builder2::History;
 
 use Carp;
-
-# Can't depend on Mouse, but want to see where we can go with a real OO system.
 use Mouse;
+use Test::Builder2::Singleton;
+
 
 =head1 NAME
 
@@ -14,7 +14,7 @@ Test::Builder2::History - Manage the history of test results
     use Test::Builder2::History;
 
     # This is a shared singleton object
-    my $history = Test::Builder2::History->new;
+    my $history = Test::Builder2::History->singleton;
 
     $history->add_test_history( { ok => 1 } );
     $history->is_passing;
@@ -28,23 +28,16 @@ This object stores and manages the history of test results.
 
 =head2 Constructors
 
-=head3 new
+=head3 singleton
 
-    my $history = Test::Builder2::History->new;
+    my $history = Test::Builder2::History->singleton;
+    Test::Builder2::History->singleton($history);
 
-Gets the instance of the history object.
+Gets/sets the shared instance of the history object.
 
-Test::Builder2::History is a singleton.  new() will return the same
+Test::Builder2::History is a singleton.  singleton() will return the same
 object every time so all users can have a shared history.  If you want
 your own history, call create() instead.
-
-=cut
-
-sub new {
-    my $class = shift;
-
-    return $class->singleton || $class->singleton( $class->create );
-}
 
 =head3 create
 
@@ -52,12 +45,6 @@ sub new {
 
 Creates a new, unique History object.
 
-=cut
-
-sub create {
-    my $class = shift;
-    return $class->SUPER::new(@_);
-}
 
 =head2 Accessors
 
@@ -65,34 +52,6 @@ Unless otherwise stated, these are all accessor methods of the form:
 
     my $value = $history->method;       # get
     $history->method($value);           # set
-
-=head3 singleton
-
-    my $history = Test::Builder2::History->singleton;
-    Test::Builder2::History->singleton($history);
-
-Gets/sets the History singleton.
-
-Normally you should never have to call this, but instead get the
-singleton through new().
-
-=cut
-
-# What?!  No class variables in Moose?!  Now I have to write the
-# accessor by hand, bleh.
-{
-    my $singleton;
-
-    sub singleton {
-        my $class = shift;
-
-        if(@_) {
-            $singleton = shift;
-        }
-
-        return $singleton;
-    }
-}
 
 =head3 next_test_number
 
