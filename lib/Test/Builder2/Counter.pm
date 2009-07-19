@@ -46,40 +46,43 @@ Gets the single shared counter.
 
     my $counter = Test::Builder2::Counter->create;
 
-Creates a brand new counter starting at 1.
+Creates a brand new counter starting at 0.
 
 =head2 The Count
 
 =head3 increment
 
-    my $count_was = $counter->increment;
-    my $count_was = $counter->increment($amount);
+    my $count = $counter->increment;
+    my $count = $counter->increment($amount);
 
 Increments the counter by $amount or 1 if $amount is not given.
 
-Returns what the $count_was before incrementing.
+Returns the new $count.
 
-Like C<<$count++>>.
+Like C<<++$count>>.
 
 =cut
 
 use Mouse::Util::TypeConstraints;
 subtype Positive_Int => (
     as 'Int',
-    where { $_ > 0 },
+    where { $_ >= 0 },
 );
 
 has _count => (
     is          => 'rw',
     isa         => 'Positive_Int',
-    default     => 1,
+    default     => 0,
 );
 
 sub increment {
     my $self = shift;
     my $amount = @_ ? shift : 1;
 
-    return $self->set( $self->_count + $amount );
+    my $new_amount = $self->_count + $amount;
+    $self->set( $new_amount );
+
+    return $new_amount;
 }
 
 =head3 set
