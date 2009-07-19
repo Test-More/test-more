@@ -160,9 +160,9 @@ Unfortunately, I can't differentiate any further.
 
 =head1 NOTES
 
-Test::Simple is B<explicitly> tested all the way back to perl 5.004.
+Test::Simple is B<explicitly> tested all the way back to perl 5.6.0.
 
-Test::Simple is thread-safe in perl 5.8.0 and up.
+Test::Simple is thread-safe in perl 5.8.1 and up.
 
 =head1 HISTORY
 

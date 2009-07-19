@@ -784,8 +784,6 @@ sub isnt_num {
 
 Like Test::More's C<like()>.  Checks if $this matches the given C<$regex>.
 
-You'll want to avoid C<qr//> if you want your tests to work before 5.005.
-
 =item B<unlike>
 
   $Test->unlike($this, qr/$regex/, $name);
@@ -1039,8 +1037,11 @@ These methods are useful when writing your own test methods.
   $Test->maybe_regex(qr/$regex/);
   $Test->maybe_regex('/$regex/');
 
+This method used to be useful back when Test::Builder worked on Perls
+before 5.6 which didn't have qr//.  Now its pretty useless.
+
 Convenience method for building testing functions that take regular
-expressions as arguments, but need to work before perl 5.005.
+expressions as arguments.
 
 Takes a quoted regular expression produced by C<qr//>, or a string
 representing a regular expression.
@@ -1109,15 +1110,11 @@ sub _regex_ok {
         ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
         my $test;
-        my $code = $self->_caller_context;
+        my $context = $self->_caller_context;
 
         local( $@, $!, $SIG{__DIE__} );    # isolate eval
 
-        # Yes, it has to look like this or 5.4.5 won't see the #line
-        # directive.
-        # Don't ask me, man, I just work here.
-        $test = eval "
-$code" . q{$test = $this =~ /$usable_regex/ ? 1 : 0};
+        $test = eval $context . q{$test = $this =~ /$usable_regex/ ? 1 : 0};
 
         $test = !$test if $cmp eq '!~';
 
@@ -1199,8 +1196,7 @@ sub is_fh {
     return 1 if ref \$maybe_fh eq 'GLOB';    # its a glob
 
     return eval { $maybe_fh->isa("IO::Handle") } ||
-           # 5.5.4's tied() and can() doesn't like getting undef
-           eval { ( tied($maybe_fh) || '' )->can('TIEHANDLE') };
+           eval { tied($maybe_fh)->can('TIEHANDLE') };
 }
 
 =back
@@ -2036,10 +2032,10 @@ WHOA
 
   _my_exit($exit_num);
 
-Perl seems to have some trouble with exiting inside an C<END> block.  5.005_03
-and 5.6.1 both seem to do odd things.  Instead, this function edits C<$?>
-directly.  It should B<only> be called from inside an C<END> block.  It
-doesn't actually exit, that's your job.
+Perl seems to have some trouble with exiting inside an C<END> block.
+5.6.1 does some odd things.  Instead, this function edits C<$?>
+directly.  It should B<only> be called from inside an C<END> block.
+It doesn't actually exit, that's your job.
 
 =cut
 
