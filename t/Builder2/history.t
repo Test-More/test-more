@@ -31,7 +31,7 @@ my $create_ok = sub {
 {
     my $history = $create_ok->();
 
-    is $history->next_test_number,      1;
+    is $history->counter->get,          0;
     is_deeply $history->results,        [];
     ok $history->should_keep_history;
 }
@@ -57,27 +57,6 @@ my $create_ok = sub {
 }
 
 
-# increment_test_number()
-{
-    my $history = $create_ok->();
-
-    $history->increment_test_number;
-    is $history->next_test_number, 2;
-
-    $history->increment_test_number(2);
-    is $history->next_test_number, 4;
-
-    $history->increment_test_number(-3);
-    is $history->next_test_number, 1;
-
-    ok !eval {
-        $history->increment_test_number(1.1);
-    };
-    is $@, sprintf "increment_test_number\(\) takes an integer, not '1.1' at %s line %d\n",
-      $0, __LINE__ - 3;
-}
-
-
 # add_test_history
 {
     my $history = $create_ok->();
@@ -86,7 +65,7 @@ my $create_ok = sub {
     is_deeply $history->results, [$Pass];
     is_deeply [$history->summary], [1];
 
-    is $history->next_test_number, 2;
+    is $history->counter->get, 1;
     ok $history->is_passing;
 
     $history->add_test_history( $Pass, $Fail );
@@ -95,11 +74,11 @@ my $create_ok = sub {
     ];
     is_deeply [$history->summary], [1, 1, 0];
 
-    is $history->next_test_number, 4;
+    is $history->counter->get, 3;
     ok !$history->is_passing;
 
     # Try a history replacement
-    $history->next_test_number(3);
+    $history->counter->set(2);
     $history->add_test_history( $Pass, $Pass );
     is_deeply [$history->summary], [1, 1, 1, 1];
 }
@@ -122,6 +101,16 @@ my $create_ok = sub {
 
     $history->should_keep_history(0);
     $history->add_test_history( $Pass );
-    is $history->next_test_number, 2;
+    is $history->counter->get, 1;
     is_deeply $history->results, [];
+}
+
+
+# create() has its own Counter
+{
+    my $history = $CLASS->singleton;
+    my $other   = $CLASS->create;
+
+    $history->counter->set(22);
+    is $other->counter->get, 0,         "create() comes with its own Counter";
 }

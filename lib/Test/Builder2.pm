@@ -169,8 +169,7 @@ sub ok {
     my $test = shift;
     my $name = shift;
 
-    my $num = $self->history->next_test_number;
-
+    my $num = $self->history->counter->get + 1;
 
     my $result = Test::Builder2::Result->new(
         test_number     => $num,

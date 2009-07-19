@@ -49,19 +49,19 @@ If there is no singleton one will be created by calling create().
 # What?!  No class variables in Moose?!  Now I have to write the
 # accessor by hand, bleh.
 {
-    my $singleton;
+    my %singletons;
 
     sub singleton {
         my $class = shift;
 
         if(@_) {
-            $singleton = shift;
+            $singletons{$class} = shift;
         }
-        elsif( !$singleton ) {
-            $singleton = $class->create;
+        elsif( !$singletons{$class} ) {
+            $singletons{$class} = $class->create;
         }
 
-        return $singleton;
+        return $singletons{$class};
     }
 }
 

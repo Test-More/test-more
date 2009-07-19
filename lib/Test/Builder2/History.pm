@@ -43,8 +43,16 @@ your own history, call create() instead.
 
     my $history = Test::Builder2::History->create;
 
-Creates a new, unique History object.
+Creates a new, unique History object with its own Counter.
 
+=cut
+
+sub BUILD {
+    my $self = shift;
+    $self->counter( Test::Builder2::Counter->create );
+
+    return $self;
+}
 
 =head2 Accessors
 
@@ -53,18 +61,21 @@ Unless otherwise stated, these are all accessor methods of the form:
     my $value = $history->method;       # get
     $history->method($value);           # set
 
-=head3 next_test_number
+=head3 counter
 
-The number of the next test to be run.
+A Test::Builder2::Counter object being used to store the count.
 
-Defaults to 1.
+Defaults to the singleton.
 
 =cut
 
-has next_test_number => (
+has counter => (
     is      => 'rw',
-    isa     => 'Int',
-    default => 1,
+    isa     => 'Test::Builder2::Counter',
+    default => sub {
+        require Test::Builder2::Counter;
+        Test::Builder2::Counter->singleton;
+    }
 );
 
 =head3 results
@@ -105,12 +116,12 @@ has should_keep_history => (
     $history->add_test_history(@results);
 
 Adds the @results to the existing test history at the point indicated
-by next_test_number().  That's usually the end of the history, but if
-next_test_number() is moved backwards it will overlay existing history.
+by C<counter>.  That's usually the end of the history, but if
+C<counter> is moved backwards it will overlay existing history.
 
 @results is a list of Result objects.
 
-next_test_number() will be incremented by the number of @results.
+C<counter> will be incremented by the number of @results.
 
 =cut
 
@@ -122,8 +133,9 @@ sub add_test_history {
               !eval { $_->isa("Test::Builder2::Result") }
       } @_;
 
-    my $last_test = $self->next_test_number - 1;
-    $self->increment_test_number( scalar @_ );
+    my $counter = $self->counter;
+    my $last_test = $counter->get;
+    $counter->increment( scalar @_ );
 
     return 0 unless $self->should_keep_history;
 
@@ -132,28 +144,6 @@ sub add_test_history {
     return 1;
 }
 
-=head3 increment_test_number
-
-    $history->increment_test_number;
-    $history->increment_test_number($by_how_much);
-
-A convenience method for incrementing next_test_number().
-
-If $by_how_much is not given it will increment by 1.
-
-=cut
-
-sub increment_test_number {
-    my $self = shift;
-    my $increment = @_ ? shift : 1;
-
-    croak "increment_test_number() takes an integer, not '$increment'"
-      unless $increment =~ /^[+-]?\d+$/;
-
-    my $num = $self->next_test_number;
-    $self->next_test_number( $num + $increment );
-    return;
-}
 
 =head3 summary
 
