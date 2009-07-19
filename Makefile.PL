@@ -77,7 +77,9 @@ WriteMakefile(
         TESTS           => 't/*.t t/*/*.t',
     },
 
-    ($mm_ver <= 6.45 ? () : (META_MERGE => {
+    ($mm_ver < 6.48 ? () : (MIN_PERL_VERSION => 5.006)),
+
+    ($mm_ver < 6.46 ? () : (META_MERGE => {
         resources => {
             license     =>      'http://dev.perl.org/licenses/',
             homepage    =>      'http://test-more.googlecode.com',
