@@ -208,13 +208,20 @@ sub subtest {
         $self->croak("subtest()'s second argument must be a code ref");
     }
 
+    # Turn the child into the parent so anyone who has stored a copy of
+    # the Test::Builder singleton will get the child.
     my $child = $self->child($name);
-    local $Test::Builder::Test = $child;
+    my %parent = %$self;
+    %$self = %$child;
 
-    unless( eval { $subtests->(); 1 } ) {
+    if( !eval { $subtests->(); 1 } ) {
         my $error = $@;
         die $error unless eval { $error->isa('Test::Builder::Exception') };
     }
+
+    # Restore the parent and the copied child.
+    %$child = %$self;
+    %$self = %parent;
 
     return $child->finalize;
 }
