@@ -214,14 +214,17 @@ sub subtest {
     my %parent = %$self;
     %$self = %$child;
 
+    my $error;
     if( !eval { $subtests->(); 1 } ) {
-        my $error = $@;
-        die $error unless eval { $error->isa('Test::Builder::Exception') };
+        $error = $@;
     }
 
     # Restore the parent and the copied child.
     %$child = %$self;
     %$self = %parent;
+
+    # Die *after* we restore the parent.
+    die $error if $error and !eval { $error->isa('Test::Builder::Exception') };
 
     return $child->finalize;
 }
