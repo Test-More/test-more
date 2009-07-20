@@ -162,6 +162,16 @@ sub plan {
 
 =head3 ok
 
+  my $result = $tb->ok( $test );
+  my $result = $tb->ok( $test, $name );
+
+Records the result of a $test.  $test is simple true for success,
+false for failure.
+
+$name is a description of the test.
+
+Returns a Test::Builder2::Result object representing the test.
+
 =cut
 
 sub ok {
@@ -176,12 +186,32 @@ sub ok {
         description     => $name,
         type            => $test ? 'pass' : 'fail',
     );
-    my $wrapper = Test::Builder2::ResultWrapper->new(
+
+    $self->accept_result($result);
+
+    return Test::Builder2::ResultWrapper->new(
         result => $result, output => $self->output
     );
+}
+
+
+=head3
+
+  $tb->accept_result( $result );
+
+Records a test $result (a Test::Builder2::Result object) to C<<$tb->history>>.
+
+This is a bare bones version of C<<ok()>>.
+
+=cut
+
+sub accept_result {
+    my $self = shift;
+    my $result = shift;
+
     $self->history->add_test_history( $result );
 
-    return $wrapper;
+    return;
 }
 
 
