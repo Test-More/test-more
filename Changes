@@ -1,4 +1,4 @@
-0.93_01
+0.93_01  Mon Jul 20 09:51:08 PDT 2009
     Bug Fixes
     * Make sure that subtest works with Test:: modules which call
       Test::Builder->new at the top of their code. (Ovid)
