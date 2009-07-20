@@ -1,33 +1,33 @@
 #!/usr/bin/perl -w
 
 use strict;
-use Test::Builder2::Output::TAP;
+use Test::Builder2::Formatter::TAP;
 use Test::Builder2::Result;
 use lib 't/lib';
 
 use Test::More;
 
-my $output = new_ok("Test::Builder2::Output::TAP");
+my $formatter = new_ok("Test::Builder2::Formatter::TAP");
 
 # Test the defaults
 {
-    is $output->output_fh,  *STDOUT;
-    is $output->failure_fh, *STDERR;
-    is $output->error_fh,   *STDERR;
+    is $formatter->output_fh,  *STDOUT;
+    is $formatter->failure_fh, *STDERR;
+    is $formatter->error_fh,   *STDERR;
 }
 
-$output->trap_output;
+$formatter->trap_output;
 
 # Test that begin does nothing with no args
 {
-    $output->begin;
-    is $output->read, "TAP version 13\n", "begin() with no args";
+    $formatter->begin;
+    is $formatter->read, "TAP version 13\n", "begin() with no args";
 }
 
 # Test begin
 {
-    $output->begin( tests => 99 );
-    is $output->read, <<'END', "begin( tests => # )";
+    $formatter->begin( tests => 99 );
+    is $formatter->read, <<'END', "begin( tests => # )";
 TAP version 13
 1..99
 END
@@ -36,58 +36,58 @@ END
 
 # Test end
 {
-    $output->end();
-    is $output->read, "", "end() does nothing";
+    $formatter->end();
+    is $formatter->read, "", "end() does nothing";
 
-    $output->end( tests => 42 );
-    is $output->read, <<END, "end( tests => # )";
+    $formatter->end( tests => 42 );
+    is $formatter->read, <<END, "end( tests => # )";
 1..42
 END
 }
 
 # Test read
 {
-    $output->begin();
-    is $output->read('all'), "TAP version 13\n", "check all stream";
+    $formatter->begin();
+    is $formatter->read('all'), "TAP version 13\n", "check all stream";
 }
 
-# output Test read output
+# Test read out
 {
-    $output->begin();
-    is $output->read('out'), "TAP version 13\n", "check out stream";
+    $formatter->begin();
+    is $formatter->read('out'), "TAP version 13\n", "check out stream";
 }
 
-# output Test read output
+# Test read err
 {
-    $output->begin();
-    is $output->read('err'), "", "check err stream";
-    $output->read; # clear the buffer
+    $formatter->begin();
+    is $formatter->read('err'), "", "check err stream";
+    $formatter->read; # clear the buffer
 }
 
-# output Test read output
+# Test read todo
 {
-    $output->begin();
-    is $output->read('todo'), "", "check todo stream";
-    $output->read; # clear the buffer
+    $formatter->begin();
+    is $formatter->read('todo'), "", "check todo stream";
+    $formatter->read; # clear the buffer
 }
 
 # test skipping
 {
-    $output->begin(skip_all=>"bored already");
-    is $output->read, "TAP version 13\n1..0 # skip bored already", "skip_all";
+    $formatter->begin(skip_all=>"bored already");
+    is $formatter->read, "TAP version 13\n1..0 # skip bored already", "skip_all";
 }
 
 # no plan
 {
-    $output->begin(no_plan => 1);
-    is $output->read, "TAP version 13\n", "no_plan";
+    $formatter->begin(no_plan => 1);
+    is $formatter->read, "TAP version 13\n", "no_plan";
 }
 
 
 # Test >1 pair of args
 {
     ok(!eval {
-        $output->end( tests => 32, moredata => 1 );
+        $formatter->end( tests => 32, moredata => 1 );
     });
     like $@, qr/\Qend() takes only one pair of arguments/, "more args";
 }
@@ -95,7 +95,7 @@ END
 # more params and no right one
 {
     ok(!eval {
-        $output->end( test => 32, moredata => 1 );
+        $formatter->end( test => 32, moredata => 1 );
     });
     like $@, qr/\Qend() takes only one pair of arguments/, "more and wrong args";
 }
@@ -103,7 +103,7 @@ END
 # wrong param
 {
     ok(!eval {
-        $output->end( test => 32 );
+        $formatter->end( test => 32 );
     });
     like $@, qr/\QUnknown argument test to end()/, "wrong args";
 }
@@ -113,56 +113,56 @@ END
     my $result = Test::Builder2::Result->new( type => 'fail' );
     $result->test_number(1);
     $result->description('');
-    $output->result($result);
-    is($output->read, "not ok 1\n", "testing not okay");
+    $formatter->result($result);
+    is($formatter->read, "not ok 1\n", "testing not okay");
 }
 
 {
     my $result = Test::Builder2::Result->new( type => 'pass' );
     $result->test_number(2);
     $result->description('');
-    $output->result($result);
-    is($output->read, "ok 2\n", "testing okay");
+    $formatter->result($result);
+    is($formatter->read, "ok 2\n", "testing okay");
 }
 
 {
     my $result = Test::Builder2::Result->new( type => 'todo_fail', reason => "reason" );
     $result->test_number(3);
     $result->description('');
-    $output->result($result);
-    is($output->read, "not ok 3 # TODO reason\n", "testing todo");
+    $formatter->result($result);
+    is($formatter->read, "not ok 3 # TODO reason\n", "testing todo");
 }
 
 {
     my $result = Test::Builder2::Result->new( type => 'todo_pass', reason => "reason" );
     $result->test_number(4);
     $result->description('');
-    $output->result($result);
-    is($output->read, "ok 4 # TODO reason\n", "testing todo");
+    $formatter->result($result);
+    is($formatter->read, "ok 4 # TODO reason\n", "testing todo");
 }
 
 {
     my $result = Test::Builder2::Result->new( type => 'todo', reason => "reason" );
     $result->test_number(4);
     $result->description('a fine test');
-    $output->result($result);
-    is($output->read, "ok 4 - a fine test # TODO reason\n", "testing todo");
+    $formatter->result($result);
+    is($formatter->read, "ok 4 - a fine test # TODO reason\n", "testing todo");
 }
 
 {
     my $result = Test::Builder2::Result->new( type => 'fail' );
     $result->description('');
     $result->test_number(1);
-    $output->result($result);
-    is($output->read, "not ok 1\n", "testing not okay");
+    $formatter->result($result);
+    is($formatter->read, "not ok 1\n", "testing not okay");
 }
 
 {
     my $result = Test::Builder2::Result->new( type => 'fail' );
     $result->description(' - a royal pain');
     $result->test_number(6);
-    $output->result($result);
-    is($output->read, "not ok 6 -  - a royal pain\n", "test description");
+    $formatter->result($result);
+    is($formatter->read, "not ok 6 -  - a royal pain\n", "test description");
 }
 
 SKIP: {
@@ -170,10 +170,10 @@ SKIP: {
     $result->description('skip test');
     $result->test_number(7);
     $result->skip('Not gonna work');
-    $output->result($result);
+    $formatter->result($result);
 
     skip 'Skip output not done yet', 1;
-    is($output->read, "not ok 7 - skip test # skip Not gonna work\n", "test description");
+    is($formatter->read, "not ok 7 - skip test # skip Not gonna work\n", "test description");
 }
 
 done_testing();

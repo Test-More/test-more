@@ -45,20 +45,20 @@ has planned_tests =>
   isa           => 'Int',
   default       => 0;
 
-=head3 output
+=head3 formatter
 
-A Test::Builder2::Output object used to output results.
+A Test::Builder2::Formatter object used to formatter results.
 
-Defaults to Test::Builder2::Output::TAP.
+Defaults to Test::Builder2::Formatter::TAP.
 
 =cut
 
-has output =>
+has formatter =>
   is            => 'rw',
-  isa           => 'Test::Builder2::Output',
+  isa           => 'Test::Builder2::Formatter',
   default       => sub {
-      require Test::Builder2::Output::TAP;
-      Test::Builder2::Output::TAP->new();
+      require Test::Builder2::Formatter::TAP;
+      Test::Builder2::Formatter::TAP->new();
   };
 
 =head3 top
@@ -157,7 +157,7 @@ sub plan {
 
     $self->planned_tests( $args{tests} );
 
-    $self->output->begin(%args);
+    $self->formatter->begin(%args);
 }
 
 =head3 ok
@@ -190,7 +190,7 @@ sub ok {
     $self->accept_result($result);
 
     return Test::Builder2::ResultWrapper->new(
-        result => $result, output => $self->output
+        result => $result, formatter => $self->formatter
     );
 }
 

@@ -10,10 +10,10 @@ lib/Test/Builder/Tester/Color.pm
 lib/Test/Builder2.pm
 lib/Test/Builder2/History.pm
 lib/Test/Builder2/Module.pm
-lib/Test/Builder2/Output.pm
-lib/Test/Builder2/Output/POSIX.pm
-lib/Test/Builder2/Output/TAP.pm
-lib/Test/Builder2/Output/TAP/v13.pm
+lib/Test/Builder2/Formatter.pm
+lib/Test/Builder2/Formatter/POSIX.pm
+lib/Test/Builder2/Formatter/TAP.pm
+lib/Test/Builder2/Formatter/TAP/v13.pm
 lib/Test/Builder2/Result.pm
 lib/Test/Builder2/ResultWrapper.pm
 lib/Test/More.pm

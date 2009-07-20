@@ -6,11 +6,11 @@ use warnings;
 use Test::More 'no_plan';
 
 {
-    package TB2::Output::Noop;
+    package TB2::Formatter::Noop;
 
     use Mouse;
 
-    extends 'Test::Builder2::Output';
+    extends 'Test::Builder2::Formatter';
 
     sub end { }
     sub result {} 
@@ -22,14 +22,14 @@ my $WRAPPERCLASS = 'Test::Builder2::ResultWrapper';
 require_ok $CLASS;
 require_ok $WRAPPERCLASS;
 
-note("Running tests using $CLASS");
-tests(sub { new_ok($CLASS, @_) });
+#note("Running tests using $CLASS");
+#tests(sub { new_ok($CLASS, @_) });
 
 note("Running tests using $WRAPPERCLASS");
-my $output = TB2::Output::Noop->new();
+my $output = TB2::Formatter::Noop->new();
 tests(sub {
     my $inner = $CLASS->new(@{$_[0]});
-    my $result = $WRAPPERCLASS->new(result => $inner, output => $output);
+    my $result = $WRAPPERCLASS->new(result => $inner, formatter => $output);
     isa_ok $result, 'Test::Builder2::Result';
     return $result;
 });

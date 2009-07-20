@@ -7,22 +7,22 @@ use Test::Builder2::Result;
 
 =head1 NAME
 
-Test::Builder2::ResultWrapper - Wed a TB2::Result with a TB2::Output
+Test::Builder2::ResultWrapper - Wed a TB2::Result with a TB2::Formatter
 
 =head1 SYNOPSIS
 
     use Test::Builder2::Result;
 
     my $wrapper = Test::Builder2::ResultWrapper->new(
-        result => $result,
-        output => $output
+        result    => $result,
+        formatter => $formatter
     );
 
 =head1 DESCRIPTION
 
-The ResultWrapper holds a Result and an Output object.  It acts like a
+The ResultWrapper holds a Result and an Formatter object.  It acts like a
 Result object, but when it gets destroyed it hands the Result to the
-Output object for outputting.
+Formatter object for formatterting.
 
 This is primarily for use to be returned by Test::Builder2->ok() and
 enables this sort of thing:
@@ -42,7 +42,7 @@ at the correct time.
 
   my $wrapper = Test::Builder2::ResultWrapper->new(
       result => $result,
-      output => $output
+      formatter => $formatter
   );
 
 new() creates a new wrapper object that when destroyed displays the
@@ -62,9 +62,9 @@ has result =>
   is  =>'ro',
   isa => 'Test::Builder2::Result';
 
-has output =>
+has formatter =>
   is  => 'ro',
-  isa => 'Test::Builder2::Output';
+  isa => 'Test::Builder2::Formatter';
 
 
 # Delegate all our method calls to the result object
@@ -133,7 +133,7 @@ sub can {
 sub DESTROY
 {
     my $self = shift;
-    $self->output->result($self->result);
+    $self->formatter->result($self->result);
 }
 
 sub _alias {

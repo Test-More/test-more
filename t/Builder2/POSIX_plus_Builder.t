@@ -7,14 +7,14 @@ use lib 't/lib';
 
 use Test::More;
 use Test::Builder2;
-use Test::Builder2::Output::POSIX;
+use Test::Builder2::Formatter::POSIX;
 
 my $test = Test::Builder2->new;
 
-my $posix = Test::Builder2::Output::POSIX->new;
+my $posix = Test::Builder2::Formatter::POSIX->new;
 $posix->trap_output;
 
-$test->output($posix);
+$test->formatter($posix);
 
 $test->ok(1, "this is a pass");
 is $posix->read, <<"END";
