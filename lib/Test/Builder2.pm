@@ -195,7 +195,7 @@ sub ok {
 }
 
 
-=head3
+=head3 accept_result
 
   $tb->accept_result( $result );
 
