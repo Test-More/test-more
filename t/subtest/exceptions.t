@@ -17,16 +17,16 @@ use Test::More tests => 7;
 
 {
     my $tb = Test::Builder::NoOutput->create;
-    $tb->new_child('one');
-    eval { $tb->new_child('two') };
+    $tb->child('one');
+    eval { $tb->child('two') };
     my $error = $@;
     like $error, qr/\QYou already have a child named (one) running/,
       'Trying to create a child with another one active should fail';
 }
 {
     my $tb    = Test::Builder::NoOutput->create;
-    my $child = $tb->new_child('one');
-    ok my $child2 = $child->new_child('two'), 'Trying to create nested children should succeed';
+    my $child = $tb->child('one');
+    ok my $child2 = $child->child('two'), 'Trying to create nested children should succeed';
     eval { $child->finalize };
     my $error = $@;
     like $error, qr/\QCan't call finalize() with child (two) active/,
@@ -34,9 +34,8 @@ use Test::More tests => 7;
 }
 {
     my $tb    = Test::Builder::NoOutput->create;
-    my $child = $tb->new_child('one');
+    my $child = $tb->child('one');
     undef $child;
-    delete $tb->{Child};   # holds a reference
     like $tb->read, qr/\QChild (one) exited without calling finalize()/,
       'Failing to call finalize should issue an appropriate diagnostic';
     ok !$tb->is_passing, '... and should cause the test suite to fail';
@@ -50,7 +49,7 @@ use Test::More tests => 7;
         $tb->diag("We ran $_");
     }
     {
-        my $indented = $tb->new_child;
+        my $indented = $tb->child;
         $indented->plan('no_plan');
         $indented->ok( 1, "We're on 1" );
         eval { $tb->ok( 1, 'This should throw an exception' ) };

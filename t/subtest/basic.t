@@ -29,7 +29,7 @@ $ENV{HARNESS_ACTIVE} = 0;
         $tb->diag("We ran $_");
     }
     {
-        my $indented = $tb->new_child;
+        my $indented = $tb->child;
         $indented->plan('no_plan');
         $indented->ok( 1, "We're on 1" );
         $indented->ok( 1, "We're on 2" );
@@ -68,11 +68,11 @@ END
         $tb->diag("We ran $_");
     }
     {
-        my $indented = $tb->new_child;
+        my $indented = $tb->child;
         $indented->plan('no_plan');
         $indented->ok( 1, "We're on 1" );
         {
-            my $indented2 = $indented->new_child('with name');
+            my $indented2 = $indented->child('with name');
             $indented2->plan( tests => 2 );
             $indented2->ok( 1, "We're on 2.1" );
             $indented2->ok( 1, "We're on 2.1" );
@@ -108,7 +108,7 @@ END
     my $tb = Test::Builder::NoOutput->create;
 
     {
-        my $child = $tb->new_child('expected to fail');
+        my $child = $tb->child('expected to fail');
         $child->plan( tests => 3 );
         $child->ok(1);
         $child->ok(0);
@@ -117,7 +117,7 @@ END
     }
 
     {
-        my $child = $tb->new_child('expected to pass');
+        my $child = $tb->child('expected to pass');
         $child->plan( tests => 3 );
         $child->ok(1);
         $child->ok(2);
@@ -144,14 +144,14 @@ END
 }
 {
     my $tb    = Test::Builder::NoOutput->create;
-    my $child = $tb->new_child('one');
+    my $child = $tb->child('one');
     is $child->{$_}, $tb->{$_}, "The child should copy the ($_) filehandle"
         foreach qw{Out_FH Todo_FH Fail_FH};
     $child->finalize;
 }
 {
     my $tb    = Test::Builder::NoOutput->create;
-    my $child = $tb->new_child('one');
+    my $child = $tb->child('one');
     can_ok $child, 'parent';
     is $child->parent, $tb, '... and it should return the parent of the child';
     ok !defined $tb->parent, '... but top level builders should not have parents';
@@ -160,7 +160,7 @@ END
     is $tb->name, $0, 'The top level name should be $0';
     is $child->name, 'one', '... but child names should be whatever we set them to';
     $child->finalize;
-    $child = $tb->new_child;
+    $child = $tb->child;
     is $child->name, 'Child of '.$tb->name, '... or at least have a sensible default';
     $child->finalize;
 }
@@ -185,7 +185,7 @@ END
     my $tb = Test::Builder::NoOutput->create;
 
     {
-        my $child = $tb->new_child('skippy says he loves you');
+        my $child = $tb->child('skippy says he loves you');
         eval { $child->plan( skip_all => 'cuz I said so' ) };
         ok my $error = $@, 'A child which does a "skip_all" should throw an exception';
         isa_ok $error, 'Test::Builder::Exception', '... and the exception it throws';
@@ -203,7 +203,7 @@ END
 #line 204
     my $tb = Test::Builder::NoOutput->create;
     $tb->plan( tests => 1 );
-    my $child = $tb->new_child;
+    my $child = $tb->child;
     $child->plan( tests => 1 );
     $child->todo_start( 'message' );
     $child->ok( 0 );
@@ -222,7 +222,7 @@ END
 {
     my $tb = Test::Builder::NoOutput->create;
     $tb->plan( tests => 1 );
-    my $child = $tb->new_child;
+    my $child = $tb->child;
     $child->finalize;
     $tb->_ending;
     $tb->reset_outputs;
