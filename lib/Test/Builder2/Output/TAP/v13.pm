@@ -8,6 +8,7 @@ use Carp;
 
 extends 'Test::Builder2::Output';
 
+sub default_streamer_class { 'Test::Builder2::Streamer::TAP' }
 
 =head1 NAME
 
@@ -30,6 +31,20 @@ Output Test::Builder2::Result's as TAP version 13.
 =head1 METHODS
 
 As Test::Builder2::Object with the following changes and additions.
+
+=head3 out
+
+=head3 err
+
+These methods are just shorthand for:
+
+  $output->write(out => @args);
+  $output->write(err => @args);
+
+=cut
+
+sub out { (shift)->write(out => @_); }
+sub err { (shift)->write(err => @_); }
 
 =head3 begin
 
