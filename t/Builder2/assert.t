@@ -2,20 +2,18 @@
 
 use strict;
 
+
 {
     package TB2::Assert::Builder;
 
-    use Mouse;
-    extends 'Test::Builder2';
+    use base qw(Test::Builder2);
 
-    around 'ok' => sub {
-        my $orig = shift;
-        my $ret = $orig->(@_);
+    sub test_end {
+        my $self   = shift;
+        my $result = shift;
 
-        die if $ret->description =~ /\bdie\b/x;
-
-        return $ret;
-    };
+        die if $result->description =~ /\b die \b/x;
+    }
 }
 
 
@@ -24,17 +22,24 @@ use strict;
 
     use Test::Builder2::Module;
     __PACKAGE__->builder(TB2::Assert::Builder->new);
-    our @EXPORT = qw(assert);
 
-    sub assert {
+    our @EXPORT = qw(assert ok);
+
+    install_test( assert => sub {
+        my($name) = @_;
+        return $Builder->ok(1, $name);
+    });
+
+    install_test( ok => sub {
         my($test, $name) = @_;
         return $Builder->ok($test, $name);
-    }
+    });
 }
 
 TB2::Assert->import( tests => 3 );
-assert(1, "pass");
+assert("pass");
 
-assert( !eval {
-    assert(1, "die die die!");
+ok( !eval {
+    assert("die die die!");
 }, "assert() dies on fail");
+

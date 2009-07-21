@@ -73,9 +73,9 @@ will do what you mean (fail if stuff is empty)
 
 =cut
 
-sub ok ($;$) {    ## no critic (Subroutines::ProhibitSubroutinePrototypes)
+install_test(ok => sub ($;$) {    ## no critic (Subroutines::ProhibitSubroutinePrototypes)
     return $Builder->ok(@_);
-}
+});
 
 
 =back
