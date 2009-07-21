@@ -7,22 +7,26 @@ use lib 't/lib';
 
 use Test::More;
 
-my $builder = new_ok("Test::Builder2");
-$builder->formatter->trap_output;
+use Test::Builder2::Formatter::TAP;
+my $tap = Test::Builder2::Formatter::TAP->new({
+  streamer_class => 'Test::Builder2::Streamer::Debug',
+});
+
+my $builder = new_ok("Test::Builder2", [ formatter => $tap ]);
 
 {
     $builder->plan(tests => 3);
-    is($builder->formatter->read, "TAP version 13\n1..3\n", 'Simple builder output');
+    is($tap->streamer->read('out'), "TAP version 13\n1..3\n", 'Simple builder output');
 }
 
 {
     $builder->ok(1, "test");
-    is($builder->formatter->read, "ok 1 - test\n", 'test output');
+    is($tap->streamer->read('out'), "ok 1 - test\n", 'test output');
 }
 
 {
     $builder->ok(0, "should fail");
-    is($builder->formatter->read, "not ok 2 - should fail\n", 'failure output');
+    is($tap->streamer->read('out'), "not ok 2 - should fail\n", 'failure output');
 }
 
 {
@@ -34,7 +38,7 @@ $builder->formatter->trap_output;
     is($result->diagnostic, "we really made a fine mess this time", 
             "diagnostic check");
     $result = undef;
-    is($builder->formatter->read, "not ok 3 - should fail, and add diagnostics\n", 
+    is($tap->streamer->read('out'), "not ok 3 - should fail, and add diagnostics\n", 
             'diagnostic output');
 }
 
@@ -43,7 +47,7 @@ $builder->formatter->trap_output;
 # from the perspective of the caller and as if it were a Result
 {
     my $ok = $builder->ok(0, "foo");
-    $builder->formatter->read;     # flush the buffer to not screw up later tests
+    $tap->streamer->read('out');     # flush the buffer to not screw up later tests
 
 #line 49
     ok !eval {
@@ -64,7 +68,7 @@ $builder->formatter->trap_output;
 
 # check destructor called in correct place
 {
-    $builder->formatter->read;     # flush the buffer 
+    $tap->streamer->read('out');     # flush the buffer 
     # FIXME: skip should alter output
     {
         # this convoluted set of nesting ensures that if
@@ -82,13 +86,13 @@ $builder->formatter->trap_output;
         $result->name('please');
         ok $result, "Check destructor";
     }
-    is($builder->formatter->read, "ok 6 - please\n");     # flush the buffer 
+    is($tap->streamer->read('out'), "ok 6 - please\n");     # flush the buffer 
 }
 
 {
-    $builder->formatter->read;     # flush the buffer 
+    $tap->streamer->read('out');     # flush the buffer 
     $builder->ok(0, "some test")->todo("test todo feature");
-    is($builder->formatter->read, "not ok 7 - some test # TODO test todo feature\n");
+    is($tap->streamer->read('out'), "not ok 7 - some test # TODO test todo feature\n");
 }
 
 done_testing();

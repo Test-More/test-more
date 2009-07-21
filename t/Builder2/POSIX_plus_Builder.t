@@ -11,17 +11,18 @@ use Test::Builder2::Formatter::POSIX;
 
 my $test = Test::Builder2->new;
 
-my $posix = Test::Builder2::Formatter::POSIX->new;
-$posix->trap_output;
+my $posix = Test::Builder2::Formatter::POSIX->new(
+  streamer_class => 'Test::Builder2::Streamer::Debug'
+);
 
 $test->formatter($posix);
 
 $test->ok(1, "this is a pass");
-is $posix->read, <<"END";
+is $posix->streamer->read('output'), <<"END";
 PASS: this is a pass
 END
 
 $test->ok(0, "this is a fail");
-is $posix->read, "FAIL: this is a fail\n";
+is $posix->streamer->read('output'), "FAIL: this is a fail\n";
 
 done_testing(2);

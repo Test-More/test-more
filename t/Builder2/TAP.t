@@ -2,32 +2,38 @@
 
 use strict;
 use Test::Builder2::Formatter::TAP;
+use Test::Builder2::Streamer::TAP; 
 use Test::Builder2::Result;
 use lib 't/lib';
 
 use Test::More;
 
-my $formatter = new_ok("Test::Builder2::Formatter::TAP");
+my $formatter = new_ok(
+    "Test::Builder2::Formatter::TAP",
+    [ streamer_class => 'Test::Builder2::Streamer::Debug' ]
+);
+
+sub last_output {
+  $formatter->streamer->read('out');
+}
 
 # Test the defaults
 {
-    is $formatter->output_fh,  *STDOUT;
-    is $formatter->failure_fh, *STDERR;
-    is $formatter->error_fh,   *STDERR;
+    my $streamer = Test::Builder2::Streamer::TAP->new; 
+    is $streamer->output_fh,  *STDOUT;
+    is $streamer->error_fh,   *STDERR;
 }
-
-$formatter->trap_output;
 
 # Test that begin does nothing with no args
 {
     $formatter->begin;
-    is $formatter->read, "TAP version 13\n", "begin() with no args";
+    is last_output, "TAP version 13\n", "begin() with no args";
 }
 
 # Test begin
 {
     $formatter->begin( tests => 99 );
-    is $formatter->read, <<'END', "begin( tests => # )";
+    is last_output, <<'END', "begin( tests => # )";
 TAP version 13
 1..99
 END
@@ -37,10 +43,10 @@ END
 # Test end
 {
     $formatter->end();
-    is $formatter->read, "", "end() does nothing";
+    is last_output, "", "end() does nothing";
 
     $formatter->end( tests => 42 );
-    is $formatter->read, <<END, "end( tests => # )";
+    is last_output, <<END, "end( tests => # )";
 1..42
 END
 }
@@ -48,39 +54,32 @@ END
 # Test read
 {
     $formatter->begin();
-    is $formatter->read('all'), "TAP version 13\n", "check all stream";
+    is last_output, "TAP version 13\n", "check all stream";
 }
 
 # Test read out
 {
     $formatter->begin();
-    is $formatter->read('out'), "TAP version 13\n", "check out stream";
+    is last_output, "TAP version 13\n", "check out stream";
 }
 
 # Test read err
 {
     $formatter->begin();
-    is $formatter->read('err'), "", "check err stream";
-    $formatter->read; # clear the buffer
-}
-
-# Test read todo
-{
-    $formatter->begin();
-    is $formatter->read('todo'), "", "check todo stream";
-    $formatter->read; # clear the buffer
+    is $formatter->streamer->read('err'), "", "check err stream";
+    last_output; # clear the buffer
 }
 
 # test skipping
 {
     $formatter->begin(skip_all=>"bored already");
-    is $formatter->read, "TAP version 13\n1..0 # skip bored already", "skip_all";
+    is last_output, "TAP version 13\n1..0 # skip bored already", "skip_all";
 }
 
 # no plan
 {
     $formatter->begin(no_plan => 1);
-    is $formatter->read, "TAP version 13\n", "no_plan";
+    is last_output, "TAP version 13\n", "no_plan";
 }
 
 
@@ -114,7 +113,7 @@ END
     $result->test_number(1);
     $result->description('');
     $formatter->result($result);
-    is($formatter->read, "not ok 1\n", "testing not okay");
+    is(last_output, "not ok 1\n", "testing not okay");
 }
 
 {
@@ -122,7 +121,7 @@ END
     $result->test_number(2);
     $result->description('');
     $formatter->result($result);
-    is($formatter->read, "ok 2\n", "testing okay");
+    is(last_output, "ok 2\n", "testing okay");
 }
 
 {
@@ -130,7 +129,7 @@ END
     $result->test_number(3);
     $result->description('');
     $formatter->result($result);
-    is($formatter->read, "not ok 3 # TODO reason\n", "testing todo");
+    is(last_output, "not ok 3 # TODO reason\n", "testing todo");
 }
 
 {
@@ -138,7 +137,7 @@ END
     $result->test_number(4);
     $result->description('');
     $formatter->result($result);
-    is($formatter->read, "ok 4 # TODO reason\n", "testing todo");
+    is(last_output, "ok 4 # TODO reason\n", "testing todo");
 }
 
 {
@@ -146,7 +145,7 @@ END
     $result->test_number(4);
     $result->description('a fine test');
     $formatter->result($result);
-    is($formatter->read, "ok 4 - a fine test # TODO reason\n", "testing todo");
+    is(last_output, "ok 4 - a fine test # TODO reason\n", "testing todo");
 }
 
 {
@@ -154,7 +153,7 @@ END
     $result->description('');
     $result->test_number(1);
     $formatter->result($result);
-    is($formatter->read, "not ok 1\n", "testing not okay");
+    is(last_output, "not ok 1\n", "testing not okay");
 }
 
 {
@@ -162,7 +161,7 @@ END
     $result->description(' - a royal pain');
     $result->test_number(6);
     $formatter->result($result);
-    is($formatter->read, "not ok 6 -  - a royal pain\n", "test description");
+    is(last_output, "not ok 6 -  - a royal pain\n", "test description");
 }
 
 SKIP: {
@@ -173,7 +172,7 @@ SKIP: {
     $formatter->result($result);
 
     skip 'Skip output not done yet', 1;
-    is($formatter->read, "not ok 7 - skip test # skip Not gonna work\n", "test description");
+    is(last_output, "not ok 7 - skip test # skip Not gonna work\n", "test description");
 }
 
 done_testing();
