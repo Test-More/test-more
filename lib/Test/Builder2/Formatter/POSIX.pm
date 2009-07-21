@@ -1,9 +1,9 @@
-package Test::Builder2::Output::POSIX;
+package Test::Builder2::Formatter::POSIX;
 
 use strict;
 use Mouse;
 
-extends 'Test::Builder2::Output';
+extends 'Test::Builder2::Formatter';
 
 sub INNER_begin {
     my $self = shift;

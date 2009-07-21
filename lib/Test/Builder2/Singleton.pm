@@ -3,10 +3,7 @@ package Test::Builder2::Singleton;
 # This is a role which implements a singleton
 
 use Carp;
-use Mouse;
-
-use base 'Exporter';
-our @EXPORT = qw(singleton create new);
+use Mouse::Role;
 
 
 =head1 NAME
@@ -92,7 +89,7 @@ Currently calls Mouse's new method.
 sub create {
     my $class = shift;
 
-    return $class->SUPER::new(@_);
+    return $class->Mouse::Object::new(@_);
 }
 
 1;

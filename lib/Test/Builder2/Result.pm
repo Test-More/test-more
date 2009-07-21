@@ -18,7 +18,7 @@ Test::Builder2::Result - Represent the result of a test
 =head1 DESCRIPTION
 
 An object to store the result of a test.  Used both for historical
-reasons and by Test::Builder2::Output objects to format the result.
+reasons and by Test::Builder2::Formatter objects to format the result.
 
 Result objects are overloaded to return true or false in boolean
 context to indicate if theypr passed or failed.

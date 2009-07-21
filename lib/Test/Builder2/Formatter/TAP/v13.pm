@@ -1,4 +1,4 @@
-package Test::Builder2::Output::TAP::v13;
+package Test::Builder2::Formatter::TAP::v13;
 
 use 5.008001;
 use strict;
@@ -6,27 +6,27 @@ use strict;
 use Mouse;
 use Carp;
 
-extends 'Test::Builder2::Output';
+extends 'Test::Builder2::Formatter';
 
 sub default_streamer_class { 'Test::Builder2::Streamer::TAP' }
 
 =head1 NAME
 
-Test::Builder2::Output::TAP::v13 - Output as TAP version 13
+Test::Builder2::Formatter::TAP::v13 - Formatter as TAP version 13
 
 =head1 SYNOPSIS
 
-  use Test::Builder2::Output::TAP::v13;
+  use Test::Builder2::Formatter::TAP::v13;
 
-  my $output = Test:::Builder2::Output::TAP::v13->new;
-  $output->begin();
-  $output->result($result);
-  $output->end($plan);
+  my $formatter = Test:::Builder2::Formatter::TAP::v13->new;
+  $formatter->begin();
+  $formatter->result($result);
+  $formatter->end($plan);
 
 
 =head1 DESCRIPTION
 
-Output Test::Builder2::Result's as TAP version 13.
+Formatter Test::Builder2::Result's as TAP version 13.
 
 =head1 METHODS
 

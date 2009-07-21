@@ -1,15 +1,15 @@
-package Test::Builder2::Output::TAP;
+package Test::Builder2::Formatter::TAP;
 
 use 5.008001;
 use strict;
 
 use Mouse;
-extends 'Test::Builder2::Output::TAP::v13';
+extends 'Test::Builder2::Formatter::TAP::v13';
 
 
 =head1 NAME
 
-Test::Builder2::Output::TAP - Output as the latest stable TAP
+Test::Builder2::Formatter::TAP - Formatter as the latest stable TAP
 
 =head1 SYNOPSIS
 

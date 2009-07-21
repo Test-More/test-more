@@ -7,9 +7,9 @@ use Test::More;
 
 use Test::Builder2::Result;
 
-use_ok 'Test::Builder2::Output::POSIX';
+use_ok 'Test::Builder2::Formatter::POSIX';
 
-my $posix = Test::Builder2::Output::POSIX->new;
+my $posix = Test::Builder2::Formatter::POSIX->new;
 $posix->trap_output;
 
 {

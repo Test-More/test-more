@@ -49,69 +49,14 @@ Test::Builder2::Module - Write a test module
     our @EXPORT = qw(ok);
 
     # ok( 1 + 1 == 2 );
-    install_test( ok => sub {
+    sub ok {
         my $test = shift;
         return $Builder-ok($test);
-    });
+    }
 
 =head1 DESCRIPTION
 
 A module to declare test functions to make writing a test library easier.
-
-=head2 FUNCTIONS
-
-=head3 install_test
-
-  install_test( $name => $code );
-
-Declares a new test function or method.  Similar to writing C<< sub
-name { ... } >> with two differences.
-
-1. Declaring the test in this manner enables pre and post test actions,
-   such as aborting the test on failure.
-2. The $Builder object is available inside your $code which is just a
-   shortcut for C<<$class->builder>>
-
-=cut
-
-sub _install {
-    my($package, $name, $code) = @_;
-
-    no strict 'refs';
-    *{$package . '::' . $name} = $code;
-
-    return;
-}
-
-
-sub install_test {
-    my($name, $test_code) = @_;
-    my $caller = caller;
-
-    my $code = sub {
-        # Fire any before-test actions.
-        $caller->builder->test_start();
-
-        # Call the original routine, but retain context.
-        my @ret;
-        if( wantarray ) {
-            @ret = $test_code->(@_);
-        }
-        else {
-            $ret[0] = $test_code->(@_);
-        }
-
-        # And after-test.
-        $caller->builder->test_end(@ret);
-
-        return wantarray ? @ret : $ret[0];
-    };
-
-    _install($caller, $name, $code);
-
-    return $code;
-}
-
 
 =head2 METHODS
 

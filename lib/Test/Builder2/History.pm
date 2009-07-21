@@ -2,7 +2,8 @@ package Test::Builder2::History;
 
 use Carp;
 use Mouse;
-use Test::Builder2::Singleton;
+
+with 'Test::Builder2::Singleton';
 
 
 =head1 NAME

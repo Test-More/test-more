@@ -8,21 +8,21 @@ use lib 't/lib';
 use Test::More;
 
 my $builder = new_ok("Test::Builder2");
-$builder->output->trap_output;
+$builder->formatter->trap_output;
 
 {
     $builder->plan(tests => 3);
-    is($builder->output->read, "TAP version 13\n1..3\n", 'Simple builder output');
+    is($builder->formatter->read, "TAP version 13\n1..3\n", 'Simple builder output');
 }
 
 {
     $builder->ok(1, "test");
-    is($builder->output->read, "ok 1 - test\n", 'test output');
+    is($builder->formatter->read, "ok 1 - test\n", 'test output');
 }
 
 {
     $builder->ok(0, "should fail");
-    is($builder->output->read, "not ok 2 - should fail\n", 'failure output');
+    is($builder->formatter->read, "not ok 2 - should fail\n", 'failure output');
 }
 
 {
@@ -34,7 +34,7 @@ $builder->output->trap_output;
     is($result->diagnostic, "we really made a fine mess this time", 
             "diagnostic check");
     $result = undef;
-    is($builder->output->read, "not ok 3 - should fail, and add diagnostics\n", 
+    is($builder->formatter->read, "not ok 3 - should fail, and add diagnostics\n", 
             'diagnostic output');
 }
 
@@ -43,7 +43,7 @@ $builder->output->trap_output;
 # from the perspective of the caller and as if it were a Result
 {
     my $ok = $builder->ok(0, "foo");
-    $builder->output->read;     # flush the buffer to not screw up later tests
+    $builder->formatter->read;     # flush the buffer to not screw up later tests
 
 #line 49
     ok !eval {
@@ -64,7 +64,7 @@ $builder->output->trap_output;
 
 # check destructor called in correct place
 {
-    $builder->output->read;     # flush the buffer 
+    $builder->formatter->read;     # flush the buffer 
     # FIXME: skip should alter output
     {
         # this convoluted set of nesting ensures that if
@@ -82,13 +82,13 @@ $builder->output->trap_output;
         $result->name('please');
         ok $result, "Check destructor";
     }
-    is($builder->output->read, "ok 6 - please\n");     # flush the buffer 
+    is($builder->formatter->read, "ok 6 - please\n");     # flush the buffer 
 }
 
 {
-    $builder->output->read;     # flush the buffer 
+    $builder->formatter->read;     # flush the buffer 
     $builder->ok(0, "some test")->todo("test todo feature");
-    is($builder->output->read, "not ok 7 - some test # TODO test todo feature\n");
+    is($builder->formatter->read, "not ok 7 - some test # TODO test todo feature\n");
 }
 
 done_testing();

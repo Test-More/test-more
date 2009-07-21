@@ -9,7 +9,7 @@ use Test::More;
     package Foo;
 
     use Mouse;
-    use Test::Builder2::Singleton;
+    with 'Test::Builder2::Singleton';
 }
 
 {
