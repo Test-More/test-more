@@ -2,6 +2,9 @@
 
 use Test::More;
 
+plan skip_all => "set RELEASE_TESTING to test Pod coverage"
+  unless $ENV{RELEASE_TESTING};
+
 # 1.08 added the coverage_class option.
 eval "use Test::Pod::Coverage 1.08";
 plan skip_all => "Test::Pod::Coverage 1.08 required for testing POD coverage" if $@;
