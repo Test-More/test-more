@@ -9,12 +9,13 @@ use Test::Builder2::Result;
 
 use_ok 'Test::Builder2::Formatter::POSIX';
 
-my $posix = Test::Builder2::Formatter::POSIX->new;
-$posix->trap_output;
+my $posix = Test::Builder2::Formatter::POSIX->new(
+  streamer_class => 'Test::Builder2::Streamer::Debug'
+);
 
 {
     $posix->begin;
-    is $posix->read, "Running $0\n", "begin()";
+    is $posix->streamer->read('output'), "Running $0\n", "begin()";
 }
 
 {
@@ -23,12 +24,20 @@ $posix->trap_output;
         description     => "basset hounds got long ears",
     );
     $posix->result($result);
-    is $posix->read, "PASS: basset hounds got long ears\n";
+    is(
+      $posix->streamer->read('output'),
+      "PASS: basset hounds got long ears\n",
+      "the right thing is emitted for passing test",
+    );
 }
 
 {
     $posix->end;
-    is $posix->read, "";
+    is(
+        $posix->streamer->read('output'),
+        "",
+        "nothing output at end of testing",
+    );
 }
 
 done_testing(4);
