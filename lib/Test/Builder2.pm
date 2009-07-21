@@ -5,7 +5,6 @@ use Mouse;
 use Carp qw(confess);
 
 use Test::Builder2::Result;
-use Test::Builder2::ResultWrapper;
 
 
 =head1 NAME
@@ -189,9 +188,9 @@ sub ok {
 
     $self->accept_result($result);
 
-    return Test::Builder2::ResultWrapper->new(
-        result => $result, formatter => $self->formatter
-    );
+    $self->formatter->result($result);
+
+    return $result;
 }
 
 

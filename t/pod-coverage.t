@@ -18,9 +18,6 @@ my %coverage_params = (
     "Test::More" => {
         trustme => [qw(skip todo)]
     },
-    "Test::Builder2::ResultWrapper" => {
-        also_private => [qw( can isa )]
-    }
 );
 
 for my $module (@modules) {

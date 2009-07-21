@@ -39,7 +39,7 @@ $builder->formatter->trap_output;
 }
 
 
-# Test that the error message from a missing ResultWrapper method dies
+# Test that the error message from a missing Result method dies
 # from the perspective of the caller and as if it were a Result
 {
     my $ok = $builder->ok(0, "foo");
@@ -53,43 +53,11 @@ $builder->formatter->trap_output;
 }
 
 
-# ResultWrapper should look and act like a Result subclass.
+# ok() should return a Result
 {
     my $ok = $builder->ok(0);
-
     isa_ok $ok, "Test::Builder2::Result";
-    can_ok $ok, "is_fail";
-    can_ok $ok, "diagnostic";
 }
 
-# check destructor called in correct place
-{
-    $builder->formatter->read;     # flush the buffer 
-    # FIXME: skip should alter output
-    {
-        # this convoluted set of nesting ensures that if
-        # we aren't returning back the wrapper after each
-        # accessor we will end up destroying the wrapper
-        # at the wrong point and the output will be displayed
-        # before the information has been associated
-        # with the result.
-        my $result;
-        {
-            $result = $builder->ok(1)->name('skippy');
-            ok $result, "Check destructor";
-        }
-
-        $result->name('please');
-        ok $result, "Check destructor";
-    }
-    is($builder->formatter->read, "ok 6 - please\n");     # flush the buffer 
-}
-
-{
-    $builder->formatter->read;     # flush the buffer 
-    $builder->ok(0, "some test")->todo("test todo feature");
-    is($builder->formatter->read, "not ok 7 - some test # TODO test todo feature\n");
-}
 
 done_testing();
-
