@@ -7,7 +7,7 @@ extends 'Test::Builder2::Formatter';
 
 sub INNER_begin {
     my $self = shift;
-    $self->out("Running $0\n");
+    $self->write(output => "Running $0\n");
 }
 
 # Map Result types to POSIX types
@@ -24,7 +24,7 @@ sub INNER_result {
     my($self, $result) = @_;
 
     my $type = $type_map{$result->type};
-    $self->out("$type: @{[$result->description]}\n");
+    $self->write(output => "$type: @{[$result->description]}\n");
 
     return;
 }

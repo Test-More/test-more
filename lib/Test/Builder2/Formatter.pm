@@ -29,35 +29,6 @@ formatter TAP or XML or send email or whatever.
 
 Sets up a new formatter object to feed results.
 
-All %args are optional.
-
-    output_fh     a filehandle to send test output
-                  [default STDOUT]
-    failure_fh    a filehandle to send failure information
-                  [default STDERR]
-    error_fh      a filehandle to send errors
-                  [default STDERR]
-
-NOTE:  Might turn these into output objects later.
-
-=cut
-
-has output_fh =>
-  is            => 'rw',
-#  isa           => 'FileHandle',  # Mouse has a bug
-  default       => *STDOUT;
-
-has failure_fh =>
-  is            => 'rw',
-#  isa           => 'FileHandle',
-  default       => *STDERR;
-
-has error_fh =>
-  is            => 'rw',
-#  isa           => 'FileHandle',
-  default       => *STDERR;
-
-
 =head3 begin
 
   $formatter->begin;
@@ -120,133 +91,33 @@ sub end {
 }
 
 
-=head3 out
+=head3 write
 
-  $formatter->out(@text);
+  $output->write($destination, @text);
 
-Formats @text to C<<$formatter->output_fh>>.
+Outputs C<@text> to the named destination.
 
-@text is treated like C<print> so it is simply concatenated.
-
-None of the global variables which effect print ($\, $" and so on)
-will effect C<out()>.
-
-=head3 fail
-
-Same as C<out()> but using C<<$formatter->failure_fh>>.
-
-=head3 error
-
-Same as C<out()> but using C<<$formatter->error_fh>>.
+C<@text> is treated like C<print>, so it is simply concatenated.
 
 =cut
 
-sub _print {
-    my $self = shift;
-    my $fh   = shift;
+sub default_streamer_class { 'Test::Builder2::Streamer::Print' }
 
-    # Prevent setting these in the tests from effecting our output
-    local( $\, $", $, ) = ( undef, ' ', '' );
+has streamer_class => (
+    is      => 'ro',
+    builder => 'default_streamer_class',
+);
 
-    return print $fh @_;
-}
-
-sub out {
-    my $self = shift;
-
-    return $self->_print($self->output_fh, @_);
-}
-
-sub fail {
-    my $self = shift;
-
-    return $self->_print($self->failure_fh, @_);
-}
-
-sub error {
-    my $self = shift;
-
-    return $self->_print($self->error_fh, @_);
-}
-
-
-=head3 trap_output
-
-  $formatter->trap_output;
-
-Causes $formatter to store all output instead of sending it to its
-filehandles.
-
-A convenience method for testing.
-
-See C<read> for how to get at the stored output.
-
-=cut
-
-sub trap_output {
-    my $self = shift;
-
-    my %outputs = (
-        all  => '',
-        out  => '',
-        err  => '',
-        fail => '',
-    );
-    $self->{_outputs} = \%outputs;
-
-    require Test::Builder::Tee;
-    tie *OUT,  "Test::Builder::Tee", \$outputs{all}, \$outputs{out};
-    tie *ERR,  "Test::Builder::Tee", \$outputs{all}, \$outputs{err};
-    tie *FAIL, "Test::Builder::Tee", \$outputs{all}, \$outputs{todo};
-
-    $self->output_fh(*OUT);
-    $self->failure_fh(*FAIL);
-    $self->error_fh(*ERR);
-
-    return;
-}
-
-
-=head3 read
-
-    my $all_output = $formatter->read;
-    my $output     = $formatter->read($stream);
-
-Only useful after trap_output() has been called.
-
-Returns all the output (including failure and todo output) collected
-so far.  It is destructive, each call to read clears the output
-buffer.
-
-If $stream is given it will return just the output from that stream.
-$stream's are...
-
-    out        output_fh()
-    fai        failure_fh()
-    err        error_fh()
-    all        all outputs
-
-Defaults to 'all'.
-
-=cut
-
-sub read {
-    my $self = shift;
-    my $stream = @_ ? shift : 'all';
-
-    my $out = $self->{_outputs}{$stream};
-
-    $self->{_outputs}{$stream} = '';
-
-    # Clear all the streams if 'all' is read.
-    if( $stream eq 'all' ) {
-        my @keys = keys %{$self->{_outputs}};
-        $self->{_outputs}{$_} = '' for @keys;
-    }
-
-    return $out;
-}
-
+has streamer => (
+    is      => 'ro',
+    lazy    => 1,
+    default => sub {
+      my $class = $_[0]->streamer_class;
+      eval "require $class; 1" or die;
+      $class->new;
+    },
+    handles => [ qw(write) ],
+);
 
 =head2 Virtual Methods
 
