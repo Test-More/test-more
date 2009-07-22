@@ -15,7 +15,7 @@ my $posix = Test::Builder2::Formatter::POSIX->new(
 
 {
     $posix->begin;
-    is $posix->streamer->read('output'), "Running $0\n", "begin()";
+    is $posix->streamer->read, "Running $0\n", "begin()";
 }
 
 {
@@ -25,7 +25,7 @@ my $posix = Test::Builder2::Formatter::POSIX->new(
     );
     $posix->result($result);
     is(
-      $posix->streamer->read('output'),
+      $posix->streamer->read,
       "PASS: basset hounds got long ears\n",
       "the right thing is emitted for passing test",
     );
@@ -34,7 +34,7 @@ my $posix = Test::Builder2::Formatter::POSIX->new(
 {
     $posix->end;
     is(
-        $posix->streamer->read('output'),
+        $posix->streamer->read,
         "",
         "nothing output at end of testing",
     );

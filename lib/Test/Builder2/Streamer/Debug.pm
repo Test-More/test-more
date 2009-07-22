@@ -8,10 +8,15 @@ has written_hunks => (
     default  => sub { [] },
 );
 
-has read_position => (
+has read_position_for => (
     is       => 'ro',
     init_arg => undef,
     default  => sub { {} },
+);
+
+has read_all_position => (
+    is       => 'rw',
+    default  => 0,
 );
 
 sub write {
@@ -30,15 +35,12 @@ sub hunks_for {
     return @hunks;
 }
 
-sub read {
-    my ($self, $name) = @_;
+sub read_all {
+    my ($self) = @_;
 
-    my @hunks = $self->hunks_for($name);
-    return '' unless @hunks;
+    return '' unless my @hunks = map { $_->[1] } @{ $self->written_hunks };
 
-    # Start with the ${old_pos}-th element and return everything through the
-    # end, then set $new_pos to $#hunks + 1 -- rjbs, 2009-07-21
-    my $old_pos = ($self->read_position->{ $name } ||= 0);
+    my $old_pos = $self->read_all_position;
     my $new_pos = @hunks;
 
     return '' if $old_pos == $new_pos;
@@ -46,7 +48,27 @@ sub read {
     @hunks = @hunks[ $old_pos .. $#hunks ];
 
     my $str = join '', @hunks;
-    $self->read_position->{ $name } = $new_pos;
+    $self->read_all_position($new_pos);
+
+    return $str;
+}
+
+sub read {
+    my ($self, $name) = @_;
+
+    return $self->read_all unless defined $name;
+
+    return '' unless my @hunks = $self->hunks_for($name);
+
+    my $old_pos = ($self->read_position_for->{ $name } ||= 0);
+    my $new_pos = @hunks;
+
+    return '' if $old_pos == $new_pos;
+
+    @hunks = @hunks[ $old_pos .. $#hunks ];
+
+    my $str = join '', @hunks;
+    $self->read_position_for->{ $name } = $new_pos;
 
     return $str;
 }
@@ -57,6 +79,11 @@ sub output_for {
     my $str = join '', $self->hunks_for($name);
 
     return $str;
+}
+
+sub all_output {
+    my ($self) = @_;
+    join '', map { $_->[1] } @{ $self->written_hunks };
 }
 
 no Mouse::Role;
