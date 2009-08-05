@@ -214,6 +214,22 @@ sub accept_result {
 }
 
 
+=head3 done_testing
+
+  $tb->done_testing();
+
+Inform the Builder that testing is complete.  This will allow the builder to
+perform any end of testing checks and actions, such as outputting a plan, and
+inform any other objects, such as the formatter.
+
+=cut
+
+sub done_testing {
+    my $self = shift;
+
+    $self->formatter->end;
+}
+
 =begin private
 
 =head3 assert
