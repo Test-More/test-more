@@ -16,8 +16,9 @@ Test::Builder2::History - Manage the history of test results
 
     # This is a shared singleton object
     my $history = Test::Builder2::History->singleton;
+    my $result  = Test::Builder2::Result->new( type => "pass" );
 
-    $history->add_test_history( { ok => 1 } );
+    $history->add_test_history( $result );
     $history->is_passing;
 
 =head1 DESCRIPTION
@@ -91,7 +92,7 @@ Remember that test 1 is index 0.
 
 has results => (
     is      => 'rw',
-    isa     => 'ArrayRef',
+    isa     => 'ArrayRef[Test::Builder2::Result]',
     default => sub { [] },
 );
 
