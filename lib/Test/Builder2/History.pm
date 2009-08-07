@@ -132,7 +132,8 @@ sub add_test_history {
 
     croak "add_test_history() takes Result objects"
       if grep {
-              !eval { $_->isa("Test::Builder2::Result") }
+          local $@;
+          !eval { $_->isa("Test::Builder2::Result") }
       } @_;
 
     my $counter = $self->counter;
@@ -141,9 +142,21 @@ sub add_test_history {
 
     return 0 unless $self->should_keep_history;
 
-    splice @{ $self->results }, $last_test, scalar @_, @_;
+    _overlay($self->results, \@_, $last_test);
 
     return 1;
+}
+
+
+# splice() isn't implemented for (thread) shared arrays and its likely
+# the History object will be shared in a threaded environment
+sub _overlay {
+    my( $orig, $overlay, $from ) = @_;
+
+    my $to = $from + (@$overlay || 0) - 1;
+    @{$orig}[$from..$to] = @$overlay;
+
+    return;
 }
 
 
