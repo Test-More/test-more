@@ -163,9 +163,13 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Original_Pid} = $$;
 
+    require Test::Builder2::History;
     require Test::Builder2::Counter;
-    $self->{Counter} = shared_clone(Test::Builder2::Counter->create);
-    $self->{Test_Results} = &share( [] );
+    require Test::Builder2::Result;
+    $self->{History} = shared_clone(Test::Builder2::History->create(
+        counter => Test::Builder2::Counter->create
+    ));
+    $self->{Counter} = $self->{History}->counter;
 
     $self->{Exported_To}    = undef;
     $self->{Expected_Tests} = 0;
@@ -495,8 +499,7 @@ sub ok {
     # store, so we turn it into a boolean.
     $test = $test ? 1 : 0;
 
-    lock $self->{Counter};
-    my $test_num = $self->{Counter}->increment;
+    lock $self->{History};
 
     # In case $name is a string overloaded object, force it to stringify.
     $self->_unoverload_str( \$name );
@@ -514,49 +517,40 @@ ERR
 
     $self->_unoverload_str( \$todo );
 
-    my $out;
-    my $result = &share( {} );
+    my( $pack, $file, $line ) = $self->caller;
+    my $result = Test::Builder2::Result->new(
+        type            => $test ? "pass" : "fail",
+        location        => $file,
+        id              => $line,
+    );
+    $result = shared_clone($result);
+    $self->{History}->add_test_history( $result );
+    my $test_num = $self->{Counter}->get;
 
-    unless($test) {
-        $out .= "not ";
-        @$result{ 'ok', 'actual_ok' } = ( ( $self->in_todo ? 1 : 0 ), 0 );
-    }
-    else {
-        @$result{ 'ok', 'actual_ok' } = ( 1, $test );
-    }
-
+    my $out = "";
+    $out  = "not " if $result->is_fail;
     $out .= "ok";
     $out .= " $test_num" if $self->use_numbers;
 
     if( defined $name ) {
         $name =~ s|#|\\#|g;    # # in a name can confuse Test::Harness.
         $out .= " - $name";
-        $result->{name} = $name;
-    }
-    else {
-        $result->{name} = '';
+        $result->description($name);
     }
 
     if( $self->in_todo ) {
         $out .= " # TODO $todo";
-        $result->{reason} = $todo;
-        $result->{type}   = 'todo';
-    }
-    else {
-        $result->{reason} = '';
-        $result->{type}   = '';
+        $result->todo($todo);
     }
 
-    $self->{Test_Results}[ $test_num - 1 ] = $result;
     $out .= "\n";
 
     $self->_print($out);
 
     unless($test) {
-        my $msg = $self->in_todo ? "Failed (TODO)" : "Failed";
+        my $msg = $result->is_todo ? "Failed (TODO)" : "Failed";
         $self->_print_to_fh( $self->_diag_fh, "\n" ) if $ENV{HARNESS_ACTIVE};
 
-        my( undef, $file, $line ) = $self->caller;
         if( defined $name ) {
             $self->diag(qq[  $msg test '$name'\n]);
             $self->diag(qq[  at $file line $line.\n]);
@@ -937,19 +931,19 @@ sub skip {
     $why ||= '';
     $self->_unoverload_str( \$why );
 
-    lock( $self->{Counter} );
-    my $test_num = $self->{Counter}->increment;
+    lock( $self->{History} );
 
-    $self->{Test_Results}[ $test_num - 1 ] = &shared_clone(
-        {
-            'ok'      => 1,
-            actual_ok => 1,
-            name      => '',
-            type      => 'skip',
-            reason    => $why,
-        }
+    my($pack, $file, $line) = $self->caller;
+    my $result = Test::Builder2::Result->new(
+        type      => 'skip_pass',
+        reason    => $why,
+        id        => $line,
+        location  => $file,
     );
+    $result = shared_clone($result);
+    $self->{History}->add_test_history( $result );
 
+    my $test_num = $self->{Counter}->get;
     my $out = "ok";
     $out .= " $test_num" if $self->use_numbers;
     $out .= " # skip";
@@ -977,19 +971,19 @@ sub todo_skip {
     my( $self, $why ) = @_;
     $why ||= '';
 
-    lock( $self->{Counter} );
-    my $test_num = $self->{Counter}->increment;
+    lock( $self->{History} );
 
-    $self->{Test_Results}[ $test_num - 1 ] = &shared_clone(
-        {
-            'ok'      => 1,
-            actual_ok => 0,
-            name      => '',
-            type      => 'todo_skip',
-            reason    => $why,
-        }
+    my($pack, $file, $line) = $self->caller;
+    my $result = Test::Builder2::Result->new(
+        type            => 'todo_skip',
+        reason          => $why,
+        location        => $file,
+        id              => $line,
     );
+    $result = shared_clone($result);
+    $self->{History}->add_test_history( $result );
 
+    my $test_num = $self->{Counter}->get;
     my $out = "not ok";
     $out .= " $test_num" if $self->use_numbers;
     $out .= " # TODO & SKIP $why\n";
@@ -1686,30 +1680,32 @@ can erase history if you really want to.
 sub current_test {
     my( $self, $num ) = @_;
 
-    lock( $self->{Counter} );
-    if( defined $num ) {
-        $self->{Counter}->set($num);
+    lock( $self->{History} );
 
+    if( defined $num ) {
         # If the test counter is being pushed forward fill in the details.
-        my $test_results = $self->{Test_Results};
-        if( $num > @$test_results ) {
-            my $start = @$test_results ? @$test_results : 0;
+        my $counter = $self->{Counter};
+        my $history = $self->{History};
+        my $results = $history->results;
+
+        if( $num > @$results ) {
+            my $start = @$results ? @$results : 0;
+            $counter->set($start);
             for( $start .. $num - 1 ) {
-                $test_results->[$_] = &shared_clone(
-                    {
-                        'ok'      => 1,
-                        actual_ok => undef,
-                        reason    => 'incrementing test number',
-                        type      => 'unknown',
-                        name      => undef
-                    }
+                my $result = Test::Builder2::Result->new(
+                    type        => 'unknown',
+                    reason      => 'incrementing test number',
+                    test_number => $_
                 );
+                $history->add_test_history( shared_clone($result) );
             }
         }
         # If backward, wipe history.  Its their funeral.
-        elsif( $num < @$test_results ) {
-            $#{$test_results} = $num - 1;
+        elsif( $num < @$results ) {
+            $#{$results} = $num - 1;
         }
+
+        $counter->set($num);
     }
     return $self->{Counter}->get;
 }
@@ -1728,7 +1724,7 @@ Of course, test #1 is $tests[0], etc...
 sub summary {
     my($self) = shift;
 
-    return map { $_->{'ok'} } @{ $self->{Test_Results} };
+    return $self->{History}->summary;
 }
 
 =item B<details>
@@ -1782,7 +1778,30 @@ result in this structure:
 
 sub details {
     my $self = shift;
-    return @{ $self->{Test_Results} };
+    return map { $self->_result_to_hash($_) } @{$self->{History}->results};
+}
+
+sub _result_to_hash {
+    my $self = shift;
+    my $result = shift;
+
+    my $type = $result->type eq 'todo_skip' ? "todo_skip"        :
+               $result->type eq 'unknown'   ? "unknown"          :
+               $result->type =~ /todo/      ? "todo"             :
+               $result->type =~ /skip/      ? "skip"             :
+                                              ""                 ;
+
+    my $actual_ok = $result->type eq 'unknown' ? undef :
+                    $result->type =~ /pass/    ? 1     :
+                                                 0     ;
+
+    return {
+        'ok'       => $result->is_fail ? 0 : 1,
+        actual_ok  => $actual_ok,
+        name       => $result->description || "",
+        type       => $type,
+        reason     => $result->reason || "",
+    };
 }
 
 =item B<todo>
@@ -1990,7 +2009,7 @@ sub _sanity_check {
     my $self = shift;
 
     $self->_whoa( $self->{Counter}->get < 0, 'Says here you ran a negative number of tests!' );
-    $self->_whoa( $self->{Counter}->get != @{ $self->{Test_Results} },
+    $self->_whoa( $self->{Counter}->get != @{ $self->{History}->results },
         'Somehow you got a different number of results than tests ran!' );
 
     return;
@@ -2070,7 +2089,7 @@ sub _ending {
     }
 
     # Figure out if we passed or failed and print helpful messages.
-    my $test_results = $self->{Test_Results};
+    my $test_results = $self->{History}->results;
     if(@$test_results) {
         # The plan?  We have no plan.
         if( $self->{No_Plan} ) {
@@ -2078,16 +2097,7 @@ sub _ending {
             $self->{Expected_Tests} = $self->{Counter}->get;
         }
 
-        # Auto-extended arrays and elements which aren't explicitly
-        # filled in with a shared reference will puke under 5.8.0
-        # ithreads.  So we have to fill them in by hand. :(
-        my $empty_result = &share( {} );
-        for my $idx ( 0 .. $self->{Expected_Tests} - 1 ) {
-            $test_results->[$idx] = $empty_result
-              unless defined $test_results->[$idx];
-        }
-
-        my $num_failed = grep !$_->{'ok'}, @{$test_results}[ 0 .. $self->{Counter}->get - 1 ];
+        my $num_failed = grep $_->is_fail, @{$test_results}[ 0 .. $self->{Counter}->get - 1 ];
 
         my $num_extra = $self->{Counter}->get - $self->{Expected_Tests};
 

@@ -80,7 +80,7 @@ $Test->current_test(6);
 print "ok 6 - current_test incremented\n";
 push @Expected_Details, { 'ok'      => 1,
                           actual_ok => undef,
-                          name      => undef,
+                          name      => '',
                           type      => 'unknown',
                           reason    => 'incrementing test number',
                         };
