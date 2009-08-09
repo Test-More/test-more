@@ -107,39 +107,40 @@ END
     like $@, qr/\QUnknown argument test to end()/, "wrong args";
 }
 
-# result testing.
+
+# Fail, no description
 {
     my $result = Test::Builder2::Result->new( type => 'fail' );
     $result->test_number(1);
-    $result->description('');
     $formatter->result($result);
     is(last_output, "not ok 1\n", "testing not okay");
 }
 
+# Pass, no description
 {
     my $result = Test::Builder2::Result->new( type => 'pass' );
     $result->test_number(2);
-    $result->description('');
     $formatter->result($result);
     is(last_output, "ok 2\n", "testing okay");
 }
 
+# TODO fail, no description
 {
     my $result = Test::Builder2::Result->new( type => 'todo_fail', reason => "reason" );
     $result->test_number(3);
-    $result->description('');
     $formatter->result($result);
     is(last_output, "not ok 3 # TODO reason\n", "testing todo");
 }
 
+# TODO pass, no description
 {
     my $result = Test::Builder2::Result->new( type => 'todo_pass', reason => "reason" );
     $result->test_number(4);
-    $result->description('');
     $formatter->result($result);
     is(last_output, "ok 4 # TODO reason\n", "testing todo");
 }
 
+# TODO pass, with description
 {
     my $result = Test::Builder2::Result->new( type => 'todo', reason => "reason" );
     $result->test_number(4);
@@ -148,14 +149,7 @@ END
     is(last_output, "ok 4 - a fine test # TODO reason\n", "testing todo");
 }
 
-{
-    my $result = Test::Builder2::Result->new( type => 'fail' );
-    $result->description('');
-    $result->test_number(1);
-    $formatter->result($result);
-    is(last_output, "not ok 1\n", "testing not okay");
-}
-
+# Fail with dashed description
 {
     my $result = Test::Builder2::Result->new( type => 'fail' );
     $result->description(' - a royal pain');
@@ -164,15 +158,27 @@ END
     is(last_output, "not ok 6 -  - a royal pain\n", "test description");
 }
 
-SKIP: {
+# Skip fail
+{
     my $result = Test::Builder2::Result->new( type => 'fail' );
     $result->description('skip test');
     $result->test_number(7);
     $result->skip('Not gonna work');
     $formatter->result($result);
 
-    skip 'Skip output not done yet', 1;
-    is(last_output, "not ok 7 - skip test # skip Not gonna work\n", "test description");
+    is(last_output, "not ok 7 - skip test # SKIP Not gonna work\n", "skip fail");
 }
+
+# Skip pass
+{
+    my $result = Test::Builder2::Result->new( type => 'pass' );
+    $result->description('skip test');
+    $result->test_number(8);
+    $result->skip('Because');
+    $formatter->result($result);
+
+    is(last_output, "ok 8 - skip test # SKIP Because\n", "skip pass");
+}
+
 
 done_testing();
