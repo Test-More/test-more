@@ -169,7 +169,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{History} = shared_clone(Test::Builder2::History->create(
         counter => Test::Builder2::Counter->create
     ));
-    $self->{Counter} = $self->{History}->counter;
 
     $self->{Exported_To}    = undef;
     $self->{Expected_Tests} = 0;
@@ -525,7 +524,7 @@ ERR
     );
     $result = shared_clone($result);
     $self->{History}->add_test_history( $result );
-    my $test_num = $self->{Counter}->get;
+    my $test_num = $self->current_test;
 
     my $out = "";
     $out  = "not " if $result->is_fail;
@@ -943,7 +942,7 @@ sub skip {
     $result = shared_clone($result);
     $self->{History}->add_test_history( $result );
 
-    my $test_num = $self->{Counter}->get;
+    my $test_num = $self->current_test;
     my $out = "ok";
     $out .= " $test_num" if $self->use_numbers;
     $out .= " # skip";
@@ -983,7 +982,7 @@ sub todo_skip {
     $result = shared_clone($result);
     $self->{History}->add_test_history( $result );
 
-    my $test_num = $self->{Counter}->get;
+    my $test_num = $self->current_test;
     my $out = "not ok";
     $out .= " $test_num" if $self->use_numbers;
     $out .= " # TODO & SKIP $why\n";
@@ -1684,8 +1683,8 @@ sub current_test {
 
     if( defined $num ) {
         # If the test counter is being pushed forward fill in the details.
-        my $counter = $self->{Counter};
         my $history = $self->{History};
+        my $counter = $history->counter;
         my $results = $history->results;
 
         if( $num > @$results ) {
@@ -1707,7 +1706,7 @@ sub current_test {
 
         $counter->set($num);
     }
-    return $self->{Counter}->get;
+    return $self->{History}->counter->get;
 }
 
 =item B<summary>
@@ -2008,8 +2007,8 @@ error message.
 sub _sanity_check {
     my $self = shift;
 
-    $self->_whoa( $self->{Counter}->get < 0, 'Says here you ran a negative number of tests!' );
-    $self->_whoa( $self->{Counter}->get != @{ $self->{History}->results },
+    $self->_whoa( $self->current_test < 0, 'Says here you ran a negative number of tests!' );
+    $self->_whoa( $self->current_test != @{ $self->{History}->results },
         'Somehow you got a different number of results than tests ran!' );
 
     return;
@@ -2073,7 +2072,7 @@ sub _ending {
     }
 
     # Ran tests but never declared a plan or hit done_testing
-    if( !$self->{Have_Plan} and $self->{Counter}->get ) {
+    if( !$self->{Have_Plan} and $self->current_test ) {
         $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
     }
 
@@ -2093,23 +2092,23 @@ sub _ending {
     if(@$test_results) {
         # The plan?  We have no plan.
         if( $self->{No_Plan} ) {
-            $self->_output_plan($self->{Counter}->get) unless $self->no_header;
-            $self->{Expected_Tests} = $self->{Counter}->get;
+            $self->_output_plan($self->current_test) unless $self->no_header;
+            $self->{Expected_Tests} = $self->current_test;
         }
 
-        my $num_failed = grep $_->is_fail, @{$test_results}[ 0 .. $self->{Counter}->get - 1 ];
+        my $num_failed = grep $_->is_fail, @{$test_results}[ 0 .. $self->current_test - 1 ];
 
-        my $num_extra = $self->{Counter}->get - $self->{Expected_Tests};
+        my $num_extra = $self->current_test - $self->{Expected_Tests};
 
         if( $num_extra != 0 ) {
             my $s = $self->{Expected_Tests} == 1 ? '' : 's';
             $self->diag(<<"FAIL");
-Looks like you planned $self->{Expected_Tests} test$s but ran @{[ $self->{Counter}->get ]}
+Looks like you planned $self->{Expected_Tests} test$s but ran @{[ $self->current_test ]}
 FAIL
         }
 
         if($num_failed) {
-            my $num_tests = $self->{Counter}->get;
+            my $num_tests = $self->current_test;
             my $s = $num_failed == 1 ? '' : 's';
 
             my $qualifier = $num_extra == 0 ? '' : ' run';
@@ -2121,7 +2120,7 @@ FAIL
 
         if($real_exit_code) {
             $self->diag(<<"FAIL");
-Looks like your test exited with $real_exit_code just after @{[ $self->{Counter}->get ]}.
+Looks like your test exited with $real_exit_code just after @{[ $self->current_test ]}.
 FAIL
 
             _my_exit($real_exit_code) && return;
