@@ -183,5 +183,13 @@ END
     is(last_output, "ok 8 - skip test # SKIP Because\n", "skip pass");
 }
 
+# No number
+{
+    my $result = Test::Builder2::Result->new( type => 'pass' );
+    $formatter->result($result);
+
+    is(last_output, "ok\n", "pass with no number");
+}
+
 
 done_testing();
