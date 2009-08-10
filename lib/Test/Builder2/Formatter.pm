@@ -155,7 +155,10 @@ has streamer => (
     lazy    => 1,
     default => sub {
       my $class = $_[0]->streamer_class;
-      eval "require $class; 1" or die;
+
+      local $@;
+      eval "require $class; 1" or die $@;
+
       $class->new;
     },
     handles => [ qw(write) ],
