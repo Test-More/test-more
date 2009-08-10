@@ -1,9 +1,20 @@
 package Test::Builder2::Streamer::TAP;
+
 use Mouse;
 with 'Test::Builder2::Streamer';
 
-sub output_fh { return *STDOUT }
-sub error_fh  { return *STDERR }
+has output_fh =>
+  is            => 'rw',
+  # "FileHandle" does not appear to include glob filehandles.
+  #  isa           => 'FileHandle',
+  default       => *STDOUT,
+;
+
+has error_fh  =>
+  is            => 'rw',
+#  isa           => 'FileHandle',
+  default       => *STDERR,
+;
 
 my %Dest_Dest = (
     out => 'output_fh',
