@@ -102,10 +102,7 @@ END { 1 while unlink($tmpfile) }
 ok 1 - ok
 ok 2 - ok\n
 ok 3 - ok, like\nok
-ok 4 # skip wibble
-# moof
-not ok 5 # TODO & SKIP todo
-# skip
-# 
+ok 4 # SKIP wibble\nmoof
+not ok 5 # TODO SKIP todo\nskip\n
 OUTPUT
 }

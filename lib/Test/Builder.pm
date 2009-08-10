@@ -935,13 +935,9 @@ sub skip {
     $self->{History}->add_test_history( $result );
 
     my $test_num = $self->current_test;
-    my $out = "ok";
-    $out .= " $test_num" if $self->use_numbers;
-    $out .= " # skip";
-    $out .= " $why"               if length $why;
-    $out .= "\n";
+    $result->test_number($test_num) if $self->use_numbers;
 
-    $self->_print($out);
+    $self->{Formatter}->result($result);
 
     return 1;
 }
@@ -975,11 +971,9 @@ sub todo_skip {
     $self->{History}->add_test_history( $result );
 
     my $test_num = $self->current_test;
-    my $out = "not ok";
-    $out .= " $test_num" if $self->use_numbers;
-    $out .= " # TODO & SKIP $why\n";
+    $result->test_number($test_num) if $self->use_numbers;
 
-    $self->_print($out);
+    $self->{Formatter}->result($result);
 
     return 1;
 }
