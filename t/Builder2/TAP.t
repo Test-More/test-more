@@ -183,12 +183,37 @@ END
     is(last_output, "ok 8 - skip test # SKIP Because\n", "skip pass");
 }
 
+
 # No number
 {
     my $result = Test::Builder2::Result->new( type => 'pass' );
     $formatter->result($result);
 
     is(last_output, "ok\n", "pass with no number");
+}
+
+
+# Descriptions with newlines in them
+{
+    my $result = Test::Builder2::Result->new( type => 'pass' );
+    $result->test_number(5);
+    $result->description("Foo\nBar\n");
+
+    $formatter->result($result);
+    is(last_output, "ok 5 - Foo\\nBar\\n\n", "description with newline");
+}
+
+
+# Descriptions with newlines in them
+{
+    my $result = Test::Builder2::Result->new(
+        type            => 'skip_pass',
+        test_number     => 4,
+        reason          => "\nFoo\nBar\n",
+    );
+
+    $formatter->result($result);
+    is(last_output, "ok 4 # SKIP \\nFoo\\nBar\\n\n", "reason with newline");
 }
 
 

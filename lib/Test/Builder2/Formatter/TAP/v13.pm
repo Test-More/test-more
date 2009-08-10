@@ -106,9 +106,12 @@ sub INNER_result {
     $out .= " ".$result->test_number   if defined $result->test_number;
 
     my $name = $result->description;
+    $self->_escape(\$name);
     $out .= " - $name" if defined $name and length $name;
 
     my $reason = $result->reason;
+    $self->_escape(\$reason);
+
     my @directives;
     push @directives, "TODO" if $result->is_todo;
     push @directives, "SKIP" if $result->is_skip;
@@ -117,6 +120,18 @@ sub INNER_result {
     $out .= "\n";
 
     $self->out($out);
+
+    return;
+}
+
+
+sub _escape {
+    my $self = shift;
+    my $string = shift;
+
+    return if !defined $$string;
+
+    $$string =~ s{\n}{\\n}g;
 
     return;
 }
