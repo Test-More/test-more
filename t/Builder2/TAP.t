@@ -8,10 +8,13 @@ use lib 't/lib';
 
 use Test::More;
 
-my $formatter = new_ok(
-    "Test::Builder2::Formatter::TAP",
-    [ streamer_class => 'Test::Builder2::Streamer::Debug' ]
-);
+my $formatter;
+sub new_formatter {
+    $formatter = new_ok(
+        "Test::Builder2::Formatter::TAP",
+        [ streamer_class => 'Test::Builder2::Streamer::Debug' ]
+    );
+}
 
 sub last_output {
   $formatter->streamer->read('out');
@@ -26,12 +29,14 @@ sub last_output {
 
 # Test that begin does nothing with no args
 {
+    new_formatter;
     $formatter->begin;
     is last_output, "TAP version 13\n", "begin() with no args";
 }
 
 # Test begin
 {
+    new_formatter;
     $formatter->begin( tests => 99 );
     is last_output, <<'END', "begin( tests => # )";
 TAP version 13
@@ -42,9 +47,14 @@ END
 
 # Test end
 {
+    new_formatter;
     $formatter->end();
     is last_output, "", "end() does nothing";
+}
 
+# Test plan-at-end
+{
+    new_formatter;
     $formatter->end( tests => 42 );
     is last_output, <<END, "end( tests => # )";
 1..42
@@ -53,31 +63,21 @@ END
 
 # Test read
 {
+    new_formatter;
     $formatter->begin();
     is last_output, "TAP version 13\n", "check all stream";
 }
 
-# Test read out
-{
-    $formatter->begin();
-    is last_output, "TAP version 13\n", "check out stream";
-}
-
-# Test read err
-{
-    $formatter->begin();
-    is $formatter->streamer->read('err'), "", "check err stream";
-    last_output; # clear the buffer
-}
-
 # test skipping
 {
+    new_formatter;
     $formatter->begin(skip_all=>"bored already");
     is last_output, "TAP version 13\n1..0 # skip bored already", "skip_all";
 }
 
 # no plan
 {
+    new_formatter;
     $formatter->begin(no_plan => 1);
     is last_output, "TAP version 13\n", "no_plan";
 }
@@ -85,6 +85,7 @@ END
 
 # Test >1 pair of args
 {
+    new_formatter;
     ok(!eval {
         $formatter->end( tests => 32, moredata => 1 );
     });
@@ -93,6 +94,7 @@ END
 
 # more params and no right one
 {
+    new_formatter;
     ok(!eval {
         $formatter->end( test => 32, moredata => 1 );
     });
@@ -101,6 +103,7 @@ END
 
 # wrong param
 {
+    new_formatter;
     ok(!eval {
         $formatter->end( test => 32 );
     });

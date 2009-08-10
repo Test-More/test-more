@@ -1,6 +1,6 @@
 package Test::Builder2::Formatter;
 
-use strict;
+use Carp;
 use Mouse;
 
 
@@ -40,12 +40,33 @@ headers.
 
 A %plan can be given, but there are currently no common attributes.
 
+C<begin()> will only happen once per formatter instance.  Subsequent
+calls will be ignored.  This helps coordinating multiple clients all
+using the same formatter, they can all call C<begin()>.
+
+Do not override C<begin()>.  Override C<INNER_begin()>.
+
+=head3 has_begun
+
+  my $has_begun = $formatter->has_begun;
+
+Returns whether begin() has been called.
+
 =cut
+
+has has_begun =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 0
+;
 
 sub begin {
     my $self = shift;
 
+    return if $self->has_begun;
+
     $self->INNER_begin(@_);
+    $self->has_begun(1);
 
     return;
 }
@@ -55,14 +76,18 @@ sub begin {
 
   $formatter->result($result);
 
-Formats a $result.
+Formats a $result (an instance of Test::Builder2::Result).
 
-If begin() has not yet been called it will be.
+It is an error to call result() after end().
+
+Do not override C<result()>.  Override C<INNER_result()>.
 
 =cut
 
 sub result {
     my $self = shift;
+
+    croak "result() called after end()" if $self->has_ended;
 
     $self->INNER_result(@_);
 
@@ -80,12 +105,29 @@ clean up, output closing tags, save the results or whatever.
 
 No further results should be formatted after end().
 
+Do not override C<end()>.  Override C<INNER_end()>.
+
+=head3 has_ended
+
+  my $has_ended = $formatter->has_ended;
+
+Returns whether end() has been called.
+
 =cut
+
+has has_ended =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 0
+;
 
 sub end {
     my $self = shift;
 
+    return if $self->has_ended;
+
     $self->INNER_end(@_);
+    $self->has_ended(1);
 
     return;
 }

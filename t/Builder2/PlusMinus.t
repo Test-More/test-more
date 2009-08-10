@@ -10,10 +10,14 @@ use Test::Builder2::Result;
 
 use_ok 'Test::Builder2::Formatter::PlusMinus';
 
-my $formatter = Test::Builder2::Formatter::PlusMinus->new(
-  streamer_class => 'Test::Builder2::Streamer::Debug'
-);
+sub new_formatter {
+    return Test::Builder2::Formatter::PlusMinus->new(
+        streamer_class => 'Test::Builder2::Streamer::Debug'
+    );
+}
 
+
+my $formatter = new_formatter();
 
 # Begin
 {
@@ -77,13 +81,13 @@ my $formatter = Test::Builder2::Formatter::PlusMinus->new(
 # Test out PlusMinus inside TB2.
 {
     my $tb = Test::Builder2->new;
-    $tb->formatter($formatter);
+    $tb->formatter( new_formatter() );
 
     $tb->ok(1);
     $tb->ok(0);
     $tb->done_testing();
 
-    is $formatter->streamer->read, "+-\n", "PlusMinus plus TB2";
+    is $tb->formatter->streamer->read, "+-\n", "PlusMinus plus TB2";
 }
 
 done_testing();
