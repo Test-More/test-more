@@ -170,6 +170,9 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
         counter => Test::Builder2::Counter->create
     ));
 
+    require Test::Builder::Formatter::TAP;
+    $self->{Formatter} = Test::Builder::Formatter::TAP->new();
+
     $self->{Exported_To}    = undef;
     $self->{Expected_Tests} = 0;
 
@@ -508,43 +511,32 @@ sub ok {
     Very confusing.
 ERR
 
-    # Capture the value of $TODO for the rest of this ok() call
-    # so it can more easily be found by other routines.
-    my $todo    = $self->todo();
-    my $in_todo = $self->in_todo;
-    local $self->{Todo} = $todo if $in_todo;
-
-    $self->_unoverload_str( \$todo );
-
+    # Turn the test into a Result
     my( $pack, $file, $line ) = $self->caller;
     my $result = Test::Builder2::Result->new(
         type            => $test ? "pass" : "fail",
         location        => $file,
         id              => $line,
     );
+    $result->description($name) if defined $name;
+
+    # Capture the value of $TODO for the rest of this ok() call
+    # so it can more easily be found by other routines.
+    my $todo    = $self->todo();
+    my $in_todo = $self->in_todo;
+    local $self->{Todo} = $todo if $in_todo;
+    $self->_unoverload_str( \$todo );
+    $result->todo($todo) if $in_todo;
+
+
+    # Store the Result in history making sure to make it thread safe
     $result = shared_clone($result);
     $self->{History}->add_test_history( $result );
+
     my $test_num = $self->current_test;
+    $result->test_number($test_num) if $self->use_numbers;
 
-    my $out = "";
-    $out  = "not " if $result->is_fail;
-    $out .= "ok";
-    $out .= " $test_num" if $self->use_numbers;
-
-    if( defined $name ) {
-        $name =~ s|#|\\#|g;    # # in a name can confuse Test::Harness.
-        $out .= " - $name";
-        $result->description($name);
-    }
-
-    if( $self->in_todo ) {
-        $out .= " # TODO $todo";
-        $result->todo($todo);
-    }
-
-    $out .= "\n";
-
-    $self->_print($out);
+    $self->{Formatter}->result($result);
 
     unless($test) {
         my $msg = $result->is_todo ? "Failed (TODO)" : "Failed";
@@ -1489,7 +1481,9 @@ sub output {
     my( $self, $fh ) = @_;
 
     if( defined $fh ) {
-        $self->{Out_FH} = $self->_new_fh($fh);
+        $fh = $self->_new_fh($fh);
+        $self->{Out_FH} = $fh;
+        $self->{Formatter}->streamer->output_fh($fh);
     }
     return $self->{Out_FH};
 }
@@ -1498,7 +1492,9 @@ sub failure_output {
     my( $self, $fh ) = @_;
 
     if( defined $fh ) {
-        $self->{Fail_FH} = $self->_new_fh($fh);
+        $fh = $self->_new_fh($fh);
+        $self->{Fail_FH} = $fh;
+        $self->{Formatter}->streamer->error_fh($fh);
     }
     return $self->{Fail_FH};
 }
