@@ -52,6 +52,7 @@ t/Builder/try.t
 t/c_flag.t
 t/circular_data.t
 t/cmp_ok.t
+t/dependents.t
 t/diag.t
 t/died.t
 t/dont_overwrite_die_handler.t
