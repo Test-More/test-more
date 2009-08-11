@@ -145,7 +145,7 @@ END
 
 # TODO pass, with description
 {
-    my $result = Test::Builder2::Result->new( type => 'todo', reason => "reason" );
+    my $result = Test::Builder2::Result->new( type => 'todo_pass', reason => "reason" );
     $result->test_number(4);
     $result->description('a fine test');
     $formatter->result($result);

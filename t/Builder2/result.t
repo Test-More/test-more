@@ -46,9 +46,9 @@ sub tests {
 
     # Skip
     {
-        my $result = $new_ok->([ type => 'skip' ]);
+        my $result = $new_ok->([ type => 'skip_pass' ]);
 
-        is $result->type, 'skip';
+        is $result->type, 'skip_pass';
         is $result->reason, undef;
         ok $result->is_skip;
         ok $result;
@@ -89,7 +89,7 @@ sub tests {
 
     # skip todo
     {
-        my $result = $new_ok->([ type    => 'skip' ])
+        my $result = $new_ok->([ type    => 'skip_pass' ])
           ->todo('Implement');
 
         ok $result, 'Chained skip';
@@ -108,10 +108,10 @@ sub tests {
         ok $result;
     }
 
-    TODO: {
-        local $TODO = "Should validate TB2::Result->type values";
+    # Type validation
+    {
         ok !eval {
-            my $result = $new_ok->([ type => 'spam' ]);
+            Test::Builder2::Result->new([ type => 'spam' ]);
         }, 'Check type validation';
     }
 

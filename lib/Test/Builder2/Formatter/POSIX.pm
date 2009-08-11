@@ -16,7 +16,7 @@ my %type_map = (
     fail        => "FAIL",
     todo_pass   => 'XPASS',
     todo_fail   => 'XFAIL',
-    skip        => 'UNTESTED',
+    skip_pass   => 'UNTESTED',
     todo_skip   => 'UNTESTED',
 );
 

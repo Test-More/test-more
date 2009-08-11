@@ -60,7 +60,7 @@ is_deeply $multi->formatters, [$pm, $posix];
 # Skip
 {
     my $result = Test::Builder2::Result->new(
-        type            => 'skip',
+        type            => 'skip_pass',
         description     => "basset hounds got long ears",
     );
     $multi->result($result);

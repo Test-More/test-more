@@ -2,6 +2,7 @@ package Test::Builder2::Result;
 
 use strict;
 use Mouse;
+use Mouse::Util::TypeConstraints qw(enum);
 
 
 =head1 NAME
@@ -30,6 +31,18 @@ context to indicate if theypr passed or failed.
 new() is a method which returns a $result based on your test data.
 
 =cut
+
+
+my @Types = qw(
+    pass
+    fail
+    todo_pass
+    todo_fail
+    skip_pass
+    skip_fail
+    todo_skip
+    unknown
+);
 
 
 our @attributes = qw(
@@ -62,7 +75,9 @@ sub get_attributes
             has $accessor =>
               is            => 'rw',
               required      => 1,
-              init_arg      => $key;
+              init_arg      => $key,
+              isa           => enum(\@Types)
+            ;
         }
         else
         {

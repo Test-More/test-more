@@ -6,7 +6,7 @@ use Test::More;
 use_ok "Test::Builder2::Result";
 
 my $result = Test::Builder2::Result->new(
-    type  => 'passed'
+    type  => 'pass'
 )->diagnostic([
     have => 23,
     want => 42

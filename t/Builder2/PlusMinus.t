@@ -59,7 +59,7 @@ my $formatter = new_formatter();
 # Skip
 {
     my $result = Test::Builder2::Result->new(
-        type            => 'skip',
+        type            => 'skip_pass',
         description     => "basset hounds got long ears",
     );
     $formatter->result($result);
