@@ -88,7 +88,12 @@ sub install_test {
     my($name, $test_code) = @_;
     my $caller = caller;
 
-    my $code = sub {
+    my $proto = prototype($test_code);
+    $proto = $proto ? "($proto)" : "";
+
+    local($@, $!);
+    my $code = eval sprintf <<'CODE', $proto;
+    sub %s {
         # Fire any before-test actions.
         $caller->builder->test_start();
 
@@ -106,6 +111,9 @@ sub install_test {
 
         return wantarray ? @ret : $ret[0];
     };
+CODE
+
+    die $@ unless $code;
 
     _install($caller, $name, $code);
 
