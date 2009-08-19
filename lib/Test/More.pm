@@ -1266,9 +1266,6 @@ and you'll know immediately when they're fixed.
 Once a todo test starts succeeding, simply move it outside the block.
 When the block is empty, delete it.
 
-B<NOTE>: TODO tests require a Test::Harness upgrade else it will
-treat it as a normal failure.  See L<CAVEATS and NOTES>).
-
 
 =item B<todo_skip>
 
@@ -1701,17 +1698,6 @@ This may cause problems:
     use threads;
 
 5.8.1 and above are supported.  Anything below that has too many bugs.
-
-
-=item Test::Harness upgrade
-
-no_plan, todo and done_testing() depend on new Test::Harness features
-and fixes.  If you're going to distribute tests that use no_plan or
-todo your end-users will have to upgrade Test::Harness to the latest
-one on CPAN.  If you avoid no_plan and TODO tests, the stock
-Test::Harness will work fine.
-
-Installing Test::More should also upgrade Test::Harness.
 
 =back
 
