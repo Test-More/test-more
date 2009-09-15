@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-use 5.006;
+use 5.008001;
 
 use Config;
 use ExtUtils::MakeMaker;
