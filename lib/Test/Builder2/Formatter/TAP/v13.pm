@@ -8,6 +8,19 @@ use Carp;
 
 extends 'Test::Builder2::Formatter';
 
+has nesting_level =>
+  is            => 'rw',
+  isa           => 'Int',
+  default       => 0,
+  where         => sub { $_ >= 0 }
+;
+
+has indent_nesting_with =>
+  is            => 'rw',
+  isa           => 'Str',
+  default       => "    "
+;
+
 sub default_streamer_class { 'Test::Builder2::Streamer::TAP' }
 
 =head1 NAME
@@ -43,8 +56,29 @@ These methods are just shorthand for:
 
 =cut
 
-sub out { (shift)->write(out => @_); }
-sub err { (shift)->write(err => @_); }
+sub _add_indentation {
+    my $self = shift;
+    my $output = shift;
+
+    my $level = $self->nesting_level;
+    return unless $level;
+
+    unshift @$output, $self->indent_nesting_with x $level;
+
+    return;
+}
+
+sub out {
+    my $self = shift;
+    $self->_add_indentation(\@_);
+    $self->write(out => @_);
+}
+
+sub err {
+    my $self = shift;
+    $self->_add_indentation(\@_);
+    $self->write(err => @_);
+}
 
 =head3 begin
 
