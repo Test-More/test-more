@@ -879,8 +879,6 @@ sub is_eq {
     my( $self, $got, $expect, $name ) = @_;
     local $Level = $Level + 1;
 
-    $self->_unoverload_str( \$got, \$expect );
-
     if( !defined $got || !defined $expect ) {
         # undef only matches undef and nothing else
         my $test = !defined $got && !defined $expect;
@@ -896,8 +894,6 @@ sub is_eq {
 sub is_num {
     my( $self, $got, $expect, $name ) = @_;
     local $Level = $Level + 1;
-
-    $self->_unoverload_num( \$got, \$expect );
 
     if( !defined $got || !defined $expect ) {
         # undef only matches undef and nothing else
