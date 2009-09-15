@@ -2089,7 +2089,7 @@ sub _ending {
         if( $num_extra != 0 ) {
             my $s = $self->{Expected_Tests} == 1 ? '' : 's';
             $self->diag(<<"FAIL");
-Looks like you planned $self->{Expected_Tests} test$s but ran @{[ $self->current_test ]}
+Looks like you planned $self->{Expected_Tests} test$s but ran @{[ $self->current_test ]}.
 FAIL
         }
 
