@@ -90,7 +90,7 @@ Test::Builder - Backend for building test libraries
 =head1 DESCRIPTION
 
 Test::Simple and Test::More have proven to be popular testing modules,
-but they're not always flexible enough.  Test::Builder provides the a
+but they're not always flexible enough.  Test::Builder provides a
 building block upon which to write your own test libraries I<which can
 work together>.
 
@@ -156,7 +156,7 @@ sub create {
   $child->finalize;
 
 Returns a new instance of C<Test::Builder>.  Any output from this child will
-indented four spaces more than the parent's indentation.  When done, the
+be indented four spaces more than the parent's indentation.  When done, the
 C<finalize> method I<must> be called explicitly.
 
 Trying to create a new child with a previous child still active (i.e.,
