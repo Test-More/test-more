@@ -1059,8 +1059,9 @@ sub cmp_ok {
 
         my($pack, $file, $line) = $self->caller();
 
+        # This is so that warnings come out at the caller's level
         $test = eval qq[
-#line 1 "cmp_ok [from $file line $line]"
+#line $line "(eval in cmp_ok) $file"
 \$got $type \$expect;
 ];
         $error = $@;
