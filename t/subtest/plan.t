@@ -15,7 +15,7 @@ use warnings;
 
 use Test::Builder::NoOutput;
 
-use Test::More 'no_plan'; # tests => 23;
+use Test::More tests => 6;
 
 # Formatting may change if we're running under Test::Harness.
 $ENV{HARNESS_ACTIVE} = 0;
@@ -36,8 +36,14 @@ $ENV{HARNESS_ACTIVE} = 0;
         ok 1, '... no matter how many tests are run';
     };
     subtest 'subtest with implicit done_testing()', sub {
-        ok 1, 'subtests with no plan should work';
+        ok 1, 'subtests with an implicit done testing should work';
         ok 1, '... and support more than one test';
         ok 1, '... no matter how many tests are run';
+    };
+    subtest 'subtest with explicit done_testing()', sub {
+        ok 1, 'subtests with an explicit done testing should work';
+        ok 1, '... and support more than one test';
+        ok 1, '... no matter how many tests are run';
+        done_testing();
     };
 }

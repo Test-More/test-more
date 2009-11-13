@@ -214,8 +214,14 @@ sub subtest {
     my %parent = %$self;
     %$self = %$child;
 
+    my $run_the_subtests = sub {
+        $subtests->();
+        $self->done_testing unless $self->_plan_handled;
+        1;
+    };
+
     my $error;
-    if( !eval { $subtests->(); 1 } ) {
+    if( !eval { $run_the_subtests->() } ) {
         $error = $@;
     }
 
@@ -227,6 +233,36 @@ sub subtest {
     die $error if $error and !eval { $error->isa('Test::Builder::Exception') };
 
     return $child->finalize;
+}
+
+=begin _private
+
+=item B<_plan_handled>
+
+    if ( $Test->_plan_handled ) { ... }
+
+Returns true if the developer has explicitly handled the plan via:
+
+=over 4
+
+=item * Explicitly setting the number of tests
+
+=item * Setting 'no_plan'
+
+=item * Set 'skip_all'.
+
+=back
+
+This is currently used in subtests when we implicitly call C<< $Test->done_testing >>
+if the developer has not set a plan.
+
+=end _private
+
+=cut
+
+sub _plan_handled {
+    my $self = shift;
+    return $self->{Have_Plan} || $self->{No_Plan} || $self->{Skip_All};
 }
 
 
@@ -458,7 +494,6 @@ sub _plan_tests {
     return;
 }
 
-
 =item B<expected_tests>
 
     my $max = $Test->expected_tests;
@@ -504,7 +539,6 @@ sub no_plan {
     return 1;
 }
 
-
 =begin private
 
 =item B<_output_plan>
@@ -542,6 +576,7 @@ sub _output_plan {
 
     return;
 }
+
 
 =item B<done_testing>
 

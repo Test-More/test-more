@@ -5,6 +5,10 @@
       not the error handle (to be in accordance with the default behaviour of
       Test::Builder and allow for testing TODO test behaviour).
 
+    New Features
+    * subtests without a 'plan' or 'no_plan' have an implicit 'done_testing()'
+      added to them.
+    
 
 0.94  Wed Sep  2 11:17:47 PDT 2009
     Releasing 0.93_01 as stable.
