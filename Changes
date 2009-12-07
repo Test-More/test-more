@@ -1,6 +1,9 @@
 0.95_01
     Bug Fixes
     * is_deeply() didn't see a difference in regexes [rt.cpan.org 53469]
+    * Test::Builder::Tester now sets $tb->todo_output to the output handle and
+      not the error handle (to be in accordance with the default behaviour of
+      Test::Builder and allow for testing TODO test behaviour).
 
 
 0.94  Wed Sep  2 11:17:47 PDT 2009
