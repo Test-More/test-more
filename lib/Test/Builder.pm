@@ -232,6 +232,7 @@ sub subtest {
     # Die *after* we restore the parent.
     die $error if $error and !eval { $error->isa('Test::Builder::Exception') };
 
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
     return $child->finalize;
 }
 
@@ -297,6 +298,7 @@ sub finalize {
     # XXX This will only be necessary for TAP envelopes (we think)
     #$self->_print( $self->is_passing ? "PASS\n" : "FAIL\n" );
 
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $ok = 1;
     $self->parent->{Child_Name} = undef;
     if ( $self->{Skip_All} ) {
