@@ -210,19 +210,25 @@ sub subtest {
 
     # Turn the child into the parent so anyone who has stored a copy of
     # the Test::Builder singleton will get the child.
-    my $child = $self->child($name);
-    my %parent = %$self;
-    %$self = %$child;
+    my($error, $child, %parent);
+    {
+        # child() calls reset() which sets $Level to 1, so we localize
+        # $Level first to limit the scope of the reset to the subtest.
+        local $Test::Builder::Level = $Test::Builder::Level;
 
-    my $run_the_subtests = sub {
-        $subtests->();
-        $self->done_testing unless $self->_plan_handled;
-        1;
-    };
+        $child  = $self->child($name);
+        %parent = %$self;
+        %$self  = %$child;
 
-    my $error;
-    if( !eval { $run_the_subtests->() } ) {
-        $error = $@;
+        my $run_the_subtests = sub {
+            $subtests->();
+            $self->done_testing unless $self->_plan_handled;
+            1;
+        };
+
+        if( !eval { $run_the_subtests->() } ) {
+            $error = $@;
+        }
     }
 
     # Restore the parent and the copied child.
