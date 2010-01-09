@@ -1049,7 +1049,7 @@ sub _type {
 
     return '' if !ref $thing;
 
-    for my $type (qw(ARRAY HASH REF SCALAR GLOB CODE Regexp)) {
+    for my $type (qw(Regexp ARRAY HASH REF SCALAR GLOB CODE)) {
         return $type if UNIVERSAL::isa( $thing, $type );
     }
 

@@ -1,3 +1,8 @@
+0.95_01
+    Bug Fixes
+    * is_deeply() didn't see a difference in regexes [rt.cpan.org 53469]
+
+
 0.94  Wed Sep  2 11:17:47 PDT 2009
     Releasing 0.93_01 as stable.
 
