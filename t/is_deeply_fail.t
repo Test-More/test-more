@@ -25,7 +25,7 @@ package main;
 
 
 my $TB = Test::Builder->create;
-$TB->plan(tests => 73);
+$TB->plan(tests => 76);
 
 # Utility testing functions.
 sub ok ($;$) {
