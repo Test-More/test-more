@@ -1420,6 +1420,8 @@ sub _eq_array {
         my $e1 = $_ > $#$a1 ? $DNE : $a1->[$_];
         my $e2 = $_ > $#$a2 ? $DNE : $a2->[$_];
 
+        next if _equal_nonrefs($e1, $e2);
+
         push @Data_Stack, { type => 'ARRAY', idx => $_, vals => [ $e1, $e2 ] };
         $ok = _deep_check( $e1, $e2 );
         pop @Data_Stack if $ok;
@@ -1428,6 +1430,21 @@ sub _eq_array {
     }
 
     return $ok;
+}
+
+sub _equal_nonrefs {
+    my( $e1, $e2 ) = @_;
+
+    return if ref $e1 or ref $e2;
+
+    if ( defined $e1 ) {
+        return 1 if defined $e2 and $e1 eq $e2;
+    }
+    else {
+        return 1 if !defined $e2;
+    }
+
+    return;
 }
 
 sub _deep_check {
@@ -1551,6 +1568,8 @@ sub _eq_hash {
     foreach my $k ( keys %$bigger ) {
         my $e1 = exists $a1->{$k} ? $a1->{$k} : $DNE;
         my $e2 = exists $a2->{$k} ? $a2->{$k} : $DNE;
+
+        next if _equal_nonrefs($e1, $e2);
 
         push @Data_Stack, { type => 'HASH', idx => $k, vals => [ $e1, $e2 ] };
         $ok = _deep_check( $e1, $e2 );
