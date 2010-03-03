@@ -112,6 +112,7 @@ t/pod-coverage.t
 t/pod.t
 t/require_ok.t
 t/simple.t
+t/Simple/load.t
 t/skip.t
 t/skipall.t
 t/subtest/args.t
@@ -120,7 +121,10 @@ t/subtest/die.t
 t/subtest/do.t
 t/subtest/exceptions.t
 t/subtest/for_do_t.test
+t/subtest/implicit_done.t
+t/subtest/line_numbers.t
 t/subtest/plan.t
+t/subtest/predicate.t
 t/subtest/singleton.t
 t/tbm_doesnt_set_exported_to.t
 t/Tester/tbt_01basic.t
