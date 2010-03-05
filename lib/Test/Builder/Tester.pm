@@ -130,7 +130,7 @@ sub _start_testing {
     $out->reset();
     $err->reset();
 
-    # remeber that we're testing
+    # remember that we're testing
     $testing     = 1;
     $testing_num = $t->current_test;
     $t->current_test(0);
@@ -229,7 +229,7 @@ sub test_fail {
 
 As most of the remaining expected output to the error stream will be
 created by Test::Builder's C<diag> function, B<Test::Builder::Tester>
-provides a convience function C<test_diag> that you can use instead of
+provides a convenience function C<test_diag> that you can use instead of
 C<test_err>.
 
 The C<test_diag> function prepends comment hashes and spacing to the
@@ -293,7 +293,7 @@ declared with C<test_err>.
 
 =back
 
-As a convience, if only one argument is passed then this argument
+As a convenience, if only one argument is passed then this argument
 is assumed to be the name of the test (as in the above examples.)
 
 Once C<test_test> has been run test output will be redirected back to
@@ -304,7 +304,7 @@ will function normally and cause success/errors for B<Test::Harness>.
 =cut
 
 sub test_test {
-    # decode the arguements as described in the pod
+    # decode the arguments as described in the pod
     my $mess;
     my %args;
     if( @_ == 1 ) {

@@ -23,7 +23,7 @@ BEGIN {
         require threads::shared;
 
         # Hack around YET ANOTHER threads::shared bug.  It would
-        # occassionally forget the contents of the variable when sharing it.
+        # occasionally forget the contents of the variable when sharing it.
         # So we first copy the data, then share, then put our copy back.
         *share = sub (\[$@%]) {
             my $type = ref $_[0];
@@ -2498,7 +2498,7 @@ Test::Builder.
 
 =head1 MEMORY
 
-An informative hash, accessable via C<<details()>>, is stored for each
+An informative hash, accessible via C<<details()>>, is stored for each
 test you perform.  So memory usage will scale linearly with each test
 run. Although this is not a problem for most test suites, it can
 become an issue if you do large (hundred thousands to million)

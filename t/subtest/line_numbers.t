@@ -43,7 +43,7 @@ our %line;
         ok 1;
     }; BEGIN{ $line{outerfail1} = __LINE__ }
     
-    test_test("un-unamed inner tests");
+    test_test("un-named inner tests");
 }
 {
     test_out("    1..3");

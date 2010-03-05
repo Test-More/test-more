@@ -101,7 +101,7 @@ now "make test" will run against each of your other perls.
 A: Use tools for measuring the code coverage of your tests, e.g. how many of
 your source code lines/subs/expressions/paths are executed (aka covered) by
 the test suite. The more, the better, of course, although you may not
-be able achive 100%. If your testsuite covers under 100%, then
+be able achieve 100%. If your testsuite covers under 100%, then
 the rest of your code is, basically, untested. Which means it may work in
 surprising ways (e.g. doesn't do things like they are intended or
 documented), have bugs (e.g. return wrong results) or it may not work at
@@ -132,7 +132,7 @@ is_deeply() from Test::More as well as Test::Deep.
 
 There's always compile/export checks.
 
-Code must be written with testabilty in mind.  Seperation of form and
+Code must be written with testability in mind.  Separation of form and
 functionality.
 
 =head2 What do I do when I can't make the code do the same thing twice?

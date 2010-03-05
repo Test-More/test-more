@@ -718,7 +718,7 @@ Returns true if the subtest passed, false otherwise.
 
 Due to how subtests work, you may omit a plan if you desire.  This adds an
 implicit C<done_testing()> to the end of your subtest.  The following two
-subtests are equivant:
+subtests are equivalent:
 
   subtest 'subtest with implicit done_testing()', sub {
       ok 1, 'subtests with an implicit done testing should work';
@@ -897,7 +897,7 @@ sub require_ok ($) {
 
     my $pack = caller;
 
-    # Try to deterine if we've been given a module name or file.
+    # Try to determine if we've been given a module name or file.
     # Module names must be barewords, files not.
     $module = qq['$module'] unless _is_module_name($module);
 
