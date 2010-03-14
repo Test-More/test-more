@@ -1472,7 +1472,7 @@ sub _deep_check {
             $ok = 0;
         }
         elsif( !defined $e1 and !defined $e2 ) {
-            # Shortcut if they're both defined.
+            # Shortcut if they're both undefined.
             $ok = 1;
         }
         elsif( _dne($e1) xor _dne($e2) ) {
