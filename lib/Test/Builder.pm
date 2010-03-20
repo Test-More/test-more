@@ -1725,17 +1725,18 @@ sub _print_to_fh {
     return if $^C;
 
     my $msg = join '', @msgs;
+    my $indent = $self->_indent;
 
     local( $\, $", $, ) = ( undef, ' ', '' );
 
     # Escape each line after the first with a # so we don't
     # confuse Test::Harness.
-    $msg =~ s{\n(?!\z)}{\n# }sg;
+    $msg =~ s{\n(?!\z)}{\n$indent# }sg;
 
     # Stick a newline on the end if it needs it.
     $msg .= "\n" unless $msg =~ /\n\z/;
 
-    return print $fh $self->_indent, $msg;
+    return print $fh $indent, $msg;
 }
 
 =item B<output>

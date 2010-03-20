@@ -16,7 +16,7 @@ BEGIN {
 use strict;
 use warnings;
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 use Test::Builder;
 use Test::Builder::Tester;
 
@@ -91,7 +91,6 @@ sub run_the_subtest {
     
     test_test("subtest() called from a sub");
 }
-
 {
     test_out( "    1..0");
     test_err( "    # No tests run!");
@@ -105,4 +104,22 @@ sub run_the_subtest {
 
     test_test("lineno in 'No tests run' diagnostic");
 }
+{
+    test_out("    1..1");
+    test_out("    not ok 1 - foo is bar");
+    test_err("    #   Failed test 'foo is bar'");
+    test_err("    #   at $0 line $line{is_fail}.");
+    test_err("    #          got: 'foo'");
+    test_err("    #     expected: 'bar'");
+    test_err("    # Looks like you failed 1 test of 1.");
+    test_out('not ok 1 - namehere');
+    test_err("#   Failed test 'namehere'");
+    test_err("#   at $0 line $line{is_outer_fail}.");
 
+    subtest namehere => sub {
+        plan tests => 1;
+        is 'foo', 'bar', 'foo is bar'; BEGIN{ $line{is_fail} = __LINE__ }
+    }; BEGIN{ $line{is_outer_fail} = __LINE__ }
+
+    test_test("diag indent for is() in subtest");
+}
