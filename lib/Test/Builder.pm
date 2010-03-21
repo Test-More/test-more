@@ -174,12 +174,18 @@ sub child {
         $self->croak("You already have a child named ($self->{Child_Name}) running");
     }
 
+    my $parent_in_todo = $self->in_todo;
+
     my $child = bless {}, ref $self;
     $child->reset;
 
     # Add to our indentation
     $child->_indent( $self->_indent . '    ' );
+    
     $child->{$_} = $self->{$_} foreach qw{Out_FH Todo_FH Fail_FH};
+    if ($parent_in_todo) {
+        $child->{Fail_FH} = $self->{Todo_FH};
+    }
 
     # This will be reset in finalize. We do this here lest one child failure
     # cause all children to fail.
@@ -214,7 +220,7 @@ sub subtest {
     {
         # child() calls reset() which sets $Level to 1, so we localize
         # $Level first to limit the scope of the reset to the subtest.
-        local $Test::Builder::Level = $Test::Builder::Level;
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
 
         $child  = $self->child($name);
         %parent = %$self;
@@ -226,9 +232,11 @@ sub subtest {
             1;
         };
 
+        my $old_TODO = $self->find_TODO(undef, 1, undef);
         if( !eval { $run_the_subtests->() } ) {
             $error = $@;
         }
+        defined $old_TODO and $self->find_TODO(undef, 1, $old_TODO);
     }
 
     # Restore the parent and the copied child.
@@ -2132,21 +2140,28 @@ sub todo {
 =item B<find_TODO>
 
     my $todo_reason = $Test->find_TODO();
-    my $todo_reason = $Test->find_TODO($pack):
+    my $todo_reason = $Test->find_TODO($pack);
 
 Like C<todo()> but only returns the value of C<$TODO> ignoring
 C<todo_start()>.
 
+Can also be used to set C<$TODO> to a new value while returning the
+old value:
+
+    my $old_reason = $Test->find_TODO($pack, 1, $new_reason);
+
 =cut
 
 sub find_TODO {
-    my( $self, $pack ) = @_;
+    my( $self, $pack, $set, $new_value ) = @_;
 
     $pack = $pack || $self->caller(1) || $self->exported_to;
     return unless $pack;
 
     no strict 'refs';    ## no critic
-    return ${ $pack . '::TODO' };
+    my $old_value = ${ $pack . '::TODO' };
+    $set and ${ $pack . '::TODO' } = $new_value;
+    return $old_value;
 }
 
 =item B<in_todo>
