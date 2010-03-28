@@ -1347,7 +1347,7 @@ but want to put tests in your testing script (always a good idea).
     BAIL_OUT($reason);
 
 Indicates to the harness that things are going so badly all testing
-should terminate.  This includes the running any additional test scripts.
+should terminate.  This includes the running of any additional test scripts.
 
 This is typically used when testing cannot continue such as a critical
 module failing to compile or a necessary external utility not being
