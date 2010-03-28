@@ -28,14 +28,15 @@ $ENV{HARNESS_ACTIVE} = 0;
 
 our %line;
 
-# Repeat each test for various combinations of the todo reason
-# and the mechanism by which it is set.
-our @test_combos = (
-    ['$TODO',      'Reason'],
-    ['todo_start', 'Reason'],
-    ['todo_start', ''],
-    ['todo_start', 0],
-);
+# Repeat each test for various combinations of the todo reason,
+# the mechanism by which it is set and $Level.
+our @test_combos;
+foreach my $level (1, 2, 3) {
+    push @test_combos, ['$TODO',       'Reason',  $level],
+                       ['todo_start',  'Reason',  $level],
+                       ['todo_start',  '',        $level],
+                       ['todo_start',  0,         $level];
+}
 
 plan tests => 8 * @test_combos;
 
@@ -48,7 +49,7 @@ sub test_subtest_in_todo {
     my @outlines = split /\n/, $want_out;
 
     foreach my $combo (@test_combos) {
-        my ($set_todo_via, $todo_reason) = @$combo;
+        my ($set_via, $todo_reason, $level) = @$combo;
 
         test_out(
             @outlines,
@@ -61,22 +62,41 @@ sub test_subtest_in_todo {
         );
 
         {
-            local $TODO = ($set_todo_via eq '$TODO' ? $todo_reason : undef);
-            if ($set_todo_via eq 'todo_start') {
+            local $TODO = $set_via eq '$TODO' ? $todo_reason : undef;
+            if ($set_via eq 'todo_start') {
                 Test::Builder->new->todo_start($todo_reason);
             }
 
-            subtest xxx => sub { $code->() }; BEGIN{ $line{xxx} = __LINE__ }
-            ok 0, 'regular todo test';        BEGIN{ $line{reg} = __LINE__ }
+            subtest_at_level(
+                        'xxx', $code, $level); BEGIN{ $line{xxx} = __LINE__ }
+            ok 0, 'regular todo test';         BEGIN{ $line{reg} = __LINE__ }
 
-            if ($set_todo_via eq 'todo_start') {
+            if ($set_via eq 'todo_start') {
                 Test::Builder->new->todo_end;
             }
-        };
+        }
 
-        test_test("$name, todo [$todo_reason] set via $set_todo_via");
+        test_test("$name ($level), todo [$todo_reason] set via $set_via");
     }
 }
+
+package Foo; # If several stack frames are in package 'main' then $Level
+             # could be wrong and $main::TODO might still be found.  Using
+             # another package makes the tests more sensitive.
+             
+sub main::subtest_at_level {
+    my ($name, $code, $level) = @_;
+
+    if ($level > 1) {
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        main::subtest_at_level($name, $code, $level-1);
+    }
+    else {
+        Test::Builder->new->subtest($name => $code);
+    }
+}
+
+package main;
 
 test_subtest_in_todo("plan, no tests run", sub {
     plan tests => 2;

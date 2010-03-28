@@ -176,6 +176,9 @@ sub child {
 
     my $parent_in_todo = $self->in_todo;
 
+    # Clear $TODO for the child.
+    my $orig_TODO = $self->find_TODO(undef, 1, undef);
+
     my $child = bless {}, ref $self;
     $child->reset;
 
@@ -192,6 +195,7 @@ sub child {
     $child->{Child_Error} = $?;
     $?                    = 0;
     $child->{Parent}      = $self;
+    $child->{Parent_TODO} = $orig_TODO;
     $child->{Name}        = $name || "Child of " . $self->name;
     $self->{Child_Name}   = $child->name;
     return $child;
@@ -232,16 +236,17 @@ sub subtest {
             1;
         };
 
-        my $old_TODO = $self->find_TODO(undef, 1, undef);
         if( !eval { $run_the_subtests->() } ) {
             $error = $@;
         }
-        defined $old_TODO and $self->find_TODO(undef, 1, $old_TODO);
     }
 
     # Restore the parent and the copied child.
     %$child = %$self;
     %$self = %parent;
+
+    # Restore the parent's $TODO
+    $self->find_TODO(undef, 1, $child->{Parent_TODO});
 
     # Die *after* we restore the parent.
     die $error if $error and !eval { $error->isa('Test::Builder::Exception') };
