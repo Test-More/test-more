@@ -372,7 +372,7 @@ sub name { shift->{Name} }
 
 sub DESTROY {
     my $self = shift;
-    if ( $self->parent ) {
+    if ( $self->parent and $$ == $self->{Original_Pid} ) {
         my $name = $self->name;
         $self->diag(<<"FAIL");
 Child ($name) exited without calling finalize()
