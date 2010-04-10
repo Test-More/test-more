@@ -166,7 +166,7 @@ which is even the same as
 
 Once C<test_out> or C<test_err> (or C<test_fail> or C<test_diag>) have
 been called once all further output from B<Test::Builder> will be
-captured by B<Test::Builder::Tester>.  This means that your will not
+captured by B<Test::Builder::Tester>.  This means that you will not
 be able perform further tests to the normal output in the normal way
 until you call C<test_test> (well, unless you manually meddle with the
 output filehandles)
@@ -191,7 +191,7 @@ sub test_err {
 
 Because the standard failure message that B<Test::Builder> produces
 whenever a test fails will be a common occurrence in your test error
-output, and because has changed between Test::Builder versions, rather
+output, and because it has changed between Test::Builder versions, rather
 than forcing you to call C<test_err> with the string all the time like
 so
 
@@ -370,7 +370,7 @@ sub line_num {
 
 =back
 
-In addition to the six exported functions there there exists one
+In addition to the six exported functions there exists one
 function that can only be accessed with a fully qualified function
 call.
 
@@ -389,7 +389,7 @@ fail even though the output looks similar.
 
 To assist you C<test_test> can colour the background of the debug
 information to disambiguate the different types of output. The debug
-output will have it's background coloured green and red.  The green
+output will have its background coloured green and red.  The green
 part represents the text which is the same between the executed and
 actual output, the red shows which part differs.
 
