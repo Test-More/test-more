@@ -63,15 +63,11 @@ Like C<<++$count>>.
 
 =cut
 
-use Mouse::Util::TypeConstraints;
-subtype Positive_Int => (
-    as 'Int',
-    where { $_ >= 0 },
-);
+use Test::Builder2::Types;
 
 has _count => (
     is          => 'rw',
-    isa         => 'Positive_Int',
+    isa         => 'Test::Builder2::Positive_Int',
     default     => 0,
 );
 
