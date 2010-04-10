@@ -59,7 +59,7 @@ Increments the counter by $amount or 1 if $amount is not given.
 
 Returns the new $count.
 
-Like C<<++$count>>.
+Like C<< ++$count >>.
 
 =cut
 

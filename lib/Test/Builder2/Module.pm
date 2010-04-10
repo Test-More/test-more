@@ -70,7 +70,7 @@ name { ... } >> with two differences.
 1. Declaring the test in this manner enables pre and post test actions,
    such as aborting the test on failure.
 2. The $Builder object is available inside your $code which is just a
-   shortcut for C<<$class->builder>>
+   shortcut for C<< $class->builder >>
 
 =cut
 

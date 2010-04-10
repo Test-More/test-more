@@ -73,8 +73,8 @@ line number of the test.
 
 It is stored as a stack, so you can wrap tests around tests.
 C<$top_stack> is a list of array ref to the return value from
-C<caller(EXPR)>.  C<<$tb->top>> is a convenience method which returns
-C<<@{$top_stack->[0]}>>.
+C<caller(EXPR)>.  C<< $tb->top >> is a convenience method which returns
+C<< @{$top_stack->[0]} >>.
 
 (Might change from the caller array to a hash)
 
@@ -97,7 +97,7 @@ sub top {
   my $msg = $tb->from_top(@msg);
 
 A convenience method.  Attaches the traditional " at $file line $line"
-to @msg using C<<$tb->top>>.  @msg is joined with no delimiter.
+to @msg using C<< $tb->top >>.  @msg is joined with no delimiter.
 
 =cut
 
@@ -198,9 +198,9 @@ sub ok {
 
   $tb->accept_result( $result );
 
-Records a test $result (a Test::Builder2::Result object) to C<<$tb->history>>.
+Records a test $result (a Test::Builder2::Result object) to C<< $tb->history >>.
 
-This is a bare bones version of C<<ok()>>.
+This is a bare bones version of C<< ok() >>.
 
 =cut
 

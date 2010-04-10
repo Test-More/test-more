@@ -45,7 +45,7 @@ Gets/sets the list of Formatter objects to multiplex to.
 
     $multi->add_formatters(@formatters);
 
-A convenience method to add @formatters to C<<$multi->formatters>>.
+A convenience method to add @formatters to C<< $multi->formatters >>.
 
 =cut
 
