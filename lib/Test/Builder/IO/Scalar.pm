@@ -497,7 +497,7 @@ sub tell { *{shift()}->{Pos} }
 
 I<Instance method.>
 B<Deprecated and ignored.>
-Obey the curent setting of $/, like IO::Handle does?
+Obey the current setting of $/, like IO::Handle does?
 Default is false in 1.x, but cold-welded true in 2.x and later.
 
 =cut

@@ -81,7 +81,7 @@ Test::Builder - Backend for building test libraries
 =head1 DESCRIPTION
 
 Test::Simple and Test::More have proven to be popular testing modules,
-but they're not always flexible enough.  Test::Builder provides the a
+but they're not always flexible enough.  Test::Builder provides a
 building block upon which to write your own test libraries I<which can
 work together>.
 
@@ -147,7 +147,7 @@ sub create {
   $child->finalize;
 
 Returns a new instance of C<Test::Builder>.  Any output from this child will
-indented four spaces more than the parent's indentation.  When done, the
+be indented four spaces more than the parent's indentation.  When done, the
 C<finalize> method I<must> be called explicitly.
 
 Trying to create a new child with a previous child still active (i.e.,
@@ -165,6 +165,11 @@ sub child {
         $self->croak("You already have a child named ($self->{Child_Name}) running");
     }
 
+    my $parent_in_todo = $self->in_todo;
+
+    # Clear $TODO for the child.
+    my $orig_TODO = $self->find_TODO(undef, 1, undef);
+
     my $child = bless {}, ref $self;
     $child->reset;
     $child->$_( $self->$_() ) for qw(output failure_output todo_output);
@@ -172,13 +177,18 @@ sub child {
     # Add to our indentation
     $child->_indent( $self->_indent . '    ' );
     $child->{Formatter}->nesting_level( $self->{Formatter}->nesting_level + 1 );
+    
     $child->{$_} = $self->{$_} foreach qw{Out_FH Todo_FH Fail_FH};
+    if ($parent_in_todo) {
+        $child->{Fail_FH} = $self->{Todo_FH};
+    }
 
     # This will be reset in finalize. We do this here lest one child failure
     # cause all children to fail.
     $child->{Child_Error} = $?;
     $?                    = 0;
     $child->{Parent}      = $self;
+    $child->{Parent_TODO} = $orig_TODO;
     $child->{Name}        = $name || "Child of " . $self->name;
     $self->{Child_Name}   = $child->name;
     return $child;
@@ -203,23 +213,69 @@ sub subtest {
 
     # Turn the child into the parent so anyone who has stored a copy of
     # the Test::Builder singleton will get the child.
-    my $child = $self->child($name);
-    my %parent = %$self;
-    %$self = %$child;
+    my($error, $child, %parent);
+    {
+        # child() calls reset() which sets $Level to 1, so we localize
+        # $Level first to limit the scope of the reset to the subtest.
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-    my $error;
-    if( !eval { $subtests->(); 1 } ) {
-        $error = $@;
+        $child  = $self->child($name);
+        %parent = %$self;
+        %$self  = %$child;
+
+        my $run_the_subtests = sub {
+            $subtests->();
+            $self->done_testing unless $self->_plan_handled;
+            1;
+        };
+
+        if( !eval { $run_the_subtests->() } ) {
+            $error = $@;
+        }
     }
 
     # Restore the parent and the copied child.
     %$child = %$self;
     %$self = %parent;
 
+    # Restore the parent's $TODO
+    $self->find_TODO(undef, 1, $child->{Parent_TODO});
+
     # Die *after* we restore the parent.
     die $error if $error and !eval { $error->isa('Test::Builder::Exception') };
 
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
     return $child->finalize;
+}
+
+=begin _private
+
+=item B<_plan_handled>
+
+    if ( $Test->_plan_handled ) { ... }
+
+Returns true if the developer has explicitly handled the plan via:
+
+=over 4
+
+=item * Explicitly setting the number of tests
+
+=item * Setting 'no_plan'
+
+=item * Set 'skip_all'.
+
+=back
+
+This is currently used in subtests when we implicitly call C<< $Test->done_testing >>
+if the developer has not set a plan.
+
+=end _private
+
+=cut
+
+sub _plan_handled {
+    my $self = shift;
+    return $self->{Have_Plan} || $self->{No_Plan} || $self->{Skip_All};
 }
 
 
@@ -254,6 +310,7 @@ sub finalize {
     # XXX This will only be necessary for TAP envelopes (we think)
     #$self->_print( $self->is_passing ? "PASS\n" : "FAIL\n" );
 
+    local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $ok = 1;
     $self->parent->{Child_Name} = undef;
     if ( $self->{Skip_All} ) {
@@ -308,7 +365,7 @@ sub name { shift->{Name} }
 
 sub DESTROY {
     my $self = shift;
-    if ( $self->parent ) {
+    if ( $self->parent and $$ == $self->{Original_Pid} ) {
         my $name = $self->name;
         $self->diag(<<"FAIL");
 Child ($name) exited without calling finalize()
@@ -457,7 +514,6 @@ sub _plan_tests {
     return;
 }
 
-
 =item B<expected_tests>
 
     my $max = $Test->expected_tests;
@@ -503,7 +559,6 @@ sub no_plan {
     return 1;
 }
 
-
 =begin private
 
 =item B<_output_plan>
@@ -541,6 +596,7 @@ sub _output_plan {
 
     return;
 }
+
 
 =item B<done_testing>
 
@@ -1033,8 +1089,9 @@ sub cmp_ok {
 
         my($pack, $file, $line) = $self->caller();
 
+        # This is so that warnings come out at the caller's level
         $test = eval qq[
-#line 1 "cmp_ok [from $file line $line]"
+#line $line "(eval in cmp_ok) $file"
 \$got $type \$expect;
 ];
         $error = $@;
@@ -1653,17 +1710,18 @@ sub _print_to_fh {
     return if $^C;
 
     my $msg = join '', @msgs;
+    my $indent = $self->_indent;
 
     local( $\, $", $, ) = ( undef, ' ', '' );
 
     # Escape each line after the first with a # so we don't
     # confuse Test::Harness.
-    $msg =~ s{\n(?!\z)}{\n# }sg;
+    $msg =~ s{\n(?!\z)}{\n$indent# }sg;
 
     # Stick a newline on the end if it needs it.
     $msg .= "\n" unless $msg =~ /\n\z/;
 
-    return print $fh $self->_indent, $msg;
+    return print $fh $indent, $msg;
 }
 
 =item B<output>
@@ -2088,21 +2146,28 @@ sub todo {
 =item B<find_TODO>
 
     my $todo_reason = $Test->find_TODO();
-    my $todo_reason = $Test->find_TODO($pack):
+    my $todo_reason = $Test->find_TODO($pack);
 
 Like C<todo()> but only returns the value of C<$TODO> ignoring
 C<todo_start()>.
 
+Can also be used to set C<$TODO> to a new value while returning the
+old value:
+
+    my $old_reason = $Test->find_TODO($pack, 1, $new_reason);
+
 =cut
 
 sub find_TODO {
-    my( $self, $pack ) = @_;
+    my( $self, $pack, $set, $new_value ) = @_;
 
     $pack = $pack || $self->caller(1) || $self->exported_to;
     return unless $pack;
 
     no strict 'refs';    ## no critic
-    return ${ $pack . '::TODO' };
+    my $old_value = ${ $pack . '::TODO' };
+    $set and ${ $pack . '::TODO' } = $new_value;
+    return $old_value;
 }
 
 =item B<in_todo>
@@ -2446,7 +2511,7 @@ Test::Builder.
 
 =head1 MEMORY
 
-An informative hash, accessable via C<<details()>>, is stored for each
+An informative hash, accessible via C<<details()>>, is stored for each
 test you perform.  So memory usage will scale linearly with each test
 run. Although this is not a problem for most test suites, it can
 become an issue if you do large (hundred thousands to million)
