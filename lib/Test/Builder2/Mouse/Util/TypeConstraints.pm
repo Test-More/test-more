@@ -1,13 +1,13 @@
-package Mouse::Util::TypeConstraints;
-use Mouse::Util qw(does_role not_supported); # enables strict and warnings
+package Test::Builder2::Mouse::Util::TypeConstraints;
+use Test::Builder2::Mouse::Util qw(does_role not_supported); # enables strict and warnings
 
 use Carp         ();
 use Scalar::Util ();
 
-use Mouse::Meta::TypeConstraint;
-use Mouse::Exporter;
+use Test::Builder2::Mouse::Meta::TypeConstraint;
+use Test::Builder2::Mouse::Exporter;
 
-Mouse::Exporter->setup_import_methods(
+Test::Builder2::Mouse::Exporter->setup_import_methods(
     as_is => [qw(
         as where message optimize_as
         from via
@@ -20,12 +20,12 @@ Mouse::Exporter->setup_import_methods(
     )],
 );
 
-our @CARP_NOT = qw(Mouse::Meta::Attribute);
+our @CARP_NOT = qw(Test::Builder2::Mouse::Meta::Attribute);
 
 my %TYPE;
 
 # The root type
-$TYPE{Any} = Mouse::Meta::TypeConstraint->new(
+$TYPE{Any} = Test::Builder2::Mouse::Meta::TypeConstraint->new(
     name => 'Any',
 );
 
@@ -67,7 +67,7 @@ my @builtins = (
 
 
 while (my ($name, $parent, $code) = splice @builtins, 0, 3) {
-    $TYPE{$name} = Mouse::Meta::TypeConstraint->new(
+    $TYPE{$name} = Test::Builder2::Mouse::Meta::TypeConstraint->new(
         name      => $name,
         parent    => $TYPE{$parent},
         optimized => $code,
@@ -166,7 +166,7 @@ sub _create_type{
         $constraint = find_or_create_isa_type_constraint($parent)->create_child_type(%args);
     }
     else{
-        $constraint = Mouse::Meta::TypeConstraint->new(%args);
+        $constraint = Test::Builder2::Mouse::Meta::TypeConstraint->new(%args);
     }
 
     if(defined $name){
@@ -202,7 +202,7 @@ sub class_type {
     # ClassType
     return _create_type 'subtype', $name => (
         as           => 'Object',
-        optimized_as => Mouse::Util::generate_isa_predicate_for($class),
+        optimized_as => Test::Builder2::Mouse::Util::generate_isa_predicate_for($class),
     );
 }
 
@@ -229,7 +229,7 @@ sub duck_type {
     # DuckType
     return _create_type 'subtype', $name => (
         as           => 'Object',
-        optimized_as => Mouse::Util::generate_can_predicate_for(\@methods),
+        optimized_as => Test::Builder2::Mouse::Util::generate_can_predicate_for(\@methods),
     );
 }
 
@@ -254,13 +254,13 @@ sub _find_or_create_regular_type{
 
     return $TYPE{$spec} if exists $TYPE{$spec};
 
-    my $meta = Mouse::Util::get_metaclass_by_name($spec);
+    my $meta = Test::Builder2::Mouse::Util::get_metaclass_by_name($spec);
 
     if(!defined $meta){
         return $create ? class_type($spec) : undef;
     }
 
-    if(Mouse::Util::is_a_metarole($meta)){
+    if(Test::Builder2::Mouse::Util::is_a_metarole($meta)){
         return role_type($spec);
     }
     else{
@@ -283,7 +283,7 @@ sub _find_or_create_union_type{
     my $name = join '|', @types;
 
     # UnionType
-    $TYPE{$name} ||= Mouse::Meta::TypeConstraint->new(
+    $TYPE{$name} ||= Test::Builder2::Mouse::Meta::TypeConstraint->new(
         name              => $name,
         type_constraints  => \@types,
     );
@@ -360,7 +360,7 @@ sub _parse_type {
 
 sub find_type_constraint {
     my($spec) = @_;
-    return $spec if Mouse::Util::is_a_type_constraint($spec);
+    return $spec if Test::Builder2::Mouse::Util::is_a_type_constraint($spec);
     return undef if !defined $spec;
 
     $spec =~ s/\s+//g;
@@ -369,7 +369,7 @@ sub find_type_constraint {
 
 sub find_or_parse_type_constraint {
     my($spec) = @_;
-    return $spec if Mouse::Util::is_a_type_constraint($spec);
+    return $spec if Test::Builder2::Mouse::Util::is_a_type_constraint($spec);
     return undef if !defined $spec;
 
     $spec =~ s/\s+//g;
@@ -402,7 +402,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Util::TypeConstraints - Type constraint system for Mouse
+Test::Builder2::Mouse::Util::TypeConstraints - Type constraint system for Mouse
 
 =head1 VERSION
 
@@ -410,7 +410,7 @@ This document describes Mouse version 0.53
 
 =head2 SYNOPSIS
 
-  use Mouse::Util::TypeConstraints;
+  use Test::Builder2::Mouse::Util::TypeConstraints;
 
   subtype 'Natural'
       => as 'Int'
@@ -427,7 +427,7 @@ This document describes Mouse version 0.53
 
   enum 'RGBColors' => qw(red green blue);
 
-  no Mouse::Util::TypeConstraints;
+  no Test::Builder2::Mouse::Util::TypeConstraints;
 
 =head1 DESCRIPTION
 
@@ -575,23 +575,23 @@ Returns the names of all the type constraints.
 
 =over 4
 
-=item C<< type $name => where { } ... -> Mouse::Meta::TypeConstraint >>
+=item C<< type $name => where { } ... -> Test::Builder2::Mouse::Meta::TypeConstraint >>
 
-=item C<< subtype $name => as $parent => where { } ... -> Mouse::Meta::TypeConstraint >>
+=item C<< subtype $name => as $parent => where { } ... -> Test::Builder2::Mouse::Meta::TypeConstraint >>
 
-=item C<< subtype as $parent => where { } ...  -> Mouse::Meta::TypeConstraint >>
+=item C<< subtype as $parent => where { } ...  -> Test::Builder2::Mouse::Meta::TypeConstraint >>
 
-=item C<< class_type ($class, ?$options) -> Mouse::Meta::TypeConstraint >>
+=item C<< class_type ($class, ?$options) -> Test::Builder2::Mouse::Meta::TypeConstraint >>
 
-=item C<< role_type ($role, ?$options) -> Mouse::Meta::TypeConstraint >>
+=item C<< role_type ($role, ?$options) -> Test::Builder2::Mouse::Meta::TypeConstraint >>
 
-=item C<< duck_type($name, @methods | \@methods) -> Mouse::Meta::TypeConstraint >>
+=item C<< duck_type($name, @methods | \@methods) -> Test::Builder2::Mouse::Meta::TypeConstraint >>
 
-=item C<< duck_type(\@methods) -> Mouse::Meta::TypeConstraint >>
+=item C<< duck_type(\@methods) -> Test::Builder2::Mouse::Meta::TypeConstraint >>
 
-=item C<< enum($name, @values | \@values) -> Mouse::Meta::TypeConstraint >>
+=item C<< enum($name, @values | \@values) -> Test::Builder2::Mouse::Meta::TypeConstraint >>
 
-=item C<< enum (\@values) -> Mouse::Meta::TypeConstraint >>
+=item C<< enum (\@values) -> Test::Builder2::Mouse::Meta::TypeConstraint >>
 
 =item C<< coerce $type => from $another_type, via { }, ... >>
 
@@ -599,7 +599,7 @@ Returns the names of all the type constraints.
 
 =over 4
 
-=item C<< find_type_constraint(Type) -> Mouse::Meta::TypeConstraint >>
+=item C<< find_type_constraint(Type) -> Test::Builder2::Mouse::Meta::TypeConstraint >>
 
 =back
 

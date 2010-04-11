@@ -1,8 +1,8 @@
-package Mouse::Meta::Role;
-use Mouse::Util qw(:meta not_supported); # enables strict and warnings
+package Test::Builder2::Mouse::Meta::Role;
+use Test::Builder2::Mouse::Util qw(:meta not_supported); # enables strict and warnings
 
-use Mouse::Meta::Module;
-our @ISA = qw(Mouse::Meta::Module);
+use Test::Builder2::Mouse::Meta::Module;
+our @ISA = qw(Test::Builder2::Mouse::Meta::Module);
 
 sub method_metaclass;
 
@@ -85,7 +85,7 @@ sub _check_required_methods{
             $role->throw_error(sprintf "'%s' requires the method%s %s to be implemented by '%s'",
                 $role->name,
                 (@missing == 1 ? '' : 's'), # method or methods
-                Mouse::Util::quoted_english_list(@missing),
+                Test::Builder2::Mouse::Util::quoted_english_list(@missing),
                 $consumer_class_name);
         }
     }
@@ -190,17 +190,17 @@ sub apply {
 
     my $instance;
 
-    if(Mouse::Util::is_a_metaclass($consumer)){  # Application::ToClass
+    if(Test::Builder2::Mouse::Util::is_a_metaclass($consumer)){  # Application::ToClass
         $args{_to} = 'class';
     }
-    elsif(Mouse::Util::is_a_metarole($consumer)){ # Application::ToRole
+    elsif(Test::Builder2::Mouse::Util::is_a_metarole($consumer)){ # Application::ToRole
         $args{_to} = 'role';
     }
     else{                                       # Appplication::ToInstance
         $args{_to} = 'instance';
         $instance  = $consumer;
 
-        $consumer = (Mouse::Util::class_of($instance) || 'Mouse::Meta::Class')->create_anon_class(
+        $consumer = (Test::Builder2::Mouse::Util::class_of($instance) || 'Mouse::Meta::Class')->create_anon_class(
             superclasses => [ref $instance],
             cache        => 1,
         );
@@ -248,9 +248,9 @@ sub apply {
 sub combine {
     my($self, @role_specs) = @_;
 
-    require 'Mouse/Meta/Role/Composite.pm'; # we don't want to create its namespace
+    require 'Test/Builder2/Mouse/Meta/Role/Composite.pm'; # we don't want to create its namespace
 
-    my $composite = Mouse::Meta::Role::Composite->create_anon_role();
+    my $composite = Test::Builder2::Mouse::Meta::Role::Composite->create_anon_role();
 
     foreach my $role_spec (@role_specs) {
         my($role_name, $args) = @{$role_spec};
@@ -308,7 +308,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Meta::Role - The Mouse Role metaclass
+Test::Builder2::Mouse::Meta::Role - The Mouse Role metaclass
 
 =head1 VERSION
 

@@ -2,7 +2,7 @@ package Test::Builder2::Formatter::TAP::v13;
 
 use 5.008001;
 
-use Mouse;
+use Test::Builder2::Mouse;
 use Carp;
 use Test::Builder2::Types;
 

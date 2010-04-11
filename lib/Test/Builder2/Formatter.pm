@@ -1,7 +1,7 @@
 package Test::Builder2::Formatter;
 
 use Carp;
-use Mouse;
+use Test::Builder2::Mouse;
 
 
 =head1 NAME
@@ -12,7 +12,7 @@ Test::Builder2::Formatter - Base class for formating test results
 
   package Test::Builder2::Formatter::SomeFormat;
 
-  use Mouse;
+  use Test::Builder2::Mouse;
   extends "Test::Builder2::Formatter;
 
 =head1 DESCRIPTION

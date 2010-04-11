@@ -1,9 +1,9 @@
-package Mouse::Meta::Attribute;
-use Mouse::Util qw(:meta); # enables strict and warnings
+package Test::Builder2::Mouse::Meta::Attribute;
+use Test::Builder2::Mouse::Util qw(:meta); # enables strict and warnings
 
 use Carp ();
 
-use Mouse::Meta::TypeConstraint;
+use Test::Builder2::Mouse::Meta::TypeConstraint;
 
 my %valid_options = map { $_ => undef } (
   'accessor',
@@ -44,13 +44,13 @@ my %valid_options = map { $_ => undef } (
   'curries',
 );
 
-our @CARP_NOT = qw(Mouse::Meta::Class);
+our @CARP_NOT = qw(Test::Builder2::Mouse::Meta::Class);
 
 sub new {
     my $class = shift;
     my $name  = shift;
 
-    my $args  = $class->Mouse::Object::BUILDARGS(@_);
+    my $args  = $class->Test::Builder2::Mouse::Object::BUILDARGS(@_);
 
     # XXX: for backward compatibility (with method modifiers)
     if($class->can('canonicalize_args') != \&canonicalize_args){
@@ -80,7 +80,7 @@ sub new {
     if(@bad){
         Carp::carp(
             "Found unknown argument(s) passed to '$name' attribute constructor in '$class': "
-            . Mouse::Util::english_list(@bad));
+            . Test::Builder2::Mouse::Util::english_list(@bad));
     }
 
     my $self = bless $args, $class;
@@ -105,14 +105,14 @@ sub interpolate_class{
     my($class, $args) = @_;
 
     if(my $metaclass = delete $args->{metaclass}){
-        $class = Mouse::Util::resolve_metaclass_alias( Attribute => $metaclass );
+        $class = Test::Builder2::Mouse::Util::resolve_metaclass_alias( Attribute => $metaclass );
     }
 
     my @traits;
     if(my $traits_ref = delete $args->{traits}){
 
         for (my $i = 0; $i < @{$traits_ref}; $i++) {
-            my $trait = Mouse::Util::resolve_metaclass_alias(Attribute => $traits_ref->[$i], trait => 1);
+            my $trait = Test::Builder2::Mouse::Util::resolve_metaclass_alias(Attribute => $traits_ref->[$i], trait => 1);
 
             next if $class->does($trait);
 
@@ -124,7 +124,7 @@ sub interpolate_class{
         }
 
         if (@traits) {
-            $class = Mouse::Meta::Class->create_anon_class(
+            $class = Test::Builder2::Mouse::Meta::Class->create_anon_class(
                 superclasses => [ $class ],
                 roles        => \@traits,
                 cache        => 1,
@@ -194,7 +194,7 @@ sub _throw_type_constraint_error {
 
 sub clone_and_inherit_options{
     my $self = shift;
-    my $args = $self->Mouse::Object::BUILDARGS(@_);
+    my $args = $self->Test::Builder2::Mouse::Object::BUILDARGS(@_);
 
     my($attribute_class, @traits) = ref($self)->interpolate_class($args);
 
@@ -346,7 +346,7 @@ sub install_accessors{
 }
 
 sub delegation_metaclass() { ## no critic
-    'Mouse::Meta::Method::Delegation'
+    'Test::Builder2::Mouse::Meta::Method::Delegation'
 }
 
 sub _canonicalize_handles {
@@ -361,16 +361,16 @@ sub _canonicalize_handles {
     elsif ( ref($handles) eq 'CODE' ) {
         my $class_or_role = ( $self->{isa} || $self->{does} )
             || $self->throw_error( "Cannot find delegate metaclass for attribute " . $self->name );
-        return $handles->( $self, Mouse::Meta::Class->initialize("$class_or_role"));
+        return $handles->( $self, Test::Builder2::Mouse::Meta::Class->initialize("$class_or_role"));
     }
     elsif (ref($handles) eq 'Regexp') {
         my $class_or_role = ($self->{isa} || $self->{does})
             || $self->throw_error("Cannot delegate methods based on a Regexp without a type constraint (isa)");
 
-        my $meta = Mouse::Meta::Class->initialize("$class_or_role"); # "" for stringify
+        my $meta = Test::Builder2::Mouse::Meta::Class->initialize("$class_or_role"); # "" for stringify
         return map  { $_ => $_ }
-               grep { !Mouse::Object->can($_) && $_ =~ $handles }
-                   Mouse::Util::is_a_metarole($meta)
+               grep { !Test::Builder2::Mouse::Object->can($_) && $_ =~ $handles }
+                   Test::Builder2::Mouse::Util::is_a_metarole($meta)
                         ? $meta->get_method_list
                         : $meta->get_all_method_names;
     }
@@ -381,14 +381,14 @@ sub _canonicalize_handles {
 
 sub _make_delegation_method {
     my($self, $handle, $method_to_call) = @_;
-    return Mouse::Util::load_class($self->delegation_metaclass)
+    return Test::Builder2::Mouse::Util::load_class($self->delegation_metaclass)
         ->_generate_delegation($self, $handle, $method_to_call);
 }
 
 sub throw_error{
     my $self = shift;
 
-    my $metaclass = (ref $self && $self->associated_class) || 'Mouse::Meta::Class';
+    my $metaclass = (ref $self && $self->associated_class) || 'Test::Builder2::Mouse::Meta::Class';
     $metaclass->throw_error(@_, depth => 1);
 }
 
@@ -397,7 +397,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Meta::Attribute - The Mouse attribute metaclass
+Test::Builder2::Mouse::Meta::Attribute - The Mouse attribute metaclass
 
 =head1 VERSION
 
@@ -405,9 +405,9 @@ This document describes Mouse version 0.53
 
 =head1 METHODS
 
-=head2 C<< new(%options) -> Mouse::Meta::Attribute >>
+=head2 C<< new(%options) -> Test::Builder2::Mouse::Meta::Attribute >>
 
-Instantiates a new Mouse::Meta::Attribute. Does nothing else.
+Instantiates a new Test::Builder2::Mouse::Meta::Attribute. Does nothing else.
 
 It adds the following options to the constructor:
 
@@ -521,7 +521,7 @@ Currently the argument I<MethodName> is ignored in Mouse.
 Checks that the given value passes this attribute's type constraint. Returns C<true>
 on success, otherwise C<confess>es.
 
-=head2 C<< clone_and_inherit_options(options) -> Mouse::Meta::Attribute >>
+=head2 C<< clone_and_inherit_options(options) -> Test::Builder2::Mouse::Meta::Attribute >>
 
 Creates a new attribute in the owner class, inheriting options from parent classes.
 Accessors and helper methods are installed. Some error checking is done.

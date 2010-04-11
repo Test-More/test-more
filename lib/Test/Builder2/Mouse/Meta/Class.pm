@@ -1,10 +1,10 @@
-package Mouse::Meta::Class;
-use Mouse::Util qw/:meta get_linear_isa not_supported/; # enables strict and warnings
+package Test::Builder2::Mouse::Meta::Class;
+use Test::Builder2::Mouse::Util qw/:meta get_linear_isa not_supported/; # enables strict and warnings
 
 use Scalar::Util qw/blessed weaken/;
 
-use Mouse::Meta::Module;
-our @ISA = qw(Mouse::Meta::Module);
+use Test::Builder2::Mouse::Meta::Module;
+our @ISA = qw(Test::Builder2::Mouse::Meta::Module);
 
 our @CARP_NOT = qw(Mouse); # trust Mouse
 
@@ -55,12 +55,12 @@ sub superclasses {
 
     if (@_) {
         foreach my $super(@_){
-            Mouse::Util::load_class($super);
-            my $meta = Mouse::Util::get_metaclass_by_name($super);
+            Test::Builder2::Mouse::Util::load_class($super);
+            my $meta = Test::Builder2::Mouse::Util::get_metaclass_by_name($super);
 
             next if not defined $meta;
 
-            if(Mouse::Util::is_a_metarole($meta)){
+            if(Test::Builder2::Mouse::Util::is_a_metarole($meta)){
                 $self->throw_error("You cannot inherit from a Mouse Role ($super)");
             }
 
@@ -74,10 +74,10 @@ sub superclasses {
     return @{ $self->{superclasses} };
 }
 my @MetaClassTypes = (
-    'attribute',   # Mouse::Meta::Attribute
-    'method',      # Mouse::Meta::Method
-    'constructor', # Mouse::Meta::Method::Constructor
-    'destructor',  # Mouse::Meta::Method::Destructor
+    'attribute',   # Test::Builder2::Mouse::Meta::Attribute
+    'method',      # Test::Builder2::Mouse::Meta::Method
+    'constructor', # Test::Builder2::Mouse::Meta::Method::Constructor
+    'destructor',  # Test::Builder2::Mouse::Meta::Method::Destructor
 );
 
 sub _reconcile_with_superclass_meta {
@@ -102,8 +102,8 @@ sub _reconcile_with_superclass_meta {
 
     #use Data::Dumper; print Data::Dumper->new([\%metaroles], ['*metaroles'])->Indent(1)->Dump;
 
-    require Mouse::Util::MetaRole;
-    $_[0] = Mouse::Util::MetaRole::apply_metaroles(
+    require Test::Builder2::Mouse::Util::MetaRole;
+    $_[0] = Test::Builder2::Mouse::Util::MetaRole::apply_metaroles(
         for             => $self,
         class_metaroles => \%metaroles,
     );
@@ -157,7 +157,7 @@ sub get_all_method_names {
     my $self = shift;
     my %uniq;
     return grep { $uniq{$_}++ == 0 }
-            map { Mouse::Meta::Class->initialize($_)->get_method_list() }
+            map { Test::Builder2::Mouse::Meta::Class->initialize($_)->get_method_list() }
             $self->linearized_isa;
 }
 
@@ -165,7 +165,7 @@ sub find_attribute_by_name{
     my($self, $name) = @_;
     my $attr;
     foreach my $class($self->linearized_isa){
-        my $meta = Mouse::Util::get_metaclass_by_name($class) or next;
+        my $meta = Test::Builder2::Mouse::Util::get_metaclass_by_name($class) or next;
         $attr = $meta->get_attribute($name) and last;
     }
     return $attr;
@@ -179,8 +179,8 @@ sub add_attribute {
     if(blessed $_[0]){
         $attr = $_[0];
 
-        $attr->isa('Mouse::Meta::Attribute')
-            || $self->throw_error("Your attribute must be an instance of Mouse::Meta::Attribute (or a subclass)");
+        $attr->isa('Test::Builder2::Mouse::Meta::Attribute')
+            || $self->throw_error("Your attribute must be an instance of Test::Builder2::Mouse::Meta::Attribute (or a subclass)");
 
         $name = $attr->name;
     }
@@ -232,7 +232,7 @@ sub new_object;
 sub clone_object {
     my $class  = shift;
     my $object = shift;
-    my $args   = $object->Mouse::Object::BUILDARGS(@_);
+    my $args   = $object->Test::Builder2::Mouse::Object::BUILDARGS(@_);
 
     (blessed($object) && $object->isa($class->name))
         || $class->throw_error("You must pass an instance of the metaclass (" . $class->name . "), not ($object)");
@@ -274,13 +274,13 @@ sub make_immutable {
 
     if ($args{inline_constructor}) {
         $self->add_method($args{constructor_name} =>
-            Mouse::Util::load_class($self->constructor_class)
+            Test::Builder2::Mouse::Util::load_class($self->constructor_class)
                 ->_generate_constructor($self, \%args));
     }
 
     if ($args{inline_destructor}) {
         $self->add_method(DESTROY =>
-            Mouse::Util::load_class($self->destructor_class)
+            Test::Builder2::Mouse::Util::load_class($self->destructor_class)
                 ->_generate_destructor($self, \%args));
     }
 
@@ -385,7 +385,7 @@ sub _install_modifier {
             my $into = $self->name;
             $install_modifier->($into, $type, $name, $code);
 
-            $self->add_method($name => Mouse::Util::get_code_ref($into, $name));
+            $self->add_method($name => Test::Builder2::Mouse::Util::get_code_ref($into, $name));
             return;
         };
     }
@@ -427,9 +427,9 @@ sub add_override_method_modifier {
         or $self->throw_error("You cannot override '$name' because it has no super method");
 
     $self->add_method($name => sub {
-        local $Mouse::SUPER_PACKAGE = $package;
-        local $Mouse::SUPER_BODY    = $super_body;
-        local @Mouse::SUPER_ARGS    = @_;
+        local $Test::Builder2::Mouse::SUPER_PACKAGE = $package;
+        local $Test::Builder2::Mouse::SUPER_BODY    = $super_body;
+        local @Test::Builder2::Mouse::SUPER_ARGS    = @_;
 
         $code->(@_);
     });
@@ -449,8 +449,8 @@ sub add_augment_method_modifier {
     my $super_body    = $super->body;
 
     $self->add_method($name => sub{
-        local $Mouse::INNER_BODY{$super_package} = $code;
-        local $Mouse::INNER_ARGS{$super_package} = [@_];
+        local $Test::Builder2::Mouse::INNER_BODY{$super_package} = $code;
+        local $Test::Builder2::Mouse::INNER_ARGS{$super_package} = [@_];
         $super_body->(@_);
     });
     return;
@@ -465,7 +465,7 @@ sub does_role {
     $role_name = $role_name->name if ref $role_name;
 
     for my $class ($self->linearized_isa) {
-        my $meta = Mouse::Util::get_metaclass_by_name($class)
+        my $meta = Test::Builder2::Mouse::Util::get_metaclass_by_name($class)
             or next;
 
         for my $role (@{ $meta->roles }) {
@@ -482,7 +482,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Meta::Class - The Mouse class metaclass
+Test::Builder2::Mouse::Meta::Class - The Mouse class metaclass
 
 =head1 VERSION
 
@@ -490,9 +490,9 @@ This document describes Mouse version 0.53
 
 =head1 METHODS
 
-=head2 C<< initialize(ClassName) -> Mouse::Meta::Class >>
+=head2 C<< initialize(ClassName) -> Test::Builder2::Mouse::Meta::Class >>
 
-Finds or creates a C<Mouse::Meta::Class> instance for the given ClassName. Only
+Finds or creates a C<Test::Builder2::Mouse::Meta::Class> instance for the given ClassName. Only
 one instance should exist for a given class.
 
 =head2 C<< name -> ClassName >>
@@ -511,9 +511,9 @@ Adds a method to the owner class.
 
 Returns whether we have a method with the given name.
 
-=head2 C<< get_method(name) -> Mouse::Meta::Method | undef >>
+=head2 C<< get_method(name) -> Test::Builder2::Mouse::Meta::Method | undef >>
 
-Returns a L<Mouse::Meta::Method> with the given name.
+Returns a L<Test::Builder2::Mouse::Meta::Method> with the given name.
 
 Note that you can also use C<< $metaclass->name->can($name) >> for a method body.
 
@@ -523,23 +523,23 @@ Returns a list of method names which are defined in the local class.
 If you want a list of all applicable methods for a class, use the
 C<get_all_methods> method.
 
-=head2 C<< get_all_methods -> (Mouse::Meta::Method) >>
+=head2 C<< get_all_methods -> (Test::Builder2::Mouse::Meta::Method) >>
 
-Return the list of all L<Mouse::Meta::Method> instances associated with
+Return the list of all L<Test::Builder2::Mouse::Meta::Method> instances associated with
 the class and its superclasses.
 
-=head2 C<< add_attribute(name => spec | Mouse::Meta::Attribute) >>
+=head2 C<< add_attribute(name => spec | Test::Builder2::Mouse::Meta::Attribute) >>
 
-Begins keeping track of the existing L<Mouse::Meta::Attribute> for the owner
+Begins keeping track of the existing L<Test::Builder2::Mouse::Meta::Attribute> for the owner
 class.
 
 =head2 C<< has_attribute(Name) -> Bool >>
 
-Returns whether we have a L<Mouse::Meta::Attribute> with the given name.
+Returns whether we have a L<Test::Builder2::Mouse::Meta::Attribute> with the given name.
 
-=head2 C<< get_attribute Name -> Mouse::Meta::Attribute | undef >>
+=head2 C<< get_attribute Name -> Test::Builder2::Mouse::Meta::Attribute | undef >>
 
-Returns the L<Mouse::Meta::Attribute> with the given name.
+Returns the L<Test::Builder2::Mouse::Meta::Attribute> with the given name.
 
 =head2 C<< get_attribute_list -> Names >>
 
@@ -547,9 +547,9 @@ Returns a list of attribute names which are defined in the local
 class. If you want a list of all applicable attributes for a class,
 use the C<get_all_attributes> method.
 
-=head2 C<< get_all_attributes -> (Mouse::Meta::Attribute) >>
+=head2 C<< get_all_attributes -> (Test::Builder2::Mouse::Meta::Attribute) >>
 
-Returns the list of all L<Mouse::Meta::Attribute> instances associated with
+Returns the list of all L<Test::Builder2::Mouse::Meta::Attribute> instances associated with
 this class and its superclasses.
 
 =head2 C<< linearized_isa -> [ClassNames] >>
@@ -571,7 +571,7 @@ Throws an error with the given message.
 
 =head1 SEE ALSO
 
-L<Mouse::Meta::Module>
+L<Test::Builder2::Mouse::Meta::Module>
 
 L<Moose::Meta::Class>
 

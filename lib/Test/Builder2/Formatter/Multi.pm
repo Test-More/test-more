@@ -1,6 +1,6 @@
 package Test::Builder2::Formatter::Multi;
 
-use Mouse;
+use Test::Builder2::Mouse;
 
 extends 'Test::Builder2::Formatter';
 

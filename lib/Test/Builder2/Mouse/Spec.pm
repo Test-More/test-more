@@ -1,4 +1,4 @@
-package Mouse::Spec;
+package Test::Builder2::Mouse::Spec;
 use strict;
 use warnings;
 
@@ -15,7 +15,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Spec - To what extent Mouse is compatible with Moose
+Test::Builder2::Mouse::Spec - To what extent Mouse is compatible with Moose
 
 =head1 VERSION
 
@@ -23,10 +23,10 @@ This document describes Mouse version 0.53
 
 =head1 SYNOPSIS
 
-    use Mouse::Spec;
+    use Test::Builder2::Mouse::Spec;
 
-    printf "Mouse/%s is compatible with Moose/%s\n",
-        Mouse::Spec->MouseVersion, Mouse::Spec->MooseVersion;
+    printf "Test/Builder2/Mouse/%s is compatible with Moose/%s\n",
+        Test::Builder2::Mouse::Spec->MouseVersion, Mouse::Spec->MooseVersion;
 
 =head1 DESCRIPTION
 
@@ -46,7 +46,7 @@ Any MOP in Mouse has no attributes by default.
 For this reason, C<< $metaclass->meta->make_immutable() >> does not yet work as you expect.
 B<Don not make metaclasses immutable>.
 
-=head3 Mouse::Meta::Instance
+=head3 Test::Builder2::Mouse::Meta::Instance
 
 Meta instance mechanism is not implemented.
 
@@ -54,12 +54,12 @@ Meta instance mechanism is not implemented.
 
 Role exclusion, C<exclude()>, is not implemented.
 
-=head3 -metaclass in Mouse::Exporter
+=head3 -metaclass in Test::Builder2::Mouse::Exporter
 
-C<< use Mouse -metaclass => ... >> are not implemented.
-Use C<< use Mouse -traits => ... >> instead.
+C<< use Test::Builder2::Mouse -metaclass => ... >> are not implemented.
+Use C<< use Test::Builder2::Mouse -traits => ... >> instead.
 
-=head3 Mouse::Meta::Attribute::Native
+=head3 Test::Builder2::Mouse::Meta::Attribute::Native
 
 Native traits are not supported directly, but C<MouseX::NativeTraits> is
 available on CPAN. Once you have installed it, you can use it as the same way

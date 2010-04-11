@@ -1,7 +1,7 @@
 package Test::Builder2;
 
 use 5.008001;
-use Mouse;
+use Test::Builder2::Mouse;
 use Carp qw(confess);
 
 use Test::Builder2::Result;

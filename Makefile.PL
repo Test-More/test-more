@@ -66,7 +66,6 @@ WriteMakefile(
 
     PREREQ_PM       => { 
         Test::Harness   => 2.03,
-        Mouse           => 0.13,
         %Prereqs
     },
 
@@ -86,6 +85,10 @@ WriteMakefile(
             bugtracker  =>      'http://code.google.com/p/test-more/issues',
             repository  =>      'http://github.com/schwern/test-more/tree/master',
             MailingList =>      'http://groups.google.com/group/test-more-users',
+        },
+        no_index => {
+            directory => ["lib/Test/Builder2/Mouse/"],
+            file      => ["lib/Test/Builder2/Mouse.pm"],
         },
     }))
 );

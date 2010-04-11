@@ -1,10 +1,10 @@
-package Mouse::Util;
-use Mouse::Exporter; # enables strict and warnings
+package Test::Builder2::Mouse::Util;
+use Test::Builder2::Mouse::Exporter; # enables strict and warnings
 
 # must be here because it will be refered by other modules loaded
 sub get_linear_isa($;$); ## no critic
 
-# must be here because it will called in Mouse::Exporter
+# must be here because it will called in Test::Builder2::Mouse::Exporter
 sub install_subroutines {
     my $into = shift;
 
@@ -18,8 +18,8 @@ sub install_subroutines {
 }
 
 BEGIN{
-    # This is used in Mouse::PurePerl
-    Mouse::Exporter->setup_import_methods(
+    # This is used in Test::Builder2::Mouse::PurePerl
+    Test::Builder2::Mouse::Exporter->setup_import_methods(
         as_is => [qw(
             find_meta
             does_role
@@ -49,32 +49,32 @@ BEGIN{
     );
 
 
-    # Because Mouse::Util is loaded first in all the Mouse sub-modules,
-    # XS loader is placed here, not in Mouse.pm.
+    # Because Test::Builder2::Mouse::Util is loaded first in all the Mouse sub-modules,
+    # XS loader is placed here, not in Test/Builder2/Mouse.pm.
 
     our $VERSION = '0.53';
 
-    my $xs = !(exists $INC{'Mouse/PurePerl.pm'} || $ENV{MOUSE_PUREPERL});
+    my $xs = !(exists $INC{'Test/Builder2/Mouse/PurePerl.pm'} || $ENV{MOUSE_PUREPERL});
 
     if($xs){
         # XXX: XSLoader tries to get the object path from caller's file name
         #      $hack_mouse_file fools its mechanism
 
-        (my $hack_mouse_file = __FILE__) =~ s/.Util//; # .../Mouse/Util.pm -> .../Mouse.pm
+        (my $hack_mouse_file = __FILE__) =~ s/.Util//; # .../Test/Builder2/Mouse/Util.pm -> .../Test/Builder2/Mouse.pm
         $xs = eval sprintf("#line %d %s\n", __LINE__, $hack_mouse_file) . q{
             local $^W = 0; # work around 'redefine' warning to &install_subroutines
             require XSLoader;
             XSLoader::load('Mouse', $VERSION);
-            Mouse::Util->import({ into => 'Mouse::Meta::Method::Constructor::XS' }, ':meta');
-            Mouse::Util->import({ into => 'Mouse::Meta::Method::Destructor::XS'  }, ':meta');
-            Mouse::Util->import({ into => 'Mouse::Meta::Method::Accessor::XS'    }, ':meta');
+            Test::Builder2::Mouse::Util->import({ into => 'Mouse::Meta::Method::Constructor::XS' }, ':meta');
+            Test::Builder2::Mouse::Util->import({ into => 'Mouse::Meta::Method::Destructor::XS'  }, ':meta');
+            Test::Builder2::Mouse::Util->import({ into => 'Mouse::Meta::Method::Accessor::XS'    }, ':meta');
             return 1;
         } || 0;
         #warn $@ if $@;
     }
 
     if(!$xs){
-        require 'Mouse/PurePerl.pm'; # we don't want to create its namespace
+        require 'Test/Builder2/Mouse/PurePerl.pm'; # we don't want to create its namespace
     }
 
     *MOUSE_XS = sub(){ $xs };
@@ -84,23 +84,23 @@ use Carp         ();
 use Scalar::Util ();
 
 # aliases as public APIs
-# it must be 'require', not 'use', because Mouse::Meta::Module depends on Mouse::Util
-require Mouse::Meta::Module; # for the entities of metaclass cache utilities
+# it must be 'require', not 'use', because Test::Builder2::Mouse::Meta::Module depends on Mouse::Util
+require Test::Builder2::Mouse::Meta::Module; # for the entities of metaclass cache utilities
 
 # aliases
 {
-    *class_of                    = \&Mouse::Meta::Module::_class_of;
-    *get_metaclass_by_name       = \&Mouse::Meta::Module::_get_metaclass_by_name;
-    *get_all_metaclass_instances = \&Mouse::Meta::Module::_get_all_metaclass_instances;
-    *get_all_metaclass_names     = \&Mouse::Meta::Module::_get_all_metaclass_names;
+    *class_of                    = \&Test::Builder2::Mouse::Meta::Module::_class_of;
+    *get_metaclass_by_name       = \&Test::Builder2::Mouse::Meta::Module::_get_metaclass_by_name;
+    *get_all_metaclass_instances = \&Test::Builder2::Mouse::Meta::Module::_get_all_metaclass_instances;
+    *get_all_metaclass_names     = \&Test::Builder2::Mouse::Meta::Module::_get_all_metaclass_names;
 
-    *Mouse::load_class           = \&load_class;
-    *Mouse::is_class_loaded      = \&is_class_loaded;
+    *Test::Builder2::Mouse::load_class           = \&load_class;
+    *Test::Builder2::Mouse::is_class_loaded      = \&is_class_loaded;
 
     # is-a predicates
-    #generate_isa_predicate_for('Mouse::Meta::TypeConstraint' => 'is_a_type_constraint');
-    #generate_isa_predicate_for('Mouse::Meta::Class'          => 'is_a_metaclass');
-    #generate_isa_predicate_for('Mouse::Meta::Role'           => 'is_a_metarole');
+    #generate_isa_predicate_for('Test::Builder2::Mouse::Meta::TypeConstraint' => 'is_a_type_constraint');
+    #generate_isa_predicate_for('Test::Builder2::Mouse::Meta::Class'          => 'is_a_metaclass');
+    #generate_isa_predicate_for('Test::Builder2::Mouse::Meta::Role'           => 'is_a_metarole');
 
     # duck type predicates
     generate_can_predicate_for(['_compiled_type_constraint']  => 'is_a_type_constraint');
@@ -123,7 +123,7 @@ sub does_role{
     my $meta = class_of($class_or_obj);
 
     (defined $role_name)
-        || ($meta || 'Mouse::Meta::Class')->throw_error("You must supply a role name to does()");
+        || ($meta || 'Test::Builder2::Mouse::Meta::Class')->throw_error("You must supply a role name to does()");
 
     return defined($meta) && $meta->does_role($role_name);
 }
@@ -182,7 +182,7 @@ BEGIN {
 }
 
 
-# taken from Mouse::Util (0.90)
+# taken from Test::Builder2::Mouse::Util (0.90)
 {
     my %cache;
 
@@ -194,7 +194,7 @@ BEGIN {
         return $cache{$cache_key}{$metaclass_name} ||= do{
 
             my $possible_full_name = join '::',
-                'Mouse::Meta', $type, 'Custom', ($options{trait} ? 'Trait' : ()), $metaclass_name
+                'Test::Builder2::Mouse::Meta', $type, 'Custom', ($options{trait} ? 'Trait' : ()), $metaclass_name
             ;
 
             my $loaded_class = load_first_existing_class(
@@ -278,7 +278,7 @@ sub is_class_loaded;
 sub apply_all_roles {
     my $consumer = Scalar::Util::blessed($_[0])
         ?                                shift   # instance
-        : Mouse::Meta::Class->initialize(shift); # class or role name
+        : Test::Builder2::Mouse::Meta::Class->initialize(shift); # class or role name
 
     my @roles;
 
@@ -302,7 +302,7 @@ sub apply_all_roles {
         get_metaclass_by_name($role_name)->apply( $consumer, defined $params ? $params : () );
     }
     else {
-        Mouse::Meta::Role->combine(@roles)->apply($consumer);
+        Test::Builder2::Mouse::Meta::Role->combine(@roles)->apply($consumer);
     }
     return;
 }
@@ -337,7 +337,7 @@ sub not_supported{
 
 # general meta() method
 sub meta :method{
-    return Mouse::Meta::Class->initialize(ref($_[0]) || $_[0]);
+    return Test::Builder2::Mouse::Meta::Class->initialize(ref($_[0]) || $_[0]);
 }
 
 # general dump() method
@@ -361,7 +361,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Util - Features, with or without their dependencies
+Test::Builder2::Mouse::Util - Features, with or without their dependencies
 
 =head1 VERSION
 
@@ -395,13 +395,13 @@ This will load a given C<ClassName> (or die if it is not loadable).
 This function can be used in place of tricks like
 C<eval "use $module"> or using C<require>.
 
-=head3 C<< Mouse::Util::class_of(ClassName or Object) >>
+=head3 C<< Test::Builder2::Mouse::Util::class_of(ClassName or Object) >>
 
-=head3 C<< Mouse::Util::get_metaclass_by_name(ClassName) >>
+=head3 C<< Test::Builder2::Mouse::Util::get_metaclass_by_name(ClassName) >>
 
-=head3 C<< Mouse::Util::get_all_metaclass_instances() >>
+=head3 C<< Test::Builder2::Mouse::Util::get_all_metaclass_instances() >>
 
-=head3 C<< Mouse::Util::get_all_metaclass_names() >>
+=head3 C<< Test::Builder2::Mouse::Util::get_all_metaclass_names() >>
 
 =head2 MRO::Compat
 

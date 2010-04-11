@@ -1,8 +1,8 @@
 package Test::Builder2::Result;
 
 use strict;
-use Mouse;
-use Mouse::Util::TypeConstraints qw(enum);
+use Test::Builder2::Mouse;
+use Test::Builder2::Mouse::Util::TypeConstraints qw(enum);
 
 
 =head1 NAME

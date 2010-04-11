@@ -8,7 +8,7 @@ BEGIN {
 }
 
 # Make sure this is in place before Test::More is loaded.
-my $handler_called;
+my $handler_called = 0;
 BEGIN {
     $SIG{__DIE__} = sub { $handler_called++ };
 }

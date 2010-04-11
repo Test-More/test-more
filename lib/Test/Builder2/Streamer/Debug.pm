@@ -1,5 +1,5 @@
 package Test::Builder2::Streamer::Debug;
-use Mouse;
+use Test::Builder2::Mouse;
 with 'Test::Builder2::Streamer';
 
 has written_hunks => (
@@ -86,5 +86,5 @@ sub all_output {
     join '', map { $_->[1] } @{ $self->written_hunks };
 }
 
-no Mouse::Role;
+no Test::Builder2::Mouse::Role;
 1;

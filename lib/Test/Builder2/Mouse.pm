@@ -1,23 +1,23 @@
-package Mouse;
+package Test::Builder2::Mouse;
 use 5.006_002;
 
-use Mouse::Exporter; # enables strict and warnings
+use Test::Builder2::Mouse::Exporter; # enables strict and warnings
 
 our $VERSION = '0.53';
 
 use Carp         qw(confess);
 use Scalar::Util qw(blessed);
 
-use Mouse::Util ();
+use Test::Builder2::Mouse::Util ();
 
-use Mouse::Meta::Module;
-use Mouse::Meta::Class;
-use Mouse::Meta::Role;
-use Mouse::Meta::Attribute;
-use Mouse::Object;
-use Mouse::Util::TypeConstraints ();
+use Test::Builder2::Mouse::Meta::Module;
+use Test::Builder2::Mouse::Meta::Class;
+use Test::Builder2::Mouse::Meta::Role;
+use Test::Builder2::Mouse::Meta::Attribute;
+use Test::Builder2::Mouse::Object;
+use Test::Builder2::Mouse::Util::TypeConstraints ();
 
-Mouse::Exporter->setup_import_methods(
+Test::Builder2::Mouse::Exporter->setup_import_methods(
     as_is => [qw(
         extends with
         has
@@ -32,17 +32,17 @@ Mouse::Exporter->setup_import_methods(
 
 
 sub extends {
-    Mouse::Meta::Class->initialize(scalar caller)->superclasses(@_);
+    Test::Builder2::Mouse::Meta::Class->initialize(scalar caller)->superclasses(@_);
     return;
 }
 
 sub with {
-    Mouse::Util::apply_all_roles(scalar(caller), @_);
+    Test::Builder2::Mouse::Util::apply_all_roles(scalar(caller), @_);
     return;
 }
 
 sub has {
-    my $meta = Mouse::Meta::Class->initialize(scalar caller);
+    my $meta = Test::Builder2::Mouse::Meta::Class->initialize(scalar caller);
     my $name = shift;
 
     $meta->throw_error(q{Usage: has 'name' => ( key => value, ... )})
@@ -60,7 +60,7 @@ sub has {
 }
 
 sub before {
-    my $meta = Mouse::Meta::Class->initialize(scalar caller);
+    my $meta = Test::Builder2::Mouse::Meta::Class->initialize(scalar caller);
     my $code = pop;
     for my $name($meta->_collect_methods(@_)) {
         $meta->add_before_method_modifier($name => $code);
@@ -69,7 +69,7 @@ sub before {
 }
 
 sub after {
-    my $meta = Mouse::Meta::Class->initialize(scalar caller);
+    my $meta = Test::Builder2::Mouse::Meta::Class->initialize(scalar caller);
     my $code = pop;
     for my $name($meta->_collect_methods(@_)) {
         $meta->add_after_method_modifier($name => $code);
@@ -78,7 +78,7 @@ sub after {
 }
 
 sub around {
-    my $meta = Mouse::Meta::Class->initialize(scalar caller);
+    my $meta = Test::Builder2::Mouse::Meta::Class->initialize(scalar caller);
     my $code = pop;
     for my $name($meta->_collect_methods(@_)) {
         $meta->add_around_method_modifier($name => $code);
@@ -100,7 +100,7 @@ sub super {
 
 sub override {
     # my($name, $method) = @_;
-    Mouse::Meta::Class->initialize(scalar caller)->add_override_method_modifier(@_);
+    Test::Builder2::Mouse::Meta::Class->initialize(scalar caller)->add_override_method_modifier(@_);
 }
 
 our %INNER_BODY;
@@ -121,7 +121,7 @@ sub inner {
 
 sub augment {
     #my($name, $method) = @_;
-    Mouse::Meta::Class->initialize(scalar caller)->add_augment_method_modifier(@_);
+    Test::Builder2::Mouse::Meta::Class->initialize(scalar caller)->add_augment_method_modifier(@_);
     return;
 }
 
@@ -132,8 +132,8 @@ sub init_meta {
     my $class = $args{for_class}
                     or confess("Cannot call init_meta without specifying a for_class");
 
-    my $base_class = $args{base_class} || 'Mouse::Object';
-    my $metaclass  = $args{metaclass}  || 'Mouse::Meta::Class';
+    my $base_class = $args{base_class} || 'Test::Builder2::Mouse::Object';
+    my $metaclass  = $args{metaclass}  || 'Test::Builder2::Mouse::Meta::Class';
 
     my $meta = $metaclass->initialize($class);
 
@@ -145,8 +145,8 @@ sub init_meta {
         unless $meta->superclasses;
 
     # make a class type for each Mouse class
-    Mouse::Util::TypeConstraints::class_type($class)
-        unless Mouse::Util::TypeConstraints::find_type_constraint($class);
+    Test::Builder2::Mouse::Util::TypeConstraints::class_type($class)
+        unless Test::Builder2::Mouse::Util::TypeConstraints::find_type_constraint($class);
 
     return $meta;
 }
@@ -217,7 +217,7 @@ highly compatible with Moose. Even the error messages are taken from Moose.
 The Mouse code just runs the test suite 4x faster.
 
 The idea is that, if you need the extra power, you should be able to run
-C<s/Mouse/Moose/g> on your codebase and have nothing break. To that end,
+C<s/Test/Builder2/Mouse/Moose/g> on your codebase and have nothing break. To that end,
 we have written L<Any::Moose> which will act as Mouse unless Moose is loaded,
 in which case it will act as Moose. Since Mouse is a little sloppier than
 Moose, if you run into weird errors, it would be worth running:
@@ -227,7 +227,7 @@ Moose, if you run into weird errors, it would be worth running:
 to see if the bug is caused by Mouse. Moose's diagnostics and validation are
 also better.
 
-See also L<Mouse::Spec> for compatibility and incompatibility with Moose.
+See also L<Test::Builder2::Mouse::Spec> for compatibility and incompatibility with Moose.
 
 =head2 MouseX
 
@@ -239,7 +239,7 @@ list or #moose on IRC beforehand.
 
 =head1 KEYWORDS
 
-=head2 C<< $object->meta -> Mouse::Meta::Class >>
+=head2 C<< $object->meta -> Test::Builder2::Mouse::Meta::Class >>
 
 Returns this class' metaclass instance.
 
@@ -287,7 +287,7 @@ supported. Any unknown type is taken to be a class check
     Ref ScalarRef ArrayRef HashRef CodeRef RegexpRef GlobRef
     FileHandle Object
 
-For more documentation on type constraints, see L<Mouse::Util::TypeConstraints>.
+For more documentation on type constraints, see L<Test::Builder2::Mouse::Util::TypeConstraints>.
 
 =item C<< does => RoleName >>
 
@@ -392,7 +392,7 @@ L<Scalar::Util/blessed> for your convenience.
 
 =head2 import
 
-Importing Mouse will default your class' superclass list to L<Mouse::Object>.
+Importing Mouse will default your class' superclass list to L<Test::Builder2::Mouse::Object>.
 You may use L</extends> to replace the superclass list.
 
 =head2 unimport
@@ -412,7 +412,7 @@ Perl 5.6.2 or later.
 
 =head1 SEE ALSO
 
-L<Mouse::Spec>
+L<Test::Builder2::Mouse::Spec>
 
 L<Moose>
 

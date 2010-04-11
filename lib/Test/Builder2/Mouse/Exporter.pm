@@ -1,4 +1,4 @@
-package Mouse::Exporter;
+package Test::Builder2::Mouse::Exporter;
 use strict;
 use warnings;
 
@@ -12,9 +12,9 @@ BEGIN{ $strict_bits = strict::bits(qw(subs refs vars)); }
 my $warnings_extra_bits;
 BEGIN{ $warnings_extra_bits = warnings::bits(FATAL => 'recursion') }
 
-# it must be "require", because Mouse::Util depends on Mouse::Exporter,
-# which depends on Mouse::Util::import()
-require Mouse::Util;
+# it must be "require", because Test::Builder2::Mouse::Util depends on Mouse::Exporter,
+# which depends on Test::Builder2::Mouse::Util::import()
+require Test::Builder2::Mouse::Util;
 
 sub import{
     # strict->import;
@@ -33,7 +33,7 @@ sub setup_import_methods{
 
     my($import, $unimport) = $class->build_import_methods(%args);
 
-    Mouse::Util::install_subroutines($exporting_package,
+    Test::Builder2::Mouse::Util::install_subroutines($exporting_package,
         import   => $import,
         unimport => $unimport,
 
@@ -93,7 +93,7 @@ sub build_import_methods{
 
                 if(ref($thingy)){
                     $code = $thingy;
-                    ($code_package, $code_name) = Mouse::Util::get_code_info($code);
+                    ($code_package, $code_name) = Test::Builder2::Mouse::Util::get_code_info($code);
                 }
                 else{
                     $code_package = $package;
@@ -147,7 +147,7 @@ sub do_import {
     my($package, @args) = @_;
 
     my $spec = $SPEC{$package}
-        || confess("The package $package package does not use Mouse::Exporter");
+        || confess("The package $package package does not use Test::Builder2::Mouse::Exporter");
 
     my $into = _get_caller_package(ref($args[0]) ? shift @args : undef);
 
@@ -161,7 +161,7 @@ sub do_import {
                 push @traits, ref($args[0]) ? @{shift(@args)} : shift(@args);
             }
             else {
-                Mouse::Util::not_supported("-$arg");
+                Test::Builder2::Mouse::Util::not_supported("-$arg");
             }
         }
         elsif($arg =~ s/^://){
@@ -190,13 +190,13 @@ sub do_import {
             @traits =
                 map{
                     ref($_) ? $_
-                            : Mouse::Util::resolve_metaclass_alias($type => $_, trait => 1)
+                            : Test::Builder2::Mouse::Util::resolve_metaclass_alias($type => $_, trait => 1)
                 } @traits;
 
-            require Mouse::Util::MetaRole;
-            Mouse::Util::MetaRole::apply_metaroles(
+            require Test::Builder2::Mouse::Util::MetaRole;
+            Test::Builder2::Mouse::Util::MetaRole::apply_metaroles(
                 for       => $into,
-                Mouse::Util::is_a_metarole($into->meta)
+                Test::Builder2::Mouse::Util::is_a_metarole($into->meta)
                     ? (role_metaroles  => { role  => \@traits })
                     : (class_metaroles => { class => \@traits }),
             );
@@ -214,10 +214,10 @@ sub do_import {
                     || confess(qq{The $package package does not export "$keyword"})
                 );
         }
-        Mouse::Util::install_subroutines($into, @export_table);
+        Test::Builder2::Mouse::Util::install_subroutines($into, @export_table);
     }
     else{
-        Mouse::Util::install_subroutines($into, %{$spec->{DEFAULT}});
+        Test::Builder2::Mouse::Util::install_subroutines($into, %{$spec->{DEFAULT}});
     }
     return;
 }
@@ -227,7 +227,7 @@ sub do_unimport {
     my($package, $arg) = @_;
 
     my $spec = $SPEC{$package}
-        || confess("The package $package does not use Mouse::Exporter");
+        || confess("The package $package does not use Test::Builder2::Mouse::Exporter");
 
     my $from = _get_caller_package($arg);
 
@@ -268,7 +268,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Exporter - make an import() and unimport() just like Mouse.pm
+Test::Builder2::Mouse::Exporter - make an import() and unimport() just like Test/Builder2/Mouse.pm
 
 =head1 VERSION
 
@@ -278,10 +278,10 @@ This document describes Mouse version 0.53
 
     package MyApp::Mouse;
 
-    use Mouse ();
-    use Mouse::Exporter;
+    use Test::Builder2::Mouse ();
+    use Test::Builder2::Mouse::Exporter;
 
-    Mouse::Exporter->setup_import_methods(
+    Test::Builder2::Mouse::Exporter->setup_import_methods(
       as_is     => [ 'has_rw', 'other_sugar', \&Some::Random::thing ],
       also      => 'Mouse',
     );
@@ -310,10 +310,10 @@ This document describes Mouse version 0.53
 =head1 DESCRIPTION
 
 This module encapsulates the exporting of sugar functions in a
-C<Mouse.pm>-like manner. It does this by building custom C<import>,
+C<Test/Builder2/Mouse.pm>-like manner. It does this by building custom C<import>,
 C<unimport> methods for your module, based on a spec you provide.
 
-Note that C<Mouse::Exporter> does not provide the C<with_meta> option,
+Note that C<Test::Builder2::Mouse::Exporter> does not provide the C<with_meta> option,
 but you can easily get the metaclass by C<< caller->meta >> as L</SYNOPSIS> shows.
 
 =head1 METHODS

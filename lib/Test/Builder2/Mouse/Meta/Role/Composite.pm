@@ -1,7 +1,7 @@
-package Mouse::Meta::Role::Composite;
-use Mouse::Util; # enables strict and warnings
-use Mouse::Meta::Role;
-our @ISA = qw(Mouse::Meta::Role);
+package Test::Builder2::Mouse::Meta::Role::Composite;
+use Test::Builder2::Mouse::Util; # enables strict and warnings
+use Test::Builder2::Mouse::Meta::Role;
+our @ISA = qw(Test::Builder2::Mouse::Meta::Role);
 
 sub get_method_list{
     my($self) = @_;
@@ -90,7 +90,7 @@ sub _apply_methods{
 
         if(@conflicting == 1){
             my $method_name = $conflicting[0];
-            my $roles       = Mouse::Util::quoted_english_list(map{ $_->name } @{ $self->{composed_roles_by_method}{$method_name} });
+            my $roles       = Test::Builder2::Mouse::Util::quoted_english_list(map{ $_->name } @{ $self->{composed_roles_by_method}{$method_name} });
             $self->throw_error(
                sprintf q{Due to a method name conflict in roles %s, the method '%s' must be implemented or excluded by '%s'},
                    $roles, $method_name, $consumer_class_name
@@ -98,7 +98,7 @@ sub _apply_methods{
         }
         elsif(@conflicting > 1){
             my %seen;
-            my $roles = Mouse::Util::quoted_english_list(
+            my $roles = Test::Builder2::Mouse::Util::quoted_english_list(
                 grep{ !$seen{$_}++ } # uniq
                 map { $_->name }
                 map { @{$_} } @{ $self->{composed_roles_by_method} }{@conflicting}
@@ -107,7 +107,7 @@ sub _apply_methods{
             $self->throw_error(
                sprintf q{Due to method name conflicts in roles %s, the methods %s must be implemented or excluded by '%s'},
                    $roles,
-                   Mouse::Util::quoted_english_list(@conflicting),
+                   Test::Builder2::Mouse::Util::quoted_english_list(@conflicting),
                    $consumer_class_name
             );
         }
@@ -121,7 +121,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Meta::Role::Composite - An object to represent the set of roles
+Test::Builder2::Mouse::Meta::Role::Composite - An object to represent the set of roles
 
 =head1 VERSION
 

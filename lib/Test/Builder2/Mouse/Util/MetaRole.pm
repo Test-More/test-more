@@ -1,5 +1,5 @@
-package Mouse::Util::MetaRole;
-use Mouse::Util; # enables strict and warnings
+package Test::Builder2::Mouse::Util::MetaRole;
+use Test::Builder2::Mouse::Util; # enables strict and warnings
 use Scalar::Util ();
 
 sub apply_metaclass_roles {
@@ -14,13 +14,13 @@ sub apply_metaroles {
 
     my $for = Scalar::Util::blessed($args{for})
         ?                                     $args{for}
-        : Mouse::Util::get_metaclass_by_name( $args{for} );
+        : Test::Builder2::Mouse::Util::get_metaclass_by_name( $args{for} );
 
     if(!$for){
         Carp::confess("You must pass an initialized class, but '$args{for}' has no metaclass");
     }
 
-    if ( Mouse::Util::is_a_metarole($for) ) {
+    if ( Test::Builder2::Mouse::Util::is_a_metarole($for) ) {
         return _make_new_metaclass( $for, $args{role_metaroles}, 'role' );
     }
     else {
@@ -78,10 +78,10 @@ sub _fixup_old_style_args {
 
     my $for = Scalar::Util::blessed($args->{for})
         ?                                     $args->{for}
-        : Mouse::Util::get_metaclass_by_name( $args->{for} );
+        : Test::Builder2::Mouse::Util::get_metaclass_by_name( $args->{for} );
 
     my $top_key;
-    if( Mouse::Util::is_a_metaclass($for) ){
+    if( Test::Builder2::Mouse::Util::is_a_metaclass($for) ){
         $top_key = 'class_metaroles';
 
         $args->{class_metaroles}{class} = delete $args->{metaclass_roles}
@@ -110,7 +110,7 @@ sub apply_base_class_roles {
 
     my $for = $options{for_class};
 
-    my $meta = Mouse::Util::class_of($for);
+    my $meta = Test::Builder2::Mouse::Util::class_of($for);
 
     my $new_base = _make_new_class(
         $for,
@@ -129,13 +129,13 @@ sub _make_new_class {
     if(!$superclasses){
         return $existing_class if !$roles;
 
-        my $meta = Mouse::Meta::Class->initialize($existing_class);
+        my $meta = Test::Builder2::Mouse::Meta::Class->initialize($existing_class);
 
         return $existing_class
             if !grep { !ref($_) && !$meta->does_role($_) } @{$roles};
     }
 
-    return Mouse::Meta::Class->create_anon_class(
+    return Test::Builder2::Mouse::Meta::Class->create_anon_class(
         superclasses => $superclasses ? $superclasses : [$existing_class],
         roles        => $roles,
         cache        => 1,
@@ -147,21 +147,21 @@ __END__
 
 =head1 NAME
 
-Mouse::Util::MetaRole - Apply roles to any metaclass, as well as the object base class
+Test::Builder2::Mouse::Util::MetaRole - Apply roles to any metaclass, as well as the object base class
 
 =head1 SYNOPSIS
 
   package MyApp::Mouse;
 
-  use Mouse ();
-  use Mouse::Exporter;
-  use Mouse::Util::MetaRole;
+  use Test::Builder2::Mouse ();
+  use Test::Builder2::Mouse::Exporter;
+  use Test::Builder2::Mouse::Util::MetaRole;
 
   use MyApp::Role::Meta::Class;
   use MyApp::Role::Meta::Method::Constructor;
   use MyApp::Role::Object;
 
-  Mouse::Exporter->setup_import_methods( also => 'Mouse' );
+  Test::Builder2::Mouse::Exporter->setup_import_methods( also => 'Mouse' );
 
   sub init_meta {
       shift;
@@ -169,7 +169,7 @@ Mouse::Util::MetaRole - Apply roles to any metaclass, as well as the object base
 
       Mouse->init_meta(%args);
 
-      Mouse::Util::MetaRole::apply_metaroles(
+      Test::Builder2::Mouse::Util::MetaRole::apply_metaroles(
           for             => $args{for_class},
           class_metaroles => {
               class       => ['MyApp::Role::Meta::Class'],
@@ -177,7 +177,7 @@ Mouse::Util::MetaRole - Apply roles to any metaclass, as well as the object base
           },
       );
 
-      Mouse::Util::MetaRole::apply_base_class_roles(
+      Test::Builder2::Mouse::Util::MetaRole::apply_base_class_roles(
           for   => $args{for_class},
           roles => ['MyApp::Role::Object'],
       );
@@ -206,7 +206,7 @@ this when your module is imported, the caller should not have any
 attributes defined yet.
 
 The easiest way to ensure that this happens is to use
-L<Mouse::Exporter>, which can generate the appropriate C<init_meta>
+L<Test::Builder2::Mouse::Exporter>, which can generate the appropriate C<init_meta>
 method for you, and make sure it is called when imported.
 
 =head1 FUNCTIONS
@@ -223,8 +223,8 @@ specified class. It accepts the following parameters:
 =item * for => $name
 
 This specifies the class or for which to alter the meta classes. This can be a
-package name, or an appropriate meta-object (a L<Mouse::Meta::Class> or
-L<Mouse::Meta::Role>).
+package name, or an appropriate meta-object (a L<Test::Builder2::Mouse::Meta::Class> or
+L<Test::Builder2::Mouse::Meta::Role>).
 
 =item * class_metaroles => \%roles
 

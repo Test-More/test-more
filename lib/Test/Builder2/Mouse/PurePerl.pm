@@ -1,13 +1,13 @@
-package Mouse::PurePerl;
+package Test::Builder2::Mouse::PurePerl;
 
-require Mouse::Util;
+require Test::Builder2::Mouse::Util;
 
-package Mouse::Util;
+package Test::Builder2::Mouse::Util;
 
 use strict;
 use warnings;
 
-use warnings FATAL => 'redefine'; # to avoid to load Mouse::PurePerl
+use warnings FATAL => 'redefine'; # to avoid to load Test::Builder2::Mouse::PurePerl
 
 use B ();
 
@@ -101,7 +101,7 @@ sub generate_isa_predicate_for {
     my $predicate = sub{ Scalar::Util::blessed($_[0]) && $_[0]->isa($for_class) };
 
     if(defined $name){
-        Mouse::Util::install_subroutines(scalar caller, $name => $predicate);
+        Test::Builder2::Mouse::Util::install_subroutines(scalar caller, $name => $predicate);
         return;
     }
 
@@ -127,14 +127,14 @@ sub generate_can_predicate_for {
     };
 
     if(defined $name){
-        Mouse::Util::install_subroutines(scalar caller, $name => $predicate);
+        Test::Builder2::Mouse::Util::install_subroutines(scalar caller, $name => $predicate);
         return;
     }
 
     return $predicate;
 }
 
-package Mouse::Util::TypeConstraints;
+package Test::Builder2::Mouse::Util::TypeConstraints;
 
 use Scalar::Util qw(blessed looks_like_number openhandle);
 
@@ -172,8 +172,8 @@ sub FileHandle {
 
 sub Object     { blessed($_[0]) && blessed($_[0]) ne 'Regexp' }
 
-sub ClassName  { Mouse::Util::is_class_loaded($_[0]) }
-sub RoleName   { (Mouse::Util::class_of($_[0]) || return 0)->isa('Mouse::Meta::Role') }
+sub ClassName  { Test::Builder2::Mouse::Util::is_class_loaded($_[0]) }
+sub RoleName   { (Test::Builder2::Mouse::Util::class_of($_[0]) || return 0)->isa('Mouse::Meta::Role') }
 
 sub _parameterize_ArrayRef_for {
     my($type_parameter) = @_;
@@ -209,7 +209,7 @@ sub _parameterize_Maybe_for {
     };
 }
 
-package Mouse::Meta::Module;
+package Test::Builder2::Mouse::Meta::Module;
 
 sub name          { $_[0]->{package} }
 
@@ -238,22 +238,22 @@ sub add_method {
 
     $self->{methods}->{$name} = $code; # Moose stores meta object here.
 
-    Mouse::Util::install_subroutines($self->name,
+    Test::Builder2::Mouse::Util::install_subroutines($self->name,
         $name => $code,
     );
     return;
 }
 
-package Mouse::Meta::Class;
+package Test::Builder2::Mouse::Meta::Class;
 
-use Mouse::Meta::Method::Constructor;
-use Mouse::Meta::Method::Destructor;
+use Test::Builder2::Mouse::Meta::Method::Constructor;
+use Test::Builder2::Mouse::Meta::Method::Destructor;
 
-sub method_metaclass    { $_[0]->{method_metaclass}    || 'Mouse::Meta::Method'    }
-sub attribute_metaclass { $_[0]->{attribute_metaclass} || 'Mouse::Meta::Attribute' }
+sub method_metaclass    { $_[0]->{method_metaclass}    || 'Test::Builder2::Mouse::Meta::Method'    }
+sub attribute_metaclass { $_[0]->{attribute_metaclass} || 'Test::Builder2::Mouse::Meta::Attribute' }
 
-sub constructor_class { $_[0]->{constructor_class} || 'Mouse::Meta::Method::Constructor' }
-sub destructor_class  { $_[0]->{destructor_class}  || 'Mouse::Meta::Method::Destructor'  }
+sub constructor_class { $_[0]->{constructor_class} || 'Test::Builder2::Mouse::Meta::Method::Constructor' }
+sub destructor_class  { $_[0]->{destructor_class}  || 'Test::Builder2::Mouse::Meta::Method::Destructor'  }
 
 sub is_anon_class{
     return exists $_[0]->{anon_serial_id};
@@ -337,9 +337,9 @@ sub is_immutable {  $_[0]->{is_immutable} }
 
 sub __strict_constructor{ $_[0]->{strict_constructor} }
 
-package Mouse::Meta::Role;
+package Test::Builder2::Mouse::Meta::Role;
 
-sub method_metaclass{ $_[0]->{method_metaclass} || 'Mouse::Meta::Role::Method' }
+sub method_metaclass{ $_[0]->{method_metaclass} || 'Test::Builder2::Mouse::Meta::Role::Method' }
 
 sub is_anon_role{
     return exists $_[0]->{anon_serial_id};
@@ -379,11 +379,11 @@ sub get_after_method_modifiers {
     return @{ $self->{after_method_modifiers}{$method_name} ||= [] }
 }
 
-package Mouse::Meta::Attribute;
+package Test::Builder2::Mouse::Meta::Attribute;
 
-require Mouse::Meta::Method::Accessor;
+require Test::Builder2::Mouse::Meta::Method::Accessor;
 
-sub accessor_metaclass{ $_[0]->{accessor_metaclass} || 'Mouse::Meta::Method::Accessor' }
+sub accessor_metaclass{ $_[0]->{accessor_metaclass} || 'Test::Builder2::Mouse::Meta::Method::Accessor' }
 
 # readers
 
@@ -466,7 +466,7 @@ sub _process_options{
         $class->throw_error("You cannot have a required attribute ($name) without a default, builder, or an init_arg");
     }
 
-    # taken from Mouse::Meta::Attribute->new and ->_process_args
+    # taken from Test::Builder2::Mouse::Meta::Attribute->new and ->_process_args
 
     if(exists $args->{is}){
         my $is = $args->{is};
@@ -493,7 +493,7 @@ sub _process_options{
 
     my $tc;
     if(exists $args->{isa}){
-        $tc = $args->{type_constraint} = Mouse::Util::TypeConstraints::find_or_create_isa_type_constraint($args->{isa});
+        $tc = $args->{type_constraint} = Test::Builder2::Mouse::Util::TypeConstraints::find_or_create_isa_type_constraint($args->{isa});
     }
 
     if(exists $args->{does}){
@@ -507,7 +507,7 @@ sub _process_options{
             }
         }
         else {
-            $tc = $args->{type_constraint} = Mouse::Util::TypeConstraints::find_or_create_does_type_constraint($args->{does});
+            $tc = $args->{type_constraint} = Test::Builder2::Mouse::Util::TypeConstraints::find_or_create_does_type_constraint($args->{does});
         }
     }
 
@@ -557,7 +557,7 @@ sub _process_options{
 }
 
 
-package Mouse::Meta::TypeConstraint;
+package Test::Builder2::Mouse::Meta::TypeConstraint;
 
 sub name    { $_[0]->{name}    }
 sub parent  { $_[0]->{parent}  }
@@ -602,7 +602,7 @@ sub compile_type_constraint{
     }
 
     if(@checks == 0){
-        $self->{compiled_type_constraint} = \&Mouse::Util::TypeConstraints::Any;
+        $self->{compiled_type_constraint} = \&Test::Builder2::Mouse::Util::TypeConstraints::Any;
     }
     else{
         $self->{compiled_type_constraint} =  sub{
@@ -623,7 +623,7 @@ sub check {
 }
 
 
-package Mouse::Object;
+package Test::Builder2::Mouse::Object;
 
 sub BUILDARGS {
     my $class = shift;
@@ -646,13 +646,13 @@ sub new {
 
     my $args = $class->BUILDARGS(@_);
 
-    my $meta = Mouse::Meta::Class->initialize($class);
+    my $meta = Test::Builder2::Mouse::Meta::Class->initialize($class);
     my $self = $meta->new_object($args);
 
     # BUILDALL
     if( $self->can('BUILD') ) {
         for my $class (reverse $meta->linearized_isa) {
-            my $build = Mouse::Util::get_code_ref($class, 'BUILD')
+            my $build = Test::Builder2::Mouse::Util::get_code_ref($class, 'BUILD')
                 || next;
 
             $self->$build($args);
@@ -679,11 +679,11 @@ sub DESTROY {
             # destruction. However, we should still be able to use mro at
             # that time (at least tests suggest so ;)
 
-            foreach my $class (@{ Mouse::Util::get_linear_isa(ref $self) }) {
-                my $demolish = Mouse::Util::get_code_ref($class, 'DEMOLISH')
+            foreach my $class (@{ Test::Builder2::Mouse::Util::get_linear_isa(ref $self) }) {
+                my $demolish = Test::Builder2::Mouse::Util::get_code_ref($class, 'DEMOLISH')
                     || next;
 
-                $self->$demolish($Mouse::Util::in_global_destruction);
+                $self->$demolish($Test::Builder2::Mouse::Util::in_global_destruction);
             }
         };
         $@;
@@ -700,7 +700,7 @@ sub BUILDALL {
     return unless $self->can('BUILD');
 
     for my $class (reverse $self->meta->linearized_isa) {
-        my $build = Mouse::Util::get_code_ref($class, 'BUILD')
+        my $build = Test::Builder2::Mouse::Util::get_code_ref($class, 'BUILD')
             || next;
 
         $self->$build(@_);
@@ -716,7 +716,7 @@ __END__
 
 =head1 NAME
 
-Mouse::PurePerl - A Mouse guts in pure Perl
+Test::Builder2::Mouse::PurePerl - A Mouse guts in pure Perl
 
 =head1 VERSION
 
@@ -724,6 +724,6 @@ This document describes Mouse version 0.53
 
 =head1 SEE ALSO
 
-L<Mouse::XS>
+L<Test::Builder2::Mouse::XS>
 
 =cut

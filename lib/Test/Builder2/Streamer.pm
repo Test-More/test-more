@@ -1,7 +1,8 @@
 package Test::Builder2::Streamer;
-use Mouse::Role;
+
+use Test::Builder2::Mouse::Role;
 
 requires 'write';
 
-no Mouse::Role;
+no Test::Builder2::Mouse::Role;
 1;

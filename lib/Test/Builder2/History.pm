@@ -1,7 +1,7 @@
 package Test::Builder2::History;
 
 use Carp;
-use Mouse;
+use Test::Builder2::Mouse;
 
 with 'Test::Builder2::Singleton';
 

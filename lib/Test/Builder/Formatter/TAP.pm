@@ -2,7 +2,7 @@ package Test::Builder::Formatter::TAP;
 
 # This is a subclass for Test::Builder v1 specific changes to the TAP formatter.
 
-use Mouse;
+use Test::Builder2::Mouse;
 
 extends 'Test::Builder2::Formatter::TAP::v13';
 

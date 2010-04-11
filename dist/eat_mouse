@@ -1,0 +1,47 @@
+#!/usr/bin/perl
+
+# This script turns Mouse into Test::Builder2::Mouse.
+#
+# To upgrade Mouse:
+# * Get the copy of Mouse you want
+# * Build it
+# * Copy /path/to/Mouse/blib/lib/Mouse* into lib/Test/Builder2/
+# * Run eat_mouse
+
+use strict;
+use warnings;
+
+use File::Find;
+
+main();
+
+sub run {
+    my $wait = system @_;
+    my $exit = $wait>>8;
+    die "@_ exited with $exit" if $wait;
+}
+
+sub main {
+    my @files;
+    find(
+        {
+            wanted => sub { push @files, $_ if /\bMouse\b/ && /\.pm/ },
+            no_chdir => 1
+        }, "lib/Test/Builder2/"
+    );
+
+    for my $file (@files) {
+        # Change all instances of Mouse to Test::Builder2::Mouse
+        # and Mouse/Blah to Test/Builder2/Mouse/Blah
+        run $^X, "-i", "-pe", q[s{Mouse.pm}{Test/Builder2/Mouse.pm}], $file;
+        run $^X, "-i", "-pe", q[s{Mouse/}{Test/Builder2/Mouse/}],     $file;
+        run $^X, "-i", "-pe", q[s{Mouse::}{Test::Builder2::Mouse::}], $file;
+
+        # Special case for "use Mouse ()"
+        run $^X, "-i", "-pe", q[s{use Mouse }{use Test::Builder2::Mouse }], $file;
+
+        # Special case for "package Mouse;"
+        run $^X, "-i", "-pe", q[s{package Mouse;}{package Test::Builder2::Mouse;}], $file;
+    }
+}
+

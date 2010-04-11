@@ -1,22 +1,22 @@
-package Mouse::Meta::Module;
-use Mouse::Util qw/:meta get_code_package get_code_ref not_supported/; # enables strict and warnings
+package Test::Builder2::Mouse::Meta::Module;
+use Test::Builder2::Mouse::Util qw/:meta get_code_package get_code_ref not_supported/; # enables strict and warnings
 
 use Carp         ();
 use Scalar::Util ();
 
 my %METAS;
 
-if(Mouse::Util::MOUSE_XS){
+if(Test::Builder2::Mouse::Util::MOUSE_XS){
     # register meta storage for performance
-    Mouse::Util::__register_metaclass_storage(\%METAS, 0);
+    Test::Builder2::Mouse::Util::__register_metaclass_storage(\%METAS, 0);
 
     # ensure thread safety
-    *CLONE = sub { Mouse::Util::__register_metaclass_storage(\%METAS, 1) };
+    *CLONE = sub { Test::Builder2::Mouse::Util::__register_metaclass_storage(\%METAS, 1) };
 }
 
 sub _metaclass_cache { # DEPRECATED
     my($self, $name) = @_;
-    Carp::cluck('_metaclass_cache() has been deprecated. Use Mouse::Util::get_metaclass_by_name() instead');
+    Carp::cluck('_metaclass_cache() has been deprecated. Use Test::Builder2::Mouse::Util::get_metaclass_by_name() instead');
     return $METAS{$name};
 }
 
@@ -78,7 +78,7 @@ sub get_attribute_list{ keys   %{$_[0]->{attributes}} }
 
 # XXX: for backward compatibility
 my %foreign = map{ $_ => undef } qw(
-    Mouse Mouse::Role Mouse::Util Mouse::Util::TypeConstraints
+    Mouse Test::Builder2::Mouse::Role Mouse::Util Mouse::Util::TypeConstraints
     Carp Scalar::Util List::Util
 );
 sub _code_is_mine{
@@ -117,7 +117,7 @@ sub get_method{
     my($self, $method_name) = @_;
 
     if(my $code = $self->get_method_body($method_name)){
-        return Mouse::Util::load_class($self->method_metaclass)->wrap(
+        return Test::Builder2::Mouse::Util::load_class($self->method_metaclass)->wrap(
             body                 => $code,
             name                 => $method_name,
             package              => $self->name,
@@ -175,7 +175,7 @@ sub create {
 
     my $superclasses;
     if(exists $options{superclasses}){
-        if(Mouse::Util::is_a_metarole($self)){
+        if(Test::Builder2::Mouse::Util::is_a_metarole($self)){
             delete $options{superclasses};
         }
         else{
@@ -245,7 +245,7 @@ sub create {
     # I think this should be the order of things.
     if (defined $attributes) {
         if(ref($attributes) eq 'ARRAY'){
-            # array of Mouse::Meta::Attribute
+            # array of Test::Builder2::Mouse::Meta::Attribute
             foreach my $attr (@{$attributes}) {
                 $meta->add_attribute($attr);
             }
@@ -263,7 +263,7 @@ sub create {
         }
     }
     if (defined $roles){
-        Mouse::Util::apply_all_roles($package_name, @{$roles});
+        Test::Builder2::Mouse::Util::apply_all_roles($package_name, @{$roles});
     }
 
     if($cache_key){
@@ -276,7 +276,7 @@ sub create {
 sub DESTROY{
     my($self) = @_;
 
-    return if $Mouse::Util::in_global_destruction;
+    return if $Test::Builder2::Mouse::Util::in_global_destruction;
 
     my $serial_id = $self->{anon_serial_id};
 
@@ -319,7 +319,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Meta::Module - The base class for Mouse::Meta::Class and Mouse::Meta::Role
+Test::Builder2::Mouse::Meta::Module - The base class for Mouse::Meta::Class and Mouse::Meta::Role
 
 =head1 VERSION
 

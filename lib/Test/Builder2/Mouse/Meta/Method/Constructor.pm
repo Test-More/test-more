@@ -1,5 +1,5 @@
-package Mouse::Meta::Method::Constructor;
-use Mouse::Util qw(:meta); # enables strict and warnings
+package Test::Builder2::Mouse::Meta::Method::Constructor;
+use Test::Builder2::Mouse::Util qw(:meta); # enables strict and warnings
 
 sub _inline_slot{
     my(undef, $self_var, $attr_name) = @_;
@@ -23,7 +23,7 @@ sub _generate_constructor {
     my $source = sprintf("#line %d %s\n", __LINE__, __FILE__).<<"...";
         sub \{
             my \$class = shift;
-            return \$class->Mouse::Object::new(\@_)
+            return \$class->Test::Builder2::Mouse::Object::new(\@_)
                 if \$class ne q{$associated_metaclass_name};
             # BUILDARGS
             $buildargs;
@@ -171,7 +171,7 @@ sub _generate_BUILDARGS {
     my(undef, $metaclass) = @_;
 
     my $class = $metaclass->name;
-    if ( $class->can('BUILDARGS') && $class->can('BUILDARGS') != \&Mouse::Object::BUILDARGS ) {
+    if ( $class->can('BUILDARGS') && $class->can('BUILDARGS') != \&Test::Builder2::Mouse::Object::BUILDARGS ) {
         return 'my $args = $class->BUILDARGS(@_)';
     }
 
@@ -195,7 +195,7 @@ sub _generate_BUILDALL {
 
     my @code;
     for my $class ($metaclass->linearized_isa) {
-        if (Mouse::Util::get_code_ref($class, 'BUILD')) {
+        if (Test::Builder2::Mouse::Util::get_code_ref($class, 'BUILD')) {
             unshift  @code, qq{${class}::BUILD(\$instance, \$args);};
         }
     }
@@ -222,7 +222,7 @@ sub _report_unknown_args {
 
     $metaclass->throw_error( sprintf
         "Unknown attribute passed to the constructor of %s: %s",
-        $metaclass->name, Mouse::Util::english_list(@unknowns),
+        $metaclass->name, Test::Builder2::Mouse::Util::english_list(@unknowns),
     );
 }
 
@@ -231,7 +231,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Meta::Method::Constructor - A Mouse method generator for constructors
+Test::Builder2::Mouse::Meta::Method::Constructor - A Mouse method generator for constructors
 
 =head1 VERSION
 

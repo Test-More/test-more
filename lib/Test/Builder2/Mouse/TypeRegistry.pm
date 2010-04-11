@@ -1,20 +1,20 @@
-package Mouse::TypeRegistry;
-use Mouse::Util::TypeConstraints;
+package Test::Builder2::Mouse::TypeRegistry;
+use Test::Builder2::Mouse::Util::TypeConstraints;
 
 sub import {
-    warn "Mouse::TypeRegistry is deprecated, please use Mouse::Util::TypeConstraints instead.";
+    warn "Test::Builder2::Mouse::TypeRegistry is deprecated, please use Mouse::Util::TypeConstraints instead.";
 
     shift @_;
-    unshift @_, 'Mouse::Util::TypeConstraints';
-    goto \&Mouse::Util::TypeConstraints::import;
+    unshift @_, 'Test::Builder2::Mouse::Util::TypeConstraints';
+    goto \&Test::Builder2::Mouse::Util::TypeConstraints::import;
 }
 
 sub unimport {
-    warn "Mouse::TypeRegistry is deprecated, please use Mouse::Util::TypeConstraints instead.";
+    warn "Test::Builder2::Mouse::TypeRegistry is deprecated, please use Mouse::Util::TypeConstraints instead.";
 
     shift @_;
-    unshift @_, 'Mouse::Util::TypeConstraints';
-    goto \&Mouse::Util::TypeConstraints::unimport;
+    unshift @_, 'Test::Builder2::Mouse::Util::TypeConstraints';
+    goto \&Test::Builder2::Mouse::Util::TypeConstraints::unimport;
 }
 
 1;
@@ -24,10 +24,10 @@ __END__
 
 =head1 NAME
 
-Mouse::TypeRegistry - (DEPRECATED)
+Test::Builder2::Mouse::TypeRegistry - (DEPRECATED)
 
 =head1 DESCRIPTION
 
-Mouse::TypeRegistry is deprecated. Use Mouse::Util::TypeConstraints instead.
+Test::Builder2::Mouse::TypeRegistry is deprecated. Use Mouse::Util::TypeConstraints instead.
 
 =cut

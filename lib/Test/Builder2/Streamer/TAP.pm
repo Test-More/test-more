@@ -1,6 +1,6 @@
 package Test::Builder2::Streamer::TAP;
 
-use Mouse;
+use Test::Builder2::Mouse;
 extends 'Test::Builder2::Streamer::Print';
 
 has error_fh  =>
@@ -25,5 +25,5 @@ sub write {
     $self->safe_print($fh, @hunks);
 }
 
-no Mouse;
+no Test::Builder2::Mouse;
 1;

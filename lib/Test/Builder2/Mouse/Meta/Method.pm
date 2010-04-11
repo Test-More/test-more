@@ -1,5 +1,5 @@
-package Mouse::Meta::Method;
-use Mouse::Util qw(:meta); # enables strict and warnings
+package Test::Builder2::Mouse::Meta::Method;
+use Test::Builder2::Mouse::Util qw(:meta); # enables strict and warnings
 use Scalar::Util ();
 
 use overload
@@ -50,7 +50,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Meta::Method - A Mouse Method metaclass
+Test::Builder2::Mouse::Meta::Method - A Mouse Method metaclass
 
 =head1 VERSION
 

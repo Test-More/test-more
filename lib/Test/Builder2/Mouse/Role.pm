@@ -1,16 +1,16 @@
-package Mouse::Role;
-use Mouse::Exporter; # enables strict and warnings
+package Test::Builder2::Mouse::Role;
+use Test::Builder2::Mouse::Exporter; # enables strict and warnings
 
 our $VERSION = '0.53';
 
 use Carp         qw(confess);
 use Scalar::Util qw(blessed);
 
-use Mouse::Util  qw(not_supported);
-use Mouse::Meta::Role;
-use Mouse ();
+use Test::Builder2::Mouse::Util  qw(not_supported);
+use Test::Builder2::Mouse::Meta::Role;
+use Test::Builder2::Mouse ();
 
-Mouse::Exporter->setup_import_methods(
+Test::Builder2::Mouse::Exporter->setup_import_methods(
     as_is => [qw(
         extends with
         has
@@ -31,13 +31,13 @@ sub extends  {
 }
 
 sub with     {
-    my $meta = Mouse::Meta::Role->initialize(scalar caller);
-    Mouse::Util::apply_all_roles($meta->name, @_);
+    my $meta = Test::Builder2::Mouse::Meta::Role->initialize(scalar caller);
+    Test::Builder2::Mouse::Util::apply_all_roles($meta->name, @_);
     return;
 }
 
 sub has {
-    my $meta = Mouse::Meta::Role->initialize(scalar caller);
+    my $meta = Test::Builder2::Mouse::Meta::Role->initialize(scalar caller);
     my $name = shift;
 
     $meta->throw_error(q{Usage: has 'name' => ( key => value, ... )})
@@ -55,7 +55,7 @@ sub has {
 }
 
 sub before {
-    my $meta = Mouse::Meta::Role->initialize(scalar caller);
+    my $meta = Test::Builder2::Mouse::Meta::Role->initialize(scalar caller);
     my $code = pop;
     for my $name($meta->_collect_methods(@_)) {
         $meta->add_before_method_modifier($name => $code);
@@ -64,7 +64,7 @@ sub before {
 }
 
 sub after {
-    my $meta = Mouse::Meta::Role->initialize(scalar caller);
+    my $meta = Test::Builder2::Mouse::Meta::Role->initialize(scalar caller);
     my $code = pop;
     for my $name($meta->_collect_methods(@_)) {
         $meta->add_after_method_modifier($name => $code);
@@ -73,7 +73,7 @@ sub after {
 }
 
 sub around {
-    my $meta = Mouse::Meta::Role->initialize(scalar caller);
+    my $meta = Test::Builder2::Mouse::Meta::Role->initialize(scalar caller);
     my $code = pop;
     for my $name($meta->_collect_methods(@_)) {
         $meta->add_around_method_modifier($name => $code);
@@ -83,13 +83,13 @@ sub around {
 
 
 sub super {
-    return if !defined $Mouse::SUPER_BODY;
-    $Mouse::SUPER_BODY->(@Mouse::SUPER_ARGS);
+    return if !defined $Test::Builder2::Mouse::SUPER_BODY;
+    $Test::Builder2::Mouse::SUPER_BODY->(@Mouse::SUPER_ARGS);
 }
 
 sub override {
     # my($name, $code) = @_;
-    Mouse::Meta::Role->initialize(scalar caller)->add_override_method_modifier(@_);
+    Test::Builder2::Mouse::Meta::Role->initialize(scalar caller)->add_override_method_modifier(@_);
     return;
 }
 
@@ -103,7 +103,7 @@ sub augment {
 }
 
 sub requires {
-    my $meta = Mouse::Meta::Role->initialize(scalar caller);
+    my $meta = Test::Builder2::Mouse::Meta::Role->initialize(scalar caller);
     $meta->throw_error("Must specify at least one method") unless @_;
     $meta->add_required_methods(@_);
     return;
@@ -120,7 +120,7 @@ sub init_meta{
     my $class = $args{for_class}
         or Carp::confess("Cannot call init_meta without specifying a for_class");
 
-    my $metaclass  = $args{metaclass}  || 'Mouse::Meta::Role';
+    my $metaclass  = $args{metaclass}  || 'Test::Builder2::Mouse::Meta::Role';
 
     my $meta = $metaclass->initialize($class);
 
@@ -129,8 +129,8 @@ sub init_meta{
     });
 
     # make a role type for each Mouse role
-    Mouse::Util::TypeConstraints::role_type($class)
-        unless Mouse::Util::TypeConstraints::find_type_constraint($class);
+    Test::Builder2::Mouse::Util::TypeConstraints::role_type($class)
+        unless Test::Builder2::Mouse::Util::TypeConstraints::find_type_constraint($class);
 
     return $meta;
 }
@@ -141,7 +141,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Role - The Mouse Role
+Test::Builder2::Mouse::Role - The Mouse Role
 
 =head1 VERSION
 
@@ -150,11 +150,11 @@ This document describes Mouse version 0.53
 =head1 SYNOPSIS
 
     package MyRole;
-    use Mouse::Role;
+    use Test::Builder2::Mouse::Role;
 
 =head1 KEYWORDS
 
-=head2 C<< meta -> Mouse::Meta::Role >>
+=head2 C<< meta -> Test::Builder2::Mouse::Meta::Role >>
 
 Returns this role's metaclass instance.
 
@@ -189,7 +189,7 @@ This is not supported in roles and emits an error. See L<Moose/Role>.
 =head2 C<< has (name|names) => parameters >>
 
 Sets up an attribute (or if passed an arrayref of names, multiple attributes) to
-this role. See L<Mouse/has>.
+this role. See L<Test/Builder2/Mouse/has>.
 
 =head2 C<< confess(error) -> BOOM >>
 
@@ -203,11 +203,11 @@ L<Scalar::Util/blessed> for your convenience.
 
 =head2 import
 
-Importing Mouse::Role will give you sugar.
+Importing Test::Builder2::Mouse::Role will give you sugar.
 
 =head2 unimport
 
-Please unimport (C<< no Mouse::Role >>) so that if someone calls one of the
+Please unimport (C<< no Test::Builder2::Mouse::Role >>) so that if someone calls one of the
 keywords (such as L</has>) it will break loudly instead breaking subtly.
 
 =head1 SEE ALSO

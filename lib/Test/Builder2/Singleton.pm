@@ -3,7 +3,7 @@ package Test::Builder2::Singleton;
 # This is a role which implements a singleton
 
 use Carp;
-use Mouse::Role;
+use Test::Builder2::Mouse::Role;
 
 
 =head1 NAME
@@ -14,7 +14,7 @@ Test::Builder2::Singleton - A singleton role for TB2
 
   package TB2::Thing;
 
-  use Mouse;
+  use Test::Builder2::Mouse;
   use Test::Builder2::Singleton;
 
   my $thing      = TB2::Thing->singleton;
@@ -89,7 +89,7 @@ Currently calls Mouse's new method.
 sub create {
     my $class = shift;
 
-    return $class->Mouse::Object::new(@_);
+    return $class->Test::Builder2::Mouse::Object::new(@_);
 }
 
 1;

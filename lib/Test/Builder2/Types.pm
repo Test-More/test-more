@@ -1,6 +1,7 @@
 package Test::Builder2::Types;
 
-use Mouse::Util::TypeConstraints;
+require Test::Builder2::Mouse;
+use Test::Builder2::Mouse::Util::TypeConstraints;
 
 subtype 'Test::Builder2::Positive_Int' => (
     as 'Int',
@@ -9,4 +10,4 @@ subtype 'Test::Builder2::Positive_Int' => (
 
 1;
 
-no Mouse::Util::TypeConstraints;
+no Test::Builder2::Mouse::Util::TypeConstraints;

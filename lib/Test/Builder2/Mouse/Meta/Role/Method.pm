@@ -1,8 +1,8 @@
-package Mouse::Meta::Role::Method;
-use Mouse::Util; # enables strict and warnings
+package Test::Builder2::Mouse::Meta::Role::Method;
+use Test::Builder2::Mouse::Util; # enables strict and warnings
 
-use Mouse::Meta::Method;
-our @ISA = qw(Mouse::Meta::Method);
+use Test::Builder2::Mouse::Meta::Method;
+our @ISA = qw(Test::Builder2::Mouse::Meta::Method);
 
 sub _new{
     my($class, %args) = @_;
@@ -19,7 +19,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Meta::Role::Method - A Mouse Method metaclass for Roles
+Test::Builder2::Mouse::Meta::Role::Method - A Mouse Method metaclass for Roles
 
 =head1 VERSION
 

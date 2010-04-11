@@ -1,5 +1,5 @@
-package Mouse::Object;
-use Mouse::Util qw(does dump meta); # enables strict and warnings
+package Test::Builder2::Mouse::Object;
+use Test::Builder2::Mouse::Util qw(does dump meta); # enables strict and warnings
 
 sub new;
 sub BUILDARGS;
@@ -13,7 +13,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Object - The base object for Mouse classes
+Test::Builder2::Mouse::Object - The base object for Mouse classes
 
 =head1 VERSION
 
@@ -23,7 +23,7 @@ This document describes Mouse version 0.53
 
 =head2 C<< new (Arguments) -> Object >>
 
-Instantiates a new C<Mouse::Object>. This is obviously intended for subclasses.
+Instantiates a new C<Test::Builder2::Mouse::Object>. This is obviously intended for subclasses.
 
 =head2 C<< BUILDARGS (Arguments) -> HashRef >>
 

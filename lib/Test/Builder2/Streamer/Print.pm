@@ -1,5 +1,5 @@
 package Test::Builder2::Streamer::Print;
-use Mouse;
+use Test::Builder2::Mouse;
 with 'Test::Builder2::Streamer';
 
 has output_fh =>
@@ -23,5 +23,5 @@ sub write {
     $self->safe_print($self->output_fh, @hunks);
 }
 
-no Mouse;
+no Test::Builder2::Mouse;
 1;

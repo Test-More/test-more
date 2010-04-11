@@ -8,7 +8,7 @@ use Test::More 'no_plan';
 {
     package TB2::Formatter::Noop;
 
-    use Mouse;
+    use Test::Builder2::Mouse;
 
     extends 'Test::Builder2::Formatter';
 

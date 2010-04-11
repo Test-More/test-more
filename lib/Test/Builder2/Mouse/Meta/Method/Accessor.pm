@@ -1,5 +1,5 @@
-package Mouse::Meta::Method::Accessor;
-use Mouse::Util qw(:meta); # enables strict and warnings
+package Test::Builder2::Mouse::Meta::Method::Accessor;
+use Test::Builder2::Mouse::Util qw(:meta); # enables strict and warnings
 
 sub _inline_slot{
     my(undef, $self_var, $attr_name) = @_;
@@ -178,7 +178,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Meta::Method::Accessor - A Mouse method generator for accessors
+Test::Builder2::Mouse::Meta::Method::Accessor - A Mouse method generator for accessors
 
 =head1 VERSION
 

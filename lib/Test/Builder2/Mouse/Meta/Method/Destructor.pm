@@ -1,5 +1,5 @@
-package Mouse::Meta::Method::Destructor;
-use Mouse::Util qw(:meta); # enables strict and warnings
+package Test::Builder2::Mouse::Meta::Method::Destructor;
+use Test::Builder2::Mouse::Util qw(:meta); # enables strict and warnings
 
 sub _empty_DESTROY{ }
 
@@ -12,8 +12,8 @@ sub _generate_destructor{
 
     my $demolishall = '';
     for my $class ($metaclass->linearized_isa) {
-        if (Mouse::Util::get_code_ref($class, 'DEMOLISH')) {
-            $demolishall .= sprintf "%s::DEMOLISH(\$self, \$Mouse::Util::in_global_destruction);\n",
+        if (Test::Builder2::Mouse::Util::get_code_ref($class, 'DEMOLISH')) {
+            $demolishall .= sprintf "%s::DEMOLISH(\$self, \$Test::Builder2::Mouse::Util::in_global_destruction);\n",
                 $class,
         }
     }
@@ -51,7 +51,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Meta::Method::Destructor - A Mouse method generator for destructors
+Test::Builder2::Mouse::Meta::Method::Destructor - A Mouse method generator for destructors
 
 =head1 VERSION
 

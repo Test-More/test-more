@@ -1,12 +1,12 @@
-package Mouse::Meta::TypeConstraint;
-use Mouse::Util qw(:meta); # enables strict and warnings
+package Test::Builder2::Mouse::Meta::TypeConstraint;
+use Test::Builder2::Mouse::Util qw(:meta); # enables strict and warnings
 
 use overload
     'bool'   => sub (){ 1 },           # always true
     '""'     => sub { $_[0]->name },   # stringify to tc name
     '|'      => sub {                  # or-combination
-        require Mouse::Util::TypeConstraints;
-        return Mouse::Util::TypeConstraints::find_or_parse_type_constraint(
+        require Test::Builder2::Mouse::Util::TypeConstraints;
+        return Test::Builder2::Mouse::Util::TypeConstraints::find_or_parse_type_constraint(
             "$_[0] | $_[1]",
         );
     },
@@ -86,7 +86,7 @@ sub _add_type_coercions{
             $self->throw_error("A coercion action already exists for '$from'");
         }
 
-        my $type = Mouse::Util::TypeConstraints::find_or_parse_type_constraint($from)
+        my $type = Test::Builder2::Mouse::Util::TypeConstraints::find_or_parse_type_constraint($from)
             or $self->throw_error("Could not find the type constraint ($from) to coerce from");
 
         push @{$coercions}, [ $type => $action ];
@@ -196,8 +196,8 @@ sub parameterize{
     my($self, $param, $name) = @_;
 
     if(!ref $param){
-        require Mouse::Util::TypeConstraints;
-        $param = Mouse::Util::TypeConstraints::find_or_create_isa_type_constraint($param);
+        require Test::Builder2::Mouse::Util::TypeConstraints;
+        $param = Test::Builder2::Mouse::Util::TypeConstraints::find_or_create_isa_type_constraint($param);
     }
 
     $name ||= sprintf '%s[%s]', $self->name, $param->name;
@@ -205,7 +205,7 @@ sub parameterize{
     my $generator = $self->{constraint_generator}
         || $self->throw_error("The $name constraint cannot be used, because $param doesn't subtype from a parameterizable type");
 
-    return Mouse::Meta::TypeConstraint->new(
+    return Test::Builder2::Mouse::Meta::TypeConstraint->new(
         name           => $name,
         parent         => $self,
         type_parameter => $param,
@@ -223,8 +223,8 @@ sub assert_valid {
 }
 
 sub throw_error {
-    require Mouse::Meta::Module;
-    goto &Mouse::Meta::Module::throw_error;
+    require Test::Builder2::Mouse::Meta::Module;
+    goto &Test::Builder2::Mouse::Meta::Module::throw_error;
 }
 
 1;
@@ -232,7 +232,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Meta::TypeConstraint - The Mouse Type Constraint metaclass
+Test::Builder2::Mouse::Meta::TypeConstraint - The Mouse Type Constraint metaclass
 
 =head1 VERSION
 

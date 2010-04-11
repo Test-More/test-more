@@ -1,5 +1,5 @@
-package Mouse::Meta::Method::Delegation;
-use Mouse::Util qw(:meta); # enables strict and warnings
+package Test::Builder2::Mouse::Meta::Method::Delegation;
+use Test::Builder2::Mouse::Util qw(:meta); # enables strict and warnings
 use Scalar::Util;
 
 sub _generate_delegation{
@@ -57,7 +57,7 @@ __END__
 
 =head1 NAME
 
-Mouse::Meta::Method::Delegation - A Mouse method generator for delegation methods
+Test::Builder2::Mouse::Meta::Method::Delegation - A Mouse method generator for delegation methods
 
 =head1 VERSION
 
