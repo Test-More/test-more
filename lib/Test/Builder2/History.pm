@@ -77,8 +77,26 @@ has counter => (
     default => sub {
         require Test::Builder2::Counter;
         Test::Builder2::Counter->singleton;
+    },
+    handles => {
+        current_count     => 'get',
     }
 );
+
+=head3 current_count
+
+Returns the current number in the counter.
+
+=head3 next_count
+
+Returns the next number in the counter.
+
+=cut
+
+sub next_count {
+    my $self = shift;
+    return $self->current_count + 1;
+}
 
 =head3 results
 

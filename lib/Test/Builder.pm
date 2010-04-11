@@ -785,7 +785,8 @@ ERR
         location        => $file,
         id              => $line,
     );
-    $result->description($name) if defined $name;
+    $result->description($name)     if defined $name;
+    $result->test_number($self->{History}->next_count) if $self->use_numbers;
 
     # Capture the value of $TODO for the rest of this ok() call
     # so it can more easily be found by other routines.
@@ -799,9 +800,6 @@ ERR
     # Store the Result in history making sure to make it thread safe
     $result = shared_clone($result);
     $self->{History}->add_test_history( $result );
-
-    my $test_num = $self->current_test;
-    $result->test_number($test_num) if $self->use_numbers;
 
     $self->{Formatter}->result($result);
 
