@@ -198,6 +198,14 @@ Returns a Test::Builder2::Result object representing the test.
 
 =cut
 
+has result_class => (
+  is            => 'ro',
+  isa           => 'Test::Builder2::LoadableClass',
+  coerce        => 1,
+  default       => 'Test::Builder2::Result',
+);
+
+
 sub ok {
     my $self = shift;
     my $test = shift;
@@ -205,7 +213,7 @@ sub ok {
 
     my $num = $self->history->counter->get + 1;
 
-    my $result = Test::Builder2::Result->new(
+    my $result = $self->result_class->new(
         test_number     => $num,
         description     => $name,
         type            => $test ? 'pass' : 'fail',
