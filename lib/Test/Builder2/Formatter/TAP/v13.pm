@@ -1,18 +1,17 @@
 package Test::Builder2::Formatter::TAP::v13;
 
 use 5.008001;
-use strict;
 
 use Mouse;
 use Carp;
+use Test::Builder2::Types;
 
 extends 'Test::Builder2::Formatter';
 
 has nesting_level =>
   is            => 'rw',
-  isa           => 'Int',
-  default       => 0,
-  where         => sub { $_ >= 0 }
+  isa           => 'Test::Builder2::Positive_Int',
+  default       => 0
 ;
 
 has indent_nesting_with =>

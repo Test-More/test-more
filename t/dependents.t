@@ -24,6 +24,7 @@ my @Modules = qw(
     Test::Class
     Test::Deep
     Test::Differences
+    Test::NoWarnings
 );
 
 # Modules which are known to be broken
