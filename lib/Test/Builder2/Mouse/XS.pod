@@ -1,0 +1,42 @@
+
+=head1 NAME
+
+Mouse::XS - A Mouse guts in XS
+
+=head1 VERSION
+
+This document describes Mouse version 0.53
+
+=head1 DESCRIPTION
+
+Mouse has an optional XS implementation, which is automatically built
+and used if available. According to benchmarks, this is about 2 times
+faster than Mouse::PurePerl.
+
+=head2 INSTALL
+
+The XS implementation are selected by default, but you can force it by
+passing the C<--xs> option to F<Makefile.PL>.
+
+    perl Makefile.PL --xs
+
+If you do not want to build the XS implementation, you can pass the C<--pp>
+option to F<Makefile.PL>.
+
+    perl Makefile.PL --pp
+
+=head2 The MOUSE_PUREPERL environment variable
+
+It can be used to enable the use of Mouse::PurePerl.
+
+=head1 DEPENDENCIES
+
+The XS implementation requires Perl 5.8.1 or later, and a C compiler.
+
+=head1 SEE ALSO
+
+L<Mouse>
+
+L<Mouse::PurePerl>
+
+=cut
