@@ -278,4 +278,6 @@ A simple assert function.  Pass it an expression you expect to be true.
 sub assert { confess "Assert failed" unless $_[0] };
 
 
+no Test::Builder2::Mouse;
+
 1;
