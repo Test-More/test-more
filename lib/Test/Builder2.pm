@@ -2,6 +2,7 @@ package Test::Builder2;
 
 use 5.008001;
 use Test::Builder2::Mouse;
+use Test::Builder2::Types;
 use Carp qw(confess);
 
 use Test::Builder2::Result;
@@ -25,13 +26,25 @@ Contains the Test::Builder2::History object.
 
 =cut
 
-has history =>
+has history_class => (
+  is            => 'ro',
+  isa           => 'Test::Builder2::LoadableClass',
+  coerce        => 1,
+  default       => 'Test::Builder2::History',
+);
+
+has history => (
   is            => 'rw',
   isa           => 'Test::Builder2::History',
-  default       => sub {
-      require Test::Builder2::History;
-      Test::Builder2::History->singleton;
-  };
+  builder       => '_build_history',
+  lazy          => 1,
+);
+
+sub _build_history {
+    my $self = shift;
+    $self->history_class->singleton;
+}
+
 
 =head3 planned_tests
 
@@ -52,13 +65,25 @@ Defaults to Test::Builder2::Formatter::TAP.
 
 =cut
 
-has formatter =>
+has formatter_class => (
+  is            => 'ro',
+  isa           => 'Test::Builder2::LoadableClass',
+  coerce        => 1,
+  default       => 'Test::Builder2::Formatter::TAP',
+);
+
+has formatter => (
   is            => 'rw',
   isa           => 'Test::Builder2::Formatter',
-  default       => sub {
-      require Test::Builder2::Formatter::TAP;
-      Test::Builder2::Formatter::TAP->new();
-  };
+  builder       => '_build_formatter',
+  lazy          => 1,
+);
+
+sub _build_formatter {
+    my $self = shift;
+    $self->formatter_class->new;
+}
+
 
 =head3 top
 
