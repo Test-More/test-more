@@ -107,7 +107,7 @@ C<< @{$top_stack->[0]} >>.
 
 has top_stack =>
   is            => 'ro',
-  isa           => 'ArrayRef',
+  isa           => 'ArrayRef[ArrayRef]',
   default       => sub { [] };
 
 sub top {
