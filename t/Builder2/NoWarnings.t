@@ -1,5 +1,7 @@
 #!/usr/bin/perl
 
+# A demonstration of how you'd implement Test::NoWarnings in TB2
+
 use strict;
 use warnings;
 
