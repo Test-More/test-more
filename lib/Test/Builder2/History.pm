@@ -16,7 +16,7 @@ Test::Builder2::History - Manage the history of test results
 
     # This is a shared singleton object
     my $history = Test::Builder2::History->singleton;
-    my $result  = Test::Builder2::Result->new( type => "pass" );
+    my $result  = Test::Builder2::Result->new_result( pass => 1 );
 
     $history->add_test_history( $result );
     $history->is_passing;
@@ -110,7 +110,7 @@ Remember that test 1 is index 0.
 
 has results => (
     is      => 'rw',
-    isa     => 'ArrayRef[Test::Builder2::Result]',
+    isa     => 'ArrayRef[Test::Builder2::Result::Base]',
     default => sub { [] },
 );
 
@@ -151,7 +151,7 @@ sub add_test_history {
     croak "add_test_history() takes Result objects"
       if grep {
           local $@;
-          !eval { $_->isa("Test::Builder2::Result") }
+          !eval { $_->isa("Test::Builder2::Result::Base") }
       } @_;
 
     my $counter = $self->counter;

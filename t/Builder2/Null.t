@@ -18,8 +18,8 @@ my $null = Test::Builder2::Formatter::Null->new(
 }
 
 {
-    my $result = Test::Builder2::Result->new(
-        type            => 'pass',
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 1,
         description     => "basset hounds got long ears",
     );
     $null->result($result);

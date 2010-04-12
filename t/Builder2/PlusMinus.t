@@ -28,8 +28,8 @@ my $formatter = new_formatter();
 
 # Pass
 {
-    my $result = Test::Builder2::Result->new(
-        type            => 'pass',
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 1,
         description     => "basset hounds got long ears",
     );
     $formatter->result($result);
@@ -43,8 +43,8 @@ my $formatter = new_formatter();
 
 # Fail
 {
-    my $result = Test::Builder2::Result->new(
-        type            => 'fail',
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 0,
         description     => "basset hounds got long ears",
     );
     $formatter->result($result);
@@ -58,8 +58,9 @@ my $formatter = new_formatter();
 
 # Skip
 {
-    my $result = Test::Builder2::Result->new(
-        type            => 'skip_pass',
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 1,
+        directives      => [qw(skip)],
         description     => "basset hounds got long ears",
     );
     $formatter->result($result);

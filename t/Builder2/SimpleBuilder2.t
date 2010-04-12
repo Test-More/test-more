@@ -33,11 +33,10 @@ my $builder = new_ok("Test::Builder2", [ formatter => $tap ]);
     my $result = $builder->ok(0, "should fail, and add diagnostics");
     if($result->is_fail)
     {
-        $result->diagnostic("we really made a fine mess this time");
+        $result->diagnostic([error => "we really made a fine mess this time"]);
     }
-    is($result->diagnostic, "we really made a fine mess this time", 
+    is_deeply($result->diagnostic, [error => "we really made a fine mess this time"], 
             "diagnostic check");
-    $result = undef;
     is($tap->streamer->read('out'), "not ok 3 - should fail, and add diagnostics\n", 
             'diagnostic output');
 }
@@ -60,7 +59,7 @@ my $builder = new_ok("Test::Builder2", [ formatter => $tap ]);
 # ok() should return a Result
 {
     my $ok = $builder->ok(0);
-    isa_ok $ok, "Test::Builder2::Result";
+    isa_ok $ok, "Test::Builder2::Result::Base";
 }
 
 done_testing();

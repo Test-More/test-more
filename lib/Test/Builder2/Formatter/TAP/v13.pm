@@ -133,7 +133,7 @@ sub INNER_result {
     # result object that I ought to do deal with.
 
     my $out = "";
-    $out .= "not " if $result->type =~ /fail/ or $result->type eq 'todo_skip';
+    $out .= "not " if !$result->literal_pass;
     $out .= "ok";
 
     $out .= " ".$result->test_number   if defined $result->test_number;

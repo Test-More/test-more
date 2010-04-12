@@ -19,8 +19,8 @@ my $posix = Test::Builder2::Formatter::POSIX->new(
 }
 
 {
-    my $result = Test::Builder2::Result->new(
-        type            => 'pass',
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 1,
         description     => "basset hounds got long ears",
     );
     $posix->result($result);

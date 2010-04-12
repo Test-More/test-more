@@ -213,10 +213,10 @@ sub ok {
 
     my $num = $self->history->counter->get + 1;
 
-    my $result = $self->result_class->new(
+    my $result = $self->result_class->new_result(
         test_number     => $num,
         description     => $name,
-        type            => $test ? 'pass' : 'fail',
+        pass            => $test,
     );
 
     $self->accept_result($result);

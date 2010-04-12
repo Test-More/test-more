@@ -12,12 +12,12 @@ my $CLASS = "Test::Builder2::History";
 require_ok 'Test::Builder2::History';
 
 
-my $Pass = Test::Builder2::Result->new(
-    type => 'pass'
+my $Pass = Test::Builder2::Result->new_result(
+    pass => 1,
 );
 
-my $Fail = Test::Builder2::Result->new(
-    type => 'fail'
+my $Fail = Test::Builder2::Result->new_result(
+    pass => 0,
 );
 
 my $create_ok = sub {

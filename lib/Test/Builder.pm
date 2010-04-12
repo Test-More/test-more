@@ -778,24 +778,24 @@ sub ok {
     Very confusing.
 ERR
 
-    # Turn the test into a Result
-    my( $pack, $file, $line ) = $self->caller;
-    my $result = Test::Builder2::Result->new(
-        type            => $test ? "pass" : "fail",
-        location        => $file,
-        id              => $line,
-    );
-    $result->description($name)     if defined $name;
-    $result->test_number($self->{History}->next_count) if $self->use_numbers;
-
     # Capture the value of $TODO for the rest of this ok() call
     # so it can more easily be found by other routines.
     my $todo    = $self->todo();
     my $in_todo = $self->in_todo;
     local $self->{Todo} = $todo if $in_todo;
     $self->_unoverload_str( \$todo );
-    $result->todo($todo) if $in_todo;
 
+    # Turn the test into a Result
+    my( $pack, $file, $line ) = $self->caller;
+    my $result = Test::Builder2::Result->new_result(
+        pass            => $test ? 1 : 0,
+        location        => $file,
+        id              => $line,
+        description     => $name,
+        test_number     => $self->use_numbers ? $self->{History}->next_count : undef,
+        directives      => $in_todo ? ["todo"] : [],
+        reason          => $in_todo ? $todo : undef,
+    );
 
     # Store the Result in history making sure to make it thread safe
     $result = shared_clone($result);
@@ -1208,17 +1208,16 @@ sub skip {
     lock( $self->{History} );
 
     my($pack, $file, $line) = $self->caller;
-    my $result = Test::Builder2::Result->new(
-        type      => 'skip_pass',
+    my $result = Test::Builder2::Result->new_result(
+        pass      => 1,
+        directives=> ['skip'],
         reason    => $why,
         id        => $line,
         location  => $file,
+        test_number => $self->use_numbers ? $self->{History}->next_count : undef,
     );
     $result = shared_clone($result);
     $self->{History}->add_test_history( $result );
-
-    my $test_num = $self->current_test;
-    $result->test_number($test_num) if $self->use_numbers;
 
     $self->{Formatter}->result($result);
 
@@ -1244,17 +1243,16 @@ sub todo_skip {
     lock( $self->{History} );
 
     my($pack, $file, $line) = $self->caller;
-    my $result = Test::Builder2::Result->new(
-        type            => 'todo_skip',
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 0,
+        directives      => ["todo", "skip"],
         reason          => $why,
         location        => $file,
         id              => $line,
+        test_number     => $self->use_numbers ? $self->{History}->next_count : undef,
     );
     $result = shared_clone($result);
     $self->{History}->add_test_history( $result );
-
-    my $test_num = $self->current_test;
-    $result->test_number($test_num) if $self->use_numbers;
 
     $self->{Formatter}->result($result);
 
@@ -1965,8 +1963,9 @@ sub current_test {
             my $start = @$results ? @$results : 0;
             $counter->set($start);
             for( $start .. $num - 1 ) {
-                my $result = Test::Builder2::Result->new(
-                    type        => 'unknown',
+                my $result = Test::Builder2::Result->new_result(
+                    pass        => 1,
+                    directives  => [qw(unknown)],
                     reason      => 'incrementing test number',
                     test_number => $_
                 );
@@ -2087,12 +2086,12 @@ sub _result_to_hash {
     my $result = shift;
 
     my $type = $result->type eq 'todo_skip' ? "todo_skip"        :
-               $result->type eq 'unknown'   ? "unknown"          :
+               $result->type =~ /unknown/   ? "unknown"          :
                $result->type =~ /todo/      ? "todo"             :
                $result->type =~ /skip/      ? "skip"             :
                                               ""                 ;
 
-    my $actual_ok = $result->type eq 'unknown' ? undef :
+    my $actual_ok = $result->type =~ /unknown/ ? undef :
                     $result->type =~ /pass/    ? 1     :
                                                  0     ;
 

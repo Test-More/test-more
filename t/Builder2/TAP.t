@@ -113,7 +113,7 @@ END
 
 # Fail, no description
 {
-    my $result = Test::Builder2::Result->new( type => 'fail' );
+    my $result = Test::Builder2::Result->new_result( pass => 0 );
     $result->test_number(1);
     $formatter->result($result);
     is(last_output, "not ok 1\n", "testing not okay");
@@ -121,7 +121,7 @@ END
 
 # Pass, no description
 {
-    my $result = Test::Builder2::Result->new( type => 'pass' );
+    my $result = Test::Builder2::Result->new_result( pass => 1 );
     $result->test_number(2);
     $formatter->result($result);
     is(last_output, "ok 2\n", "testing okay");
@@ -129,7 +129,11 @@ END
 
 # TODO fail, no description
 {
-    my $result = Test::Builder2::Result->new( type => 'todo_fail', reason => "reason" );
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 0,
+        directives      => [qw(todo)],
+        reason          => "reason" 
+    );
     $result->test_number(3);
     $formatter->result($result);
     is(last_output, "not ok 3 # TODO reason\n", "testing todo");
@@ -137,7 +141,11 @@ END
 
 # TODO pass, no description
 {
-    my $result = Test::Builder2::Result->new( type => 'todo_pass', reason => "reason" );
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 1,
+        directives      => [qw(todo)],
+        reason          => "reason"
+    );
     $result->test_number(4);
     $formatter->result($result);
     is(last_output, "ok 4 # TODO reason\n", "testing todo");
@@ -145,7 +153,11 @@ END
 
 # TODO pass, with description
 {
-    my $result = Test::Builder2::Result->new( type => 'todo_pass', reason => "reason" );
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 1,
+        directives      => [qw(todo)],
+        reason          => "reason"
+    );
     $result->test_number(4);
     $result->description('a fine test');
     $formatter->result($result);
@@ -154,7 +166,9 @@ END
 
 # Fail with dashed description
 {
-    my $result = Test::Builder2::Result->new( type => 'fail' );
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 0,
+    );
     $result->description(' - a royal pain');
     $result->test_number(6);
     $formatter->result($result);
@@ -163,10 +177,13 @@ END
 
 # Skip fail
 {
-    my $result = Test::Builder2::Result->new( type => 'fail' );
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 0,
+        directives      => [qw(skip)],
+    );
     $result->description('skip test');
     $result->test_number(7);
-    $result->skip('Not gonna work');
+    $result->reason('Not gonna work');
     $formatter->result($result);
 
     is(last_output, "not ok 7 - skip test # SKIP Not gonna work\n", "skip fail");
@@ -174,10 +191,13 @@ END
 
 # Skip pass
 {
-    my $result = Test::Builder2::Result->new( type => 'pass' );
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 1,
+        directives      => [qw(skip)],
+    );
     $result->description('skip test');
     $result->test_number(8);
-    $result->skip('Because');
+    $result->reason('Because');
     $formatter->result($result);
 
     is(last_output, "ok 8 - skip test # SKIP Because\n", "skip pass");
@@ -186,7 +206,9 @@ END
 
 # No number
 {
-    my $result = Test::Builder2::Result->new( type => 'pass' );
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 1
+    );
     $formatter->result($result);
 
     is(last_output, "ok\n", "pass with no number");
@@ -195,7 +217,9 @@ END
 
 # Descriptions with newlines in them
 {
-    my $result = Test::Builder2::Result->new( type => 'pass' );
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 1
+    );
     $result->test_number(5);
     $result->description("Foo\nBar\n");
 
@@ -206,8 +230,9 @@ END
 
 # Descriptions with newlines in them
 {
-    my $result = Test::Builder2::Result->new(
-        type            => 'skip_pass',
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 1,
+        directives      => [qw(skip)],
         test_number     => 4,
         reason          => "\nFoo\nBar\n",
     );

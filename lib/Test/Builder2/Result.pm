@@ -1,6 +1,8 @@
 package Test::Builder2::Result;
 
 use strict;
+
+use Carp;
 use Test::Builder2::Mouse;
 use Test::Builder2::Mouse::Util::TypeConstraints qw(enum);
 
@@ -13,7 +15,7 @@ Test::Builder2::Result - Represent the result of a test
 
     use Test::Builder2::Result;
 
-    my $result = Test::Builder2::Result->new(%test_data);
+    my $result = Test::Builder2::Result->new_result(%test_data);
 
 
 =head1 DESCRIPTION
@@ -26,165 +28,83 @@ context to indicate if theypr passed or failed.
 
 =head3 new
 
-  my $result = Test::Builder2::Result->new(%test_data);
+  my $result = Test::Builder2::Result->new_result(%test_data);
 
 new() is a method which returns a $result based on your test data.
 
 =cut
 
 
-my @Types = qw(
-    pass
-    fail
-    todo_pass
-    todo_fail
-    skip_pass
-    skip_fail
-    todo_skip
-    unknown
+my %Types = (
+    pass        => [qw(pass)],
+    fail        => [qw(fail)],
+    todo_pass   => [qw(pass todo)],
+    todo_fail   => [qw(fail todo)],
+    skip_pass   => [qw(pass skip)],
+    skip_fail   => [qw(fail skip)],
+    todo_skip   => [qw(fail skip todo)],
+    unknown     => [qw(unknown)],
+    unknown_fail=> [qw(fail unknown)],
+    unknown_pass=> [qw(pass unknown)],
 );
 
+my %Roles2Type;
+for my $type (keys %Types) {
+    my $roles = $Types{$type};
 
-our @attributes = qw(
-  type
-  description
-  diagnostic
-  id
-  location
-  reason
-  test_number
-);
-
-
-sub get_attributes
-{
-    return \@attributes;
+    my $key = _roles_key(@$roles);
+    $Roles2Type{$key} = $type;
 }
 
-{
-    for my $key (@attributes) {
+sub _roles_key {
+    return join ",", sort { $a cmp $b } @_;
+}
 
-        my $accessor = "_${key}_accessor";
+sub types {
+    return keys %Types;
+}
 
-        # do a special case for type
-        # to ensure a) it's filled in
-        # b) it's within the list of expected
-        #    values
-        if($key eq "type")
-        {
-            has $accessor =>
-              is            => 'rw',
-              required      => 1,
-              init_arg      => $key,
-              isa           => enum(\@Types)
-            ;
+
+# Generate the result classes as combinations of roles.
+for my $type (keys %Types) {
+    my $roles = $Types{$type};
+
+    Test::Builder2::Mouse::Meta::Class->create(
+        "Test::Builder2::Result::$type",
+        superclasses => ["Test::Builder2::Result::Base"],
+        roles        => [map { "Test::Builder2::Result::Role::$_" } @$roles],
+        methods      => {
+            type        => sub { return $type }
         }
-        else
-        {
-            has $accessor =>
-              is            => 'rw',
-              init_arg      => $key;
-        }
-
-        # Mouse accessors can't be changed to return itself on set.
-        my $code = sub {
-            my $self = shift;
-            if( @_ ) {
-                $self->$accessor(@_);
-                return $self;
-            }
-            return $self->$accessor;
-        };
-
-        # A public one which may be overriden.
-        __PACKAGE__->_alias($key => $code) unless defined &{$key};
-    }
-
-    sub valid_status {
-        my $self = shift;
-    }
-
-    sub as_hash {
-        my $self = shift;
-        return {
-            map {
-                my $val = $self->$_();
-                defined $val ? ( $_ => $val ) : ()
-              } @attributes
-        };
-    }
-
-    use overload(
-        q{bool} => sub {
-            my $self = shift;
-            return !$self->is_fail;
-        },
-        q{""} => sub {
-            my $self = shift;
-            return $self->as_string;
-        },
-        fallback => 1,
     );
 }
 
-
-# Some aliases and convenience methods.
-sub is_fail {
-    my $self = shift;
-    return $self->type eq 'fail';
+sub new {
+    croak "There is no new(), perhaps you meant new_result?";
 }
 
-sub is_todo {
-    my $self = shift;
-    return $self->type =~ qr/todo/x;
+sub new_result {
+    my $class = shift;
+    my %args  = @_;
+
+    # Figure out the roles associated with the given arguments
+    my @roles;
+    my @directives = map { lc $_ } @{$args{directives} || []};
+    push @roles, @directives;
+
+    push @roles, !exists $args{pass} ? "unknown" : 
+                         $args{pass} ? "pass"    : "fail";
+
+    my $roles_key = _roles_key(@roles);
+    my $type = $Roles2Type{$roles_key};
+    if( !$type ) {
+        carp "Unknown result roles: @roles";
+        $type = 'unknown_fail';
+    }
+
+    return "Test::Builder2::Result::$type"->new(%args);
 }
 
-sub is_skip {
-    my $self = shift;
-    return $self->type =~ qr/skip/x;
-}
-
-sub todo {
-    my $self = shift;
-    my $reason = shift;
-
-    $self->is_fail       ? $self->type("todo_fail") :
-    $self->is_skip       ? $self->type("todo_skip") :
-                           $self->type("todo_pass") ;
-    $self->reason($reason);
-
-    return $self;
-}
-
-sub skip {
-    my $self = shift;
-    my $reason = shift;
-
-    $self->is_fail              ? $self->type("skip_fail") :
-    $self->is_todo              ? $self->type("todo_skip") :
-                                  $self->type("skip_pass") ;
-    $self->reason($reason);
-
-    return $self;
-}
-
-__PACKAGE__->_alias(name => \&description);
-__PACKAGE__->_alias(diag => \&diagnostic);
-__PACKAGE__->_alias(file => \&location);
-__PACKAGE__->_alias(line => \&id);
-
-sub as_string {
-    my $self = shift;
-
-    return $self->type;
-}
-
-sub _alias {
-    my($class, $name, $code) = @_;
-
-    no strict 'refs';
-    *{$class . "::" . $name} = $code;
-}
-
+no Test::Builder2::Mouse;
 
 1;

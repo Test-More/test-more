@@ -21,23 +21,29 @@ my $CLASS = 'Test::Builder2::Result';
 require_ok $CLASS;
 
 note("Running tests using $CLASS");
-tests(sub { new_ok($CLASS, @_) });
+tests(sub {
+    my $obj = $CLASS->new_result(@{$_[0]});
+    isa_ok $obj, "Test::Builder2::Result::Base";
+    return $obj;
+});
 
 sub tests {
     my $new_ok = shift;
 
     # Pass
     {
-        my $result = $new_ok->([ type => "pass" ]);
+        my $result = $new_ok->([ pass => 1 ]);
 
-        is $result->type, 'pass';
+        ok $result->is_pass;
+        ok !$result->is_fail;
+        ok !$result->is_todo;
+        ok !$result->is_skip;
         ok $result;
     }
 
-
     # Fail
     {
-        my $result = $new_ok->([ type => "fail" ]);
+        my $result = $new_ok->([ pass => 0 ]);
 
         is $result->type, 'fail';
         ok !$result;
@@ -46,7 +52,7 @@ sub tests {
 
     # Skip
     {
-        my $result = $new_ok->([ type => 'skip_pass' ]);
+        my $result = $new_ok->([ pass => 1, directives => [qw(skip)] ]);
 
         is $result->type, 'skip_pass';
         is $result->reason, undef;
@@ -57,40 +63,16 @@ sub tests {
 
     # TODO
     {
-        my $result = $new_ok->([ type => 'todo_pass' ]);
+        my $result = $new_ok->([ pass => 1, directives => [qw(todo)] ]);
 
         is $result->type, 'todo_pass';
         ok $result->is_todo;
-        ok $result;
-    }
-
-
-    # TODO after a pass
-    {
-        my $result = $new_ok->([ type => 'pass' ])
-          ->todo('Must do');
-
-        ok $result->is_todo;
-        is $result->type, 'todo_pass';
-        is $result->reason, 'Must do';
-        ok $result;
-    }
-
-    # TODO after a fail
-    {
-        my $result = $new_ok->([ type => 'fail' ])
-          ->todo('Must do');
-
-        ok $result->is_todo;
-        is $result->type, 'todo_fail';
-        is $result->reason, 'Must do';
         ok $result;
     }
 
     # skip todo
     {
-        my $result = $new_ok->([ type    => 'skip_pass' ])
-          ->todo('Implement');
+        my $result = $new_ok->([ pass => 0, directives => [qw(todo skip)] ]);
 
         ok $result, 'Chained skip';
         is $result->type, 'todo_skip';
@@ -100,25 +82,17 @@ sub tests {
 
     # TODO with no message
     {
-        my $result = $new_ok->([ type => 'fail' ])
-          ->todo();
+        my $result = $new_ok->([ pass => 0, directives => [qw(todo)] ]);
 
         ok $result->is_todo(), 'Todo with no message';
         is $result->reason, undef;
         ok $result;
     }
 
-    # Type validation
-    {
-        ok !eval {
-            Test::Builder2::Result->new([ type => 'spam' ]);
-        }, 'Check type validation';
-    }
-
     # as_hash
     {
         my $result = $new_ok->([
-            type            => 'pass',
+            pass            => 1,
             description     => 'something something something test result',
             test_number     => 23,
             location        => 'foo.t',
