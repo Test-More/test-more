@@ -75,7 +75,7 @@ sub _generate_accessor_any{
         $class->throw_error("Unknown accessor type '$type'");
     }
 
-    if ($attribute->is_lazy) {
+    if ($attribute->is_lazy and $type ne 'wo') {
         my $value;
 
         if (defined $builder){
@@ -88,7 +88,7 @@ sub _generate_accessor_any{
             $value = '$default';
         }
 
-        $accessor .= "els" if $type eq 'rw' || $type eq 'wo';
+        $accessor .= "els" if $type eq 'rw';
         $accessor .= "if(!exists $slot){\n";
         if($should_coerce){
             $accessor .= "$slot = \$constraint->coerce($value)";
