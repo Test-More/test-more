@@ -2085,15 +2085,14 @@ sub _result_to_hash {
     my $self = shift;
     my $result = shift;
 
+    my $types = $result->types;
     my $type = $result->type eq 'todo_skip' ? "todo_skip"        :
-               $result->type =~ /unknown/   ? "unknown"          :
-               $result->type =~ /todo/      ? "todo"             :
-               $result->type =~ /skip/      ? "skip"             :
-                                              ""                 ;
+               $types->{unknown}            ? "unknown"          :
+               $types->{todo}               ? "todo"             :
+               $types->{skip}               ? "skip"             :
+                                            ""                 ;
 
-    my $actual_ok = $result->type =~ /unknown/ ? undef :
-                    $result->type =~ /pass/    ? 1     :
-                                                 0     ;
+    my $actual_ok = $types->{unknown} ? undef : $result->literal_pass;
 
     return {
         'ok'       => $result->is_fail ? 0 : 1,
