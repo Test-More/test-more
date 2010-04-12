@@ -2,44 +2,28 @@
 
 use strict;
 
-
-{
-    package TB2::Assert::Builder;
-
-    use base qw(Test::Builder2);
-
-    sub assert_end {
-        my $self   = shift;
-        my $result = shift;
-
-        die if $result->description =~ /\b die \b/x;
-    }
-}
-
-
 {
     package TB2::Assert;
 
-    use Test::Builder2::Module;
-    __PACKAGE__->builder(TB2::Assert::Builder->new);
+    require Test::Simple;
+    use Test::Builder2::Mouse::Role;
 
-    our @EXPORT = qw(assert ok);
+    after assert_end => sub {
+        my $self   = shift;
+        my $result = shift;
 
-    install_test( assert => sub {
-        my($name) = @_;
-        return $Builder->ok(1, $name);
-    });
+        die "Test said to die" if $result->name =~ /\b die \b/x;
+    };
 
-    install_test( ok => sub {
-        my($test, $name) = @_;
-        return $Builder->ok($test, $name);
-    });
+    TB2::Assert->meta->apply(Test::Simple->builder);
 }
 
-TB2::Assert->import( tests => 3 );
-assert("pass");
+
+use Test::Simple tests => 3;
+ok(1, "pass");
 
 ok( !eval {
-    assert("die die die!");
+    ok(1, "die die die!");
+    1;
 }, "assert() dies on fail");
 
