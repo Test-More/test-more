@@ -151,7 +151,7 @@ has streamer_class => (
 );
 
 has streamer => (
-    is      => 'ro',
+    is      => 'rw',
     lazy    => 1,
     default => sub {
       my $class = $_[0]->streamer_class;
