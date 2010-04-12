@@ -82,11 +82,11 @@ my $formatter = new_formatter();
 # Test out PlusMinus inside TB2.
 {
     my $tb = Test::Builder2->new;
-    $tb->formatter( new_formatter() );
+    $tb->set_formatter( new_formatter() );
 
     $tb->ok(1);
     $tb->ok(0);
-    $tb->done_testing();
+    $tb->stream_end();
 
     is $tb->formatter->streamer->read, "+-\n", "PlusMinus plus TB2";
 }

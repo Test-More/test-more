@@ -15,7 +15,7 @@ my $tap = Test::Builder2::Formatter::TAP->new({
 my $builder = new_ok("Test::Builder2", [ formatter => $tap ]);
 
 {
-    $builder->plan(tests => 3);
+    $builder->stream_start(tests => 3);
     is($tap->streamer->read('out'), "TAP version 13\n1..3\n", 'Simple builder output');
 }
 

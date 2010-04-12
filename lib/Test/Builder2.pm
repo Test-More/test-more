@@ -34,7 +34,8 @@ has history_class => (
 );
 
 has history => (
-  is            => 'rw',
+  reader        => 'history',
+  writer        => 'set_history',
   isa           => 'Test::Builder2::History',
   builder       => '_build_history',
   lazy          => 1,
@@ -73,7 +74,8 @@ has formatter_class => (
 );
 
 has formatter => (
-  is            => 'rw',
+  reader        => 'formatter',
+  writer        => 'set_formatter',
   isa           => 'Test::Builder2::Formatter',
   builder       => '_build_formatter',
   lazy          => 1,
@@ -133,6 +135,53 @@ sub from_top {
     return join "", @_, " at $top[1] line $top[2]";
 }
 
+
+=head3 stream_start
+
+  $tb->stream_start(%options);
+
+Inform the builder that testing is about to begin.  This will allow
+the builder to output any necessary headers.
+
+Extension authors are encouraged to put method modifiers on
+stream_start().
+
+=cut
+
+sub stream_start {
+    my $self = shift;
+    my %options = @_;
+
+    $self->set_plan( %options );
+
+    $self->formatter->begin(%options);
+
+    return;
+}
+
+=head3 stream_end
+
+  $tb->stream_end(%options);
+
+Inform the Builder that testing is complete.  This will allow the builder to
+perform any end of testing checks and actions, such as outputting a plan, and
+inform any other objects, such as the formatter.
+
+Extension authors are encouraged to put method modifiers on
+stream_end().
+
+=cut
+
+sub stream_end {
+    my $self    = shift;
+    my %options = @_;
+
+    $self->set_plan( %options );
+
+    $self->formatter->end(%options);
+}
+
+
 =head3 assert_start
 
   $tb->assert_start;
@@ -179,18 +228,31 @@ sub assert_end {
     return;
 }
 
-=head3 plan
+
+=head3 set_plan
+
+  $tb->set_plan(%plan);
+
+Inform the builder what your test plan is, if any.
+
+For example, Perl tests would say:
+
+    $tb->set_plan( tests => $number_of_tests );
+
+Extension authors are encouraged to put method modifiers on
+set_plan().
 
 =cut
 
-sub plan {
+sub set_plan {
     my $self = shift;
-    my %args = @_;
+    my %plan = @_;
 
-    $self->planned_tests( $args{tests} );
+    $self->planned_tests($plan{tests}) if $plan{tests};
 
-    $self->formatter->begin(%args);
+    return;
 }
+
 
 =head3 ok
 
@@ -254,22 +316,6 @@ sub accept_result {
     return;
 }
 
-
-=head3 done_testing
-
-  $tb->done_testing();
-
-Inform the Builder that testing is complete.  This will allow the builder to
-perform any end of testing checks and actions, such as outputting a plan, and
-inform any other objects, such as the formatter.
-
-=cut
-
-sub done_testing {
-    my $self = shift;
-
-    $self->formatter->end;
-}
 
 =begin private
 

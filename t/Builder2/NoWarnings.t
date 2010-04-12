@@ -13,7 +13,7 @@ BEGIN {
 
     my @Warnings;
 
-    around "plan" => sub {
+    around "set_plan" => sub {
         my $orig = shift;
         my $self = shift;
         my %args = @_;
@@ -27,7 +27,7 @@ BEGIN {
         };
     };
 
-    before done_testing => sub {
+    before stream_end => sub {
         my $self = shift;
         $self->ok( !@Warnings, "no warnings" );
     };
@@ -41,13 +41,13 @@ require Test::Builder2::Streamer::Debug;
 my $builder = Test::Simple->builder;
 $builder->formatter->streamer(Test::Builder2::Streamer::Debug->new);
 
-$builder->plan(tests => 2);
+$builder->stream_start(tests => 2);
 ok(1, "pass 1");
 warn "Wibble";
 ok(1, "pass 2");
 
-# XXX TB2 doesn't implicitly call done_testing yet
-$builder->done_testing();
+# XXX TB2 doesn't implicitly call stream_end yet
+$builder->stream_end();
 
 print "1..2\n";
 print "ok 1 - count correct\n" if $builder->history->counter->get == 3;

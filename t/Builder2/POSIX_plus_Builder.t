@@ -15,7 +15,7 @@ my $posix = Test::Builder2::Formatter::POSIX->new(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
 
-$test->formatter($posix);
+$test->set_formatter($posix);
 
 $test->ok(1, "this is a pass");
 is $posix->streamer->read('output'), <<"END";

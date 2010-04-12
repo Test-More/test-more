@@ -33,7 +33,7 @@ sub _module_import {
     my $class  = shift;
     my $caller = caller;
 
-    $class->builder->plan(@_) if @_;
+    $class->builder->stream_start(@_) if @_;
 
     $class->export_to_level(1, $class);
 }
