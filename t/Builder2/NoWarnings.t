@@ -37,13 +37,13 @@ BEGIN {
     Test::NoWarnings->meta->apply(Test::Simple->builder);
 }
 
-use Test::Simple;
-
 require Test::Builder2::Streamer::Debug;
 my $builder = Test::Simple->builder;
 $builder->formatter->streamer(Test::Builder2::Streamer::Debug->new);
 
-$builder->stream_start(tests => 2);
+require Test::Simple;
+Test::Simple->import( tests => 2 );
+
 ok(1, "pass 1");
 warn "Wibble";
 ok(1, "pass 2");

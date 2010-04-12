@@ -152,7 +152,7 @@ sub stream_start {
     my $self = shift;
     my %options = @_;
 
-    $self->set_plan( %options );
+    %options = $self->set_plan( %options );
 
     $self->formatter->begin(%options);
 
@@ -250,7 +250,7 @@ sub set_plan {
 
     $self->planned_tests($plan{tests}) if $plan{tests};
 
-    return;
+    return %plan;
 }
 
 
