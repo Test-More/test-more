@@ -13,6 +13,12 @@ BEGIN {
 
     my @Warnings;
 
+    before stream_start => sub {
+        $SIG{__WARN__} = sub {
+            push @Warnings, @_;
+        };
+    };
+
     around "set_plan" => sub {
         my $orig = shift;
         my $self = shift;
@@ -21,10 +27,6 @@ BEGIN {
         $args{tests}++ if defined $args{tests};
 
         $self->$orig(%args);
-
-        $SIG{__WARN__} = sub {
-            push @Warnings, @_;
-        };
     };
 
     before stream_end => sub {
