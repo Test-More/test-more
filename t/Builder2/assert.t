@@ -8,7 +8,7 @@ use strict;
 
     use base qw(Test::Builder2);
 
-    sub test_end {
+    sub assert_end {
         my $self   = shift;
         my $result = shift;
 

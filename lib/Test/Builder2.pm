@@ -133,17 +133,21 @@ sub from_top {
     return join "", @_, " at $top[1] line $top[2]";
 }
 
-=head3 test_start
+=head3 assert_start
 
-  $tb->test_start;
+  $tb->assert_start;
 
-Called just before a user written test function begins, it allows
-before-test actions as well as knowing what the "top" of the call
-stack is for the purposes of reporting test file and line numbers.
+Called just before a user written test function begins, an assertion.
+
+By default it records the caller at this point in C<< $self->top_stack >>
+for the purposes of reporting test file and line numbers properly.
+
+Extension authors are encouraged to put method modifiers on
+assert_start()
 
 =cut
 
-sub test_start {
+sub assert_start {
     my $self = shift;
 
     push @{$self->top_stack}, [caller(1)];
@@ -151,20 +155,24 @@ sub test_start {
     return;
 }
 
-=head3 test_end
+=head3 assert_end
 
-  $tb->test_end(@test_result);
+  $tb->assert_end($result);
 
-Like C<test_start> but for just after a user written test finishes.
-Allows end-of-test actions and pops the call stack.
+Like C<assert_start> but for just after a user written assert function
+finishes.
 
-The C<@test_result> may be used by the end-of-test action.
+By default it pops C<< $self->top_stack >> and if this is the last
+assert in the stack it formats the result.
+
+Extension authors are encouraged to put method modifiers on
+assert_end().
 
 =cut
 
-sub test_end {
-    my $self = shift;
-    my @result = @_;
+sub assert_end {
+    my $self   = shift;
+    my $result = shift;
 
     assert( pop @{$self->top_stack} );
 

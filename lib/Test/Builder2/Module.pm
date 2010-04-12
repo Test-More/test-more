@@ -95,7 +95,7 @@ sub install_test {
     my $code = eval sprintf <<'CODE', $proto;
     sub %s {
         # Fire any before-test actions.
-        $caller->builder->test_start();
+        $caller->builder->assert_start();
 
         # Call the original routine, but retain context.
         my @ret;
@@ -107,7 +107,7 @@ sub install_test {
         }
 
         # And after-test.
-        $caller->builder->test_end(@ret);
+        $caller->builder->assert_end(@ret);
 
         return wantarray ? @ret : $ret[0];
     };

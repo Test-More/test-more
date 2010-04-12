@@ -9,18 +9,18 @@ use Test::Builder2;
 my $tb = Test::Builder2->new;
 
 sub outer {
-    $tb->test_start;
+    $tb->assert_start;
     my @ret = $tb->from_top("outer");
     push @ret, inner(@_);
-    $tb->test_end;
+    $tb->assert_end;
 
     return @ret;
 }
 
 sub inner {
-    $tb->test_start;
+    $tb->assert_start;
     my $ret = $tb->from_top("inner");
-    $tb->test_end;
+    $tb->assert_end;
 
     return $ret;
 }
