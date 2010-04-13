@@ -143,26 +143,29 @@ C<@text> is treated like C<print>, so it is simply concatenated.
 
 =cut
 
-sub default_streamer_class { 'Test::Builder2::Streamer::Print' }
+sub default_streamer_class {
+    return 'Test::Builder2::Streamer::Print';
+}
 
 has streamer_class => (
-    is      => 'ro',
+    is      => 'rw',
+    isa     => 'Test::Builder2::LoadableClass',
+    coerce  => 1,
     builder => 'default_streamer_class',
 );
 
 has streamer => (
     is      => 'rw',
+    does    => 'Test::Builder2::Streamer',
     lazy    => 1,
-    default => sub {
-      my $class = $_[0]->streamer_class;
-
-      local $@;
-      eval "require $class; 1" or die $@;
-
-      $class->new;
-    },
+    builder => '_build_streamer',
     handles => [ qw(write) ],
 );
+
+sub _build_streamer {
+    return $_[0]->streamer_class->new;
+}
+
 
 =head2 Virtual Methods
 
