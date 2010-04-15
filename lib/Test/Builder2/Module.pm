@@ -51,7 +51,7 @@ Test::Builder2::Module - Write a test module
     # ok( 1 + 1 == 2 );
     install_test( ok => sub {
         my $test = shift;
-        return $Builder-ok($test);
+        return $Builder->ok($test);
     });
 
 =head1 DESCRIPTION
@@ -64,13 +64,20 @@ A module to declare test functions to make writing a test library easier.
 
   install_test( $name => $code );
 
-Declares a new test function or method.  Similar to writing C<< sub
-name { ... } >> with two differences.
+Declares a new test function (aka an "assert") or method.  Similar to
+writing C<< sub name { ... } >> with two differences.
 
-1. Declaring the test in this manner enables pre and post test actions,
-   such as aborting the test on failure.
-2. The $Builder object is available inside your $code which is just a
+1. Declaring the test in this manner enables the assert_start and
+   assert_end hooks, such as aborting the test on failure.
+2. It takes care of displaying the test result for you.
+3. The $Builder object is available inside your $code which is just a
    shortcut for C<< $class->builder >>
+
+The prototype of the $code is honored.
+
+$code must return a single Test::Builder2::Result::Base object,
+usually the result from C<< Test::Builder2->ok() >> or any other test
+function.
 
 =cut
 
@@ -97,19 +104,12 @@ sub install_test {
         # Fire any before-test actions.
         $caller->builder->assert_start();
 
-        # Call the original routine, but retain context.
-        my @ret;
-        if( wantarray ) {
-            @ret = $test_code->(@_);
-        }
-        else {
-            $ret[0] = $test_code->(@_);
-        }
+        my $result = $test_code->(@_);
 
         # And after-test.
-        $caller->builder->assert_end(@ret);
+        $caller->builder->assert_end($result);
 
-        return wantarray ? @ret : $ret[0];
+        return $result;
     };
 CODE
 

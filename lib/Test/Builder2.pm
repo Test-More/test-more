@@ -119,6 +119,37 @@ sub top {
 }
 
 
+=head3 at_top
+
+  my $is_at_top = $tb->at_top;
+
+Returns true if the current assertion is at the top of the assert
+stack.  That is, if you're the assert which was originally called by
+the user.
+
+Mostly handy to know when to format the result.
+
+=cut
+
+sub at_top {
+    my $self = shift;
+    return @{$self->top_stack} == 1;
+}
+
+
+=head3 in_assert
+
+  my $is_in_assert = $tb->in_assert;
+
+Returns true if the builder is currently inside an assert function.
+
+=cut
+
+sub in_assert {
+    my $self = shift;
+    return @{$self->top_stack} ? 1 : 0;
+}
+
 =head3 from_top
 
   my $msg = $tb->from_top(@msg);
@@ -223,6 +254,9 @@ sub assert_end {
     my $self   = shift;
     my $result = shift;
 
+    $self->formatter->result($result) if
+      $self->at_top and defined $result;
+
     assert( pop @{$self->top_stack} );
 
     return;
@@ -281,6 +315,8 @@ sub ok {
     my $test = shift;
     my $name = shift;
 
+    $self->assert_start();
+
     my $num = $self->history->counter->get + 1;
 
     my $result = $self->result_class->new_result(
@@ -291,7 +327,7 @@ sub ok {
 
     $self->accept_result($result);
 
-    $self->formatter->result($result);
+    $self->assert_end($result);
 
     return $result;
 }

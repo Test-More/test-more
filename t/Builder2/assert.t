@@ -8,11 +8,15 @@ use strict;
     require Test::Simple;
     use Test::Builder2::Mouse::Role;
 
+    # Die after assert_end to give TB2 the chance to
+    # print the result
     after assert_end => sub {
         my $self   = shift;
         my $result = shift;
 
-        die "Test said to die" if $result->name =~ /\b die \b/x;
+        # Have to check that we're not in an assert because assert_end()
+        # would have already popped the stack.
+        die "Test said to die" if !$self->in_assert and $result->name =~ /\b die \b/x;
     };
 
     TB2::Assert->meta->apply(Test::Simple->builder);
