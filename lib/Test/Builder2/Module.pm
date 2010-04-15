@@ -46,12 +46,19 @@ Test::Builder2::Module - Write a test module
 =head1 SYNOPSIS
 
     use Test::Builder2::Module;
-    our @EXPORT = qw(ok);
+    our @EXPORT = qw(is);
 
-    # ok( 1 + 1 == 2 );
-    install_test( ok => sub {
-        my $test = shift;
-        return $Builder->ok($test);
+    # is( $have, $want, $name );
+    install_test( is => sub ($$;$) {
+        my($have, $want, $name) = @_;
+
+        my $result = $Builder->ok($have eq $want, $name);
+        $result->diagnostic([
+            have => $have,
+            want => $want
+        ]);
+
+        return $result;
     });
 
 =head1 DESCRIPTION
