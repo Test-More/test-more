@@ -116,6 +116,8 @@ MAKE
         $make =~ s{\s+\z}{\n};
 
         my @perls = qw(
+            perl5.12.1
+            perl5.10.1
             perl5.8.9
             perl5.6.2
         );
@@ -125,6 +127,13 @@ MAKE
 	cd $(DISTVNAME) && $(MAKE) clean && %s Makefile.PL && PERL_RELEASING=0 $(MAKE) test $(PASTHRU)
 END
         }
+
+        # Rebuild so subsequent make commands work
+        $make .= <<'END';
+	$(MAKE) realclean
+	$(FULLPERLRUN) Makefile.PL
+	$(MAKE)
+END
 
         $make .= "\n";
 

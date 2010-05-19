@@ -1,4 +1,4 @@
-0.95_02
+0.95_02  Wed May 19 15:46:52 PDT 2010
     Bug Fixes
     * Correct various typos and spelling errors (Nick Cleaton)
     * Fix alignment of indented multi-line diagnostics from subtests
