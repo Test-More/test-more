@@ -29,6 +29,13 @@
     * is_deeply() performance boost for large structures consisting of
       mostly non-refs (Nick Cleaton)
 
+    Feature Changes
+    * is() and others will no longer stringify its arguments before
+      comparing.  Overloaded objects will make use of their eq
+      overload rather than their "" overload.  This can break tests of
+      impolitely string overloaded objects.  DateTime prior to 0.54 is
+      the biggest example.
+
 
 0.94  Wed Sep  2 11:17:47 PDT 2009
     Releasing 0.93_01 as stable.
