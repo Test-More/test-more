@@ -151,7 +151,7 @@
     - Fixed the file and line number reported by like when it gets a bad
       regex.
 
-    Features Changed
+    Feature Changes
     - Now preserves the tests' exit code if it exits abnormally, rather than
       setting it to 255.
     - Changed the "Looks like your test died" message to
@@ -171,7 +171,7 @@
     * Added note() and explain() to both Test::More and Test::Builder.
       [rt.cpan.org 14764] [test-more.googlecode.com 3]
 
-    Features Changed
+    Feature Changes
     * Changed the message for extra tests run to show the number of tests run rather than
       the number extra to avoid the user having to do mental math.
       [rt.cpan.org 7022]    
