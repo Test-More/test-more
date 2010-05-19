@@ -165,7 +165,7 @@ which is even the same as
    test_out("ok 2");
 
 Once C<test_out> or C<test_err> (or C<test_fail> or C<test_diag>) have
-been called once all further output from B<Test::Builder> will be
+been called, all further output from B<Test::Builder> will be
 captured by B<Test::Builder::Tester>.  This means that you will not
 be able perform further tests to the normal output in the normal way
 until you call C<test_test> (well, unless you manually meddle with the
