@@ -33,35 +33,37 @@ It can also let TB2 know when control is about to return to the user
 from calling an assert so it can fire an end of assert action which
 includes formatting and outputing the final result and diagnostics.
 
+Asserts are stored as L<Test::Builder2::AssertRecord> objects.
+
 =head1 Methods
 
 =head2 asserts
 
     my $asserts = $stack->asserts;
 
-Returns an array ref of the asserts on the stack, in stack order.
+Returns an array ref of the Test::Builder2::AssertRecord objects on
+the stack.
 
 =cut
 
 has asserts =>
   is            => 'ro',
-  isa           => 'ArrayRef[ArrayRef]',
+  isa           => 'ArrayRef[Test::Builder2::AssertRecord]',
   default       => sub { [] }
 ;
 
 =head2 top
 
-    my @top = $stack->top;
+    my $record = $stack->top;
 
-Returns the top of the stack as a list.
+Returns the top AssertRecord on the stack.
 
 =cut
 
 sub top {
     my $self = shift;
 
-    my $asserts = $self->asserts;
-    return @$asserts ? @{$asserts->[0]} : ();
+    return $self->asserts->[0];
 }
 
 =head2 at_top
@@ -74,6 +76,7 @@ Returns true if the stack contains just one assert.
 
 sub at_top {
     my $self = shift;
+
     return @{$self->asserts} == 1;
 }
 
@@ -87,6 +90,7 @@ Returns true if there are any assertions on the stack
 
 sub in_assert {
     my $self = shift;
+
     return @{$self->asserts} ? 1 : 0;
 }
 
@@ -104,10 +108,10 @@ Convenient for printing failure diagnostics.
 sub from_top {
     my $self = shift;
 
-    my @top = $self->top;
-    sanity @top;
+    my $top = $self->top;
+    sanity $top;
 
-    return join "", @_, " at $top[1] line $top[2]";
+    return sprintf "%s at %s line %d", join("", @_), $top->filename, $top->line;
 }
 
 

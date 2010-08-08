@@ -5,6 +5,10 @@ use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 
 use Test::Builder2::Result;
+use Test::Builder2::AssertRecord;
+
+use Carp qw(confess);
+sub sanity ($) { confess "Assert failed" unless $_[0] };
 
 
 =head1 NAME
@@ -168,7 +172,10 @@ assert_start()
 sub assert_start {
     my $self = shift;
 
-    $self->top_stack->push([caller(1)]);
+    my $record = Test::Builder2::AssertRecord->new_from_caller(1);
+    sanity $record;
+
+    $self->top_stack->push($record);
 
     return;
 }
@@ -195,7 +202,7 @@ sub assert_end {
     $self->formatter->result($result) if
       $self->top_stack->at_top and defined $result;
 
-    $self->top_stack->pop;
+    sanity $self->top_stack->pop;
 
     return;
 }
