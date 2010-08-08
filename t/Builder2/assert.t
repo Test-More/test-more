@@ -16,7 +16,7 @@ use strict;
 
         # Have to check that we're not in an assert because assert_end()
         # would have already popped the stack.
-        die "Test said to die" if !$self->in_assert and $result->name =~ /\b die \b/x;
+        die "Test said to die" if !$self->top_stack->in_assert and $result->name =~ /\b die \b/x;
     };
 
     TB2::Assert->meta->apply(Test::Simple->builder);

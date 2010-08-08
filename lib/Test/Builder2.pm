@@ -3,7 +3,6 @@ package Test::Builder2;
 use 5.008001;
 use Test::Builder2::Mouse;
 use Test::Builder2::Types;
-use Carp qw(confess);
 
 use Test::Builder2::Result;
 
@@ -91,80 +90,19 @@ sub _build_formatter {
 
 =head3 top_stack
 
-  my @top = $tb->top;
   my $top_stack = $tb->top_stack;
 
-Stores the call level where the user's tests are written.  This is
-mostly useful for printing out diagnostic messages with the file and
-line number of the test.
-
-It is stored as a stack, so you can wrap tests around tests.
-C<$top_stack> is a list of array ref to the return value from
-C<caller(EXPR)>.  C<< $tb->top >> is a convenience method which returns
-C<< @{$top_stack->[0]} >>.
-
-(Might change from the caller array to a hash)
+Stores the current stack of asserts as a Test::Builder2::AssertStack.
 
 =cut
 
 has top_stack =>
   is            => 'ro',
-  isa           => 'ArrayRef[ArrayRef]',
-  default       => sub { [] };
-
-sub top {
-    my $self = shift;
-
-    return @{$self->top_stack->[0]};
-}
-
-
-=head3 at_top
-
-  my $is_at_top = $tb->at_top;
-
-Returns true if the current assertion is at the top of the assert
-stack.  That is, if you're the assert which was originally called by
-the user.
-
-Mostly handy to know when to format the result.
-
-=cut
-
-sub at_top {
-    my $self = shift;
-    return @{$self->top_stack} == 1;
-}
-
-
-=head3 in_assert
-
-  my $is_in_assert = $tb->in_assert;
-
-Returns true if the builder is currently inside an assert function.
-
-=cut
-
-sub in_assert {
-    my $self = shift;
-    return @{$self->top_stack} ? 1 : 0;
-}
-
-=head3 from_top
-
-  my $msg = $tb->from_top(@msg);
-
-A convenience method.  Attaches the traditional " at $file line $line"
-to @msg using C<< $tb->top >>.  @msg is joined with no delimiter.
-
-=cut
-
-sub from_top {
-    my $self = shift;
-
-    my @top = $self->top;
-    return join "", @_, " at $top[1] line $top[2]";
-}
+  isa           => 'Test::Builder2::AssertStack',
+  default       => sub {
+      require Test::Builder2::AssertStack;
+      Test::Builder2::AssertStack->new;
+  };
 
 
 =head3 stream_start
@@ -230,7 +168,7 @@ assert_start()
 sub assert_start {
     my $self = shift;
 
-    push @{$self->top_stack}, [caller(1)];
+    $self->top_stack->push([caller(1)]);
 
     return;
 }
@@ -255,9 +193,9 @@ sub assert_end {
     my $result = shift;
 
     $self->formatter->result($result) if
-      $self->at_top and defined $result;
+      $self->top_stack->at_top and defined $result;
 
-    assert( pop @{$self->top_stack} );
+    $self->top_stack->pop;
 
     return;
 }
@@ -351,21 +289,6 @@ sub accept_result {
 
     return;
 }
-
-
-=begin private
-
-=head3 assert
-
-    assert EXPRESSION;
-
-A simple assert function.  Pass it an expression you expect to be true.
-
-=end private
-
-=cut
-
-sub assert { confess "Assert failed" unless $_[0] };
 
 
 no Test::Builder2::Mouse;

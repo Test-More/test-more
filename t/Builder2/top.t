@@ -10,7 +10,7 @@ my $tb = Test::Builder2->new;
 
 sub outer {
     $tb->assert_start;
-    my @ret = $tb->from_top("outer");
+    my @ret = $tb->top_stack->from_top("outer");
     push @ret, inner(@_);
     $tb->assert_end;
 
@@ -19,16 +19,16 @@ sub outer {
 
 sub inner {
     $tb->assert_start;
-    my $ret = $tb->from_top("inner");
+    my $ret = $tb->top_stack->from_top("inner");
     $tb->assert_end;
 
     return $ret;
 }
 
-is_deeply( $tb->top_stack, [], "top_stack() empty" );
+is_deeply( $tb->top_stack->asserts, [], "top_stack() empty" );
 
 #line 29
 is_deeply( [inner()], ["inner at $0 line 29"], "from_top() shallow" );
 is_deeply( [outer()], ["outer at $0 line 30", "inner at $0 line 30"], "from_top() deep" );
 
-is_deeply( $tb->top_stack, [], "top_stack() still empty" );
+is_deeply( $tb->top_stack->asserts, [], "top_stack() still empty" );
