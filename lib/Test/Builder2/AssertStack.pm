@@ -14,12 +14,14 @@ Test::Builder2::AssertStack - A stack of where asserts were called
 
 =head1 SYNOPSIS
 
+    use Test::Builder2::AssertRecord;
     use Test::Builder2::AssertStack;
 
     my $stack = Test::Builder2::AssertStack->new;
 
-    $stack->push([caller]);
-    my $caller = $stack->pop;
+    my $record = Test::Builder2::AssertRecord->new_from_caller(1);
+    $stack->push($record);
+    my $record = $stack->pop;
     my $asserts = $stack->asserts;
 
 =head1 DESCRIPTION
