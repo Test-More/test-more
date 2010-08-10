@@ -251,12 +251,10 @@ is() takes the result from ok() (now an object) and adds its own diagnostics.  I
 
 Finally, TB2 must wait until the entire assert stack has had an opportunity to add diagnostics to the result before it can print the result.  Why?  TB1, only doing TAP, is fortunate in that its a stream.  It can print a result as soon as it gets it, and then append diagnostics onto the end.  But this isn't true of other output formats.  XML, for example, requires an opening and closing tag.
 
-We B<cannot> assume that asserts are exported functions.  Or that every function in a C<Test::> library is an assert.
-
 
 =head2 Declaring Asserts
 
-TB2 takes the approach of having a test library declare that a function is an assert.  This is done with the least fanfare possible:
+We B<cannot> assume that asserts are exported functions.  Or that every function in a C<Test::> library is an assert.  TB2 takes the approach of having a test library declare that a function is an assert.  This is done with the least fanfare possible:
 
     package My::Test::Module;
     use Test::Builder2::Module;
