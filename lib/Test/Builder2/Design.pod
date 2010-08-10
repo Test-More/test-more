@@ -130,9 +130,15 @@ It has to be very easy to write a basic testing module using TB2.  The underlyin
 
 =head2 Writing Test Libraries
 
+The simplest way to extend TB2 will be to write a test library.  L<Test::Builder2::Module> provides the conveniences to the test author.
+
 =head2 Writing TB2 Roles
 
+For internal use, roles can be applied to the TB2 singleton to expand its functionality while leaving the TB2 class slim.  Roles include TB2::Assert::More which will provide most of the Test::More functionality currently in TB1.
+
 =head2 TB2 Events
+
+The primary way test libraries will alter the behavior of TB2 is by hooking into test events, such as an assert ending or the plan being set.  Rather than design an event callback system, method modifiers (provided by Mouse) will be used.  Test libraries can simply put modifiers on public TB2 methods and TB2 methods will be decomposed to correspond with test events.  This allows event modifiers and callbacks to stack in a sane way.  Not having an explicit callback system allows test authors to extend TB2 in ways not anticipated.  Finally, TB2 is not gummed up by checking for callbacks all over the place.
 
 
 =head1 Use Cases
