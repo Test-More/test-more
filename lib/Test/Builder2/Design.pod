@@ -177,9 +177,32 @@ It should be possible to have an extension which starts the debugger when an ass
 It should be possible to perform an action when a test stream completes in certain states.  For example, beep on completion or send an email on failure.
 
 
-=head1 File and Line Diagnostics
+=head1 Stacked Asserts
 
-One of the trickiest features of TB1 is correctly reporting the file and line where an assert failed.  This is because asserts call asserts which call asserts which ultimately call C<ok> which does the actual passing or failing.  It needs to know where the user originally called the assert, the "top" of the assert stack.
+TB2 lets asserts build on other asserts by just calling them.  For
+example, here is a simple implementation of is().
+
+    install_test is => sub {
+        my($have, $want, $name) = @_;
+
+        my $result = ok( $have eq $want, $name );
+        $result->diagnostics(
+            have => $have,
+            want => $want
+        );
+
+        return $result;
+    };
+
+is() uses ok() to do most of the work.  Then it adds its diagnostics
+to the result (an overloaded object in TB2) and passes it along.
+
+To accomplish this, TB2 records the stack of asserts being called and who called them.  This turns out to be one of the more involved parts of TB2, but its necessary for some critical features.
+
+
+=head2 File and Line Information
+
+One of the friendliest and trickiest features of TB1 is correctly reporting the file and line where an assert failed.  This is because asserts call asserts which call asserts which ultimately call C<ok> which does the actual passing or failing.  It needs to know where the user originally called the assert, the "top" of the assert stack.
 
 Similar in functionality to Carp, but it has to be far more robust.  It cannot guess based on crossing package boundaries, it has to know.  TB1 accomplished this by keeping track of how far down the stack you are at any moment with C<$Level>.  This results in complicated accounting that's often not quite right, and it bubbles up to the user's level who must remember to localize and increment C<$Level>.
 
@@ -190,12 +213,42 @@ For example, here is how is() would ideally be implemented by a user (ignoring d
     sub is {
         my($have, $want, $name) = @_;
         
-        return ok $have, $want, $name;
+        return ok $have eq $want, $name;
     }
 
 When C<is()> fails, you want the diagnostics to contain the file and line number of the call to is(), not the call to C<ok()> inside is().
 
+
+=head2 Assert end actions
+
+This goes beyond just file and line numbers.  It also allows actions
+to happen when an assert fully completes, suck as "die-on-fail".  To
+expand on the is() example above:
+
+    sub is {
+        my($have, $want, $name) = @_;
+        
+        my $ok = ok $have, $want, $name;
+
+        $ok->diagnostics(
+            have => $have,
+            want => $want,
+        );
+
+        return $ok;
+    }
+
+is() takes the result from ok() (now an object) and adds its own diagnostics.  If ok() were to fail, and die-on-fail is active, TB2 must know to wait until is() has had a chance to add its diagnostics and print the result before failing.  Otherwise you don't get full diagnostics about the failure.  TB2 must know that is() was called by the user and ok() was not.
+
+
+=head2 Result output
+
+Finally, TB2 must wait until the entire assert stack has had an opportunity to add diagnostics to the result before it can print the result.  Why?  TB1, only doing TAP, is fortunate in that its a stream.  It can print a result as soon as it gets it, and then append diagnostics onto the end.  But this isn't true of other output formats.  XML, for example, requires an opening and closing tag.
+
 We B<cannot> assume that asserts are exported functions.  Or that every function in a C<Test::> library is an assert.
+
+
+=head2 Declaring Asserts
 
 TB2 takes the approach of having a test library declare that a function is an assert.  This is done with the least fanfare possible:
 
@@ -209,7 +262,10 @@ TB2 takes the approach of having a test library declare that a function is an as
 
 C<install_test> is exported by TB2::Module.  It wraps the user's function in a little shim that triggers assert_start and assert_end events.  It also records this fact in an assert stack, assert_start pushes onto the stack and assert_end pops it.  The asset stack tracks where each assert was called.  If an assert fails anywhere in the stack it can get the file and line number information from the top of the stack.
 
-Currently there is only one stack and it is a simple list, see C<top_stack> in TB2.  This must be developed into its own object in order to handle some use cases, the most important is L<Test::Warn> and L<Test::Exception>.
+
+=head2 Multiple Stacks
+
+Currently there is only one stack, see C<top_stack> in TB2.  This must be developed into multiple stacks to handle some use cases, the most important is L<Test::Warn> and L<Test::Exception>.
 
 For example:
 
@@ -245,6 +301,23 @@ There is no way for TB2 to infer this special case, it must be declared by the a
 In effect, there is a stack of stacks maintained inside TB2.  C<$Builder> is provided by TB2::Module as a shortcut for C<< $class->builder >>.
 
 This will also allow tests to work in cooperative multitasking situations such as POE.  One stack of asserts may start running only to yield control to another stack.  The details are beyond the scope of this design, only that it is made possible.
+
+
+=head2 Multiple asserts inside an assert
+
+There is a final case to consider, this:
+
+    install_test file_contents_ok => sub {
+        my($file, $want) = @_;
+
+        ok( open(my $fh, "<", $file), "open $file" );
+        my $content = join "", <$fh>;
+        ok( close $fh, "close $file" );
+
+        return is $content, $want, "contents of $file";
+    };
+
+This assert has multiple asserts inside it, but the final one is the important one.  In this case, TB2 must display them all as if they came from the point where C<< file_contents_ok() >> was called.  Also make sure that the results of the two C<ok()>s get output.  And do it all in the right order.  This is an open problem.
 
 
 =head1 Mouse
