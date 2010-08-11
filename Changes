@@ -1,4 +1,4 @@
-0.95_03
+0.96  Tue Aug 10 21:13:04 PDT 2010
     Bug Fixes
     * You can call done_testing() again after reset() [googlecode 59]
 
