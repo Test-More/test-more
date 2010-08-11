@@ -82,7 +82,7 @@ WriteMakefile(
         resources => {
             license     =>      'http://dev.perl.org/licenses/',
             homepage    =>      'http://test-more.googlecode.com',
-            bugtracker  =>      'http://code.google.com/p/test-more/issues',
+            bugtracker  =>      'http://github.com/schwern/test-more/issues',
             repository  =>      'http://github.com/schwern/test-more/tree/master',
             MailingList =>      'http://groups.google.com/group/test-more-users',
         },

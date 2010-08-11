@@ -2,6 +2,9 @@
     Bug Fixes
     * You can call done_testing() again after reset() [googlecode 59]
 
+    Other
+    * Bug tracker moved to github
+
 
 0.95_02  Wed May 19 15:46:52 PDT 2010
     Bug Fixes
