@@ -1,3 +1,9 @@
+0.97_01
+    Test Fixes
+    * Adapted the tests for the new Perl 5.14 regex stringification.
+      (Karl Williamson) [github 44]
+
+
 0.96  Tue Aug 10 21:13:04 PDT 2010
     Bug Fixes
     * You can call done_testing() again after reset() [googlecode 59]
