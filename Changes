@@ -3,6 +3,10 @@
     * Adapted the tests for the new Perl 5.14 regex stringification.
       (Karl Williamson) [github 44]
 
+    Feature Changes
+    * subtest() no longer has a prototype.  It was just getting in the way.
+      [rt.cpan.org 54239]
+
 
 0.96  Tue Aug 10 21:13:04 PDT 2010
     Bug Fixes

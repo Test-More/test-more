@@ -735,7 +735,7 @@ subtests are equivalent:
 
 =cut
 
-sub subtest($&) {
+sub subtest {
     my ($name, $subtests) = @_;
 
     my $tb = Test::More->builder;
