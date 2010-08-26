@@ -889,6 +889,10 @@ sub _eval {
 
 Like use_ok(), except it requires the $module or $file.
 
+These 2 are equivalent so if you're trying to prevent imports, require_ok is what you want:
+   use Module::Name ();
+   require Module::Name;
+
 =cut
 
 sub require_ok ($) {
