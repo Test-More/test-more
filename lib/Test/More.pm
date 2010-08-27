@@ -819,6 +819,11 @@ because the notion of "compile-time" is relative.  Instead, you want:
   BEGIN { use_ok('Some::Module') }
   BEGIN { ...some code that depends on the use... }
 
+If you want the equivalent of C<use Foo ()>, use a module but not
+import anything, use C<require_ok>.
+
+  BEGIN { require_ok "Foo" }
+
 
 =cut
 
@@ -888,10 +893,6 @@ sub _eval {
    require_ok($file);
 
 Like use_ok(), except it requires the $module or $file.
-
-These 2 are equivalent so if you're trying to prevent imports, require_ok is what you want:
-   use Module::Name ();
-   require Module::Name;
 
 =cut
 
