@@ -1,4 +1,4 @@
-0.97_01
+0.97_01  Fri Aug 27 22:50:30 PDT 2010
     Test Fixes
     * Adapted the tests for the new Perl 5.14 regex stringification.
       (Karl Williamson) [github 44]
