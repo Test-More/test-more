@@ -34,6 +34,7 @@ Test event hooks
 Multiple formatters (ie. you can output something other than TAP)
 Assert stacks (ie. no more $Test::Builder::Level)
 A bunch of other stuff
+Test::Buidler is using pieces of Test::Builder2
 
 
 WHAT DOESN'T WORK
