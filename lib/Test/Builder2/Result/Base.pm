@@ -254,6 +254,8 @@ sub is_skip {
     return 0;
 }
 
+
+# XXX I don't think anything uses this.  It can probably go away.
 my %TypeMap = (
     pass        => "is_pass",
     fail        => "is_fail",
@@ -272,6 +274,8 @@ sub types {
     return \%types;
 }
 
+
+# XXX Should be moved into a utilty class
 sub _alias {
     my($class, $name, $code) = @_;
 
