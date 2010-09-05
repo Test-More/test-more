@@ -17,15 +17,54 @@ Test::Builder2::Formatter - Base class for formating test results
 
 =head1 DESCRIPTION
 
-Test::Builder2 delegates the actual formatter of test results to a
+Test::Builder2 delegates the actual formating of test results to a
 Test::Builder2::Formatter object.  This can then decide if it's going to
 formatter TAP or XML or send email or whatever.
 
 =head1 METHODS
 
+=head2 Attributes
+
+=head3 streamer_class
+
+Contains the class to use to make a Streamer.
+
+Defaults to C<< $formatter->default_streamer_class >>
+
+=head3 streamer
+
+Contains the Streamer object to L<write> to.  One will be created for
+you using C<< $formatter->streamer_class >>.
+
+=cut
+
+sub default_streamer_class {
+    return 'Test::Builder2::Streamer::Print';
+}
+
+has streamer_class => (
+    is      => 'rw',
+    isa     => 'Test::Builder2::LoadableClass',
+    coerce  => 1,
+    builder => 'default_streamer_class',
+);
+
+has streamer => (
+    is      => 'rw',
+    does    => 'Test::Builder2::Streamer',
+    lazy    => 1,
+    builder => '_build_streamer',
+    handles => [ qw(write) ],
+);
+
+sub _build_streamer {
+    return $_[0]->streamer_class->new;
+}
+
+
 =head3 new
 
-  my $formatter = Test::Builder2::Formatter::TAP::v13->new(%args);
+  my $formatter = Test::Builder2::Formatter->new(%args);
 
 Sets up a new formatter object to feed results.
 
@@ -76,7 +115,7 @@ sub begin {
 
   $formatter->result($result);
 
-Formats a $result (an instance of Test::Builder2::Result).
+Formats a $result (an instance of L<Test::Builder2::Result>).
 
 It is an error to call result() after end().
 
@@ -137,34 +176,11 @@ sub end {
 
   $output->write($destination, @text);
 
-Outputs C<@text> to the named destination.
+Outputs C<@text> to the named $destination.
 
 C<@text> is treated like C<print>, so it is simply concatenated.
 
-=cut
-
-sub default_streamer_class {
-    return 'Test::Builder2::Streamer::Print';
-}
-
-has streamer_class => (
-    is      => 'rw',
-    isa     => 'Test::Builder2::LoadableClass',
-    coerce  => 1,
-    builder => 'default_streamer_class',
-);
-
-has streamer => (
-    is      => 'rw',
-    does    => 'Test::Builder2::Streamer',
-    lazy    => 1,
-    builder => '_build_streamer',
-    handles => [ qw(write) ],
-);
-
-sub _build_streamer {
-    return $_[0]->streamer_class->new;
-}
+In reality, this is a hand off to C<< $formatter->streamer->write >>.
 
 
 =head2 Virtual Methods

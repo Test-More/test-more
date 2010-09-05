@@ -29,9 +29,8 @@ simple positive integer.
 Most testing systems don't care how many tests run, but this is very
 important for TAP output.
 
-Test::Builder2::Counter is normally used through
-Test::Builder2::History, but you can get it separately if you want to
-be really slim.
+The counter is normally used through L<Test::Builder2::History>, but
+you can get it separately if you want to be really slim.
 
 =head1 METHODS
 
