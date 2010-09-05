@@ -15,7 +15,7 @@ Test::Builder2::Singleton - A singleton role for TB2
   package TB2::Thing;
 
   use Test::Builder2::Mouse;
-  use Test::Builder2::Singleton;
+  with 'Test::Builder2::Singleton';
 
   my $thing      = TB2::Thing->singleton;
   my $same_thing = TB2::Thing->singleton;
@@ -43,7 +43,7 @@ If there is no singleton one will be created by calling create().
 
 =cut
 
-# What?!  No class variables in Moose?!  Now I have to write the
+# What?!  No class variables in Mouse?!  Now I have to write the
 # accessor by hand, bleh.
 {
     my %singletons;
