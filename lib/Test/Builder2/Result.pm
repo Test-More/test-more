@@ -9,7 +9,7 @@ use Test::Builder2::Mouse::Util::TypeConstraints qw(enum);
 
 =head1 NAME
 
-Test::Builder2::Result - Represent the result of a test
+Test::Builder2::Result - A factory to generate results.
 
 =head1 SYNOPSIS
 
@@ -20,17 +20,30 @@ Test::Builder2::Result - Represent the result of a test
 
 =head1 DESCRIPTION
 
-An object to store the result of a test.  Used both for historical
-reasons and by Test::Builder2::Formatter objects to format the result.
+A factory to generate results.  See L<Test::Builder2::Result::Base>
+for information about the real result objects.
+
+An object to store the result of a test.  Used to keep test history,
+format the results of tests, and build up diagnostics about a test.
+
+B<NOTE>: Results are currently in a high state of flux with regard to
+directives, what determines if it "passed" or "failed", their
+internal structure and this even being a factory.
+
+
+=head3 Overloading
 
 Result objects are overloaded to return true or false in boolean
-context to indicate if theypr passed or failed.
+context to indicate if they passed or failed.
 
-=head3 new
+
+=head3 new_result
 
   my $result = Test::Builder2::Result->new_result(%test_data);
 
-new() is a method which returns a $result based on your test data.
+new_result() is a method which returns a $result based on your test data.
+
+$result will be a L<Test::Builder2::Result::Base> object.
 
 =cut
 
@@ -108,3 +121,11 @@ sub new_result {
 no Test::Builder2::Mouse;
 
 1;
+
+
+=head1 SEE ALSO
+
+L<Test::Builder2::Result::Base> for the result objects generated.
+
+=cut
+
