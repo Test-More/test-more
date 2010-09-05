@@ -69,8 +69,7 @@ WriteMakefile(
         %Prereqs
     },
 
-    # Added to the core in 5.7.3 and also 5.6.2.
-    INSTALLDIRS     => $] >= 5.006002 ? 'perl' : 'site',
+    INSTALLDIRS     => 'perl',
 
     test        => {
         TESTS           => 't/*.t t/*/*.t',
@@ -82,8 +81,8 @@ WriteMakefile(
         resources => {
             license     =>      'http://dev.perl.org/licenses/',
             homepage    =>      'http://test-more.googlecode.com',
-            bugtracker  =>      'http://code.google.com/p/test-more/issues',
-            repository  =>      'http://github.com/schwern/test-more/tree/master',
+            bugtracker  =>      'http://github.com/schwern/test-more/issues',
+            repository  =>      'http://github.com/schwern/test-more/tree/Test-Builder2',
             MailingList =>      'http://groups.google.com/group/test-more-users',
         },
         no_index => {
