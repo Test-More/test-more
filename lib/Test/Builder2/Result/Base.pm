@@ -1,6 +1,7 @@
 package Test::Builder2::Result::Base;
 
 use Test::Builder2::Mouse;
+use Test::Builder2::Types;
 
 my $CLASS = __PACKAGE__;
 
