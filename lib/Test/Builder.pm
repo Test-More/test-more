@@ -406,11 +406,8 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Indent}     ||= '';
 
     require Test::Builder2::History;
-    require Test::Builder2::Counter;
     require Test::Builder2::Result;
-    $self->{History} = shared_clone(Test::Builder2::History->create(
-        counter => Test::Builder2::Counter->create
-    ));
+    $self->{History} = shared_clone(Test::Builder2::History->create);
 
     require Test::Builder::Formatter::TAP;
     $self->{Formatter} = Test::Builder::Formatter::TAP->new();
