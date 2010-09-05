@@ -1,22 +1,49 @@
-This is the README file for Test::Simple, basic utilities for 
-writing tests, by Michael G Schwern <schwern@pobox.com>.
-
-After installation, please consult the tutorial for how to
-start adding tests to your modules. 'perldoc Test::Tutorial'
-should work on most systems.
-
-* Installation
-
-Test::Simple uses the standard perl module install process:
-
-perl Makefile.PL
-make
-make test
-make install
-
-It requires Perl version 5.6.0 or newer and Test::Harness 2.03 or newer.
+This is a technology preview of Test::Builder2.  It is by no means
+complete or stable, but here's something to play with and see where
+it's going.
 
 
-* More Info
+WHAT TEST::BUILDER2 IS
 
-More information can be found at http://test-more.googlecode.com/
+It is a rewrite of the skeleton that holds together all the popular
+Test:: libraries.  Its aim is to increase flexibility and allow Perl
+authors to do pretty much whatever they please while still not having
+to worry about the minutea of test formats or coordinating with other
+test libraries.
+
+
+WHAT TEST::BUILDER2 IS NOT
+
+It is not a rewrite of Test::More.  Maybe later we can do Test::More2.
+
+It doesn't directly effect how people write tests, but how people
+write test libraries (which people then use to write tests).  Many
+things that were previously impossible are now possible.
+
+
+COMPATIBILITY
+
+Test::Builder2 is not directly compatible with Test::Builder, thus the
+new namespace, but Test::Builder will continue to work in harmony with
+Test::Builder2.
+
+
+WHAT WORKS
+
+Test event hooks
+Multiple formatters (ie. you can output something other than TAP)
+Assert stacks (ie. no more $Test::Builder::Level)
+A bunch of other stuff
+
+
+WHAT DOESN'T WORK
+
+Structured diagnostics
+Comments (traditional unstrucutred diagnostics)
+Plan enforcement
+A bunch of other stuff
+
+
+WHERE TO LOOK
+
+The new code is in lib/Test/Builder2* and tests in t/Builder2/
