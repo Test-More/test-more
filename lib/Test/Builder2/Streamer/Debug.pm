@@ -20,8 +20,8 @@ has read_all_position => (
 );
 
 sub write {
-    my ($self, $dest, $hunk) = @_;
-    push @{ $self->written_hunks }, [ $dest => $hunk ];
+    my ($self, $dest, @hunks) = @_;
+    push @{ $self->written_hunks }, [ $dest => join '', @hunks ];
 }
 
 sub hunks_for {
