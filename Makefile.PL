@@ -120,7 +120,10 @@ MAKE
 
         my @perls = qw(
             perl5.8.9
-            perl5.8.8
+            perl5.10.0
+            perl5.10.1
+            perl5.12.0
+            perl5.12.1
         );
 
         for my $perl (@perls) {
