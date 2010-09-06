@@ -13,51 +13,9 @@ BEGIN {
     }
 }
 
+# Conditionally loads threads::shared and fixes up old versions
+use Test::Builder2::threads::shared;
 
-# Make Test::Builder thread-safe for ithreads.
-BEGIN {
-    use Config;
-    # Load threads::shared when threads are turned on.
-    # 5.8.0's threads are so busted we no longer support them.
-    if( $] >= 5.008001 && $Config{useithreads} && $INC{'threads.pm'} ) {
-        require threads::shared;
-        threads::shared->import();
-
-        # shared_clone() was introduced to threads::shared pretty
-        # recently (2008) so we'll duplicate its functionality here.
-        *shared_clone = sub {
-            require Data::Dumper;
-
-            my($dump) = Test::Builder->explain( $_[0] );
-
-            local $@;
-            my $copy = eval $dump;
-            die "Couldn't clone $dump: $@" if $@;
-
-            share($_[0]);
-
-            if( ref $_[0] eq 'HASH' ) {
-                %{$_[0]} = %$copy;
-            }
-            elsif( ref $_[0] eq 'ARRAY' ) {
-                @{$_[0]} = @$copy;
-            }
-            elsif( ref $_[0] eq 'SCALAR' ) {
-                ${$_[0]} = $$copy;
-            }
-            else {
-                %{$_[0]} = %$copy;
-            }
-
-            return $_[0];
-        } if !defined &shared_clone;
-    }
-    else {
-        *share        = sub { return $_[0] };
-        *shared_clone = sub { return $_[0] };
-        *lock         = sub { 0 };
-    }
-}
 
 =head1 NAME
 
