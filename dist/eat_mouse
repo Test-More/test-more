@@ -40,6 +40,9 @@ sub main {
         # Special case for "use Mouse ()"
         run $^X, "-i", "-pe", q[s{use Mouse }{use Test::Builder2::Mouse }], $file;
 
+        # Special case for 'Mouse' and 'Mouse::Foo'
+        run $^X, "-i", "-pe", q[s{(['"])(Mouse[:\w+]*)\1}{$1Test::Builder2::$2$1}], $file;
+
         # Special case for "package Mouse;"
         run $^X, "-i", "-pe", q[s{package Mouse;}{package Test::Builder2::Mouse;}], $file;
     }
