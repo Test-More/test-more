@@ -6,6 +6,9 @@
 use strict;
 use warnings;
 
+# Consistent formatting
+local $ENV{HARNESS_ACTIVE} = 0;
+
 {
     package TB2::More;
 
@@ -36,15 +39,19 @@ my $tb = TB2::More->builder;
     $tb->formatter->streamer_class("Test::Builder2::Streamer::Debug");
 
     TB2::More->import( tests => 1 );
+
+#line 44
     is( 23, 42, "is 23 eq 42" );
 }
 
 use Test::More;
 
-is $tb->formatter->streamer->read_all, <<'END';
+is $tb->formatter->streamer->read_all, <<"END";
 TAP version 13
 1..1
 not ok 1 - is 23 eq 42 from is
+#   Failed test 'is 23 eq 42 from is'
+#   at $0 line 44.
 END
 
 done_testing();

@@ -55,6 +55,17 @@ These methods are just shorthand for:
 
 =cut
 
+
+sub _prepend {
+    my($self, $msg, $prefix) = @_;
+
+    # Put '# ' at the beginning of each line
+    $msg =~ s{^}{$prefix};
+    $msg =~ s{\n(?!\z)}{\n$prefix}g;
+
+    return $msg;
+}
+
 sub _add_indentation {
     my $self = shift;
     my $output = shift;
@@ -62,7 +73,10 @@ sub _add_indentation {
     my $level = $self->nesting_level;
     return unless $level;
 
-    unshift @$output, $self->indent_nesting_with x $level;
+    my $indent = $self->indent_nesting_with x $level;
+    for my $idx (0..$#{$output}) {
+        $output->[$idx] = $self->_prepend($output->[$idx], $indent);
+    }
 
     return;
 }
@@ -154,7 +168,73 @@ sub INNER_result {
 
     $self->out($out);
 
+    if(!$result->literal_pass and !$result->is_skip) {
+        # XXX This should also emit structured diagnostics
+        $self->_comment_diagnostics($result);
+    }
+
     return;
+}
+
+
+# Emit old style comment failure diagnostics
+sub _comment_diagnostics {
+    my($self, $result) = @_;
+
+    my $msg = '  ';
+
+    $msg .= $result->is_todo ? "Failed (TODO) test" : "Failed test";
+
+    # Failing TODO tests are not displayed to the user.
+    my $out_method = $result->is_todo ? "out" : "err";
+
+    my($file, $line, $name) = map { $result->$_ } qw(file line name);
+
+    if( defined $name ) {
+        $msg .= " '$name'\n ";
+    }
+    if( defined $file ) {
+        $msg .= " at $file";
+    }
+    if( defined $line ) {
+        $msg .= " line $line";
+    }
+
+    # Start on a new line if we're being output by Test::Harness.
+    # Makes it easier to read
+    $self->$out_method("\n") if $ENV{HARNESS_ACTIVE};
+    $self->$out_method($self->comment("$msg.\n"));
+
+    return;
+}
+
+
+=head3 comment
+
+  my $comment = $self->comment(@message);
+
+Will turn the given @message into a TAP comment.
+
+    # returns "# Basset houndsgot long ears"
+    $self->comment("Basset hounds", "got long ears");
+
+=cut
+
+sub comment {
+    my $self = shift;
+
+    return unless @_;
+
+    # Smash args together like print does.
+    # Convert undef to 'undef' so its readable.
+    my $msg = join '', map { defined($_) ? $_ : 'undef' } @_;
+
+    $msg = $self->_prepend($msg, "# ");
+
+    # Stick a newline on the end if it needs it.
+    $msg .= "\n" unless $msg =~ /\n\z/;
+
+    return $msg;
 }
 
 

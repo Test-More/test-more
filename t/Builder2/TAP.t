@@ -8,6 +8,9 @@ use lib 't/lib';
 
 use Test::More;
 
+# Prevent this from messing with our formatting
+local $ENV{HARNESS_ACTIVE} = 0;
+
 my $formatter;
 sub new_formatter {
     $formatter = new_ok(
@@ -136,7 +139,11 @@ END
     );
     $result->test_number(3);
     $formatter->result($result);
-    is(last_output, "not ok 3 # TODO reason\n", "testing todo");
+    is(last_output, <<OUT, "testing todo fail");
+not ok 3 # TODO reason
+#   Failed (TODO) test.
+OUT
+
 }
 
 # TODO pass, no description

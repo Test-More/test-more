@@ -753,19 +753,6 @@ ERR
 
     $self->{Formatter}->result($result);
 
-    unless($test) {
-        my $msg = $result->is_todo ? "Failed (TODO)" : "Failed";
-        $self->_print_to_fh( $self->_diag_fh, "\n" ) if $ENV{HARNESS_ACTIVE};
-
-        if( defined $name ) {
-            $self->diag(qq[  $msg test '$name'\n]);
-            $self->diag(qq[  at $file line $line.\n]);
-        }
-        else {
-            $self->diag(qq[  $msg test at $file line $line.\n]);
-        }
-    }
-
     $self->is_passing(0) unless $test || $self->in_todo;
 
     # Check that we haven't violated the plan

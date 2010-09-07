@@ -144,8 +144,6 @@ sub _build_formatter {
 }
 
 
-=head3 top
-
 =head3 top_stack
 
   my $top_stack = $tb->top_stack;
@@ -357,6 +355,10 @@ sub ok {
         description     => $name,
         pass            => $test,
     );
+
+    my $top = $self->top_stack->top;
+    $result->file($top->filename);
+    $result->line($top->line);
 
     $self->accept_result($result);
 
