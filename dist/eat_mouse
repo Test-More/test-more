@@ -33,9 +33,9 @@ sub main {
     for my $file (@files) {
         # Change all instances of Mouse to Test::Builder2::Mouse
         # and Mouse/Blah to Test/Builder2/Mouse/Blah
-        run $^X, "-i", "-pe", q[s{Mouse.pm}{Test/Builder2/Mouse.pm}], $file;
-        run $^X, "-i", "-pe", q[s{Mouse/}{Test/Builder2/Mouse/}],     $file;
-        run $^X, "-i", "-pe", q[s{Mouse::}{Test::Builder2::Mouse::}], $file;
+        run $^X, "-i", "-pe", q[s{Mouse.pm}{Test/Builder2/Mouse.pm}g], $file;
+        run $^X, "-i", "-pe", q[s{Mouse/}{Test/Builder2/Mouse/}g],     $file;
+        run $^X, "-i", "-pe", q[s{Mouse::}{Test::Builder2::Mouse::}g], $file;
 
         # Special case for "use Mouse ()"
         run $^X, "-i", "-pe", q[s{use Mouse }{use Test::Builder2::Mouse }], $file;
