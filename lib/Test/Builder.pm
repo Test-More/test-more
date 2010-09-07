@@ -132,7 +132,11 @@ sub child {
     
     $child->{$_} = $self->{$_} foreach qw{Out_FH Todo_FH Fail_FH};
     if ($parent_in_todo) {
+        # The entire subtest is considered TODO.  Don't make any of its failure
+        # diagnostics visible to the user.
         $child->{Fail_FH} = $self->{Todo_FH};
+        my $streamer = $child->{Formatter}->streamer;
+        $streamer->error_fh( $streamer->output_fh );
     }
 
     # This will be reset in finalize. We do this here lest one child failure
