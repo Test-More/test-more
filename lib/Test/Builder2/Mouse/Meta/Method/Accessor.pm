@@ -182,7 +182,7 @@ Test::Builder2::Mouse::Meta::Method::Accessor - A Mouse method generator for acc
 
 =head1 VERSION
 
-This document describes Mouse version 0.53
+This document describes Mouse version 0.64
 
 =head1 SEE ALSO
 

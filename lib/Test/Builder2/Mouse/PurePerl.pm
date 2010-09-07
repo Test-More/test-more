@@ -173,7 +173,7 @@ sub FileHandle {
 sub Object     { blessed($_[0]) && blessed($_[0]) ne 'Regexp' }
 
 sub ClassName  { Test::Builder2::Mouse::Util::is_class_loaded($_[0]) }
-sub RoleName   { (Test::Builder2::Mouse::Util::class_of($_[0]) || return 0)->isa('Mouse::Meta::Role') }
+sub RoleName   { (Test::Builder2::Mouse::Util::class_of($_[0]) || return 0)->isa('Test::Builder2::Mouse::Meta::Role') }
 
 sub _parameterize_ArrayRef_for {
     my($type_parameter) = @_;
@@ -270,19 +270,44 @@ sub get_all_attributes {
 }
 
 sub new_object {
-    my $self = shift;
+    my $meta = shift;
     my %args = (@_ == 1 ? %{$_[0]} : @_);
 
-    my $object = bless {}, $self->name;
+    my $object = bless {}, $meta->name;
 
-    $self->_initialize_object($object, \%args);
+    $meta->_initialize_object($object, \%args);
+    # BUILDALL
+    if( $object->can('BUILD') ) {
+        for my $class (reverse $meta->linearized_isa) {
+            my $build = Test::Builder2::Mouse::Util::get_code_ref($class, 'BUILD')
+                || next;
+
+            $object->$build(\%args);
+        }
+    }
     return $object;
+}
+
+sub clone_object {
+    my $class  = shift;
+    my $object = shift;
+    my $args   = $object->Test::Builder2::Mouse::Object::BUILDARGS(@_);
+
+    (blessed($object) && $object->isa($class->name))
+        || $class->throw_error("You must pass an instance of the metaclass (" . $class->name . "), not ($object)");
+
+    my $cloned = bless { %$object }, ref $object;
+    $class->_initialize_object($cloned, $args, 1);
+
+    return $cloned;
 }
 
 sub _initialize_object{
     my($self, $object, $args, $is_cloning) = @_;
 
     my @triggers_queue;
+
+    my $used = 0;
 
     foreach my $attribute ($self->get_all_attributes) {
         my $init_arg = $attribute->init_arg;
@@ -297,10 +322,11 @@ sub _initialize_object{
             if ($attribute->has_trigger) {
                 push @triggers_queue, [ $attribute->trigger, $object->{$slot} ];
             }
+            $used++;
         }
-        elsif(!$is_cloning) { # no init arg, noop while cloning
+        else { # no init arg
             if ($attribute->has_default || $attribute->has_builder) {
-                if (!$attribute->is_lazy) {
+                if (!$attribute->is_lazy && !exists $object->{$slot}) {
                     my $default = $attribute->default;
                     my $builder = $attribute->builder;
                     my $value =   $builder                ? $object->$builder()
@@ -313,10 +339,14 @@ sub _initialize_object{
                         if ref($object->{$slot}) && $attribute->is_weak_ref;
                 }
             }
-            elsif($attribute->is_required) {
+            elsif(!$is_cloning && $attribute->is_required) {
                 $self->throw_error("Attribute (".$attribute->name.") is required");
             }
         }
+    }
+
+    if($used < keys %{$args} && $self->strict_constructor) {
+        $self->_report_unknown_args([ $self->get_all_attributes ], $args);
     }
 
     if(@triggers_queue){
@@ -335,7 +365,47 @@ sub _initialize_object{
 
 sub is_immutable {  $_[0]->{is_immutable} }
 
-sub __strict_constructor{ $_[0]->{strict_constructor} }
+sub strict_constructor{
+    my $self = shift;
+    if(@_) {
+        $self->{strict_constructor} = shift;
+    }
+
+    foreach my $class($self->linearized_isa) {
+        my $meta = Test::Builder2::Mouse::Util::get_metaclass_by_name($class)
+            or next;
+
+        if(exists $meta->{strict_constructor}) {
+            return $meta->{strict_constructor};
+        }
+    }
+
+    return 0; # false
+}
+
+sub _report_unknown_args {
+    my($metaclass, $attrs, $args) = @_;
+
+    my @unknowns;
+    my %init_args;
+    foreach my $attr(@{$attrs}){
+        my $init_arg = $attr->init_arg;
+        if(defined $init_arg){
+            $init_args{$init_arg}++;
+        }
+    }
+
+    while(my $key = each %{$args}){
+        if(!exists $init_args{$key}){
+            push @unknowns, $key;
+        }
+    }
+
+    $metaclass->throw_error( sprintf
+        "Unknown attribute passed to the constructor of %s: %s",
+        $metaclass->name, Test::Builder2::Mouse::Util::english_list(@unknowns),
+    );
+}
 
 package Test::Builder2::Mouse::Meta::Role;
 
@@ -412,6 +482,7 @@ sub should_auto_deref    { $_[0]->{auto_deref}             }
 sub should_coerce        { $_[0]->{coerce}                 }
 
 sub documentation        { $_[0]->{documentation}          }
+sub insertion_order      { $_[0]->{insertion_order}        }
 
 # predicates
 
@@ -647,19 +718,7 @@ sub new {
     my $args = $class->BUILDARGS(@_);
 
     my $meta = Test::Builder2::Mouse::Meta::Class->initialize($class);
-    my $self = $meta->new_object($args);
-
-    # BUILDALL
-    if( $self->can('BUILD') ) {
-        for my $class (reverse $meta->linearized_isa) {
-            my $build = Test::Builder2::Mouse::Util::get_code_ref($class, 'BUILD')
-                || next;
-
-            $self->$build($args);
-        }
-    }
-
-    return $self;
+    return $meta->new_object($args);
 }
 
 sub DESTROY {
@@ -720,7 +779,7 @@ Test::Builder2::Mouse::PurePerl - A Mouse guts in pure Perl
 
 =head1 VERSION
 
-This document describes Mouse version 0.53
+This document describes Mouse version 0.64
 
 =head1 SEE ALSO
 

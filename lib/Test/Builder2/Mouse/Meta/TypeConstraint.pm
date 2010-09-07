@@ -1,9 +1,11 @@
 package Test::Builder2::Mouse::Meta::TypeConstraint;
 use Test::Builder2::Mouse::Util qw(:meta); # enables strict and warnings
+use Scalar::Util ();
 
 use overload
     'bool'   => sub (){ 1 },           # always true
     '""'     => sub { $_[0]->name },   # stringify to tc name
+    '0+'     => sub { Scalar::Util::refaddr($_[0]) },
     '|'      => sub {                  # or-combination
         require Test::Builder2::Mouse::Util::TypeConstraints;
         return Test::Builder2::Mouse::Util::TypeConstraints::find_or_parse_type_constraint(
@@ -14,7 +16,8 @@ use overload
     fallback => 1;
 
 sub new {
-    my($class, %args) = @_;
+    my $class = shift;
+    my %args  = @_ == 1 ? %{$_[0]} : @_;
 
     $args{name} = '__ANON__' if !defined $args{name};
 
@@ -164,7 +167,7 @@ sub get_message {
     }
     else {
         $value = ( defined $value ? overload::StrVal($value) : 'undef' );
-        return "Validation failed for '$self' failed with value $value";
+        return "Validation failed for '$self' with value $value";
     }
 }
 
@@ -236,7 +239,7 @@ Test::Builder2::Mouse::Meta::TypeConstraint - The Mouse Type Constraint metaclas
 
 =head1 VERSION
 
-This document describes Mouse version 0.53
+This document describes Mouse version 0.64
 
 =head1 DESCRIPTION
 

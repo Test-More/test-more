@@ -161,7 +161,7 @@ Test::Builder2::Mouse::Util::MetaRole - Apply roles to any metaclass, as well as
   use MyApp::Role::Meta::Method::Constructor;
   use MyApp::Role::Object;
 
-  Test::Builder2::Mouse::Exporter->setup_import_methods( also => 'Mouse' );
+  Test::Builder2::Mouse::Exporter->setup_import_methods( also => 'Test::Builder2::Mouse' );
 
   sub init_meta {
       shift;

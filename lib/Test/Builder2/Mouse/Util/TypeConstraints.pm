@@ -17,6 +17,7 @@ Test::Builder2::Mouse::Exporter->setup_import_methods(
         coerce
 
         find_type_constraint
+        register_type_constraint
     )],
 );
 
@@ -367,6 +368,16 @@ sub find_type_constraint {
     return $TYPE{$spec};
 }
 
+sub register_type_constraint {
+    my($constraint) = @_;
+    Carp::croak("No type supplied / type is not a valid type constraint")
+        unless Test::Builder2::Mouse::Util::is_a_type_constraint($constraint);
+    my $name = $constraint->name;
+    Carp::croak("can't register an unnamed type constraint")
+        unless defined $name;
+    return $TYPE{$name} = $constraint;
+}
+
 sub find_or_parse_type_constraint {
     my($spec) = @_;
     return $spec if Test::Builder2::Mouse::Util::is_a_type_constraint($spec);
@@ -406,7 +417,7 @@ Test::Builder2::Mouse::Util::TypeConstraints - Type constraint system for Mouse
 
 =head1 VERSION
 
-This document describes Mouse version 0.53
+This document describes Mouse version 0.64
 
 =head2 SYNOPSIS
 

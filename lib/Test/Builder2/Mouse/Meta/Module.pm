@@ -78,7 +78,7 @@ sub get_attribute_list{ keys   %{$_[0]->{attributes}} }
 
 # XXX: for backward compatibility
 my %foreign = map{ $_ => undef } qw(
-    Mouse Test::Builder2::Mouse::Role Mouse::Util Mouse::Util::TypeConstraints
+    Mouse Test::Builder2::Mouse::Role Test::Builder2::Mouse::Util Test::Builder2::Mouse::Util::TypeConstraints
     Carp Scalar::Util List::Util
 );
 sub _code_is_mine{
@@ -283,6 +283,13 @@ sub DESTROY{
     return if !$serial_id;
     # mortal anonymous class
 
+    # XXX: cleaning stash with threads causes panic/SEGV.
+    if(exists $INC{'threads.pm'}) {
+        # (caller)[2] indicates the caller's line number,
+        # which is zero when the current thread is joining.
+        return if( (caller)[2] == 0);
+    }
+
     # @ISA is a magical variable, so we clear it manually.
     @{$self->{superclasses}} = () if exists $self->{superclasses};
 
@@ -293,7 +300,6 @@ sub DESTROY{
     delete $METAS{$name};
 
     $name =~ s/ $serial_id \z//xms;
-
     no strict 'refs';
     delete ${$name}{ $serial_id . '::' };
 
@@ -319,11 +325,11 @@ __END__
 
 =head1 NAME
 
-Test::Builder2::Mouse::Meta::Module - The base class for Mouse::Meta::Class and Mouse::Meta::Role
+Test::Builder2::Mouse::Meta::Module - The base class for Test::Builder2::Mouse::Meta::Class and Test::Builder2::Mouse::Meta::Role
 
 =head1 VERSION
 
-This document describes Mouse version 0.53
+This document describes Mouse version 0.64
 
 =head1 SEE ALSO
 

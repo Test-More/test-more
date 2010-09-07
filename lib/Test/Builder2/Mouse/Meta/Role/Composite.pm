@@ -125,7 +125,7 @@ Test::Builder2::Mouse::Meta::Role::Composite - An object to represent the set of
 
 =head1 VERSION
 
-This document describes Mouse version 0.53
+This document describes Mouse version 0.64
 
 =head1 SEE ALSO
 

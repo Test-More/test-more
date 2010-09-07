@@ -200,7 +200,7 @@ sub apply {
         $args{_to} = 'instance';
         $instance  = $consumer;
 
-        $consumer = (Test::Builder2::Mouse::Util::class_of($instance) || 'Mouse::Meta::Class')->create_anon_class(
+        $consumer = (Test::Builder2::Mouse::Util::class_of($instance) || 'Test::Builder2::Mouse::Meta::Class')->create_anon_class(
             superclasses => [ref $instance],
             cache        => 1,
         );
@@ -238,7 +238,7 @@ sub apply {
     if(defined $instance){ # Application::ToInstance
         # rebless instance
         bless $instance, $consumer->name;
-        $consumer->_initialize_object($instance, $instance);
+        $consumer->_initialize_object($instance, $instance, 1);
     }
 
     return;
@@ -312,7 +312,7 @@ Test::Builder2::Mouse::Meta::Role - The Mouse Role metaclass
 
 =head1 VERSION
 
-This document describes Mouse version 0.53
+This document describes Mouse version 0.64
 
 =head1 SEE ALSO
 

@@ -16,6 +16,7 @@ my %valid_options = map { $_ => undef } (
   'does',
   'handles',
   'init_arg',
+  'insertion_order',
   'is',
   'isa',
   'lazy',
@@ -37,7 +38,6 @@ my %valid_options = map { $_ => undef } (
   # Moose defines, but Mouse doesn't
   #'definition_context',
   #'initializer',
-  #'insertion_order',
 
   # special case for AttributeHelpers
   'provides',
@@ -51,11 +51,6 @@ sub new {
     my $name  = shift;
 
     my $args  = $class->Test::Builder2::Mouse::Object::BUILDARGS(@_);
-
-    # XXX: for backward compatibility (with method modifiers)
-    if($class->can('canonicalize_args') != \&canonicalize_args){
-        %{$args} = $class->canonicalize_args($name, %{$args});
-    }
 
     $class->_process_options($name, $args);
 
@@ -135,27 +130,6 @@ sub interpolate_class{
     return( $class, @traits );
 }
 
-sub canonicalize_args{ # DEPRECATED
-    #my($self, $name, %args) = @_;
-    my($self, undef, %args) = @_;
-
-    Carp::cluck("$self->canonicalize_args has been deprecated."
-        . "Use \$self->_process_options instead.");
-
-    return %args;
-}
-
-sub create { # DEPRECATED
-    #my($self, $class, $name, %args) = @_;
-    my($self) = @_;
-
-    Carp::cluck("$self->create has been deprecated."
-        . "Use \$meta->add_attribute and \$attr->install_accessors instead.");
-
-    # noop
-    return $self;
-}
-
 sub _coerce_and_verify {
     #my($self, $value, $instance) = @_;
     my($self, $value) = @_;
@@ -192,19 +166,28 @@ sub _throw_type_constraint_error {
     );
 }
 
+sub illegal_options_for_inheritance {
+    return qw(is reader writer accessor clearer predicate);
+}
+
 sub clone_and_inherit_options{
     my $self = shift;
     my $args = $self->Test::Builder2::Mouse::Object::BUILDARGS(@_);
 
-    my($attribute_class, @traits) = ref($self)->interpolate_class($args);
-
-    $args->{traits} = \@traits if @traits;
-    # do not inherit the 'handles' attribute
-    foreach my $name(keys %{$self}){
-        if(!exists $args->{$name} && $name ne 'handles'){
-            $args->{$name} = $self->{$name};
+    foreach my $illegal($self->illegal_options_for_inheritance) {
+        if(exists $args->{$illegal} and exists $self->{$illegal}) {
+            $self->throw_error("Illegal inherited option: $illegal");
         }
     }
+
+    foreach my $name(keys %{$self}){
+        if(!exists $args->{$name}){
+            $args->{$name} = $self->{$name}; # inherit from self
+        }
+    }
+
+    my($attribute_class, @traits) = ref($self)->interpolate_class($args);
+    $args->{traits} = \@traits if @traits;
 
     # remove temporary caches
     foreach my $attr(keys %{$args}){
@@ -213,35 +196,13 @@ sub clone_and_inherit_options{
         }
     }
 
-    return $attribute_class->new($self->name, $args);
-}
-
-sub clone_parent { # DEPRECATED
-    my $self  = shift;
-    my $class = shift;
-    my $name  = shift;
-    my %args  = ($self->get_parent_args($class, $name), @_);
-
-    Carp::cluck("$self->clone_parent has been deprecated."
-        . "Use \$meta->add_attribute and \$attr->install_accessors instead.");
-
-    $self->clone_and_inherited_args($class, $name, %args);
-}
-
-sub get_parent_args { # DEPRECATED
-    my $self  = shift;
-    my $class = shift;
-    my $name  = shift;
-
-    for my $super ($class->linearized_isa) {
-        my $super_attr = $super->can("meta") && $super->meta->get_attribute($name)
-            or next;
-        return %{ $super_attr->_create_args };
+    # remove default if lazy_build => 1
+    if($args->{lazy_build}) {
+        delete $args->{default};
     }
 
-    $self->throw_error("Could not find an attribute by the name of '$name' to inherit from");
+    return $attribute_class->new($self->name, $args);
 }
-
 
 sub get_read_method {
     return $_[0]->reader || $_[0]->accessor
@@ -329,17 +290,16 @@ sub install_accessors{
         my %handles = $attribute->_canonicalize_handles($attribute->{handles});
 
         while(my($handle, $method_to_call) = each %handles){
+            if($metaclass->has_method($handle)) {
+                $attribute->throw_error("You cannot overwrite a locally defined method ($handle) with a delegation");
+            }
+
             $metaclass->add_method($handle =>
                 $attribute->_make_delegation_method(
                     $handle, $method_to_call));
 
             $attribute->associate_method($handle);
         }
-    }
-
-    if($attribute->can('create') != \&create){
-        # backword compatibility
-        $attribute->create($metaclass, $attribute->name, %{$attribute});
     }
 
     return;
@@ -401,7 +361,7 @@ Test::Builder2::Mouse::Meta::Attribute - The Mouse attribute metaclass
 
 =head1 VERSION
 
-This document describes Mouse version 0.53
+This document describes Mouse version 0.64
 
 =head1 METHODS
 

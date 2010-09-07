@@ -12,7 +12,7 @@ BEGIN{ $strict_bits = strict::bits(qw(subs refs vars)); }
 my $warnings_extra_bits;
 BEGIN{ $warnings_extra_bits = warnings::bits(FATAL => 'recursion') }
 
-# it must be "require", because Test::Builder2::Mouse::Util depends on Mouse::Exporter,
+# it must be "require", because Test::Builder2::Mouse::Util depends on Test::Builder2::Mouse::Exporter,
 # which depends on Test::Builder2::Mouse::Util::import()
 require Test::Builder2::Mouse::Util;
 
@@ -39,15 +39,10 @@ sub setup_import_methods{
 
         export_to_level => sub {
             my($package, $level, undef, @args) = @_; # the third argument is redundant
-
-            Carp::carp("$package->export_to_level has been deprecated."
-                ." Use $package->import({ into_level => LEVEL }) instead");
             $package->import({ into_level => $level + 1 }, @args);
         },
         export => sub {
             my($package, $into, @args) = @_;
-            Carp::carp("$package->export has been deprecated."
-                ." Use $package->import({ into => PACKAGE }) instead");
             $package->import({ into => $into }, @args);
         },
     );
@@ -272,7 +267,7 @@ Test::Builder2::Mouse::Exporter - make an import() and unimport() just like Test
 
 =head1 VERSION
 
-This document describes Mouse version 0.53
+This document describes Mouse version 0.64
 
 =head1 SYNOPSIS
 
@@ -283,7 +278,7 @@ This document describes Mouse version 0.53
 
     Test::Builder2::Mouse::Exporter->setup_import_methods(
       as_is     => [ 'has_rw', 'other_sugar', \&Some::Random::thing ],
-      also      => 'Mouse',
+      also      => 'Test::Builder2::Mouse',
     );
 
     sub has_rw {

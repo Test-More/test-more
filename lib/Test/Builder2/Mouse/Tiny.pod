@@ -1,0 +1,22 @@
+
+=head1 NAME
+
+Mouse::Tiny - Mouse in a single file
+
+=head1 VERSION
+
+This document describes Mouse version 0.64
+
+=head1 DESCRIPTION
+
+Mouse::Tiny is Mouse, but it is in a single file.
+
+This is B<not> tiny. In fact, it requires a little more memory and time than Mouse.
+
+Use Mouse unless you know what you are doing.
+
+=head1 SEE ALSO
+
+L<Mouse>
+
+=cut

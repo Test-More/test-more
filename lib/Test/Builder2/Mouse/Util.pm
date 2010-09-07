@@ -52,7 +52,7 @@ BEGIN{
     # Because Test::Builder2::Mouse::Util is loaded first in all the Mouse sub-modules,
     # XS loader is placed here, not in Test/Builder2/Mouse.pm.
 
-    our $VERSION = '0.53';
+    our $VERSION = '0.64';
 
     my $xs = !(exists $INC{'Test/Builder2/Mouse/PurePerl.pm'} || $ENV{MOUSE_PUREPERL});
 
@@ -64,10 +64,10 @@ BEGIN{
         $xs = eval sprintf("#line %d %s\n", __LINE__, $hack_mouse_file) . q{
             local $^W = 0; # work around 'redefine' warning to &install_subroutines
             require XSLoader;
-            XSLoader::load('Mouse', $VERSION);
-            Test::Builder2::Mouse::Util->import({ into => 'Mouse::Meta::Method::Constructor::XS' }, ':meta');
-            Test::Builder2::Mouse::Util->import({ into => 'Mouse::Meta::Method::Destructor::XS'  }, ':meta');
-            Test::Builder2::Mouse::Util->import({ into => 'Mouse::Meta::Method::Accessor::XS'    }, ':meta');
+            XSLoader::load('Test::Builder2::Mouse', $VERSION);
+            Test::Builder2::Mouse::Util->import({ into => 'Test::Builder2::Mouse::Meta::Method::Constructor::XS' }, ':meta');
+            Test::Builder2::Mouse::Util->import({ into => 'Test::Builder2::Mouse::Meta::Method::Destructor::XS'  }, ':meta');
+            Test::Builder2::Mouse::Util->import({ into => 'Test::Builder2::Mouse::Meta::Method::Accessor::XS'    }, ':meta');
             return 1;
         } || 0;
         #warn $@ if $@;
@@ -84,7 +84,7 @@ use Carp         ();
 use Scalar::Util ();
 
 # aliases as public APIs
-# it must be 'require', not 'use', because Test::Builder2::Mouse::Meta::Module depends on Mouse::Util
+# it must be 'require', not 'use', because Test::Builder2::Mouse::Meta::Module depends on Test::Builder2::Mouse::Util
 require Test::Builder2::Mouse::Meta::Module; # for the entities of metaclass cache utilities
 
 # aliases
@@ -365,7 +365,7 @@ Test::Builder2::Mouse::Util - Features, with or without their dependencies
 
 =head1 VERSION
 
-This document describes Mouse version 0.53
+This document describes Mouse version 0.64
 
 =head1 IMPLEMENTATIONS FOR
 

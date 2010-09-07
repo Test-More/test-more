@@ -2,10 +2,10 @@ package Test::Builder2::Mouse::Spec;
 use strict;
 use warnings;
 
-our $VERSION = '0.53';
+our $VERSION = '0.64';
 
 our $MouseVersion = $VERSION;
-our $MooseVersion = '0.93';
+our $MooseVersion = '1.05';
 
 sub MouseVersion{ $MouseVersion }
 sub MooseVersion{ $MooseVersion }
@@ -19,14 +19,14 @@ Test::Builder2::Mouse::Spec - To what extent Mouse is compatible with Moose
 
 =head1 VERSION
 
-This document describes Mouse version 0.53
+This document describes Mouse version 0.64
 
 =head1 SYNOPSIS
 
     use Test::Builder2::Mouse::Spec;
 
     printf "Test/Builder2/Mouse/%s is compatible with Moose/%s\n",
-        Test::Builder2::Mouse::Spec->MouseVersion, Mouse::Spec->MooseVersion;
+        Test::Builder2::Mouse::Spec->MouseVersion, Test::Builder2::Mouse::Spec->MooseVersion;
 
 =head1 DESCRIPTION
 

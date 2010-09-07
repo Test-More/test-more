@@ -1,7 +1,7 @@
 package Test::Builder2::Mouse::Role;
 use Test::Builder2::Mouse::Exporter; # enables strict and warnings
 
-our $VERSION = '0.53';
+our $VERSION = '0.64';
 
 use Carp         qw(confess);
 use Scalar::Util qw(blessed);
@@ -84,7 +84,7 @@ sub around {
 
 sub super {
     return if !defined $Test::Builder2::Mouse::SUPER_BODY;
-    $Test::Builder2::Mouse::SUPER_BODY->(@Mouse::SUPER_ARGS);
+    $Test::Builder2::Mouse::SUPER_BODY->(@Test::Builder2::Mouse::SUPER_ARGS);
 }
 
 sub override {
@@ -145,7 +145,7 @@ Test::Builder2::Mouse::Role - The Mouse Role
 
 =head1 VERSION
 
-This document describes Mouse version 0.53
+This document describes Mouse version 0.64
 
 =head1 SYNOPSIS
 
