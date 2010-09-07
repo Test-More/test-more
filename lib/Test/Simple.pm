@@ -1,6 +1,6 @@
 package Test::Simple;
 
-use 5.006;
+use 5.008001;
 use strict;
 
 our $VERSION = '2.00_01';

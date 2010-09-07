@@ -1,17 +1,11 @@
 package Test::Builder;
 
-use 5.006;
+use 5.008001;
 use strict;
 use warnings;
 
 our $VERSION = '2.00_01';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
-
-BEGIN {
-    if( $] < 5.008 ) {
-        require Test::Builder::IO::Scalar;
-    }
-}
 
 # Conditionally loads threads::shared and fixes up old versions
 use Test::Builder2::threads::shared;
@@ -1748,16 +1742,8 @@ sub _new_fh {
         $fh = $file_or_fh;
     }
     elsif( ref $file_or_fh eq 'SCALAR' ) {
-        # Scalar refs as filehandles was added in 5.8.
-        if( $] >= 5.008 ) {
-            open $fh, ">>", $file_or_fh
-              or $self->croak("Can't open scalar ref $file_or_fh: $!");
-        }
-        # Emulate scalar ref filehandles with a tie.
-        else {
-            $fh = Test::Builder::IO::Scalar->new($file_or_fh)
-              or $self->croak("Can't tie scalar ref $file_or_fh");
-        }
+        open $fh, ">>", $file_or_fh
+          or $self->croak("Can't open scalar ref $file_or_fh: $!");
     }
     else {
         open $fh, ">", $file_or_fh
