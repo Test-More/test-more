@@ -132,6 +132,13 @@ MAKE
 END
         }
 
+        # Rebuild so subsequent make commands work
+        $make .= <<'END';
+	$(MAKE) realclean
+	$(FULLPERLRUN) Makefile.PL
+	$(MAKE)
+END
+
         $make .= "\n";
 
         return $make;

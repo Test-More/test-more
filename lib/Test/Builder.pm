@@ -352,6 +352,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Have_Plan}    = 0;
     $self->{No_Plan}      = 0;
     $self->{Have_Output_Plan} = 0;
+    $self->{Done_Testing} = 0;
 
     $self->{Original_Pid} = $$;
     $self->{Child_Name}   = undef;
@@ -1792,8 +1793,8 @@ sub _open_testhandles {
     open( $Testout, ">&STDOUT" ) or die "Can't dup STDOUT:  $!";
     open( $Testerr, ">&STDERR" ) or die "Can't dup STDERR:  $!";
 
-    #    $self->_copy_io_layers( \*STDOUT, $Testout );
-    #    $self->_copy_io_layers( \*STDERR, $Testerr );
+    $self->_copy_io_layers( \*STDOUT, $Testout );
+    $self->_copy_io_layers( \*STDERR, $Testerr );
 
     $self->{Opened_Testhandles} = 1;
 
@@ -1808,12 +1809,20 @@ sub _copy_io_layers {
             require PerlIO;
             my @src_layers = PerlIO::get_layers($src);
 
-            binmode $dst, join " ", map ":$_", @src_layers if @src_layers;
+            _apply_layers($dst, @src_layers) if @src_layers;
         }
     );
 
     return;
 }
+
+sub _apply_layers {
+    my ($fh, @layers) = @_;
+    my %seen;
+    my @unique = grep { $_ ne 'unix' and !$seen{$_}++ } @layers;
+    binmode($fh, join(":", "", "raw", @unique));
+}
+
 
 =item reset_outputs
 

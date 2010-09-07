@@ -735,7 +735,7 @@ subtests are equivalent:
 
 =cut
 
-sub subtest($&) {
+sub subtest {
     my ($name, $subtests) = @_;
 
     my $tb = Test::More->builder;
@@ -818,6 +818,11 @@ because the notion of "compile-time" is relative.  Instead, you want:
 
   BEGIN { use_ok('Some::Module') }
   BEGIN { ...some code that depends on the use... }
+
+If you want the equivalent of C<use Foo ()>, use a module but not
+import anything, use C<require_ok>.
+
+  BEGIN { require_ok "Foo" }
 
 
 =cut
