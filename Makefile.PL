@@ -81,7 +81,7 @@ WriteMakefile(
         resources => {
             license     =>      'http://dev.perl.org/licenses/',
             homepage    =>      'http://test-more.googlecode.com',
-            bugtracker  =>      'http://github.com/schwern/test-more/issues',
+            bugtracker  =>      'http://github.com/schwern/test-more/issues/labels/Test-Builder2',
             repository  =>      'http://github.com/schwern/test-more/tree/Test-Builder2',
             MailingList =>      'http://groups.google.com/group/test-more-users',
         },
