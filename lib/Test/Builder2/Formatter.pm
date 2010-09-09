@@ -2,6 +2,7 @@ package Test::Builder2::Formatter;
 
 use Carp;
 use Test::Builder2::Mouse;
+use Test::Builder2::Types;
 
 
 =head1 NAME
