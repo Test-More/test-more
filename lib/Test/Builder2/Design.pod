@@ -128,6 +128,8 @@ It has to be very easy to write a basic testing module using TB2.  The underlyin
 
 =head1 Extending TB2
 
+See F<examples/TB2> in the source directory for examples of TB2 extensions.
+
 =head2 Writing Test Libraries
 
 The simplest way to extend TB2 will be to write a test library.  L<Test::Builder2::Module> provides the conveniences to the test author.
@@ -152,6 +154,8 @@ When an assert fails, it should report its file and line number so the user can 
 
 Must be able to add code at the start of a test suite (to capture warnings) and add an assertion at the end.  It also must be able to add one to a user-set plan.
 
+See F<examples/TB2/lib/TB2/NoWarnings.pm> for an example.
+
 =head2 Test::Warn
 
 This is the case where an assert called inside another assert is B<not> part of the same stack.
@@ -174,9 +178,15 @@ Fennec should be able to use TB2 for all its functionality.
 
 It should be possible to have an extension which causes the test suite to halt upon the first failed assert B<and> still receive all the diagnostics of that assert.
 
+See F<examples/TB2/lib/TB2/DieOnFail.pm> for an example.
+
+
 =head2 Debug on fail
 
 It should be possible to have an extension which starts the debugger when an assert fails.
+
+See F<examples/TB2/lib/TB2/DebugOnFail.pm> for an example.
+
 
 =head2 Action on failed (or passed) test stream
 
@@ -347,6 +357,151 @@ Finally, to avoid stepping on the installed copy of Mouse, TB2 will ship its ver
 =head2 Mouse In The Core?
 
 If TB2 ships with Mouse, and TB2 ships in the core of Perl... does that mean core Perl will ship Mouse?  No, it is not required that Perl ship Mouse.  TB2 will require that core Perl ships TB2::Mouse, but as such it is an internal module of TB2 and should not be used by the public.  Making Mouse publicly available in the core is a separate issue and would, in fact, require a separate copy of Mouse anyway.
+
+
+=head1 Overview
+
+=head2 Test::Builder
+
+Here's a diagram of the "flow" of assert results through Test::Builder version 1.
+
+                     .-------.
+                     | foo.t |
+                     '-------'
+                         |
+                         |
+     .-------------.     |     .----------------.
+     | Test::More  |<--------->| Test::Whatever |
+     '-------------'           '----------------'
+            |                           |
+            |                           |
+            |                           |
+            |     .---------------.     |
+            '---->| Test::Builder |<----'
+                  '---------------'
+                          |
+                          v
+                       .-----.
+                       | TAP |
+                       '-----'
+                          |
+                          v
+                  .---------------.
+                  | Test::Harness |
+                  '---------------'
+
+You write F<foo.t> using Test::More and Test::Whatever.  These both
+use the same Test::Builder object.  It spits out TAP which
+Test::Harness converts into something human readable.
+
+The big problem there is Test::Builder is monolithic.  There's no
+further breakdown of responsibilities.  It only spits out TAP, and
+only one version of TAP.
+
+
+=head2 Test::Builder2
+
+Here's what Test::Builder2 looks like:
+
+                                  .-------.
+                 .----------------| foo.t |-------------------.
+                 |                '-------'                   |
+                 |                    |                       |
+                 |                    |                       |
+                 v                    v                       v
+          .------------.     .----------------.     .------------------.
+          | Test::More |     | Test::Whatever |     | Test::NotUpdated |
+          '------------'     '----------------'     '------------------'
+                 |                    |                       |
+                 |                    v                       v
+                 |           .----------------.       .---------------.
+                 '---------->| Test::Builder2 |<------| Test::Builder |
+                             '----------------'       '---------------'
+                                      |
+                                      v
+           .--------------.    .-------------.
+           | TB2::History |<---| TB2::Result |
+           '--------------'    '-------------'
+                                      |
+                                      |
+    .--------------------------.      |       .---------------------.
+    | TB2::Formatter::TAP::v13 |<-----'------>| TB2::Formatter::GUI |
+    '--------------------------'              '---------------------'
+                  |                                      |
+                  v                                      |
+  .-------------------------------.                      |
+  | TB2::Formatter::Streamer::TAP |                      |
+  '-------------------------------'                      |
+                  |                                      |
+                  v                                      |
+               .-----.                                   |
+               | TAP |                                   |
+               '-----'                                   |
+                  |                                      |
+                  v                                      v
+          .---------------.                     .-----------------.
+          | Test::Harness |                     | Pretty Pictures |
+          '---------------'                     '-----------------'
+
+It starts out the same, F<foo.t> uses a bunch of test modules
+including Test::More and Test::Whatever using the same Test::Builder2
+object, but it also uses Test::NotUpdated which is still using
+Test::Builder.  That's ok because Test::Builder has been rewritten in
+terms of Test::Builder2 (more on that below).
+
+Test::Builder2, rather than being a monolith, produces a
+Test::Builder2::Result object for each assert run.  This gets stored
+in a Test::Builder2::History object for possible later use.  It also
+gets handed to a Test::Builder2::Foramtter object, the default is
+Test::Builder2::TAP::v13 which produces TAP version 13.  This is fed
+to a Streamer that prints it to STDOUT and STDERR which is read by
+Test::Harness and made human readable.
+
+Because Test::Builder2 is not monolithic, you can swap out parts.  For
+example, instead of outputting TAP it could instead hand results to a
+formatter that produced a simple GUI representation, maybe a green
+bar, or something that hooks into a larger GUI.  Or maybe one that
+produces JUnit XML.
+
+=head2 How Test::Builder and Test::Builder2 Relate
+
+        .-----.                                         .-----.
+        | TB2 |                                         | TB1 |
+        '-----'                                         '-----'
+           |                                               |
+           |                                               |
+           |                                               |
+           |                                               |
+           v                                               v
+    .-------------.        .--------------.         .-------------.
+    | TB2::Result |------->| TB2::History |<--------| TB2::Result |
+    '-------------'        '--------------'         '-------------'
+           |                                               |
+           |                                               |
+           |                                               |
+           |              .----------------.               |
+           '------------->| TB2::Formatter |<--------------'
+                          '----------------'
+                                   |
+                                   v
+                              .--------.
+                              | Output |
+                              '--------'
+
+Test::Builder and Test::Builder2 coordinate their actions by sharing
+the same History and Formatter objects.  If you call TB1->ok() it
+produces a Result object which it hands to the History singleton and
+the Formatter singleton.  If you call TB2->ok() it produces a Result
+object which it hands to the same History and Formatter objects.
+
+This allows most of the Test::Builder code to remain the same while
+still coordinating with Test::Builder2.  It also allows radically
+different builders to be made without Test::Builder2 dictating how
+they're to work.
+
+The downside is that roles applied to Test::Builder2 will not effect
+Test::Builder.  Because of this, Test::Builder may become more closely
+coupled with Test::Builder2 in the future.
 
 
 =head1 Glossary
