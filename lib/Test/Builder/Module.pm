@@ -58,7 +58,7 @@ the plan independent of Test::More.
 
 All arguments passed to import() are passed onto 
 C<< Your::Module->builder->plan() >> with the exception of 
-C<import =>[qw(things to import)]>.
+C<< import =>[qw(things to import)] >>.
 
     use Your::Module import => [qw(this that)], tests => 23;
 
