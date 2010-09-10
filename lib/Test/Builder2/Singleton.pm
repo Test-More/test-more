@@ -28,6 +28,9 @@ B<FOR INTERNAL USE ONLY>
 
 A role implementing singleton for Test::Builder2 classes.
 
+Strictly speaking, this isn't a singleton because you can create more
+instances.  Its more like giving the class a default.
+
 =head1 METHODS
 
 =head2 Constructors
