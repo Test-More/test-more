@@ -83,9 +83,7 @@ plan is already set, but it doesn't.
     };
 }
 
-# XXX Change when TB2 is a singleton
-require Test::Simple;
-my $builder = Test::Simple->builder;
+my $builder = Test::Builder2->singleton;
 
 croak "TB2::NoWarnings must be used before the plan is set"
   if $builder->planned_tests;
@@ -95,7 +93,7 @@ TB2::NoWarnings::Role->meta->apply( $builder );
 
 # XXX Hack until TB2 can do this itself
 END {
-    Test::Simple->builder->stream_end;
+    Test::Builder2->singleton->stream_end;
 }
 
 1;

@@ -3,16 +3,10 @@
 use strict;
 use warnings;
 
-use Test::Simple tests => 5;
+use Test::Simple tests => 3;
 
-ok( defined Test::Simple->builder );
-ok( Test::Simple->builder->isa("Test::Builder2") );
+ok( defined Test::Simple->Builder );
+ok( Test::Simple->Builder->isa("Test::Builder2") );
 
-my $orig_builder = Test::Simple->builder;
+my $orig_builder = Test::Simple->Builder;
 ok $orig_builder eq Test::Builder2->singleton;
-
-my $new_builder  = Test::Builder2->create;
-Test::Simple->builder($new_builder);
-ok( Test::Simple->builder eq $new_builder );
-
-ok( $Test::Simple::Builder eq $new_builder );

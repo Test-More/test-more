@@ -300,19 +300,21 @@ There is no way for TB2 to infer this special case, it must be declared by the a
         ...set up capturing warnings however...
         
         # Declare a new assert stack
-        $Builder->start_assert_stack;
+        Builder->start_assert_stack;
         
         # Run the code with that new stack
         $code->();
         
         # End the assert stack and go back to the old one
-        $Builder->end_assert_stack;
+        Builder->end_assert_stack;
         
         # Run an assert to check the warnings using the original stack
         return is( $captured_warnings, $warning );
     };
 
-In effect, there is a stack of stacks maintained inside TB2.  C<$Builder> is provided by TB2::Module as a shortcut for C<< $class->builder >>.
+In effect, there is a stack of stacks maintained inside TB2.
+C<Builder> is provided by TB2::Module as a shortcut for
+C<< $class->builder >>.
 
 This will also allow tests to work in cooperative multitasking situations such as POE.  One stack of asserts may start running only to yield control to another stack.  The details are beyond the scope of this design, only that it is made possible.
 

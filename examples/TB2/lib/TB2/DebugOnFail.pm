@@ -53,9 +53,6 @@ after the assert was called instead.
     };
 }
 
-# XXX Change when TB2 is a singleton
-require Test::Simple;
-my $builder = Test::Simple->builder;
-TB2::DebugOnFail::Role->meta->apply( $builder );
+TB2::DebugOnFail::Role->meta->apply( Test::Builder2->singleton );
 
 1;

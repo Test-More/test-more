@@ -18,7 +18,7 @@ local $ENV{HARNESS_ACTIVE} = 0;
 
     install_test is => sub ($$;$) {
         my($have, $want, $name) = @_;
-        my $ok = $Builder->ok($have eq $want, $name);
+        my $ok = Builder->ok($have eq $want, $name);
 
         $ok->name( $ok->name . " from is" );
 
@@ -31,7 +31,7 @@ local $ENV{HARNESS_ACTIVE} = 0;
     };
 }
 
-my $tb = TB2::More->builder;
+my $tb = TB2::More->Builder;
 
 {
     package Local::Test;

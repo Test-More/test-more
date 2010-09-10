@@ -19,7 +19,7 @@ use strict;
         die "Test said to die" if !$self->top_stack->in_assert and $result->name =~ /\b die \b/x;
     };
 
-    TB2::Assert->meta->apply(Test::Simple->builder);
+    TB2::Assert->meta->apply(Test::Builder2->singleton);
 }
 
 

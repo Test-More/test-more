@@ -34,11 +34,11 @@ BEGIN {
         $self->ok( !@Warnings, "no warnings" );
     };
 
-    Test::NoWarnings->meta->apply(Test::Simple->builder);
+    Test::NoWarnings->meta->apply(Test::Builder2->singleton);
 }
 
 require Test::Builder2::Streamer::Debug;
-my $builder = Test::Simple->builder;
+my $builder = Test::Builder2->singleton;
 $builder->formatter->streamer(Test::Builder2::Streamer::Debug->new);
 
 require Test::Simple;

@@ -42,9 +42,6 @@ kill the test when an assert fails.
     };
 }
 
-# XXX Change when TB2 is a singleton
-require Test::Simple;
-my $builder = Test::Simple->builder;
-TB2::DieOnFail::Role->meta->apply( $builder );
+TB2::DieOnFail::Role->meta->apply( Test::Builder2->singleton );
 
 1;
