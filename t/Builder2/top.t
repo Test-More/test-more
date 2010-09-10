@@ -6,7 +6,7 @@ use warnings;
 use Test::More tests => 4;
 use Test::Builder2;
 
-my $tb = Test::Builder2->new;
+my $tb = Test::Builder2->create;
 
 sub outer {
     $tb->assert_start;

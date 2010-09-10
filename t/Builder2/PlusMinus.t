@@ -81,7 +81,7 @@ my $formatter = new_formatter();
 
 # Test out PlusMinus inside TB2.
 {
-    my $tb = Test::Builder2->new;
+    my $tb = Test::Builder2->create;
     $tb->set_formatter( new_formatter() );
 
     $tb->ok(1);

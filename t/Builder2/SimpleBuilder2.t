@@ -12,7 +12,8 @@ my $tap = Test::Builder2::Formatter::TAP->new({
   streamer_class => 'Test::Builder2::Streamer::Debug',
 });
 
-my $builder = new_ok("Test::Builder2", [ formatter => $tap ]);
+my $builder = Test::Builder2->create(formatter => $tap);
+isa_ok $builder, "Test::Builder2";
 
 {
     $builder->stream_start(tests => 3);
@@ -60,6 +61,15 @@ my $builder = new_ok("Test::Builder2", [ formatter => $tap ]);
 {
     my $ok = $builder->ok(0);
     isa_ok $ok, "Test::Builder2::Result::Base";
+}
+
+
+# TB2 has a singleton
+{
+    my $builder1 = Test::Builder2->singleton;
+    my $builder2 = Test::Builder2->singleton;
+
+    is $builder1, $builder2, "TB2 has a singleton";
 }
 
 done_testing();

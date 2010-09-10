@@ -17,7 +17,7 @@ sub import {
 
     $class->export_to_level(1, $class, @EXPORT);
 
-    $caller->builder(Test::Builder2->new);
+    $caller->builder(Test::Builder2->singleton);
 
     no strict 'refs';
 

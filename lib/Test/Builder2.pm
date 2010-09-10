@@ -4,6 +4,8 @@ use 5.008001;
 use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 
+with 'Test::Builder2::Singleton';
+
 use Carp qw(confess);
 sub sanity ($) { confess "Assert failed" unless $_[0] };
 
