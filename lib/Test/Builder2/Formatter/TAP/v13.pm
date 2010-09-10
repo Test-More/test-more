@@ -20,6 +20,19 @@ has indent_nesting_with =>
   default       => "    "
 ;
 
+has plan_count => 
+   is           => 'rw',
+   isa          => 'Maybe[Int]',
+   lazy         => 1,
+   default      => sub{undef}, # no plan == undef
+;
+
+has test_count =>
+   is           => 'rw',
+   isa          => 'Int',
+   default      => 0,
+;
+
 sub default_streamer_class { 'Test::Builder2::Streamer::TAP' }
 
 =head1 NAME
@@ -93,6 +106,7 @@ sub err {
     $self->write(err => @_);
 }
 
+
 =head3 begin
 
 The %plan can be one and only one of...
@@ -114,6 +128,7 @@ sub INNER_begin {
     $self->out("TAP version 13\n");
 
     if( exists $args{tests} ) {
+        $self->plan_count($args{test});
         $self->out("1..$args{tests}\n");
     }
     elsif( exists $args{skip_all} ) {
@@ -142,6 +157,9 @@ result details.
 sub INNER_result {
     my $self = shift;
     my $result = shift;
+
+    # ... wasn't there in incrementer type somewhere?
+    $self->test_count( $self->test_count + 1 );
 
     # FIXME: there is a lot more detail in the 
     # result object that I ought to do deal with.
@@ -266,6 +284,7 @@ sub INNER_end {
 
     if( exists $args{tests} ) {
         $self->out("1..$args{tests}\n");
+        $self->test_count( $args{tests} ); # overwrite our count if handed something else
     }
     elsif( keys %args == 1 ) {
         croak "Unknown argument @{[ keys %args ]} to end()";
@@ -273,6 +292,14 @@ sub INNER_end {
     else {
         # ...do nothing...
     }
+
+    $self->out( sprintf( qq{# Looks like you planned %d tests but ran %d.\n},
+                         $self->plan_count,
+                         $self->test_count,
+                       ) 
+              ) if defined $self->plan_count 
+                && $self->plan_count != $self->test_count;
+
 
     return;    
 }

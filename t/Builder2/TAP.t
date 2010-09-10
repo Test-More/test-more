@@ -63,6 +63,27 @@ END
 1..42
 END
 }
+# Test plan where counts don't match
+{
+   new_formatter;
+   $formatter->plan_count(3);
+   $formatter->test_count(2);
+   $formatter->end();
+   is last_output, <<END, "failed plan output is correct";
+# Looks like you planned 3 tests but ran 2.
+END
+}
+# Test plan-at-end that overwrites counter
+{
+   new_formatter;
+   $formatter->plan_count(3);
+   $formatter->test_count(2);
+   $formatter->end(tests => 4);
+   is last_output, <<END, "failed plan output is correct";
+1..4
+# Looks like you planned 3 tests but ran 4.
+END
+}
 
 # Test read
 {
@@ -83,6 +104,7 @@ END
     new_formatter;
     $formatter->begin(no_plan => 1);
     is last_output, "TAP version 13\n", "no_plan";
+    is $formatter->plan_count, undef, 'no_plan keeps the default plan_count of undef';
 }
 
 
