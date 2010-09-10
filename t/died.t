@@ -7,6 +7,9 @@ BEGIN {
     }
 }
 
+use lib 't/lib';
+use absINC;
+
 # Can't use Test.pm, that's a 5.005 thing.
 package My::Test;
 
@@ -15,6 +18,8 @@ package My::Test;
 require Test::Builder;
 my $TB = Test::Builder->create;
 $TB->plan( skip_all => "failure diagnostics not implemented" );
+
+__END__
 $TB->plan(tests => 3);
 
 
@@ -23,7 +28,7 @@ package main;
 require Test::Simple;
 
 chdir 't';
-push @INC, '../t/lib/';
+
 require Test::Simple::Catch;
 my($out, $err) = Test::Simple::Catch::caught();
 local $ENV{HARNESS_ACTIVE} = 0;
@@ -31,16 +36,16 @@ local $ENV{HARNESS_ACTIVE} = 0;
 Test::Simple->import(tests => 1);
 exit 250;
 
-# END {
-#     $TB->is_eq($out->read, <<OUT);
-# 1..1
-# OUT
+END {
+     $TB->is_eq($out->read, <<OUT);
+ 1..1
+OUT
 
-#     $TB->is_eq($err->read, <<ERR);
-# # Looks like your test exited with 250 before it could output anything.
-# ERR
+    $TB->is_eq($err->read, <<ERR);
+# Looks like your test exited with 250 before it could output anything.
+ERR
 
-#     $TB->is_eq($?, 250, "exit code");
+    $TB->is_eq($?, 250, "exit code");
 
-#     exit grep { !$_ } $TB->summary;
-# }
+    exit grep { !$_ } $TB->summary;
+}
