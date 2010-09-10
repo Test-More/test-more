@@ -4,9 +4,6 @@ use 5.008001;
 use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 
-use Test::Builder2::Result;
-use Test::Builder2::AssertRecord;
-
 use Carp qw(confess);
 sub sanity ($) { confess "Assert failed" unless $_[0] };
 
@@ -230,6 +227,7 @@ assert after.
 sub assert_start {
     my $self = shift;
 
+    require Test::Builder2::AssertRecord;
     my $record = Test::Builder2::AssertRecord->new_from_caller(1);
     sanity $record;
 
