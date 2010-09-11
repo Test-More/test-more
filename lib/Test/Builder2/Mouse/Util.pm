@@ -54,7 +54,7 @@ BEGIN{
 
     our $VERSION = '0.64';
 
-    my $xs = !(exists $INC{'Test/Builder2/Mouse/PurePerl.pm'} || $ENV{MOUSE_PUREPERL});
+    my $xs = 0; #!(exists $INC{'Test/Builder2/Mouse/PurePerl.pm'} || $ENV{MOUSE_PUREPERL});
 
     if($xs){
         # XXX: XSLoader tries to get the object path from caller's file name
