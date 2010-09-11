@@ -58,7 +58,7 @@ If there is no singleton one will be created by calling create().
             $singletons{$class} = shift;
         }
         elsif( !$singletons{$class} ) {
-            $singletons{$class} = $class->create;
+            $singletons{$class} = $class->make_singleton;
         }
 
         return $singletons{$class};
@@ -94,5 +94,23 @@ sub create {
 
     return $class->Test::Builder2::Mouse::Object::new(@_);
 }
+
+
+=head3 make_singleton
+
+    my $singleton = $class->make_singleton;
+
+Creates the object used as the singleton.
+
+Defaults to calling C<< $class->create >>.  You can override.
+
+=cut
+
+sub make_singleton {
+    my $class = shift;
+    return $class->create;
+}
+
+no Test::Builder2::Mouse::Role;
 
 1;

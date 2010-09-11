@@ -90,7 +90,16 @@ has history => (
 
 sub _build_history {
     my $self = shift;
-    $self->history_class->singleton;
+    $self->history_class->create;
+}
+
+sub make_singleton {
+    my $class = shift;
+
+    require Test::Builder2::History;
+    return $class->create(
+        history => Test::Builder2::History->singleton
+    );
 }
 
 

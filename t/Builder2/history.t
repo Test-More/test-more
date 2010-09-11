@@ -45,11 +45,6 @@ my $create_ok = sub {
     isa_ok $history2, $CLASS;
 
     is $history1, $history2,            "new() is a singleton";
-    is $history1, $CLASS->singleton,    "singleton() get";
-
-    $history1->add_test_history($Pass, $Fail);
-
-    is_deeply $history1->results, $history2->results;
 
     my $new_history = $create_ok->();
     $CLASS->singleton($new_history);

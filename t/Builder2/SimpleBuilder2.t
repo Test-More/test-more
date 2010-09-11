@@ -12,7 +12,10 @@ my $tap = Test::Builder2::Formatter::TAP->new({
   streamer_class => 'Test::Builder2::Streamer::Debug',
 });
 
-my $builder = Test::Builder2->create(formatter => $tap);
+my $builder = Test::Builder2->create(
+    formatter => $tap,
+    history   => Test::Builder2::History->create,
+);
 isa_ok $builder, "Test::Builder2";
 
 {

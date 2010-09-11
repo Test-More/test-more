@@ -36,6 +36,8 @@ my $tb = TB2::More->Builder;
 {
     package Local::Test;
 
+    # Isolate the builder
+    $tb->set_history( Test::Builder2::History->create );
     $tb->formatter->streamer_class("Test::Builder2::Streamer::Debug");
 
     TB2::More->import( tests => 1 );
@@ -46,6 +48,7 @@ my $tb = TB2::More->Builder;
 
 use Test::More;
 
+$tb->set_history( Test::Builder2::History->singleton );
 is $tb->formatter->streamer->read_all, <<"END";
 TAP version 13
 1..1

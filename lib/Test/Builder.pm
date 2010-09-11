@@ -59,12 +59,26 @@ singleton, use C<create>.
 
 =cut
 
-our $Test = Test::Builder->new;
+our $Test;
 
 sub new {
     my($class) = shift;
-    $Test ||= $class->create;
+    $Test ||= $class->_make_default;
     return $Test;
+}
+
+# Bit of a hack to make the default TB1 object use the history singleton.
+sub _make_default {
+    my $class = shift;
+
+    my $obj = bless {}, $class;
+
+    require Test::Builder2::History;
+    $obj->reset(
+        History   => shared_clone(Test::Builder2::History->singleton),
+    );
+
+    return $obj;
 }
 
 =item B<create>
@@ -344,7 +358,7 @@ test might be run multiple times in the same process.
 our $Level;
 
 sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    my($self) = @_;
+    my($self, %overrides) = @_;
 
     # We leave this a global because it has to be localized and localizing
     # hash keys is just asking for pain.  Also, it was documented.
@@ -364,10 +378,10 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     require Test::Builder2::History;
     require Test::Builder2::Result;
-    $self->{History} = shared_clone(Test::Builder2::History->create);
+    $self->{History} = $overrides{History} || shared_clone(Test::Builder2::History->create);
 
     require Test::Builder::Formatter::TAP;
-    $self->{Formatter} = Test::Builder::Formatter::TAP->new();
+    $self->{Formatter} = $overrides{Formatter} || Test::Builder::Formatter::TAP->new;
 
     $self->{Exported_To}    = undef;
     $self->{Expected_Tests} = 0;
