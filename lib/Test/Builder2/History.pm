@@ -207,5 +207,6 @@ sub is_passing {
     return (grep { $_->is_fail } @{ $self->results }) ? 0 : 1;
 }
 
+no Test::Builder2::Mouse;
 1;
 
