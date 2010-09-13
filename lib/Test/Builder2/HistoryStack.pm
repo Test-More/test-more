@@ -85,7 +85,10 @@ Add a result object to the end stack,
 
 =head2 result_count
 
-Get the count of results stored in the stack.
+Get the count of results stored in the stack. 
+
+NOTE: This could be diffrent from the number of tests that have been
+seen, to get that count use test_count.
 
 =head3 has_results
 
@@ -97,55 +100,90 @@ sub has_results { shift->result_count > 0 }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 =head2 Statistics
-
 
 =cut
 
+# %statistic_mapping: 
+# attribute_name => code_ref that defines how to increment attribute_name
+#
+# this is used both as a list of attributes to create as well as by 
+# _update_statistics to increment the attribute. 
+# code_ref will be handed a single result object that was to be added
+# to the results stack.
 
+my %statistic_mapping = (
+    pass_count => sub{ shift->is_pass ? 1 : 0 },
+    fail_count => sub{ shift->is_fail ? 1 : 0 },
+    todo_count => sub{ shift->is_todo ? 1 : 0 },
+    skip_count => sub{ shift->is_skip ? 1 : 0 },
+    test_count => sub{ 1 },
+);
 
+has $_ => (
+    is => 'rw',
+    isa => 'Test::Builder2::Positive_Int',
+    default => 0,
+) for keys %statistic_mapping;
 
+sub _update_statistics {
+    my $self = shift;
+    for my $attr ( keys %statistic_mapping ) {
+        for my $result (@_) {
+            $self->$attr( $self->$attr + $statistic_mapping{$attr}->($result) );
+        }
+    }
+}
 
+before [qw{add_test_history add_result add_results}] => sub{
+    my $self = shift;
+    $self->_update_statistics(@_);
+};
 
+=head3 test_count
 
+A count of the number of tests that have been added to results. This
+value is not guaranteed to be the same as results_count if you have
+altered the results_stack. This is a static counter of the number of
+tests that have been seen, not the number of results stored.
 
+=head3 pass_count
 
+A count of the number of passed tests have been added to results.
 
+=head3 fail_count
+
+A count of the number of failed tests have been added to results.
+
+=head3 todo_count
+
+A count of the number of TODO tests have been added to results.
+
+=head3 skip_count
+
+A count of the number of SKIP tests have been added to results.
+
+=head3 is_passing
+
+Returns true if we have not yet seen a failing test.
+
+=cut
+
+sub is_passing { shift->fail_count == 0 }
 
 
 no Test::Builder2::Mouse;
 1;
-__END__
 
+
+
+
+
+
+
+
+__END__
+!!!!!!! DON"T YET KNOW IF I NEED ANY OF THIS FROM HISTORY !!!!!!!
 
 
 # splice() isn't implemented for (thread) shared arrays and its likely
@@ -174,21 +212,4 @@ sub summary {
 
     return map { $_->is_fail ? 0 : 1 } @{ $self->results };
 }
-
-=head3 is_passing
-
-    my $is_passing = $history->is_passing;
-
-Returns true if all the tests passed, false otherwise.
-
-=cut
-
-sub is_passing {
-    my $self = shift;
-
-    return (grep { $_->is_fail } @{ $self->results }) ? 0 : 1;
-}
-
-no Test::Builder2::Mouse;
-1;
 
