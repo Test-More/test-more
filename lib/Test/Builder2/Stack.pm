@@ -52,7 +52,7 @@ has type =>
 #        was not able to alter $self->meta->get_attribute('items')->type_constraint
 #        and have the changes stick. I'm sure that it's possible but I cant' get it to work.
 sub BUILD {
-    my $self = shift;
+    my $self = CORE::shift;
     if ( defined $self->type ) {
         my $type = sprintf q{ArrayRef[%s]}, $self->type;
         my $value = $self->items ; # save off the value to plug it in later
@@ -95,7 +95,7 @@ Returns the count of the items in the stack.
 =cut
 
 sub count {
-    scalar( @{ shift->items } );
+    scalar( @{ CORE::shift->items } );
 }
 
 =head2 pop 
@@ -105,7 +105,7 @@ Remove the last element from the items stack and return it.
 =cut 
 
 sub pop {
-    pop @{ shift->items };
+    pop @{ CORE::shift->items };
 }
 
 =head2 shift 
@@ -115,7 +115,7 @@ Remove the first element of the items stack, and return it.
 =cut
 
 sub shift {
-    shift @{ shift->items };
+    CORE::shift @{ CORE::shift->items };
 }
 
 =head2 splice 
@@ -135,7 +135,7 @@ Prepend item(s) to the beginning of the items stack.
 =cut
 
 sub unshift {
-    my $self = shift;
+    my $self = CORE::shift;
     # can not use 'unshift' like pop/shift as you need to trip the type check
     $self->items([ @_, @{ $self->items } ]);
 }
@@ -147,7 +147,7 @@ Append one or more elements to the items stack.
 =cut
 
 sub push {
-    my $self = shift;
+    my $self = CORE::shift;
     # can not use 'push' like pop/shift as you need to trip the type check
     $self->items([ @{ $self->items }, @_ ]);
 }
