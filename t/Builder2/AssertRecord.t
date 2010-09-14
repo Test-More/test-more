@@ -3,7 +3,8 @@
 use strict;
 use warnings;
 
-use Test::More;
+use lib 't/lib';
+BEGIN { require 't/test.pl'; }
 
 use Test::Builder2::AssertRecord;
 
