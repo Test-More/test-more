@@ -37,7 +37,7 @@ has '+results' =>
 ;
 
 
-after results_push => sub{
+aafter results_push => sub{
     shift->clear_results;
 };
 
