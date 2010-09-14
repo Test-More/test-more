@@ -54,6 +54,15 @@ sub plan {
     $planned = $n;
 }
 
+sub done_testing {
+    my $n = $test - 1;
+    $n = shift if @_;
+
+    _print "1..$n\n";
+    $planned = $n;
+}
+
+
 END {
     my $ran = $test - 1;
     if (!$NO_ENDING) {
@@ -70,13 +79,22 @@ END {
 # messages
 sub _diag {
     return unless @_;
-    my @mess = map { /^#/ ? "$_\n" : "# $_\n" }
-               map { split /\n/ } @_;
+    my @mess = _comment(@_);
     $TODO ? _print(@mess) : _print_stderr(@mess);
 }
 
 sub diag {
     _diag(@_);
+}
+
+sub note {
+    return unless @_;
+    _print( _comment(@_) );
+}
+
+sub _comment {
+    return map { /^#/ ? "$_\n" : "# $_\n" }
+           map { split /\n/ } @_;
 }
 
 sub skip_all {
@@ -546,8 +564,6 @@ sub runperl {
     return $result;
 }
 
-*run_perl = \&runperl; # Nice alias.
-
 sub DIE {
     _print_stderr "# @_\n";
     exit 1;
@@ -766,6 +782,31 @@ sub can_ok ($@) {
     _ok( !@nok, _where(), $name );
 }
 
+
+sub new_ok {
+    my($class, $args, $obj_name) = @_;
+    $args ||= [];
+    $object_name = "The object" unless defined $obj_name;
+
+    local $Level = $Level + 1;
+
+    my $obj;
+    my $ok = eval { $obj = $class->new(@$args); 1 };
+    my $error = $@;
+
+    if($ok) {
+        isa_ok($obj, $class, $object_name);
+    }
+    else {
+        ok( 0, "new() died" );
+        diag("Error was:  $@");
+    }
+
+    return $obj;
+
+}
+
+
 sub isa_ok ($$;$) {
     my($object, $class, $obj_name) = @_;
 
@@ -824,9 +865,12 @@ sub watchdog ($;$)
         goto WATCHDOG_VIA_ALARM;
     }
 
+    # shut up use only once warning
+    my $threads_on = $threads::threads && $threads::threads;
+
     # Don't use a watchdog process if 'threads' is loaded -
     #   use a watchdog thread instead
-    if (! $threads::threads) {
+    if (!$threads_on) {
 
         # On Windows and VMS, try launching a watchdog process
         #   using system(1, ...) (see perlport.pod)
