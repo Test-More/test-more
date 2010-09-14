@@ -2,10 +2,9 @@ package Test::Builder2::HistoryStack;
 
 use Carp;
 use Test::Builder2::Mouse;
-require Test::Builder2::Stack;
+use Test::Builder2::StackBuilder;
 
 with 'Test::Builder2::Singleton';
-
 
 =head1 NAME
 
@@ -66,18 +65,11 @@ A Test::Builder2::Stack of Result objects.
 
 =cut
 
-has _results => (
-    is      => 'rw',
-    isa     => 'Test::Builder2::Stack',
-    lazy    => 1,
-    default => sub { Test::Builder2::Stack->new( type => 'Test::Builder2::Result::Base' ) },
-    handles => { add_test_history => 'push',
-                 add_result       => 'push',
-                 add_results      => 'push',
-                 result_count     => 'count',
-                 results          => 'items',
-               },
-);
+buildstack results => 'Test::Builder2::Result::Base';
+sub add_test_history { shift->results_push(@_) }
+sub add_result       { shift->results_push(@_) }
+sub add_results      { shift->results_push(@_) }
+sub result_count     { shift->results_count}
 
 =head2 add_test_history, add_result, and add_results
 
