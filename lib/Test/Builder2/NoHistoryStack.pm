@@ -37,7 +37,7 @@ has '+results' =>
 ;
 
 
-after [qw{add_test_history add_result add_results}] => sub{
+after results_push => sub{
     shift->clear_results;
 };
 

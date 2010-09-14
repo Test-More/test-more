@@ -47,6 +47,27 @@ sub Fail { Test::Builder2::Result->new_result( pass => 0 ) }
 
 }
 
+# merge history stacks
+{
+   my $H1 = new_history;
+   $H1->add_results(Pass(),Pass(),Pass());
+   is $H1->result_count, 3, q{H1 count};
+   my $H2 = new_history;
+   $H2->add_results(Fail(),Fail(),Fail());
+   is $H2->result_count, 3, q{H2 count};
+
+   ok $H1->consume($H2);
+   is $H1->result_count, 6, q{H1 consumed H2};
+   is $H1->fail_count, 3 , q{H1 picked up the tests from H2 correctly};
+
+   ok $H1->consume( map{ my $h = new_history; $h->add_results(Pass(),Fail());$h } 1..10 ),
+      q{consume can also take lists of objects}
+   ;
+
+   is $H1->result_count, 26, q{H1 consumed all the items in that list};
+   
+}
+
 
 
 

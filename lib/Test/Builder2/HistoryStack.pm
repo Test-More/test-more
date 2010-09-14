@@ -127,7 +127,7 @@ sub _update_statistics {
     }
 }
 
-before [qw{add_test_history add_result add_results}] => sub{
+before results_push => sub{
     my $self = shift;
     $self->_update_statistics(@_);
 };
@@ -162,6 +162,28 @@ Returns true if we have not yet seen a failing test.
 =cut
 
 sub is_passing { shift->fail_count == 0 }
+
+
+=head2 HISTORY INTERACTION
+
+=head3 consume
+
+   $history->consume($old_history);
+
+Appends $old_history results in to $history's results stack.
+
+=cut
+
+sub consume {
+   my $self = shift;
+   die 'consume only takes history objects' 
+      unless scalar(@_) 
+          == scalar( grep{ local $@;
+                           eval{$_->isa('Test::Builder2::HistoryStack')} 
+                         } @_ 
+                   );
+   $self->results_push( map{ @{ $_->results } } @_ );
+};
 
 
 no Test::Builder2::Mouse;
