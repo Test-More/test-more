@@ -1,18 +1,18 @@
-package Test::Builder2::NoHistoryStack;
+package Test::Builder2::NoHistory;
 use Carp;
 use Test::Builder2::Mouse;
-extends qw{Test::Builder2::HistoryStack};
+extends qw{Test::Builder2::History};
 
 =head1 NAME
 
-Test::Builder2::NoHistoryStack - Store no history, just keep stats
+Test::Builder2::NoHistory - Store no history, just keep stats
 
 =head1 SYNOPSIS
 
-    use Test::Builder2::NoHistoryStack;
+    use Test::Builder2::NoHistory;
 
     # This is a shared singleton object
-    my $history = Test::Builder2::NoHistoryStack->singleton;
+    my $history = Test::Builder2::NoHistory->singleton;
     my $result  = Test::Builder2::Result->new_result( pass => 1 );
 
     $history->add_test_history( $result );
@@ -27,7 +27,7 @@ This object does not store results but manages the history of test stats.
 
 =head1 API
 
-All methods are the same from Test::Builder2::HistoryStack.
+All methods are the same from Test::Builder2::History.
 
 =cut
 

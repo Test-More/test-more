@@ -7,8 +7,8 @@ use Test::More 'no_plan';
 
 use Test::Builder2::Result;
 
-require_ok 'Test::Builder2::NoHistoryStack';
-can_ok( 'Test::Builder2::NoHistoryStack', 
+require_ok 'Test::Builder2::NoHistory';
+can_ok( 'Test::Builder2::NoHistory', 
         qw{ singleton
             create
             
@@ -23,7 +23,7 @@ can_ok( 'Test::Builder2::NoHistoryStack',
 );
       
 # helpers
-sub new_history { Test::Builder2::NoHistoryStack->create }
+sub new_history { Test::Builder2::NoHistory->create }
 sub Pass { Test::Builder2::Result->new_result( pass => 1 ) }
 sub Fail { Test::Builder2::Result->new_result( pass => 0 ) }
 
