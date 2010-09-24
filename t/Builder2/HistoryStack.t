@@ -24,8 +24,8 @@ can_ok( 'Test::Builder2::HistoryStack',
       
 # helpers
 sub new_history { Test::Builder2::HistoryStack->create }
-sub Pass { Test::Builder2::Result->new_result( pass => 1 ) }
-sub Fail { Test::Builder2::Result->new_result( pass => 0 ) }
+sub Pass { Test::Builder2::Result->new_result( pass => 1, @_ ) }
+sub Fail { Test::Builder2::Result->new_result( pass => 0, @_ ) }
 
 
 { 
@@ -68,6 +68,21 @@ sub Fail { Test::Builder2::Result->new_result( pass => 0 ) }
    
 }
 
+# multiple results with same test number
+{
+   my $h = new_history;
+   ok $h->add_results(Pass(test_number=>1), Pass(test_number=>1));
+   is $h->result_count,2;
+}
+
+{
+   my $h = new_history;
+   ok $h->add_event('BEGIN 1');
+   ok $h->add_result(Pass());
+   ok $h->add_event(Fail());
+   is $h->results_count, 1;
+   is $h->events_count, 3;
+}
 
 
 

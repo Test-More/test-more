@@ -54,6 +54,27 @@ Unless otherwise stated, these are all accessor methods of the form:
     $history->method($value);           # set
 
 
+=head2 Events
+
+=head3 events
+
+A Test::Builder2::Stack of events, that include Result objects.
+
+=head3 add_event
+
+Push an event to the events stack.
+
+=head3 event_count
+
+Get the count of events that are on the stack.
+
+=cut
+
+buildstack events => 'Any';
+sub add_event   { shift->events_push(@_) }
+sub event_count { shift->events_count}
+sub has_events  { shift->events_count > 0 }
+
 =head2 Results
 
 =head3 results
@@ -70,6 +91,10 @@ sub add_test_history { shift->results_push(@_) }
 sub add_result       { shift->results_push(@_) }
 sub add_results      { shift->results_push(@_) }
 sub result_count     { shift->results_count}
+
+before results_push => sub{
+   shift->events_push(@_);
+};
 
 =head2 add_test_history, add_result, and add_results
 
@@ -89,7 +114,6 @@ Returns true if we have stored results, false otherwise.
 =cut
 
 sub has_results { shift->result_count > 0 }
-
 
 
 =head2 Statistics
@@ -176,7 +200,7 @@ Appends $old_history results in to $history's results stack.
 
 sub consume {
    my $self = shift;
-   die 'consume only takes history objects' 
+   croak 'consume only takes history objects' 
       unless scalar(@_) 
           == scalar( grep{ local $@;
                            eval{$_->isa('Test::Builder2::HistoryStack')} 
