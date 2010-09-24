@@ -79,7 +79,9 @@ sub Fail { Test::Builder2::Result->new_result( pass => 0, @_ ) }
    my $h = new_history;
    ok $h->add_event('BEGIN 1');
    ok $h->add_result(Pass());
-   ok $h->add_event(Fail());
+   TODO: { local $TODO = 'add_event should not accept Results';
+      ok !eval { $h->add_event(Fail()); 1; };
+   };
    is $h->results_count, 1;
    is $h->events_count, 3;
 }
