@@ -63,13 +63,6 @@ sub BUILD {
                                                            isa => $type,
                                               );
         $items->set_value($self, $value ) if defined $value;
-=pod
-        $self->meta->get_attribute('items')->type_constraint(
-           Test::Builder2::Mouse::Util::TypeConstraints->find_or_create_isa_type_constraint(
-              {name => 'ArrayRef[Str]'},
-           )
-        );
-=cut
     }
 }
 
