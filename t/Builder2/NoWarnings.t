@@ -52,5 +52,5 @@ ok(1, "pass 2");
 $builder->stream_end();
 
 print "1..2\n";
-print "ok 1 - count correct\n" if $builder->history->counter->get == 3;
+print "ok 1 - count correct\n" if $builder->formatter->counter->get == 3;
 print "ok 2 - nowarnings test failed properly\n" if !$builder->history->results->[2];

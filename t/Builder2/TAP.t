@@ -213,12 +213,14 @@ OUT
 
 # No number
 {
+    $formatter->use_numbers(0);
     my $result = Test::Builder2::Result->new_result(
         pass            => 1
     );
     $formatter->result($result);
 
     is(last_output, "ok\n", "pass with no number");
+    $formatter->use_numbers(1);
 }
 
 

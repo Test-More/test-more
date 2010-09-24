@@ -329,8 +329,8 @@ sub set_plan {
 The most basic assertion that all other assertions should use.
 
 This handles things like calling C<assert_start> and C<assert_end>,
-creating a test result, recording the result and incrementing the test
-counter.  Everything you want an assert to do and nothing else.
+creating a test result and recording the result.  Everything you 
+want an assert to do and nothing else.
 
 $test is simple true for success, false for failure.
 
@@ -357,10 +357,7 @@ sub ok {
 
     $self->assert_start();
 
-    my $num = $self->history->counter->get + 1;
-
     my $result = $self->result_class->new_result(
-        test_number     => $num,
         description     => $name,
         pass            => $test,
     );

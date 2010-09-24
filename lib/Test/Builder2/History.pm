@@ -144,15 +144,30 @@ has $_ => (
 
 sub _update_statistics {
     my $self = shift;
+
     for my $attr ( keys %statistic_mapping ) {
         for my $result (@_) {
-            $self->$attr( $self->$attr + $statistic_mapping{$attr}->($result) );
+           $self->$attr( $self->$attr + $statistic_mapping{$attr}->($result) );
         }
     }
 }
 
+sub _try {
+    my $self = shift;
+    my $code = shift;
+
+    local($@, $!);
+    return eval { $code->() };
+}
+
 before results_push => sub{
     my $self = shift;
+
+    for my $result (@_) {
+        croak "results_push() takes Result objects"
+          if !$self->_try(sub { $result->isa('Test::Builder2::Result::Base') });
+    }
+
     $self->_update_statistics(@_);
 };
 
@@ -200,7 +215,7 @@ Appends $old_history results in to $history's results stack.
 
 sub consume {
    my $self = shift;
-   croak 'consume only takes history objects' 
+   croak 'consume() only takes History objects' 
       unless scalar(@_) 
           == scalar( grep{ local $@;
                            eval{$_->isa('Test::Builder2::History')} 
@@ -212,42 +227,4 @@ sub consume {
 
 no Test::Builder2::Mouse;
 1;
-
-
-
-
-
-
-
-
-__END__
-!!!!!!! DON"T YET KNOW IF I NEED ANY OF THIS FROM HISTORY !!!!!!!
-
-
-# splice() isn't implemented for (thread) shared arrays and its likely
-# the History object will be shared in a threaded environment
-sub _overlay {
-    my( $orig, $overlay, $from ) = @_;
-
-    my $to = $from + (@$overlay || 0) - 1;
-    @{$orig}[$from..$to] = @$overlay;
-
-    return;
-}
-
-
-=head3 summary
-
-    my @summary = $history->results;
-
-Returns a list of true/false values for each test result indicating if
-it passed or failed.
-
-=cut
-
-sub summary {
-    my $self = shift;
-
-    return map { $_->is_fail ? 0 : 1 } @{ $self->results };
-}
 

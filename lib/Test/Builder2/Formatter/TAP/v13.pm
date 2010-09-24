@@ -93,6 +93,43 @@ sub err {
     $self->write(err => @_);
 }
 
+
+=head3 counter
+
+    my $counter = $formatter->counter;
+    $formatter->counter($counter);
+
+Gets/sets the Test::Builder2::Counter for this formatter keeping track of
+the test number.
+
+=cut
+
+has counter => 
+   is => 'rw',
+   isa => 'Test::Builder2::Counter',
+   default => sub{
+      require Test::Builder2::Counter;
+      return Test::Builder2::Counter->create;
+   },
+;
+
+=head3 use_numbers
+
+    my $use_numbers = $formatter->use_numbers;
+    $formatter->use_numbers($use_numbers);
+
+Get/sets if the TAP output should include the test number. Defaults to true.
+NOTE: the counter will still incrememnt this only toggles if the number should
+be used in the display.
+
+=cut
+
+has use_numbers => 
+   is => 'rw',
+   isa => 'Bool',
+   default => 1,
+;
+
 =head3 begin
 
 The %plan can be one and only one of...
@@ -139,6 +176,8 @@ result details.
 
 =cut
 
+
+
 sub INNER_result {
     my $self = shift;
     my $result = shift;
@@ -150,7 +189,8 @@ sub INNER_result {
     $out .= "not " if !$result->literal_pass;
     $out .= "ok";
 
-    $out .= " ".$result->test_number   if defined $result->test_number;
+    my $num = $result->test_number || $self->counter->increment;
+    $out .= " ".$num if $self->use_numbers;
 
     my $name = $result->description;
     $self->_escape(\$name);

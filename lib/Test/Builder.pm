@@ -760,7 +760,6 @@ ERR
         location        => $file,
         id              => $line,
         description     => $name,
-        test_number     => $self->use_numbers ? $self->{History}->next_count : undef,
         directives      => $in_todo ? ["todo"] : [],
         reason          => $in_todo ? $todo : undef,
     );
@@ -1169,7 +1168,6 @@ sub skip {
         reason    => $why,
         id        => $line,
         location  => $file,
-        test_number => $self->use_numbers ? $self->{History}->next_count : undef,
     );
     $result = shared_clone($result);
     $self->{History}->add_test_history( $result );
@@ -1204,7 +1202,6 @@ sub todo_skip {
         reason          => $why,
         location        => $file,
         id              => $line,
-        test_number     => $self->use_numbers ? $self->{History}->next_count : undef,
     );
     $result = shared_clone($result);
     $self->{History}->add_test_history( $result );
@@ -1906,12 +1903,15 @@ can erase history if you really want to.
 sub current_test {
     my( $self, $num ) = @_;
 
-    lock( $self->{History} );
+    my $counter = $self->{Formatter}->counter;
 
     if( defined $num ) {
-        # If the test counter is being pushed forward fill in the details.
         my $history = $self->{History};
-        my $counter = $history->counter;
+
+        lock( $counter );
+        lock( $history );
+
+        # If the test counter is being pushed forward fill in the details.
         my $results = $history->results;
 
         if( $num > @$results ) {
@@ -1933,8 +1933,11 @@ sub current_test {
         }
 
         $counter->set($num);
+        return;
     }
-    return $self->{History}->counter->get;
+    else {
+        return $counter->get;
+    }
 }
 
 =item B<is_passing>
@@ -1979,7 +1982,7 @@ Of course, test #1 is $tests[0], etc...
 sub summary {
     my($self) = shift;
 
-    return $self->{History}->summary;
+    return map { $_->is_fail ? 0 : 1 } @{$self->{History}->results};
 }
 
 =item B<details>
