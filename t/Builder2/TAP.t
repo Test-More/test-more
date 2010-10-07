@@ -13,10 +13,12 @@ local $ENV{HARNESS_ACTIVE} = 0;
 
 my $formatter;
 sub new_formatter {
-    $formatter = new_ok(
-        "Test::Builder2::Formatter::TAP",
-        [ streamer_class => 'Test::Builder2::Streamer::Debug' ]
+    $formatter = Test::Builder2::Formatter::TAP->create(
+        streamer_class => 'Test::Builder2::Streamer::Debug'
     );
+    isa_ok $formatter, "Test::Builder2::Formatter::TAP";
+
+    return $formatter;
 }
 
 sub last_output {
@@ -25,7 +27,7 @@ sub last_output {
 
 # Test the defaults
 {
-    my $streamer = Test::Builder2::Streamer::TAP->new; 
+    my $streamer = Test::Builder2::Streamer::TAP->new;
     is $streamer->output_fh,  *STDOUT;
     is $streamer->error_fh,   *STDERR;
 }

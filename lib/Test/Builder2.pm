@@ -97,8 +97,10 @@ sub make_singleton {
     my $class = shift;
 
     require Test::Builder2::History;
+    require Test::Builder2::Formatter;
     return $class->create(
-        history => Test::Builder2::History->singleton
+        history   => Test::Builder2::History->singleton,
+        formatter => Test::Builder2::Formatter->singleton
     );
 }
 
@@ -148,7 +150,7 @@ has formatter => (
 
 sub _build_formatter {
     my $self = shift;
-    $self->formatter_class->new;
+    $self->formatter_class->create;
 }
 
 

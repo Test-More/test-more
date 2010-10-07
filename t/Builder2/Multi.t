@@ -12,13 +12,13 @@ use_ok 'Test::Builder2::Formatter::Multi';
 use_ok 'Test::Builder2::Formatter::PlusMinus';
 use_ok 'Test::Builder2::Formatter::POSIX';
 
-my $pm    = Test::Builder2::Formatter::PlusMinus->new(
+my $pm    = Test::Builder2::Formatter::PlusMinus->create(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
-my $posix = Test::Builder2::Formatter::POSIX->new(
+my $posix = Test::Builder2::Formatter::POSIX->create(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
-my $multi = Test::Builder2::Formatter::Multi->new;
+my $multi = Test::Builder2::Formatter::Multi->create;
 is_deeply $multi->formatters, [];
 
 $multi->add_formatters($pm, $posix);

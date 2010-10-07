@@ -6,6 +6,10 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+use absINC;
+BEGIN { require 't/test.pl'; }
+
 # Consistent formatting
 local $ENV{HARNESS_ACTIVE} = 0;
 
@@ -37,8 +41,9 @@ my $tb = TB2::More->Builder;
     package Local::Test;
 
     # Isolate the builder
+    require Test::Builder2::Streamer::Debug;
     $tb->set_history( Test::Builder2::History->create );
-    $tb->formatter->streamer_class("Test::Builder2::Streamer::Debug");
+    $tb->formatter->streamer( Test::Builder2::Streamer::Debug->new );
 
     TB2::More->import( tests => 1 );
 
@@ -46,7 +51,6 @@ my $tb = TB2::More->Builder;
     is( 23, 42, "is 23 eq 42" );
 }
 
-use Test::More;
 
 $tb->set_history( Test::Builder2::History->singleton );
 is $tb->formatter->streamer->read_all, <<"END";

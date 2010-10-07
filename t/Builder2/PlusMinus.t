@@ -11,7 +11,7 @@ use Test::Builder2::Result;
 use_ok 'Test::Builder2::Formatter::PlusMinus';
 
 sub new_formatter {
-    return Test::Builder2::Formatter::PlusMinus->new(
+    return Test::Builder2::Formatter::PlusMinus->create(
         streamer_class => 'Test::Builder2::Streamer::Debug'
     );
 }

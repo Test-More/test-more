@@ -8,7 +8,7 @@ use Test::Builder2::Result;
 
 use_ok "Test::Builder2::Formatter::Null";
 
-my $null = Test::Builder2::Formatter::Null->new(
+my $null = Test::Builder2::Formatter::Null->create(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
 
