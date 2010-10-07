@@ -61,6 +61,10 @@ sub write {
     my $self = shift;
     my $dest = shift;
 
+    # This keeps "use Test::More tests => 2" from printing stuff when
+    # compiling with -c.
+    return if $^C;
+
     $self->safe_print($self->output_fh, @_);
 }
 

@@ -104,6 +104,10 @@ Creates the object used as the singleton.
 
 Defaults to calling C<< $class->create >>.  You can override.
 
+One of the reasons to override is to ensure your singleton contains
+other singletons.  Like a Builder will want to use the singleton
+History and Formatter objects.
+
 =cut
 
 sub make_singleton {

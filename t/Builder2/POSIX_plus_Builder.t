@@ -11,7 +11,7 @@ use Test::Builder2::Formatter::POSIX;
 
 my $test = Test::Builder2->create;
 
-my $posix = Test::Builder2::Formatter::POSIX->new(
+my $posix = Test::Builder2::Formatter::POSIX->create(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
 

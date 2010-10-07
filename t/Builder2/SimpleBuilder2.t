@@ -8,7 +8,7 @@ use lib 't/lib';
 use Test::More;
 
 use Test::Builder2::Formatter::TAP;
-my $tap = Test::Builder2::Formatter::TAP->new({
+my $tap = Test::Builder2::Formatter::TAP->create({
   streamer_class => 'Test::Builder2::Streamer::Debug',
 });
 

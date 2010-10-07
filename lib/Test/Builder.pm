@@ -73,9 +73,11 @@ sub _make_default {
 
     my $obj = bless {}, $class;
 
+    require Test::Builder2::Formatter;
     require Test::Builder2::History;
     $obj->reset(
         History   => shared_clone(Test::Builder2::History->singleton),
+        Formatter => Test::Builder2::Formatter->singleton,
     );
 
     return $obj;
@@ -381,7 +383,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{History} = $overrides{History} || shared_clone(Test::Builder2::History->create);
 
     require Test::Builder::Formatter::TAP;
-    $self->{Formatter} = $overrides{Formatter} || Test::Builder::Formatter::TAP->new;
+    $self->{Formatter} = $overrides{Formatter} || Test::Builder::Formatter::TAP->create;
 
     $self->{Exported_To}    = undef;
     $self->{Expected_Tests} = 0;

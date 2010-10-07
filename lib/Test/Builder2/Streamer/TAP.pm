@@ -53,6 +53,10 @@ sub write {
     my $fh_method = $Dest_Dest{ $dest };
     my $fh = $self->$fh_method;
 
+    # This keeps "use Test::More tests => 2" from printing stuff when
+    # compiling with -c.
+    return if $^C;
+
     $self->safe_print($fh, @_);
 }
 

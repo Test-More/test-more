@@ -43,7 +43,7 @@ use Test::More;
 }
 
 
-my $formatter = My::Formatter->new;
+my $formatter = My::Formatter->create;
 is $formatter->has_begun, 0;
 is $formatter->has_ended, 0;
 
