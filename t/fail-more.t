@@ -60,7 +60,7 @@ local $SIG{__DIE__} = sub { $TB->ok(0, "DIE handler called: ".join "", @_); };
 
 
 my $tb = Test::More->builder;
-$tb->{Formatter}->use_numbers(0);
+$tb->use_numbers(0);
 
 my $Filename = quotemeta $0;
 
