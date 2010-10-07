@@ -6,6 +6,8 @@ use Test::Builder2::Mouse;
 use Carp;
 use Test::Builder2::Types;
 
+use Test::Builder2::threads::shared;
+
 extends 'Test::Builder2::Formatter';
 
 has nesting_level =>
@@ -21,6 +23,17 @@ has indent_nesting_with =>
 ;
 
 sub default_streamer_class { 'Test::Builder2::Streamer::TAP' }
+
+
+sub make_singleton {
+    my $class = shift;
+
+    require Test::Builder2::Counter;
+    $class->create(
+        counter => shared_clone( Test::Builder2::Counter->create )
+    );
+}
+
 
 =head1 NAME
 
@@ -107,7 +120,7 @@ the test number.
 has counter => 
    is => 'rw',
    isa => 'Test::Builder2::Counter',
-   default => sub{
+   default => sub {
       require Test::Builder2::Counter;
       return Test::Builder2::Counter->create;
    },

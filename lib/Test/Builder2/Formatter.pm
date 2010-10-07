@@ -76,10 +76,8 @@ The default Formatter is a Test::Builder2::Formatter::TAP object.
 =cut
 
 sub make_singleton {
-    my $self = shift;
-
     require Test::Builder2::Formatter::TAP;
-    return Test::Builder2::Formatter::TAP->create;
+    return Test::Builder2::Formatter::TAP->make_singleton;
 }
 
 
