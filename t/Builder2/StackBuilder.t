@@ -51,8 +51,13 @@ BEGIN {
 {
    my $three = My::Three->new;
    is $three->nums_count, 'buildin', q{buildstack does not squash existing methods};
-   eval { $three->nums_push('this is a string') };
-   like $@, qr{^Attribute \(nums\) does not pass the type constraint because}, q{type enforced};
+
+   TODO: {
+       local $TODO = "This would be nice, but the implementation was very inefficient and messed with threads";
+
+       eval { $three->nums_push('this is a string') };
+       like $@, qr{^Attribute \(nums\) does not pass the type constraint because}, q{type enforced};
+   }
 }
 
 done_testing;

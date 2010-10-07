@@ -57,9 +57,7 @@ sub buildstack ($;$) {
     );
 
     $meta->add_method(
-        $name.'_push' => sub{ my $self = shift;
-                              $self->$name( [ @{ $self->$name } , @_ ] );
-                            }
+        $name.'_push' => sub{ push @{ shift->$name }, @_; }
     ) unless $meta->has_method($name.'_push');
 
     $meta->add_method(
