@@ -6,6 +6,7 @@ use Test::Builder2::StackBuilder;
 
 with 'Test::Builder2::Singleton';
 
+
 =head1 NAME
 
 Test::Builder2::History - Manage the history of test results
@@ -90,10 +91,10 @@ buildstack results => 'Test::Builder2::Result::Base';
 sub add_test_history { shift->results_push(@_) }
 sub add_result       { shift->results_push(@_) }
 sub add_results      { shift->results_push(@_) }
-sub result_count     { shift->results_count}
+sub result_count     { shift->results_count }
 
-before results_push => sub{
-   shift->events_push(@_);
+before results_push => sub {
+   shift->events_push( @_ );
 };
 
 =head2 add_test_history, add_result, and add_results
