@@ -388,7 +388,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Skip_All} = 0;
 
-    $self->{Use_Nums} = 1;
+    $self->{Formatter}->use_numbers(1);
 
     $self->{No_Header} = 0;
     $self->{No_Ending} = 0;
@@ -1469,9 +1469,9 @@ sub use_numbers {
     my( $self, $use_nums ) = @_;
 
     if( defined $use_nums ) {
-        $self->{Use_Nums} = $use_nums;
+        $self->{Formatter}->use_numbers($use_nums);
     }
-    return $self->{Use_Nums};
+    return $self->{Formatter}->use_numbers;
 }
 
 =item B<no_diag>
