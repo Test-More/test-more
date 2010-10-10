@@ -25,7 +25,7 @@ sub main {
     my @files;
     find(
         {
-            wanted => sub { push @files, $_ if /\bMouse\b/ && /\.pm/ },
+            wanted => sub { push @files, $_ if /\bMouse\b/ && /\.(pm|pod)/ },
             no_chdir => 1
         }, "lib/Test/Builder2/"
     );
