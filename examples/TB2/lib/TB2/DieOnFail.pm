@@ -27,7 +27,6 @@ kill the test when an assert fails.
 {
     package TB2::DieOnFail::Role;
 
-    use Carp;
     use Test::Builder2::Mouse::Role;
 
     after assert_end => sub {
@@ -42,6 +41,7 @@ kill the test when an assert fails.
     };
 }
 
+require Test::Builder2;
 TB2::DieOnFail::Role->meta->apply( Test::Builder2->singleton );
 
 1;

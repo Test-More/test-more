@@ -37,7 +37,6 @@ after the assert was called instead.
 {
     package TB2::DebugOnFail::Role;
 
-    use Carp;
     use Test::Builder2::Mouse::Role;
 
     after assert_end => sub {
@@ -53,6 +52,7 @@ after the assert was called instead.
     };
 }
 
+require Test::Builder2;
 TB2::DebugOnFail::Role->meta->apply( Test::Builder2->singleton );
 
 1;
