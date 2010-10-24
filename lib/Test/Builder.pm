@@ -923,12 +923,16 @@ sub _is_dualvar {
 Like Test::More's C<is()>.  Checks if C<$got eq $expected>.  This is the
 string version.
 
+Also succeeds if both C<$got> and C<$expected> are undef.
+
 =item B<is_num>
 
   $Test->is_num($got, $expected, $name);
 
 Like Test::More's C<is()>.  Checks if C<$got == $expected>.  This is the
 numeric version.
+
+Also succeeds if both C<$got> and C<$expected> are undef.
 
 =cut
 
