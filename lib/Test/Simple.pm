@@ -7,7 +7,7 @@ our $VERSION = '2.00_01';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Builder2::Module;
-our @EXPORT = qw(ok);
+our @EXPORT = qw(ok done_testing);
 
 
 =head1 NAME
@@ -77,6 +77,9 @@ install_test(ok => sub ($;$) {    ## no critic (Subroutines::ProhibitSubroutineP
     return Builder->ok(@_);
 });
 
+sub done_testing {
+    Builder->stream_end;
+}
 
 =back
 
