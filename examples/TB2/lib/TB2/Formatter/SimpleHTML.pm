@@ -34,10 +34,12 @@ sub INNER_begin {
 
     $self->write(out => <<"HTML");
 <html>
-<head><title>TB2::Formatter::SimpleHTML demonstration</title></head>
+<head>
+  <title>TB2::Formatter::SimpleHTML demo</title>
+</head>
 <body>
 <table>
-<tr><th>Result</th><th>Name</th></tr>
+    <tr><th>Result</th><th>Name</th></tr>
 HTML
 
     return;
@@ -64,7 +66,7 @@ sub INNER_result {
     my $name = $result->name || '';
     my $ok   = $result ? "pass" : "<b>fail</b>";
     $self->write(out => <<"HTML");
-<tr><td>$ok</td><td>$name</td></tr>
+    <tr><td>$ok</td><td>$name</td></tr>
 HTML
 
     return;
