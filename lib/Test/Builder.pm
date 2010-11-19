@@ -233,6 +233,7 @@ sub subtest {
         my $run_the_subtests = sub {
             $subtests->();
             $self->done_testing unless $self->_plan_handled;
+            $? = 0;     # don't fail if $subtests happened to set $? nonzero
             1;
         };
 
