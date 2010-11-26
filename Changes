@@ -1,3 +1,8 @@
+0.97_02
+    Bug Fixes
+    * subtest() should not fail if $? is non-zero. (Aaron Crane)
+
+
 0.97_01  Fri Aug 27 22:50:30 PDT 2010
     Test Fixes
     * Adapted the tests for the new Perl 5.14 regex stringification.

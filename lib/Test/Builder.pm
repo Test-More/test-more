@@ -233,7 +233,6 @@ sub subtest {
         my $run_the_subtests = sub {
             $subtests->();
             $self->done_testing unless $self->_plan_handled;
-            $? = 0;     # don't fail if $subtests happened to set $? nonzero
             1;
         };
 
@@ -313,6 +312,8 @@ sub finalize {
     if( $self->{Child_Name} ) {
         $self->croak("Can't call finalize() with child ($self->{Child_Name}) active");
     }
+
+    local $? = 0;     # don't fail if $subtests happened to set $? nonzero
     $self->_ending;
 
     # XXX This will only be necessary for TAP envelopes (we think)
