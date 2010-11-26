@@ -925,7 +925,7 @@ sub _is_dualvar {
 Like Test::More's C<is()>.  Checks if C<$got eq $expected>.  This is the
 string version.
 
-Also succeeds if both C<$got> and C<$expected> are undef.
+C<undef> only ever matches another C<undef>.
 
 =item B<is_num>
 
@@ -934,7 +934,7 @@ Also succeeds if both C<$got> and C<$expected> are undef.
 Like Test::More's C<is()>.  Checks if C<$got == $expected>.  This is the
 numeric version.
 
-Also succeeds if both C<$got> and C<$expected> are undef.
+C<undef> only ever matches another C<undef>.
 
 =cut
 
