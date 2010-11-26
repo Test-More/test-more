@@ -317,6 +317,11 @@ are similar to these:
     ok( ultimate_answer() eq 42,        "Meaning of Life" );
     ok( $foo ne '',     "Got some foo" );
 
+If one of the arguments is C<undef>, the test only succeeds if the other
+is C<undef> too. You can test a value agains C<undef> like this:
+
+    is($not_defined, undef, "undefined as expected");
+
 (Mnemonic:  "This is that."  "This isn't that.")
 
 So why use these?  They produce better diagnostics on failure.  ok()
