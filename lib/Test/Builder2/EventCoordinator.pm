@@ -294,4 +294,6 @@ L<Test::Builder2::EventWatcher>, L<Test::Builder2::Event>, L<Test::Builder2::Res
 
 =cut
 
+no Test::Builder2::Mouse;
+
 1;
