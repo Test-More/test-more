@@ -3,6 +3,7 @@
 package MyEventCollector;
 
 use Test::Builder2::Mouse;
+with 'Test::Builder2::EventWatcher';
 
 has results =>
   is        => 'rw',
