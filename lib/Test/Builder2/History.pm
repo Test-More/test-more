@@ -4,7 +4,8 @@ use Carp;
 use Test::Builder2::Mouse;
 use Test::Builder2::StackBuilder;
 
-with 'Test::Builder2::Singleton';
+with 'Test::Builder2::Singleton',
+     'Test::Builder2::EventWatcher';
 
 
 =head1 NAME
@@ -61,7 +62,7 @@ Unless otherwise stated, these are all accessor methods of the form:
 
 A Test::Builder2::Stack of events, that include Result objects.
 
-=head3 add_event
+=head3 accept_event
 
 Push an event to the events stack.
 
@@ -72,9 +73,9 @@ Get the count of events that are on the stack.
 =cut
 
 buildstack events => 'Any';
-sub add_event   { shift->events_push(@_) }
-sub event_count { shift->events_count}
-sub has_events  { shift->events_count > 0 }
+sub accept_event { shift->events_push(@_) }
+sub event_count  { shift->events_count }
+sub has_events   { shift->events_count > 0 }
 
 =head2 Results
 
@@ -89,15 +90,15 @@ A Test::Builder2::Stack of Result objects.
 
 buildstack results => 'Test::Builder2::Result::Base';
 sub add_test_history { shift->results_push(@_) }
-sub add_result       { shift->results_push(@_) }
-sub add_results      { shift->results_push(@_) }
+sub accept_result    { shift->results_push(@_) }
+sub accept_results   { shift->results_push(@_) }
 sub result_count     { shift->results_count }
 
 before results_push => sub {
    shift->events_push( @_ );
 };
 
-=head2 add_test_history, add_result, and add_results
+=head2 add_test_history and accept_result
 
 Add a result object to the end stack, 
 
