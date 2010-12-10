@@ -6,7 +6,7 @@ extends 'Test::Builder2::Formatter';
 
 sub INNER_begin {}
 
-sub INNER_result {
+sub INNER_accept_result {
     my($self, $result) = @_;
 
     my $out = $result->is_fail ? "-" : "+";

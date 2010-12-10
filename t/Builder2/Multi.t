@@ -39,7 +39,7 @@ is_deeply $multi->formatters, [$pm, $posix];
         pass            => 1,
         description     => "basset hounds got long ears",
     );
-    $multi->result($result);
+    $multi->accept_result($result);
     is($pm->streamer->read, "+", "passing test" );
     is($posix->streamer->read, "PASS: basset hounds got long ears\n", "passing test" );
 }
@@ -51,7 +51,7 @@ is_deeply $multi->formatters, [$pm, $posix];
         pass            => 0,
         description     => "basset hounds got long ears",
     );
-    $multi->result($result);
+    $multi->accept_result($result);
     is($pm->streamer->read, "-", "fail" );
     is($posix->streamer->read, "FAIL: basset hounds got long ears\n", "POSIX fail" );
 }
@@ -64,7 +64,7 @@ is_deeply $multi->formatters, [$pm, $posix];
         directives      => [qw(skip)],
         description     => "basset hounds got long ears",
     );
-    $multi->result($result);
+    $multi->accept_result($result);
     is($pm->streamer->read, "+", "skip" );
     is($posix->streamer->read, "UNTESTED: basset hounds got long ears\n" );
 }

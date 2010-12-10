@@ -32,7 +32,7 @@ my $formatter = new_formatter();
         pass            => 1,
         description     => "basset hounds got long ears",
     );
-    $formatter->result($result);
+    $formatter->accept_result($result);
     is(
       $formatter->streamer->read,
       "+",
@@ -47,7 +47,7 @@ my $formatter = new_formatter();
         pass            => 0,
         description     => "basset hounds got long ears",
     );
-    $formatter->result($result);
+    $formatter->accept_result($result);
     is(
       $formatter->streamer->read,
       "-",
@@ -63,7 +63,7 @@ my $formatter = new_formatter();
         directives      => [qw(skip)],
         description     => "basset hounds got long ears",
     );
-    $formatter->result($result);
+    $formatter->accept_result($result);
     is(
       $formatter->streamer->read,
       "+",

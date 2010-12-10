@@ -13,7 +13,7 @@ use Test::More 'no_plan';
     extends 'Test::Builder2::Formatter';
 
     sub end { }
-    sub result {} 
+    sub accept_result {} 
     sub begin {}
 }
 

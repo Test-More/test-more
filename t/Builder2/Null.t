@@ -22,7 +22,7 @@ my $null = Test::Builder2::Formatter::Null->create(
         pass            => 1,
         description     => "basset hounds got long ears",
     );
-    $null->result($result);
+    $null->accept_result($result);
     is(
       $null->streamer->read,
       "",

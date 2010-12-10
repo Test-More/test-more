@@ -770,7 +770,7 @@ ERR
     $result = shared_clone($result);
     $self->{History}->accept_result( $result );
 
-    $self->{Formatter}->result($result);
+    $self->{Formatter}->accept_result($result);
 
     $self->is_passing(0) unless $test || $self->in_todo;
 
@@ -1174,7 +1174,7 @@ sub skip {
     $result = shared_clone($result);
     $self->{History}->accept_result( $result );
 
-    $self->{Formatter}->result($result);
+    $self->{Formatter}->accept_result($result);
 
     return 1;
 }
@@ -1208,7 +1208,7 @@ sub todo_skip {
     $result = shared_clone($result);
     $self->{History}->accept_result( $result );
 
-    $self->{Formatter}->result($result);
+    $self->{Formatter}->accept_result($result);
 
     return 1;
 }

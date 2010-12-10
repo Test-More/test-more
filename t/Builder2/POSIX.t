@@ -23,7 +23,7 @@ my $posix = Test::Builder2::Formatter::POSIX->create(
         pass            => 1,
         description     => "basset hounds got long ears",
     );
-    $posix->result($result);
+    $posix->accept_result($result);
     is(
       $posix->streamer->read,
       "PASS: basset hounds got long ears\n",

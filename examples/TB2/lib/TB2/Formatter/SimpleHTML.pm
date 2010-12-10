@@ -59,7 +59,7 @@ HTML
 }
 
 
-sub INNER_result {
+sub INNER_accept_result {
     my $self = shift;
     my $result = shift;
 

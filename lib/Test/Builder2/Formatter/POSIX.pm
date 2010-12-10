@@ -20,7 +20,7 @@ my %type_map = (
     todo_skip   => 'UNTESTED',
 );
 
-sub INNER_result {
+sub INNER_accept_result {
     my($self, $result) = @_;
 
     my $type = $type_map{$result->type};

@@ -4,7 +4,8 @@ use Carp;
 use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 
-with 'Test::Builder2::Singleton';
+with 'Test::Builder2::Singleton',
+     'Test::Builder2::EventWatcher';
 
 
 =head1 NAME
@@ -131,24 +132,30 @@ sub begin {
 }
 
 
-=head3 result
+=head3 accept_result
 
-  $formatter->result($result);
+  $formatter->accept_result($result);
 
 Formats a $result (an instance of L<Test::Builder2::Result>).
 
-It is an error to call result() after end().
+It is an error to call accept_result() after end().
 
-Do not override C<result()>.  Override C<INNER_result()>.
+Do not override C<accept_result()>.  Override C<INNER_accept_result()>.
 
 =cut
 
-sub result {
+# Until we work out how to turn begin() and end() into accept_event()
+# actions.
+sub accept_event {
+    shift->accept_result(@_);
+}
+
+sub accept_result {
     my $self = shift;
 
-    croak "result() called after end()" if $self->has_ended;
+    croak "accept_result() called after end()" if $self->has_ended;
 
-    $self->INNER_result(@_);
+    $self->INNER_accept_result(@_);
 
     return;
 }
@@ -207,15 +214,15 @@ In reality, this is a hand off to C<< $formatter->streamer->write >>.
 
 These methods must be defined by the subclasser.
 
-Do not override begin, result and end.  Override these instead.
+Do not override begin, accept_result and end.  Override these instead.
 
 =head3 INNER_begin
 
-=head3 INNER_result
+=head3 INNER_accept_result
 
 =head3 INNER_end
 
-These implement the guts of begin, result and end.
+These implement the guts of begin, accept_result and end.
 
 =cut
 

@@ -18,9 +18,9 @@ Test::Builder2::Formatter::Multi - Use multiple formatters at once
     $multi->add_formatters($this_formatter, $that_formatter);
 
     # Equivalent to
-    #   $this_formatter->result($result);
-    #   $that_formatter->result($result);
-    $multi->result($result);
+    #   $this_formatter->accept_result($result);
+    #   $that_formatter->accept_result($result);
+    $multi->accept_result($result);
 
 
 =head1 DESCRIPTION

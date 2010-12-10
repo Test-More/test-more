@@ -22,7 +22,7 @@ use Test::More;
         $self->begin_called( $self->begin_called() + 1 );
     }
 
-    sub INNER_result {
+    sub INNER_accept_result {
         my $self = shift;
         $self->result_called( $self->result_called() + 1 );
     }
@@ -47,7 +47,7 @@ my $formatter = My::Formatter->create;
 is $formatter->has_begun, 0;
 is $formatter->has_ended, 0;
 
-$formatter->result;
+$formatter->accept_result;
 $formatter->check(0, 1, 0, "result() before begin()");
 
 $formatter->begin;
@@ -57,7 +57,7 @@ is $formatter->has_begun, 1;
 $formatter->begin;
 $formatter->check(1, 1, 0, "begin() again");
 
-$formatter->result;
+$formatter->accept_result;
 $formatter->check(1, 2, 0, "Another result()");
 
 $formatter->end;
@@ -67,8 +67,8 @@ is $formatter->has_ended, 1;
 $formatter->end;
 $formatter->check(1, 2, 1, "end() again");
 
-ok !eval { $formatter->result; 1; }, "result() after end()";
-like $@, qr/^\Qresult() called after end()/;
+ok !eval { $formatter->accept_result; 1; }, "result() after end()";
+like $@, qr/^\Qaccept_result() called after end()/;
 
 
 done_testing();

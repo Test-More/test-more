@@ -120,7 +120,7 @@ END
 {
     my $result = Test::Builder2::Result->new_result( pass => 0 );
     $result->test_number(1);
-    $formatter->result($result);
+    $formatter->accept_result($result);
     is(last_output, "not ok 1\n", "testing not okay");
 }
 
@@ -128,7 +128,7 @@ END
 {
     my $result = Test::Builder2::Result->new_result( pass => 1 );
     $result->test_number(2);
-    $formatter->result($result);
+    $formatter->accept_result($result);
     is(last_output, "ok 2\n", "testing okay");
 }
 
@@ -140,7 +140,7 @@ END
         reason          => "reason" 
     );
     $result->test_number(3);
-    $formatter->result($result);
+    $formatter->accept_result($result);
     is(last_output, <<OUT, "testing todo fail");
 not ok 3 # TODO reason
 #   Failed (TODO) test.
@@ -156,7 +156,7 @@ OUT
         reason          => "reason"
     );
     $result->test_number(4);
-    $formatter->result($result);
+    $formatter->accept_result($result);
     is(last_output, "ok 4 # TODO reason\n", "testing todo");
 }
 
@@ -169,7 +169,7 @@ OUT
     );
     $result->test_number(4);
     $result->description('a fine test');
-    $formatter->result($result);
+    $formatter->accept_result($result);
     is(last_output, "ok 4 - a fine test # TODO reason\n", "testing todo");
 }
 
@@ -180,7 +180,7 @@ OUT
     );
     $result->description(' - a royal pain');
     $result->test_number(6);
-    $formatter->result($result);
+    $formatter->accept_result($result);
     is(last_output, "not ok 6 -  - a royal pain\n", "test description");
 }
 
@@ -193,7 +193,7 @@ OUT
     $result->description('skip test');
     $result->test_number(7);
     $result->reason('Not gonna work');
-    $formatter->result($result);
+    $formatter->accept_result($result);
 
     is(last_output, "not ok 7 - skip test # SKIP Not gonna work\n", "skip fail");
 }
@@ -207,7 +207,7 @@ OUT
     $result->description('skip test');
     $result->test_number(8);
     $result->reason('Because');
-    $formatter->result($result);
+    $formatter->accept_result($result);
 
     is(last_output, "ok 8 - skip test # SKIP Because\n", "skip pass");
 }
@@ -219,7 +219,7 @@ OUT
     my $result = Test::Builder2::Result->new_result(
         pass            => 1
     );
-    $formatter->result($result);
+    $formatter->accept_result($result);
 
     is(last_output, "ok\n", "pass with no number");
     $formatter->use_numbers(1);
@@ -234,7 +234,7 @@ OUT
     $result->test_number(5);
     $result->description("Foo\nBar\n");
 
-    $formatter->result($result);
+    $formatter->accept_result($result);
     is(last_output, "ok 5 - Foo\\nBar\\n\n", "description with newline");
 }
 
@@ -248,7 +248,7 @@ OUT
         reason          => "\nFoo\nBar\n",
     );
 
-    $formatter->result($result);
+    $formatter->accept_result($result);
     is(last_output, "ok 4 # SKIP \\nFoo\\nBar\\n\n", "reason with newline");
 }
 

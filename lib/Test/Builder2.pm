@@ -289,7 +289,7 @@ sub assert_end {
     my $self   = shift;
     my $result = shift;
 
-    $self->formatter->result($result) if
+    $self->formatter->accept_result($result) if
       $self->top_stack->at_top and defined $result;
 
     sanity $self->top_stack->pop;

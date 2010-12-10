@@ -45,7 +45,7 @@ Test::Builder2::Formatter::TAP::v13 - Formatter as TAP version 13
 
   my $formatter = Test:::Builder2::Formatter::TAP::v13->new;
   $formatter->begin();
-  $formatter->result($result);
+  $formatter->accept_result($result);
   $formatter->end($plan);
 
 
@@ -191,7 +191,7 @@ result details.
 
 
 
-sub INNER_result {
+sub INNER_accept_result {
     my $self = shift;
     my $result = shift;
 

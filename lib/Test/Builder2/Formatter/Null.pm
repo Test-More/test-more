@@ -27,7 +27,7 @@ produce no output.
 =cut
 
 sub INNER_begin {}
-sub INNER_result {}
+sub INNER_accept_result {}
 sub INNER_end {}
 
 1;
