@@ -391,7 +391,7 @@ sub accept_result {
     my $self = shift;
     my $result = shift;
 
-    $self->history->add_test_history( $result );
+    $self->history->accept_result( $result );
 
     return;
 }

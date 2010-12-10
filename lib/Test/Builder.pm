@@ -768,7 +768,7 @@ ERR
 
     # Store the Result in history making sure to make it thread safe
     $result = shared_clone($result);
-    $self->{History}->add_test_history( $result );
+    $self->{History}->accept_result( $result );
 
     $self->{Formatter}->result($result);
 
@@ -1172,7 +1172,7 @@ sub skip {
         location  => $file,
     );
     $result = shared_clone($result);
-    $self->{History}->add_test_history( $result );
+    $self->{History}->accept_result( $result );
 
     $self->{Formatter}->result($result);
 
@@ -1206,7 +1206,7 @@ sub todo_skip {
         id              => $line,
     );
     $result = shared_clone($result);
-    $self->{History}->add_test_history( $result );
+    $self->{History}->accept_result( $result );
 
     $self->{Formatter}->result($result);
 
@@ -1926,7 +1926,7 @@ sub current_test {
                     reason      => 'incrementing test number',
                     test_number => $_
                 );
-                $history->add_test_history( shared_clone($result) );
+                $history->accept_result( shared_clone($result) );
             }
         }
         # If backward, wipe history.  Its their funeral.

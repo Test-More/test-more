@@ -14,7 +14,6 @@ can_ok( 'Test::Builder2::NoHistory',
             
             results
             has_results
-            add_test_history
             accept_result
             accept_results
             result_count
@@ -33,7 +32,7 @@ sub Fail { Test::Builder2::Result->new_result( pass => 0 ) }
     ok!$history->has_results, q{we no not yet have results};
     is_deeply $history->results, [], q{blank results set};
     ok $history->accept_result( Pass() ), q{add pass};
-    ok $history->add_test_history( Fail() ), q{add fail};
+    ok $history->accept_result( Fail() ), q{add fail};
     ok $history->accept_results( Pass(), Fail() ), q{can add multiples};
     ok!$history->has_results, q{we have no results};
     

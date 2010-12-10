@@ -50,16 +50,16 @@ my $create_ok = sub {
 }
 
 
-# add_test_history
+# accept_result
 {
     my $history = $create_ok->();
 
-    $history->add_test_history( $Pass );
+    $history->accept_result( $Pass );
     is_deeply $history->results, [$Pass];
 
     ok $history->is_passing;
 
-    $history->add_test_history( $Pass, $Fail );
+    $history->accept_results( $Pass, $Fail );
     is_deeply $history->results, [
         $Pass, $Pass, $Fail
     ];
@@ -67,16 +67,16 @@ my $create_ok = sub {
     ok !$history->is_passing;
 
     # Try a history replacement
-    $history->add_test_history( $Pass, $Pass );
+    $history->accept_results( $Pass, $Pass );
 }
 
 
-# add_test_history argument checks
+# accept_results argument checks
 {
     my $history = $create_ok->();
 
     ok !eval {
-        $history->add_test_history($Pass, { passed => 1 }, $Fail);
+        $history->accept_results($Pass, { passed => 1 }, $Fail);
     };
     like $@, qr/takes Result objects/;
 }

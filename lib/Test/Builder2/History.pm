@@ -20,7 +20,7 @@ Test::Builder2::History - Manage the history of test results
     my $history = Test::Builder2::History->singleton;
     my $result  = Test::Builder2::Result->new_result( pass => 1 );
 
-    $history->add_test_history( $result );
+    $history->accept_result( $result );
     $history->is_passing;
 
 =head1 DESCRIPTION
@@ -89,16 +89,15 @@ A Test::Builder2::Stack of Result objects.
 =cut
 
 buildstack results => 'Test::Builder2::Result::Base';
-sub add_test_history { shift->results_push(@_) }
 sub accept_result    { shift->results_push(@_) }
-sub accept_results   { shift->results_push(@_) }
+sub accept_results   { shift->results_push(@_) }  # for testing
 sub result_count     { shift->results_count }
 
 before results_push => sub {
    shift->events_push( @_ );
 };
 
-=head2 add_test_history and accept_result
+=head2 accept_result
 
 Add a result object to the end stack, 
 
