@@ -30,8 +30,7 @@ tests(sub {
 sub tests {
     my $new_ok = shift;
 
-    # Pass
-    {
+    note "Pass"; {
         my $result = $new_ok->([ pass => 1 ]);
 
         ok $result->is_pass;
@@ -41,8 +40,7 @@ sub tests {
         ok $result;
     }
 
-    # Fail
-    {
+    note "Fail"; {
         my $result = $new_ok->([ pass => 0 ]);
 
         is $result->type, 'fail';
@@ -50,8 +48,7 @@ sub tests {
     }
 
 
-    # Skip
-    {
+    note "Skip"; {
         my $result = $new_ok->([ pass => 1, directives => [qw(skip)] ]);
 
         is $result->type, 'skip_pass';
@@ -61,8 +58,7 @@ sub tests {
     }
 
 
-    # TODO
-    {
+    note "TODO"; {
         my $result = $new_ok->([ pass => 1, directives => [qw(todo)] ]);
 
         is $result->type, 'todo_pass';
@@ -70,8 +66,7 @@ sub tests {
         ok $result;
     }
 
-    # skip todo
-    {
+    note "skip todo"; {
         my $result = $new_ok->([ pass => 0, directives => [qw(todo skip)] ]);
 
         ok $result, 'Chained skip';
@@ -80,8 +75,7 @@ sub tests {
         ok $result->is_skip;
     }
 
-    # TODO with no message
-    {
+    note "TODO with no message"; {
         my $result = $new_ok->([ pass => 0, directives => [qw(todo)] ]);
 
         ok $result->is_todo(), 'Todo with no message';
@@ -89,8 +83,7 @@ sub tests {
         ok $result;
     }
 
-    # as_hash
-    {
+    note "as_hash"; {
         my $result = $new_ok->([
             pass            => 1,
             description     => 'something something something test result',
