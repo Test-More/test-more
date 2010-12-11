@@ -3,6 +3,8 @@ package Test::Builder2::Result::Base;
 use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 
+with 'Test::Builder2::Event';
+
 my $CLASS = __PACKAGE__;
 
 
@@ -145,7 +147,21 @@ sub get_attributes
 }
 
 
-=head1 METHODS
+=head2 Methods
+
+=head3 event_type
+
+    my $type = $result->event_type;
+
+Returns the type of this Event, for differenciation between other
+Event objects.
+
+The type is "result".
+
+=cut
+
+sub event_type { return "result" }
+
 
 =head3 as_hash
 
