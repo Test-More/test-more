@@ -420,11 +420,15 @@ Here's what Test::Builder2 looks like:
                  '------>| Test::Builder2 |       | Test::Builder |
                          '----------------'       '---------------'
                                       |                  |
-                                      v------------------.
-           .--------------.    .-------------.
-           | TB2::History |<---| TB2::Result |
-           '--------------'    '-------------'
+                                      v                  |
+                               .-------------.           |
+                               | TB2::Result |<----------'
+                               '-------------'
                                       |
+                                      v
+        .--------------.    .-----------------------.    
+        | TB2::History |<---| TB2::EventCoordinator |
+        '--------------'    '-----------------------'
                                       |
     .--------------------------.      |       .---------------------.
     | TB2::Formatter::TAP::v13 |<-----'------>| TB2::Formatter::GUI |
@@ -452,12 +456,15 @@ Test::Builder.  That's ok because Test::Builder has been rewritten in
 terms of Test::Builder2 (more on that below).
 
 Test::Builder2, rather than being a monolith, produces a
-Test::Builder2::Result object for each assert run.  This gets stored
-in a Test::Builder2::History object for possible later use.  It also
-gets handed to a Test::Builder2::Foramtter object, the default is
-Test::Builder2::TAP::v13 which produces TAP version 13.  This is fed
-to a Streamer that prints it to STDOUT and STDERR which is read by
-Test::Harness and made human readable.
+Test::Builder2::Result object for each assert run.  This gets handed
+to the EventCoordinator which hands the Result off to the History,
+Formatter and anyone else who's watching.  Test::Builder and
+Test::Builder2 share the same EventCoordinator and thus the same
+Formatter and History.
+
+History records events and results for possible later use.  The
+Formatter turns events and results into formatted output, by default
+TAP.
 
 Because Test::Builder2 is not monolithic, you can swap out parts.  For
 example, instead of outputting TAP it could instead hand results to a
@@ -472,17 +479,14 @@ produces JUnit XML.
         '-----'                                         '-----'
            |                                               |
            |                                               |
-           |                                               |
-           |                                               |
            v                                               v
-    .-------------.        .--------------.         .-------------.
-    | TB2::Result |------->| TB2::History |<--------| TB2::Result |
-    '-------------'        '--------------'         '-------------'
-           |                                               |
-           |                                               |
-           |                                               |
-           |              .----------------.               |
-           '------------->| TB2::Formatter |<--------------'
+    .-------------.    .-----------------------.     .-------------.
+    | TB2::Result |--->| TB2::EventCoordinator |<----| TB2::Result |
+    '-------------'    '-----------------------'     '-------------'
+                                   |
+                                   v
+                          .----------------.
+                          | TB2::Formatter |
                           '----------------'
                                    |
                                    v
@@ -491,19 +495,21 @@ produces JUnit XML.
                               '--------'
 
 Test::Builder and Test::Builder2 coordinate their actions by sharing
-the same History and Formatter objects.  If you call TB1->ok() it
-produces a Result object which it hands to the History singleton and
-the Formatter singleton.  If you call TB2->ok() it produces a Result
-object which it hands to the same History and Formatter objects.
+the same EventCoordinator which carries around History and Formatter
+objects.  If you call TB1->ok() it produces a Result object which it
+hands to the EventCoordinator which hands it to its History and
+Formatter objects.  If you call TB2->ok() it produces a Result object
+which it hands to the same EventCoordinator.
 
 This allows most of the Test::Builder code to remain the same while
 still coordinating with Test::Builder2.  It also allows radically
 different builders to be made without Test::Builder2 dictating how
 they're to work.
 
-The downside is that roles applied to Test::Builder2 will not effect
-Test::Builder.  Because of this, Test::Builder may become more closely
-coupled with Test::Builder2 in the future.
+If you want to add behaviors to the tests, rather than extending or
+altering the Builder you add an EventWatcher to the EventCoordinator.
+This will be informed when thing happen in the test, can take action
+and even alter the events and results.
 
 
 =head1 Glossary
@@ -521,19 +527,45 @@ it is really the long form B<Test::Builder2::Foo>.
 =head2 builder
 
 Refers to the TB1 or TB2 object central to Perl's testing system.  It
-gathers results, coordinates output, and handles the details of writing test
-functions so test module authors don't have to.
+serves to abstract the details of writing a test library.  A builder
+defines how asserts are written, contains the event coordinator and is
+responsible for making sure it's asserts pass along events to the
+coordinator.
 
 =head2 assert
 
 An assertion is a single statement which is tested.  It corresponds to
 a traditional C<ok> function call.
 
+=head2 event
+
+Anything which happens over the course of the test will generate an
+event.  Examples include starting the test, changing the test plan,
+the result of an assert, and so on.  Events fully describe the test
+suite and they are the B<only> information used by formatters.
+
 =head2 result
 
 The information from a single assert.  Includes things like if it
 passed or failed, if it had any directives, its file and line number,
 and any additional user specified diagnostics.
+
+A result is a special type of event.
+
+=head2 event coordinator
+
+This object gathers events from all the builders that wish to work
+together in the same test suite and passes them along to its event
+watchers.
+
+=head2 event watcher
+
+And event watcher is a thing which does things with events (yes, it's
+supposed to be vague).  Examples include formatters and history.
+Custom event watchers can also be used to alter the behavior of tests (for
+example, die on assert failure) and even the event itself.
+
+Event watchers get their events through an event coordinator.
 
 =head2 directive
 
