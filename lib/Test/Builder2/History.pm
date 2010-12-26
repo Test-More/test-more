@@ -46,7 +46,7 @@ your own history, call create() instead.
 
     my $history = Test::Builder2::History->create;
 
-Creates a new, unique History object with its own Counter.
+Creates a new, unique History object.
 
 =head2 Accessors
 
