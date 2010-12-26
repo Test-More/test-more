@@ -1,4 +1,4 @@
-package Test::Builder2::Event::StartStream;
+package Test::Builder2::Event::StreamStart;
 
 use Test::Builder2::Mouse;
 with 'Test::Builder2::Event';
@@ -6,7 +6,7 @@ with 'Test::Builder2::Event';
 
 =head1 NAME
 
-Test::Builder2::Event::StartStream - Start of a test stream event
+Test::Builder2::Event::StreamStart - Start of a test stream event
 
 =head1 DESCRIPTION
 
@@ -19,15 +19,15 @@ This description is terrible.
 
 =head3 event_type
 
-The event type is C<start stream>.
+The event type is C<stream start>.
 
 =cut
 
-sub event_type { "start stream" }
+sub event_type { "stream start" }
 
 sub as_hash {
     return {
-        event_type => "start stream",
+        event_type => "stream start",
     };
 }
 
