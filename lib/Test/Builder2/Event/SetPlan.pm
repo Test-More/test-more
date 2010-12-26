@@ -52,6 +52,39 @@ has no_plan     =>
   default       => 0
 ;
 
+
+=head3 skip
+
+If true, it indicates that the rest of the asserts in the stream will
+not be executed.  Usually because they would not make sense in the
+current environment (Unix tests on Windows, for example).
+
+No results should follow in this stream.
+
+Defaults to false.
+
+=cut
+
+has skip        =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 0
+;
+
+=head3 skip_reason
+
+The reason the stream has been skipped.
+
+Defaults to empty string.
+
+=cut
+
+has skip_reason =>
+  is            => 'rw',
+  isa           => 'Str',
+  default       => ''
+;
+
 =head3 plan
 
 A hash ref containing any further information about the plan.
@@ -75,7 +108,7 @@ The event type is C<set plan>.
 
 sub event_type { "set plan" }
 
-my @data_methods = qw(plan asserts_expected no_plan event_type);
+my @data_methods = qw(plan asserts_expected no_plan skip skip_reason event_type);
 sub as_hash {
     my $self = shift;
 
