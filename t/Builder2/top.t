@@ -3,9 +3,10 @@
 use strict;
 use warnings;
 
-use Test::More tests => 4;
-use Test::Builder2;
+BEGIN { require 't/test.pl' }
+plan tests => 4;
 
+use Test::Builder2;
 my $tb = Test::Builder2->create;
 
 sub outer {
@@ -25,10 +26,10 @@ sub inner {
     return $ret;
 }
 
-is_deeply( $tb->top_stack->asserts, [], "top_stack() empty" );
+ok eq_array($tb->top_stack->asserts, []), "top_stack() empty";
 
 #line 29
-is_deeply( [inner()], ["inner at $0 line 29"], "from_top() shallow" );
-is_deeply( [outer()], ["outer at $0 line 30", "inner at $0 line 30"], "from_top() deep" );
+ok eq_array([inner()], ["inner at $0 line 29"]), "from_top() shallow";
+ok eq_array([outer()], ["outer at $0 line 30", "inner at $0 line 30"]), "from_top() deep";
 
-is_deeply( $tb->top_stack->asserts, [], "top_stack() still empty" );
+ok eq_array( $tb->top_stack->asserts, []), "top_stack() still empty";

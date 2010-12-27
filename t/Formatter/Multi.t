@@ -2,11 +2,9 @@
 
 use strict;
 use lib 't/lib';
+BEGIN { require 't/test.pl' }
 
-use Test::More;
-
-use Test::Builder2;
-use Test::Builder2::Result;
+use Test::Builder2::Events;
 
 use_ok 'Test::Builder2::Formatter::Multi';
 use_ok 'Test::Builder2::Formatter::PlusMinus';
@@ -19,15 +17,17 @@ my $posix = Test::Builder2::Formatter::POSIX->create(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
 my $multi = Test::Builder2::Formatter::Multi->create;
-is_deeply $multi->formatters, [];
+eq_array $multi->formatters, [];
 
 $multi->add_formatters($pm, $posix);
-is_deeply $multi->formatters, [$pm, $posix];
+eq_array $multi->formatters, [$pm, $posix];
 
 
 # Begin
 {
-    $multi->begin;
+    $multi->accept_event(
+        Test::Builder2::Event::StreamStart->new
+    );
     is $pm->streamer->read, "";
     is $posix->streamer->read, "Running $0\n";
 }
@@ -72,7 +72,9 @@ is_deeply $multi->formatters, [$pm, $posix];
 
 # End
 {
-    $multi->end();
+    $multi->accept_event(
+        Test::Builder2::Event::StreamEnd->new
+    );
     is $pm->streamer->read, "\n";
     is $posix->streamer->read, "";
 }

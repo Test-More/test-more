@@ -32,68 +32,111 @@ plan is already set, but it doesn't.
 =cut
 
 {
-    package TB2::NoWarnings::Role;
+   package TB2::NoWarnings::WarningsWatcher;
 
-    use Carp;
-    use Test::Builder2::Mouse::Role;
+   use Test::Builder2::Mouse;
+   with 'Test::Builder2::EventWatcher';
 
-    my $Started = 0;    # Is our warning handler set up?
-    my @Warnings;       # Storage for the warnings
+   has builder  =>
+     is                 => 'rw',
+     isa                => 'Test::Builder2',
+     default            => sub {
+         require Test::Builder2;
+         return Test::Builder2->singleton;
+     }
+   ;
 
-    # Our warning handler, so we can tell if its still there at the end.
-    my $sig_warn = sub {
-        push @Warnings, @_;
-        warn @_;
-    };
+   has warnings_seen =>
+     is                 => 'rw',
+     isa                => 'ArrayRef',
+     default            => sub { [] }
+   ;
 
-    before stream_start => sub {
-        $SIG{__WARN__} = $sig_warn;
-        $Started = 1;
+   has quiet_warnings =>
+     is                 => 'rw',
+     isa                => 'Bool',
+     default            => 0
+   ;
+
+   my %event_handlers = (
+       'stream start'   => 'accept_stream_start',
+       'stream end'     => 'accept_stream_end',
+       'set plan'       => 'accept_set_plan'
+   );
+
+   sub accept_event {
+       my $self  = shift;
+       my $event = shift;
+
+       my $event_type = $event->event_type;
+       my $handler = $event_handlers{$event_type};
+       return unless $handler;
+
+       $self->$handler($event);
+
+       return;
+   }
+
+   sub accept_stream_start {
+       my $self = shift;
+
+       $SIG{__WARN__} = sub {
+           push @{$self->warnings_seen}, @_;
+           warn @_ unless $self->quiet_warnings;
+       };
+
+       return;
+   }
+
+   sub accept_set_plan {
+        my $self  = shift;
+        my $event = shift;
+
+        my $want = $event->asserts_expected;
+        $event->asserts_expected( $want + 1 ) if $want;
+
         return;
     };
 
-    around set_plan => sub {
-        my $orig = shift;
-        my $self = shift;
-        my %args = @_;
-
-        $args{tests}++ if defined $args{tests};
-
-        $self->$orig(%args);
-    };
-
-    before stream_end => sub {
+    sub accept_stream_end {
         my $self = shift;
 
-        return unless $Started;
+        my $warnings = $self->warnings_seen;
+        $self->builder
+             ->ok( scalar @$warnings, "no warnings" )
+             ->diagnostic([
+                 warnings => $warnings
+             ]);
 
-        $self->ok( !@Warnings, "no warnings" )->diagnostic([
-            warnings => \@Warnings
-        ]);
-
-        if( $SIG{__WARN__} eq $sig_warn ) {
-            # Remove our warning handler
-            delete $SIG{__WARN__} if $SIG{__WARN__} eq $sig_warn;
-        }
-        else {
-            warn "TB2::NoWarnings's \$SIG{__WARN__} handler was replaced, all warnings may not have been caught.\n";
-        }
+        remove_warning_handler();
 
         return;
     };
+
+    sub remove_warning_handler {
+        delete $SIG{__WARN__};
+    }
 }
 
-my $builder = Test::Builder2->singleton;
 
-croak "TB2::NoWarnings must be used before the plan is set"
-  if $builder->planned_tests;
+{
+    package TB2::NoWarnings;
 
-TB2::NoWarnings::Role->meta->apply( $builder );
+    use strict;
+    use warnings;
 
+    sub import {
+        no_warnings();
+    }
 
-# XXX Hack until TB2 can do this itself
-END {
-    Test::Builder2->singleton->stream_end;
+    sub no_warnings {
+        my $watcher = TB2::NoWarnings::WarningsWatcher->new(
+            @_
+        );
+        $watcher->builder->event_coordinator->add_early_watchers($watcher);
+
+        return;
+    }
 }
 
 1;

@@ -1,7 +1,5 @@
 package Test::Builder2::Result;
 
-use strict;
-
 use Carp;
 use Test::Builder2::Mouse;
 use Test::Builder2::Mouse::Util::TypeConstraints qw(enum);

@@ -5,7 +5,8 @@
 use strict;
 use lib 't/lib';
 
-use Test::More;
+BEGIN { require 't/test.pl' }
+
 use Test::Builder2;
 use Test::Builder2::Formatter::POSIX;
 
@@ -15,7 +16,12 @@ my $posix = Test::Builder2::Formatter::POSIX->create(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
 
-$test->set_formatter($posix);
+$test->event_coordinator->formatters([$posix]);
+
+$test->stream_start;
+is $posix->streamer->read('output'), <<"END";
+Running $0
+END
 
 $test->ok(1, "this is a pass");
 is $posix->streamer->read('output'), <<"END";
@@ -25,4 +31,4 @@ END
 $test->ok(0, "this is a fail");
 is $posix->streamer->read('output'), "FAIL: this is a fail\n";
 
-done_testing(2);
+done_testing(3);

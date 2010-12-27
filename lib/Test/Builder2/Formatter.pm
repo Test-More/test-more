@@ -88,49 +88,92 @@ sub make_singleton {
 
 Creates a new formatter object to feed results to.
 
+You want to call this on a subclass.
 
-=head3 begin
 
-  $formatter->begin;
-  $formatter->begin(%plan);
+=head3 stream_depth
 
-Indicates that testing is going to begin.  Gives $formatter the
-opportunity to formatter a plan, do setup or formatter opening tags and
-headers.
+  my $stream_depth = $formatter->stream_depth;
 
-A %plan can be given, but there are currently no common attributes.
+Returns how many C<stream start> events without C<stream end> events
+have been seen.
 
-C<begin()> will only happen once per formatter instance.  Subsequent
-calls will be ignored.  This helps coordinating multiple clients all
-using the same formatter, they can all call C<begin()>.
+For example...
 
-Do not override C<begin()>.  Override C<INNER_begin()>.
+    stream start
 
-=head3 has_begun
+Would indicate a level of 1.
 
-  my $has_begun = $formatter->has_begun;
+    stream start
+      stream start
+      stream end
+      stream start
 
-Returns whether begin() has been called.
+Would indicate a level of 2.
+
+A value of 0 indiciates the Formatter is not in a stream.
+
+A negative value will throw an exception.
 
 =cut
 
-has has_begun =>
+has stream_depth =>
   is            => 'rw',
-  isa           => 'Bool',
+  isa           => 'Test::Builder2::Positive_Int',
   default       => 0
 ;
 
-sub begin {
+
+=head3 stream_depth_inc
+
+=head3 stream_depth_dec
+
+Increment and decrement the C<stream_depth>.
+
+=cut
+
+sub stream_depth_inc {
     my $self = shift;
 
-    return if $self->has_begun;
+    $self->stream_depth( $self->stream_depth + 1 );
+}
 
-    $self->INNER_begin(@_);
-    $self->has_begun(1);
+sub stream_depth_dec {
+    my $self = shift;
+
+    $self->stream_depth( $self->stream_depth - 1 );
+}
+
+
+=head3 accept_event
+
+  $formatter->accept_event($event);
+
+Accept Events as they happen.
+
+It will increment and decrement C<stream_depth> as C<stream start> and
+C<stream end> events are seen.
+
+Do not override C<accept_event()>.  Override C<INNER_accept_event()>.
+
+=cut
+
+sub accept_event {
+    my $self  = shift;
+    my $event = shift;
+
+    my $type = $event->event_type;
+    if( $type eq 'stream start' ) {
+        $self->stream_depth_inc;
+    }
+    elsif( $type eq 'stream end' ) {
+        $self->stream_depth_dec;
+    }
+
+    $self->INNER_accept_event($event);
 
     return;
 }
-
 
 =head3 accept_result
 
@@ -138,62 +181,18 @@ sub begin {
 
 Formats a $result (an instance of L<Test::Builder2::Result>).
 
-It is an error to call accept_result() after end().
+It is an error to call accept_result() outside a stream.
 
 Do not override C<accept_result()>.  Override C<INNER_accept_result()>.
 
 =cut
 
-# Until we work out how to turn begin() and end() into accept_event()
-# actions.
-sub accept_event {
-    shift->accept_result(@_);
-}
-
 sub accept_result {
     my $self = shift;
 
-    croak "accept_result() called after end()" if $self->has_ended;
+    croak "accept_result() called outside a stream" if !$self->stream_depth;
 
     $self->INNER_accept_result(@_);
-
-    return;
-}
-
-
-=head3 end
-
-  $formatter->end;
-  $formatter->end(%plan);
-
-Indicates that testing is done.  Gives $formatter the opportunity to
-clean up, output closing tags, save the results or whatever.
-
-No further results should be formatted after end().
-
-Do not override C<end()>.  Override C<INNER_end()>.
-
-=head3 has_ended
-
-  my $has_ended = $formatter->has_ended;
-
-Returns whether end() has been called.
-
-=cut
-
-has has_ended =>
-  is            => 'rw',
-  isa           => 'Bool',
-  default       => 0
-;
-
-sub end {
-    my $self = shift;
-
-    return if $self->has_ended;
-
-    $self->INNER_end(@_);
-    $self->has_ended(1);
 
     return;
 }
@@ -208,21 +207,6 @@ Outputs C<@text> to the named $destination.
 C<@text> is treated like C<print>, so it is simply concatenated.
 
 In reality, this is a hand off to C<< $formatter->streamer->write >>.
-
-
-=head2 Virtual Methods
-
-These methods must be defined by the subclasser.
-
-Do not override begin, accept_result and end.  Override these instead.
-
-=head3 INNER_begin
-
-=head3 INNER_accept_result
-
-=head3 INNER_end
-
-These implement the guts of begin, accept_result and end.
 
 =cut
 

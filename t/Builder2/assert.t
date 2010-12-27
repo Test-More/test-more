@@ -5,29 +5,34 @@ use strict;
 {
     package TB2::Assert;
 
-    require Test::Simple;
-    use Test::Builder2::Mouse::Role;
+    use Test::Builder2::Mouse;
+    with "Test::Builder2::EventWatcher";
 
-    # Die after assert_end to give TB2 the chance to
-    # print the result
-    after assert_end => sub {
+    sub accept_event {}
+
+    sub accept_result {
         my $self   = shift;
         my $result = shift;
 
         # Have to check that we're not in an assert because assert_end()
         # would have already popped the stack.
-        die "Test said to die" if !$self->top_stack->in_assert and $result->name =~ /\b die \b/x;
-    };
+        die "Test said to die" if $result->name =~ /\b die \b/x;
 
-    TB2::Assert->meta->apply(Test::Builder2->singleton);
+        return;
+    };
 }
 
+Test::Builder2->singleton->event_coordinator->add_late_watchers( TB2::Assert->new );
 
-use Test::Simple tests => 3;
+use Test::Simple tests => 4;
 ok(1, "pass");
 
-ok( !eval {
-    ok(1, "die die die!");
-    1;
-}, "assert() dies on fail");
+ok(
+    !eval {
+        ok(1, "die die die!");
+        1;
+    },
+    "assert() dies on fail"
+);
+ok $@ =~ /^Test said to die/, "right error message";
 

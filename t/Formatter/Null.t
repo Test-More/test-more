@@ -3,18 +3,17 @@
 use strict;
 use warnings;
 
-use Test::More;
-use Test::Builder2::Result;
-
-use_ok "Test::Builder2::Formatter::Null";
+BEGIN { require 't/test.pl' }
+use Test::Builder2::Events;
+use Test::Builder2::Formatter::Null;
 
 my $null = Test::Builder2::Formatter::Null->create(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
 
 {
-    $null->begin;
-    is $null->streamer->read, "", "begin()";
+    $null->accept_event( Test::Builder2::Event::StreamStart->new );
+    is $null->streamer->read, "", "stream start";
 }
 
 {
@@ -30,7 +29,7 @@ my $null = Test::Builder2::Formatter::Null->create(
 }
 
 {
-    $null->end;
+    $null->accept_event( Test::Builder2::Event::StreamEnd->new );
     is(
         $null->streamer->read,
         "",

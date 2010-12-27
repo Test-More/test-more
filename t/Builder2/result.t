@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More 'no_plan';
+BEGIN { require 't/test.pl' }
 
 {
     package TB2::Formatter::Noop;
@@ -92,7 +92,7 @@ sub tests {
             id              => 0,
         ]);
 
-        is_deeply $result->as_hash, {
+        ok eq_hash $result->as_hash, {
             type            => 'pass',
             description     => 'something something something test result',
             test_number     => 23,
@@ -101,3 +101,5 @@ sub tests {
         }, 'as_hash';
     }
 }
+
+done_testing;

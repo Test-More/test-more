@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+BEGIN { require "t/test.pl" }
 
 use Test::Builder2::Counter;
 my $CLASS = "Test::Builder2::Counter";

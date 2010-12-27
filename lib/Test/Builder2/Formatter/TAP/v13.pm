@@ -10,12 +10,6 @@ use Test::Builder2::threads::shared;
 
 extends 'Test::Builder2::Formatter';
 
-has nesting_level =>
-  is            => 'rw',
-  isa           => 'Test::Builder2::Positive_Int',
-  default       => 0
-;
-
 has indent_nesting_with =>
   is            => 'rw',
   isa           => 'Str',
@@ -44,9 +38,8 @@ Test::Builder2::Formatter::TAP::v13 - Formatter as TAP version 13
   use Test::Builder2::Formatter::TAP::v13;
 
   my $formatter = Test:::Builder2::Formatter::TAP::v13->new;
-  $formatter->begin();
+  $formatter->accept_event($event);
   $formatter->accept_result($result);
-  $formatter->end($plan);
 
 
 =head1 DESCRIPTION
@@ -83,7 +76,7 @@ sub _add_indentation {
     my $self = shift;
     my $output = shift;
 
-    my $level = $self->nesting_level;
+    my $level = $self->stream_depth - 1;
     return unless $level;
 
     my $indent = $self->indent_nesting_with x $level;
@@ -143,56 +136,111 @@ has use_numbers =>
    default => 1,
 ;
 
-=head3 begin
+my %event_dispatch = (
+    "stream start"      => "accept_stream_start",
+    "stream end"        => "accept_stream_end",
+    "set plan"          => "accept_set_plan",
+);
 
-The %plan can be one and only one of...
+sub INNER_accept_event {
+    my $self  = shift;
+    my $event = shift;
 
-  tests => $number_of_tests
+    my $type = $event->event_type;
+    my $method = $event_dispatch{$type};
+    return unless $method;
 
-  no_plan => 1
-
-  skip_all => $reason
-
-=cut
-
-sub INNER_begin {
-    my $self = shift;
-    my %args = @_;
-
-    croak "begin() takes only one pair of arguments" if keys %args > 1;
-
-    $self->out("TAP version 13\n");
-
-    if( exists $args{tests} ) {
-        $self->out("1..$args{tests}\n");
-    }
-    elsif( exists $args{skip_all} ) {
-        $self->out("1..0 # skip $args{skip_all}");
-    }
-    elsif( exists $args{no_plan} ) {
-        # ...do nothing...
-    }
-    elsif( keys %args == 1 ) {
-        croak "Unknown argument @{[ keys %args ]} to begin()";
-    }
-    else {
-        # ...do nothing...
-    }
+    $self->$method($event);
 
     return;
 }
 
-=head3 result
+
+sub accept_stream_start {
+    my $self = shift;
+
+    # Only output the TAP header once
+    $self->out("TAP version 13\n") if $self->stream_depth == 1;
+
+    return;
+}
+
+
+sub accept_stream_end {
+    my $self = shift;
+
+    $self->output_plan unless $self->did_output_plan;
+#    $self->do_ending if $self->stream_depth == 0;
+
+    return;
+}
+
+
+has plan =>
+  is            => 'rw',
+  isa           => 'Object'
+;
+
+sub accept_set_plan {
+    my $self  = shift;
+    my $event = shift;
+
+    croak "'set plan' event outside of a stream" if !$self->stream_depth;
+
+    $self->plan( $event );
+
+    # TAP only allows a plan at the very start or the very end.
+    # If we've already seen some results, save it for the end.
+    $self->output_plan unless $self->seen_results;
+
+    return;
+}
+
+
+has did_output_plan =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 0
+;
+
+sub output_plan {
+    my $self  = shift;
+    my $plan = $self->plan;
+
+    croak "No plan was seen" if !$plan;
+
+    if( $plan->skip ) {
+        my $reason = $plan->skip_reason;
+        $self->out("1..0 # skip $reason");
+    }
+    elsif( $plan->no_plan ) {
+        # ...do nothing...
+    }
+    elsif( my $expected = $plan->asserts_expected ) {
+        $self->out("1..$expected\n");
+    }
+
+    $self->did_output_plan(1);
+
+    return;
+}
+
+
+=head3 INNER_accept_result
 
 Takes a C<Test::Builder2::Result> as an argument and displays the
 result details.
 
 =cut
 
-
+has seen_results =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 0
+;
 
 sub INNER_accept_result {
-    my $self = shift;
+    my $self  = shift;
     my $result = shift;
 
     # FIXME: there is a lot more detail in the 
@@ -225,6 +273,8 @@ sub INNER_accept_result {
         # XXX This should also emit structured diagnostics
         $self->_comment_diagnostics($result);
     }
+
+    $self->seen_results(1);
 
     return;
 }
@@ -302,32 +352,5 @@ sub _escape {
     return;
 }
 
-=head3 end
-
-Similar to C<begin()>, it takes either no or one and only one pair of arguments.
-
-  tests => $number_of_tests
-
-=cut
-
-sub INNER_end {
-    my $self = shift;
-
-    my %args = @_;
-
-    croak "end() takes only one pair of arguments" if keys %args > 1;
-
-    if( exists $args{tests} ) {
-        $self->out("1..$args{tests}\n");
-    }
-    elsif( keys %args == 1 ) {
-        croak "Unknown argument @{[ keys %args ]} to end()";
-    }
-    else {
-        # ...do nothing...
-    }
-
-    return;    
-}
 
 1;

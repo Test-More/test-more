@@ -1,56 +1,39 @@
 #!/usr/bin/perl
 
-# A demonstration of how you'd implement Test::NoWarnings in TB2
+# Test the NoWarnings example
 
 use strict;
 use warnings;
 
-BEGIN {
-    package Test::NoWarnings;
+BEGIN { require "t/test.pl" }
 
-    require Test::Simple;
-    use Test::Builder2::Mouse::Role;
+# Simulate running a test with NoWarnings
+{
+    require Test::Builder2::Streamer::Debug;
+    require Test::Builder2;
+    my $builder = Test::Builder2->singleton;
+    $builder->formatter->streamer(Test::Builder2::Streamer::Debug->new);
 
-    my @Warnings;
 
-    before stream_start => sub {
-        $SIG{__WARN__} = sub {
-            push @Warnings, @_;
-        };
-    };
+    # Turn on no warnings, but silence them so we don't mess up the test output
+    use lib 'examples/TB2/lib/';
+    require TB2::NoWarnings;
+    TB2::NoWarnings::no_warnings( quiet_warnings => 1 );
 
-    around "set_plan" => sub {
-        my $orig = shift;
-        my $self = shift;
-        my %args = @_;
 
-        $args{tests}++ if defined $args{tests};
+    # Here's the test
+    $builder->stream_start();
+    $builder->set_plan(
+        tests       => 2
+    );
+    $builder->ok(1, "pass 1");
+    warn "Wibble";
+    $builder->ok(1, "pass 2");
+    $builder->stream_end();
 
-        $self->$orig(%args);
-    };
 
-    before stream_end => sub {
-        my $self = shift;
-        $self->ok( !@Warnings, "no warnings" );
-    };
-
-    Test::NoWarnings->meta->apply(Test::Builder2->singleton);
+    # Test the result
+    plan tests => 2;
+    ok $builder->formatter->counter->get == 3, "count correct";
+    ok $builder->history->results->[2], "no warnings test failed properly";
 }
-
-require Test::Builder2::Streamer::Debug;
-my $builder = Test::Builder2->singleton;
-$builder->formatter->streamer(Test::Builder2::Streamer::Debug->new);
-
-require Test::Simple;
-Test::Simple->import( tests => 2 );
-
-ok(1, "pass 1");
-warn "Wibble";
-ok(1, "pass 2");
-
-# XXX TB2 doesn't implicitly call stream_end yet
-$builder->stream_end();
-
-print "1..2\n";
-print "ok 1 - count correct\n" if $builder->formatter->counter->get == 3;
-print "ok 2 - nowarnings test failed properly\n" if !$builder->history->results->[2];

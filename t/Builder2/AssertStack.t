@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+BEGIN { require "t/test.pl" }
 
 use Test::Builder2::AssertRecord;
 use Test::Builder2::AssertStack;
@@ -11,7 +11,7 @@ use Test::Builder2::AssertStack;
 {
     note("A fresh stack");
     my $stack = new_ok "Test::Builder2::AssertStack";
-    is_deeply $stack->asserts, [];
+    ok eq_array $stack->asserts, [];
     is $stack->top, undef;
     ok !$stack->at_top;
     ok !$stack->in_assert;
@@ -41,13 +41,13 @@ use Test::Builder2::AssertStack;
     ok $stack->in_assert;
 
     note("Pop it off");
-    is_deeply $stack->pop, $bar;
+    ok eq_hash $stack->pop, $bar;
     is $stack->from_top("This ", "and"), "This and at foo.t line 23";
     ok $stack->at_top;
     ok $stack->in_assert;
 
     note("Pop off the last one");
-    is_deeply $stack->pop, $foo;
+    ok eq_hash $stack->pop, $foo;
     ok !eval { $stack->from_top("This ", "and") }, "from_top asserts when there's no asserts";
     ok !$stack->at_top;
     ok !$stack->in_assert;

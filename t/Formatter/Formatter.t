@@ -3,7 +3,9 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::Builder2::Events;
+
+BEGIN { require "t/test.pl" }
 
 {
     package My::Formatter;
@@ -11,64 +13,73 @@ use Test::More;
 
     extends 'Test::Builder2::Formatter';
 
-    has ['begin_called', 'result_called', 'end_called'] =>
+    has ['events', 'results'] =>
         is      => 'rw',
         isa     => 'Int',
         default => 0
     ;
 
-    sub INNER_begin {
+    sub INNER_accept_event {
         my $self = shift;
-        $self->begin_called( $self->begin_called() + 1 );
+        $self->events( $self->events + 1 );
     }
 
     sub INNER_accept_result {
         my $self = shift;
-        $self->result_called( $self->result_called() + 1 );
-    }
-
-    sub INNER_end {
-        my $self = shift;
-        $self->end_called( $self->end_called() + 1 );
-    }
-
-    sub check {
-        my $self = shift;
-        my($begin, $result, $end, $name) = @_;
-
-        ::is $self->begin_called, $begin,         "begin  - $name";
-        ::is $self->result_called, $result,       "result - $name";
-        ::is $self->end_called, $end,             "end    - $name";
+        $self->results( $self->results + 1 );
     }
 }
 
 
 my $formatter = My::Formatter->create;
-is $formatter->has_begun, 0;
-is $formatter->has_ended, 0;
+is $formatter->stream_depth, 0;
+
+ok !eval {
+    $formatter->accept_result;
+}, "can't accept a result outside a stream";
+like $@, qr{^\Qaccept_result() called outside a stream\E};
+is $formatter->stream_depth, 0;
+
+$formatter->accept_event(
+    Test::Builder2::Event::StreamStart->new
+);
+is $formatter->events, 1;
+is $formatter->stream_depth, 1;
+
+$formatter->accept_event(
+    Test::Builder2::Event::StreamStart->new
+);
+is $formatter->events, 2;
+is $formatter->stream_depth, 2;
 
 $formatter->accept_result;
-$formatter->check(0, 1, 0, "result() before begin()");
+$formatter->results, 1;
 
-$formatter->begin;
-$formatter->check(1, 1, 0, "begin()");
-is $formatter->has_begun, 1;
+$formatter->accept_event(
+    Test::Builder2::Event::StreamEnd->new
+);
+is $formatter->events, 3;
+is $formatter->stream_depth, 1;
 
-$formatter->begin;
-$formatter->check(1, 1, 0, "begin() again");
+$formatter->accept_event(
+    Test::Builder2::Event::StreamEnd->new
+);
+is $formatter->events, 4;
+is $formatter->stream_depth, 0;
 
-$formatter->accept_result;
-$formatter->check(1, 2, 0, "Another result()");
+ok !eval {
+    $formatter->accept_event(
+        Test::Builder2::Event::StreamEnd->new
+    );
+};
+is $formatter->stream_depth, 0;
 
-$formatter->end;
-$formatter->check(1, 2, 1, "end()");
-is $formatter->has_ended, 1;
 
-$formatter->end;
-$formatter->check(1, 2, 1, "end() again");
-
-ok !eval { $formatter->accept_result; 1; }, "result() after end()";
-like $@, qr/^\Qaccept_result() called after end()/;
+ok !eval {
+    $formatter->accept_result;
+}, "can't accept a result outside a stream";
+like $@, qr{^\Qaccept_result() called outside a stream\E};
+is $formatter->stream_depth, 0;
 
 
 done_testing();

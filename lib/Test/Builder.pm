@@ -10,6 +10,9 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 # Conditionally loads threads::shared and fixes up old versions
 use Test::Builder2::threads::shared;
 
+use Test::Builder2::Events;
+use Test::Builder2::EventCoordinator;
+
 
 =head1 NAME
 
@@ -73,11 +76,8 @@ sub _make_default {
 
     my $obj = bless {}, $class;
 
-    require Test::Builder2::Formatter;
-    require Test::Builder2::History;
     $obj->reset(
-        History   => shared_clone(Test::Builder2::History->singleton),
-        Formatter => Test::Builder2::Formatter->singleton,
+        EventCoordinator   => Test::Builder2::EventCoordinator->singleton
     );
 
     return $obj;
@@ -142,18 +142,18 @@ sub child {
     $child->reset;
     $child->$_( $self->$_() ) for qw(output failure_output todo_output);
 
-    # Add to our indentation
-    $child->_indent( $self->_indent . '    ' );
-    $child->{Formatter}->nesting_level( $self->{Formatter}->nesting_level + 1 );
-    
     $child->{$_} = $self->{$_} foreach qw{Out_FH Todo_FH Fail_FH};
     if ($parent_in_todo) {
         # The entire subtest is considered TODO.  Don't make any of its failure
         # diagnostics visible to the user.
         $child->{Fail_FH} = $self->{Todo_FH};
-        my $streamer = $child->{Formatter}->streamer;
+        my $streamer = $child->event_coordinator->formatter->[0]->streamer;
         $streamer->error_fh( $streamer->output_fh );
     }
+
+    $child->event_coordinator->post_event(
+        Test::Builder2::Event::StreamStart->new
+    );
 
     # This will be reset in finalize. We do this here lest one child failure
     # cause all children to fail.
@@ -288,7 +288,7 @@ sub finalize {
     if ( $self->{Skip_All} ) {
         $self->parent->skip($self->{Skip_All});
     }
-    elsif ( not @{ $self->{History}->results } ) {
+    elsif ( not @{ $self->history->results } ) {
         $self->parent->ok( 0, sprintf q[No tests run for subtest "%s"], $self->name );
     }
     else {
@@ -378,19 +378,15 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Child_Name}   = undef;
     $self->{Indent}     ||= '';
 
-    require Test::Builder2::History;
-    require Test::Builder2::Result;
-    $self->{History} = $overrides{History} || shared_clone(Test::Builder2::History->create);
-
-    require Test::Builder::Formatter::TAP;
-    $self->{Formatter} = $overrides{Formatter} || Test::Builder::Formatter::TAP->create;
-
     $self->{Exported_To}    = undef;
     $self->{Expected_Tests} = 0;
 
     $self->{Skip_All} = 0;
 
-    $self->{Formatter}->use_numbers(1);
+    $self->{EventCoordinator} = Test::Builder2::EventCoordinator->create(
+        formatters => [Test::Builder2::Formatter::TAP->create]
+    );
+    $self->formatter->use_numbers(1);
 
     $self->{No_Header} = 0;
     $self->{No_Ending} = 0;
@@ -404,6 +400,19 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     return;
 }
+
+sub event_coordinator {
+    return $_[0]->{EventCoordinator};
+}
+
+sub formatter {
+    return $_[0]->event_coordinator->formatters->[0];
+}
+
+sub history {
+    return $_[0]->event_coordinator->histories->[0];
+}
+
 
 =back
 
@@ -738,7 +747,7 @@ sub ok {
     # store, so we turn it into a boolean.
     $test = $test ? 1 : 0;
 
-    lock $self->{History};
+    lock $self->history;
 
     # In case $name is a string overloaded object, force it to stringify.
     $self->_unoverload_str( \$name );
@@ -768,9 +777,7 @@ ERR
 
     # Store the Result in history making sure to make it thread safe
     $result = shared_clone($result);
-    $self->{History}->accept_result( $result );
-
-    $self->{Formatter}->accept_result($result);
+    $self->event_coordinator->post_result($result);
 
     $self->is_passing(0) unless $test || $self->in_todo;
 
@@ -1161,7 +1168,7 @@ sub skip {
     $why ||= '';
     $self->_unoverload_str( \$why );
 
-    lock( $self->{History} );
+    lock( $self->history );
 
     my($pack, $file, $line) = $self->caller;
     my $result = Test::Builder2::Result->new_result(
@@ -1172,9 +1179,7 @@ sub skip {
         location  => $file,
     );
     $result = shared_clone($result);
-    $self->{History}->accept_result( $result );
-
-    $self->{Formatter}->accept_result($result);
+    $self->event_coordinator->post_result( $result );
 
     return 1;
 }
@@ -1195,7 +1200,7 @@ sub todo_skip {
     my( $self, $why ) = @_;
     $why ||= '';
 
-    lock( $self->{History} );
+    lock( $self->history );
 
     my($pack, $file, $line) = $self->caller;
     my $result = Test::Builder2::Result->new_result(
@@ -1206,9 +1211,7 @@ sub todo_skip {
         id              => $line,
     );
     $result = shared_clone($result);
-    $self->{History}->accept_result( $result );
-
-    $self->{Formatter}->accept_result($result);
+    $self->event_coordinator->post_result( $result );
 
     return 1;
 }
@@ -1470,10 +1473,11 @@ Defaults to on.
 sub use_numbers {
     my( $self, $use_nums ) = @_;
 
+    my $formatter = $self->formatter;
     if( defined $use_nums ) {
-        $self->{Formatter}->use_numbers($use_nums);
+        $formatter->use_numbers($use_nums);
     }
-    return $self->{Formatter}->use_numbers;
+    return $formatter->use_numbers;
 }
 
 =item B<no_diag>
@@ -1713,7 +1717,7 @@ sub output {
     if( defined $fh ) {
         $fh = $self->_new_fh($fh);
         $self->{Out_FH} = $fh;
-        $self->{Formatter}->streamer->output_fh($fh);
+        $self->formatter->streamer->output_fh($fh);
     }
     return $self->{Out_FH};
 }
@@ -1724,7 +1728,7 @@ sub failure_output {
     if( defined $fh ) {
         $fh = $self->_new_fh($fh);
         $self->{Fail_FH} = $fh;
-        $self->{Formatter}->streamer->error_fh($fh);
+        $self->formatter->streamer->error_fh($fh);
     }
     return $self->{Fail_FH};
 }
@@ -1905,10 +1909,10 @@ can erase history if you really want to.
 sub current_test {
     my( $self, $num ) = @_;
 
-    my $counter = $self->{Formatter}->counter;
+    my $counter = $self->formatter->counter;
 
     if( defined $num ) {
-        my $history = $self->{History};
+        my $history = $self->history;
 
         lock( $counter );
         lock( $history );
@@ -1984,7 +1988,7 @@ Of course, test #1 is $tests[0], etc...
 sub summary {
     my($self) = shift;
 
-    return map { $_->is_fail ? 0 : 1 } @{$self->{History}->results};
+    return map { $_->is_fail ? 0 : 1 } @{$self->history->results};
 }
 
 =item B<details>
@@ -2038,7 +2042,7 @@ result in this structure:
 
 sub details {
     my $self = shift;
-    return map { $self->_result_to_hash($_) } @{$self->{History}->results};
+    return map { $self->_result_to_hash($_) } @{$self->history->results};
 }
 
 sub _result_to_hash {
@@ -2275,7 +2279,7 @@ sub _sanity_check {
     my $self = shift;
 
     $self->_whoa( $self->current_test < 0, 'Says here you ran a negative number of tests!' );
-    $self->_whoa( $self->current_test != @{ $self->{History}->results },
+    $self->_whoa( $self->current_test != @{ $self->history->results },
         'Somehow you got a different number of results than tests ran!' );
 
     return;
@@ -2358,7 +2362,7 @@ sub _ending {
         return;
     }
     # Figure out if we passed or failed and print helpful messages.
-    my $test_results = $self->{History}->results;
+    my $test_results = $self->history->results;
     if(@$test_results) {
         # The plan?  We have no plan.
         if( $self->{No_Plan} ) {

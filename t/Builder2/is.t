@@ -42,7 +42,7 @@ my $tb = TB2::More->Builder;
 
     # Isolate the builder
     require Test::Builder2::Streamer::Debug;
-    $tb->set_history( Test::Builder2::History->create );
+    $tb->event_coordinator->histories([Test::Builder2::History->create]);
     $tb->formatter->streamer( Test::Builder2::Streamer::Debug->new );
 
     TB2::More->import( tests => 1 );
@@ -52,8 +52,8 @@ my $tb = TB2::More->Builder;
 }
 
 
-$tb->set_history( Test::Builder2::History->singleton );
-is $tb->formatter->streamer->read_all, <<"END";
+
+is $tb->formatter->streamer->read_all, <<"END", "proper failure output from is()";
 TAP version 13
 1..1
 not ok 1 - is 23 eq 42 from is

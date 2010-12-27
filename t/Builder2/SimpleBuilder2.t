@@ -5,21 +5,21 @@ use Test::Builder2;
 use Test::Builder2::Result;
 use lib 't/lib';
 
-use Test::More;
+BEGIN { require 't/test.pl' }
 
 use Test::Builder2::Formatter::TAP;
 my $tap = Test::Builder2::Formatter::TAP->create({
-  streamer_class => 'Test::Builder2::Streamer::Debug',
+    streamer_class => 'Test::Builder2::Streamer::Debug',
 });
 
-my $builder = Test::Builder2->create(
-    formatter => $tap,
-    history   => Test::Builder2::History->create,
-);
+my $builder = Test::Builder2->create;
 isa_ok $builder, "Test::Builder2";
 
+$builder->event_coordinator->formatters([$tap]);
+
 {
-    $builder->stream_start(tests => 3);
+    $builder->stream_start;
+    $builder->set_plan( tests => 3 );
     is($tap->streamer->read('out'), "TAP version 13\n1..3\n", 'Simple builder output');
 }
 
@@ -39,7 +39,7 @@ isa_ok $builder, "Test::Builder2";
     {
         $result->diagnostic([error => "we really made a fine mess this time"]);
     }
-    is_deeply($result->diagnostic, [error => "we really made a fine mess this time"], 
+    ok eq_array($result->diagnostic, [error => "we really made a fine mess this time"], 
             "diagnostic check");
     is($tap->streamer->read('out'), "not ok 3 - should fail, and add diagnostics\n", 
             'diagnostic output');

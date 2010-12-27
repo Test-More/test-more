@@ -40,7 +40,8 @@ sub _module_import {
 
     # XXX I don't think this is right.  The stream shouldn't start just
     # because the module was used
-    $class->Builder->stream_start(@_) if @_;
+    $class->Builder->stream_start;
+    $class->Builder->set_plan(@_) if @_;
 
     $class->export_to_level(1, $class);
 }
