@@ -31,8 +31,8 @@ note "accept_result() passes to accept_event()"; {
     $ew->accept_result({ bar => 23 });
 
     is @{$ew->events},          2,       "events accepted";
-    ok eq_hash($ew->events->[0], { foo => 42 }), "accept_event";
-    ok eq_hash($ew->events->[1], { bar => 23 }), "accept_result pass through";
+    is_deeply $ew->events->[0], { foo => 42 }, "accept_event";
+    is_deeply $ew->events->[1], { bar => 23 }, "accept_result pass through";
 }
 
 

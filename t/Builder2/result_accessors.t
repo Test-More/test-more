@@ -15,6 +15,6 @@ $result->diagnostic([
 ]);
 
 isa_ok $result, "Test::Builder2::Result::Base";
-ok eq_array $result->diagnostic, [have => 23, want => 42];
+is_deeply $result->diagnostic, [have => 23, want => 42];
 
 done_testing();

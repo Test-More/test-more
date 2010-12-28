@@ -32,10 +32,10 @@ BEGIN {
                          items_count
                        };
    my $two = My::Two->new;
-   ok eq_array $two->items, [];
+   is_deeply $two->items, [];
    ok $two->items_push(1..3);
    is $two->items_count, 3;
-   ok eq_array $two->items, [1..3];
+   is_deeply $two->items, [1..3];
    ok $two->items_push('end');
    is $two->items_pop, 'end';
 }

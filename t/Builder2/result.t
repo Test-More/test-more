@@ -92,7 +92,7 @@ sub tests {
             id              => 0,
         ]);
 
-        ok eq_hash $result->as_hash, {
+        is_deeply $result->as_hash, {
             type            => 'pass',
             description     => 'something something something test result',
             test_number     => 23,

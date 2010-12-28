@@ -404,6 +404,135 @@ sub eq_hash {
   !$fail;
 }
 
+
+# is_deeply() without diagnostics
+sub is_deeply {
+    my($have, $want, $name) = @_;
+
+    _ok(Compare($have, $want), _where(), $name);
+}
+
+
+# Copied from Data::Compare::Compare()
+my %been_there;
+sub Compare {
+  my $x = shift;
+  my $y = shift;
+  my $opts = shift || {};
+  my($xparent, $xpos, $yparent, $ypos) = map {
+    $opts->{$_} || ''
+  } qw(xparent xpos yparent ypos);
+
+  my $rval = '';
+
+  if(!exists($opts->{recursion_detector})) {
+    %been_there = ();
+    $opts->{recursion_detector} = 0;
+  }
+  $opts->{recursion_detector}++;
+
+  if(
+    (ref($x) && exists($been_there{"$x-$xpos-$xparent"}) && $been_there{"$x-$xpos-$xparent"} > 1) ||
+    (ref($y) && exists($been_there{"$y-$ypos-$yparent"}) && $been_there{"$y-$ypos-$yparent"} > 1)
+  ) {
+    return 1; # we bail as soon as possible, so if we've *not* bailed and have got here, say we're OK and go to the next sub-structure
+  } else {
+    $been_there{"$x-$xpos-$xparent"}++ if(ref($x));
+    $been_there{"$y-$ypos-$yparent"}++ if(ref($y));
+
+    $opts->{ignore_hash_keys} = { map {
+      ($_, 1)
+    } @{$opts->{ignore_hash_keys}} } if(ref($opts->{ignore_hash_keys}) eq 'ARRAY');
+
+    my $refx = ref $x;
+    my $refy = ref $y;
+
+    if(!$refx && !$refy) { # both are scalars
+      if(defined $x && defined $y) { # both are defined
+        $rval = $x eq $y;
+      } else { $rval = !(defined $x || defined $y); }
+    }
+    elsif ($refx ne $refy) { # not the same type
+      $rval = 0;
+    }
+    elsif ($x == $y) { # exactly the same reference
+      $rval = 1;
+    }
+    elsif ($refx eq 'SCALAR' || $refx eq 'REF') {
+      $rval = Compare(${$x}, ${$y}, $opts);
+    }
+    elsif ($refx eq 'ARRAY') {
+      if ($#{$x} == $#{$y}) { # same length
+        my $i = -1;
+        $rval = 1;
+        for (@$x) {
+          $i++;
+          $rval = 0 unless Compare($x->[$i], $y->[$i], { %{$opts}, xparent => $x, xpos => $i, yparent => $y, ypos => $i});
+        }
+      }
+      else {
+        $rval = 0;
+      }
+    }
+    elsif ($refx eq 'HASH') {
+      my @kx = grep { !$opts->{ignore_hash_keys}->{$_} } keys %$x;
+      my @ky = grep { !$opts->{ignore_hash_keys}->{$_} } keys %$y; # heh, KY
+      $rval = 1;
+      $rval = 0 unless scalar @kx == scalar @ky;
+
+      for (@kx) {
+        next unless defined $x->{$_} || defined $y->{$_};
+        $rval = 0 unless defined $y->{$_} && Compare($x->{$_}, $y->{$_}, { %{$opts}, xparent => $x, xpos => $_, yparent => $y, ypos => $_});
+      }
+    }
+    elsif($refx eq 'Regexp') {
+      $rval = Compare($x.'', $y.'', $opts);
+    }
+    elsif ($refx eq 'CODE') {
+      $rval = 0;
+    }
+    elsif ($refx eq 'GLOB') {
+      $rval = 0;
+    }
+    else { # a package name (object blessed)
+      my ($type) = "$x" =~ m/^$refx=(\S+)\(/;
+      if ($type eq 'HASH') {
+        my %x = %$x;
+        my %y = %$y;
+        $rval = Compare(\%x, \%y, { %{$opts}, xparent => $xparent, xpos => $xpos, yparent => $yparent, ypos => $ypos});
+        $been_there{\%x."-$xpos-$xparent"}--; # decrement count for temp structures
+        $been_there{\%y."-$ypos-$yparent"}--;
+      }
+      elsif ($type eq 'ARRAY') {
+        my @x = @$x;
+        my @y = @$y;
+        $rval = Compare(\@x, \@y, { %{$opts}, xparent => $xparent, xpos => $xpos, yparent => $yparent, ypos => $ypos});
+        $been_there{\@x."-$xpos-$xparent"}--;
+        $been_there{\@y."-$ypos-$yparent"}--;
+      }
+      elsif ($type eq 'SCALAR' || $type eq 'REF') {
+        my $x = ${$x};
+        my $y = ${$y};
+        $rval = Compare($x, $y, $opts);
+        # $been_there{\$x}--;
+        # $been_there{\$y}--;
+      }
+      elsif ($type eq 'GLOB') {
+        $rval = 0;
+      }
+      elsif ($type eq 'CODE') {
+        $rval = 0;
+      }
+      else {
+        die "Can't handle $type type";
+        $rval = 0;
+      }
+    }
+  }
+  $opts->{recursion_detector}--;
+  return $rval;
+}
+
 sub require_ok ($) {
     my ($require) = @_;
     eval <<REQUIRE_OK;

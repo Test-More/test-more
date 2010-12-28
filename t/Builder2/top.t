@@ -26,10 +26,10 @@ sub inner {
     return $ret;
 }
 
-ok eq_array($tb->top_stack->asserts, []), "top_stack() empty";
+is_deeply $tb->top_stack->asserts, [], "top_stack() empty";
 
 #line 29
-ok eq_array([inner()], ["inner at $0 line 29"]), "from_top() shallow";
-ok eq_array([outer()], ["outer at $0 line 30", "inner at $0 line 30"]), "from_top() deep";
+is_deeply [inner()], ["inner at $0 line 29"], "from_top() shallow";
+is_deeply [outer()], ["outer at $0 line 30", "inner at $0 line 30"], "from_top() deep";
 
-ok eq_array( $tb->top_stack->asserts, []), "top_stack() still empty";
+is_deeply $tb->top_stack->asserts, [], "top_stack() still empty";

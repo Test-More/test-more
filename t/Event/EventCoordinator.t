@@ -13,8 +13,8 @@ use_ok $CLASS;
 
 note("EC->singleton initialization"); {
     my $ec = $CLASS->singleton;
-    ok eq_array($ec->early_watchers, []), "early_watchers";
-    ok eq_array($ec->late_watchers,  []), "late_watchers";
+    is_deeply $ec->early_watchers, [], "early_watchers";
+    is_deeply $ec->late_watchers,  [], "late_watchers";
 
     my $formatters = $ec->formatters;
     is @$formatters, 1;
@@ -28,8 +28,8 @@ note("EC->singleton initialization"); {
 
 note("EC->create init"); {
     my $ec = $CLASS->create;
-    ok eq_array($ec->early_watchers, []), "early_watchers";
-    ok eq_array($ec->late_watchers,  []), "late_watchers";
+    is_deeply $ec->early_watchers, [], "early_watchers";
+    is_deeply $ec->late_watchers,  [], "late_watchers";
 
     my $formatters = $ec->formatters;
     is @$formatters, 1;
@@ -66,7 +66,7 @@ note("EC->create takes args"); {
                 @{$args{late_watchers}}
                );
 
-    ok eq_array([$ec->all_watchers], \@want), "all_watchers";
+    is_deeply [$ec->all_watchers], \@want, "all_watchers";
 }
 
 
@@ -83,14 +83,14 @@ note("add and clear"); {
 
         my @want = (MyEventCollector->new, MyEventCollector->new);
         $ec->$adder( @want );
-        ok eq_array( $ec->$getter(), \@want ), "add";
+        is_deeply $ec->$getter(), \@want, "add";
 
         my @want_more = (MyEventCollector->new, MyEventCollector->new);
         $ec->$adder( @want_more );
-        ok eq_array( $ec->$getter(), [@want, @want_more] ), "add more";
+        is_deeply $ec->$getter(), [@want, @want_more], "add more";
 
         $ec->$clearer;
-        ok eq_array( $ec->$getter, [] ), "clear";
+        is_deeply $ec->$getter, [], "clear";
     }
 }
 

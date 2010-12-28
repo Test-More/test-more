@@ -17,10 +17,10 @@ my $posix = Test::Builder2::Formatter::POSIX->create(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
 my $multi = Test::Builder2::Formatter::Multi->create;
-eq_array $multi->formatters, [];
+is_deeply $multi->formatters, [];
 
 $multi->add_formatters($pm, $posix);
-eq_array $multi->formatters, [$pm, $posix];
+is_deeply $multi->formatters, [$pm, $posix];
 
 
 # Begin

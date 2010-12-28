@@ -39,8 +39,8 @@ $builder->event_coordinator->formatters([$tap]);
     {
         $result->diagnostic([error => "we really made a fine mess this time"]);
     }
-    ok eq_array($result->diagnostic, [error => "we really made a fine mess this time"], 
-            "diagnostic check");
+    is_deeply $result->diagnostic, [error => "we really made a fine mess this time"], 
+            "diagnostic check";
     is($tap->streamer->read('out'), "not ok 3 - should fail, and add diagnostics\n", 
             'diagnostic output');
 }
