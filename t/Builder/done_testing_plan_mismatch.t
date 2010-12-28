@@ -13,7 +13,8 @@ BEGIN {
     }
 }
 
-use Test::Builder;
+BEGIN { require 't/test.pl' }
+
 use Test::Builder::NoOutput;
 
 my $tb = Test::Builder::NoOutput->create;
@@ -31,10 +32,9 @@ my $tb = Test::Builder::NoOutput->create;
     $tb->done_testing(2);
 }
 
-my $Test = Test::Builder->new;
-$Test->plan( tests => 1 );
-$Test->level(0);
-$Test->is_eq($tb->read, <<"END");
+
+is($tb->read, <<"END");
+TAP version 13
 1..3
 ok 1
 ok 2
@@ -43,3 +43,5 @@ not ok 4 - planned to run 3 but done_testing() expects 2
 #   Failed test 'planned to run 3 but done_testing() expects 2'
 #   at $0 line 24.
 END
+
+done_testing;

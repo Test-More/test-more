@@ -5,6 +5,7 @@
 use Test::Builder;
 
 my $tb = Test::Builder->new;
+$tb->no_header(1);
 $tb->current_test(2);
 print <<'END';
 ok 1

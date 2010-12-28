@@ -156,11 +156,17 @@ sub INNER_accept_event {
 }
 
 
+has show_tap_version =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 1
+;
+
 sub accept_stream_start {
     my $self = shift;
 
     # Only output the TAP header once
-    $self->out("TAP version 13\n") if $self->stream_depth == 1;
+    $self->out("TAP version 13\n") if $self->stream_depth == 1 and $self->show_tap_version;
 
     return;
 }
@@ -171,6 +177,9 @@ sub accept_stream_end {
 
     $self->output_plan unless $self->did_output_plan;
 #    $self->do_ending if $self->stream_depth == 0;
+
+    # New counter
+    $self->counter( Test::Builder2::Counter->create );
 
     return;
 }
@@ -191,7 +200,7 @@ sub accept_set_plan {
 
     # TAP only allows a plan at the very start or the very end.
     # If we've already seen some results, save it for the end.
-    $self->output_plan unless $self->seen_results;
+    $self->output_plan unless $self->seen_results or $event->no_plan;
 
     return;
 }
@@ -214,7 +223,8 @@ sub output_plan {
         $self->out("1..0 # skip $reason");
     }
     elsif( $plan->no_plan ) {
-        # ...do nothing...
+        my $seen = $self->counter->get;
+        $self->out("1..$seen\n");
     }
     elsif( my $expected = $plan->asserts_expected ) {
         $self->out("1..$expected\n");

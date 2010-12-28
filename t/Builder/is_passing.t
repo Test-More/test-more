@@ -11,7 +11,8 @@ BEGIN {
     };
 }
 
-use Test::More;
+BEGIN { require 't/test.pl' }
+
 use Test::Builder;
 use Test::Builder::NoOutput;
 

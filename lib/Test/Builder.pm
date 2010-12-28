@@ -1,8 +1,8 @@
 package Test::Builder;
 
 use 5.008001;
-use strict;
-use warnings;
+use Test::Builder2::Mouse;
+use Test::Builder2::Types;
 
 our $VERSION = '2.00_01';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -74,8 +74,7 @@ sub new {
 sub _make_default {
     my $class = shift;
 
-    my $obj = bless {}, $class;
-
+    my $obj = $class->SUPER::new;
     $obj->reset(
         EventCoordinator   => Test::Builder2::EventCoordinator->singleton
     );
@@ -100,7 +99,7 @@ this method.  Also, the method name may change in the future.
 sub create {
     my $class = shift;
 
-    my $self = bless {}, $class;
+    my $self = $class->SUPER::new(@_);
     $self->reset;
 
     return $self;
@@ -383,12 +382,13 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Skip_All} = 0;
 
+    require Test::Builder2::Formatter::TAP;
     $self->{EventCoordinator} = Test::Builder2::EventCoordinator->create(
         formatters => [Test::Builder2::Formatter::TAP->create]
     );
     $self->formatter->use_numbers(1);
 
-    $self->{No_Header} = 0;
+    $self->no_header(0);
     $self->{No_Ending} = 0;
 
     $self->{Todo}       = undef;
@@ -397,6 +397,9 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Opened_Testhandles} = 0;
 
     $self->_dup_stdhandles;
+
+    $self->last_test_seen(0);
+    $self->stream_started(0);
 
     return;
 }
@@ -464,6 +467,8 @@ sub plan {
     $self->croak("You tried to plan twice") if $self->{Have_Plan};
 
     if( my $method = $plan_cmds{$cmd} ) {
+        $self->stream_start;
+
         local $Level = $Level + 1;
         $self->$method($arg);
     }
@@ -512,10 +517,12 @@ sub expected_tests {
           unless $max =~ /^\+?\d+$/;
 
         $self->{Expected_Tests} = $max;
-        $self->{Have_Plan}      = 1;
 
-        $self->_output_plan($max) unless $self->no_header;
+        $self->set_plan(
+            asserts_expected => $max
+        );
     }
+
     return $self->{Expected_Tests};
 }
 
@@ -533,7 +540,10 @@ sub no_plan {
     $self->carp("no_plan takes no arguments") if $arg;
 
     $self->{No_Plan}   = 1;
-    $self->{Have_Plan} = 1;
+
+    $self->set_plan(
+        no_plan => 1
+    );
 
     return 1;
 }
@@ -625,7 +635,7 @@ sub done_testing {
 
     if( $self->{Done_Testing} ) {
         my($file, $line) = @{$self->{Done_Testing}}[1,2];
-        $self->ok(0, "done_testing() was already called at $file line $line");
+        $self->croak(qq{done_testing() called twice.\n  First at $file line $line,\n  then });
         return;
     }
 
@@ -639,15 +649,17 @@ sub done_testing {
         $self->{Expected_Tests} = $num_tests;
     }
 
-    $self->_output_plan($num_tests) unless $self->{Have_Output_Plan};
-
-    $self->{Have_Plan} = 1;
+    $self->set_plan(
+        asserts_expected => $num_tests
+    );
 
     # The wrong number of tests were run
     $self->is_passing(0) if $self->{Expected_Tests} != $self->current_test;
 
     # No tests were run
     $self->is_passing(0) if $self->current_test == 0;
+
+    $self->stream_end;
 
     return 1;
 }
@@ -683,9 +695,14 @@ Skips all the tests, using the given C<$reason>.  Exits immediately with 0.
 sub skip_all {
     my( $self, $reason ) = @_;
 
+    $reason = defined $reason ? $reason : '';
     $self->{Skip_All} = $self->parent ? $reason : 1;
 
-    $self->_output_plan(0, "SKIP", $reason) unless $self->no_header;
+    $self->set_plan(
+        skip            => 1,
+        skip_reason     => $reason
+    );
+
     if ( $self->parent ) {
         die bless {} => 'Test::Builder::Exception';
     }
@@ -735,6 +752,56 @@ like Test::Simple's C<ok()>.
 
 =cut
 
+sub stream_start {
+    my $self = shift;
+
+    $self->event_coordinator->post_event(
+        Test::Builder2::Event::StreamStart->new
+    );
+    $self->stream_started(1);
+
+    return;
+}
+
+sub stream_end {
+    my $self = shift;
+
+    $self->last_test_seen( $self->current_test );
+    $self->event_coordinator->post_event(
+        Test::Builder2::Event::StreamEnd->new
+    );
+    $self->stream_started(0);
+
+    return;
+}
+
+sub set_plan {
+    my $self = shift;
+
+    $self->event_coordinator->post_event(
+        Test::Builder2::Event::SetPlan->new( @_ )
+    );
+
+    $self->{Have_Plan} = 1;
+
+    return;
+}
+
+
+# The Formatter will reset its counter to 0 at the end of the stream
+# so we have to remember the last test number seen
+has last_test_seen =>
+  is            => 'rw',
+  isa           => 'Test::Builder2::Positive_Int',
+  default       => 0,
+;
+
+has stream_started =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 0
+;
+
 sub ok {
     my( $self, $test, $name ) = @_;
 
@@ -777,12 +844,15 @@ ERR
 
     # Store the Result in history making sure to make it thread safe
     $result = shared_clone($result);
+    $self->stream_start unless $self->stream_started;
     $self->event_coordinator->post_result($result);
 
     $self->is_passing(0) unless $test || $self->in_todo;
 
     # Check that we haven't violated the plan
     $self->_check_is_passing_plan();
+
+    $self->last_test_seen( $self->current_test );
 
     return $test ? 1 : 0;
 }
@@ -1504,7 +1574,19 @@ If set to true, no "1..N" header will be printed.
 
 =cut
 
-foreach my $attribute (qw(No_Header No_Ending No_Diag)) {
+sub no_header {
+    my $self = shift;
+
+    if( @_ ) {
+        my $no = shift;
+        $self->{No_Header} = $no;
+        $self->formatter->show_tap_version(!$no);
+    }
+
+    return $self->{No_Header};
+}
+
+foreach my $attribute (qw(No_Ending No_Diag)) {
     my $method = lc $attribute;
 
     my $code = sub {
@@ -1939,10 +2021,11 @@ sub current_test {
         }
 
         $counter->set($num);
+        $self->last_test_seen($num);
         return;
     }
     else {
-        return $counter->get;
+        return $counter->get || $self->last_test_seen;
     }
 }
 
@@ -2336,10 +2419,13 @@ sub _ending {
     return if $self->no_ending;
     return if $self->{Ending}++;
 
+    $self->stream_end if $self->stream_started;
+
     my $real_exit_code = $?;
 
     # Don't bother with an ending if this is a forked copy.  Only the parent
     # should do the ending.
+
     if( $self->{Original_Pid} != $$ ) {
         return;
     }
@@ -2366,7 +2452,6 @@ sub _ending {
     if(@$test_results) {
         # The plan?  We have no plan.
         if( $self->{No_Plan} ) {
-            $self->_output_plan($self->current_test) unless $self->no_header;
             $self->{Expected_Tests} = $self->current_test;
         }
 

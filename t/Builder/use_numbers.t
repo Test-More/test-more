@@ -5,7 +5,8 @@ use warnings;
 
 use lib 't/lib';
 
-use Test::Builder;
+BEGIN { require 't/test.pl' }
+
 use Test::Builder::NoOutput;
 
 my $tb = Test::Builder::NoOutput->create;
@@ -19,11 +20,11 @@ my $tb = Test::Builder::NoOutput->create;
 }
 
 
-my $Test = Test::Builder->new;
-$Test->plan( tests => 1 );
-$Test->level(0);
-$Test->is_eq($tb->read("out"), <<"END");
+is($tb->read("out"), <<"END");
+TAP version 13
 1..2
 ok
 not ok - a name
 END
+
+done_testing;

@@ -1,4 +1,5 @@
 #!perl -w
+
 use strict;
 use warnings;
 use IO::Pipe;
@@ -17,16 +18,19 @@ my $Can_Fork = $Config{d_fork} ||
 if( !$Can_Fork ) {
     $b->plan('skip_all' => "This system cannot fork");
 }
-else {
-    $b->plan('tests' => 2);
-}
 
 my $pipe = IO::Pipe->new;
 if ( my $pid = fork ) {
   $pipe->reader;
-  $b->ok((<$pipe> =~ /FROM CHILD: ok 1/), "ok 1 from child");
-  $b->ok((<$pipe> =~ /FROM CHILD: 1\.\.1/), "1..1 from child");
+  my @child = <$pipe>;
   waitpid($pid, 0);
+
+  $b->plan(tests => 3);
+  $b->is_eq($child[0], "TAP version 13\n",       "TAP version from child");
+  $b->is_eq($child[1], "1..1\n",                 "  plan");
+  $b->is_eq($child[2], "ok 1\n",                 "  ok");
+
+  $b->note("Output from child...\n", @child);
 }
 else {
   $pipe->writer;
@@ -34,8 +38,8 @@ else {
   close STDOUT;
   open(STDOUT, ">&$pipe_fd");
   my $b = Test::Builder->new;
-  $b->reset;
-  $b->no_plan;
+  $b->output(*STDOUT);
+  $b->plan( tests => 1 );
   $b->ok(1);
 } 
 

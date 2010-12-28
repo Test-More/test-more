@@ -26,7 +26,7 @@ An integer greater than or equal to zero.
 
 subtype 'Test::Builder2::Positive_Int' => (
     as 'Int',
-    where { $_ >= 0 },
+    where { defined $_ && $_ >= 0 },
 );
 
 
