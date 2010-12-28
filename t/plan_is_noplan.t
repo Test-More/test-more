@@ -12,7 +12,7 @@ BEGIN {
 
 use strict;
 
-use Test::More tests => 1;
+BEGIN { require 't/test.pl' }
 
 use Test::Builder::NoOutput;
 
@@ -25,7 +25,10 @@ use Test::Builder::NoOutput;
     $tb->_ending;
 
     is($tb->read, <<OUT);
+TAP version 13
 ok 1 - foo
 1..1
 OUT
+
+    done_testing;
 }

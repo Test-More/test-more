@@ -220,7 +220,10 @@ sub output_plan {
 
     if( $plan->skip ) {
         my $reason = $plan->skip_reason;
-        $self->out("1..0 # skip $reason");
+        my $out = "1..0 # SKIP";
+        $out .= " $reason" if length $reason;
+        $out .= "\n";
+        $self->out($out);
     }
     elsif( $plan->no_plan ) {
         my $seen = $self->counter->get;

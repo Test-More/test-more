@@ -34,6 +34,6 @@ BEGIN { require "t/test.pl" }
 
     # Test the result
     plan tests => 2;
-    ok $builder->formatter->counter->get == 3, "count correct";
+    like $builder->formatter->streamer->read("out"), qr/^1..3$/m, "count correct";
     ok $builder->history->results->[2], "no warnings test failed properly";
 }

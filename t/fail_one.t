@@ -15,10 +15,9 @@ use strict;
 # Normalize the output whether we're running under Test::Harness or not.
 local $ENV{HARNESS_ACTIVE} = 0;
 
-use Test::Builder;
-use Test::Builder::NoOutput;
+BEGIN { require 't/test.pl' }
 
-my $Test = Test::Builder->new;
+use Test::Builder::NoOutput;
 
 {
     my $tb = Test::Builder::NoOutput->create;
@@ -29,15 +28,16 @@ my $Test = Test::Builder->new;
     $tb->ok(0);
     $tb->_ending;
 
-    $Test->is_eq($tb->read('out'), <<OUT);
+    is($tb->read('out'), <<OUT);
+TAP version 13
 1..1
 not ok 1
 OUT
 
-    $Test->is_eq($tb->read('err'), <<ERR);
+    is($tb->read('err'), <<ERR);
 #   Failed test at $0 line 28.
 # Looks like you failed 1 test of 1.
 ERR
 
-    $Test->done_testing(2);
+    done_testing(2);
 }

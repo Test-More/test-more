@@ -15,29 +15,30 @@ BEGIN {
     *CORE::GLOBAL::exit = sub { $Exit_Code = shift; };
 }
 
+BEGIN {
+    package Test;
+    require 't/test.pl'
+}
 
-use Test::Builder;
 use Test::More;
 
 my $output;
 my $TB = Test::More->builder;
 $TB->output(\$output);
 
-my $Test = Test::Builder->create;
-$Test->level(0);
+{
+    plan tests => 4;
+    BAIL_OUT("ROCKS FALL! EVERYONE DIES!");
 
-$Test->plan(tests => 3);
-
-plan tests => 4;
-
-BAIL_OUT("ROCKS FALL! EVERYONE DIES!");
-
-
-$Test->is_eq( $output, <<'OUT' );
+    Test::is( $output, <<'OUT' );
+TAP version 13
 1..4
 Bail out!  ROCKS FALL! EVERYONE DIES!
 OUT
 
-$Test->is_eq( $Exit_Code, 255 );
+    Test::is( $Exit_Code, 255 );
+}
 
-$Test->ok( $Test->can("BAILOUT"), "Backwards compat" );
+Test::ok( $TB->can("BAILOUT"), "Backwards compat" );
+
+Test::done_testing;

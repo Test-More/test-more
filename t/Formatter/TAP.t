@@ -144,7 +144,7 @@ END
             skip_reason => "bored now"
         )
     );
-    is last_output, "TAP version 13\n1..0 # skip bored now", "skip_all";
+    is last_output, "TAP version 13\n1..0 # SKIP bored now\n", "skip_all";
 }
 
 # no plan

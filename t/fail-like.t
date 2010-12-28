@@ -40,6 +40,7 @@ Test::More->import(tests => 1);
     eval q{ like( "foo", qr/that/, 'is foo like that' ); };
 
     $TB->is_eq($out->read, <<OUT, 'failing output');
+TAP version 13
 1..1
 not ok 1 - is foo like that
 OUT
@@ -58,7 +59,7 @@ ERR
 }
 
 {
-    # line 62
+# line 62
     like("foo", "not a regex");
     $TB->is_eq($out->read, <<OUT);
 not ok 2

@@ -12,10 +12,13 @@ BEGIN {
 
 use strict;
 
-use Test::More;
+BEGIN {
+    package Test;
+    require 't/test.pl';
+    Test::plan( tests => 2 );
+}
 
-my $Test = Test::Builder->create;
-$Test->plan(tests => 2);
+use Test::More;
 
 my $out = '';
 my $err = '';
@@ -28,6 +31,10 @@ my $err = '';
 }
 
 END {
-    $Test->is_eq($out, "1..0 # SKIP\n");
-    $Test->is_eq($err, "");
+    Test::is($out, <<END);
+TAP version 13
+1..0 # SKIP
+END
+
+    Test::is($err, "");
 }
