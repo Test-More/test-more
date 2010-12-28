@@ -44,7 +44,7 @@ sub is ($$;$) {
 
 sub like ($$;$) {
     my($this, $regex, $name) = @_;
-    $regex = "/$regex/" if !ref $regex and $regex !~ m{^/.*/$}s;
+    $regex = qr/$regex/ if !ref $regex and $regex !~ m{^/.*/$}s;
 
     my $ok = $TB->like($$this, $regex, $name);
 
