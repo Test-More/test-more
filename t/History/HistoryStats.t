@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More 'no_plan';
+BEGIN { require 't/test.pl' }
 
 use Test::Builder2::Result;
 
@@ -80,11 +80,15 @@ sub Fail { Test::Builder2::Result->new_result( pass => 0, @_ ) }
    my $h = new_history;
    ok $h->accept_event('BEGIN 1');
    ok $h->accept_result(Pass());
-   TODO: { local $TODO = 'accept_event should not accept Results';
+   TODO: {
+      our $TODO;
+      local $TODO = 'accept_event should not accept Results';
       ok !eval { $h->accept_event(Fail()); 1; };
    };
    is $h->results_count, 1;
    is $h->events_count, 3;
 }
+
+done_testing;
 
 

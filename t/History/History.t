@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More 'no_plan';
+BEGIN { require 't/test.pl' }
 
 use Test::Builder2::Result;
 
@@ -82,3 +82,4 @@ my $create_ok = sub {
 }
 
 
+done_testing;

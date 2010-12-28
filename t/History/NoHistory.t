@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::More 'no_plan';
+BEGIN { require 't/test.pl' }
 
 use Test::Builder2::Result;
 
@@ -47,3 +47,5 @@ sub Fail { Test::Builder2::Result->new_result( pass => 0 ) }
     is_deeply $history->results, [], q{no results stored};
 
 }
+
+done_testing;
