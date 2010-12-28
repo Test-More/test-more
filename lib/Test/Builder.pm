@@ -1580,7 +1580,7 @@ sub no_header {
     if( @_ ) {
         my $no = shift;
         $self->{No_Header} = $no;
-        $self->formatter->show_tap_version(!$no);
+        $self->formatter->show_header(!$no);
     }
 
     return $self->{No_Header};

@@ -156,17 +156,47 @@ sub INNER_accept_event {
 }
 
 
+has show_header =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 1
+;
+
+has show_footer =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 1
+;
+
+has show_ending =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 1
+;
+
 has show_tap_version =>
   is            => 'rw',
   isa           => 'Bool',
   default       => 1
 ;
 
+has show_plan =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 1
+;
+
+
 sub accept_stream_start {
     my $self = shift;
 
-    # Only output the TAP header once
-    $self->out("TAP version 13\n") if $self->stream_depth == 1 and $self->show_tap_version;
+    # Only output the TAP version in the first stream
+    # and if we're showing the version
+    # and if we're showing header information
+    $self->out("TAP version 13\n") if
+      $self->stream_depth == 1 and
+      $self->show_tap_version  and
+      $self->show_header;
 
     return;
 }
@@ -175,8 +205,7 @@ sub accept_stream_start {
 sub accept_stream_end {
     my $self = shift;
 
-    $self->output_plan unless $self->did_output_plan;
-#    $self->do_ending if $self->stream_depth == 0;
+    $self->output_plan if $self->show_footer;
 
     # New counter
     $self->counter( Test::Builder2::Counter->create );
@@ -199,8 +228,8 @@ sub accept_set_plan {
     $self->plan( $event );
 
     # TAP only allows a plan at the very start or the very end.
-    # If we've already seen some results, save it for the end.
-    $self->output_plan unless $self->seen_results or $event->no_plan;
+    # If we've already seen some results, or it's "no_plan", save it for the end.
+    $self->output_plan if !$self->seen_results and $self->show_header and !$event->no_plan;
 
     return;
 }
@@ -213,6 +242,19 @@ has did_output_plan =>
 ;
 
 sub output_plan {
+    my $self = shift;
+
+    return unless $self->show_plan;
+    return if $self->did_output_plan;
+
+    $self->_output_plan;
+
+    $self->did_output_plan(1);
+
+    return 1;
+}
+
+sub _output_plan {
     my $self  = shift;
     my $plan = $self->plan;
 
@@ -232,8 +274,6 @@ sub output_plan {
     elsif( my $expected = $plan->asserts_expected ) {
         $self->out("1..$expected\n");
     }
-
-    $self->did_output_plan(1);
 
     return;
 }

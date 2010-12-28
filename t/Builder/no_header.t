@@ -1,21 +1,30 @@
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = '../lib';
-    }
+#!/usr/bin/perl
+
+use strict;
+use lib 't/lib';
+
+BEGIN { require 't/test.pl' }
+
+use Test::Builder::NoOutput;
+
+note "plan at the start"; {
+    my $tb = Test::Builder::NoOutput->create;
+    $tb->no_header(1);
+    $tb->plan( tests => 1 );
+
+    is $tb->read, '',       "no_header supresses initial plan and TAP version";
 }
 
-use Test::Builder;
+note "plan at the end"; {
+    my $tb = Test::Builder::NoOutput->create;
+    $tb->no_header(1);
+    is $tb->read, '';
 
-# STDOUT must be unbuffered else our prints might come out after
-# Test::More's.
-$| = 1;
+    $tb->ok(1);
+    is $tb->read, "ok 1\n";
 
-BEGIN {
-    Test::Builder->new->no_header(1);
+    $tb->done_testing(1);
+    is $tb->read, "1..1\n", "no_header does not supress plan at end";
 }
 
-use Test::More tests => 1;
-
-print "1..1\n";
-pass;
+done_testing;
