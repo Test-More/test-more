@@ -140,7 +140,7 @@ sub _where {
 }
 
 # DON'T use this for matches. Use like() instead.
-sub ok ($@) {
+sub ok ($;$@) {
     my ($pass, $name, @mess) = @_;
     _ok($pass, _where(), $name, @mess);
 }
