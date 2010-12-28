@@ -5,9 +5,13 @@
 use strict;
 use warnings;
 
+BEGIN {
+    # Avoid conflicting with Test::Simple::ok()
+    package Test;
+    require 't/test.pl';
+}
+
 use Test::Simple;
 
-print <<END;
-1..1
-ok 1 - use Test::Simple with no arguments
-END
+Test::plan tests => 1;
+Test::pass("Test::Simple loaded with no arguments");
