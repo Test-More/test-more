@@ -1,57 +1,41 @@
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = ('../lib', 'lib');
-    }
-    else {
-        unshift @INC, 't/lib';
-    }
-}
+#!/usr/bin/perl
 
-# Can't use Test.pm, that's a 5.005 thing.
-package My::Test;
+use strict;
+use lib 't/lib';
 
-# This has to be a require or else the END block below runs before
-# Test::Builder's own and the ending diagnostics don't come out right.
-require Test::Builder;
-my $TB = Test::Builder->create;
-$TB->plan( skip_all => 'plan checks not implemented' );
-$TB->plan(tests => 2);
+use Test::Builder::NoOutput;
 
-sub is { $TB->is_eq(@_) }
+BEGIN { require 't/test.pl' }
 
-
-package main;
-
-require Test::Simple;
-
-require Test::Simple::Catch;
-my($out, $err) = Test::Simple::Catch::caught();
 local $ENV{HARNESS_ACTIVE} = 0;
 
-Test::Simple->import(tests => 5);
+
+my $tb = Test::Builder::NoOutput->create;
+$tb->plan(tests => 5);
+$tb->level(0);
 
 #line 30
-ok(1, 'Foo');
-ok(0, 'Bar');
-ok(1, '1 2 3');
+$tb->ok(1, 'Foo');
+$tb->ok(0, 'Bar');
+$tb->ok(1, '1 2 3');
+$tb->done_testing;
 
-# END {
-#     My::Test::is($$out, <<OUT);
-# 1..5
-# ok 1 - Foo
-# not ok 2 - Bar
-# ok 3 - 1 2 3
-# OUT
 
-#     My::Test::is($$err, <<ERR);
-# #   Failed test 'Bar'
-# #   at $0 line 31.
-# #     You named your test '1 2 3'.  You shouldn't use numbers for your test names.
-# #     Very confusing.
-# # Looks like you planned 5 tests but ran 3.
-# # Looks like you failed 1 test of 3 run.
-# ERR
+    is($tb->read('out'), <<OUT);
+TAP version 13
+1..5
+ok 1 - Foo
+not ok 2 - Bar
+ok 3 - 1 2 3
+OUT
 
-#     exit 0;
-# }
+    is($tb->read('err'), <<ERR);
+#   Failed test 'Bar'
+#   at $0 line 31.
+#     You named your test '1 2 3'.  You shouldn't use numbers for your test names.
+#     Very confusing.
+# 5 tests planned, but 3 ran.
+# 1 test of 3 failed.
+ERR
+
+done_testing;

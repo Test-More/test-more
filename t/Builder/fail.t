@@ -48,7 +48,7 @@ OUT
 #   at $0 line 31.
 #   Failed test 'damnit'
 #   at $0 line 32.
-# Looks like you failed 2 tests of 5.
+# 2 tests of 5 failed.
 ERR
 
     done_testing(2);

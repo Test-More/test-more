@@ -1,45 +1,26 @@
 #!perl -w
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = '../lib';
-    }
-}
+use strict;
+use lib 't/lib';
+use Test::Builder::NoOutput;
 
-# Can't use Test.pm, that's a 5.005 thing.
-package My::Test;
+BEGIN { require 't/test.pl' }
+plan tests => 3;
 
-# This has to be a require or else the END block below runs before
-# Test::Builder's own and the ending diagnostics don't come out right.
-require Test::Builder;
-my $TB = Test::Builder->create;
-$TB->plan(skip_all => "plan errors not implemented");
-$TB->plan(tests => 3);
+my $tb = Test::Builder::NoOutput->create;
+$tb->plan(tests => 1);
 
+$tb->_ending;
+is($?, 255, "exit code");
 
-package main;
+is($tb->read('out'), <<OUT);
+TAP version 13
+1..1
+OUT
 
-require Test::Simple;
+is($tb->read('err'), <<ERR);
+# No tests run!
+ERR
 
-chdir 't';
-push @INC, '../t/lib/';
-require Test::Simple::Catch;
-my($out, $err) = Test::Simple::Catch::caught();
-local $ENV{HARNESS_ACTIVE} = 0;
+exit grep { !$_ } $tb->summary;
 
-Test::Simple->import(tests => 1);
-
-# END {
-#     $TB->is_eq($out->read, <<OUT);
-# 1..1
-# OUT
-
-#     $TB->is_eq($err->read, <<ERR);
-# # No tests run!
-# ERR
-
-#     $TB->is_eq($?, 255, "exit code");
-
-#     exit grep { !$_ } $TB->summary;
-# }

@@ -36,7 +36,7 @@ OUT
 
     is($tb->read('err'), <<ERR);
 #   Failed test at $0 line 28.
-# Looks like you failed 1 test of 1.
+# 1 test of 1 failed.
 ERR
 
     done_testing(2);

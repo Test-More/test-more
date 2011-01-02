@@ -45,8 +45,8 @@ END
 
 $test->_ending();
 is($test->read(), <<END);
-# Looks like you planned 3 tests but ran 5.
-# Looks like you failed 2 tests of 5 run.
+# 3 tests planned, but 5 ran.
+# 2 tests of 5 failed.
 END
 
 done_testing(5);

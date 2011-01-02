@@ -99,6 +99,11 @@ sub err {
     $self->write(err => @_);
 }
 
+sub diag {
+    my $self = shift;
+    $self->err($self->comment(@_));
+}
+
 
 =head3 counter
 
@@ -145,12 +150,13 @@ my %event_dispatch = (
 sub INNER_accept_event {
     my $self  = shift;
     my $event = shift;
+    my $ec    = shift;
 
     my $type = $event->event_type;
     my $method = $event_dispatch{$type};
     return unless $method;
 
-    $self->$method($event);
+    $self->$method($event, $ec);
 
     return;
 }
@@ -186,6 +192,12 @@ has show_plan =>
   default       => 1
 ;
 
+has show_ending_commentary =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 1
+;
+
 
 sub accept_stream_start {
     my $self = shift;
@@ -203,9 +215,13 @@ sub accept_stream_start {
 
 
 sub accept_stream_end {
-    my $self = shift;
+    my $self  = shift;
+    my $event = shift;
+    my $ec    = shift;
 
     $self->output_plan if $self->show_footer;
+
+    $self->output_ending_commentary($ec);
 
     # New counter
     $self->counter( Test::Builder2::Counter->create );
@@ -247,16 +263,7 @@ sub output_plan {
     return unless $self->show_plan;
     return if $self->did_output_plan;
 
-    # Having no plan is ok if we saw no results.
-    # Assume it was a mistake by the user.
-    if( !$self->plan ) {
-        if( $self->seen_results ) {
-            croak "No plan was seen";
-        }
-        else {
-            return;
-        }
-    }
+    return if !$self->plan;
 
     $self->_output_plan;
 
@@ -282,6 +289,87 @@ sub _output_plan {
     }
     elsif( my $expected = $plan->asserts_expected ) {
         $self->out("1..$expected\n");
+    }
+
+    return;
+}
+
+
+my %inflections = (
+    test        => "tests",
+    was         => "were"
+);
+sub _inflect {
+    my($word, $num) = @_;
+
+    return $word if $num == 1;
+
+    my $plural = $inflections{$word};
+    return $plural ? $plural : $word;
+}
+
+sub output_ending_commentary {
+    my $self = shift;
+    my $ec   = shift;
+
+    return unless $self->show_ending_commentary;
+
+    my $plan = $self->plan;
+
+    my $tests_run = $self->counter->get;
+    my $w_test    = _inflect("test", $tests_run);
+
+    my $tests_failed   = $ec->histories->[0]->fail_count;
+    my $tests_planned  = !$plan                         ? 0
+                       : $plan->no_plan                 ? $tests_run
+                       :                                  $plan->asserts_expected
+                       ;
+    my $tests_extra    = $tests_planned - $tests_run;
+
+
+    # No plan was seen
+    if( !$plan ) {
+        # Ran tests but never declared a plan
+        if( $tests_run ) {
+            $self->diag("$tests_run $w_test ran, but no plan was declared.");
+        }
+        # No plan is ok if nothing happened
+        else {
+            return;
+        }
+    }
+
+
+    # Skip
+    if( $plan && $plan->skip ) {
+        # It was supposed to be a skip, but tests were run
+        if( $tests_run ) {
+            $self->diag("The test was skipped, but $tests_run $w_test ran.");
+        }
+        # A proper skip
+        else {
+            return;
+        }
+    }
+
+    # Saw a plan, but no tests.
+    if( !$tests_run ) {
+        $self->diag("No tests run!");
+        return;
+    }
+
+
+    # Saw a plan, and tests, but not the right amount.
+    if( $plan && $tests_planned && $tests_extra ) {
+        my $w_tests_p = _inflect("test", $tests_planned);
+        $self->diag("$tests_planned $w_tests_p planned, but $tests_run ran.");
+    }
+
+
+    # Right amount, but some failed.
+    if( $tests_failed ) {
+        my $w_tests_f = _inflect("test", $tests_failed);
+        $self->diag("$tests_failed $w_tests_f of $tests_run failed.");
     }
 
     return;

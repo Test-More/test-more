@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
 
 use strict;
+
+use Test::Builder2::EventCoordinator;
 use Test::Builder2::Formatter::TAP;
 use Test::Builder2::Streamer::TAP; 
 use Test::Builder2::Events;
@@ -10,14 +12,21 @@ BEGIN { require "t/test.pl" }
 # Prevent this from messing with our formatting
 local $ENV{HARNESS_ACTIVE} = 0;
 
+
 my $formatter;
+my $ec;
 sub new_formatter {
     $formatter = Test::Builder2::Formatter::TAP->create(
         streamer_class => 'Test::Builder2::Streamer::Debug'
     );
+    $formatter->show_ending_commentary(0);
     isa_ok $formatter, "Test::Builder2::Formatter::TAP";
 
-    return $formatter;
+    my $ec = Test::Builder2::EventCoordinator->create(
+        formatters => [$formatter],
+    );
+
+    return $ec;
 }
 
 sub last_output {

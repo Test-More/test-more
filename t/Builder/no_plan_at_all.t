@@ -21,7 +21,7 @@ is($tb->read, <<'END', "proper behavior when no plan is seen");
 TAP version 13
 ok 1 - just a test
 ok 2 -   and another
-# Tests were run but no plan was declared and done_testing() was not seen.
+# 2 tests ran, but no plan was declared.
 END
 
 done_testing;

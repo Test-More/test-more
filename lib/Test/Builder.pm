@@ -629,9 +629,6 @@ sub done_testing {
     if( defined $num_tests ) {
         $self->{No_Plan} = 0;
     }
-    else {
-        $num_tests = $self->current_test;
-    }
 
     if( $self->{Done_Testing} ) {
         my($file, $line) = @{$self->{Done_Testing}}[1,2];
@@ -641,17 +638,22 @@ sub done_testing {
 
     $self->{Done_Testing} = [caller];
 
-    if( $self->expected_tests && $num_tests != $self->expected_tests ) {
+    if( $self->expected_tests && defined $num_tests && $num_tests != $self->expected_tests ) {
         $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".
                      "but done_testing() expects $num_tests");
     }
-    else {
-        $self->{Expected_Tests} = $num_tests;
+
+    if( !$self->{Expected_Tests} ) {
+        if( defined $num_tests ) {
+            $self->{Expected_Tests} = $num_tests;
+        }
+        else {
+            $self->{Expected_Tests} = $self->current_test;
+        }
     }
 
-    $self->set_plan(
-        asserts_expected => $num_tests
-    );
+    my %plan = defined $num_tests ? ( asserts_expected => $num_tests ) : ( no_plan => 1 );
+    $self->set_plan( %plan ) unless $self->{Have_Plan};
 
     # The wrong number of tests were run
     $self->is_passing(0) if $self->{Expected_Tests} != $self->current_test;
@@ -2433,7 +2435,6 @@ sub _ending {
     # Ran tests but never declared a plan or hit done_testing
     if( !$self->{Have_Plan} and $self->current_test ) {
         $self->is_passing(0);
-        $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
     }
 
     # Exit if plan() was never called.  This is so "require Test::Simple"
@@ -2460,22 +2461,10 @@ sub _ending {
         my $num_extra = $self->current_test - $self->{Expected_Tests};
 
         if( $num_extra != 0 ) {
-            my $s = $self->{Expected_Tests} == 1 ? '' : 's';
-            $self->diag(<<"FAIL");
-Looks like you planned $self->{Expected_Tests} test$s but ran @{[ $self->current_test ]}.
-FAIL
             $self->is_passing(0);
         }
 
         if($num_failed) {
-            my $num_tests = $self->current_test;
-            my $s = $num_failed == 1 ? '' : 's';
-
-            my $qualifier = $num_extra == 0 ? '' : ' run';
-
-            $self->diag(<<"FAIL");
-Looks like you failed $num_failed test$s of $num_tests$qualifier.
-FAIL
             $self->is_passing(0);
         }
 
@@ -2511,7 +2500,6 @@ FAIL
         _my_exit($real_exit_code) && return;
     }
     else {
-        $self->diag("No tests run!\n");
         $self->is_passing(0);
         _my_exit(255) && return;
     }
