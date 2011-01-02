@@ -41,12 +41,16 @@ When writing an EventWatcher you must supply these methods.
 =head3 accept_event
 
     $event_watcher->accept_event($event);
+    $event_watcher->accept_event($event, $event_coordinator);
 
 An EventWatcher will be handed Event objects to do whatever it wants
 to with via this method.
 
 C<accept_event> is allowed to alter the $event.  Be aware those
 changes B<will> be visible to other EventWatchers.
+
+It may also be given the $event_coordinator which is managing the
+$event.  This allows a watcher to issue their own Events.
 
 You must implement this method.
 
@@ -57,6 +61,7 @@ The EventWatcher role supplies these methods.
 =head3 accept_result
 
     $event_watcher->accept_result($result);
+    $event_watcher->accept_result($result, $event_coordinator);
 
 Just like L<accept_event> except it handles Results (which are a
 special type of Event).  It is there to make special case handling of

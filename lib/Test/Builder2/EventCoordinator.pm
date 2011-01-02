@@ -197,7 +197,7 @@ sub post_result {
     my $result = shift;
 
     for my $watcher ($self->all_watchers) {
-        $watcher->accept_result($result);
+        $watcher->accept_result($result, $self);
     }
 }
 
@@ -206,8 +206,8 @@ sub post_result {
 
   $ec->post_event($event);
 
-The C<$ec> will hand the C<$event> around to all its L<watchers>.  See
-L<all_watchers> for ordering information.
+The C<$ec> will hand the C<$event> around to all its L<watchers>,
+along with itself.  See L<all_watchers> for ordering information.
 
 =cut
 
@@ -216,7 +216,7 @@ sub post_event {
     my $event = shift;
 
     for my $watcher ($self->all_watchers) {
-        $watcher->accept_event($event);
+        $watcher->accept_event($event, $self);
     }
 }
 

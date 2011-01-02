@@ -73,7 +73,7 @@ Get the count of events that are on the stack.
 =cut
 
 buildstack events => 'Any';
-sub accept_event { shift->events_push(@_) }
+sub accept_event { shift->events_push(shift) }
 sub event_count  { shift->events_count }
 sub has_events   { shift->events_count > 0 }
 
@@ -89,12 +89,15 @@ A Test::Builder2::Stack of Result objects.
 =cut
 
 buildstack results => 'Test::Builder2::Result::Base';
-sub accept_result    { shift->results_push(@_) }
-sub accept_results   { shift->results_push(@_) }  # for testing
+sub accept_result    { shift->results_push(shift) }
+sub accept_results   {   # for testing
+    my $self = shift;
+    $self->results_push($_) for @_;
+}
 sub result_count     { shift->results_count }
 
 before results_push => sub {
-   shift->events_push( @_ );
+   shift->events_push( shift );
 };
 
 =head2 accept_result

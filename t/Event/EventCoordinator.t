@@ -118,11 +118,10 @@ note("posting"); {
                     @{$args{formatters}}
                    );
     for my $watcher (@watchers) {
-        is @{$watcher->results}, 1;
-        is $watcher->results->[0], $result, "result accepted";
+        is_deeply $watcher->results, [$result], "result accepted";
+        is_deeply $watcher->events,  [$event], "event accepted";
 
-        is @{$watcher->events}, 1;
-        is $watcher->events->[0], $event, "event accepted";
+        is_deeply $watcher->coordinators, [$ec, $ec], "coordinator passed through";
     }
 }
 

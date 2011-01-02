@@ -17,9 +17,16 @@ BEGIN { require 't/test.pl'; }
       default           => sub { [] },
     ;
 
+    has coordinators =>
+      is                => 'rw',
+      isa               => 'ArrayRef',
+      default           => sub { [] }
+    ;
+
     sub accept_event {
         my $self = shift;
-        push @{$self->events}, @_;
+        push @{$self->events}, shift;
+        push @{$self->coordinators}, shift;
     }
 }
 
@@ -27,12 +34,11 @@ BEGIN { require 't/test.pl'; }
 note "accept_result() passes to accept_event()"; {
     my $ew = My::Watcher->new;
 
-    $ew->accept_event({ foo => 42 });
-    $ew->accept_result({ bar => 23 });
+    $ew->accept_event({ foo => 42 }, "foo");
+    $ew->accept_result({ bar => 23 }, "bar");
 
-    is @{$ew->events},          2,       "events accepted";
-    is_deeply $ew->events->[0], { foo => 42 }, "accept_event";
-    is_deeply $ew->events->[1], { bar => 23 }, "accept_result pass through";
+    is_deeply $ew->events,       [{ foo => 42 },{ bar => 23 }], "accept_result pass through";
+    is_deeply $ew->coordinators, ["foo", "bar"]; 
 }
 
 
