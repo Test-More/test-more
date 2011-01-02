@@ -1124,7 +1124,6 @@ BEGIN{
 	our $VERSION = '0.64';
 
 	my $xs = !(exists $INC{'Test/Builder2/Mouse/PurePerl.pm'} || $ENV{MOUSE_PUREPERL});
-	$DB::single = 1;
 	if($xs){
 		# XXX: XSLoader tries to get the object path from caller's file name
 		#      $hack_mouse_file fools its mechanism

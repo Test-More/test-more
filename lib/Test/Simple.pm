@@ -74,7 +74,6 @@ will do what you mean (fail if stuff is empty)
 =cut
 
 install_test(ok => sub ($;$) {    ## no critic (Subroutines::ProhibitSubroutinePrototypes)
-                 $DB::single = 1;
     return Builder->ok(@_);
 });
 
