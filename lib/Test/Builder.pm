@@ -74,10 +74,8 @@ sub new {
 sub _make_default {
     my $class = shift;
 
-    my $obj = $class->SUPER::new;
-    $obj->reset(
-        EventCoordinator   => Test::Builder2::EventCoordinator->singleton
-    );
+    my $obj = $class->create;
+    $obj->{EventCoordinator} = Test::Builder2::EventCoordinator->singleton;
 
     return $obj;
 }
@@ -2421,7 +2419,8 @@ sub _ending {
     return if $self->no_ending;
     return if $self->{Ending}++;
 
-    $self->stream_end if $self->stream_started;
+    # End the stream unless we (or somebody else) already ended it
+    $self->stream_end if $self->stream_started and $self->formatter->stream_depth;
 
     my $real_exit_code = $?;
 
