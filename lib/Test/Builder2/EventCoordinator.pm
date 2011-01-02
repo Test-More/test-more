@@ -5,6 +5,8 @@ use Test::Builder2::Types;
 
 with 'Test::Builder2::Singleton';
 
+my @Types = qw(early_watchers formatters histories late_watchers);
+
 
 =head1 NAME
 
@@ -160,10 +162,14 @@ sub make_singleton {
     require Test::Builder2::History;
     require Test::Builder2::Formatter;
 
-    return $class->create(
-        histories       => [Test::Builder2::History->singleton],
-        formatters      => [Test::Builder2::Formatter->singleton]
+    my $self = $class->create(
+        histories  => [],
+        formatters => [],
     );
+    $self->add_histories(  Test::Builder2::History->singleton );
+    $self->add_formatters( Test::Builder2::Formatter->singleton );
+
+    return $self;
 }
 
 
@@ -228,7 +234,7 @@ The order is L<early_watchers>, L<formatters>, L<histories>, L<late_watchers>.
 sub all_watchers {
     my $self = shift;
 
-    return map @$_, $self->early_watchers, $self->formatters, $self->histories, $self->late_watchers;
+    return map @$_, map { $self->$_ } @Types;
 }
 
 
@@ -264,7 +270,7 @@ Use this instead of manipulating the list of watchers directly.
 =cut
 
 # Create add_ and clear_ methods for all the watchers
-for my $type qw(early_watchers formatters histories late_watchers) {
+for my $type (@Types) {
     my $add = sub {
         my $self = shift;
         push @{ $self->$type }, @_;
