@@ -247,6 +247,17 @@ sub output_plan {
     return unless $self->show_plan;
     return if $self->did_output_plan;
 
+    # Having no plan is ok if we saw no results.
+    # Assume it was a mistake by the user.
+    if( !$self->plan ) {
+        if( $self->seen_results ) {
+            croak "No plan was seen";
+        }
+        else {
+            return;
+        }
+    }
+
     $self->_output_plan;
 
     $self->did_output_plan(1);
@@ -257,8 +268,6 @@ sub output_plan {
 sub _output_plan {
     my $self  = shift;
     my $plan = $self->plan;
-
-    croak "No plan was seen" if !$plan;
 
     if( $plan->skip ) {
         my $reason = $plan->skip_reason;
