@@ -161,6 +161,7 @@ Do not override C<accept_event()>.  Override C<INNER_accept_event()>.
 sub accept_event {
     my $self  = shift;
     my $event = shift;
+    my $ec    = shift;
 
     my $type = $event->event_type;
     if( $type eq 'stream start' ) {
@@ -170,7 +171,7 @@ sub accept_event {
         $self->stream_depth_dec;
     }
 
-    $self->INNER_accept_event($event);
+    $self->INNER_accept_event($event, $ec);
 
     return;
 }
