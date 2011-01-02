@@ -25,23 +25,25 @@ kill the test when an assert fails.
 =cut
 
 {
-    package TB2::DieOnFail::Role;
+    package TB2::DieOnFail;
 
-    use Test::Builder2::Mouse::Role;
+    use Test::Builder2::Mouse;
+    with 'Test::Builder2::EventWatcher';
 
-    after assert_end => sub {
+    sub accept_event {}
+
+    sub accept_result {
         my $self   = shift;
         my $result = shift;
 
         return if $result;
 
-        return if $self->top_stack->in_assert;
-
-        die "Assert failed.  Test stopped.\n";
+        my $name = $result->name;
+        die sprintf "Test%s failed, aborting.\n", defined $name ? " $name" : "";
     };
 }
 
 require Test::Builder2;
-TB2::DieOnFail::Role->meta->apply( Test::Builder2->singleton );
+Test::Builder2->singleton->event_coordinator->add_late_watchers( TB2::DieOnFail->new );
 
 1;

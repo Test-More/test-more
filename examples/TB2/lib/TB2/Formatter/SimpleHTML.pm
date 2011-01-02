@@ -13,8 +13,12 @@ TB2::Formatter::SimpleHTML - A very simple HTML formatter
     use Test::Builder2;
     use TB2::Formatter::SimpleHTML;
 
-    my $tb2 = Test::Builder2->create(
-        formatter => TB2::Formatter::SimpleHTML->new
+    my $tb2 = Test::Builder2->singleton;
+    my $ec = $tb2->event_coordinator;
+
+    $ec->clear_formatters;      # remove the TAP formatter
+    $ec->add_formatters(        # add the SimpleHTML formatter
+        TB2::Formatter::SimpleHTML->create
     );
 
     $tb2->stream_start;
@@ -29,7 +33,29 @@ This is a very, very simple HTML formatter to demonstrate how its done.
 
 =cut
 
-sub INNER_begin {
+my %event_dispatch = (
+    "stream start"      => "accept_stream_start",
+    "stream end"        => "accept_stream_end",
+    "set plan"          => "accept_set_plan",
+);
+
+sub INNER_accept_event {
+    my $self  = shift;
+    my $event = shift;
+    my $ec    = shift;
+
+    my $type = $event->event_type;
+    my $method = $event_dispatch{$type};
+    return unless $method;
+
+    $self->$method($event, $ec);
+
+    return;
+}
+
+
+# Start of testing
+sub accept_stream_start {
     my $self = shift;
 
     $self->write(out => <<"HTML");
@@ -46,7 +72,8 @@ HTML
 }
 
 
-sub INNER_end {
+# End of testing
+sub accept_stream_end {
     my $self = shift;
 
     $self->write(out => <<"HTML");
@@ -59,6 +86,7 @@ HTML
 }
 
 
+# A test result
 sub INNER_accept_result {
     my $self = shift;
     my $result = shift;
