@@ -543,10 +543,10 @@ REQUIRE_OK
 
 sub use_ok ($) {
     my ($use) = @_;
-    eval <<USE_OK;
-use $use;
+    my $ok = eval <<USE_OK;
+use $use; 1;
 USE_OK
-    _ok(!$@, _where(), "use $use");
+    _ok($ok, _where(), "use $use", $@);
 }
 
 # runperl - Runs a separate perl interpreter.
