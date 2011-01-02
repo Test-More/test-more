@@ -22,6 +22,7 @@ use Test::Builder;
 
 my $Test = Test::Builder->new;
 $Test->exported_to('main');
+$Test->plan(skip_all => "threads are broken");
 $Test->plan(tests => 6);
 
 for(1..5) {
