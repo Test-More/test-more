@@ -31,9 +31,9 @@ sub Fail { Test::Builder2::Result->new_result( pass => 0 ) }
     ok my $history = new_history, q{new history} ;
     ok!$history->has_results, q{we no not yet have results};
     is_deeply $history->results, [], q{blank results set};
-    ok $history->accept_result( Pass() ), q{add pass};
-    ok $history->accept_result( Fail() ), q{add fail};
-    ok $history->accept_results( Pass(), Fail() ), q{can add multiples};
+    $history->accept_result( Pass() );
+    $history->accept_result( Fail() );
+    $history->accept_results( Pass(), Fail() );
     ok!$history->has_results, q{we have no results};
     
     is $history->result_count, 0, q{result count is 0 as we don't store them};

@@ -30,9 +30,9 @@ sub Fail { Test::Builder2::Result->new_result( pass => 0, @_ ) }
     ok my $history = new_history, q{new history} ;
     ok!$history->has_results, q{we no not yet have results};
     is_deeply $history->results, [], q{blank results set};
-    ok $history->accept_result( Pass() ), q{add pass};
-    ok $history->accept_result( Fail() ), q{add fail};
-    ok $history->accept_results( Pass(), Fail() ), q{can add multiples};
+    $history->accept_result( Pass() );
+    $history->accept_result( Fail() );
+    $history->accept_results( Pass(), Fail() );
     ok $history->has_results, q{we have results};
     
     is $history->result_count, 4, q{count looks good};
@@ -72,14 +72,14 @@ sub Fail { Test::Builder2::Result->new_result( pass => 0, @_ ) }
 # multiple results with same test number
 {
    my $h = new_history;
-   ok $h->accept_results(Pass(test_number=>1), Pass(test_number=>1));
+   $h->accept_results(Pass(test_number=>1), Pass(test_number=>1));
    is $h->result_count,2;
 }
 
 {
    my $h = new_history;
-   ok $h->accept_event('BEGIN 1');
-   ok $h->accept_result(Pass());
+   $h->accept_event('BEGIN 1');
+   $h->accept_result(Pass());
    TODO: {
       our $TODO;
       local $TODO = 'accept_event should not accept Results';
