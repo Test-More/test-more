@@ -650,6 +650,8 @@ sub done_testing {
         }
     }
 
+    $self->stream_start unless $self->stream_started;
+
     my %plan = defined $num_tests ? ( asserts_expected => $num_tests ) : ( no_plan => 1 );
     $self->set_plan( %plan ) unless $self->{Have_Plan};
 
