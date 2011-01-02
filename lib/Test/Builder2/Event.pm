@@ -59,10 +59,40 @@ The intent is to provide a way to dump all the information in an Event
 without having to call methods which may or may not exist.
 
 
+=head2 Provided Methods
+
+=head3 event_id
+
+    my $id = $event->event_id;
+
+Returns an identifier for this event unique to this process.
+
+Useful if an EventWatcher posts its own events and doesn't want to
+process them twice.
+
+=cut
+
+my $Counter = int rand(1_000_000);
+has event_id =>
+  is            => 'ro',
+  isa           => 'Str',
+  lazy          => 1,
+  default       => sub {
+      my $self = shift;
+
+      # Include the class in case somebody else decides to use
+      # just an integer.
+      return ref($self) . '-' . $Counter++;
+  }
+;
+
+
 =head1 SEE ALSO
 
 L<Test::Builder2::Result>
 
 =cut
+
+no Test::Builder2::Mouse::Role;
 
 1;
