@@ -14,8 +14,6 @@ use strict;
         my $self   = shift;
         my $result = shift;
 
-        # Have to check that we're not in an assert because assert_end()
-        # would have already popped the stack.
         die "Test said to die" if $result->name =~ /\b die \b/x;
 
         return;
