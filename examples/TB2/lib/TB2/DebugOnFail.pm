@@ -35,17 +35,18 @@ after the assert was called instead.
 
 
 {
-    package TB2::DebugOnFail::Role;
+    package TB2::DebugOnFail;
 
-    use Test::Builder2::Mouse::Role;
+    use Test::Builder2::Mouse;
+    with 'Test::Builder2::EventWatcher';
 
-    after assert_end => sub {
+    sub accept_event {}
+
+    sub accept_result {
         my $self   = shift;
         my $result = shift;
 
         return if $result;
-
-        return if $self->top_stack->in_assert;
 
         $DB::single = 1;
         return;  # welcome to the debugger.  $result contains the result
@@ -53,6 +54,6 @@ after the assert was called instead.
 }
 
 require Test::Builder2;
-TB2::DebugOnFail::Role->meta->apply( Test::Builder2->singleton );
+Test::Builder2->singleton->event_coordinator->add_late_watchers( TB2::DebugOnFail->new );
 
 1;
