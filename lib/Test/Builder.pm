@@ -814,7 +814,7 @@ sub ok {
     # store, so we turn it into a boolean.
     $test = $test ? 1 : 0;
 
-    lock $self->history;
+#    lock( $self->history );
 
     # In case $name is a string overloaded object, force it to stringify.
     $self->_unoverload_str( \$name );
@@ -1238,7 +1238,7 @@ sub skip {
     $why ||= '';
     $self->_unoverload_str( \$why );
 
-    lock( $self->history );
+#    lock( $self->history );
 
     my($pack, $file, $line) = $self->caller;
     my $result = Test::Builder2::Result->new_result(
@@ -1270,7 +1270,7 @@ sub todo_skip {
     my( $self, $why ) = @_;
     $why ||= '';
 
-    lock( $self->history );
+#    lock( $self->history );
 
     my($pack, $file, $line) = $self->caller;
     my $result = Test::Builder2::Result->new_result(
@@ -1996,8 +1996,8 @@ sub current_test {
     if( defined $num ) {
         my $history = $self->history;
 
-        lock( $counter );
-        lock( $history );
+#        lock( $counter );
+#        lock( $history );
 
         # If the test counter is being pushed forward fill in the details.
         my $results = $history->results;
