@@ -5,7 +5,8 @@ use Test::Builder2::Mouse;
 use Test::Builder2::StackBuilder;
 
 with 'Test::Builder2::Singleton',
-     'Test::Builder2::EventWatcher';
+     'Test::Builder2::EventWatcher',
+     'Test::Builder2::CanTry';
 
 
 =head1 NAME
@@ -156,20 +157,13 @@ sub _update_statistics {
     }
 }
 
-sub _try {
-    my $self = shift;
-    my $code = shift;
-
-    local($@, $!);
-    return eval { $code->() };
-}
 
 before results_push => sub{
     my $self = shift;
 
     for my $result (@_) {
         croak "results_push() takes Result objects"
-          if !$self->_try(sub { $result->isa('Test::Builder2::Result::Base') });
+          if !$self->try(sub { $result->isa('Test::Builder2::Result::Base') });
     }
 
     $self->_update_statistics(@_);

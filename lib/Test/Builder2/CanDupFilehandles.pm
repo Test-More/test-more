@@ -1,6 +1,7 @@
 package Test::Builder2::CanDupFilehandles;
 
 use Test::Builder2::Mouse::Role;
+with 'Test::Builder2::CanTry';
 
 
 =head1 NAME
@@ -63,29 +64,10 @@ sub autoflush {
 }
 
 
-sub _try {
-    my( $self, $code, %opts ) = @_;
-
-    my $error;
-    my $return;
-    {
-        local $!;               # eval can mess up $!
-        local $@;               # don't set $@ in the test
-        local $SIG{__DIE__};    # don't trip an outside DIE handler.
-        $return = eval { $code->() };
-        $error = $@;
-    }
-
-    die $error if $error and $opts{die_on_fail};
-
-    return wantarray ? ( $return, $error ) : $return;
-}
-
-
 sub _copy_io_layers {
     my( $self, $src, $dst ) = @_;
 
-    $self->_try(
+    $self->try(
         sub {
             require PerlIO;
             my @src_layers = PerlIO::get_layers($src);

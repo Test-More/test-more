@@ -524,7 +524,7 @@ sub can_ok ($@) {
 
     my @nok = ();
     foreach my $method (@methods) {
-        $tb->_try( sub { $proto->can($method) } ) or push @nok, $method;
+        $tb->try( sub { $proto->can($method) } ) or push @nok, $method;
     }
 
     my $name = (@methods == 1) ? "$class->can('$methods[0]')" :
@@ -584,7 +584,7 @@ sub isa_ok ($$;$) {
     else {
         my $whatami = ref $object ? 'object' : 'class';
         # We can't use UNIVERSAL::isa because we want to honor isa() overrides
-        my( $rslt, $error ) = $tb->_try( sub { $object->isa($class) } );
+        my( $rslt, $error ) = $tb->try( sub { $object->isa($class) } );
         if($error) {
             if( $error =~ /^Can't call method "isa" on unblessed reference/ ) {
                 # Its an unblessed reference
@@ -660,7 +660,7 @@ sub new_ok {
     $object_name = "The object" unless defined $object_name;
 
     my $obj;
-    my( $success, $error ) = $tb->_try( sub { $obj = $class->new(@$args); 1 } );
+    my( $success, $error ) = $tb->try( sub { $obj = $class->new(@$args); 1 } );
     if($success) {
         local $Test::Builder::Level = $Test::Builder::Level + 1;
         isa_ok $obj, $class, $object_name;
