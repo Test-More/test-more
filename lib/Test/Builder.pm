@@ -13,7 +13,7 @@ use Test::Builder2::threads::shared;
 use Test::Builder2::Events;
 use Test::Builder2::EventCoordinator;
 
-with 'Test::Builder2::CanDupFilehandles';
+with 'Test::Builder2::CanDupFilehandles', 'Test::Builder2::CanTry';
 
 
 =head1 NAME
@@ -877,7 +877,7 @@ sub _unoverload {
     my $self = shift;
     my $type = shift;
 
-    $self->_try(sub { require overload; }, die_on_fail => 1);
+    $self->try(sub { require overload; }, die_on_fail => 1);
 
     foreach my $thing (@_) {
         if( $self->_is_object($$thing) ) {
@@ -893,7 +893,7 @@ sub _unoverload {
 sub _is_object {
     my( $self, $thing ) = @_;
 
-    return $self->_try( sub { ref $thing && $thing->isa('UNIVERSAL') } ) ? 1 : 0;
+    return $self->try( sub { ref $thing && $thing->isa('UNIVERSAL') } ) ? 1 : 0;
 }
 
 sub _unoverload_str {
@@ -1418,47 +1418,6 @@ DIAGNOSTIC
     return $ok;
 }
 
-# I'm not ready to publish this.  It doesn't deal with array return
-# values from the code or context.
-
-=begin private
-
-=item B<_try>
-
-    my $return_from_code          = $Test->try(sub { code });
-    my($return_from_code, $error) = $Test->try(sub { code });
-
-Works like eval BLOCK except it ensures it has no effect on the rest
-of the test (ie. C<$@> is not set) nor is effected by outside
-interference (ie. C<$SIG{__DIE__}>) and works around some quirks in older
-Perls.
-
-C<$error> is what would normally be in C<$@>.
-
-It is suggested you use this in place of eval BLOCK.
-
-=cut
-
-sub _try {
-    my( $self, $code, %opts ) = @_;
-
-    my $error;
-    my $return;
-    {
-        local $!;               # eval can mess up $!
-        local $@;               # don't set $@ in the test
-        local $SIG{__DIE__};    # don't trip an outside DIE handler.
-        $return = eval { $code->() };
-        $error = $@;
-    }
-
-    die $error if $error and $opts{die_on_fail};
-
-    return wantarray ? ( $return, $error ) : $return;
-}
-
-=end private
-
 
 =item B<is_fh>
 
@@ -1713,7 +1672,7 @@ sub explain {
     return map {
         ref $_
           ? do {
-            $self->_try(sub { require Data::Dumper }, die_on_fail => 1);
+            $self->try(sub { require Data::Dumper }, die_on_fail => 1);
 
             my $dumper = Data::Dumper->new( [$_] );
             $dumper->Indent(1)->Terse(1);
