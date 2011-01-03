@@ -13,6 +13,8 @@ use Test::Builder2::threads::shared;
 use Test::Builder2::Events;
 use Test::Builder2::EventCoordinator;
 
+with 'Test::Builder2::CanDupFilehandles';
+
 
 =head1 NAME
 
@@ -392,7 +394,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Todo}       = undef;
     $self->{Todo_Stack} = [];
     $self->{Start_Todo} = 0;
-    $self->{Opened_Testhandles} = 0;
 
     $self->_dup_stdhandles;
 
@@ -1841,19 +1842,10 @@ sub _new_fh {
     else {
         open $fh, ">", $file_or_fh
           or $self->croak("Can't open test output log $file_or_fh: $!");
-        _autoflush($fh);
+        $self->autoflush($fh);
     }
 
     return $fh;
-}
-
-sub _autoflush {
-    my($fh) = shift;
-    my $old_fh = select $fh;
-    $| = 1;
-    select $old_fh;
-
-    return;
 }
 
 my( $Testout, $Testerr );
@@ -1865,54 +1857,30 @@ sub _dup_stdhandles {
 
     # Set everything to unbuffered else plain prints to STDOUT will
     # come out in the wrong order from our own prints.
-    _autoflush($Testout);
-    _autoflush( \*STDOUT );
-    _autoflush($Testerr);
-    _autoflush( \*STDERR );
+    $self->autoflush($Testout);
+    $self->autoflush( \*STDOUT );
+    $self->autoflush($Testerr);
+    $self->autoflush( \*STDERR );
 
     $self->reset_outputs;
 
     return;
 }
 
+my $Opened_Testhandles = 0;
 sub _open_testhandles {
     my $self = shift;
 
-    return if $self->{Opened_Testhandles};
+    return if $Opened_Testhandles;
 
     # We dup STDOUT and STDERR so people can change them in their
     # test suites while still getting normal test output.
-    open( $Testout, ">&STDOUT" ) or die "Can't dup STDOUT:  $!";
-    open( $Testerr, ">&STDERR" ) or die "Can't dup STDERR:  $!";
+    $Testout = $self->dup_filehandle(*STDOUT);
+    $Testerr = $self->dup_filehandle(*STDERR);
 
-    $self->_copy_io_layers( \*STDOUT, $Testout );
-    $self->_copy_io_layers( \*STDERR, $Testerr );
-
-    $self->{Opened_Testhandles} = 1;
+    $Opened_Testhandles = 1;
 
     return;
-}
-
-sub _copy_io_layers {
-    my( $self, $src, $dst ) = @_;
-
-    $self->_try(
-        sub {
-            require PerlIO;
-            my @src_layers = PerlIO::get_layers($src);
-
-            _apply_layers($dst, @src_layers) if @src_layers;
-        }
-    );
-
-    return;
-}
-
-sub _apply_layers {
-    my ($fh, @layers) = @_;
-    my %seen;
-    my @unique = grep { $_ ne 'unix' and !$seen{$_}++ } @layers;
-    binmode($fh, join(":", "", "raw", @unique));
 }
 
 
