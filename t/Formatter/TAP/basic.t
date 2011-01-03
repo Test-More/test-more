@@ -33,13 +33,6 @@ sub last_output {
   $formatter->streamer->read('out');
 }
 
-# Test the defaults
-{
-    my $streamer = Test::Builder2::Streamer::TAP->new;
-    is $streamer->output_fh,  *STDOUT;
-    is $streamer->error_fh,   *STDERR;
-}
-
 # Test that begin does nothing with no args
 {
     new_formatter;

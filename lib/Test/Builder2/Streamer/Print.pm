@@ -1,6 +1,6 @@
 package Test::Builder2::Streamer::Print;
 use Test::Builder2::Mouse;
-with 'Test::Builder2::Streamer';
+with 'Test::Builder2::Streamer', 'Test::Builder2::CanDupFilehandles';
 
 
 =head1 NAME
@@ -24,13 +24,40 @@ It ignores your destination.  Everything goes to the L<output_fh>.
 
 The filehandle to which it should write.
 
+Defaults to a copy of C<STDOUT>.  This allows tests to muck around
+with STDOUT without it affecting test results.
+
 =cut
 
 has output_fh =>
   is            => 'rw',
   # "FileHandle" does not appear to include glob filehandles.
   #  isa           => 'FileHandle',
-  default       => *STDOUT,
+  lazy          => 1,
+  default       => sub {
+      return $_[0]->stdout;
+  }
+;
+
+=head3 stdout
+
+Stores a duplicated copy of C<STDOUT>.  Handy for resetting the
+output_fh().
+
+=cut
+
+has stdout =>
+  is            => 'rw',
+  default       => sub {
+      my $self = shift;
+
+      my $fh = $self->dup_filehandle(\*STDOUT);
+
+      $self->autoflush($fh);
+      $self->autoflush(*STDOUT);
+
+      return $fh;
+  }
 ;
 
 
