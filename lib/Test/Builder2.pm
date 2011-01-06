@@ -6,6 +6,7 @@ use Test::Builder2::Types;
 use Test::Builder2::Events;
 
 with 'Test::Builder2::Singleton';
+with 'Test::Builder2::CanTry';
 
 use Carp qw(confess);
 sub sanity ($) { confess "Assert failed" unless $_[0] };
@@ -282,10 +283,18 @@ sub assert_end {
     my $self   = shift;
     my $result = shift;
 
-    $self->event_coordinator->post_result($result) if
-      $self->top_stack->at_top and defined $result;
+    # Trap an error from a watcher...
+    my($ret, $error) = $self->try( sub {
+        $self->event_coordinator->post_result($result) if
+          $self->top_stack->at_top and defined $result;
+        1;
+    });
 
+    # ...because we have to pop the stack no matter what...
     sanity $self->top_stack->pop;
+
+    # ...then rethrow it.
+    die $error if $error;
 
     return;
 }
