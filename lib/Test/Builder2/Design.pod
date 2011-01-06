@@ -238,7 +238,7 @@ When C<is()> fails, you want the diagnostics to contain the file and line number
 =head2 Assert end actions
 
 This goes beyond just file and line numbers.  It also allows actions
-to happen when an assert fully completes, suck as "die-on-fail".  To
+to happen when an assert fully completes, such as "die-on-fail".  To
 expand on the is() example above:
 
     sub is {
@@ -259,7 +259,7 @@ is() takes the result from ok() (now an object) and adds its own diagnostics.  I
 
 =head2 Result output
 
-Finally, TB2 must wait until the entire assert stack has had an opportunity to add diagnostics to the result before it can print the result.  Why?  TB1, only doing TAP, is fortunate in that its a stream.  It can print a result as soon as it gets it, and then append diagnostics onto the end.  But this isn't true of other output formats.  XML, for example, requires an opening and closing tag.
+Finally, TB2 must wait until the entire assert stack has had an opportunity to add diagnostics to the result before it can print the result.  Why?  TB1, only doing TAP, is fortunate in that it's a stream.  It can print a result as soon as it gets it, and then append diagnostics onto the end.  But this isn't true of other output formats.  XML, for example, requires an opening and closing tag.
 
 
 =head2 Declaring Asserts
@@ -529,7 +529,7 @@ it is really the long form B<Test::Builder2::Foo>.
 Refers to the TB1 or TB2 object central to Perl's testing system.  It
 serves to abstract the details of writing a test library.  A builder
 defines how asserts are written, contains the event coordinator and is
-responsible for making sure it's asserts pass along events to the
+responsible for making sure its asserts pass along events to the
 coordinator.
 
 =head2 assert
@@ -560,7 +560,7 @@ watchers.
 
 =head2 event watcher
 
-And event watcher is a thing which does things with events (yes, it's
+An event watcher is a thing which does things with events (yes, it's
 supposed to be vague).  Examples include formatters and history.
 Custom event watchers can also be used to alter the behavior of tests (for
 example, die on assert failure) and even the event itself.
