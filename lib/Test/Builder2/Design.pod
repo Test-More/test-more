@@ -147,7 +147,7 @@ The primary way test libraries will alter the behavior of TB2 is by hooking into
 
 =head2 Diagnostics contain the file and line number where the user called the assert
 
-When an assert fails, it should report its file and line number so the user can easily find the failing assert.  This is one of the trickiest aspects of TB1 and TB2.  It has its own section, L</File and Line Diagnostics>.
+When an assert fails, it should report its file and line number so the user can easily find the failing assert.  This is one of the trickiest aspects of TB1 and TB2.  It has its own section, L</File and Line Information>.
 
 
 =head2 Test::NoWarnings
@@ -160,7 +160,7 @@ See F<examples/TB2/lib/TB2/NoWarnings.pm> for an example.
 
 This is the case where an assert called inside another assert is B<not> part of the same stack.
 
-See L</File and Line Diagnostics> for details.
+See L</File and Line Information> for details.
 
 =head2 Testing a test
 
@@ -514,7 +514,7 @@ and even alter the events and results.
 
 =head1 Glossary
 
-=head1 TB1
+=head2 TB1
 
 Refers to L<Test::Builder>.
 
