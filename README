@@ -23,9 +23,14 @@ things that were previously impossible are now possible.
 
 COMPATIBILITY
 
+Test::Builder, Test::More and Test::Simple will continue to work as
+before.
+
 Test::Builder2 is not directly compatible with Test::Builder, thus the
-new namespace, but Test::Builder will continue to work in harmony with
-Test::Builder2.
+new namespace.
+
+Test modules built with Test::Builder will work together with those
+built with Test::Builder2.
 
 
 WHAT WORKS
@@ -33,18 +38,30 @@ WHAT WORKS
 Test event hooks
 Multiple formatters (ie. you can output something other than TAP)
 Assert stacks (ie. no more $Test::Builder::Level)
-A bunch of other stuff
-Test::Buidler is using pieces of Test::Builder2
+Test::Buidler using Test::Builder2
+Event watchers (ie. what things like Test::NoWarnings)
 
 
 WHAT DOESN'T WORK
 
 Structured diagnostics
-Comments (traditional unstrucutred diagnostics)
-Plan enforcement
-A bunch of other stuff
+Comments (traditional diag() and note() style diagnostics)
+Threads
+subtests
 
 
 WHERE TO LOOK
 
 The new code is in lib/Test/Builder2* and tests in t/Builder2/
+
+An outline of the redesign is in Test::Builder2::Design.
+
+
+EXAMPLES
+
+Examples can be found in examples/TB2.  These include:
+
+* Alternative formats
+* Reimplemenation of Test::NoWarnings
+* Die-on-fail
+* Debug-on-fail
