@@ -294,6 +294,13 @@ for my $type (@Types) {
 }
 
 
+=head1 THANKS
+
+Thanks to hdp and rjbs who convinced me that an event coordinator was
+necessary.  Here is documentation of the historic moment:
+L<http://www.flickr.com/photos/xwrn/5334766071/>
+
+
 =head1 SEE ALSO
 
 L<Test::Builder2::EventWatcher>, L<Test::Builder2::Event>, L<Test::Builder2::Result>
