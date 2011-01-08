@@ -17,9 +17,9 @@ There is a glossary of terms at the end of this document.
 
 =head1 What is Test::Builder2?
 
-L<Test::Builder2> is a complete rewrite of L<Test::Builder> with less assumptions about how testing is to be done and more extensibility.
+L<Test::Builder2> is a complete rewrite of L<Test::Builder> with fewer assumptions about how testing is to be done and more extensibility.
 
-So what is Test::Builder?  It is the object which backs all the Perl testing modules worth knowing about.  It provides the baseline functionality of testing, coordinates testing modules and formats the results as TAP.  It is what allows you to use multiple C<Test::> modules written by completely different authors independently together in the same test script without them stepping on each other.
+So what is Test::Builder?  It is the object that backs all the Perl testing modules worth knowing about.  It provides the baseline functionality of testing, coordinates testing modules and formats the results as TAP.  It is what allows you to use multiple C<Test::> modules written by completely different authors independently together in the same test script without them stepping on each other.
 
 Fundamentally, TB2 coordinates these things:
 
@@ -27,7 +27,7 @@ Fundamentally, TB2 coordinates these things:
 
 =item Record when a stream starts and ends
 
-This alllows setting of the plan, if any, and maybe printing out headers.
+This allows setting of the plan, if any, and maybe printing out headers.
 
 =item Record results
 
@@ -59,7 +59,7 @@ actually to cover an obscure, but important, condition.
 
 =head2 Universal
 
-If TB2 were a person, "thought shalt be universally applicable" would be tatooed upside down on their belly in flaming, writhing letters to remind itself of its responsbility to B<all> Perl users everywhere.
+If TB2 were a person, "thou shalt be universally applicable" would be tattooed upside down on their belly in flaming, writhing letters to remind itself of its responsbility to B<all> Perl users everywhere.
 
 This is the goal which has the farthest reaching consequences.  Every testing module worth knowing about is backed by TB1 and will be backed by TB2.  As a result, TB2 I<has to work>, it has to work I<everywhere Perl does> and it has to be able to test every conceivable thing.
 
@@ -72,7 +72,7 @@ While TB2 has to be universal, extensions do not.  TB2 will reject many features
 
 TB2 has to work in every environment which Perl does.  If it doesn't, TB2 de facto eliminates that environment from serious use by Perl.  It can make no assumptions about the environment which are not universal.  There's no "it'll work on most systems" compromises.
 
-As far as Perl goes, TB2 supports back to 5.8.1.  5.8.0's threading is too unstable.  5.6 is missing too many features (the biggest is scalar refere ce filehandles critical for debugging) and is all but extinct in the wild.  Even Debian oldstable ships 5.8.8.
+As far as Perl goes, TB2 supports back to 5.8.1.  5.8.0's threading is too unstable.  5.6 is missing too many features (the biggest is scalar reference filehandles critical for debugging) and is all but extinct in the wild.  Even Debian oldstable ships 5.8.8.
 
 
 =head3 Reliable
@@ -86,7 +86,7 @@ Users must be able to write test libraries on top of TB2 that do pretty much any
 
 There are three primary means of doing this.  The most common will be writing a test module using L<Test::Builder2::Module>.  Users will write logic to test their statement, and then hand the result off to a TB2 object for processing.
 
-The second is by adding roles to TB2.  Those not familiar with roles, they're kind of like object plugins... sort of.
+The second is by adding roles to TB2.  For those not familiar with roles, they're kind of like object plugins... sort of.
 
 The third is by hooking into events, like when an assert starts or finishes.
 
@@ -102,7 +102,7 @@ See L<Test::Builder2::Format> for details.
 
 =head3 Multiple Streams
 
-TB1 has limited support for outputing somewhere other than STDOUT and STDERR.  TB2 will have full control over where and how output occurs.
+TB1 has limited support for outputting somewhere other than STDOUT and STDERR.  TB2 will have full control over where and how output occurs.
 
 See L<Test::Builder2::Streamer> for details.
 
@@ -111,14 +111,14 @@ See L<Test::Builder2::Streamer> for details.
 
 TB1 and L<Test::More> avoid making assumptions about how and what you're testing, sticking to functions which provide unambiguous functionality and are universally applicable.  That is, you're not going to find code that tests XML.
 
-TB2 pushes this further, in ways already mentioned, and by stripping itself down at the core to just storing, formatting and streaming results.  It does not provide anything but the equivalent of C<ok()>.  Additional functionality will be available in various roles which ship with TB2.  Most library authors will use those roles by default, but radical extensions may use the stripped down TB2.
+TB2 pushes this further, in ways already mentioned, and by stripping itself down at the core to just storing, formatting and streaming results.  It does not provide anything but the equivalent of C<ok()>.  Additional functionality will be available in various roles that ship with TB2.  Most library authors will use those roles by default, but radical extensions may use the stripped down TB2.
 
 Two drivers for this are L<Fennec> and the need for L<Test::Builder> itself to use TB2.  The less TB2 does the weirder test library authors can get.
 
 
 =head3 No Dependencies
 
-TB2 can have no external dependencies (except Perl itself).  It may create circular dependencies, but more importantly they introduce unreliabilies in TB2.
+TB2 can have no external dependencies (except Perl itself).  External dependencies may create circular dependencies, and more importantly they introduce unreliabilies in TB2.
 
 
 =head2 Easy
@@ -213,16 +213,16 @@ example, here is a simple implementation of is().
 is() uses ok() to do most of the work.  Then it adds its diagnostics
 to the result (an overloaded object in TB2) and passes it along.
 
-To accomplish this, TB2 records the stack of asserts being called and who called them.  This turns out to be one of the more involved parts of TB2, but its necessary for some critical features.
+To accomplish this, TB2 records the stack of asserts being called and who called them.  This turns out to be one of the more involved parts of TB2, but it's necessary for some critical features.
 
 
 =head2 File and Line Information
 
 One of the friendliest and trickiest features of TB1 is correctly reporting the file and line where an assert failed.  This is because asserts call asserts which call asserts which ultimately call C<ok> which does the actual passing or failing.  It needs to know where the user originally called the assert, the "top" of the assert stack.
 
-Similar in functionality to Carp, but it has to be far more robust.  It cannot guess based on crossing package boundaries, it has to know.  TB1 accomplished this by keeping track of how far down the stack you are at any moment with C<$Level>.  This results in complicated accounting that's often not quite right, and it bubbles up to the user's level who must remember to localize and increment C<$Level>.
+This is similar in functionality to Carp, but it has to be far more robust.  It cannot guess based on crossing package boundaries, it has to know.  TB1 accomplished this by keeping track of how far down the stack you are at any moment with C<$Level>.  This results in complicated accounting that's often not quite right, and it bubbles up to the user's level, where the user must remember to localize and increment C<$Level>.
 
-You must be able to trivially wrap an assert in another assert and still have the file and line number come out B<at the outermost assert> which is presumably the one the user wrote.  This will allow users to quickly and trivially compose new domain specific assert without having to know about TB2.
+You must be able to trivially wrap an assert in another assert and still have the file and line number come out B<at the outermost assert> which is presumably the one the user wrote.  This will allow users to quickly and trivially compose new domain specific asserts without having to know about TB2.
 
 For example, here is how is() would ideally be implemented by a user (ignoring diagnostics for the moment):
 
@@ -259,7 +259,7 @@ is() takes the result from ok() (now an object) and adds its own diagnostics.  I
 
 =head2 Result output
 
-Finally, TB2 must wait until the entire assert stack has had an opportunity to add diagnostics to the result before it can print the result.  Why?  TB1, only doing TAP, is fortunate in that its a stream.  It can print a result as soon as it gets it, and then append diagnostics onto the end.  But this isn't true of other output formats.  XML, for example, requires an opening and closing tag.
+Finally, TB2 must wait until the entire assert stack has had an opportunity to add diagnostics to the result before it can print the result.  Why?  TB1, only doing TAP, is fortunate in that it's a stream.  It can print a result as soon as it gets it, and then append diagnostics onto the end.  But this isn't true of other output formats.  XML, for example, requires an opening and closing tag.
 
 
 =head2 Declaring Asserts
@@ -274,12 +274,12 @@ We B<cannot> assume that asserts are exported functions.  Or that every function
         return ok $have, $want, $name;
     };
 
-C<install_test> is exported by TB2::Module.  It wraps the user's function in a little shim that triggers assert_start and assert_end events.  It also records this fact in an assert stack, assert_start pushes onto the stack and assert_end pops it.  The asset stack tracks where each assert was called.  If an assert fails anywhere in the stack it can get the file and line number information from the top of the stack.
+C<install_test> is exported by TB2::Module.  It wraps the user's function in a little shim that triggers assert_start and assert_end events.  It also records this fact in an assert stack, assert_start pushes onto the stack and assert_end pops it.  The assert stack tracks where each assert was called.  If an assert fails anywhere in the stack it can get the file and line number information from the top of the stack.
 
 
 =head2 Multiple Stacks
 
-Currently there is only one stack, see C<top_stack> in TB2.  This must be developed into multiple stacks to handle some use cases, the most important is L<Test::Warn> and L<Test::Exception>.
+Currently there is only one stack, see C<top_stack> in TB2.  This must be developed into multiple stacks to handle some use cases, the most important are L<Test::Warn> and L<Test::Exception>.
 
 For example:
 
@@ -338,13 +338,13 @@ This assert has multiple asserts inside it, but the final one is the important o
 
 =head1 Mouse
 
-TB2 uses Mouse, which is the Moose interface without dependencies and sluggishness.  It takes a great risk in relying on a complicated module.  The decision was made on the speculation that if TB2 used a real object system that might allow the design to go in interesting directions not otherwise easily available.
+TB2 uses Mouse, which is the Moose interface without dependencies and sluggishness.  It takes a great risk in relying on a complicated module.  The decision was made on the speculation that if TB2 used a real object system, that might allow the design to go in interesting directions not otherwise easily available.
 
-Two user visible design features have come out of this.  First is that TB2's event system, rather than having explict event callbacks, is modelled by simply wrapping public TB2 methods using Mouse method wrappers.  This greatly simplifies designing and implementing test events and provides a more flexible system since users can safely wrap any public method rather than waiting for TB2 to add a hook.  Hook points fall naturally out of decomposing the steps of handling results.
+Two user visible design features have come out of this.  The first is that TB2's event system, rather than having explict event callbacks, is modelled by simply wrapping public TB2 methods using Mouse method wrappers.  This greatly simplifies designing and implementing test events and provides a more flexible system since users can safely wrap any public method rather than waiting for TB2 to add a hook.  Hook points fall naturally out of decomposing the steps of handling results.
 
-The second is the ability to compose TB2 with roles.  Rather than adding functionality by subclassing, it can be added with roles.  Subclassing is untenable in the long run.  Test::A will want to use their TB2 subclass while Test::B will want to use its own TB2 subclass.  They can't both have the singleton.  Rather than come up with increasingly complicated ways to reconcile this, users can add functionality to TB2 with roles applied to the TB2 singleton.  Roles are add, rather than modify, functionality.  Collisions will only occur in method names and will be very clear, about the same level of risk as exporting a function.  Modifications of existing functionality comes from method modifiers outlines above.
+The second is the ability to compose TB2 with roles.  Rather than adding functionality by subclassing, it can be added with roles.  Subclassing is untenable in the long run.  Test::A will want to use their TB2 subclass while Test::B will want to use its own TB2 subclass.  They can't both have the singleton.  Rather than come up with increasingly complicated ways to reconcile this, users can add functionality to TB2 with roles applied to the TB2 singleton.  Roles add, rather than modify, functionality.  Collisions will only occur in method names and will be very clear, at about the same level of risk as exporting a function.  Modifications of existing functionality come from method modifiers outlined above.
 
-Roles also let TB2 shed large amounts of TB1 functionality, leaving them to roles.  For example, most of the helper assert methods in TB1 like C<is_eq> and C<like> are not present in core TB2 making it much simpler.  They will be in something like TB2::More::Asserts which will probably be composed in by default.
+Roles also let TB2 shed much of TB1's functionality, leaving it to roles.  For example, most of the helper assert methods in TB1 like C<is_eq> and C<like> are not present in core TB2 making it much simpler.  They will be in something like TB2::More::Asserts which will probably be composed in by default.
 
 Roles and wrapping methods allow TB2 to remain a singleton while being extensible by multiple authors without explicit coordination.
 
@@ -529,7 +529,7 @@ it is really the long form B<Test::Builder2::Foo>.
 Refers to the TB1 or TB2 object central to Perl's testing system.  It
 serves to abstract the details of writing a test library.  A builder
 defines how asserts are written, contains the event coordinator and is
-responsible for making sure it's asserts pass along events to the
+responsible for making sure its asserts pass along events to the
 coordinator.
 
 =head2 assert
@@ -560,7 +560,7 @@ watchers.
 
 =head2 event watcher
 
-And event watcher is a thing which does things with events (yes, it's
+And event watcher is a thing that does things with events (yes, it's
 supposed to be vague).  Examples include formatters and history.
 Custom event watchers can also be used to alter the behavior of tests (for
 example, die on assert failure) and even the event itself.
@@ -584,12 +584,12 @@ unparsable.
 
 =head2 comment
 
-A piece of information in the stream which may be parsed but is
+A piece of information in the stream that may be parsed but is
 ignored and has no effect on the result of the stream.
 
 =head2 note
 
-A comment which is not normally shown to the user put there for
+A comment which is not normally shown to the user, put there for
 debugging and informational purposes.
 
 =head2 stream
@@ -604,7 +604,7 @@ system this is all the F<.t> files.
 
 =head2 formatter
 
-What takes the abstract result and turns it into parsable output.  For
+Takes the abstract result and turns it into parsable output.  For
 example, L<Test::Builder2::Formatter::TAP> turns test results into the
 familiar TAP.
 
@@ -612,9 +612,9 @@ See L<Test::Builder2::Formatter> for details.
 
 =head2 streamer
 
-What takes the formatted stream and outputs it, usually to STDOUT and
-STDERR but it may capture it for debugging purposes, or send it as an
-email, or write it to a file, or all of that.
+Takes the formatted stream and outputs it, usually to STDOUT and
+STDERR but it may instead capture it for debugging purposes, or send 
+it as an email, or write it to a file, or do all of these things.
 
 A formatter contains a streamer.
 
