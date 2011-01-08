@@ -19,7 +19,7 @@ TB2::DebugOnFail - Enter the debugger on failure
 
 =head1 DESCRIPTION
 
-A demonstration of using a method modifier on the assert_end action to
+A demonstration of writing an EventWatcher using C<accept_result> to
 drop you into the debugger when an assert fails.
 
 =head1 CAVEATS
@@ -30,6 +30,10 @@ You'll wind up at the end of the DebugOnFail assert_end wrapper.  You
 can hit 'r' a few times to get back to your test, or examine the
 $result object.  It would be nice if it could start the debugger just
 after the assert was called instead.
+
+=head1 SEE ALSO
+
+L<Test::Builder2::EventWatcher>
 
 =cut
 
@@ -53,6 +57,7 @@ after the assert was called instead.
     };
 }
 
+# Yep, this is less than ideal.
 require Test::Builder2;
 Test::Builder2->singleton->event_coordinator->add_late_watchers( TB2::DebugOnFail->new );
 

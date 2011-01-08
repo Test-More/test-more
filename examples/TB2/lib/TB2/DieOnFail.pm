@@ -19,8 +19,19 @@ TB2::DieOnFail - Stop the test on the first failure
 
 =head1 DESCRIPTION
 
-A demonstration of using a method modifier on the assert_end action to
+A demonstration of writing an EventWatcher using C<accept_result> to
 kill the test when an assert fails.
+
+=head1 CAVEATS
+
+While this will work with Test::Builder based modules (for example,
+Test::More still uses Test::Builder) it will kill the test B<before>
+any diagnostics are output.  Test::Builder2 based modules (such as
+Test::Simple) do not have this problem.
+
+=head1 SEE ALSO
+
+L<Test::Builder2::EventWatcher>
 
 =cut
 
