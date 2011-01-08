@@ -48,6 +48,9 @@ Structured diagnostics
 Comments (traditional diag() and note() style diagnostics)
 Threads
 subtests
+Test::Aggregate
+Test::Group
+Test::SharedFork
 
 
 WHERE TO LOOK
