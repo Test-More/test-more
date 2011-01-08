@@ -132,15 +132,15 @@ See F<examples/TB2> in the source directory for examples of TB2 extensions.
 
 =head2 Writing Test Libraries
 
-The simplest way to extend TB2 will be to write a test library.  L<Test::Builder2::Module> provides the conveniences to the test author.
+The simplest way to extend TB2 will be to write a test library.  L<Test::Builder2::Module> provides the conveniences to the test author.  L<Test::Simple> is a simple example of a Test::Builder2 module.
 
 =head2 Writing TB2 Roles
 
-For internal use, roles can be applied to the TB2 singleton to expand its functionality while leaving the TB2 class slim.  Roles include TB2::Assert::More which will provide most of the Test::More functionality currently in TB1.
+For internal use, roles can be applied to the TB2 singleton to expand its functionality while leaving the TB2 class slim.  Roles will include TB2::Assert::More which will provide most of the Test::More functionality currently in TB1.
 
 =head2 TB2 Events
 
-The primary way test libraries will alter the behavior of TB2 is by hooking into test events, such as an assert ending or the plan being set.  Rather than design an event callback system, method modifiers (provided by Mouse) will be used.  Test libraries can simply put modifiers on public TB2 methods and TB2 methods will be decomposed to correspond with test events.  This allows event modifiers and callbacks to stack in a sane way.  Not having an explicit callback system allows test authors to extend TB2 in ways not anticipated.  Finally, TB2 is not gummed up by checking for callbacks all over the place.
+The primary way test libraries will alter the behavior of tests is by writing a test event watcher.  Everything of interest in a test triggers an event such as asserts, the plan being set, even diagnostic output.  A watcher can take action based on an event, or even alter an event as it happens.  Things like Test::NoWarnings, halting on test failure, and enforcing test names will be implemented as event watchers.  Formatters are also event watchers.  See L<Test::Builder2::EventWatcher>, L<Test::Builder2::EventCoordinator> and L<Test::Builder2::Events> for details.
 
 
 =head1 Use Cases
@@ -342,7 +342,7 @@ TB2 uses Mouse, which is the Moose interface without dependencies and sluggishne
 
 Two user visible design features have come out of this.  The first is that TB2's event system, rather than having explict event callbacks, is modelled by simply wrapping public TB2 methods using Mouse method wrappers.  This greatly simplifies designing and implementing test events and provides a more flexible system since users can safely wrap any public method rather than waiting for TB2 to add a hook.  Hook points fall naturally out of decomposing the steps of handling results.
 
-The second is the ability to compose TB2 with roles.  Rather than adding functionality by subclassing, it can be added with roles.  Subclassing is untenable in the long run.  Test::A will want to use their TB2 subclass while Test::B will want to use its own TB2 subclass.  They can't both have the singleton.  Rather than come up with increasingly complicated ways to reconcile this, users can add functionality to TB2 with roles applied to the TB2 singleton.  Roles add, rather than modify, functionality.  Collisions will only occur in method names and will be very clear, at about the same level of risk as exporting a function.  Modifications of existing functionality come from method modifiers outlined above.
+The second is the ability to compose TB2 with roles.  Rather than adding functionality by subclassing, it can be added with roles.  Subclassing is untenable in the long run.  Test::A will want to use their TB2 subclass while Test::B will want to use its own TB2 subclass.  They can't both have the singleton.  Rather than come up with increasingly complicated ways to reconcile this, users can add functionality to TB2 with roles applied to the TB2 singleton.  Roles add, rather than modify, functionality.  Collisions will only occur in method names and will be very clear, at about the same level of risk as exporting a function.
 
 Roles also let TB2 shed much of TB1's functionality, leaving it to roles.  For example, most of the helper assert methods in TB1 like C<is_eq> and C<like> are not present in core TB2 making it much simpler.  They will be in something like TB2::More::Asserts which will probably be composed in by default.
 
