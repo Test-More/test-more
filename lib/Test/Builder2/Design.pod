@@ -208,12 +208,11 @@ details.
 
 =head1 Use Cases
 
-=head2 Diagnostics contain the file and line number where the user called
-the assert
+=head2 Diagnostics contain the file and line number where the user called the assert
 
 When an assert fails, it should report its file and line number so the user
 can easily find the failing assert.  This is one of the trickiest aspects
-of TB1 and TB2.  It has its own section, L</File and Line Diagnostics>.
+ of TB1 and TB2.  It has its own section, L</File and Line Information>.
 
 
 =head2 Test::NoWarnings
@@ -229,7 +228,7 @@ See F<examples/TB2/lib/TB2/NoWarnings.pm> for an example.
 This is the case where an assert called inside another assert is B<not>
 part of the same stack.
 
-See L</File and Line Diagnostics> for details.
+See L</File and Line Information> for details.
 
 =head2 Testing a test
 
@@ -331,7 +330,7 @@ number of the call to is(), not the call to C<ok()> inside is().
 =head2 Assert end actions
 
 This goes beyond just file and line numbers.  It also allows actions
-to happen when an assert fully completes, suck as "die-on-fail".  To
+to happen when an assert fully completes, such as "die-on-fail".  To
 expand on the is() example above:
 
     sub is {
@@ -672,7 +671,7 @@ and even alter the events and results.
 
 =head1 Glossary
 
-=head1 TB1
+=head2 TB1
 
 Refers to L<Test::Builder>.
 
@@ -718,7 +717,7 @@ watchers.
 
 =head2 event watcher
 
-And event watcher is a thing that does things with events (yes, it's
+An event watcher is a thing which does things with events (yes, it's
 supposed to be vague).  Examples include formatters and history.
 Custom event watchers can also be used to alter the behavior of tests (for
 example, die on assert failure) and even the event itself.
