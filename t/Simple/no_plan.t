@@ -8,6 +8,3 @@ use warnings;
 use Test::Simple 'no_plan';
 
 ok("no_plan works with Test::Simple");
-
-# This should not be necessary
-done_testing;

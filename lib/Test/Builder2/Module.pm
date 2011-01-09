@@ -144,4 +144,15 @@ CODE
     return $code;
 }
 
+
+# End the stream if it has been started (or if someone else started it)
+END {
+    my $builder = Test::Builder2->singleton;
+    my $formatter = $builder->formatter;
+
+    # Really we should be asking history, but history doesn't have that
+    # functionality yet
+    $builder->stream_end if $formatter->stream_depth;
+}
+
 1;
