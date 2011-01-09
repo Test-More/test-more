@@ -1,5 +1,10 @@
 See README and version control log for Test::Builder2 changes.
 
+2.00_03  Mon Jan 10 09:38:22 EST 2011
+    Test Fix
+    * Casing mistake in t/CanDupFilehandles.t
+
+
 2.00_02  Sun Jan  9 21:20:30 EST 2011
     Second alpha release of Test::Builder2.
     Technology Demonstrator.
