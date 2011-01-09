@@ -7,7 +7,7 @@ BEGIN { require 't/test.pl' }
 
 use IO::Handle;
 
-use_ok 'Test::Builder2::CanDupFileHandles';
+use_ok 'Test::Builder2::CanDupFilehandles';
 
 {
     package Some::Class;
