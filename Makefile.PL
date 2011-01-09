@@ -72,7 +72,7 @@ WriteMakefile(
     INSTALLDIRS     => 'perl',
 
     test        => {
-        TESTS           => 't/*.t t/*/*.t',
+        TESTS           => 't/*.t t/*/*.t t/*/*/*.t',
     },
 
     ($mm_ver < 6.48 ? () : (MIN_PERL_VERSION => '5.8.1')),
