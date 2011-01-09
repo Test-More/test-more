@@ -108,6 +108,7 @@ t/Builder/done_testing_plan_mismatch.t
 t/Builder/done_testing_with_no_plan.t
 t/Builder/done_testing_with_number.t
 t/Builder/done_testing_with_plan.t
+t/Builder/expected_tests.t
 t/Builder/fail.t
 t/Builder/fork_with_new_stdout.t
 t/Builder/has_plan.t
@@ -115,17 +116,21 @@ t/Builder/has_plan2.t
 t/Builder/is_fh.t
 t/Builder/is_passing.t
 t/Builder/last_test_seen.t
+t/Builder/last_test_skipped.t
 t/Builder/maybe_regex.t
 t/Builder/no_diag.t
 t/Builder/no_ending.t
 t/Builder/no_header.t
+t/Builder/no_plan.t
 t/Builder/no_plan_at_all.t
 t/Builder/ok_obj.t
 t/Builder/output.t
 t/Builder/reset.t
 t/Builder/reset_outputs.t
+t/Builder/skip_all.t
 t/Builder/use_numbers.t
 t/Builder2/assert.t
+t/Builder2/assert_dies.t
 t/Builder2/AssertRecord.t
 t/Builder2/AssertStack.t
 t/Builder2/Counter.t
@@ -177,6 +182,7 @@ t/Formatter/POSIX_plus_Builder.t
 t/Formatter/Streamer.t
 t/Formatter/TAP/basic.t
 t/Formatter/TAP/ending_commentary.t
+t/Formatter/TAP/escapes.t
 t/harness_active.t
 t/History/History.t
 t/History/HistoryStats.t
@@ -229,6 +235,7 @@ t/require_ok.t
 t/shared_event_coordinator.t
 t/Simple/builder.t
 t/Simple/load.t
+t/Simple/no_plan.t
 t/Simple/pass.t
 t/skip.t
 t/skipall.t

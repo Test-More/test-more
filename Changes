@@ -1,5 +1,20 @@
 See README and version control log for Test::Builder2 changes.
 
+2.00_02  Sun Jan  9 21:20:30 EST 2011
+    Second alpha release of Test::Builder2.
+    Technology Demonstrator.
+    Design complete.
+    Threads broken.
+    Subtests broken.
+    Test::Builder converted to use Test::Builder2 infrastructure.
+    Let's see how much of CPAN this breaks.
+
+
+2.00_01  Mon Sep  6 14:42:38 2010 -0700
+    First alpha release of Test::Builder2.
+    Technology Preview.
+    Very incomplete.
+
 
 0.97_01  Fri Aug 27 22:50:30 PDT 2010
     Test Fixes
