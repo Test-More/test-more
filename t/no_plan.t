@@ -11,19 +11,17 @@ use Test::Builder::NoOutput;
 {
     my $tb = Test::Builder::NoOutput->create;
 
-#line 20
     ok !eval { $tb->plan(tests => undef) };
-    is($@, "Got an undefined number of tests at $0 line 20.\n");
-    is $tb->read, "TAP version 13\n";
+    is $@, sprintf "Got an undefined number of tests at %s line %d.\n", __FILE__, __LINE__ - 1;
+    is $tb->read, "";
 }
 
 {
     my $tb = Test::Builder::NoOutput->create;
 
-#line 24
     ok !eval { $tb->plan(tests => 0) };
-    is($@, "You said to run 0 tests at $0 line 24.\n");
-    is $tb->read, "TAP version 13\n";
+    is $@, sprintf "You said to run 0 tests at %s line %d.\n", __FILE__, __LINE__ - 1;
+    is $tb->read, "";
 }
 
 {
@@ -32,9 +30,8 @@ use Test::Builder::NoOutput;
 
     my $tb = Test::Builder::NoOutput->create;
 
-#line 31
     ok $tb->plan(no_plan => 1);
-    is( $warning, "no_plan takes no arguments at $0 line 31.\n" );
+    is $warning, sprintf "no_plan takes no arguments at %s line %d.\n", __FILE__, __LINE__ - 1;
     is $tb->has_plan, 'no_plan';
     is $tb->read, "TAP version 13\n";
 }

@@ -466,8 +466,6 @@ sub plan {
     $self->croak("You tried to plan twice") if $self->{Have_Plan};
 
     if( my $method = $plan_cmds{$cmd} ) {
-        $self->stream_start;
-
         local $Level = $Level + 1;
         $self->$method($arg);
     }
@@ -517,6 +515,8 @@ sub expected_tests {
 
         $self->{Expected_Tests} = $max;
 
+        $self->stream_start;
+
         $self->set_plan(
             asserts_expected => $max
         );
@@ -539,6 +539,8 @@ sub no_plan {
     $self->carp("no_plan takes no arguments") if $arg;
 
     $self->{No_Plan}   = 1;
+
+    $self->stream_start;
 
     $self->set_plan(
         no_plan => 1
@@ -700,6 +702,8 @@ sub skip_all {
 
     $reason = defined $reason ? $reason : '';
     $self->{Skip_All} = $self->parent ? $reason : 1;
+
+    $self->stream_start;
 
     $self->set_plan(
         skip            => 1,
