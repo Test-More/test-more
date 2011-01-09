@@ -147,7 +147,15 @@ CODE
 
 # End the stream if it has been started (or if someone else started it)
 END {
-    my $builder = Test::Builder2->singleton;
+    my $builder = eval { Test::Builder2->singleton; };
+
+    _do_ending($builder) if $builder;
+}
+
+
+sub _do_ending {
+    my $builder = shift;
+
     my $formatter = $builder->formatter;
 
     # Really we should be asking history, but history doesn't have that
