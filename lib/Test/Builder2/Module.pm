@@ -41,7 +41,10 @@ sub _module_import {
     # XXX I don't think this is right.  The stream shouldn't start just
     # because the module was used
     $class->Builder->stream_start;
-    $class->Builder->set_plan(@_) if @_;
+
+    my @input = @_;
+    push @input, 1 if defined $input[0] and $input[0] eq 'no_plan';
+    $class->Builder->set_plan(@input) if @input;
 
     $class->export_to_level(1, $class);
 }
