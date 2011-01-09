@@ -497,6 +497,7 @@ sub _escape {
 
     return if !defined $$string;
 
+    $$string =~ s{#}{\\#}g;
     $$string =~ s{\n}{\\n}g;
 
     return;
