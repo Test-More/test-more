@@ -1,14 +1,13 @@
 package Test::Builder2::Module;
 
 use 5.008001;
-use strict;
-use warnings;
+use Test::Builder2::Mouse;
+with 'Test::Builder2::CanTry';
 
 our $VERSION = '2.00_01';
 our $CLASS = __PACKAGE__;
 
 use base 'Exporter';
-
 our @EXPORT = qw(install_test builder);
 
 sub import {
@@ -38,13 +37,13 @@ sub _module_import {
     my $class  = shift;
     my $caller = caller;
 
-    # XXX I don't think this is right.  The stream shouldn't start just
-    # because the module was used
-    $class->Builder->stream_start;
-
     my @input = @_;
     push @input, 1 if defined $input[0] and $input[0] eq 'no_plan';
-    $class->Builder->set_plan(@input) if @input;
+
+    if( @input ) {
+        $class->Builder->stream_start;
+        $class->Builder->set_plan(@input);
+    }
 
     $class->export_to_level(1, $class);
 }
@@ -122,10 +121,17 @@ sub install_test {
         # Fire any before-test actions.
         $caller->Builder->assert_start();
 
-        my $result = $test_code->(@_);
+        # Guard against an assert dying...
+        my @args = @_;
+        my($result, $error) = $CLASS->try( sub {
+            return $test_code->(@args);
+        });
 
-        # And after-test.
+        # ...because we have to pop the assert stack on matter what
         $caller->Builder->assert_end($result);
+
+        # ...then rethrow the error
+        die $error if $error;
 
         return $result;
     };
