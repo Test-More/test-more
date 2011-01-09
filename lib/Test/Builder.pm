@@ -1258,6 +1258,8 @@ sub skip {
     $result = shared_clone($result);
     $self->event_coordinator->post_result( $result );
 
+    $self->last_test_seen( $self->current_test );
+
     return 1;
 }
 
@@ -1289,6 +1291,8 @@ sub todo_skip {
     );
     $result = shared_clone($result);
     $self->event_coordinator->post_result( $result );
+
+    $self->last_test_seen( $self->current_test );
 
     return 1;
 }
