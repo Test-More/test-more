@@ -1,5 +1,10 @@
 See README and version control log for Test::Builder2 changes.
 
+2.00_04
+    Test Fix
+    * Work around a qr// bug in Debian etch's perl in t/Builder2/NoWarnings.t
+
+
 2.00_03  Mon Jan 10 09:38:22 EST 2011
     Test Fix
     * Casing mistake in t/CanDupFilehandles.t
