@@ -36,7 +36,6 @@ This is a very, very simple HTML formatter to demonstrate how its done.
 my %event_dispatch = (
     "stream start"      => "accept_stream_start",
     "stream end"        => "accept_stream_end",
-    "set plan"          => "accept_set_plan",
 );
 
 sub INNER_accept_event {
