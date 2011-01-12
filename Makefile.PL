@@ -119,6 +119,7 @@ MAKE
         $make =~ s{\s+\z}{\n};
 
         my @perls = qw(
+            perl5.8.8
             perl5.8.9
             perl5.10.0
             perl5.10.1
