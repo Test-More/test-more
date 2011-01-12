@@ -36,7 +36,7 @@ L<Test::Builder2::EventWatcher>
 =cut
 
 {
-    package TB2::DieOnFail;
+    package TB2::DieOnFail::Watcher;
 
     use Test::Builder2::Mouse;
     with 'Test::Builder2::EventWatcher';
@@ -55,6 +55,6 @@ L<Test::Builder2::EventWatcher>
 }
 
 require Test::Builder2;
-Test::Builder2->singleton->event_coordinator->add_late_watchers( TB2::DieOnFail->new );
+Test::Builder2->singleton->event_coordinator->add_late_watchers( TB2::DieOnFail::Watcher->new );
 
 1;

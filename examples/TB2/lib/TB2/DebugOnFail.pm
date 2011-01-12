@@ -39,7 +39,7 @@ L<Test::Builder2::EventWatcher>
 
 
 {
-    package TB2::DebugOnFail;
+    package TB2::DebugOnFail::Watcher;
 
     use Test::Builder2::Mouse;
     with 'Test::Builder2::EventWatcher';
@@ -59,6 +59,6 @@ L<Test::Builder2::EventWatcher>
 
 # Yep, this is less than ideal.
 require Test::Builder2;
-Test::Builder2->singleton->event_coordinator->add_late_watchers( TB2::DebugOnFail->new );
+Test::Builder2->singleton->event_coordinator->add_late_watchers( TB2::DebugOnFail::Watcher->new );
 
 1;
