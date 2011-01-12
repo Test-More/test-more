@@ -32,63 +32,60 @@ plan is already set, but it doesn't.
 =cut
 
 {
-   package TB2::NoWarnings::WarningsWatcher;
+    package TB2::NoWarnings::WarningsWatcher;
 
-   use Test::Builder2::Mouse;
-   with 'Test::Builder2::EventWatcher';
+    use Test::Builder2::Mouse;
+    with 'Test::Builder2::EventWatcher';
 
-   has builder  =>
-     is                 => 'rw',
-     isa                => 'Test::Builder2',
-     default            => sub {
-         require Test::Builder2;
-         return Test::Builder2->singleton;
-     }
-   ;
+    has builder  =>
+      is                 => 'rw',
+      isa                => 'Test::Builder2',
+      default            => sub {
+          require Test::Builder2;
+          return Test::Builder2->singleton;
+      };
 
-   has warnings_seen =>
-     is                 => 'rw',
-     isa                => 'ArrayRef',
-     default            => sub { [] }
-   ;
+    has warnings_seen =>
+      is                 => 'rw',
+      isa                => 'ArrayRef',
+      default            => sub { [] };
 
-   has quiet_warnings =>
-     is                 => 'rw',
-     isa                => 'Bool',
-     default            => 0
-   ;
+    has quiet_warnings =>
+      is                 => 'rw',
+      isa                => 'Bool',
+      default            => 0;
 
-   my %event_handlers = (
-       'stream start'   => 'accept_stream_start',
-       'stream end'     => 'accept_stream_end',
-       'set plan'       => 'accept_set_plan'
-   );
+    my %event_handlers = (
+        'stream start'   => 'accept_stream_start',
+        'stream end'     => 'accept_stream_end',
+        'set plan'       => 'accept_set_plan'
+    );
 
-   sub accept_event {
-       my $self  = shift;
-       my $event = shift;
+    sub accept_event {
+        my $self  = shift;
+        my $event = shift;
 
-       my $event_type = $event->event_type;
-       my $handler = $event_handlers{$event_type};
-       return unless $handler;
+        my $event_type = $event->event_type;
+        my $handler = $event_handlers{$event_type};
+        return unless $handler;
 
-       $self->$handler($event);
+        $self->$handler($event);
 
-       return;
-   }
+        return;
+    }
 
-   sub accept_stream_start {
-       my $self = shift;
+    sub accept_stream_start {
+        my $self = shift;
 
-       $SIG{__WARN__} = sub {
-           push @{$self->warnings_seen}, @_;
-           warn @_ unless $self->quiet_warnings;
-       };
+        $SIG{__WARN__} = sub {
+            push @{$self->warnings_seen}, @_;
+            warn @_ unless $self->quiet_warnings;
+        };
 
-       return;
-   }
+        return;
+    }
 
-   sub accept_set_plan {
+    sub accept_set_plan {
         my $self  = shift;
         my $event = shift;
 
@@ -96,22 +93,23 @@ plan is already set, but it doesn't.
         $event->asserts_expected( $want + 1 ) if $want;
 
         return;
-    };
+    }
 
     sub accept_stream_end {
         my $self = shift;
 
         my $warnings = $self->warnings_seen;
+
         $self->builder
-             ->ok( scalar @$warnings, "no warnings" )
-             ->diagnostic([
-                 warnings => $warnings
-             ]);
+          ->ok( scalar @$warnings, "no warnings" )
+          ->diagnostic([
+              warnings => $warnings
+          ]);
 
         remove_warning_handler();
 
         return;
-    };
+    }
 
     sub remove_warning_handler {
         delete $SIG{__WARN__};
