@@ -4,6 +4,9 @@ See README and version control log for Test::Builder2 changes.
     Test Fix
     * Work around a qr// bug in Debian etch's perl in t/Builder2/NoWarnings.t
 
+    New Features
+    * Added a Log event.
+
 
 2.00_03  Mon Jan 10 09:38:22 EST 2011
     Test Fix
