@@ -8,6 +8,7 @@ use Test::Builder2::Event::StreamEnd;
 use Test::Builder2::Event::SetPlan;
 use Test::Builder2::Event::StreamMetadata;
 use Test::Builder2::Event::Log;
+use Test::Builder2::Event::Comment;
 use Test::Builder2::Result;
 
 
