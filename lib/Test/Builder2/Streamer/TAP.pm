@@ -38,8 +38,9 @@ Defaults to a copy of STDERR.
 has error_fh  =>
   is            => 'rw',
 #  isa           => 'FileHandle',
+  lazy          => 1,
   default       => sub {
-      return$_[0]->stderr
+      return $_[0]->stderr;
   }
 ;
 
