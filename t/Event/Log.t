@@ -12,7 +12,7 @@ note "Bad args"; {
     ok !eval { $CLASS->new; };
     like $@, qr{^\QAttribute (message) is required};
 
-    ok !eval { $CLASS->new( level => 42 ) };
+    ok !eval { $CLASS->new( message => "foo", level => 42 ) };
     like $@, qr{^\QAttribute (level) does not pass the type constraint};
 }
 
