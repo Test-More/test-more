@@ -3,6 +3,7 @@ package Test::Builder2::Singleton;
 # This is a role which implements a singleton
 
 use Carp;
+use Test::Builder2::Mouse ();
 use Test::Builder2::Mouse::Role;
 
 

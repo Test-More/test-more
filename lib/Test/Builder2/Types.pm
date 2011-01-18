@@ -1,5 +1,6 @@
 package Test::Builder2::Types;
 
+use Test::Builder2::Mouse ();
 use Test::Builder2::Mouse::Util qw(load_class);
 use Test::Builder2::Mouse::Util::TypeConstraints;
 

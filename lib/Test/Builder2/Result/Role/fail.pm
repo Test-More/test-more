@@ -1,5 +1,6 @@
 package Test::Builder2::Result::Role::fail;
 
+use Test::Builder2::Mouse ();
 use Test::Builder2::Mouse::Role;
 
 sub literal_pass { 0 }

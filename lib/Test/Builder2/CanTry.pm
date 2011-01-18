@@ -1,5 +1,6 @@
 package Test::Builder2::CanTry;
 
+use Test::Builder2::Mouse ();
 use Test::Builder2::Mouse::Role;
 
 

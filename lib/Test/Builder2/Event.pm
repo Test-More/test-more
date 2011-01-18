@@ -1,5 +1,6 @@
 package Test::Builder2::Event;
 
+use Test::Builder2::Mouse ();
 use Test::Builder2::Mouse::Role;
 
 requires qw(event_type as_hash);

@@ -1,5 +1,6 @@
 package Test::Builder2::Result::Role::skip;
 
+use Test::Builder2::Mouse ();
 use Test::Builder2::Mouse::Role;
 
 sub is_skip { 1 }
