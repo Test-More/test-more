@@ -1,11 +1,19 @@
 See README and version control log for Test::Builder2 changes.
 
-2.00_04
+2.00_04  Tue Jan 18 11:50:48 EST 2011
     Test Fix
     * Work around a qr// bug in Debian etch's perl in t/Builder2/NoWarnings.t
+    * Tests looking for Mouse can now correctly find it.
 
     New Features
-    * Added a Log event.
+    * Added a Log event (nothing using it yet)
+    * Added a Comment event (nothing using it yet)
+
+    Bug Fixes
+    * Upgraded Mouse to 0.87
+    * Fixed the SimpleHTML example
+    * TB2::Streamer::TAP->error_fh could get accidentally initialized
+      to undef.
 
 
 2.00_03  Mon Jan 10 09:38:22 EST 2011

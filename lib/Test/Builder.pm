@@ -4,7 +4,7 @@ use 5.008001;
 use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 
-our $VERSION = '2.00_03';
+our $VERSION = '2.00_04';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 # Conditionally loads threads::shared and fixes up old versions

@@ -4,7 +4,7 @@ use 5.008001;
 use Test::Builder2::Mouse;
 with 'Test::Builder2::CanTry';
 
-our $VERSION = '2.00_03';
+our $VERSION = '2.00_04';
 our $CLASS = __PACKAGE__;
 
 use base 'Exporter';
