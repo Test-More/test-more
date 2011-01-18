@@ -4,7 +4,7 @@
 
 BEGIN { require 't/test.pl'; }
 
-my $Has_Mouse = 0;
+my $Has_Mouse;
 BEGIN {
     $Has_Mouse = eval {
         require Mouse;

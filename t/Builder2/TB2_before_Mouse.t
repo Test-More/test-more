@@ -6,7 +6,7 @@ BEGIN { require 't/test.pl'; }
 
 use Test::Builder2;
 
-my $Has_Mouse = 0;
+my $Has_Mouse;
 BEGIN {
     $Has_Mouse = eval {
         require Mouse;
