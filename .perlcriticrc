@@ -61,6 +61,13 @@ short_subroutine_statements = 3
 [CodeLayout::ProhibitHardTabs]
 allow_leading_tabs = 0
 
+# Inform perlcritic that Mouse turns on strictures
+[TestingAndDebugging::RequireUseStrict]
+equivalent_modules = Mouse perl5i::0 perl5i::1 perl5i::2 Modern::Perl Test::Builder2::Mouse
+
+[TestingAndDebugging::RequireUseWarnings]
+equivalent_modules = Mouse perl5i::0 perl5i::1 perl5i::2 Modern::Perl Test::Builder2::Mouse
+
 
 ###
 ### New policies and options which are not released yet.
