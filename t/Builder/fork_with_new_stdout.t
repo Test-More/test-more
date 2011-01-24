@@ -28,9 +28,11 @@ if ( my $pid = fork ) {
     waitpid($pid, 0);
 
     $b->plan(tests => 3);
-    $b->is_eq($child[0], "TAP version 13\n",       "TAP version from child");
-    $b->is_eq($child[1], "1..1\n",                 "  plan");
-    $b->is_eq($child[2], "ok 1\n",                 "  ok");
+
+    # Deliberately not checking the newline, pipes on Strawberry mess them up
+    $b->like($child[0], qr{^TAP version 13},       "TAP version from child");
+    $b->like($child[1], qr{^1..1},                 "  plan");
+    $b->like($child[2], qr{^ok 1},                 "  ok");
 
     $b->note("Output from child...\n", @child);
 } else {
