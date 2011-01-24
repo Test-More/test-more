@@ -3,7 +3,7 @@ package Test::Simple;
 use 5.008001;
 use strict;
 
-our $VERSION = '2.00_04';
+our $VERSION = '2.00_05';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Builder2::Module;

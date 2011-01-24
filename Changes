@@ -1,8 +1,11 @@
 See README and version control log for Test::Builder2 changes.
 
-2.00_05
-    Bug Fixes
+2.00_05  Mon, 24 Jan 2011 14:52:27 +1000
+    Bug Fix
     * reset() was not grabbing a fresh copy of STDOUT and STDERR
+
+    Test Fix
+    * Fixed t/Builder/fork_with_new_stdout.t on Windows.
 
 
 2.00_04  Tue Jan 18 11:50:48 EST 2011
