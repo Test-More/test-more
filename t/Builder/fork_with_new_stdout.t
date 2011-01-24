@@ -38,7 +38,7 @@ else {
   close STDOUT;
   open(STDOUT, ">&$pipe_fd");
   my $b = Test::Builder->new;
-  $b->output(*STDOUT);
+  $b->reset;
   $b->plan( tests => 1 );
   $b->ok(1);
 } 

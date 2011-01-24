@@ -1,5 +1,10 @@
 See README and version control log for Test::Builder2 changes.
 
+2.00_05
+    Bug Fixes
+    * reset() was not grabbing a fresh copy of STDOUT and STDERR
+
+
 2.00_04  Tue Jan 18 11:50:48 EST 2011
     Test Fix
     * Work around a qr// bug in Debian etch's perl in t/Builder2/NoWarnings.t
