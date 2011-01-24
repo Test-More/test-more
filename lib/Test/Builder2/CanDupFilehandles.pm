@@ -27,17 +27,22 @@ It's most handy for Streamers.
 
 =head3 dup_filehandle
 
-    my $duplicate = $obj->dup_filehandle($fh);
+    my $duplicate = $obj->dup_filehandle($src);
+    my $duplicate = $obj->dup_filehandle($src, $duplicate);
 
 Creates a duplicate filehandle including copying any IO layers.
+
+If you hand it an existing $duplicate filehandle it will overwrite it
+and return it.  If it's undef, it will return a new one.  This
+is handy as it will preserve the glob and fileno.
 
 =cut
 
 sub dup_filehandle {
     my $self = shift;
-    my $fh   = shift;
+    my($fh, $dup) = @_;
 
-    open( my $dup, ">&", $fh ) or die "Can't dup $fh:  $!";
+    open( $dup, ">&", $fh ) or die "Can't dup $fh:  $!";
 
     $self->_copy_io_layers( $fh, $dup );
 

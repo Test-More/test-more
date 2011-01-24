@@ -47,4 +47,18 @@ note "dup_filehandle"; {
 }
 
 
+note "re dup"; {
+    my $dup;
+    $dup = Some::Class->dup_filehandle(\*STDOUT, $dup);
+    ok $dup, "filehandle duplicated";
+
+    my $orig_dup    = $dup;
+    my $orig_fileno = fileno $orig_dup;
+    $dup = Some::Class->dup_filehandle(\*STDOUT, $dup);
+
+    is $dup, $orig_dup;
+    is fileno $dup, $orig_fileno, "duping can preserve the filehandle";
+}
+
+
 done_testing;
