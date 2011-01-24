@@ -5,7 +5,7 @@ use Test::Builder2::Types;
 
 with 'Test::Builder2::Singleton';
 
-my @Types = qw(early_watchers formatters histories late_watchers);
+my @Types = qw(early_watchers formatters history late_watchers);
 
 
 =head1 NAME
@@ -24,10 +24,9 @@ Test::Builder2::EventCoordinator - Coordinate events amongst the builders
     $ec->post_result($result);  # special case for results
     $ec->post_event($event);
 
-    # The EventCoordinator has the default History and Formatter objects,
+    # The EventCoordinator comes with History and the default Formatter,
     # but they can be replaced or added to.  You can also add watchers of
     # your own devising.
-    $events->add_history($history);
     $events->add_formatters($formatter);
     $events->add_watcher($watcher);
 
@@ -50,29 +49,31 @@ else you want to watch events.
 =head2 Attributes
 
 These are attributes which can be set and gotten through a method of
-the same name.
+the same name.  They can also be passed into C<new>.
 
 
-=head3 histories
+=head3 history
 
-An array ref of History objects which are listening to events.
+The History object which is listening to events.
 
 This is a special case of C<watchers> provided so you can distinguish
 between formatters and other watchers.
 
 Defaults to C<< [ Test::Builder2::History->create ] >>.
 
+Unlike other watchers, there is only one history.
+
 =cut
 
 # Specifically not requiring a History subclass so as to allow
 # non-Mouse based duck-type implementations.
-has histories =>
+has history =>
   is            => 'rw',
-  isa           => 'ArrayRef',
+  isa           => 'Object',
   lazy          => 1,
   default       => sub {
       require Test::Builder2::History;
-      return [ Test::Builder2::History->create ];
+      return Test::Builder2::History->create;
   };
 
 
@@ -159,14 +160,13 @@ It will contain the History and Formatter singletons.
 sub make_singleton {
     my $class = shift;
 
-    require Test::Builder2::History;
     require Test::Builder2::Formatter;
+    require Test::Builder2::History;
 
     my $self = $class->create(
-        histories  => [],
+        history         => Test::Builder2::History->singleton,
         formatters => [],
     );
-    $self->add_histories(  Test::Builder2::History->singleton );
     $self->add_formatters( Test::Builder2::Formatter->singleton );
 
     return $self;
@@ -227,22 +227,23 @@ sub post_event {
 
 Returns a list of all watchers in the order they will be passed events.
 
-The order is L<early_watchers>, L<formatters>, L<histories>, L<late_watchers>.
+The order is L<early_watchers>, L<formatters>, L<history>, L<late_watchers>.
 
 =cut
 
 sub all_watchers {
     my $self = shift;
 
-    return map @$_, map { $self->$_ } @Types;
+    return
+      @{ $self->early_watchers },
+      @{ $self->formatters },
+      $self->history,
+      @{ $self->late_watchers };
 }
-
 
 =head3 add_early_watchers
 
 =head3 add_formatters
-
-=head3 add_histories
 
 =head3 add_late_watchers
 
@@ -257,8 +258,6 @@ Use this instead of manipulating the list of watchers directly.
 
 =head3 clear_formatters
 
-=head3 clear_histories
-
 =head3 clear_late_watchers
 
   $ec->clear_early_watchers;
@@ -269,8 +268,8 @@ Use this instead of manipulating the list of watchers directly.
 
 =cut
 
-# Create add_ and clear_ methods for all the watchers
-for my $type (@Types) {
+# Create add_ and clear_ methods for all the watchers except history
+for my $type (grep { $_ ne 'history' } @Types) {
     my $add = sub {
         my $self = shift;
         push @{ $self->$type }, @_;

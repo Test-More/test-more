@@ -1,5 +1,12 @@
 See README and version control log for Test::Builder2 changes.
 
+2.00_06
+    Incompatible Changes
+    * The EventCoordinator now only has one history object.
+      histories() is now history().  clear_history() and add_histories()
+      are gone.
+
+
 2.00_05  Mon, 24 Jan 2011 14:52:27 +1000
     Bug Fix
     * reset() was not grabbing a fresh copy of STDOUT and STDERR

@@ -413,7 +413,7 @@ sub formatter {
 }
 
 sub history {
-    return $_[0]->event_coordinator->histories->[0];
+    return $_[0]->event_coordinator->history;
 }
 
 

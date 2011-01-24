@@ -319,7 +319,7 @@ sub output_ending_commentary {
     my $tests_run = $self->counter->get;
     my $w_test    = _inflect("test", $tests_run);
 
-    my $tests_failed   = $ec->histories->[0]->fail_count;
+    my $tests_failed   = $ec->history->fail_count;
     my $tests_planned  = !$plan                         ? 0
                        : $plan->no_plan                 ? $tests_run
                        :                                  $plan->asserts_expected
