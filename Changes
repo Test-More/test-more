@@ -4,7 +4,19 @@ See README and version control log for Test::Builder2 changes.
     Incompatible Changes
     * The EventCoordinator now only has one history object.
       histories() is now history().  clear_history() and add_histories()
-      are gone.
+      are gone. [github 115]
+    * Subtest handling has been removed from the TAP formatter.  The design
+      was wrong.  It will come back later in a better form [github 120]
+    * Test::Builder2::Counter, History and Formatter are no longer singletons.
+      This is unnecessary, use the objects provided by your EventCoordinator.
+      [github 117]
+
+    New Features
+    * Added Test::Builder2::CanLoad to protect $! and $@ from tests loading
+      modules internally.
+
+    Bug Fixes
+    * More $@ and $! protection.
 
 
 2.00_05  Mon, 24 Jan 2011 14:52:27 +1000
