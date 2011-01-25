@@ -9,14 +9,7 @@ use Test::Builder2::Types;
 use Test::Builder2::threads::shared;
 
 extends 'Test::Builder2::Formatter';
-
 with 'Test::Builder2::CanLoad';
-
-has indent_nesting_with =>
-  is            => 'rw',
-  isa           => 'Str',
-  default       => "    "
-;
 
 sub default_streamer_class { 'Test::Builder2::Streamer::TAP' }
 
@@ -64,30 +57,13 @@ sub _prepend {
     return $msg;
 }
 
-sub _add_indentation {
-    my $self = shift;
-    my $output = shift;
-
-    my $level = $self->stream_depth - 1;
-    return unless $level;
-
-    my $indent = $self->indent_nesting_with x $level;
-    for my $idx (0..$#{$output}) {
-        $output->[$idx] = $self->_prepend($output->[$idx], $indent);
-    }
-
-    return;
-}
-
 sub out {
     my $self = shift;
-    $self->_add_indentation(\@_);
     $self->write(out => @_);
 }
 
 sub err {
     my $self = shift;
-    $self->_add_indentation(\@_);
     $self->write(err => @_);
 }
 
