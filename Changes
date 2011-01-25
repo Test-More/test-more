@@ -20,6 +20,8 @@ See README and version control log for Test::Builder2 changes.
     New Features
     * Added Test::Builder2::CanLoad to protect $! and $@ from tests loading
       modules internally.
+    * Added Test::Builder2::Tester to test Test:: modules independent of
+      their format.
 
     Bug Fixes
     * More $@ and $! protection.
