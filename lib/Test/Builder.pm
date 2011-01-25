@@ -1953,7 +1953,7 @@ sub current_test {
                     reason      => 'incrementing test number',
                     test_number => $_
                 );
-                $history->accept_result( shared_clone($result) );
+                $history->accept_result( shared_clone($result), $self->event_coordinator );
             }
         }
         # If backward, wipe history.  Its their funeral.
@@ -2361,7 +2361,7 @@ sub _ending {
     return if $self->{Ending}++;
 
     # End the stream unless we (or somebody else) already ended it
-    $self->stream_end if $self->stream_started and $self->formatter->stream_depth;
+    $self->stream_end if $self->stream_started and $self->history->stream_depth;
 
     my $real_exit_code = $?;
 

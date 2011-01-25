@@ -157,11 +157,11 @@ END {
 sub _do_ending {
     my $builder = shift;
 
-    my $formatter = $builder->formatter;
+    my $history = $builder->history;
 
     # Really we should be asking history, but history doesn't have that
     # functionality yet
-    $builder->stream_end if $formatter->stream_depth;
+    $builder->stream_end if $history->stream_depth;
 }
 
 1;

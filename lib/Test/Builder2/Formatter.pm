@@ -74,112 +74,27 @@ Creates a new formatter object to feed results to.
 You want to call this on a subclass.
 
 
-=head3 stream_depth
-
-  my $stream_depth = $formatter->stream_depth;
-
-Returns how many C<stream start> events without C<stream end> events
-have been seen.
-
-For example...
-
-    stream start
-
-Would indicate a level of 1.
-
-    stream start
-      stream start
-      stream end
-      stream start
-
-Would indicate a level of 2.
-
-A value of 0 indiciates the Formatter is not in a stream.
-
-A negative value will throw an exception.
-
-=cut
-
-has stream_depth =>
-  is            => 'rw',
-  isa           => 'Test::Builder2::Positive_Int',
-  default       => 0
-;
-
-
-=head3 stream_depth_inc
-
-=head3 stream_depth_dec
-
-Increment and decrement the C<stream_depth>.
-
-=cut
-
-sub stream_depth_inc {
-    my $self = shift;
-
-    $self->stream_depth( $self->stream_depth + 1 );
-}
-
-sub stream_depth_dec {
-    my $self = shift;
-
-    $self->stream_depth( $self->stream_depth - 1 );
-}
-
-
 =head3 accept_event
 
-  $formatter->accept_event($event);
+  $formatter->accept_event($event, $event_coordinator);
 
 Accept Events as they happen.
 
-It will increment and decrement C<stream_depth> as C<stream start> and
-C<stream end> events are seen.
-
-Do not override C<accept_event()>.  Override C<INNER_accept_event()>.
+See L<Test::Builder2::EventWatcher> for details.
 
 =cut
 
 sub accept_event {
-    my $self  = shift;
-    my $event = shift;
-    my $ec    = shift;
-
-    my $type = $event->event_type;
-    if( $type eq 'stream start' ) {
-        $self->stream_depth_inc;
-    }
-    elsif( $type eq 'stream end' ) {
-        $self->stream_depth_dec;
-    }
-
-    $self->INNER_accept_event($event, $ec);
-
-    return;
+    die "You must implement this.";
 }
 
 =head3 accept_result
 
-  $formatter->accept_result($result);
+  $formatter->accept_result($result, $event_coordinator);
 
 Formats a $result (an instance of L<Test::Builder2::Result>).
 
-It is an error to call accept_result() outside a stream.
-
-Do not override C<accept_result()>.  Override C<INNER_accept_result()>.
-
-=cut
-
-sub accept_result {
-    my $self = shift;
-
-    croak "accept_result() called outside a stream" if !$self->stream_depth;
-
-    $self->INNER_accept_result(@_);
-
-    return;
-}
+See L<Test::Builder2::EventWatcher> for details.
 
 
 =head3 write

@@ -5,7 +5,7 @@ use warnings;
 
 BEGIN { require 't/test.pl' }
 
-use Test::Builder2::Result;
+use Test::Builder2::Events;
 
 require_ok 'Test::Builder2::History';
 can_ok( 'Test::Builder2::History', 
@@ -75,7 +75,9 @@ sub Fail { Test::Builder2::Result->new_result( pass => 0, @_ ) }
 
 {
    my $h = new_history;
-   $h->accept_event('BEGIN 1');
+   $h->accept_event(
+       Test::Builder2::Event::StreamStart->new
+   );
    $h->accept_result(Pass());
    TODO: {
       our $TODO;

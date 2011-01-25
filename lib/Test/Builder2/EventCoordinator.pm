@@ -6,7 +6,7 @@ use Test::Builder2::Types;
 with 'Test::Builder2::Singleton',
      'Test::Builder2::CanLoad';
 
-my @Types = qw(early_watchers formatters history late_watchers);
+my @Types = qw(early_watchers history formatters late_watchers);
 
 
 =head1 NAME
@@ -219,7 +219,7 @@ sub post_event {
 
 Returns a list of all watchers in the order they will be passed events.
 
-The order is L<early_watchers>, L<formatters>, L<history>, L<late_watchers>.
+The order is L<early_watchers>, L<history>, L<formatters>, L<late_watchers>.
 
 =cut
 
@@ -228,8 +228,8 @@ sub all_watchers {
 
     return
       @{ $self->early_watchers },
-      @{ $self->formatters },
       $self->history,
+      @{ $self->formatters },
       @{ $self->late_watchers };
 }
 

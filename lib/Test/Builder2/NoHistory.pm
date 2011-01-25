@@ -15,7 +15,7 @@ Test::Builder2::NoHistory - Store no history, just keep stats
     my $history = Test::Builder2::NoHistory->singleton;
     my $result  = Test::Builder2::Result->new_result( pass => 1 );
 
-    $history->accept_result( $result );
+    $history->accept_result( $result, $ec );
     $history->is_passing;
     $history->test_count;    # 1  we've seen a test
     $history->results_count; # 0  we did not store a result

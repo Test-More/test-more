@@ -23,8 +23,8 @@ Test::Builder2::Formatter::TAP::v13 - Formatter as TAP version 13
   use Test::Builder2::Formatter::TAP::v13;
 
   my $formatter = Test:::Builder2::Formatter::TAP::v13->new;
-  $formatter->accept_event($event);
-  $formatter->accept_result($result);
+  $formatter->accept_event($event,   $ec);
+  $formatter->accept_result($result, $ec);
 
 
 =head1 DESCRIPTION
@@ -115,10 +115,9 @@ my %event_dispatch = (
     "set plan"          => "accept_set_plan",
 );
 
-sub INNER_accept_event {
+sub accept_event {
     my $self  = shift;
-    my $event = shift;
-    my $ec    = shift;
+    my($event, $ec) = @_;
 
     my $type = $event->event_type;
     my $method = $event_dispatch{$type};
@@ -169,12 +168,12 @@ has show_ending_commentary =>
 
 sub accept_stream_start {
     my $self = shift;
+    my($event, $ec) = @_;
 
     # Only output the TAP version in the first stream
     # and if we're showing the version
     # and if we're showing header information
     $self->out("TAP version 13\n") if
-      $self->stream_depth == 1 and
       $self->show_tap_version  and
       $self->show_header;
 
@@ -205,9 +204,9 @@ has plan =>
 
 sub accept_set_plan {
     my $self  = shift;
-    my $event = shift;
+    my($event, $ec) = @_;
 
-    croak "'set plan' event outside of a stream" if !$self->stream_depth;
+    croak "'set plan' event outside of a stream" if !$ec->history->stream_depth;
 
     $self->plan( $event );
 
@@ -344,7 +343,7 @@ sub output_ending_commentary {
 }
 
 
-=head3 INNER_accept_result
+=head3 accept_result
 
 Takes a C<Test::Builder2::Result> as an argument and displays the
 result details.
@@ -357,7 +356,7 @@ has seen_results =>
   default       => 0
 ;
 
-sub INNER_accept_result {
+sub accept_result {
     my $self  = shift;
     my $result = shift;
 

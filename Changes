@@ -10,6 +10,12 @@ See README and version control log for Test::Builder2 changes.
     * Test::Builder2::Counter, History and Formatter are no longer singletons.
       This is unnecessary, use the objects provided by your EventCoordinator.
       [github 117]
+    * stream_depth() is now a method on the History object, not the TAP
+      formatter.  This makes it available to all event watchers. [github 118]
+    * history is now posted events before the formatter.  This lets the
+      formatter ask the history object about the test state.
+    * INNER_accept_event and INNER_accept_result are now gone from the
+      Formatter.  Write accept_event and accept_result normally.
 
     New Features
     * Added Test::Builder2::CanLoad to protect $! and $@ from tests loading

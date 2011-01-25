@@ -18,9 +18,9 @@ Test::Builder2::Formatter::Multi - Use multiple formatters at once
     $multi->add_formatters($this_formatter, $that_formatter);
 
     # Equivalent to
-    #   $this_formatter->accept_result($result);
-    #   $that_formatter->accept_result($result);
-    $multi->accept_result($result);
+    #   $this_formatter->accept_result($result, $ec);
+    #   $that_formatter->accept_result($result, $ec);
+    $multi->accept_result($result, $ec);
 
 
 =head1 DESCRIPTION
@@ -59,6 +59,22 @@ sub add_formatters {
     my $self = shift;
     push @{$self->formatters}, @_;
     return;
+}
+
+sub accept_event {
+    my $self = shift;
+
+    for my $formatter (@{ $self->formatters }) {
+        $formatter->accept_event(@_);
+    }
+}
+
+sub accept_result {
+    my $self = shift;
+
+    for my $formatter (@{ $self->formatters }) {
+        $formatter->accept_result(@_);
+    }
 }
 
 our $AUTOLOAD;

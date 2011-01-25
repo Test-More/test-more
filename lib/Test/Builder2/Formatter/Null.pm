@@ -26,7 +26,7 @@ produce no output.
 
 =cut
 
-sub INNER_accept_event  {}
-sub INNER_accept_result {}
+sub accept_event  {}
+sub accept_result {}
 
 1;

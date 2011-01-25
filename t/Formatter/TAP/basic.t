@@ -15,14 +15,14 @@ local $ENV{HARNESS_ACTIVE} = 0;
 
 my $formatter;
 my $ec;
-sub new_formatter {
+sub setup {
     $formatter = Test::Builder2::Formatter::TAP->new(
         streamer_class => 'Test::Builder2::Streamer::Debug'
     );
     $formatter->show_ending_commentary(0);
     isa_ok $formatter, "Test::Builder2::Formatter::TAP";
 
-    my $ec = Test::Builder2::EventCoordinator->create(
+    $ec = Test::Builder2::EventCoordinator->create(
         formatters => [$formatter],
     );
 
@@ -35,8 +35,8 @@ sub last_output {
 
 # Test that begin does nothing with no args
 {
-    new_formatter;
-    $formatter->accept_event(
+    setup;
+    $ec->post_event(
         Test::Builder2::Event::StreamStart->new
     );
     is last_output, "TAP version 13\n", "begin() with no args";
@@ -44,12 +44,12 @@ sub last_output {
 
 # Can't have a plan outside a stream
 {
-    new_formatter;
+    setup;
     ok !eval {
-        $formatter->accept_event(
+        $ec->post_event(
             Test::Builder2::Event::SetPlan->new(
                 asserts_expected => 99
-            )
+            ),
         );
     };
     like $@, qr/^'set plan' event outside of a stream/;
@@ -57,11 +57,11 @@ sub last_output {
 
 # Test begin
 {
-    new_formatter;
-    $formatter->accept_event(
+    setup;
+    $ec->post_event(
         Test::Builder2::Event::StreamStart->new
     );
-    $formatter->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::SetPlan->new(
             asserts_expected => 99
         )
@@ -75,11 +75,11 @@ END
 
 # Test end
 {
-    new_formatter;
-    $formatter->accept_event(
+    setup;
+    $ec->post_event(
         Test::Builder2::Event::StreamStart->new
     );
-    $formatter->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::SetPlan->new(
             asserts_expected => 2
         )
@@ -88,7 +88,7 @@ END
     # Clear the buffer, all we care about is stream end
     last_output;
 
-    $formatter->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::StreamEnd->new
     );
     is last_output, "", "empty stream does nothing";
@@ -96,25 +96,25 @@ END
 
 # Test plan-at-end
 {
-    new_formatter;
-    $formatter->accept_event(
+    setup;
+    $ec->post_event(
         Test::Builder2::Event::StreamStart->new
     );
     my $result = Test::Builder2::Result->new_result(
         pass            => 1,
     );
 
-    $formatter->accept_result( $result );
+    $ec->post_result( $result );
 
-    $formatter->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::SetPlan->new(
             asserts_expected    => 2
         )
     );
 
-    $formatter->accept_result( $result );
+    $ec->post_result( $result );
 
-    $formatter->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::StreamEnd->new
     );
     is last_output, <<END, "end( tests => # )";
@@ -127,8 +127,8 @@ END
 
 # Test read
 {
-    new_formatter;
-    $formatter->accept_event(
+    setup;
+    $ec->post_event(
         Test::Builder2::Event::StreamStart->new
     );
     is last_output, "TAP version 13\n", "check all stream";
@@ -136,11 +136,11 @@ END
 
 # test skipping
 {
-    new_formatter;
-    $formatter->accept_event(
+    setup;
+    $ec->post_event(
         Test::Builder2::Event::StreamStart->new
     );
-    $formatter->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::SetPlan->new(
             skip        => 1,
             skip_reason => "bored now"
@@ -151,11 +151,11 @@ END
 
 # no plan
 {
-    new_formatter;
-    $formatter->accept_event(
+    setup;
+    $ec->post_event(
         Test::Builder2::Event::StreamStart->new
     );
-    $formatter->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::SetPlan->new(
             no_plan     => 1
         )
@@ -168,7 +168,7 @@ END
 {
     my $result = Test::Builder2::Result->new_result( pass => 0 );
     $result->test_number(1);
-    $formatter->accept_result($result);
+    $ec->post_result($result);
     is(last_output, "not ok 1\n", "testing not okay");
 }
 
@@ -176,7 +176,7 @@ END
 {
     my $result = Test::Builder2::Result->new_result( pass => 1 );
     $result->test_number(2);
-    $formatter->accept_result($result);
+    $ec->post_result($result);
     is(last_output, "ok 2\n", "testing okay");
 }
 
@@ -188,7 +188,7 @@ END
         reason          => "reason" 
     );
     $result->test_number(3);
-    $formatter->accept_result($result);
+    $ec->post_result($result);
     is(last_output, <<OUT, "testing todo fail");
 not ok 3 # TODO reason
 #   Failed (TODO) test.
@@ -204,7 +204,7 @@ OUT
         reason          => "reason"
     );
     $result->test_number(4);
-    $formatter->accept_result($result);
+    $ec->post_result($result);
     is(last_output, "ok 4 # TODO reason\n", "testing todo");
 }
 
@@ -217,7 +217,7 @@ OUT
     );
     $result->test_number(4);
     $result->description('a fine test');
-    $formatter->accept_result($result);
+    $ec->post_result($result);
     is(last_output, "ok 4 - a fine test # TODO reason\n", "testing todo");
 }
 
@@ -228,7 +228,7 @@ OUT
     );
     $result->description(' - a royal pain');
     $result->test_number(6);
-    $formatter->accept_result($result);
+    $ec->post_result($result);
     is(last_output, "not ok 6 -  - a royal pain\n", "test description");
 }
 
@@ -241,7 +241,7 @@ OUT
     $result->description('skip test');
     $result->test_number(7);
     $result->reason('Not gonna work');
-    $formatter->accept_result($result);
+    $ec->post_result($result);
 
     is(last_output, "not ok 7 - skip test # SKIP Not gonna work\n", "skip fail");
 }
@@ -255,7 +255,7 @@ OUT
     $result->description('skip test');
     $result->test_number(8);
     $result->reason('Because');
-    $formatter->accept_result($result);
+    $ec->post_result($result);
 
     is(last_output, "ok 8 - skip test # SKIP Because\n", "skip pass");
 }
@@ -267,7 +267,7 @@ OUT
     my $result = Test::Builder2::Result->new_result(
         pass            => 1
     );
-    $formatter->accept_result($result);
+    $ec->post_result($result);
 
     is(last_output, "ok\n", "pass with no number");
     $formatter->use_numbers(1);
@@ -282,7 +282,7 @@ OUT
     $result->test_number(5);
     $result->description("Foo\nBar\n");
 
-    $formatter->accept_result($result);
+    $ec->post_result($result);
     is(last_output, "ok 5 - Foo\\nBar\\n\n", "description with newline");
 }
 
@@ -296,7 +296,7 @@ OUT
         reason          => "\nFoo\nBar\n",
     );
 
-    $formatter->accept_result($result);
+    $ec->post_result($result);
     is(last_output, "ok 4 # SKIP \\nFoo\\nBar\\n\n", "reason with newline");
 }
 

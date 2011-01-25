@@ -7,17 +7,22 @@ BEGIN { require 't/test.pl' }
 
 use Test::Builder2::Events;
 use Test::Builder2::Formatter::TAP;
-
+use Test::Builder2::EventCoordinator;
 
 my $formatter;
-sub new_formatter {
+my $ec;
+sub setup {
     $formatter = Test::Builder2::Formatter::TAP->new(
         streamer_class => 'Test::Builder2::Streamer::Debug'
     );
     $formatter->show_ending_commentary(0);
     isa_ok $formatter, "Test::Builder2::Formatter::TAP";
 
-    return $formatter;
+    $ec = Test::Builder2::EventCoordinator->create(
+        formatters => [$formatter],
+    );
+
+    return $ec;
 }
 
 sub last_output {
@@ -26,36 +31,36 @@ sub last_output {
 
 
 note "Escape # in test name"; {
-    new_formatter;
+    setup;
 
     my $result = Test::Builder2::Result->new_result(
         pass => 1, description => "foo # bar"
     );
 
-    $formatter->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::StreamStart->new
     );
     last_output;
 
-    $formatter->accept_result($result);
+    $ec->post_result($result);
 
     is last_output, "ok 1 - foo \\# bar\n";
 }
 
 
 note "Escape # in directive description"; {
-    new_formatter;
+    setup;
 
     my $result = Test::Builder2::Result->new_result(
         pass => 1, description => "foo # bar", directives => ['todo'], reason => "this # that"
     );
 
-    $formatter->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::StreamStart->new
     );
     last_output;
 
-    $formatter->accept_result($result);
+    $ec->post_result($result);
 
     is last_output, "ok 1 - foo \\# bar # TODO this \\# that\n";
 }

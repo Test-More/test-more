@@ -19,7 +19,7 @@ Test::Builder2::History - Manage the history of test results
     my $history = Test::Builder2::History->new;
     my $result  = Test::Builder2::Result->new_result( pass => 1 );
 
-    $history->accept_result( $result );
+    $history->accept_result( $result, $ec );
     $history->is_passing;
 
 =head1 DESCRIPTION
@@ -61,7 +61,22 @@ Get the count of events that are on the stack.
 =cut
 
 buildstack events => 'Any';
-sub accept_event { shift->events_push(shift) }
+sub accept_event {
+    my $self = shift;
+    my $event = shift;
+
+    $self->events_push($event);
+
+    my $type = $event->event_type;
+    if( $type eq 'stream start' ) {
+        $self->stream_depth_inc;
+    }
+    elsif( $type eq 'stream end' ) {
+        $self->stream_depth_dec;
+    }
+
+    return;
+}
 sub event_count  { shift->events_count }
 sub has_events   { shift->events_count > 0 }
 
@@ -186,6 +201,65 @@ Returns true if we have not yet seen a failing test.
 =cut
 
 sub is_passing { shift->fail_count == 0 }
+
+
+=head2 State
+
+History tracks some basic information about the state of the test
+surmised by watching the events go by.
+
+=head3 stream_depth
+
+  my $stream_depth = $history->stream_depth;
+
+Returns how many C<stream start> events without C<stream end> events
+have been seen.
+
+For example...
+
+    stream start
+
+Would indicate a level of 1.
+
+    stream start
+      stream start
+      stream end
+      stream start
+
+Would indicate a level of 2.
+
+A value of 0 indiciates the Formatter is not in a stream.
+
+A negative value will throw an exception.
+
+=cut
+
+has stream_depth =>
+  is            => 'rw',
+  isa           => 'Test::Builder2::Positive_Int',
+  default       => 0
+;
+
+
+=head3 stream_depth_inc
+
+=head3 stream_depth_dec
+
+Increment and decrement the C<stream_depth>.
+
+=cut
+
+sub stream_depth_inc {
+    my $self = shift;
+
+    $self->stream_depth( $self->stream_depth + 1 );
+}
+
+sub stream_depth_dec {
+    my $self = shift;
+
+    $self->stream_depth( $self->stream_depth - 1 );
+}
 
 
 =head2 HISTORY INTERACTION

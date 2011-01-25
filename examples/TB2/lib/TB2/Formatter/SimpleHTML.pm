@@ -38,7 +38,7 @@ my %event_dispatch = (
     "stream end"        => "accept_stream_end",
 );
 
-sub INNER_accept_event {
+sub accept_event {
     my $self  = shift;
     my $event = shift;
     my $ec    = shift;
@@ -86,7 +86,7 @@ HTML
 
 
 # A test result
-sub INNER_accept_result {
+sub accept_result {
     my $self = shift;
     my $result = shift;
 
