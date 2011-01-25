@@ -161,9 +161,11 @@ It will contain the History and Formatter singletons.
 sub make_singleton {
     my $class = shift;
 
-    return $class->create;
+    require Test::Builder2::EventCoordinator::Default;
+    return Test::Builder2::EventCoordinator::Default->create(
+        real_coordinator => $class->create
+    );
 }
-
 
 =head3 create
 
