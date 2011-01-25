@@ -3,7 +3,7 @@ package Test::Builder2::Tester;
 use Test::Builder2::Mouse;
 with "Test::Builder2::CanTry";
 
-use Exporter 'import';
+use Test::Builder2::Module;
 our @EXPORT = qw(capture result_like event_like);
 my $CLASS = __PACKAGE__;
 
@@ -25,13 +25,13 @@ Test::Builder2::Tester - Testing a Test:: module
 
     # The first one passed, and it has a name
     result_like $capture->results->[0], {
-        pass => 1,
+        is_pass => 1,
         name => "some name",
     };
 
     # The second one failed, and it has no name
     result_like $capture->results->[1], {
-        pass => 0,
+        is_pass => 0,
         name => ''
     };
 
@@ -75,11 +75,64 @@ sub capture(&) {
     return $our_ec->history;
 }
 
-=head3 result_like
-
 =head3 event_like
 
+  event_like( $event, $want );
+  event_like( $event, $want, $name );
+
+Tests that a $result looks like what you $want.
+
+$want is a hash ref of keys and values.  Each of these will be checked
+against the $result's attributes.  For example...
+
+    result_like( $result, { name => "foo" } );
+
+will check that C<< $result->name eq "foo" >>.
+
+Values can also be regular expressions.
+
+    result_like( $result, { name => qr/foo/ } );
+
+will check that C<< $result->name =~ /foo/ >>.
+
 =cut
+
+install_test event_like => sub($$;$) {
+    my($have, $want, $name) = @_;
+
+    $name ||= "event: ".($want->{event_type} || $have->event_type);
+
+    my $ok = 1;
+    for my $key (keys %$want) {
+        my $have_val = $CLASS->try(sub { $have->$key });
+        my $want_val = $want->{$key};
+
+        $ok &= ref $want_val ? $have_val =~ $want_val
+             :                 $have_val eq $want_val;
+    }
+
+    return Builder->ok($ok, $name);
+};
+
+
+=head3 result_like
+
+  result_like( $result, $want );
+  result_like( $result, $want, $name );
+
+Works just as C<event_like> but it also checks the $result is a result.
+
+=cut
+
+install_test result_like => sub($$;$) {
+    my($have, $want, $name) = @_;
+
+    $name ||= "result: ".($want->{event_type} || $have->event_type);
+    return Builder->ok(0, $name) if $have->event_type ne 'result';
+
+    return event_like($have, $want, $name);
+};
+
 
 no Test::Builder2::Mouse;
 

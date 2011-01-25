@@ -3,23 +3,9 @@
 use strict;
 use warnings;
 
-BEGIN { require "t/test.pl" }
-
+use Test::More;
 use Test::Simple ();
 use Test::Builder2::Tester;
-
-note "event coordinator left untouched"; {
-    my $ec = Test::Simple->Builder->event_coordinator;
-    is_deeply $ec->history->events,  [],        "no events in the EC";
-    is_deeply $ec->history->results, [],        "no results in the EC";
-
-    my $have = capture {
-        Test::Simple::ok( 1 );
-    };
-
-    is_deeply $ec->history->events,  [],        "still no events";
-    is_deeply $ec->history->results, [],        "still no results";
-}
 
 note "capturing nothing"; {
     my $have = capture {};
@@ -30,11 +16,31 @@ note "capturing nothing"; {
 
 note "capturing results"; {
     my $have = capture {
-        Test::Simple::ok( 1, "a pass" );
-        Test::Simple::ok( 0, "a fail" );
+        package Foo;
+
+        Test::Simple->import( tests => 2 );
+        ok( 1, "a pass" );
+        ok( 0, "a fail" );
     };
 
-    is @{ $have->results }, 2;
+    my @results = @{ $have->results };
+    is @results, 2;
+
+    my @events = grep { $_->event_type ne 'result' } @{ $have->events };
+    is @events, 2;
+
+    event_like( $events[0], { event_type => "stream start" } );
+    event_like( $events[1], { event_type => "set plan" } );
+
+    result_like(
+        $results[0],
+        { is_pass  => 1, name => "a pass", file => $0 }
+    );
+
+    result_like (
+        $results[1],
+        { is_pass  => 0, name => "a fail", file => $0 }
+    );
 }
 
 done_testing;
