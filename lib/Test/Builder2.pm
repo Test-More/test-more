@@ -5,8 +5,9 @@ use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 use Test::Builder2::Events;
 
-with 'Test::Builder2::Singleton';
-with 'Test::Builder2::CanTry';
+with 'Test::Builder2::Singleton',
+     'Test::Builder2::CanTry',
+     'Test::Builder2::CanLoad';
 
 use Carp qw(confess);
 sub sanity ($) { confess "Assert failed" unless $_[0] };
@@ -84,7 +85,7 @@ has event_coordinator =>
   is            => 'rw',
   isa           => 'Test::Builder2::EventCoordinator',
   default       => sub {
-      require Test::Builder2::EventCoordinator;
+      $_[0]->load('Test::Builder2::EventCoordinator');
       return Test::Builder2::EventCoordinator->create;
   }
 ;
@@ -92,7 +93,7 @@ has event_coordinator =>
 sub make_singleton {
     my $class = shift;
 
-    require Test::Builder2::EventCoordinator;
+    $class->load('Test::Builder2::EventCoordinator');
     return $class->create(
         event_coordinator => Test::Builder2::EventCoordinator->singleton
     );
@@ -144,7 +145,7 @@ has top_stack =>
   is            => 'ro',
   isa           => 'Test::Builder2::AssertStack',
   default       => sub {
-      require Test::Builder2::AssertStack;
+      $_[0]->load('Test::Builder2::AssertStack');
       Test::Builder2::AssertStack->new;
   };
 
@@ -251,7 +252,7 @@ assert after.
 sub assert_start {
     my $self = shift;
 
-    require Test::Builder2::AssertRecord;
+    $self->load('Test::Builder2::AssertRecord');
     my $record = Test::Builder2::AssertRecord->new_from_caller(1);
     sanity $record;
 

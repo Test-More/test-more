@@ -13,7 +13,9 @@ use Test::Builder2::threads::shared;
 use Test::Builder2::Events;
 use Test::Builder2::EventCoordinator;
 
-with 'Test::Builder2::CanDupFilehandles', 'Test::Builder2::CanTry';
+with 'Test::Builder2::CanDupFilehandles',
+     'Test::Builder2::CanTry',
+     'Test::Builder2::CanLoad';
 
 
 =head1 NAME
@@ -200,9 +202,7 @@ sub subtest {
             1;
         };
 
-        if( !$self->try(sub { $run_the_subtests->(); 1 }) ) {
-            $error = $@;
-        }
+        (undef, $error) = $self->try(sub { $run_the_subtests->(); 1 });
     }
 
     # Restore the parent and the copied child.
@@ -382,7 +382,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Skip_All} = 0;
 
-    require Test::Builder2::Formatter::TAP;
+    $self->load("Test::Builder2::Formatter::TAP");
     $self->{EventCoordinator} = Test::Builder2::EventCoordinator->create(
         formatters => [Test::Builder2::Formatter::TAP->new]
     );
@@ -882,7 +882,7 @@ sub _unoverload {
     my $self = shift;
     my $type = shift;
 
-    $self->try(sub { require overload; }, die_on_fail => 1);
+    $self->load("overload");
 
     foreach my $thing (@_) {
         if( $self->_is_object($$thing) ) {
@@ -1684,7 +1684,7 @@ sub explain {
     return map {
         ref $_
           ? do {
-            $self->try(sub { require Data::Dumper }, die_on_fail => 1);
+            $self->load("Data::Dumper");
 
             my $dumper = Data::Dumper->new( [$_] );
             $dumper->Indent(1)->Terse(1);

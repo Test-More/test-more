@@ -10,6 +10,8 @@ use Test::Builder2::threads::shared;
 
 extends 'Test::Builder2::Formatter';
 
+with 'Test::Builder2::CanLoad';
+
 has indent_nesting_with =>
   is            => 'rw',
   isa           => 'Str',
@@ -109,7 +111,7 @@ has counter =>
    is => 'rw',
    isa => 'Test::Builder2::Counter',
    default => sub {
-      require Test::Builder2::Counter;
+      $_[0]->load('Test::Builder2::Counter');
       return Test::Builder2::Counter->new;
    },
 ;

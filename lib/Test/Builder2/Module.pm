@@ -2,7 +2,8 @@ package Test::Builder2::Module;
 
 use 5.008001;
 use Test::Builder2::Mouse;
-with 'Test::Builder2::CanTry';
+with 'Test::Builder2::CanTry',
+     'Test::Builder2::CanLoad';
 
 our $VERSION = '2.00_05';
 our $CLASS = __PACKAGE__;
@@ -16,7 +17,7 @@ sub import {
 
     $class->export_to_level(1, $class, @EXPORT);
 
-    require Test::Builder2;
+    $class->load('Test::Builder2');
 
     no strict 'refs';
 

@@ -3,7 +3,8 @@ package Test::Builder2::EventCoordinator;
 use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 
-with 'Test::Builder2::Singleton';
+with 'Test::Builder2::Singleton',
+     'Test::Builder2::CanLoad';
 
 my @Types = qw(early_watchers formatters history late_watchers);
 
@@ -72,7 +73,7 @@ has history =>
   isa           => 'Object',
   lazy          => 1,
   default       => sub {
-      require Test::Builder2::History;
+      $_[0]->load("Test::Builder2::History");
       return Test::Builder2::History->new;
   };
 
@@ -95,7 +96,7 @@ has formatters =>
   isa           => 'ArrayRef',
   lazy          => 1,
   default       => sub {
-      require Test::Builder2::Formatter::TAP;
+      $_[0]->load("Test::Builder2::Formatter::TAP");
       return [ Test::Builder2::Formatter::TAP->new ];
   };
 
