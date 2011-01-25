@@ -4,8 +4,7 @@ use Carp;
 use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 
-with 'Test::Builder2::Singleton',
-     'Test::Builder2::EventWatcher';
+with 'Test::Builder2::EventWatcher';
 
 
 =head1 NAME
@@ -66,23 +65,7 @@ sub _build_streamer {
 }
 
 
-=head3 singleton
-
-  my $default_formatter = Test::Builder2::Formatter->singleton;
-
-Returns the default shared formatter object.
-
-The default Formatter is a Test::Builder2::Formatter::TAP object.
-
-=cut
-
-sub make_singleton {
-    require Test::Builder2::Formatter::TAP;
-    return Test::Builder2::Formatter::TAP->make_singleton;
-}
-
-
-=head3 create
+=head3 new
 
   my $formatter = Test::Builder2::Formatter->new(%args);
 

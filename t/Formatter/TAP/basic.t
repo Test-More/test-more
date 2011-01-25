@@ -16,7 +16,7 @@ local $ENV{HARNESS_ACTIVE} = 0;
 my $formatter;
 my $ec;
 sub new_formatter {
-    $formatter = Test::Builder2::Formatter::TAP->create(
+    $formatter = Test::Builder2::Formatter::TAP->new(
         streamer_class => 'Test::Builder2::Streamer::Debug'
     );
     $formatter->show_ending_commentary(0);

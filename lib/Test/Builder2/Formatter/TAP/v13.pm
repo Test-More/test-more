@@ -19,16 +19,6 @@ has indent_nesting_with =>
 sub default_streamer_class { 'Test::Builder2::Streamer::TAP' }
 
 
-sub make_singleton {
-    my $class = shift;
-
-    require Test::Builder2::Counter;
-    $class->create(
-        counter => shared_clone( Test::Builder2::Counter->create )
-    );
-}
-
-
 =head1 NAME
 
 Test::Builder2::Formatter::TAP::v13 - Formatter as TAP version 13
@@ -120,7 +110,7 @@ has counter =>
    isa => 'Test::Builder2::Counter',
    default => sub {
       require Test::Builder2::Counter;
-      return Test::Builder2::Counter->create;
+      return Test::Builder2::Counter->new;
    },
 ;
 
@@ -224,7 +214,7 @@ sub accept_stream_end {
     $self->output_ending_commentary($ec);
 
     # New counter
-    $self->counter( Test::Builder2::Counter->create );
+    $self->counter( Test::Builder2::Counter->new );
 
     return;
 }

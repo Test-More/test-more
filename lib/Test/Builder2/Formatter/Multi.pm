@@ -14,7 +14,7 @@ Test::Builder2::Formatter::Multi - Use multiple formatters at once
 
     use Test::Builder2::Formatter::Multi;
 
-    my $multi = Test::Builder2::Formatter::Multi->create;
+    my $multi = Test::Builder2::Formatter::Multi->new;
     $multi->add_formatters($this_formatter, $that_formatter);
 
     # Equivalent to

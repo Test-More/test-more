@@ -59,7 +59,7 @@ The History object which is listening to events.
 This is a special case of C<watchers> provided so you can distinguish
 between formatters and other watchers.
 
-Defaults to C<< [ Test::Builder2::History->create ] >>.
+Defaults to C<< [ Test::Builder2::History->new ] >>.
 
 Unlike other watchers, there is only one history.
 
@@ -73,7 +73,7 @@ has history =>
   lazy          => 1,
   default       => sub {
       require Test::Builder2::History;
-      return Test::Builder2::History->create;
+      return Test::Builder2::History->new;
   };
 
 
@@ -84,7 +84,7 @@ An array ref of Formatter objects which are listening to events.
 This is a special case of C<watchers> provided so you can distinguish
 between formatters and other watchers.
 
-Defaults to C<< [ Test::Builder2::Formatter->create ] >>.
+Defaults to C<< [ Test::Builder2::Formatter::TAP->new ] >>.
 
 =cut
 
@@ -95,8 +95,8 @@ has formatters =>
   isa           => 'ArrayRef',
   lazy          => 1,
   default       => sub {
-      require Test::Builder2::Formatter;
-      return [ Test::Builder2::Formatter->create ];
+      require Test::Builder2::Formatter::TAP;
+      return [ Test::Builder2::Formatter::TAP->new ];
   };
 
 
@@ -160,16 +160,7 @@ It will contain the History and Formatter singletons.
 sub make_singleton {
     my $class = shift;
 
-    require Test::Builder2::Formatter;
-    require Test::Builder2::History;
-
-    my $self = $class->create(
-        history         => Test::Builder2::History->singleton,
-        formatters => [],
-    );
-    $self->add_formatters( Test::Builder2::Formatter->singleton );
-
-    return $self;
+    return $class->create;
 }
 
 

@@ -4,8 +4,6 @@ use Carp;
 use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 
-with 'Test::Builder2::Singleton';
-
 
 =head1 NAME
 
@@ -15,7 +13,7 @@ Test::Builder2::Counter - Counts the number of tests run
 
   use Test::Builder2::Counter;
 
-  my $counter = Test::Builder2::Counter->singleton;
+  my $counter = Test::Builder2::Counter->new;
 
   $counter->increment;
   $counter->set($count);
@@ -36,15 +34,9 @@ you can get it separately if you want to be really slim.
 
 =head2 Constructors
 
-=head3 singleton
+=head3 new
 
-    my $counter = Test::Builder2::Counter->singleton;
-
-Gets the single shared counter.
-
-=head3 create
-
-    my $counter = Test::Builder2::Counter->create;
+    my $counter = Test::Builder2::Counter->new;
 
 Creates a brand new counter starting at 0.
 

@@ -4,8 +4,7 @@ use Carp;
 use Test::Builder2::Mouse;
 use Test::Builder2::StackBuilder;
 
-with 'Test::Builder2::Singleton',
-     'Test::Builder2::EventWatcher',
+with 'Test::Builder2::EventWatcher',
      'Test::Builder2::CanTry';
 
 
@@ -17,8 +16,7 @@ Test::Builder2::History - Manage the history of test results
 
     use Test::Builder2::History;
 
-    # This is a shared singleton object
-    my $history = Test::Builder2::History->singleton;
+    my $history = Test::Builder2::History->new;
     my $result  = Test::Builder2::Result->new_result( pass => 1 );
 
     $history->accept_result( $result );
@@ -32,20 +30,9 @@ This object stores and manages the history of test results.
 
 =head2 Constructors
 
-=head3 singleton
+=head3 new
 
-    my $history = Test::Builder2::History->singleton;
-    Test::Builder2::History->singleton($history);
-
-Gets/sets the shared instance of the history object.
-
-Test::Builder2::History is a singleton.  singleton() will return the same
-object every time so all users can have a shared history.  If you want
-your own history, call create() instead.
-
-=head3 create
-
-    my $history = Test::Builder2::History->create;
+    my $history = Test::Builder2::History->new;
 
 Creates a new, unique History object.
 

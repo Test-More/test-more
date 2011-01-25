@@ -384,7 +384,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     require Test::Builder2::Formatter::TAP;
     $self->{EventCoordinator} = Test::Builder2::EventCoordinator->create(
-        formatters => [Test::Builder2::Formatter::TAP->create]
+        formatters => [Test::Builder2::Formatter::TAP->new]
     );
     $self->formatter->use_numbers(1);
 

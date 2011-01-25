@@ -9,7 +9,7 @@ use Test::Builder2::Events;
 use_ok 'Test::Builder2::Formatter::PlusMinus';
 
 sub new_formatter {
-    return Test::Builder2::Formatter::PlusMinus->create(
+    return Test::Builder2::Formatter::PlusMinus->new(
         streamer_class => 'Test::Builder2::Streamer::Debug'
     );
 }

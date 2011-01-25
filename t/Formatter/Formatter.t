@@ -31,7 +31,7 @@ BEGIN { require "t/test.pl" }
 }
 
 
-my $formatter = My::Formatter->create;
+my $formatter = My::Formatter->new;
 is $formatter->stream_depth, 0;
 
 ok !eval {

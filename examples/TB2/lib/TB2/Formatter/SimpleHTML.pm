@@ -18,7 +18,7 @@ TB2::Formatter::SimpleHTML - A very simple HTML formatter
 
     $ec->clear_formatters;      # remove the TAP formatter
     $ec->add_formatters(        # add the SimpleHTML formatter
-        TB2::Formatter::SimpleHTML->create
+        TB2::Formatter::SimpleHTML->new
     );
 
     $tb2->stream_start;

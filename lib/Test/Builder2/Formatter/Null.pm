@@ -13,7 +13,7 @@ Test::Builder2::Formatter::Null - A formatter that does nothing
 =head1 SYNOPSIS
 
     use Test::Builder::Formatter::Null;
-    my $null = Test::Builder2::Formatter::Null->create;
+    my $null = Test::Builder2::Formatter::Null->new;
 
     # Make your tests output nothing
     $tb->formatter($null);

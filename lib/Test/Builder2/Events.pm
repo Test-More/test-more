@@ -20,7 +20,7 @@ Test::Builder2::Events - Convenience module to load all core TB2 events
 
     use Test::Builder2::Events;
 
-    my $event = Test::Builder2::Event::SetPlan->create( ... );
+    my $event = Test::Builder2::Event::SetPlan->new( ... );
 
 =head1 DESCRIPTION
 

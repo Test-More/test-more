@@ -20,39 +20,17 @@ my $Fail = Test::Builder2::Result->new_result(
     pass => 0,
 );
 
-my $create_ok = sub {
-    my $history = $CLASS->create;
-    isa_ok $history, $CLASS;
-    return $history;
-};
-
-
 # Testing initialization
 {
-    my $history = $create_ok->();
+    my $history = new_ok $CLASS;
 
     is_deeply $history->results,        [];
 }
 
 
-# Test the singleton nature
-{
-    my $history1 = $CLASS->singleton;
-    isa_ok $history1, $CLASS;
-    my $history2 = $CLASS->singleton;
-    isa_ok $history2, $CLASS;
-
-    is $history1, $history2,            "new() is a singleton";
-
-    my $new_history = $create_ok->();
-    $CLASS->singleton($new_history);
-    is   $CLASS->singleton,  $new_history,  "singleton() set";
-}
-
-
 # accept_result
 {
-    my $history = $create_ok->();
+    my $history = new_ok $CLASS;
 
     $history->accept_result( $Pass );
     is_deeply $history->results, [$Pass];
@@ -73,7 +51,7 @@ my $create_ok = sub {
 
 # accept_results argument checks
 {
-    my $history = $create_ok->();
+    my $history = new_ok $CLASS;
 
     ok !eval {
         $history->accept_results($Pass, { passed => 1 }, $Fail);

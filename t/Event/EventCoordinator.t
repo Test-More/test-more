@@ -18,10 +18,10 @@ note("EC->singleton initialization"); {
 
     my $formatters = $ec->formatters;
     is @$formatters, 1;
-    is $formatters->[0], Test::Builder2::Formatter->singleton, "formatters";
+    isa_ok $formatters->[0], "Test::Builder2::Formatter::TAP";
 
     my $history = $ec->history;
-    is $history,  Test::Builder2::History->singleton, "history";
+    isa_ok $history, "Test::Builder2::History";
 }
 
 
@@ -32,12 +32,10 @@ note("EC->create init"); {
 
     my $formatters = $ec->formatters;
     is @$formatters, 1;
-    isa_ok $formatters->[0], "Test::Builder2::Formatter", "formatters";
-    isnt $formatters->[0], Test::Builder2::Formatter->singleton, "  not the singleton";
+    isa_ok $formatters->[0], "Test::Builder2::Formatter::TAP", "formatters";
 
     my $history = $ec->history;
     isa_ok $history, "Test::Builder2::History", "history";
-    isnt $history, Test::Builder2::History->singleton, "  not the singleton";
 }
 
 

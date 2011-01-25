@@ -7,7 +7,7 @@ BEGIN { require 't/test.pl' }
 use Test::Builder2::Events;
 use Test::Builder2::Formatter::Null;
 
-my $null = Test::Builder2::Formatter::Null->create(
+my $null = Test::Builder2::Formatter::Null->new(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
 

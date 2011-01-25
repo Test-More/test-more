@@ -9,20 +9,17 @@ use Test::Builder2::Result;
 
 require_ok 'Test::Builder2::NoHistory';
 can_ok( 'Test::Builder2::NoHistory', 
-        qw{ singleton
-            create
-            
+        qw{ new            
             results
             has_results
             accept_result
             accept_results
             result_count
-
           },
 );
       
 # helpers
-sub new_history { Test::Builder2::NoHistory->create }
+sub new_history { Test::Builder2::NoHistory->new }
 sub Pass { Test::Builder2::Result->new_result( pass => 1 ) }
 sub Fail { Test::Builder2::Result->new_result( pass => 0 ) }
 
