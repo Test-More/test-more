@@ -200,7 +200,7 @@ sub subtest {
             1;
         };
 
-        if( !eval { $run_the_subtests->() } ) {
+        if( !$self->try(sub { $run_the_subtests->(); 1 }) ) {
             $error = $@;
         }
     }
@@ -213,7 +213,7 @@ sub subtest {
     $self->find_TODO(undef, 1, $child->{Parent_TODO});
 
     # Die *after* we restore the parent.
-    die $error if $error and !eval { $error->isa('Test::Builder::Exception') };
+    die $error if $error and !$self->try(sub { $error->isa('Test::Builder::Exception') });
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     return $child->finalize;
@@ -1402,7 +1402,10 @@ sub _regex_ok {
         my $test;
         my $context = $self->_caller_context;
 
-        local( $@, $!, $SIG{__DIE__} );    # isolate eval
+        # isolate eval
+        local $@;
+        local $!;
+        local $SIG{__DIE__};
 
         $test = eval $context . q{$test = $this =~ /$usable_regex/ ? 1 : 0};
 
@@ -1444,8 +1447,8 @@ sub is_fh {
     return 1 if ref $maybe_fh  eq 'GLOB';    # its a glob ref
     return 1 if ref \$maybe_fh eq 'GLOB';    # its a glob
 
-    return eval { $maybe_fh->isa("IO::Handle") } ||
-           eval { tied($maybe_fh)->can('TIEHANDLE') };
+    return $self->try(sub { $maybe_fh->isa("IO::Handle") }) ||
+           $self->try(sub { tied($maybe_fh)->can('TIEHANDLE') });
 }
 
 =back
