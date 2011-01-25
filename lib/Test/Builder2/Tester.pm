@@ -127,7 +127,7 @@ Works just as C<event_like> but it also checks the $result is a result.
 install_test result_like => sub($$;$) {
     my($have, $want, $name) = @_;
 
-    $name ||= "result: ".($want->{event_type} || $have->event_type);
+    $name ||= "result: ".($want->{name} || $have->name || '');
     return Builder->ok(0, $name) if $have->event_type ne 'result';
 
     return event_like($have, $want, $name);
