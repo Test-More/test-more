@@ -190,9 +190,6 @@ sub accept_stream_end {
 
     $self->output_ending_commentary($ec);
 
-    # New counter
-    $self->counter( Test::Builder2::Counter->new );
-
     return;
 }
 

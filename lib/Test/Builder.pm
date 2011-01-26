@@ -398,7 +398,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $Opened_Testhandles = 0;
     $self->_dup_stdhandles;
 
-    $self->last_test_seen(0);
     $self->stream_started(0);
 
     return;
@@ -774,7 +773,6 @@ sub stream_start {
 sub stream_end {
     my $self = shift;
 
-    $self->last_test_seen( $self->current_test );
     $self->event_coordinator->post_event(
         Test::Builder2::Event::StreamEnd->new
     );
@@ -795,14 +793,6 @@ sub set_plan {
     return;
 }
 
-
-# The Formatter will reset its counter to 0 at the end of the stream
-# so we have to remember the last test number seen
-has last_test_seen =>
-  is            => 'rw',
-  isa           => 'Test::Builder2::Positive_Int',
-  default       => 0,
-;
 
 has stream_started =>
   is            => 'rw',
@@ -859,8 +849,6 @@ ERR
 
     # Check that we haven't violated the plan
     $self->_check_is_passing_plan();
-
-    $self->last_test_seen( $self->current_test );
 
     return $test ? 1 : 0;
 }
@@ -1259,8 +1247,6 @@ sub skip {
     $result = shared_clone($result);
     $self->event_coordinator->post_result( $result );
 
-    $self->last_test_seen( $self->current_test );
-
     return 1;
 }
 
@@ -1292,8 +1278,6 @@ sub todo_skip {
     );
     $result = shared_clone($result);
     $self->event_coordinator->post_result( $result );
-
-    $self->last_test_seen( $self->current_test );
 
     return 1;
 }
@@ -1962,11 +1946,10 @@ sub current_test {
         }
 
         $counter->set($num);
-        $self->last_test_seen($num);
         return;
     }
     else {
-        return $counter->get || $self->last_test_seen;
+        return $counter->get;
     }
 }
 
