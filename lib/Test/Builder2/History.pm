@@ -69,10 +69,10 @@ sub accept_event {
 
     my $type = $event->event_type;
     if( $type eq 'stream start' ) {
-        $self->stream_depth_inc;
+        $self->_stream_depth_inc;
     }
     elsif( $type eq 'stream end' ) {
-        $self->stream_depth_dec;
+        $self->_stream_depth_dec;
     }
 
     return;
@@ -240,22 +240,25 @@ has stream_depth =>
   default       => 0
 ;
 
+=begin private
 
-=head3 stream_depth_inc
+=head3 _stream_depth_inc
 
-=head3 stream_depth_dec
+=head3 _stream_depth_dec
 
 Increment and decrement the C<stream_depth>.
 
+=end private
+
 =cut
 
-sub stream_depth_inc {
+sub _stream_depth_inc {
     my $self = shift;
 
     $self->stream_depth( $self->stream_depth + 1 );
 }
 
-sub stream_depth_dec {
+sub _stream_depth_dec {
     my $self = shift;
 
     $self->stream_depth( $self->stream_depth - 1 );
