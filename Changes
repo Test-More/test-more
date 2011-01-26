@@ -16,6 +16,7 @@ See README and version control log for Test::Builder2 changes.
       formatter ask the history object about the test state.
     * INNER_accept_event and INNER_accept_result are now gone from the
       Formatter.  Write accept_event and accept_result normally.
+    * TB2->ok will now start the stream if there is not one already
 
     New Features
     * Added Test::Builder2::CanLoad to protect $! and $@ from tests loading

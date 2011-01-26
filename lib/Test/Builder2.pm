@@ -308,9 +308,10 @@ sub assert_end {
 
 The most basic assertion that all other assertions should use.
 
-This handles things like calling C<assert_start> and C<assert_end>,
-creating a test result and recording the result.  Everything you 
-want an assert to do and nothing else.
+This handles things like calling C<assert_start>, C<assert_end>,
+creating a test result and recording the result.  It will start a
+stream if one is not already started.  Everything you want an assert
+to do and nothing else.
 
 $test is simple true for success, false for failure.
 
@@ -332,6 +333,8 @@ sub ok {
     my $self = shift;
     my $test = shift;
     my $name = shift;
+
+    $self->stream_start unless $self->history->stream_depth;
 
     $self->assert_start();
 
