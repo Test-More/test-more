@@ -25,6 +25,8 @@ See README and version control log for Test::Builder2 changes.
       their format. [github 112]
     * Added Test::Builder2::History->plan to capture the plan event so
       builders don't have to
+    * Test::Builder no longer tracks the plan on its own, it uses the
+      shared History object. [github 125]
 
     Bug Fixes
     * More $@ and $! protection.

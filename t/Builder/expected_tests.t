@@ -15,7 +15,6 @@ note "Can call expected_tests() to set the plan"; {
     my $history = capture {
         $tb->expected_tests(4);
     };
-    is $tb->expected_tests, 4;
 
     my $events = $history->events;
 
@@ -30,4 +29,4 @@ note "Can call expected_tests() to set the plan"; {
     ok !$events->[2];
 }
 
-done_testing(4);
+done_testing(3);

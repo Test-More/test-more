@@ -375,7 +375,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Indent}     ||= '';
 
     $self->{Exported_To}    = undef;
-    $self->{Expected_Tests} = 0;
 
     $self->load("Test::Builder2::Formatter::TAP");
     $self->{EventCoordinator} = Test::Builder2::EventCoordinator->create(
@@ -521,8 +520,6 @@ sub expected_tests {
         $self->croak("Number of tests must be a positive integer.  You gave it '$max'")
           unless $max =~ /^\+?\d+$/;
 
-        $self->{Expected_Tests} = $max;
-
         $self->stream_start unless $self->stream_started;
 
         $self->set_plan(
@@ -530,7 +527,9 @@ sub expected_tests {
         );
     }
 
-    return $self->{Expected_Tests};
+    my $plan = $self->history->plan;
+    return 0 unless $plan;
+    return $plan->asserts_expected;
 }
 
 =item B<no_plan>
@@ -602,35 +601,21 @@ sub done_testing {
 
     $self->{Done_Testing} = [caller];
 
+    $self->stream_start unless $self->stream_started;
+
     if( defined $num_tests ) {
         if( $self->expected_tests && $num_tests != $self->expected_tests ) {
             $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".
                           "but done_testing() expects $num_tests");
         }
-        # Send along the plan, presumably shutting off no_plan
-        else {
-            $self->event_coordinator->post_event(
-                Test::Builder2::Event::SetPlan->new( asserts_expected => $num_tests )
-            );
+
+        if( $num_tests != $self->current_test ) {
+            $self->is_passing(0);
         }
     }
-
-    if( !$self->{Expected_Tests} ) {
-        if( defined $num_tests ) {
-            $self->{Expected_Tests} = $num_tests;
-        }
-        else {
-            $self->{Expected_Tests} = $self->current_test;
-        }
-    }
-
-    $self->stream_start unless $self->stream_started;
 
     my %plan = defined $num_tests ? ( asserts_expected => $num_tests ) : ( no_plan => 1 );
     $self->set_plan( %plan ) unless $self->_plan_handled;
-
-    # The wrong number of tests were run
-    $self->is_passing(0) if $self->{Expected_Tests} != $self->current_test;
 
     # No tests were run
     $self->is_passing(0) if $self->current_test == 0;
@@ -657,8 +642,10 @@ sub has_plan {
     my $plan = $self->history->plan;
     return undef if !defined $plan;
 
-    return( $self->{Expected_Tests} ) if $self->{Expected_Tests};
-    return('no_plan') if $plan->no_plan;
+    return 'no_plan' if $plan->no_plan;
+
+    my $want = $plan->asserts_expected;
+    return $want if $want;
 
     return undef;
 }
@@ -2345,14 +2332,9 @@ sub _ending {
     # Figure out if we passed or failed and print helpful messages.
     my $test_results = $history->results;
     if(@$test_results) {
-        # The plan?  We have no plan.
-        if( $plan->no_plan ) {
-            $self->{Expected_Tests} = $self->current_test;
-        }
-
+        my $num_extra = $plan->no_plan ? 0 : $self->current_test - $plan->asserts_expected;
+            
         my $num_failed = grep $_->is_fail, @{$test_results}[ 0 .. $self->current_test - 1 ];
-
-        my $num_extra = $self->current_test - $self->{Expected_Tests};
 
         if( $num_extra != 0 ) {
             $self->is_passing(0);
