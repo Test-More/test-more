@@ -74,6 +74,9 @@ sub accept_event {
     elsif( $type eq 'stream end' ) {
         $self->_stream_depth_dec;
     }
+    elsif( $type eq 'set plan' ) {
+        $self->plan($event);
+    }
 
     return;
 }
@@ -201,6 +204,19 @@ Returns true if we have not yet seen a failing test.
 =cut
 
 sub is_passing { shift->fail_count == 0 }
+
+=head3 plan
+
+    my $plan = $history->plan;
+
+Returns the plan event for the current stream, if any.
+
+=cut
+
+has plan =>
+  is            => 'rw',
+  isa           => 'Test::Builder2::Event',
+;
 
 
 =head2 State
