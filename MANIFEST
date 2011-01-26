@@ -17,7 +17,9 @@ lib/Test/Builder/Tester/Color.pm
 lib/Test/Builder2.pm
 lib/Test/Builder2/AssertRecord.pm
 lib/Test/Builder2/AssertStack.pm
+lib/Test/Builder2/BlackHole.pm
 lib/Test/Builder2/CanDupFilehandles.pm
+lib/Test/Builder2/CanLoad.pm
 lib/Test/Builder2/CanTry.pm
 lib/Test/Builder2/Counter.pm
 lib/Test/Builder2/Design.pod
@@ -29,6 +31,7 @@ lib/Test/Builder2/Event/StreamEnd.pm
 lib/Test/Builder2/Event/StreamMetadata.pm
 lib/Test/Builder2/Event/StreamStart.pm
 lib/Test/Builder2/EventCoordinator.pm
+lib/Test/Builder2/EventCoordinator/Default.pm
 lib/Test/Builder2/Events.pm
 lib/Test/Builder2/EventWatcher.pm
 lib/Test/Builder2/Formatter.pm
@@ -56,6 +59,7 @@ lib/Test/Builder2/Streamer.pm
 lib/Test/Builder2/Streamer/Debug.pm
 lib/Test/Builder2/Streamer/Print.pm
 lib/Test/Builder2/Streamer/TAP.pm
+lib/Test/Builder2/Tester.pm
 lib/Test/Builder2/threads/shared.pm
 lib/Test/Builder2/threads/shared/off.pm
 lib/Test/Builder2/threads/shared/on.pm
@@ -93,11 +97,11 @@ t/Builder/has_plan.t
 t/Builder/has_plan2.t
 t/Builder/is_fh.t
 t/Builder/is_passing.t
-t/Builder/last_test_seen.t
 t/Builder/last_test_skipped.t
 t/Builder/maybe_regex.t
 t/Builder/no_diag.t
 t/Builder/no_ending.t
+t/Builder/no_formatter.t
 t/Builder/no_header.t
 t/Builder/no_plan.t
 t/Builder/no_plan_at_all.t
@@ -126,6 +130,7 @@ t/Builder2/TB2_before_Mouse.t
 t/Builder2/top.t
 t/c_flag.t
 t/CanDupFilehandles.t
+t/CanLoad.t
 t/CanTry.t
 t/circular_data.t
 t/cmp_ok.t
@@ -140,6 +145,7 @@ t/Event/EventCoordinator.t
 t/Event/Events.t
 t/Event/EventWatcher.t
 t/Event/Log.t
+t/Event/post_order.t
 t/Event/SetPlan.t
 t/Event/StreamEnd.t
 t/Event/StreamMetadata.t
@@ -153,7 +159,6 @@ t/fail-more.t
 t/fail_one.t
 t/filehandles.t
 t/fork.t
-t/Formatter/Formatter.t
 t/Formatter/Multi.t
 t/Formatter/Null.t
 t/Formatter/PlusMinus.t
@@ -167,6 +172,7 @@ t/harness_active.t
 t/History/History.t
 t/History/HistoryStats.t
 t/History/NoHistory.t
+t/History/stream_depth.t
 t/import.t
 t/is_deeply_dne_bug.t
 t/is_deeply_fail.t
@@ -242,6 +248,8 @@ t/Tester/tbt_04line_num.t
 t/Tester/tbt_05faildiag.t
 t/Tester/tbt_06errormess.t
 t/Tester/tbt_07args.t
+t/Tester2/capture.t
+t/Tester2/ec_untouched.t
 t/thread_taint.t
 t/threads.t
 t/todo.t
