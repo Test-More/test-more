@@ -21,10 +21,11 @@ See README and version control log for Test::Builder2 changes.
     * Added Test::Builder2::CanLoad to protect $! and $@ from tests loading
       modules internally.
     * Added Test::Builder2::Tester to test Test:: modules independent of
-      their format.
+      their format. [github 112]
 
     Bug Fixes
     * More $@ and $! protection.
+    * Test::Builder now works with non-TAP formatters (or no formatter at all)
 
 
 2.00_05  Mon, 24 Jan 2011 14:52:27 +1000
