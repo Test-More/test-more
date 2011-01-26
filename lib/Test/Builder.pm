@@ -407,14 +407,29 @@ sub event_coordinator {
     return $_[0]->{EventCoordinator};
 }
 
+use Test::Builder2::BlackHole;
+my $blackhole = Test::Builder2::BlackHole->new;
 sub formatter {
-    return $_[0]->event_coordinator->formatters->[0];
+    return $_[0]->event_coordinator->formatters->[0] || $blackhole;
 }
 
 sub history {
     return $_[0]->event_coordinator->history;
 }
 
+sub counter {
+    my $self = shift;
+
+    my $counter = $self->try(sub { $self->formatter->counter; });
+    return $counter if $counter;
+
+    # Fake a counter from the history object.
+    # This will not remember changes to the current_test()
+    $counter = Test::Builder2::Counter->new;
+    $counter->set($self->history->results_count);
+
+    return $counter;
+}
 
 =back
 
@@ -1916,7 +1931,7 @@ can erase history if you really want to.
 sub current_test {
     my( $self, $num ) = @_;
 
-    my $counter = $self->formatter->counter;
+    my $counter = $self->counter;
 
     if( defined $num ) {
         my $history = $self->history;
