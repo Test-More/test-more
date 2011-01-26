@@ -368,7 +368,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Name}         = $0;
     $self->is_passing(1);
     $self->{Ending}       = 0;
-    $self->{No_Plan}      = 0;
     $self->{Done_Testing} = 0;
 
     $self->{Original_Pid} = $$;
@@ -549,8 +548,6 @@ sub no_plan {
 
     $self->carp("no_plan takes no arguments") if $arg;
 
-    $self->{No_Plan}   = 1;
-
     $self->stream_start;
 
     $self->set_plan(
@@ -599,11 +596,6 @@ Or to plan a variable number of tests:
 sub done_testing {
     my($self, $num_tests) = @_;
 
-    # If done_testing() specified the number of tests, shut off no_plan.
-    if( defined $num_tests ) {
-        $self->{No_Plan} = 0;
-    }
-
     if( $self->{Done_Testing} ) {
         my($file, $line) = @{$self->{Done_Testing}}[1,2];
         $self->croak(qq{done_testing() called twice.\n  First at $file line $line,\n  then });
@@ -612,9 +604,17 @@ sub done_testing {
 
     $self->{Done_Testing} = [caller];
 
-    if( $self->expected_tests && defined $num_tests && $num_tests != $self->expected_tests ) {
-        $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".
-                     "but done_testing() expects $num_tests");
+    if( defined $num_tests ) {
+        if( $self->expected_tests && $num_tests != $self->expected_tests ) {
+            $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".
+                          "but done_testing() expects $num_tests");
+        }
+        # Send along the plan, presumably shutting off no_plan
+        else {
+            $self->event_coordinator->post_event(
+                Test::Builder2::Event::SetPlan->new( asserts_expected => $num_tests )
+            );
+        }
     }
 
     if( !$self->{Expected_Tests} ) {
@@ -656,9 +656,13 @@ of expected tests).
 sub has_plan {
     my $self = shift;
 
+    my $plan = $self->history->plan;
+    return undef if !defined $plan;
+
     return( $self->{Expected_Tests} ) if $self->{Expected_Tests};
-    return('no_plan') if $self->{No_Plan};
-    return(undef);
+    return('no_plan') if $plan->no_plan;
+
+    return undef;
 }
 
 =item B<skip_all>
@@ -2342,7 +2346,7 @@ sub _ending {
     my $test_results = $self->history->results;
     if(@$test_results) {
         # The plan?  We have no plan.
-        if( $self->{No_Plan} ) {
+        if( $self->history->plan->no_plan ) {
             $self->{Expected_Tests} = $self->current_test;
         }
 

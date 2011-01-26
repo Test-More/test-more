@@ -16,6 +16,9 @@ has been set.
 
 It B<must> come between a C<stream start> and an C<stream end> Event.
 
+There B<should> be only one plan per stream.  An exception is that a
+B<no_plan> can be followed by a more restrictive plan.
+
 =head1 METHODS
 
 =head2 Attributes
