@@ -3,21 +3,31 @@
 use strict;
 use warnings;
 
-BEGIN { require 't/test.pl' }
-
 use lib 't/lib';
 use Test::Builder::NoOutput;
+use Test::More;
+
+use Test::Builder2::Tester;
 
 note "Can call expected_tests() to set the plan"; {
-    my $tb = Test::Builder::NoOutput->create;
+    my $tb = Test::Builder->new;
 
-    ok $tb->expected_tests(3);
-    is $tb->expected_tests, 3;
-    is $tb->read('out'), <<OUT, "outputs header";
-TAP version 13
-1..3
-OUT
+    my $history = capture {
+        $tb->expected_tests(4);
+    };
+    is $tb->expected_tests, 4;
 
+    my $events = $history->events;
+
+    event_like $events->[0], {
+        event_type => "stream start"
+    };
+    event_like $events->[1], {
+        event_type              => "set plan",
+        asserts_expected        => 4
+    };
+
+    ok !$events->[2];
 }
 
-done_testing;
+done_testing(4);

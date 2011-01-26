@@ -246,7 +246,7 @@ if the developer has not set a plan.
 
 sub _plan_handled {
     my $self = shift;
-    return $self->{Have_Plan} || $self->{No_Plan} || $self->{Skip_All};
+    return grep { $_->event_type eq 'set plan' } @{$self->history->events};
 }
 
 
@@ -368,9 +368,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Name}         = $0;
     $self->is_passing(1);
     $self->{Ending}       = 0;
-    $self->{Have_Plan}    = 0;
     $self->{No_Plan}      = 0;
-    $self->{Have_Output_Plan} = 0;
     $self->{Done_Testing} = 0;
 
     $self->{Original_Pid} = $$;
@@ -397,8 +395,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $Opened_Testhandles = 0;
     $self->_dup_stdhandles;
-
-    $self->stream_started(0);
 
     return;
 }
@@ -478,7 +474,7 @@ sub plan {
 
     local $Level = $Level + 1;
 
-    $self->croak("You tried to plan twice") if $self->{Have_Plan};
+    $self->croak("You tried to plan twice") if $self->_plan_handled;
 
     if( my $method = $plan_cmds{$cmd} ) {
         local $Level = $Level + 1;
@@ -530,7 +526,7 @@ sub expected_tests {
 
         $self->{Expected_Tests} = $max;
 
-        $self->stream_start;
+        $self->stream_start unless $self->stream_started;
 
         $self->set_plan(
             asserts_expected => $max
@@ -562,44 +558,6 @@ sub no_plan {
     );
 
     return 1;
-}
-
-=begin private
-
-=item B<_output_plan>
-
-  $tb->_output_plan($max);
-  $tb->_output_plan($max, $directive);
-  $tb->_output_plan($max, $directive => $reason);
-
-Handles displaying the test plan.
-
-If a C<$directive> and/or C<$reason> are given they will be output with the
-plan.  So here's what skipping all tests looks like:
-
-    $tb->_output_plan(0, "SKIP", "Because I said so");
-
-It sets C<< $tb->{Have_Output_Plan} >> and will croak if the plan was already
-output.
-
-=end private
-
-=cut
-
-sub _output_plan {
-    my($self, $max, $directive, $reason) = @_;
-
-    $self->carp("The plan was already output") if $self->{Have_Output_Plan};
-
-    my $plan = "1..$max";
-    $plan .= " # $directive" if defined $directive;
-    $plan .= " $reason"      if defined $reason;
-
-    $self->_print("$plan\n");
-
-    $self->{Have_Output_Plan} = 1;
-
-    return;
 }
 
 
@@ -671,7 +629,7 @@ sub done_testing {
     $self->stream_start unless $self->stream_started;
 
     my %plan = defined $num_tests ? ( asserts_expected => $num_tests ) : ( no_plan => 1 );
-    $self->set_plan( %plan ) unless $self->{Have_Plan};
+    $self->set_plan( %plan ) unless $self->_plan_handled;
 
     # The wrong number of tests were run
     $self->is_passing(0) if $self->{Expected_Tests} != $self->current_test;
@@ -780,7 +738,6 @@ sub stream_start {
     $self->event_coordinator->post_event(
         Test::Builder2::Event::StreamStart->new
     );
-    $self->stream_started(1);
 
     return;
 }
@@ -791,7 +748,6 @@ sub stream_end {
     $self->event_coordinator->post_event(
         Test::Builder2::Event::StreamEnd->new
     );
-    $self->stream_started(0);
 
     return;
 }
@@ -803,17 +759,13 @@ sub set_plan {
         Test::Builder2::Event::SetPlan->new( @_ )
     );
 
-    $self->{Have_Plan} = 1;
-
     return;
 }
 
 
-has stream_started =>
-  is            => 'rw',
-  isa           => 'Bool',
-  default       => 0
-;
+sub stream_started {
+    $_[0]->history->stream_depth > 0;
+}
 
 sub ok {
     my( $self, $test, $name ) = @_;
@@ -2359,7 +2311,7 @@ sub _ending {
     return if $self->{Ending}++;
 
     # End the stream unless we (or somebody else) already ended it
-    $self->stream_end if $self->stream_started and $self->history->stream_depth;
+    $self->stream_end if $self->history->stream_depth;
 
     my $real_exit_code = $?;
 
@@ -2371,13 +2323,13 @@ sub _ending {
     }
 
     # Ran tests but never declared a plan or hit done_testing
-    if( !$self->{Have_Plan} and $self->current_test ) {
+    if( !$self->_plan_handled and $self->current_test ) {
         $self->is_passing(0);
     }
 
     # Exit if plan() was never called.  This is so "require Test::Simple"
     # doesn't puke.
-    if( !$self->{Have_Plan} ) {
+    if( !$self->_plan_handled ) {
         return;
     }
 
