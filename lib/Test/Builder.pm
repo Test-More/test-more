@@ -284,8 +284,8 @@ sub finalize {
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $ok = 1;
     $self->parent->{Child_Name} = undef;
-    if ( $self->{Skip_All} ) {
-        $self->parent->skip($self->{Skip_All});
+    if ( $self->history->plan->skip ) {
+        $self->parent->skip($self->history->plan->skip_reason);
     }
     elsif ( not @{ $self->history->results } ) {
         $self->parent->ok( 0, sprintf q[No tests run for subtest "%s"], $self->name );
@@ -376,8 +376,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Exported_To}    = undef;
     $self->{Expected_Tests} = 0;
-
-    $self->{Skip_All} = 0;
 
     $self->load("Test::Builder2::Formatter::TAP");
     $self->{EventCoordinator} = Test::Builder2::EventCoordinator->create(
@@ -678,7 +676,6 @@ sub skip_all {
     my( $self, $reason ) = @_;
 
     $reason = defined $reason ? $reason : '';
-    $self->{Skip_All} = $self->parent ? $reason : 1;
 
     $self->stream_start;
 
@@ -2314,8 +2311,11 @@ sub _ending {
     return if $self->no_ending;
     return if $self->{Ending}++;
 
+    my $history = $self->history;
+    my $plan    = $history->plan;
+
     # End the stream unless we (or somebody else) already ended it
-    $self->stream_end if $self->history->stream_depth;
+    $self->stream_end if $history->stream_depth;
 
     my $real_exit_code = $?;
 
@@ -2343,10 +2343,10 @@ sub _ending {
         return;
     }
     # Figure out if we passed or failed and print helpful messages.
-    my $test_results = $self->history->results;
+    my $test_results = $history->results;
     if(@$test_results) {
         # The plan?  We have no plan.
-        if( $self->history->plan->no_plan ) {
+        if( $plan->no_plan ) {
             $self->{Expected_Tests} = $self->current_test;
         }
 
@@ -2383,7 +2383,7 @@ FAIL
 
         _my_exit($exit_code) && return;
     }
-    elsif( $self->{Skip_All} ) {
+    elsif( $plan->skip ) {
         _my_exit(0) && return;
     }
     elsif($real_exit_code) {
