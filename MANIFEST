@@ -110,6 +110,7 @@ t/Builder/output.t
 t/Builder/reset.t
 t/Builder/reset_outputs.t
 t/Builder/skip_all.t
+t/Builder/stream_start.t
 t/Builder/use_numbers.t
 t/Builder2/assert.t
 t/Builder2/assert_dies.t
@@ -120,6 +121,7 @@ t/Builder2/is.t
 t/Builder2/Mouse.t
 t/Builder2/Mouse_before_TB2.t
 t/Builder2/NoWarnings.t
+t/Builder2/ok_starts_a_stream.t
 t/Builder2/result.t
 t/Builder2/result_accessors.t
 t/Builder2/SimpleBuilder2.t
@@ -172,6 +174,7 @@ t/harness_active.t
 t/History/History.t
 t/History/HistoryStats.t
 t/History/NoHistory.t
+t/History/plan.t
 t/History/stream_depth.t
 t/import.t
 t/is_deeply_dne_bug.t

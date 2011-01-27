@@ -5,7 +5,7 @@ use Test::Builder2::Mouse;
 with 'Test::Builder2::CanTry',
      'Test::Builder2::CanLoad';
 
-our $VERSION = '2.00_05';
+our $VERSION = '2.00_06';
 our $CLASS = __PACKAGE__;
 
 use base 'Exporter';
