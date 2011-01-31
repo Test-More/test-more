@@ -21,15 +21,14 @@ note "defaults"; {
     my $message = "The dolphins are in the jacuzzi.";
     my $event = $CLASS->new( message => $message );
 
-    is $event->event_type, "log";
-    is $event->level, 7;
-    is $event->message, $message;
+    is $event->event_type,      "log";
+    is $event->level,           'debug';
+    is $event->message,         $message;
     is_deeply $event->as_hash, {
         event_type      => 'log',
         message         => $message,
-        level           => 7
+        level           => 'debug'
     };
-    is $event->level_name, "debug";
 }
 
 

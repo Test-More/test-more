@@ -2,6 +2,7 @@ package Test::Builder2::Event::Log;
 
 use Test::Builder2::Types;
 use Test::Builder2::Mouse;
+use Test::Builder2::Mouse::Util::TypeConstraints qw(enum coerce via from);
 with 'Test::Builder2::Event';
 
 
@@ -44,20 +45,6 @@ sub levels {
     return @Levels;
 }
 
-
-=head3 level_name
-
-    my $name = $event->level_name;
-
-Returns the name for the $event's level.
-
-=cut
-
-sub level_name {
-    my $self = shift;
-    return $Levels[$self->level];
-}
-
 sub as_hash {
     my $self = shift;
 
@@ -85,29 +72,43 @@ has message =>
 
 =head3 level
 
-The severity level of this log, with 0 being the highest severity and
-7 the lowest.
+The severity level of this log.  These are based on syslog levels.
 
-These are based on syslog levels.
+Here are the levels from highest to lowest.
 
-     Emergency     (level 0)
-     Alert         (level 1)
-     Critical      (level 2)
-     Error         (level 3)
-     Warning       (level 4)
-     Notice        (level 5)
-     Info          (level 6)
-     Debug         (level 7)
+     emergency
+     alert
+     critical
+     error
+     warning
+     notice
+     info
+     debug
 
-Defaults to 7, debug.
+Defaults to C<debug>.
 
 =cut
+
+enum 'Test::Builder2::LogLevel'
+  => \@Levels;
+coerce 'Test::Builder2::LogLevel' => from 'Str' => via { lc $_ };
+
 
 has level =>
   is            => 'rw',
   isa           => 'Test::Builder2::LogLevel',
-  default       => 7
+  default       => 'debug'
 ;
+
+
+=head2 Types
+
+=head3 Test::Builder2::LogLevel
+
+A valid level for a L<Test::Builder2::Event::Log>
+
+=cut
+
 
 no Test::Builder2::Mouse;
 

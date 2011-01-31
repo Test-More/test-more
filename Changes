@@ -1,5 +1,12 @@
 See README and version control log for Test::Builder2 changes.
 
+2.00_07
+    Incompatible Changes
+    * TB2::Event::Log now uses symbolic levels, not numeric.  This lets us
+      add new levels later. [github 111]
+    * Event log levels have been lower cased.
+
+
 2.00_06  Thu, 27 Jan 2011 09:58:35 +1000
     Incompatible Changes
     * The EventCoordinator now only has one history object.
