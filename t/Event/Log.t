@@ -14,6 +14,10 @@ note "Bad args"; {
 
     ok !eval { $CLASS->new( message => "foo", level => 42 ) };
     like $@, qr{^\QAttribute (level) does not pass the type constraint};
+
+    ok !eval { $CLASS->new( message => "foo", level => "highest" ) };
+    like $@, qr{^\QAttribute (level) does not pass the type constraint},
+      "highest is not a level";
 }
 
 
@@ -33,7 +37,21 @@ note "defaults"; {
 
 
 note "levels"; {
-    is_deeply [$CLASS->levels], [qw( emergency alert critical error warning notice info debug )];
+    is_deeply [$CLASS->levels], [qw( debug info notice warning error alert )];
+}
+
+
+note "between_levels"; {
+    my $log = $CLASS->new(
+        message => "whatever",
+        level   => "error"
+    );
+
+    ok $log->between_levels("error", "alert");
+    ok !$log->between_levels("alert", "highest");
+    ok !$log->between_levels("error", "error");
+    ok !$log->between_levels("lowest", "error");
+    ok $log->between_levels("lowest", "alert");
 }
 
 done_testing;
