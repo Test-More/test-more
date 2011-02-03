@@ -1,12 +1,5 @@
 #!perl -w
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = '../lib';
-    }
-}
-
 use lib 't/lib';
 use absINC;
 
@@ -17,9 +10,6 @@ package My::Test;
 # Test::Builder's own and the ending diagnostics don't come out right.
 require Test::Builder;
 my $TB = Test::Builder->create;
-$TB->plan( skip_all => "failure diagnostics not implemented" );
-
-__END__
 $TB->plan(tests => 3);
 
 
@@ -38,10 +28,12 @@ exit 250;
 
 END {
      $TB->is_eq($out->read, <<OUT);
- 1..1
+TAP version 13
+1..1
 OUT
 
     $TB->is_eq($err->read, <<ERR);
+# No tests run!
 # Looks like your test exited with 250 before it could output anything.
 ERR
 
