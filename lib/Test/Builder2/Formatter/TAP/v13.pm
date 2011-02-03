@@ -72,6 +72,11 @@ sub diag {
     $self->err($self->comment(@_));
 }
 
+sub note {
+    my $self = shift;
+    $self->out($self->comment(@_));
+}
+
 
 =head3 counter
 
@@ -113,6 +118,7 @@ my %event_dispatch = (
     "stream start"      => "accept_stream_start",
     "stream end"        => "accept_stream_end",
     "set plan"          => "accept_set_plan",
+    "log"               => "accept_log",
 );
 
 sub accept_event {
@@ -463,6 +469,21 @@ sub _escape {
 
     $$string =~ s{#}{\\#}g;
     $$string =~ s{\n}{\\n}g;
+
+    return;
+}
+
+
+sub accept_log {
+    my $self = shift;
+    my($log, $ec) = @_;
+
+    if( $log->between_levels( "warning", "highest" ) ) {
+        $self->diag( $log->message );
+    }
+    else {
+        $self->note( $log->message );
+    }
 
     return;
 }
