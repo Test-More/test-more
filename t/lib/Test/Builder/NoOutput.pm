@@ -39,7 +39,6 @@ $stream's are...
 
     out         output()
     err         failure_output()
-    todo        todo_output()
     all         all outputs
 
 Defaults to 'all'.
@@ -56,18 +55,15 @@ sub create {
         all  => '',
         out  => '',
         err  => '',
-        todo => '',
     );
     $self->{_outputs} = \%outputs;
 
     require Test::Builder::Tee;
     tie *OUT,  "Test::Builder::Tee", \$outputs{all}, \$outputs{out};
     tie *ERR,  "Test::Builder::Tee", \$outputs{all}, \$outputs{err};
-    tie *TODO, "Test::Builder::Tee", \$outputs{all}, \$outputs{todo};
 
     $self->output(*OUT);
     $self->failure_output(*ERR);
-    $self->todo_output(*TODO);
 
     return $self;
 }

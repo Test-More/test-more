@@ -1,16 +1,5 @@
 #!perl -w
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = ('../lib', 'lib');
-    }
-    else {
-        unshift @INC, 't/lib';
-    }
-}
-
-
 # Turn on threads here, if available, since this test tends to find
 # lots of threading bugs.
 use Config;
@@ -24,22 +13,23 @@ BEGIN {
 
 use strict;
 
+use lib 't/lib';
 use Test::Builder::NoOutput;
 use Test::More tests => 7;
 
 my $test = Test::Builder::NoOutput->create;
 
-# Test diag() goes to todo_output() in a todo test.
+# Test diag() goes to the right place in a todo test.
 {
     $test->todo_start();
 
     $test->diag("a single line");
-    is( $test->read('todo'), <<'DIAG',   'diag() with todo_output set' );
+    is( $test->read('out'), <<'DIAG',   'diag() with todo_output set' );
 # a single line
 DIAG
 
     my $ret = $test->diag("multiple\n", "lines");
-    is( $test->read('todo'), <<'DIAG',   '  multi line' );
+    is( $test->read('out'), <<'DIAG',   '  multi line' );
 # multiple
 # lines
 DIAG

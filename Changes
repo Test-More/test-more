@@ -12,6 +12,8 @@ See README and version control log for Test::Builder2 changes.
     New Features
     * Added TB2::Event::Log->between_levels() to compare log levels.
     * The TAP formatter now respects log events.
+    * Test::Builder->diag and ->note now use log events and the
+      formatter.
 
     Documentation
     * The suggested meanings of event log levels are now documented.

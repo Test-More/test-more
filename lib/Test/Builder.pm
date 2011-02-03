@@ -1555,7 +1555,18 @@ Mark Fowler <mark@twoshortplanks.com>
 sub diag {
     my $self = shift;
 
-    $self->_print_comment( $self->_diag_fh, @_ );
+    return unless @_;
+    return if $self->no_diag;
+    return $self->note(@_) if $self->in_todo;
+
+    $self->event_coordinator->post_event(
+        Test::Builder2::Event::Log->new(
+            message     => $self->_join_message(@_),
+            level       => 'warning'
+        )
+    );
+
+    return;
 }
 
 =item B<note>
@@ -1570,37 +1581,24 @@ normally be seen by the user except in verbose mode.
 sub note {
     my $self = shift;
 
-    $self->_print_comment( $self->output, @_ );
-}
-
-sub _diag_fh {
-    my $self = shift;
-
-    local $Level = $Level + 1;
-    return $self->in_todo ? $self->todo_output : $self->failure_output;
-}
-
-sub _print_comment {
-    my( $self, $fh, @msgs ) = @_;
-
+    return unless @_;
     return if $self->no_diag;
-    return unless @msgs;
 
-    # Prevent printing headers when compiling (i.e. -c)
-    return if $^C;
+    $self->event_coordinator->post_event(
+        Test::Builder2::Event::Log->new(
+            message     => $self->_join_message(@_),
+            level       => 'info'
+        )
+    );
 
-    # Smash args together like print does.
-    # Convert undef to 'undef' so its readable.
-    my $msg = join '', map { defined($_) ? $_ : 'undef' } @msgs;
-
-    # Escape the beginning, _print will take care of the rest.
-    $msg =~ s/^/# /;
-
-    local $Level = $Level + 1;
-    $self->_print_to_fh( $fh, $msg );
-
-    return 0;
+    return;
 }
+
+sub _join_message {
+    my $self = shift;
+    return join '', map { defined($_) ? $_ : 'undef' } @_;
+}
+
 
 =item B<explain>
 
