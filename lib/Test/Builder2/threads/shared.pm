@@ -8,7 +8,7 @@ use warnings;
 
 use Config;
 
-if( $] >= 5.008001 && $Config{useithreads} && $INC{'threads.pm'} ) {
+if( $Config{useithreads} && $INC{'threads.pm'} ) {
     require Test::Builder2::threads::shared::on;
     our @ISA = qw(Test::Builder2::threads::shared::on);
 }
