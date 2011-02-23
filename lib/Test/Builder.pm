@@ -755,6 +755,19 @@ sub stream_started {
     $_[0]->history->stream_depth > 0;
 }
 
+
+sub post_result {
+    my $self = shift;
+    my $result = shift;
+
+    $result = shared_clone($result);
+    $self->stream_start unless $self->stream_started;
+    $self->event_coordinator->post_result($result);
+
+    return;
+}
+
+
 sub ok {
     my( $self, $test, $name ) = @_;
 
@@ -796,9 +809,7 @@ ERR
     );
 
     # Store the Result in history making sure to make it thread safe
-    $result = shared_clone($result);
-    $self->stream_start unless $self->stream_started;
-    $self->event_coordinator->post_result($result);
+    $self->post_result($result);
 
     $self->is_passing(0) unless $test || $self->in_todo;
 
@@ -1199,8 +1210,7 @@ sub skip {
         id        => $line,
         location  => $file,
     );
-    $result = shared_clone($result);
-    $self->event_coordinator->post_result( $result );
+    $self->post_result($result);
 
     return 1;
 }
@@ -1231,8 +1241,7 @@ sub todo_skip {
         location        => $file,
         id              => $line,
     );
-    $result = shared_clone($result);
-    $self->event_coordinator->post_result( $result );
+    $self->post_result($result);
 
     return 1;
 }

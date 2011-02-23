@@ -18,6 +18,9 @@ See README and version control log for Test::Builder2 changes.
     Documentation
     * The suggested meanings of event log levels are now documented.
 
+    Bug Fixes
+    * Fixed a skip() or todo_skip() called before a plan.  [github 132]
+
 
 2.00_06  Thu, 27 Jan 2011 09:58:35 +1000
     Incompatible Changes (since 2.00_01)
