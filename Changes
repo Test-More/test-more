@@ -1,4 +1,4 @@
-0.98
+0.98  Wed, 23 Feb 2011 14:38:02 +1100
     Bug Fixes
     * subtest() should not fail if $? is non-zero. (Aaron Crane)
 

@@ -128,6 +128,7 @@ t/subtest/plan.t
 t/subtest/predicate.t
 t/subtest/singleton.t
 t/subtest/todo.t
+t/subtest/wstat.t
 t/tbm_doesnt_set_exported_to.t
 t/Tester/tbt_01basic.t
 t/Tester/tbt_02fhrestore.t
