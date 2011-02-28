@@ -170,6 +170,7 @@ t/Formatter/Streamer.t
 t/Formatter/TAP/basic.t
 t/Formatter/TAP/ending_commentary.t
 t/Formatter/TAP/escapes.t
+t/Formatter/TAP/log.t
 t/harness_active.t
 t/History/History.t
 t/History/HistoryStats.t
@@ -227,6 +228,7 @@ t/Simple/load.t
 t/Simple/no_plan.t
 t/Simple/pass.t
 t/skip.t
+t/skip_before_plan.t
 t/skipall.t
 t/subtest/args.t
 t/subtest/basic.t
@@ -256,6 +258,7 @@ t/Tester2/ec_untouched.t
 t/thread_taint.t
 t/threads.t
 t/todo.t
+t/todo_skip_before_plan.t
 t/undef.t
 t/use_ok.t
 t/useing.t

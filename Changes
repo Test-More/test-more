@@ -1,6 +1,6 @@
 See README and version control log for Test::Builder2 changes.
 
-2.00_07
+2.00_07  Mon, 28 Feb 2011 23:53:22 +1100
     Incompatible Changes (since 2.00_01)
     * TB2::Event::Log now uses symbolic levels, not numeric.  This lets us
       add new levels later. [github 111]
