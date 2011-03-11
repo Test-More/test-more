@@ -120,6 +120,17 @@ To achieve a specific order, try Test::Manifest.
 
 =head2 What should I name my tests?
 
+Typically, authors name their tests with a number, and a short name signifying
+what the test tests. For example, F<00-load.t> is a common test name, and should
+test that the module can be loaded. F<01-methodname.t> might then test that a
+particular function does what it should. By incrementing the number at the
+beginning of the filename, you can maybe get the tests to run in a particular
+order.
+
+Another common naming scheme uses bug numbers, names, or mnemonics for
+regression tests: F<rt-54321.t>, or F<rt54321-silly-mistake.t> might test that
+the fix for a particular bug is there and working right.
+
 =head2 How do I deal with tests that sometimes pass and sometimes fail?
 
 =head2 How do I test with a database/network/server that the user may or may not have?
