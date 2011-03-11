@@ -267,6 +267,11 @@ say C<use lib 't/lib'>.
 
 =head2 Why do I need more than ok?
 
+Technically you don't even need C<ok()>, but that doesn't mean it's a good idea
+to go without. Beyond C<ok()>, you can get multiple ways to say "ok" clearly,
+you can getdeep comparisons of data structures, you can test future features,
+and you can skip tests. It really is worth it.
+
 =head2 What's wrong with C<print $test ? "ok" : "not ok">?
 
 =head2 How do I check for an infinite loop
