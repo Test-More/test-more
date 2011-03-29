@@ -252,7 +252,11 @@ sub subtest {
     die $error if $error and !eval { $error->isa('Test::Builder::Exception') };
 
     local $Test::Builder::Level = $Test::Builder::Level + 1;
-    return $child->finalize;
+    my $finalize = $child->finalize;
+
+    $self->BAIL_OUT($child->{Bailed_Out_Reason}) if $child->{Bailed_Out};
+
+    return $finalize;
 }
 
 =begin _private
@@ -322,14 +326,16 @@ sub finalize {
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $ok = 1;
     $self->parent->{Child_Name} = undef;
-    if ( $self->{Skip_All} ) {
-        $self->parent->skip($self->{Skip_All});
-    }
-    elsif ( not @{ $self->{Test_Results} } ) {
-        $self->parent->ok( 0, sprintf q[No tests run for subtest "%s"], $self->name );
-    }
-    else {
-        $self->parent->ok( $self->is_passing, $self->name );
+    unless ($self->{Bailed_Out}) {
+        if ( $self->{Skip_All} ) {
+            $self->parent->skip($self->{Skip_All});
+        }
+        elsif ( not @{ $self->{Test_Results} } ) {
+            $self->parent->ok( 0, sprintf q[No tests run for subtest "%s"], $self->name );
+        }
+        else {
+            $self->parent->ok( $self->is_passing, $self->name );
+        }
     }
     $? = $self->{Child_Error};
     delete $self->{Parent};
@@ -1208,6 +1214,13 @@ sub BAIL_OUT {
     my( $self, $reason ) = @_;
 
     $self->{Bailed_Out} = 1;
+
+    if ($self->parent) {
+        $self->{Bailed_Out_Reason} = $reason;
+        $self->no_ending(1);
+        die bless {} => 'Test::Builder::Exception';
+    }
+
     $self->_print("Bail out!  $reason");
     exit 255;
 }
