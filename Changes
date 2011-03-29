@@ -1,3 +1,8 @@
+0.98_01
+    Bug Fixes
+    * BAIL_OUT works inside a subtest. (Larry Leszczynski) [github #138]
+
+
 0.98  Wed, 23 Feb 2011 14:38:02 +1100
     Bug Fixes
     * subtest() should not fail if $? is non-zero. (Aaron Crane)
