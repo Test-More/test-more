@@ -39,7 +39,7 @@ Test::Builder2::Tester - Testing a Test:: module
 
 This is a module for testing Test modules.
 
-=head1 Exports
+=head2 Exports
 
 These are exported by default
 
