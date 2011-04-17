@@ -39,7 +39,7 @@ Test::Builder2::Tester - Testing a Test:: module
 
 This is a module for testing Test modules.
 
-=head1 Exports
+=head2 Exports
 
 These are exported by default
 
@@ -137,3 +137,32 @@ install_test result_like => sub($$;$) {
 no Test::Builder2::Mouse;
 
 1;
+
+=head1 EXAMPLES
+
+=head2 Avoid to hardcode the sequence of tests
+
+    my $results = $history->results;
+    result_like $results->[0], {
+        is_pass => 0,
+        name    => "this is that",
+        file    => $0,
+    };
+    result_like $results->[1], { ... }
+    result_like $results->[2], { ... }
+
+The drawback with using array indices to access individual results
+is that once you decide to add or remove a test from any place but
+the very end of the test list, your array indices will be wrong and
+you'll have to update them all.
+
+To preclude this issue from arising, simply C<shift> the individual
+results off the result list, like this:
+
+    result_like shift @$results, { ... }; # check first result
+    result_like shift @$results, { ... }; # next one, and so on
+
+The advantage here is that while your checks may still be out of
+order with your tests after you've added a test or two, you only
+have to add checks symmetrically with your new tests - existing
+lines won't have to be edited.
