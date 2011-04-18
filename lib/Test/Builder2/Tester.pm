@@ -23,14 +23,16 @@ Test::Builder2::Tester - Testing a Test:: module
         that_ok $that;
     };
 
+    my $results = $capture->results;
+
     # The first one passed, and it has a name
-    result_like $capture->results->[0], {
+    result_like shift @$capture, {
         is_pass => 1,
         name => "some name",
     };
 
     # The second one failed, and it has no name
-    result_like $capture->results->[1], {
+    result_like shift @$capture, {
         is_pass => 0,
         name => ''
     };
@@ -39,7 +41,7 @@ Test::Builder2::Tester - Testing a Test:: module
 
 This is a module for testing Test modules.
 
-=head1 Exports
+=head2 Exports
 
 These are exported by default
 
@@ -49,8 +51,9 @@ These are exported by default
 
 Captures all the events and results which happens inside the block.
 
-Returns a L<Test::Builder2::Tester::Capture> (which is largely a
-L<Test::Builder2::History>) that you can reference later.
+Returns a L<Test::Builder2::History> that you can reference later.
+This is disassociated from any other tests, so you do what you like to
+it without altering any other tests.
 
 =cut
 
@@ -137,3 +140,31 @@ install_test result_like => sub($$;$) {
 no Test::Builder2::Mouse;
 
 1;
+
+=head1 EXAMPLES
+
+=head2 Avoid hardcoding the test sequence
+
+    my $results = $history->results;
+    result_like $results->[0], {
+        is_pass => 0,
+        name    => "this is that",
+        file    => $0,
+    };
+    result_like $results->[1], { ... }
+    result_like $results->[2], { ... }
+
+The drawback with using array indices to access individual results
+is that once you decide to add or remove a test from any place but
+the very end of the test list, your array indices will be wrong and
+you'll have to update them all.
+
+To preclude this issue from arising, simply C<shift> the individual
+results off the result list, like this:
+
+    result_like shift @$results, { ... }; # check first result
+    result_like shift @$results, { ... }; # next one, and so on
+
+Now you only have to add checks symmetrically with your new tests -
+existing lines won't have to be edited.  It's safe to modify $results
+because it is only the results for your captured tests.
