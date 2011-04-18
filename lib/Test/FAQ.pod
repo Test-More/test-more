@@ -116,6 +116,12 @@ L<Devel::Cover>
 Tests run in alphabetical order, so simply name your test files in the order
 you want them to run.  Numbering your test files works, too.
 
+    t/00_compile.t
+    t/01_config.t
+    t/zz_teardown.t
+
+0 runs first, z runs last.
+
 To achieve a specific order, try L<Test::Manifest>.
 
 =head2 What should I name my tests?
