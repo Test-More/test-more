@@ -397,7 +397,7 @@ So this:
 
 is similar to:
 
-    ok( $got =~ /expected/, 'this is like that');
+    ok( $got =~ m/expected/, 'this is like that');
 
 (Mnemonic "This is like that".)
 
