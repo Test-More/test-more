@@ -299,10 +299,34 @@ say C<use lib 't/lib'>.
 
 =head2 Why do I need more than ok?
 
-Technically you don't even need C<ok()>, but that doesn't mean it's a good idea
-to go without. Beyond C<ok()>, you can get multiple ways to say "ok" clearly,
-you can getdeep comparisons of data structures, you can test future features,
-and you can skip tests. It really is worth it.
+Since every test can be reduced to checking if a statement is true,
+ok() can test everything.  But ok() doesn't tell you why the test
+failed.  For that you need to tell the test more... which is why 
+you need L<Test::More>.
+
+    ok $pirate->name eq "Roberts", "person's name";
+
+    not ok 1 - person's name
+    # Failed test at pirates.t line 23.
+
+If the above fails, you don't know what C<< $person->name >> returned.
+You have to go in and add a C<diag> call.  This is time consuming.  If
+it's a heisenbug, it might not fail again!  If it's a user reporting a
+test failure, they might not be bothered to hack the tests to give you
+more information.
+
+    is $person->name, "Roberts", "person's name";
+
+    not ok 1 - person's name
+    # Failed test at pirates.t line 23.
+    #        got: 'Wesley'
+    #   expected: 'Roberts'
+
+Using C<is> from L<Test::More> you now know what value you got and
+what value you expected.
+
+The most useful functions in Test::More are is, like and is_deeply.
+
 
 =head2 What's wrong with C<print $test ? "ok" : "not ok">?
 
