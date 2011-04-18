@@ -124,18 +124,44 @@ you want them to run.  Numbering your test files works, too.
 
 To achieve a specific order, try L<Test::Manifest>.
 
+Typically you do B<not> want your tests to require being run in a
+certain order, but it can be useful to do a compile check first or to
+run the tests on a very basic module before everything else.  This
+gives you early information if a basic module fails which will bring
+everything else down.
+
+Another use is if you have a suite wide setup/teardown, such as
+creating and delete a large test database, which may be too
+expensive to do for every test.
+
+We recommend B<against> numbering every test file.  For most files
+this ordering will be arbitrary and the leading number obscures the
+real name of the file.  See L<What should I name my test files?> for
+more information.
+
+
 =head2 What should I name my tests?
 
-Typically, authors name their tests with a number, and a short name signifying
-what the test tests. For example, F<00-load.t> is a common test name, and should
-test that the module can be loaded. F<01-methodname.t> might then test that a
-particular function does what it should. By incrementing the number at the
-beginning of the filename, you can maybe get the tests to run in a particular
-order; see L<above|/"How do I get tests to run in a certain order?">.
+=head2 What should I name my test files?
 
-Another common naming scheme uses bug numbers, names, or mnemonics for
-regression tests: F<rt-54321.t>, or F<rt54321-silly-mistake.t> might test that
-the fix for a particular bug is there and working right.
+A test filename serves three purposes:
+
+Most importantly, it serves to identify what is being tested.  Each
+test file should test a clear piece of functionality.  This could be
+at single class, a single method, even a single bug.
+
+The order in which tests are run is usually dictated by the filename.
+See L<How do I get tests to run in a certain order?> for details.
+
+Finally, the grouping of tests into common bits of functionality can
+be achieved by directory and filenames.  For example, all the tests
+for Test::Builder are in the F<t/Builder/> directory.
+
+As an example, F<t/Builder/reset.t> contains the tests for
+C<< Test::Builder->reset >>.  F<t/00compile.t> checks that everything
+compiles, and it will run first.  F<t/dont_overwrite_die_handler.t>
+checks that we don't overwrite the C<<$SIG{__DIE__}>> handler.
+
 
 =head2 How do I deal with tests that sometimes pass and sometimes fail?
 
