@@ -23,14 +23,16 @@ Test::Builder2::Tester - Testing a Test:: module
         that_ok $that;
     };
 
+    my $results = $capture->results;
+
     # The first one passed, and it has a name
-    result_like $capture->results->[0], {
+    result_like shift @$capture, {
         is_pass => 1,
         name => "some name",
     };
 
     # The second one failed, and it has no name
-    result_like $capture->results->[1], {
+    result_like shift @$capture, {
         is_pass => 0,
         name => ''
     };
@@ -49,8 +51,9 @@ These are exported by default
 
 Captures all the events and results which happens inside the block.
 
-Returns a L<Test::Builder2::Tester::Capture> (which is largely a
-L<Test::Builder2::History>) that you can reference later.
+Returns a L<Test::Builder2::History> that you can reference later.
+This is disassociated from any other tests, so you do what you like to
+it without altering any other tests.
 
 =cut
 
@@ -140,7 +143,7 @@ no Test::Builder2::Mouse;
 
 =head1 EXAMPLES
 
-=head2 Avoid to hardcode the sequence of tests
+=head2 Avoid hardcoding the test sequence
 
     my $results = $history->results;
     result_like $results->[0], {
@@ -162,7 +165,6 @@ results off the result list, like this:
     result_like shift @$results, { ... }; # check first result
     result_like shift @$results, { ... }; # next one, and so on
 
-The advantage here is that while your checks may still be out of
-order with your tests after you've added a test or two, you only
-have to add checks symmetrically with your new tests - existing
-lines won't have to be edited.
+Now you only have to add checks symmetrically with your new tests -
+existing lines won't have to be edited.  It's safe to modify $results
+because it is only the results for your captured tests.
