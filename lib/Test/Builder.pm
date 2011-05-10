@@ -639,7 +639,7 @@ Or to plan a variable number of tests:
     for my $test (@tests) {
         $Test->ok($test);
     }
-    $Test->done_testing(@tests);
+    $Test->done_testing(scalar @tests);
 
 =cut
 
