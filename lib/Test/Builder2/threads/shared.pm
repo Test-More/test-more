@@ -17,3 +17,5 @@ else {
     our @ISA = qw(Test::Builder2::threads::shared::off);
 }
 
+1;
+

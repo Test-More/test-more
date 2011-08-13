@@ -128,4 +128,6 @@ sub as_hash {
 
 L<Test::Builder2::Event>
 
+=cut
+
 1;
