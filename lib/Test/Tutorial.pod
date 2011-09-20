@@ -5,8 +5,8 @@ Test::Tutorial - A tutorial about writing really basic tests
 =head1 DESCRIPTION
 
 
-I<AHHHHHHH!!!!  NOT TESTING!  Anything but testing!  
-Beat me, whip me, send me to Detroit, but don't make 
+I<AHHHHHHH!!!!  NOT TESTING!  Anything but testing!
+Beat me, whip me, send me to Detroit, but don't make
 me write tests!>
 
 I<*sob*>
@@ -16,7 +16,7 @@ I<Besides, I don't know how to write the damned things.>
 
 Is this you?  Is writing tests right up there with writing
 documentation and having your fingernails pulled out?  Did you open up
-a test and read 
+a test and read
 
     ######## We start with some black magic
 
@@ -137,7 +137,7 @@ So now you'd see...
 =head2 Test the manual
 
 Simplest way to build up a decent testing suite is to just test what
-the manual says it does. [3] Let's pull something out of the 
+the manual says it does. [3] Let's pull something out of the
 L<Date::ICal/SYNOPSIS> and test that all its bits work.
 
     #!/usr/bin/perl -w
@@ -146,14 +146,14 @@ L<Date::ICal/SYNOPSIS> and test that all its bits work.
 
     use Date::ICal;
 
-    $ical = Date::ICal->new( year => 1964, month => 10, day => 16, 
-                             hour => 16, min => 12, sec => 47, 
+    $ical = Date::ICal->new( year => 1964, month => 10, day => 16,
+                             hour => 16, min => 12, sec => 47,
                              tz => '0530' );
 
     ok( defined $ical,            'new() returned something' );
     ok( $ical->isa('Date::ICal'), "  and it's the right class" );
     ok( $ical->sec   == 47,       '  sec()'   );
-    ok( $ical->min   == 12,       '  min()'   );    
+    ok( $ical->min   == 12,       '  min()'   );
     ok( $ical->hour  == 16,       '  hour()'  );
     ok( $ical->day   == 17,       '  day()'   );
     ok( $ical->month == 10,       '  month()' );
@@ -197,14 +197,14 @@ same as something else:
 
     use Date::ICal;
 
-    $ical = Date::ICal->new( year => 1964, month => 10, day => 16, 
-                             hour => 16, min => 12, sec => 47, 
+    $ical = Date::ICal->new( year => 1964, month => 10, day => 16,
+                             hour => 16, min => 12, sec => 47,
                              tz => '0530' );
 
     ok( defined $ical,            'new() returned something' );
     ok( $ical->isa('Date::ICal'), "  and it's the right class" );
     is( $ical->sec,     47,       '  sec()'   );
-    is( $ical->min,     12,       '  min()'   );    
+    is( $ical->min,     12,       '  min()'   );
     is( $ical->hour,    16,       '  hour()'  );
     is( $ical->day,     17,       '  day()'   );
     is( $ical->month,   10,       '  month()' );
@@ -289,7 +289,7 @@ or we could set up a little try/expect loop.
         is( $ical->month,   $expect->[1],     '  month()' );
         is( $ical->day,     $expect->[2],     '  day()'   );
         is( $ical->hour,    $expect->[3],     '  hour()'  );
-        is( $ical->min,     $expect->[4],     '  min()'   );    
+        is( $ical->min,     $expect->[4],     '  min()'   );
         is( $ical->sec,     $expect->[5],     '  sec()'   );
     }
 
@@ -391,7 +391,7 @@ we can explicitly say it's never going to work and skip the test.
     is( $t1->epoch, 0,          "Epoch time of 0" );
 
     SKIP: {
-        skip('epoch to ICal not working on MacOS', 6) 
+        skip('epoch to ICal not working on MacOS', 6)
             if $^O eq 'MacOS';
 
         is( $t1->ical, '19700101Z', "  epoch to ical" );
