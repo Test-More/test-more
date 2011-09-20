@@ -30,7 +30,7 @@ you.  And here are the tricks...
 
 Here's the most basic test program.
 
-    #!/usr/bin/perl -w
+    #!/usr/bin/perl
 
     print "1..1\n";
 
@@ -50,7 +50,7 @@ results to determine if you succeeded or failed (more on that later).
 Writing all these print statements rapidly gets tedious.  Fortunately,
 there's B<Test::Simple>.  It has one function, C<ok()>.
 
-    #!/usr/bin/perl -w
+    #!/usr/bin/perl
 
     use Test::Simple tests => 1;
 
@@ -61,7 +61,7 @@ of Perl testing, and we'll be using it instead of roll-your-own from
 here on.  If C<ok()> gets a true value, the test passes.  False, it
 fails.
 
-    #!/usr/bin/perl -w
+    #!/usr/bin/perl
 
     use Test::Simple tests => 2;
     ok( 1 + 1 == 2 );
@@ -95,7 +95,7 @@ whole module.  Best place to start is at the beginning.  Date::ICal is
 an object-oriented module, and that means you start by making an
 object.  So we test C<new()>.
 
-    #!/usr/bin/perl -w
+    #!/usr/bin/perl
 
     use Test::Simple tests => 2;
 
@@ -140,7 +140,7 @@ Simplest way to build up a decent testing suite is to just test what
 the manual says it does. [3] Let's pull something out of the 
 L<Date::ICal/SYNOPSIS> and test that all its bits work.
 
-    #!/usr/bin/perl -w
+    #!/usr/bin/perl
 
     use Test::Simple tests => 8;
 
@@ -191,7 +191,7 @@ can't tell you what went wrong.  Instead, we'll use the C<is()>
 function, which lets us declare that something is supposed to be the
 same as something else:
 
-    #!/usr/bin/perl -w
+    #!/usr/bin/perl
 
     use Test::More tests => 8;
 
@@ -355,7 +355,7 @@ for you or for the next person who runs your test.
 Poking around in the existing Date::ICal tests, I found this in
 F<t/01sanity.t> [7]
 
-    #!/usr/bin/perl -w
+    #!/usr/bin/perl
 
     use Test::More tests => 7;
     use Date::ICal;
