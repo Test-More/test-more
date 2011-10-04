@@ -279,7 +279,7 @@ or we could set up a little try/expect loop.
     );
 
 
-    while( my ($ical_str, $expect) = each %ICal_Dates ) {
+    while( my($ical_str, $expect) = each %ICal_Dates ) {
         my $ical = Date::ICal->new( ical => $ical_str );
 
         ok( defined $ical,            "new(ical => '$ical_str')" );
