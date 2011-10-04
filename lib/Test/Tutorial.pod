@@ -311,7 +311,7 @@ function.
     );
 
     # For each key in the hash we're running 8 tests.
-    plan tests => keys %ICal_Dates * 8;
+    plan tests => keys(%ICal_Dates) * 8;
 
     ...and then your tests...
 
