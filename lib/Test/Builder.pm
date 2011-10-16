@@ -179,15 +179,20 @@ sub child {
     # Clear $TODO for the child.
     my $orig_TODO = $self->find_TODO(undef, 1, undef);
 
-    my $child = bless {}, ref $self;
-    $child->reset;
+    my $class = ref $self;
+    my $child = $class->create;
 
     # Add to our indentation
     $child->_indent( $self->_indent . '    ' );
-    
-    $child->{$_} = $self->{$_} foreach qw{Out_FH Todo_FH Fail_FH};
-    if ($parent_in_todo) {
-        $child->{Fail_FH} = $self->{Todo_FH};
+
+    # Make the child use the same outputs as the parent
+    for my $method (qw(output failure_output todo_output)) {
+        $child->$method( $self->$method );
+    }
+
+    # Ensure the child understands if they're inside a TODO
+    if( $parent_in_todo ) {
+        $child->failure_output( $self->todo_output );
     }
 
     # This will be reset in finalize. We do this here lest one child failure
