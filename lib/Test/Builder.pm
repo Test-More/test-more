@@ -147,6 +147,20 @@ sub create {
     return $self;
 }
 
+
+# Copy an object, currently a shallow.
+# This does *not* bless the destination.  This keeps the destructor from
+# firing when we're just storing a copy of the object to restore later.
+sub _copy {
+    my($src, $dest) = @_;
+
+    %$dest = %$src;
+    _share_keys($dest);
+
+    return;
+}
+
+
 =item B<child>
 
   my $child = $builder->child($name_of_child);
@@ -179,15 +193,20 @@ sub child {
     # Clear $TODO for the child.
     my $orig_TODO = $self->find_TODO(undef, 1, undef);
 
-    my $child = bless {}, ref $self;
-    $child->reset;
+    my $class = ref $self;
+    my $child = $class->create;
 
     # Add to our indentation
     $child->_indent( $self->_indent . '    ' );
-    
-    $child->{$_} = $self->{$_} foreach qw{Out_FH Todo_FH Fail_FH};
-    if ($parent_in_todo) {
-        $child->{Fail_FH} = $self->{Todo_FH};
+
+    # Make the child use the same outputs as the parent
+    for my $method (qw(output failure_output todo_output)) {
+        $child->$method( $self->$method );
+    }
+
+    # Ensure the child understands if they're inside a TODO
+    if( $parent_in_todo ) {
+        $child->failure_output( $self->todo_output );
     }
 
     # This will be reset in finalize. We do this here lest one child failure
@@ -220,15 +239,17 @@ sub subtest {
 
     # Turn the child into the parent so anyone who has stored a copy of
     # the Test::Builder singleton will get the child.
-    my($error, $child, %parent);
+    my $error;
+    my $child;
+    my $parent = {};
     {
         # child() calls reset() which sets $Level to 1, so we localize
         # $Level first to limit the scope of the reset to the subtest.
         local $Test::Builder::Level = $Test::Builder::Level + 1;
 
         $child  = $self->child($name);
-        %parent = %$self;
-        %$self  = %$child;
+        _copy($self,  $parent);
+        _copy($child, $self);
 
         my $run_the_subtests = sub {
             $subtests->();
@@ -242,8 +263,8 @@ sub subtest {
     }
 
     # Restore the parent and the copied child.
-    %$child = %$self;
-    %$self = %parent;
+    _copy($self,   $child);
+    _copy($parent, $self);
 
     # Restore the parent's $TODO
     $self->find_TODO(undef, 1, $child->{Parent_TODO});
@@ -421,7 +442,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Child_Name}   = undef;
     $self->{Indent}     ||= '';
 
-    share( $self->{Curr_Test} );
     $self->{Curr_Test} = 0;
     $self->{Test_Results} = &share( [] );
 
@@ -440,10 +460,24 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Start_Todo} = 0;
     $self->{Opened_Testhandles} = 0;
 
+    $self->_share_keys;
     $self->_dup_stdhandles;
 
     return;
 }
+
+
+# Shared scalar values are lost when a hash is copied, so we have
+# a separate method to restore them.
+# Shared references are retained across copies.
+sub _share_keys {
+    my $self = shift;
+
+    share( $self->{Curr_Test} );
+
+    return;
+}
+
 
 =back
 
