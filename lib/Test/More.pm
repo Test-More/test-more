@@ -20,7 +20,7 @@ sub _carp {
 our $VERSION = '0.98';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Builder::Module;
+use Test::Builder::Module 0.98;
 our @ISA    = qw(Test::Builder::Module);
 our @EXPORT = qw(ok use_ok require_ok
   is isnt like unlike is_deeply

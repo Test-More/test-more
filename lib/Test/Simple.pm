@@ -7,7 +7,7 @@ use strict;
 our $VERSION = '0.98';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Builder::Module;
+use Test::Builder::Module 0.98;
 our @ISA    = qw(Test::Builder::Module);
 our @EXPORT = qw(ok);
 
