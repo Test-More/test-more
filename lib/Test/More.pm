@@ -829,6 +829,9 @@ import anything, use C<require_ok>.
 
   BEGIN { require_ok "Foo" }
 
+Lexical effects will occur as usual.  For example, this will turn on strictures.
+
+  use_ok "strict";
 
 =cut
 
@@ -840,19 +843,19 @@ sub use_ok ($;@) {
     my( $pack, $filename, $line ) = caller;
 
     my $f = $filename;
-    $f = "" if $f =~ /[\n\r]/; # paranoia
+    $f =~ s/[\n\r]/_/g; # so it doesn't run off the "#line $line $f" line
 
     my $version;
     if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
         # probably a version check
         $version = shift @imports;
     }
-    else { $version = "" }
-    $version = defined $version ? "q/$module/->VERSION($version);" : "";
-    my $code = <<USE;
+
+    my $version_check = defined $version ? qq{$module->VERSION($version)} : "";
+    my $code = <<"USE";
 package $pack;
 #line $line $f
-require $module; $version q/$module/->import(\@{\$args[0]});
+require $module; $version_check; $module->import(\@{\$args[0]});
 # Work around [perl #70151]
 \${\$args[1]} = \$^H;
 %{\$args[2]} = %^H;
@@ -863,7 +866,10 @@ USE
          = _eval( $code, \@imports, \my($hints, %hints) );
     my $ok = $tb->ok( $eval_result, "use $module;" );
 
-    if( $ok ) { $^H = $hints; %^H = %hints }
+    if( $ok ) {
+        $^H = $hints;
+        %^H = %hints;
+    }
 
     unless($ok) {
         chomp $eval_error;

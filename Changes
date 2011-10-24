@@ -2,6 +2,8 @@
     Bug Fixes
     * BAIL_OUT works inside a subtest. (Larry Leszczynski) [github #138]
     * subtests now work with threads turned on. [github #145]
+    * use_ok() will continue to have lexical effect on 5.13.7 and forward.
+      [rt.cpan.org 67538] (Father Chrysostomos)
 
     Misc
     * Test::More, Test::Simple and Test::Builder::Module now require
