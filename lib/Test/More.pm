@@ -839,26 +839,31 @@ sub use_ok ($;@) {
 
     my( $pack, $filename, $line ) = caller;
 
-    my $code;
-    if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
-        # probably a version check.  Perl needs to see the bare number
-        # for it to work with non-Exporter based modules.
-        $code = <<USE;
-package $pack;
-use $module $imports[0];
-1;
-USE
-    }
-    else {
-        $code = <<USE;
-package $pack;
-use $module \@{\$args[0]};
-1;
-USE
-    }
+    my $f = $filename;
+    $f = "" if $f =~ /[\n\r]/; # paranoia
 
-    my( $eval_result, $eval_error ) = _eval( $code, \@imports );
+    my $version;
+    if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
+        # probably a version check
+        $version = shift @imports;
+    }
+    else { $version = "" }
+    $version = defined $version ? "q/$module/->VERSION($version);" : "";
+    my $code = <<USE;
+package $pack;
+#line $line $f
+require $module; $version q/$module/->import(\@{\$args[0]});
+# Work around [perl #70151]
+\${\$args[1]} = \$^H;
+%{\$args[2]} = %^H;
+1;
+USE
+
+    my( $eval_result, $eval_error )
+         = _eval( $code, \@imports, \my($hints, %hints) );
     my $ok = $tb->ok( $eval_result, "use $module;" );
+
+    if( $ok ) { $^H = $hints; %^H = %hints }
 
     unless($ok) {
         chomp $eval_error;
