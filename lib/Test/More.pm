@@ -831,7 +831,7 @@ import anything, use C<require_ok>.
 
 Lexical effects will occur as usual.  For example, this will turn on strictures.
 
-  use_ok "strict";
+  BEGIN { use_ok "strict"; }
 
 =cut
 
