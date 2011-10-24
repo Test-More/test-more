@@ -2,8 +2,6 @@
     Bug Fixes
     * BAIL_OUT works inside a subtest. (Larry Leszczynski) [github #138]
     * subtests now work with threads turned on. [github #145]
-    * use_ok() will continue to apply source filters on 5.13.7 and forward.
-      [rt.cpan.org 67538] (Father Chrysostomos)
 
     Feature Changes
     * use_ok() will now apply lexical effects. [rt.cpan.org 67538]
