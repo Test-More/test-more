@@ -3,8 +3,6 @@ package Test::Builder2::EventWatcher;
 use Test::Builder2::Mouse ();
 use Test::Builder2::Mouse::Role;
 
-requires qw(accept_event);
-
 no Test::Builder2::Mouse::Role;
 
 
@@ -78,10 +76,6 @@ A handler is allowed to alter the $event.  Those changes will be
 visible to other EventWatchers down the line.
 
 
-=head2 Required Methods
-
-When writing an EventWatcher you must supply these methods.
-
 =head3 accept_event
 
     $event_watcher->accept_event($event, $event_coordinator);
@@ -89,7 +83,11 @@ When writing an EventWatcher you must supply these methods.
 This event handler accepts any event not handled by a more specific
 event handler (such as accept_result).
 
-You must implement this method, even if it is an empty subroutine.
+By default it does nothing.
+
+=cut
+
+sub accept_event {}
 
 
 =head1 EXAMPLE
@@ -103,9 +101,6 @@ stream of pluses and minuses.
 
     # This provides write(), otherwise it's a normal EventWatcher
     extends 'Test::Builder2::Formatter';
-
-    # Ignore most events
-    sub accept_event {}
 
     # Output a newline when we're done testing.
     sub accept_stream_end {

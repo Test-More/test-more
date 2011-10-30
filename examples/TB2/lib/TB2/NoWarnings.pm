@@ -55,8 +55,6 @@ plan is already set, but it doesn't.
       isa                => 'Bool',
       default            => 0;
 
-    sub accept_event {}
-
     sub accept_stream_start {
         my $self = shift;
 
