@@ -7,6 +7,8 @@ use lib 't/lib';
 require MyEventCollector;
 BEGIN { require 't/test.pl'; }
 
+use Test::Builder2::Events;
+
 my $CLASS = 'Test::Builder2::EventCoordinator';
 use_ok $CLASS;
 
@@ -102,8 +104,8 @@ note("posting"); {
         %args
     );
 
-    my $result = { foo => 42 };
-    my $event  = { bar => 23 };
+    my $result = Test::Builder2::Result->new_result;
+    my $event  = Test::Builder2::Event::StreamStart->new;
     $ec->post_result($result);
     $ec->post_event ($event);
 
@@ -120,5 +122,65 @@ note("posting"); {
     }
 }
 
+
+note "posting events to specific handlers"; {
+    {
+        package My::Watcher::StartEnd;
+        
+        use Test::Builder2::Mouse;
+        with "Test::Builder2::EventWatcher";
+
+        has starts =>
+          is            => 'rw',
+          isa           => 'ArrayRef',
+          default       => sub { [] };
+
+        has ends =>
+          is            => 'rw',
+          isa           => 'ArrayRef',
+          default       => sub { [] };
+
+        has others =>
+          is            => 'rw',
+          isa           => 'ArrayRef',
+          default       => sub { [] };
+
+        sub accept_stream_start {
+            my($self, $event, $ec) = @_;
+            push @{$self->starts}, [$event, $ec];
+        }
+
+        sub accept_stream_end {
+            my($self, $event, $ec) = @_;
+            push @{$self->ends}, [$event, $ec];            
+        }
+
+        sub accept_event {
+            my($self, $event, $ec) = @_;
+            push @{$self->others}, [$event, $ec];
+        }
+    }
+
+    my $watcher = My::Watcher::StartEnd->new;
+
+    my $ec = $CLASS->create(
+        early_watchers  => [$watcher],
+        formatters      => []
+    );
+
+    my $start   = Test::Builder2::Event::StreamStart->new;
+    my $comment = Test::Builder2::Event::Comment->new( comment => "whatever" );
+    my $result  = Test::Builder2::Result->new_result;
+    my $end     = Test::Builder2::Event::StreamEnd->new;
+    $ec->post_event($start) for 1..2;
+    $ec->post_event($comment);
+    $ec->post_event($result);
+    $ec->post_result($result);
+    $ec->post_event($end)   for 1..2;
+
+    is_deeply $watcher->starts, [[$start, $ec], [$start, $ec]];
+    is_deeply $watcher->ends,   [[$end, $ec], [$end, $ec]];
+    is_deeply $watcher->others, [[$comment, $ec], [$result, $ec], [$result, $ec]];
+}
 
 done_testing();
