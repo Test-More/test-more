@@ -55,24 +55,6 @@ history via C<< $ec->history >>.
 
 You must implement this method.
 
-=head2 Supplied Methods
-
-The EventWatcher role supplies these methods.
-
-=head3 accept_result
-
-    $event_watcher->accept_result($result, $event_coordinator);
-
-Just like L<accept_event> except it handles Results (which are a
-special type of Event).  It is there to make special case handling of
-Results a little more convenient.
-
-The provided C<accept_result> simply passes through to C<accept_event>.
-
 =cut
-
-sub accept_result {
-    shift->accept_event(@_);
-}
 
 1;

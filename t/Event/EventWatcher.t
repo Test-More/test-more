@@ -31,17 +31,6 @@ BEGIN { require 't/test.pl'; }
 }
 
 
-note "accept_result() passes to accept_event()"; {
-    my $ew = My::Watcher->new;
-
-    $ew->accept_event({ foo => 42 }, "foo");
-    $ew->accept_result({ bar => 23 }, "bar");
-
-    is_deeply $ew->events,       [{ foo => 42 },{ bar => 23 }], "accept_result pass through";
-    is_deeply $ew->coordinators, ["foo", "bar"]; 
-}
-
-
 note "can't make a watcher without accept_event()"; {
     ok !eval {
         package My::Bad::Watcher;

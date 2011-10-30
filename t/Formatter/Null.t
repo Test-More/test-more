@@ -21,7 +21,7 @@ my $null = Test::Builder2::Formatter::Null->new(
         pass            => 1,
         description     => "basset hounds got long ears",
     );
-    $null->accept_result($result);
+    $null->accept_event($result);
     is(
       $null->streamer->read,
       "",
