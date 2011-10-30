@@ -19,7 +19,30 @@ Test::Builder2::EventWatcher - A role which watches events and results
   use Test::Builder2::Mouse;
   with "Test::Builder2::EventWatcher";
 
-  sub accept_event  { ... }
+  # accept_result() handles result events
+  sub accept_result {
+      my $self = shift;
+      my($result, $ec) = @_;
+
+      ...
+  }
+
+  # accept_comment() handles comment events... and so on
+  sub accept_result {
+      my $self = shift;
+      my($comment, $ec) = @_;
+
+      ...
+  }
+
+
+  # accept_event() handles anything not handled by some other method
+  sub accept_event  {
+      my $self = shift;
+      my($event, $ec) = @_;
+
+      ....
+  }
 
   no Test::Builder2::Mouse;
 
@@ -35,6 +58,26 @@ itself.
 
 =head1 METHODS
 
+=head2 Event handlers
+
+EventWatchers accept events via event handler methods.  They are all
+of the form C<< "accept_".$event->event_type >>.  So a "comment" event
+is handled by C<< accept_comment >>.
+
+Event handlers are all called like this:
+
+    $event_watcher->accept_thing($event, $event_coordinator);
+
+$event is the event being accepted.
+
+$event_coordinator is the coordinator which is managing the $event.
+This allows a watcher to issue their own Events or access history via
+C<< $ec->history >>.
+
+A handler is allowed to alter the $event.  Those changes will be
+visible to other EventWatchers down the line.
+
+
 =head2 Required Methods
 
 When writing an EventWatcher you must supply these methods.
@@ -43,17 +86,48 @@ When writing an EventWatcher you must supply these methods.
 
     $event_watcher->accept_event($event, $event_coordinator);
 
-An EventWatcher will be handed Event objects to do whatever it wants
-to with via this method.
+This event handler accepts any event not handled by a more specific
+event handler (such as accept_result).
 
-C<accept_event> is allowed to alter the $event.  Be aware those
-changes B<will> be visible to other EventWatchers.
+You must implement this method, even if it is an empty subroutine.
 
-It must also be given the $event_coordinator which is managing the
-$event.  This allows a watcher to issue their own Events or access
-history via C<< $ec->history >>.
 
-You must implement this method.
+=head1 EXAMPLE
+
+Here is an example of an EventWatcher which formats the results as a
+stream of pluses and minuses.
+
+    package My::Formatter::PlusMinus;
+
+    use Test::Builder2::Mouse;
+
+    # This provides write(), otherwise it's a normal EventWatcher
+    extends 'Test::Builder2::Formatter';
+
+    # Ignore most events
+    sub accept_event {}
+
+    # Output a newline when we're done testing.
+    sub accept_stream_end {
+        my $self  = shift;
+        my $event = shift;
+
+        $self->write(output => "\n");
+        return;
+    }
+
+    # Print a plus for passes, minus for failures.
+    sub accept_result {
+        my $self   = shift;
+        my $result = shift;
+
+        my $out = $result->is_fail ? "-" : "+";
+        $self->write(output => $out);
+
+        return;
+    }
+
+    1;
 
 =cut
 
