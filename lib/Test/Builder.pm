@@ -1890,8 +1890,16 @@ sub current_test {
         my $results = $history->results;
 
         if( $num > @$results ) {
+            # Create a detached event coordinator so we can post events
+            # just to our history
+            my $ec = Test::Builder2::EventCoordinator->create(
+                formatters => [],
+                history    => $history
+            );
+
             my $start = @$results ? @$results : 0;
             $counter->set($start);
+
             for( $start .. $num - 1 ) {
                 my $result = Test::Builder2::Result->new_result(
                     pass        => 1,
@@ -1899,7 +1907,7 @@ sub current_test {
                     reason      => 'incrementing test number',
                     test_number => $_
                 );
-                $history->accept_result( shared_clone($result), $self->event_coordinator );
+                $ec->post_event( shared_clone($result) );
             }
         }
         # If backward, wipe history.  Its their funeral.

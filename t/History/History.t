@@ -3,8 +3,10 @@
 use strict;
 use warnings;
 
-BEGIN { require 't/test.pl' }
+use lib 't/lib';
 
+BEGIN { require 't/test.pl' }
+use MyEventCoordinator;
 use Test::Builder2::Result;
 
 
@@ -31,30 +33,30 @@ my $Fail = Test::Builder2::Result->new_result(
 # accept_result
 {
     my $history = new_ok $CLASS;
+    my $ec = MyEventCoordinator->create(
+        history => $history
+    );
 
-    $history->accept_result( $Pass );
+    $ec->post_event( $Pass );
     is_deeply $history->results, [$Pass];
 
     ok $history->is_passing;
 
-    $history->accept_results( $Pass, $Fail );
+    $ec->post_event( $Fail );
     is_deeply $history->results, [
-        $Pass, $Pass, $Fail
+        $Pass, $Fail
     ];
 
     ok !$history->is_passing;
-
-    # Try a history replacement
-    $history->accept_results( $Pass, $Pass );
 }
 
 
-# accept_results argument checks
+# accept_result argument check
 {
     my $history = new_ok $CLASS;
 
     ok !eval {
-        $history->accept_results($Pass, { passed => 1 }, $Fail);
+        $history->accept_result({ passed => 1 });
     };
     like $@, qr/takes Result objects/;
 }

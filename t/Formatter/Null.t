@@ -3,7 +3,10 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 BEGIN { require 't/test.pl' }
+use MyEventCoordinator;
 use Test::Builder2::Events;
 use Test::Builder2::Formatter::Null;
 
@@ -11,8 +14,12 @@ my $null = Test::Builder2::Formatter::Null->new(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
 
+my $ec = MyEventCoordinator->create(
+    formatters => [$null]
+);
+
 {
-    $null->accept_event( Test::Builder2::Event::StreamStart->new );
+    $ec->post_event( Test::Builder2::Event::StreamStart->new );
     is $null->streamer->read, "", "stream start";
 }
 
@@ -21,7 +28,7 @@ my $null = Test::Builder2::Formatter::Null->new(
         pass            => 1,
         description     => "basset hounds got long ears",
     );
-    $null->accept_event($result);
+    $ec->post_event($result);
     is(
       $null->streamer->read,
       "",
@@ -29,7 +36,7 @@ my $null = Test::Builder2::Formatter::Null->new(
 }
 
 {
-    $null->accept_event( Test::Builder2::Event::StreamEnd->new );
+    $ec->post_event( Test::Builder2::Event::StreamEnd->new );
     is(
         $null->streamer->read,
         "",

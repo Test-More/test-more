@@ -26,6 +26,4 @@ produce no output.
 
 =cut
 
-sub accept_event  {}
-
 1;

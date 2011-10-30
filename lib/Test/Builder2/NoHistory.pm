@@ -13,10 +13,14 @@ Test::Builder2::NoHistory - Store no history, just keep stats
 
     # This is a shared singleton object
     my $history = Test::Builder2::NoHistory->singleton;
-    my $result  = Test::Builder2::Result->new_result( pass => 1 );
+    my $ec = Test::Builder2::EventCoordinator->create(
+        history => $history
+    );
 
-    $history->accept_result( $result, $ec );
-    $history->is_passing;
+    my $result  = Test::Builder2::Result->new_result( pass => 1 );
+    $ec->post_event($result);
+
+    $history->is_passing;    # true
     $history->test_count;    # 1  we've seen a test
     $history->results_count; # 0  we did not store a result
     $history->results;       # [] still not there

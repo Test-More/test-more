@@ -29,7 +29,7 @@ my $ec = MyEventCoordinator->create(
 
 # Begin
 {
-    $ec->post_event( Test::Builder2::Event::StreamStart->new);
+    $ec->post_event( Test::Builder2::Event::StreamStart->new );
     is $pm->streamer->read, "";
     is $posix->streamer->read, "Running $0\n";
 }

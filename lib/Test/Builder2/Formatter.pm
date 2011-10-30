@@ -24,7 +24,14 @@ Test::Builder2 delegates the actual formating of test results to a
 Test::Builder2::Formatter object.  This can then decide if it's going to
 formatter TAP or XML or send email or whatever.
 
+A Formatter is just a special L<Test::Builder2::EventWatcher> which can
+produce output.
+
 =head1 METHODS
+
+You must implement C<accept> methods as any C<EventWatcher>.
+
+In addition...
 
 =head2 Attributes
 
@@ -72,29 +79,6 @@ sub _build_streamer {
 Creates a new formatter object to feed results to.
 
 You want to call this on a subclass.
-
-
-=head3 accept_event
-
-  $formatter->accept_event($event, $event_coordinator);
-
-Accept Events as they happen.
-
-See L<Test::Builder2::EventWatcher> for details.
-
-=cut
-
-sub accept_event {
-    die "You must implement this.";
-}
-
-=head3 accept_result
-
-  $formatter->accept_result($result, $event_coordinator);
-
-Formats a $result (an instance of L<Test::Builder2::Result>).
-
-See L<Test::Builder2::EventWatcher> for details.
 
 
 =head3 write
