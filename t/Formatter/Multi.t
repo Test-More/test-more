@@ -4,6 +4,7 @@ use strict;
 use lib 't/lib';
 BEGIN { require 't/test.pl' }
 
+use MyEventCoordinator;
 use Test::Builder2::Events;
 
 use_ok 'Test::Builder2::Formatter::Multi';
@@ -22,12 +23,13 @@ is_deeply $multi->formatters, [];
 $multi->add_formatters($pm, $posix);
 is_deeply $multi->formatters, [$pm, $posix];
 
+my $ec = MyEventCoordinator->create(
+    formatters => [$multi]
+);
 
 # Begin
 {
-    $multi->accept_event(
-        Test::Builder2::Event::StreamStart->new
-    );
+    $ec->post_event( Test::Builder2::Event::StreamStart->new);
     is $pm->streamer->read, "";
     is $posix->streamer->read, "Running $0\n";
 }
@@ -39,7 +41,7 @@ is_deeply $multi->formatters, [$pm, $posix];
         pass            => 1,
         description     => "basset hounds got long ears",
     );
-    $multi->accept_result($result);
+    $ec->post_event($result);
     is($pm->streamer->read, "+", "passing test" );
     is($posix->streamer->read, "PASS: basset hounds got long ears\n", "passing test" );
 }
@@ -51,7 +53,7 @@ is_deeply $multi->formatters, [$pm, $posix];
         pass            => 0,
         description     => "basset hounds got long ears",
     );
-    $multi->accept_result($result);
+    $ec->post_event($result);
     is($pm->streamer->read, "-", "fail" );
     is($posix->streamer->read, "FAIL: basset hounds got long ears\n", "POSIX fail" );
 }
@@ -64,7 +66,7 @@ is_deeply $multi->formatters, [$pm, $posix];
         directives      => [qw(skip)],
         description     => "basset hounds got long ears",
     );
-    $multi->accept_result($result);
+    $ec->post_event($result);
     is($pm->streamer->read, "+", "skip" );
     is($posix->streamer->read, "UNTESTED: basset hounds got long ears\n" );
 }
@@ -72,7 +74,7 @@ is_deeply $multi->formatters, [$pm, $posix];
 
 # End
 {
-    $multi->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::StreamEnd->new
     );
     is $pm->streamer->read, "\n";
