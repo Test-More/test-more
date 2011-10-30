@@ -762,7 +762,7 @@ sub post_result {
 
     $result = shared_clone($result);
     $self->stream_start unless $self->stream_started;
-    $self->event_coordinator->post_result($result);
+    $self->event_coordinator->post_event($result);
 
     return;
 }

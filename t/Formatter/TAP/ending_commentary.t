@@ -52,7 +52,7 @@ note "Good test"; {
 
     $ec->post_event( $StreamStart );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 1 ) );
-    $ec->post_result( $Pass );
+    $ec->post_event( $Pass );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -76,7 +76,7 @@ note "Single failure, all failed"; {
 
     $ec->post_event( $StreamStart );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 1 ) );
-    $ec->post_result( $Fail );
+    $ec->post_event( $Fail );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -92,9 +92,9 @@ note "Single failure, some passed"; {
 
     $ec->post_event( $StreamStart );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 3 ) );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Fail );
-    $ec->post_result( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Fail );
+    $ec->post_event( $Pass );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -110,11 +110,11 @@ note "Many failures, some passed"; {
 
     $ec->post_event( $StreamStart );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 5 ) );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Fail );
-    $ec->post_result( $Fail );
-    $ec->post_result( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Fail );
+    $ec->post_event( $Fail );
+    $ec->post_event( $Pass );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -130,11 +130,11 @@ note "Many failures, some passed, no_plan"; {
 
     $ec->post_event( $StreamStart );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( no_plan => 1 ) );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Fail );
-    $ec->post_result( $Fail );
-    $ec->post_result( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Fail );
+    $ec->post_event( $Fail );
+    $ec->post_event( $Pass );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -149,11 +149,11 @@ note "Many failures, some passed, done_testing with expected"; {
     my $ec = new_formatter;
 
     $ec->post_event( $StreamStart );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Fail );
-    $ec->post_result( $Fail );
-    $ec->post_result( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Fail );
+    $ec->post_event( $Fail );
+    $ec->post_event( $Pass );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 5 ) );
     clear_formatter;
 
@@ -169,11 +169,11 @@ note "Many failures, some passed, done_testing with no plan"; {
     my $ec = new_formatter;
 
     $ec->post_event( $StreamStart );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Fail );
-    $ec->post_result( $Fail );
-    $ec->post_result( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Fail );
+    $ec->post_event( $Fail );
+    $ec->post_event( $Pass );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( no_plan => 1 ) );
     clear_formatter;
 
@@ -189,7 +189,7 @@ note "Passing test with no plan"; {
     my $ec = new_formatter;
 
     $ec->post_event( $StreamStart );
-    $ec->post_result( $Pass );
+    $ec->post_event( $Pass );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -204,9 +204,9 @@ note "Passing tests with no plan"; {
     my $ec = new_formatter;
 
     $ec->post_event( $StreamStart );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Pass );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -221,9 +221,9 @@ note "Failing tests with no plan"; {
     my $ec = new_formatter;
 
     $ec->post_event( $StreamStart );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Fail );
-    $ec->post_result( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Fail );
+    $ec->post_event( $Pass );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -240,8 +240,8 @@ note "All passed, too few"; {
 
     $ec->post_event( $StreamStart );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 3 ) );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Pass );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -257,8 +257,8 @@ note "All passed, too many"; {
 
     $ec->post_event( $StreamStart );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 1 ) );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Pass );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -274,8 +274,8 @@ note "Some failed, too many"; {
 
     $ec->post_event( $StreamStart );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 1 ) );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Fail );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Fail );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -304,7 +304,7 @@ note "Skipped test, one result"; {
 
     $ec->post_event( $StreamStart );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( skip => 1 ) );
-    $ec->post_result( $Pass );
+    $ec->post_event( $Pass );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -320,8 +320,8 @@ note "Skipped test, two results"; {
 
     $ec->post_event( $StreamStart );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( skip => 1 ) );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Pass );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -337,9 +337,9 @@ note "Skipped test, with failures"; {
 
     $ec->post_event( $StreamStart );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( skip => 1 ) );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Fail );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Fail );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );
@@ -357,9 +357,9 @@ note "no ending commentary"; {
 
     $ec->post_event( $StreamStart );
     $ec->post_event( Test::Builder2::Event::SetPlan->new( skip => 1 ) );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Pass );
-    $ec->post_result( $Fail );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Pass );
+    $ec->post_event( $Fail );
     clear_formatter;
 
     $ec->post_event( $StreamEnd );

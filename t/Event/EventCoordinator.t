@@ -106,7 +106,7 @@ note("posting"); {
 
     my $result = Test::Builder2::Result->new_result;
     my $event  = Test::Builder2::Event::StreamStart->new;
-    $ec->post_result($result);
+    $ec->post_event($result);
     $ec->post_event ($event);
 
     my @watchers = (@{$args{early_watchers}},
@@ -175,12 +175,11 @@ note "posting events to specific handlers"; {
     $ec->post_event($start) for 1..2;
     $ec->post_event($comment);
     $ec->post_event($result);
-    $ec->post_result($result);
     $ec->post_event($end)   for 1..2;
 
     is_deeply $watcher->starts, [[$start, $ec], [$start, $ec]];
     is_deeply $watcher->ends,   [[$end, $ec], [$end, $ec]];
-    is_deeply $watcher->others, [[$comment, $ec], [$result, $ec], [$result, $ec]];
+    is_deeply $watcher->others, [[$comment, $ec], [$result, $ec]];
 }
 
 done_testing();

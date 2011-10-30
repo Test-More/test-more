@@ -22,7 +22,6 @@ Test::Builder2::EventCoordinator - Coordinate events amongst the builders
 
     # The builder sends it events like assert results and the beginning
     # and end of test streams.
-    $ec->post_result($result);  # special case for results
     $ec->post_event($event);
 
     # The EventCoordinator comes with History and the default Formatter,
@@ -177,24 +176,6 @@ Creates a new EventCoordinator.
 
 
 =head2 Methods
-
-=head3 post_result
-
-  $ec->post_result($result);
-
-This is a special case of L<post_event> for assert results.
-
-=cut
-
-sub post_result {
-    my $self  = shift;
-    my $result = shift;
-
-    for my $watcher ($self->all_watchers) {
-        $watcher->accept_result($result, $self);
-    }
-}
-
 
 =head3 post_event
 

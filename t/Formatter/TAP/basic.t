@@ -104,7 +104,7 @@ END
         pass            => 1,
     );
 
-    $ec->post_result( $result );
+    $ec->post_event( $result );
 
     $ec->post_event(
         Test::Builder2::Event::SetPlan->new(
@@ -112,7 +112,7 @@ END
         )
     );
 
-    $ec->post_result( $result );
+    $ec->post_event( $result );
 
     $ec->post_event(
         Test::Builder2::Event::StreamEnd->new
@@ -168,7 +168,7 @@ END
 {
     my $result = Test::Builder2::Result->new_result( pass => 0 );
     $result->test_number(1);
-    $ec->post_result($result);
+    $ec->post_event($result);
     is(last_output, "not ok 1\n", "testing not okay");
 }
 
@@ -176,7 +176,7 @@ END
 {
     my $result = Test::Builder2::Result->new_result( pass => 1 );
     $result->test_number(2);
-    $ec->post_result($result);
+    $ec->post_event($result);
     is(last_output, "ok 2\n", "testing okay");
 }
 
@@ -188,7 +188,7 @@ END
         reason          => "reason" 
     );
     $result->test_number(3);
-    $ec->post_result($result);
+    $ec->post_event($result);
     is(last_output, <<OUT, "testing todo fail");
 not ok 3 # TODO reason
 #   Failed (TODO) test.
@@ -204,7 +204,7 @@ OUT
         reason          => "reason"
     );
     $result->test_number(4);
-    $ec->post_result($result);
+    $ec->post_event($result);
     is(last_output, "ok 4 # TODO reason\n", "testing todo");
 }
 
@@ -217,7 +217,7 @@ OUT
     );
     $result->test_number(4);
     $result->description('a fine test');
-    $ec->post_result($result);
+    $ec->post_event($result);
     is(last_output, "ok 4 - a fine test # TODO reason\n", "testing todo");
 }
 
@@ -228,7 +228,7 @@ OUT
     );
     $result->description(' - a royal pain');
     $result->test_number(6);
-    $ec->post_result($result);
+    $ec->post_event($result);
     is(last_output, "not ok 6 -  - a royal pain\n", "test description");
 }
 
@@ -241,7 +241,7 @@ OUT
     $result->description('skip test');
     $result->test_number(7);
     $result->reason('Not gonna work');
-    $ec->post_result($result);
+    $ec->post_event($result);
 
     is(last_output, "not ok 7 - skip test # SKIP Not gonna work\n", "skip fail");
 }
@@ -255,7 +255,7 @@ OUT
     $result->description('skip test');
     $result->test_number(8);
     $result->reason('Because');
-    $ec->post_result($result);
+    $ec->post_event($result);
 
     is(last_output, "ok 8 - skip test # SKIP Because\n", "skip pass");
 }
@@ -267,7 +267,7 @@ OUT
     my $result = Test::Builder2::Result->new_result(
         pass            => 1
     );
-    $ec->post_result($result);
+    $ec->post_event($result);
 
     is(last_output, "ok\n", "pass with no number");
     $formatter->use_numbers(1);
@@ -282,7 +282,7 @@ OUT
     $result->test_number(5);
     $result->description("Foo\nBar\n");
 
-    $ec->post_result($result);
+    $ec->post_event($result);
     is(last_output, "ok 5 - Foo\\nBar\\n\n", "description with newline");
 }
 
@@ -296,7 +296,7 @@ OUT
         reason          => "\nFoo\nBar\n",
     );
 
-    $ec->post_result($result);
+    $ec->post_event($result);
     is(last_output, "ok 4 # SKIP \\nFoo\\nBar\\n\n", "reason with newline");
 }
 
