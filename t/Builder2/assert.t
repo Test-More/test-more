@@ -8,8 +8,6 @@ use strict;
     use Test::Builder2::Mouse;
     with "Test::Builder2::EventWatcher";
 
-    sub accept_event {}
-
     sub accept_result {
         my $self   = shift;
         my $result = shift;
