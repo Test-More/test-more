@@ -191,13 +191,8 @@ sub post_event {
     my $self  = shift;
     my $event = shift;
 
-    my $type = $event->event_type;
-    my $method = $type2method{$type} ||= $self->type2method($type);
-
     for my $watcher ($self->all_watchers) {
-        $watcher->can($method)
-          ? $watcher->$method($event, $self) 
-          : $watcher->accept_event($event, $self);
+        $watcher->receive_event($event, $self);
     }
 }
 

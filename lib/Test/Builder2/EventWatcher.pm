@@ -56,6 +56,48 @@ itself.
 
 =head1 METHODS
 
+=head3 receive_event
+
+    $watcher->receive_event($event, $event_coordinator);
+
+Pass an $event and the $event_coordinator managing it to the $watcher.
+The watcher will then pass them along to the appropriate handler
+method based on the C<< $event->event_type >>.  If the appropriate
+handler method does not exist, it will pass it to C<<accept_event>>.
+
+This is the main interface to pass events to an EventWatcher.  You
+should I<not> pass events directly to handler methods as they may not
+exist.
+
+=cut
+
+our %type2method;
+sub receive_event {
+    my($self, $event, $ec) = @_;
+
+    my $type = $event->event_type;
+    my $method = $type2method{$type} ||= $self->_event_type2accept_method($type);
+
+    $self->can($method)
+          ? $self->$method($event, $ec) 
+          : $self->accept_event($event, $ec);
+
+    return;
+}
+
+
+sub _event_type2accept_method {
+    my $self = shift;
+    my $type = shift;
+
+    my $method = "accept_".$type;
+    $method =~ s{\s}{_}g;
+
+    return $method;
+}
+
+
+
 =head2 Event handlers
 
 EventWatchers accept events via event handler methods.  They are all
@@ -74,6 +116,9 @@ C<< $ec->history >>.
 
 A handler is allowed to alter the $event.  Those changes will be
 visible to other EventWatchers down the line.
+
+Event handler methods should B<not> be called directly.  Instead use
+L<receive_event>.
 
 
 =head3 accept_event
