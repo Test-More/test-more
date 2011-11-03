@@ -65,17 +65,10 @@ sub accept_event {
     my $self = shift;
 
     for my $formatter (@{ $self->formatters }) {
-        $formatter->accept_event(@_);
+        $formatter->receive_event(@_);
     }
 }
 
-sub accept_result {
-    my $self = shift;
-
-    for my $formatter (@{ $self->formatters }) {
-        $formatter->accept_result(@_);
-    }
-}
 
 our $AUTOLOAD;
 sub AUTOLOAD {

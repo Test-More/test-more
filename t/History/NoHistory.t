@@ -3,8 +3,10 @@
 use strict;
 use warnings;
 
-BEGIN { require 't/test.pl' }
+use lib 't/lib';
 
+BEGIN { require 't/test.pl' }
+use MyEventCoordinator;
 use Test::Builder2::Result;
 
 require_ok 'Test::Builder2::NoHistory';
@@ -13,7 +15,6 @@ can_ok( 'Test::Builder2::NoHistory',
             results
             has_results
             accept_result
-            accept_results
             result_count
           },
 );
@@ -26,15 +27,19 @@ sub Fail { Test::Builder2::Result->new_result( pass => 0 ) }
 
 { 
     ok my $history = new_history, q{new history} ;
+    my $ec = MyEventCoordinator->create( history => $history );
+
     ok!$history->has_results, q{we no not yet have results};
     is_deeply $history->results, [], q{blank results set};
-    $history->accept_result( Pass() );
-    $history->accept_result( Fail() );
-    $history->accept_results( Pass(), Fail() );
+
+    $ec->post_event( Pass() );
+    $ec->post_event( Fail() );
+    $ec->post_event($_) for Pass(), Fail();
+
     ok!$history->has_results, q{we have no results};
     
     is $history->result_count, 0, q{result count is 0 as we don't store them};
-    is $history->test_count, 4, q{test_count how ever does work};
+    is $history->test_count,   4, q{test_count how ever does work};
 
     is $history->pass_count, 2, q{pass_count};
     is $history->fail_count, 2, q{fail_count};

@@ -55,25 +55,6 @@ plan is already set, but it doesn't.
       isa                => 'Bool',
       default            => 0;
 
-    my %event_handlers = (
-        'stream start'   => 'accept_stream_start',
-        'stream end'     => 'accept_stream_end',
-        'set plan'       => 'accept_set_plan'
-    );
-
-    sub accept_event {
-        my $self  = shift;
-        my $event = shift;
-
-        my $event_type = $event->event_type;
-        my $handler = $event_handlers{$event_type};
-        return unless $handler;
-
-        $self->$handler($event);
-
-        return;
-    }
-
     sub accept_stream_start {
         my $self = shift;
 

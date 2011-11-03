@@ -286,7 +286,7 @@ sub assert_end {
 
     # Trap an error from a watcher...
     my($ret, $error) = $self->try( sub {
-        $self->event_coordinator->post_result($result) if
+        $self->event_coordinator->post_event($result) if
           $self->top_stack->at_top and defined $result;
         1;
     });

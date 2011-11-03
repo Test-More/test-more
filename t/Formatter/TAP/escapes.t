@@ -42,7 +42,7 @@ note "Escape # in test name"; {
     );
     last_output;
 
-    $ec->post_result($result);
+    $ec->post_event($result);
 
     is last_output, "ok 1 - foo \\# bar\n";
 }
@@ -60,7 +60,7 @@ note "Escape # in directive description"; {
     );
     last_output;
 
-    $ec->post_result($result);
+    $ec->post_event($result);
 
     is last_output, "ok 1 - foo \\# bar # TODO this \\# that\n";
 }

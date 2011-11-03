@@ -23,8 +23,11 @@ Test::Builder2::Formatter::TAP::v13 - Formatter as TAP version 13
   use Test::Builder2::Formatter::TAP::v13;
 
   my $formatter = Test:::Builder2::Formatter::TAP::v13->new;
-  $formatter->accept_event($event,   $ec);
-  $formatter->accept_result($result, $ec);
+  my $ec = Test::Builder2::EventCoordinator->create(
+      formatters => [$formatter]
+  );
+  $ec->post_event($event);
+  $ec->post_event($result);
 
 
 =head1 DESCRIPTION
@@ -33,7 +36,7 @@ Formatter Test::Builder2::Result's as TAP version 13.
 
 =head1 METHODS
 
-As Test::Builder2::Object with the following changes and additions.
+As L<Test::Builder2::Formatter> with the following changes and additions.
 
 =head3 out
 
@@ -113,27 +116,6 @@ has use_numbers =>
    isa => 'Bool',
    default => 1,
 ;
-
-my %event_dispatch = (
-    "stream start"      => "accept_stream_start",
-    "stream end"        => "accept_stream_end",
-    "set plan"          => "accept_set_plan",
-    "log"               => "accept_log",
-);
-
-sub accept_event {
-    my $self  = shift;
-    my($event, $ec) = @_;
-
-    my $type = $event->event_type;
-    my $method = $event_dispatch{$type};
-    return unless $method;
-
-    $self->$method($event, $ec);
-
-    return;
-}
-
 
 has show_header =>
   is            => 'rw',

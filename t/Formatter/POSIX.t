@@ -4,6 +4,7 @@ use strict;
 use lib 't/lib';
 
 BEGIN { require "t/test.pl" }
+use MyEventCoordinator;
 use Test::Builder2::Events;
 
 use_ok 'Test::Builder2::Formatter::POSIX';
@@ -12,8 +13,12 @@ my $posix = Test::Builder2::Formatter::POSIX->new(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
 
+my $ec = MyEventCoordinator->create(
+    formatters => [$posix]
+);
+
 {
-    $posix->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::StreamStart->new
     );
     is $posix->streamer->read, "Running $0\n", "stream start";
@@ -24,7 +29,7 @@ my $posix = Test::Builder2::Formatter::POSIX->new(
         pass            => 1,
         description     => "basset hounds got long ears",
     );
-    $posix->accept_result($result);
+    $ec->post_event($result);
     is(
       $posix->streamer->read,
       "PASS: basset hounds got long ears\n",
@@ -38,7 +43,7 @@ my $posix = Test::Builder2::Formatter::POSIX->new(
         pass            => 0,
         description     => "something something something description",
     );
-    $posix->accept_result($result);
+    $ec->post_event($result);
     is(
       $posix->streamer->read,
       "FAIL: something something something description\n",
@@ -48,7 +53,7 @@ my $posix = Test::Builder2::Formatter::POSIX->new(
 
 
 {
-    $posix->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::StreamEnd->new
     );
     is(

@@ -13,7 +13,6 @@ BEGIN { require 't/test.pl' }
     extends 'Test::Builder2::Formatter';
 
     sub end { }
-    sub accept_result {} 
     sub begin {}
 }
 

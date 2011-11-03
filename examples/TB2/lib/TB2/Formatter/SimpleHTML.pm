@@ -33,26 +33,6 @@ This is a very, very simple HTML formatter to demonstrate how its done.
 
 =cut
 
-my %event_dispatch = (
-    "stream start"      => "accept_stream_start",
-    "stream end"        => "accept_stream_end",
-);
-
-sub accept_event {
-    my $self  = shift;
-    my $event = shift;
-    my $ec    = shift;
-
-    my $type = $event->event_type;
-    my $method = $event_dispatch{$type};
-    return unless $method;
-
-    $self->$method($event, $ec);
-
-    return;
-}
-
-
 # Start of testing
 sub accept_stream_start {
     my $self = shift;

@@ -17,14 +17,24 @@ Test::Builder2::History - Manage the history of test results
     use Test::Builder2::History;
 
     my $history = Test::Builder2::History->new;
-    my $result  = Test::Builder2::Result->new_result( pass => 1 );
+    my $ec = Test::Builder2::EventCoordinator->create(
+        history => $history
+    );
 
-    $history->accept_result( $result, $ec );
-    $history->is_passing;
+    my $pass  = Test::Builder2::Result->new_result( pass => 1 );
+    $ec->post_event( $pass );
+    $ec->history->is_passing;   # true
+
+    my $result  = Test::Builder2::Result->new_result( pass => 0 );
+    $ec->post_event( $pass );
+    $ec->history->is_passing;   # false
+
 
 =head1 DESCRIPTION
 
 This object stores and manages the history of test results.
+
+It is a L<Test::Builder2::EventWatcher>.
 
 =head1 METHODS
 
@@ -67,19 +77,44 @@ sub accept_event {
 
     $self->events_push($event);
 
-    my $type = $event->event_type;
-    if( $type eq 'stream start' ) {
-        $self->_stream_depth_inc;
-    }
-    elsif( $type eq 'stream end' ) {
-        $self->_stream_depth_dec;
-    }
-    elsif( $type eq 'set plan' ) {
-        $self->plan($event);
-    }
+    return;
+}
+
+sub accept_stream_start {
+    my $self  = shift;
+    my($event, $ec) = @_;
+
+    $self->accept_event($event, $ec);
+
+    $self->_stream_depth_inc;
 
     return;
 }
+
+
+sub accept_stream_end {
+    my $self  = shift;
+    my($event, $ec) = @_;
+
+    $self->accept_event($event, $ec);
+
+    $self->_stream_depth_dec;
+
+    return;
+}
+
+
+sub accept_set_plan {
+    my $self  = shift;
+    my($event, $ec) = @_;
+
+    $self->accept_event($event, $ec);
+
+    $self->plan($event);
+
+    return;
+}
+
 sub event_count  { shift->events_count }
 sub has_events   { shift->events_count > 0 }
 
@@ -96,10 +131,6 @@ A Test::Builder2::Stack of Result objects.
 
 buildstack results => 'Test::Builder2::Result::Base';
 sub accept_result    { shift->results_push(shift) }
-sub accept_results   {   # for testing
-    my $self = shift;
-    $self->results_push($_) for @_;
-}
 sub result_count     { shift->results_count }
 
 before results_push => sub {

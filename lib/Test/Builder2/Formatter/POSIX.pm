@@ -4,13 +4,11 @@ use Test::Builder2::Mouse;
 
 extends 'Test::Builder2::Formatter';
 
-sub accept_event {
+sub accept_stream_start {
     my $self  = shift;
     my $event = shift;
 
-    if( $event->event_type eq 'stream start' ) {
-        $self->write(output => "Running $0\n");
-    }
+    $self->write(output => "Running $0\n");
 
     return;
 }

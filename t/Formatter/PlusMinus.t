@@ -4,6 +4,7 @@ use strict;
 use lib 't/lib';
 
 BEGIN { require "t/test.pl" }
+use MyEventCoordinator;
 use Test::Builder2::Events;
 
 use_ok 'Test::Builder2::Formatter::PlusMinus';
@@ -17,9 +18,14 @@ sub new_formatter {
 
 my $formatter = new_formatter();
 
+my $ec = MyEventCoordinator->create(
+    formatters => [$formatter]
+);
+
+
 # Begin
 {
-    $formatter->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::StreamStart->new
     );
     is $formatter->streamer->read, "";
@@ -32,7 +38,7 @@ my $formatter = new_formatter();
         pass            => 1,
         description     => "basset hounds got long ears",
     );
-    $formatter->accept_result($result);
+    $ec->post_event($result);
     is(
       $formatter->streamer->read,
       "+",
@@ -47,7 +53,7 @@ my $formatter = new_formatter();
         pass            => 0,
         description     => "basset hounds got long ears",
     );
-    $formatter->accept_result($result);
+    $ec->post_event($result);
     is(
       $formatter->streamer->read,
       "-",
@@ -63,7 +69,7 @@ my $formatter = new_formatter();
         directives      => [qw(skip)],
         description     => "basset hounds got long ears",
     );
-    $formatter->accept_result($result);
+    $ec->post_event($result);
     is(
       $formatter->streamer->read,
       "+",
@@ -74,7 +80,7 @@ my $formatter = new_formatter();
 
 # End
 {
-    $formatter->accept_event(
+    $ec->post_event(
         Test::Builder2::Event::StreamEnd->new
     );
     is $formatter->streamer->read, "\n";
