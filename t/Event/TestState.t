@@ -43,5 +43,24 @@ note "singleton"; {
 }
 
 
+note "isa"; {
+    for my $thing ($CLASS, $CLASS->create) {
+        isa_ok $thing, $CLASS;
+        isa_ok $thing, "Test::Builder2::EventCoordinator";
+        ok !$thing->isa("Some::Other::Class");
+    }
+}
+
+
+note "can"; {
+    for my $thing ($CLASS, $CLASS->create) {
+        can_ok $thing, "formatters";
+        can_ok $thing, "create";
+        can_ok $thing, "pop_coordinator";
+
+        ok !$thing->can("method_not_appearing_in_this_film");
+    }
+}
+
 
 done_testing;

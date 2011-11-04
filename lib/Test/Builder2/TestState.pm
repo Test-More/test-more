@@ -22,10 +22,11 @@ has _coordinator_constructor_args =>
 Arguments passed to the TestState constructor which are passed on to the coordinator.
 END
 
+my $DEFAULT_COORDINATOR_CLASS = 'Test::Builder2::EventCoordinator';
 has coordinator_class =>
   is            => 'rw',
-  isa           => 'ClassName',
-  default       => 'Test::Builder2::EventCoordinator',
+  isa           => 'Str',  # Grr, ClassName requires the class be loaded
+  default       => $DEFAULT_COORDINATOR_CLASS,
   documentation => <<END;
 The class to make event coordinators from.
 END
@@ -67,8 +68,8 @@ sub _add_coordinator {
 sub isa {
     my($self, $want) = @_;
 
-    my $ec = $self->_coordinators->[0];
-    return $ec->isa($want) if $ec;
+    my $ec = ref $self ? $self->_coordinators->[0] : $DEFAULT_COORDINATOR_CLASS;
+    return 1 if $ec && $ec->isa($want);
     return $self->SUPER::isa($want);
 }
 
@@ -76,8 +77,8 @@ sub isa {
 sub can {
     my($self, $want) = @_;
 
-    my $ec = $self->_coordinators->[0];
-    return $ec->can($want) if $ec;
+    my $ec = ref $self ? $self->_coordinators->[0] : $DEFAULT_COORDINATOR_CLASS;
+    return 1 if $ec && $ec->can($want);
     return $self->SUPER::can($want);
 }
 
