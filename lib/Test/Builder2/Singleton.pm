@@ -93,6 +93,7 @@ Currently calls Mouse's new method.
 sub create {
     my $class = shift;
 
+    # Mouse injects new(), we can't call SUPER.
     return $class->Test::Builder2::Mouse::Object::new(@_);
 }
 

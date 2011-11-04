@@ -42,33 +42,44 @@ sub create {
     # Store our constructor arguments
     $self->_coordinator_constructor_args(\%args);
 
-    $self->_add_coordinator;
+    $self->add_coordinator;
 
     return $self;
 }
 
 
-sub _add_coordinator {
+sub add_coordinator {
     my $self = shift;
 
     my $coordinator_class = $self->coordinator_class;
     $self->load( $coordinator_class );
 
-    my $ec = $coordinator_class->create( %{ $self->_coordinator_constructor_args } );
+    my $ec = $coordinator_class->new( %{ $self->_coordinator_constructor_args } );
 
     push @{ $self->_coordinators }, $ec;
 
     $self->_delegate_to;
 
-    return;
+    return $ec;
 }
 
+
+sub pop_coordinator {
+    my $self = shift;
+
+    return pop @{ $self->_coordinators };
+}
+
+
+sub current_coordinator {
+    $_[0]->_coordinators->[-1];
+}
 
 # Convince isa() that we act like an EventCoordinator
 sub isa {
     my($self, $want) = @_;
 
-    my $ec = ref $self ? $self->_coordinators->[0] : $DEFAULT_COORDINATOR_CLASS;
+    my $ec = ref $self ? $self->_coordinators->[-1] : $DEFAULT_COORDINATOR_CLASS;
     return 1 if $ec && $ec->isa($want);
     return $self->SUPER::isa($want);
 }
@@ -77,7 +88,7 @@ sub isa {
 sub can {
     my($self, $want) = @_;
 
-    my $ec = ref $self ? $self->_coordinators->[0] : $DEFAULT_COORDINATOR_CLASS;
+    my $ec = ref $self ? $self->_coordinators->[-1] : $DEFAULT_COORDINATOR_CLASS;
     return 1 if $ec && $ec->can($want);
     return $self->SUPER::can($want);
 }
@@ -86,7 +97,7 @@ sub can {
 sub _delegate_to {
     my $self  = shift;
 
-    my $delegate = $self->_coordinators->[0];
+    my $delegate = $self->_coordinators->[-1];
     my $meta = $self->meta;
     foreach my $name( $delegate->meta->get_all_method_names ) {
         # Check what we can do without the delegate.
@@ -98,7 +109,7 @@ sub _delegate_to {
 
         $meta->add_method($name => sub {
             my $self = shift;
-            $self->_coordinators->[0]->$name(@_);
+            $self->_coordinators->[-1]->$name(@_);
         });
     }
 

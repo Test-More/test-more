@@ -22,7 +22,7 @@ sub setup {
     $formatter->show_ending_commentary(0);
     isa_ok $formatter, "Test::Builder2::Formatter::TAP";
 
-    $ec = Test::Builder2::EventCoordinator->create(
+    $ec = Test::Builder2::EventCoordinator->new(
         formatters => [$formatter],
     );
 

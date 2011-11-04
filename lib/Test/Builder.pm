@@ -11,7 +11,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 use Test::Builder2::threads::shared;
 
 use Test::Builder2::Events;
-use Test::Builder2::EventCoordinator;
+use Test::Builder2::TestState;
 
 with 'Test::Builder2::CanDupFilehandles',
      'Test::Builder2::CanTry',
@@ -79,7 +79,7 @@ sub _make_default {
     my $class = shift;
 
     my $obj = $class->create;
-    $obj->{EventCoordinator} = Test::Builder2::EventCoordinator->singleton;
+    $obj->{TestState} = Test::Builder2::TestState->singleton;
 
     return $obj;
 }
@@ -148,11 +148,11 @@ sub child {
         # The entire subtest is considered TODO.  Don't make any of its failure
         # diagnostics visible to the user.
         $child->{Fail_FH} = $self->{Todo_FH};
-        my $streamer = $child->event_coordinator->formatter->[0]->streamer;
+        my $streamer = $child->test_state->formatter->[0]->streamer;
         $streamer->error_fh( $streamer->output_fh );
     }
 
-    $child->event_coordinator->post_event(
+    $child->test_state->post_event(
         Test::Builder2::Event::StreamStart->new
     );
 
@@ -377,7 +377,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Exported_To}    = undef;
 
     $self->load("Test::Builder2::Formatter::TAP");
-    $self->{EventCoordinator} = Test::Builder2::EventCoordinator->create(
+    $self->{TestState} = Test::Builder2::TestState->create(
         formatters => [Test::Builder2::Formatter::TAP->new]
     );
     $self->formatter->use_numbers(1);
@@ -395,18 +395,18 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     return;
 }
 
-sub event_coordinator {
-    return $_[0]->{EventCoordinator};
+sub test_state {
+    return $_[0]->{TestState};
 }
 
 use Test::Builder2::BlackHole;
 my $blackhole = Test::Builder2::BlackHole->new;
 sub formatter {
-    return $_[0]->event_coordinator->formatters->[0] || $blackhole;
+    return $_[0]->test_state->formatters->[0] || $blackhole;
 }
 
 sub history {
-    return $_[0]->event_coordinator->history;
+    return $_[0]->test_state->history;
 }
 
 sub counter {
@@ -723,7 +723,7 @@ like Test::Simple's C<ok()>.
 sub stream_start {
     my $self = shift;
 
-    $self->event_coordinator->post_event(
+    $self->test_state->post_event(
         Test::Builder2::Event::StreamStart->new
     );
 
@@ -733,7 +733,7 @@ sub stream_start {
 sub stream_end {
     my $self = shift;
 
-    $self->event_coordinator->post_event(
+    $self->test_state->post_event(
         Test::Builder2::Event::StreamEnd->new
     );
 
@@ -743,7 +743,7 @@ sub stream_end {
 sub set_plan {
     my $self = shift;
 
-    $self->event_coordinator->post_event(
+    $self->test_state->post_event(
         Test::Builder2::Event::SetPlan->new( @_ )
     );
 
@@ -762,7 +762,7 @@ sub post_result {
 
     $result = shared_clone($result);
     $self->stream_start unless $self->stream_started;
-    $self->event_coordinator->post_event($result);
+    $self->test_state->post_event($result);
 
     return;
 }
@@ -1568,7 +1568,7 @@ sub diag {
     return if $self->no_diag;
     return $self->note(@_) if $self->in_todo;
 
-    $self->event_coordinator->post_event(
+    $self->test_state->post_event(
         Test::Builder2::Event::Log->new(
             message     => $self->_join_message(@_),
             level       => 'warning'
@@ -1593,7 +1593,7 @@ sub note {
     return unless @_;
     return if $self->no_diag;
 
-    $self->event_coordinator->post_event(
+    $self->test_state->post_event(
         Test::Builder2::Event::Log->new(
             message     => $self->_join_message(@_),
             level       => 'info'
@@ -1890,9 +1890,10 @@ sub current_test {
         my $results = $history->results;
 
         if( $num > @$results ) {
-            # Create a detached event coordinator so we can post events
+            # Create a detached test state so we can post events
             # just to our history
-            my $ec = Test::Builder2::EventCoordinator->create(
+            # XXX No longer needed with receive_event
+            my $ec = Test::Builder2::TestState->create(
                 formatters => [],
                 history    => $history
             );

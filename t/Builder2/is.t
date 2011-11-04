@@ -43,7 +43,7 @@ my $tb = TB2::More->Builder;
     # Isolate the builder
     require Test::Builder2::Streamer::Debug;
     require Test::Builder2::History;
-    $tb->event_coordinator->history(Test::Builder2::History->new);
+    $tb->test_state->history(Test::Builder2::History->new);
     $tb->formatter->streamer( Test::Builder2::Streamer::Debug->new );
 
     TB2::More->import( tests => 1 );

@@ -13,7 +13,7 @@ my $posix = Test::Builder2::Formatter::POSIX->new(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
 
-my $ec = MyEventCoordinator->create(
+my $ec = MyEventCoordinator->new(
     formatters => [$posix]
 );
 

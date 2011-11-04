@@ -9,7 +9,7 @@ use Test::Builder2::EventCoordinator;
 BEGIN { require "t/test.pl" }
 
 note "History captures the plan"; {
-    my $ec = Test::Builder2::EventCoordinator->create;
+    my $ec = Test::Builder2::EventCoordinator->new;
     $ec->clear_formatters;
 
     $ec->post_event( Test::Builder2::Event::StreamStart->new );

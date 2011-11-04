@@ -53,6 +53,6 @@ L<Test::Builder2::EventWatcher>
 }
 
 require Test::Builder2;
-Test::Builder2->singleton->event_coordinator->add_late_watchers( TB2::DieOnFail::Watcher->new );
+Test::Builder2->singleton->test_state->add_late_watchers( TB2::DieOnFail::Watcher->new );
 
 1;

@@ -27,7 +27,7 @@ sub Fail { Test::Builder2::Result->new_result( pass => 0 ) }
 
 { 
     ok my $history = new_history, q{new history} ;
-    my $ec = MyEventCoordinator->create( history => $history );
+    my $ec = MyEventCoordinator->new( history => $history );
 
     ok!$history->has_results, q{we no not yet have results};
     is_deeply $history->results, [], q{blank results set};

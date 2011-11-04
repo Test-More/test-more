@@ -68,34 +68,34 @@ directly.
 
 =head1 METHODS
 
-=head3 event_coordinator
+=head3 test_state
 
-    my $event_coordinator = $builder->event_coordinator;
-    $builder->event_coordinator($event_coordinator);
+    my $test_state = $builder->test_state;
+    $builder->test_state($test_state);
 
-Get/set the L<Test::Builder2::EventCoordinator> associated with this C<$builder>.
+Get/set the L<Test::Builder2::TestState> associated with this C<$builder>.
 
-By default it creates a new EventCoordinator detached from other builders.
+By default it creates a new TestState detached from other builders.
 
-The singleton contains the EventCoordinator singleton.
+The singleton contains the TestState singleton.
 
 =cut
 
-has event_coordinator =>
+has test_state =>
   is            => 'rw',
-  isa           => 'Test::Builder2::EventCoordinator',
+  isa           => 'Test::Builder2::TestState',
   default       => sub {
-      $_[0]->load('Test::Builder2::EventCoordinator');
-      return Test::Builder2::EventCoordinator->create;
+      $_[0]->load('Test::Builder2::TestState');
+      return Test::Builder2::TestState->create;
   }
 ;
 
 sub make_singleton {
     my $class = shift;
 
-    $class->load('Test::Builder2::EventCoordinator');
+    $class->load('Test::Builder2::TestState');
     return $class->create(
-        event_coordinator => Test::Builder2::EventCoordinator->singleton
+        test_state => Test::Builder2::TestState->singleton
     );
 }
 
@@ -105,14 +105,14 @@ sub make_singleton {
     my $history = $builder->history;
 
 A convenience method to access the first History object associated
-with the C<event_coordinator>.
+with the C<test_state>.
 
 Note that there can be more than one.
 
 =cut
 
 sub history {
-    return $_[0]->event_coordinator->history;
+    return $_[0]->test_state->history;
 }
 
 
@@ -121,14 +121,14 @@ sub history {
     my $formatter = $builder->formatter;
 
 A convenience method to access the first Formatter associated
-with the C<event_coordinator>.
+with the C<test_state>.
 
 Note that there can be more than one.
 
 =cut
 
 sub formatter {
-    return $_[0]->event_coordinator->formatters->[0];
+    return $_[0]->test_state->formatters->[0];
 }
 
 
@@ -168,7 +168,7 @@ before C<stream_end>.
 sub stream_start {
     my $self = shift;
 
-    $self->event_coordinator->post_event(
+    $self->test_state->post_event(
         Test::Builder2::Event::StreamStart->new
     );
 
@@ -186,7 +186,7 @@ Inform the Builder that a set of asserts is complete.
 sub stream_end {
     my $self = shift;
 
-    $self->event_coordinator->post_event(
+    $self->test_state->post_event(
         Test::Builder2::Event::StreamEnd->new
     );
 
@@ -225,7 +225,7 @@ sub set_plan {
         %plan
     );
 
-    $self->event_coordinator->post_event($plan);
+    $self->test_state->post_event($plan);
 
     return;
 }
@@ -286,7 +286,7 @@ sub assert_end {
 
     # Trap an error from a watcher...
     my($ret, $error) = $self->try( sub {
-        $self->event_coordinator->post_event($result) if
+        $self->test_state->post_event($result) if
           $self->top_stack->at_top and defined $result;
         1;
     });
@@ -401,7 +401,7 @@ L<Test::Builder2::History> for the object storing result history.
 
 L<Test::Builder2::Formatter> for the object handling printing results.
 
-L<Test::Builder2::EventCoordinator> for the object coordinating between builders.
+L<Test::Builder2::TestState> for the object holding the state of the test.
 
 L<Test::Builder2::Module> for writing your own test libraries.
 

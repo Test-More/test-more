@@ -27,7 +27,7 @@ sub Fail { Test::Builder2::Result->new_result( pass => 0, @_ ) }
 
 note "basic history stats"; { 
     ok my $history = new_history, q{new history} ;
-    my $ec = MyEventCoordinator->create(
+    my $ec = MyEventCoordinator->new(
         history => $history
     );
 
@@ -51,7 +51,7 @@ note "basic history stats"; {
 
 note "merge history stacks"; {
    my $H1 = new_history;
-   my $ec1 = MyEventCoordinator->create(
+   my $ec1 = MyEventCoordinator->new(
        history => $H1
    );
 
@@ -59,7 +59,7 @@ note "merge history stacks"; {
    is $H1->result_count, 3, q{H1 count};
 
    my $H2 = new_history;
-   my $ec2 = MyEventCoordinator->create(
+   my $ec2 = MyEventCoordinator->new(
        history => $H2
    );
 
@@ -72,7 +72,7 @@ note "merge history stacks"; {
 
    my @histories = map {
        my $h = new_history;
-       my $ec = MyEventCoordinator->create( history => $h );
+       my $ec = MyEventCoordinator->new( history => $h );
        $ec->post_event($_) for Pass(), Fail();
        $h;
    } 1..10;
@@ -85,7 +85,7 @@ note "merge history stacks"; {
 
 note "multiple results with same test number"; {
    my $h = new_history;
-   my $ec = MyEventCoordinator->create( history => $h );
+   my $ec = MyEventCoordinator->new( history => $h );
    $ec->post_event($_) for Pass(test_number=>1), Pass(test_number=>1);
    is $h->result_count,2;
 }

@@ -13,7 +13,7 @@ use Test::Builder2::History;
 
 {
     my $history = Test::Builder2::History->new;
-    my $ec = MyEventCoordinator->create( history => $history );
+    my $ec = MyEventCoordinator->new( history => $history );
 
     is $history->stream_depth, 0;
 
@@ -66,7 +66,7 @@ note "post order"; {
     }
 
     my $formatter = My::Formatter->new;
-    my $ec = MyEventCoordinator->create(
+    my $ec = MyEventCoordinator->new(
         formatters      => [ $formatter ],
     );
 

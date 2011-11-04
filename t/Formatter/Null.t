@@ -14,7 +14,7 @@ my $null = Test::Builder2::Formatter::Null->new(
   streamer_class => 'Test::Builder2::Streamer::Debug'
 );
 
-my $ec = MyEventCoordinator->create(
+my $ec = MyEventCoordinator->new(
     formatters => [$null]
 );
 

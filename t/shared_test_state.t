@@ -10,7 +10,7 @@ use Test::Builder2;
 my $tb1 = Test::Builder->new;
 my $tb2 = Test::Builder2->singleton;
 
-is $tb1->event_coordinator, $tb2->event_coordinator,
-  "TB1 and TB2 have the same EventCoordinator";
+is $tb1->test_state, $tb2->test_state,
+  "TB1 and TB2 have the same TestState";
 
 done_testing;
