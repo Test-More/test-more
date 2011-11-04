@@ -53,10 +53,16 @@ sub create {
 sub add_coordinator {
     my $self = shift;
 
-    my $coordinator_class = $self->coordinator_class;
-    $self->load( $coordinator_class );
+    my $ec;
+    if( !@_ ) {
+        my $coordinator_class = $self->coordinator_class;
+        $self->load( $coordinator_class );
 
-    my $ec = $coordinator_class->new( %{ $self->_coordinator_constructor_args } );
+        $ec = $coordinator_class->new( %{ $self->_coordinator_constructor_args } );
+    }
+    else {
+        $ec = shift;
+    }
 
     push @{ $self->_coordinators }, $ec;
 

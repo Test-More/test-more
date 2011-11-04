@@ -76,6 +76,17 @@ note "push/pop coordinators"; {
 }
 
 
+note "push our own coordinator"; {
+    my $state = $CLASS->create;
+
+    require Test::Builder2::EventCoordinator;
+    my $ec = Test::Builder2::EventCoordinator->new;
+
+    $state->add_coordinator($ec);
+
+    is $state->current_coordinator, $ec;
+}
+
 note "popping the last coordinator"; {
     my $state = $CLASS->create;
 
