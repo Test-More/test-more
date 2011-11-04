@@ -63,4 +63,16 @@ note "can"; {
 }
 
 
+note "push/pop coordinators"; {
+    my $state = $CLASS->create;
+
+    my $first_ec  = $state->current_coordinator;
+    my $second_ec = $state->add_coordinator;
+    is $state->history, $second_ec->history;
+    isnt $state->history, $first_ec->history;
+
+    is $state->pop_coordinator, $second_ec;
+    is $state->history, $first_ec->history;
+}
+
 done_testing;
