@@ -62,7 +62,7 @@ sub capture(&) {
 
     require Test::Builder2::TestState;
     my $state = Test::Builder2::TestState->singleton;
-    my $our_ec = $state->add_coordinator;
+    my $our_ec = $state->push_coordinator;
 
     $our_ec->clear_formatters;
 

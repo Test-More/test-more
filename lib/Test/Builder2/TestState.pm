@@ -44,13 +44,13 @@ sub create {
     # Store our constructor arguments
     $self->_coordinator_constructor_args(\%args);
 
-    $self->add_coordinator;
+    $self->push_coordinator;
 
     return $self;
 }
 
 
-sub add_coordinator {
+sub push_coordinator {
     my $self = shift;
 
     my $ec;

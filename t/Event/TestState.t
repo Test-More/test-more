@@ -67,7 +67,7 @@ note "push/pop coordinators"; {
     my $state = $CLASS->create;
 
     my $first_ec  = $state->current_coordinator;
-    my $second_ec = $state->add_coordinator;
+    my $second_ec = $state->push_coordinator;
     is $state->history, $second_ec->history;
     isnt $state->history, $first_ec->history;
 
@@ -82,7 +82,7 @@ note "push our own coordinator"; {
     require Test::Builder2::EventCoordinator;
     my $ec = Test::Builder2::EventCoordinator->new;
 
-    $state->add_coordinator($ec);
+    $state->push_coordinator($ec);
 
     is $state->current_coordinator, $ec;
 }
