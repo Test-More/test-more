@@ -3,6 +3,8 @@ package Test::Builder2::TestState;
 use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 
+use Carp;
+
 with 'Test::Builder2::Singleton',
      'Test::Builder2::CanLoad';
 
@@ -67,7 +69,10 @@ sub add_coordinator {
 sub pop_coordinator {
     my $self = shift;
 
-    return pop @{ $self->_coordinators };
+    my $coordinators = $self->_coordinators;
+    croak "The last coordinator cannot be popped" if @$coordinators == 1;
+
+    return pop @$coordinators;
 }
 
 

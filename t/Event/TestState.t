@@ -75,4 +75,12 @@ note "push/pop coordinators"; {
     is $state->history, $first_ec->history;
 }
 
+
+note "popping the last coordinator"; {
+    my $state = $CLASS->create;
+
+    ok !eval { $state->pop_coordinator; 1 };
+    like $@, qr{^The last coordinator cannot be popped};
+}
+
 done_testing;
