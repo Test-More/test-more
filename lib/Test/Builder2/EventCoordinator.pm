@@ -186,7 +186,6 @@ along with itself.  See L<all_watchers> for ordering information.
 
 =cut
 
-my %type2method;
 sub post_event {
     my $self  = shift;
     my $event = shift;
@@ -194,16 +193,6 @@ sub post_event {
     for my $watcher ($self->all_watchers) {
         $watcher->receive_event($event, $self);
     }
-}
-
-sub type2method {
-    my $self = shift;
-    my $type = shift;
-
-    my $method = "accept_".$type;
-    $method =~ s{\s}{_}g;
-
-    return $method;
 }
 
 
