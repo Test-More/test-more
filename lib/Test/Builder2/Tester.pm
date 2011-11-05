@@ -60,18 +60,15 @@ it without altering any other tests.
 sub capture(&) {
     my $code = shift;
 
-    require Test::Builder2::EventCoordinator;
-    my $ec = Test::Builder2::EventCoordinator->singleton;
-    my $real_ec = $ec->real_coordinator;
+    require Test::Builder2::TestState;
+    my $state = Test::Builder2::TestState->singleton;
+    my $our_ec = $state->push_coordinator;
 
-    my $our_ec = $real_ec->create;
     $our_ec->clear_formatters;
 
-    $ec->real_coordinator($our_ec);
-    
     my($ret, $err) = $CLASS->try(sub { $code->(); 1; });
 
-    $ec->real_coordinator($real_ec);
+    $state->pop_coordinator;
 
     die $err if $err;
 

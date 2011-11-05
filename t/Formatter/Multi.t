@@ -23,7 +23,7 @@ is_deeply $multi->formatters, [];
 $multi->add_formatters($pm, $posix);
 is_deeply $multi->formatters, [$pm, $posix];
 
-my $ec = MyEventCoordinator->create(
+my $ec = MyEventCoordinator->new(
     formatters => [$multi]
 );
 

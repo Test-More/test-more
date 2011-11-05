@@ -18,7 +18,7 @@ use strict;
     };
 }
 
-Test::Builder2->singleton->event_coordinator->add_late_watchers( TB2::Assert->new );
+Test::Builder2->singleton->test_state->add_late_watchers( TB2::Assert->new );
 
 use Test::Simple tests => 4;
 ok(1, "pass");

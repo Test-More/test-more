@@ -33,7 +33,7 @@ my $Fail = Test::Builder2::Result->new_result(
 # accept_result
 {
     my $history = new_ok $CLASS;
-    my $ec = MyEventCoordinator->create(
+    my $ec = MyEventCoordinator->new(
         history => $history
     );
 

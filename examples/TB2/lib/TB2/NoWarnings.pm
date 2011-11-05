@@ -112,7 +112,7 @@ plan is already set, but it doesn't.
         my $watcher = TB2::NoWarnings::WarningsWatcher->new(
             @_
         );
-        $watcher->builder->event_coordinator->add_early_watchers($watcher);
+        $watcher->builder->test_state->add_early_watchers($watcher);
 
         return;
     }

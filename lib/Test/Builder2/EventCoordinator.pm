@@ -3,8 +3,7 @@ package Test::Builder2::EventCoordinator;
 use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 
-with 'Test::Builder2::Singleton',
-     'Test::Builder2::CanLoad';
+with 'Test::Builder2::CanLoad';
 
 my @Types = qw(early_watchers history formatters late_watchers);
 
@@ -16,9 +15,8 @@ Test::Builder2::EventCoordinator - Coordinate events amongst the builders
 
 =head1 SYNOPSIS
 
-    # A builder gets and stores a copy of the singleton
     use Test::Builder2::EventCoordinator;
-    my $ec = Test::Builder2::EventCoordinator->singleton;
+    my $ec = Test::Builder2::EventCoordinator->create;
 
     # The builder sends it events like assert results and the beginning
     # and end of test streams.
@@ -146,33 +144,21 @@ has late_watchers =>
 
 These are methods which create or retrieve EventCoordinator objects.
 
-=head3 singleton
+=head2 Constructor
 
-    my $ec = Test::Builder2::EventCoordinator->singleton;
+=head3 new
 
-Returns the default EventCoordinator.  If you want to be hooked into
-the state of the globally active test, use this.
+    my $ec = Test::Builder2::EventCoordinator->new( %args );
 
-It will contain the History and Formatter singletons.
+Creates a new event coordinator.
 
-=cut
+%args are the L<Attributes> defined above.
 
-sub make_singleton {
-    my $class = shift;
+For example, to create an EventCoordinator without a formatter...
 
-    require Test::Builder2::EventCoordinator::Default;
-    return Test::Builder2::EventCoordinator::Default->create(
-        real_coordinator => $class->create
+    my $ec = Test::Builder2::EventCoordinator->new(
+        formatters => []
     );
-}
-
-=head3 create
-
-    my $ec = Test::Builder2::EventCoordinator->create(%args);
-
-Creates a new EventCoordinator.
-
-%args corresponds to the L<Attributes>.
 
 
 =head2 Methods

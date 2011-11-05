@@ -18,7 +18,7 @@ sub new_formatter {
     );
     isa_ok $formatter, "Test::Builder2::Formatter::TAP";
 
-    my $ec = Test::Builder2::EventCoordinator->create(
+    my $ec = Test::Builder2::EventCoordinator->new(
         formatters => [$formatter],
     );
 

@@ -14,7 +14,7 @@ TB2::Formatter::SimpleHTML - A very simple HTML formatter
     use TB2::Formatter::SimpleHTML;
 
     my $tb2 = Test::Builder2->singleton;
-    my $ec = $tb2->event_coordinator;
+    my $ec = $tb2->test_state;
 
     $ec->clear_formatters;      # remove the TAP formatter
     $ec->add_formatters(        # add the SimpleHTML formatter

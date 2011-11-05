@@ -31,7 +31,6 @@ lib/Test/Builder2/Event/StreamEnd.pm
 lib/Test/Builder2/Event/StreamMetadata.pm
 lib/Test/Builder2/Event/StreamStart.pm
 lib/Test/Builder2/EventCoordinator.pm
-lib/Test/Builder2/EventCoordinator/Default.pm
 lib/Test/Builder2/Events.pm
 lib/Test/Builder2/EventWatcher.pm
 lib/Test/Builder2/Formatter.pm
@@ -60,6 +59,7 @@ lib/Test/Builder2/Streamer/Debug.pm
 lib/Test/Builder2/Streamer/Print.pm
 lib/Test/Builder2/Streamer/TAP.pm
 lib/Test/Builder2/Tester.pm
+lib/Test/Builder2/TestState.pm
 lib/Test/Builder2/threads/shared.pm
 lib/Test/Builder2/threads/shared/off.pm
 lib/Test/Builder2/threads/shared/on.pm
@@ -152,6 +152,7 @@ t/Event/SetPlan.t
 t/Event/StreamEnd.t
 t/Event/StreamMetadata.t
 t/Event/StreamStart.t
+t/Event/TestState.t
 t/exit.t
 t/explain.t
 t/extra.t
@@ -185,6 +186,7 @@ t/lib/absINC.pm
 t/lib/Dev/Null.pm
 t/lib/Dummy.pm
 t/lib/MyEventCollector.pm
+t/lib/MyEventCoordinator.pm
 t/lib/MyOverload.pm
 t/lib/NoExporter.pm
 t/lib/SigDie.pm
@@ -222,7 +224,7 @@ t/plan_skip_all.t
 t/pod-coverage.t
 t/pod.t
 t/require_ok.t
-t/shared_event_coordinator.t
+t/shared_test_state.t
 t/Simple/builder.t
 t/Simple/load.t
 t/Simple/no_plan.t
@@ -254,11 +256,12 @@ t/Tester/tbt_05faildiag.t
 t/Tester/tbt_06errormess.t
 t/Tester/tbt_07args.t
 t/Tester2/capture.t
-t/Tester2/ec_untouched.t
+t/Tester2/state_untouched.t
 t/thread_taint.t
 t/threads.t
 t/todo.t
 t/todo_skip_before_plan.t
+t/true_value.t
 t/undef.t
 t/use_ok.t
 t/useing.t

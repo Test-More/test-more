@@ -8,8 +8,8 @@ BEGIN { require "t/test.pl" }
 use Test::Simple ();
 use Test::Builder2::Tester;
 
-note "event coordinator left untouched"; {
-    my $ec = Test::Simple->Builder->event_coordinator;
+note "test state left untouched"; {
+    my $ec = Test::Simple->Builder->test_state;
     is_deeply $ec->history->events,  [],        "no events in the EC";
     is_deeply $ec->history->results, [],        "no results in the EC";
 

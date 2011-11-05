@@ -18,7 +18,7 @@ sub new_formatter {
 
 my $formatter = new_formatter();
 
-my $ec = MyEventCoordinator->create(
+my $ec = MyEventCoordinator->new(
     formatters => [$formatter]
 );
 
@@ -91,7 +91,7 @@ my $ec = MyEventCoordinator->create(
 {
     require Test::Builder2;
     my $tb = Test::Builder2->create;
-    $tb->event_coordinator->formatters([ new_formatter ]);
+    $tb->test_state->formatters([ new_formatter ]);
 
     $tb->stream_start();
     $tb->ok(1);

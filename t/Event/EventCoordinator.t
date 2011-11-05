@@ -13,22 +13,8 @@ my $CLASS = 'Test::Builder2::EventCoordinator';
 use_ok $CLASS;
 
 
-note("EC->singleton initialization"); {
-    my $ec = $CLASS->singleton;
-    is_deeply $ec->early_watchers, [], "early_watchers";
-    is_deeply $ec->late_watchers,  [], "late_watchers";
-
-    my $formatters = $ec->formatters;
-    is @$formatters, 1;
-    isa_ok $formatters->[0], "Test::Builder2::Formatter::TAP";
-
-    my $history = $ec->history;
-    isa_ok $history, "Test::Builder2::History";
-}
-
-
-note("EC->create init"); {
-    my $ec = $CLASS->create;
+note("EC init"); {
+    my $ec = $CLASS->new;
     is_deeply $ec->early_watchers, [], "early_watchers";
     is_deeply $ec->late_watchers,  [], "late_watchers";
 
@@ -41,7 +27,7 @@ note("EC->create init"); {
 }
 
 
-note("EC->create takes args"); {
+note("EC->new takes args"); {
     my %args = (
         early_watchers  => [MyEventCollector->new],
         late_watchers   => [MyEventCollector->new],
@@ -49,7 +35,7 @@ note("EC->create takes args"); {
         formatters      => [MyEventCollector->new]
     );
 
-    my $ec = $CLASS->create(
+    my $ec = $CLASS->new(
         %args
     );
 
@@ -69,7 +55,7 @@ note("EC->create takes args"); {
 
 
 note("add and clear"); {
-    my $ec = $CLASS->create(
+    my $ec = $CLASS->new(
         formatters => [],
     );
 
@@ -100,7 +86,7 @@ note("posting"); {
         formatters      => [MyEventCollector->new]
     );
 
-    my $ec = $CLASS->create(
+    my $ec = $CLASS->new(
         %args
     );
 
@@ -163,7 +149,7 @@ note "posting events to specific handlers"; {
 
     my $watcher = My::Watcher::StartEnd->new;
 
-    my $ec = $CLASS->create(
+    my $ec = $CLASS->new(
         early_watchers  => [$watcher],
         formatters      => []
     );

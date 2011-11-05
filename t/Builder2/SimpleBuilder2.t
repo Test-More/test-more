@@ -15,7 +15,7 @@ my $tap = Test::Builder2::Formatter::TAP->new({
 my $builder = Test::Builder2->create;
 isa_ok $builder, "Test::Builder2";
 
-$builder->event_coordinator->formatters([$tap]);
+$builder->test_state->formatters([$tap]);
 
 {
     $builder->stream_start;
