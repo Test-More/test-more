@@ -34,6 +34,84 @@ The class to make event coordinators from.
 END
 
 
+=head1 NAME
+
+Test::Builder2::TestState - Object which holds the state of the test
+
+=head1 SYNOPSIS
+
+    use Test::Builder2::TestState;
+
+    # Get the state of the default test.
+    # Usually you'd ask your builder for the TestState object,
+    # but we'll get it directly.
+    my $state = Test::Builder2::TestState->singleton;
+
+    # Post an event, like an EventCoordinator
+    $state->post_event($event);
+
+    # Get the history of the test
+    my $history = $state->history;
+
+
+=head1 DESCRIPTION
+
+All test state resides not in the builder objects but in the TestState
+and its attached L<Test::Builder2::EventWatcher> objects.  TestState
+holds onto the current event watchers and passes events along to them.
+It also manages subtest state.
+
+For example, when a builder has generated a Result object, it should
+post it to the TestState.
+
+    $state->post_event($result);
+
+TestState does everything a L<Test::Builder2::EventCoordinator> does.
+It delegates to a stack of EventCoordinators, one for each layer of
+subtesting.
+
+TestState has a singleton object to hold the state of the default
+test.  Builders should use C<< Test::Builder2::TestState->singleton >>
+to get the TestState if they want to play nice with others.  You can
+also create your own test states with
+C<<Test::Builder2::TestState->create >>.
+
+=head1 METHODS
+
+=head2 Constructors
+
+Because TestState is a singleton, it does not provide a B<new> to
+avoid confusion.  It instead has B<create> and B<singleton>.
+
+=head3 create
+
+    my $state = Test::Builder2::TestState->create(%event_coordinator_args);
+
+Create a new test state.
+
+C<%event_coordinator_args> are passed to the constructor when it
+creates new event coordinators.  This lets you pass in different
+formatters and watchers.
+
+    # Make a test state with no formatter
+    my $state = Test::Builder2::TestState->create(
+        formatters => []
+    );
+
+
+=head3 singleton
+
+    my $state = Test::Builder2::TestState->singleton;
+
+Retrieve the shared TestState.
+
+You should use this if you want to coordinate with other test libraries.
+
+=cut
+
+# Override create() to add the first coordinator.
+# Mouse attributes don't provide enough flexibility to have both a default
+# and the trigger to do the delegation.
 sub create {
     my $class = shift;
     my %args = @_;
@@ -49,6 +127,35 @@ sub create {
     return $self;
 }
 
+
+=head2 EventCoordinator methods
+
+TestState delegates to a stack of EventCoordinators.  It does all the
+methods of L<Test::Builder2::EventCoordinator>.
+
+
+=head2 Stack management
+
+TestState maintains state in a stack of EventCoordinators.  Each item
+in the stack is isolated from another (unless they decide to share
+EventWatchers).
+
+One can add a coordinator to the stack to set up an isolated test
+state and remove it to restore the original state.  This is useful
+both for testing tests (see L<Test::Builder2::Tester>) and for running
+subtests in isolation.
+
+=head3 push_coordinator
+
+    my $event_coordinator = $state->push_coordinator;
+    my $event_coordinator = $state->push_coordinator($event_coordinator);
+
+Add an $event_coordinator to the stack.  This will become the new delegate.
+
+If an $event_coordinator is not passed in, a new one will be made using
+the arguments originally passed into L<create>.
+
+=cut
 
 sub push_coordinator {
     my $self = shift;
@@ -66,11 +173,25 @@ sub push_coordinator {
 
     push @{ $self->_coordinators }, $ec;
 
-    $self->_delegate_to;
+    # Do the delegation every time we add a new coordinator in case it's
+    # a subclass that added methods.
+    $self->_delegate_to_current_coordinator;
 
     return $ec;
 }
 
+
+=head3 pop_coordinator
+
+    my $event_coordinator = $state->pop_coordinator;
+
+This will remove the current coordinator from the stack.  Test state
+will be delegated to the coordinator below it.
+
+An exception will be thrown if the final coordinator is attempted to
+be removed.
+
+=cut
 
 sub pop_coordinator {
     my $self = shift;
@@ -81,6 +202,15 @@ sub pop_coordinator {
     return pop @$coordinators;
 }
 
+
+=head3 current_coordinator
+
+    my $ec = $state->current_coordinator;
+
+Returns the current L<Test::Builder2::EventCoordinator> which is being
+delegated to.
+
+=cut
 
 sub current_coordinator {
     $_[0]->_coordinators->[-1];
@@ -105,7 +235,8 @@ sub can {
 }
 
 
-sub _delegate_to {
+# Set up delegation to the current coordinator.
+sub _delegate_to_current_coordinator {
     my $self  = shift;
 
     my $delegate = $self->_coordinators->[-1];
@@ -127,7 +258,20 @@ sub _delegate_to {
     return;
 }
 
-# Do not make it immutable.
+# Do not make it immutable, we need to add delegate methods dynamically.
 no Test::Builder2::Mouse;
+
+
+=head1 SEE ALSO
+
+L<Test::Builder2::EventCoordinator> which TestState delegates to under the hood.
+
+L<Test::Builder2::EventWatcher> which handle events.
+
+L<Test::Builder2::Formatter> which handle output.
+
+L<Test::Builder2::History> which stores events for reference.
+
+=cut
 
 1;
