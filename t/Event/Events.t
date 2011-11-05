@@ -7,7 +7,7 @@ BEGIN { require "t/test.pl"; }
 use Test::Builder2::Events;
 
 my @events = map { "Test::Builder2::Event::".$_ }
-                 qw(StreamStart StreamEnd SetPlan StreamMetadata Log Comment);
+                 qw(StreamStart StreamEnd SetPlan StreamMetadata Log Comment SubtestStart);
 
 for my $class (@events) {
     ok $class->can("event_type"), "$class loaded";
