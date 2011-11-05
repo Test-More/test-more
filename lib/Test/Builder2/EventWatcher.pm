@@ -97,6 +97,30 @@ sub _event_type2accept_method {
 }
 
 
+=head3 subtest_handler
+
+    my $subtest_handler = $watcher->subtest_handler($subtest_start_event);
+
+When a subtest starts, the TestState will call C<subtest_handler> on
+each EventWatcher to get a watcher for the subtest.  It will be passed
+in the $subtest_start_event (see L<Test::Builder2::Event::SubtestStart>).
+
+The provided method simply returns a new instance of the $watcher's
+class which should be sufficient for most watchers.
+
+You may override this to, for example, configure the new instance.  Or
+to return the same instance if you want a single instance to handle
+all subtests.
+
+=cut
+
+sub subtest_handler {
+    my $self = shift;
+    my $class = ref $self;
+
+    return $class->new;
+}
+
 
 =head2 Event handlers
 
