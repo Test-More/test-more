@@ -6,7 +6,7 @@ BEGIN {
         @INC = ('../lib', 'lib');
     }
     else {
-        unshift @INC, 't/lib';
+        unshift @INC, ( 't/lib', 'lib' );
     }
 }
 
@@ -15,7 +15,8 @@ use warnings;
 
 use Test::Builder::NoOutput;
 
-use Test::More tests => 2;
+BEGIN { require 't/test.pl'; }
+plan(2);
 
 {
     my $tb = Test::Builder::NoOutput->create;

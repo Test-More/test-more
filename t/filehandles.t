@@ -2,7 +2,8 @@
 
 use strict;
 use lib 't/lib';
-use Test::More tests => 1;
+BEGIN { require 't/test.pl'; }
+plan(1);
 use Dev::Null;
 
 tie *STDOUT, "Dev::Null" or die $!;
