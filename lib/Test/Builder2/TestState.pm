@@ -258,6 +258,68 @@ sub _delegate_to_current_coordinator {
     return;
 }
 
+
+my %special_handlers = (
+    'subtest start' => \&accept_subtest_start,
+    'subtest end'   => \&accept_subtest_end,
+);
+sub post_event {
+    my $self  = shift;
+
+    # Don't shift to preserve @_ so we can pass it along in its entirety.
+    my($event) = @_;
+
+    if( my $code = $special_handlers{$event->event_type} ) {
+        $self->$code(@_);
+    }
+    else {
+        $self->_coordinators->[-1]->post_event(@_);
+    }
+}
+
+sub accept_subtest_start {
+    my $self  = shift;
+
+    # Don't shift to preserve @_ so we can pass it along in its entirety.
+    my($event) = @_;
+
+    # Add nesting information
+    $event->depth( $self->_depth + 1 );
+
+    # Post the event to the current level
+    $self->current_coordinator->post_event(@_);
+
+    # Add a new level of testing
+    $self->push_coordinator;
+
+    return;
+}
+
+
+sub accept_subtest_end {
+    my $self  = shift;
+
+    # Don't shift to preserve @_ so we can pass it along in its entirety.
+    my($event) = @_;
+
+    # Pop the subtest
+    my $subtest_ec = $self->pop_coordinator;
+
+    # Attach the subtest history to the event.  If somebody else already
+    # did so, honor that.
+    $event->history( $subtest_ec->history ) unless $event->history;
+
+    # Post the event to the current level
+    $self->current_coordinator->post_event(@_);
+
+    return;
+}
+
+
+sub _depth {
+    return @{ $_[0]->_coordinators } - 1;
+}
+
 # Do not make it immutable, we need to add delegate methods dynamically.
 no Test::Builder2::Mouse;
 

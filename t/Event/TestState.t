@@ -87,11 +87,52 @@ note "push our own coordinator"; {
     is $state->current_coordinator, $ec;
 }
 
+
 note "popping the last coordinator"; {
     my $state = $CLASS->create;
 
     ok !eval { $state->pop_coordinator; 1 };
     like $@, qr{^The last coordinator cannot be popped};
 }
+
+
+note "basic subtest"; {
+    my $state = $CLASS->create(
+        formatters => []
+    );
+
+    note "...starting a subtest";
+    my $first_ec = $state->current_coordinator;
+    my $subtest_start = Test::Builder2::Event::SubtestStart->new;
+    $state->post_event($subtest_start);
+    my $second_ec = $state->current_coordinator;
+
+    isnt $first_ec, $second_ec, "creates a new coordinator";
+
+    note "...checking coordinator state";
+    my $first_history  = $first_ec->history;
+    my $second_history = $second_ec->history;
+    is $first_history->event_count, 1;
+    my $event = $first_history->events->[0];
+    is $event->event_id, $subtest_start->event_id;
+    is $event->event_type, "subtest start",     "first level saw the start event";
+    is $event->depth, 1,                        "  depth was correctly set";
+    is $second_history->event_count, 0,     "second level did not see the start event";
+
+
+    note "...ending the subtest";
+    my $subtest_end = Test::Builder2::Event::SubtestEnd->new;
+    $state->post_event($subtest_end);
+    is $subtest_end->history, $second_history,  "second level history attached to the event";
+    is $second_history->event_count, 0,         "  second level did not see the end event";
+    is $state->current_coordinator, $first_ec,  "stack popped";
+
+    is $first_history->event_count, 2;
+    $event = $first_history->events->[1];
+    is $event->event_id, $subtest_end->event_id;
+    is $event->event_type, "subtest end",     "first level saw the start event";
+    is $event->history, $second_history;
+}
+
 
 done_testing;
