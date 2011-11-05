@@ -13,9 +13,10 @@ BEGIN {
 
 use strict;
 
-use lib 't/lib';
+use lib ( 't/lib', 'lib' );
 use Test::Builder::NoOutput;
-use Test::More tests => 7;
+BEGIN { require 't/test.pl'; }
+plan(7);
 
 my $test = Test::Builder::NoOutput->create;
 
