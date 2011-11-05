@@ -9,7 +9,7 @@ use Test::Builder;
 use Test::Builder2::EventCoordinator;
 use Test::Builder2::Events;
 
-my $ec = Test::Builder2::EventCoordinator->singleton;
+my $ec = Test::Builder2::EventCoordinator->default;
 
 $ec->post_event(
     Test::Builder2::Event::StreamStart->new

@@ -95,7 +95,7 @@ sub make_singleton {
 
     $class->load('Test::Builder2::EventCoordinator');
     return $class->create(
-        event_coordinator => Test::Builder2::EventCoordinator->singleton
+        event_coordinator => Test::Builder2::EventCoordinator->default
     );
 }
 

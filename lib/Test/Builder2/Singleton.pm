@@ -18,8 +18,8 @@ Test::Builder2::Singleton - A singleton role for TB2
   use Test::Builder2::Mouse;
   with 'Test::Builder2::Singleton';
 
-  my $thing      = TB2::Thing->singleton;
-  my $same_thing = TB2::Thing->singleton;
+  my $thing      = TB2::Thing->default;
+  my $same_thing = TB2::Thing->default;
 
   my $new_thing  = TB2::Thing->create;
 
@@ -38,8 +38,8 @@ instances.  Its more like giving the class a default.
 
 =head3 singleton
 
-    my $singleton = Class->singleton;
-    Class->singleton($singleton);
+    my $singleton = Class->default;
+    Class->default($singleton);
 
 Gets/sets the singleton object.
 
@@ -52,7 +52,7 @@ If there is no singleton one will be created by calling create().
 {
     my %singletons;
 
-    sub singleton {
+    sub default {
         my $class = shift;
 
         if(@_) {

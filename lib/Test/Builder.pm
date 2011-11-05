@@ -79,7 +79,7 @@ sub _make_default {
     my $class = shift;
 
     my $obj = $class->create;
-    $obj->{EventCoordinator} = Test::Builder2::EventCoordinator->singleton;
+    $obj->{EventCoordinator} = Test::Builder2::EventCoordinator->default;
 
     return $obj;
 }

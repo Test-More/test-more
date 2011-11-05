@@ -18,7 +18,7 @@ Test::Builder2::EventCoordinator - Coordinate events amongst the builders
 
     # A builder gets and stores a copy of the singleton
     use Test::Builder2::EventCoordinator;
-    my $ec = Test::Builder2::EventCoordinator->singleton;
+    my $ec = Test::Builder2::EventCoordinator->default;
 
     # The builder sends it events like assert results and the beginning
     # and end of test streams.
@@ -149,7 +149,7 @@ These are methods which create or retrieve EventCoordinator objects.
 
 =head3 singleton
 
-    my $ec = Test::Builder2::EventCoordinator->singleton;
+    my $ec = Test::Builder2::EventCoordinator->default;
 
 Returns the default EventCoordinator.  If you want to be hooked into
 the state of the globally active test, use this.

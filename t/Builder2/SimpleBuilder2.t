@@ -69,8 +69,8 @@ $builder->event_coordinator->formatters([$tap]);
 
 # TB2 has a singleton
 {
-    my $builder1 = Test::Builder2->singleton;
-    my $builder2 = Test::Builder2->singleton;
+    my $builder1 = Test::Builder2->default;
+    my $builder2 = Test::Builder2->default;
 
     is $builder1, $builder2, "TB2 has a singleton";
 }

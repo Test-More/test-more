@@ -61,7 +61,7 @@ sub capture(&) {
     my $code = shift;
 
     require Test::Builder2::EventCoordinator;
-    my $ec = Test::Builder2::EventCoordinator->singleton;
+    my $ec = Test::Builder2::EventCoordinator->default;
     my $real_ec = $ec->real_coordinator;
 
     my $our_ec = $real_ec->create;

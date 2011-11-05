@@ -11,7 +11,7 @@ use Test::Builder;
 use Test::Builder2;
 
 my $tb1 = Test::Builder->new;
-my $tb2 = Test::Builder2->singleton;
+my $tb2 = Test::Builder2->default;
 
 $tb1->plan( tests => 2 );
 $tb2->ok( 1, "this is Test::Builder2" );

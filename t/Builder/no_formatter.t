@@ -10,7 +10,7 @@ BEGIN { require "t/test.pl" }
 use Test::Builder2::EventCoordinator;
 
 # Pull the formatter
-my $ec = Test::Builder2::EventCoordinator->singleton;
+my $ec = Test::Builder2::EventCoordinator->default;
 $ec->clear_formatters;
 
 require Test::Builder;

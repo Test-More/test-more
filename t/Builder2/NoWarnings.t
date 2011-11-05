@@ -11,7 +11,7 @@ BEGIN { require "t/test.pl" }
 {
     require Test::Builder2::Streamer::Debug;
     require Test::Builder2;
-    my $builder = Test::Builder2->singleton;
+    my $builder = Test::Builder2->default;
     $builder->formatter->streamer(Test::Builder2::Streamer::Debug->new);
 
 

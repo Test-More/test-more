@@ -42,7 +42,7 @@ plan is already set, but it doesn't.
       isa                => 'Test::Builder2',
       default            => sub {
           require Test::Builder2;
-          return Test::Builder2->singleton;
+          return Test::Builder2->default;
       };
 
     has warnings_seen =>

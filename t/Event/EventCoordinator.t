@@ -11,8 +11,8 @@ my $CLASS = 'Test::Builder2::EventCoordinator';
 use_ok $CLASS;
 
 
-note("EC->singleton initialization"); {
-    my $ec = $CLASS->singleton;
+note("EC->default initialization"); {
+    my $ec = $CLASS->default;
     is_deeply $ec->early_watchers, [], "early_watchers";
     is_deeply $ec->late_watchers,  [], "late_watchers";
 
