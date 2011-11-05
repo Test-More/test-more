@@ -33,14 +33,11 @@ The L<Test::Builder2::History> object from the subtest.
 
 This can be used by event watchers to get information from the subtest.
 
-This is required.
-
 =cut
 
 has history =>
   is            => 'rw',
   isa           => 'Test::Builder2::History',
-  required      => 1
 ;
 
 =head3 event_type

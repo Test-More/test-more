@@ -26,11 +26,4 @@ note "defaults"; {
     };
 }
 
-
-note "history is required"; {
-    ok !eval { $CLASS->new() };
-    ok !eval { $CLASS->new( history => bless {}, "Foo" ) };
-}
-
-
 done_testing;
