@@ -31,6 +31,18 @@ subtype 'Test::Builder2::Positive_Int' => (
 );
 
 
+=head3 Test::Buidler2::Positive_NonZero_Int
+
+An integer greater than zero.
+
+=cut
+
+subtype 'Test::Builder2::Positive_NonZero_Int' => (
+    as 'Int',
+    where { defined $_ && $_ > 0 },
+);
+
+
 =head3 Test::Builder2::LoadableClass
 
 A class name.  It will be loaded.

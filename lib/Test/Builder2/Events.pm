@@ -5,6 +5,8 @@ use warnings;
 
 use Test::Builder2::Event::StreamStart;
 use Test::Builder2::Event::StreamEnd;
+use Test::Builder2::Event::SubtestStart;
+use Test::Builder2::Event::SubtestEnd;
 use Test::Builder2::Event::SetPlan;
 use Test::Builder2::Event::StreamMetadata;
 use Test::Builder2::Event::Log;
