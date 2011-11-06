@@ -115,8 +115,8 @@ has use_numbers =>
 ;
 
 my %event_dispatch = (
-    "stream start"      => "accept_stream_start",
-    "stream end"        => "accept_stream_end",
+    "test start"      => "accept_test_start",
+    "test end"        => "accept_test_end",
     "set plan"          => "accept_set_plan",
     "log"               => "accept_log",
 );
@@ -172,7 +172,7 @@ has show_ending_commentary =>
 ;
 
 
-sub accept_stream_start {
+sub accept_test_start {
     my $self = shift;
     my($event, $ec) = @_;
 
@@ -187,7 +187,7 @@ sub accept_stream_start {
 }
 
 
-sub accept_stream_end {
+sub accept_test_end {
     my $self  = shift;
     my $event = shift;
     my $ec    = shift;

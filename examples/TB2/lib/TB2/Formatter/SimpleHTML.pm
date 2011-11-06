@@ -21,11 +21,11 @@ TB2::Formatter::SimpleHTML - A very simple HTML formatter
         TB2::Formatter::SimpleHTML->new
     );
 
-    $tb2->stream_start;
+    $tb2->test_start;
     $tb2->ok(1, "a name");
     $tb2->ok(0, "another name");
     $tb2->ok(1);
-    $tb2->stream_end;
+    $tb2->test_end;
 
 =head1 DESCRIPTION
 
@@ -34,8 +34,8 @@ This is a very, very simple HTML formatter to demonstrate how its done.
 =cut
 
 my %event_dispatch = (
-    "stream start"      => "accept_stream_start",
-    "stream end"        => "accept_stream_end",
+    "test start"      => "accept_test_start",
+    "test end"        => "accept_test_end",
 );
 
 sub accept_event {
@@ -54,7 +54,7 @@ sub accept_event {
 
 
 # Start of testing
-sub accept_stream_start {
+sub accept_test_start {
     my $self = shift;
 
     $self->write(out => <<"HTML");
@@ -72,7 +72,7 @@ HTML
 
 
 # End of testing
-sub accept_stream_end {
+sub accept_test_end {
     my $self = shift;
 
     $self->write(out => <<"HTML");

@@ -16,7 +16,7 @@ my $posix = Test::Builder2::Formatter::POSIX->new(
     $posix->accept_event(
         Test::Builder2::Event::StreamStart->new
     );
-    is $posix->streamer->read, "Running $0\n", "stream start";
+    is $posix->streamer->read, "Running $0\n", "test start";
 }
 
 {

@@ -16,4 +16,4 @@ my $tb2 = Test::Builder2->singleton;
 $tb1->plan( tests => 2 );
 $tb2->ok( 1, "this is Test::Builder2" );
 $tb1->ok( 1, "this is Test::Builder");
-$tb2->stream_end;
+$tb2->test_end;

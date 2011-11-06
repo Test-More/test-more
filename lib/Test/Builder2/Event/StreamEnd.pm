@@ -16,15 +16,15 @@ This is an Event representing the end of a test stream.
 
 =head3 event_type
 
-The event type is C<stream end>.
+The event type is C<test end>.
 
 =cut
 
-sub event_type { "stream end" }
+sub event_type { "test end" }
 
 sub as_hash {
     return {
-        event_type => "stream end",
+        event_type => "test end",
     };
 }
 

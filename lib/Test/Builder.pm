@@ -520,7 +520,7 @@ sub expected_tests {
         $self->croak("Number of tests must be a positive integer.  You gave it '$max'")
           unless $max =~ /^\+?\d+$/;
 
-        $self->stream_start unless $self->stream_started;
+        $self->test_start unless $self->test_started;
 
         $self->set_plan(
             asserts_expected => $max
@@ -545,7 +545,7 @@ sub no_plan {
 
     $self->carp("no_plan takes no arguments") if $arg;
 
-    $self->stream_start;
+    $self->test_start;
 
     $self->set_plan(
         no_plan => 1
@@ -601,7 +601,7 @@ sub done_testing {
 
     $self->{Done_Testing} = [caller];
 
-    $self->stream_start unless $self->stream_started;
+    $self->test_start unless $self->test_started;
 
     if( defined $num_tests ) {
         if( $self->expected_tests && $num_tests != $self->expected_tests ) {
@@ -620,7 +620,7 @@ sub done_testing {
     # No tests were run
     $self->is_passing(0) if $self->current_test == 0;
 
-    $self->stream_end;
+    $self->test_end;
 
     return 1;
 }
@@ -664,7 +664,7 @@ sub skip_all {
 
     $reason = defined $reason ? $reason : '';
 
-    $self->stream_start;
+    $self->test_start;
 
     $self->set_plan(
         skip            => 1,
@@ -720,7 +720,7 @@ like Test::Simple's C<ok()>.
 
 =cut
 
-sub stream_start {
+sub test_start {
     my $self = shift;
 
     $self->event_coordinator->post_event(
@@ -730,7 +730,7 @@ sub stream_start {
     return;
 }
 
-sub stream_end {
+sub test_end {
     my $self = shift;
 
     $self->event_coordinator->post_event(
@@ -751,7 +751,7 @@ sub set_plan {
 }
 
 
-sub stream_started {
+sub test_started {
     $_[0]->history->stream_depth > 0;
 }
 
@@ -761,7 +761,7 @@ sub post_result {
     my $result = shift;
 
     $result = shared_clone($result);
-    $self->stream_start unless $self->stream_started;
+    $self->test_start unless $self->test_started;
     $self->event_coordinator->post_result($result);
 
     return;
@@ -2309,7 +2309,7 @@ sub _ending {
     my $plan    = $history->plan;
 
     # End the stream unless we (or somebody else) already ended it
-    $self->stream_end if $history->stream_depth;
+    $self->test_end if $history->stream_depth;
 
     my $real_exit_code = $?;
 

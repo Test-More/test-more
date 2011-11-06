@@ -68,10 +68,10 @@ sub accept_event {
     $self->events_push($event);
 
     my $type = $event->event_type;
-    if( $type eq 'stream start' ) {
+    if( $type eq 'test start' ) {
         $self->_stream_depth_inc;
     }
-    elsif( $type eq 'stream end' ) {
+    elsif( $type eq 'test end' ) {
         $self->_stream_depth_dec;
     }
     elsif( $type eq 'set plan' ) {
@@ -228,19 +228,19 @@ surmised by watching the events go by.
 
   my $stream_depth = $history->stream_depth;
 
-Returns how many C<stream start> events without C<stream end> events
+Returns how many C<test start> events without C<test end> events
 have been seen.
 
 For example...
 
-    stream start
+    test start
 
 Would indicate a level of 1.
 
-    stream start
-      stream start
-      stream end
-      stream start
+    test start
+      test start
+      test end
+      test start
 
 Would indicate a level of 2.
 

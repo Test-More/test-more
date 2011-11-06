@@ -150,22 +150,22 @@ has top_stack =>
   };
 
 
-=head3 stream_start
+=head3 test_start
 
-  $tb->stream_start;
+  $tb->test_start;
 
 Inform the builder that testing is about to begin.
 
 This should be called before any set of asserts is run.
 
-It should eventually be followed by a call to L<stream_end>.
+It should eventually be followed by a call to L<test_end>.
 
-You can indicate nested sets of asserts by calling C<stream_start>
-before C<stream_end>.
+You can indicate nested sets of asserts by calling C<test_start>
+before C<test_end>.
 
 =cut
 
-sub stream_start {
+sub test_start {
     my $self = shift;
 
     $self->event_coordinator->post_event(
@@ -175,15 +175,15 @@ sub stream_start {
     return;
 }
 
-=head3 stream_end
+=head3 test_end
 
-  $tb->stream_end;
+  $tb->test_end;
 
 Inform the Builder that a set of asserts is complete.
 
 =cut
 
-sub stream_end {
+sub test_end {
     my $self = shift;
 
     $self->event_coordinator->post_event(
@@ -334,7 +334,7 @@ sub ok {
     my $test = shift;
     my $name = shift;
 
-    $self->stream_start unless $self->history->stream_depth;
+    $self->test_start unless $self->history->stream_depth;
 
     $self->assert_start();
 

@@ -32,7 +32,7 @@ Fundamentally, TB2 coordinates these things:
 
 =over 4
 
-=item Record when a stream starts and ends
+=item Record when a test starts and ends
 
 This allows setting of the plan, if any, and maybe printing out headers.
 

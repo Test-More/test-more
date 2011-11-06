@@ -29,7 +29,7 @@ note "capturing results"; {
     my @events = grep { $_->event_type ne 'result' } @{ $have->events };
     is @events, 2;
 
-    event_like( $events[0], { event_type => "stream start" } );
+    event_like( $events[0], { event_type => "test start" } );
     event_like( $events[1], { event_type => "set plan" } );
 
     result_like(

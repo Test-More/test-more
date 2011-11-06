@@ -42,7 +42,7 @@ sub _module_import {
     push @input, 1 if defined $input[0] and $input[0] eq 'no_plan';
 
     if( @input ) {
-        $class->Builder->stream_start;
+        $class->Builder->test_start;
         $class->Builder->set_plan(@input);
     }
 
@@ -161,7 +161,7 @@ sub _do_ending {
 
     # Really we should be asking history, but history doesn't have that
     # functionality yet
-    $builder->stream_end if $history->stream_depth;
+    $builder->test_end if $history->stream_depth;
 }
 
 1;

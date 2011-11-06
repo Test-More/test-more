@@ -18,7 +18,7 @@ my $posix = Test::Builder2::Formatter::POSIX->new(
 
 $test->event_coordinator->formatters([$posix]);
 
-$test->stream_start;
+$test->test_start;
 is $posix->streamer->read('output'), <<"END";
 Running $0
 END

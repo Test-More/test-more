@@ -19,7 +19,7 @@ note "Can call expected_tests() to set the plan"; {
     my $events = $history->events;
 
     event_like $events->[0], {
-        event_type => "stream start"
+        event_type => "test start"
     };
     event_like $events->[1], {
         event_type              => "set plan",

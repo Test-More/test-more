@@ -13,7 +13,7 @@ my $null = Test::Builder2::Formatter::Null->new(
 
 {
     $null->accept_event( Test::Builder2::Event::StreamStart->new );
-    is $null->streamer->read, "", "stream start";
+    is $null->streamer->read, "", "test start";
 }
 
 {

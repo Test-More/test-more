@@ -14,9 +14,9 @@ my $tb = Test::Builder2->singleton;
     $tb->ok(1);
 
     my $history = $tb->history;
-    my $start = grep { $_->event_type eq 'stream start' } @{$history->events};
-    $tb->ok( $start, "ok issued a stream start" );
+    my $start = grep { $_->event_type eq 'test start' } @{$history->events};
+    $tb->ok( $start, "ok issued a test start" );
 }
 
 $tb->set_plan( no_plan => 1 );
-$tb->stream_end;
+$tb->test_end;

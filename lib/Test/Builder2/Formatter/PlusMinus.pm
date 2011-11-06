@@ -8,7 +8,7 @@ sub accept_event {
     my $self  = shift;
     my $event = shift;
 
-    if( $event->event_type eq 'stream end' ) {
+    if( $event->event_type eq 'test end' ) {
         $self->write(output => "\n");
     }
 

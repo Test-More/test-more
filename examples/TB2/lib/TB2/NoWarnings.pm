@@ -56,8 +56,8 @@ plan is already set, but it doesn't.
       default            => 0;
 
     my %event_handlers = (
-        'stream start'   => 'accept_stream_start',
-        'stream end'     => 'accept_stream_end',
+        'test start'   => 'accept_test_start',
+        'test end'     => 'accept_test_end',
         'set plan'       => 'accept_set_plan'
     );
 
@@ -74,7 +74,7 @@ plan is already set, but it doesn't.
         return;
     }
 
-    sub accept_stream_start {
+    sub accept_test_start {
         my $self = shift;
 
         $SIG{__WARN__} = sub {
@@ -95,7 +95,7 @@ plan is already set, but it doesn't.
         return;
     }
 
-    sub accept_stream_end {
+    sub accept_test_end {
         my $self = shift;
 
         my $warnings = $self->warnings_seen;

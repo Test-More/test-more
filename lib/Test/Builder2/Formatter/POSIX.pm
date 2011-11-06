@@ -8,7 +8,7 @@ sub accept_event {
     my $self  = shift;
     my $event = shift;
 
-    if( $event->event_type eq 'stream start' ) {
+    if( $event->event_type eq 'test start' ) {
         $self->write(output => "Running $0\n");
     }
 
