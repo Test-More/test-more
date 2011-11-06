@@ -71,7 +71,7 @@ actually to cover an obscure, but important, condition.
 
 If TB2 were a person, "thou shalt be universally applicable" would be
 tattooed upside down on their belly in flaming, writhing letters to remind
-itself of its responsbility to B<all> Perl users everywhere.
+itself of its responsibility to B<all> Perl users everywhere.
 
 This is the goal which has the farthest reaching consequences.  Every
 testing module worth knowing about is backed by TB1 and will be backed by
@@ -80,7 +80,7 @@ does> and it has to be able to test every conceivable thing.
 
 Every assumption TB2 makes about its environment, how testing is done or
 what is being tested eliminates that category from being easily tested by
-Perl programmers.  I knocks the entire modern suite of Perl testing tools
+Perl programmers.  It knocks the entire modern suite of Perl testing tools
 from their hands.
 
 While TB2 has to be universal, extensions do not.  TB2 will reject many
@@ -91,7 +91,7 @@ test libraries built on top of it will not.
 =head3 Portable
 
 TB2 has to work in every environment which Perl does.  If it doesn't, TB2
-de facto eliminates that environment from serious use by Perl.  It can make
+I<de facto> eliminates that environment from serious use by Perl.  It can make
 no assumptions about the environment which are not universal.  There's no
 "it'll work on most systems" compromises.
 
@@ -121,7 +121,7 @@ for processing.
 The second is by adding roles to TB2.  For those not familiar with roles,
 they're kind of like object plugins... sort of.
 
-The third is by hooking into events, like when an assert starts or
+The third is by hooking into events, such as when an assert starts or
 finishes.
 
 See L<Extending TB2> for details.
@@ -211,9 +211,8 @@ details.
 =head2 Diagnostics contain the file and line number where the user called the assert
 
 When an assert fails, it should report its file and line number so the user
-can easily find the failing assert.  This is one of the trickiest aspects
- of TB1 and TB2.  It has its own section, L</File and Line Information>.
-
+can easily find the failing assert.  This is one of the trickiest aspects of
+TB1 and TB2.  It has its own section, L</File and Line Information>.
 
 =head2 Test::NoWarnings
 
@@ -302,7 +301,7 @@ actual passing or failing.  It needs to know where the user originally
 called the assert, the "top" of the assert stack.
 
 This is similar in functionality to Carp, but it has to be far more robust.
- It cannot guess based on crossing package boundaries, it has to know.  TB1
+It cannot guess based on crossing package boundaries, it has to know.  TB1
 accomplished this by keeping track of how far down the stack you are at any
 moment with C<$Level>.  This results in complicated accounting that's often
 not quite right, and it bubbles up to the user's level, where the user must
