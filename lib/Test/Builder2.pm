@@ -156,12 +156,10 @@ has top_stack =>
 
 Inform the builder that testing is about to begin.
 
-This should be called before any set of asserts is run.
+This should be called before any set of asserts is run, but L<ok> will
+do it for you if you haven't.
 
 It should eventually be followed by a call to L<stream_end>.
-
-You can indicate nested sets of asserts by calling C<stream_start>
-before C<stream_end>.
 
 =cut
 
@@ -350,6 +348,59 @@ sub ok {
     $self->assert_end($result);
 
     return $result;
+}
+
+
+=head3 done_testing
+
+    $tb->done_testing;
+    $tb->done_testing($num_tests);
+
+Declares that testing is done, issuing a set_plan and stream_end event.
+
+If $num_tests is given, that is the number of asserts_expected in the
+plan.  Otherwise a no_plan plan is used.
+
+=cut
+
+sub done_testing {
+    my $self = shift;
+
+    $self->set_plan( @_ ? ( tests => shift ) : ( no_plan => 1 ) );
+    $self->stream_end;
+}
+
+=head3 subtest
+
+    $tb->subtest($name => \&code);
+
+Declares that &code should run as a I<subtest>.  Subtest events run in
+isolation from regular tests.
+
+See L<Test::Builder2::TestState> for more details about subtests.
+
+$name is the name given to this subtest.
+
+=cut
+
+sub subtest {
+    my $self = shift;
+    my($name, $code) = @_;
+
+    # Start the subtest
+    my $start = Test::Builder2::Event::SubtestStart->new(
+        name    => $name
+    );
+    $self->test_state->post_event($start);
+
+    # Run the code
+    $code->();
+
+    # End the subtest
+    my $end = Test::Builder2::Event::SubtestEnd->new;
+    $self->test_state->post_event($end);
+
+    return;
 }
 
 
