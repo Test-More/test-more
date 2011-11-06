@@ -62,22 +62,22 @@ sub _prepend {
 
 sub out {
     my $self = shift;
-    $self->write(out => @_);
+    $self->write(out => $self->indent, @_);
 }
 
 sub err {
     my $self = shift;
-    $self->write(err => @_);
+    $self->write(err => $self->indent, @_);
 }
 
 sub diag {
     my $self = shift;
-    $self->err($self->comment(@_));
+    $self->err($self->comment( $self->indent, @_ ));
 }
 
 sub note {
     my $self = shift;
-    $self->out($self->comment(@_));
+    $self->out($self->comment( $self->indent, @_));
 }
 
 
@@ -151,6 +151,12 @@ has show_ending_commentary =>
   is            => 'rw',
   isa           => 'Bool',
   default       => 1
+;
+
+has indent =>
+  is            => 'rw',
+  isa           => 'Str',
+  default       => ''
 ;
 
 
@@ -470,5 +476,33 @@ sub accept_log {
     return;
 }
 
+
+sub subtest_handler {
+    my $self  = shift;
+    my $event = shift;
+
+    my $subformatter = $self->SUPER::subtest_handler($event);
+
+    $subformatter->show_tap_version(0);
+    $subformatter->indent('    '.$self->indent);
+
+    return $subformatter;
+}
+
+
+sub accept_subtest_end {
+    my $self = shift;
+    my($event, $ec) = @_;
+
+    my $result = Test::Builder2::Result->new_result(
+        pass => $event->history->is_passing
+    );
+
+    # This result is only applicable to TAP, it's not a real test event and
+    # should not be seen by other event watchers.
+    $self->accept_result($result, $ec);
+
+    return;
+}
 
 1;
