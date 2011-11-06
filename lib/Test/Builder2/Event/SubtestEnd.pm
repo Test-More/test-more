@@ -33,6 +33,9 @@ The L<Test::Builder2::History> object from the subtest.
 
 This can be used by event watchers to get information from the subtest.
 
+Normally this will be filled in by L<Test::Builder2::TestState> during
+posting.  A builder may put in an alternative history object.
+
 =cut
 
 has history =>

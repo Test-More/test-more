@@ -135,18 +135,26 @@ note "basic subtest"; {
 }
 
 
-note "subtest with a pre-set depth"; {
+note "honor event presets"; {
     my $state = $CLASS->create(
         formatters => []
     );
 
+    note "...post a subtest with a pre defined depth";
     my $subtest_start = Test::Builder2::Event::SubtestStart->new(
         depth => 93
     );
-    my $history = $state->current_coordinator->history;
+    my $history = $state->history;
     $state->post_event($subtest_start);
-
     is $history->events->[0]->depth, 93;
+
+    note "...post a subtest with a alternate history";
+    my $alternate_history = Test::Builder2::History->new;
+    my $subtest_end = Test::Builder2::Event::SubtestEnd->new(
+        history => $alternate_history
+    );
+    $state->post_event($subtest_end);
+    is $state->history->events->[-1]->history, $alternate_history;
 }
 
 done_testing;
