@@ -157,4 +157,55 @@ note "honor event presets"; {
     is $state->history->events->[-1]->history, $alternate_history;
 }
 
+
+note "nested subtests"; {
+    my $state = $CLASS->create(
+        formatters => []
+    );
+
+    my $first_stream_start = Test::Builder2::Event::StreamStart->new;
+    $state->post_event($first_stream_start);
+
+    my $first_subtest_start = Test::Builder2::Event::SubtestStart->new;
+    $state->post_event($first_subtest_start);
+    is $first_subtest_start->depth, 1;
+
+    my $second_stream_start = Test::Builder2::Event::StreamStart->new;
+    $state->post_event($second_stream_start);
+
+    my $second_subtest_start = Test::Builder2::Event::SubtestStart->new;
+    $state->post_event($second_subtest_start);
+    is $second_subtest_start->depth, 2;
+
+    my $second_subtest_ec = $state->current_coordinator;
+
+    my $second_subtest_end = Test::Builder2::Event::SubtestEnd->new;
+    $state->post_event($second_subtest_end);
+    is $second_subtest_end->history, $second_subtest_ec->history;
+
+    my $second_stream_end = Test::Builder2::Event::StreamEnd->new;
+    $state->post_event($second_stream_end);
+
+    my $first_subtest_ec = $state->current_coordinator;
+
+    my $first_subtest_end = Test::Builder2::Event::SubtestEnd->new;
+    $state->post_event($first_subtest_end);
+    is $first_subtest_end->history, $first_subtest_ec->history;
+
+    my $first_stream_end = Test::Builder2::Event::StreamEnd->new;
+    $state->post_event($first_stream_end);
+
+    is_deeply [map { $_->event_type } @{$state->history->events}],
+              ["stream start", "subtest start", "subtest end", "stream end"],
+              "original level saw the right events";
+
+    is_deeply [map { $_->event_type } @{$first_subtest_ec->history->events}],
+              ["stream start", "subtest start", "subtest end", "stream end"],
+              "first subtest saw the right events";
+
+    is_deeply [map { $_->event_type } @{$second_subtest_ec->history->events}],
+              [],
+              "second subtest saw the right events";
+}
+
 done_testing;
