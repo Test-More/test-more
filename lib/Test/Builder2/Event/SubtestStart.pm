@@ -55,6 +55,18 @@ has depth =>
   isa           => 'Test::Builder2::Positive_NonZero_Int';
 
 
+=head3 name
+
+The name of this subtest.
+
+=cut
+
+has name =>
+  is            => 'rw',
+  isa           => 'Str',
+  default       => '';
+
+
 =head3 event_type
 
 The event type is C<subtest start>.
@@ -69,7 +81,8 @@ sub as_hash {
     return {
         event_id        => $self->event_id,
         event_type      => "subtest start",
-        depth           => $self->depth
+        depth           => $self->depth,
+        name            => $self->name,
     };
 }
 
