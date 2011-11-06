@@ -286,11 +286,22 @@ sub accept_subtest_start {
     # Add nesting information
     $event->depth( $self->_depth + 1 ) unless defined $event->depth;
 
+    my $current_ec = $self->current_coordinator;
+
     # Post the event to the current level
-    $self->current_coordinator->post_event(@_);
+    $current_ec->post_event(@_);
+
+    # Ask all the watchers in the current coordinator to supply watchers for the subtest.
+    # Retain the order of each handler.
+    my $subtest_ec = $current_ec->new(
+        formatters      => [map { $_->subtest_handler($event) } @{$current_ec->formatters}],
+        history         => $current_ec->history->subtest_handler($event),
+        early_watchers  => [map { $_->subtest_handler($event) } @{$current_ec->early_watchers}],
+        late_watchers   => [map { $_->subtest_handler($event) } @{$current_ec->late_watchers}],
+    );
 
     # Add a new level of testing
-    $self->push_coordinator;
+    $self->push_coordinator($subtest_ec);
 
     return;
 }
