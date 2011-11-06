@@ -1,16 +1,14 @@
 #!perl -w
 
+BEGIN { require 't/test.pl'; }
+plan('no_plan');
 BEGIN {
     if( $ENV{PERL_CORE} ) {
         chdir 't';
         @INC = '../lib';
     }
 }
-
-use Test::More;
-
-plan tests => 36;
-
+use Test::More ();
 
 $Why = 'Just testing the todo interface.';
 
@@ -36,7 +34,6 @@ TODO: {
 
 pass("This is still not todo");
 
-
 TODO: {
     local $TODO = "testing that error messages don't leak out of todo";
 
@@ -52,7 +49,6 @@ TODO: {
     require_ok('Fooble');
 }
 
-
 TODO: {
     todo_skip "Just testing todo_skip", 2;
 
@@ -60,7 +56,6 @@ TODO: {
     die "todo_skip should prevent this";
     pass("Again");
 }
-
 
 {
     my $warning;

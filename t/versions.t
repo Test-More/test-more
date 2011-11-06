@@ -5,11 +5,11 @@
 # TBT has its own version system.
 
 use strict;
-use Test::More;
-
+require Test::More;
 require Test::Builder;
 require Test::Builder::Module;
 require Test::Simple;
+BEGIN { require 't/test.pl'; }
 
 my $dist_version = Test::More->VERSION;
 
