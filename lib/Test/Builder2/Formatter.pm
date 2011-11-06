@@ -46,6 +46,8 @@ Defaults to C<< $formatter->default_streamer_class >>
 Contains the Streamer object to L<write> to.  One will be created for
 you using C<< $formatter->streamer_class >>.
 
+By default, the subtest handler inherits its parent's streamer.
+
 =cut
 
 sub default_streamer_class {
@@ -71,6 +73,10 @@ sub _build_streamer {
     return $_[0]->streamer_class->new;
 }
 
+sub subtest_handler {
+    my $self = shift;
+    return $self->new( streamer => $self->streamer );
+}
 
 =head3 new
 

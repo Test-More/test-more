@@ -481,11 +481,10 @@ sub subtest_handler {
     my $self  = shift;
     my $event = shift;
 
-    my $subformatter = $self->new(
-        streamer                => $self->streamer,
-        show_tap_version        => 0,
-        indent                  => '    '.$self->indent
-    );
+    my $subformatter = $self->SUPER::subtest_handler($event);
+
+    $subformatter->show_tap_version(0);
+    $subformatter->indent('    '.$self->indent);
 
     return $subformatter;
 }
