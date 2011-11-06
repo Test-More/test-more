@@ -135,4 +135,18 @@ note "basic subtest"; {
 }
 
 
+note "subtest with a pre-set depth"; {
+    my $state = $CLASS->create(
+        formatters => []
+    );
+
+    my $subtest_start = Test::Builder2::Event::SubtestStart->new(
+        depth => 93
+    );
+    my $history = $state->current_coordinator->history;
+    $state->post_event($subtest_start);
+
+    is $history->events->[0]->depth, 93;
+}
+
 done_testing;

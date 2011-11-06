@@ -284,7 +284,7 @@ sub accept_subtest_start {
     my($event) = @_;
 
     # Add nesting information
-    $event->depth( $self->_depth + 1 );
+    $event->depth( $self->_depth + 1 ) unless defined $event->depth;
 
     # Post the event to the current level
     $self->current_coordinator->post_event(@_);
