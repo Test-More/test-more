@@ -3,7 +3,9 @@
 use strict;
 use warnings;
 
-use Test::More;
+use lib 't/lib';
+
+BEGIN { require "t/test.pl" }
 
 use Test::Builder2::Events;
 
@@ -53,6 +55,7 @@ note "isa"; {
 
 
 note "can"; {
+    # Test both $class->can and $object->can
     for my $thing ($CLASS, $CLASS->create) {
         can_ok $thing, "formatters";
         can_ok $thing, "create";
