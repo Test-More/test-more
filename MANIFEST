@@ -259,6 +259,7 @@ t/thread_taint.t
 t/threads.t
 t/todo.t
 t/todo_skip_before_plan.t
+t/true_value.t
 t/undef.t
 t/use_ok.t
 t/useing.t
