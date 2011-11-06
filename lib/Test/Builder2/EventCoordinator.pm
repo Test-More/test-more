@@ -37,7 +37,7 @@ Test::Builder2::EventCoordinator - Coordinate events amongst the builders
 Test::Builder2 is a federated system of test formatters and assert
 generators.  This lets people make new and interesting ways to write
 tests and format the results while keeping them coordianted.  The
-EventCoordiantor is responsible for that coordination.
+EventCoordinator is responsible for that coordination.
 
 Each thing that generates events, usually something that causes
 asserts, will report them to the EventCoordinator.  This in turn
