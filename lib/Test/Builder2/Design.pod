@@ -467,7 +467,7 @@ system, that might allow the design to go in interesting directions not
 otherwise easily available.
 
 Two user visible design features have come out of this.  The first is that
-TB2's event system, rather than having explict event callbacks, is modelled
+TB2's event system, rather than having explicit event callbacks, is modelled
 by simply wrapping public TB2 methods using Mouse method wrappers.  This
 greatly simplifies designing and implementing test events and provides a
 more flexible system since users can safely wrap any public method rather
