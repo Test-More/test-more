@@ -52,7 +52,7 @@ lib/Test/Builder2/Result/Role/pass.pm
 lib/Test/Builder2/Result/Role/skip.pm
 lib/Test/Builder2/Result/Role/todo.pm
 lib/Test/Builder2/Result/Role/unknown.pm
-lib/Test/Builder2/Singleton.pm
+lib/Test/Builder2/Role/DefaultObject.pm
 lib/Test/Builder2/Stack.pm
 lib/Test/Builder2/StackBuilder.pm
 lib/Test/Builder2/Streamer.pm
@@ -117,6 +117,7 @@ t/Builder2/assert_dies.t
 t/Builder2/AssertRecord.t
 t/Builder2/AssertStack.t
 t/Builder2/Counter.t
+t/Builder2/DefaultObject.t
 t/Builder2/is.t
 t/Builder2/Mouse.t
 t/Builder2/Mouse_before_TB2.t
@@ -125,7 +126,6 @@ t/Builder2/ok_starts_a_stream.t
 t/Builder2/result.t
 t/Builder2/result_accessors.t
 t/Builder2/SimpleBuilder2.t
-t/Builder2/Singleton.t
 t/Builder2/Stack.t
 t/Builder2/StackBuilder.t
 t/Builder2/TB2_before_Mouse.t
@@ -259,6 +259,7 @@ t/thread_taint.t
 t/threads.t
 t/todo.t
 t/todo_skip_before_plan.t
+t/true_value.t
 t/undef.t
 t/use_ok.t
 t/useing.t

@@ -9,7 +9,7 @@ BEGIN { require 't/test.pl' }
     package Foo;
 
     use Test::Builder2::Mouse;
-    with 'Test::Builder2::Singleton';
+    with 'Test::Builder2::Role::DefaultObject';
 }
 
 {

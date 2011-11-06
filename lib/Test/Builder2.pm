@@ -5,7 +5,7 @@ use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 use Test::Builder2::Events;
 
-with 'Test::Builder2::Singleton',
+with 'Test::Builder2::Role::DefaultObject',
      'Test::Builder2::CanTry',
      'Test::Builder2::CanLoad';
 

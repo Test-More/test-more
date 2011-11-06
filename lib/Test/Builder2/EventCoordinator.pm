@@ -3,7 +3,7 @@ package Test::Builder2::EventCoordinator;
 use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 
-with 'Test::Builder2::Singleton',
+with 'Test::Builder2::Role::DefaultObject',
      'Test::Builder2::CanLoad';
 
 my @Types = qw(early_watchers history formatters late_watchers);

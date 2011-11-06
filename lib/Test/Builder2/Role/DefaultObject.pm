@@ -1,4 +1,4 @@
-package Test::Builder2::Singleton;
+package Test::Builder2::Role::DefaultObject;
 
 # This is a role which implements a singleton
 
@@ -9,14 +9,14 @@ use Test::Builder2::Mouse::Role;
 
 =head1 NAME
 
-Test::Builder2::Singleton - A singleton role for TB2
+Test::Builder2::Role::DefaultObject - A singleton role for TB2
 
 =head1 SYNOPSIS
 
   package TB2::Thing;
 
   use Test::Builder2::Mouse;
-  with 'Test::Builder2::Singleton';
+  with 'Test::Builder2::Role::DefaultObject';
 
   my $thing      = TB2::Thing->default;
   my $same_thing = TB2::Thing->default;
