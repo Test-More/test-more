@@ -43,12 +43,17 @@ How deeply nested this subtest is.  The first subtest will have a
 depth of 1.  A subtest inside that subtest will have a depth of 2 and
 so on.
 
+It has no default.  The depth is typically set by
+L<Test::Builder2::TestState/post_event> and need not be set by the
+creator of the event.  Only set it if you wish to override the normal
+depth.
+
 =cut
 
 has depth =>
   is            => 'rw',
-  isa           => 'Test::Builder2::Positive_NonZero_Int',
-  default       => 1;
+  isa           => 'Test::Builder2::Positive_NonZero_Int';
+
 
 =head3 event_type
 

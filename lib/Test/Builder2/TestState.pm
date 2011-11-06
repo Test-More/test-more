@@ -258,6 +258,79 @@ sub _delegate_to_current_coordinator {
     return;
 }
 
+
+my %special_handlers = (
+    'subtest start' => \&accept_subtest_start,
+    'subtest end'   => \&accept_subtest_end,
+);
+sub post_event {
+    my $self  = shift;
+
+    # Don't shift to preserve @_ so we can pass it along in its entirety.
+    my($event) = @_;
+
+    if( my $code = $special_handlers{$event->event_type} ) {
+        $self->$code(@_);
+    }
+    else {
+        $self->_coordinators->[-1]->post_event(@_);
+    }
+}
+
+sub accept_subtest_start {
+    my $self  = shift;
+
+    # Don't shift to preserve @_ so we can pass it along in its entirety.
+    my($event) = @_;
+
+    # Add nesting information
+    $event->depth( $self->_depth + 1 ) unless defined $event->depth;
+
+    my $current_ec = $self->current_coordinator;
+
+    # Post the event to the current level
+    $current_ec->post_event(@_);
+
+    # Ask all the watchers in the current coordinator to supply watchers for the subtest.
+    # Retain the order of each handler.
+    my $subtest_ec = $current_ec->new(
+        formatters      => [map { $_->subtest_handler($event) } @{$current_ec->formatters}],
+        history         => $current_ec->history->subtest_handler($event),
+        early_watchers  => [map { $_->subtest_handler($event) } @{$current_ec->early_watchers}],
+        late_watchers   => [map { $_->subtest_handler($event) } @{$current_ec->late_watchers}],
+    );
+
+    # Add a new level of testing
+    $self->push_coordinator($subtest_ec);
+
+    return;
+}
+
+
+sub accept_subtest_end {
+    my $self  = shift;
+
+    # Don't shift to preserve @_ so we can pass it along in its entirety.
+    my($event) = @_;
+
+    # Pop the subtest
+    my $subtest_ec = $self->pop_coordinator;
+
+    # Attach the subtest history to the event.  If somebody else already
+    # did so, honor that.
+    $event->history( $subtest_ec->history ) unless $event->history;
+
+    # Post the event to the current level
+    $self->current_coordinator->post_event(@_);
+
+    return;
+}
+
+
+sub _depth {
+    return @{ $_[0]->_coordinators } - 1;
+}
+
 # Do not make it immutable, we need to add delegate methods dynamically.
 no Test::Builder2::Mouse;
 

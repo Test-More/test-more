@@ -13,12 +13,12 @@ note "defaults"; {
     my $event = $CLASS->new;
     isa_ok $event, $CLASS;
 
-    is $event->depth, 1;
+    is $event->depth, undef;
     is $event->event_type, "subtest start";
     is_deeply $event->as_hash, {
         event_type      => "subtest start",
         event_id        => $event->event_id,
-        depth           => 1
+        depth           => undef
     };
 }
 
