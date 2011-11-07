@@ -188,39 +188,26 @@ sub subtest {
         $self->croak("subtest()'s second argument must be a code ref");
     }
 
-    # Turn the child into the parent so anyone who has stored a copy of
-    # the Test::Builder default will get the child.
-    my($error, $child, %parent);
+    my $error;
     {
-        # child() calls reset() which sets $Level to 1, so we localize
-        # $Level first to limit the scope of the reset to the subtest.
-        local $Test::Builder::Level = $Test::Builder::Level + 1;
-
-        $child  = $self->child($name);
-        %parent = %$self;
-        %$self  = %$child;
+        # In case the subtest messes with $Level
+        local $Test::Builder::Level = $Test::Builder::Level;
 
         my $run_the_subtests = sub {
+            $self->post_event( Test::Builder2::Event::SubtestStart->new( name => $name ) );
             $subtests->();
             $self->done_testing unless $self->_plan_handled;
+            $self->post_event( Test::Builder2::Event::SubtestEnd->new( name => $name ) );
             1;
         };
 
         (undef, $error) = $self->try(sub { $run_the_subtests->(); 1 });
     }
 
-    # Restore the parent and the copied child.
-    %$child = %$self;
-    %$self = %parent;
-
-    # Restore the parent's $TODO
-    $self->find_TODO(undef, 1, $child->{Parent_TODO});
-
     # Die *after* we restore the parent.
     die $error if $error and !$self->try(sub { $error->isa('Test::Builder::Exception') });
 
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
-    return $child->finalize;
+    return;
 }
 
 =begin _private
@@ -299,6 +286,7 @@ sub finalize {
 
     return $self->is_passing;
 }
+
 
 
 =item B<parent>
@@ -732,6 +720,10 @@ sub in_test {
     $_[0]->history->in_test;
 }
 
+
+sub post_event {
+    $_[0]->test_state->post_event($_[1]);
+}
 
 sub post_result {
     my $self = shift;
