@@ -30,6 +30,8 @@ lib/Test/Builder2/Event/SetPlan.pm
 lib/Test/Builder2/Event/StreamEnd.pm
 lib/Test/Builder2/Event/StreamMetadata.pm
 lib/Test/Builder2/Event/StreamStart.pm
+lib/Test/Builder2/Event/SubtestEnd.pm
+lib/Test/Builder2/Event/SubtestStart.pm
 lib/Test/Builder2/EventCoordinator.pm
 lib/Test/Builder2/Events.pm
 lib/Test/Builder2/EventWatcher.pm
@@ -81,8 +83,9 @@ t/buffer.t
 t/Builder/Builder.t
 t/Builder/carp.t
 t/Builder/create.t
-t/Builder/current_test.t
-t/Builder/current_test_without_plan.t
+t/Builder/current_test/no_tests.t
+t/Builder/current_test/test_number.t
+t/Builder/current_test/without_plan.t
 t/Builder/details.t
 t/Builder/done_testing.t
 t/Builder/done_testing_double.t
@@ -117,6 +120,7 @@ t/Builder2/assert_dies.t
 t/Builder2/AssertRecord.t
 t/Builder2/AssertStack.t
 t/Builder2/Counter.t
+t/Builder2/done_testing.t
 t/Builder2/is.t
 t/Builder2/Mouse.t
 t/Builder2/Mouse_before_TB2.t
@@ -128,6 +132,7 @@ t/Builder2/SimpleBuilder2.t
 t/Builder2/Singleton.t
 t/Builder2/Stack.t
 t/Builder2/StackBuilder.t
+t/Builder2/subtest.t
 t/Builder2/TB2_before_Mouse.t
 t/Builder2/top.t
 t/c_flag.t
@@ -152,6 +157,9 @@ t/Event/SetPlan.t
 t/Event/StreamEnd.t
 t/Event/StreamMetadata.t
 t/Event/StreamStart.t
+t/Event/subtest_handler.t
+t/Event/SubtestEnd.t
+t/Event/SubtestStart.t
 t/Event/TestState.t
 t/exit.t
 t/explain.t
@@ -168,10 +176,12 @@ t/Formatter/PlusMinus.t
 t/Formatter/POSIX.t
 t/Formatter/POSIX_plus_Builder.t
 t/Formatter/Streamer.t
+t/Formatter/subtest.t
 t/Formatter/TAP/basic.t
 t/Formatter/TAP/ending_commentary.t
 t/Formatter/TAP/escapes.t
 t/Formatter/TAP/log.t
+t/Formatter/TAP/subtest.t
 t/harness_active.t
 t/History/History.t
 t/History/HistoryStats.t
@@ -248,6 +258,7 @@ t/subtest/todo.t
 t/TB1vsTB2.t
 t/tbm_doesnt_set_exported_to.t
 t/test.pl
+t/test_pl/can_isa_ok.t
 t/Tester/tbt_01basic.t
 t/Tester/tbt_02fhrestore.t
 t/Tester/tbt_03die.t
