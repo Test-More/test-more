@@ -7,13 +7,13 @@ BEGIN {
     }
 }
 
+# Make sure this is in place before Test::More is loaded.
 my $handler_called = 0;
 BEGIN {
     $SIG{__DIE__} = sub { $handler_called++ };
 }
 
-BEGIN { require 't/test.pl'; }
-plan(2);
+use Test::More tests => 2;
 
 ok !eval { die };
 is $handler_called, 1, 'existing DIE handler not overridden';
