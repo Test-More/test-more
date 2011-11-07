@@ -26,7 +26,7 @@ Test::Builder2::EventCoordinator - Coordinate events amongst the builders
     # but they can be replaced or added to.  You can also add watchers of
     # your own devising.
     $events->add_formatters($formatter);
-    $events->add_watcher($watcher);
+    $events->add_late_watchers($watcher);
 
 
 =head1 DESCRIPTION
