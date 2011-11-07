@@ -89,6 +89,7 @@ sub tests {
             test_number     => 23,
             file            => 'foo.t',
             line            => 1,
+            event_type      => 'result',
         ]);
 
         is_deeply $result->as_hash, {
@@ -97,6 +98,9 @@ sub tests {
             test_number     => 23,
             file            => 'foo.t',
             line            => 1,
+            event_id        => $result->event_id,
+            event_type      => 'result',
+            diag            => [],
         }, 'as_hash';
     }
 }

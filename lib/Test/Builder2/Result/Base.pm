@@ -45,6 +45,8 @@ use overload(
 
 =head1 METHODS
 
+It has all the attributes and methods of a normal L<Test::Builder2::Event> plus...
+
 =head2 Attributes
 
 =head3 name
@@ -56,6 +58,14 @@ The name of the assert.  For example...
     # The name is "addition"
     ok( 1 + 1, "addition" );
 
+=cut
+
+has name =>
+  is    => 'rw',
+  isa   => 'Str'
+;
+
+
 =head3 diag
 
     my $diag = $result->diag;
@@ -65,28 +75,26 @@ The structured diagnostics associated with this result.
 Diagnostics are currently an array ref of key/value pairs.  Its an
 array ref to keep the order.  This will probably change.
 
-=head3 line
+=cut
 
-    my $line = $result->line;
+has diag =>
+  is            => 'rw',
+  isa           => 'ArrayRef',
+  default       => sub { [] };
 
-The line number upon which this assert was run.
-
-Because a single result can represent a stack of actual asserts, this
-is generally the location of the first assert in the stack.
-
-=head3 file
-
-    my $file = $result->file;
-
-The file whre this assert was run.
-
-Like L<line>, this represents the top of the assert stack.
 
 =head3 reason
 
     my $reason = $result->reason;
 
 The reason for any modifiers.
+
+=cut
+
+has reason =>
+  is    => 'rw',
+  isa   => 'Str';
+
 
 =head3 test_number
 
@@ -99,35 +107,9 @@ even TAP tests are not required to do so.
 
 =cut
 
-
-my %attributes = (
-  name          => { },
-  diag          => { isa => 'ArrayRef', },
-  line          => { isa => 'Test::Builder2::Positive_NonZero_Int' },
-  file          => { },
-  reason        => { },
-  test_number   => { isa => 'Test::Builder2::Positive_NonZero_Int', },
-);
-my @attributes = keys %attributes;
-
-my %attr_defaults = (
-    is  => 'rw',
-    isa => 'Str',
-);
-
-for my $attr (keys %attributes) {
-    my $has = $attributes{$attr};
-    $has = { %attr_defaults, %$has };
-
-    $has->{predicate} ||= "has_$attr";
-    has $attr => %$has;
-}
-
-
-sub get_attributes
-{
-    return \@attributes;
-}
+has test_number =>
+  is    => 'rw',
+  isa   => 'Test::Builder2::Positive_NonZero_Int';
 
 
 =head2 Methods
@@ -145,25 +127,12 @@ The type is "result".
 
 sub event_type { return "result" }
 
-
-=head3 as_hash
-
-    my $hash = $self->as_hash;
-
-Returns the attributes of a result as a hash reference.
-
-Useful for quickly dumping the contents of a result.
-
-=cut
-
-sub as_hash {
+sub keys_for_as_hash {
     my $self = shift;
-    return {
-        map {
-            my $val = $self->$_();
-            defined $val ? ( $_ => $val ) : ()
-        } @attributes, "type"
-    };
+    my $keys = $self->Test::Builder2::Event::keys_for_as_hash;
+    push @$keys, "type";
+
+    return $keys;
 }
 
 
