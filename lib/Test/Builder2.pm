@@ -337,7 +337,7 @@ sub ok {
     $self->assert_start();
 
     my $result = $self->result_class->new_result(
-        description     => $name,
+        name            => $name,
         pass            => $test,
     );
 

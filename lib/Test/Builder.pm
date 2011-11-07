@@ -801,9 +801,9 @@ ERR
     my( $pack, $file, $line ) = $self->caller;
     my $result = Test::Builder2::Result->new_result(
         pass            => $test ? 1 : 0,
-        location        => $file,
-        id              => $line,
-        description     => $name,
+        file            => $file,
+        line            => $line,
+        name            => $name,
         directives      => $in_todo ? ["todo"] : [],
         reason          => $in_todo ? $todo : undef,
     );
@@ -1207,8 +1207,8 @@ sub skip {
         pass      => 1,
         directives=> ['skip'],
         reason    => $why,
-        id        => $line,
-        location  => $file,
+        line      => $line,
+        file      => $file,
     );
     $self->post_result($result);
 
@@ -1238,8 +1238,8 @@ sub todo_skip {
         pass            => 0,
         directives      => ["todo", "skip"],
         reason          => $why,
-        location        => $file,
-        id              => $line,
+        file            => $file,
+        line            => $line,
     );
     $self->post_result($result);
 
@@ -2039,7 +2039,7 @@ sub _result_to_hash {
     return {
         'ok'       => $result->is_fail ? 0 : 1,
         actual_ok  => $actual_ok,
-        name       => $result->description || "",
+        name       => $result->name || "",
         type       => $type,
         reason     => $result->reason || "",
     };

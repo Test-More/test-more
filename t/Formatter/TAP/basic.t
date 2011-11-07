@@ -164,7 +164,7 @@ END
 }
 
 
-# Fail, no description
+# Fail, no name
 {
     my $result = Test::Builder2::Result->new_result( pass => 0 );
     $result->test_number(1);
@@ -172,7 +172,7 @@ END
     is(last_output, "not ok 1\n", "testing not okay");
 }
 
-# Pass, no description
+# Pass, no name
 {
     my $result = Test::Builder2::Result->new_result( pass => 1 );
     $result->test_number(2);
@@ -180,7 +180,7 @@ END
     is(last_output, "ok 2\n", "testing okay");
 }
 
-# TODO fail, no description
+# TODO fail, no name
 {
     my $result = Test::Builder2::Result->new_result(
         pass            => 0,
@@ -196,7 +196,7 @@ OUT
 
 }
 
-# TODO pass, no description
+# TODO pass, no name
 {
     my $result = Test::Builder2::Result->new_result(
         pass            => 1,
@@ -208,7 +208,7 @@ OUT
     is(last_output, "ok 4 # TODO reason\n", "testing todo");
 }
 
-# TODO pass, with description
+# TODO pass, with name
 {
     my $result = Test::Builder2::Result->new_result(
         pass            => 1,
@@ -216,20 +216,20 @@ OUT
         reason          => "reason"
     );
     $result->test_number(4);
-    $result->description('a fine test');
+    $result->name('a fine test');
     $ec->post_event($result);
     is(last_output, "ok 4 - a fine test # TODO reason\n", "testing todo");
 }
 
-# Fail with dashed description
+# Fail with dashed name
 {
     my $result = Test::Builder2::Result->new_result(
         pass            => 0,
     );
-    $result->description(' - a royal pain');
+    $result->name(' - a royal pain');
     $result->test_number(6);
     $ec->post_event($result);
-    is(last_output, "not ok 6 -  - a royal pain\n", "test description");
+    is(last_output, "not ok 6 -  - a royal pain\n", "test name");
 }
 
 # Skip fail
@@ -238,7 +238,7 @@ OUT
         pass            => 0,
         directives      => [qw(skip)],
     );
-    $result->description('skip test');
+    $result->name('skip test');
     $result->test_number(7);
     $result->reason('Not gonna work');
     $ec->post_event($result);
@@ -252,7 +252,7 @@ OUT
         pass            => 1,
         directives      => [qw(skip)],
     );
-    $result->description('skip test');
+    $result->name('skip test');
     $result->test_number(8);
     $result->reason('Because');
     $ec->post_event($result);
@@ -274,20 +274,20 @@ OUT
 }
 
 
-# Descriptions with newlines in them
+# Names with newlines in them
 {
     my $result = Test::Builder2::Result->new_result(
         pass            => 1
     );
     $result->test_number(5);
-    $result->description("Foo\nBar\n");
+    $result->name("Foo\nBar\n");
 
     $ec->post_event($result);
-    is(last_output, "ok 5 - Foo\\nBar\\n\n", "description with newline");
+    is(last_output, "ok 5 - Foo\\nBar\\n\n", "name with newline");
 }
 
 
-# Descriptions with newlines in them
+# Names with newlines in them
 {
     my $result = Test::Builder2::Result->new_result(
         pass            => 1,

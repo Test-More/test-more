@@ -35,8 +35,8 @@ my $ec = MyEventCoordinator->new(
 # Pass
 {
     my $result = Test::Builder2::Result->new_result(
-        pass            => 1,
-        description     => "basset hounds got long ears",
+        pass     => 1,
+        name     => "basset hounds got long ears",
     );
     $ec->post_event($result);
     is(
@@ -51,7 +51,7 @@ my $ec = MyEventCoordinator->new(
 {
     my $result = Test::Builder2::Result->new_result(
         pass            => 0,
-        description     => "basset hounds got long ears",
+        name            => "basset hounds got long ears",
     );
     $ec->post_event($result);
     is(
@@ -67,7 +67,7 @@ my $ec = MyEventCoordinator->new(
     my $result = Test::Builder2::Result->new_result(
         pass            => 1,
         directives      => [qw(skip)],
-        description     => "basset hounds got long ears",
+        name            => "basset hounds got long ears",
     );
     $ec->post_event($result);
     is(

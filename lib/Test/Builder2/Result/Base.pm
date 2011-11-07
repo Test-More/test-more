@@ -47,8 +47,6 @@ use overload(
 
 =head2 Attributes
 
-=head3 description
-
 =head3 name
 
     my $name = $result->name;
@@ -57,10 +55,6 @@ The name of the assert.  For example...
 
     # The name is "addition"
     ok( 1 + 1, "addition" );
-
-L<description> is the more generic alias to this method.
-
-=head3 diagnostic
 
 =head3 diag
 
@@ -71,8 +65,6 @@ The structured diagnostics associated with this result.
 Diagnostics are currently an array ref of key/value pairs.  Its an
 array ref to keep the order.  This will probably change.
 
-=head3 id
-
 =head3 line
 
     my $line = $result->line;
@@ -81,10 +73,6 @@ The line number upon which this assert was run.
 
 Because a single result can represent a stack of actual asserts, this
 is generally the location of the first assert in the stack.
-
-L<id> is a more generic alias.
-
-=head3 location
 
 =head3 file
 
@@ -113,12 +101,12 @@ even TAP tests are not required to do so.
 
 
 my %attributes = (
-  description   => { },
-  diagnostic    => { isa => 'ArrayRef', },
-  id            => { },
-  location      => { },
+  name          => { },
+  diag          => { isa => 'ArrayRef', },
+  line          => { isa => 'Test::Builder2::Positive_NonZero_Int' },
+  file          => { },
   reason        => { },
-  test_number   => { isa => 'Test::Builder2::Positive_Int', },
+  test_number   => { isa => 'Test::Builder2::Positive_NonZero_Int', },
 );
 my @attributes = keys %attributes;
 
@@ -134,11 +122,6 @@ for my $attr (keys %attributes) {
     $has->{predicate} ||= "has_$attr";
     has $attr => %$has;
 }
-
-_alias($CLASS, name => \&description);
-_alias($CLASS, diag => \&diagnostic);
-_alias($CLASS, file => \&location);
-_alias($CLASS, line => \&id);
 
 
 sub get_attributes
@@ -289,15 +272,6 @@ sub types {
     }
 
     return \%types;
-}
-
-
-# XXX Should be moved into a utilty class
-sub _alias {
-    my($class, $name, $code) = @_;
-
-    no strict 'refs';
-    *{$class . "::" . $name} = $code;
 }
 
 no Test::Builder2::Mouse;

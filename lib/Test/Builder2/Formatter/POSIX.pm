@@ -27,7 +27,7 @@ sub accept_result {
     my($self, $result) = @_;
 
     my $type = $type_map{$result->type};
-    $self->write(output => "$type: @{[$result->description]}\n");
+    $self->write(output => "$type: @{[$result->name]}\n");
 
     return;
 }

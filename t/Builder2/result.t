@@ -85,18 +85,18 @@ sub tests {
     note "as_hash"; {
         my $result = $new_ok->([
             pass            => 1,
-            description     => 'something something something test result',
+            name            => 'something something something test result',
             test_number     => 23,
-            location        => 'foo.t',
-            id              => 0,
+            file            => 'foo.t',
+            line            => 1,
         ]);
 
         is_deeply $result->as_hash, {
             type            => 'pass',
-            description     => 'something something something test result',
+            name            => 'something something something test result',
             test_number     => 23,
-            location        => 'foo.t',
-            id              => 0,
+            file            => 'foo.t',
+            line            => 1,
         }, 'as_hash';
     }
 }

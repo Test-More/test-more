@@ -64,7 +64,7 @@ Test::Builder2::Module - Write a test module
         my($have, $want, $name) = @_;
 
         my $result = Builder->ok($have eq $want, $name);
-        $result->diagnostic([
+        $result->diag([
             have => $have,
             want => $want
         ]);
