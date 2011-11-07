@@ -18,20 +18,22 @@ note "defaults"; {
     is_deeply $event->as_hash, {
         event_type      => "subtest start",
         event_id        => $event->event_id,
-        depth           => undef
+        depth           => undef,
+        name            => '',
     };
 }
 
 
 note "depth"; {
-    my $event = $CLASS->new( depth => 3 );
+    my $event = $CLASS->new( depth => 3, name => 'foo' );
     isa_ok $event, $CLASS;
 
     is $event->depth, 3;
     is_deeply $event->as_hash, {
         event_type      => "subtest start",
         event_id        => $event->event_id,
-        depth           => 3
+        depth           => 3,
+        name            => 'foo'
     };
 }
 
