@@ -23,8 +23,6 @@ use Test::More;
 use Test::Builder;
 use Test::Builder::Tester;
 
-plan skip_all => "subtests are broken";
-
 # Formatting may change if we're running under Test::Harness.
 $ENV{HARNESS_ACTIVE} = 0;
 

@@ -17,7 +17,6 @@ use strict;
 use warnings;
 
 use Test::More;
-plan skip_all => "subtests are broken";
 
 use Test::Builder;
 use Test::Builder::Tester;

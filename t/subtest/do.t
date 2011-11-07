@@ -4,7 +4,6 @@
 
 use strict;
 use Test::More;
-plan skip_all => "subtests are broken";
 
 pass("First");
 
