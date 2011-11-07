@@ -1898,15 +1898,15 @@ sub current_test {
                 history    => $history
             );
 
-            my $start = @$results ? @$results : 0;
-            $counter->set($start);
+            my $last_test_number = @$results ? @$results : 0;
+            $counter->set($last_test_number);
 
-            for( $start .. $num - 1 ) {
+            for my $test_number ( $last_test_number + 1 .. $num ) {
                 my $result = Test::Builder2::Result->new_result(
                     pass        => 1,
                     directives  => [qw(unknown)],
                     reason      => 'incrementing test number',
-                    test_number => $_
+                    test_number => $test_number
                 );
                 $ec->post_event( shared_clone($result) );
             }
