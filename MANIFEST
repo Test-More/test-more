@@ -116,6 +116,7 @@ t/Simple/load.t
 t/skip.t
 t/skipall.t
 t/subtest/args.t
+t/subtest/bail_out.t
 t/subtest/basic.t
 t/subtest/die.t
 t/subtest/do.t
@@ -127,6 +128,7 @@ t/subtest/line_numbers.t
 t/subtest/plan.t
 t/subtest/predicate.t
 t/subtest/singleton.t
+t/subtest/threads.t
 t/subtest/todo.t
 t/subtest/wstat.t
 t/tbm_doesnt_set_exported_to.t
