@@ -36,4 +36,4 @@ ok 1 - a test
 OUT
 }
 
-pass("Changing output() of new TB doesn't interfere with singleton");
+pass("Changing output() of new TB doesn't interfere with default");

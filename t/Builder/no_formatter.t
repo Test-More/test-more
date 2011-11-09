@@ -10,7 +10,7 @@ BEGIN { require "t/test.pl" }
 use Test::Builder2::TestState;
 
 # Pull the formatter
-my $ec = Test::Builder2::TestState->singleton;
+my $ec = Test::Builder2::TestState->default;
 $ec->clear_formatters;
 
 require Test::Builder;

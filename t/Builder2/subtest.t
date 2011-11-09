@@ -5,7 +5,7 @@ use warnings;
 
 use Test::Builder2;
 
-my $tb = Test::Builder2->singleton;
+my $tb = Test::Builder2->default;
 $tb->ok(1, "first test");
 $tb->ok(1, "second test");
 $tb->subtest("a subtest" => sub {

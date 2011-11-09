@@ -188,7 +188,7 @@ L<Test::Simple> is a simple example of a Test::Builder2 module.
 
 =head2 Writing TB2 Roles
 
-For internal use, roles can be applied to the TB2 singleton to expand its
+For internal use, roles can be applied to the TB2 default to expand its
 functionality while leaving the TB2 class slim.  Roles will include
 TB2::Assert::More which will provide most of the Test::More functionality
 currently in TB1.
@@ -479,9 +479,9 @@ The second is the ability to compose TB2 with roles.  Rather than adding
 functionality by subclassing, it can be added with roles.  Subclassing is
 untenable in the long run.  Test::A will want to use their TB2 subclass
 while Test::B will want to use its own TB2 subclass.  They can't both have
-the singleton.  Rather than come up with increasingly complicated ways to
+the default.  Rather than come up with increasingly complicated ways to
 reconcile this, users can add functionality to TB2 with roles applied to
-the TB2 singleton.  Roles add, rather than modify, functionality. 
+the TB2 default.  Roles add, rather than modify, functionality. 
 Collisions will only occur in method names and will be very clear, at about
 the same level of risk as exporting a function.
 
@@ -491,7 +491,7 @@ C<like> are not present in core TB2 making it much simpler.  They will be
 in something like TB2::More::Asserts which will probably be composed in by
 default.
 
-Roles and wrapping methods allow TB2 to remain a singleton while being
+Roles and wrapping methods allow TB2 to remain a default while being
 extensible by multiple authors without explicit coordination.
 
 =head2 Mouse Risk Mitgation

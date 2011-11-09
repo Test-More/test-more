@@ -13,7 +13,7 @@ TB2::Formatter::SimpleHTML - A very simple HTML formatter
     use Test::Builder2;
     use TB2::Formatter::SimpleHTML;
 
-    my $tb2 = Test::Builder2->singleton;
+    my $tb2 = Test::Builder2->default;
     my $ec = $tb2->test_state;
 
     $ec->clear_formatters;      # remove the TAP formatter

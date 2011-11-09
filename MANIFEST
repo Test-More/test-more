@@ -42,6 +42,7 @@ lib/Test/Builder2/Formatter/PlusMinus.pm
 lib/Test/Builder2/Formatter/POSIX.pm
 lib/Test/Builder2/Formatter/TAP.pm
 lib/Test/Builder2/Formatter/TAP/v13.pm
+lib/Test/Builder2/HasDefault.pm
 lib/Test/Builder2/History.pm
 lib/Test/Builder2/Module.pm
 lib/Test/Builder2/Mouse.pm
@@ -53,7 +54,6 @@ lib/Test/Builder2/Result/Role/pass.pm
 lib/Test/Builder2/Result/Role/skip.pm
 lib/Test/Builder2/Result/Role/todo.pm
 lib/Test/Builder2/Result/Role/unknown.pm
-lib/Test/Builder2/Singleton.pm
 lib/Test/Builder2/Stack.pm
 lib/Test/Builder2/StackBuilder.pm
 lib/Test/Builder2/Streamer.pm
@@ -121,6 +121,7 @@ t/Builder2/AssertRecord.t
 t/Builder2/AssertStack.t
 t/Builder2/Counter.t
 t/Builder2/done_testing.t
+t/Builder2/HasDefault.t
 t/Builder2/is.t
 t/Builder2/Mouse.t
 t/Builder2/Mouse_before_TB2.t
@@ -129,7 +130,6 @@ t/Builder2/ok_starts_a_stream.t
 t/Builder2/result.t
 t/Builder2/result_accessors.t
 t/Builder2/SimpleBuilder2.t
-t/Builder2/Singleton.t
 t/Builder2/Stack.t
 t/Builder2/StackBuilder.t
 t/Builder2/subtest.t
@@ -244,6 +244,7 @@ t/skip_before_plan.t
 t/skipall.t
 t/subtest/args.t
 t/subtest/basic.t
+t/subtest/default.t
 t/subtest/die.t
 t/subtest/do.t
 t/subtest/exceptions.t
@@ -253,7 +254,6 @@ t/subtest/implicit_done.t
 t/subtest/line_numbers.t
 t/subtest/plan.t
 t/subtest/predicate.t
-t/subtest/singleton.t
 t/subtest/todo.t
 t/TB1vsTB2.t
 t/tbm_doesnt_set_exported_to.t
