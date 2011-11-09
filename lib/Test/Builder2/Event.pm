@@ -51,7 +51,7 @@ perspective, not literally where the event was created inside the builder.
 
 has line =>
   is    => 'rw',
-  isa   => 'Test::Builder2::Positive_NonZero_Int'
+  isa   => 'Test::Builder2::Positive_Int'
 ;
 
 =head3 file
