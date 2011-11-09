@@ -153,7 +153,7 @@ sub child {
     }
 
     $child->test_state->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::StreamStart->new( $child->_file_and_line )
     );
 
     # This will be reset in finalize. We do this here lest one child failure
@@ -724,7 +724,7 @@ sub stream_start {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::StreamStart->new( $self->_file_and_line(1) )
     );
 
     return;
@@ -734,7 +734,7 @@ sub stream_end {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::StreamEnd->new
+        Test::Builder2::Event::StreamEnd->new( $self->_file_and_line(1) )
     );
 
     return;
@@ -744,7 +744,7 @@ sub set_plan {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::SetPlan->new( @_ )
+        Test::Builder2::Event::SetPlan->new( $self->_file_and_line, @_ )
     );
 
     return;
@@ -800,6 +800,7 @@ ERR
     # Turn the test into a Result
     my( $pack, $file, $line ) = $self->caller;
     my $result = Test::Builder2::Result->new_result(
+        $self->_file_and_line,
         pass            => $test ? 1 : 0,
         file            => $file,
         line            => $line,
@@ -1204,6 +1205,7 @@ sub skip {
 
     my($pack, $file, $line) = $self->caller;
     my $result = Test::Builder2::Result->new_result(
+        $self->_file_and_line,
         pass      => 1,
         directives=> ['skip'],
         reason    => $why,
@@ -1235,6 +1237,7 @@ sub todo_skip {
 
     my($pack, $file, $line) = $self->caller;
     my $result = Test::Builder2::Result->new_result(
+        $self->_file_and_line,
         pass            => 0,
         directives      => ["todo", "skip"],
         reason          => $why,
@@ -1570,6 +1573,7 @@ sub diag {
 
     $self->test_state->post_event(
         Test::Builder2::Event::Log->new(
+            $self->_file_and_line,
             message     => $self->_join_message(@_),
             level       => 'warning'
         )
@@ -1595,6 +1599,7 @@ sub note {
 
     $self->test_state->post_event(
         Test::Builder2::Event::Log->new(
+            $self->_file_and_line,
             message     => $self->_join_message(@_),
             level       => 'info'
         )
@@ -1903,6 +1908,7 @@ sub current_test {
 
             for my $test_number ( $last_test_number + 1 .. $num ) {
                 my $result = Test::Builder2::Result->new_result(
+                    $self->_file_and_line,
                     pass        => 1,
                     directives  => [qw(unknown)],
                     reason      => 'incrementing test number',
@@ -2232,6 +2238,16 @@ sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
         $level--;
     } until @caller;
     return wantarray ? @caller : $caller[0];
+}
+
+
+# A convenience method to pass context into Event->new
+sub _file_and_line {
+    my( $self, $height ) = @_;
+    $height ||= 0;
+
+    my($file, $line) = ($self->caller($height + 1))[1,2];
+    return ( file => $file, line => $line );
 }
 
 =back
