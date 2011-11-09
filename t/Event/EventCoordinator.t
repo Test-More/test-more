@@ -131,12 +131,12 @@ note "posting events to specific handlers"; {
           isa           => 'ArrayRef',
           default       => sub { [] };
 
-        sub accept_stream_start {
+        sub accept_test_start {
             my($self, $event, $ec) = @_;
             push @{$self->starts}, [$event, $ec];
         }
 
-        sub accept_stream_end {
+        sub accept_test_end {
             my($self, $event, $ec) = @_;
             push @{$self->ends}, [$event, $ec];            
         }

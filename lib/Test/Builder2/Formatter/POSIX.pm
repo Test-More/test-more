@@ -4,7 +4,7 @@ use Test::Builder2::Mouse;
 
 extends 'Test::Builder2::Formatter';
 
-sub accept_stream_start {
+sub accept_test_start {
     my $self  = shift;
     my $event = shift;
 

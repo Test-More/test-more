@@ -150,20 +150,20 @@ has top_stack =>
   };
 
 
-=head3 stream_start
+=head3 test_start
 
-  $tb->stream_start;
+  $tb->test_start;
 
 Inform the builder that testing is about to begin.
 
 This should be called before any set of asserts is run, but L<ok> will
 do it for you if you haven't.
 
-It should eventually be followed by a call to L<stream_end>.
+It should eventually be followed by a call to L<test_end>.
 
 =cut
 
-sub stream_start {
+sub test_start {
     my $self = shift;
 
     $self->test_state->post_event(
@@ -173,15 +173,15 @@ sub stream_start {
     return;
 }
 
-=head3 stream_end
+=head3 test_end
 
-  $tb->stream_end;
+  $tb->test_end;
 
 Inform the Builder that a set of asserts is complete.
 
 =cut
 
-sub stream_end {
+sub test_end {
     my $self = shift;
 
     $self->test_state->post_event(
@@ -335,7 +335,7 @@ sub ok {
 
     $self->assert_start();
 
-    $self->stream_start unless $self->history->stream_depth;
+    $self->test_start unless $self->history->stream_depth;
 
     my $result = $self->result_class->new_result(
         $self->_file_and_line,
@@ -372,7 +372,7 @@ sub _file_and_line {
     $tb->done_testing;
     $tb->done_testing($num_tests);
 
-Declares that testing is done, issuing a set_plan and stream_end event.
+Declares that testing is done, issuing a set_plan and test_end event.
 
 If $num_tests is given, that is the number of asserts_expected in the
 plan.  Otherwise a no_plan plan is used.
@@ -383,7 +383,7 @@ sub done_testing {
     my $self = shift;
 
     $self->set_plan( @_ ? ( tests => shift ) : ( no_plan => 1 ) );
-    $self->stream_end;
+    $self->test_end;
 }
 
 =head3 subtest

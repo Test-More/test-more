@@ -19,15 +19,15 @@ This description is terrible.
 
 =head3 event_type
 
-The event type is C<stream start>.
+The event type is C<test start>.
 
 =cut
 
-sub event_type { "stream start" }
+sub event_type { "test start" }
 
 sub as_hash {
     return {
-        event_type => "stream start",
+        event_type => "test start",
     };
 }
 

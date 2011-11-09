@@ -93,10 +93,10 @@ my $ec = MyEventCoordinator->new(
     my $tb = Test::Builder2->create;
     $tb->test_state->formatters([ new_formatter ]);
 
-    $tb->stream_start();
+    $tb->test_start();
     $tb->ok(1);
     $tb->ok(0);
-    $tb->stream_end();
+    $tb->test_end();
 
     is $tb->formatter->streamer->read, "+-\n", "PlusMinus plus TB2";
 }

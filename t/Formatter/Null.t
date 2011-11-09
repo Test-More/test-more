@@ -20,7 +20,7 @@ my $ec = MyEventCoordinator->new(
 
 {
     $ec->post_event( Test::Builder2::Event::StreamStart->new );
-    is $null->streamer->read, "", "stream start";
+    is $null->streamer->read, "", "test start";
 }
 
 {

@@ -85,7 +85,7 @@ END
         )
     );
 
-    # Clear the buffer, all we care about is stream end
+    # Clear the buffer, all we care about is test end
     last_output;
 
     $ec->post_event(

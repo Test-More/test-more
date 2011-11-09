@@ -21,7 +21,7 @@ my $ec = MyEventCoordinator->new(
     $ec->post_event(
         Test::Builder2::Event::StreamStart->new
     );
-    is $posix->streamer->read, "Running $0\n", "stream start";
+    is $posix->streamer->read, "Running $0\n", "test start";
 }
 
 {

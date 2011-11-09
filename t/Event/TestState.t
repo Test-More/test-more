@@ -202,11 +202,11 @@ note "nested subtests"; {
     $state->post_event($first_stream_end);
 
     is_deeply [map { $_->event_type } @{$state->history->events}],
-              ["stream start", "subtest start", "subtest end", "stream end"],
+              ["test start", "subtest start", "subtest end", "test end"],
               "original level saw the right events";
 
     is_deeply [map { $_->event_type } @{$first_subtest_ec->history->events}],
-              ["stream start", "subtest start", "subtest end", "stream end"],
+              ["test start", "subtest start", "subtest end", "test end"],
               "first subtest saw the right events";
 
     is_deeply [map { $_->event_type } @{$second_subtest_ec->history->events}],

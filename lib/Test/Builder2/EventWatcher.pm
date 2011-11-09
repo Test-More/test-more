@@ -172,7 +172,7 @@ stream of pluses and minuses.
     extends 'Test::Builder2::Formatter';
 
     # Output a newline when we're done testing.
-    sub accept_stream_end {
+    sub accept_test_end {
         my $self  = shift;
         my $event = shift;
 

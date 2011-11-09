@@ -80,7 +80,7 @@ sub accept_event {
     return;
 }
 
-sub accept_stream_start {
+sub accept_test_start {
     my $self  = shift;
     my($event, $ec) = @_;
 
@@ -92,7 +92,7 @@ sub accept_stream_start {
 }
 
 
-sub accept_stream_end {
+sub accept_test_end {
     my $self  = shift;
     my($event, $ec) = @_;
 
@@ -259,19 +259,19 @@ surmised by watching the events go by.
 
   my $stream_depth = $history->stream_depth;
 
-Returns how many C<stream start> events without C<stream end> events
+Returns how many C<test start> events without C<test end> events
 have been seen.
 
 For example...
 
-    stream start
+    test start
 
 Would indicate a level of 1.
 
-    stream start
-      stream start
-      stream end
-      stream start
+    test start
+      test start
+      test end
+      test start
 
 Would indicate a level of 2.
 
