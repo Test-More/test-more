@@ -8,8 +8,7 @@ BEGIN { require 't/test.pl'; }
 
 use Test::Builder2::AssertRecord;
 
-# Basic construction
-{
+note "Basic construction"; {
     my $record = new_ok "Test::Builder2::AssertRecord", [{
         package         => "Foo",
         line            => 23,
@@ -28,14 +27,12 @@ use Test::Builder2::AssertRecord;
 }
 
 
-# No arguments
-{
+note "No arguments"; {
     ok !eval { Test::Builder2::AssertRecord->new } or diag $@;
 }
 
 
-# new_from_caller
-{
+note "new_from_caller"; {
 #line 29 baz.t 
     sub baz {
         foo();
