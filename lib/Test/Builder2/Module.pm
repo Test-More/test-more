@@ -29,7 +29,7 @@ sub import {
 
     # And their own Builder convenience function
     *{$caller .'::Builder'} = sub () {
-        return Test::Builder2->singleton;
+        return Test::Builder2->default;
     };
 }
 
@@ -89,7 +89,7 @@ writing C<< sub name { ... } >> with two differences.
    assert_end hooks, such as aborting the test on failure.
 2. It takes care of displaying the test result for you.
 3. The C<< Builder >> object is available inside your $code which is just
-   a shortcut for C<< Test::Builder2->singleton >>.
+   a shortcut for C<< Test::Builder2->default >>.
 
 The prototype of the $code is honored.
 
@@ -148,7 +148,7 @@ CODE
 
 # End the stream if it has been started (or if someone else started it)
 END {
-    my $builder = eval { Test::Builder2->singleton; };
+    my $builder = eval { Test::Builder2->default; };
 
     _do_ending($builder) if $builder;
 }

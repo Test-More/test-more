@@ -13,10 +13,10 @@ BEGIN { require 't/test.pl' }
 }
 
 {
-    my $foo = Foo->singleton;
+    my $foo = Foo->default;
     isa_ok $foo, "Foo";
 
-    my $same = Foo->singleton;
+    my $same = Foo->default;
     is $foo, $same;
 
     my $other = Foo->create;
@@ -27,13 +27,13 @@ BEGIN { require 't/test.pl' }
     like $@, qr/there is no new/;
 }
 
-# Set the singleton
+# Set the default
 {
-    my $orig  = Foo->singleton;
+    my $orig  = Foo->default;
     my $thing = Foo->create;
-    Foo->singleton($thing);
+    Foo->default($thing);
 
-    is( Foo->singleton, $thing );
+    is( Foo->default, $thing );
 }
 
 done_testing();

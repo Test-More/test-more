@@ -35,14 +35,14 @@ note "create() and pass through"; {
 }
 
 
-note "singleton"; {
-    my $singleton1 = $CLASS->singleton;
-    my $singleton2 = $CLASS->singleton;
+note "default"; {
+    my $default1 = $CLASS->default;
+    my $default2 = $CLASS->default;
     my $new1 = $CLASS->create;
     my $new2 = $CLASS->create;
 
-    is $singleton1, $singleton2, "singleton returns the same object";
-    isnt $singleton1, $new1,     "create() does not return the singleton";
+    is $default1, $default2, "default returns the same object";
+    isnt $default1, $new1,     "create() does not return the default";
     isnt $new1, $new2,           "create() makes a fresh object";
 }
 

@@ -45,7 +45,7 @@ Test::Builder2::TestState - Object which holds the state of the test
     # Get the state of the default test.
     # Usually you'd ask your builder for the TestState object,
     # but we'll get it directly.
-    my $state = Test::Builder2::TestState->singleton;
+    my $state = Test::Builder2::TestState->default;
 
     # Post an event, like an EventCoordinator
     $state->post_event($event);
@@ -70,8 +70,8 @@ TestState does everything a L<Test::Builder2::EventCoordinator> does.
 It delegates to a stack of EventCoordinators, one for each layer of
 subtesting.
 
-TestState has a singleton object to hold the state of the default
-test.  Builders should use C<< Test::Builder2::TestState->singleton >>
+TestState has a default object to hold the state of the default
+test.  Builders should use C<< Test::Builder2::TestState->default >>
 to get the TestState if they want to play nice with others.  You can
 also create your own test states with
 C<<Test::Builder2::TestState->create >>.
@@ -80,8 +80,8 @@ C<<Test::Builder2::TestState->create >>.
 
 =head2 Constructors
 
-Because TestState is a singleton, it does not provide a B<new> to
-avoid confusion.  It instead has B<create> and B<singleton>.
+Because TestState is a default, it does not provide a B<new> to
+avoid confusion.  It instead has B<create> and B<default>.
 
 =head3 create
 
@@ -99,9 +99,9 @@ formatters and watchers.
     );
 
 
-=head3 singleton
+=head3 default
 
-    my $state = Test::Builder2::TestState->singleton;
+    my $state = Test::Builder2::TestState->default;
 
 Retrieve the shared TestState.
 

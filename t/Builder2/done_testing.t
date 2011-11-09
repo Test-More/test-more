@@ -5,7 +5,7 @@ use warnings;
 
 use Test::Builder2;
 
-my $tb = Test::Builder2->singleton;
+my $tb = Test::Builder2->default;
 
 $tb->ok(1);
 $tb->ok(1);

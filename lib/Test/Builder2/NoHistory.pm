@@ -11,8 +11,8 @@ Test::Builder2::NoHistory - Store no history, just keep stats
 
     use Test::Builder2::NoHistory;
 
-    # This is a shared singleton object
-    my $history = Test::Builder2::NoHistory->singleton;
+    # This is a shared default object
+    my $history = Test::Builder2::NoHistory->default;
     my $ec = Test::Builder2::EventCoordinator->create(
         history => $history
     );

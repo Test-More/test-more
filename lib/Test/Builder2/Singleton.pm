@@ -1,6 +1,6 @@
 package Test::Builder2::Singleton;
 
-# This is a role which implements a singleton
+# This is a role which implements a default
 
 use Carp;
 use Test::Builder2::Mouse ();
@@ -9,7 +9,7 @@ use Test::Builder2::Mouse::Role;
 
 =head1 NAME
 
-Test::Builder2::Singleton - A singleton role for TB2
+Test::Builder2::Singleton - A role providing a shared default object
 
 =head1 SYNOPSIS
 
@@ -18,8 +18,8 @@ Test::Builder2::Singleton - A singleton role for TB2
   use Test::Builder2::Mouse;
   with 'Test::Builder2::Singleton';
 
-  my $thing      = TB2::Thing->singleton;
-  my $same_thing = TB2::Thing->singleton;
+  my $thing      = TB2::Thing->default;
+  my $same_thing = TB2::Thing->default;
 
   my $new_thing  = TB2::Thing->create;
 
@@ -27,42 +27,42 @@ Test::Builder2::Singleton - A singleton role for TB2
 
 B<FOR INTERNAL USE ONLY>
 
-A role implementing singleton for Test::Builder2 classes.
+A role implementing default for Test::Builder2 classes.
 
-Strictly speaking, this isn't a singleton because you can create more
+Strictly speaking, this isn't a default because you can create more
 instances.  Its more like giving the class a default.
 
 =head1 METHODS
 
 =head2 Constructors
 
-=head3 singleton
+=head3 default
 
-    my $singleton = Class->singleton;
-    Class->singleton($singleton);
+    my $default = Class->default;
+    Class->default($default);
 
-Gets/sets the singleton object.
+Gets/sets the default object.
 
-If there is no singleton one will be created by calling create().
+If there is no default one will be created by calling create().
 
 =cut
 
 # What?!  No class variables in Mouse?!  Now I have to write the
 # accessor by hand, bleh.
 {
-    my %singletons;
+    my %defaults;
 
-    sub singleton {
+    sub default {
         my $class = shift;
 
         if(@_) {
-            $singletons{$class} = shift;
+            $defaults{$class} = shift;
         }
-        elsif( !$singletons{$class} ) {
-            $singletons{$class} = $class->make_singleton;
+        elsif( !$defaults{$class} ) {
+            $defaults{$class} = $class->make_default;
         }
 
-        return $singletons{$class};
+        return $defaults{$class};
     }
 }
 
@@ -70,13 +70,13 @@ If there is no singleton one will be created by calling create().
 =head3 new
 
 Because it is not clear if new() will make a new object or return a
-singleton (like Test::Builder does) new() will simply croak to force
+default (like Test::Builder does) new() will simply croak to force
 the user to make the decision.
 
 =cut
 
 sub new {
-    croak "Sorry, there is no new().  Use create() or singleton().";
+    croak "Sorry, there is no new().  Use create() or default().";
 }
 
 
@@ -84,7 +84,7 @@ sub new {
 
   my $obj = Class->create(@args);
 
-Creates a new, non-singleton object.
+Creates a new, non-default object.
 
 Currently calls Mouse's new method.
 
@@ -98,21 +98,21 @@ sub create {
 }
 
 
-=head3 make_singleton
+=head3 make_default
 
-    my $singleton = $class->make_singleton;
+    my $default = $class->make_default;
 
-Creates the object used as the singleton.
+Creates the object used as the default.
 
 Defaults to calling C<< $class->create >>.  You can override.
 
-One of the reasons to override is to ensure your singleton contains
-other singletons.  Like a Builder will want to use the singleton
+One of the reasons to override is to ensure your default contains
+other defaults.  Like a Builder will want to use the default
 History and Formatter objects.
 
 =cut
 
-sub make_singleton {
+sub make_default {
     my $class = shift;
     return $class->create;
 }

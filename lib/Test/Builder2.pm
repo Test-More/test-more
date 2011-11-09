@@ -77,7 +77,7 @@ Get/set the L<Test::Builder2::TestState> associated with this C<$builder>.
 
 By default it creates a new TestState detached from other builders.
 
-The singleton contains the TestState singleton.
+The default contains the TestState default.
 
 =cut
 
@@ -90,12 +90,12 @@ has test_state =>
   }
 ;
 
-sub make_singleton {
+sub make_default {
     my $class = shift;
 
     $class->load('Test::Builder2::TestState');
     return $class->create(
-        test_state => Test::Builder2::TestState->singleton
+        test_state => Test::Builder2::TestState->default
     );
 }
 

@@ -57,12 +57,12 @@ test.
 
 Since you only run one test per program C<new> always returns the same
 Test::Builder object.  No matter how many times you call C<new()>, you're
-getting the same object.  This is called a singleton.  This is done so that
+getting the same object.  This is called the default.  This is done so that
 multiple modules share such global information as the test counter and
 where test output is going.
 
 If you want a completely new Test::Builder object different from the
-singleton, use C<create>.
+default, use C<create>.
 
 =cut
 
@@ -74,12 +74,12 @@ sub new {
     return $Test;
 }
 
-# Bit of a hack to make the default TB1 object use the history singleton.
+# Bit of a hack to make the default TB1 object use the history default.
 sub _make_default {
     my $class = shift;
 
     my $obj = $class->create;
-    $obj->{TestState} = Test::Builder2::TestState->singleton;
+    $obj->{TestState} = Test::Builder2::TestState->default;
 
     return $obj;
 }
@@ -185,7 +185,7 @@ sub subtest {
     }
 
     # Turn the child into the parent so anyone who has stored a copy of
-    # the Test::Builder singleton will get the child.
+    # the Test::Builder default will get the child.
     my($error, $child, %parent);
     {
         # child() calls reset() which sets $Level to 1, so we localize
@@ -350,7 +350,7 @@ FAIL
 
   $Test->reset;
 
-Reinitializes the Test::Builder singleton to its original state.
+Reinitializes the Test::Builder default to its original state.
 Mostly useful for tests run in persistent environments where the same
 test might be run multiple times in the same process.
 

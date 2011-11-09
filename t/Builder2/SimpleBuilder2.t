@@ -67,12 +67,12 @@ $builder->test_state->formatters([$tap]);
 }
 
 
-# TB2 has a singleton
+# TB2 has a default
 {
-    my $builder1 = Test::Builder2->singleton;
-    my $builder2 = Test::Builder2->singleton;
+    my $builder1 = Test::Builder2->default;
+    my $builder2 = Test::Builder2->default;
 
-    is $builder1, $builder2, "TB2 has a singleton";
+    is $builder1, $builder2, "TB2 has a default";
 }
 
 done_testing();

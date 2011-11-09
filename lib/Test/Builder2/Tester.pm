@@ -61,7 +61,7 @@ sub capture(&) {
     my $code = shift;
 
     require Test::Builder2::TestState;
-    my $state = Test::Builder2::TestState->singleton;
+    my $state = Test::Builder2::TestState->default;
     my $our_ec = $state->push_coordinator;
 
     $our_ec->clear_formatters;

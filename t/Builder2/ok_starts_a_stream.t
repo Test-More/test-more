@@ -7,7 +7,7 @@ use warnings;
 
 use Test::Builder2;
 
-my $tb = Test::Builder2->singleton;
+my $tb = Test::Builder2->default;
 
 # ok() starts the stream automatically
 {
