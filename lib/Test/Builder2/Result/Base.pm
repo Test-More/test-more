@@ -45,9 +45,9 @@ use overload(
 
 =head1 METHODS
 
-=head2 Attributes
+It has all the attributes and methods of a normal L<Test::Builder2::Event> plus...
 
-=head3 description
+=head2 Attributes
 
 =head3 name
 
@@ -58,9 +58,13 @@ The name of the assert.  For example...
     # The name is "addition"
     ok( 1 + 1, "addition" );
 
-L<description> is the more generic alias to this method.
+=cut
 
-=head3 diagnostic
+has name =>
+  is    => 'rw',
+  isa   => 'Str'
+;
+
 
 =head3 diag
 
@@ -71,34 +75,26 @@ The structured diagnostics associated with this result.
 Diagnostics are currently an array ref of key/value pairs.  Its an
 array ref to keep the order.  This will probably change.
 
-=head3 id
+=cut
 
-=head3 line
+has diag =>
+  is            => 'rw',
+  isa           => 'ArrayRef',
+  default       => sub { [] };
 
-    my $line = $result->line;
-
-The line number upon which this assert was run.
-
-Because a single result can represent a stack of actual asserts, this
-is generally the location of the first assert in the stack.
-
-L<id> is a more generic alias.
-
-=head3 location
-
-=head3 file
-
-    my $file = $result->file;
-
-The file whre this assert was run.
-
-Like L<line>, this represents the top of the assert stack.
 
 =head3 reason
 
     my $reason = $result->reason;
 
 The reason for any modifiers.
+
+=cut
+
+has reason =>
+  is    => 'rw',
+  isa   => 'Str';
+
 
 =head3 test_number
 
@@ -111,40 +107,9 @@ even TAP tests are not required to do so.
 
 =cut
 
-
-my %attributes = (
-  description   => { },
-  diagnostic    => { isa => 'ArrayRef', },
-  id            => { },
-  location      => { },
-  reason        => { },
-  test_number   => { isa => 'Test::Builder2::Positive_Int', },
-);
-my @attributes = keys %attributes;
-
-my %attr_defaults = (
-    is  => 'rw',
-    isa => 'Str',
-);
-
-for my $attr (keys %attributes) {
-    my $has = $attributes{$attr};
-    $has = { %attr_defaults, %$has };
-
-    $has->{predicate} ||= "has_$attr";
-    has $attr => %$has;
-}
-
-_alias($CLASS, name => \&description);
-_alias($CLASS, diag => \&diagnostic);
-_alias($CLASS, file => \&location);
-_alias($CLASS, line => \&id);
-
-
-sub get_attributes
-{
-    return \@attributes;
-}
+has test_number =>
+  is    => 'rw',
+  isa   => 'Test::Builder2::Positive_NonZero_Int';
 
 
 =head2 Methods
@@ -162,25 +127,12 @@ The type is "result".
 
 sub event_type { return "result" }
 
-
-=head3 as_hash
-
-    my $hash = $self->as_hash;
-
-Returns the attributes of a result as a hash reference.
-
-Useful for quickly dumping the contents of a result.
-
-=cut
-
-sub as_hash {
+sub keys_for_as_hash {
     my $self = shift;
-    return {
-        map {
-            my $val = $self->$_();
-            defined $val ? ( $_ => $val ) : ()
-        } @attributes, "type"
-    };
+    my $keys = $self->Test::Builder2::Event::keys_for_as_hash;
+    push @$keys, "type";
+
+    return $keys;
 }
 
 
@@ -289,15 +241,6 @@ sub types {
     }
 
     return \%types;
-}
-
-
-# XXX Should be moved into a utilty class
-sub _alias {
-    my($class, $name, $code) = @_;
-
-    no strict 'refs';
-    *{$class . "::" . $name} = $code;
 }
 
 no Test::Builder2::Mouse;

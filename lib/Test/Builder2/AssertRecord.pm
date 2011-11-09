@@ -69,6 +69,47 @@ sub new_from_caller {
     );
 }
 
+
+=head2 new_from_guess
+
+    my $record = Test::Builder2::AssertRecord->new_from_guess;
+    my $record = Test::Builder2::AssertRecord->new_from_guess(@ignore_packages);
+
+Constructs an AssertRecord for you by looking up the call stack until
+it is out of the calling class.
+
+If @ignore_packages is given, those are also to be ignored when looking
+up the stack.
+
+=cut
+
+sub new_from_guess {
+    my $class = shift;
+    my %ignore = map { $_ => 1 } @_;
+
+    $ignore{ caller() } = 1;
+
+    my @last_caller;
+    my $height = 0;
+    while(1) {
+        my @caller = caller($height++);
+
+        last if !@caller;               # walked off the stack
+
+        @last_caller = @caller;
+
+        last unless $ignore{$caller[0]};
+    } 
+
+    return $class->new(
+        package    => $last_caller[0],
+        filename   => $last_caller[1],
+        line       => $last_caller[2],
+        subroutine => $last_caller[3],
+    );
+}
+
+
 =head1 Accessors
 
 These are all read-only and act in the expected manner.

@@ -44,7 +44,7 @@ ok !eval {
     use Test::Builder2::Mouse;
     with "Test::Builder2::Event";
 };
-like $@, qr/requires the methods/;
+like $@, qr/requires the method/;
 
 
 done_testing;

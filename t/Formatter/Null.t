@@ -25,8 +25,8 @@ my $ec = MyEventCoordinator->new(
 
 {
     my $result = Test::Builder2::Result->new_result(
-        pass            => 1,
-        description     => "basset hounds got long ears",
+        pass     => 1,
+        name     => "basset hounds got long ears",
     );
     $ec->post_event($result);
     is(

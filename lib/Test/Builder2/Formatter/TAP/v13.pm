@@ -361,7 +361,7 @@ sub accept_result {
     my $num = $result->test_number || $self->counter->increment;
     $out .= " ".$num if $self->use_numbers;
 
-    my $name = $result->description;
+    my $name = $result->name;
     $self->_escape(\$name);
     $out .= " - $name" if defined $name and length $name;
 

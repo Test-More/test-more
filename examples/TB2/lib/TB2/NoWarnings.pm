@@ -83,7 +83,7 @@ plan is already set, but it doesn't.
 
         $self->builder
           ->ok( scalar @$warnings, "no warnings" )
-          ->diagnostic([
+          ->diag([
               warnings => $warnings
           ]);
 

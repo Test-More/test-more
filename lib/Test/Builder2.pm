@@ -167,7 +167,7 @@ sub stream_start {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::StreamStart->new( $self->_file_and_line )
     );
 
     return;
@@ -185,7 +185,7 @@ sub stream_end {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::StreamEnd->new
+        Test::Builder2::Event::StreamEnd->new( $self->_file_and_line )
     );
 
     return;
@@ -220,6 +220,7 @@ sub set_plan {
     $plan{plan} = \%input if keys %input;
 
     my $plan = Test::Builder2::Event::SetPlan->new(
+        $self->_file_and_line,
         %plan
     );
 
@@ -332,12 +333,13 @@ sub ok {
     my $test = shift;
     my $name = shift;
 
-    $self->stream_start unless $self->history->stream_depth;
-
     $self->assert_start();
 
+    $self->stream_start unless $self->history->stream_depth;
+
     my $result = $self->result_class->new_result(
-        description     => $name,
+        $self->_file_and_line,
+        name            => $name,
         pass            => $test,
     );
 
@@ -348,6 +350,20 @@ sub ok {
     $self->assert_end($result);
 
     return $result;
+}
+
+
+# A convenience method to pass context into Event->new
+sub _file_and_line {
+    my $self = shift;
+
+    my $top = $self->top_stack->top;
+    $top ||= do {
+        $self->load('Test::Builder2::AssertRecord');
+        Test::Builder2::AssertRecord->new_from_guess;
+    };
+
+    return ( file => $top->filename, line => $top->line );
 }
 
 
@@ -389,6 +405,7 @@ sub subtest {
 
     # Start the subtest
     my $start = Test::Builder2::Event::SubtestStart->new(
+        $self->_file_and_line,
         name    => $name
     );
     $self->test_state->post_event($start);
@@ -397,7 +414,7 @@ sub subtest {
     $code->();
 
     # End the subtest
-    my $end = Test::Builder2::Event::SubtestEnd->new;
+    my $end = Test::Builder2::Event::SubtestEnd->new( $self->_file_and_line );
     $self->test_state->post_event($end);
 
     return;
