@@ -1,6 +1,4 @@
-package Test::Builder2::Singleton;
-
-# This is a role which implements a default
+package Test::Builder2::HasDefault;
 
 use Carp;
 use Test::Builder2::Mouse ();
@@ -9,14 +7,14 @@ use Test::Builder2::Mouse::Role;
 
 =head1 NAME
 
-Test::Builder2::Singleton - A role providing a shared default object
+Test::Builder2::HasDefault - A role providing a shared default object
 
 =head1 SYNOPSIS
 
   package TB2::Thing;
 
   use Test::Builder2::Mouse;
-  with 'Test::Builder2::Singleton';
+  with 'Test::Builder2::HasDefault';
 
   my $thing      = TB2::Thing->default;
   my $same_thing = TB2::Thing->default;

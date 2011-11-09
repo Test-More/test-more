@@ -53,7 +53,6 @@ lib/Test/Builder2/Result/Role/pass.pm
 lib/Test/Builder2/Result/Role/skip.pm
 lib/Test/Builder2/Result/Role/todo.pm
 lib/Test/Builder2/Result/Role/unknown.pm
-lib/Test/Builder2/Singleton.pm
 lib/Test/Builder2/Stack.pm
 lib/Test/Builder2/StackBuilder.pm
 lib/Test/Builder2/Streamer.pm

@@ -5,7 +5,7 @@ use Test::Builder2::Types;
 
 use Carp;
 
-with 'Test::Builder2::Singleton',
+with 'Test::Builder2::HasDefault',
      'Test::Builder2::CanLoad';
 
 has _coordinators =>
