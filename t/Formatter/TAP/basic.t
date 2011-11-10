@@ -301,4 +301,15 @@ OUT
 }
 
 
+note "Name with an empty string (github #84)"; {
+    my $result = Test::Builder2::Result->new_result(
+        pass            => 1,
+        test_number     => 99,
+        name            => ''
+    );
+
+    $ec->post_event($result);
+    is(last_output, "ok 99 - \n", "empty string name preserved");
+}
+
 done_testing();
