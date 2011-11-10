@@ -1,4 +1,4 @@
-package Test::Builder2::Event::StreamEnd;
+package Test::Builder2::Event::TestEnd;
 
 use Test::Builder2::Mouse;
 with 'Test::Builder2::Event';
@@ -6,7 +6,7 @@ with 'Test::Builder2::Event';
 
 =head1 NAME
 
-Test::Builder2::Event::StreamEnd - End of a test stream event
+Test::Builder2::Event::TestEnd - End of a test stream event
 
 =head1 DESCRIPTION
 
@@ -16,15 +16,15 @@ This is an Event representing the end of a test stream.
 
 =head3 event_type
 
-The event type is C<stream end>.
+The event type is C<test end>.
 
 =cut
 
-sub event_type { "stream end" }
+sub event_type { "test end" }
 
 sub as_hash {
     return {
-        event_type => "stream end",
+        event_type => "test end",
     };
 }
 

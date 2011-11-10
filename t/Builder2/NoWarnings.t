@@ -22,14 +22,14 @@ BEGIN { require "t/test.pl" }
 
 
     # Here's the test
-    $builder->stream_start();
+    $builder->test_start();
     $builder->set_plan(
         tests       => 2
     );
     $builder->ok(1, "pass 1");
     warn "Wibble";
     $builder->ok(1, "pass 2");
-    $builder->stream_end();
+    $builder->test_end();
 
 
     # Test the result

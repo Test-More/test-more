@@ -27,11 +27,11 @@ lib/Test/Builder2/Event.pm
 lib/Test/Builder2/Event/Comment.pm
 lib/Test/Builder2/Event/Log.pm
 lib/Test/Builder2/Event/SetPlan.pm
-lib/Test/Builder2/Event/StreamEnd.pm
 lib/Test/Builder2/Event/StreamMetadata.pm
-lib/Test/Builder2/Event/StreamStart.pm
 lib/Test/Builder2/Event/SubtestEnd.pm
 lib/Test/Builder2/Event/SubtestStart.pm
+lib/Test/Builder2/Event/TestEnd.pm
+lib/Test/Builder2/Event/TestStart.pm
 lib/Test/Builder2/EventCoordinator.pm
 lib/Test/Builder2/Events.pm
 lib/Test/Builder2/EventWatcher.pm
@@ -113,7 +113,7 @@ t/Builder/output.t
 t/Builder/reset.t
 t/Builder/reset_outputs.t
 t/Builder/skip_all.t
-t/Builder/stream_start.t
+t/Builder/test_start.t
 t/Builder/use_numbers.t
 t/Builder2/assert.t
 t/Builder2/assert_dies.t
@@ -154,12 +154,12 @@ t/Event/EventWatcher.t
 t/Event/Log.t
 t/Event/post_order.t
 t/Event/SetPlan.t
-t/Event/StreamEnd.t
 t/Event/StreamMetadata.t
-t/Event/StreamStart.t
 t/Event/subtest_handler.t
 t/Event/SubtestEnd.t
 t/Event/SubtestStart.t
+t/Event/TestEnd.t
+t/Event/TestStart.t
 t/Event/TestState.t
 t/exit.t
 t/explain.t

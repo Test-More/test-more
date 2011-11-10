@@ -37,7 +37,7 @@ sub last_output {
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
     is last_output, "TAP version 13\n", "begin() with no args";
 }
@@ -59,7 +59,7 @@ sub last_output {
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
     $ec->post_event(
         Test::Builder2::Event::SetPlan->new(
@@ -77,7 +77,7 @@ END
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
     $ec->post_event(
         Test::Builder2::Event::SetPlan->new(
@@ -85,11 +85,11 @@ END
         )
     );
 
-    # Clear the buffer, all we care about is stream end
+    # Clear the buffer, all we care about is test end
     last_output;
 
     $ec->post_event(
-        Test::Builder2::Event::StreamEnd->new
+        Test::Builder2::Event::TestEnd->new
     );
     is last_output, "", "empty stream does nothing";
 }
@@ -98,7 +98,7 @@ END
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
     my $result = Test::Builder2::Result->new_result(
         pass            => 1,
@@ -115,7 +115,7 @@ END
     $ec->post_event( $result );
 
     $ec->post_event(
-        Test::Builder2::Event::StreamEnd->new
+        Test::Builder2::Event::TestEnd->new
     );
     is last_output, <<END, "end( tests => # )";
 TAP version 13
@@ -129,7 +129,7 @@ END
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
     is last_output, "TAP version 13\n", "check all stream";
 }
@@ -138,7 +138,7 @@ END
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
     $ec->post_event(
         Test::Builder2::Event::SetPlan->new(
@@ -153,7 +153,7 @@ END
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
     $ec->post_event(
         Test::Builder2::Event::SetPlan->new(

@@ -3,8 +3,8 @@ package Test::Builder2::Events;
 use strict;
 use warnings;
 
-use Test::Builder2::Event::StreamStart;
-use Test::Builder2::Event::StreamEnd;
+use Test::Builder2::Event::TestStart;
+use Test::Builder2::Event::TestEnd;
 use Test::Builder2::Event::SubtestStart;
 use Test::Builder2::Event::SubtestEnd;
 use Test::Builder2::Event::SetPlan;
@@ -31,9 +31,9 @@ intended as a convenience for authors of builders.
 
 =head2 Events Loaded
 
-=head3 Test::Builder2::Event::StreamStart
+=head3 Test::Builder2::Event::TestStart
 
-=head3 Test::Builder2::Event::StreamEnd
+=head3 Test::Builder2::Event::TestEnd
 
 =head3 Test::Builder2::Event::SetPlan
 

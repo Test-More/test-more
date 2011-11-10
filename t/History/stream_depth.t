@@ -18,28 +18,28 @@ use Test::Builder2::History;
     is $history->stream_depth, 0;
 
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
     is $history->stream_depth, 1;
 
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
     is $history->stream_depth, 2;
 
     $ec->post_event(
-        Test::Builder2::Event::StreamEnd->new
+        Test::Builder2::Event::TestEnd->new
     );
     is $history->stream_depth, 1;
 
     $ec->post_event(
-        Test::Builder2::Event::StreamEnd->new
+        Test::Builder2::Event::TestEnd->new
     );
     is $history->stream_depth, 0;
 
     ok !eval {
         $ec->post_event(
-            Test::Builder2::Event::StreamEnd->new
+            Test::Builder2::Event::TestEnd->new
         );
         1;
     };
@@ -71,13 +71,13 @@ note "post order"; {
     );
 
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
 
     is $formatter->last_depth_seen, 1;
 
     $ec->post_event(
-        Test::Builder2::Event::StreamEnd->new
+        Test::Builder2::Event::TestEnd->new
     );
 
     is $formatter->last_depth_seen, 0;

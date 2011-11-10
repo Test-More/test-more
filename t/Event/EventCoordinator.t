@@ -91,7 +91,7 @@ note("posting"); {
     );
 
     my $result = Test::Builder2::Result->new_result;
-    my $event  = Test::Builder2::Event::StreamStart->new;
+    my $event  = Test::Builder2::Event::TestStart->new;
     $ec->post_event($result);
     $ec->post_event ($event);
 
@@ -131,12 +131,12 @@ note "posting events to specific handlers"; {
           isa           => 'ArrayRef',
           default       => sub { [] };
 
-        sub accept_stream_start {
+        sub accept_test_start {
             my($self, $event, $ec) = @_;
             push @{$self->starts}, [$event, $ec];
         }
 
-        sub accept_stream_end {
+        sub accept_test_end {
             my($self, $event, $ec) = @_;
             push @{$self->ends}, [$event, $ec];            
         }
@@ -154,10 +154,10 @@ note "posting events to specific handlers"; {
         formatters      => []
     );
 
-    my $start   = Test::Builder2::Event::StreamStart->new;
+    my $start   = Test::Builder2::Event::TestStart->new;
     my $comment = Test::Builder2::Event::Comment->new( comment => "whatever" );
     my $result  = Test::Builder2::Result->new_result;
-    my $end     = Test::Builder2::Event::StreamEnd->new;
+    my $end     = Test::Builder2::Event::TestEnd->new;
     $ec->post_event($start) for 1..2;
     $ec->post_event($comment);
     $ec->post_event($result);

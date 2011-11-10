@@ -78,7 +78,7 @@ install_test(ok => sub ($;$) {    ## no critic (Subroutines::ProhibitSubroutineP
 });
 
 sub done_testing {
-    Builder->stream_end;
+    Builder->test_end;
 }
 
 =back

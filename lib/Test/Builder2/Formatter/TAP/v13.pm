@@ -160,7 +160,7 @@ has indent =>
 ;
 
 
-sub accept_stream_start {
+sub accept_test_start {
     my $self = shift;
     my($event, $ec) = @_;
 
@@ -175,7 +175,7 @@ sub accept_stream_start {
 }
 
 
-sub accept_stream_end {
+sub accept_test_end {
     my $self  = shift;
     my $event = shift;
     my $ec    = shift;

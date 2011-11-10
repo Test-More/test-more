@@ -12,7 +12,7 @@ note "History captures the plan"; {
     my $ec = Test::Builder2::EventCoordinator->new;
     $ec->clear_formatters;
 
-    $ec->post_event( Test::Builder2::Event::StreamStart->new );
+    $ec->post_event( Test::Builder2::Event::TestStart->new );
 
     my $plan = Test::Builder2::Event::SetPlan->new( asserts_expected => 2 );
     $ec->post_event( $plan );

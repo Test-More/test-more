@@ -38,7 +38,7 @@ note "Escape # in test name"; {
     );
 
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
     last_output;
 
@@ -56,7 +56,7 @@ note "Escape # in directive name"; {
     );
 
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
     last_output;
 

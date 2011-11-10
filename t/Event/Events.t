@@ -7,7 +7,7 @@ BEGIN { require "t/test.pl"; }
 use Test::Builder2::Events;
 
 my @events = map { "Test::Builder2::Event::".$_ }
-                 qw(StreamStart StreamEnd
+                 qw(TestStart TestEnd
                     SetPlan
                     StreamMetadata
                     Log

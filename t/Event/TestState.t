@@ -29,7 +29,7 @@ note "create() and pass through"; {
     is_deeply $state->formatters, [],           "create() passes arguments through";
     isa_ok $state->history, "Test::Builder2::History";
 
-    my $start = Test::Builder2::Event::StreamStart->new;
+    my $start = Test::Builder2::Event::TestStart->new;
     $state->post_event($start);
     is_deeply $state->history->events, [$start],        "events are posted";
 }
@@ -169,14 +169,14 @@ note "nested subtests"; {
         formatters => []
     );
 
-    my $first_stream_start = Test::Builder2::Event::StreamStart->new;
+    my $first_stream_start = Test::Builder2::Event::TestStart->new;
     $state->post_event($first_stream_start);
 
     my $first_subtest_start = Test::Builder2::Event::SubtestStart->new;
     $state->post_event($first_subtest_start);
     is $first_subtest_start->depth, 1;
 
-    my $second_stream_start = Test::Builder2::Event::StreamStart->new;
+    my $second_stream_start = Test::Builder2::Event::TestStart->new;
     $state->post_event($second_stream_start);
 
     my $second_subtest_start = Test::Builder2::Event::SubtestStart->new;
@@ -189,7 +189,7 @@ note "nested subtests"; {
     $state->post_event($second_subtest_end);
     is $second_subtest_end->history, $second_subtest_ec->history;
 
-    my $second_stream_end = Test::Builder2::Event::StreamEnd->new;
+    my $second_stream_end = Test::Builder2::Event::TestEnd->new;
     $state->post_event($second_stream_end);
 
     my $first_subtest_ec = $state->current_coordinator;
@@ -198,15 +198,15 @@ note "nested subtests"; {
     $state->post_event($first_subtest_end);
     is $first_subtest_end->history, $first_subtest_ec->history;
 
-    my $first_stream_end = Test::Builder2::Event::StreamEnd->new;
+    my $first_stream_end = Test::Builder2::Event::TestEnd->new;
     $state->post_event($first_stream_end);
 
     is_deeply [map { $_->event_type } @{$state->history->events}],
-              ["stream start", "subtest start", "subtest end", "stream end"],
+              ["test start", "subtest start", "subtest end", "test end"],
               "original level saw the right events";
 
     is_deeply [map { $_->event_type } @{$first_subtest_ec->history->events}],
-              ["stream start", "subtest start", "subtest end", "stream end"],
+              ["test start", "subtest start", "subtest end", "test end"],
               "first subtest saw the right events";
 
     is_deeply [map { $_->event_type } @{$second_subtest_ec->history->events}],
@@ -315,8 +315,8 @@ note "watchers are asked to provide their handler"; {
     is $state->early_watchers->[0]->depth,      1;
     is $state->late_watchers->[0]->depth,       1;
 
-    my $substream_start = Test::Builder2::Event::StreamStart->new;
-    my $substream_end = Test::Builder2::Event::StreamStart->new;
+    my $substream_start = Test::Builder2::Event::TestStart->new;
+    my $substream_end = Test::Builder2::Event::TestStart->new;
     $state->post_event($_) for $substream_start, $substream_end;
 
     my $subtest_end = Test::Builder2::Event::SubtestEnd->new;
