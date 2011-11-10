@@ -1,5 +1,7 @@
 #!perl -w
 
+# This tests Test::Builder's various output() methods.
+
 use strict;
 
 BEGIN { require 't/test.pl' }
