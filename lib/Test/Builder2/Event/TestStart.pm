@@ -1,4 +1,4 @@
-package Test::Builder2::Event::StreamStart;
+package Test::Builder2::Event::TestStart;
 
 use Test::Builder2::Mouse;
 with 'Test::Builder2::Event';
@@ -6,7 +6,7 @@ with 'Test::Builder2::Event';
 
 =head1 NAME
 
-Test::Builder2::Event::StreamStart - Start of a test stream event
+Test::Builder2::Event::TestStart - Start of a test stream event
 
 =head1 DESCRIPTION
 

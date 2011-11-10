@@ -167,7 +167,7 @@ sub test_start {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::StreamStart->new( $self->_file_and_line )
+        Test::Builder2::Event::TestStart->new( $self->_file_and_line )
     );
 
     return;
@@ -185,7 +185,7 @@ sub test_end {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::StreamEnd->new( $self->_file_and_line )
+        Test::Builder2::Event::TestEnd->new( $self->_file_and_line )
     );
 
     return;

@@ -48,7 +48,7 @@ note "post order"; {
     );
 
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
 
     # history has to come first so stream_depth is set

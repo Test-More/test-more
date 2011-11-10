@@ -12,7 +12,7 @@ use Test::Builder2::Events;
 my $ec = Test::Builder2::TestState->default;
 
 $ec->post_event(
-    Test::Builder2::Event::StreamStart->new
+    Test::Builder2::Event::TestStart->new
 );
 
 my $tb = Test::Builder->new;

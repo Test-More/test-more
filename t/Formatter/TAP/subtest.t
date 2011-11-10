@@ -28,18 +28,18 @@ note "subtest"; {
     my $state = new_state();
 
     my @events = (
-        Test::Builder2::Event::StreamStart->new,
+        Test::Builder2::Event::TestStart->new,
         Test::Builder2::Result->new_result( pass => 1 ),
         Test::Builder2::Event::SubtestStart->new,
-          Test::Builder2::Event::StreamStart->new,
+          Test::Builder2::Event::TestStart->new,
           Test::Builder2::Result->new_result( pass => 1 ),
           Test::Builder2::Result->new_result( pass => 1 ),
           Test::Builder2::Event::SetPlan->new( asserts_expected => 2 ),
-          Test::Builder2::Event::StreamEnd->new,
+          Test::Builder2::Event::TestEnd->new,
         Test::Builder2::Event::SubtestEnd->new,
         Test::Builder2::Result->new_result( pass => 1 ),
         Test::Builder2::Event::SetPlan->new( asserts_expected => 3 ),
-        Test::Builder2::Event::StreamEnd->new,
+        Test::Builder2::Event::TestEnd->new,
     );
 
     $state->post_event($_) for @events;

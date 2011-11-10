@@ -26,7 +26,7 @@ my $ec = MyEventCoordinator->new(
 # Begin
 {
     $ec->post_event(
-        Test::Builder2::Event::StreamStart->new
+        Test::Builder2::Event::TestStart->new
     );
     is $formatter->streamer->read, "";
 }
@@ -81,7 +81,7 @@ my $ec = MyEventCoordinator->new(
 # End
 {
     $ec->post_event(
-        Test::Builder2::Event::StreamEnd->new
+        Test::Builder2::Event::TestEnd->new
     );
     is $formatter->streamer->read, "\n";
 }

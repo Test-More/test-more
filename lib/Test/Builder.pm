@@ -153,7 +153,7 @@ sub child {
     }
 
     $child->test_state->post_event(
-        Test::Builder2::Event::StreamStart->new( $child->_file_and_line )
+        Test::Builder2::Event::TestStart->new( $child->_file_and_line )
     );
 
     # This will be reset in finalize. We do this here lest one child failure
@@ -724,7 +724,7 @@ sub test_start {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::StreamStart->new( $self->_file_and_line(1) )
+        Test::Builder2::Event::TestStart->new( $self->_file_and_line(1) )
     );
 
     return;
@@ -734,7 +734,7 @@ sub test_end {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::StreamEnd->new( $self->_file_and_line(1) )
+        Test::Builder2::Event::TestEnd->new( $self->_file_and_line(1) )
     );
 
     return;
