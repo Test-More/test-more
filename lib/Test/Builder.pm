@@ -10,6 +10,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 # Conditionally loads threads::shared and fixes up old versions
 use Test::Builder2::threads::shared;
 
+use Test::Builder2::OnlyOnePlan;
 use Test::Builder2::Events;
 use Test::Builder2::TestState;
 
@@ -80,6 +81,9 @@ sub _make_default {
 
     my $obj = $class->create;
     $obj->{TestState} = Test::Builder2::TestState->default;
+    $obj->{TestState}->add_early_watchers(
+        Test::Builder2::OnlyOnePlan->new
+    );
 
     return $obj;
 }
@@ -378,7 +382,8 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->load("Test::Builder2::Formatter::TAP");
     $self->{TestState} = Test::Builder2::TestState->create(
-        formatters => [Test::Builder2::Formatter::TAP->new]
+        formatters      => [Test::Builder2::Formatter::TAP->new],
+        early_watchers  => [Test::Builder2::OnlyOnePlan->new],
     );
     $self->formatter->use_numbers(1);
 
@@ -470,8 +475,6 @@ sub plan {
 
     local $Level = $Level + 1;
 
-    $self->croak("You tried to plan twice") if $self->_plan_handled;
-
     if( my $method = $plan_cmds{$cmd} ) {
         local $Level = $Level + 1;
         $self->$method($arg);
@@ -545,7 +548,7 @@ sub no_plan {
 
     $self->carp("no_plan takes no arguments") if $arg;
 
-    $self->test_start;
+    $self->test_start unless $self->test_started;
 
     $self->set_plan(
         no_plan => 1

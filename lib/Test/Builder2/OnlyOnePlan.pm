@@ -58,7 +58,7 @@ specifically allows...
 
 has existing_plan =>
   is            => 'rw',
-  isa           => 'Test::Builder2::Event',
+  isa           => 'Object',
 ;
 
 sub accept_set_plan {
