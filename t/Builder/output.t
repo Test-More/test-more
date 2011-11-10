@@ -75,22 +75,24 @@ END { 1 while unlink($tmpfile) }
     my $out = $tb->output(\$fakeout);
     $tb->exported_to(__PACKAGE__);
     $tb->no_ending(1);
-    $tb->plan(tests => 5);
+    $tb->plan(tests => 6);
 
     $tb->ok(1, "ok");
     $tb->ok(1, "ok\n");
     $tb->ok(1, "ok, like\nok");
     $tb->skip("wibble\nmoof");
     $tb->todo_skip("todo\nskip\n");
+    $tb->ok(1, "");
 
     is( $fakeout, <<'OUTPUT' );
 TAP version 13
-1..5
+1..6
 ok 1 - ok
 ok 2 - ok\n
 ok 3 - ok, like\nok
 ok 4 # SKIP wibble\nmoof
 not ok 5 # TODO SKIP todo\nskip\n
+ok 6 - 
 OUTPUT
 }
 

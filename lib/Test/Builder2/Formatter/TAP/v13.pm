@@ -363,7 +363,7 @@ sub accept_result {
 
     my $name = $result->name;
     $self->_escape(\$name);
-    $out .= " - $name" if defined $name and length $name;
+    $out .= " - $name" if defined $name;
 
     my $reason = $result->reason;
     $self->_escape(\$reason);
