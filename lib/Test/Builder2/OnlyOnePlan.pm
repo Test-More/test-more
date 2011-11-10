@@ -56,7 +56,7 @@ specifically allows...
 
 =cut
 
-has plan        =>
+has existing_plan =>
   is            => 'rw',
   isa           => 'Test::Builder2::Event',
 ;
@@ -65,9 +65,9 @@ sub accept_set_plan {
     my $self  = shift;
     my $event = shift;
 
-    $self->already_saw_plan($event) if $self->plan;
+    $self->already_saw_plan($event) if $self->existing_plan;
 
-    $self->plan($event);
+    $self->existing_plan($event);
 
     return;
 }
@@ -77,20 +77,30 @@ sub already_saw_plan {
     my $self = shift;
     my $new_plan = shift;
 
-    my $plan = $self->plan;
+    my $existing_plan = $self->existing_plan;
 
-    if(
-        $plan->no_plan          &&
-        (
-            $new_plan->no_plan          ||
-            $new_plan->asserts_expected
-        )
-    ) {
-        $self->plan($new_plan);
-        return;
-    }
+    return if $existing_plan->no_plan &&
+              ( $new_plan->no_plan || $new_plan->asserts_expected );
 
-    croak("Already saw a plan");
+    my $error = "Tried to set a plan" . $self->_plan_location($new_plan);
+    $error .= ", but a plan was already set" . $self->_plan_location($existing_plan);
+
+    die "$error.\n";
+}
+
+
+sub _plan_location {
+    my $self = shift;
+    my $plan = shift;
+
+    my $file = $plan->file;
+    my $line = $plan->line;
+
+    my $location = '';
+    $location .= " at $file"   if defined $file;
+    $location .= " line $line" if defined $line;
+
+    return $location;
 }
 
 

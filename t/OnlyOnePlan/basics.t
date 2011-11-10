@@ -16,17 +16,26 @@ note "Two plans are not ok"; {
 
     ok eval {
         $onlyone->receive_event(
-            Test::Builder2::Event::SetPlan->new(asserts_expected => 1)
+            Test::Builder2::Event::SetPlan->new(
+                asserts_expected => 1,
+                file             => "bar.t",
+                line             => 42,
+            )
         );
         1;
     }, "one plan is ok";
 
     ok !eval {
         $onlyone->receive_event(
-            Test::Builder2::Event::SetPlan->new(asserts_expected => 1)
+            Test::Builder2::Event::SetPlan->new(
+                asserts_expected => 1,
+                file             => "foo.t",
+                line             => 99,
+            )
         );
         1;
     }, "two plans are not ok, even with the same number of tests";
+    like $@, qr{^Tried to set a plan at foo.t line 99, but a plan was already set at bar.t line 42\.$};
 }
 
 
@@ -60,6 +69,28 @@ note "Multiple no_plans are ok"; {
         );
         1;
     }, "another one is not";
+}
+
+
+note "Error message with no file/line"; {
+    my $onlyone = $CLASS->new;
+
+    ok eval {
+        $onlyone->receive_event(
+            Test::Builder2::Event::SetPlan->new(asserts_expected => 1)
+        );
+        1;
+    }, "one plan is ok";
+
+    ok !eval {
+        $onlyone->receive_event(
+            Test::Builder2::Event::SetPlan->new(
+                asserts_expected => 1,
+            )
+        );
+        1;
+    }, "two plans are not ok, even with the same number of tests";
+    like $@, qr{^Tried to set a plan, but a plan was already set\.$};
 }
 
 done_testing;
