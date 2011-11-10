@@ -11,13 +11,13 @@ my $CLASS = 'Test::Builder2::OnlyOnePlan';
 use_ok $CLASS;
 
 
-note "Two plans are not ok"; {
+note "Two different plans are not ok"; {
     my $onlyone = $CLASS->new;
 
     ok eval {
         $onlyone->receive_event(
             Test::Builder2::Event::SetPlan->new(
-                asserts_expected => 1,
+                asserts_expected => 3,
                 file             => "bar.t",
                 line             => 42,
             )
@@ -34,8 +34,35 @@ note "Two plans are not ok"; {
             )
         );
         1;
-    }, "two plans are not ok, even with the same number of tests";
+    }, "two different plans are not ok";
     like $@, qr{^Tried to set a plan at foo.t line 99, but a plan was already set at bar.t line 42\.$};
+}
+
+
+note "The same plan is ok"; {
+    my $onlyone = $CLASS->new;
+
+    ok eval {
+        $onlyone->receive_event(
+            Test::Builder2::Event::SetPlan->new(
+                asserts_expected => 3,
+                file             => "bar.t",
+                line             => 42,
+            )
+        );
+        1;
+    }, "one plan is ok";
+
+    ok eval {
+        $onlyone->receive_event(
+            Test::Builder2::Event::SetPlan->new(
+                asserts_expected => 3,
+                file             => "foo.t",
+                line             => 99,
+            )
+        );
+        1;
+    }, "the same plans are ok";
 }
 
 
@@ -54,7 +81,7 @@ note "Multiple no_plans are ok"; {
             Test::Builder2::Event::SetPlan->new(no_plan => 1)
         );
         1;
-    }, "two no_plans are not ok";
+    }, "two no_plans are ok";
 
     ok eval {
         $onlyone->receive_event(
@@ -77,7 +104,7 @@ note "Error message with no file/line"; {
 
     ok eval {
         $onlyone->receive_event(
-            Test::Builder2::Event::SetPlan->new(asserts_expected => 1)
+            Test::Builder2::Event::SetPlan->new(asserts_expected => 2)
         );
         1;
     }, "one plan is ok";
@@ -85,7 +112,7 @@ note "Error message with no file/line"; {
     ok !eval {
         $onlyone->receive_event(
             Test::Builder2::Event::SetPlan->new(
-                asserts_expected => 1,
+                asserts_expected => 3,
             )
         );
         1;

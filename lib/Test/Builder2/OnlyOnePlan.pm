@@ -54,6 +54,19 @@ specifically allows...
 
     done_testing(5);
 
+
+=head3 Setting a fixed plan the same as the existing fixed plan.
+
+This specificially allows redundant planning...
+
+    use Test::More tests => 3;
+
+    pass("One");
+    pass("Two");
+    pass("Three");
+
+    done_testing(3);
+
 =cut
 
 has existing_plan =>
@@ -81,6 +94,9 @@ sub already_saw_plan {
 
     return if $existing_plan->no_plan &&
               ( $new_plan->no_plan || $new_plan->asserts_expected );
+
+    my $asserts_expected = $existing_plan->asserts_expected;
+    return if $asserts_expected && $asserts_expected == $new_plan->asserts_expected;
 
     my $error = "Tried to set a plan" . $self->_plan_location($new_plan);
     $error .= ", but a plan was already set" . $self->_plan_location($existing_plan);
