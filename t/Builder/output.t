@@ -23,9 +23,9 @@ END { 1 while unlink($tmpfile) }
     close *$out;
 
     undef $out;
-    open(IN, $tmpfile) or die $!;
-    chomp(my $line = <IN>);
-    close IN;
+    open(my $in, $tmpfile) or die $!;
+    chomp(my $line = <$in>);
+    close $in;
 
     is($line, 'hi!');
 }
@@ -40,9 +40,9 @@ END { 1 while unlink($tmpfile) }
     close *$out;
     undef $out;
     select $old;
-    open(IN, $tmpfile) or die $!;
-    my @lines = <IN>;
-    close IN;
+    open(my $in, $tmpfile) or die $!;
+    my @lines = <$in>;
+    close $in;
 
     like($lines[1], qr/Hello!/);
 }
