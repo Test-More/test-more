@@ -10,6 +10,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 # Conditionally loads threads::shared and fixes up old versions
 use Test::Builder2::threads::shared;
 
+use Test::Builder2::OnlyOnePlan;
 use Test::Builder2::Events;
 use Test::Builder2::TestState;
 
@@ -80,6 +81,9 @@ sub _make_default {
 
     my $obj = $class->create;
     $obj->{TestState} = Test::Builder2::TestState->default;
+    $obj->{TestState}->add_early_watchers(
+        Test::Builder2::OnlyOnePlan->new
+    );
 
     return $obj;
 }
@@ -368,7 +372,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Name}         = $0;
     $self->is_passing(1);
     $self->{Ending}       = 0;
-    $self->{Done_Testing} = 0;
 
     $self->{Original_Pid} = $$;
     $self->{Child_Name}   = undef;
@@ -378,7 +381,8 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->load("Test::Builder2::Formatter::TAP");
     $self->{TestState} = Test::Builder2::TestState->create(
-        formatters => [Test::Builder2::Formatter::TAP->new]
+        formatters      => [Test::Builder2::Formatter::TAP->new],
+        early_watchers  => [Test::Builder2::OnlyOnePlan->new],
     );
     $self->formatter->use_numbers(1);
 
@@ -470,8 +474,6 @@ sub plan {
 
     local $Level = $Level + 1;
 
-    $self->croak("You tried to plan twice") if $self->_plan_handled;
-
     if( my $method = $plan_cmds{$cmd} ) {
         local $Level = $Level + 1;
         $self->$method($arg);
@@ -545,7 +547,7 @@ sub no_plan {
 
     $self->carp("no_plan takes no arguments") if $arg;
 
-    $self->test_start;
+    $self->test_start unless $self->test_started;
 
     $self->set_plan(
         no_plan => 1
@@ -593,29 +595,23 @@ Or to plan a variable number of tests:
 sub done_testing {
     my($self, $num_tests) = @_;
 
-    if( $self->{Done_Testing} ) {
-        my($file, $line) = @{$self->{Done_Testing}}[1,2];
-        $self->croak(qq{done_testing() called twice.\n  First at $file line $line,\n  then });
-        return;
-    }
-
-    $self->{Done_Testing} = [caller];
-
-    $self->test_start unless $self->test_started;
+    $self->croak("Tried to finish testing, but testing is already done (or wasn't started)")
+      unless $self->test_started;
 
     if( defined $num_tests ) {
-        if( $self->expected_tests && $num_tests != $self->expected_tests ) {
-            $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".
-                          "but done_testing() expects $num_tests");
-        }
+        $self->is_passing(0) if $num_tests != $self->current_test;
 
-        if( $num_tests != $self->current_test ) {
-            $self->is_passing(0);
+        my $expected_tests = $self->expected_tests;
+        if( $expected_tests && $num_tests != $expected_tests ) {
+            $self->ok(0, "planned to run $expected_tests but done_testing() expects $num_tests");
+        }
+        else {
+            $self->set_plan( asserts_expected => $num_tests );
         }
     }
-
-    my %plan = defined $num_tests ? ( asserts_expected => $num_tests ) : ( no_plan => 1 );
-    $self->set_plan( %plan ) unless $self->_plan_handled;
+    elsif( !$self->_plan_handled ) {
+        $self->set_plan( no_plan => 1 );
+    }
 
     # No tests were run
     $self->is_passing(0) if $self->current_test == 0;
