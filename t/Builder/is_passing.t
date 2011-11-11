@@ -90,14 +90,6 @@ use Test::Builder::NoOutput;
 # is_passing() with no tests run vs done_testing()
 {
     my $tb = Test::Builder::NoOutput->create;
-    $tb->done_testing();
-    ok !$tb->is_passing, "No tests run with done_testing()";
-}
-
-
-# is_passing() with no tests run vs done_testing()
-{
-    my $tb = Test::Builder::NoOutput->create;
     $tb->ok(1);
     $tb->done_testing();
     ok $tb->is_passing, "All tests passed with done_testing()";

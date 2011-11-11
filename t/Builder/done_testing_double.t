@@ -28,9 +28,7 @@ my $tb = Test::Builder::NoOutput->create;
 #line 24
     $tb->done_testing(3);
     ok !eval { $tb->done_testing; };
-    like $@, qr/^\Qdone_testing() called twice/, "done_testing twice error message";
-    like $@, qr/\n\s+First at \Q$0\E line 24/,   "  part 2";
-    like $@, qr/\n\s+then  at \Q$0\E line 25/,   "  part 3";
+    is $@, "Tried to finish testing, but testing is already done (or wasn't started) at $0 line 25.\n";
 }
 
 is($tb->read, <<"END", "multiple done_testing");
