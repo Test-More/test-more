@@ -30,7 +30,7 @@ suitable for CPAN modules and other pursuits.  If you wish to do more
 complicated testing, use the Test::More module (a drop-in replacement
 for this one).
 
-The basic unit of Perl testing is the ok.  For each thing you want to
+The basic unit of Perl testing is the I<ok>.  For each thing you want to
 test your program will print out an "ok" or "not ok" to indicate pass
 or fail.  You do this with the ok() function (see below).
 
@@ -51,10 +51,10 @@ You must have a plan.
   ok( $foo eq $bar, $name );
   ok( $foo eq $bar );
 
-ok() is given an expression (in this case C<$foo eq $bar>).  If it's
+C<ok()> is given an expression (in this case C<$foo eq $bar>).  If it's
 true, the test passed.  If it's false, it didn't.  That's about it.
 
-ok() prints out either "ok" or "not ok" along with a test number (it
+C<ok()> prints out either "ok" or "not ok" along with a test number (it
 keeps track of that for you).
 
   # This produces "ok 1 - Hell not yet frozen over" (or not ok)
@@ -111,7 +111,7 @@ recommended you look at L<Test::More>.
 
 =head1 EXAMPLE
 
-Here's an example of a simple .t file for the fictional Film module.
+Here's an example of a simple F<.t> file for the fictional Film module.
 
     use Test::Simple tests => 5;
 

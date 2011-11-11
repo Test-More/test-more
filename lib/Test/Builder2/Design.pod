@@ -80,7 +80,7 @@ does> and it has to be able to test every conceivable thing.
 
 Every assumption TB2 makes about its environment, how testing is done or
 what is being tested eliminates that category from being easily tested by
-Perl programmers.  I knocks the entire modern suite of Perl testing tools
+Perl programmers.  It knocks the entire modern suite of Perl testing tools
 from their hands.
 
 While TB2 has to be universal, extensions do not.  TB2 will reject many
