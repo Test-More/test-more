@@ -55,14 +55,14 @@ work together>.
 Returns a Test::Builder object representing the current state of the
 test.
 
-Since you only run one test per program C<new> always returns the same
+Since you only run one test per program C<new()> always returns the same
 Test::Builder object.  No matter how many times you call C<new()>, you're
 getting the same object.  This is called the default.  This is done so that
 multiple modules share such global information as the test counter and
 where test output is going.
 
 If you want a completely new Test::Builder object different from the
-default, use C<create>.
+default, use C<create()>.
 
 =cut
 
@@ -117,10 +117,10 @@ sub create {
 
 Returns a new instance of C<Test::Builder>.  Any output from this child will
 be indented four spaces more than the parent's indentation.  When done, the
-C<finalize> method I<must> be called explicitly.
+C<finalize()> method I<must> be called explicitly.
 
 Trying to create a new child with a previous child still active (i.e.,
-C<finalize> not called) will C<croak>.
+C<finalize()> not called) will C<croak>.
 
 Trying to run a test when you have an open child will also C<croak> and cause
 the test suite to fail.
