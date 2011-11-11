@@ -991,7 +991,7 @@ the string version.
 
   $Test->isnt_num($got, $dont_expect, $name);
 
-Like Test::More's C<isnt()>.  Checks if C<$got ne $dont_expect>.  This is
+Like Test::More's C<isnt()>.  Checks if C<$got != $dont_expect>.  This is
 the numeric version.
 
 =cut
