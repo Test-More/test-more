@@ -129,7 +129,7 @@ the end.
 
 Sometimes you really don't know how many tests were run, or it's too
 difficult to calculate.  In which case you can leave off
-$number_of_tests_run.
+C<$number_of_tests_run>.
 
 In some cases, you'll want to completely skip an entire testing script.
 
@@ -145,7 +145,7 @@ but 'fail', you'd do:
 
   use Test::More tests => 23, import => ['!fail'];
 
-Alternatively, you can use the plan() function.  Useful for when you
+Alternatively, you can use the C<plan()> function.  Useful for when you
 have to calculate the number of tests.
 
   use Test::More;
@@ -205,7 +205,7 @@ sub import_extra {
 If you don't know how many tests you're going to run, you can issue
 the plan when you're done running tests.
 
-$number_of_tests is the same as plan(), it's the number of tests you
+C<$number_of_tests> is the same as C<plan()>, it's the number of tests you
 expected to run.  You can omit this, in which case the number of tests
 you ran doesn't matter, just the fact that your tests ran to
 conclusion.
@@ -273,18 +273,18 @@ For example:
 
 (Mnemonic:  "This is ok.")
 
-$test_name is a very short description of the test that will be printed
+C<$test_name> is a very short description of the test that will be printed
 out.  It makes it very easy to find a test in your script when it fails
-and gives others an idea of your intentions.  $test_name is optional,
+and gives others an idea of your intentions.  C<$test_name> is optional,
 but we B<very> strongly encourage its use.
 
-Should an ok() fail, it will produce some diagnostics:
+Should an C<ok()> fail, it will produce some diagnostics:
 
     not ok 18 - sufficient mucus
     #   Failed test 'sufficient mucus'
     #   in foo.t at line 42.
 
-This is the same as Test::Simple's ok() routine.
+This is the same as Test::Simple's C<ok()> routine.
 
 =cut
 
@@ -302,7 +302,7 @@ sub ok ($;$) {
   is  ( $got, $expected, $test_name );
   isnt( $got, $expected, $test_name );
 
-Similar to ok(), is() and isnt() compare their two arguments
+Similar to C<ok()>, C<is()> and C<isnt()> compare their two arguments
 with C<eq> and C<ne> respectively and use the result of that to
 determine if the test succeeded or failed.  So these:
 
@@ -319,9 +319,9 @@ are similar to these:
 
 (Mnemonic:  "This is that."  "This isn't that.")
 
-So why use these?  They produce better diagnostics on failure.  ok()
-cannot know what you are testing for (beyond the name), but is() and
-isnt() know what the test was and why it failed.  For example this
+So why use these?  They produce better diagnostics on failure.  C<ok()>
+cannot know what you are testing for (beyond the name), but C<is()> and
+C<isnt()> know what the test was and why it failed.  For example this
 test:
 
     my $foo = 'waffle';  my $bar = 'yarblokos';
@@ -337,7 +337,7 @@ Will produce something like this:
 
 So you can figure out what went wrong without rerunning the test.
 
-You are encouraged to use is() and isnt() over ok() where possible,
+You are encouraged to use C<is()> and C<isnt()> over C<ok()> where possible,
 however do not be tempted to use them to find out if something is
 true or false!
 
@@ -346,11 +346,11 @@ true or false!
 
 This does not check if C<exists $brooklyn{tree}> is true, it checks if
 it returns 1.  Very different.  Similar caveats exist for false and 0.
-In these cases, use ok().
+In these cases, use C<ok()>.
 
   ok( exists $brooklyn{tree},    'A tree grows in Brooklyn' );
 
-A simple call to isnt() usually does not provide a strong test but there
+A simple call to C<isnt()> usually does not provide a strong test but there
 are cases when you cannot say much more about a value than that it is
 different from some other value:
 
@@ -362,7 +362,7 @@ different from some other value:
   isnt $obj, $clone, "clone() produces a different object";
 
 For those grammatical pedants out there, there's an C<isn't()>
-function which is an alias of isnt().
+function which is an alias of C<isnt()>.
 
 =cut
 
@@ -378,13 +378,13 @@ sub isnt ($$;$) {
     return $tb->isnt_eq(@_);
 }
 
-*isn't = \&isnt;
+*isn't = \&isnt; #'
 
 =item B<like>
 
   like( $got, qr/expected/, $test_name );
 
-Similar to ok(), like() matches $got against the regex C<qr/expected/>.
+Similar to C<ok()>, C<like()> matches C<$got> against the regex C<qr/expected/>.
 
 So this:
 
@@ -405,8 +405,8 @@ currently not supported):
 
 Regex options may be placed on the end (C<'/expected/i'>).
 
-Its advantages over ok() are similar to that of is() and isnt().  Better
-diagnostics on failure.
+Its advantages over C<ok()> are similar to that of C<is()> and C<isnt()>.
+Better diagnostics on failure.
 
 =cut
 
@@ -420,7 +420,7 @@ sub like ($$;$) {
 
   unlike( $got, qr/expected/, $test_name );
 
-Works exactly as like(), only it checks if $got B<does not> match the
+Works exactly as C<like()>, only it checks if C<$got> B<does not> match the
 given pattern.
 
 =cut
@@ -435,7 +435,7 @@ sub unlike ($$;$) {
 
   cmp_ok( $got, $op, $expected, $test_name );
 
-Halfway between ok() and is() lies cmp_ok().  This allows you to
+Halfway between C<ok()> and C<is()> lies C<cmp_ok()>.  This allows you to
 compare two arguments using any binary perl operator.
 
     # ok( $got eq $expected );
@@ -448,8 +448,8 @@ compare two arguments using any binary perl operator.
     cmp_ok( $got, '&&', $expected, 'this && that' );
     ...etc...
 
-Its advantage over ok() is when the test fails you'll know what $got
-and $expected were:
+Its advantage over C<ok()> is when the test fails you'll know what C<$got>
+and C<$expected> were:
 
     not ok 1
     #   Failed test in foo.t at line 12.
@@ -481,7 +481,7 @@ sub cmp_ok($$$;$) {
   can_ok($module, @methods);
   can_ok($object, @methods);
 
-Checks to make sure the $module or $object can do these @methods
+Checks to make sure the C<$module> or C<$object> can do these C<@methods>
 (works with functions, too).
 
     can_ok('Foo', qw(this that whatever));
@@ -496,7 +496,7 @@ is almost exactly like saying:
 only without all the typing and with a better interface.  Handy for
 quickly testing an interface.
 
-No matter how many @methods you check, a single can_ok() call counts
+No matter how many C<@methods> you check, a single C<can_ok()> call counts
 as one test.  If you desire otherwise, use:
 
     foreach my $meth (@methods) {
@@ -566,7 +566,7 @@ It works on references, too:
     isa_ok( $array_ref, 'ARRAY' );
 
 The diagnostics of this test normally just refer to 'the object'.  If
-you'd like them to be more specific, you can supply an $object_name
+you'd like them to be more specific, you can supply an C<$object_name>
 (for example 'Test customer').
 
 =cut
@@ -636,16 +636,16 @@ WHOA
   my $obj = new_ok( $class => \@args, $object_name );
 
 A convenience function which combines creating an object and calling
-isa_ok() on that object.
+C<isa_ok()> on that object.
 
 It is basically equivalent to:
 
     my $obj = $class->new(@args);
     isa_ok $obj, $class, $object_name;
 
-If @args is not given, an empty list will be used.
+If C<@args> is not given, an empty list will be used.
 
-This function only works on new() and it assumes new() will return
+This function only works on C<new()> and it assumes C<new()> will return
 just a single object which isa C<$class>.
 
 =cut
@@ -677,7 +677,7 @@ sub new_ok {
 
     subtest $name => \&code;
 
-subtest() runs the &code as its own little test with its own plan and
+C<subtest()> runs the C<&code> as its own little test with its own plan and
 its own result.  The main test counts this as a single test using the
 result of the whole subtest to determine if its ok or not ok.
 
@@ -751,9 +751,9 @@ sub subtest {
 
 Sometimes you just want to say that the tests have passed.  Usually
 the case is you've got some complicated condition that is difficult to
-wedge into an ok().  In this case, you can simply use pass() (to
-declare the test ok) or fail (for not ok).  They are synonyms for
-ok(1) and ok(0).
+wedge into an C<ok()>.  In this case, you can simply use C<pass()> (to
+declare the test ok) or C<fail()> (for not ok).  They are synonyms for
+C<ok(1)> and C<ok(0)>.
 
 Use these very, very, very sparingly.
 
@@ -787,12 +787,12 @@ C<use_ok> and C<require_ok>.
    BEGIN { use_ok($module); }
    BEGIN { use_ok($module, @imports); }
 
-These simply use the given $module and test to make sure the load
-happened ok.  It's recommended that you run use_ok() inside a BEGIN
+These simply use the given C<$module> and test to make sure the load
+happened ok.  It's recommended that you run C<use_ok()> inside a C<BEGIN>
 block so its functions are exported at compile-time and prototypes are
 properly honored.
 
-If @imports are given, they are passed through to the use.  So this:
+If C<@imports> are given, they are passed through to the use.  So this:
 
    BEGIN { use_ok('Some::Module', qw(foo bar)) }
 
@@ -892,7 +892,7 @@ sub _eval {
    require_ok($module);
    require_ok($file);
 
-Like use_ok(), except it requires the $module or $file.
+Like C<use_ok()>, except it requires the C<$module> or C<$file>.
 
 =cut
 
@@ -943,7 +943,7 @@ sub _is_module_name {
 
 =head2 Complex data structures
 
-Not everything is a simple eq check or regex.  There are times you
+Not everything is a simple C<eq> check or regex.  There are times you
 need to see if two data structures are equivalent.  For these
 instances Test::More provides a handful of useful functions.
 
@@ -955,16 +955,16 @@ B<NOTE> I'm not quite sure what will happen with filehandles.
 
   is_deeply( $got, $expected, $test_name );
 
-Similar to is(), except that if $got and $expected are references, it
+Similar to C<is()>, except that if C<$got> and C<$expected> are references, it
 does a deep comparison walking each data structure to see if they are
 equivalent.  If the two structures are different, it will display the
 place where they start differing.
 
-is_deeply() compares the dereferenced values of references, the
+C<is_deeply()> compares the dereferenced values of references, the
 references themselves (except for their type) are ignored.  This means
 aspects such as blessing and ties are not considered "different".
 
-is_deeply() currently has very limited handling of function reference
+C<is_deeply()> currently has very limited handling of function reference
 and globs.  It merely checks if they have the same referent.  This may
 improve in the future.
 
@@ -1095,7 +1095,7 @@ messages which are safer than just C<print STDERR>.
   diag(@diagnostic_message);
 
 Prints a diagnostic message which is guaranteed not to interfere with
-test output.  Like C<print> @diagnostic_message is simply concatenated
+test output.  Like C<print>, C<@diagnostic_message> is simply concatenated
 together.
 
 Returns false, so as to preserve failure.
@@ -1123,7 +1123,7 @@ interfere with the test.
 
   note(@diagnostic_message);
 
-Like diag(), except the message will not be seen when the test is run
+Like C<diag()>, except the message will not be seen when the test is run
 in a harness.  It will only be visible in the verbose TAP stream.
 
 Handy for putting in notes which might be useful for debugging, but
@@ -1170,7 +1170,7 @@ sub explain {
 
 Sometimes running a test under certain conditions will cause the
 test script to die.  A certain function or method isn't implemented
-(such as fork() on MacOS), some resource isn't available (like a 
+(such as C<fork()> on MacOS), some resource isn't available (like a 
 net connection) or a module isn't available.  In these cases it's
 necessary to skip tests, or declare that they are supposed to fail
 but will work in the future (a todo test).
@@ -1192,8 +1192,8 @@ just show you...
       ...normal testing code goes here...
   }
 
-This declares a block of tests that might be skipped, $how_many tests
-there are, $why and under what $condition to skip them.  An example is
+This declares a block of tests that might be skipped, C<$how_many> tests
+there are, C<$why> and under what C<$condition> to skip them.  An example is
 the easiest way to illustrate:
 
     SKIP: {
@@ -1212,9 +1212,9 @@ If the user does not have HTML::Lint installed, the whole block of
 code I<won't be run at all>.  Test::More will output special ok's
 which Test::Harness interprets as skipped, but passing, tests.
 
-It's important that $how_many accurately reflects the number of tests
+It's important that C<$how_many> accurately reflects the number of tests
 in the SKIP block so the # of tests run will match up with your plan.
-If your plan is C<no_plan> $how_many is optional and will default to 1.
+If your plan is C<no_plan>, C<$how_many> is optional and will default to 1.
 
 It's perfectly safe to nest SKIP blocks.  Each SKIP block must have
 the label C<SKIP>, or Test::More can't work its magic.
@@ -1259,7 +1259,7 @@ sub skip {
         ...normal testing code goes here...
     }
 
-Declares a block of tests you expect to fail and $why.  Perhaps it's
+Declares a block of tests you expect to fail and C<$why>.  Perhaps it's
 because you haven't fixed a bug or haven't finished a new feature:
 
     TODO: {
@@ -1287,7 +1287,6 @@ and you'll know immediately when they're fixed.
 
 Once a todo test starts succeeding, simply move it outside the block.
 When the block is empty, delete it.
-
 
 =item B<todo_skip>
 
@@ -1332,7 +1331,7 @@ sub todo_skip {
 
 B<If it's something the user might not be able to do>, use SKIP.
 This includes optional modules that aren't installed, running under
-an OS that doesn't have some feature (like fork() or symlinks), or maybe
+an OS that doesn't have some feature (like C<fork()> or symlinks), or maybe
 you need an Internet connection and one isn't available.
 
 B<If it's something the programmer hasn't done yet>, use TODO.  This
@@ -1378,11 +1377,11 @@ sub BAIL_OUT {
 
 The use of the following functions is discouraged as they are not
 actually testing functions and produce no diagnostics to help figure
-out what went wrong.  They were written before is_deeply() existed
+out what went wrong.  They were written before C<is_deeply()> existed
 because I couldn't figure out how to display a useful diff of two
 arbitrary data structures.
 
-These functions are usually used inside an ok().
+These functions are usually used inside an C<ok()>.
 
     ok( eq_array(\@got, \@expected) );
 
@@ -1709,14 +1708,14 @@ directly.
 
 =item Overloaded objects
 
-String overloaded objects are compared B<as strings> (or in cmp_ok()'s
+String overloaded objects are compared B<as strings> (or in C<cmp_ok()>'s
 case, strings or numbers as appropriate to the comparison op).  This
 prevents Test::More from piercing an object's interface allowing
 better blackbox testing.  So if a function starts returning overloaded
 objects instead of bare strings your tests won't notice the
 difference.  This is good.
 
-However, it does mean that functions like is_deeply() cannot be used to
+However, it does mean that functions like C<is_deeply()> cannot be used to
 test the internals of string overloaded objects.  In this case I would
 suggest L<Test::Deep> which contains more flexible testing functions for
 complex data structures.
@@ -1724,7 +1723,7 @@ complex data structures.
 
 =item Threads
 
-Test::More will only be aware of threads if "use threads" has been done
+Test::More will only be aware of threads if C<use threads> has been done
 I<before> Test::More is loaded.  This is ok:
 
     use threads;
@@ -1744,7 +1743,7 @@ This may cause problems:
 
 This is a case of convergent evolution with Joshua Pritikin's Test
 module.  I was largely unaware of its existence when I'd first
-written my own ok() routines.  This module exists because I can't
+written my own C<ok()> routines.  This module exists because I can't
 figure out how to easily wedge test names into Test's interface (along
 with a few other problems).
 
