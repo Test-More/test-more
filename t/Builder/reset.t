@@ -51,14 +51,14 @@ $tb->reset;
 
 # Test the state of the reset builder
 $Test->ok( !defined $tb->exported_to, 'exported_to' );
-$Test->is_eq( $tb->expected_tests, 0, 'expected_tests' );
-$Test->is_eq( $tb->level,          1, 'level' );
-$Test->is_eq( $tb->use_numbers,    1, 'use_numbers' );
-$Test->is_eq( $tb->no_header,      0, 'no_header' );
-$Test->is_eq( $tb->no_ending,      0, 'no_ending' );
-$Test->is_eq( $tb->current_test,   0, 'current_test' );
-$Test->is_eq( scalar $tb->summary, 0, 'summary' );
-$Test->is_eq( scalar $tb->details, 0, 'details' );
+$Test->ok( !$tb->expected_tests      , 'expected_tests' );
+$Test->is_num( $tb->level,          1, 'level' );
+$Test->ok( $tb->use_numbers,         , 'use_numbers' );
+$Test->ok( !$tb->no_header,          , 'no_header' );
+$Test->ok( !$tb->no_ending,          , 'no_ending' );
+$Test->is_num( $tb->current_test,   0, 'current_test' );
+$Test->is_num( scalar $tb->summary, 0, 'summary' );
+$Test->is_num( scalar $tb->details, 0, 'details' );
 $Test->is_eq( fileno $tb->output,
               fileno $Original_Output{output},         'output' );
 $Test->is_eq( fileno $tb->failure_output,
