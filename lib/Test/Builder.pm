@@ -1507,7 +1507,19 @@ sub no_header {
     return $self->{No_Header};
 }
 
-foreach my $attribute (qw(No_Ending No_Diag)) {
+
+sub no_diag {
+    my $self = shift;
+
+    if( @_ ) {
+        my $no = shift;
+        $self->formatter->show_logs(!$no);
+    }
+
+    return !$self->formatter->show_logs;
+}
+
+foreach my $attribute (qw(No_Ending)) {
     my $method = lc $attribute;
 
     my $code = sub {

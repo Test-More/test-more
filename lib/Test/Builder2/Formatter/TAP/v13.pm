@@ -153,6 +153,12 @@ has show_ending_commentary =>
   default       => 1
 ;
 
+has show_logs =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 1
+;
+
 has indent =>
   is            => 'rw',
   isa           => 'Str',
@@ -465,6 +471,8 @@ sub _escape {
 sub accept_log {
     my $self = shift;
     my($log, $ec) = @_;
+
+    return if !$self->show_logs;
 
     if( $log->between_levels( "warning", "highest" ) ) {
         $self->diag( $log->message );
