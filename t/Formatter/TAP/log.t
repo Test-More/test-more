@@ -119,4 +119,31 @@ MSG
     is last_error(), '';
 }
 
+
+note "->show_log"; {
+    my $ec = setup;
+    ok $formatter->show_logs, "show_log defaults to on";
+
+    note "...turn show_log off";
+    $formatter->show_logs(0);
+
+    $ec->post_event( Test::Builder2::Event::TestStart->new );
+
+    $ec->post_event( Test::Builder2::Event::Log->new(
+        message => "this should not show up",
+        level   => "notice"
+    ));
+
+    $ec->post_event( Test::Builder2::Event::Log->new(
+        message => "nor should this",
+        level   => "warning"
+    ));
+
+    is last_output(), <<'', "show_log(0) prevented log messages";
+TAP version 13
+
+    is last_error(), '';
+}
+
+
 done_testing;
