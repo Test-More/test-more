@@ -1475,8 +1475,8 @@ sub use_numbers {
 
     $Test->no_diag($no_diag);
 
-If set true no diagnostics will be printed.  This includes calls to
-C<diag()>.
+If set true no diagnostics nor notes will be displayed.  This includes
+calls to C<diag()> and C<note()>.
 
 =item B<no_ending>
 
@@ -1576,7 +1576,6 @@ sub diag {
     my $self = shift;
 
     return unless @_;
-    return if $self->no_diag;
     return $self->note(@_) if $self->in_todo;
 
     $self->test_state->post_event(
@@ -1603,7 +1602,6 @@ sub note {
     my $self = shift;
 
     return unless @_;
-    return if $self->no_diag;
 
     $self->test_state->post_event(
         Test::Builder2::Event::Log->new(
