@@ -384,10 +384,11 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
         formatters      => [Test::Builder2::Formatter::TAP->new],
         early_watchers  => [Test::Builder2::OnlyOnePlan->new],
     );
-    $self->formatter->use_numbers(1);
 
+    $self->use_numbers(1);
     $self->no_header(0);
-    $self->{No_Ending} = 0;
+    $self->no_diag(0);
+    $self->no_ending(0);
 
     $self->{Todo}       = undef;
     $self->{Todo_Stack} = [];
