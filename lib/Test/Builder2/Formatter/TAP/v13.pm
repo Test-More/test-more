@@ -503,7 +503,7 @@ sub accept_subtest_end {
     my($event, $ec) = @_;
 
     my $result = Test::Builder2::Result->new_result(
-        pass => $event->history->is_passing
+        pass => $event->history->test_was_successful
     );
 
     # This result is only applicable to TAP, it's not a real test event and
