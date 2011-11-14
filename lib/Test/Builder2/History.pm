@@ -23,11 +23,11 @@ Test::Builder2::History - Manage the history of test results
 
     my $pass  = Test::Builder2::Result->new_result( pass => 1 );
     $ec->post_event( $pass );
-    $ec->history->is_passing;   # true
+    $ec->history->can_succeed;   # true
 
     my $result  = Test::Builder2::Result->new_result( pass => 0 );
     $ec->post_event( $pass );
-    $ec->history->is_passing;   # false
+    $ec->history->can_succeed;   # false
 
 
 =head1 DESCRIPTION
@@ -228,9 +228,12 @@ A count of the number of TODO tests have been added to results.
 
 A count of the number of SKIP tests have been added to results.
 
-=head3 is_passing
+=head3 can_succeed
 
-Returns true if we have not yet seen a failing test.
+Returns true if the test can still succeed.  That is, if nothing yet
+has happened to cause it to fail.
+
+Currently it only checks if any results have failed.
 
 This may change to include whether the plan can be fulfilled.  For
 example, running too few tests is ok, but running too many can never
@@ -238,7 +241,7 @@ succeed.
 
 =cut
 
-sub is_passing { shift->fail_count == 0 }
+sub can_succeed { shift->fail_count == 0 }
 
 =head3 test_was_successful
 
@@ -255,7 +258,7 @@ The conditions for a test passing are...
 * If asked at END time, the test process is exiting with 0
 
 Note that this will not be true until C<test_end> has been seen.
-Until then, use C<is_passing>.
+Until then, use C<can_succeed>.
 
 =cut
 
