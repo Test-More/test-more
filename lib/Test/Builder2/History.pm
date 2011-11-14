@@ -232,6 +232,10 @@ A count of the number of SKIP tests have been added to results.
 
 Returns true if we have not yet seen a failing test.
 
+This may change to include whether the plan can be fulfilled.  For
+example, running too few tests is ok, but running too many can never
+succeed.
+
 =cut
 
 sub is_passing { shift->fail_count == 0 }
