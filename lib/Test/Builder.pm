@@ -2342,49 +2342,33 @@ sub _ending {
     # Don't do the ending analysis for forked children
     $self->formatter->show_ending_commentary(0) unless $self->{Original_Pid} == $$;
 
+    # They never set a plan nor ran a test.
+    return if !$plan && !$history->test_count;
+
     # End the stream unless we (or somebody else) already ended it
     $self->test_end if $history->stream_depth;
 
+    # Save the process exit code for later, we might change it.
     my $real_exit_code = $?;
 
     # Don't bother with an ending if this is a forked copy.  Only the parent
     # should do the ending.
-
     if( $self->{Original_Pid} != $$ ) {
         return;
     }
 
-    # Ran tests but never declared a plan or hit done_testing
-    if( !$self->_plan_handled and $self->current_test ) {
-        $self->is_passing(0);
-    }
-
-    # Exit if plan() was never called.  This is so "require Test::Simple"
-    # doesn't puke.
-    if( !$self->_plan_handled ) {
-        return;
-    }
+    # Ask the history if we passed.
+    $self->is_passing( $history->test_was_successful );
 
     # Don't do an ending if we bailed out.
     if( $self->{Bailed_Out} ) {
         $self->is_passing(0);
         return;
     }
-    # Figure out if we passed or failed and print helpful messages.
-    my $test_results = $history->results;
-    if(@$test_results) {
-        my $num_extra = $plan->no_plan ? 0 : $self->current_test - $plan->asserts_expected;
-            
-        my $num_failed = grep $_->is_fail, @{$test_results}[ 0 .. $self->current_test - 1 ];
 
-        if( $num_extra != 0 ) {
-            $self->is_passing(0);
-        }
-
-        if($num_failed) {
-            $self->is_passing(0);
-        }
-
+    # Some tests were run...
+    if( $history->test_count ) {
+        # ...but we exited with non-zero
         if($real_exit_code) {
             $self->diag(<<"FAIL");
 Looks like your test exited with $real_exit_code just after @{[ $self->current_test ]}.
@@ -2393,22 +2377,23 @@ FAIL
             _my_exit($real_exit_code) && return;
         }
 
-        my $exit_code;
-        if($num_failed) {
+        my $exit_code = 0;
+        # Extra tests
+        if(my $num_failed = $history->fail_count) {
             $exit_code = $num_failed <= 254 ? $num_failed : 254;
         }
-        elsif( $num_extra != 0 ) {
+        # Too many tests
+        elsif( $plan && !$plan->no_plan && $self->current_test > $plan->asserts_expected ) {
             $exit_code = 255;
-        }
-        else {
-            $exit_code = 0;
         }
 
         _my_exit($exit_code) && return;
     }
+    # Everything was skipped
     elsif( $plan->skip ) {
         _my_exit(0) && return;
     }
+    # We died before running any tests
     elsif($real_exit_code) {
         $self->diag(<<"FAIL");
 Looks like your test exited with $real_exit_code before it could output anything.

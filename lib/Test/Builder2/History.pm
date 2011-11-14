@@ -236,6 +236,60 @@ Returns true if we have not yet seen a failing test.
 
 sub is_passing { shift->fail_count == 0 }
 
+=head3 test_was_successful
+
+    my $test_passed = $history->test_was_successful;
+
+This returns true if the test is considered successful, false otherwise.
+
+The conditions for a test passing are...
+
+* test_start, set_plan and test_end events were seen
+* the plan is satisfied (the right number of Results were seen)
+* no Results were seen out of order according to their test_number
+* For every Result, is_fail() is false
+* If asked at END time, the test process is exiting with 0
+
+Note that this will not be true until C<test_end> has been seen.
+Until then, use C<is_passing>.
+
+=cut
+
+sub test_was_successful {
+    my $self = shift;
+
+    # We're still testing
+    return 0 if $self->stream_depth;
+
+    my $plan = $self->plan;
+
+    # No plan was seen
+    if( !$plan ) {
+        return 0;
+    }
+
+    # We failed a test
+    if( $self->fail_count ) {
+        return 0;
+    }
+
+    if( $plan->no_plan ) {
+        # Didn't run any tests
+        return 0 if !$self->test_count;
+    }
+    else {
+        # Wrong number of tests
+        return 0 if $self->test_count != $plan->asserts_expected;
+    }
+
+    # We're exiting with non-zero
+    if($?) {
+        return 0;
+    }
+
+    return 1;
+}
+
 =head3 plan
 
     my $plan = $history->plan;
