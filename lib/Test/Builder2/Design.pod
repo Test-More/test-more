@@ -6,12 +6,13 @@ Test::Builder2::Design - Explaining the design of Test::Builder2
 
 =head1 DESCRIPTION
 
-This document is about the design and philosophy of Test::Builder2 for
-those willing to contribute to the project, design their own advanced
-testing modules, extend Test::Builder2 and for the curious.
+This document is about the design and philosophy of Test::Builder2. It is
+written for the curious, as well as for interested in contributing to the 
+project, designing their own advanced testing modules, or extending 
+Test::Builder2.
 
-Those not already familiar with L<Test::Builder> may wish to have a gander
-at it.
+Having a gander at L<Test::Builder> may also be useful, if you're not already 
+familiar with it.
 
 There is a glossary of terms at the end of this document.
 
@@ -19,43 +20,44 @@ There is a glossary of terms at the end of this document.
 =head1 What is Test::Builder2?
 
 L<Test::Builder2> is a complete rewrite of L<Test::Builder> with fewer
-assumptions about how testing is to be done and more extensibility.
+assumptions about how testing is to be done, and more extensibility.
 
 So what is Test::Builder?  It is the object that backs all the Perl testing
 modules worth knowing about.  It provides the baseline functionality of
 testing, coordinates testing modules and formats the results as TAP.  It is
-what allows you to use multiple C<Test::> modules written by completely
-different authors independently together in the same test script without
+what allows you to use multiple independent C<Test::> modules, written by 
+completely different authors, together in the same test script without
 them stepping on each other.
 
 Fundamentally, TB2 coordinates these things:
 
 =over 4
 
-=item Record when a test starts and ends
+=item Recording when a test starts and ends
 
-This allows setting of the plan, if any, and maybe printing out headers.
+TB2 allows a C<Test::> module to set a plan, and to print out headers, if 
+required.
 
-=item Record results
+=item Recording results
 
-Handing them to a TB2::History object.
+TB2 hands results to a TB2::History object.
 
-=item Format results
+=item Formatting results
 
-Handing them to a TB2::Formatter object.
+TB2 hands results to a TB2::Formatter object.
 
-=item Stream (output) results
+=item Streaming (outputting) results
 
-The TB2::Formatter hands it to a TB2::Streamer.
+The TB2::Formatter hands results to a TB2::Streamer.
 
 =back
 
-You hand TB2 the result of an assert, and it decides when and how to format
-and output it.  That's about it (rjbs gets credit for bringing this
-revelation of simplicity).
+In short, you hand TB2 the result of an assert, and it decides when and 
+how to format and output it.  That's about it (rjbs gets credit for 
+bringing this revelation of simplicity).
 
-There's the additional meta-responsibility of being the central point to
-coordinate extensions and provide hooks into testing events.
+TB2 also takes on the additional meta-responsibility of providing a central 
+point to coordinate extensions and to provide hooks into testing events.
 
 
 =head1 Design Goals
@@ -63,49 +65,51 @@ coordinate extensions and provide hooks into testing events.
 To understand Test::Builder2 you must understand its design goals.
 
 Test::Builder2 takes a very long and broad view in its design.  As
-such, many things which might seem overcomplicated at first glance are
-actually to cover an obscure, but important, condition.
+such, many things which might seem overcomplicated at first glance have
+been deliberately thought out to cover an obscure, but important, condition.
 
 
 =head2 Universal
 
 If TB2 were a person, "thou shalt be universally applicable" would be
-tattooed upside down on their belly in flaming, writhing letters to remind
+tattooed upside down on its belly in flaming, writhing letters, to remind
 itself of its responsbility to B<all> Perl users everywhere.
 
 This is the goal which has the farthest reaching consequences.  Every
 testing module worth knowing about is backed by TB1 and will be backed by
-TB2.  As a result, TB2 I<has to work>, it has to work I<everywhere Perl
+TB2. As a result, TB2 I<has to work>, it has to work I<everywhere Perl
 does> and it has to be able to test every conceivable thing.
 
-Every assumption TB2 makes about its environment, how testing is done or
-what is being tested eliminates that category from being easily tested by
-Perl programmers.  It knocks the entire modern suite of Perl testing tools
-from their hands.
+Any assumption TB2 made about its environment, how testing is or is not
+done, or what is being tested, could eliminate a whole category of Perl 
+programmers from easily being able to test their code, knocking the entire 
+modern suite of Perl testing tools from their hands. In order to be universally
+useful, TB2 cannot make such assumptions.
 
 While TB2 has to be universal, extensions do not.  TB2 will reject many
 features because they are not universally applicable, but extensions and
-test libraries built on top of it will not.
+test libraries built on top of it can add those features.
 
 
 =head3 Portable
 
-TB2 has to work in every environment which Perl does.  If it doesn't, TB2
-de facto eliminates that environment from serious use by Perl.  It can make
-no assumptions about the environment which are not universal.  There's no
+TB2 has to work in every environment where Perl does.  If it doesn't, TB2
+de facto eliminates Perl from serious use in that environment.  TB2 can make
+no assumptions about its environment that are not universal.  There's no
 "it'll work on most systems" compromises.
 
 As far as Perl goes, TB2 supports back to 5.8.1.  5.8.0's threading is too
 unstable.  5.6 is missing too many features (the biggest is scalar
-reference filehandles critical for debugging) and is all but extinct in the
+reference filehandles, critical for debugging) and is all but extinct in the
 wild.  Even Debian oldstable ships 5.8.8.
 
 
 =head3 Reliable
 
-There has to be total confidence in the test libraries, that a test failure
-indicates a failed test and not a bug in TB2.  There are no "this works 99%
-of the time" implementations.
+TB2 has to be completely reliable, allowing for total confidence in the test 
+libraries. Users need to know that a test failure indicates a failed test,
+and not a bug in TB2.  There are no "this works 99% of the time" 
+implementations.
 
 
 =head3 Extensible
@@ -113,7 +117,7 @@ of the time" implementations.
 Users must be able to write test libraries on top of TB2 that do pretty
 much anything.
 
-There are three primary means of doing this.  The most common will be
+There are three primary ways of doing this.  The most common will be
 writing a test module using L<Test::Builder2::Module>.  Users will write
 logic to test their statement, and then hand the result off to a TB2 object
 for processing.
@@ -124,23 +128,23 @@ they're kind of like object plugins... sort of.
 The third is by hooking into events, like when an assert starts or
 finishes.
 
-See L<Extending TB2> for details.
+See L<Extending TB2> for more details.
 
 
 =head3 Multiple Formats
 
 TB1 outputs only TAP.  TB2 will output TAP by default, but can be extended
-to output any format desired.  As such, its internal structures have to be
+to output any format you like.  As such, its internal structures have to be
 free of assumptions.  For example, TAP is one of the few testing systems
-which requires a test count and TB1 is riddled with that assumption.
+that requires a test count. TB1 is riddled with that assumption. TB2 cannot be.
 
 See L<Test::Builder2::Format> for details.
 
 
 =head3 Multiple Streams
 
-TB1 has limited support for outputting somewhere other than STDOUT and
-STDERR.  TB2 will have full control over where and how output occurs.
+TB1 has limited support for outputting to anywhere other than STDOUT and
+STDERR.  TB2 should have full control over where and how output occurs.
 
 See L<Test::Builder2::Streamer> for details.
 
@@ -148,7 +152,7 @@ See L<Test::Builder2::Streamer> for details.
 =head3 Minimal Assumptions
 
 TB1 and L<Test::More> avoid making assumptions about how and what you're
-testing, sticking to functions which provide unambiguous functionality and
+testing, sticking to functions that provide unambiguous functionality and
 are universally applicable.  That is, you're not going to find code that
 tests XML.
 
@@ -160,14 +164,14 @@ library authors will use those roles by default, but radical extensions may
 use the stripped down TB2.
 
 Two drivers for this are L<Fennec> and the need for L<Test::Builder> itself
-to use TB2.  The less TB2 does the weirder test library authors can get.
+to use TB2.  The less TB2 does, the weirder test library authors can get.
 
 
 =head3 No Dependencies
 
 TB2 can have no external dependencies (except Perl itself).  External
-dependencies may create circular dependencies, and more importantly they
-introduce unreliabilies in TB2.
+dependencies may create circular dependencies, and worse, could introduce 
+unreliabilies to TB2.
 
 
 =head2 Easy
@@ -182,28 +186,28 @@ See F<examples/TB2> in the source directory for examples of TB2 extensions.
 
 =head2 Writing Test Libraries
 
-The simplest way to extend TB2 will be to write a test library. 
+The simplest way to extend TB2 is to write a test library. 
 L<Test::Builder2::Module> provides the conveniences to the test author. 
 L<Test::Simple> is a simple example of a Test::Builder2 module.
 
 =head2 Writing TB2 Roles
 
 For internal use, roles can be applied to the TB2 default to expand its
-functionality while leaving the TB2 class slim.  Roles will include
-TB2::Assert::More which will provide most of the Test::More functionality
-currently in TB1.
+functionality while leaving the TB2 class slim.  TB2 will include a 
+TB2::Assert::More role that provides most of the Test::More functionality 
+currently available in TB1.
 
 =head2 TB2 Events
 
-The primary way test libraries will alter the behavior of tests is by
-writing a test event watcher.  Everything of interest in a test triggers an
-event such as asserts, the plan being set, even diagnostic output.  A
-watcher can take action based on an event, or even alter an event as it
-happens.  Things like Test::NoWarnings, halting on test failure, and
-enforcing test names will be implemented as event watchers.  Formatters are
-also event watchers.  See L<Test::Builder2::EventWatcher>,
-L<Test::Builder2::EventCoordinator> and L<Test::Builder2::Events> for
-details.
+The primary way test libraries using TB2 will alter the behavior of tests is by
+writing a test event watcher.  Everything of interest in a test, from setting 
+the plan to diagnostic output to asserts, triggers an event. A watcher can take 
+action based on an event, or even alter an event as it happens.  Event watchers
+will allow TB2 to halt on test failure, to enforce test names, and to provide the 
+functionality of Test::NoWarnings.  
+
+Formatters are also event watchers.  See L<Test::Builder2::EventWatcher>, 
+L<Test::Builder2::EventCoordinator> and L<Test::Builder2::Events> for details.
 
 
 =head1 Use Cases
@@ -217,8 +221,8 @@ can easily find the failing assert.  This is one of the trickiest aspects
 
 =head2 Test::NoWarnings
 
-Must be able to add code at the start of a test suite (to capture warnings)
-and add an assertion at the end.  It also must be able to add one to a
+To capture warnings, TB2 must be able to add code at the start of a test suite, and 
+to add an assertion at the end.  It also must be able to add an assertion to a
 user-set plan.
 
 See F<examples/TB2/lib/TB2/NoWarnings.pm> for an example.
