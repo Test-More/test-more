@@ -2339,6 +2339,9 @@ sub _ending {
     my $history = $self->history;
     my $plan    = $history->plan;
 
+    # Don't do the ending analysis for forked children
+    $self->formatter->show_ending_commentary(0) unless $self->{Original_Pid} == $$;
+
     # End the stream unless we (or somebody else) already ended it
     $self->test_end if $history->stream_depth;
 
