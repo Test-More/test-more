@@ -113,10 +113,11 @@ sub new_result {
     my %args  = @_;
 
     # Figure out the roles associated with the given arguments
-    my @roles;
     my @directives = map { lc $_ } @{$args{directives} || []};
-    push @roles, @directives;
+    push @directives, "skip" if delete $args{skip};
+    push @directives, "todo" if delete $args{todo};
 
+    my @roles = @directives;
     push @roles, !exists $args{pass} ? "unknown" : 
                          $args{pass} ? "pass"    : "fail";
 
