@@ -2,8 +2,8 @@
 
 # A test to make sure the new Test::Harness was installed properly.
 
-use Test::More;
-plan tests => 1;
+BEGIN { require 't/test.pl' };
+plan(1);
 
 my $TH_Version = 2.03;
 

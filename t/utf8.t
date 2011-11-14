@@ -1,5 +1,7 @@
 #!/usr/bin/perl -w
 
+BEGIN { require 't/test.pl'; }
+plan(5);
 BEGIN {
     if( $ENV{PERL_CORE} ) {
         chdir 't';
@@ -21,15 +23,7 @@ BEGIN {
         1;
     ];
 }
-
-use Test::More;
-
-if( !$have_perlio ) {
-    plan skip_all => "Don't have PerlIO";
-}
-else {
-    plan tests => 5;
-}
+use Test::More ();
 
 SKIP: {
     skip( "Need PerlIO for this feature", 3 )

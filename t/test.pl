@@ -41,14 +41,14 @@ sub _print_stderr {
 sub plan {
     my $n;
     if (@_ == 1) {
-	$n = shift;
-	if ($n eq 'no_plan') {
-	  undef $n;
-	  $noplan = 1;
-	}
+        $n = shift;
+        if ($n eq 'no_plan') {
+          undef $n;
+          $noplan = 1;
+        }
     } else {
-	my %plan = @_;
-	$n = $plan{tests};
+        my %plan = @_;
+        $n = $plan{tests};
     }
     _print "1..$n\n" unless $noplan;
     $planned = $n;
@@ -66,12 +66,12 @@ sub done_testing {
 END {
     my $ran = $test - 1;
     if (!$NO_ENDING) {
-	if (defined $planned && $planned != $ran) {
-	    _print_stderr
-		"# Looks like you planned $planned tests but ran $ran.\n";
-	} elsif ($noplan) {
-	    _print "1..$ran\n";
-	}
+        if (defined $planned && $planned != $ran) {
+            _print_stderr
+            "# Looks like you planned $planned tests but ran $ran.\n";
+        } elsif ($noplan) {
+            _print "1..$ran\n";
+        }
     }
 }
 
@@ -101,7 +101,7 @@ sub skip_all {
     if (@_) {
         _print "1..0 # Skip @_\n";
     } else {
-	_print "1..0\n";
+        _print "1..0\n";
     }
     exit(0);
 }
@@ -114,16 +114,16 @@ sub _ok {
     if ($name) {
         # escape out '#' or it will interfere with '# skip' and such
         $name =~ s/#/\\#/g;
-	$out = $pass ? "ok $test - $name" : "not ok $test - $name";
+        $out = $pass ? "ok $test - $name" : "not ok $test - $name";
     } else {
-	$out = $pass ? "ok $test" : "not ok $test";
+        $out = $pass ? "ok $test" : "not ok $test";
     }
 
     $out = $out . " # TODO $TODO" if $TODO;
     _print "$out\n";
 
     unless ($pass) {
-	_diag "# Failed $where\n";
+        _diag "# Failed $where\n";
     }
 
     # Ensure that the message is properly escaped.
@@ -212,8 +212,8 @@ sub is ($$@) {
     }
 
     unless ($pass) {
-	unshift(@mess, "#      got "._qq($got)."\n",
-		       "# expected "._qq($expected)."\n");
+    unshift(@mess, "#      got "._qq($got)."\n",
+               "# expected "._qq($expected)."\n");
     }
     _ok($pass, _where(), $name, @mess);
 }
@@ -295,8 +295,8 @@ sub within ($$$@) {
         if ($got eq $expected) {
             unshift @mess, "# $got - $expected = " . ($got - $expected) . "\n";
         }
-	unshift@mess, "#      got "._qq($got)."\n",
-		      "# expected "._qq($expected)." (within "._qq($range).")\n";
+    unshift@mess, "#      got "._qq($got)."\n",
+              "# expected "._qq($expected)." (within "._qq($range).")\n";
     }
     _ok($pass, _where(), $name, @mess);
 }
@@ -312,9 +312,9 @@ sub like_yn ($$$@) {
     $pass = $got =~ /$expected/ if !$flip;
     $pass = $got !~ /$expected/ if $flip;
     unless ($pass) {
-	unshift(@mess, "#      got '$got'\n",
-		$flip
-		? "# expected !~ /$expected/\n" : "# expected /$expected/\n");
+    unshift(@mess, "#      got '$got'\n",
+        $flip
+        ? "# expected !~ /$expected/\n" : "# expected /$expected/\n");
     }
     local $Level = $Level + 1;
     _ok($pass, _where(), $name, @mess);
@@ -368,10 +368,10 @@ sub eq_array {
     my ($ra, $rb) = @_;
     return 0 unless $#$ra == $#$rb;
     for my $i (0..$#$ra) {
-	next     if !defined $ra->[$i] && !defined $rb->[$i];
-	return 0 if !defined $ra->[$i];
-	return 0 if !defined $rb->[$i];
-	return 0 unless $ra->[$i] eq $rb->[$i];
+        next     if !defined $ra->[$i] && !defined $rb->[$i];
+        return 0 if !defined $ra->[$i];
+        return 0 if !defined $rb->[$i];
+        return 0 unless $ra->[$i] eq $rb->[$i];
     }
     return 1;
 }
@@ -570,8 +570,8 @@ sub _quote_args {
     my ($runperl, $args) = @_;
 
     foreach (@$args) {
-	# In VMS protect with doublequotes because otherwise
-	# DCL will lowercase -- unless already doublequoted.
+        # In VMS protect with doublequotes because otherwise
+        # DCL will lowercase -- unless already doublequoted.
        $_ = q(").$_.q(") if $is_vms && !/^\"/ && length($_) > 0;
        $runperl = $runperl . ' ' . $_;
     }
@@ -586,25 +586,25 @@ sub _create_runperl { # Create the string to qx in runperl().
     }
     #- this allows, for example, to set PERL_RUNPERL_DEBUG=/usr/bin/valgrind
     if ($ENV{PERL_RUNPERL_DEBUG}) {
-	$runperl = "$ENV{PERL_RUNPERL_DEBUG} $runperl";
+        $runperl = "$ENV{PERL_RUNPERL_DEBUG} $runperl";
     }
     unless ($args{nolib}) {
-	$runperl = $runperl . ' "-I../lib"'; # doublequotes because of VMS
+        $runperl = $runperl . ' "-I../lib"'; # doublequotes because of VMS
     }
     if ($args{switches}) {
-	local $Level = 2;
-	die "test.pl:runperl(): 'switches' must be an ARRAYREF " . _where()
-	    unless ref $args{switches} eq "ARRAY";
-	$runperl = _quote_args($runperl, $args{switches});
+        local $Level = 2;
+        die "test.pl:runperl(): 'switches' must be an ARRAYREF " . _where()
+            unless ref $args{switches} eq "ARRAY";
+        $runperl = _quote_args($runperl, $args{switches});
     }
     if (defined $args{prog}) {
-	die "test.pl:runperl(): both 'prog' and 'progs' cannot be used " . _where()
-	    if defined $args{progs};
-        $args{progs} = [$args{prog}]
+        die "test.pl:runperl(): both 'prog' and 'progs' cannot be used " . _where()
+            if defined $args{progs};
+            $args{progs} = [$args{prog}]
     }
     if (defined $args{progs}) {
-	die "test.pl:runperl(): 'progs' must be an ARRAYREF " . _where()
-	    unless ref $args{progs} eq "ARRAY";
+        die "test.pl:runperl(): 'progs' must be an ARRAYREF " . _where()
+            unless ref $args{progs} eq "ARRAY";
         foreach my $prog (@{$args{progs}}) {
             if ($is_mswin || $is_netware || $is_vms) {
                 $runperl = $runperl . qq ( -e "$prog" );
@@ -614,44 +614,44 @@ sub _create_runperl { # Create the string to qx in runperl().
             }
         }
     } elsif (defined $args{progfile}) {
-	$runperl = $runperl . qq( "$args{progfile}");
+        $runperl = $runperl . qq( "$args{progfile}");
     } else {
-	# You probaby didn't want to be sucking in from the upstream stdin
-	die "test.pl:runperl(): none of prog, progs, progfile, args, "
-	    . " switches or stdin specified"
-	    unless defined $args{args} or defined $args{switches}
-		or defined $args{stdin};
+        # You probaby didn't want to be sucking in from the upstream stdin
+        die "test.pl:runperl(): none of prog, progs, progfile, args, "
+            . " switches or stdin specified"
+            unless defined $args{args} or defined $args{switches}
+            or defined $args{stdin};
     }
     if (defined $args{stdin}) {
-	# so we don't try to put literal newlines and crs onto the
-	# command line.
-	$args{stdin} =~ s/\n/\\n/g;
-	$args{stdin} =~ s/\r/\\r/g;
+        # so we don't try to put literal newlines and crs onto the
+        # command line.
+        $args{stdin} =~ s/\n/\\n/g;
+        $args{stdin} =~ s/\r/\\r/g;
 
-	if ($is_mswin || $is_netware || $is_vms) {
-	    $runperl = qq{$Perl -e "print qq(} .
-		$args{stdin} . q{)" | } . $runperl;
-	}
-	else {
-	    $runperl = qq{$Perl -e 'print qq(} .
-		$args{stdin} . q{)' | } . $runperl;
-	}
+        if ($is_mswin || $is_netware || $is_vms) {
+            $runperl = qq{$Perl -e "print qq(} .
+            $args{stdin} . q{)" | } . $runperl;
+        }
+        else {
+            $runperl = qq{$Perl -e 'print qq(} .
+            $args{stdin} . q{)' | } . $runperl;
+        }
     }
     if (defined $args{args}) {
-	$runperl = _quote_args($runperl, $args{args});
+        $runperl = _quote_args($runperl, $args{args});
     }
-    $runperl = $runperl . ' 2>&1' if $args{stderr};
+        $runperl = $runperl . ' 2>&1' if $args{stderr};
     if ($args{verbose}) {
-	my $runperldisplay = $runperl;
-	$runperldisplay =~ s/\n/\n\#/g;
-	_print_stderr "# $runperldisplay\n";
+        my $runperldisplay = $runperl;
+        $runperldisplay =~ s/\n/\n\#/g;
+        _print_stderr "# $runperldisplay\n";
     }
     return $runperl;
 }
 
 sub runperl {
     die "test.pl:runperl() does not take a hashref"
-	if ref $_[0] and ref $_[0] eq 'HASH';
+        if ref $_[0] and ref $_[0] eq 'HASH';
     my $runperl = &_create_runperl;
     my $result;
 
@@ -660,34 +660,34 @@ sub runperl {
     exists $args{switches} && grep m/^-T$/, @{$args{switches}} and $tainted = $tainted + 1;
 
     if ($tainted) {
-	# We will assume that if you're running under -T, you really mean to
-	# run a fresh perl, so we'll brute force launder everything for you
-	my $sep;
-
-	if (! eval 'require Config; 1') {
-	    warn "test.pl had problems loading Config: $@";
-	    $sep = ':';
-	} else {
-	    $sep = $Config::Config{path_sep};
-	}
-
-	my @keys = grep {exists $ENV{$_}} qw(CDPATH IFS ENV BASH_ENV);
-	local @ENV{@keys} = ();
-	# Untaint, plus take out . and empty string:
-	local $ENV{'DCL$PATH'} = $1 if $is_vms && exists($ENV{'DCL$PATH'}) && ($ENV{'DCL$PATH'} =~ /(.*)/s);
-	$ENV{PATH} =~ /(.*)/s;
-	local $ENV{PATH} =
-	    join $sep, grep { $_ ne "" and $_ ne "." and -d $_ and
-		($is_mswin or $is_vms or !(stat && (stat _)[2]&0022)) }
-		    split quotemeta ($sep), $1;
-	$ENV{PATH} = $ENV{PATH} . "$sep/bin" if $is_cygwin;  # Must have /bin under Cygwin
-
-	$runperl =~ /(.*)/s;
-	$runperl = $1;
-
-	$result = `$runperl`;
+        # We will assume that if you're running under -T, you really mean to
+        # run a fresh perl, so we'll brute force launder everything for you
+        my $sep;
+    
+        if (! eval 'require Config; 1') {
+            warn "test.pl had problems loading Config: $@";
+            $sep = ':';
+        } else {
+            $sep = $Config::Config{path_sep};
+        }
+    
+        my @keys = grep {exists $ENV{$_}} qw(CDPATH IFS ENV BASH_ENV);
+        local @ENV{@keys} = ();
+        # Untaint, plus take out . and empty string:
+        local $ENV{'DCL$PATH'} = $1 if $is_vms && exists($ENV{'DCL$PATH'}) && ($ENV{'DCL$PATH'} =~ /(.*)/s);
+        $ENV{PATH} =~ /(.*)/s;
+        local $ENV{PATH} =
+            join $sep, grep { $_ ne "" and $_ ne "." and -d $_ and
+            ($is_mswin or $is_vms or !(stat && (stat _)[2]&0022)) }
+                split quotemeta ($sep), $1;
+        $ENV{PATH} = $ENV{PATH} . "$sep/bin" if $is_cygwin;  # Must have /bin under Cygwin
+    
+        $runperl =~ /(.*)/s;
+        $runperl = $1;
+    
+        $result = `$runperl`;
     } else {
-	$result = `$runperl`;
+        $result = `$runperl`;
     }
     $result =~ s/\n\n/\n/ if $is_vms; # XXX pipes sometimes double these
     return $result;
@@ -701,45 +701,45 @@ sub DIE {
 # A somewhat safer version of the sometimes wrong $^X.
 sub which_perl {
     unless (defined $Perl) {
-	$Perl = $^X;
+    $Perl = $^X;
 
-	# VMS should have 'perl' aliased properly
-	return $Perl if $^O eq 'VMS';
+    # VMS should have 'perl' aliased properly
+    return $Perl if $^O eq 'VMS';
 
-	my $exe;
-	if (! eval 'require Config; 1') {
-	    warn "test.pl had problems loading Config: $@";
-	    $exe = '';
-	} else {
-	    $exe = $Config::Config{_exe};
-	}
+    my $exe;
+    if (! eval 'require Config; 1') {
+        warn "test.pl had problems loading Config: $@";
+        $exe = '';
+    } else {
+        $exe = $Config::Config{_exe};
+    }
        $exe = '' unless defined $exe;
 
-	# This doesn't absolutize the path: beware of future chdirs().
-	# We could do File::Spec->abs2rel() but that does getcwd()s,
-	# which is a bit heavyweight to do here.
+    # This doesn't absolutize the path: beware of future chdirs().
+    # We could do File::Spec->abs2rel() but that does getcwd()s,
+    # which is a bit heavyweight to do here.
 
-	if ($Perl =~ /^perl\Q$exe\E$/i) {
-	    my $perl = "perl$exe";
-	    if (! eval 'require File::Spec; 1') {
-		warn "test.pl had problems loading File::Spec: $@";
-		$Perl = "./$perl";
-	    } else {
-		$Perl = File::Spec->catfile(File::Spec->curdir(), $perl);
-	    }
-	}
+    if ($Perl =~ /^perl\Q$exe\E$/i) {
+        my $perl = "perl$exe";
+        if (! eval 'require File::Spec; 1') {
+            warn "test.pl had problems loading File::Spec: $@";
+            $Perl = "./$perl";
+        } else {
+            $Perl = File::Spec->catfile(File::Spec->curdir(), $perl);
+        }
+    }
 
-	# Build up the name of the executable file from the name of
-	# the command.
+    # Build up the name of the executable file from the name of
+    # the command.
 
-	if ($Perl !~ /\Q$exe\E$/i) {
-	    $Perl = $Perl . $exe;
-	}
+    if ($Perl !~ /\Q$exe\E$/i) {
+        $Perl = $Perl . $exe;
+    }
 
-	warn "which_perl: cannot find $Perl from $^X" unless -f $Perl;
+    warn "which_perl: cannot find $Perl from $^X" unless -f $Perl;
 
-	# For subcommands to use.
-	$ENV{PERLEXE} = $Perl;
+    # For subcommands to use.
+    $ENV{PERLEXE} = $Perl;
     }
     return $Perl;
 }
@@ -762,20 +762,20 @@ my @letters = qw(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z);
 sub tempfile {
     my $count = 0;
     do {
-	my $temp = $count;
-	my $try = "tmp$$";
-	do {
-	    $try = $try . $letters[$temp % 26];
-	    $temp = int ($temp / 26);
-	} while $temp;
-	# Need to note all the file names we allocated, as a second request may
-	# come before the first is created.
-	if (!-e $try && !$tmpfiles{$try}) {
-	    # We have a winner
-	    $tmpfiles{$try} = 1;
-	    return $try;
-	}
-	$count = $count + 1;
+        my $temp = $count;
+        my $try = "tmp$$";
+        do {
+            $try = $try . $letters[$temp % 26];
+            $temp = int ($temp / 26);
+        } while $temp;
+        # Need to note all the file names we allocated, as a second request may
+        # come before the first is created.
+        if (!-e $try && !$tmpfiles{$try}) {
+            # We have a winner
+            $tmpfiles{$try} = 1;
+            return $try;
+        }
+        $count = $count + 1;
     } while $count < 26 * 26;
     die "Can't find temporary file name starting 'tmp$$'";
 }
@@ -823,7 +823,7 @@ sub _fresh_perl {
     my $status = $?;
 
     # Clean up the results into something a bit more predictable.
-    $results  =~ s/\n+$//;
+    $results =~ s/\n+$//;
     $results =~ s/at\s+$::tempfile_regexp\s+line/at - line/g;
     $results =~ s/of\s+$::tempfile_regexp\s+aborted/of - aborted/g;
 
@@ -871,8 +871,8 @@ sub fresh_perl_is {
 
     local $Level = 2;
     _fresh_perl($prog,
-		sub { @_ ? $_[0] eq $expected : $expected },
-		$runperl_args, $name);
+        sub { @_ ? $_[0] eq $expected : $expected },
+        $runperl_args, $name);
 }
 
 #
@@ -885,8 +885,8 @@ sub fresh_perl_like {
     my($prog, $expected, $runperl_args, $name) = @_;
     local $Level = 2;
     _fresh_perl($prog,
-		sub { @_ ? $_[0] =~ $expected : $expected },
-		$runperl_args, $name);
+        sub { @_ ? $_[0] =~ $expected : $expected },
+        $runperl_args, $name);
 }
 
 sub can_ok ($@) {

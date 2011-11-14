@@ -19,7 +19,7 @@ This defines custom Mouse types used by Test::Builder2.
 
 =head2 Types
 
-=head3 Test::Buidler2::Positive_Int
+=head3 Test::Builder2::Positive_Int
 
 An integer greater than or equal to zero.
 
