@@ -371,7 +371,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Name}         = $0;
     $self->is_passing(1);
-    $self->{Ending}       = 0;
 
     $self->{Original_Pid} = $$;
     $self->{Child_Name}   = undef;
@@ -2355,7 +2354,6 @@ sub _my_exit {
 sub _ending {
     my $self = shift;
     return if $self->no_ending;
-    return if $self->{Ending}++;
 
     my $history = $self->history;
     my $plan    = $history->plan;
