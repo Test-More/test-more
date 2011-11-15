@@ -28,13 +28,12 @@ foreach my $level (1, 2, 3) {
                        ['todo_start',  0,         $level];
 }
 
-plan skip_all => "Haven't fixed this yet";
 plan tests => 8 * @test_combos;
 
 sub test_subtest_in_todo {
     my ($name, $code, $want_out, $no_tests_run) = @_;
 
-    my $xxx = $no_tests_run ? 'No tests run for subtest "xxx"' : 'xxx';
+    my $xxx = $no_tests_run ? 'No tests run in subtest "xxx"' : 'xxx';
 
     chomp $want_out;
     my @outlines = split /\n/, $want_out;
@@ -58,9 +57,14 @@ sub test_subtest_in_todo {
                 Test::Builder->new->todo_start($todo_reason);
             }
 
-            subtest_at_level(
-                        'xxx', $code, $level); BEGIN{ $line{xxx} = __LINE__ }
-            ok 0, 'regular todo test';         BEGIN{ $line{reg} = __LINE__ }
+            # Test::Builder::Tester turns ending off.  Turn it back on
+            # for the subtest.
+            Test::Builder->new->no_ending(0);
+            subtest_at_level('xxx', $code, $level); BEGIN{ $line{xxx} = __LINE__ }
+            ok 0, 'regular todo test';              BEGIN{ $line{reg} = __LINE__ }
+
+            # And now back off again.
+            Test::Builder->new->no_ending(1);
 
             if ($set_via eq 'todo_start') {
                 Test::Builder->new->todo_end;
@@ -92,6 +96,7 @@ package main;
 test_subtest_in_todo("plan, no tests run", sub {
     plan tests => 2;
 }, <<END, 1);
+    TAP version 13
     1..2
     # No tests run!
 END
@@ -105,6 +110,7 @@ END
 test_subtest_in_todo("missingplan, no tests run", sub {
     1;
 }, <<END, 1);
+    TAP version 13
     1..0
     # No tests run!
 END
@@ -112,6 +118,7 @@ END
 test_subtest_in_todo("donetesting, no tests run", sub {
     done_testing;
 }, <<END, 1);
+    TAP version 13
     1..0
     # No tests run!
 END
@@ -119,6 +126,7 @@ END
 test_subtest_in_todo("1 failed test", sub {
     ok 0, 'failme'; BEGIN { $line{fail1} = __LINE__ }
 }, <<END);
+    TAP version 13
     not ok 1 - failme
     #   Failed test 'failme'
     #   at $0 line $line{fail1}.
@@ -130,6 +138,7 @@ test_subtest_in_todo("1fail, wrongplan", sub {
     plan tests => 17;
     ok 0, 'failme'; BEGIN { $line{fail2} = __LINE__ }
 }, <<END);
+    TAP version 13
     1..17
     not ok 1 - failme
     #   Failed test 'failme'
@@ -142,12 +151,13 @@ test_subtest_in_todo("1fail, 1pass", sub {
     ok 0, 'failme'; BEGIN { $line{fail3} = __LINE__ }
     ok 1, 'passme';
 }, <<END);
+    TAP version 13
     not ok 1 - failme
     #   Failed test 'failme'
     #   at $0 line $line{fail3}.
     ok 2 - passme
     1..2
-    # Looks like you failed 1 test of 2.
+    # 1 test of 2 failed.
 END
 
 test_subtest_in_todo("todo tests in the subtest", sub {
@@ -168,6 +178,7 @@ test_subtest_in_todo("todo tests in the subtest", sub {
 
     ok 0, 'inner test 3';             BEGIN{ $line{in3} = __LINE__ }
 }, <<END);
+    TAP version 13
     not ok 1 - inner test 1
     #   Failed test 'inner test 1'
     #   at $0 line $line{in1}.
@@ -186,5 +197,5 @@ test_subtest_in_todo("todo tests in the subtest", sub {
     #   Failed test 'inner test 3'
     #   at $0 line $line{in3}.
     1..7
-    # Looks like you failed 3 tests of 7.
+    # 3 tests of 7 failed.
 END
