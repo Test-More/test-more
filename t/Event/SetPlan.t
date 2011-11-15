@@ -30,11 +30,18 @@ note "Basic event with a plan"; {
     is $event->event_type, "set plan";
 
     my $data = $event->as_hash;
-    is $data->{asserts_expected},       23;
+
+    is_deeply $data, {
+        event_id                => $event->event_id,
+        event_type              => 'set plan',
+        plan                    => { this => "that" },
+        asserts_expected        => 23,
+        no_plan                 => 0,
+        skip                    => 0,
+        skip_reason             => "",
+    };
+
     ok !$data->{no_plan},                               "no_plan";
-    is keys %{$data->{plan}},           1;
-    is $data->{plan}{this},             "that";
-    is $data->{event_type},             "set plan";
 }
 
 
