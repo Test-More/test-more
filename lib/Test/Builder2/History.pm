@@ -87,6 +87,7 @@ sub accept_test_start {
     croak "Saw a test_start, but testing has already ended"   if $self->test_end;
 
     $self->test_start($event);
+    $self->pid_at_test_start($$) unless $self->pid_at_test_start;
 
     return;
 }
@@ -422,6 +423,40 @@ has abort =>
   is            => 'rw',
   does          => 'Test::Builder2::Event';
 
+
+=head3 pid_at_test_start
+
+    my $process_id = $history->pid_at_test_start;
+
+History records the $process_id at the time the test has started.
+
+=cut
+
+has pid_at_test_start =>
+  is            => 'rw',
+  isa           => 'Test::Builder2::Positive_NonZero_Int',
+;
+
+
+=head3 is_child_process
+
+    my $is_child = $history->is_child_process;
+
+Returns true if the current process is a child of the process which
+started the test.
+
+=cut
+
+sub is_child_process {
+    my $self = shift;
+
+    my $pid_at_test_start = $self->pid_at_test_start;
+
+    return 0 unless $pid_at_test_start;
+    return 0 if $pid_at_test_start == $$;
+
+    return 1;
+}
 
 =head2 HISTORY INTERACTION
 

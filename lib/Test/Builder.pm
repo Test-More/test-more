@@ -328,7 +328,7 @@ sub name { shift->{Name} }
 
 sub DESTROY {
     my $self = shift;
-    if ( $self->parent and $$ == $self->{Original_Pid} ) {
+    if ( $self->parent and !$self->history->is_child_process ) {
         my $name = $self->name;
         $self->diag(<<"FAIL");
 Child ($name) exited without calling finalize()
@@ -359,7 +359,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Name}         = $0;
 
-    $self->{Original_Pid} = $$;
     $self->{Child_Name}   = undef;
 
     $self->{Exported_To}    = undef;
@@ -2299,7 +2298,7 @@ sub _ending {
     return if !$plan && !$history->test_count;
 
     # Forked children often run fragments of tests.
-    my $in_child = $self->{Original_Pid} != $$;
+    my $in_child = $self->history->is_child_process;
 
     # Don't show ending commentary in a forked copy.
     # Forks often run fragments of tests.
