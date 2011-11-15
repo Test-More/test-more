@@ -10,35 +10,37 @@ BEGIN {
     }
 }
 
-my $Exit_Code;
-BEGIN {
-    *CORE::GLOBAL::exit = sub { $Exit_Code = shift; };
-}
 
 BEGIN {
+    # Put it in its own package to avoid interfering.
     package Test;
     require 't/test.pl'
 }
 
-use Test::More;
+use Test::Builder;
 
 my $output;
-my $TB = Test::More->builder;
-$TB->output(\$output);
+my $tb = Test::Builder->create;
+$tb->output(\$output);
+
+Test::plan tests => 3;
+
+Test::ok( $tb->can("BAILOUT"), "Backwards compat" );
 
 {
-    plan tests => 4;
-    BAIL_OUT("ROCKS FALL! EVERYONE DIES!");
+    $tb->plan( tests => 2 );
+    $tb->BAIL_OUT("ROCKS FALL! EVERYONE DIES!");
+}
 
+END {
     Test::is( $output, <<'OUT' );
 TAP version 13
-1..4
+1..2
 Bail out!  ROCKS FALL! EVERYONE DIES!
 OUT
 
-    Test::is( $Exit_Code, 255 );
+    Test::is $?, 255, "bail out exits with 255 for real";
+
+    # Don't really exit with non-zero
+    $? = 0;
 }
-
-Test::ok( $TB->can("BAILOUT"), "Backwards compat" );
-
-Test::done_testing;
