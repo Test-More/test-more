@@ -1456,6 +1456,20 @@ sub use_numbers {
 If set true no diagnostics nor notes will be displayed.  This includes
 calls to C<diag()> and C<note()>.
 
+=cut
+
+sub no_diag {
+    my $self = shift;
+
+    if( @_ ) {
+        my $no = shift;
+        $self->formatter->show_logs(!$no);
+    }
+
+    return !$self->formatter->show_logs;
+}
+
+
 =item B<no_ending>
 
     $Test->no_ending($no_ending);
@@ -1464,6 +1478,21 @@ Normally, Test::Builder does some extra diagnostics when the test
 ends.  It also changes the exit code as described below.
 
 If this is true, none of that will be done.
+
+=cut
+
+sub no_ending {
+    my $self = shift;
+
+    if( @_ ) {
+        my $no = shift;
+        $self->{No_Ending} = $no;
+        $self->formatter->show_ending_commentary(!$no);
+    }
+
+    return $self->{No_Ending};
+}
+
 
 =item B<no_header>
 
@@ -1484,33 +1513,6 @@ sub no_header {
     return !$self->formatter->show_header;
 }
 
-
-sub no_diag {
-    my $self = shift;
-
-    if( @_ ) {
-        my $no = shift;
-        $self->formatter->show_logs(!$no);
-    }
-
-    return !$self->formatter->show_logs;
-}
-
-foreach my $attribute (qw(No_Ending)) {
-    my $method = lc $attribute;
-
-    my $code = sub {
-        my( $self, $no ) = @_;
-
-        if( defined $no ) {
-            $self->{$attribute} = $no;
-        }
-        return $self->{$attribute};
-    };
-
-    no strict 'refs';    ## no critic
-    *{ __PACKAGE__ . '::' . $method } = $code;
-}
 
 =item B<no_change_exit_code>
 
