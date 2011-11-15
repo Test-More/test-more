@@ -204,14 +204,18 @@ sub subtest {
         )
     );
 
+    # Check before we change the level
+    my $in_todo = $self->in_todo;
+
     {
         local $Test::Builder::Level = $self->{Set_Level};
-        my(undef, $error) = $self->try(sub { $subtests->() });
 
         # If the subtest is in a TODO, error output should not be seen like
         # any other TODO test.
         my $streamer = $self->formatter->streamer;
-        $streamer->error_fh( $streamer->output_fh ) if $self->in_todo;
+        $streamer->error_fh( $streamer->output_fh ) if $in_todo;
+
+        my(undef, $error) = $self->try(sub { $subtests->() });
 
         die $error if $error && !eval { $error->isa("Test::Builder::Exception") };
     }
