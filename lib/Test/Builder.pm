@@ -1159,8 +1159,10 @@ It will exit with 255.
 sub BAIL_OUT {
     my( $self, $reason ) = @_;
 
-    $self->{Bailed_Out} = 1;
-    $self->_print("Bail out!  $reason");
+    $self->test_state->post_event(
+        Test::Builder2::Event::Abort->new( reason => $reason )
+    );
+
     exit 255;
 }
 

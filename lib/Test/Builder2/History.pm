@@ -111,6 +111,18 @@ sub accept_test_end {
 }
 
 
+sub accept_abort {
+    my $self = shift;
+    my($event, $ec) = @_;
+
+    $self->accept_event($event, $ec);
+
+    $self->abort($event);
+
+    return;
+}
+
+
 sub accept_set_plan {
     my $self  = shift;
     my($event, $ec) = @_;
@@ -251,6 +263,8 @@ to violate.
 sub can_succeed {
     my $self = shift;
 
+    return 0 if $self->abort;
+
     # Testing is done, do the full check.
     return $self->test_was_successful if $self->done_testing;
 
@@ -293,6 +307,8 @@ Until then, use C<can_succeed>.
 
 sub test_was_successful {
     my $self = shift;
+
+    return 0 if $self->abort;
 
     # We're still testing
     return 0 if !$self->done_testing;
@@ -339,6 +355,7 @@ event was seen but a C<test_end> event has not.
 sub in_test {
     my $self = shift;
 
+    return 0 if $self->abort;
     return $self->test_start && !$self->test_end;
 }
 
@@ -355,6 +372,7 @@ C<test_start> and a C<test_end> event has been seen.
 sub done_testing {
     my $self = shift;
 
+    return 0 if $self->abort;
     return $self->test_start && $self->test_end;
 }
 
@@ -395,6 +413,19 @@ Returns the C<test_end> event, if it has been seen.
 =cut
 
 has test_end =>
+  is            => 'rw',
+  does          => 'Test::Builder2::Event';
+
+
+=head3 abort
+
+    my $abort = $history->abort;
+
+Returns the last C<abort> event seen, if any.
+
+=cut
+
+has abort =>
   is            => 'rw',
   does          => 'Test::Builder2::Event';
 

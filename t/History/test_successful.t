@@ -320,4 +320,21 @@ note "Todo fail"; {
 }
 
 
+note "Abort"; {
+    my $history = $CLASS->new;
+
+    # A test which would pass if not for the abort
+    $history->receive_event($_) for
+      Test::Builder2::Event::TestStart->new,
+      Test::Builder2::Event::SetPlan->new( asserts_expected => 2 ),
+      Test::Builder2::Result->new_result( pass => 1 ),
+      Test::Builder2::Result->new_result( pass => 1 ),
+      Test::Builder2::Event::Abort->new,
+      Test::Builder2::Event::TestEnd->new;
+
+    ok !$history->can_succeed;
+    ok !$history->test_was_successful;
+}
+
+
 done_testing;
