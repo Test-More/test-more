@@ -513,4 +513,29 @@ sub accept_subtest_end {
     return;
 }
 
+
+sub accept_abort {
+    my $self = shift;
+    my($event, $ec) = @_;
+
+    my $reason = $self->_escape_reason($event->reason);
+
+    my $msg = "Bail out!";
+    $msg   .= "  $reason" if length $reason;
+    $self->out( "$msg\n" );
+
+    return;
+}
+
+
+# TAP has no way to issue a multi-line bail out reason, so escape the newlines.
+sub _escape_reason {
+    my $self = shift;
+    my $reason = shift;
+    
+    $reason =~ s{\n}{\\n}g;
+
+    return $reason;
+}
+
 1;
