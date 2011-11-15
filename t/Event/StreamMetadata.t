@@ -12,9 +12,11 @@ note "Basic event"; {
 
     is $event->event_type, "stream metadata";
 
-    my $data = $event->as_hash;
-    is keys %{$data->{metadata}},           0;
-    is $data->{event_type},             "stream metadata";
+    is_deeply $event->as_hash, {
+        event_id                => $event->event_id,
+        event_type              => 'stream metadata',
+        metadata                => {},
+    };
 }
 
 note "Basic event with metadata"; {
@@ -23,8 +25,11 @@ note "Basic event with metadata"; {
     );
 
     my $data = $event->as_hash;
-    is $data->{metadata}{this},         "that";
-    is $data->{event_type},             "stream metadata";
+    is_deeply $event->as_hash, {
+        event_id                => $event->event_id,
+        event_type              => 'stream metadata',
+        metadata                => { this => 'that' },
+    };
 }
 
 done_testing;

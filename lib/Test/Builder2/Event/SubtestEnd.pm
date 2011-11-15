@@ -51,17 +51,6 @@ The event type is C<subtest end>.
 
 sub event_type { return "subtest end" }
 
-sub as_hash {
-    my $self = shift;
-
-    return {
-        event_id        => $self->event_id,
-        event_type      => "subtest end",
-        history         => $self->history,
-    };
-}
-
-
 =head1 SEE ALSO
 
 L<Test::Builder2::Event>  This does the Event role.

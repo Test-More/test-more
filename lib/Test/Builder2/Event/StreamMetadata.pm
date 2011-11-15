@@ -42,16 +42,6 @@ The event type is C<stream metadata>.
 
 sub event_type { "stream metadata" }
 
-sub as_hash {
-    my $self = shift;
-
-    return {
-        metadata        => $self->metadata,
-        event_type      => "stream metadata",
-    };
-}
-
-
 =head1 SEE ALSO
 
 L<Test::Builder2::Event>
