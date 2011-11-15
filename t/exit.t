@@ -32,7 +32,7 @@ else {
 # Some OS' will alter the exit code to their own native sense...
 # sometimes.  Rather than deal with the exception we'll just
 # build up the mapping.
-print "# Building up a map of exit codes.  May take a while.\n";
+note "# Building up a map of exit codes.  May take a while.\n";
 my %Exit_Map;
 
 open my $fh, ">", "exit_map_test" or die $!;
@@ -55,7 +55,7 @@ for my $exit (0..255) {
     like( $out, qr/^exit $exit\n/, "exit map test for $exit" );
     $Exit_Map{$exit} = exitstatus($?);
 }
-print "# Done.\n";
+note "# Done.\n";
 
 
 my %Tests = (
