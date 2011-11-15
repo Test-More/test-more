@@ -60,10 +60,6 @@ Unless otherwise stated, these are all accessor methods of the form:
 
 A Test::Builder2::Stack of events, that include Result objects.
 
-=head3 accept_event
-
-Push an event to the events stack.
-
 =head3 event_count
 
 Get the count of events that are on the stack.
@@ -156,9 +152,6 @@ before results_push => sub {
    shift->events_push( shift );
 };
 
-=head2 accept_result
-
-Add a result object to the end stack, 
 
 =head2 result_count
 
