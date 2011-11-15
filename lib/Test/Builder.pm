@@ -190,8 +190,13 @@ sub subtest {
 
     $self->test_start unless $self->in_test;
 
+    # Save the TODO state
+    my $todo_state = $self->_todo_state;
+
+    my $in_todo     = $self->in_todo;
+
     my %extra_args;
-    if( $self->in_todo ) {
+    if( $in_todo ) {
         $extra_args{directives} = ["todo"];
         $extra_args{reason}     = $self->todo;
     }
@@ -204,9 +209,7 @@ sub subtest {
         )
     );
 
-    # Check before we change the level
-    my $in_todo = $self->in_todo;
-
+    my $orig_TODO;
     {
         local $Test::Builder::Level = $self->{Set_Level};
 
@@ -214,6 +217,12 @@ sub subtest {
         # any other TODO test.
         my $streamer = $self->formatter->streamer;
         $streamer->error_fh( $streamer->output_fh ) if $in_todo;
+
+        # The subtest gets its own TODO state
+        $self->_reset_todo_state;
+
+        # Clear $TODO for the child.
+#        $orig_TODO = $self->find_TODO(undef, 1, undef);
 
         my(undef, $error) = $self->try(sub { $subtests->() });
 
@@ -228,6 +237,14 @@ sub subtest {
         $self->_ending;
         $self->no_change_exit_code($old_setting);
     }
+
+    # Restore TODO state
+    for my $key (keys %$todo_state) {
+        $self->{$key} = $todo_state->{$key};
+    }
+
+    # Restore the parent's $TODO
+#    $self->find_TODO(undef, 1, $orig_TODO);
 
     $self->post_event(
         Test::Builder2::Event::SubtestEnd->new(
@@ -359,9 +376,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->no_ending(0);
     $self->no_change_exit_code(0);
 
-    $self->{Todo}       = undef;
-    $self->{Todo_Stack} = [];
-    $self->{Start_Todo} = 0;
+    $self->_reset_todo_state;
 
     $Opened_Testhandles = 0;
     $self->_dup_stdhandles;
@@ -2170,6 +2185,30 @@ sub todo_end {
 
     return;
 }
+
+
+my @Todo_Keys = qw(Start_Todo Todo_Stack Todo);
+sub _todo_state {
+    my $self = shift;
+
+    my %todo_state;
+    for my $key (@Todo_Keys) {
+        $todo_state{$key} = $self->{$key};
+    }
+
+    return \%todo_state;
+}
+
+sub _reset_todo_state {
+    my $self = shift;
+
+    $self->{Todo}       = undef;
+    $self->{Todo_Stack} = [];
+    $self->{Start_Todo} = 0;
+
+    return;
+}
+
 
 =item B<caller>
 
