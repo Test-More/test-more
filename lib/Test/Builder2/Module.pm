@@ -158,10 +158,7 @@ sub _do_ending {
     my $builder = shift;
 
     my $history = $builder->history;
-
-    # Really we should be asking history, but history doesn't have that
-    # functionality yet
-    $builder->test_end if $history->stream_depth;
+    $builder->test_end if $history->in_test;
 }
 
 1;

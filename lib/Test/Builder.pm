@@ -523,7 +523,7 @@ sub expected_tests {
         $self->croak("Number of tests must be a positive integer.  You gave it '$max'")
           unless $max =~ /^\+?\d+$/;
 
-        $self->test_start unless $self->test_started;
+        $self->test_start unless $self->in_test;
 
         $self->set_plan(
             asserts_expected => $max
@@ -548,7 +548,7 @@ sub no_plan {
 
     $self->carp("no_plan takes no arguments") if $arg;
 
-    $self->test_start unless $self->test_started;
+    $self->test_start unless $self->in_test;
 
     $self->set_plan(
         no_plan => 1
@@ -597,7 +597,7 @@ sub done_testing {
     my($self, $num_tests) = @_;
 
     $self->croak("Tried to finish testing, but testing is already done (or wasn't started)")
-      unless $self->test_started;
+      unless $self->in_test;
 
     if( defined $num_tests ) {
         $self->is_passing(0) if $num_tests != $self->current_test;
@@ -748,8 +748,8 @@ sub set_plan {
 }
 
 
-sub test_started {
-    $_[0]->history->stream_depth > 0;
+sub in_test {
+    $_[0]->history->in_test;
 }
 
 
@@ -758,7 +758,7 @@ sub post_result {
     my $result = shift;
 
     $result = shared_clone($result);
-    $self->test_start unless $self->test_started;
+    $self->test_start unless $self->in_test;
     $self->test_state->post_event($result);
 
     return;
@@ -2369,7 +2369,7 @@ sub _ending {
     $self->formatter->show_ending_commentary(0) if $in_child;
 
     # End the stream unless we (or somebody else) already ended it
-    $self->test_end if $history->stream_depth;
+    $self->test_end if $history->in_test;
 
     # Ask the history if we passed.
     $self->is_passing( $history->test_was_successful );

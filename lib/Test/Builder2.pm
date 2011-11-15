@@ -335,7 +335,7 @@ sub ok {
 
     $self->assert_start();
 
-    $self->test_start unless $self->history->stream_depth;
+    $self->test_start unless $self->history->in_test;
 
     my $result = $self->result_class->new_result(
         $self->_file_and_line,

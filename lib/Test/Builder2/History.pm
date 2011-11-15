@@ -89,8 +89,6 @@ sub accept_test_start {
 
     $self->test_start($event);
 
-    $self->_stream_depth_inc;
-
     return;
 }
 
@@ -102,8 +100,6 @@ sub accept_test_end {
     $self->accept_event($event, $ec);
 
     $self->test_end($event);
-
-    $self->_stream_depth_dec;
 
     return;
 }
@@ -373,68 +369,6 @@ Returns the C<test_end> event, if it has been seen.
 has test_end =>
   is            => 'rw',
   does          => 'Test::Builder2::Event';
-
-
-=head2 State
-
-History tracks some basic information about the state of the test
-surmised by watching the events go by.
-
-=head3 stream_depth
-
-  my $stream_depth = $history->stream_depth;
-
-Returns how many C<test start> events without C<test end> events
-have been seen.
-
-For example...
-
-    test start
-
-Would indicate a level of 1.
-
-    test start
-      test start
-      test end
-      test start
-
-Would indicate a level of 2.
-
-A value of 0 indiciates the Formatter is not in a stream.
-
-A negative value will throw an exception.
-
-=cut
-
-has stream_depth =>
-  is            => 'rw',
-  isa           => 'Test::Builder2::Positive_Int',
-  default       => 0
-;
-
-=begin private
-
-=head3 _stream_depth_inc
-
-=head3 _stream_depth_dec
-
-Increment and decrement the C<stream_depth>.
-
-=end private
-
-=cut
-
-sub _stream_depth_inc {
-    my $self = shift;
-
-    $self->stream_depth( $self->stream_depth + 1 );
-}
-
-sub _stream_depth_dec {
-    my $self = shift;
-
-    $self->stream_depth( $self->stream_depth - 1 );
-}
 
 
 =head2 HISTORY INTERACTION

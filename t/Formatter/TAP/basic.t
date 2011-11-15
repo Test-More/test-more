@@ -52,7 +52,7 @@ sub last_output {
             ),
         );
     };
-    like $@, qr/^'set plan' event outside of a stream/;
+    like $@, qr/^A plan was set but we're not testing/;
 }
 
 # Test begin
