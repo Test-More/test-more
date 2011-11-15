@@ -495,9 +495,13 @@ sub accept_subtest_end {
     my $self = shift;
     my($event, $ec) = @_;
 
-    my $result = Test::Builder2::Result->new_result(
-        pass => $event->history->test_was_successful
-    );
+    my $subtest_start = $ec->history->subtest_start;
+
+    my %result_args;
+    $result_args{pass} = $event->history->test_was_successful;
+    $result_args{name} = $subtest_start->name if $subtest_start && defined $subtest_start->name;
+
+    my $result = Test::Builder2::Result->new_result( %result_args );
 
     # This result is only applicable to TAP, it's not a real test event and
     # should not be seen by other event watchers.
