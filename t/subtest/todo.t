@@ -133,7 +133,7 @@ test_subtest_in_todo("1 failed test", sub {
     #   Failed test 'failme'
     #   at $0 line $line{fail1}.
     1..1
-    # Looks like you failed 1 test of 1.
+    # 1 test of 1 failed.
 END
 
 test_subtest_in_todo("1fail, wrongplan", sub {
