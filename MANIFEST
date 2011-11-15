@@ -127,14 +127,14 @@ t/Builder2/Mouse.t
 t/Builder2/Mouse_before_TB2.t
 t/Builder2/NoWarnings.t
 t/Builder2/ok_starts_a_stream.t
-t/Builder2/result.t
-t/Builder2/result_accessors.t
 t/Builder2/SimpleBuilder2.t
 t/Builder2/Stack.t
 t/Builder2/StackBuilder.t
 t/Builder2/subtest.t
 t/Builder2/TB2_before_Mouse.t
 t/Builder2/top.t
+t/Result/basics.t
+t/Result/accessors.t
 t/c_flag.t
 t/CanDupFilehandles.t
 t/CanLoad.t
