@@ -14,6 +14,7 @@ my @events = map { "Test::Builder2::Event::".$_ }
                     Comment
                     SubtestStart
                     SubtestEnd
+                    Abort
                  );
 
 for my $class (@events) {
