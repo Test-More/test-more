@@ -104,6 +104,8 @@ END
 test_subtest_in_todo("noplan, no tests run", sub {
     plan 'no_plan';
 }, <<END, 1);
+    TAP version 13
+    1..0
     # No tests run!
 END
 

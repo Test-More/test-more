@@ -220,7 +220,7 @@ sub subtest {
         die $error if $error && !eval { $error->isa("Test::Builder::Exception") };
     }
 
-    $self->done_testing if $self->history->in_test;
+    $self->done_testing if !$self->history->done_testing;
     {
         # Don't change the exit code while doing the ending for a subtest
         my $old_setting = $self->no_change_exit_code;

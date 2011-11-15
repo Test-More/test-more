@@ -195,6 +195,9 @@ note "empty subtest"; {
     is $tb->read, <<"END", 'Not running subtests should make the parent test fail';
 TAP version 13
 1..1
+    TAP version 13
+    1..0
+    # No tests run!
 not ok 1 - No tests run in subtest "empty subtest"
 #   Failed test 'No tests run in subtest "empty subtest"'
 #   at $0 line 189.
