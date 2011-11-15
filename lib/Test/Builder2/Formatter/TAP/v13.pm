@@ -505,6 +505,12 @@ sub accept_subtest_end {
         $result_args{$key} = $val if defined $val;
     }
 
+    my $subtest_plan = $event->history->plan;
+    if( $subtest_plan->skip ) {
+        $result_args{skip} = 1;
+        $result_args{reason} = $subtest_plan->skip_reason;
+    }
+
     my $result = Test::Builder2::Result->new_result( %result_args );
 
     # This result is only applicable to TAP, it's not a real test event and

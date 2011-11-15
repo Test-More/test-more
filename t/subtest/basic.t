@@ -140,21 +140,16 @@ END
 }
 
 
-# Skip all subtests
-{
+note "skip_all subtest"; {
     my $tb = Test::Builder::NoOutput->create;
 
-    {
-        my $child = $tb->child('skippy says he loves you');
-        eval { $child->plan( skip_all => 'cuz I said so' ) };
-        ok my $error = $@, 'A child which does a "skip_all" should throw an exception';
-        isa_ok $error, 'Test::Builder::Exception', '... and the exception it throws';
-    }
-    subtest 'skip all', sub {
-        plan skip_all => 'subtest with skip_all';
-        ok 0, 'This should never be run';
-    };
-    my @details = Test::More->builder->details;
+    $tb->subtest("skippy says he loves you" => sub {
+        $tb->plan( skip_all => 'cuz I said so' );
+        $tb->ok(1, "this should not run");
+        $tb->ok(0, "nor this");
+    });
+
+    my @details = $tb->details;
     is $details[-1]{type}, 'skip',
         'Subtests which "skip_all" are reported as skipped tests';
 }

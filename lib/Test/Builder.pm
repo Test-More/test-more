@@ -197,10 +197,14 @@ sub subtest {
         )
     );
 
+    my $error;
     {
-        # Increment the level to account for the subtest function wrapper
-        local $Test::Builder::Level = $Test::Builder::Level + 1;
-        $subtests->();
+        # Increment the level to account for...
+        #     try()
+        #     try wrapper
+        #     subtest wrapper
+        local $Test::Builder::Level = $Test::Builder::Level + 4;
+        (undef, $error) = $self->try(sub { $subtests->() });
     }
 
     $self->done_testing if $self->history->in_test;
@@ -640,10 +644,13 @@ sub skip_all {
         skip_reason     => $reason
     );
 
-    if ( $self->parent ) {
-        die bless {} => 'Test::Builder::Exception';
+    if ( $self->history->subtest_depth ) {
+        # We're in a subtest, don't exit.  Throw an exception.
+        die bless { from => "skip_all" } => 'Test::Builder::Exception';
     }
-    exit(0);
+    else {
+        exit(0);
+    }
 }
 
 =item B<exported_to>
