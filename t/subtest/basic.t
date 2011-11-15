@@ -6,8 +6,7 @@ use warnings;
 use lib 't/lib';
 use Test::Builder::NoOutput;
 
-use Test::More;
-plan tests => 19;
+use Test::More tests => 19;
 
 # Formatting may change if we're running under Test::Harness.
 local $ENV{HARNESS_ACTIVE} = 0;
@@ -20,14 +19,14 @@ local $ENV{HARNESS_ACTIVE} = 0;
         $tb->ok( $_, "We're on $_" );
         $tb->diag("We ran $_");
     }
-    {
-        my $indented = $tb->child;
-        $indented->plan('no_plan');
-        $indented->ok( 1, "We're on 1" );
-        $indented->ok( 1, "We're on 2" );
-        $indented->ok( 1, "We're on 3" );
-        $indented->finalize;
-    }
+
+    $tb->subtest( first_subtest => sub {
+        $tb->plan('no_plan');
+        $tb->ok( 1, "We're on 1" );
+        $tb->ok( 1, "We're on 2" );
+        $tb->ok( 1, "We're on 3" );
+    });
+
     for( 7, 8, 9 ) {
         $tb->ok( $_, "We're on $_" );
     }
@@ -47,7 +46,7 @@ ok 3 - We're on 3
     ok 2 - We're on 2
     ok 3 - We're on 3
     1..3
-ok 4 - Child of $0
+ok 4 - first_subtest
 ok 5 - We're on 7
 ok 6 - We're on 8
 ok 7 - We're on 9
