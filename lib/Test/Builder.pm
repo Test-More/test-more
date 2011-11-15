@@ -188,24 +188,28 @@ sub subtest {
         $self->croak("subtest()'s second argument must be a code ref");
     }
 
-    my $error;
+    $self->test_start unless $self->in_test;
+
+    $self->post_event(
+        Test::Builder2::Event::SubtestStart->new(
+            $self->_file_and_line,
+            name => $name,
+        )
+    );
+
     {
-        # In case the subtest messes with $Level
-        local $Test::Builder::Level = $Test::Builder::Level;
-
-        my $run_the_subtests = sub {
-            $self->post_event( Test::Builder2::Event::SubtestStart->new( name => $name ) );
-            $subtests->();
-            $self->done_testing if $self->history->in_test;
-            $self->post_event( Test::Builder2::Event::SubtestEnd->new );
-            1;
-        };
-
-        (undef, $error) = $self->try(sub { $run_the_subtests->(); 1 });
+        # Increment the level to account for the subtest function wrapper
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        $subtests->();
     }
 
-    # Die *after* we restore the parent.
-    die $error if $error and !$self->try(sub { $error->isa('Test::Builder::Exception') });
+    $self->done_testing if $self->history->in_test;
+
+    $self->post_event(
+        Test::Builder2::Event::SubtestEnd->new(
+            $self->_file_and_line,
+        )
+    );
 
     return;
 }

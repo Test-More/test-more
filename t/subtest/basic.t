@@ -99,27 +99,24 @@ ok 3 - We're on 7
 END
 }
 
-{
-#line 108
+note "failing subtests"; {
+#line 104
     my $tb = Test::Builder::NoOutput->create;
 
-    {
-        my $child = $tb->child('expected to fail');
-        $child->plan( tests => 3 );
-        $child->ok(1);
-        $child->ok(0);
-        $child->ok(3);
-        $child->finalize;
-    }
+    $tb->subtest('expected to fail' => sub {
+        $tb->plan( tests => 3 );
+        $tb->ok(1);
+        $tb->ok(0);
+        $tb->ok(3);
+    });
 
-    {
-        my $child = $tb->child('expected to pass');
-        $child->plan( tests => 3 );
-        $child->ok(1);
-        $child->ok(2);
-        $child->ok(3);
-        $child->finalize;
-    }
+    $tb->subtest('expected to pass' => sub {
+        $tb->plan( tests => 3 );
+        $tb->ok(1);
+        $tb->ok(2);
+        $tb->ok(3);
+    });
+
     $tb->reset_outputs;
     is $tb->read, <<"END", 'Previous child failures should not force subsequent failures';
 TAP version 13
@@ -127,12 +124,12 @@ TAP version 13
     1..3
     ok 1
     not ok 2
-    #   Failed test at $0 line 114.
+    #   Failed test at $0 line 111.
     ok 3
-    # Looks like you failed 1 test of 3.
+    # 1 test of 3 failed.
 not ok 1 - expected to fail
 #   Failed test 'expected to fail'
-#   at $0 line 116.
+#   at $0 line 111.
     TAP version 13
     1..3
     ok 1
@@ -141,6 +138,8 @@ not ok 1 - expected to fail
 ok 2 - expected to pass
 END
 }
+
+
 {
     my $tb    = Test::Builder::NoOutput->create;
     my $child = $tb->child('one');
