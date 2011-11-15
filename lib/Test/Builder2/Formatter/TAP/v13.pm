@@ -498,7 +498,12 @@ sub accept_subtest_end {
 
     my %result_args;
     $result_args{pass} = $event->history->test_was_successful;
-    $result_args{name} = $subtest_start->name if $subtest_start && defined $subtest_start->name;
+    $result_args{name} = $subtest_start->name if defined $subtest_start->name;
+
+    for my $key (qw(file line)) {
+        my $val = $event->$key();
+        $result_args{$key} = $val if defined $val;
+    }
 
     my $result = Test::Builder2::Result->new_result( %result_args );
 
