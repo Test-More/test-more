@@ -100,4 +100,18 @@ note "start after end"; {
 }
 
 
+note "abort"; {
+    my $history = Test::Builder2::History->new;
+    my $ec = MyEventCoordinator->new( history => $history );
+
+    my $start = Test::Builder2::Event::TestStart->new;
+    my $abort = Test::Builder2::Event::Abort->new;
+    $ec->post_event($_) for $start, $abort;
+
+    ok !$history->in_test;
+    ok !$history->done_testing;
+    is $history->abort, $abort;
+}
+
+
 done_testing;
