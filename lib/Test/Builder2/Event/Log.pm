@@ -127,17 +127,6 @@ sub levels {
     return @Real_Levels;
 }
 
-sub as_hash {
-    my $self = shift;
-
-    return {
-        event_type      => $self->event_type,
-        message         => $self->message,
-        level           => $self->level,
-    };
-}
-
-
 =head3 between_levels
 
     $is_between = $event->between_levels($low_level, $high_level);

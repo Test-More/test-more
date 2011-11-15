@@ -111,19 +111,6 @@ The event type is C<set plan>.
 
 sub event_type { "set plan" }
 
-my @data_methods = qw(plan asserts_expected no_plan skip skip_reason event_type);
-sub as_hash {
-    my $self = shift;
-
-    my %data;
-    for my $method (@data_methods) {
-        $data{$method} = $self->$method();
-    }
-
-    return \%data;
-}
-
-
 =head1 SEE ALSO
 
 L<Test::Builder2::Event>

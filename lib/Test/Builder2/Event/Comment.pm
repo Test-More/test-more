@@ -27,16 +27,6 @@ The event type is C<comment>.
 
 sub event_type { return "comment"; }
 
-sub as_hash {
-    my $self = shift;
-
-    return {
-        event_type      => $self->event_type,
-        comment         => $self->comment,
-    };
-}
-
-
 =head2 Attributes
 
 =head3 comment

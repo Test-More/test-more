@@ -22,10 +22,4 @@ The event type is C<test end>.
 
 sub event_type { "test end" }
 
-sub as_hash {
-    return {
-        event_type => "test end",
-    };
-}
-
 1;
