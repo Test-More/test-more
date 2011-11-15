@@ -18,7 +18,6 @@ note "defaults"; {
     is_deeply $event->as_hash, {
         event_type      => "subtest start",
         event_id        => $event->event_id,
-        depth           => undef,
         name            => '',
     };
 }
