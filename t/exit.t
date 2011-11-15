@@ -3,16 +3,6 @@
 # Can't use Test.pm, that's a 5.005 thing.
 package My::Test;
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = '../lib';
-    }
-}
-
-print STDOUT "1..0 # Skip exit codes not implemented\n";
-exit;
-
 require Test::Builder;
 my $TB = Test::Builder->create();
 $TB->level(0);
