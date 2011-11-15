@@ -203,7 +203,7 @@ sub accept_set_plan {
     my $self  = shift;
     my($event, $ec) = @_;
 
-    croak "'set plan' event outside of a stream" if !$ec->history->stream_depth;
+    croak "A plan was set but we're not testing" if !$ec->history->in_test;
 
     $self->plan( $event );
 

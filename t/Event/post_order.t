@@ -51,7 +51,6 @@ note "post order"; {
         Test::Builder2::Event::TestStart->new
     );
 
-    # history has to come first so stream_depth is set
     is_deeply [My::Event::Incrementer->read_stack], [qw(early history formatter late)];
 }
 

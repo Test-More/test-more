@@ -80,13 +80,17 @@ sub accept_event {
     return;
 }
 
+
 sub accept_test_start {
     my $self  = shift;
     my($event, $ec) = @_;
 
     $self->accept_event($event, $ec);
 
-    $self->_stream_depth_inc;
+    croak "Saw a test_start, but testing has already started" if $self->test_start;
+    croak "Saw a test_start, but testing has already ended"   if $self->test_end;
+
+    $self->test_start($event);
 
     return;
 }
@@ -98,7 +102,10 @@ sub accept_test_end {
 
     $self->accept_event($event, $ec);
 
-    $self->_stream_depth_dec;
+    croak "Saw a test_end, but testing has not yet started" if !$self->test_start;
+    croak "Saw a test_end, but testing has already ended"   if $self->test_end;
+
+    $self->test_end($event);
 
     return;
 }
@@ -266,7 +273,7 @@ sub test_was_successful {
     my $self = shift;
 
     # We're still testing
-    return 0 if $self->stream_depth;
+    return 0 if !$self->done_testing;
 
     my $plan = $self->plan;
 
@@ -297,6 +304,39 @@ sub test_was_successful {
     return 1;
 }
 
+
+=head3 in_test
+
+    my $am_in_test = $history->in_test;
+
+Returns true if we're in the middle of a test, that is a C<test_start>
+event was seen but a C<test_end> event has not.
+
+=cut
+
+sub in_test {
+    my $self = shift;
+
+    return $self->test_start && !$self->test_end;
+}
+
+
+=head3 done_testing
+
+    my $testing_is_done = $history->done_testing;
+
+Returns true if testing was started and it is done.  That is, both a
+C<test_start> and a C<test_end> event has been seen.
+
+=cut
+
+sub done_testing {
+    my $self = shift;
+
+    return $self->test_start && $self->test_end;
+}
+
+
 =head3 plan
 
     my $plan = $history->plan;
@@ -307,70 +347,34 @@ Returns the plan event for the current stream, if any.
 
 has plan =>
   is            => 'rw',
-  isa           => 'Test::Builder2::Event',
+  does          => 'Test::Builder2::Event',
 ;
 
 
-=head2 State
+=head3 test_start
 
-History tracks some basic information about the state of the test
-surmised by watching the events go by.
+    my $test_start = $history->test_start;
 
-=head3 stream_depth
-
-  my $stream_depth = $history->stream_depth;
-
-Returns how many C<test start> events without C<test end> events
-have been seen.
-
-For example...
-
-    test start
-
-Would indicate a level of 1.
-
-    test start
-      test start
-      test end
-      test start
-
-Would indicate a level of 2.
-
-A value of 0 indiciates the Formatter is not in a stream.
-
-A negative value will throw an exception.
+Returns the C<test_start> event, if it has been seen.
 
 =cut
 
-has stream_depth =>
+has test_start =>
   is            => 'rw',
-  isa           => 'Test::Builder2::Positive_Int',
-  default       => 0
-;
+  does          => 'Test::Builder2::Event';
 
-=begin private
 
-=head3 _stream_depth_inc
+=head3 test_end
 
-=head3 _stream_depth_dec
+    my $test_end = $history->test_end;
 
-Increment and decrement the C<stream_depth>.
-
-=end private
+Returns the C<test_end> event, if it has been seen.
 
 =cut
 
-sub _stream_depth_inc {
-    my $self = shift;
-
-    $self->stream_depth( $self->stream_depth + 1 );
-}
-
-sub _stream_depth_dec {
-    my $self = shift;
-
-    $self->stream_depth( $self->stream_depth - 1 );
-}
+has test_end =>
+  is            => 'rw',
+  does          => 'Test::Builder2::Event';
 
 
 =head2 HISTORY INTERACTION

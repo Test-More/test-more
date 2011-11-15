@@ -158,13 +158,13 @@ note "posting events to specific handlers"; {
     my $comment = Test::Builder2::Event::Comment->new( comment => "whatever" );
     my $result  = Test::Builder2::Result->new_result;
     my $end     = Test::Builder2::Event::TestEnd->new;
-    $ec->post_event($start) for 1..2;
+    $ec->post_event($start);
     $ec->post_event($comment);
     $ec->post_event($result);
-    $ec->post_event($end)   for 1..2;
+    $ec->post_event($end);
 
-    is_deeply $watcher->starts, [[$start, $ec], [$start, $ec]];
-    is_deeply $watcher->ends,   [[$end, $ec], [$end, $ec]];
+    is_deeply $watcher->starts, [[$start, $ec]];
+    is_deeply $watcher->ends,   [[$end, $ec]];
     is_deeply $watcher->others, [[$comment, $ec], [$result, $ec]];
 }
 

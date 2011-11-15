@@ -315,8 +315,9 @@ note "watchers are asked to provide their handler"; {
     is $state->early_watchers->[0]->depth,      1;
     is $state->late_watchers->[0]->depth,       1;
 
-    my $substream_start = Test::Builder2::Event::TestStart->new;
-    my $substream_end = Test::Builder2::Event::TestStart->new;
+    # Start and end an empty subtest
+    my $substream_start = Test::Builder2::Event::SubtestStart->new;
+    my $substream_end = Test::Builder2::Event::SubtestEnd->new;
     $state->post_event($_) for $substream_start, $substream_end;
 
     my $subtest_end = Test::Builder2::Event::SubtestEnd->new;
