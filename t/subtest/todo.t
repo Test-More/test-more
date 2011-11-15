@@ -6,16 +6,6 @@
 # redirected to the todo output destination, but individual tests
 # within the subtest should not become todo tests themselves.
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = ( '../lib', 'lib' );
-    }
-    else {
-        unshift @INC, 't/lib';
-    }
-}
-
 use strict;
 use warnings;
 
@@ -24,7 +14,7 @@ use Test::Builder;
 use Test::Builder::Tester;
 
 # Formatting may change if we're running under Test::Harness.
-$ENV{HARNESS_ACTIVE} = 0;
+local $ENV{HARNESS_ACTIVE} = 0;
 
 our %line;
 
