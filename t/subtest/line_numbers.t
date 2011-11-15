@@ -3,18 +3,10 @@
 # Test Test::More::subtest(), focusing on correct line numbers in
 # failed test diagnostics.
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = ( '../lib', 'lib' );
-    }
-    else {
-        unshift @INC, 't/lib';
-    }
-}
-
 use strict;
 use warnings;
+
+use lib 't/lib';
 
 use Test::More;
 
