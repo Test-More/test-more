@@ -497,18 +497,30 @@ sub accept_subtest_end {
     my $subtest_start = $ec->history->subtest_start;
 
     my %result_args;
+
+    # Did the subtest pass?
     $result_args{pass} = $event->history->test_was_successful;
+
+    # Inherit the name from the subtest.
     $result_args{name} = $subtest_start->name if defined $subtest_start->name;
 
+    # Inherit the context.
     for my $key (qw(file line)) {
         my $val = $event->$key();
         $result_args{$key} = $val if defined $val;
     }
 
+    # If the subtest was a skip_all, make our result a skip.
     my $subtest_plan = $event->history->plan;
-    if( $subtest_plan->skip ) {
+    if( $subtest_plan && $subtest_plan->skip ) {
         $result_args{skip} = 1;
         $result_args{reason} = $subtest_plan->skip_reason;
+    }
+    elsif( $event->history->test_count == 0 ) {
+        # The subtest didn't run any tests
+        my $name = $result_args{name};
+        $result_args{name} = "No tests run in subtest";
+        $result_args{name}.= qq[ "$name"] if defined $name;
     }
 
     my $result = Test::Builder2::Result->new_result( %result_args );

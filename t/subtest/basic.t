@@ -6,7 +6,7 @@ use warnings;
 use lib 't/lib';
 use Test::Builder::NoOutput;
 
-use Test::More tests => 19;
+use Test::More;
 
 # Formatting may change if we're running under Test::Harness.
 local $ENV{HARNESS_ACTIVE} = 0;
@@ -31,7 +31,6 @@ note "passing subtest"; {
         $tb->ok( $_, "We're on $_" );
     }
 
-    $tb->reset_outputs;
     is $tb->read, <<"END", 'Output should nest properly';
 TAP version 13
 1..7
@@ -79,7 +78,6 @@ note "subtest with no_plan"; {
     }
 
     $tb->_ending;
-    $tb->reset_outputs;
     is $tb->read, <<"END", 'We should allow arbitrary nesting';
 TAP version 13
 ok 1 - We're on 1
@@ -117,7 +115,6 @@ note "failing subtests"; {
         $tb->ok(3);
     });
 
-    $tb->reset_outputs;
     is $tb->read, <<"END", 'Previous child failures should not force subsequent failures';
 TAP version 13
     TAP version 13
@@ -168,7 +165,6 @@ note "todo tests"; {
     });
 
     $tb->_ending;
-    $tb->reset_outputs;
 
     is $tb->read, <<"END", 'TODO tests should not make the parent test fail';
 TAP version 13
@@ -181,18 +177,24 @@ ok 1 - with todo
 END
 }
 
-{
+note "empty subtest"; {
     my $tb = Test::Builder::NoOutput->create;
     $tb->plan( tests => 1 );
-    my $child = $tb->child;
-    $child->finalize;
+
+#line 189
+    $tb->subtest("empty subtest" => sub {});
+
     $tb->_ending;
-    $tb->reset_outputs;
-    my $expected = <<"END";
+    is $tb->read, <<"END", 'Not running subtests should make the parent test fail';
 TAP version 13
 1..1
-not ok 1 - No tests run for subtest "Child of $0"
+not ok 1 - No tests run in subtest "empty subtest"
+#   Failed test 'No tests run in subtest "empty subtest"'
+#   at $0 line 189.
+# 1 test of 1 failed.
 END
-    like $tb->read, qr/\Q$expected/,
-        'Not running subtests should make the parent test fail';
+
 }
+
+
+done_testing;
