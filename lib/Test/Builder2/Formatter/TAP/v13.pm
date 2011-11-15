@@ -72,12 +72,12 @@ sub err {
 
 sub diag {
     my $self = shift;
-    $self->err($self->comment( $self->indent, @_ ));
+    $self->err($self->comment( @_ ));
 }
 
 sub note {
     my $self = shift;
-    $self->out($self->comment( $self->indent, @_));
+    $self->out($self->comment( @_));
 }
 
 
