@@ -40,14 +40,14 @@ my $Fail = Test::Builder2::Result->new_result(
     $ec->post_event( $Pass );
     is_deeply $history->results, [$Pass];
 
-    ok $history->is_passing;
+    ok $history->can_succeed;
 
     $ec->post_event( $Fail );
     is_deeply $history->results, [
         $Pass, $Fail
     ];
 
-    ok !$history->is_passing;
+    ok !$history->can_succeed;
 }
 
 

@@ -12,7 +12,7 @@ no Test::Builder2::Mouse::Role;
 
 =head1 NAME
 
-Test::Builder2::Result::Role::fail - The assert did not run
+Test::Builder2::Result::Role::skip - The assert did not run
 
 =head1 DESCRIPTION
 

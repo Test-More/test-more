@@ -371,7 +371,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Name}         = $0;
     $self->is_passing(1);
-    $self->{Ending}       = 0;
 
     $self->{Original_Pid} = $$;
     $self->{Child_Name}   = undef;
@@ -389,6 +388,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->no_header(0);
     $self->no_diag(0);
     $self->no_ending(0);
+    $self->no_change_exit_code(0);
 
     $self->{Todo}       = undef;
     $self->{Todo_Stack} = [];
@@ -1404,7 +1404,6 @@ sub is_fh {
 
 =head2 Test style
 
-
 =over 4
 
 =item B<level>
@@ -1533,6 +1532,27 @@ foreach my $attribute (qw(No_Ending)) {
 
     no strict 'refs';    ## no critic
     *{ __PACKAGE__ . '::' . $method } = $code;
+}
+
+=item B<no_change_exit_code>
+
+    $tb->no_change_exit_code($no_change);
+
+If true, Test::Builder will not change the process' exit code.
+
+See L<test_exit_code> for details.
+
+=cut
+
+sub no_change_exit_code {
+    my $self = shift;
+
+    if( @_ ) {
+        my $no = shift;
+        $self->{Change_Exit_Code} = !$no;
+    }
+
+    return !$self->{Change_Exit_Code};
 }
 
 =back
@@ -2334,95 +2354,107 @@ sub _my_exit {
 sub _ending {
     my $self = shift;
     return if $self->no_ending;
-    return if $self->{Ending}++;
 
     my $history = $self->history;
     my $plan    = $history->plan;
 
-    # Don't do the ending analysis for forked children
-    $self->formatter->show_ending_commentary(0) unless $self->{Original_Pid} == $$;
+    # They never set a plan nor ran a test.
+    return if !$plan && !$history->test_count;
+
+    # Forked children often run fragments of tests.
+    my $in_child = $self->{Original_Pid} != $$;
+
+    # Don't show ending commentary in a forked copy.
+    # Forks often run fragments of tests.
+    $self->formatter->show_ending_commentary(0) if $in_child;
 
     # End the stream unless we (or somebody else) already ended it
     $self->test_end if $history->stream_depth;
 
-    my $real_exit_code = $?;
+    # Ask the history if we passed.
+    $self->is_passing( $history->test_was_successful );
 
-    # Don't bother with an ending if this is a forked copy.  Only the parent
-    # should do the ending.
+    # Don't change the exit code of a forked copy.
+    # Forks often run fragments of tests.
+    return if $in_child;
 
-    if( $self->{Original_Pid} != $$ ) {
-        return;
-    }
+    my $new_exit_code = $self->test_exit_code($?);
+    _my_exit($new_exit_code);
+}
 
-    # Ran tests but never declared a plan or hit done_testing
-    if( !$self->_plan_handled and $self->current_test ) {
-        $self->is_passing(0);
-    }
 
-    # Exit if plan() was never called.  This is so "require Test::Simple"
-    # doesn't puke.
-    if( !$self->_plan_handled ) {
-        return;
-    }
+=head3 test_exit_code
 
-    # Don't do an ending if we bailed out.
-    if( $self->{Bailed_Out} ) {
-        $self->is_passing(0);
-        return;
-    }
-    # Figure out if we passed or failed and print helpful messages.
-    my $test_results = $history->results;
-    if(@$test_results) {
-        my $num_extra = $plan->no_plan ? 0 : $self->current_test - $plan->asserts_expected;
-            
-        my $num_failed = grep $_->is_fail, @{$test_results}[ 0 .. $self->current_test - 1 ];
+    my $new_exit_code = $tb->test_exit_code($?);
 
-        if( $num_extra != 0 ) {
-            $self->is_passing(0);
-        }
+Determine the exit code of the process to reflect if the test
+succeeded or not.
 
-        if($num_failed) {
-            $self->is_passing(0);
-        }
+This does not actually change the exit code.
 
+If L<no_change_exit_code> is set true, the exit code will not be
+changed.  $new_exit_code will be identical to the input.
+
+See L<EXIT CODES> for details.
+
+=cut
+
+sub test_exit_code {
+    my $self = shift;
+    my $real_exit_code = @_ ? shift : $?;
+
+    return $real_exit_code if $self->no_change_exit_code;
+
+    my $history = $self->history;
+    my $plan    = $history->plan;
+
+    # They never set a plan nor ran a test.
+    return $real_exit_code if !$plan && !$history->test_count;
+
+    # Some tests were run...
+    if( $history->test_count ) {
+        # ...but we exited with non-zero
         if($real_exit_code) {
             $self->diag(<<"FAIL");
 Looks like your test exited with $real_exit_code just after @{[ $self->current_test ]}.
 FAIL
-            $self->is_passing(0);
-            _my_exit($real_exit_code) && return;
+            return $real_exit_code;
         }
-
-        my $exit_code;
-        if($num_failed) {
-            $exit_code = $num_failed <= 254 ? $num_failed : 254;
+        # Extra tests
+        elsif(my $num_failed = $history->fail_count) {
+            return $num_failed <= 254 ? $num_failed : 254;
         }
-        elsif( $num_extra != 0 ) {
-            $exit_code = 255;
+        # Too many tests
+        elsif( $plan && !$plan->no_plan && $self->current_test > $plan->asserts_expected ) {
+            return 255;
         }
         else {
-            $exit_code = 0;
+            return $real_exit_code;
+        }
+    }
+    # Everything was skipped
+    elsif( $plan->skip ) {
+        if( $real_exit_code ) {
+            $self->diag(<<"FAIL");
+Looks like your test skipped but exited with $real_exit_code.
+FAIL
         }
 
-        _my_exit($exit_code) && return;
+        return $real_exit_code;
     }
-    elsif( $plan->skip ) {
-        _my_exit(0) && return;
-    }
-    elsif($real_exit_code) {
+    # We died before running any tests
+    elsif( $real_exit_code ) {
         $self->diag(<<"FAIL");
 Looks like your test exited with $real_exit_code before it could output anything.
 FAIL
-        $self->is_passing(0);
-        _my_exit($real_exit_code) && return;
+        return $real_exit_code;
     }
+    # Dunno what happened
     else {
-        $self->is_passing(0);
-        _my_exit(255) && return;
+        return 255;
     }
 
-    $self->is_passing(0);
-    $self->_whoa( 1, "We fell off the end of _ending()" );
+    $self->_whoa( 1, "We fell off the end of test_exit_code!" );
 }
 
 END {
@@ -2446,6 +2478,8 @@ So the exit codes are...
     any other number    how many failed (including missing or extras)
 
 If you fail more than 254 tests, it will be reported as 254.
+
+This behavior can be turned off with L<no_change_exit_code>.
 
 =head1 THREADS
 
