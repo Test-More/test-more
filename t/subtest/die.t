@@ -21,8 +21,6 @@ note "death of a subtest"; {
         1;
     });
     like( $@, qr/^Death in the subtest at $0 line /);
-
-    ok( !$tb->parent, "the parent object is restored after a die" );
 }
 
 

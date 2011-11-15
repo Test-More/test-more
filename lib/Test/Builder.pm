@@ -197,14 +197,15 @@ sub subtest {
         )
     );
 
-    my $error;
     {
         # Increment the level to account for...
         #     try()
         #     try wrapper
         #     subtest wrapper
         local $Test::Builder::Level = $Test::Builder::Level + 4;
-        (undef, $error) = $self->try(sub { $subtests->() });
+        my(undef, $error) = $self->try(sub { $subtests->() });
+
+        die $error if $error && !eval { $error->isa("Test::Builder::Exception") };
     }
 
     $self->done_testing if $self->history->in_test;
