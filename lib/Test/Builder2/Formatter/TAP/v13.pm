@@ -376,7 +376,7 @@ sub accept_result {
 
     my $name = $result->name;
     $self->_escape(\$name);
-    $out .= " - $name" if defined $name;
+    $out .= " - $name" if defined $name and length $name;
 
     my $reason = $result->reason;
     $self->_escape(\$reason);
@@ -516,7 +516,7 @@ sub accept_subtest_end {
     $result_args{pass} = $event->history->test_was_successful;
 
     # Inherit the name from the subtest.
-    $result_args{name} = $subtest_start->name if defined $subtest_start->name;
+    $result_args{name} = $subtest_start->name;
 
     # Inherit the context.
     for my $key (qw(file line)) {
