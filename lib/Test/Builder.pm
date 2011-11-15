@@ -202,7 +202,7 @@ sub subtest {
         #     try()
         #     try wrapper
         #     subtest wrapper
-        local $Test::Builder::Level = $Test::Builder::Level + 4;
+        local $Test::Builder::Level = $Test::Builder::Level;
         my(undef, $error) = $self->try(sub { $subtests->() });
 
         die $error if $error && !eval { $error->isa("Test::Builder::Exception") };

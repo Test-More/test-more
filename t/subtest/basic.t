@@ -12,7 +12,9 @@ use Test::More;
 local $ENV{HARNESS_ACTIVE} = 0;
 
 note "passing subtest"; {
+#line 16
     my $tb = Test::Builder::NoOutput->create;
+    $tb->level(0);
 
     $tb->plan( tests => 7 );
     for( 1 .. 3 ) {
@@ -55,6 +57,7 @@ END
 
 note "subtest with no_plan"; {
     my $tb = Test::Builder::NoOutput->create;
+    $tb->level(0);
 
     $tb->plan('no_plan');
     for(1) {
@@ -98,8 +101,9 @@ END
 }
 
 note "failing subtests"; {
-#line 104
+#line 105
     my $tb = Test::Builder::NoOutput->create;
+    $tb->level(0);
 
     $tb->subtest('expected to fail' => sub {
         $tb->plan( tests => 3 );
@@ -126,7 +130,7 @@ TAP version 13
     # 1 test of 3 failed.
 not ok 1 - expected to fail
 #   Failed test 'expected to fail'
-#   at $0 line 111.
+#   at $0 line 113.
     TAP version 13
     1..3
     ok 1
@@ -139,6 +143,7 @@ END
 
 note "skip_all subtest"; {
     my $tb = Test::Builder::NoOutput->create;
+    $tb->level(0);
 
     $tb->subtest("skippy says he loves you" => sub {
         $tb->plan( skip_all => 'cuz I said so' );
@@ -153,8 +158,9 @@ note "skip_all subtest"; {
 
 
 note "todo tests"; {
-#line 160
+#line 162
     my $tb = Test::Builder::NoOutput->create;
+    $tb->level(0);
     $tb->plan( tests => 1 );
 
     $tb->subtest("with todo" => sub {
@@ -172,13 +178,14 @@ TAP version 13
     TAP version 13
     1..1
     not ok 1 # TODO message
-    #   Failed (TODO) test at $0 line 168.
+    #   Failed (TODO) test at $0 line 169.
 ok 1 - with todo
 END
 }
 
 note "empty subtest"; {
     my $tb = Test::Builder::NoOutput->create;
+    $tb->level(0);
     $tb->plan( tests => 1 );
 
 #line 189
