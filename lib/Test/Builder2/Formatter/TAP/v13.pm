@@ -60,14 +60,28 @@ sub _prepend {
     return $msg;
 }
 
+
+sub _indent {
+    my $self = shift;
+
+    my $indent = $self->indent;
+    my $msg = join "", @_;
+    return $msg unless $indent;
+
+    # Put an indent after each newline
+    $msg =~ s{\n(?!\z)}{\n$indent}sg;
+
+    return $indent . $msg;
+}
+
 sub out {
     my $self = shift;
-    $self->write(out => $self->indent, @_);
+    $self->write(out => $self->_indent(@_));
 }
 
 sub err {
     my $self = shift;
-    $self->write(err => $self->indent, @_);
+    $self->write(err => $self->_indent(@_));
 }
 
 sub diag {
