@@ -65,6 +65,6 @@ EXAMPLES
 Examples can be found in examples/TB2.  These include:
 
 * Alternative formats
-* Reimplemenation of Test::NoWarnings
+* Reimplementation of Test::NoWarnings
 * Die-on-fail
 * Debug-on-fail
