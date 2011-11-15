@@ -77,7 +77,7 @@ my %Tests = (
             );
 
 chdir 't';
-my $lib = File::Spec->catdir(qw(lib Test Simple sample_tests));
+my $lib = File::Spec->catdir(qw(sample_tests_for_exit_t));
 while( my($test_name, $exit_code) = each %Tests ) {
     my $file = File::Spec->catfile($lib, $test_name);
     my $wait_stat = system(qq{$Perl -"I../blib/lib" -"I../lib" -"I../t/lib" $file});
