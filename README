@@ -8,7 +8,7 @@ WHAT TEST::BUILDER2 IS
 It is a rewrite of the skeleton that holds together all the popular
 Test:: libraries.  Its aim is to increase flexibility and allow Perl
 authors to do pretty much whatever they please while still not having
-to worry about the minutea of test formats or coordinating with other
+to worry about the minutiae of test formats or coordinating with other
 test libraries.
 
 
@@ -38,8 +38,8 @@ WHAT WORKS
 Test event hooks
 Multiple formatters (ie. you can output something other than TAP)
 Assert stacks (ie. no more $Test::Builder::Level)
-Test::Buidler using Test::Builder2
-Event watchers (ie. what things like Test::NoWarnings)
+Test::Builder using Test::Builder2
+Event watchers (ie. things like Test::NoWarnings)
 
 
 WHAT DOESN'T WORK
