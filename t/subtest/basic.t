@@ -11,7 +11,7 @@ use Test::More tests => 19;
 # Formatting may change if we're running under Test::Harness.
 local $ENV{HARNESS_ACTIVE} = 0;
 
-{
+note "passing subtest"; {
     my $tb = Test::Builder::NoOutput->create;
 
     $tb->plan( tests => 7 );
@@ -52,28 +52,28 @@ ok 6 - We're on 8
 ok 7 - We're on 9
 END
 }
-{
+
+
+note "subtest with no_plan"; {
     my $tb = Test::Builder::NoOutput->create;
 
     $tb->plan('no_plan');
-    for( 1 .. 1 ) {
+    for(1) {
         $tb->ok( $_, "We're on $_" );
         $tb->diag("We ran $_");
     }
-    {
-        my $indented = $tb->child;
-        $indented->plan('no_plan');
-        $indented->ok( 1, "We're on 1" );
-        {
-            my $indented2 = $indented->child('with name');
-            $indented2->plan( tests => 2 );
-            $indented2->ok( 1, "We're on 2.1" );
-            $indented2->ok( 1, "We're on 2.1" );
-            $indented2->finalize;
-        }
-        $indented->ok( 1, 'after child' );
-        $indented->finalize;
-    }
+
+    $tb->subtest( "first subtest", sub {
+        $tb->plan('no_plan');
+        $tb->ok( 1, "We're on 1" );
+        $tb->subtest( "second subtest", sub {
+            $tb->plan( tests => 2 );
+            $tb->ok( 1, "We're on 2.1" );
+            $tb->ok( 1, "We're on 2.2" );
+        });
+        $tb->ok( 1, 'after child' );
+    });
+
     for(7) {
         $tb->ok( $_, "We're on $_" );
     }
@@ -89,11 +89,11 @@ ok 1 - We're on 1
         TAP version 13
         1..2
         ok 1 - We're on 2.1
-        ok 2 - We're on 2.1
-    ok 2 - with name
+        ok 2 - We're on 2.2
+    ok 2 - second subtest
     ok 3 - after child
     1..3
-ok 2 - Child of $0
+ok 2 - first subtest
 ok 3 - We're on 7
 1..3
 END
