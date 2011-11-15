@@ -25,10 +25,4 @@ The event type is C<test start>.
 
 sub event_type { "test start" }
 
-sub as_hash {
-    return {
-        event_type => "test start",
-    };
-}
-
 1;

@@ -11,7 +11,10 @@ note "Basic event"; {
     my $event = Test::Builder2::Event::TestEnd->new;
 
     is $event->event_type, "test end";
-    is $event->as_hash->{event_type}, "test end";
+    is_deeply $event->as_hash, {
+        event_type      => "test end",
+        event_id        => $event->event_id,
+    };
 }
 
 done_testing;
