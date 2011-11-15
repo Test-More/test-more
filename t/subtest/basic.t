@@ -154,29 +154,33 @@ note "skip_all subtest"; {
         'Subtests which "skip_all" are reported as skipped tests';
 }
 
-# to do tests
-{
-#line 204
+
+note "todo tests"; {
+#line 160
     my $tb = Test::Builder::NoOutput->create;
     $tb->plan( tests => 1 );
-    my $child = $tb->child;
-    $child->plan( tests => 1 );
-    $child->todo_start( 'message' );
-    $child->ok( 0 );
-    $child->todo_end;
-    $child->finalize;
+
+    $tb->subtest("with todo" => sub {
+        $tb->plan( tests => 1 );
+        $tb->todo_start( 'message' );
+        $tb->ok(0);
+        $tb->todo_end;
+    });
+
     $tb->_ending;
     $tb->reset_outputs;
+
     is $tb->read, <<"END", 'TODO tests should not make the parent test fail';
 TAP version 13
 1..1
     TAP version 13
     1..1
     not ok 1 # TODO message
-    #   Failed (TODO) test at $0 line 209.
-ok 1 - Child of $0
+    #   Failed (TODO) test at $0 line 168.
+ok 1 - with todo
 END
 }
+
 {
     my $tb = Test::Builder::NoOutput->create;
     $tb->plan( tests => 1 );
