@@ -2,6 +2,7 @@ package Test::Builder2::History;
 
 use Carp;
 use Test::Builder2::Mouse;
+use Test::Builder2::Types;
 use Test::Builder2::StackBuilder;
 
 with 'Test::Builder2::EventWatcher',
@@ -131,6 +132,16 @@ sub accept_subtest_start {
     return;
 }
 
+
+sub subtest_handler {
+    my $self  = shift;
+    my $event = shift;
+
+    my $subhistory = $self->new;
+    $subhistory->subtest_depth( $event->depth );
+
+    return $subhistory;
+}
 
 sub accept_set_plan {
     my $self  = shift;
@@ -423,11 +434,31 @@ has test_end =>
   does          => 'Test::Builder2::Event';
 
 
+=head3 subtest_depth
+
+    my $depth = $history->subtest_depth;
+
+Returns how deep in subtests the current test is.
+
+The top level test has a depth of 0.  The first subtest is 1, the next
+nested is 2 and so on.
+
+=cut
+
+has subtest_depth =>
+  is            => 'rw',
+  isa           => 'Test::Builder2::Positive_Int',
+  default       => 0;
+
+
 =head3 subtest_start
 
     my $subtest_start = $history->subtest_start;
 
 Returns the C<subtest_start> event, if it has been seen.
+
+This is the event for the subtest I<about to start> or which I<has
+just ended>.  It is not the event for the current subtest.
 
 =cut
 
