@@ -198,11 +198,7 @@ sub subtest {
     );
 
     {
-        # Increment the level to account for...
-        #     try()
-        #     try wrapper
-        #     subtest wrapper
-        local $Test::Builder::Level = $Test::Builder::Level;
+        local $Test::Builder::Level = $self->{Set_Level};
         my(undef, $error) = $self->try(sub { $subtests->() });
 
         die $error if $error && !eval { $error->isa("Test::Builder::Exception") };
@@ -320,9 +316,7 @@ my $Opened_Testhandles = 0;
 sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my($self, %overrides) = @_;
 
-    # We leave this a global because it has to be localized and localizing
-    # hash keys is just asking for pain.  Also, it was documented.
-    $Level = 1;
+    $self->level(1);
 
     $self->{Name}         = $0;
 
@@ -750,6 +744,7 @@ ERR
 
     # Turn the test into a Result
     my( $pack, $file, $line ) = $self->caller;
+
     my $result = Test::Builder2::Result->new_result(
         $self->_file_and_line,
         pass            => $test ? 1 : 0,
@@ -1386,6 +1381,7 @@ sub level {
     my( $self, $level ) = @_;
 
     if( defined $level ) {
+        $self->{Set_Level} = $level;
         $Level = $level;
     }
     return $Level;
