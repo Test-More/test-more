@@ -92,7 +92,10 @@ sub run_the_subtest {
     
     test_test("subtest() called from a sub");
 }
+
+
 {
+    test_out( "    TAP version 13" );
     test_out( "    1..0");
     test_err( "    # No tests run!");
     test_out( 'not ok 1 - No tests run for subtest "namehere"');
@@ -106,6 +109,7 @@ sub run_the_subtest {
     test_test("lineno in 'No tests run' diagnostic");
 }
 {
+    test_out("    TAP version 13" );
     test_out("    1..1");
     test_out("    not ok 1 - foo is bar");
     test_err("    #   Failed test 'foo is bar'");
