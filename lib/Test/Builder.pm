@@ -190,10 +190,17 @@ sub subtest {
 
     $self->test_start unless $self->in_test;
 
+    my %extra_args;
+    if( $self->in_todo ) {
+        $extra_args{directives} = ["todo"];
+        $extra_args{reason}     = $self->todo;
+    }
+
     $self->post_event(
         Test::Builder2::Event::SubtestStart->new(
             $self->_file_and_line,
-            name => $name,
+            name        => $name,
+            %extra_args
         )
     );
 
@@ -201,10 +208,22 @@ sub subtest {
         local $Test::Builder::Level = $self->{Set_Level};
         my(undef, $error) = $self->try(sub { $subtests->() });
 
+        # If the subtest is in a TODO, error output should not be seen like
+        # any other TODO test.
+        my $streamer = $self->formatter->streamer;
+        $streamer->error_fh( $streamer->output_fh ) if $self->in_todo;
+
         die $error if $error && !eval { $error->isa("Test::Builder::Exception") };
     }
 
     $self->done_testing if $self->history->in_test;
+    {
+        # Don't change the exit code while doing the ending for a subtest
+        my $old_setting = $self->no_change_exit_code;
+        $self->no_change_exit_code(1);
+        $self->_ending;
+        $self->no_change_exit_code($old_setting);
+    }
 
     $self->post_event(
         Test::Builder2::Event::SubtestEnd->new(

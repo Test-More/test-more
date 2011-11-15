@@ -518,6 +518,11 @@ sub accept_subtest_end {
     # Inherit the name from the subtest.
     $result_args{name} = $subtest_start->name;
 
+    # If the subtest was started in a todo context, the subtest result
+    # will be todo.
+    $result_args{directives} = $subtest_start->directives;
+    $result_args{reason}     = $subtest_start->reason;
+
     # Inherit the context.
     for my $key (qw(file line)) {
         my $val = $event->$key();
