@@ -3,6 +3,7 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
 use Test::Builder::NoOutput;
 
 use Test::More;
