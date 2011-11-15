@@ -2359,8 +2359,8 @@ FAIL
         elsif(my $num_failed = $history->fail_count) {
             return $num_failed <= 254 ? $num_failed : 254;
         }
-        # Too many tests
-        elsif( $plan && !$plan->no_plan && $self->current_test > $plan->asserts_expected ) {
+        # Wrong number of tests
+        elsif( $plan && !$plan->no_plan && $self->current_test != $plan->asserts_expected ) {
             return 255;
         }
         else {

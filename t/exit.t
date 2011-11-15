@@ -1,24 +1,6 @@
 #!/usr/bin/perl -w
 
-# Can't use Test.pm, that's a 5.005 thing.
-package My::Test;
-
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = '../lib';
-    }
-}
-
-print STDOUT "1..0 # Skip exit codes not implemented\n";
-exit;
-
-require Test::Builder;
-my $TB = Test::Builder->create();
-$TB->level(0);
-
-
-package main;
+BEGIN { require "t/test.pl" }
 
 use Cwd;
 use File::Spec;
@@ -27,9 +9,6 @@ my $Orig_Dir = cwd;
 
 my $Perl = File::Spec->rel2abs($^X);
 if( $^O eq 'VMS' ) {
-    # VMS can't use its own $^X in a system call until almost 5.8
-    $Perl = "MCR $^X" if $] < 5.007003;
-
     # Quiet noisy 'SYS$ABORT'
     $Perl .= q{ -"I../lib"} if $ENV{PERL_CORE};
     $Perl .= q{ -"Mvmsish=hushed"};
@@ -48,7 +27,7 @@ else {
 # Some OS' will alter the exit code to their own native sense...
 # sometimes.  Rather than deal with the exception we'll just
 # build up the mapping.
-print "# Building up a map of exit codes.  May take a while.\n";
+note "# Building up a map of exit codes.  May take a while.\n";
 my %Exit_Map;
 
 open my $fh, ">", "exit_map_test" or die $!;
@@ -68,10 +47,10 @@ END { 1 while unlink "exit_map_test" }
 for my $exit (0..255) {
     # This correctly emulates Test::Builder's behavior.
     my $out = qx[$Perl exit_map_test $exit];
-    $TB->like( $out, qr/^exit $exit\n/, "exit map test for $exit" );
+    like( $out, qr/^exit $exit\n/, "exit map test for $exit" );
     $Exit_Map{$exit} = exitstatus($?);
 }
-print "# Done.\n";
+note "# Done.\n";
 
 
 my %Tests = (
@@ -93,25 +72,23 @@ my %Tests = (
             );
 
 chdir 't';
-my $lib = File::Spec->catdir(qw(lib Test Simple sample_tests));
+my $lib = File::Spec->catdir(qw(sample_tests_for_exit_t));
 while( my($test_name, $exit_code) = each %Tests ) {
     my $file = File::Spec->catfile($lib, $test_name);
     my $wait_stat = system(qq{$Perl -"I../blib/lib" -"I../lib" -"I../t/lib" $file});
     my $actual_exit = exitstatus($wait_stat);
 
     if( $exit_code eq 'not zero' ) {
-        $TB->isnt_num( $actual_exit, $Exit_Map{0},
-                      "$test_name exited with $actual_exit ".
-                      "(expected non-zero)");
+        isnt( $actual_exit, $Exit_Map{0},
+              "$test_name exited with $actual_exit (expected non-zero)");
     }
     else {
-        $TB->is_num( $actual_exit, $Exit_Map{$exit_code}, 
-                      "$test_name exited with $actual_exit ".
-                      "(expected $Exit_Map{$exit_code})");
+        is( $actual_exit, $Exit_Map{$exit_code}, 
+            "$test_name exited with $actual_exit (expected $Exit_Map{$exit_code})");
     }
 }
 
-$TB->done_testing( scalar keys(%Tests) + 256 );
+done_testing( scalar keys(%Tests) + 256 );
 
 # So any END block file cleanup works.
 chdir $Orig_Dir;
