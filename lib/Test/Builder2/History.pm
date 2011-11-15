@@ -120,6 +120,18 @@ sub accept_abort {
 }
 
 
+sub accept_subtest_start {
+    my $self = shift;
+    my($event, $ec) = @_;
+
+    $self->accept_event($event, $ec);
+
+    $self->subtest_start($event);
+
+    return;
+}
+
+
 sub accept_set_plan {
     my $self  = shift;
     my($event, $ec) = @_;
@@ -407,6 +419,19 @@ Returns the C<test_end> event, if it has been seen.
 =cut
 
 has test_end =>
+  is            => 'rw',
+  does          => 'Test::Builder2::Event';
+
+
+=head3 subtest_start
+
+    my $subtest_start = $history->subtest_start;
+
+Returns the C<subtest_start> event, if it has been seen.
+
+=cut
+
+has subtest_start =>
   is            => 'rw',
   does          => 'Test::Builder2::Event';
 
