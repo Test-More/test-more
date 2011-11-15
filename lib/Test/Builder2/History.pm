@@ -238,17 +238,39 @@ A count of the number of SKIP tests have been added to results.
 =head3 can_succeed
 
 Returns true if the test can still succeed.  That is, if nothing yet
-has happened to cause it to fail.
+has happened to cause it to fail and the plan can be fulfilled.
 
-Currently it only checks if any results have failed.
+For example, running too few tests is ok, but if too many have been
+run the test can never succeed.
 
-This may change to include whether the plan can be fulfilled.  For
-example, running too few tests is ok, but running too many can never
-succeed.
+In another example, if there is no plan yet issued, there is no plan
+to violate.
 
 =cut
 
-sub can_succeed { shift->fail_count == 0 }
+sub can_succeed {
+    my $self = shift;
+
+    # Testing is done, do the full check.
+    return $self->test_was_successful if $self->done_testing;
+
+    # A test failed.
+    return 0 if $self->fail_count > 0;
+
+    # If there's no plan yet, we can't have violated it.
+    if( my $plan = $self->plan ) {
+        if( my $expect = $plan->asserts_expected ) {
+            # We ran more tests than the plan
+            return 0 if $self->test_count > $expect;
+        }
+        elsif( $plan->skip ) {
+            # We were supposed to skip everything, but we ran tests
+            return 0 if $self->test_count;
+        }
+    }
+
+    return 1;
+}
 
 =head3 test_was_successful
 
