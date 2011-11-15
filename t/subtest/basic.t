@@ -10,7 +10,7 @@ use Test::More;
 plan tests => 19;
 
 # Formatting may change if we're running under Test::Harness.
-$ENV{HARNESS_ACTIVE} = 0;
+local $ENV{HARNESS_ACTIVE} = 0;
 
 {
     my $tb = Test::Builder::NoOutput->create;
