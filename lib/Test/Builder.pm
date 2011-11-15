@@ -219,36 +219,6 @@ sub subtest {
     return;
 }
 
-=begin _private
-
-=item B<_plan_handled>
-
-    if ( $Test->_plan_handled ) { ... }
-
-Returns true if the developer has explicitly handled the plan via:
-
-=over 4
-
-=item * Explicitly setting the number of tests
-
-=item * Setting 'no_plan'
-
-=item * Set 'skip_all'.
-
-=back
-
-This is currently used in subtests when we implicitly call C<< $Test->done_testing >>
-if the developer has not set a plan.
-
-=end _private
-
-=cut
-
-sub _plan_handled {
-    my $self = shift;
-    return grep { $_->event_type eq 'set_plan' } @{$self->history->events};
-}
-
 
 =item B<finalize>
 
@@ -578,8 +548,8 @@ Or to plan a variable number of tests:
 sub done_testing {
     my($self, $num_tests) = @_;
 
-    $self->croak("Tried to finish testing, but testing is already done (or wasn't started)")
-      unless $self->in_test;
+    $self->croak("Tried to finish testing, but testing is already done")
+      if !$self->in_test and $self->history->done_testing;
 
     if( defined $num_tests ) {
         my $expected_tests = $self->expected_tests;
@@ -590,7 +560,8 @@ sub done_testing {
             $self->set_plan( asserts_expected => $num_tests );
         }
     }
-    elsif( !$self->_plan_handled ) {
+    elsif( !$self->history->plan ) {
+        $self->test_start unless $self->in_test;
         $self->set_plan( no_plan => 1 );
     }
 
