@@ -197,7 +197,7 @@ sub subtest {
             $self->post_event( Test::Builder2::Event::SubtestStart->new( name => $name ) );
             $subtests->();
             $self->done_testing if $self->history->in_test;
-            $self->post_event( Test::Builder2::Event::SubtestEnd->new( name => $name ) );
+            $self->post_event( Test::Builder2::Event::SubtestEnd->new );
             1;
         };
 
