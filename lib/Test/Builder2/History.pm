@@ -88,6 +88,7 @@ sub accept_test_start {
     $self->accept_event($event, $ec);
 
     croak "Saw a test_start, but testing has already started" if $self->test_start;
+    croak "Saw a test_start, but testing has already ended"   if $self->test_end;
 
     $self->test_start($event);
 
@@ -101,7 +102,8 @@ sub accept_test_end {
 
     $self->accept_event($event, $ec);
 
-    croak "Saw a test_end, but testing has already ended" if $self->test_end;
+    croak "Saw a test_end, but testing has not yet started" if !$self->test_start;
+    croak "Saw a test_end, but testing has already ended"   if $self->test_end;
 
     $self->test_end($event);
 
