@@ -282,9 +282,6 @@ sub finalize {
     }
     $self->_ending;
 
-    # XXX This will only be necessary for TAP envelopes (we think)
-    #$self->_print( $self->is_passing ? "PASS\n" : "FAIL\n" );
-
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     my $ok = 1;
     $self->parent->{Child_Name} = undef;
@@ -303,15 +300,6 @@ sub finalize {
     return $self->is_passing;
 }
 
-sub _indent      {
-    my $self = shift;
-
-    if( @_ ) {
-        $self->{Indent} = shift;
-    }
-
-    return $self->{Indent};
-}
 
 =item B<parent>
 
@@ -373,7 +361,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Original_Pid} = $$;
     $self->{Child_Name}   = undef;
-    $self->{Indent}     ||= '';
 
     $self->{Exported_To}    = undef;
 
@@ -1664,44 +1651,6 @@ sub explain {
     } @_;
 }
 
-=begin _private
-
-=item B<_print>
-
-    $Test->_print(@msgs);
-
-Prints to the C<output()> filehandle.
-
-=end _private
-
-=cut
-
-sub _print {
-    my $self = shift;
-    return $self->_print_to_fh( $self->output, @_ );
-}
-
-sub _print_to_fh {
-    my( $self, $fh, @msgs ) = @_;
-
-    # Prevent printing headers when only compiling.  Mostly for when
-    # tests are deparsed with B::Deparse
-    return if $^C;
-
-    my $msg = join '', @msgs;
-    my $indent = $self->_indent;
-
-    local( $\, $", $, ) = ( undef, ' ', '' );
-
-    # Escape each line after the first with a # so we don't
-    # confuse Test::Harness.
-    $msg =~ s{\n(?!\z)}{\n$indent# }sg;
-
-    # Stick a newline on the end if it needs it.
-    $msg .= "\n" unless $msg =~ /\n\z/;
-
-    return print $fh $indent, $msg;
-}
 
 =item B<output>
 
