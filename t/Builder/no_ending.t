@@ -16,6 +16,7 @@ use Test::More tests => 3;
 
 # Normally, Test::More would yell that we ran too few tests, but we
 # suppressed the ending diagnostics.
-pass;
+ok !Test::More->builder->formatter->show_ending_commentary,
+  "TAP formatter told not to do ending commentary";
 print "ok 2\n";
 print "ok 3\n";
