@@ -2,8 +2,6 @@
 
 BEGIN { require "t/test.pl" }
 
-package main;
-
 use Cwd;
 use File::Spec;
 
@@ -11,9 +9,6 @@ my $Orig_Dir = cwd;
 
 my $Perl = File::Spec->rel2abs($^X);
 if( $^O eq 'VMS' ) {
-    # VMS can't use its own $^X in a system call until almost 5.8
-    $Perl = "MCR $^X" if $] < 5.007003;
-
     # Quiet noisy 'SYS$ABORT'
     $Perl .= q{ -"I../lib"} if $ENV{PERL_CORE};
     $Perl .= q{ -"Mvmsish=hushed"};
