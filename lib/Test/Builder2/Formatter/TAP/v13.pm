@@ -164,8 +164,7 @@ sub accept_test_start {
     my $self = shift;
     my($event, $ec) = @_;
 
-    # Only output the TAP version in the first stream
-    # and if we're showing the version
+    # Only output the TAP version if we're showing the version
     # and if we're showing header information
     $self->out("TAP version 13\n") if
       $self->show_tap_version  and
