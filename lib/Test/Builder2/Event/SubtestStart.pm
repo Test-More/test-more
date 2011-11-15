@@ -67,6 +67,34 @@ has name =>
   default       => '';
 
 
+=head3 directives
+
+Any directives which were in effect when the subtest started.
+
+These should be applied to the result of the subtest.
+
+Usually used for todo blocks.
+
+=cut
+
+has directives =>
+  is            => 'rw',
+  isa           => 'ArrayRef',
+  default       => sub { [] };
+
+
+=head3 reason
+
+The reason for any directives.
+
+=cut
+
+has reason =>
+  is            => 'rw',
+  isa           => 'Str',
+  default       => '';
+
+
 =head3 build_event_type
 
 The event type is C<subtest_start>.

@@ -19,6 +19,8 @@ note "defaults"; {
         event_type      => "subtest_start",
         event_id        => $event->event_id,
         name            => '',
+        directives      => [],
+        reason          => ''
     };
 }
 
@@ -32,7 +34,9 @@ note "depth"; {
         event_type      => "subtest_start",
         event_id        => $event->event_id,
         depth           => 3,
-        name            => 'foo'
+        name            => 'foo',
+        directives      => [],
+        reason          => ''
     };
 }
 
