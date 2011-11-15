@@ -140,28 +140,6 @@ END
 }
 
 
-{
-    my $tb    = Test::Builder::NoOutput->create;
-    my $child = $tb->child('one');
-    is $child->{$_}, $tb->{$_}, "The child should copy the ($_) filehandle"
-        foreach qw{Out_FH Todo_FH Fail_FH};
-    $child->finalize;
-}
-{
-    my $tb    = Test::Builder::NoOutput->create;
-    my $child = $tb->child('one');
-    can_ok $child, 'parent';
-    is $child->parent, $tb, '... and it should return the parent of the child';
-    ok !defined $tb->parent, '... but top level builders should not have parents';
-
-    can_ok $tb, 'name';
-    is $tb->name, $0, 'The top level name should be $0';
-    is $child->name, 'one', '... but child names should be whatever we set them to';
-    $child->finalize;
-    $child = $tb->child;
-    is $child->name, 'Child of '.$tb->name, '... or at least have a sensible default';
-    $child->finalize;
-}
 # Skip all subtests
 {
     my $tb = Test::Builder::NoOutput->create;
