@@ -80,11 +80,14 @@ sub accept_event {
     return;
 }
 
+
 sub accept_test_start {
     my $self  = shift;
     my($event, $ec) = @_;
 
     $self->accept_event($event, $ec);
+
+    $self->test_start($event);
 
     $self->_stream_depth_inc;
 
@@ -97,6 +100,8 @@ sub accept_test_end {
     my($event, $ec) = @_;
 
     $self->accept_event($event, $ec);
+
+    $self->test_end($event);
 
     $self->_stream_depth_dec;
 
@@ -266,7 +271,7 @@ sub test_was_successful {
     my $self = shift;
 
     # We're still testing
-    return 0 if $self->stream_depth;
+    return 0 if !$self->done_testing;
 
     my $plan = $self->plan;
 
@@ -297,6 +302,39 @@ sub test_was_successful {
     return 1;
 }
 
+
+=head3 in_test
+
+    my $am_in_test = $history->in_test;
+
+Returns true if we're in the middle of a test, that is a C<test_start>
+event was seen but a C<test_end> event has not.
+
+=cut
+
+sub in_test {
+    my $self = shift;
+
+    return $self->test_start && !$self->test_end;
+}
+
+
+=head3 done_testing
+
+    my $testing_is_done = $history->done_testing;
+
+Returns true if testing was started and it is done.  That is, both a
+C<test_start> and a C<test_end> event has been seen.
+
+=cut
+
+sub done_testing {
+    my $self = shift;
+
+    return $self->test_start && $self->test_end;
+}
+
+
 =head3 plan
 
     my $plan = $history->plan;
@@ -307,8 +345,34 @@ Returns the plan event for the current stream, if any.
 
 has plan =>
   is            => 'rw',
-  isa           => 'Test::Builder2::Event',
+  does          => 'Test::Builder2::Event',
 ;
+
+
+=head3 test_start
+
+    my $test_start = $history->test_start;
+
+Returns the C<test_start> event, if it has been seen.
+
+=cut
+
+has test_start =>
+  is            => 'rw',
+  does          => 'Test::Builder2::Event';
+
+
+=head3 test_end
+
+    my $test_end = $history->test_end;
+
+Returns the C<test_end> event, if it has been seen.
+
+=cut
+
+has test_end =>
+  is            => 'rw',
+  does          => 'Test::Builder2::Event';
 
 
 =head2 State
