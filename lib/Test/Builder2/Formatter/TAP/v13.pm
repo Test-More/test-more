@@ -129,12 +129,6 @@ has show_footer =>
   default       => 1
 ;
 
-has show_ending =>
-  is            => 'rw',
-  isa           => 'Bool',
-  default       => 1
-;
-
 has show_tap_version =>
   is            => 'rw',
   isa           => 'Bool',
