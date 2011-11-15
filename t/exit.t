@@ -1,12 +1,6 @@
 #!/usr/bin/perl -w
 
-# Can't use Test.pm, that's a 5.005 thing.
-package My::Test;
-
-require Test::Builder;
-my $TB = Test::Builder->create();
-$TB->level(0);
-
+BEGIN { require "t/test.pl" }
 
 package main;
 
@@ -58,7 +52,7 @@ END { 1 while unlink "exit_map_test" }
 for my $exit (0..255) {
     # This correctly emulates Test::Builder's behavior.
     my $out = qx[$Perl exit_map_test $exit];
-    $TB->like( $out, qr/^exit $exit\n/, "exit map test for $exit" );
+    like( $out, qr/^exit $exit\n/, "exit map test for $exit" );
     $Exit_Map{$exit} = exitstatus($?);
 }
 print "# Done.\n";
@@ -90,18 +84,16 @@ while( my($test_name, $exit_code) = each %Tests ) {
     my $actual_exit = exitstatus($wait_stat);
 
     if( $exit_code eq 'not zero' ) {
-        $TB->isnt_num( $actual_exit, $Exit_Map{0},
-                      "$test_name exited with $actual_exit ".
-                      "(expected non-zero)");
+        isnt( $actual_exit, $Exit_Map{0},
+              "$test_name exited with $actual_exit (expected non-zero)");
     }
     else {
-        $TB->is_num( $actual_exit, $Exit_Map{$exit_code}, 
-                      "$test_name exited with $actual_exit ".
-                      "(expected $Exit_Map{$exit_code})");
+        is( $actual_exit, $Exit_Map{$exit_code}, 
+            "$test_name exited with $actual_exit (expected $Exit_Map{$exit_code})");
     }
 }
 
-$TB->done_testing( scalar keys(%Tests) + 256 );
+done_testing( scalar keys(%Tests) + 256 );
 
 # So any END block file cleanup works.
 chdir $Orig_Dir;
