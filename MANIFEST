@@ -47,6 +47,7 @@ lib/Test/Builder2/History.pm
 lib/Test/Builder2/Module.pm
 lib/Test/Builder2/Mouse.pm
 lib/Test/Builder2/NoHistory.pm
+lib/Test/Builder2/OnlyOnePlan.pm
 lib/Test/Builder2/Result.pm
 lib/Test/Builder2/Result/Base.pm
 lib/Test/Builder2/Result/Role/fail.pm
@@ -76,12 +77,13 @@ README
 t/00compile.t
 t/00test_harness_check.t
 t/bad_plan.t
-t/bail_out.t
 t/BEGIN_require_ok.t
 t/BEGIN_use_ok.t
 t/buffer.t
+t/Builder/bail_out.t
 t/Builder/Builder.t
 t/Builder/carp.t
+t/Builder/context.t
 t/Builder/create.t
 t/Builder/current_test/no_tests.t
 t/Builder/current_test/test_number.t
@@ -119,6 +121,7 @@ t/Builder2/assert.t
 t/Builder2/assert_dies.t
 t/Builder2/AssertRecord.t
 t/Builder2/AssertStack.t
+t/Builder2/context.t
 t/Builder2/Counter.t
 t/Builder2/done_testing.t
 t/Builder2/HasDefault.t
@@ -133,8 +136,6 @@ t/Builder2/StackBuilder.t
 t/Builder2/subtest.t
 t/Builder2/TB2_before_Mouse.t
 t/Builder2/top.t
-t/Result/basics.t
-t/Result/accessors.t
 t/c_flag.t
 t/CanDupFilehandles.t
 t/CanLoad.t
@@ -188,6 +189,7 @@ t/History/HistoryStats.t
 t/History/NoHistory.t
 t/History/plan.t
 t/History/stream_depth.t
+t/History/test_successful.t
 t/import.t
 t/is_deeply_dne_bug.t
 t/is_deeply_fail.t
@@ -223,6 +225,7 @@ t/new_ok.t
 t/no_plan.t
 t/no_tests.t
 t/note.t
+t/OnlyOnePlan/basics.t
 t/overload.t
 t/overload_threads.t
 t/plan.t
@@ -234,6 +237,8 @@ t/plan_skip_all.t
 t/pod-coverage.t
 t/pod.t
 t/require_ok.t
+t/Result/accessors.t
+t/Result/basics.t
 t/shared_test_state.t
 t/Simple/builder.t
 t/Simple/load.t
@@ -273,9 +278,9 @@ t/threads.t
 t/todo.t
 t/todo_skip_before_plan.t
 t/true_value.t
+t/Types/int.t
 t/undef.t
 t/use_ok.t
 t/useing.t
 t/utf8.t
 t/versions.t
-TODO
