@@ -87,6 +87,8 @@ sub accept_test_start {
 
     $self->accept_event($event, $ec);
 
+    croak "Saw a test_start, but testing has already started" if $self->test_start;
+
     $self->test_start($event);
 
     return;
@@ -98,6 +100,8 @@ sub accept_test_end {
     my($event, $ec) = @_;
 
     $self->accept_event($event, $ec);
+
+    croak "Saw a test_end, but testing has already ended" if $self->test_end;
 
     $self->test_end($event);
 
