@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
+
 use strict;
 use warnings;
+
 use Config;
 use IO::Pipe;
 use Test::Builder;
@@ -11,8 +13,6 @@ my $Can_Fork = $Config{d_fork} ||
                 $Config{useithreads} and
                 $Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/
                );
-
-plan skip_all => "Haven't fixed this yet";
 
 if( !$Can_Fork ) {
     plan 'skip_all' => "This system cannot fork";
@@ -39,12 +39,10 @@ subtest 'fork within subtest' => sub {
     else {
         $pipe->writer;
 
-        # Force all T::B output into the pipe, for the parent
-        # builder as well as the current subtest builder.
-        no warnings 'redefine';
-        *Test::Builder::output         = sub { $pipe };
-        *Test::Builder::failure_output = sub { $pipe };
-        *Test::Builder::todo_output    = sub { $pipe };
+        my $builder = Test::More->builder;
+        $builder->output( $pipe );
+        $builder->failure_output( $pipe );
+        $builder->todo_output( $pipe );
         
         diag 'Child Done';
         exit 0;
