@@ -1,15 +1,5 @@
 #!/usr/bin/perl -w
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = ( '../lib', 'lib' );
-    }
-    else {
-        unshift @INC, 't/lib';
-    }
-}
-
 use strict;
 use warnings;
 
@@ -43,6 +33,7 @@ $ENV{HARNESS_ACTIVE} = 0;
 
     $tb->reset_outputs;
     is $tb->read, <<"END", 'Output should nest properly';
+TAP version 13
 1..7
 ok 1 - We're on 1
 # We ran 1
@@ -50,6 +41,7 @@ ok 2 - We're on 2
 # We ran 2
 ok 3 - We're on 3
 # We ran 3
+    TAP version 13
     ok 1 - We're on 1
     ok 2 - We're on 2
     ok 3 - We're on 3
@@ -89,9 +81,12 @@ END
     $tb->_ending;
     $tb->reset_outputs;
     is $tb->read, <<"END", 'We should allow arbitrary nesting';
+TAP version 13
 ok 1 - We're on 1
 # We ran 1
+    TAP version 13
     ok 1 - We're on 1
+        TAP version 13
         1..2
         ok 1 - We're on 2.1
         ok 2 - We're on 2.1
@@ -127,6 +122,8 @@ END
     }
     $tb->reset_outputs;
     is $tb->read, <<"END", 'Previous child failures should not force subsequent failures';
+TAP version 13
+    TAP version 13
     1..3
     ok 1
     not ok 2
@@ -136,6 +133,7 @@ END
 not ok 1 - expected to fail
 #   Failed test 'expected to fail'
 #   at $0 line 116.
+    TAP version 13
     1..3
     ok 1
     ok 2
@@ -198,7 +196,9 @@ END
     $tb->_ending;
     $tb->reset_outputs;
     is $tb->read, <<"END", 'TODO tests should not make the parent test fail';
+TAP version 13
 1..1
+    TAP version 13
     1..1
     not ok 1 # TODO message
     #   Failed (TODO) test at $0 line 209.
@@ -213,6 +213,7 @@ END
     $tb->_ending;
     $tb->reset_outputs;
     my $expected = <<"END";
+TAP version 13
 1..1
 not ok 1 - No tests run for subtest "Child of $0"
 END
