@@ -485,7 +485,6 @@ sub subtest_handler {
 
     my $subformatter = $self->SUPER::subtest_handler($event);
 
-    $subformatter->show_tap_version(0);
     $subformatter->indent('    '.$self->indent);
 
     return $subformatter;
@@ -502,7 +501,7 @@ sub accept_subtest_end {
 
     # This result is only applicable to TAP, it's not a real test event and
     # should not be seen by other event watchers.
-    $self->accept_result($result, $ec);
+    $ec->post_event($result);
 
     return;
 }
