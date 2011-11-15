@@ -370,7 +370,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $Level = 1;
 
     $self->{Name}         = $0;
-    $self->is_passing(1);
 
     $self->{Original_Pid} = $$;
     $self->{Child_Name}   = undef;
@@ -600,8 +599,6 @@ sub done_testing {
       unless $self->in_test;
 
     if( defined $num_tests ) {
-        $self->is_passing(0) if $num_tests != $self->current_test;
-
         my $expected_tests = $self->expected_tests;
         if( $expected_tests && $num_tests != $expected_tests ) {
             $self->ok(0, "planned to run $expected_tests but done_testing() expects $num_tests");
@@ -613,9 +610,6 @@ sub done_testing {
     elsif( !$self->_plan_handled ) {
         $self->set_plan( no_plan => 1 );
     }
-
-    # No tests were run
-    $self->is_passing(0) if $self->current_test == 0;
 
     $self->test_end;
 
@@ -770,7 +764,6 @@ sub ok {
 
     if ( $self->{Child_Name} and not $self->{In_Destroy} ) {
         $name = 'unnamed test' unless defined $name;
-        $self->is_passing(0);
         $self->croak("Cannot run test ($name) with active children");
     }
     # $test might contain an object which we don't want to accidentally
@@ -809,8 +802,6 @@ ERR
     # Store the Result in history making sure to make it thread safe
     $self->post_result($result);
 
-    $self->is_passing(0) unless $test || $self->in_todo;
-
     # Check that we haven't violated the plan
     $self->_check_is_passing_plan();
 
@@ -826,7 +817,6 @@ sub _check_is_passing_plan {
     my $plan = $self->has_plan;
     return unless defined $plan;        # no plan yet defined
     return unless $plan !~ /\D/;        # no numeric plan
-    $self->is_passing(0) if $plan < $self->current_test;
 }
 
 
@@ -1976,11 +1966,7 @@ Don't think about it too much.
 sub is_passing {
     my $self = shift;
 
-    if( @_ ) {
-        $self->{Is_Passing} = shift;
-    }
-
-    return $self->{Is_Passing};
+    return $self->history->can_succeed;
 }
 
 
@@ -2370,9 +2356,6 @@ sub _ending {
 
     # End the stream unless we (or somebody else) already ended it
     $self->test_end if $history->in_test;
-
-    # Ask the history if we passed.
-    $self->is_passing( $history->test_was_successful );
 
     # Don't change the exit code of a forked copy.
     # Forks often run fragments of tests.

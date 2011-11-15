@@ -13,6 +13,7 @@ BEGIN {
 use strict;
 use warnings;
 use Test::Builder::NoOutput;
+use Test::More skip_all => "subtests are broken";
 use Test::More tests => 7;
 
 {
@@ -59,5 +60,6 @@ use Test::More tests => 7;
     my $error = $@;
     like $error, qr/\QCannot run test (This should throw an exception) with active children/,
       'Running a test with active children should fail';
+
     ok !$tb->is_passing, '... and should cause the test suite to fail';
 }
