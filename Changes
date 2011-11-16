@@ -100,6 +100,29 @@ See README and version control log for Test::Builder2 changes.
     Very incomplete.
 
 
+0.98_01  Tue Nov  8 17:07:58 PST 2011
+    Bug Fixes
+    * BAIL_OUT works inside a subtest. (Larry Leszczynski) [github #138]
+    * subtests now work with threads turned on. [github #145]
+
+    Feature Changes
+    * use_ok() will now apply lexical effects. [rt.cpan.org 67538]
+      (Father Chrysostomos)
+
+    Misc
+    * Test::More, Test::Simple and Test::Builder::Module now require
+      a minimum version of Test::Builder.  This avoids Test::More and
+      Test::Builder from getting out of sync. [github #89]
+
+
+0.98  Wed, 23 Feb 2011 14:38:02 +1100
+    Bug Fixes
+    * subtest() should not fail if $? is non-zero. (Aaron Crane)
+
+    Docs
+    * The behavior of is() and undef has been documented. (Pedro Melo)
+
+
 0.97_01  Fri Aug 27 22:50:30 PDT 2010
     Test Fixes
     * Adapted the tests for the new Perl 5.14 regex stringification.

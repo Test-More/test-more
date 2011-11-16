@@ -3,6 +3,7 @@ package Test::Builder::NoOutput;
 use strict;
 use warnings;
 
+use Symbol qw(gensym);
 use base qw(Test::Builder);
 
 
@@ -59,14 +60,16 @@ sub create {
     $self->{_outputs} = \%outputs;
 
     require Test::Builder::Tee;
-    tie *OUT,  "Test::Builder::Tee", \$outputs{all}, \$outputs{out};
-    tie *ERR,  "Test::Builder::Tee", \$outputs{all}, \$outputs{err};
+    my($out, $err) = map { gensym() } 1..2;
+    tie *$out, "Test::Builder::Tee", \$outputs{all}, \$outputs{out};
+    tie *$err, "Test::Builder::Tee", \$outputs{all}, \$outputs{err};
 
-    $self->output(*OUT);
-    $self->failure_output(*ERR);
+    $self->output($out);
+    $self->failure_output($err);
 
     return $self;
 }
+
 
 sub read {
     my $self = shift;

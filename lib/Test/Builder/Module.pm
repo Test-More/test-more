@@ -2,7 +2,7 @@ package Test::Builder::Module;
 
 use strict;
 
-use Test::Builder;
+use Test::Builder 0.98;
 
 require Exporter;
 our @ISA = qw(Exporter);

@@ -299,6 +299,7 @@ sub counter {
     return $counter;
 }
 
+
 =back
 
 =head2 Setting up tests
@@ -448,7 +449,7 @@ Or to plan a variable number of tests:
     for my $test (@tests) {
         $Test->ok($test);
     }
-    $Test->done_testing(@tests);
+    $Test->done_testing(scalar @tests);
 
 =cut
 
@@ -746,12 +747,16 @@ sub _is_dualvar {
 Like Test::More's C<is()>.  Checks if C<$got eq $expected>.  This is the
 string version.
 
+C<undef> only ever matches another C<undef>.
+
 =item B<is_num>
 
   $Test->is_num($got, $expected, $name);
 
 Like Test::More's C<is()>.  Checks if C<$got == $expected>.  This is the
 numeric version.
+
+C<undef> only ever matches another C<undef>.
 
 =cut
 

@@ -20,7 +20,7 @@ sub _carp {
 our $VERSION = '2.00_07';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Builder::Module;
+use Test::Builder::Module 0.98;
 our @ISA    = qw(Test::Builder::Module);
 our @EXPORT = qw(ok use_ok require_ok
   is isnt like unlike is_deeply
@@ -317,6 +317,11 @@ are similar to these:
     ok( ultimate_answer() eq 42,        "Meaning of Life" );
     ok( $foo ne '',     "Got some foo" );
 
+C<undef> will only ever match C<undef>.  So you can test a value
+agains C<undef> like this:
+
+    is($not_defined, undef, "undefined as expected");
+
 (Mnemonic:  "This is that."  "This isn't that.")
 
 So why use these?  They produce better diagnostics on failure.  C<ok()>
@@ -392,7 +397,7 @@ So this:
 
 is similar to:
 
-    ok( $got =~ /expected/, 'this is like that');
+    ok( $got =~ m/expected/, 'this is like that');
 
 (Mnemonic "This is like that".)
 
@@ -824,6 +829,9 @@ import anything, use C<require_ok>.
 
   BEGIN { require_ok "Foo" }
 
+Lexical effects will occur as usual.  For example, this will turn on strictures.
+
+  BEGIN { use_ok "strict"; }
 
 =cut
 
@@ -834,26 +842,34 @@ sub use_ok ($;@) {
 
     my( $pack, $filename, $line ) = caller;
 
-    my $code;
+    my $f = $filename;
+    $f =~ s/[\n\r]/_/g; # so it doesn't run off the "#line $line $f" line
+
+    my $version;
     if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
-        # probably a version check.  Perl needs to see the bare number
-        # for it to work with non-Exporter based modules.
-        $code = <<USE;
-package $pack;
-use $module $imports[0];
-1;
-USE
-    }
-    else {
-        $code = <<USE;
-package $pack;
-use $module \@{\$args[0]};
-1;
-USE
+        # probably a version check
+        $version = shift @imports;
     }
 
-    my( $eval_result, $eval_error ) = _eval( $code, \@imports );
+    my $version_check = defined $version ? qq{$module->VERSION($version)} : "";
+    my $code = <<"USE";
+package $pack;
+#line $line $f
+require $module; $version_check; $module->import(\@{\$args[0]});
+# Work around [perl #70151]
+\${\$args[1]} = \$^H;
+%{\$args[2]} = %^H;
+1;
+USE
+
+    my( $eval_result, $eval_error )
+         = _eval( $code, \@imports, \my($hints, %hints) );
     my $ok = $tb->ok( $eval_result, "use $module;" );
+
+    if( $ok ) {
+        $^H = $hints;
+        %^H = %hints;
+    }
 
     unless($ok) {
         chomp $eval_error;

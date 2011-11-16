@@ -124,15 +124,20 @@ MAKE
         $make =~ s{\s+\z}{\n};
 
         my @perls = qw(
-            perl5.8.8
-            perl5.8.9
-            perl5.10.0
+            perl5.14.1
+            perl5.12.4
+            perl5.12.3
             perl5.10.1
-            perl5.12.0
-            perl5.12.1
+            perl5.10.0
+            perl5.8.9
+            perl5.8.8
         );
 
         for my $perl (@perls) {
+            if( !`which $perl` ) {
+                print STDERR "Missing $perl";
+                next;
+            }
             $make .= sprintf <<'END', $perl;
 	cd $(DISTVNAME) && $(MAKE) clean && %s Makefile.PL && PERL_RELEASING=0 $(MAKE) test $(PASTHRU)
 END
