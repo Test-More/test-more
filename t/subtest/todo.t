@@ -136,7 +136,7 @@ test_subtest_in_todo("1 failed test", sub {
     # 1 test of 1 failed.
 END
 
-test_subtest_in_todo("1fail, wrongplan", sub {
+test_subtest_in_todo("1 fail, wrongplan", sub {
     plan tests => 17;
     ok 0, 'failme'; BEGIN { $line{fail2} = __LINE__ }
 }, <<END);
@@ -145,8 +145,8 @@ test_subtest_in_todo("1fail, wrongplan", sub {
     not ok 1 - failme
     #   Failed test 'failme'
     #   at $0 line $line{fail2}.
-    # Looks like you planned 17 tests but ran 1.
-    # Looks like you failed 1 test of 1 run.
+    # 17 tests planned, but 1 ran.
+    # 1 test of 1 failed.
 END
 
 test_subtest_in_todo("1fail, 1pass", sub {
