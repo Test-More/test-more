@@ -121,7 +121,7 @@ note "basic subtest"; {
     is $first_history->event_count, 1;
     my $event = $first_history->events->[0];
     is $event->event_id, $subtest_start->event_id;
-    is $event->event_type, "subtest start",     "first level saw the start event";
+    is $event->event_type, "subtest_start",     "first level saw the start event";
     is $event->depth, 1,                        "  depth was correctly set";
     is $second_history->event_count, 0,     "second level did not see the start event";
 
@@ -136,7 +136,7 @@ note "basic subtest"; {
     is $first_history->event_count, 2;
     $event = $first_history->events->[1];
     is $event->event_id, $subtest_end->event_id;
-    is $event->event_type, "subtest end",     "first level saw the start event";
+    is $event->event_type, "subtest_end",     "first level saw the start event";
     is $event->history, $second_history;
 }
 
@@ -202,11 +202,11 @@ note "nested subtests"; {
     $state->post_event($first_stream_end);
 
     is_deeply [map { $_->event_type } @{$state->history->events}],
-              ["test start", "subtest start", "subtest end", "test end"],
+              ["test_start", "subtest_start", "subtest_end", "test_end"],
               "original level saw the right events";
 
     is_deeply [map { $_->event_type } @{$first_subtest_ec->history->events}],
-              ["test start", "subtest start", "subtest end", "test end"],
+              ["test_start", "subtest_start", "subtest_end", "test_end"],
               "first subtest saw the right events";
 
     is_deeply [map { $_->event_type } @{$second_subtest_ec->history->events}],

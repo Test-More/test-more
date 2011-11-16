@@ -19,13 +19,13 @@ to the user unless they're looking at the raw formatter output.
 
 =head2 Methods
 
-=head3 event_type
+=head3 build_event_type
 
 The event type is C<comment>.
 
 =cut
 
-sub event_type { return "comment"; }
+sub build_event_type { "comment" }
 
 =head2 Attributes
 

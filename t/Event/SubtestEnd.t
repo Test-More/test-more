@@ -18,9 +18,9 @@ note "defaults"; {
     isa_ok $event, $CLASS;
 
     is $event->history, $history;
-    is $event->event_type, "subtest end";
+    is $event->event_type, "subtest_end";
     is_deeply $event->as_hash, {
-        event_type      => "subtest end",
+        event_type      => "subtest_end",
         event_id        => $event->event_id,
         history         => $history
     };

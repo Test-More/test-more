@@ -31,7 +31,7 @@ subtype 'Test::Builder2::Positive_Int' => (
 );
 
 
-=head3 Test::Buidler2::Positive_NonZero_Int
+=head3 Test::Builder2::Positive_NonZero_Int
 
 An integer greater than zero.
 
@@ -40,6 +40,18 @@ An integer greater than zero.
 subtype 'Test::Builder2::Positive_NonZero_Int' => (
     as 'Int',
     where { defined $_ && $_ > 0 },
+);
+
+
+=head3 Test::Builder2::LC_AlphaNumUs_Str
+
+A lowercase string containing only alphanumerics & underscores.
+
+=cut
+
+subtype 'Test::Builder2::LC_AlphaNumUS_Str' => (
+    as 'Str',
+    where { defined $_ && /^[a-z_]+$/ },
 );
 
 
