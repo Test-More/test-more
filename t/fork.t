@@ -26,7 +26,7 @@ if( my $child = fork ) { # parent
     # Wait for the child to finish
     waitpid($child, 0);
 
-    open my $fh, "<", "t/$child" or die $!;
+    open my $fh, "<", "t/fork_t_$child" or die $!;
 
     is join("", <$fh>), <<END, "child should not do the ending";
 not ok 1 - This should have no effect on the parent
@@ -40,11 +40,11 @@ not ok 2 - For good measure, issue the wrong test count
 END
 
     close $fh;
-    unlink "t/$child";
+    END { unlink "t/fork_t_$child"; }
 }
 else {
     # Send the child's output to a file.
-    open my $fh, ">", "t/$$" or die $!;
+    open my $fh, ">", "t/fork_t_$$" or die $!;
     my $formatter = Test::More->builder->test_state->formatters->[0];
     $formatter->streamer->output_fh($fh);
     $formatter->streamer->error_fh($fh);
