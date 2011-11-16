@@ -252,7 +252,6 @@ t/subtest/basic.t
 t/subtest/default.t
 t/subtest/die.t
 t/subtest/do.t
-t/subtest/exceptions.t
 t/subtest/for_do_t.test
 t/subtest/fork.t
 t/subtest/implicit_done.t
