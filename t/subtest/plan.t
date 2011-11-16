@@ -16,7 +16,6 @@ use warnings;
 use Test::Builder::NoOutput;
 
 use Test::More;
-plan skip_all => "subtests are broken";
 plan tests => 6;
 
 # Formatting may change if we're running under Test::Harness.

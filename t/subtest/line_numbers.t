@@ -3,21 +3,12 @@
 # Test Test::More::subtest(), focusing on correct line numbers in
 # failed test diagnostics.
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = ( '../lib', 'lib' );
-    }
-    else {
-        unshift @INC, 't/lib';
-    }
-}
-
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 use Test::More;
-plan skip_all => "subtests are broken";
 
 use Test::Builder;
 use Test::Builder::Tester;
@@ -30,12 +21,13 @@ local $ENV{HARNESS_ACTIVE} = 0;
 our %line;
 
 {
+    test_out("    TAP version 13");
     test_out("    1..3");
     test_out("    ok 1");
     test_out("    not ok 2");
     test_err("    #   Failed test at $0 line $line{innerfail1}.");
     test_out("    ok 3");
-    test_err("    # Looks like you failed 1 test of 3.");
+    test_err("    # 1 test of 3 failed.");
     test_out("not ok 1 - namehere");
     test_err("#   Failed test 'namehere'");
     test_err("#   at $0 line $line{outerfail1}.");
@@ -49,14 +41,17 @@ our %line;
     
     test_test("un-named inner tests");
 }
+
+
 {
+    test_out("    TAP version 13");
     test_out("    1..3");
     test_out("    ok 1 - first is good");
     test_out("    not ok 2 - second is bad");
     test_err("    #   Failed test 'second is bad'");
     test_err("    #   at $0 line $line{innerfail2}.");
     test_out("    ok 3 - third is good");
-    test_err("    # Looks like you failed 1 test of 3.");
+    test_err("    # 1 test of 3 failed.");
     test_out("not ok 1 - namehere");
     test_err("#   Failed test 'namehere'");
     test_err("#   at $0 line $line{outerfail2}.");
@@ -71,6 +66,7 @@ our %line;
     test_test("named inner tests");
 }
 
+
 sub run_the_subtest {
     subtest namehere => sub {
         plan tests => 3;
@@ -80,13 +76,14 @@ sub run_the_subtest {
     }; BEGIN{ $line{outerfail3} = __LINE__ }
 }
 {
+    test_out("    TAP version 13");
     test_out("    1..3");
     test_out("    ok 1 - first is good");
     test_out("    not ok 2 - second is bad");
     test_err("    #   Failed test 'second is bad'");
     test_err("    #   at $0 line $line{innerfail3}.");
     test_out("    ok 3 - third is good");
-    test_err("    # Looks like you failed 1 test of 3.");
+    test_err("    # 1 test of 3 failed.");
     test_out("not ok 1 - namehere");
     test_err("#   Failed test 'namehere'");
     test_err("#   at $0 line $line{outerfail3}.");
@@ -95,11 +92,14 @@ sub run_the_subtest {
     
     test_test("subtest() called from a sub");
 }
+
+
 {
+    test_out( "    TAP version 13" );
     test_out( "    1..0");
     test_err( "    # No tests run!");
-    test_out( 'not ok 1 - No tests run for subtest "namehere"');
-    test_err(q{#   Failed test 'No tests run for subtest "namehere"'});
+    test_out( 'not ok 1 - No tests run in subtest "namehere"');
+    test_err(q{#   Failed test 'No tests run in subtest "namehere"'});
     test_err( "#   at $0 line $line{outerfail4}.");
 
     subtest namehere => sub {
@@ -109,13 +109,14 @@ sub run_the_subtest {
     test_test("lineno in 'No tests run' diagnostic");
 }
 {
+    test_out("    TAP version 13" );
     test_out("    1..1");
     test_out("    not ok 1 - foo is bar");
     test_err("    #   Failed test 'foo is bar'");
     test_err("    #   at $0 line $line{is_fail}.");
     test_err("    #          got: 'foo'");
     test_err("    #     expected: 'bar'");
-    test_err("    # Looks like you failed 1 test of 1.");
+    test_err("    # 1 test of 1 failed.");
     test_out('not ok 1 - namehere');
     test_err("#   Failed test 'namehere'");
     test_err("#   at $0 line $line{is_outer_fail}.");

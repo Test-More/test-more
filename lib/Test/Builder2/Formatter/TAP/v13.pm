@@ -60,24 +60,38 @@ sub _prepend {
     return $msg;
 }
 
+
+sub _indent {
+    my $self = shift;
+
+    my $indent = $self->indent;
+    my $msg = join "", @_;
+    return $msg unless $indent;
+
+    # Put an indent after each newline
+    $msg =~ s{\n(?!\z)}{\n$indent}sg;
+
+    return $indent . $msg;
+}
+
 sub out {
     my $self = shift;
-    $self->write(out => $self->indent, @_);
+    $self->write(out => $self->_indent(@_));
 }
 
 sub err {
     my $self = shift;
-    $self->write(err => $self->indent, @_);
+    $self->write(err => $self->_indent(@_));
 }
 
 sub diag {
     my $self = shift;
-    $self->err($self->comment( $self->indent, @_ ));
+    $self->err($self->comment( @_ ));
 }
 
 sub note {
     my $self = shift;
-    $self->out($self->comment( $self->indent, @_));
+    $self->out($self->comment( @_));
 }
 
 
@@ -164,8 +178,7 @@ sub accept_test_start {
     my $self = shift;
     my($event, $ec) = @_;
 
-    # Only output the TAP version in the first stream
-    # and if we're showing the version
+    # Only output the TAP version if we're showing the version
     # and if we're showing header information
     $self->out("TAP version 13\n") if
       $self->show_tap_version  and
@@ -363,7 +376,7 @@ sub accept_result {
 
     my $name = $result->name;
     $self->_escape(\$name);
-    $out .= " - $name" if defined $name;
+    $out .= " - $name" if defined $name and length $name;
 
     my $reason = $result->reason;
     $self->_escape(\$reason);
@@ -485,7 +498,6 @@ sub subtest_handler {
 
     my $subformatter = $self->SUPER::subtest_handler($event);
 
-    $subformatter->show_tap_version(0);
     $subformatter->indent('    '.$self->indent);
 
     return $subformatter;
@@ -496,13 +508,45 @@ sub accept_subtest_end {
     my $self = shift;
     my($event, $ec) = @_;
 
-    my $result = Test::Builder2::Result->new_result(
-        pass => $event->history->test_was_successful
-    );
+    my $subtest_start = $ec->history->subtest_start;
+
+    my %result_args;
+
+    # Did the subtest pass?
+    $result_args{pass} = $event->history->test_was_successful;
+
+    # Inherit the name from the subtest.
+    $result_args{name} = $subtest_start->name;
+
+    # If the subtest was started in a todo context, the subtest result
+    # will be todo.
+    $result_args{directives} = $subtest_start->directives;
+    $result_args{reason}     = $subtest_start->reason;
+
+    # Inherit the context.
+    for my $key (qw(file line)) {
+        my $val = $event->$key();
+        $result_args{$key} = $val if defined $val;
+    }
+
+    # If the subtest was a skip_all, make our result a skip.
+    my $subtest_plan = $event->history->plan;
+    if( $subtest_plan && $subtest_plan->skip ) {
+        $result_args{skip} = 1;
+        $result_args{reason} = $subtest_plan->skip_reason;
+    }
+    elsif( $event->history->test_count == 0 ) {
+        # The subtest didn't run any tests
+        my $name = $result_args{name};
+        $result_args{name} = "No tests run in subtest";
+        $result_args{name}.= qq[ "$name"] if defined $name;
+    }
+
+    my $result = Test::Builder2::Result->new_result( %result_args );
 
     # This result is only applicable to TAP, it's not a real test event and
     # should not be seen by other event watchers.
-    $self->accept_result($result, $ec);
+    $ec->post_event($result);
 
     return;
 }

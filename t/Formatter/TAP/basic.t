@@ -309,7 +309,7 @@ note "Name with an empty string (github #84)"; {
     );
 
     $ec->post_event($result);
-    is(last_output, "ok 99 - \n", "empty string name preserved");
+    is(last_output, "ok 99\n", "empty string name");
 }
 
 done_testing();

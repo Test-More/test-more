@@ -28,7 +28,7 @@ my $tb = Test::Builder::NoOutput->create;
 #line 24
     $tb->done_testing(3);
     ok !eval { $tb->done_testing; };
-    is $@, "Tried to finish testing, but testing is already done (or wasn't started) at $0 line 25.\n";
+    is $@, "Tried to finish testing, but testing is already done at $0 line 25.\n";
 }
 
 is($tb->read, <<"END", "multiple done_testing");

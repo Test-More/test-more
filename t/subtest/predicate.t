@@ -3,27 +3,16 @@
 # Test the use of subtest() to define new test predicates that combine
 # multiple existing predicates.
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = ( '../lib', 'lib' );
-    }
-    else {
-        unshift @INC, 't/lib';
-    }
-}
-
 use strict;
 use warnings;
 
 use Test::More;
-plan skip_all => "subtests are broken";
 plan tests => 4;
 use Test::Builder;
 use Test::Builder::Tester;
 
 # Formatting may change if we're running under Test::Harness.
-$ENV{HARNESS_ACTIVE} = 0;
+local $ENV{HARNESS_ACTIVE} = 0;
 
 our %line;
 
@@ -42,12 +31,13 @@ sub foobar_ok ($;$) {
     };
 }
 {
+    test_out("    TAP version 13");
     test_out("    1..2");
     test_out("    ok 1 - foo");
     test_out("    not ok 2 - bar");
     test_err("    #   Failed test 'bar'");
     test_err("    #   at $0 line $line{foobar_ok_bar}.");
-    test_err("    # Looks like you failed 1 test of 2.");
+    test_err("    # 1 test of 2 failed.");
     test_out("not ok 1 - namehere");
     test_err("#   Failed test 'namehere'");
     test_err("#   at $0 line ".(__LINE__+2).".");
@@ -66,12 +56,13 @@ sub foobar_ok_2 ($;$) {
     foobar_ok($value, $name);
 }
 {
+    test_out("    TAP version 13");
     test_out("    1..2");
     test_out("    ok 1 - foo");
     test_out("    not ok 2 - bar");
     test_err("    #   Failed test 'bar'");
     test_err("    #   at $0 line $line{foobar_ok_bar}.");
-    test_err("    # Looks like you failed 1 test of 2.");
+    test_err("    # 1 test of 2 failed.");
     test_out("not ok 1 - namehere");
     test_err("#   Failed test 'namehere'");
     test_err("#   at $0 line ".(__LINE__+2).".");
@@ -95,12 +86,13 @@ sub barfoo_ok ($;$) {
     });
 }
 {
+    test_out("    TAP version 13");
     test_out("    1..2");
     test_out("    ok 1 - foo");
     test_out("    not ok 2 - bar");
     test_err("    #   Failed test 'bar'");
     test_err("    #   at $0 line $line{barfoo_ok_bar}.");
-    test_err("    # Looks like you failed 1 test of 2.");
+    test_err("    # 1 test of 2 failed.");
     test_out("not ok 1 - namehere");
     test_err("#   Failed test 'namehere'");
     test_err("#   at $0 line ".(__LINE__+2).".");
@@ -119,12 +111,13 @@ sub barfoo_ok_2 ($;$) {
     barfoo_ok($value, $name);
 }
 {
+    test_out("    TAP version 13");
     test_out("    1..2");
     test_out("    ok 1 - foo");
     test_out("    not ok 2 - bar");
     test_err("    #   Failed test 'bar'");
     test_err("    #   at $0 line $line{barfoo_ok_bar}.");
-    test_err("    # Looks like you failed 1 test of 2.");
+    test_err("    # 1 test of 2 failed.");
     test_out("not ok 1 - namehere");
     test_err("#   Failed test 'namehere'");
     test_err("#   at $0 line ".(__LINE__+2).".");
@@ -136,14 +129,16 @@ sub barfoo_ok_2 ($;$) {
 
 # A subtest-based predicate called from within a subtest
 {
+    test_out("    TAP version 13");
     test_out("    1..2");
     test_out("    ok 1 - this passes");
+    test_out("        TAP version 13");
     test_out("        1..2");
     test_out("        ok 1 - foo");
     test_out("        not ok 2 - bar");
     test_err("        #   Failed test 'bar'");
     test_err("        #   at $0 line $line{barfoo_ok_bar}.");
-    test_err("        # Looks like you failed 1 test of 2.");
+    test_err("        # 1 test of 2 failed.");
     test_out("    not ok 2 - namehere");
     test_err("    #   Failed test 'namehere'");
     test_err("    #   at $0 line $line{ipredcall}.");

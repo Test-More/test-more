@@ -188,69 +188,70 @@ sub subtest {
         $self->croak("subtest()'s second argument must be a code ref");
     }
 
-    # Turn the child into the parent so anyone who has stored a copy of
-    # the Test::Builder default will get the child.
-    my($error, $child, %parent);
-    {
-        # child() calls reset() which sets $Level to 1, so we localize
-        # $Level first to limit the scope of the reset to the subtest.
-        local $Test::Builder::Level = $Test::Builder::Level + 1;
+    $self->test_start unless $self->in_test;
 
-        $child  = $self->child($name);
-        %parent = %$self;
-        %$self  = %$child;
+    # Save the TODO state
+    my $todo_state = $self->_todo_state;
 
-        my $run_the_subtests = sub {
-            $subtests->();
-            $self->done_testing unless $self->_plan_handled;
-            1;
-        };
+    my $in_todo     = $self->in_todo;
 
-        (undef, $error) = $self->try(sub { $run_the_subtests->(); 1 });
+    my %extra_args;
+    if( $in_todo ) {
+        $extra_args{directives} = ["todo"];
+        $extra_args{reason}     = $self->todo;
     }
 
-    # Restore the parent and the copied child.
-    %$child = %$self;
-    %$self = %parent;
+    $self->post_event(
+        Test::Builder2::Event::SubtestStart->new(
+            $self->_file_and_line,
+            name        => $name,
+            %extra_args
+        )
+    );
 
-    # Restore the parent's $TODO
-    $self->find_TODO(undef, 1, $child->{Parent_TODO});
+    # Save and clear the content of $TODO so it doesn't make all
+    # the subtest's tests TODO.
+    my $orig_TODO = $self->find_TODO(undef, 1, undef);
+    {
+        local $Test::Builder::Level = $self->{Set_Level};
 
-    # Die *after* we restore the parent.
-    die $error if $error and !$self->try(sub { $error->isa('Test::Builder::Exception') });
+        # If the subtest is in a TODO, error output should not be seen like
+        # any other TODO test.
+        my $streamer = $self->formatter->streamer;
+        $streamer->error_fh( $streamer->output_fh ) if $in_todo;
 
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
-    return $child->finalize;
-}
+        # The subtest gets its own TODO state
+        $self->_reset_todo_state;
 
-=begin _private
+        my(undef, $error) = $self->try(sub { $subtests->() });
 
-=item B<_plan_handled>
+        die $error if $error && !eval { $error->isa("Test::Builder::Exception") };
+    }
 
-    if ( $Test->_plan_handled ) { ... }
+    $self->done_testing if !$self->history->done_testing;
+    {
+        # Don't change the exit code while doing the ending for a subtest
+        my $old_setting = $self->no_change_exit_code;
+        $self->no_change_exit_code(1);
+        $self->_ending;
+        $self->no_change_exit_code($old_setting);
+    }
 
-Returns true if the developer has explicitly handled the plan via:
+    # Restore TODO state
+    for my $key (keys %$todo_state) {
+        $self->{$key} = $todo_state->{$key};
+    }
 
-=over 4
+    # Restore $TODO
+    $self->find_TODO(undef, 1, $orig_TODO);
 
-=item * Explicitly setting the number of tests
+    $self->post_event(
+        Test::Builder2::Event::SubtestEnd->new(
+            $self->_file_and_line,
+        )
+    );
 
-=item * Setting 'no_plan'
-
-=item * Set 'skip_all'.
-
-=back
-
-This is currently used in subtests when we implicitly call C<< $Test->done_testing >>
-if the developer has not set a plan.
-
-=end _private
-
-=cut
-
-sub _plan_handled {
-    my $self = shift;
-    return grep { $_->event_type eq 'set_plan' } @{$self->history->events};
+    return;
 }
 
 
@@ -299,6 +300,7 @@ sub finalize {
 
     return $self->is_passing;
 }
+
 
 
 =item B<parent>
@@ -353,9 +355,7 @@ my $Opened_Testhandles = 0;
 sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my($self, %overrides) = @_;
 
-    # We leave this a global because it has to be localized and localizing
-    # hash keys is just asking for pain.  Also, it was documented.
-    $Level = 1;
+    $self->level(1);
 
     $self->{Name}         = $0;
 
@@ -375,9 +375,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->no_ending(0);
     $self->no_change_exit_code(0);
 
-    $self->{Todo}       = undef;
-    $self->{Todo_Stack} = [];
-    $self->{Start_Todo} = 0;
+    $self->_reset_todo_state;
 
     $Opened_Testhandles = 0;
     $self->_dup_stdhandles;
@@ -581,8 +579,8 @@ Or to plan a variable number of tests:
 sub done_testing {
     my($self, $num_tests) = @_;
 
-    $self->croak("Tried to finish testing, but testing is already done (or wasn't started)")
-      unless $self->in_test;
+    $self->croak("Tried to finish testing, but testing is already done")
+      if !$self->in_test and $self->history->done_testing;
 
     if( defined $num_tests ) {
         my $expected_tests = $self->expected_tests;
@@ -593,7 +591,8 @@ sub done_testing {
             $self->set_plan( asserts_expected => $num_tests );
         }
     }
-    elsif( !$self->_plan_handled ) {
+    elsif( !$self->history->plan ) {
+        $self->test_start unless $self->in_test;
         $self->set_plan( no_plan => 1 );
     }
 
@@ -648,10 +647,13 @@ sub skip_all {
         skip_reason     => $reason
     );
 
-    if ( $self->parent ) {
-        die bless {} => 'Test::Builder::Exception';
+    if ( $self->history->subtest_depth ) {
+        # We're in a subtest, don't exit.  Throw an exception.
+        die bless { from => "skip_all" } => 'Test::Builder::Exception';
     }
-    exit(0);
+    else {
+        exit(0);
+    }
 }
 
 =item B<exported_to>
@@ -733,6 +735,10 @@ sub in_test {
 }
 
 
+sub post_event {
+    $_[0]->test_state->post_event($_[1]);
+}
+
 sub post_result {
     my $self = shift;
     my $result = shift;
@@ -775,6 +781,7 @@ ERR
 
     # Turn the test into a Result
     my( $pack, $file, $line ) = $self->caller;
+
     my $result = Test::Builder2::Result->new_result(
         $self->_file_and_line,
         pass            => $test ? 1 : 0,
@@ -1411,6 +1418,7 @@ sub level {
     my( $self, $level ) = @_;
 
     if( defined $level ) {
+        $self->{Set_Level} = $level;
         $Level = $level;
     }
     return $Level;
@@ -2176,6 +2184,30 @@ sub todo_end {
 
     return;
 }
+
+
+my @Todo_Keys = qw(Start_Todo Todo_Stack Todo);
+sub _todo_state {
+    my $self = shift;
+
+    my %todo_state;
+    for my $key (@Todo_Keys) {
+        $todo_state{$key} = $self->{$key};
+    }
+
+    return \%todo_state;
+}
+
+sub _reset_todo_state {
+    my $self = shift;
+
+    $self->{Todo}       = undef;
+    $self->{Todo_Stack} = [];
+    $self->{Start_Todo} = 0;
+
+    return;
+}
+
 
 =item B<caller>
 
