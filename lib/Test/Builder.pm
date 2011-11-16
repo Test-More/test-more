@@ -111,66 +111,6 @@ sub create {
     return $self;
 }
 
-=item B<child>
-
-  my $child = $builder->child($name_of_child);
-  $child->plan( tests => 4 );
-  $child->ok(some_code());
-  ...
-  $child->finalize;
-
-Returns a new instance of C<Test::Builder>.  Any output from this child will
-be indented four spaces more than the parent's indentation.  When done, the
-C<finalize()> method I<must> be called explicitly.
-
-Trying to create a new child with a previous child still active (i.e.,
-C<finalize()> not called) will C<croak>.
-
-Trying to run a test when you have an open child will also C<croak> and cause
-the test suite to fail.
-
-=cut
-
-sub child {
-    my( $self, $name ) = @_;
-
-    if( $self->{Child_Name} ) {
-        $self->croak("You already have a child named ($self->{Child_Name}) running");
-    }
-
-    my $parent_in_todo = $self->in_todo;
-
-    # Clear $TODO for the child.
-    my $orig_TODO = $self->find_TODO(undef, 1, undef);
-
-    my $child = bless {}, ref $self;
-    $child->reset;
-    $child->$_( $self->$_() ) for qw(output failure_output todo_output);
-
-    $child->{$_} = $self->{$_} foreach qw{Out_FH Todo_FH Fail_FH};
-    if ($parent_in_todo) {
-        # The entire subtest is considered TODO.  Don't make any of its failure
-        # diagnostics visible to the user.
-        $child->{Fail_FH} = $self->{Todo_FH};
-        my $streamer = $child->test_state->formatter->[0]->streamer;
-        $streamer->error_fh( $streamer->output_fh );
-    }
-
-    $child->test_state->post_event(
-        Test::Builder2::Event::TestStart->new( $child->_file_and_line )
-    );
-
-    # This will be reset in finalize. We do this here lest one child failure
-    # cause all children to fail.
-    $child->{Child_Error} = $?;
-    $?                    = 0;
-    $child->{Parent}      = $self;
-    $child->{Parent_TODO} = $orig_TODO;
-    $child->{Name}        = $name || "Child of " . $self->name;
-    $self->{Child_Name}   = $child->name;
-    return $child;
-}
-
 
 =item B<subtest>
 
@@ -255,90 +195,33 @@ sub subtest {
 }
 
 
-=item B<finalize>
+# Removed public API function.
+sub child {
+    my $self = shift;
+    $self->croak("The internals of subtests were redesigned, child() no longer exists.");
+}
 
-  my $ok = $child->finalize;
 
-When your child is done running tests, you must call C<finalize> to clean up
-and tell the parent your pass/fail status.
-
-Calling finalize on a child with open children will C<croak>.
-
-If the child falls out of scope before C<finalize> is called, a failure
-diagnostic will be issued and the child is considered to have failed.
-
-No attempt to call methods on a child after C<finalize> is called is
-guaranteed to succeed.
-
-Calling this on the root builder is a no-op.
-
-=cut
-
+# Removed public API method.
 sub finalize {
     my $self = shift;
 
-    return unless $self->parent;
-    if( $self->{Child_Name} ) {
-        $self->croak("Can't call finalize() with child ($self->{Child_Name}) active");
-    }
-    $self->_ending;
-
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
-    my $ok = 1;
-    $self->parent->{Child_Name} = undef;
-    if ( $self->history->plan->skip ) {
-        $self->parent->skip($self->history->plan->skip_reason);
-    }
-    elsif ( not @{ $self->history->results } ) {
-        $self->parent->ok( 0, sprintf q[No tests run for subtest "%s"], $self->name );
-    }
-    else {
-        $self->parent->ok( $self->is_passing, $self->name );
-    }
-    $? = $self->{Child_Error};
-    delete $self->{Parent};
-
-    return $self->is_passing;
+    $self->croak("The internals of subtests were redesigned, finalize() no longer exists.");
 }
 
-
-
-=item B<parent>
-
- if ( my $parent = $builder->parent ) {
-     ...
- }
-
-Returns the parent C<Test::Builder> instance, if any.  Only used with child
-builders for nested TAP.
-
-=cut
-
-sub parent { shift->{Parent} }
-
-=item B<name>
-
- diag $builder->name;
-
-Returns the name of the current builder.  Top level builders default to C<$0>
-(the name of the executable).  Child builders are named via the C<child>
-method.  If no name is supplied, will be named "Child of $parent->name".
-
-=cut
-
-sub name { shift->{Name} }
-
-sub DESTROY {
+# Removed public API method.
+sub parent {
     my $self = shift;
-    if ( $self->parent and !$self->history->is_child_process ) {
-        my $name = $self->name;
-        $self->diag(<<"FAIL");
-Child ($name) exited without calling finalize()
-FAIL
-        $self->parent->{In_Destroy} = 1;
-        $self->parent->ok(0, $name);
-    }
+
+    $self->croak("The internals of subtests were redesigned, parent() no longer exists.");
 }
+
+sub name {
+    my $self = shift;
+
+    $self->croak("The internals of subtests were redesigned, name() no longer exists.");
+}
+
 
 =item B<reset>
 
@@ -356,10 +239,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my($self, %overrides) = @_;
 
     $self->level(1);
-
-    $self->{Name}         = $0;
-
-    $self->{Child_Name}   = undef;
 
     $self->{Exported_To}    = undef;
 
@@ -430,18 +309,6 @@ A convenient way to set up your tests.  Call this and Test::Builder
 will print the appropriate headers and take the appropriate actions.
 
 If you call C<plan()>, don't call any of the other methods below.
-
-If a child calls "skip_all" in the plan, a C<Test::Builder::Exception> is
-thrown.  Trap this error, call C<finalize()> and don't run any more tests on
-the child.
-
- my $child = $Test->child('some child');
- eval { $child->plan( $condition ? ( skip_all => $reason ) : ( tests => 3 )  ) };
- if ( eval { $@->isa('Test::Builder::Exception') } ) {
-    $child->finalize;
-    return;
- }
- # run your tests
 
 =cut
 
@@ -754,10 +621,6 @@ sub post_result {
 sub ok {
     my( $self, $test, $name ) = @_;
 
-    if ( $self->{Child_Name} and not $self->{In_Destroy} ) {
-        $name = 'unnamed test' unless defined $name;
-        $self->croak("Cannot run test ($name) with active children");
-    }
     # $test might contain an object which we don't want to accidentally
     # store, so we turn it into a boolean.
     $test = $test ? 1 : 0;
