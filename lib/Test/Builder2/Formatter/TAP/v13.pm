@@ -498,6 +498,7 @@ sub subtest_handler {
 
     my $subformatter = $self->SUPER::subtest_handler($event);
 
+    $subformatter->show_tap_version( $self->show_tap_version );
     $subformatter->indent('    '.$self->indent);
 
     return $subformatter;
