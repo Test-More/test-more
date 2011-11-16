@@ -19,7 +19,7 @@ Test::Builder2::Event - A test event role
     with 'Test::Builder2::Event';
 
     sub as_hash    { ... }
-    sub _build_event_type { "my_thingy" }
+    sub build_event_type { "my_thingy" }
 
 
 =head1 DESCRIPTION
