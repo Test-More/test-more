@@ -70,18 +70,18 @@ has file =>
 
 =head3 event_type
 
-    my $type = $event->event_type;
+Returns the type of event this is.  For example, "result" or "test_start".
 
-Returns the type of event this is.
+Use this to identify events rather than C<< $event->isa($class) >>.
 
-For example, "result".
+See L<build_event_type> for how to set the C<event_type> if you're
+writing a new event.
 
 =cut
 
 has event_type =>
   is    => 'ro',
   isa   => 'Test::Builder2::LC_AlphaNumUS_Str',
-  lazy => 1,
   builder => 'build_event_type',
 ;
 
@@ -97,8 +97,8 @@ Returns the type of event this is.
 
 For example, "result".
 
-The returned string must be lowercase and only contain alphanumeric characters
-and underscores.
+$type must be lowercase and only contain alphanumeric characters and
+underscores.
 
 Used to build C<event_type>
 
@@ -160,8 +160,8 @@ sub as_hash {
 Returns an array ref of keys for C<as_hash> to use as keys and methods
 to call on the object for the key's value.
 
-By default it uses the object's non-private attributes, plus C<event_type>.
-That should be sufficient for most events.
+By default it uses the object's non-private attributes.  That should
+be sufficient for most events.
 
 =cut
 
@@ -170,7 +170,6 @@ sub keys_for_as_hash {
     my $self = shift;
     my $class = ref $self;
     return $Attributes{$class} ||= [
-        "event_type",
         grep !/^_/, map { $_->name } $class->meta->get_all_attributes
     ];
 }
