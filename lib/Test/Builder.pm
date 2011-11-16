@@ -393,6 +393,17 @@ sub formatter {
     return $_[0]->test_state->formatters->[0] || $blackhole;
 }
 
+=item B<history>
+
+    my $history = $builder->history;
+
+A convenience method to access the first History object associated
+with the C<test_state>.
+
+Note that there can be more than one.
+
+=cut
+
 sub history {
     return $_[0]->test_state->history;
 }
