@@ -209,7 +209,9 @@ sub subtest {
         )
     );
 
-    my $orig_TODO;
+    # Save and clear the content of $TODO so it doesn't make all
+    # the subtest's tests TODO.
+    my $orig_TODO = $self->find_TODO(undef, 1, undef);
     {
         local $Test::Builder::Level = $self->{Set_Level};
 
@@ -220,9 +222,6 @@ sub subtest {
 
         # The subtest gets its own TODO state
         $self->_reset_todo_state;
-
-        # Clear $TODO for the child.
-#        $orig_TODO = $self->find_TODO(undef, 1, undef);
 
         my(undef, $error) = $self->try(sub { $subtests->() });
 
@@ -243,8 +242,8 @@ sub subtest {
         $self->{$key} = $todo_state->{$key};
     }
 
-    # Restore the parent's $TODO
-#    $self->find_TODO(undef, 1, $orig_TODO);
+    # Restore $TODO
+    $self->find_TODO(undef, 1, $orig_TODO);
 
     $self->post_event(
         Test::Builder2::Event::SubtestEnd->new(
