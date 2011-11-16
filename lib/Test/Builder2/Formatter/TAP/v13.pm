@@ -530,24 +530,28 @@ sub accept_subtest_end {
         $result_args{$key} = $val if defined $val;
     }
 
-    # If the subtest was a skip_all, make our result a skip.
-    my $subtest_plan = $event->history->plan;
-    if( $subtest_plan && $subtest_plan->skip ) {
-        $result_args{skip} = 1;
-        $result_args{reason} = $subtest_plan->skip_reason;
+    # What was the result of the subtest?
+    if( my $abort = $event->history->abort ) {
+        # Subtest aborted, end the abort up to the top level
+        $ec->post_event($abort);
     }
-    elsif( $event->history->test_count == 0 ) {
-        # The subtest didn't run any tests
-        my $name = $result_args{name};
-        $result_args{name} = "No tests run in subtest";
-        $result_args{name}.= qq[ "$name"] if defined $name;
+    else {
+        my $subtest_plan = $event->history->plan;
+        if( $subtest_plan && $subtest_plan->skip ) {
+            # If the subtest was a skip_all, make our result a skip.
+            $result_args{skip} = 1;
+            $result_args{reason} = $subtest_plan->skip_reason;
+        }
+        elsif( $event->history->test_count == 0 ) {
+            # The subtest didn't run any tests
+            my $name = $result_args{name};
+            $result_args{name} = "No tests run in subtest";
+            $result_args{name}.= qq[ "$name"] if defined $name;
+        }
+
+        my $result = Test::Builder2::Result->new_result( %result_args );
+        $ec->post_event($result);
     }
-
-    my $result = Test::Builder2::Result->new_result( %result_args );
-
-    # This result is only applicable to TAP, it's not a real test event and
-    # should not be seen by other event watchers.
-    $ec->post_event($result);
 
     return;
 }
@@ -556,6 +560,9 @@ sub accept_subtest_end {
 sub accept_abort {
     my $self = shift;
     my($event, $ec) = @_;
+
+    # Only the top level will report the bailout.
+    return if $ec->history->is_subtest;
 
     my $reason = $self->_escape_reason($event->reason);
 

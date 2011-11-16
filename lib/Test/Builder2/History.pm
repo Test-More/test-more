@@ -137,8 +137,10 @@ sub subtest_handler {
     my $self  = shift;
     my $event = shift;
 
-    my $subhistory = $self->new;
-    $subhistory->subtest_depth( $event->depth );
+    my $subhistory = $self->new(
+        subtest_depth   => $event->depth,
+        is_subtest      => 1
+    );
 
     return $subhistory;
 }
@@ -432,6 +434,19 @@ Returns the C<test_end> event, if it has been seen.
 has test_end =>
   is            => 'rw',
   does          => 'Test::Builder2::Event';
+
+
+=head3 is_subtest
+
+    my $is_subtest = $history->is_subtest;
+
+Returns whether this $history represents a subtest.
+
+=cut
+
+has is_subtest =>
+  is            => 'ro',
+  default       => 0;
 
 
 =head3 subtest_depth

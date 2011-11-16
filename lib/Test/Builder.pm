@@ -1033,6 +1033,16 @@ sub BAIL_OUT {
         Test::Builder2::Event::Abort->new( reason => $reason )
     );
 
+    # Get out of any subtest we might be in
+    while( $self->history->is_subtest ) {
+        $self->test_state->post_event(
+            Test::Builder2::Event::SubtestEnd->new(
+                $self->_file_and_line
+            )
+        );
+    }
+
+    # If this is the top, kill the process.
     exit 255;
 }
 
