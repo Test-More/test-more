@@ -272,6 +272,15 @@ sub formatter {
     return $_[0]->test_state->formatters->[0] || $blackhole;
 }
 
+=item B<history>
+
+    my $history = $builder->history;
+
+A convenience method to access the L<Test::Builder2::History> object associated
+with the C<test_state>.
+
+=cut
+
 sub history {
     return $_[0]->test_state->history;
 }
