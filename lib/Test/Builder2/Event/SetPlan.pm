@@ -14,7 +14,7 @@ Test::Builder2::Event::SetPlan - Set the plan for the current stream
 This is an Event indicating that the test plan for the current stream
 has been set.
 
-It B<must> come between a C<test start> and an C<test end> Event.
+It B<must> come between a C<test_start> and an C<test_end> Event.
 
 There B<should> be only one plan per stream.  An exception is that a
 B<no_plan> can be followed by a more restrictive plan.
@@ -105,11 +105,11 @@ has plan =>
 
 =head3 event_type
 
-The event type is C<set plan>.
+The event type is C<set_plan>.
 
 =cut
 
-sub event_type { "set plan" }
+sub event_type { "set_plan" }
 
 =head1 SEE ALSO
 

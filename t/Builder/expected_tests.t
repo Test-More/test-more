@@ -19,10 +19,10 @@ note "Can call expected_tests() to set the plan"; {
     my $events = $history->events;
 
     event_like $events->[0], {
-        event_type => "test start"
+        event_type => "test_start"
     };
     event_like $events->[1], {
-        event_type              => "set plan",
+        event_type              => "set_plan",
         asserts_expected        => 4
     };
 

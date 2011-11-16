@@ -12,7 +12,7 @@ Test::Builder2::Event::StreamMetadata - Metadata for the current stream
 
 This is an Event for metadata about the current stream of tests.
 
-It B<must> come between a C<test start> and an C<test end> Event.
+It B<must> come between a C<test_start> and an C<test_end> Event.
 
 =head1 METHODS
 
@@ -36,11 +36,11 @@ has metadata =>
 
 =head3 event_type
 
-The event type is C<stream metadata>.
+The event type is C<stream_metadata>.
 
 =cut
 
-sub event_type { "stream metadata" }
+sub event_type { "stream_metadata" }
 
 =head1 SEE ALSO
 

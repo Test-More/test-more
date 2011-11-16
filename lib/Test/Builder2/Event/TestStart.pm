@@ -19,10 +19,10 @@ This description is terrible.
 
 =head3 event_type
 
-The event type is C<test start>.
+The event type is C<test_start>.
 
 =cut
 
-sub event_type { "test start" }
+sub event_type { "test_start" }
 
 1;

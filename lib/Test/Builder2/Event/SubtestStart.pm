@@ -69,11 +69,11 @@ has name =>
 
 =head3 event_type
 
-The event type is C<subtest start>.
+The event type is C<subtest_start>.
 
 =cut
 
-sub event_type { return "subtest start" }
+sub event_type { return "subtest_start" }
 
 =head1 SEE ALSO
 

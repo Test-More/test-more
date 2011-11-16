@@ -250,7 +250,7 @@ if the developer has not set a plan.
 
 sub _plan_handled {
     my $self = shift;
-    return grep { $_->event_type eq 'set plan' } @{$self->history->events};
+    return grep { $_->event_type eq 'set_plan' } @{$self->history->events};
 }
 
 

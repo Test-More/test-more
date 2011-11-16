@@ -10,9 +10,9 @@ use Test::Builder2::Event::TestStart;
 note "Basic event"; {
     my $event = Test::Builder2::Event::TestStart->new;
 
-    is $event->event_type, "test start";
+    is $event->event_type, "test_start";
     is_deeply $event->as_hash, {
-        event_type      => "test start",
+        event_type      => "test_start",
         event_id        => $event->event_id,
     };
 }

@@ -45,11 +45,11 @@ has history =>
 
 =head3 event_type
 
-The event type is C<subtest end>.
+The event type is C<subtest_end>.
 
 =cut
 
-sub event_type { return "subtest end" }
+sub event_type { return "subtest_end" }
 
 =head1 SEE ALSO
 
