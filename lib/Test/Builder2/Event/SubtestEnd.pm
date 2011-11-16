@@ -43,13 +43,13 @@ has history =>
   isa           => 'Test::Builder2::History',
 ;
 
-=head3 event_type
+=head3 build_event_type
 
-The event type is C<subtest end>.
+The event type is C<subtest_end>.
 
 =cut
 
-sub event_type { return "subtest end" }
+sub build_event_type { "subtest_end" }
 
 =head1 SEE ALSO
 

@@ -34,13 +34,13 @@ This implements all the methods and attributes of
 L<Test::Builder2::Event> with the following additions and
 modifications.
 
-=head3 event_type
+=head3 build_event_type
 
 The event type is C<abort>.
 
 =cut
 
-sub event_type { "abort" }
+sub build_event_type { "abort" }
 
 =head2 Attributes
 

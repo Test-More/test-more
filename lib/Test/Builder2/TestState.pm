@@ -260,8 +260,8 @@ sub _delegate_to_current_coordinator {
 
 
 my %special_handlers = (
-    'subtest start' => \&accept_subtest_start,
-    'subtest end'   => \&accept_subtest_end,
+    'subtest_start' => \&accept_subtest_start,
+    'subtest_end'   => \&accept_subtest_end,
 );
 sub post_event {
     my $self  = shift;

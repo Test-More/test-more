@@ -122,3 +122,4 @@ sub _plan_location {
 
 __PACKAGE__->meta->make_immutable();
 no Test::Builder2::Mouse;
+1;
