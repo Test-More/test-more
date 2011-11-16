@@ -4,7 +4,7 @@ use Test::Builder2::Mouse ();
 use Test::Builder2::Mouse::Role;
 use Test::Builder2::Types;
 
-requires qw(event_type);
+requires qw( build_event_type );
 
 
 =head1 NAME
@@ -19,7 +19,7 @@ Test::Builder2::Event - A test event role
     with 'Test::Builder2::Event';
 
     sub as_hash    { ... }
-    sub event_type { return "thingy" }
+    sub _build_event_type { "my_thingy" }
 
 
 =head1 DESCRIPTION
@@ -68,10 +68,6 @@ has file =>
   isa   => 'Str',
 ;
 
-=head2 Required Methods
-
-You must implement these methods.
-
 =head3 event_type
 
     my $type = $event->event_type;
@@ -80,6 +76,31 @@ Returns the type of event this is.
 
 For example, "result".
 
+=cut
+
+has event_type =>
+  is    => 'ro',
+  isa   => 'Test::Builder2::LC_AlphaNumUS_Str',
+  lazy => 1,
+  builder => 'build_event_type',
+;
+
+=head2 Required Methods
+
+You must implement these methods.
+
+=head3 build_event_type
+
+    my $type = $event->build_event_type;
+
+Returns the type of event this is.
+
+For example, "result".
+
+The returned string must be lowercase and only contain alphanumeric characters
+and underscores.
+
+Used to build C<event_type>
 
 =head2 Provided Methods
 

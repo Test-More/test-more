@@ -14,12 +14,12 @@ This is an Event representing the end of a test stream.
 
 =head1 METHODS
 
-=head3 event_type
+=head3 build_event_type
 
 The event type is C<test_end>.
 
 =cut
 
-sub event_type { "test_end" }
+sub build_event_type { "test_end" }
 
 1;

@@ -19,7 +19,7 @@ note "Proper Event role"; {
             return { foo => 42 };
         }
 
-        sub event_type {
+        sub build_event_type {
             return "dummy";
         }
     } || diag $@;
@@ -45,6 +45,23 @@ ok !eval {
     with "Test::Builder2::Event";
 };
 like $@, qr/requires the method/;
+
+
+note "Improper Event Type";
+ok !eval {
+    package My::Bad::EventType;
+
+    use Test::Builder2::Mouse;
+    with "Test::Builder2::Event";
+
+    sub as_hash {
+        return { foo => 42 };
+    }
+
+    sub build_event_type {
+        return "spaces bad";
+    }
+};
 
 
 done_testing;

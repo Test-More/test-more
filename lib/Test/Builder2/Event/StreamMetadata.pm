@@ -34,13 +34,13 @@ has metadata =>
   default       => sub { {} }
 ;
 
-=head3 event_type
+=head3 build_event_type
 
 The event type is C<stream_metadata>.
 
 =cut
 
-sub event_type { "stream_metadata" }
+sub build_event_type { "stream_metadata" }
 
 =head1 SEE ALSO
 

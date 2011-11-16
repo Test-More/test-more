@@ -114,9 +114,9 @@ has test_number =>
 
 =head2 Methods
 
-=head3 event_type
+=head3 build_event_type
 
-    my $type = $result->event_type;
+    my $type = $result->build_event_type;
 
 Returns the type of this Event, for differenciation between other
 Event objects.
@@ -125,7 +125,7 @@ The type is "result".
 
 =cut
 
-sub event_type { return "result" }
+sub build_event_type { "result" }
 
 sub keys_for_as_hash {
     my $self = shift;
