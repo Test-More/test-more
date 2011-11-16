@@ -397,10 +397,8 @@ sub formatter {
 
     my $history = $builder->history;
 
-A convenience method to access the first History object associated
+A convenience method to access the L<Test::Builder2::History> object associated
 with the C<test_state>.
-
-Note that there can be more than one.
 
 =cut
 
