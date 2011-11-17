@@ -1,6 +1,9 @@
-This is a technology preview of Test::Builder2.  It is by no means
-complete or stable, but here's something to play with and see where
-it's going.
+This is an almost feature complete alpha of Test::Builder1.5
+(Test::Builder with Test::Builder2's internals).  It is all but
+feature complete and passes nearly all tests.
+
+If you find any bugs or incompatibilities, please report them at
+https://github.com/schwern/test-more/issues
 
 
 WHAT TEST::BUILDER2 IS
@@ -35,19 +38,18 @@ built with Test::Builder2.
 
 WHAT WORKS
 
+All the existing Test::Builder and Test::More features
 Test event hooks
 Multiple formatters (ie. you can output something other than TAP)
-Assert stacks (ie. no more $Test::Builder::Level)
 Test::Builder using Test::Builder2
 Event Handlers (ie. things like Test::NoWarnings)
 
 
 WHAT DOESN'T WORK
 
+Assert stacks (ie. no more $Test::Builder::Level)
 Structured diagnostics
-Comments (traditional diag() and note() style diagnostics)
 Threads
-subtests
 Test::Aggregate
 Test::Group
 Test::SharedFork
@@ -55,9 +57,9 @@ Test::SharedFork
 
 WHERE TO LOOK
 
-The new code is in lib/Test/Builder2* and tests in t/Builder2/
+An outline of the redesign is in TB2::Design.
 
-An outline of the redesign is in Test::Builder2::Design.
+More information can be had at https://github.com/schwern/test-more/
 
 
 EXAMPLES
