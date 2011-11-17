@@ -8,10 +8,10 @@ use lib 't/lib';
 BEGIN { require "t/test.pl" }
 
 use MyEventCollector;
-use Test::Builder2::Formatter::Null;
-use Test::Builder2::Events;
+use TB2::Formatter::Null;
+use TB2::Events;
 
-my $CLASS = 'Test::Builder2::TestState';
+my $CLASS = 'TB2::TestState';
 use_ok $CLASS;
 
 
@@ -27,9 +27,9 @@ note "create() and pass through"; {
     );
 
     is_deeply $state->formatters, [],           "create() passes arguments through";
-    isa_ok $state->history, "Test::Builder2::History";
+    isa_ok $state->history, "TB2::History";
 
-    my $start = Test::Builder2::Event::TestStart->new;
+    my $start = TB2::Event::TestStart->new;
     $state->post_event($start);
     is_deeply $state->history->events, [$start],        "events are posted";
 }
@@ -51,7 +51,7 @@ note "isa"; {
     # Test both $class->isa and $object->isa
     for my $thing ($CLASS, $CLASS->create) {
         isa_ok $thing, $CLASS;
-        isa_ok $thing, "Test::Builder2::EventCoordinator";
+        isa_ok $thing, "TB2::EventCoordinator";
         ok !$thing->isa("Some::Other::Class");
     }
 }
@@ -85,8 +85,8 @@ note "push/pop coordinators"; {
 note "push our own coordinator"; {
     my $state = $CLASS->create;
 
-    require Test::Builder2::EventCoordinator;
-    my $ec = Test::Builder2::EventCoordinator->new;
+    require TB2::EventCoordinator;
+    my $ec = TB2::EventCoordinator->new;
 
     $state->push_coordinator($ec);
 
@@ -109,7 +109,7 @@ note "basic subtest"; {
 
     note "...starting a subtest";
     my $first_ec = $state->current_coordinator;
-    my $subtest_start = Test::Builder2::Event::SubtestStart->new;
+    my $subtest_start = TB2::Event::SubtestStart->new;
     $state->post_event($subtest_start);
     my $second_ec = $state->current_coordinator;
 
@@ -127,7 +127,7 @@ note "basic subtest"; {
 
 
     note "...ending the subtest";
-    my $subtest_end = Test::Builder2::Event::SubtestEnd->new;
+    my $subtest_end = TB2::Event::SubtestEnd->new;
     $state->post_event($subtest_end);
     is $subtest_end->history, $second_history,  "second level history attached to the event";
     is $second_history->event_count, 0,         "  second level did not see the end event";
@@ -147,7 +147,7 @@ note "honor event presets"; {
     );
 
     note "...post a subtest with a pre defined depth";
-    my $subtest_start = Test::Builder2::Event::SubtestStart->new(
+    my $subtest_start = TB2::Event::SubtestStart->new(
         depth => 93
     );
     my $history = $state->history;
@@ -155,8 +155,8 @@ note "honor event presets"; {
     is $history->events->[0]->depth, 93;
 
     note "...post a subtest with a alternate history";
-    my $alternate_history = Test::Builder2::History->new;
-    my $subtest_end = Test::Builder2::Event::SubtestEnd->new(
+    my $alternate_history = TB2::History->new;
+    my $subtest_end = TB2::Event::SubtestEnd->new(
         history => $alternate_history
     );
     $state->post_event($subtest_end);
@@ -169,36 +169,36 @@ note "nested subtests"; {
         formatters => []
     );
 
-    my $first_stream_start = Test::Builder2::Event::TestStart->new;
+    my $first_stream_start = TB2::Event::TestStart->new;
     $state->post_event($first_stream_start);
 
-    my $first_subtest_start = Test::Builder2::Event::SubtestStart->new;
+    my $first_subtest_start = TB2::Event::SubtestStart->new;
     $state->post_event($first_subtest_start);
     is $first_subtest_start->depth, 1;
 
-    my $second_stream_start = Test::Builder2::Event::TestStart->new;
+    my $second_stream_start = TB2::Event::TestStart->new;
     $state->post_event($second_stream_start);
 
-    my $second_subtest_start = Test::Builder2::Event::SubtestStart->new;
+    my $second_subtest_start = TB2::Event::SubtestStart->new;
     $state->post_event($second_subtest_start);
     is $second_subtest_start->depth, 2;
 
     my $second_subtest_ec = $state->current_coordinator;
 
-    my $second_subtest_end = Test::Builder2::Event::SubtestEnd->new;
+    my $second_subtest_end = TB2::Event::SubtestEnd->new;
     $state->post_event($second_subtest_end);
     is $second_subtest_end->history, $second_subtest_ec->history;
 
-    my $second_stream_end = Test::Builder2::Event::TestEnd->new;
+    my $second_stream_end = TB2::Event::TestEnd->new;
     $state->post_event($second_stream_end);
 
     my $first_subtest_ec = $state->current_coordinator;
 
-    my $first_subtest_end = Test::Builder2::Event::SubtestEnd->new;
+    my $first_subtest_end = TB2::Event::SubtestEnd->new;
     $state->post_event($first_subtest_end);
     is $first_subtest_end->history, $first_subtest_ec->history;
 
-    my $first_stream_end = Test::Builder2::Event::TestEnd->new;
+    my $first_stream_end = TB2::Event::TestEnd->new;
     $state->post_event($first_stream_end);
 
     is_deeply [map { $_->event_type } @{$state->history->events}],
@@ -219,8 +219,8 @@ note "handlers providing their own subtest_handler"; {
     # Some classes useful for testing subtest_handler is called correctly
     {
         package MyHistory;
-        use Test::Builder2::Mouse;
-        extends "Test::Builder2::History";
+        use TB2::Mouse;
+        extends "TB2::History";
 
         has denial =>
           is            => 'rw',
@@ -231,7 +231,7 @@ note "handlers providing their own subtest_handler"; {
             my $self = shift;
             my $event = shift;
 
-            ::isa_ok $event, "Test::Builder2::Event::SubtestStart";
+            ::isa_ok $event, "TB2::Event::SubtestStart";
 
             return $self->new( denial => 5 );
         }
@@ -239,8 +239,8 @@ note "handlers providing their own subtest_handler"; {
 
     {
         package MyNullFormatter;
-        use Test::Builder2::Mouse;
-        extends "Test::Builder2::Formatter::Null";
+        use TB2::Mouse;
+        extends "TB2::Formatter::Null";
 
         has depth => 
           is            => 'rw',
@@ -252,7 +252,7 @@ note "handlers providing their own subtest_handler"; {
             my $self = shift;
             my $event = shift;
 
-            ::isa_ok $event, "Test::Builder2::Event::SubtestStart";
+            ::isa_ok $event, "TB2::Event::SubtestStart";
 
             return $self->new( depth => $event->depth );
         }
@@ -260,7 +260,7 @@ note "handlers providing their own subtest_handler"; {
 
     {
         package MyEventCollectorSeesAll;
-        use Test::Builder2::Mouse;
+        use TB2::Mouse;
         extends "MyEventCollector";
 
         # A handler that returns itself
@@ -268,14 +268,14 @@ note "handlers providing their own subtest_handler"; {
             my $self = shift;
             my $event = shift;
 
-            ::isa_ok $event, "Test::Builder2::Event::SubtestStart";
+            ::isa_ok $event, "TB2::Event::SubtestStart";
 
             return $self;
         }
     }
 
     note "...init a bunch of handlers with subtest_handler overrides";
-    my $formatter1 = Test::Builder2::Formatter::Null->new;
+    my $formatter1 = TB2::Formatter::Null->new;
     my $formatter2 = MyNullFormatter->new;
     my $seesall    = MyEventCollectorSeesAll->new;
     my $collector  = MyEventCollector->new;
@@ -288,7 +288,7 @@ note "handlers providing their own subtest_handler"; {
     );
 
     note "...starting the subtest";
-    my $subtest_start = Test::Builder2::Event::SubtestStart->new;
+    my $subtest_start = TB2::Event::SubtestStart->new;
     $state->post_event($subtest_start);
 
     note "...checking the sub handlers were initialized from their parent's classes";
@@ -316,11 +316,11 @@ note "handlers providing their own subtest_handler"; {
     is $state->late_handlers->[0]->depth,       1;
 
     # Start and end an empty subtest
-    my $substream_start = Test::Builder2::Event::SubtestStart->new;
-    my $substream_end = Test::Builder2::Event::SubtestEnd->new;
+    my $substream_start = TB2::Event::SubtestStart->new;
+    my $substream_end = TB2::Event::SubtestEnd->new;
     $state->post_event($_) for $substream_start, $substream_end;
 
-    my $subtest_end = Test::Builder2::Event::SubtestEnd->new;
+    my $subtest_end = TB2::Event::SubtestEnd->new;
     $state->post_event($subtest_end);
 
     is_deeply [map { $_->event_id } $subtest_start, $subtest_end],

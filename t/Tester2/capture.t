@@ -5,7 +5,7 @@ use warnings;
 
 use Test::More;
 use Test::Simple ();
-use Test::Builder2::Tester;
+use TB2::Tester;
 
 note "capturing nothing"; {
     my $have = capture {};

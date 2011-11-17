@@ -8,8 +8,8 @@ BEGIN { require 't/test.pl'; }
 {
     package My::Handler;
 
-    use Test::Builder2::Mouse;
-    with "Test::Builder2::EventHandler";
+    use TB2::Mouse;
+    with "TB2::EventHandler";
 }
 
 ok !My::Handler->handle_event(), "default handle_event does nothing";

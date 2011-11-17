@@ -31,15 +31,15 @@ Test::Simple) do not have this problem.
 
 =head1 SEE ALSO
 
-L<Test::Builder2::EventHandler>
+L<TB2::EventHandler>
 
 =cut
 
 {
     package TB2::DieOnFail::Handler;
 
-    use Test::Builder2::Mouse;
-    with 'Test::Builder2::EventHandler';
+    use TB2::Mouse;
+    with 'TB2::EventHandler';
 
     sub handle_result {
         my $self   = shift;

@@ -8,8 +8,8 @@ BEGIN { require 't/test.pl' }
 {
     package Foo;
 
-    use Test::Builder2::Mouse;
-    with 'Test::Builder2::HasDefault';
+    use TB2::Mouse;
+    with 'TB2::HasDefault';
 }
 
 {

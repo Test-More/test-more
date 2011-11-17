@@ -5,9 +5,9 @@
 use strict;
 use warnings;
 
-use Test::Builder2::Streamer::Print;
+use TB2::Streamer::Print;
 
-my $print = Test::Builder2::Streamer::Print->new;
+my $print = TB2::Streamer::Print->new;
 
 $print->write(out => "1..3\n", "ok 1 - write\n");
 

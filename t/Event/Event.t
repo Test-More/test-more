@@ -5,15 +5,15 @@ use warnings;
 
 BEGIN { require 't/test.pl' }
 
-use Test::Builder2::Event;
+use TB2::Event;
 
 # For testing porpoises
 note "Proper Event role"; {
     ok eval {
         package My::Event;
 
-        use Test::Builder2::Mouse;
-        with "Test::Builder2::Event";
+        use TB2::Mouse;
+        with "TB2::Event";
 
         sub as_hash {
             return { foo => 42 };
@@ -41,8 +41,8 @@ note "Improper Event role";
 ok !eval {
     package My::Bad::Event;
 
-    use Test::Builder2::Mouse;
-    with "Test::Builder2::Event";
+    use TB2::Mouse;
+    with "TB2::Event";
 };
 like $@, qr/requires the method/;
 
@@ -51,8 +51,8 @@ note "Improper Event Type";
 ok !eval {
     package My::Bad::EventType;
 
-    use Test::Builder2::Mouse;
-    with "Test::Builder2::Event";
+    use TB2::Mouse;
+    with "TB2::Event";
 
     sub as_hash {
         return { foo => 42 };

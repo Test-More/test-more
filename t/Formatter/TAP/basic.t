@@ -2,10 +2,10 @@
 
 use strict;
 
-use Test::Builder2::EventCoordinator;
-use Test::Builder2::Formatter::TAP;
-use Test::Builder2::Streamer::TAP; 
-use Test::Builder2::Events;
+use TB2::EventCoordinator;
+use TB2::Formatter::TAP;
+use TB2::Streamer::TAP; 
+use TB2::Events;
 use lib 't/lib';
 BEGIN { require "t/test.pl" }
 
@@ -16,13 +16,13 @@ local $ENV{HARNESS_ACTIVE} = 0;
 my $formatter;
 my $ec;
 sub setup {
-    $formatter = Test::Builder2::Formatter::TAP->new(
-        streamer_class => 'Test::Builder2::Streamer::Debug'
+    $formatter = TB2::Formatter::TAP->new(
+        streamer_class => 'TB2::Streamer::Debug'
     );
     $formatter->show_ending_commentary(0);
-    isa_ok $formatter, "Test::Builder2::Formatter::TAP";
+    isa_ok $formatter, "TB2::Formatter::TAP";
 
-    $ec = Test::Builder2::EventCoordinator->new(
+    $ec = TB2::EventCoordinator->new(
         formatters => [$formatter],
     );
 
@@ -37,7 +37,7 @@ sub last_output {
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::TestStart->new
+        TB2::Event::TestStart->new
     );
     is last_output, "TAP version 13\n", "begin() with no args";
 }
@@ -47,7 +47,7 @@ sub last_output {
     setup;
     ok !eval {
         $ec->post_event(
-            Test::Builder2::Event::SetPlan->new(
+            TB2::Event::SetPlan->new(
                 asserts_expected => 99
             ),
         );
@@ -59,10 +59,10 @@ sub last_output {
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::TestStart->new
+        TB2::Event::TestStart->new
     );
     $ec->post_event(
-        Test::Builder2::Event::SetPlan->new(
+        TB2::Event::SetPlan->new(
             asserts_expected => 99
         )
     );
@@ -77,10 +77,10 @@ END
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::TestStart->new
+        TB2::Event::TestStart->new
     );
     $ec->post_event(
-        Test::Builder2::Event::SetPlan->new(
+        TB2::Event::SetPlan->new(
             asserts_expected => 2
         )
     );
@@ -89,7 +89,7 @@ END
     last_output;
 
     $ec->post_event(
-        Test::Builder2::Event::TestEnd->new
+        TB2::Event::TestEnd->new
     );
     is last_output, "", "empty stream does nothing";
 }
@@ -98,16 +98,16 @@ END
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::TestStart->new
+        TB2::Event::TestStart->new
     );
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 1,
     );
 
     $ec->post_event( $result );
 
     $ec->post_event(
-        Test::Builder2::Event::SetPlan->new(
+        TB2::Event::SetPlan->new(
             asserts_expected    => 2
         )
     );
@@ -115,7 +115,7 @@ END
     $ec->post_event( $result );
 
     $ec->post_event(
-        Test::Builder2::Event::TestEnd->new
+        TB2::Event::TestEnd->new
     );
     is last_output, <<END, "end( tests => # )";
 TAP version 13
@@ -129,7 +129,7 @@ END
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::TestStart->new
+        TB2::Event::TestStart->new
     );
     is last_output, "TAP version 13\n", "check all stream";
 }
@@ -138,10 +138,10 @@ END
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::TestStart->new
+        TB2::Event::TestStart->new
     );
     $ec->post_event(
-        Test::Builder2::Event::SetPlan->new(
+        TB2::Event::SetPlan->new(
             skip        => 1,
             skip_reason => "bored now"
         )
@@ -153,10 +153,10 @@ END
 {
     setup;
     $ec->post_event(
-        Test::Builder2::Event::TestStart->new
+        TB2::Event::TestStart->new
     );
     $ec->post_event(
-        Test::Builder2::Event::SetPlan->new(
+        TB2::Event::SetPlan->new(
             no_plan     => 1
         )
     );
@@ -166,7 +166,7 @@ END
 
 # Fail, no name
 {
-    my $result = Test::Builder2::Result->new_result( pass => 0 );
+    my $result = TB2::Result->new_result( pass => 0 );
     $result->test_number(1);
     $ec->post_event($result);
     is(last_output, "not ok 1\n", "testing not okay");
@@ -174,7 +174,7 @@ END
 
 # Pass, no name
 {
-    my $result = Test::Builder2::Result->new_result( pass => 1 );
+    my $result = TB2::Result->new_result( pass => 1 );
     $result->test_number(2);
     $ec->post_event($result);
     is(last_output, "ok 2\n", "testing okay");
@@ -182,7 +182,7 @@ END
 
 # TODO fail, no name
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 0,
         directives      => [qw(todo)],
         reason          => "reason" 
@@ -198,7 +198,7 @@ OUT
 
 # TODO pass, no name
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 1,
         directives      => [qw(todo)],
         reason          => "reason"
@@ -210,7 +210,7 @@ OUT
 
 # TODO pass, with name
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 1,
         directives      => [qw(todo)],
         reason          => "reason"
@@ -223,7 +223,7 @@ OUT
 
 # Fail with dashed name
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 0,
     );
     $result->name(' - a royal pain');
@@ -234,7 +234,7 @@ OUT
 
 # Skip fail
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 0,
         directives      => [qw(skip)],
     );
@@ -248,7 +248,7 @@ OUT
 
 # Skip pass
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 1,
         directives      => [qw(skip)],
     );
@@ -264,7 +264,7 @@ OUT
 # No number
 {
     $formatter->use_numbers(0);
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 1
     );
     $ec->post_event($result);
@@ -276,7 +276,7 @@ OUT
 
 # Names with newlines in them
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 1
     );
     $result->test_number(5);
@@ -289,7 +289,7 @@ OUT
 
 # Names with newlines in them
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 1,
         directives      => [qw(skip)],
         test_number     => 4,
@@ -302,7 +302,7 @@ OUT
 
 
 note "Name with an empty string (github #84)"; {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 1,
         test_number     => 99,
         name            => ''

@@ -1,7 +1,7 @@
 package MyEventCoordinator;
 
-use Test::Builder2::Mouse;
-extends 'Test::Builder2::EventCoordinator';
+use TB2::Mouse;
+extends 'TB2::EventCoordinator';
 
 =head1 NAME
 
@@ -16,7 +16,7 @@ MyEventCoordinator - An EventCoordinator for testing
 
 =head1 DESCRIPTION
 
-A subclass of L<Test::Builder2::EventCoordinator> for testing events
+A subclass of L<TB2::EventCoordinator> for testing events
 and event handlers.
 
 It makes the following changes:
@@ -28,6 +28,6 @@ It makes the following changes:
 has '+formatters' =>
   default       => sub { [] };
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 
 1;

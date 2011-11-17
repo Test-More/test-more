@@ -2,14 +2,14 @@
 
 use strict;
 use Test::Builder2;
-use Test::Builder2::Result;
+use TB2::Result;
 use lib 't/lib';
 
 BEGIN { require 't/test.pl' }
 
-use Test::Builder2::Formatter::TAP;
-my $tap = Test::Builder2::Formatter::TAP->new({
-    streamer_class => 'Test::Builder2::Streamer::Debug',
+use TB2::Formatter::TAP;
+my $tap = TB2::Formatter::TAP->new({
+    streamer_class => 'TB2::Streamer::Debug',
 });
 
 my $builder = Test::Builder2->create;
@@ -56,14 +56,14 @@ $builder->test_state->formatters([$tap]);
     ok !eval {
         $ok->i_do_not_exist;
     };
-    like $@, qr{^Can't locate object method "i_do_not_exist" via package "Test::Builder2::Result.*?" at \Q$0 line 50.\E\n$};
+    like $@, qr{^Can't locate object method "i_do_not_exist" via package "TB2::Result.*?" at \Q$0 line 50.\E\n$};
 }
 
 
 # ok() should return a Result
 {
     my $ok = $builder->ok(0);
-    isa_ok $ok, "Test::Builder2::Result::Base";
+    isa_ok $ok, "TB2::Result::Base";
 }
 
 

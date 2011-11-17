@@ -5,19 +5,19 @@ use lib 't/lib';
 BEGIN { require 't/test.pl' }
 
 use MyEventCoordinator;
-use Test::Builder2::Events;
+use TB2::Events;
 
-use_ok 'Test::Builder2::Formatter::Multi';
-use_ok 'Test::Builder2::Formatter::PlusMinus';
-use_ok 'Test::Builder2::Formatter::POSIX';
+use_ok 'TB2::Formatter::Multi';
+use_ok 'TB2::Formatter::PlusMinus';
+use_ok 'TB2::Formatter::POSIX';
 
-my $pm    = Test::Builder2::Formatter::PlusMinus->new(
-  streamer_class => 'Test::Builder2::Streamer::Debug'
+my $pm    = TB2::Formatter::PlusMinus->new(
+  streamer_class => 'TB2::Streamer::Debug'
 );
-my $posix = Test::Builder2::Formatter::POSIX->new(
-  streamer_class => 'Test::Builder2::Streamer::Debug'
+my $posix = TB2::Formatter::POSIX->new(
+  streamer_class => 'TB2::Streamer::Debug'
 );
-my $multi = Test::Builder2::Formatter::Multi->new;
+my $multi = TB2::Formatter::Multi->new;
 is_deeply $multi->formatters, [];
 
 $multi->add_formatters($pm, $posix);
@@ -29,7 +29,7 @@ my $ec = MyEventCoordinator->new(
 
 # Begin
 {
-    $ec->post_event( Test::Builder2::Event::TestStart->new );
+    $ec->post_event( TB2::Event::TestStart->new );
     is $pm->streamer->read, "";
     is $posix->streamer->read, "Running $0\n";
 }
@@ -37,7 +37,7 @@ my $ec = MyEventCoordinator->new(
 
 # Pass
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass     => 1,
         name     => "basset hounds got long ears",
     );
@@ -49,7 +49,7 @@ my $ec = MyEventCoordinator->new(
 
 # Fail
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass     => 0,
         name     => "basset hounds got long ears",
     );
@@ -61,7 +61,7 @@ my $ec = MyEventCoordinator->new(
 
 # Skip
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 1,
         directives      => [qw(skip)],
         name            => "basset hounds got long ears",
@@ -75,7 +75,7 @@ my $ec = MyEventCoordinator->new(
 # End
 {
     $ec->post_event(
-        Test::Builder2::Event::TestEnd->new
+        TB2::Event::TestEnd->new
     );
     is $pm->streamer->read, "\n";
     is $posix->streamer->read, "";

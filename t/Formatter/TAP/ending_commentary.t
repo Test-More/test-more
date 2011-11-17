@@ -5,20 +5,20 @@ use warnings;
 
 BEGIN { require 't/test.pl' }
 
-use Test::Builder2::EventCoordinator;
-use Test::Builder2::Events;
-use Test::Builder2::Formatter::TAP;
-use Test::Builder2::Streamer::Debug;
+use TB2::EventCoordinator;
+use TB2::Events;
+use TB2::Formatter::TAP;
+use TB2::Streamer::Debug;
 
 my $formatter;
 my $ec;
 sub new_formatter {
-    $formatter = Test::Builder2::Formatter::TAP->new(
-        streamer_class => 'Test::Builder2::Streamer::Debug'
+    $formatter = TB2::Formatter::TAP->new(
+        streamer_class => 'TB2::Streamer::Debug'
     );
-    isa_ok $formatter, "Test::Builder2::Formatter::TAP";
+    isa_ok $formatter, "TB2::Formatter::TAP";
 
-    my $ec = Test::Builder2::EventCoordinator->new(
+    my $ec = TB2::EventCoordinator->new(
         formatters => [$formatter],
     );
 
@@ -42,16 +42,16 @@ sub all_output {
     $formatter->streamer->read;
 }
 
-my $TestStart = Test::Builder2::Event::TestStart->new;
-my $TestEnd   = Test::Builder2::Event::TestEnd->new;
-my $Pass        = Test::Builder2::Result->new_result( pass => 1 );
-my $Fail        = Test::Builder2::Result->new_result( pass => 0 );
+my $TestStart = TB2::Event::TestStart->new;
+my $TestEnd   = TB2::Event::TestEnd->new;
+my $Pass        = TB2::Result->new_result( pass => 1 );
+my $Fail        = TB2::Result->new_result( pass => 0 );
 
 note "Good test"; {
     my $ec = new_formatter;
 
     $ec->post_event( $TestStart );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 1 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 1 ) );
     $ec->post_event( $Pass );
     clear_formatter;
 
@@ -75,7 +75,7 @@ note "Single failure, all failed"; {
     my $ec = new_formatter;
 
     $ec->post_event( $TestStart );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 1 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 1 ) );
     $ec->post_event( $Fail );
     clear_formatter;
 
@@ -91,7 +91,7 @@ note "Single failure, some passed"; {
     my $ec = new_formatter;
 
     $ec->post_event( $TestStart );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 3 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 3 ) );
     $ec->post_event( $Pass );
     $ec->post_event( $Fail );
     $ec->post_event( $Pass );
@@ -109,7 +109,7 @@ note "Many failures, some passed"; {
     my $ec = new_formatter;
 
     $ec->post_event( $TestStart );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 5 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 5 ) );
     $ec->post_event( $Pass );
     $ec->post_event( $Pass );
     $ec->post_event( $Fail );
@@ -129,7 +129,7 @@ note "Many failures, some passed, no_plan"; {
     my $ec = new_formatter;
 
     $ec->post_event( $TestStart );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( no_plan => 1 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( no_plan => 1 ) );
     $ec->post_event( $Pass );
     $ec->post_event( $Pass );
     $ec->post_event( $Fail );
@@ -154,7 +154,7 @@ note "Many failures, some passed, done_testing with expected"; {
     $ec->post_event( $Fail );
     $ec->post_event( $Fail );
     $ec->post_event( $Pass );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 5 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 5 ) );
     clear_formatter;
 
     $ec->post_event( $TestEnd );
@@ -174,7 +174,7 @@ note "Many failures, some passed, done_testing with no plan"; {
     $ec->post_event( $Fail );
     $ec->post_event( $Fail );
     $ec->post_event( $Pass );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( no_plan => 1 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( no_plan => 1 ) );
     clear_formatter;
 
     $ec->post_event( $TestEnd );
@@ -239,7 +239,7 @@ note "All passed, too few"; {
     my $ec = new_formatter;
 
     $ec->post_event( $TestStart );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 3 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 3 ) );
     $ec->post_event( $Pass );
     $ec->post_event( $Pass );
     clear_formatter;
@@ -256,7 +256,7 @@ note "All passed, too many"; {
     my $ec = new_formatter;
 
     $ec->post_event( $TestStart );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 1 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 1 ) );
     $ec->post_event( $Pass );
     $ec->post_event( $Pass );
     clear_formatter;
@@ -273,7 +273,7 @@ note "Some failed, too many"; {
     my $ec = new_formatter;
 
     $ec->post_event( $TestStart );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 1 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 1 ) );
     $ec->post_event( $Pass );
     $ec->post_event( $Fail );
     clear_formatter;
@@ -291,7 +291,7 @@ note "Skipped test, no results"; {
     my $ec = new_formatter;
 
     $ec->post_event( $TestStart );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( skip => 1 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( skip => 1 ) );
     clear_formatter;
 
     $ec->post_event( $TestEnd );
@@ -303,7 +303,7 @@ note "Skipped test, one result"; {
     my $ec = new_formatter;
 
     $ec->post_event( $TestStart );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( skip => 1 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( skip => 1 ) );
     $ec->post_event( $Pass );
     clear_formatter;
 
@@ -319,7 +319,7 @@ note "Skipped test, two results"; {
     my $ec = new_formatter;
 
     $ec->post_event( $TestStart );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( skip => 1 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( skip => 1 ) );
     $ec->post_event( $Pass );
     $ec->post_event( $Pass );
     clear_formatter;
@@ -336,7 +336,7 @@ note "Skipped test, with failures"; {
     my $ec = new_formatter;
 
     $ec->post_event( $TestStart );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( skip => 1 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( skip => 1 ) );
     $ec->post_event( $Pass );
     $ec->post_event( $Pass );
     $ec->post_event( $Fail );
@@ -356,7 +356,7 @@ note "no ending commentary"; {
     $ec->formatters->[0]->show_ending_commentary(0);
 
     $ec->post_event( $TestStart );
-    $ec->post_event( Test::Builder2::Event::SetPlan->new( skip => 1 ) );
+    $ec->post_event( TB2::Event::SetPlan->new( skip => 1 ) );
     $ec->post_event( $Pass );
     $ec->post_event( $Pass );
     $ec->post_event( $Fail );

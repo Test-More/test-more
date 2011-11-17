@@ -7,13 +7,13 @@ use warnings;
 
 BEGIN { require "t/test.pl" }
 
-use Test::Builder2::Events;
+use TB2::Events;
 
 {
     package My::Event::Incrementer;
 
-    use Test::Builder2::Mouse;
-    with "Test::Builder2::EventHandler";
+    use TB2::Mouse;
+    with "TB2::EventHandler";
 
     our @Stack;
 
@@ -39,8 +39,8 @@ use Test::Builder2::Events;
 
 
 note "post order"; {
-    require Test::Builder2::EventCoordinator;
-    my $ec = Test::Builder2::EventCoordinator->new(
+    require TB2::EventCoordinator;
+    my $ec = TB2::EventCoordinator->new(
         early_handlers  => [ My::Event::Incrementer->new( name => "early" ) ],
         late_handlers   => [ My::Event::Incrementer->new( name => "late" ) ],
         formatters      => [ My::Event::Incrementer->new( name => "formatter" ) ],
@@ -48,7 +48,7 @@ note "post order"; {
     );
 
     $ec->post_event(
-        Test::Builder2::Event::TestStart->new
+        TB2::Event::TestStart->new
     );
 
     is_deeply [My::Event::Incrementer->read_stack], [qw(early history formatter late)];

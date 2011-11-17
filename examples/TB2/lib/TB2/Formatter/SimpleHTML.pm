@@ -1,7 +1,7 @@
 package TB2::Formatter::SimpleHTML;
 
-use Test::Builder2::Mouse;
-extends "Test::Builder2::Formatter";
+use TB2::Mouse;
+extends "TB2::Formatter";
 
 
 =head1 NAME

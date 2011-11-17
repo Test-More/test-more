@@ -5,12 +5,12 @@ use lib 't/lib';
 
 BEGIN { require "t/test.pl" }
 use MyEventCoordinator;
-use Test::Builder2::Events;
+use TB2::Events;
 
-use_ok 'Test::Builder2::Formatter::POSIX';
+use_ok 'TB2::Formatter::POSIX';
 
-my $posix = Test::Builder2::Formatter::POSIX->new(
-  streamer_class => 'Test::Builder2::Streamer::Debug'
+my $posix = TB2::Formatter::POSIX->new(
+  streamer_class => 'TB2::Streamer::Debug'
 );
 
 my $ec = MyEventCoordinator->new(
@@ -19,13 +19,13 @@ my $ec = MyEventCoordinator->new(
 
 {
     $ec->post_event(
-        Test::Builder2::Event::TestStart->new
+        TB2::Event::TestStart->new
     );
     is $posix->streamer->read, "Running $0\n", "test start";
 }
 
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass     => 1,
         name     => "basset hounds got long ears",
     );
@@ -39,7 +39,7 @@ my $ec = MyEventCoordinator->new(
 
 
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass     => 0,
         name     => "something something something description",
     );
@@ -54,7 +54,7 @@ my $ec = MyEventCoordinator->new(
 
 {
     $ec->post_event(
-        Test::Builder2::Event::TestEnd->new
+        TB2::Event::TestEnd->new
     );
     is(
         $posix->streamer->read,

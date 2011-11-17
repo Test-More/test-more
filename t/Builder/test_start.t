@@ -6,13 +6,13 @@ use strict;
 use warnings;
 
 use Test::Builder;
-use Test::Builder2::TestState;
-use Test::Builder2::Events;
+use TB2::TestState;
+use TB2::Events;
 
-my $ec = Test::Builder2::TestState->default;
+my $ec = TB2::TestState->default;
 
 $ec->post_event(
-    Test::Builder2::Event::TestStart->new
+    TB2::Event::TestStart->new
 );
 
 my $tb = Test::Builder->new;

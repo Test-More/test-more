@@ -5,7 +5,7 @@ use warnings;
 
 BEGIN { require "t/test.pl" }
 
-my $CLASS = 'Test::Builder2::Event::SubtestStart';
+my $CLASS = 'TB2::Event::SubtestStart';
 use_ok $CLASS;
 
 

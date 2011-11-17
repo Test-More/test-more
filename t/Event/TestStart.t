@@ -5,10 +5,10 @@ use warnings;
 
 BEGIN { require 't/test.pl' }
 
-use Test::Builder2::Event::TestStart;
+use TB2::Event::TestStart;
 
 note "Basic event"; {
-    my $event = Test::Builder2::Event::TestStart->new;
+    my $event = TB2::Event::TestStart->new;
 
     is $event->event_type, "test_start";
     is_deeply $event->as_hash, {

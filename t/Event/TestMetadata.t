@@ -5,7 +5,7 @@ use warnings;
 
 BEGIN { require 't/test.pl' }
 
-my $CLASS = 'Test::Builder2::Event::TestMetadata';
+my $CLASS = 'TB2::Event::TestMetadata';
 use_ok $CLASS;
 
 note "Basic event"; {

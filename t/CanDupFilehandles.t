@@ -7,13 +7,13 @@ BEGIN { require 't/test.pl' }
 
 use IO::Handle;
 
-use_ok 'Test::Builder2::CanDupFilehandles';
+use_ok 'TB2::CanDupFilehandles';
 
 {
     package Some::Class;
 
-    use Test::Builder2::Mouse;
-    with 'Test::Builder2::CanDupFilehandles';
+    use TB2::Mouse;
+    with 'TB2::CanDupFilehandles';
 }
 
 note "autoflush"; {

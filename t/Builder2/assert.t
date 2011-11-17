@@ -5,8 +5,8 @@ use strict;
 {
     package TB2::Assert;
 
-    use Test::Builder2::Mouse;
-    with "Test::Builder2::EventHandler";
+    use TB2::Mouse;
+    with "TB2::EventHandler";
 
     sub handle_result {
         my $self   = shift;

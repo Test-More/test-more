@@ -6,7 +6,7 @@ use warnings;
 BEGIN { require "t/test.pl" }
 
 use Test::Simple ();
-use Test::Builder2::Tester;
+use TB2::Tester;
 
 note "test state left untouched"; {
     my $ec = Test::Simple->Builder->test_state;

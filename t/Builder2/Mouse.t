@@ -6,11 +6,11 @@
 use strict;
 use warnings;
 
-use Test::Builder2::Mouse;
+use TB2::Mouse;
 
 print <<'END';
 1..1
-ok 1 - Test::Builder2::Mouse loaded
+ok 1 - TB2::Mouse loaded
 END
 
 

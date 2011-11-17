@@ -1,13 +1,13 @@
 package Test::Builder2;
 
 use 5.008001;
-use Test::Builder2::Mouse;
-use Test::Builder2::Types;
-use Test::Builder2::Events;
+use TB2::Mouse;
+use TB2::Types;
+use TB2::Events;
 
-with 'Test::Builder2::HasDefault',
-     'Test::Builder2::CanTry',
-     'Test::Builder2::CanLoad';
+with 'TB2::HasDefault',
+     'TB2::CanTry',
+     'TB2::CanLoad';
 
 use Carp qw(confess);
 sub sanity ($) { confess "Assert failed" unless $_[0] };
@@ -20,7 +20,7 @@ Test::Builder2 - 2nd Generation test library builder
 =head1 SYNOPSIS
 
 If you're writing a test library, you should start with
-L<Test::Builder2::Module>.
+L<TB2::Module>.
 
 If you're writing a test, you should start with L<Test::Simple>.
 
@@ -40,8 +40,8 @@ libraries or formatting.
 
 There is usually a single Test::Builder2 object per test process
 coordinating everything.  Results are stored in a single
-L<Test::Builder2::History> object and formatting the results with a
-single L<Test::Builder2::Formatter>.
+L<TB2::History> object and formatting the results with a
+single L<TB2::Formatter>.
 
 Test::Builder2 is very generic and doesn't do a lot of the work you've
 probably come to expect a test framework to do.  This reduction of
@@ -57,12 +57,12 @@ object as desired.
 Test::Builder2 is a L<Mouse> object (like Moose, but smaller) to take
 advantage of the advances in OO over the last 10 years.  To avoid
 dependencies and bugs caused by changes in Mouse, Test::Builder2 ships
-and uses its own copy of Mouse called L<Test::Builder2::Mouse>.  All
-Mouse classes have L<Test::Builder2::> prepended.
+and uses its own copy of Mouse called L<TB2::Mouse>.  All
+Mouse classes have L<TB2::> prepended.
 
 You can take advantage of all the features Mouse has to offer,
 including roles and meta stuff.  You are free to use
-Test::Builder2::Mouse in your TB2 derived classes or use Mouse
+TB2::Mouse in your TB2 derived classes or use Mouse
 directly.
 
 
@@ -73,7 +73,7 @@ directly.
     my $test_state = $builder->test_state;
     $builder->test_state($test_state);
 
-Get/set the L<Test::Builder2::TestState> associated with this C<$builder>.
+Get/set the L<TB2::TestState> associated with this C<$builder>.
 
 By default it creates a new TestState detached from other builders.
 
@@ -83,19 +83,19 @@ The default contains the TestState default.
 
 has test_state =>
   is            => 'rw',
-  isa           => 'Test::Builder2::TestState',
+  isa           => 'TB2::TestState',
   default       => sub {
-      $_[0]->load('Test::Builder2::TestState');
-      return Test::Builder2::TestState->create;
+      $_[0]->load('TB2::TestState');
+      return TB2::TestState->create;
   }
 ;
 
 sub make_default {
     my $class = shift;
 
-    $class->load('Test::Builder2::TestState');
+    $class->load('TB2::TestState');
     return $class->create(
-        test_state => Test::Builder2::TestState->default
+        test_state => TB2::TestState->default
     );
 }
 
@@ -104,7 +104,7 @@ sub make_default {
 
     my $history = $builder->history;
 
-A convenience method to access the L<Test::Builder2::History> object associated
+A convenience method to access the L<TB2::History> object associated
 with the C<test_state>.
 
 =cut
@@ -135,16 +135,16 @@ sub formatter {
   my $top_stack = $tb->top_stack;
 
 Stores the current stack of asserts being run as a
-Test::Builder2::AssertStack.
+TB2::AssertStack.
 
 =cut
 
 has top_stack =>
   is            => 'ro',
-  isa           => 'Test::Builder2::AssertStack',
+  isa           => 'TB2::AssertStack',
   default       => sub {
-      $_[0]->load('Test::Builder2::AssertStack');
-      Test::Builder2::AssertStack->new;
+      $_[0]->load('TB2::AssertStack');
+      TB2::AssertStack->new;
   };
 
 
@@ -165,7 +165,7 @@ sub test_start {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::TestStart->new( $self->_file_and_line )
+        TB2::Event::TestStart->new( $self->_file_and_line )
     );
 
     return;
@@ -183,7 +183,7 @@ sub test_end {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::TestEnd->new( $self->_file_and_line )
+        TB2::Event::TestEnd->new( $self->_file_and_line )
     );
 
     return;
@@ -217,7 +217,7 @@ sub set_plan {
     # Whatever's left
     $plan{plan} = \%input if keys %input;
 
-    my $plan = Test::Builder2::Event::SetPlan->new(
+    my $plan = TB2::Event::SetPlan->new(
         $self->_file_and_line,
         %plan
     );
@@ -249,8 +249,8 @@ assert after.
 sub assert_start {
     my $self = shift;
 
-    $self->load('Test::Builder2::AssertRecord');
-    my $record = Test::Builder2::AssertRecord->new_from_caller(1);
+    $self->load('TB2::AssertRecord');
+    my $record = TB2::AssertRecord->new_from_caller(1);
     sanity $record;
 
     $self->top_stack->push($record);
@@ -314,15 +314,15 @@ $test is simple true for success, false for failure.
 
 $name is a description of the test.
 
-Returns a Test::Builder2::Result object representing the test.
+Returns a TB2::Result object representing the test.
 
 =cut
 
 has result_class => (
   is            => 'ro',
-  isa           => 'Test::Builder2::LoadableClass',
+  isa           => 'TB2::LoadableClass',
   coerce        => 1,
-  default       => 'Test::Builder2::Result',
+  default       => 'TB2::Result',
 );
 
 
@@ -357,8 +357,8 @@ sub _file_and_line {
 
     my $top = $self->top_stack->top;
     $top ||= do {
-        $self->load('Test::Builder2::AssertRecord');
-        Test::Builder2::AssertRecord->new_from_guess;
+        $self->load('TB2::AssertRecord');
+        TB2::AssertRecord->new_from_guess;
     };
 
     return ( file => $top->filename, line => $top->line );
@@ -391,7 +391,7 @@ sub done_testing {
 Declares that &code should run as a I<subtest>.  Subtest events run in
 isolation from regular tests.
 
-See L<Test::Builder2::TestState> for more details about subtests.
+See L<TB2::TestState> for more details about subtests.
 
 $name is the name given to this subtest.
 
@@ -402,7 +402,7 @@ sub subtest {
     my($name, $code) = @_;
 
     # Start the subtest
-    my $start = Test::Builder2::Event::SubtestStart->new(
+    my $start = TB2::Event::SubtestStart->new(
         $self->_file_and_line,
         name    => $name
     );
@@ -412,14 +412,14 @@ sub subtest {
     $code->();
 
     # End the subtest
-    my $end = Test::Builder2::Event::SubtestEnd->new( $self->_file_and_line );
+    my $end = TB2::Event::SubtestEnd->new( $self->_file_and_line );
     $self->test_state->post_event($end);
 
     return;
 }
 
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 
 1;
 
@@ -459,16 +459,16 @@ See L<http://dev.perl.org/licenses/artistic.html>
 
 =head1 SEE ALSO
 
-L<Test::Builder2::Design> for a high level overview of how Test::Builder2 is put together.
+L<TB2::Design> for a high level overview of how Test::Builder2 is put together.
 
-L<Test::Builder2::Result> for the object representing the result of an assert.
+L<TB2::Result> for the object representing the result of an assert.
 
-L<Test::Builder2::History> for the object storing result history.
+L<TB2::History> for the object storing result history.
 
-L<Test::Builder2::Formatter> for the object handling printing results.
+L<TB2::Formatter> for the object handling printing results.
 
-L<Test::Builder2::TestState> for the object holding the state of the test.
+L<TB2::TestState> for the object holding the state of the test.
 
-L<Test::Builder2::Module> for writing your own test libraries.
+L<TB2::Module> for writing your own test libraries.
 
 =cut

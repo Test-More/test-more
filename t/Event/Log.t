@@ -5,7 +5,7 @@ use warnings;
 
 BEGIN { require "t/test.pl" }
 
-my $CLASS = "Test::Builder2::Event::Log";
+my $CLASS = "TB2::Event::Log";
 use_ok $CLASS or die;
 
 note "Bad args"; {

@@ -16,7 +16,7 @@ local $ENV{HARNESS_ACTIVE} = 0;
 {
     package TB2::More;
 
-    use Test::Builder2::Module;
+    use TB2::Module;
 
     our @EXPORT = qw(is);
 
@@ -41,10 +41,10 @@ my $tb = TB2::More->Builder;
     package Local::Test;
 
     # Isolate the builder
-    require Test::Builder2::Streamer::Debug;
-    require Test::Builder2::History;
-    $tb->test_state->history(Test::Builder2::History->new);
-    $tb->formatter->streamer( Test::Builder2::Streamer::Debug->new );
+    require TB2::Streamer::Debug;
+    require TB2::History;
+    $tb->test_state->history(TB2::History->new);
+    $tb->formatter->streamer( TB2::Streamer::Debug->new );
 
     TB2::More->import( tests => 1 );
 

@@ -7,10 +7,10 @@ use lib 't/lib';
 
 BEGIN { require 't/test.pl' }
 use MyEventCoordinator;
-use Test::Builder2::Result;
+use TB2::Result;
 
-require_ok 'Test::Builder2::NoHistory';
-can_ok( 'Test::Builder2::NoHistory', 
+require_ok 'TB2::NoHistory';
+can_ok( 'TB2::NoHistory', 
         qw{ new            
             results
             has_results
@@ -20,9 +20,9 @@ can_ok( 'Test::Builder2::NoHistory',
 );
       
 # helpers
-sub new_history { Test::Builder2::NoHistory->new }
-sub Pass { Test::Builder2::Result->new_result( pass => 1 ) }
-sub Fail { Test::Builder2::Result->new_result( pass => 0 ) }
+sub new_history { TB2::NoHistory->new }
+sub Pass { TB2::Result->new_result( pass => 1 ) }
+sub Fail { TB2::Result->new_result( pass => 0 ) }
 
 
 { 

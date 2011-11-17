@@ -5,20 +5,20 @@ use warnings;
 
 BEGIN { require "t/test.pl" }
 
-use Test::Builder2::Formatter::TAP;
-use Test::Builder2::EventCoordinator;
-use Test::Builder2::Events;
+use TB2::Formatter::TAP;
+use TB2::EventCoordinator;
+use TB2::Events;
 
 
 my $formatter;
 sub setup {
-    $formatter = Test::Builder2::Formatter::TAP->new(
-        streamer_class => 'Test::Builder2::Streamer::Debug'
+    $formatter = TB2::Formatter::TAP->new(
+        streamer_class => 'TB2::Streamer::Debug'
     );
     $formatter->show_ending_commentary(0);
-    isa_ok $formatter, "Test::Builder2::Formatter::TAP";
+    isa_ok $formatter, "TB2::Formatter::TAP";
 
-    my $ec = Test::Builder2::EventCoordinator->new(
+    my $ec = TB2::EventCoordinator->new(
         formatters => [$formatter],
     );
 
@@ -36,14 +36,14 @@ sub last_error {
 note "warning and up"; {
     my $ec = setup;
 
-    $ec->post_event( Test::Builder2::Event::Log->new(
+    $ec->post_event( TB2::Event::Log->new(
         message => "stuff and things",
         level   => "warning"
     ));
 
     is last_error(), "# stuff and things\n";
 
-    $ec->post_event( Test::Builder2::Event::Log->new(
+    $ec->post_event( TB2::Event::Log->new(
         message => "uhhh yeah",
         level   => "alert"
     ));
@@ -57,14 +57,14 @@ note "warning and up"; {
 note "notice and down"; {
     my $ec = setup;
 
-    $ec->post_event( Test::Builder2::Event::Log->new(
+    $ec->post_event( TB2::Event::Log->new(
         message => "this is a notice",
         level   => "notice"
     ));
 
     is last_output(), "# this is a notice\n";
 
-    $ec->post_event( Test::Builder2::Event::Log->new(
+    $ec->post_event( TB2::Event::Log->new(
         message => "and this is debugging",
         level   => "debug"
     ));
@@ -77,7 +77,7 @@ note "notice and down"; {
 note "multiline messages"; {
     my $ec = setup;
 
-    $ec->post_event( Test::Builder2::Event::Log->new(
+    $ec->post_event( TB2::Event::Log->new(
         message => <<MSG,
 
 basset hounds
@@ -103,7 +103,7 @@ MSG
 note "escaping the message"; {
     my $ec = setup;
 
-    $ec->post_event( Test::Builder2::Event::Log->new(
+    $ec->post_event( TB2::Event::Log->new(
         message => <<MSG,
 # foo ## stuff
 #
@@ -127,14 +127,14 @@ note "->show_log"; {
     note "...turn show_log off";
     $formatter->show_logs(0);
 
-    $ec->post_event( Test::Builder2::Event::TestStart->new );
+    $ec->post_event( TB2::Event::TestStart->new );
 
-    $ec->post_event( Test::Builder2::Event::Log->new(
+    $ec->post_event( TB2::Event::Log->new(
         message => "this should not show up",
         level   => "notice"
     ));
 
-    $ec->post_event( Test::Builder2::Event::Log->new(
+    $ec->post_event( TB2::Event::Log->new(
         message => "nor should this",
         level   => "warning"
     ));

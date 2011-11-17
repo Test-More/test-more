@@ -6,10 +6,10 @@ use warnings;
 use lib 't/lib';
 BEGIN { require 't/test.pl'; }
 
-use Test::Builder2::AssertRecord;
+use TB2::AssertRecord;
 
 note "Basic construction"; {
-    my $record = new_ok "Test::Builder2::AssertRecord", [{
+    my $record = new_ok "TB2::AssertRecord", [{
         package         => "Foo",
         line            => 23,
         filename        => "foo.t",
@@ -28,17 +28,17 @@ note "Basic construction"; {
 
 
 note "No arguments"; {
-    ok !eval { Test::Builder2::AssertRecord->new } or diag $@;
+    ok !eval { TB2::AssertRecord->new } or diag $@;
 }
 
 
 note "new_from_guess"; {
-    my $record = Test::Builder2::AssertRecord->new_from_guess;
+    my $record = TB2::AssertRecord->new_from_guess;
 
     is $record->package,        __PACKAGE__;
     is $record->line,           __LINE__ - 3;
     is $record->filename,       $0;
-    is $record->subroutine,     'Test::Builder2::AssertRecord::new_from_guess';
+    is $record->subroutine,     'TB2::AssertRecord::new_from_guess';
 }
 
 
@@ -56,7 +56,7 @@ note "new_from_guess deeper"; {
         package Bar;
 
         sub outer { inner() }
-        sub inner { return Test::Builder2::AssertRecord->new_from_guess }
+        sub inner { return TB2::AssertRecord->new_from_guess }
     }
 
 
@@ -81,7 +81,7 @@ note "new_from_caller"; {
 #line 44 bar.t
     sub bar {
         note "caller(0)"; {
-            my $record = Test::Builder2::AssertRecord->new_from_caller(0);
+            my $record = TB2::AssertRecord->new_from_caller(0);
 
             is $record->package,    __PACKAGE__;
             is $record->line,       40;
@@ -90,7 +90,7 @@ note "new_from_caller"; {
         }
 
         note "caller(1)"; {
-            my $record = Test::Builder2::AssertRecord->new_from_caller(1);
+            my $record = TB2::AssertRecord->new_from_caller(1);
 
             is $record->package,    __PACKAGE__;
             is $record->line,       30;

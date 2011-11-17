@@ -5,13 +5,13 @@ use warnings;
 
 BEGIN { require "t/test.pl" }
 
-my $CLASS = 'Test::Builder2::Event::SubtestEnd';
+my $CLASS = 'TB2::Event::SubtestEnd';
 use_ok $CLASS;
 
-use Test::Builder2::History;
+use TB2::History;
 
 note "defaults"; {
-    my $history = Test::Builder2::History->new;
+    my $history = TB2::History->new;
     my $event = $CLASS->new(
         history => $history
     );

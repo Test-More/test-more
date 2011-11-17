@@ -7,9 +7,9 @@ use lib 't/lib';
 require MyEventCollector;
 BEGIN { require 't/test.pl'; }
 
-use Test::Builder2::Events;
+use TB2::Events;
 
-my $CLASS = 'Test::Builder2::EventCoordinator';
+my $CLASS = 'TB2::EventCoordinator';
 use_ok $CLASS;
 
 
@@ -20,10 +20,10 @@ note("EC init"); {
 
     my $formatters = $ec->formatters;
     is @$formatters, 1;
-    isa_ok $formatters->[0], "Test::Builder2::Formatter::TAP", "formatters";
+    isa_ok $formatters->[0], "TB2::Formatter::TAP", "formatters";
 
     my $history = $ec->history;
-    isa_ok $history, "Test::Builder2::History", "history";
+    isa_ok $history, "TB2::History", "history";
 }
 
 
@@ -90,8 +90,8 @@ note("posting"); {
         %args
     );
 
-    my $result = Test::Builder2::Result->new_result;
-    my $event  = Test::Builder2::Event::TestStart->new;
+    my $result = TB2::Result->new_result;
+    my $event  = TB2::Event::TestStart->new;
     $ec->post_event($result);
     $ec->post_event ($event);
 
@@ -113,8 +113,8 @@ note "posting events to specific handlers"; {
     {
         package My::Handler::StartEnd;
         
-        use Test::Builder2::Mouse;
-        with "Test::Builder2::EventHandler";
+        use TB2::Mouse;
+        with "TB2::EventHandler";
 
         has starts =>
           is            => 'rw',
@@ -154,10 +154,10 @@ note "posting events to specific handlers"; {
         formatters      => []
     );
 
-    my $start   = Test::Builder2::Event::TestStart->new;
-    my $comment = Test::Builder2::Event::Comment->new( comment => "whatever" );
-    my $result  = Test::Builder2::Result->new_result;
-    my $end     = Test::Builder2::Event::TestEnd->new;
+    my $start   = TB2::Event::TestStart->new;
+    my $comment = TB2::Event::Comment->new( comment => "whatever" );
+    my $result  = TB2::Result->new_result;
+    my $end     = TB2::Event::TestEnd->new;
     $ec->post_event($start);
     $ec->post_event($comment);
     $ec->post_event($result);

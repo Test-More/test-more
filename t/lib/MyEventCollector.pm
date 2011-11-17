@@ -2,8 +2,8 @@
 
 package MyEventCollector;
 
-use Test::Builder2::Mouse;
-with 'Test::Builder2::EventHandler';
+use TB2::Mouse;
+with 'TB2::EventHandler';
 
 has results =>
   is        => 'rw',

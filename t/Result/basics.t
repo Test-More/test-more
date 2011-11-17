@@ -8,21 +8,21 @@ BEGIN { require 't/test.pl' }
 {
     package TB2::Formatter::Noop;
 
-    use Test::Builder2::Mouse;
+    use TB2::Mouse;
 
-    extends 'Test::Builder2::Formatter';
+    extends 'TB2::Formatter';
 
     sub end { }
     sub begin {}
 }
 
-my $CLASS = 'Test::Builder2::Result';
+my $CLASS = 'TB2::Result';
 require_ok $CLASS;
 
 note("Running tests using $CLASS");
 tests(sub {
     my $obj = $CLASS->new_result(@{$_[0]});
-    isa_ok $obj, "Test::Builder2::Result::Base";
+    isa_ok $obj, "TB2::Result::Base";
     return $obj;
 });
 

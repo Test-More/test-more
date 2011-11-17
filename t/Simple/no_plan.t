@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Test::Builder2::Module broke no_plan
+# TB2::Module broke no_plan
 
 use strict;
 use warnings;
