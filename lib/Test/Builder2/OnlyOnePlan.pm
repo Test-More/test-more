@@ -6,7 +6,7 @@ use warnings;
 use Carp;
 
 use Test::Builder2::Mouse;
-with 'Test::Builder2::EventWatcher';
+with 'Test::Builder2::EventHandler';
 
 
 =head1 NAME
@@ -22,7 +22,7 @@ Test::Builder2::OnlyOnePlan - Enforces there being only one plan per test
 
 =head1 DESCRIPTION
 
-This is a L<Test::Builder2::EventWatcher> which enforces there being
+This is a L<Test::Builder2::EventHandler> which enforces there being
 only one plan issued per test.
 
 There are exceptions...

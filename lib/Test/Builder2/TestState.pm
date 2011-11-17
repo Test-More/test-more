@@ -57,8 +57,8 @@ Test::Builder2::TestState - Object which holds the state of the test
 =head1 DESCRIPTION
 
 All test state resides not in the builder objects but in the TestState
-and its attached L<Test::Builder2::EventWatcher> objects.  TestState
-holds onto the current event watchers and passes events along to them.
+and its attached L<Test::Builder2::EventHandler> objects.  TestState
+holds onto the current event handlers and passes events along to them.
 It also manages subtest state.
 
 For example, when a builder has generated a Result object, it should
@@ -91,7 +91,7 @@ Create a new test state.
 
 C<%event_coordinator_args> are passed to the constructor when it
 creates new event coordinators.  This lets you pass in different
-formatters and watchers.
+formatters and handlers.
 
     # Make a test state with no formatter
     my $state = Test::Builder2::TestState->create(
@@ -138,7 +138,7 @@ methods of L<Test::Builder2::EventCoordinator>.
 
 TestState maintains state in a stack of EventCoordinators.  Each item
 in the stack is isolated from another (unless they decide to share
-EventWatchers).
+EventHandlers).
 
 One can add a coordinator to the stack to set up an isolated test
 state and remove it to restore the original state.  This is useful
@@ -291,7 +291,7 @@ sub accept_subtest_start {
     # Post the event to the current level
     $current_ec->post_event(@_);
 
-    # Ask all the watchers in the current coordinator to supply watchers for the subtest.
+    # Ask all the handlers in the current coordinator to supply handlers for the subtest.
     # Retain the order of each handler.
     my $subtest_ec = $current_ec->new(
         formatters      => [map { $_->subtest_handler($event) } @{$current_ec->formatters}],
@@ -339,7 +339,7 @@ no Test::Builder2::Mouse;
 
 L<Test::Builder2::EventCoordinator> which TestState delegates to under the hood.
 
-L<Test::Builder2::EventWatcher> which handle events.
+L<Test::Builder2::EventHandler> which handle events.
 
 L<Test::Builder2::Formatter> which handle output.
 

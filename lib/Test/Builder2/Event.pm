@@ -110,7 +110,7 @@ Used to build C<event_type>
 
 Returns an identifier for this event unique to this process.
 
-Useful if an EventWatcher posts its own events and doesn't want to
+Useful if an EventHandler posts its own events and doesn't want to
 process them twice.
 
 =cut

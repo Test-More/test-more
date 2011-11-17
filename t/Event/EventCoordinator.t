@@ -114,7 +114,7 @@ note "posting events to specific handlers"; {
         package My::Watcher::StartEnd;
         
         use Test::Builder2::Mouse;
-        with "Test::Builder2::EventWatcher";
+        with "Test::Builder2::EventHandler";
 
         has starts =>
           is            => 'rw',

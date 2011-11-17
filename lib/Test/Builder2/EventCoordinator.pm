@@ -23,10 +23,10 @@ Test::Builder2::EventCoordinator - Coordinate events amongst the builders
     $ec->post_event($event);
 
     # The EventCoordinator comes with History and the default Formatter,
-    # but they can be replaced or added to.  You can also add watchers of
+    # but they can be replaced or added to.  You can also add handlers of
     # your own devising.
     $events->add_formatters($formatter);
-    $events->add_late_watchers($watcher);
+    $events->add_late_watchers($handler);
 
 
 =head1 DESCRIPTION
@@ -39,7 +39,7 @@ EventCoordiantor is responsible for that coordination.
 Each thing that generates events, usually something that causes
 asserts, will report them to the EventCoordinator.  This in turn
 reports them to things like History and result Formatters and whatever
-else you want to watch events.
+else you want to handle events.
 
 
 =head1 METHODS
@@ -101,7 +101,7 @@ has formatters =>
 =head3 early_watchers
 
 An array ref of any additional objects which are listening to events.
-They all must do the Test::Builder2::EventWatcher role (or have
+They all must do the Test::Builder2::EventHandler role (or have
 equivalent methods).
 
 early_watchers are called first before any other watchers.  This lets
@@ -111,7 +111,7 @@ By default there are no early_watchers.
 
 =cut
 
-# Specifically not requiring an EventWatcher subclass so as to allow
+# Specifically not requiring an EventHandler subclass so as to allow
 # non-Mouse based implementations.
 has early_watchers =>
   is            => 'rw',
@@ -122,7 +122,7 @@ has early_watchers =>
 =head3 late_watchers
 
 An array ref of any additional objects which are listening to events.
-They all must do the Test::Builder2::EventWatcher role (or have
+They all must do the Test::Builder2::EventHandler role (or have
 equivalent methods).
 
 late_watchers are called last after all other watchers.  This lets
@@ -132,7 +132,7 @@ By default there are no late_watchers.
 
 =cut
 
-# Specifically not requiring an EventWatcher subclass so as to allow
+# Specifically not requiring an EventHandler subclass so as to allow
 # non-Mouse based implementations.
 has late_watchers =>
   is            => 'rw',
@@ -263,7 +263,7 @@ L<http://www.flickr.com/photos/xwrn/5334766071/>
 
 =head1 SEE ALSO
 
-L<Test::Builder2::EventWatcher>, L<Test::Builder2::Event>, L<Test::Builder2::Result>
+L<Test::Builder2::EventHandler>, L<Test::Builder2::Event>, L<Test::Builder2::Result>
 
 =cut
 

@@ -5,7 +5,7 @@ use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 use Test::Builder2::StackBuilder;
 
-with 'Test::Builder2::EventWatcher',
+with 'Test::Builder2::EventHandler',
      'Test::Builder2::CanTry';
 
 
@@ -35,7 +35,7 @@ Test::Builder2::History - Manage the history of test results
 
 This object stores and manages the history of test results.
 
-It is a L<Test::Builder2::EventWatcher>.
+It is a L<Test::Builder2::EventHandler>.
 
 =head1 METHODS
 
