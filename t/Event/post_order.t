@@ -13,7 +13,7 @@ use Test::Builder2::Events;
     package My::Event::Incrementer;
 
     use Test::Builder2::Mouse;
-    with "Test::Builder2::EventWatcher";
+    with "Test::Builder2::EventHandler";
 
     our @Stack;
 

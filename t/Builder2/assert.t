@@ -6,7 +6,7 @@ use strict;
     package TB2::Assert;
 
     use Test::Builder2::Mouse;
-    with "Test::Builder2::EventWatcher";
+    with "Test::Builder2::EventHandler";
 
     sub accept_result {
         my $self   = shift;

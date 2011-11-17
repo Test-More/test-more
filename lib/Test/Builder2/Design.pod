@@ -200,13 +200,13 @@ currently available in TB1.
 =head2 TB2 Events
 
 The primary way test libraries using TB2 will alter the behavior of tests is by
-writing a test event watcher.  Everything of interest in a test, from setting 
-the plan to diagnostic output to asserts, triggers an event. A watcher can take 
-action based on an event, or even alter an event as it happens.  Event watchers
+writing a test event handler.  Everything of interest in a test, from setting 
+the plan to diagnostic output to asserts, triggers an event. A handler can take 
+action based on an event, or even alter an event as it happens.  Event handlers
 will allow TB2 to halt on test failure, to enforce test names, and to provide the 
 functionality of Test::NoWarnings.  
 
-Formatters are also event watchers.  See L<Test::Builder2::EventWatcher>, 
+Formatters are also event handlers.  See L<Test::Builder2::EventHandler>, 
 L<Test::Builder2::EventCoordinator> and L<Test::Builder2::Events> for details.
 
 
@@ -668,7 +668,7 @@ different builders to be made without Test::Builder2 dictating how
 they're to work.
 
 If you want to add behaviors to the tests, rather than extending or
-altering the Builder you add an EventWatcher to the EventCoordinator.
+altering the Builder you add an EventHandler to the EventCoordinator.
 This will be informed when thing happen in the test, can take action
 and even alter the events and results.
 
@@ -717,16 +717,16 @@ A result is a special type of event.
 
 This object gathers events from all the builders that wish to work
 together in the same test suite and passes them along to its event
-watchers.
+handlers.
 
-=head2 event watcher
+=head2 event handler
 
-An event watcher is a thing which does things with events (yes, it's
+An event handler is a thing which does things with events (yes, it's
 supposed to be vague).  Examples include formatters and history.
-Custom event watchers can also be used to alter the behavior of tests (for
+Custom event handlers can also be used to alter the behavior of tests (for
 example, die on assert failure) and even the event itself.
 
-Event watchers get their events through an event coordinator.
+Event handlers get their events through an event coordinator.
 
 =head2 directive
 

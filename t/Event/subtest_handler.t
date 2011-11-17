@@ -7,7 +7,7 @@ use lib 't/lib';
 BEGIN { require "t/test.pl" }
 
 use Test::Builder2::Events;
-use Test::Builder2::EventWatcher;
+use Test::Builder2::EventHandler;
 use MyEventCollector;
 
 note "default subtest_handler"; {
