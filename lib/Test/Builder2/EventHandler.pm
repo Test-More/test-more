@@ -76,7 +76,7 @@ sub accept_event {
     my($self, $event, $ec) = @_;
 
     my $type = $event->event_type;
-    my $method = $type2method{$type} ||= $self->_event_type2accept_method($type);
+    my $method = $type2method{$type} ||= $self->_event_type2handle_method($type);
 
     $self->can($method)
           ? $self->$method($event, $ec) 
@@ -86,7 +86,7 @@ sub accept_event {
 }
 
 
-sub _event_type2accept_method {
+sub _event_type2handle_method {
     my $self = shift;
     my $type = shift;
 
@@ -132,7 +132,7 @@ Event handlers are all called like this:
 
     $handler->handle_thing($event, $event_coordinator);
 
-$event is the event being accepted.
+$event is the event being handled.
 
 $event_coordinator is the coordinator which is managing the $event.
 This allows a handler to issue their own Events or access history via
@@ -149,8 +149,8 @@ L<accept_event>.
 
     $event_handler->handle_event($event, $event_coordinator);
 
-This event handler accepts any event not handled by a more specific
-event handler (such as handle_result).
+This handles any event not handled by a more specific event handler
+(such as handle_result).
 
 By default it does nothing.
 

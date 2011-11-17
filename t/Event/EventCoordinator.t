@@ -101,8 +101,8 @@ note("posting"); {
                     @{$args{formatters}}
                    );
     for my $handler (@handlers) {
-        is_deeply $handler->results, [$result], "result accepted";
-        is_deeply $handler->events,  [$event], "event accepted";
+        is_deeply $handler->results, [$result], "result handled";
+        is_deeply $handler->events,  [$event], "event handled";
 
         is_deeply $handler->coordinators, [$ec, $ec], "coordinator passed through";
     }
