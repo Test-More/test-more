@@ -101,8 +101,8 @@ note("posting"); {
                     @{$args{formatters}}
                    );
     for my $handler (@handlers) {
-        is_deeply $handler->results, [$result], "result accepted";
-        is_deeply $handler->events,  [$event], "event accepted";
+        is_deeply $handler->results, [$result], "result handled";
+        is_deeply $handler->events,  [$event], "event handled";
 
         is_deeply $handler->coordinators, [$ec, $ec], "coordinator passed through";
     }
@@ -131,17 +131,17 @@ note "posting events to specific handlers"; {
           isa           => 'ArrayRef',
           default       => sub { [] };
 
-        sub accept_test_start {
+        sub handle_test_start {
             my($self, $event, $ec) = @_;
             push @{$self->starts}, [$event, $ec];
         }
 
-        sub accept_test_end {
+        sub handle_test_end {
             my($self, $event, $ec) = @_;
             push @{$self->ends}, [$event, $ec];            
         }
 
-        sub accept_event {
+        sub handle_event {
             my($self, $event, $ec) = @_;
             push @{$self->others}, [$event, $ec];
         }

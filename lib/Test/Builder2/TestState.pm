@@ -260,8 +260,8 @@ sub _delegate_to_current_coordinator {
 
 
 my %special_handlers = (
-    'subtest_start' => \&accept_subtest_start,
-    'subtest_end'   => \&accept_subtest_end,
+    'subtest_start' => \&handle_subtest_start,
+    'subtest_end'   => \&handle_subtest_end,
 );
 sub post_event {
     my $self  = shift;
@@ -277,7 +277,7 @@ sub post_event {
     }
 }
 
-sub accept_subtest_start {
+sub handle_subtest_start {
     my $self  = shift;
 
     # Don't shift to preserve @_ so we can pass it along in its entirety.
@@ -307,7 +307,7 @@ sub accept_subtest_start {
 }
 
 
-sub accept_subtest_end {
+sub handle_subtest_end {
     my $self  = shift;
 
     # Don't shift to preserve @_ so we can pass it along in its entirety.

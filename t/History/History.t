@@ -30,7 +30,7 @@ my $Fail = Test::Builder2::Result->new_result(
 }
 
 
-# accept_result
+# handle_result
 {
     my $history = new_ok $CLASS;
     my $ec = MyEventCoordinator->new(
@@ -51,12 +51,12 @@ my $Fail = Test::Builder2::Result->new_result(
 }
 
 
-# accept_result argument check
+# handle_result argument check
 {
     my $history = new_ok $CLASS;
 
     ok !eval {
-        $history->accept_result({ passed => 1 });
+        $history->handle_result({ passed => 1 });
     };
     like $@, qr/takes Result objects/;
 }

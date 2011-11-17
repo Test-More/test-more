@@ -29,7 +29,7 @@ produce output.
 
 =head1 METHODS
 
-You must implement C<accept> methods as any C<EventHandler>.
+You must implement C<handle> methods as any C<EventHandler>.
 
 In addition...
 

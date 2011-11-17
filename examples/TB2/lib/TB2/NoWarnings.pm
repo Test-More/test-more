@@ -55,7 +55,7 @@ plan is already set, but it doesn't.
       isa                => 'Bool',
       default            => 0;
 
-    sub accept_test_start {
+    sub handle_test_start {
         my $self = shift;
 
         $SIG{__WARN__} = sub {
@@ -66,7 +66,7 @@ plan is already set, but it doesn't.
         return;
     }
 
-    sub accept_set_plan {
+    sub handle_set_plan {
         my $self  = shift;
         my $event = shift;
 
@@ -76,7 +76,7 @@ plan is already set, but it doesn't.
         return;
     }
 
-    sub accept_test_end {
+    sub handle_test_end {
         my $self = shift;
 
         my $warnings = $self->warnings_seen;
