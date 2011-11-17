@@ -2,7 +2,7 @@ package TB2::threads::shared::off;
 
 use strict;
 
-our $VERSION = '2.00_07';
+our $VERSION = '1.005000_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 sub import {

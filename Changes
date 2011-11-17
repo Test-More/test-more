@@ -1,5 +1,24 @@
 See README and version control log for Test::Builder2 changes.
 
+1.005000_001  Thu Nov 17 01:38:53 PST 2011
+    This is the first alpha release of what has been termed Test::Builder1.5.
+    It is Test::Builder implemented with the Test::Builder2 internals
+    (formatters, event system, etc...).  Aside from thread support, it is
+    feature complete and supports all existing features of Test::Builder,
+    Test::Simple and Test::More.
+
+    Tests should continue to work as written.  Please report any breakages
+    at https://github.com/schwern/test-more/issues/
+
+    Incompatible Changes (since 2.00_07)
+    * A lot, too many to list.  If you were using an earlier alpha,
+      all bets are off.
+
+    Incompatible Changes (since 0.98)
+    * The test output format has changed in small ways.  A later release
+      will provide the means to format the output just like 0.98 does now.
+
+
 2.00_07  Mon, 28 Feb 2011 23:53:22 +1100
     Incompatible Changes (since 2.00_01)
     * TB2::Event::Log now uses symbolic levels, not numeric.  This lets us

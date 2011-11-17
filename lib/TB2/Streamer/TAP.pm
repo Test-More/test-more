@@ -3,7 +3,7 @@ package TB2::Streamer::TAP;
 use TB2::Mouse;
 extends 'TB2::Streamer::Print';
 
-our $VERSION = '2.00_07';
+our $VERSION = '1.005000_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

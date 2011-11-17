@@ -3,7 +3,7 @@ package TB2::Streamer::Debug;
 use TB2::Mouse;
 with 'TB2::Streamer';
 
-our $VERSION = '2.00_07';
+our $VERSION = '1.005000_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

@@ -4,7 +4,7 @@ use TB2::Mouse ();
 use TB2::Mouse::Role;
 with 'TB2::CanTry';
 
-our $VERSION = '2.00_07';
+our $VERSION = '1.005000_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

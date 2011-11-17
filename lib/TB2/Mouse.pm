@@ -1087,7 +1087,7 @@ BEGIN{
 		},
 	);
 
-	our $VERSION = '0.87';
+	our $VERSION = '1.005000_001';
 
 	my $xs = !(defined(&is_valid_class_name) || $ENV{MOUSE_PUREPERL} || $ENV{PERL_ONLY});
 
