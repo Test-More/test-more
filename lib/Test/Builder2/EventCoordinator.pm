@@ -177,7 +177,7 @@ sub post_event {
     my $event = shift;
 
     for my $handler ($self->all_handlers) {
-        $handler->receive_event($event, $self);
+        $handler->accept_event($event, $self);
     }
 }
 

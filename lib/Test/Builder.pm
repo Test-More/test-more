@@ -1760,7 +1760,7 @@ sub current_test {
         if( $num > @$results ) {
             # Create a detached test state so we can post events
             # just to our history
-            # XXX No longer needed with receive_event
+            # XXX No longer needed with accept_event
             my $ec = Test::Builder2::TestState->create(
                 formatters => [],
                 history    => $history

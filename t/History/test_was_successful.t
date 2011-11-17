@@ -16,20 +16,20 @@ note "no success until it's over"; {
     ok !$history->test_was_successful, "no events";
     ok $history->can_succeed;
 
-    $history->receive_event( Test::Builder2::Event::TestStart->new );
+    $history->accept_event( Test::Builder2::Event::TestStart->new );
     ok !$history->test_was_successful, "testing started";
     ok $history->can_succeed;
 
-    $history->receive_event( Test::Builder2::Result->new_result( pass => 1 ) );
-    $history->receive_event( Test::Builder2::Result->new_result( pass => 1 ) );
+    $history->accept_event( Test::Builder2::Result->new_result( pass => 1 ) );
+    $history->accept_event( Test::Builder2::Result->new_result( pass => 1 ) );
     ok !$history->test_was_successful, "passing tests, but testing not done";
     ok $history->can_succeed;
 
-    $history->receive_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 2 ) );
+    $history->accept_event( Test::Builder2::Event::SetPlan->new( asserts_expected => 2 ) );
     ok !$history->test_was_successful, "plan satisfied, but testing not done";
     ok $history->can_succeed;
 
-    $history->receive_event( Test::Builder2::Event::TestEnd->new );
+    $history->accept_event( Test::Builder2::Event::TestEnd->new );
     ok $history->test_was_successful,  "test is over";
     ok $history->can_succeed;
 }
@@ -38,7 +38,7 @@ note "no success until it's over"; {
 note "No plan seen"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::TestEnd->new;
 
@@ -50,7 +50,7 @@ note "No plan seen"; {
 note "Failed test"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( asserts_expected => 2 ),
       Test::Builder2::Result->new_result( pass => 0 ),
@@ -58,7 +58,7 @@ note "Failed test"; {
 
     ok !$history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestEnd->new;
 
     ok !$history->can_succeed;
@@ -69,25 +69,25 @@ note "Failed test"; {
 note "Too many tests"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( asserts_expected => 2 ),
       Test::Builder2::Result->new_result( pass => 1 );
 
     ok $history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Result->new_result( pass => 1 );
 
     ok $history->can_succeed;
 
     # One too many tests
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Result->new_result( pass => 1 );
 
     ok !$history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestEnd->new;
 
     ok !$history->can_succeed;
@@ -98,7 +98,7 @@ note "Too many tests"; {
 note "Too few tests"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( asserts_expected => 4 ),
       Test::Builder2::Result->new_result( pass => 1 ),
@@ -107,7 +107,7 @@ note "Too few tests"; {
 
     ok $history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestEnd->new;
 
     ok !$history->can_succeed;
@@ -118,19 +118,19 @@ note "Too few tests"; {
 note "No plan, passing tests"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( no_plan => 1 );
 
     ok $history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Result->new_result( pass => 1 ),
       Test::Builder2::Result->new_result( pass => 1 );
 
     ok $history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestEnd->new;
 
     ok $history->can_succeed;
@@ -141,14 +141,14 @@ note "No plan, passing tests"; {
 note "No plan at end"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Result->new_result( pass => 1 ),
       Test::Builder2::Result->new_result( pass => 1 );
 
     ok $history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::SetPlan->new( no_plan => 1 ),
       Test::Builder2::Event::TestEnd->new;
 
@@ -160,7 +160,7 @@ note "No plan at end"; {
 note "No plan, failing test"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( no_plan => 1 ),
       Test::Builder2::Result->new_result( pass => 1 ),
@@ -168,7 +168,7 @@ note "No plan, failing test"; {
 
     ok !$history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestEnd->new;
 
     ok !$history->can_succeed;
@@ -179,13 +179,13 @@ note "No plan, failing test"; {
 note "No plan, no tests"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( no_plan => 1 );
 
     ok $history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestEnd->new;
 
     ok !$history->can_succeed;
@@ -196,7 +196,7 @@ note "No plan, no tests"; {
 note "Non-zero exit"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( asserts_expected => 2 ),
       Test::Builder2::Result->new_result( pass => 1 ),
@@ -212,13 +212,13 @@ note "Non-zero exit"; {
 note "Skip plan, no tests"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( skip => 1 );
 
     ok $history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestEnd->new;
 
     ok $history->can_succeed;
@@ -229,14 +229,14 @@ note "Skip plan, no tests"; {
 note "Skip plan, passing tests"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( skip => 1 ),
       Test::Builder2::Result->new_result( pass => 1 );
 
     ok !$history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestEnd->new;
 
     ok !$history->can_succeed;
@@ -247,7 +247,7 @@ note "Skip plan, passing tests"; {
 note "Some skip results"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( asserts_expected => 2 ),
       Test::Builder2::Result->new_result( pass => 1, skip => 1 ),
@@ -255,7 +255,7 @@ note "Some skip results"; {
 
     ok $history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestEnd->new;
 
     ok $history->can_succeed;
@@ -266,7 +266,7 @@ note "Some skip results"; {
 note "All skip results"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( asserts_expected => 2 ),
       Test::Builder2::Result->new_result( pass => 1, skip => 1 ),
@@ -274,7 +274,7 @@ note "All skip results"; {
 
     ok $history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestEnd->new;
 
     ok $history->can_succeed;
@@ -285,7 +285,7 @@ note "All skip results"; {
 note "Todo pass"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( asserts_expected => 2 ),
       Test::Builder2::Result->new_result( pass => 1, todo => 1 ),
@@ -293,7 +293,7 @@ note "Todo pass"; {
 
     ok $history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestEnd->new;
 
     ok $history->can_succeed;
@@ -304,7 +304,7 @@ note "Todo pass"; {
 note "Todo fail"; {
     my $history = $CLASS->new;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( asserts_expected => 2 ),
       Test::Builder2::Result->new_result( pass => 0, todo => 1 ),
@@ -312,7 +312,7 @@ note "Todo fail"; {
 
     ok $history->can_succeed;
 
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestEnd->new;
 
     ok $history->can_succeed;
@@ -324,7 +324,7 @@ note "Abort"; {
     my $history = $CLASS->new;
 
     # A test which would pass if not for the abort
-    $history->receive_event($_) for
+    $history->accept_event($_) for
       Test::Builder2::Event::TestStart->new,
       Test::Builder2::Event::SetPlan->new( asserts_expected => 2 ),
       Test::Builder2::Result->new_result( pass => 1 ),
