@@ -36,7 +36,7 @@ L<Test::Builder2::EventHandler>
 =cut
 
 {
-    package TB2::DieOnFail::Watcher;
+    package TB2::DieOnFail::Handler;
 
     use Test::Builder2::Mouse;
     with 'Test::Builder2::EventHandler';
@@ -53,6 +53,6 @@ L<Test::Builder2::EventHandler>
 }
 
 require Test::Builder2;
-Test::Builder2->default->test_state->add_late_handlers( TB2::DieOnFail::Watcher->new );
+Test::Builder2->default->test_state->add_late_handlers( TB2::DieOnFail::Handler->new );
 
 1;

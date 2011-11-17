@@ -111,7 +111,7 @@ note("posting"); {
 
 note "posting events to specific handlers"; {
     {
-        package My::Watcher::StartEnd;
+        package My::Handler::StartEnd;
         
         use Test::Builder2::Mouse;
         with "Test::Builder2::EventHandler";
@@ -147,7 +147,7 @@ note "posting events to specific handlers"; {
         }
     }
 
-    my $handler = My::Watcher::StartEnd->new;
+    my $handler = My::Handler::StartEnd->new;
 
     my $ec = $CLASS->new(
         early_handlers  => [$handler],
