@@ -23,13 +23,13 @@ has coordinators =>
   default       => sub { [] }
 ;
 
-sub accept_result {
+sub handle_result {
     my $self = shift;
     push @{ $self->results }, shift;
     push @{ $self->coordinators }, shift;
 }
 
-sub accept_event {
+sub handle_event {
     my $self = shift;
     push @{ $self->events }, shift;
     push @{ $self->coordinators }, shift;

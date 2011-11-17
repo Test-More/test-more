@@ -12,6 +12,6 @@ BEGIN { require 't/test.pl'; }
     with "Test::Builder2::EventWatcher";
 }
 
-ok !My::Watcher->accept_event(), "default accept_event does nothing";
+ok !My::Watcher->handle_event(), "default handle_event does nothing";
 
 done_testing();

@@ -174,7 +174,7 @@ has indent =>
 ;
 
 
-sub accept_test_start {
+sub handle_test_start {
     my $self = shift;
     my($event, $ec) = @_;
 
@@ -188,7 +188,7 @@ sub accept_test_start {
 }
 
 
-sub accept_test_end {
+sub handle_test_end {
     my $self  = shift;
     my $event = shift;
     my $ec    = shift;
@@ -206,7 +206,7 @@ has plan =>
   isa           => 'Object'
 ;
 
-sub accept_set_plan {
+sub handle_set_plan {
     my $self  = shift;
     my($event, $ec) = @_;
 
@@ -347,7 +347,7 @@ sub output_ending_commentary {
 }
 
 
-=head3 accept_result
+=head3 handle_result
 
 Takes a C<Test::Builder2::Result> as an argument and displays the
 result details.
@@ -360,7 +360,7 @@ has seen_results =>
   default       => 0
 ;
 
-sub accept_result {
+sub handle_result {
     my $self  = shift;
     my $result = shift;
 
@@ -475,7 +475,7 @@ sub _escape {
 }
 
 
-sub accept_log {
+sub handle_log {
     my $self = shift;
     my($log, $ec) = @_;
 
@@ -505,7 +505,7 @@ sub subtest_handler {
 }
 
 
-sub accept_subtest_end {
+sub handle_subtest_end {
     my $self = shift;
     my($event, $ec) = @_;
 
@@ -553,7 +553,7 @@ sub accept_subtest_end {
 }
 
 
-sub accept_abort {
+sub handle_abort {
     my $self = shift;
     my($event, $ec) = @_;
 

@@ -68,7 +68,7 @@ Get the count of events that are on the stack.
 =cut
 
 buildstack events => 'Any';
-sub accept_event {
+sub handle_event {
     my $self = shift;
     my $event = shift;
 
@@ -78,11 +78,11 @@ sub accept_event {
 }
 
 
-sub accept_test_start {
+sub handle_test_start {
     my $self  = shift;
     my($event, $ec) = @_;
 
-    $self->accept_event($event, $ec);
+    $self->handle_event($event, $ec);
 
     croak "Saw a test_start, but testing has already started" if $self->test_start;
     croak "Saw a test_start, but testing has already ended"   if $self->test_end;
@@ -94,11 +94,11 @@ sub accept_test_start {
 }
 
 
-sub accept_test_end {
+sub handle_test_end {
     my $self  = shift;
     my($event, $ec) = @_;
 
-    $self->accept_event($event, $ec);
+    $self->handle_event($event, $ec);
 
     croak "Saw a test_end, but testing has not yet started" if !$self->test_start;
     croak "Saw a test_end, but testing has already ended"   if $self->test_end;
@@ -109,11 +109,11 @@ sub accept_test_end {
 }
 
 
-sub accept_abort {
+sub handle_abort {
     my $self = shift;
     my($event, $ec) = @_;
 
-    $self->accept_event($event, $ec);
+    $self->handle_event($event, $ec);
 
     $self->abort($event);
 
@@ -121,11 +121,11 @@ sub accept_abort {
 }
 
 
-sub accept_subtest_start {
+sub handle_subtest_start {
     my $self = shift;
     my($event, $ec) = @_;
 
-    $self->accept_event($event, $ec);
+    $self->handle_event($event, $ec);
 
     $self->subtest_start($event);
 
@@ -143,11 +143,11 @@ sub subtest_handler {
     return $subhistory;
 }
 
-sub accept_set_plan {
+sub handle_set_plan {
     my $self  = shift;
     my($event, $ec) = @_;
 
-    $self->accept_event($event, $ec);
+    $self->handle_event($event, $ec);
 
     $self->plan($event);
 
@@ -169,7 +169,7 @@ A Test::Builder2::Stack of Result objects.
 =cut
 
 buildstack results => 'Test::Builder2::Result::Base';
-sub accept_result    { shift->results_push(shift) }
+sub handle_result    { shift->results_push(shift) }
 sub result_count     { shift->results_count }
 
 before results_push => sub {

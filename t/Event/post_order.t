@@ -23,7 +23,7 @@ use Test::Builder2::Events;
       required          => 1
     ;
 
-    sub accept_event {
+    sub handle_event {
         my($self, $event, $ec) = @_;
 
         push @Stack, $self->name;

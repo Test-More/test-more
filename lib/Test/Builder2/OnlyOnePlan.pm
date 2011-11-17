@@ -74,7 +74,7 @@ has existing_plan =>
   isa           => 'Object',
 ;
 
-sub accept_set_plan {
+sub handle_set_plan {
     my $self  = shift;
     my $event = shift;
 

@@ -14,7 +14,7 @@ can_ok( 'Test::Builder2::History',
         qw{ new            
             results
             has_results
-            accept_result
+            handle_result
             result_count
           },
 );
