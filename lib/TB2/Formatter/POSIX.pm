@@ -1,8 +1,10 @@
 package TB2::Formatter::POSIX;
 
 use TB2::Mouse;
-
 extends 'TB2::Formatter';
+
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 sub handle_test_start {
     my $self  = shift;

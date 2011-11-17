@@ -3,6 +3,9 @@ package TB2::CanTry;
 use TB2::Mouse ();
 use TB2::Mouse::Role;
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 
 # I'm not ready to publish this.  It doesn't deal with array return
 # values from the code or context.

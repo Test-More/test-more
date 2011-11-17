@@ -1,6 +1,11 @@
 package TB2::Streamer::Debug;
+
 use TB2::Mouse;
 with 'TB2::Streamer';
+
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 
 has written_hunks => (
     is       => 'ro',

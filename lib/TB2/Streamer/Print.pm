@@ -1,6 +1,10 @@
 package TB2::Streamer::Print;
+
 use TB2::Mouse;
 with 'TB2::Streamer', 'TB2::CanDupFilehandles';
+
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 
 =head1 NAME

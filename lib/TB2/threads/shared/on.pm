@@ -2,6 +2,9 @@ package TB2::threads::shared::on;
 
 use strict;
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 use threads::shared;
 use Scalar::Util qw(refaddr reftype blessed);
 

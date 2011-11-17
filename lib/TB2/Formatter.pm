@@ -6,6 +6,9 @@ use TB2::Types;
 
 with 'TB2::EventHandler';
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 
 =head1 NAME
 

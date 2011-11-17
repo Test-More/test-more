@@ -3,6 +3,9 @@ package TB2::EventHandler;
 use TB2::Mouse ();
 use TB2::Mouse::Role;
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 no TB2::Mouse::Role;
 
 

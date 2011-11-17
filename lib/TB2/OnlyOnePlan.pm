@@ -1,12 +1,13 @@
 package TB2::OnlyOnePlan;
 
-use strict;
-use warnings;
+use TB2::Mouse;
+with 'TB2::EventHandler';
+
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Carp;
 
-use TB2::Mouse;
-with 'TB2::EventHandler';
 
 
 =head1 NAME

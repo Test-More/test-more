@@ -3,6 +3,9 @@ package TB2::Tester;
 use TB2::Mouse;
 with "TB2::CanTry";
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 use TB2::Module;
 our @EXPORT = qw(capture result_like event_like);
 my $CLASS = __PACKAGE__;

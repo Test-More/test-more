@@ -1,7 +1,12 @@
 package TB2::NoHistory;
+
 use Carp;
 use TB2::Mouse;
 extends qw{TB2::History};
+
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 
 =head1 NAME
 

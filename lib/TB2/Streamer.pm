@@ -3,6 +3,9 @@ package TB2::Streamer;
 use TB2::Mouse ();
 use TB2::Mouse::Role;
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 requires 'write';
 
 no TB2::Mouse::Role;

@@ -1,10 +1,10 @@
 package TB2::Event::Abort;
 
-use strict;
-use warnings;
-
 use TB2::Mouse;
 with "TB2::Event";
+
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 
 =head1 NAME

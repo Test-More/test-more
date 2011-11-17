@@ -2,6 +2,10 @@ package TB2::BlackHole;
 
 use TB2::Mouse;
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
+
 use overload
   "bool"        => sub { 0 };
 

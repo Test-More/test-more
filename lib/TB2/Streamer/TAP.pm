@@ -3,6 +3,9 @@ package TB2::Streamer::TAP;
 use TB2::Mouse;
 extends 'TB2::Streamer::Print';
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 
 =head1 NAME
 

@@ -1,8 +1,10 @@
 package TB2::Formatter::Multi;
 
 use TB2::Mouse;
-
 extends 'TB2::Formatter';
+
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 
 =head1 NAME

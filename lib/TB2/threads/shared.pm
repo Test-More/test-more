@@ -8,6 +8,9 @@ use warnings;
 
 use Config;
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 if( $Config{useithreads} && $INC{'threads.pm'} ) {
     require TB2::threads::shared::on;
     our @ISA = qw(TB2::threads::shared::on);

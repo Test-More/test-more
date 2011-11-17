@@ -4,6 +4,9 @@ use 5.008001;
 use TB2::Mouse;
 use TB2::Types;
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 use Carp qw(confess);
 sub sanity ($) { confess "Assert failed" unless $_[0] };
 

@@ -3,13 +3,15 @@ package TB2::Formatter::TAP::v13;
 use 5.008001;
 
 use TB2::Mouse;
-use Carp;
 use TB2::Types;
-
-use TB2::threads::shared;
-
 extends 'TB2::Formatter';
 with 'TB2::CanLoad';
+
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
+use Carp;
+use TB2::threads::shared;
 
 sub default_streamer_class { 'TB2::Streamer::TAP' }
 

@@ -2,6 +2,9 @@ package TB2::threads::shared::off;
 
 use strict;
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 sub import {
     my $caller = caller;
 

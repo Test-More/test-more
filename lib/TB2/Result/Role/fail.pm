@@ -3,6 +3,10 @@ package TB2::Result::Role::fail;
 use TB2::Mouse ();
 use TB2::Mouse::Role;
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
+
 sub literal_pass { 0 }
 
 no TB2::Mouse::Role;

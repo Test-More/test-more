@@ -3,6 +3,10 @@ package TB2::Events;
 use strict;
 use warnings;
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
+
 use TB2::Event::TestStart;
 use TB2::Event::TestEnd;
 use TB2::Event::SubtestStart;

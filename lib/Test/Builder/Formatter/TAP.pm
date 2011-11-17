@@ -4,6 +4,9 @@ package Test::Builder::Formatter::TAP;
 
 use TB2::Mouse;
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 extends 'TB2::Formatter::TAP::v13';
 
 # Test::Builder won't print if $^C is set.

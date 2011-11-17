@@ -2,8 +2,10 @@ package TB2::EventCoordinator;
 
 use TB2::Mouse;
 use TB2::Types;
-
 with 'TB2::CanLoad';
+
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 my @Types = qw(early_handlers history formatters late_handlers);
 

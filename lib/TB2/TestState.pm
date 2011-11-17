@@ -3,6 +3,9 @@ package TB2::TestState;
 use TB2::Mouse;
 use TB2::Types;
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 use Carp;
 
 with 'TB2::HasDefault',

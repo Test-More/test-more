@@ -3,8 +3,10 @@ package TB2::Event;
 use TB2::Mouse ();
 use TB2::Mouse::Role;
 use TB2::Types;
-
 requires qw( build_event_type );
+
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 
 =head1 NAME

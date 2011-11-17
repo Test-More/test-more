@@ -12,6 +12,9 @@ with 'TB2::HasDefault',
 use Carp qw(confess);
 sub sanity ($) { confess "Assert failed" unless $_[0] };
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 
 =head1 NAME
 

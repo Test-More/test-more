@@ -3,6 +3,10 @@ package TB2::Result::Role::todo;
 use TB2::Mouse ();
 use TB2::Mouse::Role;
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
+
 sub is_todo { 1 }
 sub is_fail { 0 }
 

@@ -4,6 +4,9 @@ use Carp;
 use TB2::Mouse;
 use TB2::Mouse::Util::TypeConstraints qw(enum);
 
+our $VERSION = '2.00_07';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 
 =head1 NAME
 
