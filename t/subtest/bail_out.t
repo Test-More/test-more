@@ -54,4 +54,7 @@ OUT
 
     # Don't exit non-zero because of the bail out
     $? = 0;
+
+    # I can't get this to fire after the END block, so suppress Test::Builder's ending.
+    Test::More->builder->no_ending(1);
 }
