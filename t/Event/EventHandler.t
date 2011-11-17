@@ -12,6 +12,6 @@ BEGIN { require 't/test.pl'; }
     with "Test::Builder2::EventHandler";
 }
 
-ok !My::Handler->accept_event(), "default accept_event does nothing";
+ok !My::Handler->handle_event(), "default handle_event does nothing";
 
 done_testing();

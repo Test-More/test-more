@@ -4,7 +4,7 @@ use Test::Builder2::Mouse;
 
 extends 'Test::Builder2::Formatter';
 
-sub accept_test_start {
+sub handle_test_start {
     my $self  = shift;
     my $event = shift;
 
@@ -23,7 +23,7 @@ my %type_map = (
     todo_skip   => 'UNTESTED',
 );
 
-sub accept_result {
+sub handle_result {
     my($self, $result) = @_;
 
     my $type = $type_map{$result->type};
