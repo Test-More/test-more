@@ -1,8 +1,8 @@
-package Test::Builder2::Formatter::PlusMinus;
+package TB2::Formatter::PlusMinus;
 
-use Test::Builder2::Mouse;
+use TB2::Mouse;
 
-extends 'Test::Builder2::Formatter';
+extends 'TB2::Formatter';
 
 sub handle_test_end {
     my $self  = shift;

@@ -1,17 +1,17 @@
-package Test::Builder2::Streamer;
+package TB2::Streamer;
 
-use Test::Builder2::Mouse ();
-use Test::Builder2::Mouse::Role;
+use TB2::Mouse ();
+use TB2::Mouse::Role;
 
 requires 'write';
 
-no Test::Builder2::Mouse::Role;
+no TB2::Mouse::Role;
 1;
 
 
 =head1 NAME
 
-Test::Builder2::Streamer - Role to output formatted test results
+TB2::Streamer - Role to output formatted test results
 
 =head1 SYNOPSIS
 
@@ -37,7 +37,7 @@ A streamer object is used to output formatted test results (or really
 any text).  You can use it to just spit stuff to STDOUT and STDERR,
 trap stuff for debugging, or... uhh... something else.
 
-Test::Builder2::Streamer is just a role, you must write your own
+TB2::Streamer is just a role, you must write your own
 streamer or use one of the existing ones (see L<SEE ALSO>).
 
 
@@ -58,10 +58,10 @@ It must throw an exception if it fails.
 
 =head1 SEE ALSO
 
-L<Test::Builder2::Streamer::Print> Print to a configurable output filehandle
+L<TB2::Streamer::Print> Print to a configurable output filehandle
 
-L<Test::Builder2::Streamer::TAP> A streamer for the special needs of TAP
+L<TB2::Streamer::TAP> A streamer for the special needs of TAP
 
-L<Test::Builder2::Streamer::Debug> Captures all output, useful for debugging.
+L<TB2::Streamer::Debug> Captures all output, useful for debugging.
 
 =cut

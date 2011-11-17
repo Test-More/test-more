@@ -7,18 +7,18 @@ use lib 't/lib';
 
 BEGIN { require 't/test.pl' }
 
-use Test::Builder2::Formatter::TAP;
-use Test::Builder2::TestState;
-use Test::Builder2::Events;
+use TB2::Formatter::TAP;
+use TB2::TestState;
+use TB2::Events;
 
 sub new_formatter {
-    return Test::Builder2::Formatter::TAP->new(
-        streamer_class => 'Test::Builder2::Streamer::Debug'
+    return TB2::Formatter::TAP->new(
+        streamer_class => 'TB2::Streamer::Debug'
     );
 }
 
 sub new_state {
-    return Test::Builder2::TestState->create(
+    return TB2::TestState->create(
         formatters => [new_formatter()]
     );
 }
@@ -28,18 +28,18 @@ note "subtest"; {
     my $state = new_state();
 
     my @events = (
-        Test::Builder2::Event::TestStart->new,
-        Test::Builder2::Result->new_result( pass => 1 ),
-        Test::Builder2::Event::SubtestStart->new,
-          Test::Builder2::Event::TestStart->new,
-          Test::Builder2::Result->new_result( pass => 1 ),
-          Test::Builder2::Result->new_result( pass => 1 ),
-          Test::Builder2::Event::SetPlan->new( asserts_expected => 2 ),
-          Test::Builder2::Event::TestEnd->new,
-        Test::Builder2::Event::SubtestEnd->new,
-        Test::Builder2::Result->new_result( pass => 1 ),
-        Test::Builder2::Event::SetPlan->new( asserts_expected => 3 ),
-        Test::Builder2::Event::TestEnd->new,
+        TB2::Event::TestStart->new,
+        TB2::Result->new_result( pass => 1 ),
+        TB2::Event::SubtestStart->new,
+          TB2::Event::TestStart->new,
+          TB2::Result->new_result( pass => 1 ),
+          TB2::Result->new_result( pass => 1 ),
+          TB2::Event::SetPlan->new( asserts_expected => 2 ),
+          TB2::Event::TestEnd->new,
+        TB2::Event::SubtestEnd->new,
+        TB2::Result->new_result( pass => 1 ),
+        TB2::Event::SetPlan->new( asserts_expected => 3 ),
+        TB2::Event::TestEnd->new,
     );
 
     $state->post_event($_) for @events;

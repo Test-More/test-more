@@ -1,6 +1,6 @@
-package Test::Builder2::BlackHole;
+package TB2::BlackHole;
 
-use Test::Builder2::Mouse;
+use TB2::Mouse;
 
 use overload
   "bool"        => sub { 0 };
@@ -14,12 +14,12 @@ sub AUTOLOAD {
 
 =head1 NAME
 
-Test::Builder2::BlackHole - Goes Nowhere Does Nothing
+TB2::BlackHole - Goes Nowhere Does Nothing
 
 =head1 SYNOPSIS
 
-    use Test::Builder2::BlackHole;
-    my $blackhole = Test::Builder2::BlackHole->new;
+    use TB2::BlackHole;
+    my $blackhole = TB2::BlackHole->new;
 
     $blackhole->whatever;
     $blackhole->destroy_the_universe( pretty => "please" );
@@ -42,6 +42,6 @@ out to be a really bad idea.
 
 =cut
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 
 1;

@@ -5,7 +5,7 @@ use warnings;
 
 BEGIN { require "t/test.pl" }
 
-my $CLASS = "Test::Builder2::Event::Abort";
+my $CLASS = "TB2::Event::Abort";
 use_ok $CLASS;
 
 note "defaults"; {

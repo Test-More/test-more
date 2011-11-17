@@ -14,17 +14,17 @@ my $Can_Fork = $Config{d_fork} ||
 
 plan skip_all => "This system cannot fork" unless $Can_Fork;
 
-use Test::Builder2::Events;
-use Test::Builder2::History;
+use TB2::Events;
+use TB2::History;
 
 my $Top_PID = $$;
 
 note "Parent PID: $$";
-my $history = Test::Builder2::History->new;
+my $history = TB2::History->new;
 ok !$history->pid_at_test_start,        "PID not recorded until test start";
 ok !$history->is_child_process;
 
-$history->accept_event( Test::Builder2::Event::TestStart->new );
+$history->accept_event( TB2::Event::TestStart->new );
 is $history->pid_at_test_start, $Top_PID, "PID recorded at test start";
 ok !$history->is_child_process;
 

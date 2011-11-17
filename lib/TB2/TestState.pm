@@ -1,12 +1,12 @@
-package Test::Builder2::TestState;
+package TB2::TestState;
 
-use Test::Builder2::Mouse;
-use Test::Builder2::Types;
+use TB2::Mouse;
+use TB2::Types;
 
 use Carp;
 
-with 'Test::Builder2::HasDefault',
-     'Test::Builder2::CanLoad';
+with 'TB2::HasDefault',
+     'TB2::CanLoad';
 
 has _coordinators =>
   is            => 'rw',
@@ -24,7 +24,7 @@ has _coordinator_constructor_args =>
 Arguments passed to the TestState constructor which are passed on to the coordinator.
 END
 
-my $DEFAULT_COORDINATOR_CLASS = 'Test::Builder2::EventCoordinator';
+my $DEFAULT_COORDINATOR_CLASS = 'TB2::EventCoordinator';
 has coordinator_class =>
   is            => 'rw',
   isa           => 'Str',  # Grr, ClassName requires the class be loaded
@@ -36,16 +36,16 @@ END
 
 =head1 NAME
 
-Test::Builder2::TestState - Object which holds the state of the test
+TB2::TestState - Object which holds the state of the test
 
 =head1 SYNOPSIS
 
-    use Test::Builder2::TestState;
+    use TB2::TestState;
 
     # Get the state of the default test.
     # Usually you'd ask your builder for the TestState object,
     # but we'll get it directly.
-    my $state = Test::Builder2::TestState->default;
+    my $state = TB2::TestState->default;
 
     # Post an event, like an EventCoordinator
     $state->post_event($event);
@@ -57,7 +57,7 @@ Test::Builder2::TestState - Object which holds the state of the test
 =head1 DESCRIPTION
 
 All test state resides not in the builder objects but in the TestState
-and its attached L<Test::Builder2::EventHandler> objects.  TestState
+and its attached L<TB2::EventHandler> objects.  TestState
 holds onto the current event handlers and passes events along to them.
 It also manages subtest state.
 
@@ -66,15 +66,15 @@ post it to the TestState.
 
     $state->post_event($result);
 
-TestState does everything a L<Test::Builder2::EventCoordinator> does.
+TestState does everything a L<TB2::EventCoordinator> does.
 It delegates to a stack of EventCoordinators, one for each layer of
 subtesting.
 
 TestState has a default object to hold the state of the default
-test.  Builders should use C<< Test::Builder2::TestState->default >>
+test.  Builders should use C<< TB2::TestState->default >>
 to get the TestState if they want to play nice with others.  You can
 also create your own test states with
-C<<Test::Builder2::TestState->create >>.
+C<<TB2::TestState->create >>.
 
 =head1 METHODS
 
@@ -85,7 +85,7 @@ avoid confusion.  It instead has B<create> and B<default>.
 
 =head3 create
 
-    my $state = Test::Builder2::TestState->create(%event_coordinator_args);
+    my $state = TB2::TestState->create(%event_coordinator_args);
 
 Create a new test state.
 
@@ -94,14 +94,14 @@ creates new event coordinators.  This lets you pass in different
 formatters and handlers.
 
     # Make a test state with no formatter
-    my $state = Test::Builder2::TestState->create(
+    my $state = TB2::TestState->create(
         formatters => []
     );
 
 
 =head3 default
 
-    my $state = Test::Builder2::TestState->default;
+    my $state = TB2::TestState->default;
 
 Retrieve the shared TestState.
 
@@ -117,7 +117,7 @@ sub create {
     my %args = @_;
 
     # Roles inject methods, so we can't call SUPER. :(
-    my $self = $class->Test::Builder2::Mouse::Object::new(@_);
+    my $self = $class->TB2::Mouse::Object::new(@_);
 
     # Store our constructor arguments
     $self->_coordinator_constructor_args(\%args);
@@ -131,7 +131,7 @@ sub create {
 =head2 EventCoordinator methods
 
 TestState delegates to a stack of EventCoordinators.  It does all the
-methods of L<Test::Builder2::EventCoordinator>.
+methods of L<TB2::EventCoordinator>.
 
 
 =head2 Stack management
@@ -142,7 +142,7 @@ EventHandlers).
 
 One can add a coordinator to the stack to set up an isolated test
 state and remove it to restore the original state.  This is useful
-both for testing tests (see L<Test::Builder2::Tester>) and for running
+both for testing tests (see L<TB2::Tester>) and for running
 subtests in isolation.
 
 =head3 push_coordinator
@@ -207,7 +207,7 @@ sub pop_coordinator {
 
     my $ec = $state->current_coordinator;
 
-Returns the current L<Test::Builder2::EventCoordinator> which is being
+Returns the current L<TB2::EventCoordinator> which is being
 delegated to.
 
 =cut
@@ -332,18 +332,18 @@ sub _depth {
 }
 
 # Do not make it immutable, we need to add delegate methods dynamically.
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 
 
 =head1 SEE ALSO
 
-L<Test::Builder2::EventCoordinator> which TestState delegates to under the hood.
+L<TB2::EventCoordinator> which TestState delegates to under the hood.
 
-L<Test::Builder2::EventHandler> which handle events.
+L<TB2::EventHandler> which handle events.
 
-L<Test::Builder2::Formatter> which handle output.
+L<TB2::Formatter> which handle output.
 
-L<Test::Builder2::History> which stores events for reference.
+L<TB2::History> which stores events for reference.
 
 =cut
 

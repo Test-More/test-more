@@ -1,20 +1,20 @@
-package Test::Builder2::HasDefault;
+package TB2::HasDefault;
 
 use Carp;
-use Test::Builder2::Mouse ();
-use Test::Builder2::Mouse::Role;
+use TB2::Mouse ();
+use TB2::Mouse::Role;
 
 
 =head1 NAME
 
-Test::Builder2::HasDefault - A role providing a shared default object
+TB2::HasDefault - A role providing a shared default object
 
 =head1 SYNOPSIS
 
   package TB2::Thing;
 
-  use Test::Builder2::Mouse;
-  with 'Test::Builder2::HasDefault';
+  use TB2::Mouse;
+  with 'TB2::HasDefault';
 
   my $thing      = TB2::Thing->default;
   my $same_thing = TB2::Thing->default;
@@ -92,7 +92,7 @@ sub create {
     my $class = shift;
 
     # Mouse injects new(), we can't call SUPER.
-    return $class->Test::Builder2::Mouse::Object::new(@_);
+    return $class->TB2::Mouse::Object::new(@_);
 }
 
 
@@ -115,6 +115,6 @@ sub make_default {
     return $class->create;
 }
 
-no Test::Builder2::Mouse::Role;
+no TB2::Mouse::Role;
 
 1;

@@ -8,7 +8,7 @@ use warnings;
 require Test::Builder;
 
 # TB2 + TB2::Module will end the stream before TB1
-require Test::Builder2::Module;
+require TB2::Module;
 require Test::Builder2;
 
 my $tb = Test::Builder->new;

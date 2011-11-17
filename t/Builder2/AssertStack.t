@@ -5,19 +5,19 @@ use warnings;
 
 BEGIN { require "t/test.pl" }
 
-use Test::Builder2::AssertRecord;
-use Test::Builder2::AssertStack;
+use TB2::AssertRecord;
+use TB2::AssertStack;
 
 {
     note("A fresh stack");
-    my $stack = new_ok "Test::Builder2::AssertStack";
+    my $stack = new_ok "TB2::AssertStack";
     is_deeply $stack->asserts, [];
     is $stack->top, undef;
     ok !$stack->at_top;
     ok !$stack->in_assert;
 
     note("Push on one assert");
-    my $foo = new_ok "Test::Builder2::AssertRecord", [{
+    my $foo = new_ok "TB2::AssertRecord", [{
         package         => "Foo",
         filename        => "foo.t",
         line            => 23,
@@ -29,7 +29,7 @@ use Test::Builder2::AssertStack;
     ok $stack->in_assert;
 
     note("Push on another");
-    my $bar = new_ok "Test::Builder2::AssertRecord", [{
+    my $bar = new_ok "TB2::AssertRecord", [{
         package         => "Bar",
         filename        => "bar.t",
         line            =>  42,

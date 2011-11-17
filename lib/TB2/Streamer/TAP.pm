@@ -1,17 +1,17 @@
-package Test::Builder2::Streamer::TAP;
+package TB2::Streamer::TAP;
 
-use Test::Builder2::Mouse;
-extends 'Test::Builder2::Streamer::Print';
+use TB2::Mouse;
+extends 'TB2::Streamer::Print';
 
 
 =head1 NAME
 
-Test::Builder2::Streamer::TAP - A streamer for TAP output
+TB2::Streamer::TAP - A streamer for TAP output
 
 =head1 DESCRIPTION
 
 This is a streamer specific to the needs of the TAP formatter.  It is
-a subclass of L<Test::Builder2::Streamer::Print>.
+a subclass of L<TB2::Streamer::Print>.
 
 Basically, it adds a destination for errors.
 
@@ -87,5 +87,5 @@ sub write {
     $self->safe_print($fh, @_);
 }
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 1;

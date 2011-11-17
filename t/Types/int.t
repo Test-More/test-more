@@ -10,12 +10,12 @@ note "Positive_Int"; {
     {
         package My::Positive::Int;
 
-        use Test::Builder2::Mouse;
-        use Test::Builder2::Types;
+        use TB2::Mouse;
+        use TB2::Types;
 
         has positive_int =>
           is        => 'rw',
-          isa       => 'Test::Builder2::Positive_Int';
+          isa       => 'TB2::Positive_Int';
     }
 
     my $obj = My::Positive::Int->new;
@@ -42,12 +42,12 @@ note "Positive_NonZero_Int"; {
     {
         package My::Positive::NonZero::Int;
 
-        use Test::Builder2::Mouse;
-        use Test::Builder2::Types;
+        use TB2::Mouse;
+        use TB2::Types;
 
         has positive_nonzero_int =>
           is        => 'rw',
-          isa       => 'Test::Builder2::Positive_NonZero_Int';
+          isa       => 'TB2::Positive_NonZero_Int';
     }
 
     my $obj = My::Positive::NonZero::Int->new;

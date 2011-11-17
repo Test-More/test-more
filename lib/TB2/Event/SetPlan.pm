@@ -1,13 +1,13 @@
-package Test::Builder2::Event::SetPlan;
+package TB2::Event::SetPlan;
 
-use Test::Builder2::Types;
-use Test::Builder2::Mouse;
-with 'Test::Builder2::Event';
+use TB2::Types;
+use TB2::Mouse;
+with 'TB2::Event';
 
 
 =head1 NAME
 
-Test::Builder2::Event::SetPlan - Set the plan for the current stream
+TB2::Event::SetPlan - Set the plan for the current stream
 
 =head1 DESCRIPTION
 
@@ -35,7 +35,7 @@ Defaults to 0.
 
 has asserts_expected =>
   is            => 'rw',
-  isa           => 'Test::Builder2::Positive_Int',
+  isa           => 'TB2::Positive_Int',
   default       => 0,
 ;
 
@@ -113,7 +113,7 @@ sub build_event_type { "set_plan" }
 
 =head1 SEE ALSO
 
-L<Test::Builder2::Event>
+L<TB2::Event>
 
 =cut
 

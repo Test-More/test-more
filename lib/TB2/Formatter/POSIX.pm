@@ -1,8 +1,8 @@
-package Test::Builder2::Formatter::POSIX;
+package TB2::Formatter::POSIX;
 
-use Test::Builder2::Mouse;
+use TB2::Mouse;
 
-extends 'Test::Builder2::Formatter';
+extends 'TB2::Formatter';
 
 sub handle_test_start {
     my $self  = shift;

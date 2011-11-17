@@ -7,10 +7,10 @@ use warnings;
 
 BEGIN { require "t/test.pl" }
 
-use Test::Builder2::TestState;
+use TB2::TestState;
 
 # Pull the formatter
-my $ec = Test::Builder2::TestState->default;
+my $ec = TB2::TestState->default;
 $ec->clear_formatters;
 
 require Test::Builder;

@@ -1,22 +1,22 @@
 package Test::Builder;
 
 use 5.008001;
-use Test::Builder2::Mouse;
-use Test::Builder2::Types;
+use TB2::Mouse;
+use TB2::Types;
 
 our $VERSION = '2.00_07';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 # Conditionally loads threads::shared and fixes up old versions
-use Test::Builder2::threads::shared;
+use TB2::threads::shared;
 
-use Test::Builder2::OnlyOnePlan;
-use Test::Builder2::Events;
-use Test::Builder2::TestState;
+use TB2::OnlyOnePlan;
+use TB2::Events;
+use TB2::TestState;
 
-with 'Test::Builder2::CanDupFilehandles',
-     'Test::Builder2::CanTry',
-     'Test::Builder2::CanLoad';
+with 'TB2::CanDupFilehandles',
+     'TB2::CanTry',
+     'TB2::CanLoad';
 
 
 =head1 NAME
@@ -80,9 +80,9 @@ sub _make_default {
     my $class = shift;
 
     my $obj = $class->create;
-    $obj->{TestState} = Test::Builder2::TestState->default;
+    $obj->{TestState} = TB2::TestState->default;
     $obj->{TestState}->add_early_handlers(
-        Test::Builder2::OnlyOnePlan->new
+        TB2::OnlyOnePlan->new
     );
 
     return $obj;
@@ -142,7 +142,7 @@ sub subtest {
     }
 
     $self->post_event(
-        Test::Builder2::Event::SubtestStart->new(
+        TB2::Event::SubtestStart->new(
             $self->_file_and_line,
             name        => $name,
             %extra_args
@@ -186,7 +186,7 @@ sub subtest {
     $self->find_TODO(undef, 1, $orig_TODO);
 
     $self->post_event(
-        Test::Builder2::Event::SubtestEnd->new(
+        TB2::Event::SubtestEnd->new(
             $self->_file_and_line,
         )
     );
@@ -242,10 +242,10 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Exported_To}    = undef;
 
-    $self->load("Test::Builder2::Formatter::TAP");
-    $self->{TestState} = Test::Builder2::TestState->create(
-        formatters      => [Test::Builder2::Formatter::TAP->new],
-        early_handlers  => [Test::Builder2::OnlyOnePlan->new],
+    $self->load("TB2::Formatter::TAP");
+    $self->{TestState} = TB2::TestState->create(
+        formatters      => [TB2::Formatter::TAP->new],
+        early_handlers  => [TB2::OnlyOnePlan->new],
     );
 
     $self->use_numbers(1);
@@ -266,8 +266,8 @@ sub test_state {
     return $_[0]->{TestState};
 }
 
-use Test::Builder2::BlackHole;
-my $blackhole = Test::Builder2::BlackHole->new;
+use TB2::BlackHole;
+my $blackhole = TB2::BlackHole->new;
 sub formatter {
     return $_[0]->test_state->formatters->[0] || $blackhole;
 }
@@ -276,7 +276,7 @@ sub formatter {
 
     my $history = $builder->history;
 
-A convenience method to access the L<Test::Builder2::History> object associated
+A convenience method to access the L<TB2::History> object associated
 with the C<test_state>.
 
 =cut
@@ -293,7 +293,7 @@ sub counter {
 
     # Fake a counter from the history object.
     # This will not remember changes to the current_test()
-    $counter = Test::Builder2::Counter->new;
+    $counter = TB2::Counter->new;
     $counter->set($self->history->results_count);
 
     return $counter;
@@ -580,7 +580,7 @@ sub test_start {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::TestStart->new( $self->_file_and_line(1) )
+        TB2::Event::TestStart->new( $self->_file_and_line(1) )
     );
 
     return;
@@ -590,7 +590,7 @@ sub test_end {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::TestEnd->new( $self->_file_and_line(1) )
+        TB2::Event::TestEnd->new( $self->_file_and_line(1) )
     );
 
     return;
@@ -600,7 +600,7 @@ sub set_plan {
     my $self = shift;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::SetPlan->new( $self->_file_and_line, @_ )
+        TB2::Event::SetPlan->new( $self->_file_and_line, @_ )
     );
 
     return;
@@ -655,7 +655,7 @@ ERR
     # Turn the test into a Result
     my( $pack, $file, $line ) = $self->caller;
 
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         $self->_file_and_line,
         pass            => $test ? 1 : 0,
         file            => $file,
@@ -1030,13 +1030,13 @@ sub BAIL_OUT {
     my( $self, $reason ) = @_;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::Abort->new( reason => $reason )
+        TB2::Event::Abort->new( reason => $reason )
     );
 
     # Get out of any subtest we might be in
     while( $self->history->is_subtest ) {
         $self->test_state->post_event(
-            Test::Builder2::Event::SubtestEnd->new(
+            TB2::Event::SubtestEnd->new(
                 $self->_file_and_line
             )
         );
@@ -1073,7 +1073,7 @@ sub skip {
 #    lock( $self->history );
 
     my($pack, $file, $line) = $self->caller;
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         $self->_file_and_line,
         pass      => 1,
         directives=> ['skip'],
@@ -1105,7 +1105,7 @@ sub todo_skip {
 #    lock( $self->history );
 
     my($pack, $file, $line) = $self->caller;
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         $self->_file_and_line,
         pass            => 0,
         directives      => ["todo", "skip"],
@@ -1474,7 +1474,7 @@ sub diag {
     return $self->note(@_) if $self->in_todo;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::Log->new(
+        TB2::Event::Log->new(
             $self->_file_and_line,
             message     => $self->_join_message(@_),
             level       => 'warning'
@@ -1499,7 +1499,7 @@ sub note {
     return unless @_;
 
     $self->test_state->post_event(
-        Test::Builder2::Event::Log->new(
+        TB2::Event::Log->new(
             $self->_file_and_line,
             message     => $self->_join_message(@_),
             level       => 'info'
@@ -1761,7 +1761,7 @@ sub current_test {
             # Create a detached test state so we can post events
             # just to our history
             # XXX No longer needed with accept_event
-            my $ec = Test::Builder2::TestState->create(
+            my $ec = TB2::TestState->create(
                 formatters => [],
                 history    => $history
             );
@@ -1770,7 +1770,7 @@ sub current_test {
             $counter->set($last_test_number);
 
             for my $test_number ( $last_test_number + 1 .. $num ) {
-                my $result = Test::Builder2::Result->new_result(
+                my $result = TB2::Result->new_result(
                     $self->_file_and_line,
                     pass        => 1,
                     directives  => [qw(unknown)],

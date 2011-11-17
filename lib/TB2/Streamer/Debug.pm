@@ -1,6 +1,6 @@
-package Test::Builder2::Streamer::Debug;
-use Test::Builder2::Mouse;
-with 'Test::Builder2::Streamer';
+package TB2::Streamer::Debug;
+use TB2::Mouse;
+with 'TB2::Streamer';
 
 has written_hunks => (
     is       => 'ro',
@@ -86,5 +86,5 @@ sub all_output {
     join '', map { $_->[1] } @{ $self->written_hunks };
 }
 
-no Test::Builder2::Mouse::Role;
+no TB2::Mouse::Role;
 1;

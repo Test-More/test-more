@@ -7,10 +7,10 @@ use lib 't/lib';
 
 BEGIN { require 't/test.pl' }
 use MyEventCoordinator;
-use Test::Builder2::Events;
+use TB2::Events;
 
-require_ok 'Test::Builder2::History';
-can_ok( 'Test::Builder2::History', 
+require_ok 'TB2::History';
+can_ok( 'TB2::History', 
         qw{ new            
             results
             has_results
@@ -20,9 +20,9 @@ can_ok( 'Test::Builder2::History',
 );
       
 # helpers
-sub new_history { Test::Builder2::History->new }
-sub Pass { Test::Builder2::Result->new_result( pass => 1, @_ ) }
-sub Fail { Test::Builder2::Result->new_result( pass => 0, @_ ) }
+sub new_history { TB2::History->new }
+sub Pass { TB2::Result->new_result( pass => 1, @_ ) }
+sub Fail { TB2::Result->new_result( pass => 0, @_ ) }
 
 
 note "basic history stats"; { 

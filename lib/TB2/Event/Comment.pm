@@ -1,12 +1,12 @@
-package Test::Builder2::Event::Comment;
+package TB2::Event::Comment;
 
-use Test::Builder2::Mouse;
-with 'Test::Builder2::Event';
+use TB2::Mouse;
+with 'TB2::Event';
 
 
 =head1 NAME
 
-Test::Builder2::Event::Comment - an event representing a comment
+TB2::Event::Comment - an event representing a comment
 
 =head1 DESCRIPTION
 
@@ -41,6 +41,6 @@ has comment =>
   required      => 1
 ;
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 
 1;

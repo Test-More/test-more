@@ -1,19 +1,19 @@
-package Test::Builder2::Counter;
+package TB2::Counter;
 
 use Carp;
-use Test::Builder2::Mouse;
-use Test::Builder2::Types;
+use TB2::Mouse;
+use TB2::Types;
 
 
 =head1 NAME
 
-Test::Builder2::Counter - Counts the number of tests run
+TB2::Counter - Counts the number of tests run
 
 =head1 SYNOPSIS
 
-  use Test::Builder2::Counter;
+  use TB2::Counter;
 
-  my $counter = Test::Builder2::Counter->new;
+  my $counter = TB2::Counter->new;
 
   $counter->increment;
   $counter->set($count);
@@ -27,7 +27,7 @@ simple positive integer.
 Most testing systems don't care how many tests run, but this is very
 important for TAP output.
 
-The counter is normally used through L<Test::Builder2::History>, but
+The counter is normally used through L<TB2::History>, but
 you can get it separately if you want to be really slim.
 
 =head1 METHODS
@@ -36,7 +36,7 @@ you can get it separately if you want to be really slim.
 
 =head3 new
 
-    my $counter = Test::Builder2::Counter->new;
+    my $counter = TB2::Counter->new;
 
 Creates a brand new counter starting at 0.
 
@@ -55,11 +55,11 @@ Like C<< ++$count >>.
 
 =cut
 
-use Test::Builder2::Types;
+use TB2::Types;
 
 has _count => (
     is          => 'rw',
-    isa         => 'Test::Builder2::Positive_Int',
+    isa         => 'TB2::Positive_Int',
     default     => 0,
 );
 

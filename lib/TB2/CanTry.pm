@@ -1,7 +1,7 @@
-package Test::Builder2::CanTry;
+package TB2::CanTry;
 
-use Test::Builder2::Mouse ();
-use Test::Builder2::Mouse::Role;
+use TB2::Mouse ();
+use TB2::Mouse::Role;
 
 
 # I'm not ready to publish this.  It doesn't deal with array return
@@ -47,6 +47,6 @@ sub try {
 
 =cut
 
-no Test::Builder2::Mouse::Role;
+no TB2::Mouse::Role;
 
 1;

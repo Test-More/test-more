@@ -1,22 +1,22 @@
-package Test::Builder2::Stack;
+package TB2::Stack;
 
 use 5.008001;
-use Test::Builder2::Mouse;
-use Test::Builder2::Types;
+use TB2::Mouse;
+use TB2::Types;
 
 use Carp qw(confess);
 
 
 =head1 NAME
 
-Test::Builder2::Stack - A stack object to be used when you need a stack of things.
+TB2::Stack - A stack object to be used when you need a stack of things.
 
 =head1 SYNOPSIS
 
    # TODO
 
-   use Test::Builder2::Stack;
-   my $stack = Test::Builder2::Stack->new;
+   use TB2::Stack;
+   my $stack = TB2::Stack->new;
    
 
 =head1 DESCRIPTION
@@ -70,7 +70,7 @@ sub BUILD {
 
     my $items = $stack->items;
 
-Returns an array ref of the Test::Builder2::AssertRecord objects on
+Returns an array ref of the TB2::AssertRecord objects on
 the stack.
 
 =cut
@@ -148,5 +148,5 @@ sub push {
 
 #TODO: would a map & grep method be sane?
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 1;

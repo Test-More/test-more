@@ -1,23 +1,23 @@
-package Test::Builder2::NoHistory;
+package TB2::NoHistory;
 use Carp;
-use Test::Builder2::Mouse;
-extends qw{Test::Builder2::History};
+use TB2::Mouse;
+extends qw{TB2::History};
 
 =head1 NAME
 
-Test::Builder2::NoHistory - Store no history, just keep stats
+TB2::NoHistory - Store no history, just keep stats
 
 =head1 SYNOPSIS
 
-    use Test::Builder2::NoHistory;
+    use TB2::NoHistory;
 
     # This is a shared default object
-    my $history = Test::Builder2::NoHistory->default;
-    my $ec = Test::Builder2::EventCoordinator->create(
+    my $history = TB2::NoHistory->default;
+    my $ec = TB2::EventCoordinator->create(
         history => $history
     );
 
-    my $result  = Test::Builder2::Result->new_result( pass => 1 );
+    my $result  = TB2::Result->new_result( pass => 1 );
     $ec->post_event($result);
 
     $history->can_succeed;    # true
@@ -31,7 +31,7 @@ This object does not store results but manages the history of test stats.
 
 =head1 API
 
-All methods are the same from Test::Builder2::History.
+All methods are the same from TB2::History.
 
 =cut
 
@@ -46,6 +46,6 @@ after results_push => sub{
 };
 
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 1;
 

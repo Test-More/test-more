@@ -5,10 +5,10 @@ use warnings;
 
 BEGIN { require 't/test.pl' }
 
-use Test::Builder2::Event::SetPlan;
+use TB2::Event::SetPlan;
 
 note "Basic event"; {
-    my $event = Test::Builder2::Event::SetPlan->new;
+    my $event = TB2::Event::SetPlan->new;
 
     is $event->event_type, "set_plan";
 
@@ -22,7 +22,7 @@ note "Basic event"; {
 }
 
 note "Basic event with a plan"; {
-    my $event = Test::Builder2::Event::SetPlan->new(
+    my $event = TB2::Event::SetPlan->new(
         asserts_expected        => 23,
         plan                    => { this => "that" }
     );
@@ -46,7 +46,7 @@ note "Basic event with a plan"; {
 
 
 note "Skip"; {
-    my $event = Test::Builder2::Event::SetPlan->new(
+    my $event = TB2::Event::SetPlan->new(
         skip                    => 1,
         skip_reason             => "i said so",
     );

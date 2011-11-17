@@ -5,9 +5,9 @@ use warnings;
 
 BEGIN { require "t/test.pl" }
 
-use Test::Builder2::Events;
+use TB2::Events;
 
-my $CLASS = 'Test::Builder2::OnlyOnePlan';
+my $CLASS = 'TB2::OnlyOnePlan';
 use_ok $CLASS;
 
 
@@ -16,7 +16,7 @@ note "Two different plans are not ok"; {
 
     ok eval {
         $onlyone->accept_event(
-            Test::Builder2::Event::SetPlan->new(
+            TB2::Event::SetPlan->new(
                 asserts_expected => 3,
                 file             => "bar.t",
                 line             => 42,
@@ -27,7 +27,7 @@ note "Two different plans are not ok"; {
 
     ok !eval {
         $onlyone->accept_event(
-            Test::Builder2::Event::SetPlan->new(
+            TB2::Event::SetPlan->new(
                 asserts_expected => 1,
                 file             => "foo.t",
                 line             => 99,
@@ -44,7 +44,7 @@ note "The same plan is ok"; {
 
     ok eval {
         $onlyone->accept_event(
-            Test::Builder2::Event::SetPlan->new(
+            TB2::Event::SetPlan->new(
                 asserts_expected => 3,
                 file             => "bar.t",
                 line             => 42,
@@ -55,7 +55,7 @@ note "The same plan is ok"; {
 
     ok eval {
         $onlyone->accept_event(
-            Test::Builder2::Event::SetPlan->new(
+            TB2::Event::SetPlan->new(
                 asserts_expected => 3,
                 file             => "foo.t",
                 line             => 99,
@@ -71,28 +71,28 @@ note "Multiple no_plans are ok"; {
 
     ok eval {
         $onlyone->accept_event(
-            Test::Builder2::Event::SetPlan->new(no_plan => 1)
+            TB2::Event::SetPlan->new(no_plan => 1)
         );
         1;
     }, "one no_plan is ok";
 
     ok eval {
         $onlyone->accept_event(
-            Test::Builder2::Event::SetPlan->new(no_plan => 1)
+            TB2::Event::SetPlan->new(no_plan => 1)
         );
         1;
     }, "two no_plans are ok";
 
     ok eval {
         $onlyone->accept_event(
-            Test::Builder2::Event::SetPlan->new(asserts_expected => 3)
+            TB2::Event::SetPlan->new(asserts_expected => 3)
         );
         1;
     }, "a fixed number of tests after a no_plan is ok";
 
     ok !eval {
         $onlyone->accept_event(
-            Test::Builder2::Event::SetPlan->new(asserts_expected => 23)
+            TB2::Event::SetPlan->new(asserts_expected => 23)
         );
         1;
     }, "another one is not";
@@ -104,14 +104,14 @@ note "Error message with no file/line"; {
 
     ok eval {
         $onlyone->accept_event(
-            Test::Builder2::Event::SetPlan->new(asserts_expected => 2)
+            TB2::Event::SetPlan->new(asserts_expected => 2)
         );
         1;
     }, "one plan is ok";
 
     ok !eval {
         $onlyone->accept_event(
-            Test::Builder2::Event::SetPlan->new(
+            TB2::Event::SetPlan->new(
                 asserts_expected => 3,
             )
         );

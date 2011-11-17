@@ -1,15 +1,15 @@
-package Test::Builder2::Streamer::Print;
-use Test::Builder2::Mouse;
-with 'Test::Builder2::Streamer', 'Test::Builder2::CanDupFilehandles';
+package TB2::Streamer::Print;
+use TB2::Mouse;
+with 'TB2::Streamer', 'TB2::CanDupFilehandles';
 
 
 =head1 NAME
 
-Test::Builder2::Streamer::Print - A simple streamer that prints
+TB2::Streamer::Print - A simple streamer that prints
 
 =head1 DESCRIPTION
 
-This is a L<Test::Builder2::Streamer> which prints to a filehandle.
+This is a L<TB2::Streamer> which prints to a filehandle.
 
 You are encouraged to subclass this Streamer if you're writing one
 which prints.
@@ -95,5 +95,5 @@ sub write {
     $self->safe_print($self->output_fh, @_);
 }
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 1;

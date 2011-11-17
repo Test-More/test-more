@@ -5,12 +5,12 @@ use warnings;
 
 BEGIN { require 't/test.pl' }
 
-use_ok( 'Test::Builder2::StackBuilder' );
+use_ok( 'TB2::StackBuilder' );
 
 BEGIN {
    package My::One;
-   use Test::Builder2::Mouse;
-   use Test::Builder2::StackBuilder;
+   use TB2::Mouse;
+   use TB2::StackBuilder;
 }
 
 {
@@ -19,8 +19,8 @@ BEGIN {
 
 BEGIN {
    package My::Two;
-   use Test::Builder2::Mouse;
-   use Test::Builder2::StackBuilder;
+   use TB2::Mouse;
+   use TB2::StackBuilder;
    buildstack 'items';
 }
 
@@ -42,8 +42,8 @@ BEGIN {
 
 BEGIN {
    package My::Three;
-   use Test::Builder2::Mouse;
-   use Test::Builder2::StackBuilder;
+   use TB2::Mouse;
+   use TB2::StackBuilder;
    sub nums_count {'buildin'};
    buildstack nums => 'Int';
 }

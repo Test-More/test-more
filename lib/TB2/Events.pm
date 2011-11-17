@@ -1,29 +1,29 @@
-package Test::Builder2::Events;
+package TB2::Events;
 
 use strict;
 use warnings;
 
-use Test::Builder2::Event::TestStart;
-use Test::Builder2::Event::TestEnd;
-use Test::Builder2::Event::SubtestStart;
-use Test::Builder2::Event::SubtestEnd;
-use Test::Builder2::Event::SetPlan;
-use Test::Builder2::Event::TestMetadata;
-use Test::Builder2::Event::Log;
-use Test::Builder2::Event::Comment;
-use Test::Builder2::Event::Abort;
-use Test::Builder2::Result;
+use TB2::Event::TestStart;
+use TB2::Event::TestEnd;
+use TB2::Event::SubtestStart;
+use TB2::Event::SubtestEnd;
+use TB2::Event::SetPlan;
+use TB2::Event::TestMetadata;
+use TB2::Event::Log;
+use TB2::Event::Comment;
+use TB2::Event::Abort;
+use TB2::Result;
 
 
 =head1 NAME
 
-Test::Builder2::Events - Convenience module to load all core TB2 events
+TB2::Events - Convenience module to load all core TB2 events
 
 =head1 SYNOPSIS
 
-    use Test::Builder2::Events;
+    use TB2::Events;
 
-    my $event = Test::Builder2::Event::SetPlan->new( ... );
+    my $event = TB2::Event::SetPlan->new( ... );
 
 =head1 DESCRIPTION
 
@@ -32,15 +32,15 @@ intended as a convenience for authors of builders.
 
 =head2 Events Loaded
 
-=head3 Test::Builder2::Event::TestStart
+=head3 TB2::Event::TestStart
 
-=head3 Test::Builder2::Event::TestEnd
+=head3 TB2::Event::TestEnd
 
-=head3 Test::Builder2::Event::SetPlan
+=head3 TB2::Event::SetPlan
 
-=head3 Test::Builder2::Event::StreamMetadata
+=head3 TB2::Event::StreamMetadata
 
-=head3 Test::Builder2::Event::Result
+=head3 TB2::Event::Result
 
 =cut
 

@@ -1,21 +1,21 @@
-package Test::Builder2::EventHandler;
+package TB2::EventHandler;
 
-use Test::Builder2::Mouse ();
-use Test::Builder2::Mouse::Role;
+use TB2::Mouse ();
+use TB2::Mouse::Role;
 
-no Test::Builder2::Mouse::Role;
+no TB2::Mouse::Role;
 
 
 =head1 NAME
 
-Test::Builder2::EventHandler - A role which handles events and results
+TB2::EventHandler - A role which handles events and results
 
 =head1 SYNOPSIS
 
   package My::EventHandler;
 
-  use Test::Builder2::Mouse;
-  with "Test::Builder2::EventHandler";
+  use TB2::Mouse;
+  with "TB2::EventHandler";
 
   # handle_result() handles result events
   sub handle_result {
@@ -42,7 +42,7 @@ Test::Builder2::EventHandler - A role which handles events and results
       ....
   }
 
-  no Test::Builder2::Mouse;
+  no TB2::Mouse;
 
 
 =head1 DESCRIPTION
@@ -50,8 +50,8 @@ Test::Builder2::EventHandler - A role which handles events and results
 An EventHandler is made known to an EventCoordinator which gives it
 Events and Results to do whatever it wants with.  EventHandlers can be
 used to record events for future use (such as
-L<Test::Builder2::History>), to take an action like producing output
-(such as L<Test::Builder2::Formatter>) or even modifying the event
+L<TB2::History>), to take an action like producing output
+(such as L<TB2::Formatter>) or even modifying the event
 itself.
 
 =head1 METHODS
@@ -103,7 +103,7 @@ sub _event_type2handle_method {
 
 When a subtest starts, the TestState will call C<subtest_handler> on
 each EventHandler to get a handler for the subtest.  It will be passed
-in the $subtest_start_event (see L<Test::Builder2::Event::SubtestStart>).
+in the $subtest_start_event (see L<TB2::Event::SubtestStart>).
 
 The provided method simply returns a new instance of the $handler's
 class which should be sufficient for most handlers.
@@ -166,10 +166,10 @@ stream of pluses and minuses.
 
     package My::Formatter::PlusMinus;
 
-    use Test::Builder2::Mouse;
+    use TB2::Mouse;
 
     # This provides write(), otherwise it's a normal EventHandler
-    extends 'Test::Builder2::Formatter';
+    extends 'TB2::Formatter';
 
     # Output a newline when we're done testing.
     sub handle_test_end {

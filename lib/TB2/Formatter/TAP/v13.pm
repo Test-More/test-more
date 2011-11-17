@@ -1,29 +1,29 @@
-package Test::Builder2::Formatter::TAP::v13;
+package TB2::Formatter::TAP::v13;
 
 use 5.008001;
 
-use Test::Builder2::Mouse;
+use TB2::Mouse;
 use Carp;
-use Test::Builder2::Types;
+use TB2::Types;
 
-use Test::Builder2::threads::shared;
+use TB2::threads::shared;
 
-extends 'Test::Builder2::Formatter';
-with 'Test::Builder2::CanLoad';
+extends 'TB2::Formatter';
+with 'TB2::CanLoad';
 
-sub default_streamer_class { 'Test::Builder2::Streamer::TAP' }
+sub default_streamer_class { 'TB2::Streamer::TAP' }
 
 
 =head1 NAME
 
-Test::Builder2::Formatter::TAP::v13 - Formatter as TAP version 13
+TB2::Formatter::TAP::v13 - Formatter as TAP version 13
 
 =head1 SYNOPSIS
 
-  use Test::Builder2::Formatter::TAP::v13;
+  use TB2::Formatter::TAP::v13;
 
   my $formatter = Test:::Builder2::Formatter::TAP::v13->new;
-  my $ec = Test::Builder2::EventCoordinator->create(
+  my $ec = TB2::EventCoordinator->create(
       formatters => [$formatter]
   );
   $ec->post_event($event);
@@ -32,11 +32,11 @@ Test::Builder2::Formatter::TAP::v13 - Formatter as TAP version 13
 
 =head1 DESCRIPTION
 
-Formatter Test::Builder2::Result's as TAP version 13.
+Formatter TB2::Result's as TAP version 13.
 
 =head1 METHODS
 
-As L<Test::Builder2::Formatter> with the following changes and additions.
+As L<TB2::Formatter> with the following changes and additions.
 
 =head3 out
 
@@ -100,17 +100,17 @@ sub note {
     my $counter = $formatter->counter;
     $formatter->counter($counter);
 
-Gets/sets the Test::Builder2::Counter for this formatter keeping track of
+Gets/sets the TB2::Counter for this formatter keeping track of
 the test number.
 
 =cut
 
 has counter => 
    is => 'rw',
-   isa => 'Test::Builder2::Counter',
+   isa => 'TB2::Counter',
    default => sub {
-      $_[0]->load('Test::Builder2::Counter');
-      return Test::Builder2::Counter->new;
+      $_[0]->load('TB2::Counter');
+      return TB2::Counter->new;
    },
 ;
 
@@ -349,7 +349,7 @@ sub output_ending_commentary {
 
 =head3 handle_result
 
-Takes a C<Test::Builder2::Result> as an argument and displays the
+Takes a C<TB2::Result> as an argument and displays the
 result details.
 
 =cut
@@ -549,7 +549,7 @@ sub handle_subtest_end {
             $result_args{name}.= qq[ "$name"] if defined $name;
         }
 
-        my $result = Test::Builder2::Result->new_result( %result_args );
+        my $result = TB2::Result->new_result( %result_args );
         $ec->post_event($result);
     }
 

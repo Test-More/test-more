@@ -1,22 +1,22 @@
-package Test::Builder2::EventCoordinator;
+package TB2::EventCoordinator;
 
-use Test::Builder2::Mouse;
-use Test::Builder2::Types;
+use TB2::Mouse;
+use TB2::Types;
 
-with 'Test::Builder2::CanLoad';
+with 'TB2::CanLoad';
 
 my @Types = qw(early_handlers history formatters late_handlers);
 
 
 =head1 NAME
 
-Test::Builder2::EventCoordinator - Coordinate events amongst the builders
+TB2::EventCoordinator - Coordinate events amongst the builders
 
 
 =head1 SYNOPSIS
 
-    use Test::Builder2::EventCoordinator;
-    my $ec = Test::Builder2::EventCoordinator->create;
+    use TB2::EventCoordinator;
+    my $ec = TB2::EventCoordinator->create;
 
     # The builder sends it events like assert results and the beginning
     # and end of test streams.
@@ -57,7 +57,7 @@ The History object which is listening to events.
 This is a special case of C<handlers> provided so you can distinguish
 between formatters and other handlers.
 
-Defaults to C<< [ Test::Builder2::History->new ] >>.
+Defaults to C<< [ TB2::History->new ] >>.
 
 Unlike other handlers, there is only one history.
 
@@ -70,8 +70,8 @@ has history =>
   isa           => 'Object',
   lazy          => 1,
   default       => sub {
-      $_[0]->load("Test::Builder2::History");
-      return Test::Builder2::History->new;
+      $_[0]->load("TB2::History");
+      return TB2::History->new;
   };
 
 
@@ -82,7 +82,7 @@ An array ref of Formatter objects which are listening to events.
 This is a special case of C<handlers> provided so you can distinguish
 between formatters and other handlers.
 
-Defaults to C<< [ Test::Builder2::Formatter::TAP->new ] >>.
+Defaults to C<< [ TB2::Formatter::TAP->new ] >>.
 
 =cut
 
@@ -93,15 +93,15 @@ has formatters =>
   isa           => 'ArrayRef',
   lazy          => 1,
   default       => sub {
-      $_[0]->load("Test::Builder2::Formatter::TAP");
-      return [ Test::Builder2::Formatter::TAP->new ];
+      $_[0]->load("TB2::Formatter::TAP");
+      return [ TB2::Formatter::TAP->new ];
   };
 
 
 =head3 early_handlers
 
 An array ref of any additional objects which are listening to events.
-They all must do the Test::Builder2::EventHandler role (or have
+They all must do the TB2::EventHandler role (or have
 equivalent methods).
 
 early_handlers are called first before any other handlers.  This lets
@@ -122,7 +122,7 @@ has early_handlers =>
 =head3 late_handlers
 
 An array ref of any additional objects which are listening to events.
-They all must do the Test::Builder2::EventHandler role (or have
+They all must do the TB2::EventHandler role (or have
 equivalent methods).
 
 late_handlers are called last after all other handlers.  This lets
@@ -148,7 +148,7 @@ These are methods which create or retrieve EventCoordinator objects.
 
 =head3 new
 
-    my $ec = Test::Builder2::EventCoordinator->new( %args );
+    my $ec = TB2::EventCoordinator->new( %args );
 
 Creates a new event coordinator.
 
@@ -156,7 +156,7 @@ Creates a new event coordinator.
 
 For example, to create an EventCoordinator without a formatter...
 
-    my $ec = Test::Builder2::EventCoordinator->new(
+    my $ec = TB2::EventCoordinator->new(
         formatters => []
     );
 
@@ -263,10 +263,10 @@ L<http://www.flickr.com/photos/xwrn/5334766071/>
 
 =head1 SEE ALSO
 
-L<Test::Builder2::EventHandler>, L<Test::Builder2::Event>, L<Test::Builder2::Result>
+L<TB2::EventHandler>, L<TB2::Event>, L<TB2::Result>
 
 =cut
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 
 1;

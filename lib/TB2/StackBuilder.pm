@@ -1,22 +1,22 @@
-package Test::Builder2::StackBuilder;
+package TB2::StackBuilder;
 
 use 5.008001;
-use Test::Builder2::Mouse;
-use Test::Builder2::Mouse::Exporter;
-use Test::Builder2::Types;
+use TB2::Mouse;
+use TB2::Mouse::Exporter;
+use TB2::Types;
 
 use Carp qw(confess);
 
 
 =head1 NAME
 
-Test::Builder2::StackBuilder - A stack builder
+TB2::StackBuilder - A stack builder
 
 =head1 SYNOPSIS
 
     # TODO
 
-    use Test::Builder2::StackBuilder;
+    use TB2::StackBuilder;
     buildstack items => 'Int';
 
     # is the same as having said:
@@ -43,7 +43,7 @@ Exports a keyword buildstack to build up an Attribute array and methods consista
 
 =cut
 
-Test::Builder2::Mouse::Exporter->setup_import_methods(
+TB2::Mouse::Exporter->setup_import_methods(
     as_is => [ 'buildstack' ],
 );
 
@@ -71,5 +71,5 @@ sub buildstack ($;$) {
 }
 
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 1;

@@ -1,4 +1,4 @@
-package Test::Builder2::threads::shared;
+package TB2::threads::shared;
 
 # Avoid loading threads::shared unless we absolutely have to.
 # Avoids triggering once and future threading bugs
@@ -9,12 +9,12 @@ use warnings;
 use Config;
 
 if( $Config{useithreads} && $INC{'threads.pm'} ) {
-    require Test::Builder2::threads::shared::on;
-    our @ISA = qw(Test::Builder2::threads::shared::on);
+    require TB2::threads::shared::on;
+    our @ISA = qw(TB2::threads::shared::on);
 }
 else {
-    require Test::Builder2::threads::shared::off;
-    our @ISA = qw(Test::Builder2::threads::shared::off);
+    require TB2::threads::shared::off;
+    our @ISA = qw(TB2::threads::shared::off);
 }
 
 1;

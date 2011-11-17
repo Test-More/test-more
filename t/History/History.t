@@ -7,18 +7,18 @@ use lib 't/lib';
 
 BEGIN { require 't/test.pl' }
 use MyEventCoordinator;
-use Test::Builder2::Result;
+use TB2::Result;
 
 
-my $CLASS = "Test::Builder2::History";
-require_ok 'Test::Builder2::History';
+my $CLASS = "TB2::History";
+require_ok 'TB2::History';
 
 
-my $Pass = Test::Builder2::Result->new_result(
+my $Pass = TB2::Result->new_result(
     pass => 1,
 );
 
-my $Fail = Test::Builder2::Result->new_result(
+my $Fail = TB2::Result->new_result(
     pass => 0,
 );
 

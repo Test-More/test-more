@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-Test::Builder2::Design - Explaining the design of Test::Builder2
+TB2::Design - Explaining the design of Test::Builder2
 
 =head1 DESCRIPTION
 
@@ -118,7 +118,7 @@ Users must be able to write test libraries on top of TB2 that do pretty
 much anything.
 
 There are three primary ways of doing this.  The most common will be
-writing a test module using L<Test::Builder2::Module>.  Users will write
+writing a test module using L<TB2::Module>.  Users will write
 logic to test their statement, and then hand the result off to a TB2 object
 for processing.
 
@@ -138,7 +138,7 @@ to output any format you like.  As such, its internal structures have to be
 free of assumptions.  For example, TAP is one of the few testing systems
 that requires a test count. TB1 is riddled with that assumption. TB2 cannot be.
 
-See L<Test::Builder2::Format> for details.
+See L<TB2::Format> for details.
 
 
 =head3 Multiple Streams
@@ -146,7 +146,7 @@ See L<Test::Builder2::Format> for details.
 TB1 has limited support for outputting to anywhere other than STDOUT and
 STDERR.  TB2 should have full control over where and how output occurs.
 
-See L<Test::Builder2::Streamer> for details.
+See L<TB2::Streamer> for details.
 
 
 =head3 Minimal Assumptions
@@ -187,7 +187,7 @@ See F<examples/TB2> in the source directory for examples of TB2 extensions.
 =head2 Writing Test Libraries
 
 The simplest way to extend TB2 is to write a test library. 
-L<Test::Builder2::Module> provides the conveniences to the test author. 
+L<TB2::Module> provides the conveniences to the test author. 
 L<Test::Simple> is a simple example of a Test::Builder2 module.
 
 =head2 Writing TB2 Roles
@@ -206,8 +206,8 @@ action based on an event, or even alter an event as it happens.  Event handlers
 will allow TB2 to halt on test failure, to enforce test names, and to provide the 
 functionality of Test::NoWarnings.  
 
-Formatters are also event handlers.  See L<Test::Builder2::EventHandler>, 
-L<Test::Builder2::EventCoordinator> and L<Test::Builder2::Events> for details.
+Formatters are also event handlers.  See L<TB2::EventHandler>, 
+L<TB2::EventCoordinator> and L<TB2::Events> for details.
 
 
 =head1 Use Cases
@@ -376,7 +376,7 @@ having a test library declare that a function is an assert.  This is done
 with the least fanfare possible:
 
     package My::Test::Module;
-    use Test::Builder2::Module;
+    use TB2::Module;
 
     install_test is => sub {
         my($have, $want, $name) = @_;
@@ -412,7 +412,7 @@ There is no way for TB2 to infer this special case, it must be declared by
 the author of C<warnings_is>.  C<warnings_is> must tell TB2 that it should
 save its current assert stack and start a new one.
 
-    use Test::Builder2::Module;
+    use TB2::Module;
     
     install_test warnings_is => sub (&$) {
         my($code, $warning) = @_;
@@ -617,7 +617,7 @@ Test::Builder.  That's ok because Test::Builder has been rewritten in
 terms of Test::Builder2 (more on that below).
 
 Test::Builder2, rather than being a monolith, produces a
-Test::Builder2::Result object for each assert run.  This gets handed
+TB2::Result object for each assert run.  This gets handed
 to the EventCoordinator which hands the Result off to the History,
 Formatter and any other handlers.  Test::Builder and Test::Builder2
 share the same EventCoordinator and thus the same Formatter and
@@ -682,8 +682,6 @@ Refers to L<Test::Builder>.
 =head2 TB2
 
 For brevity's sake, Test::Builder2 will be referred to as B<TB2>.
-Similarly, sub-modules will be referred to as B<TB2::Foo> even though
-it is really the long form B<Test::Builder2::Foo>.
 
 =head2 builder
 
@@ -767,10 +765,10 @@ system this is all the F<.t> files.
 =head2 formatter
 
 Takes the abstract result and turns it into parsable output.  For
-example, L<Test::Builder2::Formatter::TAP> turns test results into the
+example, L<TB2::Formatter::TAP> turns test results into the
 familiar TAP.
 
-See L<Test::Builder2::Formatter> for details.
+See L<TB2::Formatter> for details.
 
 =head2 streamer
 
@@ -780,7 +778,7 @@ it as an email, or write it to a file, or do all of these things.
 
 A formatter contains a streamer.
 
-See L<Test::Builder2::Streamer> for details.
+See L<TB2::Streamer> for details.
 
 =head2 TAP
 

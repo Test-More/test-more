@@ -6,7 +6,7 @@ use strict;
 our $VERSION = '2.00_07';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Builder2::Module;
+use TB2::Module;
 our @EXPORT = qw(ok done_testing);
 
 

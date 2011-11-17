@@ -1,8 +1,8 @@
-package Test::Builder2::AssertStack;
+package TB2::AssertStack;
 
 use 5.008001;
-use Test::Builder2::Mouse;
-use Test::Builder2::Types;
+use TB2::Mouse;
+use TB2::Types;
 
 use Carp qw(confess);
 sub sanity ($) { confess "Assert failed" unless $_[0] };
@@ -10,16 +10,16 @@ sub sanity ($) { confess "Assert failed" unless $_[0] };
 
 =head1 NAME
 
-Test::Builder2::AssertStack - A stack of where asserts were called
+TB2::AssertStack - A stack of where asserts were called
 
 =head1 SYNOPSIS
 
-    use Test::Builder2::AssertRecord;
-    use Test::Builder2::AssertStack;
+    use TB2::AssertRecord;
+    use TB2::AssertStack;
 
-    my $stack = Test::Builder2::AssertStack->new;
+    my $stack = TB2::AssertStack->new;
 
-    my $record = Test::Builder2::AssertRecord->new_from_caller(1);
+    my $record = TB2::AssertRecord->new_from_caller(1);
     $stack->push($record);
     my $record = $stack->pop;
     my $asserts = $stack->asserts;
@@ -35,7 +35,7 @@ It can also let TB2 know when control is about to return to the user
 from calling an assert so it can fire an end of assert action which
 includes formatting and outputing the final result and diagnostics.
 
-Asserts are stored as L<Test::Builder2::AssertRecord> objects.
+Asserts are stored as L<TB2::AssertRecord> objects.
 
 =head1 Methods
 
@@ -43,14 +43,14 @@ Asserts are stored as L<Test::Builder2::AssertRecord> objects.
 
     my $asserts = $stack->asserts;
 
-Returns an array ref of the Test::Builder2::AssertRecord objects on
+Returns an array ref of the TB2::AssertRecord objects on
 the stack.
 
 =cut
 
 has asserts =>
   is            => 'ro',
-  isa           => 'ArrayRef[Test::Builder2::AssertRecord]',
+  isa           => 'ArrayRef[TB2::AssertRecord]',
   default       => sub { [] }
 ;
 
@@ -148,6 +148,6 @@ sub pop {
 }
 
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 
 1;

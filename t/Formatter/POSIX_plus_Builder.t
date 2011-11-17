@@ -8,12 +8,12 @@ use lib 't/lib';
 BEGIN { require 't/test.pl' }
 
 use Test::Builder2;
-use Test::Builder2::Formatter::POSIX;
+use TB2::Formatter::POSIX;
 
 my $test = Test::Builder2->create;
 
-my $posix = Test::Builder2::Formatter::POSIX->new(
-  streamer_class => 'Test::Builder2::Streamer::Debug'
+my $posix = TB2::Formatter::POSIX->new(
+  streamer_class => 'TB2::Streamer::Debug'
 );
 
 $test->test_state->formatters([$posix]);

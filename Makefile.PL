@@ -86,8 +86,8 @@ WriteMakefile(
             MailingList =>      'http://groups.google.com/group/test-more-users',
         },
         no_index => {
-            directory => ["lib/Test/Builder2/Mouse/"],
-            file      => ["lib/Test/Builder2/Mouse.pm"],
+            directory => ["lib/TB2/Mouse/"],
+            file      => ["lib/TB2/Mouse.pm"],
         },
     }))
 );
@@ -107,7 +107,7 @@ perltidy:
 .PHONY: Mouse
 
 Mouse:
-	$(PERL) "-MMousse::Maker" -e make_mousse 'Test::Builder2::Mouse' > lib/Test/Builder2/Mouse.pm
+	$(PERL) "-MMousse::Maker" -e make_mousse 'TB2::Mouse' > lib/TB2/Mouse.pm
 
 MAKE
     }

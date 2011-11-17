@@ -5,20 +5,20 @@ use warnings;
 
 BEGIN { require 't/test.pl' }
 
-use Test::Builder2::Events;
-use Test::Builder2::Formatter::TAP;
-use Test::Builder2::EventCoordinator;
+use TB2::Events;
+use TB2::Formatter::TAP;
+use TB2::EventCoordinator;
 
 my $formatter;
 my $ec;
 sub setup {
-    $formatter = Test::Builder2::Formatter::TAP->new(
-        streamer_class => 'Test::Builder2::Streamer::Debug'
+    $formatter = TB2::Formatter::TAP->new(
+        streamer_class => 'TB2::Streamer::Debug'
     );
     $formatter->show_ending_commentary(0);
-    isa_ok $formatter, "Test::Builder2::Formatter::TAP";
+    isa_ok $formatter, "TB2::Formatter::TAP";
 
-    $ec = Test::Builder2::EventCoordinator->new(
+    $ec = TB2::EventCoordinator->new(
         formatters => [$formatter],
     );
 
@@ -33,12 +33,12 @@ sub last_output {
 note "Escape # in test name"; {
     setup;
 
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass => 1, name => "foo # bar"
     );
 
     $ec->post_event(
-        Test::Builder2::Event::TestStart->new
+        TB2::Event::TestStart->new
     );
     last_output;
 
@@ -51,12 +51,12 @@ note "Escape # in test name"; {
 note "Escape # in directive name"; {
     setup;
 
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass => 1, name => "foo # bar", directives => ['todo'], reason => "this # that"
     );
 
     $ec->post_event(
-        Test::Builder2::Event::TestStart->new
+        TB2::Event::TestStart->new
     );
     last_output;
 

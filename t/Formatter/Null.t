@@ -7,11 +7,11 @@ use lib 't/lib';
 
 BEGIN { require 't/test.pl' }
 use MyEventCoordinator;
-use Test::Builder2::Events;
-use Test::Builder2::Formatter::Null;
+use TB2::Events;
+use TB2::Formatter::Null;
 
-my $null = Test::Builder2::Formatter::Null->new(
-  streamer_class => 'Test::Builder2::Streamer::Debug'
+my $null = TB2::Formatter::Null->new(
+  streamer_class => 'TB2::Streamer::Debug'
 );
 
 my $ec = MyEventCoordinator->new(
@@ -19,12 +19,12 @@ my $ec = MyEventCoordinator->new(
 );
 
 {
-    $ec->post_event( Test::Builder2::Event::TestStart->new );
+    $ec->post_event( TB2::Event::TestStart->new );
     is $null->streamer->read, "", "test start";
 }
 
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass     => 1,
         name     => "basset hounds got long ears",
     );
@@ -36,7 +36,7 @@ my $ec = MyEventCoordinator->new(
 }
 
 {
-    $ec->post_event( Test::Builder2::Event::TestEnd->new );
+    $ec->post_event( TB2::Event::TestEnd->new );
     is(
         $null->streamer->read,
         "",

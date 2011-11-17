@@ -5,14 +5,14 @@ use warnings;
 
 BEGIN { require "t/test.pl" }
 
-use Test::Builder2::Formatter::TAP;
+use TB2::Formatter::TAP;
 
 my $formatter;
 sub setup {
-    $formatter = Test::Builder2::Formatter::TAP->new(
-        streamer_class => 'Test::Builder2::Streamer::Debug'
+    $formatter = TB2::Formatter::TAP->new(
+        streamer_class => 'TB2::Streamer::Debug'
     );
-    isa_ok $formatter, "Test::Builder2::Formatter::TAP";
+    isa_ok $formatter, "TB2::Formatter::TAP";
 
     return $formatter;
 }

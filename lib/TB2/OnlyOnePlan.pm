@@ -1,28 +1,28 @@
-package Test::Builder2::OnlyOnePlan;
+package TB2::OnlyOnePlan;
 
 use strict;
 use warnings;
 
 use Carp;
 
-use Test::Builder2::Mouse;
-with 'Test::Builder2::EventHandler';
+use TB2::Mouse;
+with 'TB2::EventHandler';
 
 
 =head1 NAME
 
-Test::Builder2::OnlyOnePlan - Enforces there being only one plan per test
+TB2::OnlyOnePlan - Enforces there being only one plan per test
 
 =head1 SYNOPSIS
 
     # Add an instance of this to the TestState to enforce plans
-    use Test::Builder2::OnlyOnePlan;
-    $test_state->add_early_handlers( Test::Builder2::OnlyOnePlan->new );
+    use TB2::OnlyOnePlan;
+    $test_state->add_early_handlers( TB2::OnlyOnePlan->new );
 
 
 =head1 DESCRIPTION
 
-This is a L<Test::Builder2::EventHandler> which enforces there being
+This is a L<TB2::EventHandler> which enforces there being
 only one plan issued per test.
 
 There are exceptions...
@@ -121,5 +121,5 @@ sub _plan_location {
 
 
 __PACKAGE__->meta->make_immutable();
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 1;

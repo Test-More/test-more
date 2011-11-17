@@ -5,13 +5,13 @@ use lib 't/lib';
 
 BEGIN { require "t/test.pl" }
 use MyEventCoordinator;
-use Test::Builder2::Events;
+use TB2::Events;
 
-use_ok 'Test::Builder2::Formatter::PlusMinus';
+use_ok 'TB2::Formatter::PlusMinus';
 
 sub new_formatter {
-    return Test::Builder2::Formatter::PlusMinus->new(
-        streamer_class => 'Test::Builder2::Streamer::Debug'
+    return TB2::Formatter::PlusMinus->new(
+        streamer_class => 'TB2::Streamer::Debug'
     );
 }
 
@@ -26,7 +26,7 @@ my $ec = MyEventCoordinator->new(
 # Begin
 {
     $ec->post_event(
-        Test::Builder2::Event::TestStart->new
+        TB2::Event::TestStart->new
     );
     is $formatter->streamer->read, "";
 }
@@ -34,7 +34,7 @@ my $ec = MyEventCoordinator->new(
 
 # Pass
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass     => 1,
         name     => "basset hounds got long ears",
     );
@@ -49,7 +49,7 @@ my $ec = MyEventCoordinator->new(
 
 # Fail
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 0,
         name            => "basset hounds got long ears",
     );
@@ -64,7 +64,7 @@ my $ec = MyEventCoordinator->new(
 
 # Skip
 {
-    my $result = Test::Builder2::Result->new_result(
+    my $result = TB2::Result->new_result(
         pass            => 1,
         directives      => [qw(skip)],
         name            => "basset hounds got long ears",
@@ -81,7 +81,7 @@ my $ec = MyEventCoordinator->new(
 # End
 {
     $ec->post_event(
-        Test::Builder2::Event::TestEnd->new
+        TB2::Event::TestEnd->new
     );
     is $formatter->streamer->read, "\n";
 }

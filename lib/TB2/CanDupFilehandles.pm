@@ -1,20 +1,20 @@
-package Test::Builder2::CanDupFilehandles;
+package TB2::CanDupFilehandles;
 
-use Test::Builder2::Mouse ();
-use Test::Builder2::Mouse::Role;
-with 'Test::Builder2::CanTry';
+use TB2::Mouse ();
+use TB2::Mouse::Role;
+with 'TB2::CanTry';
 
 
 =head1 NAME
 
-Test::Builder2::CanDupFilehandles - A role for duplicating filehandles
+TB2::CanDupFilehandles - A role for duplicating filehandles
 
 =head1 SYNOPSIS
 
     package Some::Thing;
 
-    use Test::Builder2::Mouse;
-    with 'Test::Builder2::CanDupFilehandles';
+    use TB2::Mouse;
+    with 'TB2::CanDupFilehandles';
 
 =head1 DESCRIPTION
 
@@ -92,6 +92,6 @@ sub _apply_layers {
     binmode($fh, join(":", "", "raw", @unique));
 }
 
-no Test::Builder2::Mouse::Role;
+no TB2::Mouse::Role;
 
 1;

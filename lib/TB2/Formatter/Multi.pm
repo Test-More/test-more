@@ -1,20 +1,20 @@
-package Test::Builder2::Formatter::Multi;
+package TB2::Formatter::Multi;
 
-use Test::Builder2::Mouse;
+use TB2::Mouse;
 
-extends 'Test::Builder2::Formatter';
+extends 'TB2::Formatter';
 
 
 =head1 NAME
 
-Test::Builder2::Formatter::Multi - Use multiple formatters at once
+TB2::Formatter::Multi - Use multiple formatters at once
 
 
 =head1 SYNOPSIS
 
-    use Test::Builder2::Formatter::Multi;
+    use TB2::Formatter::Multi;
 
-    my $multi = Test::Builder2::Formatter::Multi->new;
+    my $multi = TB2::Formatter::Multi->new;
     $multi->add_formatters($this_formatter, $that_formatter);
 
     # Equivalent to
@@ -51,7 +51,7 @@ A convenience method to add @formatters to C<< $multi->formatters >>.
 
 has formatters =>
   is            => 'rw',
-  isa           => 'ArrayRef[Test::Builder2::Formatter]',
+  isa           => 'ArrayRef[TB2::Formatter]',
   default       => sub { [] }
 ;
 

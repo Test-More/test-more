@@ -5,8 +5,8 @@ use warnings;
 
 BEGIN { require "t/test.pl" }
 
-use Test::Builder2::Counter;
-my $CLASS = "Test::Builder2::Counter";
+use TB2::Counter;
+my $CLASS = "TB2::Counter";
 
 {
     my $counter = $CLASS->new;

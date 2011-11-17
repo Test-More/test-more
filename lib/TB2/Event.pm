@@ -1,22 +1,22 @@
-package Test::Builder2::Event;
+package TB2::Event;
 
-use Test::Builder2::Mouse ();
-use Test::Builder2::Mouse::Role;
-use Test::Builder2::Types;
+use TB2::Mouse ();
+use TB2::Mouse::Role;
+use TB2::Types;
 
 requires qw( build_event_type );
 
 
 =head1 NAME
 
-Test::Builder2::Event - A test event role
+TB2::Event - A test event role
 
 =head1 SYNOPSIS
 
     package My::Event;
 
-    use Test::Builder2::Mouse;
-    with 'Test::Builder2::Event';
+    use TB2::Mouse;
+    with 'TB2::Event';
 
     sub as_hash    { ... }
     sub build_event_type { "my_thingy" }
@@ -51,7 +51,7 @@ perspective, not literally where the event was created inside the builder.
 
 has line =>
   is    => 'rw',
-  isa   => 'Test::Builder2::Positive_Int'
+  isa   => 'TB2::Positive_Int'
 ;
 
 =head3 file
@@ -81,7 +81,7 @@ writing a new event.
 
 has event_type =>
   is    => 'ro',
-  isa   => 'Test::Builder2::LC_AlphaNumUS_Str',
+  isa   => 'TB2::LC_AlphaNumUS_Str',
   builder => 'build_event_type',
 ;
 
@@ -177,10 +177,10 @@ sub keys_for_as_hash {
 
 =head1 SEE ALSO
 
-L<Test::Builder2::Result>
+L<TB2::Result>
 
 =cut
 
-no Test::Builder2::Mouse::Role;
+no TB2::Mouse::Role;
 
 1;

@@ -1,22 +1,22 @@
-package Test::Builder2::Tester;
+package TB2::Tester;
 
-use Test::Builder2::Mouse;
-with "Test::Builder2::CanTry";
+use TB2::Mouse;
+with "TB2::CanTry";
 
-use Test::Builder2::Module;
+use TB2::Module;
 our @EXPORT = qw(capture result_like event_like);
 my $CLASS = __PACKAGE__;
 
 
 =head1 NAME
 
-Test::Builder2::Tester - Testing a Test:: module
+TB2::Tester - Testing a Test:: module
 
 =head1 SYNOPSIS
 
     use Test::More;
     use Your::Test::Module qw(this_ok that_ok);
-    use Test::Builder2::Tester;
+    use TB2::Tester;
 
     my $capture = capture {
         this_ok $this, "some name";
@@ -51,7 +51,7 @@ These are exported by default
 
 Captures all the events and results which happens inside the block.
 
-Returns a L<Test::Builder2::History> that you can reference later.
+Returns a L<TB2::History> that you can reference later.
 This is disassociated from any other tests, so you do what you like to
 it without altering any other tests.
 
@@ -60,8 +60,8 @@ it without altering any other tests.
 sub capture(&) {
     my $code = shift;
 
-    require Test::Builder2::TestState;
-    my $state = Test::Builder2::TestState->default;
+    require TB2::TestState;
+    my $state = TB2::TestState->default;
     my $our_ec = $state->push_coordinator;
 
     $our_ec->clear_formatters;
@@ -134,7 +134,7 @@ install_test result_like => sub($$;$) {
 };
 
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 
 1;
 

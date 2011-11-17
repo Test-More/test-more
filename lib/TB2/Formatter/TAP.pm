@@ -1,14 +1,14 @@
-package Test::Builder2::Formatter::TAP;
+package TB2::Formatter::TAP;
 
 use 5.008001;
 
-use Test::Builder2::Mouse;
-extends 'Test::Builder2::Formatter::TAP::v13';
+use TB2::Mouse;
+extends 'TB2::Formatter::TAP::v13';
 
 
 =head1 NAME
 
-Test::Builder2::Formatter::TAP - Formatter as the latest stable TAP
+TB2::Formatter::TAP - Formatter as the latest stable TAP
 
 =head1 SYNOPSIS
 
@@ -19,7 +19,7 @@ Currently TAP::v13.
 
 =head1 SEE ALSO
 
-L<< Test::Builder2::Formatter::TAP::v13 >>
+L<< TB2::Formatter::TAP::v13 >>
 
 =cut
 

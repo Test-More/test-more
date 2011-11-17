@@ -1,19 +1,19 @@
-package Test::Builder2::Formatter::Null;
+package TB2::Formatter::Null;
 
-use Test::Builder2::Mouse;
+use TB2::Mouse;
 
-extends 'Test::Builder2::Formatter';
+extends 'TB2::Formatter';
 
 
 =head1 NAME
 
-Test::Builder2::Formatter::Null - A formatter that does nothing
+TB2::Formatter::Null - A formatter that does nothing
 
 
 =head1 SYNOPSIS
 
     use Test::Builder::Formatter::Null;
-    my $null = Test::Builder2::Formatter::Null->new;
+    my $null = TB2::Formatter::Null->new;
 
     # Make your tests output nothing
     $tb->formatter($null);

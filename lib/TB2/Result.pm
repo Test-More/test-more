@@ -1,24 +1,24 @@
-package Test::Builder2::Result;
+package TB2::Result;
 
 use Carp;
-use Test::Builder2::Mouse;
-use Test::Builder2::Mouse::Util::TypeConstraints qw(enum);
+use TB2::Mouse;
+use TB2::Mouse::Util::TypeConstraints qw(enum);
 
 
 =head1 NAME
 
-Test::Builder2::Result - A factory to generate results.
+TB2::Result - A factory to generate results.
 
 =head1 SYNOPSIS
 
-    use Test::Builder2::Result;
+    use TB2::Result;
 
-    my $result = Test::Builder2::Result->new_result(%test_data);
+    my $result = TB2::Result->new_result(%test_data);
 
 
 =head1 DESCRIPTION
 
-A factory to generate results.  See L<Test::Builder2::Result::Base>
+A factory to generate results.  See L<TB2::Result::Base>
 for information about the real result objects.
 
 An object to store the result of a test.  Used to keep test history,
@@ -37,11 +37,11 @@ context to indicate if they passed or failed.
 
 =head3 new_result
 
-  my $result = Test::Builder2::Result->new_result(%test_data);
+  my $result = TB2::Result->new_result(%test_data);
 
 new_result() is a method which returns a $result based on your test data.
 
-$result will be a L<Test::Builder2::Result::Base> object.
+$result will be a L<TB2::Result::Base> object.
 
 =cut
 
@@ -92,10 +92,10 @@ sub types {
 for my $type (keys %Types) {
     my $roles = $Types{$type};
 
-    Test::Builder2::Mouse::Meta::Class->create(
-        "Test::Builder2::Result::$type",
-        superclasses => ["Test::Builder2::Result::Base"],
-        roles        => [map { "Test::Builder2::Result::Role::$_" } @$roles],
+    TB2::Mouse::Meta::Class->create(
+        "TB2::Result::$type",
+        superclasses => ["TB2::Result::Base"],
+        roles        => [map { "TB2::Result::Role::$_" } @$roles],
         methods      => {
             type        => sub { return $type }
         }
@@ -128,17 +128,17 @@ sub new_result {
         $type = 'unknown_fail';
     }
 
-    return "Test::Builder2::Result::$type"->new(%args);
+    return "TB2::Result::$type"->new(%args);
 }
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 
 1;
 
 
 =head1 SEE ALSO
 
-L<Test::Builder2::Result::Base> for the result objects generated.
+L<TB2::Result::Base> for the result objects generated.
 
 =cut
 

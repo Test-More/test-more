@@ -1,16 +1,16 @@
-package Test::Builder2::Event::Log;
+package TB2::Event::Log;
 
 use Carp;
 
-use Test::Builder2::Types;
-use Test::Builder2::Mouse;
-use Test::Builder2::Mouse::Util::TypeConstraints qw(enum coerce via from);
-with 'Test::Builder2::Event';
+use TB2::Types;
+use TB2::Mouse;
+use TB2::Mouse::Util::TypeConstraints qw(enum coerce via from);
+with 'TB2::Event';
 
 
 =head1 NAME
 
-Test::Builder2::Event::Log - a logging event
+TB2::Event::Log - a logging event
 
 =head1 DESCRIPTION
 
@@ -177,27 +177,27 @@ Defaults to C<debug>.
 
 =cut
 
-enum 'Test::Builder2::LogLevel'
+enum 'TB2::LogLevel'
   => \@Real_Levels;
-coerce 'Test::Builder2::LogLevel' => from 'Str' => via { lc $_ };
+coerce 'TB2::LogLevel' => from 'Str' => via { lc $_ };
 
 
 has level =>
   is            => 'rw',
-  isa           => 'Test::Builder2::LogLevel',
+  isa           => 'TB2::LogLevel',
   default       => 'debug'
 ;
 
 
 =head2 Types
 
-=head3 Test::Builder2::LogLevel
+=head3 TB2::LogLevel
 
-A valid level for a L<Test::Builder2::Event::Log>
+A valid level for a L<TB2::Event::Log>
 
 =cut
 
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 
 1;

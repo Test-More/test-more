@@ -1,12 +1,12 @@
-package Test::Builder2::Event::TestStart;
+package TB2::Event::TestStart;
 
-use Test::Builder2::Mouse;
-with 'Test::Builder2::Event';
+use TB2::Mouse;
+with 'TB2::Event';
 
 
 =head1 NAME
 
-Test::Builder2::Event::TestStart - Start of a test stream event
+TB2::Event::TestStart - Start of a test stream event
 
 =head1 DESCRIPTION
 

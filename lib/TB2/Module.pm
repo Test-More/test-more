@@ -1,9 +1,9 @@
-package Test::Builder2::Module;
+package TB2::Module;
 
 use 5.008001;
-use Test::Builder2::Mouse;
-with 'Test::Builder2::CanTry',
-     'Test::Builder2::CanLoad';
+use TB2::Mouse;
+with 'TB2::CanTry',
+     'TB2::CanLoad';
 
 our $VERSION = '2.00_07';
 our $CLASS = __PACKAGE__;
@@ -52,11 +52,11 @@ sub _module_import {
 
 =head1 NAME
 
-Test::Builder2::Module - Write a test module
+TB2::Module - Write a test module
 
 =head1 SYNOPSIS
 
-    use Test::Builder2::Module;
+    use TB2::Module;
     our @EXPORT = qw(is);
 
     # is( $have, $want, $name );
@@ -93,7 +93,7 @@ writing C<< sub name { ... } >> with two differences.
 
 The prototype of the $code is honored.
 
-$code must return a single Test::Builder2::Result::Base object,
+$code must return a single TB2::Result::Base object,
 usually the result from C<< Test::Builder2->ok() >> or any other test
 function.
 

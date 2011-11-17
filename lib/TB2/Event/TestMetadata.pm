@@ -1,12 +1,12 @@
-package Test::Builder2::Event::TestMetadata;
+package TB2::Event::TestMetadata;
 
-use Test::Builder2::Mouse;
-with 'Test::Builder2::Event';
+use TB2::Mouse;
+with 'TB2::Event';
 
 
 =head1 NAME
 
-Test::Builder2::Event::TestMetadata - Metadata for the current test
+TB2::Event::TestMetadata - Metadata for the current test
 
 =head1 DESCRIPTION
 
@@ -45,7 +45,7 @@ sub build_event_type { "test_metadata" }
 
 =head1 SEE ALSO
 
-L<Test::Builder2::Event>
+L<TB2::Event>
 
 =cut
 

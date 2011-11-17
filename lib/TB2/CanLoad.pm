@@ -1,20 +1,20 @@
-package Test::Builder2::CanLoad;
+package TB2::CanLoad;
 
-require Test::Builder2::Mouse;
-use Test::Builder2::Mouse::Role;
-with 'Test::Builder2::CanTry';
+require TB2::Mouse;
+use TB2::Mouse::Role;
+with 'TB2::CanTry';
 
 
 =head1 NAME
 
-Test::Builder2::CanLoad - load modules without effecting global variables
+TB2::CanLoad - load modules without effecting global variables
 
 =head1 SYNOPSIS
 
     package My::Thing;
 
-    use Test::Builder2::Mouse;
-    with "Test::Builder2::CanLoad";
+    use TB2::Mouse;
+    with "TB2::CanLoad";
 
     My::Thing->load("Some::Module");
 
@@ -39,7 +39,7 @@ internally in your test module when you want to load a module.
 
 It B<will> die on failure if the $module fails to load in which case
 it B<will> set C<$@>.  If you want to trap the failure, see
-L<Test::Builder2::CanTry>.
+L<TB2::CanTry>.
 
 =cut
 
@@ -59,11 +59,11 @@ sub load {
 
 =head1 SEE ALSO
 
-L<Test::Builder2::CanTry>
+L<TB2::CanTry>
 
 =cut
 
-no Test::Builder2::Mouse;
-no Test::Builder2::Mouse::Role;
+no TB2::Mouse;
+no TB2::Mouse::Role;
 
 1;

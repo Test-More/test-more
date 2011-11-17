@@ -1,21 +1,21 @@
-package Test::Builder2::Event::Abort;
+package TB2::Event::Abort;
 
 use strict;
 use warnings;
 
-use Test::Builder2::Mouse;
-with "Test::Builder2::Event";
+use TB2::Mouse;
+with "TB2::Event";
 
 
 =head1 NAME
 
-Test::Builder2::Event::Abort - Abort testing
+TB2::Event::Abort - Abort testing
 
 =head1 SYNOPSIS
 
-    use Test::Builder2::Event::Abort;
+    use TB2::Event::Abort;
 
-    my $abort = Test::Builder2::Event::Abort->new(
+    my $abort = TB2::Event::Abort->new(
         reason => "Warp core breech imminent"
     );
 
@@ -31,7 +31,7 @@ This is what TAP calls "bail out".
 =head1 METHODS
 
 This implements all the methods and attributes of
-L<Test::Builder2::Event> with the following additions and
+L<TB2::Event> with the following additions and
 modifications.
 
 =head3 build_event_type
@@ -57,5 +57,5 @@ has reason =>
 
 
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 1;

@@ -1,4 +1,4 @@
-package Test::Builder2::threads::shared::on;
+package TB2::threads::shared::on;
 
 use strict;
 

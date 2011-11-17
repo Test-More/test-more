@@ -1,21 +1,21 @@
-package Test::Builder2::Result::Base;
+package TB2::Result::Base;
 
-use Test::Builder2::Mouse;
-use Test::Builder2::Types;
+use TB2::Mouse;
+use TB2::Types;
 
-with 'Test::Builder2::Event';
+with 'TB2::Event';
 
 my $CLASS = __PACKAGE__;
 
 
 =head1 NAME
 
-Test::Builder2::Result::Base - Store the result of an assert
+TB2::Result::Base - Store the result of an assert
 
 =head1 SYNOPSIS
 
     # Use TB2::Result as a factory, not TB2::Result::Base directly
-    my $result = Test::Builder2::Result->new_result(%options);
+    my $result = TB2::Result->new_result(%options);
 
 
 =head1 DESCRIPTION
@@ -45,7 +45,7 @@ use overload(
 
 =head1 METHODS
 
-It has all the attributes and methods of a normal L<Test::Builder2::Event> plus...
+It has all the attributes and methods of a normal L<TB2::Event> plus...
 
 =head2 Attributes
 
@@ -109,7 +109,7 @@ even TAP tests are not required to do so.
 
 has test_number =>
   is    => 'rw',
-  isa   => 'Test::Builder2::Positive_NonZero_Int';
+  isa   => 'TB2::Positive_NonZero_Int';
 
 
 =head2 Methods
@@ -129,7 +129,7 @@ sub build_event_type { "result" }
 
 sub keys_for_as_hash {
     my $self = shift;
-    my $keys = $self->Test::Builder2::Event::keys_for_as_hash;
+    my $keys = $self->TB2::Event::keys_for_as_hash;
     push @$keys, "type";
 
     return $keys;
@@ -243,18 +243,18 @@ sub types {
     return \%types;
 }
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 
 1;
 
 
 =head1 SEE ALSO
 
-L<Test::Builder2::Result> Factory for creating results
+L<TB2::Result> Factory for creating results
 
-L<Test::Builder2::History> Store the results
+L<TB2::History> Store the results
 
-L<Test::Builder2::Formatter> Format results for display
+L<TB2::Formatter> Format results for display
 
 =cut
 

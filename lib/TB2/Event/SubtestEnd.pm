@@ -1,17 +1,17 @@
-package Test::Builder2::Event::SubtestEnd;
+package TB2::Event::SubtestEnd;
 
-use Test::Builder2::Mouse;
-use Test::Builder2::Types;
-with 'Test::Builder2::Event';
+use TB2::Mouse;
+use TB2::Types;
+with 'TB2::Event';
 
 
 =head1 NAME
 
-Test::Builder2::SubtestEnd - End of a subtest event
+TB2::SubtestEnd - End of a subtest event
 
 =head1 DESCRIPTION
 
-This is a L<Test::Builder2::Event> representing the end of a subtest.
+This is a L<TB2::Event> representing the end of a subtest.
 
 Receiving this event indicates to the parent that the subtest has
 ended.  All events from here out belong to the current test level.
@@ -22,25 +22,25 @@ handler via C<<$subtest_end->history>>
 
 =head1 METHODS
 
-It has all the methods and attributes of L<Test::Builder2::Event> with
+It has all the methods and attributes of L<TB2::Event> with
 the following differences and additions.
 
 =head2 Attributes
 
 =head3 history
 
-The L<Test::Builder2::History> object from the subtest.
+The L<TB2::History> object from the subtest.
 
 This can be used by event handlers to get information from the subtest.
 
-Normally this will be filled in by L<Test::Builder2::TestState> during
+Normally this will be filled in by L<TB2::TestState> during
 posting.  A builder may put in an alternative history object.
 
 =cut
 
 has history =>
   is            => 'rw',
-  isa           => 'Test::Builder2::History',
+  isa           => 'TB2::History',
 ;
 
 =head3 build_event_type
@@ -53,12 +53,12 @@ sub build_event_type { "subtest_end" }
 
 =head1 SEE ALSO
 
-L<Test::Builder2::Event>  This does the Event role.
+L<TB2::Event>  This does the Event role.
 
-L<Test::Builder2::SubtestStart>  The cooresponding event which starts the subtest.
+L<TB2::SubtestStart>  The cooresponding event which starts the subtest.
 
 =cut
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 
 1;

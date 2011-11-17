@@ -1,32 +1,32 @@
-package Test::Builder2::History;
+package TB2::History;
 
 use Carp;
-use Test::Builder2::Mouse;
-use Test::Builder2::Types;
-use Test::Builder2::StackBuilder;
+use TB2::Mouse;
+use TB2::Types;
+use TB2::StackBuilder;
 
-with 'Test::Builder2::EventHandler',
-     'Test::Builder2::CanTry';
+with 'TB2::EventHandler',
+     'TB2::CanTry';
 
 
 =head1 NAME
 
-Test::Builder2::History - Manage the history of test results
+TB2::History - Manage the history of test results
 
 =head1 SYNOPSIS
 
-    use Test::Builder2::History;
+    use TB2::History;
 
-    my $history = Test::Builder2::History->new;
-    my $ec = Test::Builder2::EventCoordinator->create(
+    my $history = TB2::History->new;
+    my $ec = TB2::EventCoordinator->create(
         history => $history
     );
 
-    my $pass  = Test::Builder2::Result->new_result( pass => 1 );
+    my $pass  = TB2::Result->new_result( pass => 1 );
     $ec->post_event( $pass );
     $ec->history->can_succeed;   # true
 
-    my $result  = Test::Builder2::Result->new_result( pass => 0 );
+    my $result  = TB2::Result->new_result( pass => 0 );
     $ec->post_event( $pass );
     $ec->history->can_succeed;   # false
 
@@ -35,7 +35,7 @@ Test::Builder2::History - Manage the history of test results
 
 This object stores and manages the history of test results.
 
-It is a L<Test::Builder2::EventHandler>.
+It is a L<TB2::EventHandler>.
 
 =head1 METHODS
 
@@ -43,7 +43,7 @@ It is a L<Test::Builder2::EventHandler>.
 
 =head3 new
 
-    my $history = Test::Builder2::History->new;
+    my $history = TB2::History->new;
 
 Creates a new, unique History object.
 
@@ -59,7 +59,7 @@ Unless otherwise stated, these are all accessor methods of the form:
 
 =head3 events
 
-A Test::Builder2::Stack of events, that include Result objects.
+A TB2::Stack of events, that include Result objects.
 
 =head3 event_count
 
@@ -163,14 +163,14 @@ sub has_events   { shift->events_count > 0 }
 
 =head3 results
 
-A Test::Builder2::Stack of Result objects.
+A TB2::Stack of Result objects.
 
     # The result of test #4.
     my $result = $history->results->[3];
 
 =cut
 
-buildstack results => 'Test::Builder2::Result::Base';
+buildstack results => 'TB2::Result::Base';
 sub handle_result    { shift->results_push(shift) }
 sub result_count     { shift->results_count }
 
@@ -217,7 +217,7 @@ my %statistic_mapping = (
 
 has $_ => (
     is => 'rw',
-    isa => 'Test::Builder2::Positive_Int',
+    isa => 'TB2::Positive_Int',
     default => 0,
 ) for keys %statistic_mapping;
 
@@ -237,7 +237,7 @@ before results_push => sub{
 
     for my $result (@_) {
         croak "results_push() takes Result objects"
-          if !$self->try(sub { $result->isa('Test::Builder2::Result::Base') });
+          if !$self->try(sub { $result->isa('TB2::Result::Base') });
     }
 
     $self->_update_statistics(@_);
@@ -406,7 +406,7 @@ Returns the plan event for the current stream, if any.
 
 has plan =>
   is            => 'rw',
-  does          => 'Test::Builder2::Event',
+  does          => 'TB2::Event',
 ;
 
 
@@ -420,7 +420,7 @@ Returns the C<test_start> event, if it has been seen.
 
 has test_start =>
   is            => 'rw',
-  does          => 'Test::Builder2::Event';
+  does          => 'TB2::Event';
 
 
 =head3 test_end
@@ -433,7 +433,7 @@ Returns the C<test_end> event, if it has been seen.
 
 has test_end =>
   is            => 'rw',
-  does          => 'Test::Builder2::Event';
+  does          => 'TB2::Event';
 
 
 =head3 is_subtest
@@ -462,7 +462,7 @@ nested is 2 and so on.
 
 has subtest_depth =>
   is            => 'rw',
-  isa           => 'Test::Builder2::Positive_Int',
+  isa           => 'TB2::Positive_Int',
   default       => 0;
 
 
@@ -479,7 +479,7 @@ just ended>.  It is not the event for the current subtest.
 
 has subtest_start =>
   is            => 'rw',
-  does          => 'Test::Builder2::Event';
+  does          => 'TB2::Event';
 
 
 =head3 abort
@@ -492,7 +492,7 @@ Returns the last C<abort> event seen, if any.
 
 has abort =>
   is            => 'rw',
-  does          => 'Test::Builder2::Event';
+  does          => 'TB2::Event';
 
 
 =head3 pid_at_test_start
@@ -505,7 +505,7 @@ History records the $process_id at the time the test has started.
 
 has pid_at_test_start =>
   is            => 'rw',
-  isa           => 'Test::Builder2::Positive_NonZero_Int',
+  isa           => 'TB2::Positive_NonZero_Int',
 ;
 
 
@@ -544,13 +544,13 @@ sub consume {
    croak 'consume() only takes History objects' 
       unless scalar(@_) 
           == scalar( grep{ local $@;
-                           eval{$_->isa('Test::Builder2::History')} 
+                           eval{$_->isa('TB2::History')} 
                          } @_ 
                    );
    $self->results_push( map{ @{ $_->results } } @_ );
 };
 
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 1;
 

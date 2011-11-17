@@ -5,11 +5,11 @@ use warnings;
 
 BEGIN { require 't/test.pl' }
 
-use_ok( 'Test::Builder2::Stack' );
+use_ok( 'TB2::Stack' );
 
 # bare type
 {
-    ok my $stack = Test::Builder2::Stack->new , q{fresh stack} ;
+    ok my $stack = TB2::Stack->new , q{fresh stack} ;
     is_deeply $stack->items, [], q{empty stack};
     ok $stack->push(1..3), q{push};
     is_deeply $stack->items, [1..3], q{stack};
@@ -23,7 +23,7 @@ use_ok( 'Test::Builder2::Stack' );
 
 # simple type
 {
-    ok my $stack = Test::Builder2::Stack->new(type => 'Int') , q{fresh stack} ;
+    ok my $stack = TB2::Stack->new(type => 'Int') , q{fresh stack} ;
     ok $stack->push(1), q{push int};
     eval { $stack->push(undef) };
     like $@, qr{Attribute \(items\) does not pass the type constraint}, q{type check}; 

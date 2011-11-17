@@ -1,20 +1,20 @@
-package Test::Builder2::AssertRecord;
+package TB2::AssertRecord;
 
-use Test::Builder2::Mouse;
+use TB2::Mouse;
 
 use Carp;
 
 
 =head1 NAME
 
-Test::Builder2::AssertRecord - Record an assert happening
+TB2::AssertRecord - Record an assert happening
 
 =head1 SYNOPSIS
 
-    use Test::Builder2::AssertRecord;
+    use TB2::AssertRecord;
 
-    my $record = Test::Builder2::AssertRecord->new;
-    my $record = Test::Builder2::AssertRecord->new_from_caller($level);
+    my $record = TB2::AssertRecord->new;
+    my $record = TB2::AssertRecord->new_from_caller($level);
 
     # All the stuff from caller
     my $package  = $record->package;
@@ -32,7 +32,7 @@ Useful for diagnostics and stack traces.
 
 =head2 new
 
-    my $record = Test::Builder2::AssertRecord->new({
+    my $record = TB2::AssertRecord->new({
         package    => $package,
         line       => $line,
         filename   => $filename,
@@ -46,7 +46,7 @@ You should use C<new_from_caller>.
 
 =head2 new_from_caller
 
-    my $record = Test::Builder2::AssertRecord->new_from_caller($level);
+    my $record = TB2::AssertRecord->new_from_caller($level);
 
 Constructs an AssertRecord for you by calling caller() at the given
 $level above your call in the call stack.
@@ -72,8 +72,8 @@ sub new_from_caller {
 
 =head2 new_from_guess
 
-    my $record = Test::Builder2::AssertRecord->new_from_guess;
-    my $record = Test::Builder2::AssertRecord->new_from_guess(@ignore_packages);
+    my $record = TB2::AssertRecord->new_from_guess;
+    my $record = TB2::AssertRecord->new_from_guess(@ignore_packages);
 
 Constructs an AssertRecord for you by looking up the call stack until
 it is out of the calling class.
@@ -155,6 +155,6 @@ has subroutine =>
   isa           => 'Str',
 ;
 
-no Test::Builder2::Mouse;
+no TB2::Mouse;
 
 1;

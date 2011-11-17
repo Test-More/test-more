@@ -1,18 +1,18 @@
-package Test::Builder2::Result::Role::unknown;
+package TB2::Result::Role::unknown;
 
-use Test::Builder2::Mouse ();
-use Test::Builder2::Mouse::Role;
+use TB2::Mouse ();
+use TB2::Mouse::Role;
 
 sub is_unknown { 1 }
 
-no Test::Builder2::Mouse::Role;
+no TB2::Mouse::Role;
 
 1;
 
 
 =head1 NAME
 
-Test::Builder2::Result::Role::unknown - The result of the assert is not known
+TB2::Result::Role::unknown - The result of the assert is not known
 
 =head1 DESCRIPTION
 

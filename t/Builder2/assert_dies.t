@@ -14,7 +14,7 @@ use Test::Simple tests => 2;
 {
     package My::FatalAssert;
 
-    use Test::Builder2::Module;
+    use TB2::Module;
     our @EXPORT = qw(fatal will_die);
 
     install_test will_die => sub(;$) {

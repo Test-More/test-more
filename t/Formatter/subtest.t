@@ -7,16 +7,16 @@ use lib 't/lib';
 
 BEGIN { require "t/test.pl" }
 
-use Test::Builder2::Formatter::PlusMinus;
-use Test::Builder2::Events;
-use Test::Builder2::EventCoordinator;
+use TB2::Formatter::PlusMinus;
+use TB2::Events;
+use TB2::EventCoordinator;
 
 note "subtest formatter inherits the streamer"; {
-    my $formatter = Test::Builder2::Formatter::PlusMinus->new(
-        streamer_class  => "Test::Builder2::Streamer::Debug"
+    my $formatter = TB2::Formatter::PlusMinus->new(
+        streamer_class  => "TB2::Streamer::Debug"
     );
 
-    my $sub_formatter = $formatter->subtest_handler( Test::Builder2::Event::SubtestStart->new );
+    my $sub_formatter = $formatter->subtest_handler( TB2::Event::SubtestStart->new );
     is $formatter->streamer, $sub_formatter->streamer;
 }
 

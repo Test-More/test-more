@@ -1,30 +1,30 @@
-package Test::Builder2::Formatter;
+package TB2::Formatter;
 
 use Carp;
-use Test::Builder2::Mouse;
-use Test::Builder2::Types;
+use TB2::Mouse;
+use TB2::Types;
 
-with 'Test::Builder2::EventHandler';
+with 'TB2::EventHandler';
 
 
 =head1 NAME
 
-Test::Builder2::Formatter - Base class for formating test results
+TB2::Formatter - Base class for formating test results
 
 =head1 SYNOPSIS
 
-  package Test::Builder2::Formatter::SomeFormat;
+  package TB2::Formatter::SomeFormat;
 
-  use Test::Builder2::Mouse;
-  extends "Test::Builder2::Formatter;
+  use TB2::Mouse;
+  extends "TB2::Formatter;
 
 =head1 DESCRIPTION
 
 Test::Builder2 delegates the actual formating of test results to a
-Test::Builder2::Formatter object.  This can then decide if it's going to
+TB2::Formatter object.  This can then decide if it's going to
 formatter TAP or XML or send email or whatever.
 
-A Formatter is just a special L<Test::Builder2::EventHandler> which can
+A Formatter is just a special L<TB2::EventHandler> which can
 produce output.
 
 =head1 METHODS
@@ -51,19 +51,19 @@ By default, the subtest handler inherits its parent's streamer.
 =cut
 
 sub default_streamer_class {
-    return 'Test::Builder2::Streamer::Print';
+    return 'TB2::Streamer::Print';
 }
 
 has streamer_class => (
     is      => 'rw',
-    isa     => 'Test::Builder2::LoadableClass',
+    isa     => 'TB2::LoadableClass',
     coerce  => 1,
     builder => 'default_streamer_class',
 );
 
 has streamer => (
     is      => 'rw',
-    does    => 'Test::Builder2::Streamer',
+    does    => 'TB2::Streamer',
     lazy    => 1,
     builder => '_build_streamer',
     handles => [ qw(write) ],
@@ -80,7 +80,7 @@ sub subtest_handler {
 
 =head3 new
 
-  my $formatter = Test::Builder2::Formatter->new(%args);
+  my $formatter = TB2::Formatter->new(%args);
 
 Creates a new formatter object to feed results to.
 

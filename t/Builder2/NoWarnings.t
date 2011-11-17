@@ -9,10 +9,10 @@ BEGIN { require "t/test.pl" }
 
 # Simulate running a test with NoWarnings
 {
-    require Test::Builder2::Streamer::Debug;
+    require TB2::Streamer::Debug;
     require Test::Builder2;
     my $builder = Test::Builder2->default;
-    $builder->formatter->streamer(Test::Builder2::Streamer::Debug->new);
+    $builder->formatter->streamer(TB2::Streamer::Debug->new);
 
 
     # Turn on no warnings, but silence them so we don't mess up the test output
