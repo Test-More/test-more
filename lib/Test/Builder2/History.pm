@@ -354,7 +354,7 @@ sub test_was_successful {
     }
 
     # We're exiting with non-zero
-    if($?) {
+    if($? and !$self->is_subtest) {
         return 0;
     }
 
