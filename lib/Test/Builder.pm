@@ -81,7 +81,7 @@ sub _make_default {
 
     my $obj = $class->create;
     $obj->{TestState} = Test::Builder2::TestState->default;
-    $obj->{TestState}->add_early_watchers(
+    $obj->{TestState}->add_early_handlers(
         Test::Builder2::OnlyOnePlan->new
     );
 
@@ -245,7 +245,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->load("Test::Builder2::Formatter::TAP");
     $self->{TestState} = Test::Builder2::TestState->create(
         formatters      => [Test::Builder2::Formatter::TAP->new],
-        early_watchers  => [Test::Builder2::OnlyOnePlan->new],
+        early_handlers  => [Test::Builder2::OnlyOnePlan->new],
     );
 
     $self->use_numbers(1);

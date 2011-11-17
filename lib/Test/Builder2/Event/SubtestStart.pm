@@ -22,12 +22,12 @@ A subtest has its own history, plan and set of results.
 
 Receiving this event indicates that a subtest is about to start, all
 events from here to L<Test::Builder2::SubtestEnd> belong to the
-subtest.  Most event watchers will not have to be concerned about
-this, the TestState will call C<subtest_handler> on each event watcher
+subtest.  Most event handlers will not have to be concerned about
+this, the TestState will call C<subtest_handler> on each event handler
 to get a new one to handle the subtest.
 
 Information about the subtest can be communicated back to the parent
-watcher via information contained in the
+handler via information contained in the
 L<Test::Builder2::SubtestEnd>.
 
 =head1 METHODS
@@ -109,7 +109,7 @@ L<Test::Builder2::Event>  This does the Event role.
 
 L<Test::Builder2::SubtestEnd>  The cooresponding event which ends the subtest.
 
-L<Test::Builder2::EventWatcher/subtest_handler>  The method called on each Watcher when a subtest starts.
+L<Test::Builder2::EventHandler/subtest_handler>  The method called on each Handler when a subtest starts.
 
 =cut
 

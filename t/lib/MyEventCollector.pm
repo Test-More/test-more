@@ -1,9 +1,9 @@
-# A basic EventWatcher that collects events
+# A basic EventHandler that collects events
 
 package MyEventCollector;
 
 use Test::Builder2::Mouse;
-with 'Test::Builder2::EventWatcher';
+with 'Test::Builder2::EventHandler';
 
 has results =>
   is        => 'rw',

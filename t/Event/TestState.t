@@ -215,7 +215,7 @@ note "nested subtests"; {
 }
 
 
-note "watchers are asked to provide their handler"; {
+note "handlers are asked to provide their handler"; {
     # Some classes useful for testing subtest_handler is called correctly
     {
         package MyHistory;
@@ -274,7 +274,7 @@ note "watchers are asked to provide their handler"; {
         }
     }
 
-    note "...init a bunch of watchers with subtest_handler overrides";
+    note "...init a bunch of handlers with subtest_handler overrides";
     my $formatter1 = Test::Builder2::Formatter::Null->new;
     my $formatter2 = MyNullFormatter->new;
     my $seesall    = MyEventCollectorSeesAll->new;
@@ -283,37 +283,37 @@ note "watchers are asked to provide their handler"; {
     my $state = $CLASS->create(
         formatters      => [$formatter1, $formatter2],
         history         => $history,
-        early_watchers  => [$formatter2, $seesall],
-        late_watchers   => [$formatter2, $collector],
+        early_handlers  => [$formatter2, $seesall],
+        late_handlers   => [$formatter2, $collector],
     );
 
     note "...starting the subtest";
     my $subtest_start = Test::Builder2::Event::SubtestStart->new;
     $state->post_event($subtest_start);
 
-    note "...checking the sub watchers were initialized from their parent's classes";
+    note "...checking the sub handlers were initialized from their parent's classes";
     isa_ok $state->formatters->[0],     ref $formatter1;
     isa_ok $state->formatters->[1],     ref $formatter2;
     isa_ok $state->history,             ref $history;
-    isa_ok $state->early_watchers->[0], ref $formatter2;
-    isa_ok $state->early_watchers->[1], ref $seesall;
-    isa_ok $state->late_watchers->[0],  ref $formatter2;
-    isa_ok $state->late_watchers->[1],  ref $collector;
+    isa_ok $state->early_handlers->[0], ref $formatter2;
+    isa_ok $state->early_handlers->[1], ref $seesall;
+    isa_ok $state->late_handlers->[0],  ref $formatter2;
+    isa_ok $state->late_handlers->[1],  ref $collector;
 
-    note "...checking the sub watchers made new objects (or didn't)";
+    note "...checking the sub handlers made new objects (or didn't)";
     isnt $state->formatters->[0],     $formatter1;
     isnt $state->formatters->[1],     $formatter2;
     isnt $state->history,             $history;
-    isnt $state->early_watchers->[0], $formatter2;
-    is   $state->early_watchers->[1], $seesall;
-    isnt $state->late_watchers->[0],  $formatter2;
-    isnt $state->late_watchers->[1],  $collector;
+    isnt $state->early_handlers->[0], $formatter2;
+    is   $state->early_handlers->[1], $seesall;
+    isnt $state->late_handlers->[0],  $formatter2;
+    isnt $state->late_handlers->[1],  $collector;
 
     note "...checking special subtest_handler methods were called";
     is $state->formatters->[1]->depth,          1;
     is $state->history->denial,                 5;
-    is $state->early_watchers->[0]->depth,      1;
-    is $state->late_watchers->[0]->depth,       1;
+    is $state->early_handlers->[0]->depth,      1;
+    is $state->late_handlers->[0]->depth,       1;
 
     # Start and end an empty subtest
     my $substream_start = Test::Builder2::Event::SubtestStart->new;
@@ -328,7 +328,7 @@ note "watchers are asked to provide their handler"; {
 
     is_deeply [map { $_->event_id } $subtest_start, $substream_start, $substream_end, $subtest_end],
               [map { $_->event_id } @{$seesall->events}],
-              "A watcher can see all if it chooses";
+              "A handler can see all if it chooses";
 }
 
 done_testing;

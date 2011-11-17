@@ -546,7 +546,7 @@ sub accept_subtest_end {
     my $result = Test::Builder2::Result->new_result( %result_args );
 
     # This result is only applicable to TAP, it's not a real test event and
-    # should not be seen by other event watchers.
+    # should not be seen by other event handlers.
     $ec->post_event($result);
 
     return;
