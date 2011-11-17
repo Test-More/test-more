@@ -19,7 +19,7 @@ TB2::DebugOnFail - Enter the debugger on failure
 
 =head1 DESCRIPTION
 
-A demonstration of writing an EventWatcher using C<accept_result> to
+A demonstration of writing an EventHandler using C<accept_result> to
 drop you into the debugger when an assert fails.
 
 =head1 CAVEATS
@@ -33,16 +33,16 @@ after the assert was called instead.
 
 =head1 SEE ALSO
 
-L<Test::Builder2::EventWatcher>
+L<Test::Builder2::EventHandler>
 
 =cut
 
 
 {
-    package TB2::DebugOnFail::Watcher;
+    package TB2::DebugOnFail::Handler;
 
     use Test::Builder2::Mouse;
-    with 'Test::Builder2::EventWatcher';
+    with 'Test::Builder2::EventHandler';
 
     sub accept_result {
         my $self   = shift;
@@ -57,6 +57,6 @@ L<Test::Builder2::EventWatcher>
 
 # Yep, this is less than ideal.
 require Test::Builder2;
-Test::Builder2->default->test_state->add_late_watchers( TB2::DebugOnFail::Watcher->new );
+Test::Builder2->default->test_state->add_late_handlers( TB2::DebugOnFail::Handler->new );
 
 1;

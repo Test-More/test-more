@@ -5,7 +5,7 @@ use Test::Builder2::Types;
 
 with 'Test::Builder2::CanLoad';
 
-my @Types = qw(early_watchers history formatters late_watchers);
+my @Types = qw(early_handlers history formatters late_handlers);
 
 
 =head1 NAME
@@ -23,10 +23,10 @@ Test::Builder2::EventCoordinator - Coordinate events amongst the builders
     $ec->post_event($event);
 
     # The EventCoordinator comes with History and the default Formatter,
-    # but they can be replaced or added to.  You can also add watchers of
+    # but they can be replaced or added to.  You can also add handlers of
     # your own devising.
     $events->add_formatters($formatter);
-    $events->add_late_watchers($watcher);
+    $events->add_late_handlers($handler);
 
 
 =head1 DESCRIPTION
@@ -39,7 +39,7 @@ EventCoordiantor is responsible for that coordination.
 Each thing that generates events, usually something that causes
 asserts, will report them to the EventCoordinator.  This in turn
 reports them to things like History and result Formatters and whatever
-else you want to watch events.
+else you want to handle events.
 
 
 =head1 METHODS
@@ -54,12 +54,12 @@ the same name.  They can also be passed into C<new>.
 
 The History object which is listening to events.
 
-This is a special case of C<watchers> provided so you can distinguish
-between formatters and other watchers.
+This is a special case of C<handlers> provided so you can distinguish
+between formatters and other handlers.
 
 Defaults to C<< [ Test::Builder2::History->new ] >>.
 
-Unlike other watchers, there is only one history.
+Unlike other handlers, there is only one history.
 
 =cut
 
@@ -79,8 +79,8 @@ has history =>
 
 An array ref of Formatter objects which are listening to events.
 
-This is a special case of C<watchers> provided so you can distinguish
-between formatters and other watchers.
+This is a special case of C<handlers> provided so you can distinguish
+between formatters and other handlers.
 
 Defaults to C<< [ Test::Builder2::Formatter::TAP->new ] >>.
 
@@ -98,43 +98,43 @@ has formatters =>
   };
 
 
-=head3 early_watchers
+=head3 early_handlers
 
 An array ref of any additional objects which are listening to events.
-They all must do the Test::Builder2::EventWatcher role (or have
+They all must do the Test::Builder2::EventHandler role (or have
 equivalent methods).
 
-early_watchers are called first before any other watchers.  This lets
+early_handlers are called first before any other handlers.  This lets
 them manipulate the result before a formatter can act on it.
 
-By default there are no early_watchers.
+By default there are no early_handlers.
 
 =cut
 
-# Specifically not requiring an EventWatcher subclass so as to allow
+# Specifically not requiring an EventHandler subclass so as to allow
 # non-Mouse based implementations.
-has early_watchers =>
+has early_handlers =>
   is            => 'rw',
   isa           => 'ArrayRef',
   default       => sub { [] };
 
 
-=head3 late_watchers
+=head3 late_handlers
 
 An array ref of any additional objects which are listening to events.
-They all must do the Test::Builder2::EventWatcher role (or have
+They all must do the Test::Builder2::EventHandler role (or have
 equivalent methods).
 
-late_watchers are called last after all other watchers.  This lets
+late_handlers are called last after all other handlers.  This lets
 them see the result after any manipulations.
 
-By default there are no late_watchers.
+By default there are no late_handlers.
 
 =cut
 
-# Specifically not requiring an EventWatcher subclass so as to allow
+# Specifically not requiring an EventHandler subclass so as to allow
 # non-Mouse based implementations.
-has late_watchers =>
+has late_handlers =>
   is            => 'rw',
   isa           => 'ArrayRef',
   default       => sub { [] };
@@ -167,8 +167,8 @@ For example, to create an EventCoordinator without a formatter...
 
   $ec->post_event($event);
 
-The C<$ec> will hand the C<$event> around to all its L<watchers>,
-along with itself.  See L<all_watchers> for ordering information.
+The C<$ec> will hand the C<$event> around to all its L<handlers>,
+along with itself.  See L<all_handlers> for ordering information.
 
 =cut
 
@@ -176,60 +176,60 @@ sub post_event {
     my $self  = shift;
     my $event = shift;
 
-    for my $watcher ($self->all_watchers) {
-        $watcher->receive_event($event, $self);
+    for my $handler ($self->all_handlers) {
+        $handler->receive_event($event, $self);
     }
 }
 
 
-=head3 all_watchers
+=head3 all_handlers
 
-  my @watchers = $ec->all_watchers;
+  my @handlers = $ec->all_handlers;
 
-Returns a list of all watchers in the order they will be passed events.
+Returns a list of all handlers in the order they will be passed events.
 
-The order is L<early_watchers>, L<history>, L<formatters>, L<late_watchers>.
+The order is L<early_handlers>, L<history>, L<formatters>, L<late_handlers>.
 
 =cut
 
-sub all_watchers {
+sub all_handlers {
     my $self = shift;
 
     return
-      @{ $self->early_watchers },
+      @{ $self->early_handlers },
       $self->history,
       @{ $self->formatters },
-      @{ $self->late_watchers };
+      @{ $self->late_handlers };
 }
 
-=head3 add_early_watchers
+=head3 add_early_handlers
 
 =head3 add_formatters
 
-=head3 add_late_watchers
+=head3 add_late_handlers
 
-  $ec->add_early_watchers($watcher1, $watcher2, ...);
+  $ec->add_early_handlers($handler1, $handler2, ...);
 
-Adds new watchers to their respective types.
+Adds new handlers to their respective types.
 
-Use this instead of manipulating the list of watchers directly.
+Use this instead of manipulating the list of handlers directly.
 
 
-=head3 clear_early_watchers
+=head3 clear_early_handlers
 
 =head3 clear_formatters
 
-=head3 clear_late_watchers
+=head3 clear_late_handlers
 
-  $ec->clear_early_watchers;
+  $ec->clear_early_handlers;
 
-Removes all watchers of their respective types.
+Removes all handlers of their respective types.
 
-Use this instead of manipulating the list of watchers directly.
+Use this instead of manipulating the list of handlers directly.
 
 =cut
 
-# Create add_ and clear_ methods for all the watchers except history
+# Create add_ and clear_ methods for all the handlers except history
 for my $type (grep { $_ ne 'history' } @Types) {
     my $add = sub {
         my $self = shift;
@@ -240,10 +240,10 @@ for my $type (grep { $_ ne 'history' } @Types) {
 
     my $clear = sub {
         my $self = shift;
-        my $watchers = $self->$type;
+        my $handlers = $self->$type;
 
         # Specifically doing this to reuse the same array ref.
-        $#{$watchers} = -1;
+        $#{$handlers} = -1;
 
         return;
     };
@@ -263,7 +263,7 @@ L<http://www.flickr.com/photos/xwrn/5334766071/>
 
 =head1 SEE ALSO
 
-L<Test::Builder2::EventWatcher>, L<Test::Builder2::Event>, L<Test::Builder2::Result>
+L<Test::Builder2::EventHandler>, L<Test::Builder2::Event>, L<Test::Builder2::Result>
 
 =cut
 

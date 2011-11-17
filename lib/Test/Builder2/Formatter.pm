@@ -4,7 +4,7 @@ use Carp;
 use Test::Builder2::Mouse;
 use Test::Builder2::Types;
 
-with 'Test::Builder2::EventWatcher';
+with 'Test::Builder2::EventHandler';
 
 
 =head1 NAME
@@ -24,12 +24,12 @@ Test::Builder2 delegates the actual formating of test results to a
 Test::Builder2::Formatter object.  This can then decide if it's going to
 formatter TAP or XML or send email or whatever.
 
-A Formatter is just a special L<Test::Builder2::EventWatcher> which can
+A Formatter is just a special L<Test::Builder2::EventHandler> which can
 produce output.
 
 =head1 METHODS
 
-You must implement C<accept> methods as any C<EventWatcher>.
+You must implement C<accept> methods as any C<EventHandler>.
 
 In addition...
 

@@ -6,7 +6,7 @@ use strict;
     package TB2::Assert;
 
     use Test::Builder2::Mouse;
-    with "Test::Builder2::EventWatcher";
+    with "Test::Builder2::EventHandler";
 
     sub accept_result {
         my $self   = shift;
@@ -18,7 +18,7 @@ use strict;
     };
 }
 
-Test::Builder2->default->test_state->add_late_watchers( TB2::Assert->new );
+Test::Builder2->default->test_state->add_late_handlers( TB2::Assert->new );
 
 use Test::Simple tests => 4;
 ok(1, "pass");

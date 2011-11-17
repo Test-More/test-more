@@ -15,10 +15,10 @@ This is a L<Test::Builder2::Event> representing the end of a subtest.
 
 Receiving this event indicates to the parent that the subtest has
 ended.  All events from here out belong to the current test level.
-Most event watchers will not have to be concerned about this.
+Most event handlers will not have to be concerned about this.
 
 Information about the subtest will be communicated back to the parent
-watcher via C<<$subtest_end->history>>
+handler via C<<$subtest_end->history>>
 
 =head1 METHODS
 
@@ -31,7 +31,7 @@ the following differences and additions.
 
 The L<Test::Builder2::History> object from the subtest.
 
-This can be used by event watchers to get information from the subtest.
+This can be used by event handlers to get information from the subtest.
 
 Normally this will be filled in by L<Test::Builder2::TestState> during
 posting.  A builder may put in an alternative history object.

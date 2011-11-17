@@ -15,8 +15,8 @@ use_ok $CLASS;
 
 note("EC init"); {
     my $ec = $CLASS->new;
-    is_deeply $ec->early_watchers, [], "early_watchers";
-    is_deeply $ec->late_watchers,  [], "late_watchers";
+    is_deeply $ec->early_handlers, [], "early_handlers";
+    is_deeply $ec->late_handlers,  [], "late_handlers";
 
     my $formatters = $ec->formatters;
     is @$formatters, 1;
@@ -29,8 +29,8 @@ note("EC init"); {
 
 note("EC->new takes args"); {
     my %args = (
-        early_watchers  => [MyEventCollector->new],
-        late_watchers   => [MyEventCollector->new],
+        early_handlers  => [MyEventCollector->new],
+        late_handlers   => [MyEventCollector->new],
         history         => MyEventCollector->new,
         formatters      => [MyEventCollector->new]
     );
@@ -39,18 +39,18 @@ note("EC->new takes args"); {
         %args
     );
 
-    is $ec->early_watchers->[0], $args{early_watchers}->[0];
-    is $ec->late_watchers->[0],  $args{late_watchers}->[0];
+    is $ec->early_handlers->[0], $args{early_handlers}->[0];
+    is $ec->late_handlers->[0],  $args{late_handlers}->[0];
     is $ec->history,             $args{history};
     is $ec->formatters->[0],     $args{formatters}->[0];
 
-    my @want = (@{$args{early_watchers}},
+    my @want = (@{$args{early_handlers}},
                 @{$args{formatters}},
                 $args{history},
-                @{$args{late_watchers}}
+                @{$args{late_handlers}}
                );
 
-    is_deeply [$ec->all_watchers], \@want, "all_watchers";
+    is_deeply [$ec->all_handlers], \@want, "all_handlers";
 }
 
 
@@ -59,7 +59,7 @@ note("add and clear"); {
         formatters => [],
     );
 
-    for my $getter (qw(early_watchers formatters late_watchers)) {
+    for my $getter (qw(early_handlers formatters late_handlers)) {
         note("  $getter");
         my $adder       = "add_$getter";
         my $clearer     = "clear_$getter";
@@ -80,8 +80,8 @@ note("add and clear"); {
 
 note("posting"); {
     my %args = (
-        early_watchers  => [MyEventCollector->new, MyEventCollector->new],
-        late_watchers   => [MyEventCollector->new],
+        early_handlers  => [MyEventCollector->new, MyEventCollector->new],
+        late_handlers   => [MyEventCollector->new],
         history         => MyEventCollector->new,
         formatters      => [MyEventCollector->new]
     );
@@ -95,26 +95,26 @@ note("posting"); {
     $ec->post_event($result);
     $ec->post_event ($event);
 
-    my @watchers = (@{$args{early_watchers}},
-                    @{$args{late_watchers}},
+    my @handlers = (@{$args{early_handlers}},
+                    @{$args{late_handlers}},
                     $args{history},
                     @{$args{formatters}}
                    );
-    for my $watcher (@watchers) {
-        is_deeply $watcher->results, [$result], "result accepted";
-        is_deeply $watcher->events,  [$event], "event accepted";
+    for my $handler (@handlers) {
+        is_deeply $handler->results, [$result], "result accepted";
+        is_deeply $handler->events,  [$event], "event accepted";
 
-        is_deeply $watcher->coordinators, [$ec, $ec], "coordinator passed through";
+        is_deeply $handler->coordinators, [$ec, $ec], "coordinator passed through";
     }
 }
 
 
 note "posting events to specific handlers"; {
     {
-        package My::Watcher::StartEnd;
+        package My::Handler::StartEnd;
         
         use Test::Builder2::Mouse;
-        with "Test::Builder2::EventWatcher";
+        with "Test::Builder2::EventHandler";
 
         has starts =>
           is            => 'rw',
@@ -147,10 +147,10 @@ note "posting events to specific handlers"; {
         }
     }
 
-    my $watcher = My::Watcher::StartEnd->new;
+    my $handler = My::Handler::StartEnd->new;
 
     my $ec = $CLASS->new(
-        early_watchers  => [$watcher],
+        early_handlers  => [$handler],
         formatters      => []
     );
 
@@ -163,9 +163,9 @@ note "posting events to specific handlers"; {
     $ec->post_event($result);
     $ec->post_event($end);
 
-    is_deeply $watcher->starts, [[$start, $ec]];
-    is_deeply $watcher->ends,   [[$end, $ec]];
-    is_deeply $watcher->others, [[$comment, $ec], [$result, $ec]];
+    is_deeply $handler->starts, [[$start, $ec]];
+    is_deeply $handler->ends,   [[$end, $ec]];
+    is_deeply $handler->others, [[$comment, $ec], [$result, $ec]];
 }
 
 done_testing();

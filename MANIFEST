@@ -34,7 +34,7 @@ lib/Test/Builder2/Event/TestEnd.pm
 lib/Test/Builder2/Event/TestStart.pm
 lib/Test/Builder2/EventCoordinator.pm
 lib/Test/Builder2/Events.pm
-lib/Test/Builder2/EventWatcher.pm
+lib/Test/Builder2/EventHandler.pm
 lib/Test/Builder2/Formatter.pm
 lib/Test/Builder2/Formatter/Multi.pm
 lib/Test/Builder2/Formatter/Null.pm
@@ -153,7 +153,7 @@ t/Event/Comment.t
 t/Event/Event.t
 t/Event/EventCoordinator.t
 t/Event/Events.t
-t/Event/EventWatcher.t
+t/Event/EventHandler.t
 t/Event/Log.t
 t/Event/post_order.t
 t/Event/SetPlan.t
