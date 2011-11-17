@@ -1,4 +1,4 @@
-package Test::Builder2::Event::StreamMetadata;
+package Test::Builder2::Event::TestMetadata;
 
 use Test::Builder2::Mouse;
 with 'Test::Builder2::Event';
@@ -6,11 +6,12 @@ with 'Test::Builder2::Event';
 
 =head1 NAME
 
-Test::Builder2::Event::StreamMetadata - Metadata for the current stream
+Test::Builder2::Event::TestMetadata - Metadata for the current test
 
 =head1 DESCRIPTION
 
-This is an Event for metadata about the current stream of tests.
+This is an Event for metadata about the current test.  It can include
+things such as the time and date of the test, its name, etc...
 
 It B<must> come between a C<test_start> and an C<test_end> Event.
 
@@ -36,11 +37,11 @@ has metadata =>
 
 =head3 build_event_type
 
-The event type is C<stream_metadata>.
+The event type is C<test_metadata>.
 
 =cut
 
-sub build_event_type { "stream_metadata" }
+sub build_event_type { "test_metadata" }
 
 =head1 SEE ALSO
 

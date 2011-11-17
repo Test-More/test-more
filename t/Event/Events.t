@@ -9,7 +9,7 @@ use Test::Builder2::Events;
 my @events = map { "Test::Builder2::Event::".$_ }
                  qw(TestStart TestEnd
                     SetPlan
-                    StreamMetadata
+                    TestMetadata
                     Log
                     Comment
                     SubtestStart

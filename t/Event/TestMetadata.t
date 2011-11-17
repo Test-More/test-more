@@ -5,29 +5,30 @@ use warnings;
 
 BEGIN { require 't/test.pl' }
 
-use Test::Builder2::Event::StreamMetadata;
+my $CLASS = 'Test::Builder2::Event::TestMetadata';
+use_ok $CLASS;
 
 note "Basic event"; {
-    my $event = Test::Builder2::Event::StreamMetadata->new;
+    my $event = $CLASS->new;
 
-    is $event->event_type, "stream_metadata";
+    is $event->event_type, "test_metadata";
 
     is_deeply $event->as_hash, {
         event_id                => $event->event_id,
-        event_type              => 'stream_metadata',
+        event_type              => 'test_metadata',
         metadata                => {},
     };
 }
 
 note "Basic event with metadata"; {
-    my $event = Test::Builder2::Event::StreamMetadata->new(
+    my $event = $CLASS->new(
         metadata        => { this => "that" }
     );
 
     my $data = $event->as_hash;
     is_deeply $event->as_hash, {
         event_id                => $event->event_id,
-        event_type              => 'stream_metadata',
+        event_type              => 'test_metadata',
         metadata                => { this => 'that' },
     };
 }
