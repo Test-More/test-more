@@ -17,16 +17,16 @@ Test::Builder2::EventWatcher - A role which watches events and results
   use Test::Builder2::Mouse;
   with "Test::Builder2::EventWatcher";
 
-  # accept_result() handles result events
-  sub accept_result {
+  # handle_result() handles result events
+  sub handle_result {
       my $self = shift;
       my($result, $ec) = @_;
 
       ...
   }
 
-  # accept_comment() handles comment events... and so on
-  sub accept_result {
+  # handle_comment() handles comment events... and so on
+  sub handle_comment {
       my $self = shift;
       my($comment, $ec) = @_;
 
@@ -34,8 +34,8 @@ Test::Builder2::EventWatcher - A role which watches events and results
   }
 
 
-  # accept_event() handles anything not handled by some other method
-  sub accept_event  {
+  # handle_event() handles anything not handled by some other method
+  sub handle_event  {
       my $self = shift;
       my($event, $ec) = @_;
 
@@ -56,14 +56,14 @@ itself.
 
 =head1 METHODS
 
-=head3 receive_event
+=head3 accept_event
 
-    $watcher->receive_event($event, $event_coordinator);
+    $watcher->accept_event($event, $event_coordinator);
 
 Pass an $event and the $event_coordinator managing it to the $watcher.
 The watcher will then pass them along to the appropriate handler
 method based on the C<< $event->event_type >>.  If the appropriate
-handler method does not exist, it will pass it to C<<accept_event>>.
+handler method does not exist, it will pass it to C<<handle_event>>.
 
 This is the main interface to pass events to an EventWatcher.  You
 should I<not> pass events directly to handler methods as they may not
@@ -72,7 +72,7 @@ exist.
 =cut
 
 our %type2method;
-sub receive_event {
+sub accept_event {
     my($self, $event, $ec) = @_;
 
     my $type = $event->event_type;
@@ -80,7 +80,7 @@ sub receive_event {
 
     $self->can($method)
           ? $self->$method($event, $ec) 
-          : $self->accept_event($event, $ec);
+          : $self->handle_event($event, $ec);
 
     return;
 }
@@ -90,7 +90,7 @@ sub _event_type2accept_method {
     my $self = shift;
     my $type = shift;
 
-    my $method = "accept_".$type;
+    my $method = "handle_".$type;
     $method =~ s{\s}{_}g;
 
     return $method;
@@ -125,12 +125,12 @@ sub subtest_handler {
 =head2 Event handlers
 
 EventWatchers accept events via event handler methods.  They are all
-of the form C<< "accept_".$event->event_type >>.  So a "comment" event
-is handled by C<< accept_comment >>.
+of the form C<< "handle_".$event->event_type >>.  So a "comment" event
+is handled by C<< handle_comment >>.
 
 Event handlers are all called like this:
 
-    $event_watcher->accept_thing($event, $event_coordinator);
+    $event_watcher->handle_thing($event, $event_coordinator);
 
 $event is the event being accepted.
 
@@ -142,21 +142,21 @@ A handler is allowed to alter the $event.  Those changes will be
 visible to other EventWatchers down the line.
 
 Event handler methods should B<not> be called directly.  Instead use
-L<receive_event>.
+L<accept_event>.
 
 
-=head3 accept_event
+=head3 handle_event
 
-    $event_watcher->accept_event($event, $event_coordinator);
+    $event_watcher->handle_event($event, $event_coordinator);
 
 This event handler accepts any event not handled by a more specific
-event handler (such as accept_result).
+event handler (such as handle_result).
 
 By default it does nothing.
 
 =cut
 
-sub accept_event {}
+sub handle_event {}
 
 
 =head1 EXAMPLE
@@ -172,7 +172,7 @@ stream of pluses and minuses.
     extends 'Test::Builder2::Formatter';
 
     # Output a newline when we're done testing.
-    sub accept_test_end {
+    sub handle_test_end {
         my $self  = shift;
         my $event = shift;
 
@@ -181,7 +181,7 @@ stream of pluses and minuses.
     }
 
     # Print a plus for passes, minus for failures.
-    sub accept_result {
+    sub handle_result {
         my $self   = shift;
         my $result = shift;
 

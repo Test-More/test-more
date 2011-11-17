@@ -34,7 +34,7 @@ This is a very, very simple HTML formatter to demonstrate how its done.
 =cut
 
 # Start of testing
-sub accept_test_start {
+sub handle_test_start {
     my $self = shift;
 
     $self->write(out => <<"HTML");
@@ -52,7 +52,7 @@ HTML
 
 
 # End of testing
-sub accept_test_end {
+sub handle_test_end {
     my $self = shift;
 
     $self->write(out => <<"HTML");
@@ -66,7 +66,7 @@ HTML
 
 
 # A test result
-sub accept_result {
+sub handle_result {
     my $self = shift;
     my $result = shift;
 

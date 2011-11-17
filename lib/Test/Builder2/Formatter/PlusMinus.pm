@@ -4,7 +4,7 @@ use Test::Builder2::Mouse;
 
 extends 'Test::Builder2::Formatter';
 
-sub accept_test_end {
+sub handle_test_end {
     my $self  = shift;
     my $event = shift;
 
@@ -13,7 +13,7 @@ sub accept_test_end {
     return;
 }
 
-sub accept_result {
+sub handle_result {
     my($self, $result) = @_;
 
     my $out = $result->is_fail ? "-" : "+";

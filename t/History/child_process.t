@@ -24,7 +24,7 @@ my $history = Test::Builder2::History->new;
 ok !$history->pid_at_test_start,        "PID not recorded until test start";
 ok !$history->is_child_process;
 
-$history->receive_event( Test::Builder2::Event::TestStart->new );
+$history->accept_event( Test::Builder2::Event::TestStart->new );
 is $history->pid_at_test_start, $Top_PID, "PID recorded at test start";
 ok !$history->is_child_process;
 

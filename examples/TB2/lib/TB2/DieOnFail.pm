@@ -19,7 +19,7 @@ TB2::DieOnFail - Stop the test on the first failure
 
 =head1 DESCRIPTION
 
-A demonstration of writing an EventWatcher using C<accept_result> to
+A demonstration of writing an EventWatcher using C<handle_result> to
 kill the test when an assert fails.
 
 =head1 CAVEATS
@@ -41,7 +41,7 @@ L<Test::Builder2::EventWatcher>
     use Test::Builder2::Mouse;
     with 'Test::Builder2::EventWatcher';
 
-    sub accept_result {
+    sub handle_result {
         my $self   = shift;
         my $result = shift;
 
