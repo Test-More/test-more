@@ -2265,8 +2265,15 @@ sub test_exit_code {
     # They never set a plan nor ran a test.
     return $real_exit_code if !$plan && !$history->test_count;
 
+    # The test bailed out.
+    if( $history->abort ) {
+            $self->diag(<<"FAIL");
+Looks like your test bailed out.
+FAIL
+        return 255;
+    }
     # Some tests were run...
-    if( $history->test_count ) {
+    elsif( $history->test_count ) {
         # ...but we exited with non-zero
         if($real_exit_code) {
             $self->diag(<<"FAIL");
