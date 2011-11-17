@@ -56,9 +56,9 @@ itself.
 
 =head1 METHODS
 
-=head3 receive_event
+=head3 accept_event
 
-    $watcher->receive_event($event, $event_coordinator);
+    $watcher->accept_event($event, $event_coordinator);
 
 Pass an $event and the $event_coordinator managing it to the $watcher.
 The watcher will then pass them along to the appropriate handler
@@ -72,7 +72,7 @@ exist.
 =cut
 
 our %type2method;
-sub receive_event {
+sub accept_event {
     my($self, $event, $ec) = @_;
 
     my $type = $event->event_type;
@@ -142,7 +142,7 @@ A handler is allowed to alter the $event.  Those changes will be
 visible to other EventWatchers down the line.
 
 Event handler methods should B<not> be called directly.  Instead use
-L<receive_event>.
+L<accept_event>.
 
 
 =head3 handle_event

@@ -177,7 +177,7 @@ sub post_event {
     my $event = shift;
 
     for my $watcher ($self->all_watchers) {
-        $watcher->receive_event($event, $self);
+        $watcher->accept_event($event, $self);
     }
 }
 
