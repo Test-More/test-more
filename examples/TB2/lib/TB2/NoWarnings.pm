@@ -109,10 +109,10 @@ plan is already set, but it doesn't.
     }
 
     sub no_warnings {
-        my $watcher = TB2::NoWarnings::WarningsWatcher->new(
+        my $handler = TB2::NoWarnings::WarningsWatcher->new(
             @_
         );
-        $watcher->builder->test_state->add_early_watchers($watcher);
+        $handler->builder->test_state->add_early_handlers($handler);
 
         return;
     }

@@ -41,8 +41,8 @@ use Test::Builder2::Events;
 note "post order"; {
     require Test::Builder2::EventCoordinator;
     my $ec = Test::Builder2::EventCoordinator->new(
-        early_watchers  => [ My::Event::Incrementer->new( name => "early" ) ],
-        late_watchers   => [ My::Event::Incrementer->new( name => "late" ) ],
+        early_handlers  => [ My::Event::Incrementer->new( name => "early" ) ],
+        late_handlers   => [ My::Event::Incrementer->new( name => "late" ) ],
         formatters      => [ My::Event::Incrementer->new( name => "formatter" ) ],
         history         => My::Event::Incrementer->new( name => "history" )
     );

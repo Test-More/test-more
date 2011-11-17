@@ -17,7 +17,7 @@ MyEventCoordinator - An EventCoordinator for testing
 =head1 DESCRIPTION
 
 A subclass of L<Test::Builder2::EventCoordinator> for testing events
-and event watchers.
+and event handlers.
 
 It makes the following changes:
 

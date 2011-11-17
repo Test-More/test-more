@@ -296,8 +296,8 @@ sub accept_subtest_start {
     my $subtest_ec = $current_ec->new(
         formatters      => [map { $_->subtest_handler($event) } @{$current_ec->formatters}],
         history         => $current_ec->history->subtest_handler($event),
-        early_watchers  => [map { $_->subtest_handler($event) } @{$current_ec->early_watchers}],
-        late_watchers   => [map { $_->subtest_handler($event) } @{$current_ec->late_watchers}],
+        early_handlers  => [map { $_->subtest_handler($event) } @{$current_ec->early_handlers}],
+        late_handlers   => [map { $_->subtest_handler($event) } @{$current_ec->late_handlers}],
     );
 
     # Add a new level of testing
