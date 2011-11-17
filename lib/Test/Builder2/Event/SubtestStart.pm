@@ -109,7 +109,7 @@ L<Test::Builder2::Event>  This does the Event role.
 
 L<Test::Builder2::SubtestEnd>  The cooresponding event which ends the subtest.
 
-L<Test::Builder2::EventHandler/subtest_handler>  The method called on each Watcher when a subtest starts.
+L<Test::Builder2::EventHandler/subtest_handler>  The method called on each Handler when a subtest starts.
 
 =cut
 

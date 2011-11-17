@@ -6,12 +6,12 @@ use warnings;
 BEGIN { require 't/test.pl'; }
 
 {
-    package My::Watcher;
+    package My::Handler;
 
     use Test::Builder2::Mouse;
     with "Test::Builder2::EventHandler";
 }
 
-ok !My::Watcher->accept_event(), "default accept_event does nothing";
+ok !My::Handler->accept_event(), "default accept_event does nothing";
 
 done_testing();

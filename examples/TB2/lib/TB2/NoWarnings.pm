@@ -32,7 +32,7 @@ plan is already set, but it doesn't.
 =cut
 
 {
-    package TB2::NoWarnings::WarningsWatcher;
+    package TB2::NoWarnings::WarningsHandler;
 
     use Test::Builder2::Mouse;
     with 'Test::Builder2::EventHandler';
@@ -109,7 +109,7 @@ plan is already set, but it doesn't.
     }
 
     sub no_warnings {
-        my $handler = TB2::NoWarnings::WarningsWatcher->new(
+        my $handler = TB2::NoWarnings::WarningsHandler->new(
             @_
         );
         $handler->builder->test_state->add_early_handlers($handler);
