@@ -9,7 +9,7 @@ use Test::Simple ();
 use TB2::Tester;
 
 note "test state left untouched"; {
-    my $ec = Test::Simple->Builder->test_state;
+    my $ec = Test::Simple->builder->test_state;
     is_deeply $ec->history->events,  [],        "no events in the EC";
     is_deeply $ec->history->results, [],        "no results in the EC";
 

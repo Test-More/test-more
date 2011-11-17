@@ -18,7 +18,7 @@ use strict;
     };
 }
 
-Test::Builder2->default->test_state->add_late_handlers( TB2::Assert->new );
+Test::Simple->builder->test_state->add_late_handlers( TB2::Assert->new );
 
 use Test::Simple tests => 4;
 ok(1, "pass");
