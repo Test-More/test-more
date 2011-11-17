@@ -619,9 +619,9 @@ terms of Test::Builder2 (more on that below).
 Test::Builder2, rather than being a monolith, produces a
 Test::Builder2::Result object for each assert run.  This gets handed
 to the EventCoordinator which hands the Result off to the History,
-Formatter and anyone else who's watching.  Test::Builder and
-Test::Builder2 share the same EventCoordinator and thus the same
-Formatter and History.
+Formatter and any other handlers.  Test::Builder and Test::Builder2
+share the same EventCoordinator and thus the same Formatter and
+History.
 
 History records events and results for possible later use.  The
 Formatter turns events and results into formatted output, by default

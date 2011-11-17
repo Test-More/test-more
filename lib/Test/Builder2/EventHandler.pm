@@ -61,7 +61,7 @@ itself.
     $handler->accept_event($event, $event_coordinator);
 
 Pass an $event and the $event_coordinator managing it to the $handler.
-The handler will then pass them along to the appropriate handler
+The $handler will then pass them along to the appropriate handler
 method based on the C<< $event->event_type >>.  If the appropriate
 handler method does not exist, it will pass it to C<<handle_event>>.
 

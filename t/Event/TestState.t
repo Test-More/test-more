@@ -215,7 +215,7 @@ note "nested subtests"; {
 }
 
 
-note "handlers are asked to provide their handler"; {
+note "handlers providing their own subtest_handler"; {
     # Some classes useful for testing subtest_handler is called correctly
     {
         package MyHistory;
