@@ -32,11 +32,11 @@ if( my $child = fork ) { # parent
 not ok 1 - This should have no effect on the parent
 
 #   Failed test 'This should have no effect on the parent'
-#   at t/fork.t line 48.
+#   at $0 line 48.
 not ok 2 - For good measure, issue the wrong test count
 
 #   Failed test 'For good measure, issue the wrong test count'
-#   at t/fork.t line 49.
+#   at $0 line 49.
 END
 
     close $fh;
