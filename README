@@ -39,7 +39,7 @@ Test event hooks
 Multiple formatters (ie. you can output something other than TAP)
 Assert stacks (ie. no more $Test::Builder::Level)
 Test::Builder using Test::Builder2
-Event watchers (ie. things like Test::NoWarnings)
+Event Handlers (ie. things like Test::NoWarnings)
 
 
 WHAT DOESN'T WORK

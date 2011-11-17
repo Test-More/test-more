@@ -281,7 +281,7 @@ sub assert_end {
     my $self   = shift;
     my $result = shift;
 
-    # Trap an error from a watcher...
+    # Trap an error from a handler...
     my($ret, $error) = $self->try( sub {
         $self->test_state->post_event($result) if
           $self->top_stack->at_top and defined $result;

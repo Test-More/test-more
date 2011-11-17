@@ -57,6 +57,6 @@ L<Test::Builder2::EventHandler>
 
 # Yep, this is less than ideal.
 require Test::Builder2;
-Test::Builder2->default->test_state->add_late_watchers( TB2::DebugOnFail::Watcher->new );
+Test::Builder2->default->test_state->add_late_handlers( TB2::DebugOnFail::Watcher->new );
 
 1;
