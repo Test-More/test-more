@@ -174,12 +174,18 @@ A TB2::Stack of Result objects.
 =cut
 
 buildstack results => 'TB2::Result::Base';
-sub handle_result    { shift->results_push(shift) }
-sub result_count     { shift->results_count }
+sub handle_result    {
+    my $self = shift;
+    my $result = shift;
 
-before results_push => sub {
-   shift->events_push( shift );
-};
+    $self->results_push($result);
+    $self->events_push($result);
+
+    $self->_update_statistics($result);
+
+    return;
+}
+sub result_count     { shift->results_count }
 
 
 =head2 result_count
@@ -210,41 +216,33 @@ sub has_results { shift->result_count > 0 }
 # code_ref will be handed a single result object that was to be added
 # to the results stack.
 
-my %statistic_mapping = (
-    pass_count => sub{ shift->is_pass ? 1 : 0 },
-    fail_count => sub{ shift->is_fail ? 1 : 0 },
-    todo_count => sub{ shift->is_todo ? 1 : 0 },
-    skip_count => sub{ shift->is_skip ? 1 : 0 },
-    test_count => sub{ 1 },
+my @statistic_attributes = qw(
+    pass_count
+    fail_count
+    todo_count
+    skip_count
+    test_count
 );
 
 has $_ => (
     is => 'rw',
     isa => 'TB2::Positive_Int',
     default => 0,
-) for keys %statistic_mapping;
+) for @statistic_attributes;
 
 sub _update_statistics {
     my $self = shift;
+    my $result = shift;
 
-    for my $attr ( keys %statistic_mapping ) {
-        for my $result (@_) {
-           $self->$attr( $self->$attr + $statistic_mapping{$attr}->($result) );
-        }
-    }
+    $self->pass_count( $self->pass_count + 1 ) if $result->is_pass;
+    $self->fail_count( $self->fail_count + 1 ) if $result->is_fail;
+    $self->todo_count( $self->todo_count + 1 ) if $result->is_todo;
+    $self->skip_count( $self->skip_count + 1 ) if $result->is_skip;
+    $self->test_count( $self->test_count + 1 );
+
+    return;
 }
 
-
-before results_push => sub{
-    my $self = shift;
-
-    for my $result (@_) {
-        croak "results_push() takes Result objects"
-          if !$self->try(sub { $result->isa('TB2::Result::Base') });
-    }
-
-    $self->_update_statistics(@_);
-};
 
 =head3 test_count
 
@@ -544,13 +542,14 @@ Appends $old_history results in to $history's results stack.
 
 sub consume {
    my $self = shift;
-   croak 'consume() only takes History objects' 
-      unless scalar(@_) 
-          == scalar( grep{ local $@;
-                           eval{$_->isa('TB2::History')} 
-                         } @_ 
-                   );
-   $self->results_push( map{ @{ $_->results } } @_ );
+   my $old_history = shift;
+
+   croak 'consume() only takes History objects'
+     unless eval { $old_history->isa("TB2::History") };
+
+   $self->accept_event($_) for @{ $old_history->events };
+
+   return;
 };
 
 

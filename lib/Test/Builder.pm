@@ -647,10 +647,13 @@ ERR
 
     # Capture the value of $TODO for the rest of this ok() call
     # so it can more easily be found by other routines.
-    my $todo    = $self->todo();
     my $in_todo = $self->in_todo;
-    local $self->{Todo} = $todo if $in_todo;
-    $self->_unoverload_str( \$todo );
+
+    # Calling todo() is expensive.  Only do so if we're in a TODO test.
+    my $todo;
+    $todo = $self->todo()               if $in_todo;
+    local $self->{Todo} = $todo         if $in_todo;
+    $self->_unoverload_str( \$todo )    if $in_todo;
 
     # Turn the test into a Result
     my( $pack, $file, $line ) = $self->caller;

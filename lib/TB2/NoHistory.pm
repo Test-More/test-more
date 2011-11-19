@@ -46,10 +46,16 @@ has '+results' =>
 ;
 
 
-after results_push => sub{
-    shift->clear_results;
-};
+sub handle_result {
+    my $self = shift;
+    my $result = shift;
 
+    $self->_update_statistics($result);
+
+    return;
+}
+
+sub handle_event {}
 
 no TB2::Mouse;
 1;
