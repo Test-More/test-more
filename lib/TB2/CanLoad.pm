@@ -46,9 +46,12 @@ L<TB2::CanTry>.
 
 =cut
 
+my %Loaded;
 sub load {
     my $self   = shift;
     my $module = shift;
+
+    return $Loaded{$module} if $Loaded{$module};
 
     my $ret = $self->try(sub {
         my $path = $module;
@@ -56,6 +59,8 @@ sub load {
         $path .= ".pm";
         require $path;
     }, die_on_fail => 1);
+
+    $Loaded{$module} = $ret;
 
     return $ret;
 }
