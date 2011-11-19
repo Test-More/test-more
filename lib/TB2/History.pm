@@ -174,12 +174,18 @@ A TB2::Stack of Result objects.
 =cut
 
 buildstack results => 'TB2::Result::Base';
-sub handle_result    { shift->results_push(shift) }
-sub result_count     { shift->results_count }
+sub handle_result    {
+    my $self = shift;
+    my $result = shift;
 
-before results_push => sub {
-   shift->events_push( shift );
-};
+    $self->results_push($result);
+    $self->events_push($result);
+
+    $self->_update_statistics($result);
+
+    return;
+}
+sub result_count     { shift->results_count }
 
 
 =head2 result_count
@@ -226,25 +232,13 @@ has $_ => (
 
 sub _update_statistics {
     my $self = shift;
+    my $result = shift;
 
     for my $attr ( keys %statistic_mapping ) {
-        for my $result (@_) {
-           $self->$attr( $self->$attr + $statistic_mapping{$attr}->($result) );
-        }
+        $self->$attr( $self->$attr + $statistic_mapping{$attr}->($result) );
     }
 }
 
-
-before results_push => sub{
-    my $self = shift;
-
-    for my $result (@_) {
-        croak "results_push() takes Result objects"
-          if !$self->try(sub { $result->isa('TB2::Result::Base') });
-    }
-
-    $self->_update_statistics(@_);
-};
 
 =head3 test_count
 
@@ -544,13 +538,14 @@ Appends $old_history results in to $history's results stack.
 
 sub consume {
    my $self = shift;
-   croak 'consume() only takes History objects' 
-      unless scalar(@_) 
-          == scalar( grep{ local $@;
-                           eval{$_->isa('TB2::History')} 
-                         } @_ 
-                   );
-   $self->results_push( map{ @{ $_->results } } @_ );
+   my $old_history = shift;
+
+   croak 'consume() only takes History objects'
+     unless eval { $old_history->isa("TB2::History") };
+
+   $self->accept_event($_) for @{ $old_history->events };
+
+   return;
 };
 
 

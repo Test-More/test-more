@@ -66,19 +66,17 @@ note "merge history stacks"; {
    $ec2->post_event($_) for Fail(), Fail(), Fail();
    is $H2->result_count, 3, q{H2 count};
 
-   ok $H1->consume($H2);
+   $H1->consume($H2);
    is $H1->result_count, 6, q{H1 consumed H2};
    is $H1->fail_count, 3 , q{H1 picked up the tests from H2 correctly};
 
-   my @histories = map {
-       my $h = new_history;
-       my $ec = MyEventCoordinator->new( history => $h );
-       $ec->post_event($_) for Pass(), Fail();
-       $h;
-   } 1..10;
-   ok $H1->consume( @histories ), q{consume can also take lists of objects};
+   my $h = new_history;
+   my $ec = MyEventCoordinator->new( history => $h );
+   $ec->post_event($_) for Pass(), Fail();
 
-   is $H1->result_count, 26, q{H1 consumed all the items in that list};
+   $H1->consume( $h ) for 1..10;
+
+   is $H1->result_count, 26, q{consume appends history};
    
 }
 

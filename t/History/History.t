@@ -50,16 +50,4 @@ my $Fail = TB2::Result->new_result(
     ok !$history->can_succeed;
 }
 
-
-# handle_result argument check
-{
-    my $history = new_ok $CLASS;
-
-    ok !eval {
-        $history->handle_result({ passed => 1 });
-    };
-    like $@, qr/takes Result objects/;
-}
-
-
 done_testing;
