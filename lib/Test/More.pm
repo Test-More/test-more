@@ -139,12 +139,6 @@ Your script will declare a skip with the reason why you skipped and
 exit immediately with a zero (success).  See L<Test::Harness> for
 details.
 
-If you want to control what functions Test::More will export, you
-have to use the 'import' option.  For example, to import everything
-but 'fail', you'd do:
-
-  use Test::More tests => 23, import => ['!fail'];
-
 Alternatively, you can use the C<plan()> function.  Useful for when you
 have to calculate the number of tests.
 
@@ -168,6 +162,18 @@ sub plan {
 
     return $tb->plan(@_);
 }
+
+=pod
+
+If you want to control what functions Test::More will export, you
+have to use the 'import' option.  For example, to import everything
+but 'fail', you'd do:
+
+  use Test::More tests => 23, import => ['!fail'];
+
+Any import list that L<Exporter> accepts will work.
+
+=cut
 
 # This implements "use Test::More 'no_diag'" but the behavior is
 # deprecated.
@@ -262,14 +268,16 @@ respectively.
 
 This simply evaluates any expression (C<$got eq $expected> is just a
 simple example) and uses that to determine if the test succeeded or
-failed.  A true expression passes, a false one fails.  Very simple.
+failed.  The expression is evaluated in scalar context.  A true
+expression passes, a false one fails.  Very simple.
 
 For example:
 
     ok( $exp{9} == 81,                   'simple exponential' );
     ok( Film->can('db_Main'),            'set_db()' );
     ok( $p->tests == 4,                  'saw tests' );
-    ok( !grep !defined $_, @items,       'items populated' );
+    ok( !(grep !defined $_, @items),     'items populated' );
+    ok( @stuff,                          'I have some stuff' );
 
 (Mnemonic:  "This is ok.")
 
@@ -318,7 +326,7 @@ are similar to these:
     ok( $foo ne '',     "Got some foo" );
 
 C<undef> will only ever match C<undef>.  So you can test a value
-agains C<undef> like this:
+against C<undef> like this:
 
     is($not_defined, undef, "undefined as expected");
 
@@ -1166,7 +1174,7 @@ Usually you want to pass this into C<note> or C<diag>.
 
 Handy for things like...
 
-    is_deeply($have, $want) || diag explain $have;
+    is_deeply($have, $want) or diag explain $have;
 
 or
 
@@ -1315,7 +1323,7 @@ When the block is empty, delete it.
 With todo tests, it's best to have the tests actually run.  That way
 you'll know when they start passing.  Sometimes this isn't possible.
 Often a failing test will cause the whole program to die or hang, even
-inside an C<eval BLOCK> with and using C<alarm>.  In these extreme
+inside an C<eval BLOCK> or when using C<alarm>.  In these extreme
 cases you have no choice but to skip over the broken tests entirely.
 
 The syntax and behavior is similar to a C<SKIP: BLOCK> except the
