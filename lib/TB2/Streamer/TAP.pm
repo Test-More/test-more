@@ -49,24 +49,26 @@ has error_fh  =>
 
 =head3 stderr
 
-Stores a duplicated copy of C<STDERR>.  Handy for resetting the
+Contains a duplicated copy of C<STDERR>.  Handy for resetting the
 error_fh().
+
+It is read only.
 
 =cut
 
-has stderr =>
-  is            => 'rw',
-  default       => sub {
-      my $self = shift;
+my $stderr;
+sub stderr {
+    my $self = shift;
 
-      my $fh = $self->dup_filehandle(\*STDERR);
+    return $stderr if $stderr;
 
-      $self->autoflush($fh);
-      $self->autoflush(*STDERR);
+    $stderr = $self->dup_filehandle(\*STDERR);
 
-      return $fh;
-  }
-;
+    $self->autoflush($stderr);
+    $self->autoflush(\*STDERR);
+
+    return $stderr;
+}
 
 
 my %Dest_Dest = (

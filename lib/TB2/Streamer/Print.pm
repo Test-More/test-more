@@ -45,24 +45,26 @@ has output_fh =>
 
 =head3 stdout
 
-Stores a duplicated copy of C<STDOUT>.  Handy for resetting the
+Contains a duplicated copy of C<STDOUT>.  Handy for resetting the
 output_fh().
+
+It is read only.
 
 =cut
 
-has stdout =>
-  is            => 'rw',
-  default       => sub {
-      my $self = shift;
+my $stdout;
+sub stdout {
+    my $self = shift;
 
-      my $fh = $self->dup_filehandle(\*STDOUT);
+    return $stdout if $stdout;
 
-      $self->autoflush($fh);
-      $self->autoflush(*STDOUT);
+    $stdout = $self->dup_filehandle(\*STDOUT);
 
-      return $fh;
-  }
-;
+    $self->autoflush($stdout);
+    $self->autoflush(\*STDOUT);
+
+    return $stdout;
+}
 
 
 =head2 Methods
