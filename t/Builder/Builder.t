@@ -1,11 +1,7 @@
 #!/usr/bin/perl -w
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = '../lib';
-    }
-}
+use strict;
+use warnings;
 
 use Test::Builder;
 my $Test = Test::Builder->new;

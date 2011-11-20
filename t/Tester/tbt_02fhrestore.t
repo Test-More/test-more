@@ -22,7 +22,6 @@ my $t = Test::Builder->new();
 
 $t->output($orig_o);
 $t->failure_output($orig_f);
-$t->todo_output($orig_t);
 
 # run a test
 
@@ -32,9 +31,9 @@ test_test("standard test okay");
 
 # now check that they were restored okay
 
-ok($orig_o == $t->output(), "output file reconnected");
-ok($orig_t == $t->todo_output(), "todo output file reconnected");
-ok($orig_f == $t->failure_output(), "failure output file reconnected");
+is($orig_o, $t->output(), "output file reconnected");
+is($orig_o, $t->todo_output(), "todo output file reconnected");
+is($orig_f, $t->failure_output(), "failure output file reconnected");
 
 #####################################################################
 

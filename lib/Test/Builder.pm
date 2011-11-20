@@ -256,9 +256,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->_reset_todo_state;
 
-    $Opened_Testhandles = 0;
-    $self->_dup_stdhandles;
-
     return;
 }
 
@@ -1452,7 +1449,7 @@ Prints out the given C<@msgs>.  Like C<print>, arguments are simply
 appended together.
 
 Normally, it uses the C<failure_output()> handle, but if this is for a
-TODO test, the C<todo_output()> handle is used.
+TODO test, the C<output()> handle is used.
 
 Output will be indented and marked with a # so as not to interfere
 with test output.  A newline will be put on the end if there isn't one
@@ -1555,8 +1552,6 @@ sub explain {
 
 =item B<failure_output>
 
-=item B<todo_output>
-
     my $filehandle = $Test->output;
     $Test->output($filehandle);
     $Test->output($filename);
@@ -1576,11 +1571,16 @@ displayed to the user.
 
 Defaults to STDERR.
 
-C<todo_output> is used instead of C<failure_output()> for the
+=item B<todo_output>
+
+This method exists for backwards compatibility.
+
+C<todo_output> was used instead of C<failure_output()> for the
 diagnostics of a failing TODO test.  These will not be seen by the
 user.
 
-Defaults to STDOUT.
+Now TODO tests will use C<< $builder->output >> and the TODO
+filehandle cannot be set separate from C<output()>.
 
 =cut
 
@@ -1589,10 +1589,10 @@ sub output {
 
     if( defined $fh ) {
         $fh = $self->_new_fh($fh);
-        $self->{Out_FH} = $fh;
         $self->formatter->streamer->output_fh($fh);
     }
-    return $self->{Out_FH};
+
+    return $self->formatter->streamer->output_fh;
 }
 
 sub failure_output {
@@ -1600,19 +1600,17 @@ sub failure_output {
 
     if( defined $fh ) {
         $fh = $self->_new_fh($fh);
-        $self->{Fail_FH} = $fh;
         $self->formatter->streamer->error_fh($fh);
     }
-    return $self->{Fail_FH};
+
+    return $self->formatter->streamer->error_fh;
 }
 
 sub todo_output {
     my( $self, $fh ) = @_;
 
-    if( defined $fh ) {
-        $self->{Todo_FH} = $self->_new_fh($fh);
-    }
-    return $self->{Todo_FH};
+    # There is no longer a concept of a separate TODO filehandle
+    return $self->formatter->streamer->output_fh;
 }
 
 sub _new_fh {
@@ -1636,41 +1634,6 @@ sub _new_fh {
     return $fh;
 }
 
-my( $Testout, $Testerr );
-
-sub _dup_stdhandles {
-    my $self = shift;
-
-    $self->_open_testhandles;
-
-    # Set everything to unbuffered else plain prints to STDOUT will
-    # come out in the wrong order from our own prints.
-    $self->autoflush($Testout);
-    $self->autoflush( \*STDOUT );
-    $self->autoflush($Testerr);
-    $self->autoflush( \*STDERR );
-
-    $self->reset_outputs;
-
-    return;
-}
-
-
-sub _open_testhandles {
-    my $self = shift;
-
-    return if $Opened_Testhandles;
-
-    # We dup STDOUT and STDERR so people can change them in their
-    # test suites while still getting normal test output.
-    $Testout = $self->dup_filehandle(*STDOUT, $Testout);
-    $Testerr = $self->dup_filehandle(*STDERR, $Testerr);
-
-    $Opened_Testhandles = 1;
-
-    return;
-}
-
 
 =item reset_outputs
 
@@ -1683,9 +1646,7 @@ Resets all the output filehandles back to their defaults.
 sub reset_outputs {
     my $self = shift;
 
-    $self->output        ($Testout);
-    $self->failure_output($Testerr);
-    $self->todo_output   ($Testout);
+    $self->formatter->reset_streamer;
 
     return;
 }

@@ -1715,19 +1715,35 @@ Test::More works with Perls as old as 5.6.0.
 =item utf8 / "Wide character in print"
 
 If you use utf8 or other non-ASCII characters with Test::More you
-might get a "Wide character in print" warning.  Using C<binmode
-STDOUT, ":utf8"> will not fix it.  Test::Builder (which powers
-Test::More) duplicates STDOUT and STDERR.  So any changes to them,
-including changing their output disciplines, will not be seem by
-Test::More.
+might get a "Wide character in print" warning.  Test::Builder (which
+powers Test::More) duplicates STDOUT and STDERR just before using them
+for the first time.  Any changes to them, including changing their
+output disciplines, should be done C<before> the plan is set or any
+tests are run.
 
-The work around is to change the filehandles used by Test::Builder
-directly.
+Versions of Test::More prior to 1.5 would duplicate STDOUT and STDERR
+immediately upon loading, so you're best off applying encodings to
+them as early as possible.
+
+    # Turn on UTF8 in the source code
+    use utf8;
+
+    # Make STDIN, STDOUT and STDERR use utf8
+    use open ':std', ':encoding(utf8)';
+
+    # Now load Test::More which will see the encoded filehandles
+    use Test::More;
+
+    pass("Unicode ☃ for you!");
+
+    done_testing;
+
+Alternatively you can change the encoding on the filehandles used by
+Test::Builder at any time.
 
     my $builder = Test::More->builder;
-    binmode $builder->output,         ":utf8";
-    binmode $builder->failure_output, ":utf8";
-    binmode $builder->todo_output,    ":utf8";
+    binmode $builder->output,         ":encoding(utf8)";
+    binmode $builder->failure_output, ":encoding(utf8)";
 
 
 =item Overloaded objects
