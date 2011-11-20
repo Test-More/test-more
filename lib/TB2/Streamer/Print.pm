@@ -67,6 +67,30 @@ sub stdout {
 }
 
 
+=head3 stderr
+
+Contains a duplicated copy of C<STDERR>.  Handy for resetting the
+error_fh().
+
+It is read only.
+
+=cut
+
+my $stderr;
+sub stderr {
+    my $self = shift;
+
+    return $stderr if $stderr;
+
+    $stderr = $self->dup_filehandle(\*STDERR);
+
+    $self->autoflush($stderr);
+    $self->autoflush(\*STDERR);
+
+    return $stderr;
+}
+
+
 =head2 Methods
 
 =head3 safe_print

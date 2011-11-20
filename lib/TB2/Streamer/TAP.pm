@@ -47,29 +47,6 @@ has error_fh  =>
   }
 ;
 
-=head3 stderr
-
-Contains a duplicated copy of C<STDERR>.  Handy for resetting the
-error_fh().
-
-It is read only.
-
-=cut
-
-my $stderr;
-sub stderr {
-    my $self = shift;
-
-    return $stderr if $stderr;
-
-    $stderr = $self->dup_filehandle(\*STDERR);
-
-    $self->autoflush($stderr);
-    $self->autoflush(\*STDERR);
-
-    return $stderr;
-}
-
 
 my %Dest_Dest = (
     out => 'output_fh',

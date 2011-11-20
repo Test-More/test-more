@@ -5,7 +5,7 @@ use warnings;
 
 BEGIN { require "t/test.pl" }
 
-my $CLASS = 'TB2::Streamer::TAP';
+my $CLASS = 'TB2::Streamer::Print';
 use_ok $CLASS;
 
 
