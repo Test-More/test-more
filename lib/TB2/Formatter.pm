@@ -81,6 +81,8 @@ sub subtest_handler {
     return $self->new( streamer => $self->streamer );
 }
 
+=head2 Methods
+
 =head3 new
 
   my $formatter = TB2::Formatter->new(%args);
@@ -92,7 +94,7 @@ You want to call this on a subclass.
 
 =head3 write
 
-  $output->write($destination, @text);
+  $formatter->write($destination, @text);
 
 Outputs C<@text> to the named $destination.
 
@@ -100,6 +102,18 @@ C<@text> is treated like C<print>, so it is simply concatenated.
 
 In reality, this is a hand off to C<< $formatter->streamer->write >>.
 
+=head3 reset_streamer
+
+  $formatter->reset_streamer;
+
+Changes C<< $formatter->streamer >> back to the default.
+
 =cut
+
+sub reset_streamer {
+    $_[0]->streamer( $_[0]->_build_streamer );
+}
+
+
 
 1;
