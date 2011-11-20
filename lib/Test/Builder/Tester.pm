@@ -102,7 +102,6 @@ my $testing_num;
 # remembering where the file handles were originally connected
 my $original_output_handle;
 my $original_failure_handle;
-my $original_todo_handle;
 
 my $original_test_number;
 my $original_harness_state;
@@ -119,12 +118,10 @@ sub _start_testing {
     # remember what the handles were set to
     $original_output_handle  = $t->output();
     $original_failure_handle = $t->failure_output();
-    $original_todo_handle    = $t->todo_output();
 
     # switch out to our own handles
     $t->output($output_handle);
     $t->failure_output($error_handle);
-    $t->todo_output($output_handle);
 
     # clear the expected list
     $out->reset();
@@ -324,7 +321,6 @@ sub test_test {
     # okay, reconnect the test suite back to the saved handles
     $t->output($original_output_handle);
     $t->failure_output($original_failure_handle);
-    $t->todo_output($original_todo_handle);
 
     # restore the test no, etc, back to the original point
     $t->current_test($testing_num);
