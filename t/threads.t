@@ -1,12 +1,5 @@
 #!/usr/bin/perl -w
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = '../lib';
-    }
-}
-
 use Config;
 BEGIN {
     unless ( $Config{'useithreads'} && 
@@ -22,13 +15,12 @@ use Test::Builder;
 
 my $Test = Test::Builder->new;
 $Test->exported_to('main');
-$Test->plan(skip_all => "threads are broken");
 $Test->plan(tests => 6);
 
 for(1..5) {
-	'threads'->create(sub { 
-          $Test->ok(1,"Each of these should app the test number") 
+    'threads'->create(sub { 
+        $Test->ok(1,"Each of these should increment the test number") 
     })->join;
 }
 
-$Test->is_num($Test->current_test(), 5,"Should be five");
+$Test->is_num($Test->current_test(), 5, "Should be five");

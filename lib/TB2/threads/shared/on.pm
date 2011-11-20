@@ -109,15 +109,7 @@ else {
     *shared_clone = threads::shared->can("shared_clone");
 }
 
-
-sub import {
-    my $caller = caller;
-
-    no strict 'refs';
-    *{$caller .'::shared_clone'} = \&shared_clone;
-
-    my $parent = threads::shared->can("import");
-    goto $parent;
-}
+# import share()
+threads::shared->import(qw(share));
 
 1;

@@ -5,16 +5,7 @@ use strict;
 our $VERSION = '1.005000_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-sub import {
-    my $caller = caller;
-
-    no strict;
-
-    *{$caller . '::share'}        = sub { return $_[0] };
-    *{$caller . '::shared_clone'} = sub { return $_[0] };
-    *{$caller . '::lock'}         = sub { 0 };
-
-    return;
-}
+sub share        { 0 }
+sub shared_clone { return $_[0] };
 
 1;
