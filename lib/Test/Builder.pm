@@ -201,15 +201,15 @@ sub name {
     $self->croak("The internals of subtests were redesigned, name() no longer exists.");
 }
 
-=item B<is_subtest>
+=item B<in_subtest>
 
-	$builder->is_subtest;
+	$builder->in_subtest;
 
-Whether the Test::Builder is a subtest.
+Whether the Test::Builder is in a subtest.
 
 =cut
 
-sub is_subtest {
+sub in_subtest {
 	$self->history->is_subtest
 }
 
