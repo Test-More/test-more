@@ -13,7 +13,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 use Carp;
 use TB2::threads::shared;
 
-sub default_streamer_class { 'TB2::Streamer::TAP' }
+sub default_streamer_class { 'TB2::Streamer::Print' }
 
 
 =head1 NAME

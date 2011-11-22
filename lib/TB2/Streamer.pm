@@ -63,8 +63,6 @@ It must throw an exception if it fails.
 
 L<TB2::Streamer::Print> Print to a configurable output filehandle
 
-L<TB2::Streamer::TAP> A streamer for the special needs of TAP
-
 L<TB2::Streamer::Debug> Captures all output, useful for debugging.
 
 =cut

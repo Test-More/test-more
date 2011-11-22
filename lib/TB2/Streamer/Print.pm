@@ -11,6 +11,18 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 TB2::Streamer::Print - A simple streamer that prints
 
+=head1 SYNOPSIS
+
+    use TB2::Streamer::Print;
+
+    my $streamer = TB2::Streamer::Print;
+
+    $streamer->write( out => "something something" );
+    $streamer->write( err => "something's wrong!" );
+
+    # Redirect out to a new filehandle.
+    $streamer->output_fh($fh);
+
 =head1 DESCRIPTION
 
 This is a L<TB2::Streamer> which prints to a filehandle.
@@ -20,28 +32,46 @@ which prints.
 
 =head2 Destinations
 
-It ignores your destination.  Everything goes to the L<output_fh>.
+These are the destinations understood by C<< $streamer->write >>.
+
+=head3 out
+
+Where normal output goes.  This connects to C<< $streamer->output_fh >>.
+
+=head3 err
+
+Where ad-hoc user visible comments go.  This connects to
+C<< $streamer->error_fh >>.
 
 =head2 Attributes
 
 =head3 output_fh
 
-The filehandle to which it should write.
+This is the filehandle for normal output.  For example, TAP or XML or
+HTML or whatever records the test state.
 
 Defaults to a copy of C<STDOUT>.  This allows tests to muck around
 with STDOUT without it affecting test results.
 
+=head3 error_fh
+
+This is the filehandle for error output.  This is normally human
+readable information about the test as its running.  It is not part of
+the TAP or XML or HTML or whatever.
+
+Defaults to a copy of C<STDERR>.  This allows tests to muck around
+with STDERR without it affecting test results.
+
 =cut
 
-has output_fh =>
-  is            => 'rw',
-  # "FileHandle" does not appear to include glob filehandles.
-  #  isa           => 'FileHandle',
-  lazy          => 1,
-  default       => sub {
-      return $_[0]->stdout;
-  }
-;
+use TB2::ThreadSafeFilehandleAccessor fh_accessors => [qw(output_fh error_fh)];
+
+sub BUILD {
+    my $self = shift;
+    $self->output_fh( $self->stdout ) unless $self->output_fh;
+    $self->error_fh ( $self->stderr ) unless $self->error_fh;
+    return $self;
+}
 
 =head3 stdout
 
@@ -114,15 +144,26 @@ sub safe_print {
     print $fh @_;
 }
 
+
+my %Dest_Dest = (
+    out => 'output_fh',
+    err => 'error_fh',
+);
+
 sub write {
     my $self = shift;
     my $dest = shift;
+
+    confess "Unknown stream destination '$dest'" if !exists $Dest_Dest{$dest};
+
+    my $fh_method = $Dest_Dest{ $dest };
+    my $fh = $self->$fh_method;
 
     # This keeps "use Test::More tests => 2" from printing stuff when
     # compiling with -c.
     return if $^C;
 
-    $self->safe_print($self->output_fh, @_);
+    $self->safe_print($fh, @_);
 }
 
 no TB2::Mouse;
