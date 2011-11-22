@@ -21,7 +21,7 @@ TB2::EventCoordinator - Coordinate events amongst the builders
     my $ec = TB2::EventCoordinator->create;
 
     # The builder sends it events like assert results and the beginning
-    # and end of test streams.
+    # and end of tests.
     $ec->post_event($event);
 
     # The EventCoordinator comes with History and the default Formatter,
