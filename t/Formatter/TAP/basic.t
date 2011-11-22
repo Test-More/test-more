@@ -4,7 +4,6 @@ use strict;
 
 use TB2::EventCoordinator;
 use TB2::Formatter::TAP;
-use TB2::Streamer::TAP; 
 use TB2::Events;
 use lib 't/lib';
 BEGIN { require "t/test.pl" }
