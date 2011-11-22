@@ -5,7 +5,7 @@ use strict;
 our $VERSION = '1.005000_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use threads::shared;
+require threads::shared;
 use Scalar::Util qw(refaddr reftype blessed);
 
 # shared_clone() was introduced to threads::shared pretty
@@ -80,7 +80,8 @@ if ( !threads::shared->can("shared_clone") ) {
                 $tmp = $make_shared->($$item, $cloned);
             }
 
-        } else {
+        }
+        else {
             require Carp;
             Carp::croak("Unsupported ref type: ", $ref_type);
         }
@@ -110,6 +111,6 @@ else {
 }
 
 # import share()
-threads::shared->import(qw(share));
+*share = \&threads::shared::share;
 
 1;
