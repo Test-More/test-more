@@ -1,15 +1,4 @@
-#!perl -w
-
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = ('../lib', 'lib');
-    }
-    else {
-        unshift @INC, 't/lib';
-    }
-}
-chdir 't';
+#!/usr/bin/env perl -w
 
 BEGIN {
     # There was a bug with overloaded objects and threads.
@@ -17,9 +6,7 @@ BEGIN {
     eval { require threads; 'threads'->import; 1; };
 }
 
-use Test::More;
-plan skip_all => "threads are broken";
-plan tests => 5;
+use Test::More tests => 5;
 
 
 package Overloaded;

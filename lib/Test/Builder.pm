@@ -7,9 +7,6 @@ use TB2::Types;
 our $VERSION = '1.005000_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-# Conditionally loads threads::shared and fixes up old versions
-use TB2::threads::shared;
-
 use TB2::OnlyOnePlan;
 use TB2::Events;
 use TB2::TestState;
@@ -617,7 +614,6 @@ sub post_result {
     my $self = shift;
     my $result = shift;
 
-    $result = shared_clone($result);
     $self->test_start unless $self->in_test;
     $self->test_state->post_event($result);
 
@@ -1741,7 +1737,7 @@ sub current_test {
                     reason      => 'incrementing test number',
                     test_number => $test_number
                 );
-                $ec->post_event( shared_clone($result) );
+                $ec->post_event( $result );
             }
         }
         # If backward, wipe history.  Its their funeral.

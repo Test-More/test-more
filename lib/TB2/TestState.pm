@@ -2,6 +2,7 @@ package TB2::TestState;
 
 use TB2::Mouse;
 use TB2::Types;
+use TB2::threads::shared;
 
 our $VERSION = '1.005000_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -9,7 +10,8 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 use Carp;
 
 with 'TB2::HasDefault',
-     'TB2::CanLoad';
+     'TB2::CanLoad',
+     'TB2::CanThread';
 
 has _coordinators =>
   is            => 'rw',
@@ -131,6 +133,13 @@ sub create {
 }
 
 
+sub make_default {
+    my $class = shift;
+    my $state = $class->create;
+    return $state->shared_clone($state);
+}
+
+
 =head2 EventCoordinator methods
 
 TestState delegates to a stack of EventCoordinators.  It does all the
@@ -174,7 +183,8 @@ sub push_coordinator {
         $ec = shift;
     }
 
-    push @{ $self->_coordinators }, $ec;
+    $ec = $self->shared_clone($ec);
+    push @{ $self->_coordinators }, $ec; 
 
     # Do the delegation every time we add a new coordinator in case it's
     # a subclass that added methods.
@@ -219,21 +229,40 @@ sub current_coordinator {
     $_[0]->_coordinators->[-1];
 }
 
+
+# Find the event coordinator to check with isa/can.
+# Do it carefuly because this might fire during globlal destruction
+# and $self->_coordinators might already be cleaned up.
+sub _ec {
+    my $self = shift;
+
+    # It's a class
+    return $DEFAULT_COORDINATOR_CLASS if !ref $self;
+
+    # It doesn't have coordinators
+    my $coordinators = $self->_coordinators;
+    return $DEFAULT_COORDINATOR_CLASS if !$coordinators;
+
+    my $ec = $coordinators->[-1];
+    return defined $ec ? $ec : $DEFAULT_COORDINATOR_CLASS;
+}
+
+
 # Convince isa() that we act like an EventCoordinator
 sub isa {
     my($self, $want) = @_;
 
-    my $ec = ref $self ? $self->_coordinators->[-1] : $DEFAULT_COORDINATOR_CLASS;
-    return 1 if $ec && $ec->isa($want);
+    my $ec = $self->_ec;
+    return 1 if $ec->isa($want);
     return $self->SUPER::isa($want);
 }
 
-
+# Convince can() that we act like an EventCoordinator
 sub can {
     my($self, $want) = @_;
 
-    my $ec = ref $self ? $self->_coordinators->[-1] : $DEFAULT_COORDINATOR_CLASS;
-    return 1 if $ec && $ec->can($want);
+    my $ec = $self->_ec;
+    return 1 if $ec->can($want);
     return $self->SUPER::can($want);
 }
 

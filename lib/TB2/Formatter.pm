@@ -4,7 +4,7 @@ use Carp;
 use TB2::Mouse;
 use TB2::Types;
 
-with 'TB2::EventHandler';
+with 'TB2::EventHandler', 'TB2::CanThread';
 
 our $VERSION = '1.005000_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -73,7 +73,7 @@ has streamer => (
 );
 
 sub _build_streamer {
-    return $_[0]->streamer_class->new;
+    return $_[0]->shared_clone( $_[0]->streamer_class->new );
 }
 
 sub subtest_handler {
