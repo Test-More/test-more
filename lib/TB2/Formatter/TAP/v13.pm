@@ -372,7 +372,9 @@ sub handle_result {
     $out .= "not " if !$result->literal_pass;
     $out .= "ok";
 
-    my $num = $result->test_number || $self->counter->increment;
+    my $counter = $self->counter;
+    lock $counter;
+    my $num = $result->test_number || $counter->increment;
     $out .= " ".$num if $self->use_numbers;
 
     my $name = $result->name;
