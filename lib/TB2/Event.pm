@@ -30,8 +30,8 @@ Test::Builder2 is a federated system where multiple builders can
 define their own way to do asserts.  They communicate and coordinate
 with each other by way of events.  These events can include:
 
-    start of a test stream
-    end of a test stream
+    start of a test
+    end of a test
     the result of an assert
 
 The basic Event doesn't do a whole lot.  It contains data and that's

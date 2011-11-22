@@ -10,16 +10,16 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 =head1 NAME
 
-TB2::Event::SetPlan - Set the plan for the current stream
+TB2::Event::SetPlan - Set the plan for the current test
 
 =head1 DESCRIPTION
 
-This is an Event indicating that the test plan for the current stream
+This is an Event indicating that the test plan for the current test
 has been set.
 
 It B<must> come between a C<test_start> and an C<test_end> Event.
 
-There B<should> be only one plan per stream.  An exception is that a
+There B<should> be only one plan per test.  An exception is that a
 B<no_plan> can be followed by a more restrictive plan.
 
 =head1 METHODS
@@ -28,7 +28,7 @@ B<no_plan> can be followed by a more restrictive plan.
 
 =head3 asserts_expected
 
-The total number of asserts expected to be in this stream.
+The total number of asserts expected to be in this test.
 
 Must be a positive integer or 0.
 
@@ -45,7 +45,7 @@ has asserts_expected =>
 
 =head3 no_plan
 
-If true, there is explicitly no plan for this stream.  Any positive
+If true, there is explicitly no plan for this test.  Any positive
 number of asserts is fine.
 
 Defaults to false.
@@ -61,11 +61,11 @@ has no_plan     =>
 
 =head3 skip
 
-If true, it indicates that the rest of the asserts in the stream will
+If true, it indicates that the rest of the asserts in the test will
 not be executed.  Usually because they would not make sense in the
 current environment (Unix tests on Windows, for example).
 
-No results should follow in this stream.
+No results should follow in this test.
 
 Defaults to false.
 
@@ -79,7 +79,7 @@ has skip        =>
 
 =head3 skip_reason
 
-The reason the stream has been skipped.
+The reason the test has been skipped.
 
 Defaults to empty string.
 

@@ -192,33 +192,23 @@ sub subtest {
 }
 
 
-# Removed public API function.
-sub child {
-    my $self = shift;
-    $self->croak("The internals of subtests were redesigned, child() no longer exists.");
-}
-
-
-# Removed public API method.
-sub finalize {
-    my $self = shift;
-
-    $self->croak("The internals of subtests were redesigned, finalize() no longer exists.");
-}
-
-# Removed public API method.
-sub parent {
-    my $self = shift;
-
-    $self->croak("The internals of subtests were redesigned, parent() no longer exists.");
-}
-
 sub name {
     my $self = shift;
 
     $self->croak("The internals of subtests were redesigned, name() no longer exists.");
 }
 
+=item B<is_subtest>
+
+	$builder->is_subtest;
+
+Whether the Test::Builder is a subtest.
+
+=cut
+
+sub is_subtest {
+	$self->history->is_subtest
+}
 
 =item B<reset>
 
