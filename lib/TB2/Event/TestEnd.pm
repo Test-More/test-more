@@ -9,11 +9,11 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 =head1 NAME
 
-TB2::Event::TestEnd - End of a test stream event
+TB2::Event::TestEnd - End of a test event
 
 =head1 DESCRIPTION
 
-This is an Event representing the end of a test stream.
+This is an Event representing the end of a test.
 
 =head1 METHODS
 
