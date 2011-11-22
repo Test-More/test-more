@@ -33,15 +33,13 @@ with STDOUT without it affecting test results.
 
 =cut
 
-has output_fh =>
-  is            => 'rw',
-  # "FileHandle" does not appear to include glob filehandles.
-  #  isa           => 'FileHandle',
-  lazy          => 1,
-  default       => sub {
-      return $_[0]->stdout;
-  }
-;
+use TB2::ThreadSafeFilehandleAccessor fh_accessors => [qw(output_fh)];
+
+sub BUILD {
+    my $self = shift;
+    $self->output_fh( $self->stdout ) unless $self->output_fh;
+    return $self;
+}
 
 =head3 stdout
 
