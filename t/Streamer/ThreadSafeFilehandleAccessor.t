@@ -26,11 +26,10 @@ use threads::shared;
 note "construction and accessors"; {
     my $obj = MyStreamer->new(
         this_fh         => \*STDOUT,
-        that_fh         => \*STDERR,
     );
 
     is $obj->this_fh, \*STDOUT;
-    is $obj->that_fh, \*STDERR;
+    ok !$obj->that_fh;
 
     my $string = '';
     open my $fh, ">", \$string;

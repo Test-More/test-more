@@ -93,6 +93,7 @@ sub import {
             }
             else {                      # getting
                 my $key = $self->$orig;
+                return if !defined $key;
                 return $Filehandle_Storage{$key};
             }
         });
