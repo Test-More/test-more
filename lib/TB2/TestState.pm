@@ -133,6 +133,13 @@ sub create {
 }
 
 
+sub make_default {
+    my $class = shift;
+    my $state = $class->create;
+    return $state->shared_clone($state);
+}
+
+
 =head2 EventCoordinator methods
 
 TestState delegates to a stack of EventCoordinators.  It does all the
@@ -176,7 +183,8 @@ sub push_coordinator {
         $ec = shift;
     }
 
-    push @{ $self->_coordinators }, $ec;
+    $ec = $self->shared_clone($ec);
+    push @{ $self->_coordinators }, $ec; 
 
     # Do the delegation every time we add a new coordinator in case it's
     # a subclass that added methods.

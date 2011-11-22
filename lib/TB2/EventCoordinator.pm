@@ -2,7 +2,7 @@ package TB2::EventCoordinator;
 
 use TB2::Mouse;
 use TB2::Types;
-with 'TB2::CanLoad';
+with 'TB2::CanLoad', 'TB2::CanThread';
 
 our $VERSION = '1.005000_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -71,9 +71,10 @@ has history =>
   is            => 'rw',
   isa           => 'Object',
   lazy          => 1,
+  trigger       => sub { $_[0]->shared_clone($_[1]) },
   default       => sub {
       $_[0]->load("TB2::History");
-      return TB2::History->new;
+      return $_[0]->shared_clone(TB2::History->new);
   };
 
 
@@ -94,9 +95,10 @@ has formatters =>
   is            => 'rw',
   isa           => 'ArrayRef',
   lazy          => 1,
+  trigger       => sub { $_[0]->shared_clone($_[1]) },
   default       => sub {
       $_[0]->load("TB2::Formatter::TAP");
-      return [ TB2::Formatter::TAP->new ];
+      return $_[0]->shared_clone( [ TB2::Formatter::TAP->new ] );
   };
 
 
@@ -118,6 +120,7 @@ By default there are no early_handlers.
 has early_handlers =>
   is            => 'rw',
   isa           => 'ArrayRef',
+  trigger       => sub { $_[0]->shared_clone($_[1]) },
   default       => sub { [] };
 
 
@@ -139,6 +142,7 @@ By default there are no late_handlers.
 has late_handlers =>
   is            => 'rw',
   isa           => 'ArrayRef',
+  trigger       => sub { $_[0]->shared_clone($_[1]) },
   default       => sub { [] };
 
 
@@ -178,6 +182,7 @@ sub post_event {
     my $self  = shift;
     my $event = shift;
 
+    $event = $self->shared_clone($event);
     for my $handler ($self->all_handlers) {
         $handler->accept_event($event, $self);
     }
@@ -235,7 +240,8 @@ Use this instead of manipulating the list of handlers directly.
 for my $type (grep { $_ ne 'history' } @Types) {
     my $add = sub {
         my $self = shift;
-        push @{ $self->$type }, @_;
+        my @handlers = map { $self->shared_clone($_) } @_;
+        push @{ $self->$type }, @handlers;
 
         return;
     };
