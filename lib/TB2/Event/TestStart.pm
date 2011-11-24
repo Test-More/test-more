@@ -15,7 +15,8 @@ TB2::Event::TestStart - Start of a test stream event
 
 This is an Event representing the start of a test.
 
-A test is a set of related results.
+A test is a set of related results and events.  There can be only one
+test per L<TB2::TestState>.
 
 =head1 METHODS
 
