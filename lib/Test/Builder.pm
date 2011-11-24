@@ -207,7 +207,7 @@ Whether the Test::Builder is in a subtest.
 =cut
 
 sub in_subtest {
-	$self->history->is_subtest
+    return $self->history->is_subtest;
 }
 
 =item B<reset>
