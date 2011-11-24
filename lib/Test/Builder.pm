@@ -13,7 +13,9 @@ use TB2::TestState;
 
 with 'TB2::CanDupFilehandles',
      'TB2::CanTry',
-     'TB2::CanLoad';
+     'TB2::CanLoad',
+     'TB2::HasObjectID';
+
 
 
 =head1 NAME

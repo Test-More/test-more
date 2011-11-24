@@ -2,7 +2,7 @@ package TB2::EventCoordinator;
 
 use TB2::Mouse;
 use TB2::Types;
-with 'TB2::CanLoad', 'TB2::CanThread';
+with 'TB2::CanLoad', 'TB2::CanThread', 'TB2::HasObjectID';
 
 our $VERSION = '1.005000_002';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)

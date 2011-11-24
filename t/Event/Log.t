@@ -29,7 +29,7 @@ note "defaults"; {
     is $event->level,           'debug';
     is $event->message,         $message;
     is_deeply $event->as_hash, {
-        event_id        => $event->event_id,
+        object_id        => $event->object_id,
         event_type      => 'log',
         message         => $message,
         level           => 'debug'

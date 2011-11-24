@@ -7,7 +7,9 @@ use TB2::Events;
 
 with 'TB2::HasDefault',
      'TB2::CanTry',
-     'TB2::CanLoad';
+     'TB2::CanLoad',
+     'TB2::HasObjectID';
+
 
 use Carp qw(confess);
 sub sanity ($) { confess "Assert failed" unless $_[0] };

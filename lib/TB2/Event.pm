@@ -3,6 +3,8 @@ package TB2::Event;
 use TB2::Mouse ();
 use TB2::Mouse::Role;
 use TB2::Types;
+with 'TB2::HasObjectID';
+
 requires qw( build_event_type );
 
 our $VERSION = '1.005000_002';
@@ -105,32 +107,6 @@ underscores.
 Used to build C<event_type>
 
 =head2 Provided Methods
-
-=head3 event_id
-
-    my $id = $event->event_id;
-
-Returns an identifier for this event unique to this process.
-
-Useful if an EventHandler posts its own events and doesn't want to
-process them twice.
-
-=cut
-
-my $Counter = int rand(1_000_000);
-has event_id =>
-  is            => 'ro',
-  isa           => 'Str',
-  lazy          => 1,
-  default       => sub {
-      my $self = shift;
-
-      # Include the class in case somebody else decides to use
-      # just an integer.
-      return ref($self) . '-' . $Counter++;
-  }
-;
-
 
 =head3 as_hash
 
