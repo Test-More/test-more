@@ -40,11 +40,22 @@ intended as a convenience for authors of builders.
 
 =head3 TB2::Event::TestEnd
 
+=head3 TB2::Event::SubtestStart
+
+=head3 TB2::Event::SubtestEnd
+
 =head3 TB2::Event::SetPlan
 
-=head3 TB2::Event::StreamMetadata
+=head3 TB2::Event::TestMetadata
 
-=head3 TB2::Event::Result
+=head3 TB2::Event::Log
+
+=head3 TB2::Event::Comment
+
+=head3 TB2::Event::Abort
+
+=head3 TB2::Result
+
 
 =cut
 
