@@ -119,6 +119,13 @@ See README and version control log for Test::Builder2 changes.
     Very incomplete.
 
 
+0.98_02  Thu Nov 24 01:13:53 PST 2011
+    Bug Fixes
+    * use_ok() in 0.98_01 was leaking pragmas from inside Test::More.
+      This looked like Test::More was forcing strict. [rt.cpan.org 67538]
+      (Father Chrysostomos)
+
+
 0.98_01  Tue Nov  8 17:07:58 PST 2011
     Bug Fixes
     * BAIL_OUT works inside a subtest. (Larry Leszczynski) [github #138]
