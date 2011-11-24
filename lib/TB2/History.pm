@@ -401,7 +401,7 @@ sub done_testing {
 
     my $plan = $history->plan;
 
-Returns the plan event for the current stream, if any.
+Returns the plan event for the current test, if any.
 
 =cut
 

@@ -310,7 +310,7 @@ The most basic assertion that all other assertions should use.
 
 This handles things like calling C<assert_start>, C<assert_end>,
 creating a test result and recording the result.  It will start a
-stream if one is not already started.  Everything you want an assert
+test if one is not already started.  Everything you want an assert
 to do and nothing else.
 
 $test is simple true for success, false for failure.

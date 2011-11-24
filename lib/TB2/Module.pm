@@ -146,7 +146,7 @@ CODE
 }
 
 
-# End the stream if it has been started (or if someone else started it)
+# End the test if it has been started (or if someone else started it)
 END {
     my $builder = eval { Test::Builder2->default; };
 
