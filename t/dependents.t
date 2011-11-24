@@ -32,7 +32,6 @@ my @Modules = qw(
 # Modules which are known to be broken
 my %Broken = map { $_ => 1 } (
     'Test::Class',
-    'Test::Warn',
     'Test::Tester',       # rt.cpan.org 72707
     'Test::NoWarnings',   # because of Test::Tester
 );
