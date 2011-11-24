@@ -157,7 +157,7 @@ are universally applicable.  That is, you're not going to find code that
 tests XML.
 
 TB2 pushes this further, in ways already mentioned, and by stripping itself
-down at the core to just storing, formatting and streaming results.  It
+down at the core to just storing, formatting and testing results.  It
 does not provide anything but the equivalent of C<ok()>.  Additional
 functionality will be available in various roles that ship with TB2.  Most
 library authors will use those roles by default, but radical extensions may
@@ -265,9 +265,9 @@ an assert fails.
 See F<examples/TB2/lib/TB2/DebugOnFail.pm> for an example.
 
 
-=head2 Action on failed (or passed) test stream
+=head2 Action on failed (or passed) test
 
-It should be possible to perform an action when a test stream completes in
+It should be possible to perform an action when a test completes in
 certain states.  For example, beep on completion or send an email on
 failure.
 
@@ -362,7 +362,7 @@ not.
 
 Finally, TB2 must wait until the entire assert stack has had an opportunity
 to add diagnostics to the result before it can print the result.  Why? 
-TB1, only doing TAP, is fortunate in that it's a stream.  It can print a
+TB1, only doing TAP, is fortunate in that it's a test.  It can print a
 result as soon as it gets it, and then append diagnostics onto the end. 
 But this isn't true of other output formats.  XML, for example, requires an
 opening and closing tag.
@@ -744,15 +744,15 @@ unparsable.
 
 =head2 comment
 
-A piece of information in the stream that may be parsed but is
-ignored and has no effect on the result of the stream.
+A piece of information in the test that may be parsed but is
+ignored and has no effect on the result of the test.
 
 =head2 note
 
 A comment which is not normally shown to the user, put there for
 debugging and informational purposes.
 
-=head2 stream
+=head2 test
 
 The output from a single test unit.  In a traditional Perl system this
 is the output from a single F<.t> file.
@@ -772,7 +772,7 @@ See L<TB2::Formatter> for details.
 
 =head2 streamer
 
-Takes the formatted stream and outputs it, usually to STDOUT and
+Takes the formatted test and outputs it, usually to STDOUT and
 STDERR but it may instead capture it for debugging purposes, or send 
 it as an email, or write it to a file, or do all of these things.
 
@@ -787,7 +787,7 @@ from most Perl tests.
 
 =head2 test
 
-An ambiguous term often used to mean an assert, a stream or a suite.
+An ambiguous term often used to mean an assert, a test or a suite.
 We'll avoid using it without qualification.
 
 =cut

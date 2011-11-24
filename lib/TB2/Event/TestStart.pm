@@ -13,10 +13,9 @@ TB2::Event::TestStart - Start of a test stream event
 
 =head1 DESCRIPTION
 
-This is an Event representing the start of a test stream.
+This is an Event representing the start of a test.
 
-A test stream is a set of results that belong together.
-This description is terrible.
+A test is a set of related results.
 
 =head1 METHODS
 
