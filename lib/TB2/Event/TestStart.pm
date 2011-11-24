@@ -9,7 +9,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 =head1 NAME
 
-TB2::Event::TestStart - Start of a test stream event
+TB2::Event::TestStart - Start of a test event
 
 =head1 DESCRIPTION
 
