@@ -2,7 +2,6 @@ package TB2::TestState;
 
 use TB2::Mouse;
 use TB2::Types;
-use TB2::threads::shared;
 
 our $VERSION = '1.005000_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)

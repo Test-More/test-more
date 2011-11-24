@@ -56,7 +56,7 @@ This cannot be changed once the TestState has been constructed.
 has coordinate_threads =>
   is            => 'ro',
   isa           => 'Bool',
-  default       => 1;
+  default       => sub { $INC{"threads.pm"} ? 1 : 0 };
 
 
 =head2 threads::shared methods
