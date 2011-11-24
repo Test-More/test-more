@@ -843,7 +843,7 @@ sub use_ok ($;@) {
     my( $pack, $filename, $line ) = caller;
 
     my $f = $filename;
-    $f =~ s/[\n\r]/_/g; # so it doesn't run off the "#line $line $f" line
+    $f =~ y/\n\r/_/; # so it doesn't run off the "#line $line $f" line
 
     my $version;
     if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
@@ -854,16 +854,20 @@ sub use_ok ($;@) {
     my $version_check = defined $version ? qq{$module->VERSION($version)} : "";
     my $code = <<"USE";
 package $pack;
+# Work around [perl #70151]
+\$^H = \${\$args[1]};
+%^H = %{\$args[2]};
 #line $line $f
 require $module; $version_check; $module->import(\@{\$args[0]});
-# Work around [perl #70151]
 \${\$args[1]} = \$^H;
 %{\$args[2]} = %^H;
 1;
 USE
 
+    my $hints = $^H;
+    my %hints = %^H;
     my( $eval_result, $eval_error )
-         = _eval( $code, \@imports, \my($hints, %hints) );
+         = _eval( $code, \(@imports, $hints, %hints) );
     my $ok = $tb->ok( $eval_result, "use $module;" );
 
     if( $ok ) {
