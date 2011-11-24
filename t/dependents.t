@@ -34,6 +34,7 @@ my %Broken = map { $_ => 1 } (
     'Test::Class',
     'Test::Tester',       # rt.cpan.org 72707
     'Test::NoWarnings',   # because of Test::Tester
+    'Test::Deep',         # because of Test::Tester
 );
 
 # Have to do it here because CPAN chdirs.
