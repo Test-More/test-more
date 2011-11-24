@@ -19,6 +19,7 @@ $CPAN::Config->{test_report} = 0;
 
 # Module which depend on Test::More to test
 my @Modules = qw(
+    Test::Tester
     Test::Most
     Test::Warn
     Test::Exception
@@ -29,9 +30,11 @@ my @Modules = qw(
 );
 
 # Modules which are known to be broken
-my %Broken = map { $_ => 1 } qw(
-    Test::Class
-    Test::Warn
+my %Broken = map { $_ => 1 } (
+    'Test::Class',
+    'Test::Warn',
+    'Test::Tester',       # rt.cpan.org 72707
+    'Test::NoWarnings',   # because of Test::Tester
 );
 
 # Have to do it here because CPAN chdirs.
