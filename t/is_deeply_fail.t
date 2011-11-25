@@ -283,7 +283,7 @@ ERR
 #line 306
 ok !is_deeply( undef, [] );
 is( $out, "not ok 23\n", 'is_deeply and undef [RT 9441]' );
-like( $err, <<ERR,	 '  right diagnostic' );
+like( $err, <<ERR,       '  right diagnostic' );
 #   Failed test at $Filename line 306\\.
 #     Structures begin differing at:
 #          \\\$got = undef
@@ -299,7 +299,7 @@ ERR
 #line 321
     ok !is_deeply( $array, $hash );
     is( $out, "not ok 24\n", 'is_deeply and different reference types' );
-    is( $err, <<ERR, 	     '  right diagnostic' );
+    is( $err, <<ERR,         '  right diagnostic' );
 #   Failed test at $0 line 321.
 #     Structures begin differing at:
 #          \$got = $array
@@ -309,7 +309,7 @@ ERR
 #line 332
     ok !is_deeply( [$array], [$hash] );
     is( $out, "not ok 25\n", 'nested different ref types' );
-    is( $err, <<ERR,	     '  right diagnostic' );
+    is( $err, <<ERR,         '  right diagnostic' );
 #   Failed test at $0 line 332.
 #     Structures begin differing at:
 #          \$got->[0] = $array
@@ -319,18 +319,18 @@ ERR
 
     # Overloaded object tests
     {
-	my $foo = bless [], "Foo";
-	my $bar = bless {}, "Bar";
+        my $foo = bless [], "Foo";
+        my $bar = bless {}, "Bar";
 
-	{
-	    package Bar;
-	    "overload"->import(q[""] => sub { "wibble" });
-	}
+        {
+            package Bar;
+            "overload"->import(q[""] => sub { "wibble" });
+        }
 
 #line 353
-	ok !is_deeply( [$foo], [$bar] );
-	is( $out, "not ok 26\n", 'string overloaded refs respected in diag' );
-	is( $err, <<ERR,	     '  right diagnostic' );
+        ok !is_deeply( [$foo], [$bar] );
+        is( $out, "not ok 26\n", 'string overloaded refs respected in diag' );
+        is( $err, <<ERR,         '  right diagnostic' );
 #   Failed test at $0 line 353.
 #     Structures begin differing at:
 #          \$got->[0] = $foo
@@ -346,7 +346,7 @@ ERR
 # line 349
     ok !is_deeply( sub {"foo"}, sub {"bar"} ), 'function refs';
     is( $out, "not ok 27\n" );
-    like( $err, <<ERR,	     '  right diagnostic' );
+    like( $err, <<ERR,       '  right diagnostic' );
 #   Failed test at $Filename line 349.
 #     Structures begin differing at:
 #          \\\$got = CODE\\(0x[0-9a-f]+\\)
@@ -361,7 +361,7 @@ ERR
 #line 357
     ok !is_deeply( $glob1, $glob2 ), 'typeglobs';
     is( $out, "not ok 28\n" );
-    like( $err, <<ERR,	     '  right diagnostic' );
+    like( $err, <<ERR,       '  right diagnostic' );
 #   Failed test at $Filename line 357.
 #     Structures begin differing at:
 #          \\\$got = GLOB\\(0x[0-9a-f]+\\)

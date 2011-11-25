@@ -192,33 +192,41 @@ sub subtest {
 }
 
 
-# Removed public API function.
-sub child {
-    my $self = shift;
-    $self->croak("The internals of subtests were redesigned, child() no longer exists.");
-}
-
-
-# Removed public API method.
-sub finalize {
-    my $self = shift;
-
-    $self->croak("The internals of subtests were redesigned, finalize() no longer exists.");
-}
-
-# Removed public API method.
-sub parent {
-    my $self = shift;
-
-    $self->croak("The internals of subtests were redesigned, parent() no longer exists.");
-}
-
 sub name {
     my $self = shift;
 
     $self->croak("The internals of subtests were redesigned, name() no longer exists.");
 }
 
+
+=item B<in_test>
+
+    my $in_test = $builder->in_test;
+
+Returns true if a test has started and not finished.
+
+Testing has begun when a plan is issued or a test is run.  Testing has
+ended when C<done_testing> is called or the process is exiting.
+
+=cut
+
+sub in_test {
+    $_[0]->history->in_test;
+}
+
+=item B<in_subtest>
+
+  my $in_subtest = $builder->in_subtest;
+
+Returns true if the $builder is in a subtest.
+
+=cut
+
+sub in_subtest {
+    my $self = shift;
+
+    return $self->history->is_subtest;
+}
 
 =item B<reset>
 
@@ -598,11 +606,6 @@ sub set_plan {
     );
 
     return;
-}
-
-
-sub in_test {
-    $_[0]->history->in_test;
 }
 
 

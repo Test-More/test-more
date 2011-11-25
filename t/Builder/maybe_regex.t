@@ -32,29 +32,29 @@ SKIP: {
 }
 
 {
-	my $r = $Test->maybe_regex('/^BAR$/i');
-	ok(defined $r, '"//" detected');
-	ok(('bar' =~ m/$r/), '"//" good match');
-	ok(('foo' !~ m/$r/), '"//" bad match');
+    my $r = $Test->maybe_regex('/^BAR$/i');
+    ok(defined $r, '"//" detected');
+    ok(('bar' =~ m/$r/), '"//" good match');
+    ok(('foo' !~ m/$r/), '"//" bad match');
 };
 
 {
-	my $r = $Test->maybe_regex('not a regex');
-	ok(!defined $r, 'non-regex detected');
-};
-
-
-{
-	my $r = $Test->maybe_regex('/0/');
-	ok(defined $r, 'non-regex detected');
-	ok(('f00' =~ m/$r/), '"//" good match');
-	ok(('b4r' !~ m/$r/), '"//" bad match');
+    my $r = $Test->maybe_regex('not a regex');
+    ok(!defined $r, 'non-regex detected');
 };
 
 
 {
-	my $r = $Test->maybe_regex('m,foo,i');
-	ok(defined $r, 'm,, detected');
-	ok(('fOO' =~ m/$r/), '"//" good match');
-	ok(('bar' !~ m/$r/), '"//" bad match');
+    my $r = $Test->maybe_regex('/0/');
+    ok(defined $r, 'non-regex detected');
+    ok(('f00' =~ m/$r/), '"//" good match');
+    ok(('b4r' !~ m/$r/), '"//" bad match');
+};
+
+
+{
+    my $r = $Test->maybe_regex('m,foo,i');
+    ok(defined $r, 'm,, detected');
+    ok(('fOO' =~ m/$r/), '"//" good match');
+    ok(('bar' !~ m/$r/), '"//" bad match');
 };
