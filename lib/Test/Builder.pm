@@ -198,18 +198,34 @@ sub name {
     $self->croak("The internals of subtests were redesigned, name() no longer exists.");
 }
 
+
+=item B<in_test>
+
+    my $in_test = $builder->in_test;
+
+Returns true if a test has started and not finished.
+
+Testing has begun when a plan is issued or a test is run.  Testing has
+ended when C<done_testing> is called or the process is exiting.
+
+=cut
+
+sub in_test {
+    $_[0]->history->in_test;
+}
+
 =item B<in_subtest>
 
-  $builder->in_subtest;
+  my $in_subtest = $builder->in_subtest;
 
-Whether the Test::Builder is in a subtest.
+Returns true if the $builder is in a subtest.
 
 =cut
 
 sub in_subtest {
-	my $self = shift;
+    my $self = shift;
 
-	return $self->history->is_subtest;
+    return $self->history->is_subtest;
 }
 
 =item B<reset>
@@ -590,11 +606,6 @@ sub set_plan {
     );
 
     return;
-}
-
-
-sub in_test {
-    $_[0]->history->in_test;
 }
 
 
