@@ -12,29 +12,28 @@ use Test::More;
 local $ENV{HARNESS_ACTIVE} = 0; 
 
 note; {
-	my $tb = Test::Builder::NoOutput->create;
-	$tb->level(0);
+    my $tb = Test::Builder::NoOutput->create;
+    $tb->level(0);
 
-	is $tb->in_subtest, '0', 'After testing has started but outside a subtest.';
+    is $tb->in_subtest, '0', 'After testing has started but outside a subtest.';
 }
 
 note; {
-	my $tb = Test::Builder::NoOutput->create;
-	$tb->level(0);
+    my $tb = Test::Builder::NoOutput->create;
+    $tb->level(0);
 
-	$tb->subtest('first subtest' => sub {
-		is $tb->in_subtest, '1', 'After testing has started and inside a subtest.';
-	});
+    $tb->subtest('first subtest' => sub {
+        is $tb->in_subtest, '1', 'After testing has started and inside a subtest.';
+    });
 }
 
 note; {
-	my $tb = Test::Builder::NoOutput->create;
-	$tb->level(0);
+    my $tb = Test::Builder::NoOutput->create;
+    $tb->level(0);
 
-	$tb->subtest('first subtest' => sub {
-	});
+    $tb->subtest('first subtest' => sub {});
 
-	is $tb->in_subtest, '0', 'After testing has started and after a subtest is done.';
+    is $tb->in_subtest, '0', 'After testing has started and after a subtest is done.';
 }
 
 done_testing;

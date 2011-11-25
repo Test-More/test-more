@@ -13,8 +13,8 @@ use Test::Builder;
 my $unplanned;
 
 BEGIN {
-	$unplanned = 'oops';
-	$unplanned = Test::Builder->new->has_plan;
+    $unplanned = 'oops';
+    $unplanned = Test::Builder->new->has_plan;
 };
 
 use Test::More tests => 2;
