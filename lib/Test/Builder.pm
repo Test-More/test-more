@@ -192,13 +192,6 @@ sub subtest {
 }
 
 
-sub name {
-    my $self = shift;
-
-    $self->croak("The internals of subtests were redesigned, name() no longer exists.");
-}
-
-
 =item B<in_test>
 
     my $in_test = $builder->in_test;
