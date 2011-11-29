@@ -40,7 +40,6 @@ lib/TB2/HasDefault.pm
 lib/TB2/History.pm
 lib/TB2/Module.pm
 lib/TB2/Mouse.pm
-lib/TB2/NoHistory.pm
 lib/TB2/OnlyOnePlan.pm
 lib/TB2/Result.pm
 lib/TB2/Result/Base.pm
@@ -195,7 +194,6 @@ t/History/child_process.t
 t/History/History.t
 t/History/HistoryStats.t
 t/History/in_test.t
-t/History/NoHistory.t
 t/History/plan.t
 t/History/test_was_successful.t
 t/import.t

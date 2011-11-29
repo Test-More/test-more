@@ -1,5 +1,12 @@
 See README and version control log for Test::Builder2 changes.
 
+1.005000_003
+    Incompatible changes (with the last alpha)
+    * TB2::NoHistory has been deleted before somebody relies on it.
+      It was unmaintained and will be replaced by a TB2::History feature.
+      See github 198.  [github 241]
+
+
 1.005000_002  Mon Nov 28 21:16:13 PST 2011
     This release is now 100% feature complete and supports all documented
     features of Test::Builder 0.98.  From this point forward it's bug
