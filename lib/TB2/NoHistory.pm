@@ -4,7 +4,7 @@ use Carp;
 use TB2::Mouse;
 extends qw{TB2::History};
 
-our $VERSION = '1.005000_001';
+our $VERSION = '1.005000_002';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

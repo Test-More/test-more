@@ -3,7 +3,7 @@ package TB2::Event::TestEnd;
 use TB2::Mouse;
 with 'TB2::Event';
 
-our $VERSION = '1.005000_001';
+our $VERSION = '1.005000_002';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

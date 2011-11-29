@@ -4,7 +4,7 @@ use TB2::Mouse ();
 use TB2::Mouse::Util qw(load_class);
 use TB2::Mouse::Util::TypeConstraints;
 
-our $VERSION = '1.005000_001';
+our $VERSION = '1.005000_002';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

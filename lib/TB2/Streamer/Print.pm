@@ -3,7 +3,7 @@ package TB2::Streamer::Print;
 use TB2::Mouse;
 with 'TB2::Streamer', 'TB2::CanDupFilehandles';
 
-our $VERSION = '1.005000_001';
+our $VERSION = '1.005000_002';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

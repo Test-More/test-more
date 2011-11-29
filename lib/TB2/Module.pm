@@ -5,7 +5,7 @@ use TB2::Mouse;
 with 'TB2::CanTry',
      'TB2::CanLoad';
 
-our $VERSION = '1.005000_001';
+our $VERSION = '1.005000_002';
 our $CLASS = __PACKAGE__;
 
 use base 'Exporter';

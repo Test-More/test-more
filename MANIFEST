@@ -12,6 +12,7 @@ lib/TB2/AssertStack.pm
 lib/TB2/BlackHole.pm
 lib/TB2/CanDupFilehandles.pm
 lib/TB2/CanLoad.pm
+lib/TB2/CanThread.pm
 lib/TB2/CanTry.pm
 lib/TB2/Counter.pm
 lib/TB2/Design.pod
@@ -53,12 +54,12 @@ lib/TB2/StackBuilder.pm
 lib/TB2/Streamer.pm
 lib/TB2/Streamer/Debug.pm
 lib/TB2/Streamer/Print.pm
-lib/TB2/Streamer/TAP.pm
 lib/TB2/Tester.pm
 lib/TB2/TestState.pm
 lib/TB2/threads/shared.pm
 lib/TB2/threads/shared/off.pm
 lib/TB2/threads/shared/on.pm
+lib/TB2/ThreadSafeFilehandleAccessor.pm
 lib/TB2/Types.pm
 lib/Test/Builder.pm
 lib/Test/Builder/Formatter/TAP.pm
@@ -101,6 +102,7 @@ t/Builder/fail.t
 t/Builder/fork_with_new_stdout.t
 t/Builder/has_plan.t
 t/Builder/has_plan2.t
+t/Builder/in_subtest.t
 t/Builder/is_fh.t
 t/Builder/is_passing.t
 t/Builder/last_test_skipped.t
@@ -140,6 +142,7 @@ t/Builder2/top.t
 t/c_flag.t
 t/CanDupFilehandles.t
 t/CanLoad.t
+t/CanThread.t
 t/CanTry.t
 t/circular_data.t
 t/cmp_ok.t
@@ -178,7 +181,7 @@ t/Formatter/Null.t
 t/Formatter/PlusMinus.t
 t/Formatter/POSIX.t
 t/Formatter/POSIX_plus_Builder.t
-t/Formatter/Streamer.t
+t/Formatter/reset_streamer.t
 t/Formatter/subtest.t
 t/Formatter/TAP/abort.t
 t/Formatter/TAP/basic.t
@@ -252,6 +255,10 @@ t/Simple/pass.t
 t/skip.t
 t/skip_before_plan.t
 t/skipall.t
+t/Streamer/stdout.t
+t/Streamer/Streamer.t
+t/Streamer/threads.t
+t/Streamer/ThreadSafeFilehandleAccessor.t
 t/subtest/args.t
 t/subtest/bail_out.t
 t/subtest/basic.t

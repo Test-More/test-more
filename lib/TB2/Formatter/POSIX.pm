@@ -3,7 +3,7 @@ package TB2::Formatter::POSIX;
 use TB2::Mouse;
 extends 'TB2::Formatter';
 
-our $VERSION = '1.005000_001';
+our $VERSION = '1.005000_002';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 sub handle_test_start {

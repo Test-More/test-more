@@ -1,5 +1,40 @@
 See README and version control log for Test::Builder2 changes.
 
+1.005000_002  Mon Nov 28 21:16:13 PST 2011
+    This release is now 100% feature complete and supports all documented
+    features of Test::Builder 0.98.  From this point forward it's bug
+    fixing.
+
+    New Features
+    * Test::Builder->in_subtest() will tell you if you're currently in
+      a subtest.  (dunsmoreb) [github/229]
+
+    Bug Fixes
+    * Thread support is now 100% operational.
+    * use_ok() in 1.005000_001 was leaking pragmas from inside Test::More.
+      This looked like Test::More was forcing strict. [rt.cpan.org 67538]
+      (same as 0.98_02) (Father Chrysostomos)
+    * subtest(), child(), name() and parent() are now completely removed,
+      no stubs, so that a can() check will not find them.  This fixes
+      some modules. (dunsmoreb) [github/229]
+
+    Doc Fixes
+    * References to "stream" have all been turned to "test" to be
+      consistent with the new terminology. [github issue/211]
+
+    Performance Improvements
+    * Runtime performance of a basic test has been significantly improved.
+
+    Some Known Broken Dependencies
+    * POE
+    * Test::Tester (and anything based on it)
+    * Test::NoWarnings (because of Test::Tester)
+    * Test::Deep (because of Test::Tester)
+    * Test::Class
+    * Test::SharedFork
+    * Test::Aggregate
+
+
 1.005000_001  Thu Nov 17 01:38:53 PST 2011
     This is the first alpha release of what has been termed Test::Builder1.5.
     It is Test::Builder implemented with the Test::Builder2 internals

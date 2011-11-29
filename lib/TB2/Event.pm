@@ -5,7 +5,7 @@ use TB2::Mouse::Role;
 use TB2::Types;
 requires qw( build_event_type );
 
-our $VERSION = '1.005000_001';
+our $VERSION = '1.005000_002';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 
