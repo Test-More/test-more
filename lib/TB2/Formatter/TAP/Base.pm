@@ -290,6 +290,32 @@ sub _output_plan {
 }
 
 
+has 'diag_tests_but_no_plan' =>
+  is            => 'ro',
+  isa           => 'Str',
+  default       => "%d %s ran, but no plan was declared.";
+
+has 'diag_skipped_with_tests' =>
+  is            => 'ro',
+  isa           => 'Str',
+  default       => "The test was skipped, but %d %s ran.";
+
+has 'diag_wrong_number_of_tests' =>
+  is            => 'ro',
+  isa           => 'Str',
+  default       => "%d %s planned, but %d ran.";
+
+has 'diag_tests_failed' =>
+  is            => 'ro',
+  isa           => 'Str',
+  default       => "%d %s of %d failed.";
+
+has 'diag_no_tests' =>
+  is            => 'ro',
+  isa           => 'Str',
+  default       => "No tests run!";
+
+
 my %inflections = (
     test        => "tests",
     was         => "were"
@@ -326,7 +352,7 @@ sub output_ending_commentary {
     if( !$plan ) {
         # Ran tests but never declared a plan
         if( $tests_run ) {
-            $self->diag("$tests_run $w_test ran, but no plan was declared.");
+            $self->diag( sprintf $self->diag_tests_but_no_plan, $tests_run, $w_test );
         }
         # No plan is ok if nothing happened
         else {
@@ -339,7 +365,7 @@ sub output_ending_commentary {
     if( $plan && $plan->skip ) {
         # It was supposed to be a skip, but tests were run
         if( $tests_run ) {
-            $self->diag("The test was skipped, but $tests_run $w_test ran.");
+            $self->diag( sprintf $self->diag_skipped_with_tests, $tests_run, $w_test );
         }
         # A proper skip
         else {
@@ -349,7 +375,7 @@ sub output_ending_commentary {
 
     # Saw a plan, but no tests.
     if( !$tests_run ) {
-        $self->diag("No tests run!");
+        $self->diag( $self->diag_no_tests );
         return;
     }
 
@@ -357,14 +383,16 @@ sub output_ending_commentary {
     # Saw a plan, and tests, but not the right amount.
     if( $plan && $tests_planned && $tests_extra ) {
         my $w_tests_p = _inflect("test", $tests_planned);
-        $self->diag("$tests_planned $w_tests_p planned, but $tests_run ran.");
+        $self->diag(
+            sprintf $self->diag_wrong_number_of_tests, $tests_planned, $w_tests_p, $tests_run
+        );
     }
 
 
     # Right amount, but some failed.
     if( $tests_failed ) {
         my $w_tests_f = _inflect("test", $tests_failed);
-        $self->diag("$tests_failed $w_tests_f of $tests_run failed.");
+        $self->diag( sprintf $self->diag_tests_failed, $tests_failed, $w_tests_f, $tests_run );
     }
 
     return;
@@ -383,6 +411,16 @@ has seen_results =>
   isa           => 'Bool',
   default       => 0
 ;
+
+has 'directive_display' =>
+  is            => 'ro',
+  isa           => 'HashRef',
+  default       => sub {
+      return {
+          skip  => 'SKIP',
+          todo  => 'TODO'
+      }
+  };
 
 sub handle_result {
     my $self  = shift;
@@ -408,8 +446,8 @@ sub handle_result {
     $self->_escape(\$reason);
 
     my @directives;
-    push @directives, "TODO" if $result->is_todo;
-    push @directives, "SKIP" if $result->is_skip;
+    push @directives, $self->directive_display->{todo} if $result->is_todo;
+    push @directives, $self->directive_display->{skip} if $result->is_skip;
 
     $out .= " # @{[ join ' ', @directives ]} $reason" if @directives;
     $out .= "\n";
