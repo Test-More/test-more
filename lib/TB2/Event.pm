@@ -152,6 +152,14 @@ sub keys_for_as_hash {
     ];
 }
 
+=head3 object_id
+
+    my $id = $thing->object_id;
+
+Returns an identifier for this object unique to the running process.
+The identifier is fairly simple and easily predictable.
+
+See L<TB2::HasObjectID>
 
 =head1 SEE ALSO
 

@@ -234,6 +234,15 @@ Removes all handlers of their respective types.
 
 Use this instead of manipulating the list of handlers directly.
 
+=head3 object_id
+
+    my $id = $thing->object_id;
+
+Returns an identifier for this object unique to the running process.
+The identifier is fairly simple and easily predictable.
+
+See L<TB2::HasObjectID>
+
 =cut
 
 # Create add_ and clear_ methods for all the handlers except history

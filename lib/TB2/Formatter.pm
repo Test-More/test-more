@@ -12,7 +12,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 =head1 NAME
 
-TB2::Formatter - Base class for formating test results
+TB2::Formatter - Base class for formatting test results
 
 =head1 SYNOPSIS
 

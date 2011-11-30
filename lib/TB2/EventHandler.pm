@@ -125,6 +125,14 @@ sub subtest_handler {
     return $class->new;
 }
 
+=head3 object_id
+
+    my $id = $thing->object_id;
+
+Returns an identifier for this object unique to the running process.
+The identifier is fairly simple and easily predictable.
+
+See L<TB2::HasObjectID>
 
 =head2 Event handlers
 
