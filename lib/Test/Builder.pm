@@ -240,9 +240,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     $self->{Exported_To}    = undef;
 
-    $self->load("TB2::Formatter::TAP");
     $self->{TestState} = TB2::TestState->create(
-        formatters      => [TB2::Formatter::TAP->new],
         early_handlers  => [TB2::OnlyOnePlan->new],
     );
 
