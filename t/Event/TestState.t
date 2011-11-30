@@ -331,4 +331,25 @@ note "handlers providing their own subtest_handler"; {
               "A handler can see all if it chooses";
 }
 
+note "object_id"; {
+    my $state1 = $CLASS->create;
+    my $state2 = $CLASS->create;
+
+    ok $state1->object_id;
+    ok $state2->object_id;
+
+    isnt $state1->object_id, $state2->object_id, "teststate object_ids are unique";
+
+    require TB2::EventCoordinator;
+    my $ec = TB2::EventCoordinator->new;
+
+    cmp_ok( $state1->object_id, '=~', '^TB2::TestState', 'object_id is ours' );
+
+    my $state1_id = $state1->object_id;
+    $state1->push_coordinator($ec);
+
+    is $state1->object_id, $state1_id, 'object_id stays the same after changing coordinators';
+}
+
+
 done_testing;
