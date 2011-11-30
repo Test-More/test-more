@@ -27,7 +27,7 @@ has '+directive_display' =>
 
 
 # ok( 1, "" ) comes out as "ok 1 - "
-has "+show_empty_result_names"
+has "+show_empty_result_names" =>
   default       => 1;
 
 
