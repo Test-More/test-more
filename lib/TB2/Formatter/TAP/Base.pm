@@ -422,6 +422,13 @@ has 'directive_display' =>
       }
   };
 
+# A result with an empty string for a name is considered to have no name.
+has show_empty_result_names =>
+  is            => 'ro',
+  isa           => 'Bool',
+  default       => 0;
+
+
 sub handle_result {
     my $self  = shift;
     my $result = shift;
@@ -440,7 +447,10 @@ sub handle_result {
 
     my $name = $result->name;
     $self->_escape(\$name);
-    $out .= " - $name" if defined $name and length $name;
+    my $show_name = 1;
+    $show_name = 0 if !defined $name;
+    $show_name = 0 if !length $name && !$self->show_empty_result_names;
+    $out .= " - $name" if $show_name;
 
     my $reason = $result->reason;
     $self->_escape(\$reason);

@@ -25,6 +25,12 @@ has '+directive_display' =>
       }
   };
 
+
+# ok( 1, "" ) comes out as "ok 1 - "
+has "+show_empty_result_names"
+  default       => 1;
+
+
 # Messages output as part of the ending commentary
 has '+diag_tests_but_no_plan' =>
   default       => "Tests were run but no plan was declared and done_testing() was not seen.";
