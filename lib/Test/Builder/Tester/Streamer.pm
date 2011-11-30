@@ -120,8 +120,6 @@ has 'wanted' =>
 sub clear {
     my $self = shift;
 
-    $DB::single = 1;
-
     $self->SUPER::clear;
     %{$self->wanted} = ( out => [], err => [] );
     return;
