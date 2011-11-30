@@ -1,11 +1,24 @@
 package Test::Builder::Tester;
 
 use strict;
-our $VERSION = "1.23_02";
+
+BEGIN {
+    require Test::Builder::Module;
+    our @ISA = ('Test::Builder::Module');
+    our $VERSION = "1.23_02";
+
+    our @EXPORT = qw(test_out test_err test_fail test_diag test_test line_num change_formatter);
+    our @EXPORT_OK = qw(color);
+}
 
 use Test::Builder;
-use Symbol;
 use Carp;
+
+
+####
+# exported functions
+####
+
 
 =head1 NAME
 
@@ -48,39 +61,6 @@ output.
 ####
 
 my $t = Test::Builder->new;
-
-###
-# make us an exporter
-###
-
-use Exporter;
-our @ISA = qw(Exporter);
-
-our @EXPORT = qw(test_out test_err test_fail test_diag test_test line_num);
-
-sub import {
-    my $class = shift;
-    my(@plan) = @_;
-
-    my $caller = caller;
-
-    $t->exported_to($caller);
-    $t->plan(@plan);
-
-    my @imports = ();
-    foreach my $idx ( 0 .. $#plan ) {
-        if( $plan[$idx] eq 'import' ) {
-            @imports = @{ $plan[ $idx + 1 ] };
-            last;
-        }
-    }
-
-    __PACKAGE__->export_to_level( 1, __PACKAGE__, @imports );
-}
-
-####
-# exported functions
-####
 
 # for remembering that we're testing
 my $testing = 0;
@@ -136,7 +116,7 @@ sub _start_testing {
 
 =head2 Functions
 
-These are the six methods that are exported as default.
+=head3 Exported by default
 
 =over 4
 
@@ -366,9 +346,17 @@ sub line_num {
 
 =back
 
-In addition to the six exported functions there exists one
-function that can only be accessed with a fully qualified function
-call.
+=head3 Exported on request
+
+These functions can be exported by using a special syntax which comes
+from L<Test::Builder::Module>.
+
+    use Test::Builder::Tester import => [@exporter_args];
+
+For example...
+
+    # Import all the usual functions, plus color
+    use Test::Builder::Tester import => ['color', ':DEFAULT'];
 
 =over 4
 
