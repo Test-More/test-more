@@ -1,4 +1,4 @@
-package TB2::Formatter::TAP::v13;
+package TB2::Formatter::TAP::v12;
 
 use 5.008001;
 
@@ -11,22 +11,21 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 =head1 NAME
 
-TB2::Formatter::TAP::v13 - TAP version 13 formatter
+TB2::Formatter::TAP::v12 - TAP version 12 formatter
 
 =head1 DESCRIPTION
 
-Like L<TB2::Formatter::TAP::Base>, but it will show the TAP version header.
-
-This is the default formatter provided by L<TB2::Formatter::TAP>.
+Like L<TB2::Formatter::TAP::Base>, but it will not show a TAP version header.
 
 =head1 SEE ALSO
 
 L<TB2::Formatter::TAP>
 L<TB2::Formatter::TAP::Base>
+L<TB2::Formatter::TAP::v12>
 
 =cut
 
 has '+show_tap_version' =>
-  default => 1;
+  default => 0;
 
 1;
