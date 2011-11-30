@@ -64,7 +64,7 @@ sub complaint {
     my $self   = shift;
     my $name   = shift;
     my $type   = $self->name2handle->{$name};
-    my $got    = $self->read($name);
+    my $got    = $self->output_for($name);
     my $wanted = join "\n", @{ $self->wanted->{$name} };
 
     # are we running in colour mode?
