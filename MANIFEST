@@ -276,13 +276,6 @@ t/TB1vsTB2.t
 t/tbm_doesnt_set_exported_to.t
 t/test.pl
 t/test_pl/can_isa_ok.t
-t/Tester/tbt_01basic.t
-t/Tester/tbt_02fhrestore.t
-t/Tester/tbt_03die.t
-t/Tester/tbt_04line_num.t
-t/Tester/tbt_05faildiag.t
-t/Tester/tbt_06errormess.t
-t/Tester/tbt_07args.t
 t/Tester2/capture.t
 t/Tester2/state_untouched.t
 t/thread_taint.t
