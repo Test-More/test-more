@@ -9,8 +9,7 @@ use Carp;
 
 =head1 NAME
 
-Test::Builder::Tester - test testsuites that have been built with
-Test::Builder
+Test::Builder::Tester - test modules built with Test::Builder
 
 =head1 SYNOPSIS
 
@@ -79,34 +78,25 @@ sub import {
     __PACKAGE__->export_to_level( 1, __PACKAGE__, @imports );
 }
 
-###
-# set up file handles
-###
-
-# create some private file handles
-my $output_handle = gensym;
-my $error_handle  = gensym;
-
-# and tie them to this package
-my $out = tie *$output_handle, "Test::Builder::Tester::Tie", "STDOUT";
-my $err = tie *$error_handle,  "Test::Builder::Tester::Tie", "STDERR";
-
 ####
 # exported functions
 ####
 
-# for remembering that we're testing and where we're testing at
+# for remembering that we're testing
 my $testing = 0;
-my $testing_num;
 
-# remembering where the file handles were originally connected
-my $original_output_handle;
-my $original_failure_handle;
+# Store the normal TestState
+my $original_state;
 
-my $original_test_number;
-my $original_harness_state;
-
+# Store the state of the harness
 my $original_harness_env;
+
+# Store the streamer used for capturing output
+use Test::Builder::Tester::Streamer;
+my $streamer = Test::Builder::Tester::Streamer->new;
+
+# For testing ourself
+sub _streamer { return $streamer }
 
 # function that starts testing and redirects the filehandles for now
 sub _start_testing {
@@ -115,25 +105,33 @@ sub _start_testing {
     $original_harness_env = $ENV{HARNESS_ACTIVE} || 0;
     $ENV{HARNESS_ACTIVE} = 0;
 
-    # remember what the handles were set to
-    $original_output_handle  = $t->output();
-    $original_failure_handle = $t->failure_output();
+    # Store the default TestState
+    $original_state = $t->test_state;
 
-    # switch out to our own handles
-    $t->output($output_handle);
-    $t->failure_output($error_handle);
+    # Use the legacy TAP formatter to keep compatible with 0.98.
+    require TB2::Formatter::TAP::TB1;
+    my $formatter = TB2::Formatter::TAP::TB1->new(
+        streamer => $streamer
+    );
 
-    # clear the expected list
-    $out->reset();
-    $err->reset();
+    # Make a detached TestState
+    my $state = $original_state->create(
+        formatters      => [$formatter],
+
+        # Preserve existing handlers
+        early_handlers  => $original_state->early_handlers,
+        late_handlers   => $original_state->late_handlers,
+    );
 
     # remember that we're testing
     $testing     = 1;
-    $testing_num = $t->current_test;
-    $t->current_test(0);
 
-    # look, we shouldn't do the ending stuff
+    # we shouldn't do the ending stuff
     $t->no_ending(1);
+
+    # Override the state in the builder and for everyone
+    $t->{TestState} = $state;
+    TB2::TestState->default($state);
 }
 
 =head2 Functions
@@ -174,14 +172,14 @@ sub test_out {
     # do we need to do any setup?
     _start_testing() unless $testing;
 
-    $out->expect(@_);
+    $streamer->expect("out", @_);
 }
 
 sub test_err {
     # do we need to do any setup?
     _start_testing() unless $testing;
 
-    $err->expect(@_);
+    $streamer->expect("err", @_);
 }
 
 =item test_fail
@@ -219,7 +217,7 @@ sub test_fail {
     $line = $line + ( shift() || 0 );    # prevent warnings
 
     # expect that on stderr
-    $err->expect("#     Failed test ($0 at line $line)");
+    $streamer->expect("err", "#     Failed test ($0 at line $line)");
 }
 
 =item test_diag
@@ -258,7 +256,7 @@ sub test_diag {
 
     # expect the same thing, but prepended with "#     "
     local $_;
-    $err->expect( map { "# $_" } @_ );
+    $streamer->expect("err", map { "# $_" } @_ );
 }
 
 =item test_test
@@ -318,20 +316,19 @@ sub test_test {
     croak "Not testing.  You must declare output with a test function first."
       unless $testing;
 
-    # okay, reconnect the test suite back to the saved handles
-    $t->output($original_output_handle);
-    $t->failure_output($original_failure_handle);
+    # restore the original test state
+    TB2::TestState->default($original_state);
+    $t->{TestState} = $original_state;
 
-    # restore the test no, etc, back to the original point
-    $t->current_test($testing_num);
+    # Switch off testing mode
     $testing = 0;
 
     # re-enable the original setting of the harness
     $ENV{HARNESS_ACTIVE} = $original_harness_env;
 
     # check the output we've stashed
-    unless( $t->ok( ( $args{skip_out} || $out->check ) &&
-                    ( $args{skip_err} || $err->check ), $mess ) 
+    unless( $t->ok( ( $args{skip_out} || $streamer->check("out") ) &&
+                    ( $args{skip_err} || $streamer->check("err") ), $mess ) 
     )
     {
         # print out the diagnostic information about why this
@@ -339,12 +336,15 @@ sub test_test {
 
         local $_;
 
-        $t->diag( map { "$_\n" } $out->complaint )
-          unless $args{skip_out} || $out->check;
+        $t->diag( map { "$_\n" } $streamer->complaint("out") )
+          unless $args{skip_out} || $streamer->check("out");
 
-        $t->diag( map { "$_\n" } $err->complaint )
-          unless $args{skip_err} || $err->check;
+        $t->diag( map { "$_\n" } $streamer->complaint("err") )
+          unless $args{skip_err} || $streamer->check("err");
     }
+
+    # Clear the streamer
+    $streamer->clear;
 }
 
 =item line_num
@@ -449,151 +449,5 @@ me use his testing system to try this module out on.
 L<Test::Builder>, L<Test::Builder::Tester::Color>, L<Test::More>.
 
 =cut
-
-1;
-
-####################################################################
-# Helper class that is used to remember expected and received data
-
-package Test::Builder::Tester::Tie;
-
-##
-# add line(s) to be expected
-
-sub expect {
-    my $self = shift;
-
-    my @checks = @_;
-    foreach my $check (@checks) {
-        $check = $self->_translate_Failed_check($check);
-        push @{ $self->{wanted} }, ref $check ? $check : "$check\n";
-    }
-}
-
-sub _translate_Failed_check {
-    my( $self, $check ) = @_;
-
-    if( $check =~ /\A(.*)#     (Failed .*test) \((.*?) at line (\d+)\)\Z(?!\n)/ ) {
-        $check = "/\Q$1\E#\\s+\Q$2\E.*?\\n?.*?\Qat $3\E line \Q$4\E.*\\n?/";
-    }
-
-    return $check;
-}
-
-##
-# return true iff the expected data matches the got data
-
-sub check {
-    my $self = shift;
-
-    # turn off warnings as these might be undef
-    local $^W = 0;
-
-    my @checks = @{ $self->{wanted} };
-    my $got    = $self->{got};
-    foreach my $check (@checks) {
-        $check = "\Q$check\E" unless( $check =~ s,^/(.*)/$,$1, or ref $check );
-        return 0 unless $got =~ s/^$check//;
-    }
-
-    return length $got == 0;
-}
-
-##
-# a complaint message about the inputs not matching (to be
-# used for debugging messages)
-
-sub complaint {
-    my $self   = shift;
-    my $type   = $self->type;
-    my $got    = $self->got;
-    my $wanted = join "\n", @{ $self->wanted };
-
-    # are we running in colour mode?
-    if(Test::Builder::Tester::color) {
-        # get color
-        eval { require Term::ANSIColor };
-        unless($@) {
-            # colours
-
-            my $green = Term::ANSIColor::color("black") . Term::ANSIColor::color("on_green");
-            my $red   = Term::ANSIColor::color("black") . Term::ANSIColor::color("on_red");
-            my $reset = Term::ANSIColor::color("reset");
-
-            # work out where the two strings start to differ
-            my $char = 0;
-            $char++ while substr( $got, $char, 1 ) eq substr( $wanted, $char, 1 );
-
-            # get the start string and the two end strings
-            my $start = $green . substr( $wanted, 0, $char );
-            my $gotend    = $red . substr( $got,    $char ) . $reset;
-            my $wantedend = $red . substr( $wanted, $char ) . $reset;
-
-            # make the start turn green on and off
-            $start =~ s/\n/$reset\n$green/g;
-
-            # make the ends turn red on and off
-            $gotend    =~ s/\n/$reset\n$red/g;
-            $wantedend =~ s/\n/$reset\n$red/g;
-
-            # rebuild the strings
-            $got    = $start . $gotend;
-            $wanted = $start . $wantedend;
-        }
-    }
-
-    return "$type is:\n" . "$got\nnot:\n$wanted\nas expected";
-}
-
-##
-# forget all expected and got data
-
-sub reset {
-    my $self = shift;
-    %$self = (
-        type   => $self->{type},
-        got    => '',
-        wanted => [],
-    );
-}
-
-sub got {
-    my $self = shift;
-    return $self->{got};
-}
-
-sub wanted {
-    my $self = shift;
-    return $self->{wanted};
-}
-
-sub type {
-    my $self = shift;
-    return $self->{type};
-}
-
-###
-# tie interface
-###
-
-sub PRINT {
-    my $self = shift;
-    $self->{got} .= join '', @_;
-}
-
-sub TIEHANDLE {
-    my( $class, $type ) = @_;
-
-    my $self = bless { type => $type }, $class;
-
-    $self->reset;
-
-    return $self;
-}
-
-sub READ     { }
-sub READLINE { }
-sub GETC     { }
-sub FILENO   { }
 
 1;
