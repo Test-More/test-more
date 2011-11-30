@@ -93,6 +93,10 @@ sub _start_testing {
     # Make a detached TestState
     my $state = $original_state->create(
         formatters      => [$formatter],
+
+        # Preserve existing handlers
+        early_handlers  => $original_state->early_handlers,
+        late_handlers   => $original_state->late_handlers,
     );
 
     # remember that we're testing
