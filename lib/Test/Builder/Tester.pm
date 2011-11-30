@@ -1,14 +1,14 @@
 package Test::Builder::Tester;
 
-use strict;
-
+use TB2::Mouse;
 BEGIN {
-    require Test::Builder::Module;
-    our @ISA = ('Test::Builder::Module');
     our $VERSION = "1.23_02";
 
+    extends 'Test::Builder::Module';
+    with 'TB2::CanLoad';
+
     our @EXPORT = qw(test_out test_err test_fail test_diag test_test line_num change_formatter);
-    our @EXPORT_OK = qw(color);
+    our @EXPORT_OK = qw(color change_formatter_class);
 }
 
 use Test::Builder;
@@ -88,19 +88,11 @@ sub _start_testing {
     # Store the default TestState
     $original_state = $t->test_state;
 
-    # Use the legacy TAP formatter to keep compatible with 0.98.
-    require TB2::Formatter::TAP::TB1;
-    my $formatter = TB2::Formatter::TAP::TB1->new(
-        streamer => $streamer
-    );
+    my $formatter = _make_formatter();
 
     # Make a detached TestState
     my $state = $original_state->create(
         formatters      => [$formatter],
-
-        # Preserve existing handlers
-        early_handlers  => $original_state->early_handlers,
-        late_handlers   => $original_state->late_handlers,
     );
 
     # remember that we're testing
@@ -397,6 +389,37 @@ my $color;
 sub color {
     $color = shift if @_;
     $color;
+}
+
+=item change_formatter_class
+
+    change_formatter_class( $formatter_class );
+
+By default, output will be formatted using the
+L<TB2::Foramtter::TAP::TB1> to be compatibile with tests written using
+Test::More 0.98.
+
+If your test does not need to be backwards compatible with 0.98, you
+can change this.  L<TB2::Formatter::TAP> is the default formatter now
+used by Test::More.
+
+=cut
+
+{
+    # Use the legacy TAP formatter to keep compatible with 0.98.
+    my $formatter_class = 'TB2::Formatter::TAP::TB1';
+    sub change_formatter_class {
+        $formatter_class = shift;
+
+        return;
+    }
+
+    sub _make_formatter {
+        __PACKAGE__->load($formatter_class);
+        return $formatter_class->new(
+            streamer => _streamer()
+        );
+    }
 }
 
 =back
