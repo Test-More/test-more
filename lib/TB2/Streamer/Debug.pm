@@ -24,6 +24,14 @@ has read_all_position => (
     default  => 0,
 );
 
+sub clear {
+    my $self = shift;
+    @{$self->written_hunks()} = ();
+    %{$self->read_position_for} = ();
+    $self->read_all_position(0);
+    return;
+}
+
 sub write {
     my ($self, $dest, @hunks) = @_;
     push @{ $self->written_hunks }, [ $dest => join '', @hunks ];
