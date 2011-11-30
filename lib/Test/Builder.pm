@@ -13,7 +13,9 @@ use TB2::TestState;
 
 with 'TB2::CanDupFilehandles',
      'TB2::CanTry',
-     'TB2::CanLoad';
+     'TB2::CanLoad',
+     'TB2::HasObjectID';
+
 
 
 =head1 NAME
@@ -292,6 +294,16 @@ sub counter {
     return $counter;
 }
 
+=item B<object_id>
+
+    my $id = $thing->object_id;
+
+Returns an identifier for this object unique to the running process.
+The identifier is fairly simple and easily predictable.
+
+See L<TB2::HasObjectID>
+
+=cut
 
 =back
 

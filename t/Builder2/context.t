@@ -20,7 +20,7 @@ sub check_events {
     my @have = @{$events}[ $from_idx .. $#{$events} ]; 
 
     for my $event ( @have ) {
-        note sprintf "Type: %s ID: %s", $event->event_type, $event->event_id;
+        note sprintf "Type: %s ID: %s", $event->event_type, $event->object_id;
         is $event->file, __FILE__;
         is $event->line, $line;
     }

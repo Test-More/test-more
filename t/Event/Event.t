@@ -26,14 +26,14 @@ note "Proper Event role"; {
 }
 
 
-note "event_id"; {
+note "event object_id"; {
     my $e1 = My::Event->new;
     my $e2 = My::Event->new;
 
-    ok $e1->event_id;
-    ok $e2->event_id;
+    ok $e1->object_id;
+    ok $e2->object_id;
 
-    isnt $e1->event_id, $e2->event_id, "event_ids are unique";
+    isnt $e1->object_id, $e2->object_id, "event object_ids are unique";
 }
 
 

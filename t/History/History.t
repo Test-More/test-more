@@ -50,4 +50,16 @@ my $Fail = TB2::Result->new_result(
     ok !$history->can_succeed;
 }
 
+# object_id
+{
+    my $history1 = new_ok $CLASS;
+    my $history2 = new_ok $CLASS;
+
+    ok $history1->object_id;
+    ok $history2->object_id;
+
+    isnt $history1->object_id, $history2->object_id, "history object_ids are unique";
+}
+
+
 done_testing;
