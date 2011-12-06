@@ -6,6 +6,7 @@ use warnings;
 BEGIN { require "t/test.pl" }
 
 use TB2::Events;
+use TB2::EventCoordinator;
 
 my $CLASS = 'TB2::OnlyOnePlan';
 use_ok $CLASS;
@@ -13,9 +14,13 @@ use_ok $CLASS;
 
 note "Two different plans are not ok"; {
     my $onlyone = $CLASS->new;
+    my $ec = TB2::EventCoordinator->new(
+        formatters      => [],
+        early_handlers  => [$onlyone]
+    );
 
     ok eval {
-        $onlyone->accept_event(
+        $ec->post_event(
             TB2::Event::SetPlan->new(
                 asserts_expected => 3,
                 file             => "bar.t",
@@ -26,7 +31,7 @@ note "Two different plans are not ok"; {
     }, "one plan is ok";
 
     ok !eval {
-        $onlyone->accept_event(
+        $ec->post_event(
             TB2::Event::SetPlan->new(
                 asserts_expected => 1,
                 file             => "foo.t",
@@ -41,9 +46,13 @@ note "Two different plans are not ok"; {
 
 note "The same plan is ok"; {
     my $onlyone = $CLASS->new;
+    my $ec = TB2::EventCoordinator->new(
+        formatters      => [],
+        early_handlers  => [$onlyone]
+    );
 
     ok eval {
-        $onlyone->accept_event(
+        $ec->post_event(
             TB2::Event::SetPlan->new(
                 asserts_expected => 3,
                 file             => "bar.t",
@@ -54,7 +63,7 @@ note "The same plan is ok"; {
     }, "one plan is ok";
 
     ok eval {
-        $onlyone->accept_event(
+        $ec->post_event(
             TB2::Event::SetPlan->new(
                 asserts_expected => 3,
                 file             => "foo.t",
@@ -68,30 +77,34 @@ note "The same plan is ok"; {
 
 note "Multiple no_plans are ok"; {
     my $onlyone = $CLASS->new;
+    my $ec = TB2::EventCoordinator->new(
+        formatters      => [],
+        early_handlers  => [$onlyone]
+    );
 
     ok eval {
-        $onlyone->accept_event(
+        $ec->post_event(
             TB2::Event::SetPlan->new(no_plan => 1)
         );
         1;
     }, "one no_plan is ok";
 
     ok eval {
-        $onlyone->accept_event(
+        $ec->post_event(
             TB2::Event::SetPlan->new(no_plan => 1)
         );
         1;
     }, "two no_plans are ok";
 
     ok eval {
-        $onlyone->accept_event(
+        $ec->post_event(
             TB2::Event::SetPlan->new(asserts_expected => 3)
         );
         1;
     }, "a fixed number of tests after a no_plan is ok";
 
     ok !eval {
-        $onlyone->accept_event(
+        $ec->post_event(
             TB2::Event::SetPlan->new(asserts_expected => 23)
         );
         1;
@@ -101,16 +114,20 @@ note "Multiple no_plans are ok"; {
 
 note "Error message with no file/line"; {
     my $onlyone = $CLASS->new;
+    my $ec = TB2::EventCoordinator->new(
+        formatters      => [],
+        early_handlers  => [$onlyone]
+    );
 
     ok eval {
-        $onlyone->accept_event(
+        $ec->post_event(
             TB2::Event::SetPlan->new(asserts_expected => 2)
         );
         1;
     }, "one plan is ok";
 
     ok !eval {
-        $onlyone->accept_event(
+        $ec->post_event(
             TB2::Event::SetPlan->new(
                 asserts_expected => 3,
             )

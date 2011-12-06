@@ -11,12 +11,10 @@ use lib 't/lib';
 use Test::More;
 
 use Test::Builder;
-use Test::Builder::Tester;
+use Test::Builder::Tester import => ['change_formatter_class', ':DEFAULT'];
+change_formatter_class("TB2::Formatter::TAP");
 
 plan tests => 5;
-
-# Formatting may change if we're running under Test::Harness.
-local $ENV{HARNESS_ACTIVE} = 0;
 
 our %line;
 
