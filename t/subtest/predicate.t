@@ -9,10 +9,8 @@ use warnings;
 use Test::More;
 plan tests => 4;
 use Test::Builder;
-use Test::Builder::Tester;
-
-# Formatting may change if we're running under Test::Harness.
-local $ENV{HARNESS_ACTIVE} = 0;
+use Test::Builder::Tester import => ['change_formatter_class', ':DEFAULT'];
+change_formatter_class("TB2::Formatter::TAP");
 
 our %line;
 
