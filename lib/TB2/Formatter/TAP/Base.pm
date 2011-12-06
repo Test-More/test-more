@@ -109,7 +109,9 @@ Like L<diag> but goes to the output handle.
 
 sub diag {
     my $self = shift;
-    $self->err($self->comment( @_ ));
+
+    my $out_method = ($self->test_is_todo) ? "out" : "err";
+    $self->$out_method($self->comment( @_ ));
 }
 
 sub note {
@@ -429,6 +431,13 @@ has show_empty_result_names =>
   default       => 0;
 
 
+# Indicates that the whole test is in a todo state.  Used for subtests.
+has test_is_todo =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 0;
+
+
 sub handle_result {
     my $self  = shift;
     my $result = shift;
@@ -481,11 +490,10 @@ sub _comment_diagnostics {
 
     my $msg = '  ';
 
-    $msg .= $result->is_todo ? "Failed (TODO) test" : "Failed test";
+    my $is_todo = $result->is_todo;
+    $msg .= $is_todo ? "Failed (TODO) test" : "Failed test";
 
     # Failing TODO tests are not displayed to the user.
-    my $out_method = $result->is_todo ? "out" : "err";
-
     my($file, $line, $name) = map { $result->$_ } qw(file line name);
 
     if( defined $name ) {
@@ -497,11 +505,16 @@ sub _comment_diagnostics {
     if( defined $line ) {
         $msg .= " line $line";
     }
+    $msg .= ".";
+
+    # Send todo test output to the out handle
+    my $diag_method = $is_todo ? "note" : "diag";
+    my $out_method  = $is_todo ? "out"  : "err";
 
     # Start on a new line if we're being output by Test::Harness.
     # Makes it easier to read
-    $self->$out_method("\n") if $ENV{HARNESS_ACTIVE};
-    $self->$out_method($self->comment("$msg.\n"));
+    $self->$out_method("\n") if ($out_method eq 'err') and $ENV{HARNESS_ACTIVE};
+    $self->$diag_method($msg);
 
     return;
 }
@@ -572,6 +585,8 @@ sub subtest_handler {
 
     my $subformatter = $self->SUPER::subtest_handler($event);
 
+    my $is_todo = scalar grep { $_ eq 'todo' } @{$event->directives};
+    $subformatter->test_is_todo( $is_todo );
     $subformatter->show_tap_version( $self->show_tap_version );
     $subformatter->indent('    '.$self->indent);
 
