@@ -154,11 +154,6 @@ sub subtest {
     {
         local $Test::Builder::Level = $self->{Set_Level};
 
-        # If the subtest is in a TODO, error output should not be seen like
-        # any other TODO test.
-        my $streamer = $self->formatter->streamer;
-        $streamer->error_fh( $streamer->output_fh ) if $in_todo;
-
         # The subtest gets its own TODO state
         $self->_reset_todo_state;
 
