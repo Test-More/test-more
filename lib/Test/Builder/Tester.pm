@@ -92,12 +92,17 @@ sub _start_testing {
 
     # Make a detached TestState
     my $state = $original_state->create(
-        formatters      => [$formatter],
+        formatters      => [],
 
         # Preserve existing handlers
         early_handlers  => $original_state->early_handlers,
         late_handlers   => $original_state->late_handlers,
     );
+
+    # To emulate existing behavior, start testing but don't
+    # let the formatter see it
+    $state->post_event( TB2::Event::TestStart->new );
+    $state->add_formatters($formatter);
 
     # remember that we're testing
     $testing     = 1;
