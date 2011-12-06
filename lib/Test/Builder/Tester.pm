@@ -108,7 +108,7 @@ sub _start_testing {
     $testing     = 1;
 
     # we shouldn't do the ending stuff
-    $t->no_ending(1);
+    $t->no_change_exit_code(1);
 
     # Override the state in the builder and for everyone
     $t->{TestState} = $state;
@@ -434,11 +434,6 @@ used by Test::More.
 =back
 
 =head1 BUGS
-
-Calls C<<Test::Builder->no_ending>> turning off the ending tests.
-This is needed as otherwise it will trip out because we've run more
-tests than we strictly should have and it'll register any failures we
-had that we were testing for as real failures.
 
 The color function doesn't work unless B<Term::ANSIColor> is
 compatible with your terminal.
