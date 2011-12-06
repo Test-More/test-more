@@ -12,7 +12,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 =head1 NAME
 
-TB2::Formatter - Base class for formating test results
+TB2::Formatter - Base class for formatting test results
 
 =head1 SYNOPSIS
 
@@ -114,6 +114,16 @@ sub reset_streamer {
     $_[0]->streamer( $_[0]->_build_streamer );
 }
 
+=head3 object_id
+
+    my $id = $thing->object_id;
+
+Returns an identifier for this object unique to the running process.
+The identifier is fairly simple and easily predictable.
+
+See L<TB2::HasObjectID>
+
+=cut
 
 
 1;

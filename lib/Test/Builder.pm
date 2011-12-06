@@ -13,7 +13,9 @@ use TB2::TestState;
 
 with 'TB2::CanDupFilehandles',
      'TB2::CanTry',
-     'TB2::CanLoad';
+     'TB2::CanLoad',
+     'TB2::HasObjectID';
+
 
 
 =head1 NAME
@@ -152,11 +154,6 @@ sub subtest {
     {
         local $Test::Builder::Level = $self->{Set_Level};
 
-        # If the subtest is in a TODO, error output should not be seen like
-        # any other TODO test.
-        my $streamer = $self->formatter->streamer;
-        $streamer->error_fh( $streamer->output_fh ) if $in_todo;
-
         # The subtest gets its own TODO state
         $self->_reset_todo_state;
 
@@ -292,6 +289,16 @@ sub counter {
     return $counter;
 }
 
+=item B<object_id>
+
+    my $id = $thing->object_id;
+
+Returns an identifier for this object unique to the running process.
+The identifier is fairly simple and easily predictable.
+
+See L<TB2::HasObjectID>
+
+=cut
 
 =back
 

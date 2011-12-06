@@ -2,7 +2,7 @@ package TB2::EventCoordinator;
 
 use TB2::Mouse;
 use TB2::Types;
-with 'TB2::CanLoad', 'TB2::CanThread';
+with 'TB2::CanLoad', 'TB2::CanThread', 'TB2::HasObjectID';
 
 our $VERSION = '1.005000_002';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -233,6 +233,15 @@ Use this instead of manipulating the list of handlers directly.
 Removes all handlers of their respective types.
 
 Use this instead of manipulating the list of handlers directly.
+
+=head3 object_id
+
+    my $id = $thing->object_id;
+
+Returns an identifier for this object unique to the running process.
+The identifier is fairly simple and easily predictable.
+
+See L<TB2::HasObjectID>
 
 =cut
 

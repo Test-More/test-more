@@ -120,7 +120,7 @@ note "basic subtest"; {
     my $second_history = $second_ec->history;
     is $first_history->event_count, 1;
     my $event = $first_history->events->[0];
-    is $event->event_id, $subtest_start->event_id;
+    is $event->object_id, $subtest_start->object_id;
     is $event->event_type, "subtest_start",     "first level saw the start event";
     is $event->depth, 1,                        "  depth was correctly set";
     is $second_history->event_count, 0,     "second level did not see the start event";
@@ -135,7 +135,7 @@ note "basic subtest"; {
 
     is $first_history->event_count, 2;
     $event = $first_history->events->[1];
-    is $event->event_id, $subtest_end->event_id;
+    is $event->object_id, $subtest_end->object_id;
     is $event->event_type, "subtest_end",     "first level saw the start event";
     is $event->history, $second_history;
 }
@@ -323,12 +323,33 @@ note "handlers providing their own subtest_handler"; {
     my $subtest_end = TB2::Event::SubtestEnd->new;
     $state->post_event($subtest_end);
 
-    is_deeply [map { $_->event_id } $subtest_start, $subtest_end],
-              [map { $_->event_id } @{$history->events}];
+    is_deeply [map { $_->object_id } $subtest_start, $subtest_end],
+              [map { $_->object_id } @{$history->events}];
 
-    is_deeply [map { $_->event_id } $subtest_start, $substream_start, $substream_end, $subtest_end],
-              [map { $_->event_id } @{$seesall->events}],
+    is_deeply [map { $_->object_id } $subtest_start, $substream_start, $substream_end, $subtest_end],
+              [map { $_->object_id } @{$seesall->events}],
               "A handler can see all if it chooses";
 }
+
+note "object_id"; {
+    my $state1 = $CLASS->create;
+    my $state2 = $CLASS->create;
+
+    ok $state1->object_id;
+    ok $state2->object_id;
+
+    isnt $state1->object_id, $state2->object_id, "teststate object_ids are unique";
+
+    require TB2::EventCoordinator;
+    my $ec = TB2::EventCoordinator->new;
+
+    cmp_ok( $state1->object_id, '=~', '^TB2::TestState', 'object_id is ours' );
+
+    my $state1_id = $state1->object_id;
+    $state1->push_coordinator($ec);
+
+    is $state1->object_id, $state1_id, 'object_id stays the same after changing coordinators';
+}
+
 
 done_testing;

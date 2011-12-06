@@ -50,6 +50,17 @@ It is a L<TB2::EventHandler>.
 
 Creates a new, unique History object.
 
+=head2 Misc
+
+=head3 object_id
+
+    my $id = $thing->object_id;
+
+Returns an identifier for this object unique to the running process.
+The identifier is fairly simple and easily predictable.
+
+See L<TB2::HasObjectID>
+
 =head2 Accessors
 
 Unless otherwise stated, these are all accessor methods of the form:
