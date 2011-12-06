@@ -13,7 +13,7 @@ note "Basic event"; {
     is $event->event_type, "test_end";
     is_deeply $event->as_hash, {
         event_type      => "test_end",
-        event_id        => $event->event_id,
+        object_id        => $event->object_id,
     };
 }
 

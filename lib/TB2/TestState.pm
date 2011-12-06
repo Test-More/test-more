@@ -10,7 +10,8 @@ use Carp;
 
 with 'TB2::HasDefault',
      'TB2::CanLoad',
-     'TB2::CanThread';
+     'TB2::CanThread',
+     'TB2::HasObjectID';
 
 has _coordinators =>
   is            => 'rw',
@@ -137,6 +138,17 @@ sub make_default {
     my $state = $class->create;
     return $state->shared_clone($state);
 }
+
+=head2 Misc
+
+=head3 object_id
+
+    my $id = $thing->object_id;
+
+Returns an identifier for this object unique to the running process.
+The identifier is fairly simple and easily predictable.
+
+See L<TB2::HasObjectID>
 
 
 =head2 EventCoordinator methods
