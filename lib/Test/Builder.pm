@@ -1105,38 +1105,38 @@ sub isnt_num {
 
 =item B<like>
 
-  $Test->like($this, qr/$regex/, $name);
-  $Test->like($this, '/$regex/', $name);
+  $Test->like($thing, qr/$regex/, $name);
+  $Test->like($thing, '/$regex/', $name);
 
-Like Test::More's C<like()>.  Checks if $this matches the given C<$regex>.
+Like Test::More's C<like()>.  Checks if $thing matches the given C<$regex>.
 
 =item B<unlike>
 
-  $Test->unlike($this, qr/$regex/, $name);
-  $Test->unlike($this, '/$regex/', $name);
+  $Test->unlike($thing, qr/$regex/, $name);
+  $Test->unlike($thing, '/$regex/', $name);
 
-Like Test::More's C<unlike()>.  Checks if $this B<does not match> the
+Like Test::More's C<unlike()>.  Checks if $thing B<does not match> the
 given C<$regex>.
 
 =cut
 
 sub like {
-    my( $self, $this, $regex, $name ) = @_;
+    my( $self, $thing, $regex, $name ) = @_;
 
     local $Level = $Level + 1;
-    return $self->_regex_ok( $this, $regex, '=~', $name );
+    return $self->_regex_ok( $thing, $regex, '=~', $name );
 }
 
 sub unlike {
-    my( $self, $this, $regex, $name ) = @_;
+    my( $self, $thing, $regex, $name ) = @_;
 
     local $Level = $Level + 1;
-    return $self->_regex_ok( $this, $regex, '!~', $name );
+    return $self->_regex_ok( $thing, $regex, '!~', $name );
 }
 
 =item B<cmp_ok>
 
-  $Test->cmp_ok($this, $type, $that, $name);
+  $Test->cmp_ok($thing, $type, $that, $name);
 
 Works just like Test::More's C<cmp_ok()>.
 
@@ -1390,11 +1390,11 @@ For example, a version of C<like()>, sans the useful diagnostic messages,
 could be written as:
 
   sub laconic_like {
-      my ($self, $this, $regex, $name) = @_;
+      my ($self, $thing, $regex, $name) = @_;
       my $usable_regex = $self->maybe_regex($regex);
       die "expecting regex, found '$regex'\n"
           unless $usable_regex;
-      $self->ok($this =~ m/$usable_regex/, $name);
+      $self->ok($thing =~ m/$usable_regex/, $name);
   }
 
 =cut
@@ -1432,7 +1432,7 @@ sub _is_qr {
 }
 
 sub _regex_ok {
-    my( $self, $this, $regex, $cmp, $name ) = @_;
+    my( $self, $thing, $regex, $cmp, $name ) = @_;
 
     my $ok           = 0;
     my $usable_regex = $self->maybe_regex($regex);
@@ -1451,7 +1451,7 @@ sub _regex_ok {
 
         local( $@, $!, $SIG{__DIE__} );    # isolate eval
 
-        $test = eval $context . q{$test = $this =~ /$usable_regex/ ? 1 : 0};
+        $test = eval $context . q{$test = $thing =~ /$usable_regex/ ? 1 : 0};
 
         $test = !$test if $cmp eq '!~';
 
@@ -1460,11 +1460,11 @@ sub _regex_ok {
     }
 
     unless($ok) {
-        $this = defined $this ? "'$this'" : 'undef';
+        $thing = defined $thing ? "'$thing'" : 'undef';
         my $match = $cmp eq '=~' ? "doesn't match" : "matches";
 
         local $Level = $Level + 1;
-        $self->diag( sprintf <<'DIAGNOSTIC', $this, $match, $regex );
+        $self->diag( sprintf <<'DIAGNOSTIC', $thing, $match, $regex );
                   %s
     %13s '%s'
 DIAGNOSTIC
