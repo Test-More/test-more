@@ -1,6 +1,11 @@
 See README and version control log for Test::Builder2 changes.
 
 1.005000_003
+    Bug Fixes
+    * Remove unnecessary uses of local $_ in Test::Builder::Tester.
+      Father Chrysostomos says it interferes with a caller's tied $_.
+      [rt.cpan.org 73543]
+
     Incompatible changes (with the last alpha)
     * TB2::NoHistory has been deleted before somebody relies on it.
       It was unmaintained and will be replaced by a TB2::History feature.

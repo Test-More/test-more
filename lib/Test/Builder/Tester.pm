@@ -236,7 +236,6 @@ sub test_diag {
     _start_testing() unless $testing;
 
     # expect the same thing, but prepended with "#     "
-    local $_;
     $streamer->expect("err", map { "# $_" } @_ );
 }
 
@@ -314,8 +313,6 @@ sub test_test {
     {
         # print out the diagnostic information about why this
         # test failed
-
-        local $_;
 
         $t->diag( map { "$_\n" } $streamer->complaint("out") )
           unless $args{skip_out} || $streamer->check("out");
