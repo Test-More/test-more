@@ -18,11 +18,11 @@ TB2::Tester - Testing a Test:: module
 =head1 SYNOPSIS
 
     use Test::More;
-    use Your::Test::Module qw(this_ok that_ok);
+    use Your::Test::Module qw(thing_ok that_ok);
     use TB2::Tester;
 
     my $capture = capture {
-        this_ok $this, "some name";
+        thing_ok $thing, "some name";
         that_ok $that;
     };
 
