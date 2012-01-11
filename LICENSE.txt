@@ -1,0 +1,11 @@
+Test-Simple is Copyright (C) 2001-2012, by Michael G Schwern <schwern@pobox.com> and
+chromatic <chromatic@wgz.org>.
+
+It is free software; you can redistribute it and/or modify it under the terms of either:
+
+a) the GNU General Public License as published by the Free Software Foundation; version 1,
+   or (at your option) any later version.  See the file LICENSE_GPL1.txt contained in this
+   distribution.
+
+b) the "Artistic License".  See the file LICENSE_Artistic.txt contained in this distribution.
+

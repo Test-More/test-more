@@ -1,5 +1,13 @@
 See README and version control log for Test::Builder2 changes.
 
+1.005000_004
+    Distribution Changes
+    * Added an explicit license file and copies of the GPL1 and Artistic
+      License.
+    * Changed the URL pointing to the Perl license to use the dev.perl.org
+      one pointing at the Perl license, not just the Artistic.
+
+
 1.005000_003
     Bug Fixes
     * Remove unnecessary uses of local $_ in Test::Builder::Tester.

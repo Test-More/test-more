@@ -2346,13 +2346,13 @@ E<lt>schwern@pobox.comE<gt>
 
 =head1 COPYRIGHT
 
-Copyright 2002-2008 by chromatic E<lt>chromatic@wgz.orgE<gt> and
+Copyright 2002-2012 by chromatic E<lt>chromatic@wgz.orgE<gt> and
                        Michael G Schwern E<lt>schwern@pobox.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See F<http://www.perl.com/perl/misc/Artistic.html>
+See L<http://dev.perl.org/licenses/>
 
 =cut
 
