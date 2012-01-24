@@ -598,48 +598,13 @@ sub handle_subtest_end {
     my $self = shift;
     my($event, $ec) = @_;
 
-    my $subtest_start = $ec->history->subtest_start;
-
-    my %result_args;
-
-    # Did the subtest pass?
-    $result_args{pass} = $event->history->test_was_successful;
-
-    # Inherit the name from the subtest.
-    $result_args{name} = $subtest_start->name;
-
-    # If the subtest was started in a todo context, the subtest result
-    # will be todo.
-    $result_args{directives} = $subtest_start->directives;
-    $result_args{reason}     = $subtest_start->reason;
-
-    # Inherit the context.
-    for my $key (qw(file line)) {
-        my $val = $event->$key();
-        $result_args{$key} = $val if defined $val;
-    }
-
-    # What was the result of the subtest?
     if( my $abort = $event->history->abort ) {
         # Subtest aborted, end the abort up to the top level
         $ec->post_event($abort);
     }
     else {
-        my $subtest_plan = $event->history->plan;
-        if( $subtest_plan && $subtest_plan->skip ) {
-            # If the subtest was a skip_all, make our result a skip.
-            $result_args{skip} = 1;
-            $result_args{reason} = $subtest_plan->skip_reason;
-        }
-        elsif( $event->history->test_count == 0 ) {
-            # The subtest didn't run any tests
-            my $name = $result_args{name};
-            $result_args{name} = "No tests run in subtest";
-            $result_args{name}.= qq[ "$name"] if defined $name;
-        }
-
-        my $result = TB2::Result->new_result( %result_args );
-        $ec->post_event($result);
+        # Subtest ended normally, post a summary result
+        $ec->post_event($event->result);
     }
 
     return;

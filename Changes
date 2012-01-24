@@ -7,6 +7,10 @@ See README and version control log for Test::Builder2 changes.
     * Changed the URL pointing to the Perl license to use the dev.perl.org
       one pointing at the Perl license, not just the Artistic.
 
+    Bug Fixes
+    * subtest() once again returns the Result of the subtest.
+      [github 250]
+
 
 1.005000_003
     Bug Fixes

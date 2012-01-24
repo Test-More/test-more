@@ -179,13 +179,13 @@ sub subtest {
     # Restore $TODO
     $self->find_TODO(undef, 1, $orig_TODO);
 
-    $self->post_event(
-        TB2::Event::SubtestEnd->new(
-            $self->_file_and_line,
-        )
+    my $subtest_end = TB2::Event::SubtestEnd->new(
+        $self->_file_and_line,
     );
 
-    return;
+    $self->post_event($subtest_end);
+
+    return $subtest_end->result;
 }
 
 
