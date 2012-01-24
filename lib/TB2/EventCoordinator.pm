@@ -18,7 +18,7 @@ TB2::EventCoordinator - Coordinate events amongst the builders
 =head1 SYNOPSIS
 
     use TB2::EventCoordinator;
-    my $ec = TB2::EventCoordinator->create;
+    my $ec = TB2::EventCoordinator->new;
 
     # The builder sends it events like assert results and the beginning
     # and end of tests.
