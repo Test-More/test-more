@@ -2,7 +2,7 @@ package TB2::Event::SubtestEnd;
 
 use TB2::Mouse;
 use TB2::Types;
-with 'TB2::Event';
+with 'TB2::Event', 'TB2::CanThread', 'TB2::CanLoad';
 
 our $VERSION = '1.005000_002';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -45,6 +45,82 @@ has history =>
   is            => 'rw',
   isa           => 'TB2::History',
 ;
+
+
+=head3 subtest_start
+
+The matching L<TB2::Event::SubtestStart>.
+
+Normally this will be filled in by L<TB2::TestState> during
+posting.
+
+=cut
+
+has subtest_start =>
+  is            => 'rw',
+  isa           => 'TB2::Event::SubtestStart'
+;
+
+
+=head3 result
+
+A Result summarizing the outcome of the subtest.
+
+This will be created from the L<history> by default.
+
+=cut
+
+has result =>
+  is            => 'rw',
+  isa           => 'TB2::Result::Base',
+  lazy          => 1,
+  trigger       => sub { $_[0]->shared_clone($_[1]) },
+  default       => sub {
+      return $_[0]->shared_clone( $_[0]->_build_result );
+  };
+
+sub _build_result {
+    my $self = shift;
+
+    my $subtest_history = $self->history;
+
+    my %result_args;
+
+    # Inherit information from the subtest.
+    if( my $subtest_start = $self->subtest_start ) {
+        $result_args{name} = $subtest_start->name;
+
+        # If the subtest was started in a todo context, the subtest result
+        # will be todo.
+        $result_args{directives} = $subtest_start->directives;
+        $result_args{reason}     = $subtest_start->reason;
+    }
+
+    # Did the subtest pass?
+    $result_args{pass} = $subtest_history->test_was_successful;
+
+    # Inherit the context.
+    for my $key (qw(file line)) {
+        my $val = $self->$key();
+        $result_args{$key} = $val if defined $val;
+    }
+
+    my $subtest_plan = $subtest_history->plan;
+    if( $subtest_plan && $subtest_plan->skip ) {
+        # If the subtest was a skip_all, make our result a skip.
+        $result_args{skip} = 1;
+        $result_args{reason} = $subtest_plan->skip_reason;
+    }
+    elsif( $subtest_history->test_count == 0 ) {
+        # The subtest didn't run any tests
+        my $name = $result_args{name};
+        $result_args{name} = "No tests run in subtest";
+        $result_args{name}.= qq[ "$name"] if defined $name;
+    }
+
+    $self->load("TB2::Result");
+    return TB2::Result->new_result( %result_args );
+}
 
 =head3 build_event_type
 

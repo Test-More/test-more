@@ -362,6 +362,7 @@ sub handle_subtest_end {
     # Attach the subtest history to the event.  If somebody else already
     # did so, honor that.
     $event->history( $subtest_ec->history ) unless $event->history;
+    $event->subtest_start( $self->history->subtest_start ) unless $event->subtest_start;
 
     # Post the event to the current level
     $self->current_coordinator->post_event(@_);
