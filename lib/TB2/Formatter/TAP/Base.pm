@@ -598,12 +598,13 @@ sub handle_subtest_end {
     my $self = shift;
     my($event, $ec) = @_;
 
+    my $subtest_history = $event->history;
     my $subtest_start = $ec->history->subtest_start;
 
     my %result_args;
 
     # Did the subtest pass?
-    $result_args{pass} = $event->history->test_was_successful;
+    $result_args{pass} = $subtest_history->test_was_successful;
 
     # Inherit the name from the subtest.
     $result_args{name} = $subtest_start->name;
@@ -620,18 +621,18 @@ sub handle_subtest_end {
     }
 
     # What was the result of the subtest?
-    if( my $abort = $event->history->abort ) {
+    if( my $abort = $subtest_history->abort ) {
         # Subtest aborted, end the abort up to the top level
         $ec->post_event($abort);
     }
     else {
-        my $subtest_plan = $event->history->plan;
+        my $subtest_plan = $subtest_history->plan;
         if( $subtest_plan && $subtest_plan->skip ) {
             # If the subtest was a skip_all, make our result a skip.
             $result_args{skip} = 1;
             $result_args{reason} = $subtest_plan->skip_reason;
         }
-        elsif( $event->history->test_count == 0 ) {
+        elsif( $subtest_history->test_count == 0 ) {
             # The subtest didn't run any tests
             my $name = $result_args{name};
             $result_args{name} = "No tests run in subtest";
