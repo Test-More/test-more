@@ -457,8 +457,11 @@ sub handle_result {
     my $name = $result->name;
     $self->_escape(\$name);
     my $show_name = 1;
-    $show_name = 0 if !defined $name;
-    $show_name = 0 if !length $name && !$self->show_empty_result_names;
+    $show_name = 0 if (
+      !defined $name
+        or
+      !length $name && !$self->show_empty_result_names
+    );
     $out .= " - $name" if $show_name;
 
     my $reason = $result->reason;
