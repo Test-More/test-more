@@ -252,15 +252,62 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     return;
 }
 
+
+=item B<test_state>
+
+    my $state = $builder->test_state;
+
+Returns the L<TB2::TestState> representing the test $builder is working with.
+
+There may be other builders contributing to the same $state.
+
+=cut
+
 sub test_state {
     return $_[0]->{TestState};
 }
+
+
+=item B<formatter>
+
+    my $formatter = $builder->formatter;
+
+Returns the L<TB2::Formatter> being used to format test output.
+
+=cut
 
 use TB2::BlackHole;
 my $blackhole = TB2::BlackHole->new;
 sub formatter {
     return $_[0]->test_state->formatters->[0] || $blackhole;
 }
+
+
+=item B<set_formatter>
+
+    $builder->set_formatter( $formatter );
+
+Change what $formatter is used to output the test.
+
+Note that this changes the $formatter for the entire test state, not just this $builder.
+
+=cut
+
+sub set_formatter {
+    my $self      = shift;
+    my $formatter = shift;
+
+    $self->croak("No formatter given to set_formatter()") unless $formatter;
+    $self->croak("Argument to set_formatter() is not a TB2::Formatter")
+      unless $self->try( sub { $formatter->isa("TB2::Formatter") } );
+
+    my $state = $self->test_state;
+    $state->clear_formatters;
+    $state->add_formatters($formatter);
+
+    return;
+}
+
 
 =item B<history>
 
