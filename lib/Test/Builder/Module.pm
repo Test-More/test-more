@@ -57,13 +57,7 @@ exporting of functions and variables.  This allows your module to set
 the plan independent of Test::More.
 
 All arguments passed to import() are passed onto 
-C<< Your::Module->builder->plan() >> with the exception of 
-C<< import =>[qw(things to import)] >>.
-
-    use Your::Module import => [qw(this that)], tests => 23;
-
-says to import the functions this() and that() as well as set the plan
-to be 23 tests.
+C<< Your::Module->builder->plan() >> with some exceptions below.
 
 import() also sets the exported_to() attribute of your builder to be
 the caller of the import() function.
@@ -71,10 +65,46 @@ the caller of the import() function.
 Additional behaviors can be added to your import() method by overriding
 import_extra().
 
+The special keywords are...
+
+=over 4
+
+=item B<import>
+
+C<import> can be passed an array ref of symbols to import, using the
+normal L<Exporter> syntax.
+
+    use Your::Module import => [qw(this that)], tests => 23;
+
+Says to import the functions this() and that() as well as set the plan
+to be 23 tests.
+
+    use Your::Module import => [qw(!fail)], tests => 23;
+
+Say to export everything normally, except the C<fail> function.
+
+
+=item B<formatter>
+
+C<formatter> can be used to change the L<TB2::Formatter> used to
+output test results.
+
+    use TB2::Formatter::POSIX;
+    use Your::Module formatter => TB2::Formatter::POSIX->new;
+
+The test will then use the POSIX formatter rather than the normal TAP
+formatter.  Note this effects the whole test, not just the functions
+in your module.
+
+See L<Test::Builder/set_formatter> for more details.
+
+=back
+
 =cut
 
 sub import {
     my($class) = shift;
+    my @args = @_;
 
     # Don't run all this when loading ourself.
     return 1 if $class eq 'Test::Builder::Module';
@@ -85,15 +115,32 @@ sub import {
 
     $test->exported_to($caller);
 
-    $class->import_extra( \@_ );
-    my(@imports) = $class->_strip_imports( \@_ );
+    # Let a module do whatever extra things it likes
+    $class->import_extra( \@args );
 
-    $test->plan(@_);
+    # Strip off anything which is not a test plan
+    my(@imports) = $class->_strip_import_args( \@args );
+
+    # We're left with test plan arguments
+    my @plan = @args;
+    $test->plan(@plan);
 
     $class->export_to_level( 1, $class, @imports );
 }
 
-sub _strip_imports {
+
+my $special_imports = {
+    formatter => sub {
+        my $class     = shift;
+        my $formatter = shift;
+
+        $class->builder->set_formatter($formatter);
+
+        return;
+    },
+};
+
+sub _strip_import_args {
     my $class = shift;
     my $list  = shift;
 
@@ -103,8 +150,14 @@ sub _strip_imports {
     while( $idx <= $#{$list} ) {
         my $item = $list->[$idx];
 
-        if( defined $item and $item eq 'import' ) {
+        if( defined($item) and $item eq 'import' ) {
+            # A special case for adding imports which requires accessing @imports
             push @imports, @{ $list->[ $idx + 1 ] };
+            $idx++;
+        }
+        elsif( my $action = $special_imports->{$item} ) {
+            # Spotted a special keyword.  Take action
+            $class->$action($list->[ $idx + 1 ]);
             $idx++;
         }
         else {
