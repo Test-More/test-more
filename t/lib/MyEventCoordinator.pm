@@ -25,8 +25,7 @@ It makes the following changes:
 
 =cut
 
-has '+formatters' =>
-  default       => sub { [] };
+sub default_formatters { [] }
 
 no TB2::Mouse;
 
