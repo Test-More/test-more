@@ -1975,9 +1975,13 @@ sub find_TODO {
     $pack = $pack || $self->caller(1) || $self->exported_to;
     return unless $pack;
 
-    no strict 'refs';    ## no critic
-    my $old_value = ${ $pack . '::TODO' };
-    $set and ${ $pack . '::TODO' } = $new_value;
+    my $todo = do {
+        no strict 'refs';    ## no critic
+        no warnings 'once';
+        \${ $pack.'::TODO'};
+    };
+    my $old_value = $$todo;
+    $set and $$todo = $new_value;
     return $old_value;
 }
 
