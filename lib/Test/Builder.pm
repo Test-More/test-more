@@ -712,21 +712,7 @@ ERR
     # Store the Result in history making sure to make it thread safe
     $self->post_result($result);
 
-    # Check that we haven't violated the plan
-    $self->_check_is_passing_plan();
-
     return $test ? 1 : 0;
-}
-
-
-# Check that we haven't yet violated the plan and set
-# is_passing() accordingly
-sub _check_is_passing_plan {
-    my $self = shift;
-
-    my $plan = $self->has_plan;
-    return unless defined $plan;        # no plan yet defined
-    return unless $plan !~ /\D/;        # no numeric plan
 }
 
 
