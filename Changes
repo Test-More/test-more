@@ -7,17 +7,42 @@ See README and version control log for Test::Builder2 changes.
     * Changed the URL pointing to the Perl license to use the dev.perl.org
       one pointing at the Perl license, not just the Artistic.
 
+    New Features
+    * The default formatter can be changed several ways.
+        use Some::Test formatter => "Some::Other::Formatter";
+        $builder->set_formatter( $other_formatter );
+        TB2_FORMATTER_CLASS environment variable
+      [github 244] [github 243]
+    * A new formatter, TB2::Formatter::TAP::TB1, emulates all the
+      quirks of Test::Builder 0.98. [github 215]
+    * Test::Builder::Tester now uses TB2::Formatter::TAP::TB1
+      so tests written with TBT remain compatible.  TBT is
+      discouraged, use Test::Tester.
+      [github 242]
+    * Everything responds to object_id() now. [github 162]
+
     Bug Fixes
     * subtest() once again returns the Result of the subtest.
       [github 250]
     * Remove unnecessary uses of local $_ in Test::Builder::Tester.
       Father Chrysostomos says it interferes with a caller's tied $_.
       [rt.cpan.org 73543]
+    * Quiet a warning about $TODO when a test function is called at
+      BEGIN time and outside the package into which Test::More was
+      exported. [github 253]
+    * Quiet warnings in the TAP formatter when a result name is
+      undefined. [github 260]
 
     Incompatible changes (with the last alpha)
     * TB2::NoHistory has been deleted before somebody relies on it.
       It was unmaintained and will be replaced by a TB2::History feature.
       See github 198.  [github 241]
+    * Events no longer have an event_id method, it's all object_id.
+      [github 162]
+
+    Documentation Changes
+    * $this has been replaced with $thing to avoid Javascript or C++
+      folks being confused. (Karen Etheridge)
 
 
 1.005000_002  Mon Nov 28 21:16:13 PST 2011
