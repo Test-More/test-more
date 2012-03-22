@@ -8,7 +8,7 @@ use warnings;
 
 use Config;
 
-our $VERSION = '1.005000_002';
+our $VERSION = '1.005000_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 if( $Config{useithreads} && $INC{'threads.pm'} ) {

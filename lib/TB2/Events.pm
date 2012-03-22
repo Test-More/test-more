@@ -3,7 +3,7 @@ package TB2::Events;
 use strict;
 use warnings;
 
-our $VERSION = '1.005000_002';
+our $VERSION = '1.005000_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

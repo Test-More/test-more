@@ -4,7 +4,7 @@ package Test::Builder::Formatter::TAP;
 
 use TB2::Mouse;
 
-our $VERSION = '1.005000_002';
+our $VERSION = '1.005000_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 extends 'TB2::Formatter::TAP::v13';

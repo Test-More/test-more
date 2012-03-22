@@ -6,7 +6,7 @@ use TB2::Types;
 
 with 'TB2::EventHandler', 'TB2::CanThread';
 
-our $VERSION = '1.005000_002';
+our $VERSION = '1.005000_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

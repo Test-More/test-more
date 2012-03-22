@@ -4,7 +4,7 @@ use TB2::Mouse;
 use TB2::Types;
 with 'TB2::Event', 'TB2::CanThread', 'TB2::CanLoad';
 
-our $VERSION = '1.005000_002';
+our $VERSION = '1.005000_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

@@ -3,7 +3,7 @@ package TB2::Formatter::Multi;
 use TB2::Mouse;
 extends 'TB2::Formatter';
 
-our $VERSION = '1.005000_002';
+our $VERSION = '1.005000_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

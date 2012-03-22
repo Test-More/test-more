@@ -7,7 +7,7 @@ use TB2::Types;
 extends 'TB2::Formatter';
 with 'TB2::CanLoad', 'TB2::CanThread';
 
-our $VERSION = '1.005000_002';
+our $VERSION = '1.005000_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Carp;
