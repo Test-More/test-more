@@ -201,7 +201,7 @@ ended when C<done_testing> is called or the process is exiting.
 =cut
 
 sub in_test {
-    $_[0]->history->in_test;
+    return $_[0]->history->in_test;
 }
 
 =item B<in_subtest>
@@ -540,14 +540,14 @@ sub has_plan {
     my $self = shift;
 
     my $plan = $self->history->plan;
-    return undef if !defined $plan;
+    return undef if !defined $plan;     ## no critic
 
     return 'no_plan' if $plan->no_plan;
 
     my $want = $plan->asserts_expected;
     return $want if $want;
 
-    return undef;
+    return undef;                       ## no critic
 }
 
 =item B<skip_all>
@@ -655,7 +655,7 @@ sub set_plan {
 
 
 sub post_event {
-    $_[0]->test_state->post_event($_[1]);
+    return $_[0]->test_state->post_event($_[1]);
 }
 
 sub post_result {
