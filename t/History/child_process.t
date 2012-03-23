@@ -38,7 +38,10 @@ else {                                  # child
     is $history->pid_at_test_start, $Top_PID;
     ok $history->is_child_process;
 
-    if( !fork ) {                       # grandchild
+    if( my $grand_child = fork ) {
+        waitpid $grand_child, 0;
+    }
+    else {                              # grandchild
         note "Grandchild PID: $$";
         is $history->pid_at_test_start, $Top_PID;
         ok $history->is_child_process;
