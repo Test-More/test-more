@@ -11,7 +11,7 @@ BEGIN {
     # Have to load threads before threads::shared.
     $Have_Threads = $Config{'useithreads'} && eval { require threads; 'threads'->import; 1; };
 }
-use threads::shared;
+use TB2::threads::shared;
 skip_all "this perl does not have threads" if !$Have_Threads;
 
 use TB2::Streamer::Print;

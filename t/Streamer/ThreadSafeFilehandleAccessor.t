@@ -12,7 +12,7 @@ BEGIN {
     # Have to load threads before threads::shared.
     $Have_Threads = $Config{'useithreads'} && eval { require threads; 'threads'->import; 1; };
 }
-use threads::shared;
+use TB2::threads::shared;
 
 # A class for testing
 {
