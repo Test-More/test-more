@@ -1,5 +1,11 @@
 See README and version control log for Test::Builder2 changes.
 
+1.005000_004
+    Incompatible Changes
+    * coordinate_threads() has been removed.  It had no use case and was
+      complicating threads which are quite complicated enough thank you.
+
+
 1.005000_003  Thu Mar 22 17:48:08 GMT 2012
     Distribution Changes
     * Added an explicit license file and copies of the GPL1 and Artistic

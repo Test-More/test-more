@@ -22,7 +22,6 @@ note "defaults"; {
     is $event->history, $history;
     is $event->event_type, "subtest_end";
     is_deeply $event->as_hash, {
-        coordinate_threads      => $event->coordinate_threads,
         event_type              => "subtest_end",
         object_id               => $event->object_id,
         history                 => $history,
