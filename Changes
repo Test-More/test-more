@@ -1,6 +1,10 @@
 See README and version control log for Test::Builder2 changes.
 
 1.005000_004
+    Test Fixes
+    * t/History/child_process.t was failing, the forked processes were
+      improperly coordinated.
+
     Incompatible Changes
     * coordinate_threads() has been removed.  It had no use case and was
       complicating threads which are quite complicated enough thank you.
