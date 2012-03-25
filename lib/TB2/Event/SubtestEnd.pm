@@ -6,7 +6,7 @@ use TB2::threads::shared;
 
 with 'TB2::Event', 'TB2::CanLoad';
 
-our $VERSION = '1.005000_003';
+our $VERSION = '1.005000_004';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

@@ -8,7 +8,7 @@ use TB2::StackBuilder;
 with 'TB2::EventHandler',
      'TB2::CanTry';
 
-our $VERSION = '1.005000_003';
+our $VERSION = '1.005000_004';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

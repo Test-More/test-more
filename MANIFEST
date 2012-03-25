@@ -306,6 +306,7 @@ t/Tester2/capture.t
 t/Tester2/state_untouched.t
 t/thread_taint.t
 t/threads.t
+t/threads_shared.t
 t/todo.t
 t/todo_skip_before_plan.t
 t/todo_warnings.t

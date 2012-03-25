@@ -5,7 +5,7 @@ use TB2::Mouse;
 use TB2::Mouse::Exporter;
 use TB2::Types;
 
-our $VERSION = '1.005000_003';
+our $VERSION = '1.005000_004';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

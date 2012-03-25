@@ -3,7 +3,7 @@ package TB2::OnlyOnePlan;
 use TB2::Mouse;
 with 'TB2::EventHandler';
 
-our $VERSION = '1.005000_003';
+our $VERSION = '1.005000_004';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Carp;

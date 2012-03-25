@@ -7,7 +7,7 @@ with 'TB2::HasObjectID';
 
 requires qw( build_event_type );
 
-our $VERSION = '1.005000_003';
+our $VERSION = '1.005000_004';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

@@ -5,7 +5,7 @@ use 5.008001;
 use TB2::Mouse;
 extends 'TB2::Formatter::TAP::v13';
 
-our $VERSION = '1.005000_003';
+our $VERSION = '1.005000_004';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 
