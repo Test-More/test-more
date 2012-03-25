@@ -2,7 +2,9 @@ package TB2::Event::SubtestEnd;
 
 use TB2::Mouse;
 use TB2::Types;
-with 'TB2::Event', 'TB2::CanThread', 'TB2::CanLoad';
+use TB2::threads::shared;
+
+with 'TB2::Event', 'TB2::CanLoad';
 
 our $VERSION = '1.005000_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -74,9 +76,9 @@ has result =>
   is            => 'rw',
   isa           => 'TB2::Result::Base',
   lazy          => 1,
-  trigger       => sub { $_[0]->shared_clone($_[1]) },
+  trigger       => sub { shared_clone($_[1]) },
   default       => sub {
-      return $_[0]->shared_clone( $_[0]->_build_result );
+      return shared_clone( $_[0]->_build_result );
   };
 
 sub _build_result {

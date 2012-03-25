@@ -22,12 +22,14 @@ BEGIN {
     }
 }
 
+# This has to come after the above to threads are on
+use TB2::threads::shared;
+
 
 {
     package WithThreads;
 
     use TB2::Mouse;
-    with "TB2::CanThread";
 
     has 'stuff' =>
       is        => 'rw',
@@ -40,13 +42,13 @@ note "threads on"; {
 
     # Try this stuff even with threads off to make sure they don't blow up.
     my %hash = ( counter => 4, bar => [1,2,3] );
-    $obj->stuff( $obj->shared_clone(\%hash) );
+    $obj->stuff( shared_clone(\%hash) );
 
     my $var = 5;
-    $obj->share(\$var);
+    share($var);
 
     my $var2 = 1;
-    $obj->share(\$var2);
+    share($var2);
 
     note "check lock() works with threads on or off"; {
         lock($var2);

@@ -8,16 +8,22 @@ use warnings;
 
 use Config;
 
+use Exporter;
+our @ISA    = qw(Exporter);
+our @EXPORT = qw(share shared_clone);
+
 our $VERSION = '1.005000_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 if( $Config{useithreads} && $INC{'threads.pm'} ) {
     require TB2::threads::shared::on;
-    our @ISA = qw(TB2::threads::shared::on);
+    *share        = \&TB2::threads::shared::on::share;
+    *shared_clone = \&TB2::threads::shared::on::shared_clone;
 }
 else {
     require TB2::threads::shared::off;
-    our @ISA = qw(TB2::threads::shared::off);
+    *share        = \&TB2::threads::shared::off::share;
+    *shared_clone = \&TB2::threads::shared::off::shared_clone;
 }
 
 1;

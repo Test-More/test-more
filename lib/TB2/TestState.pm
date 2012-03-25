@@ -2,6 +2,7 @@ package TB2::TestState;
 
 use TB2::Mouse;
 use TB2::Types;
+use TB2::threads::shared;
 
 our $VERSION = '1.005000_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -10,7 +11,6 @@ use Carp;
 
 with 'TB2::HasDefault',
      'TB2::CanLoad',
-     'TB2::CanThread',
      'TB2::HasObjectID';
 
 has _coordinators =>
@@ -136,7 +136,7 @@ sub create {
 sub make_default {
     my $class = shift;
     my $state = $class->create;
-    return $state->shared_clone($state);
+    return shared_clone($state);
 }
 
 =head2 Misc
@@ -194,7 +194,7 @@ sub push_coordinator {
         $ec = shift;
     }
 
-    $ec = $self->shared_clone($ec);
+    $ec = shared_clone($ec);
     push @{ $self->_coordinators }, $ec; 
 
     # Do the delegation every time we add a new coordinator in case it's

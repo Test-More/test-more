@@ -2,7 +2,9 @@ package TB2::EventCoordinator;
 
 use TB2::Mouse;
 use TB2::Types;
-with 'TB2::CanLoad', 'TB2::CanThread', 'TB2::HasObjectID';
+use TB2::threads::shared;
+
+with 'TB2::CanLoad', 'TB2::HasObjectID';
 
 our $VERSION = '1.005000_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -71,10 +73,10 @@ has history =>
   is            => 'rw',
   isa           => 'Object',
   lazy          => 1,
-  trigger       => sub { $_[0]->shared_clone($_[1]) },
+  trigger       => sub { shared_clone($_[1]) },
   default       => sub {
       $_[0]->load("TB2::History");
-      return $_[0]->shared_clone(TB2::History->new);
+      return shared_clone(TB2::History->new);
   };
 
 
@@ -98,7 +100,7 @@ has formatters =>
   is            => 'rw',
   isa           => 'ArrayRef',
   lazy          => 1,
-  trigger       => sub { $_[0]->shared_clone($_[1]) },
+  trigger       => sub { shared_clone($_[1]) },
   builder       => 'default_formatters';
 
 
@@ -120,7 +122,7 @@ By default there are no early_handlers.
 has early_handlers =>
   is            => 'rw',
   isa           => 'ArrayRef',
-  trigger       => sub { $_[0]->shared_clone($_[1]) },
+  trigger       => sub { shared_clone($_[1]) },
   default       => sub { [] };
 
 
@@ -142,7 +144,7 @@ By default there are no late_handlers.
 has late_handlers =>
   is            => 'rw',
   isa           => 'ArrayRef',
-  trigger       => sub { $_[0]->shared_clone($_[1]) },
+  trigger       => sub { shared_clone($_[1]) },
   default       => sub { [] };
 
 
@@ -199,7 +201,7 @@ Defaults to a single instance of the L<default_formatter_class>.
 sub default_formatters {
     my $formatter_class = $_[0]->default_formatter_class;
     $_[0]->load( $formatter_class );
-    return $_[0]->shared_clone( [ $formatter_class->new ] );
+    return shared_clone( [ $formatter_class->new ] );
 }
 
 
@@ -216,7 +218,7 @@ sub post_event {
     my $self  = shift;
     my $event = shift;
 
-    $event = $self->shared_clone($event);
+    $event = shared_clone($event);
     for my $handler ($self->all_handlers) {
         $handler->accept_event($event, $self);
     }
@@ -283,7 +285,7 @@ See L<TB2::HasObjectID>
 for my $type (grep { $_ ne 'history' } @Types) {
     my $add = sub {
         my $self = shift;
-        my @handlers = map { $self->shared_clone($_) } @_;
+        my @handlers = map { shared_clone($_) } @_;
         push @{ $self->$type }, @handlers;
 
         return;
