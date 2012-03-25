@@ -51,7 +51,11 @@ If there is no default one will be created by calling create().
 # What?!  No class variables in Mouse?!  Now I have to write the
 # accessor by hand, bleh.
 {
-    my %defaults;
+    # This has to be shared else 5.12 and below segfault when a shared
+    # TB2::TestState is put into it.  This is probably not viable in the
+    # long term, but for now only TB2::TestState and TB2::Builder2
+    # are using it.
+    my %defaults :shared;
 
     sub default {
         my $class = shift;

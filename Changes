@@ -1,6 +1,10 @@
 See README and version control log for Test::Builder2 changes.
 
 1.005000_004
+    Bug Fixes
+    * Fix the thread crashes occurring with 5.12 and down.
+      [github 261]
+
     Test Fixes
     * t/History/child_process.t was failing, the forked processes were
       improperly coordinated.
