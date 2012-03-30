@@ -1,5 +1,10 @@
 See README and version control log for Test::Builder2 changes.
 
+1.005000_005
+    Bug Fixes
+    * Using a reference as a test name works again.  [github #264]
+
+
 1.005000_004  Sun Mar 25 15:01:49 BST 2012
     Bug Fixes
     * Fix the thread crashes occurring with 5.12 and down.
