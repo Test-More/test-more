@@ -110,4 +110,14 @@ note "Line numbers preserved"; {
     ::is( $caller[2], $line,            "  line" );
 }
 
+
+note "not confused by functions vs class names"; {
+    $INC{"ok.pm"} = 1;
+    use_ok("ok");               # ok is a function inside Test::More
+
+    $INC{"Foo/bar.pm"} = 1;
+    sub Foo::bar { 42 }
+    use_ok("Foo::bar");         # Confusing a class name with a function name
+}
+
 done_testing;
