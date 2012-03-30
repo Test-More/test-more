@@ -30,8 +30,10 @@ note "autoflush"; {
 note "dup_filehandle"; {
     ok open my $write, ">", "t/tmpfile.$$";
 
+    local $!;
     my $dup = Some::Class->dup_filehandle($write);
     ok $dup, "filehandle duplicated";
+    ok !$!, "dup_filehandle leaves $! alone";
 
     print $dup    "stuff";
     print $write  " and things\n";

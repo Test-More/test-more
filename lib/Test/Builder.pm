@@ -14,6 +14,7 @@ use TB2::TestState;
 with 'TB2::CanDupFilehandles',
      'TB2::CanTry',
      'TB2::CanLoad',
+     'TB2::CanOpen',
      'TB2::HasObjectID';
 
 
@@ -1652,12 +1653,12 @@ sub _new_fh {
         $fh = $file_or_fh;
     }
     elsif( ref $file_or_fh eq 'SCALAR' ) {
-        open $fh, ">>", $file_or_fh
-          or $self->croak("Can't open scalar ref $file_or_fh: $!");
+        $self->try(sub { $fh = $self->open(">>", $file_or_fh) })
+          or $self->croak("Can't open scalar ref $file_or_fh: $@");
     }
     else {
-        open $fh, ">", $file_or_fh
-          or $self->croak("Can't open test output log $file_or_fh: $!");
+        $self->try(sub { $fh = $self->open(">", $file_or_fh) })
+          or $self->croak("Can't open test output log $file_or_fh: $@");
         $self->autoflush($fh);
     }
 

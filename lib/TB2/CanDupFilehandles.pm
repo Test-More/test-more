@@ -2,6 +2,7 @@ package TB2::CanDupFilehandles;
 
 use TB2::Mouse ();
 use TB2::Mouse::Role;
+
 with 'TB2::CanTry';
 
 our $VERSION = '1.005000_004';
@@ -45,7 +46,8 @@ sub dup_filehandle {
     my $self = shift;
     my($fh, $dup) = @_;
 
-    open( $dup, ">&", $fh ) or die "Can't dup $fh:  $!";
+    local $!;
+    open( $dup, ">&", $fh ) or die "Can't dup $fh: $!";
 
     $self->_copy_io_layers( $fh, $dup );
 
