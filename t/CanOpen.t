@@ -53,3 +53,5 @@ note "open fails"; {
     open "<", $file;
     is $error, "$!\n", "exception throws $!";
 }
+
+done_testing;
