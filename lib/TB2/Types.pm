@@ -67,6 +67,15 @@ A class name.  It will be loaded.
 subtype 'TB2::LoadableClass', as 'ClassName';
 coerce 'TB2::LoadableClass', from 'Str', via { load_class($_); $_ };
 
+=head3 TB2::Stringify
+
+References stringifier class. It will coerce ref to string.
+
+=cut
+
+subtype 'TB2::Stringify', as 'Str';
+coerce 'TB2::Stringify', from 'Ref', via { "$_" };
+
 no TB2::Mouse::Util::TypeConstraints;
 
 1;
