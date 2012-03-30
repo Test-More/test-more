@@ -2220,16 +2220,12 @@ sub _ending {
     # Forked children often run fragments of tests.
     my $in_child = $self->history->is_child_process;
 
-    # Don't show ending commentary in a forked copy.
-    # Forks often run fragments of tests.
-    $self->formatter->show_ending_commentary(0) if $in_child;
+    # Forks often run fragments of tests, so don't do any ending
+    # processing
+    return if $in_child;
 
     # End the stream unless we (or somebody else) already ended it
     $self->test_end if $history->in_test;
-
-    # Don't change the exit code of a forked copy.
-    # Forks often run fragments of tests.
-    return if $in_child;
 
     my $new_exit_code = $self->test_exit_code($?);
     _my_exit($new_exit_code);

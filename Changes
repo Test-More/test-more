@@ -5,6 +5,8 @@ See README and version control log for Test::Builder2 changes.
     * Using a reference as a test name works again.  [github #264]
     * Protected against Test::More accidentally overwriting $!
       [github #268] [github #266]
+    * Restored the behavior of a fork, it will not issue its own
+      plan, making testing with fork easier.
 
 
 1.005000_004  Sun Mar 25 15:01:49 BST 2012
