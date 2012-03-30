@@ -7,6 +7,7 @@ sub TIEHANDLE {
 
     my @fhs;
     for my $ref (@refs) {
+        local $!;
         open my $fh, ">>", $ref or die $!;
         push @fhs, $fh;
     }
