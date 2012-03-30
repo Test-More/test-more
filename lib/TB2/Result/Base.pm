@@ -64,7 +64,8 @@ The name of the assert.  For example...
 
 has name =>
   is    => 'rw',
-  isa   => 'Str'
+  isa   => 'TB2::Stringify',
+  coerce => 1,
 ;
 
 
