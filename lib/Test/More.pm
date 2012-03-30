@@ -858,7 +858,7 @@ package $pack;
 \$^H = \${\$args[1]};
 %^H = %{\$args[2]};
 #line $line $f
-require $module; $version_check; $module->import(\@{\$args[0]});
+require $module; $version_check; '$module'->import(\@{\$args[0]});
 \${\$args[1]} = \$^H;
 %{\$args[2]} = %^H;
 1;
