@@ -24,7 +24,7 @@ sub open {
     my $self = shift;
     my($mode, $file) = @_;
 
-    local($!, $@);
+    local $!;
     open my $fh, $mode, $file or die "$!\n";
 
     return $fh;
