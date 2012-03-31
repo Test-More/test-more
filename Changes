@@ -18,7 +18,7 @@ See README and version control log for Test::Builder2 changes.
     * t/History/child_process.t was failing, the forked processes were
       improperly coordinated.
 
-    Incompatible Changes
+    Incompatible Changes with previous alphas
     * coordinate_threads() has been removed.  It had no use case and was
       complicating threads which are quite complicated enough thank you.
 
@@ -56,7 +56,7 @@ See README and version control log for Test::Builder2 changes.
     * Quiet warnings in the TAP formatter when a result name is
       undefined. [github 260]
 
-    Incompatible changes (with the last alpha)
+    Incompatible changes with previous alphas
     * TB2::NoHistory has been deleted before somebody relies on it.
       It was unmaintained and will be replaced by a TB2::History feature.
       See github 198.  [github 241]
@@ -113,7 +113,7 @@ See README and version control log for Test::Builder2 changes.
     Tests should continue to work as written.  Please report any breakages
     at https://github.com/schwern/test-more/issues/
 
-    Incompatible Changes (since 2.00_07)
+    Incompatible Changes with previous alphas
     * A lot, too many to list.  If you were using an earlier alpha,
       all bets are off.
 
@@ -123,7 +123,7 @@ See README and version control log for Test::Builder2 changes.
 
 
 2.00_07  Mon, 28 Feb 2011 23:53:22 +1100
-    Incompatible Changes (since 2.00_01)
+    Incompatible Changes with previous alphas
     * TB2::Event::Log now uses symbolic levels, not numeric.  This lets us
       add new levels later. [github 111]
     * Event log levels have been lower cased.
@@ -145,7 +145,7 @@ See README and version control log for Test::Builder2 changes.
 
 
 2.00_06  Thu, 27 Jan 2011 09:58:35 +1000
-    Incompatible Changes (since 2.00_01)
+    Incompatible Changes with previous alphas
     * The EventCoordinator now only has one history object.
       histories() is now history().  clear_history() and add_histories()
       are gone. [github 115]
