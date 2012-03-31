@@ -191,8 +191,7 @@ sub handle_result    {
     my $self = shift;
     my $result = shift;
 
-    my $counter = $self->counter;
-    $counter->increment;
+    $self->counter( $self->counter + 1 );
 
     $self->results_push($result);
     $self->events_push($result);
@@ -420,19 +419,15 @@ sub done_testing {
     my $counter = $formatter->counter;
     $formatter->counter($counter);
 
-Gets/sets the TB2::Counter for this formatter keeping track of
-the test number.
+Gets/sets the result counter.  This is usually the number of results
+seen, but it is not guaranteed to be so.  It can be reset.
 
 =cut
 
 has counter => 
    is           => 'rw',
-   isa          => 'TB2::Counter',
-   trigger      => sub { shared_clone($_[1]) },
-   default => sub {
-      $_[0]->load('TB2::Counter');
-      return TB2::Counter->new;
-   },
+   isa          => 'TB2::Positive_Int',
+   default      => 0
 ;
 
 

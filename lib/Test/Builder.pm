@@ -323,11 +323,6 @@ sub history {
     return $_[0]->test_state->history;
 }
 
-sub counter {
-    my $self = shift;
-    
-    return $self->history->counter;
-}
 
 =item B<object_id>
 
@@ -1733,14 +1728,9 @@ can erase history if you really want to.
 sub current_test {
     my( $self, $num ) = @_;
 
-    my $counter = $self->counter;
+    my $history = $self->history;
 
     if( defined $num ) {
-        my $history = $self->history;
-
-#        lock( $counter );
-#        lock( $history );
-
         # If the test counter is being pushed forward fill in the details.
         my $results = $history->results;
 
@@ -1754,7 +1744,7 @@ sub current_test {
             );
 
             my $last_test_number = @$results ? @$results : 0;
-            $counter->set($last_test_number);
+            $history->counter($last_test_number);
 
             for my $test_number ( $last_test_number + 1 .. $num ) {
                 my $result = TB2::Result->new_result(
@@ -1772,11 +1762,11 @@ sub current_test {
             $#{$results} = $num - 1;
         }
 
-        $counter->set($num);
+        $history->counter($num);
         return;
     }
     else {
-        return $counter->get;
+        return $history->counter;
     }
 }
 
