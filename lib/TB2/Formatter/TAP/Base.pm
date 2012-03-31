@@ -4,7 +4,6 @@ use 5.008001;
 
 use TB2::Mouse;
 use TB2::Types;
-use TB2::threads::shared;
 extends 'TB2::Formatter';
 with 'TB2::CanLoad';
 
@@ -121,26 +120,6 @@ sub note {
 }
 
 
-=head3 counter
-
-    my $counter = $formatter->counter;
-    $formatter->counter($counter);
-
-Gets/sets the TB2::Counter for this formatter keeping track of
-the test number.
-
-=cut
-
-has counter => 
-   is           => 'rw',
-   isa          => 'TB2::Counter',
-   trigger      => sub { shared_clone($_[1]) },
-   default => sub {
-      $_[0]->load('TB2::Counter');
-      return TB2::Counter->new;
-   },
-;
-
 =head3 use_numbers
 
     my $use_numbers = $formatter->use_numbers;
@@ -220,7 +199,7 @@ sub handle_test_end {
     my $event = shift;
     my $ec    = shift;
 
-    $self->output_plan if $self->show_footer;
+    $self->output_plan($ec) if $self->show_footer;
 
     $self->output_ending_commentary($ec);
 
@@ -243,7 +222,7 @@ sub handle_set_plan {
 
     # TAP only allows a plan at the very start or the very end.
     # If we've already seen some results, or it's "no_plan", save it for the end.
-    $self->output_plan if !$self->seen_results and $self->show_header and !$event->no_plan;
+    $self->output_plan($ec) if !$self->seen_results and $self->show_header and !$event->no_plan;
 
     return;
 }
@@ -257,13 +236,14 @@ has did_output_plan =>
 
 sub output_plan {
     my $self = shift;
+    my ($ec) = @_;
 
     return unless $self->show_plan;
     return if $self->did_output_plan;
 
     return if !$self->plan;
 
-    $self->_output_plan;
+    $self->_output_plan($ec);
 
     $self->did_output_plan(1);
 
@@ -272,6 +252,8 @@ sub output_plan {
 
 sub _output_plan {
     my $self  = shift;
+    my ($ec) = @_;
+
     my $plan = $self->plan;
 
     if( $plan->skip ) {
@@ -282,7 +264,7 @@ sub _output_plan {
         $self->out($out);
     }
     elsif( $plan->no_plan ) {
-        my $seen = $self->counter->get;
+        my $seen = $ec->history->counter->get;
         $self->out("1..$seen\n");
     }
     elsif( my $expected = $plan->asserts_expected ) {
@@ -340,7 +322,7 @@ sub output_ending_commentary {
 
     my $plan = $self->plan;
 
-    my $tests_run = $self->counter->get;
+    my $tests_run = $ec->history->counter->get;
     my $w_test    = _inflect("test", $tests_run);
 
     my $tests_failed   = $ec->history->fail_count;
@@ -441,7 +423,7 @@ has test_is_todo =>
 
 sub handle_result {
     my $self  = shift;
-    my $result = shift;
+    my ($result, $ec) = @_;
 
     # FIXME: there is a lot more detail in the 
     # result object that I ought to do deal with.
@@ -450,9 +432,7 @@ sub handle_result {
     $out .= "not " if !$result->literal_pass;
     $out .= "ok";
 
-    my $counter = $self->counter;
-    lock $counter;
-    my $num = $result->test_number || $counter->increment;
+    my $num = $result->test_number || $ec->history->counter->get;
     $out .= " ".$num if $self->use_numbers;
 
     my $name = $result->name;
