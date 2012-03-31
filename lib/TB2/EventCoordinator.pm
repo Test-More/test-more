@@ -218,6 +218,10 @@ sub post_event {
     my $self  = shift;
     my $event = shift;
 
+    #prevent counter corruption between multiple threads
+    my $history = $self->history;
+    lock $history;
+
     $event = shared_clone($event);
     for my $handler ($self->all_handlers) {
         $handler->accept_event($event, $self);

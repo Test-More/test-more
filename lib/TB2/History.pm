@@ -4,9 +4,11 @@ use Carp;
 use TB2::Mouse;
 use TB2::Types;
 use TB2::StackBuilder;
+use TB2::threads::shared;
 
 with 'TB2::EventHandler',
-     'TB2::CanTry';
+     'TB2::CanTry',
+     'TB2::CanLoad';
 
 our $VERSION = '1.005000_004';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -188,6 +190,9 @@ buildstack results => 'TB2::Result::Base';
 sub handle_result    {
     my $self = shift;
     my $result = shift;
+
+    my $counter = $self->counter;
+    $counter->increment;
 
     $self->results_push($result);
     $self->events_push($result);
@@ -406,6 +411,29 @@ sub done_testing {
     return 0 if $self->abort;
     return $self->test_start && $self->test_end;
 }
+
+
+
+
+=head3 counter
+
+    my $counter = $formatter->counter;
+    $formatter->counter($counter);
+
+Gets/sets the TB2::Counter for this formatter keeping track of
+the test number.
+
+=cut
+
+has counter => 
+   is           => 'rw',
+   isa          => 'TB2::Counter',
+   trigger      => sub { shared_clone($_[1]) },
+   default => sub {
+      $_[0]->load('TB2::Counter');
+      return TB2::Counter->new;
+   },
+;
 
 
 =head3 plan
