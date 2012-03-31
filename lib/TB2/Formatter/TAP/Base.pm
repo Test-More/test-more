@@ -264,7 +264,7 @@ sub _output_plan {
         $self->out($out);
     }
     elsif( $plan->no_plan ) {
-        my $seen = $ec->history->counter->get;
+        my $seen = $ec->history->counter;
         $self->out("1..$seen\n");
     }
     elsif( my $expected = $plan->asserts_expected ) {
@@ -322,7 +322,7 @@ sub output_ending_commentary {
 
     my $plan = $self->plan;
 
-    my $tests_run = $ec->history->counter->get;
+    my $tests_run = $ec->history->counter;
     my $w_test    = _inflect("test", $tests_run);
 
     my $tests_failed   = $ec->history->fail_count;
@@ -432,7 +432,7 @@ sub handle_result {
     $out .= "not " if !$result->literal_pass;
     $out .= "ok";
 
-    my $num = $result->test_number || $ec->history->counter->get;
+    my $num = $result->test_number || $ec->history->counter;
     $out .= " ".$num if $self->use_numbers;
 
     my $name = $result->name;
