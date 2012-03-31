@@ -325,16 +325,8 @@ sub history {
 
 sub counter {
     my $self = shift;
-
-    my $counter = $self->try(sub { $self->formatter->counter; });
-    return $counter if $counter;
-
-    # Fake a counter from the history object.
-    # This will not remember changes to the current_test()
-    $counter = TB2::Counter->new;
-    $counter->set($self->history->results_count);
-
-    return $counter;
+    
+    return $self->history->counter;
 }
 
 =item B<object_id>
