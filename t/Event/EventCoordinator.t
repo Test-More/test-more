@@ -168,4 +168,54 @@ note "posting events to specific handlers"; {
     is_deeply $handler->others, [[$comment, $ec], [$result, $ec]];
 }
 
+note "early handler that replace his history"; {
+    {
+        package My::Handler::HistoryModifier;
+        
+        use TB2::Mouse;
+        with "TB2::EventHandler";
+
+        has new_history => (
+            is  => 'ro',
+            isa => 'TB2::History',
+            default => sub { TB2::History->new }
+        );
+
+        sub handle_event {
+            my($self, $event, $ec) = @_;
+            $ec->history($self->new_history);
+        }
+    }
+
+    {
+        package My::Handler::HistoryChecker;
+        
+        use TB2::Mouse;
+        with "TB2::EventHandler";
+
+        has history => (
+            is  => 'ro',
+            isa => 'TB2::History',
+        );
+
+        sub handle_event {
+            my($self, $event, $ec) = @_;
+            ::is $ec->history, $self->history, "history can be changed in the middle of event processing";
+        }
+    }
+
+    my $history_modifier = My::Handler::HistoryModifier->new;
+    my $history_checker  = My::Handler::HistoryChecker->new(
+        history => $history_modifier->new_history
+    );
+
+    my $ec = $CLASS->new(
+        early_handlers  => [$history_modifier],
+        formatters      => [],
+        late_handlers   => [$history_checker],
+    );
+
+    $ec->post_event(TB2::Event::TestStart->new);
+}
+
 done_testing();

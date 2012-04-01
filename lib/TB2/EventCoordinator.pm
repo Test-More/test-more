@@ -223,9 +223,10 @@ sub post_event {
     lock $history;
 
     $event = shared_clone($event);
-    for my $handler ($self->all_handlers) {
-        $handler->accept_event($event, $self);
-    }
+    $_->accept_event($event, $self) for @{$self->early_handlers};
+    $_->accept_event($event, $self) for   $self->history;
+    $_->accept_event($event, $self) for @{$self->formatters};
+    $_->accept_event($event, $self) for @{$self->late_handlers};
 }
 
 
