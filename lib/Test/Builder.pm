@@ -1811,6 +1811,20 @@ sub summary {
     return map { $_->is_fail ? 0 : 1 } @{$self->history->results};
 }
 
+=item B<name>
+
+    my $name = $Test->name;
+
+Returns the name of the current subtest or test.
+
+=cut
+
+sub name {
+    my $self = shift;
+
+    my $name = $self->in_subtest ? $self->history->subtest->name : $0;
+}
+
 =item B<details>
 
     my @tests = $Test->details;
