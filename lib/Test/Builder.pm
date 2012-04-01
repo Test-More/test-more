@@ -946,8 +946,8 @@ Works just like Test::More's C<cmp_ok()>.
 
 my %numeric_cmps = map { ( $_, 1 ) } ( "<", "<=", ">", ">=", "==", "!=", "<=>" );
 
-# Bad, these are not comparison operators. Should we include more?
-my %cmp_ok_bl = map { ( $_, 1 ) } ( "=", "+=", ".=", "x=", "^=", "|=", "||=", "&&=", "...");
+# A list of non-comparison operators that may be easily typo'd
+my %cmp_ok_bl = map { ( $_, 1 ) } ( "=" );
 
 sub cmp_ok {
     my( $self, $got, $type, $expect, $name ) = @_;
