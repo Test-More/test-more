@@ -946,8 +946,15 @@ Works just like Test::More's C<cmp_ok()>.
 
 my %numeric_cmps = map { ( $_, 1 ) } ( "<", "<=", ">", ">=", "==", "!=", "<=>" );
 
+# A list of non-comparison operators that may be easily typo'd
+my %cmp_ok_bl = map { ( $_, 1 ) } ( "=" );
+
 sub cmp_ok {
     my( $self, $got, $type, $expect, $name ) = @_;
+
+    if ($cmp_ok_bl{$type}) {
+        $self->croak("$type is not a valid comparison operator in cmp_ok()");
+    }
 
     my $test;
     my $error;
