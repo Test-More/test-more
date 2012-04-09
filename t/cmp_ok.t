@@ -1,16 +1,9 @@
 #!/usr/bin/perl -w
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = ('../lib', 'lib', '../lib/Test/Simple/t/lib');
-    }
-    else {
-        unshift @INC, 't/lib';
-    }
-}
-
 use strict;
+use warnings;
+
+use lib 't/lib';
 
 require Test::Simple::Catch;
 my($out, $err) = Test::Simple::Catch::caught();
