@@ -440,8 +440,9 @@ sub unlike ($$;$) {
 
   cmp_ok( $got, $op, $expected, $test_name );
 
-Halfway between ok() and is() lies cmp_ok().  This allows you to
-compare two arguments using any binary perl operator.
+Halfway between C<ok()> and C<is()> lies C<cmp_ok()>.  This allows you
+to compare two arguments using any binary perl operator.  The test
+passes if the comparison is true and fails otherwise.
 
     # ok( $got eq $expected );
     cmp_ok( $got, 'eq', $expected, 'this eq that' );

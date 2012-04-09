@@ -1,4 +1,9 @@
 0.98_03
+    New Features
+    * cmp_ok() will error when used with something which is not a
+      comparison operator, including =, += and the like.
+      [github 141]
+
     Bug Fixes
     * use_ok() was calling class->import without quoting which could
       cause problems if "class" is also a function.
