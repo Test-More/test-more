@@ -17,10 +17,12 @@ sub try_cmp_ok {
     my($left, $cmp, $right, $error) = @_;
     
     my %expect;
-    $expect{ok}    = eval "\$left $cmp \$right";
-    $expect{error} = $error;
-
-    if (!$expect{error}) {
+    if( $error ) {
+        $expect{ok} = 0;
+        $expect{error} = $error;
+    }
+    else {
+        $expect{ok}    = eval "\$left $cmp \$right";
         $expect{error} = $@;
         $expect{error} =~ s/ at .*\n?//;
     }
@@ -72,7 +74,8 @@ my @Tests = (
     [$ify, 'eq', "bar"],
     [$ify, "==", 23],
 
-    [1, "=", 0, "= is not a valid comparison operator in cmp_ok()"],
+    [1, "=", 0,  "= is not a valid comparison operator in cmp_ok()"],
+    [1, "+=", 0, "+= is not a valid comparison operator in cmp_ok()"],
 );
 
 plan tests => scalar @Tests;
