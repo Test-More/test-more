@@ -7,6 +7,8 @@ See README and version control log for Test::Builder2 changes.
       [github #268] [github #266]
     * Restored the behavior of a fork, it will not issue its own
       plan, making testing with fork easier.
+    * Test::Builder->name() has been restored. [github #220]
+      (Matthew Horsfall)
 
     Incompatible Changes with previous alphas
     * TB2::Counter has been removed [github 119]
