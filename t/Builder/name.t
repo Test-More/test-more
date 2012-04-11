@@ -6,10 +6,7 @@ use warnings;
 use lib 't/lib';
 use Test::Builder::NoOutput;
 
-use Test::More;
-
-# Formatting may change if we're running under Test::Harness.
-local $ENV{HARNESS_ACTIVE} = 0;
+BEGIN { require 't/test.pl' }
 
 note "name test"; {
 #line 16
