@@ -154,8 +154,7 @@ sub subtest_handler {
     my $event = shift;
 
     my $subhistory = $self->new(
-        subtest_depth   => $event->depth,
-        is_subtest      => 1
+        subtest => $event,
     );
 
     return $subhistory;
@@ -471,6 +470,18 @@ has test_end =>
   does          => 'TB2::Event';
 
 
+=head3 subtest
+
+    my $subtest = $history->subtest;
+
+Returns the current C<subtest> event for this object, if there is one.
+
+=cut
+
+has subtest =>
+  is            => 'rw',
+  does          => 'TB2::Event';
+
 =head3 is_subtest
 
     my $is_subtest = $history->is_subtest;
@@ -479,10 +490,11 @@ Returns whether this $history represents a subtest.
 
 =cut
 
-has is_subtest =>
-  is            => 'ro',
-  default       => 0;
+sub is_subtest {
+    my $self = shift;
 
+    return $self->subtest ? 1 : 0;
+}
 
 =head3 subtest_depth
 
@@ -495,11 +507,11 @@ nested is 2 and so on.
 
 =cut
 
-has subtest_depth =>
-  is            => 'rw',
-  isa           => 'TB2::Positive_Int',
-  default       => 0;
+sub subtest_depth {
+    my $self = shift;
 
+    return $self->subtest ? $self->subtest->depth : 0;
+}    
 
 =head3 subtest_start
 
