@@ -15,6 +15,7 @@ sub AUTOLOAD {
     return __PACKAGE__->new;
 }
 
+sub DESTROY {}
 
 =head1 NAME
 
