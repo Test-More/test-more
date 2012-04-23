@@ -2,7 +2,7 @@ package Test::Builder::Tester;
 
 use TB2::Mouse;
 BEGIN {
-    our $VERSION = "1.23_04";
+    our $VERSION = "1.24_004";
 
     extends 'Test::Builder::Module';
     with 'TB2::CanLoad';
