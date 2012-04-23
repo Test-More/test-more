@@ -32,9 +32,6 @@ my @Modules = qw(
 # Modules which are known to be broken
 my %Broken = map { $_ => 1 } (
     'Test::Class',
-    'Test::Tester',       # rt.cpan.org 72707
-    'Test::NoWarnings',   # because of Test::Tester
-    'Test::Deep',         # because of Test::Tester
 );
 
 # Have to do it here because CPAN chdirs.
@@ -45,7 +42,9 @@ TODO: for my $name (@ARGV ? @ARGV : @Modules) {
     local $ENV{PERL5LIB} = $perl5lib;
 
     my $module = CPAN::Shell->expand("Module", $name);
+    $module->make;
     $module->test;
-    ok( !$module->distribution->{make_test}->failed, $name );
+    my $test_result = $module->distribution->{make_test};
+    ok( $test_result && !$test_result->failed, $name );
 }
 done_testing();
