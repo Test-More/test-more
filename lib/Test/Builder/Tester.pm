@@ -511,7 +511,7 @@ sub complaint {
     my $self   = shift;
     my $type   = $self->type;
     my $got    = $self->got;
-    my $wanted = join "\n", @{ $self->wanted };
+    my $wanted = join '', @{ $self->wanted };
 
     # are we running in colour mode?
     if(Test::Builder::Tester::color) {
