@@ -49,7 +49,6 @@ Test::More - yet another framework for writing test scripts
   # or
   use Test::More;   # see done_testing()
 
-  BEGIN { use_ok( 'Some::Module' ); }
   require_ok( 'Some::Module' );
 
   # Various ways to say "ok"
@@ -782,21 +781,101 @@ sub fail (;$) {
 
 =head2 Module tests
 
-You usually want to test if the module you're testing loads ok, rather
-than just vomiting if its load fails.  For such purposes we have
-C<use_ok> and C<require_ok>.
+Sometimes you want to test if a module, or a list of modules, can
+successfully load.  For example, you'll often want a first test which
+simply loads all the modules in the distribution to make sure they
+work before going on to do more complicated testing.
+
+For such purposes we have C<use_ok> and C<require_ok>.
 
 =over 4
+
+=item B<require_ok>
+
+   require_ok($module);
+   require_ok($file);
+
+Tries to C<require> the given $module or $file.  If it loads
+successfully, the test will pass.  Otherwise it fails and displays the
+load error.
+
+C<require_ok> will guess whether the input is a module name or a
+filename.
+
+No exception will be thrown if the load fails.
+
+    # require Some::Module
+    require_ok "Some::Module";
+
+    # require "Some/File.pl";
+    require_ok "Some/File.pl";
+
+    # stop testing if any of your modules will not load
+    for my $module (@module) {
+        require_ok $module or BAIL_OUT "Can't load $module";
+    }
+
+=cut
+
+sub require_ok ($) {
+    my($module) = shift;
+    my $tb = Test::More->builder;
+
+    my $pack = caller;
+
+    # Try to determine if we've been given a module name or file.
+    # Module names must be barewords, files not.
+    $module = qq['$module'] unless _is_module_name($module);
+
+    my $code = <<REQUIRE;
+package $pack;
+require $module;
+1;
+REQUIRE
+
+    my( $eval_result, $eval_error ) = _eval($code);
+    my $ok = $tb->ok( $eval_result, "require $module;" );
+
+    unless($ok) {
+        chomp $eval_error;
+        $tb->diag(<<DIAGNOSTIC);
+    Tried to require '$module'.
+    Error:  $eval_error
+DIAGNOSTIC
+
+    }
+
+    return $ok;
+}
+
+sub _is_module_name {
+    my $module = shift;
+
+    # Module names start with a letter.
+    # End with an alphanumeric.
+    # The rest is an alphanumeric or ::
+    $module =~ s/\b::\b//g;
+
+    return $module =~ /^[a-zA-Z]\w*$/ ? 1 : 0;
+}
+
 
 =item B<use_ok>
 
    BEGIN { use_ok($module); }
    BEGIN { use_ok($module, @imports); }
 
-These simply use the given $module and test to make sure the load
-happened ok.  It's recommended that you run use_ok() inside a BEGIN
-block so its functions are exported at compile-time and prototypes are
-properly honored.
+Like C<require_ok>, but it will C<use> the $module in question and
+only loads modules, not files.
+
+If you just want to test a module can be loaded, use C<require_ok>.
+
+If you just want to load a module in a test, we recommend simply using
+C<use> directly.  It will cause the test to stop.
+
+It's recommended that you run use_ok() inside a BEGIN block so its
+functions are exported at compile-time and prototypes are properly
+honored.
 
 If @imports are given, they are passed through to the use.  So this:
 
@@ -897,56 +976,6 @@ sub _eval {
     return( $eval_result, $eval_error );
 }
 
-=item B<require_ok>
-
-   require_ok($module);
-   require_ok($file);
-
-Like use_ok(), except it requires the $module or $file.
-
-=cut
-
-sub require_ok ($) {
-    my($module) = shift;
-    my $tb = Test::More->builder;
-
-    my $pack = caller;
-
-    # Try to determine if we've been given a module name or file.
-    # Module names must be barewords, files not.
-    $module = qq['$module'] unless _is_module_name($module);
-
-    my $code = <<REQUIRE;
-package $pack;
-require $module;
-1;
-REQUIRE
-
-    my( $eval_result, $eval_error ) = _eval($code);
-    my $ok = $tb->ok( $eval_result, "require $module;" );
-
-    unless($ok) {
-        chomp $eval_error;
-        $tb->diag(<<DIAGNOSTIC);
-    Tried to require '$module'.
-    Error:  $eval_error
-DIAGNOSTIC
-
-    }
-
-    return $ok;
-}
-
-sub _is_module_name {
-    my $module = shift;
-
-    # Module names start with a letter.
-    # End with an alphanumeric.
-    # The rest is an alphanumeric or ::
-    $module =~ s/\b::\b//g;
-
-    return $module =~ /^[a-zA-Z]\w*$/ ? 1 : 0;
-}
 
 =back
 
