@@ -237,6 +237,9 @@ sub subtest {
         $self->croak("subtest()'s second argument must be a code ref");
     }
 
+    # Add subtest note for clarification of starting point
+    $self->note("Subtest: $name");
+    
     # Turn the child into the parent so anyone who has stored a copy of
     # the Test::Builder singleton will get the child.
     my $error;
