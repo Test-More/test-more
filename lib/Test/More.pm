@@ -49,7 +49,6 @@ Test::More - yet another framework for writing test scripts
   # or
   use Test::More;   # see done_testing()
 
-  BEGIN { use_ok( 'Some::Module' ); }
   require_ok( 'Some::Module' );
 
   # Various ways to say "ok"
@@ -448,8 +447,9 @@ sub unlike ($$;$) {
 
   cmp_ok( $got, $op, $expected, $test_name );
 
-Halfway between C<ok()> and C<is()> lies C<cmp_ok()>.  This allows you to
-compare two arguments using any binary perl operator.
+Halfway between C<ok()> and C<is()> lies C<cmp_ok()>.  This allows you
+to compare two arguments using any binary perl operator.  The test
+passes if the comparison is true and fails otherwise.
 
     # ok( $got eq $expected );
     cmp_ok( $got, 'eq', $expected, 'this eq that' );
@@ -789,138 +789,39 @@ sub fail (;$) {
 
 =head2 Module tests
 
-You usually want to test if the module you're testing loads ok, rather
-than just vomiting if its load fails.  For such purposes we have
-C<use_ok> and C<require_ok>.
+Sometimes you want to test if a module, or a list of modules, can
+successfully load.  For example, you'll often want a first test which
+simply loads all the modules in the distribution to make sure they
+work before going on to do more complicated testing.
+
+For such purposes we have C<use_ok> and C<require_ok>.
 
 =over 4
-
-=item B<use_ok>
-
-   BEGIN { use_ok($module); }
-   BEGIN { use_ok($module, @imports); }
-
-These simply use the given C<$module> and test to make sure the load
-happened ok.  It's recommended that you run C<use_ok()> inside a C<BEGIN>
-block so its functions are exported at compile-time and prototypes are
-properly honored.
-
-If C<@imports> are given, they are passed through to the use.  So this:
-
-   BEGIN { use_ok('Some::Module', qw(foo bar)) }
-
-is like doing this:
-
-   use Some::Module qw(foo bar);
-
-Version numbers can be checked like so:
-
-   # Just like "use Some::Module 1.02"
-   BEGIN { use_ok('Some::Module', 1.02) }
-
-Don't try to do this:
-
-   BEGIN {
-       use_ok('Some::Module');
-
-       ...some code that depends on the use...
-       ...happening at compile time...
-   }
-
-because the notion of "compile-time" is relative.  Instead, you want:
-
-  BEGIN { use_ok('Some::Module') }
-  BEGIN { ...some code that depends on the use... }
-
-If you want the equivalent of C<use Foo ()>, use a module but not
-import anything, use C<require_ok>.
-
-  BEGIN { require_ok "Foo" }
-
-Lexical effects will occur as usual.  For example, this will turn on strictures.
-
-  BEGIN { use_ok "strict"; }
-
-=cut
-
-sub use_ok ($;@) {
-    my( $module, @imports ) = @_;
-    @imports = () unless @imports;
-    my $tb = Test::More->builder;
-
-    my( $pack, $filename, $line ) = caller;
-
-    my $f = $filename;
-    $f =~ y/\n\r/_/; # so it doesn't run off the "#line $line $f" line
-
-    my $version;
-    if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
-        # probably a version check
-        $version = shift @imports;
-    }
-
-    my $version_check = defined $version ? qq{$module->VERSION($version)} : "";
-    my $code = <<"USE";
-package $pack;
-# Work around [perl #70151]
-\$^H = \${\$args[1]};
-%^H = %{\$args[2]};
-#line $line $f
-require $module; $version_check; '$module'->import(\@{\$args[0]});
-\${\$args[1]} = \$^H;
-%{\$args[2]} = %^H;
-1;
-USE
-
-    my $hints = $^H;
-    my %hints = %^H;
-    my( $eval_result, $eval_error )
-         = _eval( $code, \(@imports, $hints, %hints) );
-    my $ok = $tb->ok( $eval_result, "use $module;" );
-
-    if( $ok ) {
-        $^H = $hints;
-        %^H = %hints;
-    }
-
-    unless($ok) {
-        chomp $eval_error;
-        $@ =~ s{^BEGIN failed--compilation aborted at .*$}
-                {BEGIN failed--compilation aborted at $filename line $line.}m;
-        $tb->diag(<<DIAGNOSTIC);
-    Tried to use '$module'.
-    Error:  $eval_error
-DIAGNOSTIC
-
-    }
-
-    return $ok;
-}
-
-sub _eval {
-    my( $code, @args ) = @_;
-
-    # Work around oddities surrounding resetting of $@ by immediately
-    # storing it.
-    my( $sigdie, $eval_result, $eval_error );
-    {
-        local( $@, $!, $SIG{__DIE__} );    # isolate eval
-        $eval_result = eval $code;              ## no critic (BuiltinFunctions::ProhibitStringyEval)
-        $eval_error  = $@;
-        $sigdie      = $SIG{__DIE__} || undef;
-    }
-    # make sure that $code got a chance to set $SIG{__DIE__}
-    $SIG{__DIE__} = $sigdie if defined $sigdie;
-
-    return( $eval_result, $eval_error );
-}
 
 =item B<require_ok>
 
    require_ok($module);
    require_ok($file);
 
-Like C<use_ok()>, except it requires the C<$module> or C<$file>.
+Tries to C<require> the given $module or $file.  If it loads
+successfully, the test will pass.  Otherwise it fails and displays the
+load error.
+
+C<require_ok> will guess whether the input is a module name or a
+filename.
+
+No exception will be thrown if the load fails.
+
+    # require Some::Module
+    require_ok "Some::Module";
+
+    # require "Some/File.pl";
+    require_ok "Some/File.pl";
+
+    # stop testing if any of your modules will not load
+    for my $module (@module) {
+        require_ok $module or BAIL_OUT "Can't load $module";
+    }
 
 =cut
 
@@ -965,6 +866,124 @@ sub _is_module_name {
 
     return $module =~ /^[a-zA-Z]\w*$/ ? 1 : 0;
 }
+
+
+=item B<use_ok>
+
+   BEGIN { use_ok($module); }
+   BEGIN { use_ok($module, @imports); }
+
+Like C<require_ok>, but it will C<use> the $module in question and
+only loads modules, not files.
+
+If you just want to test a module can be loaded, use C<require_ok>.
+
+If you just want to load a module in a test, we recommend simply using
+C<use> directly.  It will cause the test to stop.
+
+It's recommended that you run C<use_ok()> inside a C<BEGIN> block so its
+functions are exported at compile-time and prototypes are properly
+honored.
+
+If C<@imports> are given, they are passed through to the use.  So this:
+
+   BEGIN { use_ok('Some::Module', qw(foo bar)) }
+
+is like doing this:
+
+   use Some::Module qw(foo bar);
+
+Version numbers can be checked like so:
+
+   # Just like "use Some::Module 1.02"
+   BEGIN { use_ok('Some::Module', 1.02) }
+
+Don't try to do this:
+
+   BEGIN {
+       use_ok('Some::Module');
+
+       ...some code that depends on the use...
+       ...happening at compile time...
+   }
+
+because the notion of "compile-time" is relative.  Instead, you want:
+
+  BEGIN { use_ok('Some::Module') }
+  BEGIN { ...some code that depends on the use... }
+
+If you want the equivalent of C<use Foo ()>, use a module but not
+import anything, use C<require_ok>.
+
+  BEGIN { require_ok "Foo" }
+
+=cut
+
+sub use_ok ($;@) {
+    my( $module, @imports ) = @_;
+    @imports = () unless @imports;
+    my $tb = Test::More->builder;
+
+    my( $pack, $filename, $line ) = caller;
+    $filename =~ y/\n\r/_/; # so it doesn't run off the "#line $line $f" line
+
+    my $code;
+    if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
+        # probably a version check.  Perl needs to see the bare number
+        # for it to work with non-Exporter based modules.
+        $code = <<USE;
+package $pack;
+
+#line $line $filename
+use $module $imports[0];
+1;
+USE
+    }
+    else {
+        $code = <<USE;
+package $pack;
+
+#line $line $filename
+use $module \@{\$args[0]};
+1;
+USE
+    }
+
+    my( $eval_result, $eval_error ) = _eval( $code, \@imports );
+    my $ok = $tb->ok( $eval_result, "use $module;" );
+
+    unless($ok) {
+        chomp $eval_error;
+        $@ =~ s{^BEGIN failed--compilation aborted at .*$}
+                {BEGIN failed--compilation aborted at $filename line $line.}m;
+        $tb->diag(<<DIAGNOSTIC);
+    Tried to use '$module'.
+    Error:  $eval_error
+DIAGNOSTIC
+
+    }
+
+    return $ok;
+}
+
+sub _eval {
+    my( $code, @args ) = @_;
+
+    # Work around oddities surrounding resetting of $@ by immediately
+    # storing it.
+    my( $sigdie, $eval_result, $eval_error );
+    {
+        local( $@, $!, $SIG{__DIE__} );    # isolate eval
+        $eval_result = eval $code;              ## no critic (BuiltinFunctions::ProhibitStringyEval)
+        $eval_error  = $@;
+        $sigdie      = $SIG{__DIE__} || undef;
+    }
+    # make sure that $code got a chance to set $SIG{__DIE__}
+    $SIG{__DIE__} = $sigdie if defined $sigdie;
+
+    return( $eval_result, $eval_error );
+}
+
 
 =back
 

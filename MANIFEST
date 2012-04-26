@@ -311,7 +311,6 @@ t/true_value.t
 t/Types/int.t
 t/undef.t
 t/use_ok.t
-t/use_ok_leaking.t
 t/useing.t
 t/utf8.t
 t/versions.t

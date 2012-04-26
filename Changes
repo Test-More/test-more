@@ -1,6 +1,11 @@
 See README and version control log for Test::Builder2 changes.
 
 1.005000_005
+    New Features
+    * cmp_ok() will error when used with something which is not a
+      comparison operator, including =, += and the like.
+      [github 141]
+
     Bug Fixes
     * Using a reference as a test name works again.  [github #264]
     * Protected against Test::More accidentally overwriting $!
@@ -13,6 +18,10 @@ See README and version control log for Test::Builder2 changes.
       [github #280] (Peter Rabbitson)
     * Threads work on 5.12 and 5.10 again. (Peter Rabbitson)
 
+    Doc Fixes
+    * use_ok() has been discouraged and de-emphasized as a general
+      replacement for `use` in tests. [github #288]
+
     Incompatible Changes with previous alphas
     * TB2::Counter has been removed [github 119]
     * The test counter has been moved from the TAP formatter
@@ -21,6 +30,9 @@ See README and version control log for Test::Builder2 changes.
       TB2::EventCoordinator, but delegates most EC methods.  The isa/can
       trickery caused threading issues. [github 291]
     * TB2::TestState->current_coordinator is now TB2::TestState->ec.
+    * use_ok() will no longer apply lexical pragams.  The incompatibilities
+      and extra complexity is not worth the marginal use.
+      [github #287]
 
 
 1.005000_004  Sun Mar 25 15:01:49 BST 2012
@@ -237,9 +249,23 @@ See README and version control log for Test::Builder2 changes.
 
 
 0.98_03
+    New Features
+    * cmp_ok() will error when used with something which is not a
+      comparison operator, including =, += and the like.
+      [github 141]
+
     Bug Fixes
     * use_ok() was calling class->import without quoting which could
       cause problems if "class" is also a function.
+
+    Doc Fixes
+    * use_ok() has been discouraged and de-emphasized as a general
+      replacement for `use` in tests. [github #288]
+
+    Incompatible Changes With Previous Alphas
+    * use_ok() will no longer apply lexical pragams.  The incompatibilities
+      and extra complexity is not worth the marginal use.
+      [github #287]
 
 
 0.98_02  Thu Nov 24 01:13:53 PST 2011
