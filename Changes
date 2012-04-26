@@ -11,6 +11,7 @@ See README and version control log for Test::Builder2 changes.
       (Matthew Horsfall)
     * TB2::BlackHole no longer tries to AUTOLOAD its destructor.
       [github #280] (Peter Rabbitson)
+    * Threads work on 5.12 again. (Peter Rabbitson)
 
     Incompatible Changes with previous alphas
     * TB2::Counter has been removed [github 119]
