@@ -9,6 +9,8 @@ See README and version control log for Test::Builder2 changes.
       plan, making testing with fork easier.
     * Test::Builder->name() has been restored. [github #220]
       (Matthew Horsfall)
+    * TB2::BlackHole no longer tries to AUTOLOAD its destructor.
+      [github #280] (Peter Rabbitson)
 
     Incompatible Changes with previous alphas
     * TB2::Counter has been removed [github 119]
