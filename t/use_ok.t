@@ -67,26 +67,6 @@ note "Signals are preserved"; {
 }
 
 
-note "strict works"; {
-    no strict;
-
-    {
-        BEGIN { use_ok 'strict' }
-        ok !eval { ()=@{"!#%^"}; 1 }, 'use_ok with pragma';
-    }
-
-    ok eval { ()=@{"!#%^"}; 1 }, 'pragmata enabled by use_ok are lexical'; 
-}
-
-
-note "strict works with a version check"; {
-    no strict;
-
-    BEGIN { use_ok 'strict', 1 }
-    ok !eval { ()=@{"!#%^"}; 1 }, 'use_ok with pragma and version';
-}
-
-
 note "Line numbers preserved"; {
     my $package = "that_cares_about_line_numbers";
 
