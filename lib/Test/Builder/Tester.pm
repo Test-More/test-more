@@ -354,7 +354,7 @@ from L<Test::Builder::Module>.
 For example...
 
     # Import all the usual functions, plus color
-    use Test::Builder::Tester import => ['color', ':DEFAULT'];
+    use Test::Builder::Tester import => [':DEFAULT', 'color'];
 
 =over 4
 

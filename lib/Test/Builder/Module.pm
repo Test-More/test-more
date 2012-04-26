@@ -4,8 +4,10 @@ use strict;
 
 use Test::Builder 0.98;
 
-require Exporter;
-our @ISA = qw(Exporter);
+BEGIN {
+    require Exporter;
+    our @ISA = qw(Exporter);
+}
 
 our $VERSION = '1.005000_004';
 $VERSION = eval $VERSION;      ## no critic (BuiltinFunctions::ProhibitStringyEval)

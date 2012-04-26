@@ -11,7 +11,7 @@ use lib 't/lib';
 use Test::More;
 
 use Test::Builder;
-use Test::Builder::Tester import => ['change_formatter_class', ':DEFAULT'];
+use Test::Builder::Tester import => [':DEFAULT', 'change_formatter_class'];
 change_formatter_class("TB2::Formatter::TAP");
 
 plan tests => 5;

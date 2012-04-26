@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use Test::Builder::Tester tests => 1, import => ['change_formatter_class', ':DEFAULT'];
+use Test::Builder::Tester tests => 1, import => [':DEFAULT', 'change_formatter_class'];
 use Test::More;
 
 note "change_formatter_class"; {

@@ -27,7 +27,7 @@ note "optional import"; {
 
 note "default import"; {
     package Foo3;
-    use Test::Builder::Tester import => ['color', ':DEFAULT'];
+    use Test::Builder::Tester import => [':DEFAULT', 'color'];
 
     ::ok defined &color;
     ::ok defined &test_test;
