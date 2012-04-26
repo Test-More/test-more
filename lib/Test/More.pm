@@ -830,10 +830,6 @@ import anything, use C<require_ok>.
 
   BEGIN { require_ok "Foo" }
 
-Lexical effects will occur as usual.  For example, this will turn on strictures.
-
-  BEGIN { use_ok "strict"; }
-
 =cut
 
 sub use_ok ($;@) {
@@ -842,39 +838,32 @@ sub use_ok ($;@) {
     my $tb = Test::More->builder;
 
     my( $pack, $filename, $line ) = caller;
+    $filename =~ y/\n\r/_/; # so it doesn't run off the "#line $line $f" line
 
-    my $f = $filename;
-    $f =~ y/\n\r/_/; # so it doesn't run off the "#line $line $f" line
-
-    my $version;
+    my $code;
     if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
-        # probably a version check
-        $version = shift @imports;
-    }
-
-    my $version_check = defined $version ? qq{$module->VERSION($version)} : "";
-    my $code = <<"USE";
+        # probably a version check.  Perl needs to see the bare number
+        # for it to work with non-Exporter based modules.
+        $code = <<USE;
 package $pack;
-# Work around [perl #70151]
-\$^H = \${\$args[1]};
-%^H = %{\$args[2]};
-#line $line $f
-require $module; $version_check; '$module'->import(\@{\$args[0]});
-\${\$args[1]} = \$^H;
-%{\$args[2]} = %^H;
+
+#line $line $filename
+use $module $imports[0];
 1;
 USE
-
-    my $hints = $^H;
-    my %hints = %^H;
-    my( $eval_result, $eval_error )
-         = _eval( $code, \(@imports, $hints, %hints) );
-    my $ok = $tb->ok( $eval_result, "use $module;" );
-
-    if( $ok ) {
-        $^H = $hints;
-        %^H = %hints;
     }
+    else {
+        $code = <<USE;
+package $pack;
+
+#line $line $filename
+use $module \@{\$args[0]};
+1;
+USE
+    }
+
+    my( $eval_result, $eval_error ) = _eval( $code, \@imports );
+    my $ok = $tb->ok( $eval_result, "use $module;" );
 
     unless($ok) {
         chomp $eval_error;

@@ -8,6 +8,11 @@
     * use_ok() was calling class->import without quoting which could
       cause problems if "class" is also a function.
 
+    Incompatible Changes With Previous Alphas
+    * use_ok() will no longer apply lexical pragams.  The incompatibilities
+      and extra complexity is not worth the marginal use.
+      [github #287]
+
 
 0.98_02  Thu Nov 24 01:13:53 PST 2011
     Bug Fixes
