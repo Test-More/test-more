@@ -1144,8 +1144,45 @@ require TB2::Mouse::Meta::Module; # for the entities of metaclass cache utilitie
 	generate_can_predicate_for(['create_anon_role']           => 'is_a_metarole');
 }
 
+# TEMPORARY!!! The moment rafl ships the pure-perl version (which works all the way
+# back to 5.6.2), we can have gfx pull it into Mouse, and you can re-bundle a higher
+# version
+# http://matrix.cpantesters.org/?dist=Devel-GlobalDestruction-0.04_01
 our $in_global_destruction = 0;
-END{ $in_global_destruction = 1 }
+{
+  my $before_is_installed;
+
+  END {
+    # SpeedyCGI runs END blocks every cycle but somehow keeps object instances
+    # hence lying about it seems reasonable...ish
+    $in_global_destruction = 1 unless $CGI::SpeedyCGI::i_am_speedy;
+  }
+
+  # threads do not execute the global ENDs (it would be stupid). However
+  # one can register a new END via simple string eval within a thread, and
+  # achieve the same result. A logical place to do this would be CLONE, which
+  # is claimed to run in the context of the new thread. However this does
+  # not really seem to be the case - any END evaled in a CLONE is ignored :(
+  # Hence blatantly hooking threads::create
+
+  if ($INC{'threads.pm'}) {
+    my $orig_create = threads->can('create');
+    no warnings 'redefine';
+    *threads::create = sub {
+      { local $@; eval 'END { $in_global_destruction = 1 }' };
+      goto $orig_create;
+    };
+    $before_is_installed = 1;
+  }
+
+  # just in case threads got loaded after us (silly)
+  sub CLONE {
+    unless ($before_is_installed) {
+      require Carp;
+      Carp::croak("You must load the 'threads' module before Test::Builder");
+    }
+  }
+}
 
 # Moose::Util compatible utilities
 

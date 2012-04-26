@@ -251,8 +251,8 @@ sub _ec {
     return $DEFAULT_COORDINATOR_CLASS if !ref $self;
 
     # It doesn't have coordinators
-    my $coordinators = $self->_coordinators;
-    return $DEFAULT_COORDINATOR_CLASS if !$coordinators;
+    my $coordinators = (!$TB2::Mouse::Util::in_global_destruction and $self->_coordinators)
+      or return $DEFAULT_COORDINATOR_CLASS;
 
     my $ec = $coordinators->[-1];
     return defined $ec ? $ec : $DEFAULT_COORDINATOR_CLASS;
