@@ -125,6 +125,7 @@ MAKE
 
         my @perls = qw(
             perl5.8.1
+            perl5.8.5
             perl5.8.8
             perl5.8.9
             perl5.10.0
@@ -137,13 +138,24 @@ MAKE
 
         for my $perl (@perls) {
             if( !`which $perl` ) {
-                print STDERR "Missing $perl";
+                print STDERR "Missing $perl\n";
                 next;
             }
+
+            my $has_threads = `$perl -MConfig -e 'print \$Config{usethreads}'` eq 'define';
+            my $is_58       = $perl =~ /5\.8/;
+
+            if( $is_58 && $has_threads ) {
+                print STDERR "Skipping threaded 5.8 $perl\n";
+                next;
+            }
+
             $make .= sprintf <<'END', $perl;
 	cd $(DISTVNAME) && $(MAKE) clean && %s Makefile.PL && PERL_RELEASING=0 $(MAKE) test $(PASTHRU)
 END
         }
+
+        sleep 1;
 
         # Rebuild so subsequent make commands work
         $make .= <<'END';
