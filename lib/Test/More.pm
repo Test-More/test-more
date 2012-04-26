@@ -49,7 +49,6 @@ Test::More - yet another framework for writing test scripts
   # or
   use Test::More;   # see done_testing()
 
-  BEGIN { use_ok( 'Some::Module' ); }
   require_ok( 'Some::Module' );
 
   # Various ways to say "ok"
@@ -789,9 +788,14 @@ sub fail (;$) {
 
 =head2 Module tests
 
-You usually want to test if the module you're testing loads ok, rather
-than just vomiting if its load fails.  For such purposes we have
-C<use_ok> and C<require_ok>.
+You usually want to test if the module you're testing loads ok. For 
+this, a simple C<use> will work fine and will stop the test if it fails 
+rather than trying to push on. If all you need to do is load a module in
+a test, C<use_ok()> is not necessary, but it is retained for backward 
+compatibility.  If you wish to load another module conditionally, e.g. 
+in order to test how your module interacts with another optional module, 
+or if you have some other reason to load modules at compile-time, you 
+can use C<require_ok()> in the same way as you would use C<require>.
 
 =over 4
 
@@ -803,7 +807,8 @@ C<use_ok> and C<require_ok>.
 These simply use the given C<$module> and test to make sure the load
 happened ok.  It's recommended that you run C<use_ok()> inside a C<BEGIN>
 block so its functions are exported at compile-time and prototypes are
-properly honored.
+properly honored.  B<Note> that Perl's C<use> is recommended instead of 
+C<use_ok()>.
 
 If C<@imports> are given, they are passed through to the use.  So this:
 
@@ -920,7 +925,7 @@ sub _eval {
    require_ok($module);
    require_ok($file);
 
-Like C<use_ok()>, except it requires the C<$module> or C<$file>.
+Like C<use_ok()>, except it C<require>s the C<$module> or C<$file>.
 
 =cut
 
