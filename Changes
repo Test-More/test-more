@@ -11,12 +11,16 @@ See README and version control log for Test::Builder2 changes.
       (Matthew Horsfall)
     * TB2::BlackHole no longer tries to AUTOLOAD its destructor.
       [github #280] (Peter Rabbitson)
-    * Threads work on 5.12 again. (Peter Rabbitson)
+    * Threads work on 5.12 and 5.10 again. (Peter Rabbitson)
 
     Incompatible Changes with previous alphas
     * TB2::Counter has been removed [github 119]
     * The test counter has been moved from the TAP formatter
       into TB2::History [github 190]
+    * TB2::TestState is no longer a complete subclass of
+      TB2::EventCoordinator, but delegates most EC methods.  The isa/can
+      trickery caused threading issues. [github 291]
+    * TB2::TestState->current_coordinator is now TB2::TestState->ec.
 
 
 1.005000_004  Sun Mar 25 15:01:49 BST 2012

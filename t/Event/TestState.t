@@ -47,16 +47,6 @@ note "default"; {
 }
 
 
-note "isa"; {
-    # Test both $class->isa and $object->isa
-    for my $thing ($CLASS, $CLASS->create) {
-        isa_ok $thing, $CLASS;
-        isa_ok $thing, "TB2::EventCoordinator";
-        ok !$thing->isa("Some::Other::Class");
-    }
-}
-
-
 note "can"; {
     # Test both $class->can and $object->can
     for my $thing ($CLASS, $CLASS->create) {
@@ -72,7 +62,7 @@ note "can"; {
 note "push/pop coordinators"; {
     my $state = $CLASS->create;
 
-    my $first_ec  = $state->current_coordinator;
+    my $first_ec  = $state->ec;
     my $second_ec = $state->push_coordinator;
     is $state->history, $second_ec->history;
     isnt $state->history, $first_ec->history;
@@ -90,7 +80,7 @@ note "push our own coordinator"; {
 
     $state->push_coordinator($ec);
 
-    is $state->current_coordinator, $ec;
+    is $state->ec, $ec;
 }
 
 
@@ -108,10 +98,10 @@ note "basic subtest"; {
     );
 
     note "...starting a subtest";
-    my $first_ec = $state->current_coordinator;
+    my $first_ec = $state->ec;
     my $subtest_start = TB2::Event::SubtestStart->new;
     $state->post_event($subtest_start);
-    my $second_ec = $state->current_coordinator;
+    my $second_ec = $state->ec;
 
     isnt $first_ec, $second_ec, "creates a new coordinator";
 
@@ -131,7 +121,7 @@ note "basic subtest"; {
     $state->post_event($subtest_end);
     is $subtest_end->history, $second_history,  "second level history attached to the event";
     is $second_history->event_count, 0,         "  second level did not see the end event";
-    is $state->current_coordinator, $first_ec,  "stack popped";
+    is $state->ec, $first_ec,  "stack popped";
 
     is $first_history->event_count, 2;
     $event = $first_history->events->[1];
@@ -183,7 +173,7 @@ note "nested subtests"; {
     $state->post_event($second_subtest_start);
     is $second_subtest_start->depth, 2;
 
-    my $second_subtest_ec = $state->current_coordinator;
+    my $second_subtest_ec = $state->ec;
 
     my $second_subtest_end = TB2::Event::SubtestEnd->new;
     $state->post_event($second_subtest_end);
@@ -192,7 +182,7 @@ note "nested subtests"; {
     my $second_stream_end = TB2::Event::TestEnd->new;
     $state->post_event($second_stream_end);
 
-    my $first_subtest_ec = $state->current_coordinator;
+    my $first_subtest_ec = $state->ec;
 
     my $first_subtest_end = TB2::Event::SubtestEnd->new;
     $state->post_event($first_subtest_end);

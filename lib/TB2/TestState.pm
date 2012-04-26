@@ -148,13 +148,67 @@ sub make_default {
 Returns an identifier for this object unique to the running process.
 The identifier is fairly simple and easily predictable.
 
-See L<TB2::HasObjectID>
+See L<TB2::HasObjectID> for details.
 
 
 =head2 EventCoordinator methods
 
-TestState delegates to a stack of EventCoordinators.  It does all the
-methods of L<TB2::EventCoordinator>.
+TestState contains a stack of L<TB2::EventCoordinator> objects and
+delegates most of the work to the first event coordinator in the
+stack.
+
+The following TB2::EventCoordinator methods can be called on a
+TB2::TestState object and work exactly the same.
+
+=head3 post_event
+
+=head3 history
+
+=head3 formatters
+
+=head3 early_handlers
+
+=head3 late_handlers
+
+=head3 all_handlers
+
+=head3 add_early_handlers
+
+=head3 add_formatters
+
+=head3 add_late_handlers
+
+=head3 clear_early_handlers
+
+=head3 clear_formatters
+
+=head3 clear_late_handlers
+
+=cut
+
+# post_event has special code handled elsewhere
+my @EC_Methods = qw(
+    history
+    formatters
+    early_handlers
+    late_handlers
+    all_handlers
+    add_early_handlers
+    add_formatters
+    add_late_handlers
+    clear_early_handlers
+    clear_formatters
+    clear_late_handlers
+);
+for my $method (@EC_Methods) {
+    my $code = sub {
+        my $self = shift;
+        $self->ec->$method(@_);
+    };
+
+    no strict 'refs';
+    *{$method} = $code;
+}
 
 
 =head2 Stack management
@@ -197,10 +251,6 @@ sub push_coordinator {
     $ec = shared_clone($ec);
     push @{ $self->_coordinators }, $ec; 
 
-    # Do the delegation every time we add a new coordinator in case it's
-    # a subclass that added methods.
-    $self->_delegate_to_current_coordinator;
-
     return $ec;
 }
 
@@ -227,78 +277,20 @@ sub pop_coordinator {
 }
 
 
-=head3 current_coordinator
+=head3 ec
 
-    my $ec = $state->current_coordinator;
+    my $ec = $state->ec;
 
-Returns the current L<TB2::EventCoordinator> which is being
-delegated to.
+Returns the L<TB2::EventCoordinator> which is currently in control of
+the test.
+
+B<DO NOT> store this object!  The event coordinator in control of the
+test can change over the course of the test.
 
 =cut
 
-sub current_coordinator {
+sub ec {
     $_[0]->_coordinators->[-1];
-}
-
-
-# Find the event coordinator to check with isa/can.
-# Do it carefuly because this might fire during globlal destruction
-# and $self->_coordinators might already be cleaned up.
-sub _ec {
-    my $self = shift;
-
-    # It's a class
-    return $DEFAULT_COORDINATOR_CLASS if !ref $self;
-
-    # It doesn't have coordinators
-    my $coordinators = $self->_coordinators;
-    return $DEFAULT_COORDINATOR_CLASS if !$coordinators;
-
-    my $ec = $coordinators->[-1];
-    return defined $ec ? $ec : $DEFAULT_COORDINATOR_CLASS;
-}
-
-
-# Convince isa() that we act like an EventCoordinator
-sub isa {
-    my($self, $want) = @_;
-
-    my $ec = $self->_ec;
-    return 1 if $ec->isa($want);
-    return $self->SUPER::isa($want);
-}
-
-# Convince can() that we act like an EventCoordinator
-sub can {
-    my($self, $want) = @_;
-
-    my $ec = $self->_ec;
-    return 1 if $ec->can($want);
-    return $self->SUPER::can($want);
-}
-
-
-# Set up delegation to the current coordinator.
-sub _delegate_to_current_coordinator {
-    my $self  = shift;
-
-    my $delegate = $self->_coordinators->[-1];
-    my $meta = $self->meta;
-    foreach my $name( $delegate->meta->get_all_method_names ) {
-        # Check what we can do without the delegate.
-        # And don't redelegate
-        next if $self->SUPER::can($name);
-
-        # Don't delegate private methods
-        next if $name =~ /^_/;
-
-        $meta->add_method($name => sub {
-            my $self = shift;
-            $self->_coordinators->[-1]->$name(@_);
-        });
-    }
-
-    return;
 }
 
 
@@ -316,7 +308,7 @@ sub post_event {
         $self->$code(@_);
     }
     else {
-        $self->_coordinators->[-1]->post_event(@_);
+        $self->ec->post_event(@_);
     }
 }
 
@@ -329,7 +321,7 @@ sub handle_subtest_start {
     # Add nesting information
     $event->depth( $self->_depth + 1 ) unless defined $event->depth;
 
-    my $current_ec = $self->current_coordinator;
+    my $current_ec = $self->ec;
 
     # Post the event to the current level
     $current_ec->post_event(@_);
@@ -365,7 +357,7 @@ sub handle_subtest_end {
     $event->subtest_start( $self->history->subtest_start ) unless $event->subtest_start;
 
     # Post the event to the current level
-    $self->current_coordinator->post_event(@_);
+    $self->ec->post_event(@_);
 
     return;
 }
