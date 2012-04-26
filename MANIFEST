@@ -12,6 +12,7 @@ lib/TB2/AssertStack.pm
 lib/TB2/BlackHole.pm
 lib/TB2/CanDupFilehandles.pm
 lib/TB2/CanLoad.pm
+lib/TB2/CanOpen.pm
 lib/TB2/CanTry.pm
 lib/TB2/Design.pod
 lib/TB2/Event.pm
@@ -112,6 +113,7 @@ t/Builder/is_fh.t
 t/Builder/is_passing.t
 t/Builder/last_test_skipped.t
 t/Builder/maybe_regex.t
+t/Builder/name.t
 t/Builder/no_diag.t
 t/Builder/no_ending.t
 t/Builder/no_formatter.t
@@ -147,6 +149,7 @@ t/Builder2/top.t
 t/c_flag.t
 t/CanDupFilehandles.t
 t/CanLoad.t
+t/CanOpen.t
 t/CanTry.t
 t/circular_data.t
 t/cmp_ok.t
@@ -156,6 +159,7 @@ t/died.t
 t/dont_overwrite_die_handler.t
 t/eq_set.t
 t/Event/Abort.t
+t/Event/change_handler.t
 t/Event/Comment.t
 t/Event/default_formatter_class.t
 t/Event/Event.t
@@ -309,6 +313,7 @@ t/todo_skip_before_plan.t
 t/todo_warnings.t
 t/true_value.t
 t/Types/int.t
+t/Types/stringify.t
 t/undef.t
 t/use_ok.t
 t/useing.t

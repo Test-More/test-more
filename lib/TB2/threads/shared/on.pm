@@ -2,7 +2,7 @@ package TB2::threads::shared::on;
 
 use strict;
 
-our $VERSION = '1.005000_004';
+our $VERSION = '1.005000_005';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 require threads::shared;

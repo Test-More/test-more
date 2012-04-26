@@ -12,7 +12,7 @@ use Exporter;
 our @ISA    = qw(Exporter);
 our @EXPORT = qw(share shared_clone);
 
-our $VERSION = '1.005000_004';
+our $VERSION = '1.005000_005';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 if( $Config{useithreads} && $INC{'threads.pm'} ) {

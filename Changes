@@ -1,6 +1,6 @@
 See README and version control log for Test::Builder2 changes.
 
-1.005000_005
+1.005000_005  Thu Apr 26 15:23:25 PDT 2012
     New Features
     * cmp_ok() will error when used with something which is not a
       comparison operator, including =, += and the like.

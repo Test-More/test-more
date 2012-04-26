@@ -7,7 +7,7 @@ use TB2::Mouse;
 use TB2::Mouse::Util::TypeConstraints qw(enum coerce via from);
 with 'TB2::Event';
 
-our $VERSION = '1.005000_004';
+our $VERSION = '1.005000_005';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

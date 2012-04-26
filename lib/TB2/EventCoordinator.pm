@@ -6,7 +6,7 @@ use TB2::threads::shared;
 
 with 'TB2::CanLoad', 'TB2::HasObjectID';
 
-our $VERSION = '1.005000_004';
+our $VERSION = '1.005000_005';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 my @Types = qw(early_handlers history formatters late_handlers);
