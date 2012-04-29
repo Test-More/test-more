@@ -688,9 +688,10 @@ sub compile_type_constraint{
 	else{
 		$self->{compiled_type_constraint} =  sub{
 			my(@args) = @_;
-			local $_ = $args[0];
-			foreach my $c(@checks){
-				return undef if !$c->(@args);
+			for ($args[0]) {
+				foreach my $c(@checks){
+					return undef if !$c->(@args);
+				}
 			}
 			return 1;
 		};
@@ -1570,8 +1571,7 @@ sub _compiled_type_coercion {
 		   foreach my $pair (@coercions) {
 				#my ($constraint, $converter) = @$pair;
 				if ($pair->[0]->($thing)) {
-				  local $_ = $thing;
-				  return $pair->[1]->($thing);
+				  return $pair->[1]->($thing) for $thing;
 				}
 		   }
 		   return $thing;
@@ -1611,8 +1611,7 @@ sub coerce {
 sub get_message {
 	my ($self, $value) = @_;
 	if ( my $msg = $self->message ) {
-		local $_ = $value;
-		return $msg->($value);
+		return $msg->($value) for $value;
 	}
 	else {
 		if(not defined $value) {

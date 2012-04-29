@@ -1,6 +1,10 @@
 See README and version control log for Test::Builder2 changes.
 
 1.005000_006
+    Bug Fixes
+    * Patched TB2::Mouse to not blow over tied $_ (a local $_ bug).
+      (Father Chrysostomos) [github 293]
+
     Misc
     * Update the resources meta data to point at the correct repository, issues
       mailing list and home page.
