@@ -1742,14 +1742,6 @@ sub current_test {
         my $results = $history->results;
 
         if( $num > @$results ) {
-            # Create a detached test state so we can post events
-            # just to our history
-            # XXX No longer needed with accept_event
-            my $ec = TB2::TestState->create(
-                formatters => [],
-                history    => $history
-            );
-
             my $last_test_number = @$results ? @$results : 0;
             $history->counter($last_test_number);
 
@@ -1761,7 +1753,7 @@ sub current_test {
                     reason      => 'incrementing test number',
                     test_number => $test_number
                 );
-                $ec->post_event( $result );
+                $history->accept_event( $result );
             }
         }
         # If backward, wipe history.  Its their funeral.
