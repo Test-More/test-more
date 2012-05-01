@@ -1737,36 +1737,35 @@ sub current_test {
 
     my $history = $self->history;
 
-    if( defined $num ) {
-        # If the test counter is being pushed forward fill in the details.
-        my $results = $history->results;
+    # Being used as a getter.
+    return $history->counter unless defined $num;
 
-        if( $num > @$results ) {
-            my $last_test_number = @$results ? @$results : 0;
-            $history->counter($last_test_number);
+    # If the test counter is being pushed forward fill in the details.
+    my $results = $history->results;
 
-            for my $test_number ( $last_test_number + 1 .. $num ) {
-                my $result = TB2::Result->new_result(
-                    $self->_file_and_line,
-                    pass        => 1,
-                    directives  => [qw(unknown)],
-                    reason      => 'incrementing test number',
-                    test_number => $test_number
-                );
-                $history->accept_event( $result );
-            }
+    if ( $num > @$results ) {
+        my $last_test_number = @$results ? @$results : 0;
+        $history->counter($last_test_number);
+
+        for my $test_number ( $last_test_number + 1 .. $num ) {
+            my $result = TB2::Result->new_result(
+                $self->_file_and_line,
+                pass        => 1,
+                directives  => [qw(unknown)],
+                reason      => 'incrementing test number',
+                test_number => $test_number
+            );
+            $history->accept_event( $result );
         }
-        # If backward, wipe history.  Its their funeral.
-        elsif( $num < @$results ) {
-            $#{$results} = $num - 1;
-        }
+    }
+    # If backward, wipe history.  Its their funeral.
+    elsif ( $num < @$results ) {
+        $#{$results} = $num - 1;
+    }
 
-        $history->counter($num);
-        return;
-    }
-    else {
-        return $history->counter;
-    }
+    $history->counter($num);
+
+    return;
 }
 
 =item B<is_passing>
