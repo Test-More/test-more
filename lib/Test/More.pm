@@ -33,7 +33,7 @@ our @EXPORT = qw(ok use_ok require_ok
   done_testing
   can_ok isa_ok new_ok
   diag note explain
-  subtest
+  subtest subtest_for subtest_foreach
   BAIL_OUT
 );
 
@@ -742,12 +742,63 @@ subtests are equivalent:
 =cut
 
 sub subtest {
-    my ($name, $subtests) = @_;
-
     my $tb = Test::More->builder;
     return $tb->subtest(@_);
 }
 
+=item B<subtest_for>
+
+=item B<subtest_foreach>
+
+  subtest_for ([qw/a b c d/] => sub { 
+      my ($var) = @_;
+      plan tests => 2;
+
+      pass("This is a subtest using $var");
+      pass("So is this");
+  });
+    
+This is a fancy way of combining a subtest with a for loop.  It's the same
+as:
+
+  for my $var (qw/a b c d/) {
+      subtest $var => sub {
+          plan tests => 2;
+
+          pass("This is a subtest using $var");
+          pass("So is this");
+      }
+  }
+
+Except you don't have to deal with the double-nesting indentation.  (Though,
+you do have to deal with a somewhat different syntax.)
+
+An optional name, in sprintf format, can be tacked on the end of the loop,
+like so:
+
+  subtest_for ([qw/a b c d/] => sub { 
+      my ($var) = @_;
+      plan tests => 2;
+
+      pass("This is a subtest using $var");
+      pass("So is this");
+  } => "subtest for testing alphabet: %s");
+
+This would change the subtest line to:
+
+  subtest sprintf("subtest for testing alphabet: %s", $var) => sub { ... }
+
+Like Perl's counterpart, both subtest_for and subtest_foreach do the same
+thing.
+
+=cut
+
+sub subtest_foreach {
+    my $tb = Test::More->builder;
+    return $tb->subtest_foreach(@_);
+}
+*subtest_for{SUB} = *subtest_foreach{SUB}
+ 
 =item B<pass>
 
 =item B<fail>

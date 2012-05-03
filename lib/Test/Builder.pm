@@ -230,8 +230,7 @@ See documentation of C<subtest> in Test::More.
 =cut
 
 sub subtest {
-    my $self = shift;
-    my($name, $subtests) = @_;
+    my($self, $name, $subtests) = (shift, shift, shift);
 
     if ('CODE' ne ref $subtests) {
         $self->croak("subtest()'s second argument must be a code ref");
@@ -252,12 +251,12 @@ sub subtest {
         _copy($child, $self);
 
         my $run_the_subtests = sub {
-            $subtests->();
+            $subtests->(@_);
             $self->done_testing unless $self->_plan_handled;
             1;
         };
 
-        if( !eval { $run_the_subtests->() } ) {
+        if( !eval { $run_the_subtests->(@_) } ) {
             $error = $@;
         }
     }
@@ -279,6 +278,31 @@ sub subtest {
 
     return $finalize;
 }
+
+=item B<subtest_for>
+
+=item B<subtest_foreach>
+
+    $builder->subtest_for([qw/a b c d/], \&subtests, $name_format);
+    
+See documentation of C<subtest_for> in Test::More.
+
+=cut
+
+sub subtest_foreach {
+    my ($self, $list, $subtests, $name_format) = @_;
+    
+    die "subtest_for/foreach()'s first argument must be an array ref"
+        if ('ARRAY' ne ref $list);
+    die "subtest_for/foreach()'s second argument must be a code ref"
+        if ('CODE' ne ref $subtests);
+        
+    foreach my $var (@$list) {
+        my $name = $name_format||'' ? sprintf($name_format, $var) : $var;
+        $self->subtest($name, $subtests, $var);
+    }
+}
+*subtest_for{SUB} = *subtest_foreach{SUB}
 
 =begin _private
 
