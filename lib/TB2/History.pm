@@ -16,16 +16,14 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 =head1 NAME
 
-TB2::History - Manage the history of test results
+TB2::History - Holds information about the state of the test
 
 =head1 SYNOPSIS
 
     use TB2::History;
 
-    my $history = TB2::History->new;
-    my $ec = TB2::EventCoordinator->create(
-        history => $history
-    );
+    # An EventCoordinator contains a History object by default
+    my $ec = TB2::EventCoordinator->create();
 
     my $pass  = TB2::Result->new_result( pass => 1 );
     $ec->post_event( $pass );
@@ -38,7 +36,20 @@ TB2::History - Manage the history of test results
 
 =head1 DESCRIPTION
 
-This object stores and manages the history of test results.
+TB2::History records information and statistics about the state of the
+test.  It watches and analyses events as they happen.  It is used to
+get information about the state of the test such as has it started,
+has it ended, is it passing, how many tests have run and so on.
+
+The history for a test is usually accessed by going through the
+L<TB2::TestState> C<history> accessor.
+
+=for later
+To save memory it does not, by default, store the complete history of
+all events.
+
+Each subtest gets its own L<TB2::EventCoordinator> and thus its own
+TB2::History object.
 
 It is a L<TB2::EventHandler>.
 
