@@ -3,7 +3,6 @@ package TB2::History;
 use Carp;
 use TB2::Mouse;
 use TB2::Types;
-use TB2::StackBuilder;
 use TB2::threads::shared;
 
 with 'TB2::EventHandler',
@@ -86,20 +85,56 @@ Unless otherwise stated, these are all accessor methods of the form:
 
 =head3 events
 
-A TB2::Stack of events, that include Result objects.
+    my $events = $history->events;
 
-=head3 event_count
-
-Get the count of events that are on the stack.
+An array ref of all events seen.
 
 =cut
 
-buildstack events => 'Any';
+has event_storage =>
+  is            => 'ro',
+  isa           => 'TB2::History::EventStorage',
+  default       => sub {
+      $_[0]->load("TB2::History::EventStorage");
+      return TB2::History::EventStorage->new;
+  };
+
+sub events {
+    my $self = shift;
+    return $self->event_storage->events;
+}
+
+sub results {
+    my $self = shift;
+    return $self->event_storage->results;
+}
+
+
+=head3 event_count
+
+    my $count = $history->event_count;
+
+Get the count of events that have been seen.
+
+=cut
+
+sub event_count {
+    my $self = shift;
+    my $events = $self->events;
+    return scalar @$events;
+}
+
+sub result_count {
+    my $self = shift;
+    my $results = $self->results;
+    return scalar @$results;
+}
+
 sub handle_event {
     my $self = shift;
     my $event = shift;
 
-    $self->events_push($event);
+    $self->event_storage->events_push($event);
 
     return;
 }
@@ -182,35 +217,29 @@ sub handle_set_plan {
     return;
 }
 
-sub event_count  { shift->events_count }
-sub has_events   { shift->events_count > 0 }
+sub has_events   { shift->event_count > 0 }
 
 =head2 Results
 
 =head3 results
-
-A TB2::Stack of Result objects.
 
     # The result of test #4.
     my $result = $history->results->[3];
 
 =cut
 
-buildstack results => 'TB2::Result::Base';
 sub handle_result    {
     my $self = shift;
     my $result = shift;
 
     $self->counter( $self->counter + 1 );
 
-    $self->results_push($result);
-    $self->events_push($result);
+    $self->event_storage->events_push($result);
 
     $self->_update_statistics($result);
 
     return;
 }
-sub result_count     { shift->results_count }
 
 
 =head2 result_count
