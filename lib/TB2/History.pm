@@ -91,12 +91,17 @@ An array ref of all events seen.
 
 =cut
 
+sub event_storage_class {
+    return "TB2::History::EventStorage";
+}
+
 has event_storage =>
   is            => 'ro',
   isa           => 'TB2::History::EventStorage',
   default       => sub {
-      $_[0]->load("TB2::History::EventStorage");
-      return TB2::History::EventStorage->new;
+      my $storage_class = $_[0]->event_storage_class;
+      $_[0]->load($storage_class);
+      return $storage_class->new;
   };
 
 sub events {
