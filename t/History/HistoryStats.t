@@ -49,38 +49,6 @@ note "basic history stats"; {
 }
 
 
-note "merge history stacks"; {
-   my $H1 = new_history;
-   my $ec1 = MyEventCoordinator->new(
-       history => $H1
-   );
-
-   $ec1->post_event($_) for Pass(), Pass(), Pass();
-   is $H1->result_count, 3, q{H1 count};
-
-   my $H2 = new_history;
-   my $ec2 = MyEventCoordinator->new(
-       history => $H2
-   );
-
-   $ec2->post_event($_) for Fail(), Fail(), Fail();
-   is $H2->result_count, 3, q{H2 count};
-
-   $H1->consume($H2);
-   is $H1->result_count, 6, q{H1 consumed H2};
-   is $H1->fail_count, 3 , q{H1 picked up the tests from H2 correctly};
-
-   my $h = new_history;
-   my $ec = MyEventCoordinator->new( history => $h );
-   $ec->post_event($_) for Pass(), Fail();
-
-   $H1->consume( $h ) for 1..10;
-
-   is $H1->result_count, 26, q{consume appends history};
-   
-}
-
-
 note "multiple results with same test number"; {
    my $h = new_history;
    my $ec = MyEventCoordinator->new( history => $h );
