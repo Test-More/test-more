@@ -72,7 +72,10 @@ note "Turn off event storage";
     is $history->event_count, 3;
 
     ok !eval { $history->events; 1 };
+    is $@, sprintf "Events are not stored at %s line %d.\n", __FILE__, __LINE__-1;
+
     ok !eval { $history->results; 1 };
+    is $@, sprintf "Results are not stored at %s line %d.\n", __FILE__, __LINE__-1;
 
     ok !eval { $history->store_events(1) }, "can't turn on storage for an existing object";
 }

@@ -4,6 +4,8 @@ use Carp;
 use TB2::Mouse;
 extends 'TB2::History::EventStorage';
 
+our @CARP_NOT = qw(TB2::History);
+
 
 =head1 NAME
 
