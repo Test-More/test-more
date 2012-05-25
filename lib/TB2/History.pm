@@ -62,6 +62,28 @@ It is a L<TB2::EventHandler>.
 
 Creates a new, unique History object.
 
+new() takes the following options.
+
+=head3 store_events
+
+If true, $history will keep a complete record of all test events
+accessable via L<events> and L<results>.  This will cause memory usage
+to grow over the life of the test.
+
+If false, $history will discard events and only keep a summary of
+events.  L<events> and L<results> will throw an exception if called.
+
+Defaults to true (which will change in a moment).
+
+=cut
+
+has store_events =>
+  is            => 'ro',
+  isa           => 'Bool',
+  default       => 1
+;
+
+
 =head2 Misc
 
 =head3 object_id
@@ -80,7 +102,6 @@ Unless otherwise stated, these are all accessor methods of the form:
     my $value = $history->method;       # get
     $history->method($value);           # set
 
-
 =head2 Events
 
 =head3 events
@@ -92,7 +113,7 @@ An array ref of all events seen.
 =cut
 
 sub event_storage_class {
-    return "TB2::History::EventStorage";
+    return $_[0]->store_events ? "TB2::History::EventStorage" : "TB2::History::NoEventStorage";
 }
 
 has event_storage =>
@@ -123,23 +144,22 @@ Get the count of events that have been seen.
 
 =cut
 
-sub event_count {
-    my $self = shift;
-    my $events = $self->events;
-    return scalar @$events;
-}
+has event_count =>
+  is            => 'rw',
+  isa           => 'TB2::Positive_Int',
+  default       => 0;
 
-sub result_count {
-    my $self = shift;
-    my $results = $self->results;
-    return scalar @$results;
-}
+has result_count =>
+  is            => 'rw',
+  isa           => 'TB2::Positive_Int',
+  default       => 0;
 
 sub handle_event {
     my $self = shift;
     my $event = shift;
 
     $self->event_storage->events_push($event);
+    $self->event_count( $self->event_count + 1 );
 
     return;
 }
@@ -237,11 +257,11 @@ sub handle_result    {
     my $self = shift;
     my $result = shift;
 
+    $self->result_count( $self->result_count + 1 );
     $self->counter( $self->counter + 1 );
-
-    $self->event_storage->events_push($result);
-
     $self->_update_statistics($result);
+
+    $self->handle_event($result);
 
     return;
 }

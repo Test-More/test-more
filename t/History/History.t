@@ -61,5 +61,20 @@ my $Fail = TB2::Result->new_result(
     isnt $history1->object_id, $history2->object_id, "history object_ids are unique";
 }
 
+note "Turn off event storage";
+{
+    my $history = $CLASS->new(
+        store_events => 0
+    );
+
+    $history->accept_event( $Pass ) for 1..3;
+    is $history->result_count, 3;
+    is $history->event_count, 3;
+
+    ok !eval { $history->events; 1 };
+    ok !eval { $history->results; 1 };
+
+    ok !eval { $history->store_events(1) }, "can't turn on storage for an existing object";
+}
 
 done_testing;
