@@ -6,9 +6,13 @@ use warnings;
 BEGIN { require 't/test.pl' }
 
 use Test::Builder2;
+use TB2::History;
+
 my $tb = Test::Builder2->create;
 $tb->test_state->clear_formatters;
-
+$tb->test_state->ec->history(
+    TB2::History->new( store_events => 1 )
+);
 
 my $from_idx = 0;
 sub check_events {

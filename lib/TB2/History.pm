@@ -73,14 +73,14 @@ to grow over the life of the test.
 If false, $history will discard events and only keep a summary of
 events.  L<events> and L<results> will throw an exception if called.
 
-Defaults to true (which will change in a moment).
+Defaults to false, events are not stored by default.
 
 =cut
 
 has store_events =>
   is            => 'ro',
   isa           => 'Bool',
-  default       => 1
+  default       => 0
 ;
 
 
@@ -225,7 +225,8 @@ sub subtest_handler {
     my $event = shift;
 
     my $subhistory = $self->new(
-        subtest => $event,
+        subtest      => $event,
+        store_events => $self->store_events
     );
 
     return $subhistory;
@@ -256,6 +257,8 @@ sub has_events   { shift->event_count > 0 }
 sub handle_result    {
     my $self = shift;
     my $result = shift;
+
+    $DB::single = 1;
 
     $self->result_count( $self->result_count + 1 );
     $self->counter( $self->counter + 1 );
@@ -657,6 +660,9 @@ sub consume {
 
    croak 'consume() only takes History objects'
      unless eval { $old_history->isa("TB2::History") };
+
+   croak 'Cannot consume() a History object which has store_events() off'
+     unless eval { $old_history->store_events };
 
    $self->accept_event($_) for @{ $old_history->events };
 

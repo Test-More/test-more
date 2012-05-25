@@ -145,15 +145,15 @@ note "skip_all subtest"; {
     my $tb = Test::Builder::NoOutput->create;
     $tb->level(0);
 
+    is $tb->history->skip_count, 0;
+
     $tb->subtest("skippy says he loves you" => sub {
         $tb->plan( skip_all => 'cuz I said so' );
         $tb->ok(1, "this should not run");
         $tb->ok(0, "nor this");
     });
 
-    my @details = $tb->details;
-    is $details[-1]{type}, 'skip',
-        'Subtests which "skip_all" are reported as skipped tests';
+    is $tb->history->skip_count, 1, 'Subtests which "skip_all" are reported as skipped tests';
 }
 
 

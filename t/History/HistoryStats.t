@@ -32,7 +32,6 @@ note "basic history stats"; {
     );
 
     ok!$history->has_results, q{we no not yet have results};
-    is_deeply $history->results, [], q{blank results set};
 
     $ec->post_event( Pass() );
     $ec->post_event( Fail() );

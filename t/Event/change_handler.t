@@ -22,7 +22,7 @@ note "Set up an early handler"; {
       isa       => 'TB2::History',
       default   => sub {
           require TB2::History;
-          return TB2::History->new;
+          return TB2::History->new( store_events => 1 );
       };
 
     sub handle_event {

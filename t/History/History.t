@@ -26,7 +26,8 @@ my $Fail = TB2::Result->new_result(
 {
     my $history = new_ok $CLASS;
 
-    is_deeply $history->results,        [];
+    is_deeply $history->result_count, 0;
+    is_deeply $history->event_count,  0;
 }
 
 
@@ -38,14 +39,12 @@ my $Fail = TB2::Result->new_result(
     );
 
     $ec->post_event( $Pass );
-    is_deeply $history->results, [$Pass];
+    is_deeply $history->result_count, 1;
 
     ok $history->can_succeed;
 
     $ec->post_event( $Fail );
-    is_deeply $history->results, [
-        $Pass, $Fail
-    ];
+    is_deeply $history->result_count, 2;
 
     ok !$history->can_succeed;
 }

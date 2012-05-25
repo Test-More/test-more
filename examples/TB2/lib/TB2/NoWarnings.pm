@@ -79,10 +79,12 @@ plan is already set, but it doesn't.
     sub handle_test_end {
         my $self = shift;
 
+        $DB::single = 1;
+
         my $warnings = $self->warnings_seen;
 
         $self->builder
-          ->ok( scalar @$warnings, "no warnings" )
+          ->ok( !scalar @$warnings, "no warnings" )
           ->diag([
               warnings => $warnings
           ]);
