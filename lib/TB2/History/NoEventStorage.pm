@@ -2,6 +2,7 @@ package TB2::History::NoEventStorage;
 
 use Carp;
 use TB2::Mouse;
+extends 'TB2::History::EventStorage';
 
 
 =head1 NAME

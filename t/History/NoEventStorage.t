@@ -13,6 +13,9 @@ require_ok $CLASS;
 note "Event and result storage"; {
     my $storage = $CLASS->new;
 
+    isa_ok $storage, $CLASS;
+    isa_ok $storage, "TB2::History::EventStorage";
+
     ok !eval { is_deeply $storage->events;  1 };
     ok !eval { is_deeply $storage->results; 1 };
 
