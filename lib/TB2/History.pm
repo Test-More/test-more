@@ -144,16 +144,6 @@ Get the count of events that have been seen.
 
 =cut
 
-has event_count =>
-  is            => 'rw',
-  isa           => 'TB2::Positive_Int',
-  default       => 0;
-
-has result_count =>
-  is            => 'rw',
-  isa           => 'TB2::Positive_Int',
-  default       => 0;
-
 sub handle_event {
     my $self = shift;
     my $event = shift;
@@ -258,12 +248,7 @@ sub handle_result    {
     my $self = shift;
     my $result = shift;
 
-    $DB::single = 1;
-
-    $self->result_count( $self->result_count + 1 );
-    $self->counter( $self->counter + 1 );
-    $self->_update_statistics($result);
-
+    $self->_update_result_statistics($result);
     $self->handle_event($result);
 
     return;
@@ -288,19 +273,13 @@ sub has_results { shift->result_count > 0 }
 
 =cut
 
-# %statistic_mapping: 
-# attribute_name => code_ref that defines how to increment attribute_name
-#
-# this is used both as a list of attributes to create as well as by 
-# _update_statistics to increment the attribute. 
-# code_ref will be handed a single result object that was to be added
-# to the results stack.
-
 my @statistic_attributes = qw(
     pass_count
     fail_count
     todo_count
     skip_count
+    result_count
+    event_count
 );
 
 for my $name (@statistic_attributes) {
@@ -311,14 +290,16 @@ for my $name (@statistic_attributes) {
     );
 }
 
-sub _update_statistics {
+sub _update_result_statistics {
     my $self = shift;
     my $result = shift;
 
+    $self->counter( $self->counter + 1 );
     $self->pass_count( $self->pass_count + 1 ) if $result->is_pass;
     $self->fail_count( $self->fail_count + 1 ) if $result->is_fail;
     $self->todo_count( $self->todo_count + 1 ) if $result->is_todo;
     $self->skip_count( $self->skip_count + 1 ) if $result->is_skip;
+    $self->result_count( $self->result_count + 1 );
 
     return;
 }
@@ -468,8 +449,6 @@ sub done_testing {
     return 0 if $self->abort;
     return $self->test_start && $self->test_end;
 }
-
-
 
 
 =head3 counter
