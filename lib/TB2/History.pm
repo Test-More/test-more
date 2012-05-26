@@ -272,10 +272,8 @@ sub handle_result    {
 
 =head2 result_count
 
-Get the count of results stored in the stack. 
+The number of results which have been seen.
 
-NOTE: This could be diffrent from the number of tests that have been
-seen, to get that count use test_count.
 
 =head3 has_results
 
@@ -303,14 +301,15 @@ my @statistic_attributes = qw(
     fail_count
     todo_count
     skip_count
-    test_count
 );
 
-has $_ => (
-    is => 'rw',
-    isa => 'TB2::Positive_Int',
-    default => 0,
-) for @statistic_attributes;
+for my $name (@statistic_attributes) {
+    has $name => (
+        is => 'rw',
+        isa => 'TB2::Positive_Int',
+        default => 0,
+    );
+}
 
 sub _update_statistics {
     my $self = shift;
@@ -320,18 +319,10 @@ sub _update_statistics {
     $self->fail_count( $self->fail_count + 1 ) if $result->is_fail;
     $self->todo_count( $self->todo_count + 1 ) if $result->is_todo;
     $self->skip_count( $self->skip_count + 1 ) if $result->is_skip;
-    $self->test_count( $self->test_count + 1 );
 
     return;
 }
 
-
-=head3 test_count
-
-A count of the number of tests that have been added to results. This
-value is not guaranteed to be the same as results_count if you have
-altered the results_stack. This is a static counter of the number of
-tests that have been seen, not the number of results stored.
 
 =head3 pass_count
 
@@ -377,11 +368,11 @@ sub can_succeed {
     if( my $plan = $self->plan ) {
         if( my $expect = $plan->asserts_expected ) {
             # We ran more tests than the plan
-            return 0 if $self->test_count > $expect;
+            return 0 if $self->result_count > $expect;
         }
         elsif( $plan->skip ) {
             # We were supposed to skip everything, but we ran tests
-            return 0 if $self->test_count;
+            return 0 if $self->result_count;
         }
     }
 
@@ -429,11 +420,11 @@ sub test_was_successful {
 
     if( $plan->no_plan ) {
         # Didn't run any tests
-        return 0 if !$self->test_count;
+        return 0 if !$self->result_count;
     }
     else {
         # Wrong number of tests
-        return 0 if $self->test_count != $plan->asserts_expected;
+        return 0 if $self->result_count != $plan->asserts_expected;
     }
 
     # We're exiting with non-zero

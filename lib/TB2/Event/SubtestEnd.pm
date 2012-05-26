@@ -113,7 +113,7 @@ sub _build_result {
         $result_args{skip} = 1;
         $result_args{reason} = $subtest_plan->skip_reason;
     }
-    elsif( $subtest_history->test_count == 0 ) {
+    elsif( $subtest_history->result_count == 0 ) {
         # The subtest didn't run any tests
         my $name = $result_args{name};
         $result_args{name} = "No tests run in subtest";

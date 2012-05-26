@@ -39,7 +39,6 @@ note "basic history stats"; {
     ok $history->has_results, q{we have results};
     
     is $history->result_count, 4, q{count looks good};
-    is $history->test_count,   4, q{test_count};
     is $history->pass_count,   2, q{pass_count};
     is $history->fail_count,   2, q{fail_count};
     is $history->todo_count,   0, q{todo_count};

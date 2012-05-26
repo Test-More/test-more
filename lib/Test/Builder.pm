@@ -2215,7 +2215,7 @@ sub _ending {
     my $plan    = $history->plan;
 
     # They never set a plan nor ran a test.
-    return if !$plan && !$history->test_count;
+    return if !$plan && !$history->result_count;
 
     # Forked children often run fragments of tests.
     my $in_child = $self->history->is_child_process;
@@ -2258,7 +2258,7 @@ sub test_exit_code {
     my $plan    = $history->plan;
 
     # They never set a plan nor ran a test.
-    return $real_exit_code if !$plan && !$history->test_count;
+    return $real_exit_code if !$plan && !$history->result_count;
 
     # The test bailed out.
     if( $history->abort ) {
@@ -2268,7 +2268,7 @@ FAIL
         return 255;
     }
     # Some tests were run...
-    elsif( $history->test_count ) {
+    elsif( $history->result_count ) {
         # ...but we exited with non-zero
         if($real_exit_code) {
             $self->diag(<<"FAIL");
