@@ -692,7 +692,7 @@ sub new_ok {
 
 C<subtest()> runs the C<&code> as its own little test with its own plan and
 its own result.  The main test counts this as a single test using the
-result of the whole subtest to determine if its ok or not ok.
+result of the whole subtest to determine if it's ok or not ok.
 
 For example...
 
@@ -1003,11 +1003,11 @@ B<NOTE> I'm not quite sure what will happen with filehandles.
   is_deeply( $got, $expected, $test_name );
 
 Similar to C<is()>, except that if C<$got> and C<$expected> are references, it
-does a deep comparison walking each data structure to see if they are
+does a deep comparison, walking each data structure to see if they are
 equivalent.  If the two structures are different, it will display the
 place where they start differing.
 
-C<is_deeply()> compares the dereferenced values of references, the
+C<is_deeply()> compares the dereferenced values of references. The
 references themselves (except for their type) are ignored.  This means
 aspects such as blessing and ties are not considered "different".
 
@@ -1163,7 +1163,7 @@ You might remember C<ok() or diag()> with the mnemonic C<open() or
 die()>.
 
 B<NOTE> The exact formatting of the diagnostic output is still
-changing, but it is guaranteed that whatever you throw at it it won't
+changing, but it is guaranteed that whatever you throw at it, it won't
 interfere with the test.
 
 =item B<note>
@@ -1400,9 +1400,9 @@ but want to put tests in your testing script (always a good idea).
 Indicates to the harness that things are going so badly all testing
 should terminate.  This includes the running of any additional test scripts.
 
-This is typically used when testing cannot continue such as a critical
+This is typically used when testing cannot continue, such as a critical
 module failing to compile or a necessary external utility not being
-available such as a database connection failing.
+available, such as a database connection failing.
 
 The test will exit with 255.
 
@@ -1827,7 +1827,7 @@ L<Test::Harness> is the test runner and output interpreter for Perl.
 It's the thing that powers C<make test> and where the C<prove> utility
 comes from.
 
-L<Test::Legacy> tests written with Test.pm, the original testing
+L<Test::Legacy>. Tests written with Test.pm, the original testing
 module, do not play well with other testing libraries.  Test::Legacy
 emulates the Test.pm interface and does play well with others.
 
@@ -1845,8 +1845,8 @@ L<Bundle::Test> installs a whole bunch of useful test modules.
 
 =head1 AUTHORS
 
-Michael G Schwern E<lt>schwern@pobox.comE<gt> with much inspiration
-from Joshua Pritikin's Test module and lots of help from Barrie
+Michael G Schwern E<lt>schwern@pobox.comE<gt>, with much inspiration
+from Joshua Pritikin's Test module, and lots of help from Barrie
 Slaymaker, Tony Bowden, blackstar.co.uk, chromatic, Fergal Daly and
 the perl-qa gang.
 

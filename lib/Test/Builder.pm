@@ -56,7 +56,7 @@ work together>.
 Returns a Test::Builder object representing the current state of the
 test.
 
-Since you only run one test per program C<new()> always returns the same
+Since you only run one test per program, C<new()> always returns the same
 Test::Builder object.  No matter how many times you call C<new()>, you're
 getting the same object.  This is called the default.  This is done so that
 multiple modules share such global information as the test counter and
@@ -1173,7 +1173,7 @@ These methods are useful when writing your own test methods.
   $Test->maybe_regex('/$regex/');
 
 This method used to be useful back when Test::Builder worked on Perls
-before 5.6 which didn't have qr//.  Now its pretty useless.
+before 5.6 which didn't have qr//.  Now it's pretty useless.
 
 Convenience method for building testing functions that take regular
 expressions as arguments.

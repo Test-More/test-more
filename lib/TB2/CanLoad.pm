@@ -10,7 +10,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 =head1 NAME
 
-TB2::CanLoad - load modules without effecting global variables
+TB2::CanLoad - load modules without affecting global variables
 
 =head1 SYNOPSIS
 
