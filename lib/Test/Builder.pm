@@ -889,7 +889,7 @@ ERR
     $self->_check_is_passing_plan();
 
     $self->BAIL_OUT("Early exit requested.") 
-	if $ENV{'TEST_MORE_BAIL_EARLY'} && !$test;
+        if $ENV{'TEST_MORE_BAIL_EARLY'} && !$test;
 
     return $test ? 1 : 0;
 }
