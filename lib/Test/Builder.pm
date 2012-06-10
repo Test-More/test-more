@@ -700,6 +700,11 @@ ERR
     # Store the Result in history making sure to make it thread safe
     $self->post_result($result);
 
+    if ($ENV{'BAIL_ON_FAIL'} && !$test) {
+      $self->{Have_Plan} = 1; # Silence done_testing"
+      $self->BAIL_OUT("Early exit requested.")
+    }
+
     return $test ? 1 : 0;
 }
 
