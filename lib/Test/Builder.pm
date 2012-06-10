@@ -889,7 +889,7 @@ ERR
     $self->_check_is_passing_plan();
 
     if ($ENV{'BAIL_ON_FAIL'} && !$test) {
-      $self->{Have_Plan} = 0; # Silence done_testing"
+      $self->{Have_Plan} = 1; # Silence done_testing"
       $self->BAIL_OUT("Early exit requested.")
     }
 
