@@ -30,7 +30,7 @@ $Test->plan(tests => 3);
 
 plan tests => 4;
 
-$ENV{TEST_MORE_BAIL_EARLY}=1;
+$ENV{BAIL_ON_FAIL}=1;
 ok(0, "Let's see what happens when we fail");
 
 $Test->is_eq( $output, <<'OUT' );

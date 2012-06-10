@@ -1399,6 +1399,12 @@ available such as a database connection failing.
 
 The test will exit with 255.
 
+Sometimes in developing code or installing dependant package from
+CPAN, you may want to bail out after the first failure. To do that set
+environment variable C<FAIL_ON_BAIL>. For example:
+    
+   BAIL_ON_FAIL=1 prove t/
+
 For even better control look at L<Test::Most>.
 
 =cut
