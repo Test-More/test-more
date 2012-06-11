@@ -36,7 +36,6 @@ ok(0, "Let's see what happens when we fail");
 $Test->is_eq( $output, <<'OUT' );
 1..4
 not ok 1 - Let's see what happens when we fail
-Bail out!  Early exit requested.
 OUT
 
 $Test->is_eq( $Exit_Code, 255 );

@@ -459,6 +459,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Todo_Stack} = [];
     $self->{Start_Todo} = 0;
     $self->{Opened_Testhandles} = 0;
+    $self->{No_Failures} = 1;
 
     $self->_share_keys;
     $self->_dup_stdhandles;
@@ -803,6 +804,10 @@ like Test::Simple's C<ok()>.
 sub ok {
     my( $self, $test, $name ) = @_;
 
+    if ($ENV{'BAIL_ON_FAIL'} && !$self->{No_Failures}) {
+        $self->BAIL_OUT("Early exit requested.")
+    }
+
     if ( $self->{Child_Name} and not $self->{In_Destroy} ) {
         $name = 'unnamed test' unless defined $name;
         $self->is_passing(0);
@@ -888,10 +893,7 @@ ERR
     # Check that we haven't violated the plan
     $self->_check_is_passing_plan();
 
-    if ($ENV{'BAIL_ON_FAIL'} && !$test) {
-      $self->{Have_Plan} = 1; # Silence done_testing"
-      $self->BAIL_OUT("Early exit requested.")
-    }
+    $self->{No_Failures} &&= $test;
 
     return $test ? 1 : 0;
 }
@@ -2455,6 +2457,10 @@ sub _ending {
     # should do the ending.
     if( $self->{Original_Pid} != $$ ) {
         return;
+    }
+
+    if ($ENV{'BAIL_ON_FAIL'} && !$self->{No_Failures}) {
+        $self->BAIL_OUT("Early exit requested.")
     }
 
     # Ran tests but never declared a plan or hit done_testing
