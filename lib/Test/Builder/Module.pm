@@ -48,7 +48,7 @@ Test::Builder::Module is a subclass of Exporter which means your
 module is also a subclass of Exporter.  @EXPORT, @EXPORT_OK, etc...
 all act normally.
 
-A few methods are provided to do the C<use Your::Module tests => 23> part
+A few methods are provided to do the C<< use Your::Module tests => 23 >> part
 for you.
 
 =head3 import
