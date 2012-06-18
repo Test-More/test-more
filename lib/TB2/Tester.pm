@@ -68,6 +68,7 @@ sub capture(&) {
     my $our_ec = $state->push_coordinator;
 
     $our_ec->clear_formatters;
+    $our_ec->history( TB2::History->new( store_events => 1 ) );
 
     my($ret, $err) = $CLASS->try(sub { $code->(); 1; });
 

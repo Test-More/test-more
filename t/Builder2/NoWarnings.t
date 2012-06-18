@@ -33,9 +33,10 @@ BEGIN { require "t/test.pl" }
 
 
     # Test the result
-    plan tests => 2;
+    plan tests => 3;
 
     # qr/...$/m is broken on Debian etch's 5.8.8
     like $builder->formatter->streamer->read("out"), qr/^1\.\.3\n/m, "count correct";
-    ok $builder->history->results->[2], "no warnings test failed properly";
+    is $builder->history->result_count, 3, "no warnings test ran";
+    is $builder->history->fail_count, 1,   "no warnings test failed properly";
 }

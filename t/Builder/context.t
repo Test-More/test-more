@@ -9,14 +9,16 @@ use lib 't/lib';
 BEGIN { require "t/test.pl" }
 
 use Test::Builder::NoOutput;
+use TB2::History;
 
 my $tb = Test::Builder::NoOutput->create;
+my $history = TB2::History->new( store_events => 1 );
+$tb->test_state->ec->history($history);
 
 my $from_idx = 0;
 sub check_events {
     my($tb, $line) = @_;
 
-    my $results = $tb->history->results;
     my $events  = $tb->history->events;
 
     my @have = @{$events}[ $from_idx .. $#{$events} ]; 

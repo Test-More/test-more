@@ -3,8 +3,16 @@
 # Test that current_test will get the numbering right if no tests
 # have yet been run by Test::Builder.
 
+use strict;
+use warnings;
+
 use Test::Builder;
-$TB = Test::Builder->new;
+use TB2::History;
+
+my $TB = Test::Builder->new;
+my $history = TB2::History->new( store_events => 1 );
+$TB->test_state->ec->history($history);
+
 $TB->no_header(1);
 print "ok 1\n";
 print "ok 2\n";

@@ -3,7 +3,6 @@ package TB2::History;
 use Carp;
 use TB2::Mouse;
 use TB2::Types;
-use TB2::StackBuilder;
 use TB2::threads::shared;
 
 with 'TB2::EventHandler',
@@ -16,16 +15,14 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 =head1 NAME
 
-TB2::History - Manage the history of test results
+TB2::History - Holds information about the state of the test
 
 =head1 SYNOPSIS
 
     use TB2::History;
 
-    my $history = TB2::History->new;
-    my $ec = TB2::EventCoordinator->create(
-        history => $history
-    );
+    # An EventCoordinator contains a History object by default
+    my $ec = TB2::EventCoordinator->create();
 
     my $pass  = TB2::Result->new_result( pass => 1 );
     $ec->post_event( $pass );
@@ -38,7 +35,20 @@ TB2::History - Manage the history of test results
 
 =head1 DESCRIPTION
 
-This object stores and manages the history of test results.
+TB2::History records information and statistics about the state of the
+test.  It watches and analyses events as they happen.  It is used to
+get information about the state of the test such as has it started,
+has it ended, is it passing, how many tests have run and so on.
+
+The history for a test is usually accessed by going through the
+L<TB2::TestState> C<history> accessor.
+
+=for later
+To save memory it does not, by default, store the complete history of
+all events.
+
+Each subtest gets its own L<TB2::EventCoordinator> and thus its own
+TB2::History object.
 
 It is a L<TB2::EventHandler>.
 
@@ -51,6 +61,28 @@ It is a L<TB2::EventHandler>.
     my $history = TB2::History->new;
 
 Creates a new, unique History object.
+
+new() takes the following options.
+
+=head3 store_events
+
+If true, $history will keep a complete record of all test events
+accessable via L<events> and L<results>.  This will cause memory usage
+to grow over the life of the test.
+
+If false, $history will discard events and only keep a summary of
+events.  L<events> and L<results> will throw an exception if called.
+
+Defaults to false, events are not stored by default.
+
+=cut
+
+has store_events =>
+  is            => 'ro',
+  isa           => 'Bool',
+  default       => 0
+;
+
 
 =head2 Misc
 
@@ -70,25 +102,54 @@ Unless otherwise stated, these are all accessor methods of the form:
     my $value = $history->method;       # get
     $history->method($value);           # set
 
-
 =head2 Events
 
 =head3 events
 
-A TB2::Stack of events, that include Result objects.
+    my $events = $history->events;
 
-=head3 event_count
-
-Get the count of events that are on the stack.
+An array ref of all events seen.
 
 =cut
 
-buildstack events => 'Any';
+sub event_storage_class {
+    return $_[0]->store_events ? "TB2::History::EventStorage" : "TB2::History::NoEventStorage";
+}
+
+has event_storage =>
+  is            => 'ro',
+  isa           => 'TB2::History::EventStorage',
+  default       => sub {
+      my $storage_class = $_[0]->event_storage_class;
+      $_[0]->load($storage_class);
+      return $storage_class->new;
+  };
+
+sub events {
+    my $self = shift;
+    return $self->event_storage->events;
+}
+
+sub results {
+    my $self = shift;
+    return $self->event_storage->results;
+}
+
+
+=head3 event_count
+
+    my $count = $history->event_count;
+
+Get the count of events that have been seen.
+
+=cut
+
 sub handle_event {
     my $self = shift;
     my $event = shift;
 
-    $self->events_push($event);
+    $self->event_storage->events_push($event);
+    $self->event_count( $self->event_count + 1 );
 
     return;
 }
@@ -154,7 +215,8 @@ sub subtest_handler {
     my $event = shift;
 
     my $subhistory = $self->new(
-        subtest => $event,
+        subtest      => $event,
+        store_events => $self->store_events
     );
 
     return $subhistory;
@@ -171,43 +233,32 @@ sub handle_set_plan {
     return;
 }
 
-sub event_count  { shift->events_count }
-sub has_events   { shift->events_count > 0 }
+sub has_events   { shift->event_count > 0 }
 
 =head2 Results
 
 =head3 results
-
-A TB2::Stack of Result objects.
 
     # The result of test #4.
     my $result = $history->results->[3];
 
 =cut
 
-buildstack results => 'TB2::Result::Base';
 sub handle_result    {
     my $self = shift;
     my $result = shift;
 
-    $self->counter( $self->counter + 1 );
-
-    $self->results_push($result);
-    $self->events_push($result);
-
-    $self->_update_statistics($result);
+    $self->_update_result_statistics($result);
+    $self->handle_event($result);
 
     return;
 }
-sub result_count     { shift->results_count }
 
 
 =head2 result_count
 
-Get the count of results stored in the stack. 
+The number of results which have been seen.
 
-NOTE: This could be diffrent from the number of tests that have been
-seen, to get that count use test_count.
 
 =head3 has_results
 
@@ -222,48 +273,37 @@ sub has_results { shift->result_count > 0 }
 
 =cut
 
-# %statistic_mapping: 
-# attribute_name => code_ref that defines how to increment attribute_name
-#
-# this is used both as a list of attributes to create as well as by 
-# _update_statistics to increment the attribute. 
-# code_ref will be handed a single result object that was to be added
-# to the results stack.
-
 my @statistic_attributes = qw(
     pass_count
     fail_count
     todo_count
     skip_count
-    test_count
+    result_count
+    event_count
 );
 
-has $_ => (
-    is => 'rw',
-    isa => 'TB2::Positive_Int',
-    default => 0,
-) for @statistic_attributes;
+for my $name (@statistic_attributes) {
+    has $name => (
+        is => 'rw',
+        isa => 'TB2::Positive_Int',
+        default => 0,
+    );
+}
 
-sub _update_statistics {
+sub _update_result_statistics {
     my $self = shift;
     my $result = shift;
 
+    $self->counter( $self->counter + 1 );
     $self->pass_count( $self->pass_count + 1 ) if $result->is_pass;
     $self->fail_count( $self->fail_count + 1 ) if $result->is_fail;
     $self->todo_count( $self->todo_count + 1 ) if $result->is_todo;
     $self->skip_count( $self->skip_count + 1 ) if $result->is_skip;
-    $self->test_count( $self->test_count + 1 );
+    $self->result_count( $self->result_count + 1 );
 
     return;
 }
 
-
-=head3 test_count
-
-A count of the number of tests that have been added to results. This
-value is not guaranteed to be the same as results_count if you have
-altered the results_stack. This is a static counter of the number of
-tests that have been seen, not the number of results stored.
 
 =head3 pass_count
 
@@ -309,11 +349,11 @@ sub can_succeed {
     if( my $plan = $self->plan ) {
         if( my $expect = $plan->asserts_expected ) {
             # We ran more tests than the plan
-            return 0 if $self->test_count > $expect;
+            return 0 if $self->result_count > $expect;
         }
         elsif( $plan->skip ) {
             # We were supposed to skip everything, but we ran tests
-            return 0 if $self->test_count;
+            return 0 if $self->result_count;
         }
     }
 
@@ -361,11 +401,11 @@ sub test_was_successful {
 
     if( $plan->no_plan ) {
         # Didn't run any tests
-        return 0 if !$self->test_count;
+        return 0 if !$self->result_count;
     }
     else {
         # Wrong number of tests
-        return 0 if $self->test_count != $plan->asserts_expected;
+        return 0 if $self->result_count != $plan->asserts_expected;
     }
 
     # We're exiting with non-zero
@@ -409,8 +449,6 @@ sub done_testing {
     return 0 if $self->abort;
     return $self->test_start && $self->test_end;
 }
-
-
 
 
 =head3 counter
@@ -592,6 +630,9 @@ sub consume {
 
    croak 'consume() only takes History objects'
      unless eval { $old_history->isa("TB2::History") };
+
+   croak 'Cannot consume() a History object which has store_events() off'
+     unless eval { $old_history->store_events };
 
    $self->accept_event($_) for @{ $old_history->events };
 
