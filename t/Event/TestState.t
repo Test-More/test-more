@@ -22,8 +22,10 @@ note "new() does not work"; {
 
 
 note "create() and pass through"; {
+    require TB2::History;
     my $state = $CLASS->create(
-        formatters => []
+        formatters => [],
+        history    => TB2::History->new( store_events => 1 )
     );
 
     is_deeply $state->formatters, [],           "create() passes arguments through";
@@ -94,7 +96,8 @@ note "popping the last coordinator"; {
 
 note "basic subtest"; {
     my $state = $CLASS->create(
-        formatters => []
+        formatters => [],
+        history    => TB2::History->new( store_events => 1 )
     );
 
     note "...starting a subtest";
@@ -133,7 +136,8 @@ note "basic subtest"; {
 
 note "honor event presets"; {
     my $state = $CLASS->create(
-        formatters => []
+        formatters => [],
+        history    => TB2::History->new( store_events => 1 )
     );
 
     note "...post a subtest with a pre defined depth";
@@ -156,7 +160,8 @@ note "honor event presets"; {
 
 note "nested subtests"; {
     my $state = $CLASS->create(
-        formatters => []
+        formatters => [],
+        history    => TB2::History->new( store_events => 1 )
     );
 
     my $first_stream_start = TB2::Event::TestStart->new;
@@ -269,7 +274,7 @@ note "handlers providing their own subtest_handler"; {
     my $formatter2 = MyNullFormatter->new;
     my $seesall    = MyEventCollectorSeesAll->new;
     my $collector  = MyEventCollector->new;
-    my $history   = MyHistory->new;
+    my $history   = MyHistory->new( store_events => 1 );
     my $state = $CLASS->create(
         formatters      => [$formatter1, $formatter2],
         history         => $history,

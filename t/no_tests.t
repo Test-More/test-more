@@ -22,5 +22,4 @@ is($tb->read('err'), <<ERR);
 # No tests run!
 ERR
 
-exit grep { !$_ } $tb->summary;
-
+exit $tb->history->test_was_successful ? 0 : 1;

@@ -39,5 +39,5 @@ ERR
 
     $TB->is_eq($?, 250, "exit code");
 
-    exit grep { !$_ } $TB->summary;
+    exit $TB->history->test_was_successful ? 0 : 1;
 }

@@ -32,7 +32,6 @@ note "basic history stats"; {
     );
 
     ok!$history->has_results, q{we no not yet have results};
-    is_deeply $history->results, [], q{blank results set};
 
     $ec->post_event( Pass() );
     $ec->post_event( Fail() );
@@ -40,44 +39,11 @@ note "basic history stats"; {
     ok $history->has_results, q{we have results};
     
     is $history->result_count, 4, q{count looks good};
-    is $history->test_count,   4, q{test_count};
     is $history->pass_count,   2, q{pass_count};
     is $history->fail_count,   2, q{fail_count};
     is $history->todo_count,   0, q{todo_count};
     is $history->skip_count,   0, q{skip_count};
 
-}
-
-
-note "merge history stacks"; {
-   my $H1 = new_history;
-   my $ec1 = MyEventCoordinator->new(
-       history => $H1
-   );
-
-   $ec1->post_event($_) for Pass(), Pass(), Pass();
-   is $H1->result_count, 3, q{H1 count};
-
-   my $H2 = new_history;
-   my $ec2 = MyEventCoordinator->new(
-       history => $H2
-   );
-
-   $ec2->post_event($_) for Fail(), Fail(), Fail();
-   is $H2->result_count, 3, q{H2 count};
-
-   $H1->consume($H2);
-   is $H1->result_count, 6, q{H1 consumed H2};
-   is $H1->fail_count, 3 , q{H1 picked up the tests from H2 correctly};
-
-   my $h = new_history;
-   my $ec = MyEventCoordinator->new( history => $h );
-   $ec->post_event($_) for Pass(), Fail();
-
-   $H1->consume( $h ) for 1..10;
-
-   is $H1->result_count, 26, q{consume appends history};
-   
 }
 
 

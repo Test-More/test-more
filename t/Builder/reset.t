@@ -14,6 +14,7 @@ chdir 't';
 
 
 use Test::Builder;
+use TB2::History;
 my $Test = Test::Builder->new;
 my $tb = Test::Builder->create;
 
@@ -57,8 +58,8 @@ $Test->ok( $tb->use_numbers,         , 'use_numbers' );
 $Test->ok( !$tb->no_header,          , 'no_header' );
 $Test->ok( !$tb->no_ending,          , 'no_ending' );
 $Test->is_num( $tb->current_test,   0, 'current_test' );
-$Test->is_num( scalar $tb->summary, 0, 'summary' );
-$Test->is_num( scalar $tb->details, 0, 'details' );
+$Test->is_num( $tb->history->event_count,  0 );
+$Test->is_num( $tb->history->result_count, 0 );
 $Test->is_eq( fileno $tb->output,
               fileno $Original_Output{output},         'output' );
 $Test->is_eq( fileno $tb->failure_output,

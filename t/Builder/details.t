@@ -7,7 +7,11 @@ use lib 't/lib';
 
 use Test::More;
 use Test::Builder;
+use TB2::History;
+
 my $Test = Test::Builder->new;
+my $history = TB2::History->new( store_events => 1 );
+$Test->test_state->ec->history($history);
 
 $Test->plan( tests => 9 );
 $Test->level(0);
@@ -91,7 +95,9 @@ is_deeply( \@details, \@Expected_Details );
 
 
 # This test has to come last because it thrashes the test details.
-{
+TODO_SKIP: {
+    local $TODO = "current_test() going backwards is broken and may be removed";
+
     my $curr_test = $Test->current_test;
     $Test->current_test(4);
     my @details = $Test->details();

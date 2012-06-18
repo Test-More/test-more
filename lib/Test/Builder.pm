@@ -1741,10 +1741,10 @@ sub current_test {
     return $history->counter unless defined $num;
 
     # If the test counter is being pushed forward fill in the details.
-    my $results = $history->results;
+    my $result_count = $history->result_count;
 
-    if ( $num > @$results ) {
-        my $last_test_number = @$results ? @$results : 0;
+    if ( $num > $result_count ) {
+        my $last_test_number = $result_count ? $result_count : 0;
         $history->counter($last_test_number);
 
         for my $test_number ( $last_test_number + 1 .. $num ) {
@@ -1759,8 +1759,8 @@ sub current_test {
         }
     }
     # If backward, wipe history.  Its their funeral.
-    elsif ( $num < @$results ) {
-        $#{$results} = $num - 1;
+    elsif ( $num < $result_count ) {
+        $history->result_count($num);
     }
 
     $history->counter($num);
@@ -1800,6 +1800,9 @@ A simple summary of the tests so far.  True for pass, false for fail.
 This is a logical pass/fail, so todos are passes.
 
 Of course, test #1 is $tests[0], etc...
+
+By default, this method will throw an exception unless Test::Builder has
+been configured to store events.
 
 =cut
 
@@ -1869,6 +1872,9 @@ result in this structure:
         type      => 'todo',
         reason    => 'insufficient donuts'
       };
+
+By default, this test will throw an exception unless Test::Builder has
+been configured to store events.
 
 =cut
 
@@ -2149,7 +2155,7 @@ sub _sanity_check {
     my $self = shift;
 
     $self->_whoa( $self->current_test < 0, 'Says here you ran a negative number of tests!' );
-    $self->_whoa( $self->current_test != @{ $self->history->results },
+    $self->_whoa( $self->current_test != $self->history->result_count,
         'Somehow you got a different number of results than tests ran!' );
 
     return;
@@ -2209,7 +2215,7 @@ sub _ending {
     my $plan    = $history->plan;
 
     # They never set a plan nor ran a test.
-    return if !$plan && !$history->test_count;
+    return if !$plan && !$history->result_count;
 
     # Forked children often run fragments of tests.
     my $in_child = $self->history->is_child_process;
@@ -2252,7 +2258,7 @@ sub test_exit_code {
     my $plan    = $history->plan;
 
     # They never set a plan nor ran a test.
-    return $real_exit_code if !$plan && !$history->test_count;
+    return $real_exit_code if !$plan && !$history->result_count;
 
     # The test bailed out.
     if( $history->abort ) {
@@ -2262,7 +2268,7 @@ FAIL
         return 255;
     }
     # Some tests were run...
-    elsif( $history->test_count ) {
+    elsif( $history->result_count ) {
         # ...but we exited with non-zero
         if($real_exit_code) {
             $self->diag(<<"FAIL");
