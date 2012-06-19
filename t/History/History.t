@@ -9,7 +9,8 @@ BEGIN { require 't/test.pl' }
 use MyEventCoordinator;
 use TB2::Result;
 
-
+my $FILE = __FILE__;
+my $QFILE = quotemeta($FILE);
 my $CLASS = "TB2::History";
 require_ok 'TB2::History';
 
@@ -71,10 +72,10 @@ note "Turn off event storage";
     is $history->event_count, 3;
 
     ok !eval { $history->events; 1 };
-    is $@, sprintf "Events are not stored at %s line %d.\n", __FILE__, __LINE__-1;
+    like $@, qr{^Events are not stored at $QFILE line @{[ __LINE__ - 1 ]}\.?\n};
 
     ok !eval { $history->results; 1 };
-    is $@, sprintf "Results are not stored at %s line %d.\n", __FILE__, __LINE__-1;
+    like $@, qr{^Results are not stored at $QFILE line @{[ __LINE__ - 1 ]}\.?\n};
 
     ok !eval { $history->store_events(1) }, "can't turn on storage for an existing object";
 }

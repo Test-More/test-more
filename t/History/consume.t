@@ -5,6 +5,9 @@ use warnings;
 
 BEGIN { require 't/test.pl' }
 
+my $FILE = __FILE__;
+my $QFILE = quotemeta($FILE);
+
 my $CLASS = "TB2::History";
 use_ok $CLASS;
 use TB2::Events;
@@ -41,8 +44,8 @@ note "Try to consume with storage off"; {
     my $h2 = $CLASS->new;
 
     ok !eval { $h2->consume( $h1 ); 1 };
-    is $@, sprintf "Cannot consume() a History object which has store_events() off at %s line %d.\n",
-      __FILE__, __LINE__-2;
+    my $line = __LINE__ - 1;
+    like $@, qr{^Cannot consume\(\) a History object which has store_events\(\) off at $QFILE line $line\.?\n};
 }
 
 done_testing;
