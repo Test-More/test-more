@@ -1,4 +1,4 @@
-0.98_03
+0.98_03  Thu Jun 21 13:04:19 PDT 2012
     New Features
     * cmp_ok() will error when used with something which is not a
       comparison operator, including =, += and the like.
