@@ -3,7 +3,7 @@ package Test::Builder::Tester;
 use strict;
 our $VERSION = "1.22";
 
-use Test::Builder;
+use Test::Builder 0.98;
 use Symbol;
 use Carp;
 
