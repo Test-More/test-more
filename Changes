@@ -11,8 +11,10 @@
     Doc Fixes
     * use_ok() has been discouraged and de-emphasized as a general
       replacement for `use` in tests. [github #288]
+    * $thing is now $this in the docs to avoid confusing users of
+      other languages. [Karen Etheridge]
 
-    Incompatible Changes With Previous Alphas
+    Incompatible Changes With Previous Alphas (0.98_01)
     * use_ok() will no longer apply lexical pragams.  The incompatibilities
       and extra complexity is not worth the marginal use.
       [github #287]
