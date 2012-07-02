@@ -275,7 +275,7 @@ For example:
     ok( $exp{9} == 81,                   'simple exponential' );
     ok( Film->can('db_Main'),            'set_db()' );
     ok( $p->tests == 4,                  'saw tests' );
-    ok( !(grep !defined $_, @items),     'items populated' );
+    ok( !grep(!defined $_, @items),      'all items defined' );
     ok( @stuff,                          'I have some stuff' );
 
 (Mnemonic:  "This is ok.")
