@@ -46,7 +46,7 @@ subtype 'TB2::Positive_NonZero_Int' => (
 );
 
 
-=head3 TB2::LC_AlphaNumUs_Str
+=head3 TB2::LC_AlphaNumUS_Str
 
 A lowercase string containing only alphanumerics & underscores.
 
@@ -54,7 +54,7 @@ A lowercase string containing only alphanumerics & underscores.
 
 subtype 'TB2::LC_AlphaNumUS_Str' => (
     as 'Str',
-    where { defined $_ && /^[a-z_]+$/ },
+    where { defined $_ && /^[a-z0-9_]+$/ },
 );
 
 
