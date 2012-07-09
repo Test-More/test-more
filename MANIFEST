@@ -41,6 +41,8 @@ lib/TB2/Formatter/TAP/v13.pm
 lib/TB2/HasDefault.pm
 lib/TB2/HasObjectID.pm
 lib/TB2/History.pm
+lib/TB2/History/EventStorage.pm
+lib/TB2/History/NoEventStorage.pm
 lib/TB2/Module.pm
 lib/TB2/Mouse.pm
 lib/TB2/OnlyOnePlan.pm
@@ -51,8 +53,6 @@ lib/TB2/Result/Role/pass.pm
 lib/TB2/Result/Role/skip.pm
 lib/TB2/Result/Role/todo.pm
 lib/TB2/Result/Role/unknown.pm
-lib/TB2/Stack.pm
-lib/TB2/StackBuilder.pm
 lib/TB2/Streamer.pm
 lib/TB2/Streamer/Debug.pm
 lib/TB2/Streamer/Print.pm
@@ -141,8 +141,6 @@ t/Builder2/Mouse_before_TB2.t
 t/Builder2/NoWarnings.t
 t/Builder2/ok_starts_a_stream.t
 t/Builder2/SimpleBuilder2.t
-t/Builder2/Stack.t
-t/Builder2/StackBuilder.t
 t/Builder2/subtest.t
 t/Builder2/TB2_before_Mouse.t
 t/Builder2/top.t
@@ -205,9 +203,12 @@ t/Formatter/TAP/v12.t
 t/harness_active.t
 t/HasObjectID.t
 t/History/child_process.t
+t/History/consume.t
+t/History/EventStorage.t
 t/History/History.t
 t/History/HistoryStats.t
 t/History/in_test.t
+t/History/NoEventStorage.t
 t/History/plan.t
 t/History/test_was_successful.t
 t/import.t
