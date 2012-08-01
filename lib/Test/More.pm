@@ -9,14 +9,6 @@ use warnings;
 # We use a lot of subroutine prototypes
 ## no critic (Subroutines::ProhibitSubroutinePrototypes)
 
-# Can't use Carp because it might cause use_ok() to accidentally succeed
-# even though the module being used forgot to use Carp.  Yes, this
-# actually happened.
-sub _carp {
-    my( $file, $line ) = ( caller(1) )[ 1, 2 ];
-    return warn @_, " at $file line $line\n";
-}
-
 our $VERSION = '1.005000_005';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
@@ -1039,7 +1031,7 @@ of a reference to it
 WARNING
         chop $msg;    # clip off newline so carp() will put in line/file
 
-        _carp sprintf $msg, scalar @_;
+        $tb->carp(sprintf $msg, scalar @_);
 
         return $tb->ok(0);
     }
@@ -1279,14 +1271,13 @@ sub skip {
 
     unless( defined $how_many ) {
         # $how_many can only be avoided when no_plan is in use.
-        _carp "skip() needs to know \$how_many tests are in the block"
+        $tb->carp("skip() needs to know \$how_many tests are in the block")
           unless $tb->has_plan eq 'no_plan';
         $how_many = 1;
     }
 
     if( defined $how_many and $how_many =~ /\D/ ) {
-        _carp
-          "skip() was passed a non-numeric number of tests.  Did you get the arguments backwards?";
+        $tb->carp("skip() was passed a non-numeric number of tests.  Did you get the arguments backwards?");
         $how_many = 1;
     }
 
@@ -1361,7 +1352,7 @@ sub todo_skip {
 
     unless( defined $how_many ) {
         # $how_many can only be avoided when no_plan is in use.
-        _carp "todo_skip() needs to know \$how_many tests are in the block"
+        $tb->carp("todo_skip() needs to know \$how_many tests are in the block")
           unless $tb->has_plan eq 'no_plan';
         $how_many = 1;
     }
