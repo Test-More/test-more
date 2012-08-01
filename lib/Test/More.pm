@@ -1582,7 +1582,7 @@ sub _whoa {
     if($check) {
         die <<"WHOA";
 WHOA!  $desc
-This should never happen!  Please contact the author immediately!
+This should never happen!  Please contact the authors of Test::More, and let them know what happened!
 WHOA
     }
 }
