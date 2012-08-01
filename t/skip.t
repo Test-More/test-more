@@ -64,7 +64,7 @@ SKIP: {
         fail("So very failed");
     }
     is( $warning, "skip() needs to know \$how_many tests are in the ".
-                  "block at $0 line 56\n",
+                  "block at $0 line 56.\n",
         'skip without $how_many warning' );
 }
 
