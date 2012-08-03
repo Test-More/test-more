@@ -4,6 +4,9 @@ See README and version control log for Test::Builder2 changes.
     Bug Fixes
     * Patched TB2::Mouse to not blow over tied $_ (a local $_ bug).
       (Father Chrysostomos) [github 293]
+    * Test::Builder::Tester will now set a plan in test tests emulating
+      an undocumented feature that some tests accidentally rely on.
+      [github 327] [github 328]
 
     Misc
     * Update the resources meta data to point at the correct repository, issues

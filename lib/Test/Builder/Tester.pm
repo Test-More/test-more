@@ -99,9 +99,12 @@ sub _start_testing {
         late_handlers   => $original_state->late_handlers,
     );
 
-    # To emulate existing behavior, start testing but don't
-    # let the formatter see it
+    # To retain compatibility with old behaviors...
+    # start testing but don't let the formatter see it
     $state->post_event( TB2::Event::TestStart->new );
+    # start a plan if the original test had a plan
+    $state->post_event( TB2::Event::SetPlan->new( no_plan => 1 ) )
+      if $original_state->history->plan;
     $state->add_formatters($formatter);
 
     # remember that we're testing
