@@ -22,7 +22,7 @@ ok(2,"two");
 test_test("multiple tests");
 
 test_out("not ok 1 - should fail");
-test_err("#     Failed test ($0 at line 28)");
+test_err("#     Failed test ($0 at line @{[ __LINE__ + 3 ]})");
 test_err("#          got: 'foo'");
 test_err("#     expected: 'bar'");
 is("foo","bar","should fail");
@@ -46,7 +46,7 @@ test_test("testing failing on the same line with the same name");
 
 
 test_out("not ok 1 - name # TODO Something");
-test_out("#     Failed (TODO) test ($0 at line 52)");
+test_out("#     Failed (TODO) test ($0 at line @{[__LINE__+3]})");
 TODO: { 
     local $TODO = "Something";
     fail("name");
