@@ -36,6 +36,10 @@ Test::Builder::Tester - test modules built with Test::Builder
 
 =head1 DESCRIPTION
 
+Because testing formatted TAP is unstable, this module is
+B<DISCOURAGED>.  It is recommended you use L<Test::Tester> or
+L<TB2::Tester> and test events directly before they are formatted.
+
 A module that helps you test testing modules that are built with
 B<Test::Builder>.
 
@@ -102,20 +106,21 @@ sub _start_testing {
     # To retain compatibility with old behaviors...
     # start testing but don't let the formatter see it
     $state->post_event( TB2::Event::TestStart->new );
-    # start a plan if the original test had a plan
-    $state->post_event( TB2::Event::SetPlan->new( no_plan => 1 ) )
+    # use the original plan
+    $state->post_event( $original_state->history->plan )
       if $original_state->history->plan;
     $state->add_formatters($formatter);
 
     # remember that we're testing
     $testing     = 1;
 
-    # we shouldn't do the ending stuff
-    $t->no_change_exit_code(1);
-
     # Override the state in the builder and for everyone
     $t->{TestState} = $state;
     TB2::TestState->default($state);
+
+    # we shouldn't do the ending stuff
+    $t->no_change_exit_code(1);
+    $t->no_ending(1);
 }
 
 =head2 Functions

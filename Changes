@@ -5,12 +5,17 @@ See README and version control log for Test::Builder2 changes.
     * Patched TB2::Mouse to not blow over tied $_ (a local $_ bug).
       (Father Chrysostomos) [github 293]
     * Test::Builder::Tester will now set a plan in test tests emulating
-      an undocumented feature that some tests accidentally rely on.
+      an undocumented 0.x feature that some tests accidentally rely on.
       [github 327] [github 328]
+    * Test::Builder::Tester will now turn off the ending stuff to
+      emulate an undocumented 0.x feature that some tests accidentally
+      rely on.  [github #276]
 
     Misc
     * Update the resources meta data to point at the correct repository, issues
       mailing list and home page.
+    * Test::Builder::Tester is now discouraged.  Use Test::Tester or TB2::Tester
+      instead.
 
     Incompatible Changes
     * The result of each test is no longer stored by default.  This keeps
