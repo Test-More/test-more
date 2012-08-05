@@ -441,8 +441,6 @@ Declares that this test will run an indeterminate number of tests.
 sub no_plan {
     my($self, $arg) = @_;
 
-    $self->carp("no_plan takes no arguments") if $arg;
-
     $self->test_start unless $self->in_test;
 
     $self->set_plan(

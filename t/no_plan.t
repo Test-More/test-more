@@ -31,7 +31,7 @@ use Test::Builder::NoOutput;
     my $tb = Test::Builder::NoOutput->create;
 
     ok $tb->plan(no_plan => 1);
-    is $warning, sprintf "no_plan takes no arguments at %s line %d.\n", __FILE__, __LINE__ - 1;
+    is $warning, '';
     is $tb->has_plan, 'no_plan';
     is $tb->read, "TAP version 13\n";
 }

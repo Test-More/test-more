@@ -24,6 +24,11 @@ See README and version control log for Test::Builder2 changes.
       exceptions by default.  For most needs, they are replaced with
       statistical methods in TB2::History. [github 198]
 
+      Feature Changes
+      * 'use Test::More no_plan => 1' no longer warns.  This allows us
+        to simplify the import argument handling, everything is a hash
+        now (or can be converted into one).
+
 
 1.005000_005  Thu Apr 26 15:23:25 PDT 2012
     New Features

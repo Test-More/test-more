@@ -104,6 +104,17 @@ See L<Test::Builder/set_formatter> for more details.
 
 =cut
 
+my $special_imports = {
+    formatter => sub {
+        my $class     = shift;
+        my $formatter = shift;
+
+        $class->builder->set_formatter($formatter);
+
+        return $formatter;
+    },
+};
+
 sub import {
     my($class) = shift;
     my @args = @_;
@@ -117,62 +128,29 @@ sub import {
 
     $test->exported_to($caller);
 
+    # Special case for 'use Test::More "no_plan"'
+    # Normalize it into 'use Test::More no_plan => 1' so we can hash the
+    # args list.
+    push @args, 1 if @args == 1 and $args[0] eq 'no_plan';
+
     # Let a module do whatever extra things it likes
     $class->import_extra( \@args );
 
-    # Strip off anything which is not a test plan
-    my(@imports) = $class->_strip_import_args( \@args );
+    my %args = @args;
 
-    # We're left with test plan arguments
-    my @plan = @args;
-    $test->plan(@plan);
+    my $imports = delete $args{import};
 
-    $class->export_to_level( 1, $class, @imports );
-}
-
-
-my $special_imports = {
-    formatter => sub {
-        my $class     = shift;
-        my $formatter = shift;
-
-        $class->builder->set_formatter($formatter);
-
-        return;
-    },
-};
-
-sub _strip_import_args {
-    my $class = shift;
-    my $list  = shift;
-
-    my @imports = ();
-    my @other   = ();
-    my $idx     = 0;
-    while( $idx <= $#{$list} ) {
-        my $item = $list->[$idx];
-
-        if( defined($item) and $item eq 'import' ) {
-            # A special case for adding imports which requires accessing @imports
-            push @imports, @{ $list->[ $idx + 1 ] };
-            $idx++;
-        }
-        elsif( my $action = $special_imports->{$item} ) {
-            # Spotted a special keyword.  Take action
-            $class->$action($list->[ $idx + 1 ]);
-            $idx++;
-        }
-        else {
-            push @other, $item;
-        }
-
-        $idx++;
+    for my $key (keys %$special_imports) {
+        my $method = $special_imports->{$key};
+        $class->$method(delete $args{$key}) if exists $args{$key};
     }
 
-    @$list = @other;
+    # We're left with test plan arguments
+    $test->plan(%args);
 
-    return @imports;
+    $class->export_to_level( 1, $class, @$imports );
 }
+
 
 =head3 import_extra
 
