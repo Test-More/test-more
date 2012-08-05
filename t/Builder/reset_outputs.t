@@ -1,15 +1,5 @@
 #!perl -w
 
-BEGIN {
-    if( $ENV{PERL_CORE} ) {
-        chdir 't';
-        @INC = ('../lib', 'lib');
-    }
-    else {
-        unshift @INC, 't/lib';
-    }
-}
-
 use Test::Builder;
 use Test::More 'no_plan';
 
