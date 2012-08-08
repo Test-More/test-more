@@ -1,41 +1,39 @@
+#!/usr/bin/perl -w
+
 use strict;
 use warnings;
-use Test::More tests => 43;
-use Test::SharedFork;
+
+BEGIN {
+    package MyTest;
+    require "t/test.pl";
+    plan skip_all unless has_fork();
+}
+
+use Test::More tests => 43, coordinate_forks => 1;
+
 use Time::HiRes qw/sleep/;
 
 my $pid = fork();
-if ($pid == 0) {
-    # child
-    Test::SharedFork->child;
-
-    my $i = 0;
-    for (1..20) {
-        $i++;
-        ok 1, "child $_";
+if ($pid == 0) { # child
+    for my $i (1..20) {
+        ok 1, "child $i";
         sleep(rand()/100);
     }
-    is $i, 20, 'child finished';
+    pass 'child finished';
 
     1 while wait() != -1;
     exit;
-} elsif ($pid) {
-    # parent
-    Test::SharedFork->parent;
-
-    my $i = 0;
-    for (1..20) {
-        $i++;
-        ok 1, "parent $_";
+} elsif ($pid) { # parent
+    for my $i (1..20) {
+        ok 1, "parent $i";
         sleep(rand()/100);
     }
-    is $i, 20, 'parent finished';
+    pass 'parent finished';
     waitpid($pid, 0);
 
-    ok 1, 'wait ok';
+    pass 'wait ok';
 
     exit;
 } else {
     die $!;
 }
-
