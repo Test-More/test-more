@@ -6,7 +6,7 @@ use warnings;
 BEGIN {
     package MyTest;
     require "t/test.pl";
-    plan skip_all unless has_fork();
+    plan( skip_all => "test needs fork()" ) unless has_fork();
 }
 
 use Test::More tests => 43, coordinate_forks => 1;

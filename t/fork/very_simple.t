@@ -1,5 +1,7 @@
-use Test::More tests => 2;
-use Test::SharedFork;
+#!/usr/bin/perl -w
 
-ok 1;
-ok 1;
+use Test::More tests => 2, coordinate_forks => 1;
+
+pass();
+pass();
+

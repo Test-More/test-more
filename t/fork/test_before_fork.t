@@ -1,14 +1,20 @@
+#!/usr/bin/perl -w
+
 use strict;
 use warnings;
 
-use Test::More tests => 3;
-use Test::SharedFork;
+BEGIN {
+    package MyTest;
+    require "t/test.pl";
+    plan( skip_all => "test needs fork()" ) unless has_fork();
+}
 
-ok(1, 'one');
-if (!Test::SharedFork::fork) {
-    ok(1, 'two');
+use Test::More tests => 3, coordinate_forks => 1;
+
+pass('one');
+if (!fork) {
+    pass('two');
     exit 0;
 }
 1 while wait == -1;
-ok(1, 'three');
-
+pass('three');

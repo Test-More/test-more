@@ -1,8 +1,9 @@
+#!/usr/bin/perl -w
+
 use strict;
 use warnings;
-use utf8;
-use Test::More 0.96;
-use Test::SharedFork;
+
+use Test::More coordinate_forks => 1;
 
 subtest 'foo' => sub {
     pass 'parent one';

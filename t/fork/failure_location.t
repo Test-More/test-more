@@ -1,9 +1,16 @@
+#!/usr/bin/perl -w
+
 use strict;
 use warnings;
 
-use Test::More tests => 2;
+BEGIN {
+    package MyTest;
+    require "t/test.pl";
+    plan( skip_all => "test needs fork()" ) unless has_fork();
+}
+
+use Test::More tests => 2, coordinate_forks => 1;
 use Test::Builder::Tester;
-use Test::SharedFork;
 
 sub run_test {
     test_fail +3;

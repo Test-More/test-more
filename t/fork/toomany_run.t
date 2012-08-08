@@ -1,24 +1,30 @@
+#!/usr/bin/perl -w
+
 use strict;
 use warnings;
-use Test::More tests => 30;
-use Test::SharedFork;
 
-for (1..10) {
-    my $pid = Test::SharedFork->fork();
-    if ($pid == 0) {
-        # child
-        ok 1, "child $_";
+BEGIN {
+    package MyTest;
+    require "t/test.pl";
+    plan( skip_all => "test needs fork()" ) unless has_fork();
+}
 
+use Test::More tests => 30, coordinate_forks => 1;
+
+for my $num (1..10) {
+    my $pid = fork();
+    if ($pid == 0) {            # child
+        pass "child $num";
         exit;
-    } elsif (defined($pid)) {
-        # parent
-        ok 1, "parent $_";
+    }
+    elsif (defined($pid)) {     # parent
+        pass "parent $num";
 
         waitpid($pid, 0);
 
-        ok 1, 'wait ok';
-    } else {
+        pass 'wait ok';
+    }
+    else {                      # fork failure
         die "fork failed: $!";
     }
 }
-
