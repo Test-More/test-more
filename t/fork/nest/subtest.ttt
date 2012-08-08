@@ -1,0 +1,22 @@
+use strict;
+use warnings;
+use utf8;
+use Test::More 0.96;
+use Test::SharedFork;
+
+subtest 'foo' => sub {
+    pass 'parent one';
+    pass 'parent two';
+    my $pid = fork;
+    unless ($pid) {
+        pass 'child one';
+        pass 'child two';
+        fail 'child three';
+        exit;
+    }
+    wait;
+    pass 'parent three';
+};
+
+done_testing;
+
