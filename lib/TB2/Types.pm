@@ -76,6 +76,14 @@ References stringifier class. It will coerce ref to string.
 subtype 'TB2::Stringify', as 'Str';
 coerce 'TB2::Stringify', from 'Ref', via { "$_" };
 
+
+# Pre-declare some things as classes so we don't have to load them just
+# to get the types to turn out right.
+my @classes = qw(
+    File::Temp
+);
+for my $class (@classes) { class_type($class) }
+
 no TB2::Mouse::Util::TypeConstraints;
 
 1;
