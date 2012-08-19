@@ -1361,6 +1361,9 @@ sub use_numbers {
     my( $self, $use_nums ) = @_;
 
     my $formatter = $self->formatter;
+
+    return unless $formatter->can("use_numbers");
+
     if( defined $use_nums ) {
         $formatter->use_numbers($use_nums);
     }
@@ -1378,6 +1381,9 @@ calls to C<diag()> and C<note()>.
 
 sub no_diag {
     my $self = shift;
+
+    my $formatter = $self->formatter;
+    return unless $formatter->can("show_logs");
 
     if( @_ ) {
         my $no = shift;
@@ -1402,6 +1408,9 @@ If this is true, none of that will be done.
 sub no_ending {
     my $self = shift;
 
+    my $formatter = $self->formatter;
+    return unless $formatter->can("show_ending_commentary");
+
     if( @_ ) {
         my $no = shift;
         $self->{No_Ending} = $no;
@@ -1422,6 +1431,9 @@ If set to true, no "1..N" header will be printed.
 
 sub no_header {
     my $self = shift;
+
+    my $formatter = $self->formatter;
+    return unless $formatter->can("show_header");
 
     if( @_ ) {
         my $no = shift;
