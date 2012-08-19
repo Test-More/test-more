@@ -10,7 +10,7 @@ sub handle_test_start {
     my $self  = shift;
     my $event = shift;
 
-    $self->write(output => "Running $0\n");
+    $self->write(out => "Running $0\n");
 
     return;
 }
@@ -29,7 +29,11 @@ sub handle_result {
     my($self, $result) = @_;
 
     my $type = $type_map{$result->type};
-    $self->write(output => "$type: @{[$result->name]}\n");
+    my $name = $result->name;
+    my $out = $type;
+    $out .= ": $name" if defined $name;
+
+    $self->write(out => "$out\n");
 
     return;
 }

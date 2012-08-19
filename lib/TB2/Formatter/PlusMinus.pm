@@ -10,7 +10,7 @@ sub handle_test_end {
     my $self  = shift;
     my $event = shift;
 
-    $self->write(output => "\n");
+    $self->write(out => "\n");
 
     return;
 }
@@ -19,7 +19,7 @@ sub handle_result {
     my($self, $result) = @_;
 
     my $out = $result->is_fail ? "-" : "+";
-    $self->write(output => $out);
+    $self->write(out => $out);
 
     return;
 }
