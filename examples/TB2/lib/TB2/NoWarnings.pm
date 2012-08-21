@@ -79,8 +79,6 @@ plan is already set, but it doesn't.
     sub handle_test_end {
         my $self = shift;
 
-        $DB::single = 1;
-
         my $warnings = $self->warnings_seen;
 
         $self->builder
@@ -89,7 +87,7 @@ plan is already set, but it doesn't.
               warnings => $warnings
           ]);
 
-        remove_warning_handler();
+        $self->remove_warning_handler();
 
         return;
     }
