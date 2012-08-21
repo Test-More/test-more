@@ -10,6 +10,8 @@ See README and version control log for Test::Builder2 changes.
     * Test::Builder::Tester will now turn off the ending stuff to
       emulate an undocumented 0.x feature that some tests accidentally
       rely on.  [github #276]
+    * Fix TB2::Formatter::PlusMinus and TB2::Formatter::POSIX.  They
+      suffered bit rot.
 
     Misc
     * Update the resources meta data to point at the correct repository, issues
