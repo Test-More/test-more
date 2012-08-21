@@ -52,7 +52,7 @@ L<TB2::EventHandler>
 
         $DB::single = 1;
         return;  # welcome to the debugger.  $result contains the result
-    };
+    }
 }
 
 # Yep, this is less than ideal.
