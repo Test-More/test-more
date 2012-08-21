@@ -1819,7 +1819,7 @@ been configured to store events.
 sub summary {
     my($self) = shift;
 
-    return map { $_->is_fail ? 0 : 1 } @{$self->history->results};
+    return map { $_->is_fail ? 0 : 1 } @{$self->_results};
 }
 
 =item B<name>
@@ -1888,9 +1888,30 @@ been configured to store events.
 
 =cut
 
+# Get $self->history->results and rethrow the error if results are
+# turned off so its at the point of the caller of details() or
+# summary().
+sub _results {
+    my $self = shift;
+
+    my $results = eval {
+        $self->history->results;
+    };
+
+    if( !$results ) {
+        my $error = $@;
+        my($pack, $file, $line) = caller(1);
+        $error =~ s{ at .* line \d+\.?$}{ at $file line $line.};
+        die $error;
+    }
+
+    return $results;
+}
+
 sub details {
     my $self = shift;
-    return map { $self->_result_to_hash($_) } @{$self->history->results};
+
+    return map { $self->_result_to_hash($_) } @{$self->_results};
 }
 
 sub _result_to_hash {
