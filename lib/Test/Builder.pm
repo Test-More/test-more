@@ -1819,6 +1819,7 @@ been configured to store events.
 sub summary {
     my($self) = shift;
 
+    local $Level = $Level + 1;
     return map { $_->is_fail ? 0 : 1 } @{$self->_results};
 }
 
@@ -1894,23 +1895,25 @@ been configured to store events.
 sub _results {
     my $self = shift;
 
-    my $results = eval {
-        $self->history->results;
-    };
+    my $history = $self->history;
 
-    if( !$results ) {
-        my $error = $@;
-        my($pack, $file, $line) = caller(1);
-        $error =~ s{ at .* line \d+\.?$}{ at $file line $line.};
-        die $error;
-    }
+    return $history->results if $history->store_events;
 
-    return $results;
+    local $Level = $Level + 1;
+
+    $self->croak(<<ERROR);
+Results are not stored by default (saves memory).  Consider using the
+statistical methods of the TB2::History object instead, accessable
+as Test::Builder->history.
+ERROR
+
+    return;
 }
 
 sub details {
     my $self = shift;
 
+    local $Level = $Level + 1;
     return map { $self->_result_to_hash($_) } @{$self->_results};
 }
 

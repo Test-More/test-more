@@ -13,7 +13,7 @@ my $Test = Test::Builder->new;
 my $history = TB2::History->new( store_events => 1 );
 $Test->test_state->ec->history($history);
 
-$Test->plan( tests => 13 );
+$Test->plan( tests => 15 );
 $Test->level(0);
 
 my @Expected_Details;
@@ -109,10 +109,13 @@ TODO_SKIP: {
 
 note "details() error message when storage is off"; {
     my $tb = Test::Builder->create;
+    $tb->level(0);
 
     ok !eval { $tb->details };
-    is $@, "Results are not stored at $0 line @{[ __LINE__ - 1 ]}.\n";
+    like $@, qr/^Results are not stored by default /;
+    like $@, qr/at $0 line @{[ __LINE__ - 2 ]}\.$/;
 
     ok !eval { $tb->summary };
-    is $@, "Results are not stored at $0 line @{[ __LINE__ - 1 ]}.\n";
+    like $@, qr/^Results are not stored by default /;
+    like $@, qr/at \Q$0\E line @{[ __LINE__ - 2 ]}\.$/;
 }
