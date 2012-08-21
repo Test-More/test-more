@@ -44,7 +44,9 @@ sub handle_test_start {
 </head>
 <body>
 <table>
-    <tr><th>Result</th><th>Name</th></tr>
+    <tr>
+        <th>Result</th><th>Name</th><th>File</th><th>Line</th>
+    </tr>
 HTML
 
     return;
@@ -71,9 +73,13 @@ sub handle_result {
     my $result = shift;
 
     my $name = $result->name || '';
+    my $file = $result->file;
+    my $line = $result->line;
     my $ok   = $result ? "pass" : "<b>fail</b>";
     $self->write(out => <<"HTML");
-    <tr><td>$ok</td><td>$name</td></tr>
+    <tr>
+        <td>$ok</td><td>$name</td><td>$file</td><td>$line</td>
+    </tr>
 HTML
 
     return;
