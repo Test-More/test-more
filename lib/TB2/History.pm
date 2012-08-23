@@ -135,14 +135,6 @@ sub results {
 }
 
 
-=head3 event_count
-
-    my $count = $history->event_count;
-
-Get the count of events that have been seen.
-
-=cut
-
 sub handle_event {
     my $self = shift;
     my $event = shift;
@@ -254,11 +246,6 @@ sub handle_result    {
 }
 
 
-=head2 result_count
-
-The number of results which have been seen.
-
-
 =head3 has_results
 
 Returns true if we have stored results, false otherwise.
@@ -275,6 +262,8 @@ sub has_results { shift->result_count > 0 }
 my @statistic_attributes = qw(
     pass_count
     fail_count
+    literal_pass_count
+    literal_fail_count
     todo_count
     skip_count
     result_count
@@ -296,6 +285,8 @@ sub _update_result_statistics {
     $self->counter( $self->counter + 1 );
     $self->pass_count( $self->pass_count + 1 ) if $result->is_pass;
     $self->fail_count( $self->fail_count + 1 ) if $result->is_fail;
+    $self->literal_pass_count( $self->literal_pass_count + 1 ) if $result->literal_pass;
+    $self->literal_fail_count( $self->literal_fail_count + 1 ) if !$result->literal_pass;
     $self->todo_count( $self->todo_count + 1 ) if $result->is_todo;
     $self->skip_count( $self->skip_count + 1 ) if $result->is_skip;
     $self->result_count( $self->result_count + 1 );
@@ -303,22 +294,37 @@ sub _update_result_statistics {
     return;
 }
 
+=head3 event_count
+
+A count of number of events that have been seen.
+
+=head2 result_count
+
+A count of the number of results which have been seen.
 
 =head3 pass_count
 
-A count of the number of passed tests have been added to results.
+A count of the number of passed tests seen.
+
+That is any result for which C<is_pass> is true.
 
 =head3 fail_count
 
-A count of the number of failed tests have been added to results.
+A count of the number of failed tests seen.
+
+That is any result for which C<is_fail> is true.
 
 =head3 todo_count
 
-A count of the number of TODO tests have been added to results.
+A count of the number of TODO tests seen.
+
+That is any result for which C<is_todo> is true.
 
 =head3 skip_count
 
-A count of the number of SKIP tests have been added to results.
+A count of the number of SKIP tests seen.
+
+That is any result for which C<is_skip> is true.
 
 =head3 can_succeed
 

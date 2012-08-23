@@ -9,6 +9,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 sub is_todo { 1 }
 sub is_fail { 0 }
+sub is_pass { 1 }
 
 no TB2::Mouse::Role;
 

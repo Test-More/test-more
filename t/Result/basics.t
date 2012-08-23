@@ -62,6 +62,8 @@ sub tests {
 
         is $result->type, 'todo_pass';
         ok $result->is_todo;
+        ok $result->is_pass;
+        ok !$result->is_fail;
         ok $result;
     }
 

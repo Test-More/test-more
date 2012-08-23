@@ -36,14 +36,28 @@ note "basic history stats"; {
     $ec->post_event( Pass() );
     $ec->post_event( Fail() );
     $ec->post_event($_) for Pass(), Fail();
+    $ec->post_event( TB2::Result->new_result(
+        pass            => 0,
+        directives      => ['todo'],
+    ));
+    $ec->post_event( TB2::Result->new_result(
+        pass            => 1,
+        directives      => ['todo'],
+    ));
+    $ec->post_event( TB2::Result->new_result(
+        pass            => 1,
+        directives      => ['skip'],
+    ));
     ok $history->has_results, q{we have results};
-    
-    is $history->result_count, 4, q{count looks good};
-    is $history->pass_count,   2, q{pass_count};
-    is $history->fail_count,   2, q{fail_count};
-    is $history->todo_count,   0, q{todo_count};
-    is $history->skip_count,   0, q{skip_count};
 
+    is $history->event_count,           7, q{event_count};    
+    is $history->result_count,          7, q{result_count};
+    is $history->pass_count,            5, q{pass_count};
+    is $history->fail_count,            2, q{fail_count};
+    is $history->todo_count,            2, q{todo_count};
+    is $history->skip_count,            1, q{skip_count};
+    is $history->literal_pass_count,    4, q{literal_pass_count};
+    is $history->literal_fail_count,    3, q{literal_pass_count};
 }
 
 
