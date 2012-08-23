@@ -31,15 +31,25 @@ note "basic history stats"; {
         history => $history
     );
 
+    $ec->post_event( TB2::Event::TestStart->new );
+
+    is $history->last_event->object_id,  $history->test_start->object_id;
+
     ok!$history->has_results, q{we no not yet have results};
 
     $ec->post_event( Pass() );
     $ec->post_event( Fail() );
     $ec->post_event($_) for Pass(), Fail();
-    $ec->post_event( TB2::Result->new_result(
+
+    my $todo_fail = TB2::Result->new_result(
         pass            => 0,
         directives      => ['todo'],
-    ));
+    );
+    $ec->post_event( $todo_fail );
+
+    is $history->last_result->object_id, $todo_fail->object_id;
+    is $history->last_event->object_id,  $todo_fail->object_id;
+
     $ec->post_event( TB2::Result->new_result(
         pass            => 1,
         directives      => ['todo'],
@@ -50,7 +60,7 @@ note "basic history stats"; {
     ));
     ok $history->has_results, q{we have results};
 
-    is $history->event_count,           7, q{event_count};    
+    is $history->event_count,           8, q{event_count};    
     is $history->result_count,          7, q{result_count};
     is $history->pass_count,            5, q{pass_count};
     is $history->fail_count,            2, q{fail_count};

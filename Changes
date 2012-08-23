@@ -1,6 +1,11 @@
 See README and version control log for Test::Builder2 changes.
 
 1.005000_006
+    New Features
+    * Memory usage will not grow as more tests are run.
+    * Added TB2::History->last_result and last_event to retrieve the
+      last result and event seen.
+
     Bug Fixes
     * Patched TB2::Mouse to not blow over tied $_ (a local $_ bug).
       (Father Chrysostomos) [github 293]

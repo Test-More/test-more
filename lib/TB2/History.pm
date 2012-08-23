@@ -109,7 +109,21 @@ Unless otherwise stated, these are all accessor methods of the form:
 
 An array ref of all events seen.
 
+By default, no events are stored and this will throw an exception
+unless C<< $history->store_events >> is true.
+
+=head3 last_event
+
+    my $event = $history->last_event;
+
+Returns the last event seen.
+
 =cut
+
+has last_event => (
+    is          => 'rw',
+    isa         => 'TB2::Event',
+);
 
 sub event_storage_class {
     return $_[0]->store_events ? "TB2::History::EventStorage" : "TB2::History::NoEventStorage";
@@ -141,6 +155,7 @@ sub handle_event {
 
     $self->event_storage->events_push($event);
     $self->event_count( $self->event_count + 1 );
+    $self->last_event($event);
 
     return;
 }
@@ -233,12 +248,18 @@ sub has_events   { shift->event_count > 0 }
     # The result of test #4.
     my $result = $history->results->[3];
 
+Returns a list of all L<TB2::Result> objects seen in this test.
+
+By default, no results are stored and this will throw an exception
+unless C<< $history->store_events >> is true.
+
 =cut
 
 sub handle_result    {
     my $self = shift;
     my $result = shift;
 
+    $self->last_result($result);
     $self->_update_result_statistics($result);
     $self->handle_event($result);
 
@@ -254,6 +275,19 @@ Returns true if we have stored results, false otherwise.
 
 sub has_results { shift->result_count > 0 }
 
+
+=head3 last_result
+
+    my $result = $history->last_result;
+
+Returns the last result seen.
+
+=cut
+
+has last_result => (
+    is          => 'rw',
+    isa         => 'TB2::Result::Base',
+);
 
 =head2 Statistics
 
