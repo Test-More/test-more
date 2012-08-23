@@ -43,7 +43,6 @@ has it ended, is it passing, how many tests have run and so on.
 The history for a test is usually accessed by going through the
 L<TB2::TestState> C<history> accessor.
 
-=for later
 To save memory it does not, by default, store the complete history of
 all events.
 
