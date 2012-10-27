@@ -2,6 +2,7 @@ package TB2::History;
 
 use Carp;
 use TB2::Mouse;
+use TB2::Mouse::Util::TypeConstraints qw(class_type);
 use TB2::Types;
 use TB2::threads::shared;
 
@@ -122,7 +123,7 @@ Returns the last event seen.
 
 has last_event => (
     is          => 'rw',
-    isa         => 'TB2::Event',
+    does        => 'TB2::Event',
 );
 
 sub event_storage_class {
@@ -131,7 +132,7 @@ sub event_storage_class {
 
 has event_storage =>
   is            => 'ro',
-  isa           => 'TB2::History::EventStorage',
+  isa           => class_type('TB2::History::EventStorage'),
   default       => sub {
       my $storage_class = $_[0]->event_storage_class;
       $_[0]->load($storage_class);
@@ -286,7 +287,7 @@ Returns the last result seen.
 
 has last_result => (
     is          => 'rw',
-    isa         => 'TB2::Result::Base',
+    isa         => class_type('TB2::Result::Base'),
 );
 
 =head2 Statistics
