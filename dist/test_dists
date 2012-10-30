@@ -11,6 +11,8 @@ use Test::More;
 CPAN::HandleConfig->load;
 $CPAN::Config->{test_report} = 0;
 
+my %skip_dists = map { chomp; $_ => 1 } <DATA>;
+
 sub get_distributions {
     my $match = shift;
     return map { $_->pretty_id } CPAN::Shell->expand("Distribution", $match);
@@ -24,6 +26,8 @@ for my $dist (@dist_list->shuffle) {
     my($mod_name) = $dist =~ m{([^/]+)$};
     $mod_name =~ s{-[^-]+$}{};
     $mod_name =~ s{-}{::}g;
+
+    next if $skip_dists{$mod_name};
 
     note $mod_name;
 
@@ -54,3 +58,6 @@ done_testing;
 
 note "Failed distributions";
 note "$_" for @failed_dists;
+
+__DATA__
+Test::Presenter
