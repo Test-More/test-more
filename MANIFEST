@@ -151,7 +151,6 @@ t/CanOpen.t
 t/CanTry.t
 t/circular_data.t
 t/cmp_ok.t
-t/dependents.t
 t/diag.t
 t/died.t
 t/dont_overwrite_die_handler.t
@@ -229,6 +228,8 @@ t/lib/TieOut.pm
 t/missing.t
 t/Module/doesnt_set_exported_to.t
 t/Module/formatter.t
+t/Module/import_extra.t
+t/Module/no_plan.t
 t/More.t
 t/new_ok.t
 t/no_plan.t
@@ -303,6 +304,7 @@ t/Tester/faildiag.t
 t/Tester/fhrestore.t
 t/Tester/import.t
 t/Tester/line_num.t
+t/Tester/plan.t
 t/Tester/skip.t
 t/Tester2/capture.t
 t/Tester2/state_untouched.t
@@ -314,9 +316,11 @@ t/todo_skip_before_plan.t
 t/todo_warnings.t
 t/true_value.t
 t/Types/int.t
+t/Types/string.t
 t/Types/stringify.t
 t/undef.t
 t/use_ok.t
 t/useing.t
 t/utf8.t
 t/versions.t
+t/xt/dependents.t
