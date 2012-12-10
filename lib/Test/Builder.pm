@@ -2456,6 +2456,26 @@ sub _ending {
     if( !$self->{Have_Plan} and $self->{Curr_Test} ) {
         $self->is_passing(0);
         $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
+
+        if($real_exit_code) {
+            $self->diag(<<"FAIL");
+Looks like your test exited with $real_exit_code just after $self->{Curr_Test}.
+FAIL
+            $self->is_passing(0);
+            _my_exit($real_exit_code) && return;
+        }
+
+        # But if the tests ran, handle exit code.
+        my $test_results = $self->{Test_Results};
+        if(@$test_results) {
+            my $num_failed = grep !$_->{'ok'}, @{$test_results}[ 0 .. $self->{Curr_Test} - 1 ];
+            if ($num_failed > 0) {
+
+                my $exit_code = $num_failed <= 254 ? $num_failed : 254;
+                _my_exit($exit_code) && return;
+            }
+        }
+        _my_exit(254) && return;
     }
 
     # Exit if plan() was never called.  This is so "require Test::Simple"
