@@ -22,6 +22,8 @@ my @dist_list = @ARGV ? @ARGV : get_distributions("/Test-/");
 
 my @failed_dists;
 
+note sprintf "%d dists to test", scalar @dist_list;
+
 for my $dist (@dist_list->shuffle) {
     my($mod_name) = $dist =~ m{([^/]+)$};
     $mod_name =~ s{-[^-]+$}{};
