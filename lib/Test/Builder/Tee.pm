@@ -2,6 +2,9 @@ package Test::Builder::Tee;
 
 # A cheap implementation of IO::Tee.
 
+use strict;
+use warnings;
+
 sub TIEHANDLE {
     my($class, @refs) = @_;
 
