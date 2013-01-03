@@ -63,10 +63,10 @@ allow_leading_tabs = 0
 
 # Inform perlcritic that other things turn on strictures and warnings
 [TestingAndDebugging::RequireUseStrict]
-equivalent_modules = Mouse perl5i::0 perl5i::1 perl5i::2 Modern::Perl TB2::Mouse
+equivalent_modules = Mouse perl5i::0 perl5i::1 perl5i::2 Modern::Perl TB2::Mouse TB2::Mouse::Role
 
 [TestingAndDebugging::RequireUseWarnings]
-equivalent_modules = Mouse perl5i::0 perl5i::1 perl5i::2 Modern::Perl TB2::Mouse
+equivalent_modules = Mouse perl5i::0 perl5i::1 perl5i::2 Modern::Perl TB2::Mouse TB2::Mouse::Role
 
 # "no warnings" is fine as long as it's restricted to one or more categories
 [TestingAndDebugging::ProhibitNoWarnings]
