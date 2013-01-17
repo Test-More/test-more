@@ -1820,6 +1820,35 @@ L<Test::Inline> shows the idea of embedded testing.
 L<Bundle::Test> installs a whole bunch of useful test modules.
 
 
+Although Test::More is a core module in versions of Perl since 5.8, Test::More has evolved since Perl 5.8, and not all of the features you're used to will be present in the shipped version of Test::More. If you are writing a module, don't forget to indicate in your package metadata the minimum version of Test::More that you require. For instance, if you want to use C<done_testing()> but want your test script to run on Perl 5.10.0, you will need to explicitly require Test::More > 0.88.
+
+Key feature milestones include:
+
+=over 4
+
+=item subtests
+
+Subtests were released in Test::More 0.94, but did not implicitly call C<done_testing()> until 0.96. 
+
+=item C<done_testing()>
+
+This was released in Test::More 0.88, which shipped with Perl 5.10.1. 
+
+=item C<diag()>
+
+This was introduced in Test::More 0.41.
+
+=item C<cmp_ok()>, C<todo_skip()>, and C<unlike()>
+
+These were introduced in Test::More 0.40.
+
+=item C<is_deeply()>
+
+This was introduced in Test::More 0.31.
+
+=back
+
+There is a full version history in the Changes file.
 =head1 AUTHORS
 
 Michael G Schwern E<lt>schwern@pobox.comE<gt> with much inspiration
