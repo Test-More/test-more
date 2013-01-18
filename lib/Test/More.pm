@@ -1833,8 +1833,9 @@ L<Test::Inline> shows the idea of embedded testing.
 
 L<Bundle::Test> installs a whole bunch of useful test modules.
 
+=head1 COMPATIBILITY
 
-Although Test::More is a core module in versions of Perl since 5.8, Test::More has evolved since Perl 5.8, and not all of the features you're used to will be present in the shipped version of Test::More. If you are writing a module, don't forget to indicate in your package metadata the minimum version of Test::More that you require. For instance, if you want to use C<done_testing()> but want your test script to run on Perl 5.10.0, you will need to explicitly require Test::More > 0.88.
+Although Test::More has been a core module in versions of Perl since 5.6.2, Test::More has evolved since then, and not all of the features you're used to will be present in the shipped version of Test::More. If you are writing a module, don't forget to indicate in your package metadata the minimum version of Test::More that you require. For instance, if you want to use C<done_testing()> but want your test script to run on Perl 5.10.0, you will need to explicitly require Test::More > 0.88.
 
 Key feature milestones include:
 
@@ -1842,27 +1843,27 @@ Key feature milestones include:
 
 =item subtests
 
-Subtests were released in Test::More 0.94, but did not implicitly call C<done_testing()> until 0.96. 
+Subtests were released in Test::More 0.94, which came with Perl 5.11.1. Subtests did not implicitly call C<done_testing()> until 0.96, which came with Perl 5.13.4. 
 
 =item C<done_testing()>
 
-This was released in Test::More 0.88, which shipped with Perl 5.10.1. 
+This was released in Test::More 0.88, and first shipped with Perl in 5.10.1 as part of Test::More 0.92. 
 
-=item C<diag()>
+=item C<cmp_ok()>
 
-This was introduced in Test::More 0.41.
+Although C<cmp_ok()> was introduced in 0.40, 0.86 fixed an important bug to make it safe for overloaded objects; the fixed first shipped with Perl in 5.10.1 as part of Test::More 0.92.
 
-=item C<cmp_ok()>, C<todo_skip()>, and C<unlike()>
+=item C<new_ok()> C<note()> and C<explain()>
 
-These were introduced in Test::More 0.40.
-
-=item C<is_deeply()>
-
-This was introduced in Test::More 0.31.
+These were was released in Test::More 0.82, and first shipped with Perl in 5.10.1 as part of Test::More 0.92. 
 
 =back
 
-There is a full version history in the Changes file.
+There is a full version history in the Changes file, and the Test::More versions included as core can be found using:
+
+    $ corelist -a Test::More
+
+
 =head1 AUTHORS
 
 Michael G Schwern E<lt>schwern@pobox.comE<gt>, with much inspiration
