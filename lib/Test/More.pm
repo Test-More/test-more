@@ -1723,7 +1723,10 @@ B<NOTE>  This behavior may go away in future versions.
 
 =item Backwards compatibility
 
-Test::More works with Perls as old as 5.6.0.
+Test::More works with Perls as old as 5.8.1.
+
+Thread support is not very reliable before 5.10.1, but that's
+because threads are not very reliable before 5.10.1.
 
 
 =item utf8 / "Wide character in print"
