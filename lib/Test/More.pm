@@ -1734,11 +1734,11 @@ Key feature milestones include:
 
 =item subtests
 
-Subtests were released in Test::More 0.94, which came with Perl 5.11.1. Subtests did not implicitly call C<done_testing()> until 0.96, which came with Perl 5.13.4. 
+Subtests were released in Test::More 0.94, which came with Perl 5.12.0. Subtests did not implicitly call C<done_testing()> until 0.96; the first Perl with that fix was Perl 5.14.0 with 0.98.
 
 =item C<done_testing()>
 
-This was released in Test::More 0.88, and first shipped with Perl in 5.10.1 as part of Test::More 0.92. 
+This was released in Test::More 0.88 and first shipped with Perl in 5.10.1 as part of Test::More 0.92. 
 
 =item C<cmp_ok()>
 
@@ -1750,7 +1750,7 @@ These were was released in Test::More 0.82, and first shipped with Perl in 5.10.
 
 =back
 
-There is a full version history in the Changes file, and the Test::More versions included as core can be found using:
+There is a full version history in the Changes file, and the Test::More versions included as core can be found using L<Module::CoreList>:
 
     $ corelist -a Test::More
 
