@@ -1,3 +1,10 @@
+0.98_04
+    Docs
+    * Added a COMPATIBILITY section so users know what major features were
+      added with what version of Test::More or perl. [github 343] [github 344]
+      (pdl)
+
+
 0.98_03  Thu Jun 21 13:04:19 PDT 2012
     New Features
     * cmp_ok() will error when used with something which is not a
