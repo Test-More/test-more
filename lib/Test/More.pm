@@ -29,6 +29,8 @@ our @EXPORT = qw(ok use_ok require_ok
   BAIL_OUT
 );
 
+=encoding utf8
+
 =head1 NAME
 
 Test::More - yet another framework for writing test scripts
