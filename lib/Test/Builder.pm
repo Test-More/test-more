@@ -333,8 +333,6 @@ The identifier is fairly simple and easily predictable.
 
 See L<TB2::HasObjectID>
 
-=cut
-
 =back
 
 =head2 Setting up tests
@@ -661,8 +659,6 @@ sub ok {
     # $test might contain an object which we don't want to accidentally
     # store, so we turn it into a boolean.
     $test = $test ? 1 : 0;
-
-#    lock( $self->history );
 
     # In case $name is a string overloaded object, force it to stringify.
     $self->_unoverload_str( \$name );
@@ -2167,8 +2163,6 @@ sub _file_and_line {
 }
 
 =back
-
-=cut
 
 =begin _private
 
