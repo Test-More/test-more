@@ -222,7 +222,7 @@ sub test_fail {
     $line = $line + ( shift() || 0 );    # prevent warnings
 
     # expect that on stderr
-    $err->expect("#     Failed test ($0 at line $line)");
+    $err->expect("#     Failed test ($filename at line $line)");
 }
 
 =item test_diag
