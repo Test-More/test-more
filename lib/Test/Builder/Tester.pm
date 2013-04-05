@@ -206,7 +206,7 @@ sub test_fail {
     $line = $line + ( shift() || 0 );    # prevent warnings
 
     # expect that on stderr
-    $streamer->expect("err", "#     Failed test ($0 at line $line)");
+    $streamer->expect("err", "#     Failed test ($filename at line $line)");
 }
 
 =item test_diag
