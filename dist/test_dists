@@ -50,7 +50,7 @@ for my $dist (@dist_list->shuffle) {
     my @results;
     for my $perl5lib ('', $lib_path) {
         local $ENV{PERL5LIB} = $perl5lib;
-        note "PERL5LIB=$perl5lib";
+        note "PERL5LIB=$ENV{PERL5LIB}";
 
         my $test_out;
         eval {
