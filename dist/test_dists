@@ -9,7 +9,7 @@ use perl5i::2;
 use CPAN;
 
 use Test::More;
-use Path::Tiny;
+use Path::Tiny 0.018;
 use Getopt::Long;
 my $mirror = "file:///var/local/CPAN_mirror";
 my $lib_path = "/tmp/tb2/lib/perl5";
