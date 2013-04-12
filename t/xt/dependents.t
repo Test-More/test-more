@@ -31,7 +31,8 @@ my @Modules = qw(
 
 # Modules which are known to be broken
 my %Broken = map { $_ => 1 } (
-    'Test::Class',
+    'Test::Most',
+    'Test::Differences'
 );
 
 # Have to do it here because CPAN chdirs.
