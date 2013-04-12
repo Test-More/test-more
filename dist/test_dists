@@ -59,10 +59,6 @@ for my $dist (@dist_list->shuffle) {
             my $mirror_settings = '';
             $mirror_settings = "--mirror $mirror --mirror-only" unless $nomirror;
             $test_out = `cpanm $mirror_settings --test-only $mod_name 2>&1`;
-            my $mod_file = $mod_name =~ s/::/-/gr;
-            my $lib_id = $perl5lib =~ s/\//-/gr;
-            my $new_file = $temp->child("$mod_file-$lib_id-build.log");
-            path('~/.cpanm/latest-build/build.log')->copy($new_file);
             alarm 0;
         };
         if( $@ ) {
@@ -71,6 +67,12 @@ for my $dist (@dist_list->shuffle) {
         else {
             push @results, ($test_out =~ /^Building and testing .* OK$/ms) ? 1 : 0;
         }
+
+        # Save the build log.
+        my $mod_file = $mod_name =~ s/::/-/gr;
+        my $lib_id = $perl5lib =~ s/\//-/gr;
+        my $new_file = $temp->child("$mod_file-$lib_id-build.log");
+        path('~/.cpanm/latest-build/build.log')->copy($new_file);
     }
 
     is( $results[0], $results[1], "$mod_name - install vs dev" ) || push @failed_dists, $mod_name;
