@@ -68,6 +68,8 @@ for my $dist (@dist_list->shuffle) {
             push @results, ($test_out =~ /^Building and testing .* OK$/ms) ? 1 : 0;
         }
 
+        note $results[-1] ? "Passed" : "Failed";
+
         # Save the build log.
         my $mod_file = $mod_name =~ s/::/-/gr;
         my $lib_id = $perl5lib =~ s/\//-/gr;
