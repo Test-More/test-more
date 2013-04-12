@@ -9,7 +9,7 @@ use warnings;
 # We use a lot of subroutine prototypes
 ## no critic (Subroutines::ProhibitSubroutinePrototypes)
 
-our $VERSION = '1.005000_005';
+our $VERSION = '1.005000_006';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Builder::Module 0.98;

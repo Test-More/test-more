@@ -4,7 +4,7 @@ use 5.008001;
 use TB2::Mouse;
 use TB2::Types;
 
-our $VERSION = '1.005000_005';
+our $VERSION = '1.005000_006';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use TB2::OnlyOnePlan;

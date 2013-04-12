@@ -10,7 +10,7 @@ with 'TB2::EventHandler',
      'TB2::CanTry',
      'TB2::CanLoad';
 
-our $VERSION = '1.005000_005';
+our $VERSION = '1.005000_006';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 

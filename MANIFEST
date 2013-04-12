@@ -147,6 +147,7 @@ t/Builder2/top.t
 t/c_flag.t
 t/CanDupFilehandles.t
 t/CanLoad.t
+t/CanLoad/taint.t
 t/CanOpen.t
 t/CanTry.t
 t/circular_data.t
@@ -299,6 +300,8 @@ t/Tester/args.t
 t/Tester/basic.t
 t/Tester/change_formatter.t
 t/Tester/die.t
+t/Tester/do-test_fail.pl
+t/Tester/do.t
 t/Tester/errormess.t
 t/Tester/faildiag.t
 t/Tester/fhrestore.t
