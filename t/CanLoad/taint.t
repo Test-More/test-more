@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+use lib 't/lib';
+
 BEGIN { require "./t/test.pl" }
 
 my $Taint = $0;
@@ -25,13 +27,11 @@ note "Creating test class"; {
 
 
 note "Loading a tainted class"; {
+    my $module = "Dummy";
 
-    # A simple core module we're not likely to have loaded.
-    my $module = "Text::Soundex";
-
-    ok !$INC{"Text/Soundex.pm"}, "test module is not loaded";
-    My::Thing->load("Text::Soundex".$Taint);
-    ok $INC{"Text/Soundex.pm"}, "test module is not loaded";    
+    ok !$INC{"Dummy.pm"}, "test module is not loaded";
+    My::Thing->load("Dummy".$Taint);
+    ok $INC{"Dummy.pm"}, "test module is not loaded";    
 }
 
 
