@@ -7,6 +7,7 @@ use perl5i::2;
 use CPAN;
 
 use Test::More;
+use Path::Tiny;
 
 CPAN::HandleConfig->load;
 $CPAN::Config->{test_report} = 0;
@@ -32,6 +33,8 @@ for my $dist (@dist_list->shuffle) {
     next if $skip_dists{$mod_name};
 
     note $mod_name;
+    my $temp = Path::Tiny->tempdir;
+    note "Creating directory $temp for test reports";
 
     my @results;
     for my $perl5lib ('', "/tmp/tb2/lib/perl5") {
@@ -43,6 +46,9 @@ for my $dist (@dist_list->shuffle) {
             local $SIG{ALRM} = sub { die "Alarm!\n" };
             alarm 60*5;
             $test_out = `cpanm --mirror file:///var/local/CPAN_mirror --mirror-only --test-only $mod_name 2>&1`;
+            my $mod_file = $mod_name =~ s/::/-/g;
+            my $new_file = $temp->child("$mod_file-build.log");
+            path('~/.cpanm/latest-build/build.log')->copy($new_file);
             alarm 0;
         };
         if( $@ ) {
