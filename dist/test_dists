@@ -3,10 +3,21 @@
 # Test the installed version of Test::More vs whatever's sitting in /tmp/tb2/lib/perl5
 # If we get the same result from both, that's a pass.
 
+# Usage dist/test_dists --mirror file:///var/local/CPAN_mirror --lib=/tmp/tb2/lib/perl5
+
 use perl5i::2;
 use CPAN;
 
 use Test::More;
+use Path::Tiny;
+use Getopt::Long;
+my $mirror = "file:///var/local/CPAN_mirror";
+my $lib_path = "/tmp/tb2/lib/perl5";
+my $nomirror;
+my $result = GetOptions ("nomirror" => \$nomirror,
+                        "mirror=s" => \$mirror,    # numeric
+                        "lib=s"    => \$lib_path);
+
 
 CPAN::HandleConfig->load;
 $CPAN::Config->{test_report} = 0;
@@ -24,6 +35,9 @@ my @failed_dists;
 
 note sprintf "%d dists to test", scalar @dist_list;
 
+my $temp = Path::Tiny->tempdir(UNLINK => 0);
+note "Creating directory $temp for test reports";
+
 for my $dist (@dist_list->shuffle) {
     my($mod_name) = $dist =~ m{([^/]+)$};
     $mod_name =~ s{-[^-]+$}{};
@@ -34,7 +48,7 @@ for my $dist (@dist_list->shuffle) {
     note $mod_name;
 
     my @results;
-    for my $perl5lib ('', "/tmp/tb2/lib/perl5") {
+    for my $perl5lib ('', $lib_path) {
         local $ENV{PERL5LIB} = $perl5lib;
         note "PERL5LIB=$perl5lib";
 
@@ -42,7 +56,13 @@ for my $dist (@dist_list->shuffle) {
         eval {
             local $SIG{ALRM} = sub { die "Alarm!\n" };
             alarm 60*5;
-            $test_out = `cpanm --mirror file:///var/local/CPAN_mirror --mirror-only --test-only $mod_name 2>&1`;
+            my $mirror_settings = '';
+            $mirror_settings = "--mirror $mirror --mirror-only" unless $nomirror;
+            $test_out = `cpanm $mirror_settings --test-only $mod_name 2>&1`;
+            my $mod_file = $mod_name =~ s/::/-/gr;
+            my $lib_id = $perl5lib =~ s/\//-/gr;
+            my $new_file = $temp->child("$mod_file-$lib_id-build.log");
+            path('~/.cpanm/latest-build/build.log')->copy($new_file);
             alarm 0;
         };
         if( $@ ) {
