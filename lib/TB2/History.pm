@@ -67,7 +67,7 @@ new() takes the following options.
 =head3 store_events
 
 If true, $history will keep a complete record of all test events
-accessable via L<events> and L<results>.  This will cause memory usage
+accessible via L<events> and L<results>.  This will cause memory usage
 to grow over the life of the test.
 
 If false, $history will discard events and only keep a summary of

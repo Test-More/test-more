@@ -1899,7 +1899,7 @@ sub _results {
 
     $self->croak(<<ERROR);
 Results are not stored by default (saves memory).  Consider using the
-statistical methods of the TB2::History object instead, accessable
+statistical methods of the TB2::History object instead, accessible
 as Test::Builder->history.
 ERROR
 
