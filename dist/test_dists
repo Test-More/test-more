@@ -78,7 +78,7 @@ for my $dist (@dist_list->shuffle) {
 
 done_testing;
 
-note "Failed distributions";
+note "Failed distributions" if @failed_dists;
 note "$_" for @failed_dists;
 
 __DATA__
