@@ -1,4 +1,8 @@
 0.98_04
+    Feature Changes
+    * The default name and diagnostics for isa_ok() and new_ok() have
+      changed. (Michael G Schwern)
+
     Docs Fixes
     * Added a COMPATIBILITY section so users know what major features were
       added with what version of Test::More or perl. [github 343] [github 344]
@@ -8,6 +12,8 @@
     Bug Fixes
     * A test with no plan and missing done_testing() now exits with non-zero.
       [github #341] (tokuhirom)
+    * isa_ok() tests were broken in 5.17 because of a change in
+      method resolution. [github #353] (Michael G Schwern)
 
 
 0.98_03  Thu Jun 21 13:04:19 PDT 2012
