@@ -1,8 +1,13 @@
 0.98_04
-    Docs
+    Docs Fixes
     * Added a COMPATIBILITY section so users know what major features were
       added with what version of Test::More or perl. [github 343] [github 344]
       (pdl)
+    * Fix the ok() example with grep(). (derek.mead@gmail.com)
+
+    Bug Fixes
+    * A test with no plan and missing done_testing() now exits with non-zero.
+      [github #341] (tokuhirom)
 
 
 0.98_03  Thu Jun 21 13:04:19 PDT 2012
