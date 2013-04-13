@@ -87,3 +87,4 @@ note "$_" for @failed_dists;
 
 __DATA__
 Test::Presenter
+Test::Harness::FileFilter
