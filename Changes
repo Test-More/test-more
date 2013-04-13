@@ -1,4 +1,8 @@
 0.98_04
+    Distribution Changes
+    * Scalar::Util 1.13 (ships with Perl 5.8.1) is now required.
+      (Michael G Schwern)
+
     Feature Changes
     * The default name and diagnostics for isa_ok() and new_ok() have
       changed. (Michael G Schwern)
