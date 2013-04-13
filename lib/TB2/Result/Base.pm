@@ -246,6 +246,36 @@ sub types {
     return \%types;
 }
 
+=head2 legacy_hash
+
+Returns the result object converted to a legacy hash.  Please don't
+use this method for anything other than legacy support for existing
+test modules.  You will find the result object should provide a 
+far less ambiguous representation of the test results.
+
+=cut
+
+sub legacy_hash {
+    my $self = shift;
+
+    my $types = $self->types;
+    my $type = $self->type eq 'todo_skip' ? "todo_skip"        :
+               $types->{unknown}            ? "unknown"          :
+               $types->{todo}               ? "todo"             :
+               $types->{skip}               ? "skip"             :
+                                            ""                 ;
+
+    my $actual_ok = $types->{unknown} ? undef : $self->literal_pass;
+
+    return {
+        'ok'       => $self->is_fail ? 0 : 1,
+        actual_ok  => $actual_ok,
+        name       => $self->name || "",
+        type       => $type,
+        reason     => $self->reason || "",
+    };
+}
+
 no TB2::Mouse;
 
 1;
