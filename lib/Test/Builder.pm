@@ -1910,30 +1910,9 @@ sub details {
     my $self = shift;
 
     local $Level = $Level + 1;
-    return map { $self->_result_to_hash($_) } @{$self->_results};
+    return map { $_->legacy_hash } @{$self->_results};
 }
 
-sub _result_to_hash {
-    my $self = shift;
-    my $result = shift;
-
-    my $types = $result->types;
-    my $type = $result->type eq 'todo_skip' ? "todo_skip"        :
-               $types->{unknown}            ? "unknown"          :
-               $types->{todo}               ? "todo"             :
-               $types->{skip}               ? "skip"             :
-                                            ""                 ;
-
-    my $actual_ok = $types->{unknown} ? undef : $result->literal_pass;
-
-    return {
-        'ok'       => $result->is_fail ? 0 : 1,
-        actual_ok  => $actual_ok,
-        name       => $result->name || "",
-        type       => $type,
-        reason     => $result->reason || "",
-    };
-}
 
 =item B<todo>
 
