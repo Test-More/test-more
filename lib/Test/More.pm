@@ -1779,6 +1779,8 @@ There is a full version history in the Changes file, and the Test::More versions
 
 =head1 CAVEATS and NOTES
 
+=over 4
+
 =item utf8 / "Wide character in print"
 
 If you use utf8 or other non-ASCII characters with Test::More you
