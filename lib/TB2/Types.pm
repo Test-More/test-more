@@ -46,6 +46,18 @@ subtype 'TB2::Positive_NonZero_Int' => (
 );
 
 
+=head3 TB2::NonZero_Int
+
+An integer which is not zero.
+
+=cut
+
+subtype 'TB2::NonZero_Int' => (
+    as 'Int',
+    where { defined $_ && $_ != 0 },
+);
+
+
 =head3 TB2::LC_AlphaNumUS_Str
 
 A lowercase string containing only alphanumerics & underscores.

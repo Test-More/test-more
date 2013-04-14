@@ -630,7 +630,7 @@ History records the $process_id at the time the test has started.
 
 has pid_at_test_start =>
   is            => 'rw',
-  isa           => 'TB2::Positive_NonZero_Int',
+  isa           => 'TB2::NonZero_Int',
 ;
 
 

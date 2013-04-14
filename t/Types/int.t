@@ -67,4 +67,38 @@ note "Positive_NonZero_Int"; {
     ok !eval { $obj->positive_nonzero_int(" 12 "); 1 }, "stringy numbers";
 }
 
+
+note "NonZero_Int"; {
+    {
+        package My::NonZero::Int;
+
+        use TB2::Mouse;
+        use TB2::Types;
+
+        has nonzero_int =>
+          is        => 'rw',
+          isa       => 'TB2::NonZero_Int';
+    }
+
+    my $obj = My::NonZero::Int->new;
+
+    $obj->nonzero_int(-11);
+    is $obj->nonzero_int, -11;
+
+    $obj->nonzero_int(1);
+    is $obj->nonzero_int, 1;
+
+    $obj->nonzero_int(2_000_000);
+    is $obj->nonzero_int, 2_000_000;
+
+    ok !eval { $obj->nonzero_int(0);     1 },  "zero";
+    ok eval  { $obj->nonzero_int(-1);    1 },  "negative integer";
+    ok !eval { $obj->nonzero_int(1.5);   1 },  "decimals";
+    ok !eval { $obj->nonzero_int(-1.5);  1 },  "negative decimals";
+    ok !eval { $obj->nonzero_int(undef); 1 },  "undef";
+    ok !eval { $obj->nonzero_int("one"); 1 },  "strings";
+    ok !eval { $obj->nonzero_int("");    1 },  "empty strings";
+    ok !eval { $obj->nonzero_int(" 12 "); 1 }, "stringy numbers";
+}
+
 done_testing;
