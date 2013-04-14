@@ -579,58 +579,80 @@ you'd like them to be more specific, you can supply an C<$object_name>
 =cut
 
 sub isa_ok ($$;$) {
-    my( $object, $class, $obj_name ) = @_;
+    my( $thing, $class, $thing_name ) = @_;
     my $tb = Test::More->builder;
 
-    my $diag;
+    my $whatami;
+    if( !defined $thing ) {
+        $whatami = 'undef';
+    }
+    elsif( ref $thing ) {
+        $whatami = 'reference';
 
-    if( !defined $object ) {
-        $obj_name = 'The thing' unless defined $obj_name;
-        $diag = "$obj_name isn't defined";
+        local($@,$!);
+        require Scalar::Util;
+        if( Scalar::Util::blessed($thing) ) {
+            $whatami = 'object';
+        }
     }
     else {
-        my $whatami = ref $object ? 'object' : 'class';
-        # We can't use UNIVERSAL::isa because we want to honor isa() overrides
-        my( $rslt, $error ) = $tb->try( sub { $object->isa($class) } );
-        if($error) {
-            if( $error =~ /^Can't call method "isa" on unblessed reference/ ) {
-                # It's an unblessed reference
-                $obj_name = 'The reference' unless defined $obj_name;
-                if( !UNIVERSAL::isa( $object, $class ) ) {
-                    my $ref = ref $object;
-                    $diag = "$obj_name isn't a '$class' it's a '$ref'";
-                }
-            }
-            elsif( $error =~ /Can't call method "isa" without a package/ ) {
-                # It's something that can't even be a class
-                $obj_name = 'The thing' unless defined $obj_name;
-                $diag = "$obj_name isn't a class or reference";
-            }
-            else {
-                die <<WHOA;
+        $whatami = 'class';
+    }
+
+    # We can't use UNIVERSAL::isa because we want to honor isa() overrides
+    my( $rslt, $error ) = $tb->try( sub { $thing->isa($class) } );
+
+    if($error) {
+        die <<WHOA unless $error =~ /^Can't (locate|call) method "isa"/;
 WHOA! I tried to call ->isa on your $whatami and got some weird error.
 Here's the error.
 $error
 WHOA
-            }
-        }
-        else {
-            $obj_name = "The $whatami" unless defined $obj_name;
-            if( !$rslt ) {
-                my $ref = ref $object;
-                $diag = "$obj_name isn't a '$class' it's a '$ref'";
-            }
-        }
     }
 
-    my $name = "$obj_name isa $class";
-    my $ok;
-    if($diag) {
-        $ok = $tb->ok( 0, $name );
-        $tb->diag("    $diag\n");
+    # Special case for isa_ok( [], "ARRAY" ) and like
+    if( $whatami eq 'reference' ) {
+        $rslt = UNIVERSAL::isa($thing, $class);
+    }
+
+    my($diag, $name);
+    if( defined $thing_name ) {
+        $name = "'$thing_name' isa '$class'";
+        $diag = defined $thing ? "'$thing_name' isn't a '$class'" : "'$thing_name' isn't defined";
+    }
+    elsif( $whatami eq 'object' ) {
+        my $my_class = ref $thing;
+        $thing_name = qq[An object of class '$my_class'];
+        $name = "$thing_name isa '$class'";
+        $diag = "The object of class '$my_class' isn't a '$class'";
+    }
+    elsif( $whatami eq 'reference' ) {
+        my $type = ref $thing;
+        $thing_name = qq[A reference of type '$type'];
+        $name = "$thing_name isa '$class'";
+        $diag = "The reference of type '$type' isn't a '$class'";
+    }
+    elsif( $whatami eq 'undef' ) {
+        $thing_name = 'undef';
+        $name = "$thing_name isa '$class'";
+        $diag = "$thing_name isn't defined";
+    }
+    elsif( $whatami eq 'class' ) {
+        $thing_name = qq[The class (or class-like) '$thing'];
+        $name = "$thing_name isa '$class'";
+        $diag = "$thing_name isn't a '$class'";
     }
     else {
+        die;
+    }
+
+    my $ok;
+    if($rslt) {
         $ok = $tb->ok( 1, $name );
+    }
+    else {
+        $ok = $tb->ok( 0, $name );
+        $tb->diag("    $diag\n");
     }
 
     return $ok;
@@ -664,7 +686,6 @@ sub new_ok {
     my( $class, $args, $object_name ) = @_;
 
     $args ||= [];
-    $object_name = "The object" unless defined $object_name;
 
     my $obj;
     my( $success, $error ) = $tb->try( sub { $obj = $class->new(@$args); 1 } );
@@ -673,7 +694,8 @@ sub new_ok {
         isa_ok $obj, $class, $object_name;
     }
     else {
-        $tb->ok( 0, "new() died" );
+        $class = 'undef' if !defined $class;
+        $tb->ok( 0, "$class->new() died" );
         $tb->diag("    Error was:  $error");
     }
 
@@ -1756,8 +1778,6 @@ There is a full version history in the Changes file, and the Test::More versions
 
 
 =head1 CAVEATS and NOTES
-
-=over 4
 
 =item utf8 / "Wide character in print"
 

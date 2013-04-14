@@ -11,7 +11,7 @@ BEGIN {
     our @EXPORT_OK = qw(color change_formatter_class);
 }
 
-use Test::Builder;
+use Test::Builder 1.005;
 use Carp;
 
 

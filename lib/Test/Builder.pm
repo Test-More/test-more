@@ -2312,6 +2312,9 @@ FAIL
         elsif( $plan && !$plan->no_plan && $self->current_test != $plan->asserts_expected ) {
             return 255;
         }
+        elsif( !$plan ) {
+            return 254;
+        }
         else {
             return $real_exit_code;
         }

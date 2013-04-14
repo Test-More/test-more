@@ -13,13 +13,16 @@ use TB2::TestState;
 my $ec = TB2::TestState->default;
 $ec->clear_formatters;
 
-require Test::Builder;
-my $tb = Test::Builder->new;
+{
+    require Test::Builder;
+    my $tb = Test::Builder->new;
 
-is $tb->current_test, 0;
-ok eval { $tb->ok(1); };
-is $tb->current_test, 1;
-ok eval { $tb->ok(1, "second test") };
-is $tb->current_test, 2;
+    is $tb->current_test, 0;
+    ok eval { $tb->ok(1); };
+    is $tb->current_test, 1;
+    ok eval { $tb->ok(1, "second test") };
+    is $tb->current_test, 2;
+    $tb->done_testing;
+}
 
 done_testing;
