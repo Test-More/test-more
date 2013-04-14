@@ -349,6 +349,16 @@ A count of the number of failed tests seen.
 
 That is any result for which C<is_fail> is true.
 
+=head3 literal_pass_count
+
+A count of the number of tests passed without regard to any modifiers applied
+to the test result.
+
+=head3 literal_fail_count
+
+A count of the number of tests failed without regard to any modifiers applied
+to the test result.
+
 =head3 todo_count
 
 A count of the number of TODO tests seen.
