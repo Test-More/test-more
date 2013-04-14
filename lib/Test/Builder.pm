@@ -1910,7 +1910,7 @@ sub details {
     my $self = shift;
 
     local $Level = $Level + 1;
-    return map { $_->legacy_hash } @{$self->_results};
+    return map { $_->as_tb1_details_hash } @{$self->_results};
 }
 
 

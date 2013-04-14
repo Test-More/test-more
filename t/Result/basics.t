@@ -106,7 +106,7 @@ sub tests {
         }, 'as_hash';
     }
 
-    note "legacy_hash"; {
+    note "as_tb1_legacy_hash"; {
         my $result = $new_ok->([
             pass            => 1,
             name            => 'something something something test result',
@@ -116,7 +116,7 @@ sub tests {
             event_type      => 'result',
         ]);
 
-        is_deeply $result->legacy_hash, {
+        is_deeply $result->as_tb1_details_hash, {
             ok => 1,
             actual_ok => 1,
             name => 'something something something test result',

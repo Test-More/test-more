@@ -246,16 +246,28 @@ sub types {
     return \%types;
 }
 
-=head2 legacy_hash
+=head2 as_tb1_details_hash
 
-Returns the result object converted to a legacy hash.  Please don't
-use this method for anything other than legacy support for existing
-test modules.  You will find the result object should provide a 
-far less ambiguous representation of the test results.
+    my $hash = $result->as_tb1_details_hash;
+
+Returns the Result object converted to a hash reference matching the
+format defined in L<Test::Builder/details>.
+
+It's major use case is for replacing code like this:
+
+    my $details = $builder->details->[-1];
+
+with this:
+
+    my $details = $builder->history->last_result->as_tb1_details_hash;
+
+Please don't use this method for anything other than legacy support
+for existing test modules.  You will find the result object should
+provide a far less ambiguous representation of the test results.
 
 =cut
 
-sub legacy_hash {
+sub as_tb1_details_hash {
     my $self = shift;
 
     my $types = $self->types;
