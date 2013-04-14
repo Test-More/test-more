@@ -30,7 +30,7 @@ An integer greater than or equal to zero.
 
 subtype 'TB2::Positive_Int' => (
     as 'Int',
-    where { defined $_ && $_ >= 0 },
+    where { $_ >= 0 },
 );
 
 
@@ -42,7 +42,7 @@ An integer greater than zero.
 
 subtype 'TB2::Positive_NonZero_Int' => (
     as 'Int',
-    where { defined $_ && $_ > 0 },
+    where { $_ > 0 },
 );
 
 
@@ -54,7 +54,7 @@ An integer which is not zero.
 
 subtype 'TB2::NonZero_Int' => (
     as 'Int',
-    where { defined $_ && $_ != 0 },
+    where { $_ != 0 },
 );
 
 
@@ -66,7 +66,7 @@ A lowercase string containing only alphanumerics & underscores.
 
 subtype 'TB2::LC_AlphaNumUS_Str' => (
     as 'Str',
-    where { defined $_ && /^[a-z0-9_]+$/ },
+    where { /^[a-z0-9_]+$/ },
 );
 
 
