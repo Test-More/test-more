@@ -8,7 +8,20 @@ BEGIN { require "t/test.pl"; }
 use TB2::History;
 use TB2::Events;
 
-note "PID can be negative on Windows"; {
+
+note "pid_at_test_start"; {
+    my $history = TB2::History->new;
+
+    for my $pid ((-int rand(2**15)), (int rand(2**15))) {
+        $history->pid_at_test_start($pid);
+        is $history->pid_at_test_start, $pid;
+    }
+
+    ok !eval { $history->pid_at_test_start(0); 1 }, "PID can't be zero";
+}
+
+
+note "Run a test through History with a negative PID which can happen on Windows"; {
     local $$ = -756;
 
     my $history = TB2::History->new;
