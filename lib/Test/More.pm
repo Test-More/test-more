@@ -1790,13 +1790,19 @@ Test::More) duplicates STDOUT and STDERR.  So any changes to them,
 including changing their output disciplines, will not be seem by
 Test::More.
 
-The work around is to change the filehandles used by Test::Builder
-directly.
+One work around is to apply encodings to STDOUT and STDERR as early
+as possible and before Test::More (or any other Test module) loads.
+
+    use open ':std', ':encoding(utf8)';
+    use Test::More;
+
+A more direct work around is to change the filehandles used by
+Test::Builder.
 
     my $builder = Test::More->builder;
-    binmode $builder->output,         ":utf8";
-    binmode $builder->failure_output, ":utf8";
-    binmode $builder->todo_output,    ":utf8";
+    binmode $builder->output,         ":encoding(utf8)";
+    binmode $builder->failure_output, ":encoding(utf8)";
+    binmode $builder->todo_output,    ":encoding(utf8)";
 
 
 =item Overloaded objects

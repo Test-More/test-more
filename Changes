@@ -1,3 +1,9 @@
+0.98_05
+    Doc Changes
+    * Add a shorter work around for the UTF-8 output problem.
+      (Michael G Schwern)
+
+
 0.98_04  Sun Apr 14 10:54:13 BST 2013
     Distribution Changes
     * Scalar::Util 1.13 (ships with Perl 5.8.1) is now required.
