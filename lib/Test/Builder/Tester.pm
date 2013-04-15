@@ -98,14 +98,12 @@ my $err = tie *$error_handle,  "Test::Builder::Tester::Tie", "STDERR";
 # for remembering that we're testing and where we're testing at
 my $testing = 0;
 my $testing_num;
+my $original_is_passing;
 
 # remembering where the file handles were originally connected
 my $original_output_handle;
 my $original_failure_handle;
 my $original_todo_handle;
-
-my $original_test_number;
-my $original_harness_state;
 
 my $original_harness_env;
 
@@ -134,6 +132,8 @@ sub _start_testing {
     $testing     = 1;
     $testing_num = $t->current_test;
     $t->current_test(0);
+    $original_is_passing  = $t->is_passing;
+    $t->is_passing(1);
 
     # look, we shouldn't do the ending stuff
     $t->no_ending(1);
@@ -329,6 +329,7 @@ sub test_test {
     # restore the test no, etc, back to the original point
     $t->current_test($testing_num);
     $testing = 0;
+    $t->is_passing($original_is_passing);
 
     # re-enable the original setting of the harness
     $ENV{HARNESS_ACTIVE} = $original_harness_env;
@@ -469,9 +470,17 @@ sub expect {
 
     my @checks = @_;
     foreach my $check (@checks) {
+        $check = $self->_account_for_subtest($check);
         $check = $self->_translate_Failed_check($check);
         push @{ $self->{wanted} }, ref $check ? $check : "$check\n";
     }
+}
+
+sub _account_for_subtest {
+    my( $self, $check ) = @_;
+
+    # Since we ship with Test::Builder, calling a private method is safe...ish.
+    return $t->_indent . $check;
 }
 
 sub _translate_Failed_check {
