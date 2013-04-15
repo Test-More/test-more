@@ -727,6 +727,7 @@ This would produce.
 
   1..3
   ok 1 - First test
+      # Subtest: An example subtest
       1..2
       ok 1 - This is a subtest
       ok 2 - So is this
