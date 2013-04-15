@@ -3,6 +3,11 @@
     * Add a shorter work around for the UTF-8 output problem.
       (Michael G Schwern)
 
+    New Features
+    * A subtest will put its name at the front of its results to make
+      subtests easier to read. [github #290] [github #364]
+      (Brendan Byrd)
+
 
 0.98_04  Sun Apr 14 10:54:13 BST 2013
     Distribution Changes
