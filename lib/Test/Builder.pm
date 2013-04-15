@@ -237,9 +237,6 @@ sub subtest {
         $self->croak("subtest()'s second argument must be a code ref");
     }
 
-    # Add subtest note for clarification of starting point
-    $self->note("Subtest: $name");
-    
     # Turn the child into the parent so anyone who has stored a copy of
     # the Test::Builder singleton will get the child.
     my $error;
@@ -250,11 +247,14 @@ sub subtest {
         # $Level first to limit the scope of the reset to the subtest.
         local $Test::Builder::Level = $Test::Builder::Level + 1;
 
+        # Store the guts of $self as $parent and turn $child into $self.
         $child  = $self->child($name);
         _copy($self,  $parent);
         _copy($child, $self);
 
         my $run_the_subtests = sub {
+            # Add subtest name for clarification of starting point
+            $self->note("Subtest: $name");
             $subtests->();
             $self->done_testing unless $self->_plan_handled;
             1;
