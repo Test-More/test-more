@@ -17,23 +17,28 @@ my $pid = fork();
 if ($pid == 0) { # child
     for my $i (1..20) {
         ok 1, "child $i";
-        sleep(rand()/100);
+        sleep(rand()/10);
     }
     pass 'child finished';
 
+    note "Child SyncStore directory: ".Test::Builder->new->test_state->sync_store->directory;
+
     1 while wait() != -1;
     exit;
-} elsif ($pid) { # parent
+}
+elsif ($pid) { # parent
     for my $i (1..20) {
         ok 1, "parent $i";
-        sleep(rand()/100);
+        sleep(rand()/10);
     }
     pass 'parent finished';
     waitpid($pid, 0);
-
     pass 'wait ok';
 
-    exit;
-} else {
+    note "Parent SyncStore directory: ".Test::Builder->new->test_state->sync_store->directory;
+}
+else {
     die $!;
 }
+
+done_testing;

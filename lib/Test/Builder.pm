@@ -359,6 +359,7 @@ my %plan_cmds = (
     no_plan     => \&no_plan,
     skip_all    => \&skip_all,
     tests       => \&_plan_tests,
+    coordinate_forks => \&_coordinate_forks,
 );
 
 sub plan {
@@ -378,6 +379,14 @@ sub plan {
     }
 
     return 1;
+}
+
+sub _coordinate_forks {
+    my($self, $set) = @_;
+
+    $self->test_state->coordinate_forks($set);
+
+    return;
 }
 
 
