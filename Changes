@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 See README and version control log for Test::Builder2 changes.
 
 1.005000_006  Fri Apr 12 18:01:09 BST 2013
@@ -310,6 +311,20 @@ See README and version control log for Test::Builder2 changes.
 
 
 0.98_04
+=======
+0.98_05
+    Doc Changes
+    * Add a shorter work around for the UTF-8 output problem.
+      (Michael G Schwern)
+
+    New Features
+    * A subtest will put its name at the front of its results to make
+      subtests easier to read. [github #290] [github #364]
+      (Brendan Byrd)
+
+
+0.98_04  Sun Apr 14 10:54:13 BST 2013
+>>>>>>> master
     Distribution Changes
     * Scalar::Util 1.13 (ships with Perl 5.8.1) is now required.
       (Michael G Schwern)

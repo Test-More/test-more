@@ -47,6 +47,7 @@ note "subtest"; {
     is $state->formatters->[0]->streamer->read('out'), <<'END';
 TAP version 13
 ok 1
+    # Subtest: 
     TAP version 13
     ok 1
     ok 2

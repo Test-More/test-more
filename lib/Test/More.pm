@@ -729,6 +729,7 @@ This would produce.
 
   1..3
   ok 1 - First test
+      # Subtest: An example subtest
       1..2
       ok 1 - This is a subtest
       ok 2 - So is this
@@ -1807,12 +1808,13 @@ them as early as possible.
 
     done_testing;
 
-Alternatively you can change the encoding on the filehandles used by
-Test::Builder at any time.
+A more direct work around is to change the filehandles used by
+Test::Builder.
 
     my $builder = Test::More->builder;
     binmode $builder->output,         ":encoding(utf8)";
     binmode $builder->failure_output, ":encoding(utf8)";
+    binmode $builder->todo_output,    ":encoding(utf8)";
 
 
 =item Overloaded objects

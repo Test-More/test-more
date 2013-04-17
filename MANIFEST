@@ -225,6 +225,25 @@ t/lib/NoExporter.pm
 t/lib/SigDie.pm
 t/lib/Test/Builder/NoOutput.pm
 t/lib/Test/Simple/Catch.pm
+<<<<<<< HEAD
+=======
+t/lib/Test/Simple/sample_tests/death.plx
+t/lib/Test/Simple/sample_tests/death_in_eval.plx
+t/lib/Test/Simple/sample_tests/death_with_handler.plx
+t/lib/Test/Simple/sample_tests/exit.plx
+t/lib/Test/Simple/sample_tests/extras.plx
+t/lib/Test/Simple/sample_tests/five_fail.plx
+t/lib/Test/Simple/sample_tests/last_minute_death.plx
+t/lib/Test/Simple/sample_tests/missing_done_testing.plx
+t/lib/Test/Simple/sample_tests/one_fail.plx
+t/lib/Test/Simple/sample_tests/one_fail_without_plan.plx
+t/lib/Test/Simple/sample_tests/pre_plan_death.plx
+t/lib/Test/Simple/sample_tests/require.plx
+t/lib/Test/Simple/sample_tests/success.plx
+t/lib/Test/Simple/sample_tests/too_few.plx
+t/lib/Test/Simple/sample_tests/too_few_fail.plx
+t/lib/Test/Simple/sample_tests/two_fail.plx
+>>>>>>> master
 t/lib/TieOut.pm
 t/missing.t
 t/Module/doesnt_set_exported_to.t

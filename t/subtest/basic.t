@@ -42,6 +42,7 @@ ok 2 - We're on 2
 # We ran 2
 ok 3 - We're on 3
 # We ran 3
+    # Subtest: first_subtest
     TAP version 13
     ok 1 - We're on 1
     ok 2 - We're on 2
@@ -85,8 +86,10 @@ note "subtest with no_plan"; {
 TAP version 13
 ok 1 - We're on 1
 # We ran 1
+    # Subtest: first subtest
     TAP version 13
     ok 1 - We're on 1
+        # Subtest: second subtest
         TAP version 13
         1..2
         ok 1 - We're on 2.1
@@ -121,6 +124,7 @@ note "failing subtests"; {
 
     is $tb->read, <<"END", 'Previous child failures should not force subsequent failures';
 TAP version 13
+    # Subtest: expected to fail
     TAP version 13
     1..3
     ok 1
@@ -131,6 +135,7 @@ TAP version 13
 not ok 1 - expected to fail
 #   Failed test 'expected to fail'
 #   at $0 line 113.
+    # Subtest: expected to pass
     TAP version 13
     1..3
     ok 1
@@ -175,6 +180,7 @@ note "todo tests"; {
     is $tb->read, <<"END", 'TODO tests should not make the parent test fail';
 TAP version 13
 1..1
+    # Subtest: with todo
     TAP version 13
     1..1
     not ok 1 # TODO message
@@ -195,6 +201,7 @@ note "empty subtest"; {
     is $tb->read, <<"END", 'Not running subtests should make the parent test fail';
 TAP version 13
 1..1
+    # Subtest: empty subtest
     TAP version 13
     1..0
     # No tests run!

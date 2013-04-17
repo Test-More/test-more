@@ -184,6 +184,12 @@ sub handle_test_start {
     my $self = shift;
     my($event, $ec) = @_;
 
+    if( my $subtest = $ec->history->subtest ) {
+        my $subtest_name = $subtest->name;
+        $subtest_name = '' if !defined $subtest_name;
+        $self->note("Subtest: ".$subtest->name);
+    }
+
     # Only output the TAP version if we're showing the version
     # and if we're showing header information
     $self->out("TAP version 13\n") if

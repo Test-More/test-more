@@ -40,9 +40,11 @@ END {
 TAP version 13
 1..4
 ok 1
+    # Subtest: outer
     TAP version 13
     1..3
     ok 1
+        # Subtest: inner
         TAP version 13
         1..3
         ok 1
