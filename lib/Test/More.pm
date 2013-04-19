@@ -1748,6 +1748,10 @@ Although C<cmp_ok()> was introduced in 0.40, 0.86 fixed an important bug to make
 
 These were was released in Test::More 0.82, and first shipped with Perl in 5.10.1 as part of Test::More 0.92. 
 
+=item C<coordinate_forks>
+
+This was added in 1.5.0.  To remain compatible with previous versions, you can use Test::SharedFork which will select between using coordinate_forks or its own implementation.
+
 =back
 
 There is a full version history in the Changes file, and the Test::More versions included as core can be found using L<Module::CoreList>:
@@ -1806,6 +1810,54 @@ However, it does mean that functions like C<is_deeply()> cannot be used to
 test the internals of string overloaded objects.  In this case I would
 suggest L<Test::Deep> which contains more flexible testing functions for
 complex data structures.
+
+
+=item Forking
+
+By default, Test::More if you fork and run tests in each process the
+results will overlap each other and generally not work out.  If you want
+to run tests in a fork, you must turn on "coordinate_forks" in your plan.
+
+    use Test::More coordinate_forks => 1, tests => 4;
+
+    pass("Parent before fork");
+
+    if( fork ) {
+        pass("Parent");
+    }
+    else {
+        pass("Child");
+        exit;
+    }
+
+    # Wait for the child to finish up
+    wait;
+
+    pass("Parent after waiting");
+
+With coordinate_forks off, the output will be confused by the fork.
+
+    TAP version 13
+    1..4
+    ok 1 - Parent before fork
+    ok 2 - Parent
+    ok 2 - Child
+    ok 3 - Parent after waiting
+    # 4 tests planned, but 3 ran.
+
+With coordinate_forks on, this will produce output just as if the fork
+did not happen.
+
+    TAP version 13
+    1..4
+    ok 1 - Parent before fork
+    ok 2 - Parent
+    ok 3 - Child
+    ok 4 - Parent after waiting
+
+Due to the way TAP is formatted, a subtest will lock other processes
+until it is finished.  This is an implementation detail and may not be
+relied on.
 
 
 =item Threads

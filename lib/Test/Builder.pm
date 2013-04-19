@@ -347,6 +347,7 @@ are.  You usually only want to call one of these methods.
   $Test->plan('no_plan');
   $Test->plan( skip_all => $reason );
   $Test->plan( tests => $num_tests );
+  $Test->plan( coordinate_forks => $coordiante );
 
 A convenient way to set up your tests.  Call this and Test::Builder
 will print the appropriate headers and take the appropriate actions.
@@ -383,6 +384,21 @@ sub plan {
 
     return 1;
 }
+
+
+=item B<coordinate_forks>
+
+    $Test->coordinate_forks($coordinate);
+    $coordinate = $Test->coordinate_forks;
+
+Sets/gets whether the test state should be coordinated across forks.
+
+If true, parent and child processes will be considered a single test.
+Things such as test numbers and subtests will just work.
+
+If false, Test::Builder will have no special awareness of child processes.
+
+=cut
 
 sub coordinate_forks {
     my $self = shift;
