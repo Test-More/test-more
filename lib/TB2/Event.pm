@@ -164,6 +164,28 @@ sub keys_for_as_hash {
     ];
 }
 
+
+=head3 copy_context
+
+    $event->copy_context($source_event);
+
+Copies the file, line, pid and possibly other contextual information from
+C<<$source_event>> to C<<$event>>.
+
+=cut
+
+sub copy_context {
+    my $self = shift;
+    my $src  = shift;
+
+    for my $method (qw(file line pid)) {
+        my $value = $src->$method;
+        $self->$method($value) if defined $value;
+    }
+
+    return;
+}
+
 =head3 object_id
 
     my $id = $thing->object_id;
