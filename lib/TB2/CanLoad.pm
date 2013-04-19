@@ -4,7 +4,9 @@ require TB2::Mouse;
 use TB2::Mouse::Role;
 with 'TB2::CanTry';
 
-our $VERSION = '1.005000_005';
+use Carp;
+
+our $VERSION = '1.005000_006';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 
@@ -54,9 +56,17 @@ sub load {
     return $Loaded{$module} if $Loaded{$module};
 
     my $ret = $self->try(sub {
+        croak qq['$module' does not look like a module name]
+          unless $self->_looks_like_a_module_name($module);
+
         my $path = $module;
         $path =~ s{::}{/}g;
         $path .= ".pm";
+
+        # Untaint so things like TB2_FORMATTER_CLASS work
+        $path =~ m{(.*)};
+        $path = $1;
+
         require $path;
     }, die_on_fail => 1);
 
@@ -64,6 +74,15 @@ sub load {
 
     return $ret;
 }
+
+
+sub _looks_like_a_module_name {
+    my $self = shift;
+    my $module = shift;
+
+    return $module =~ /^\w+(::\w+)*$/
+}
+
 
 =head1 SEE ALSO
 

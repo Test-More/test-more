@@ -1,10 +1,20 @@
+<<<<<<< HEAD
 See README and version control log for Test::Builder2 changes.
 
-1.005000_006
+1.005000_006  Fri Apr 12 18:01:09 BST 2013
     New Features
     * Memory usage will not grow as more tests are run.
     * Added TB2::History->last_result and last_event to retrieve the
       last result and event seen.
+    * Clarify who to contact when getting a WHOA! [github 324]
+      (Noirin Plunkett)
+    * TB2::Formatter::SimpleHTML now shows the file and line.
+      (Michael G Schwern)
+    * Add TB2::History->literal_pass_count and literal_fail_count to
+      record results with literal_pass and literal_fail.
+      (Michael G Schwern)
+    * Add TB2::History->last_result and last_event to record the
+      last seen event and result. (Michael G Schwern)
 
     Bug Fixes
     * Patched TB2::Mouse to not blow over tied $_ (a local $_ bug).
@@ -17,6 +27,18 @@ See README and version control log for Test::Builder2 changes.
       rely on.  [github #276]
     * Fix TB2::Formatter::PlusMinus and TB2::Formatter::POSIX.  They
       suffered bit rot.
+    * Conditionally call special methods on Formatters so things don't
+      blow up on non-TAP formatters. (Michael G Schwern)
+    * Fix test_fail called via a do statement. [github #349] (nnutter)
+    * Fix TB2_FORMATTER_CLASS with taint mode tests. [github #357]
+      (Michael G Schwern)
+
+    Doc Fixes
+    * Typo and POD formatting fixes. [github #318] [github #320] [github #355]
+      (Ben Bullock, pdl, derek.mead@gmail.com)
+    * Add a COMPATIBILITY section to the Test::More docs. [github #344]
+      (pdl, Michael G Schwern)
+    * Fix UTF-8 encoding errors in the docs. [github #348] (Michael G Schwern)
 
     Misc
     * Update the resources meta data to point at the correct repository, issues
@@ -34,7 +56,10 @@ See README and version control log for Test::Builder2 changes.
     Feature Changes
     * 'use Test::More no_plan => 1' no longer warns.  This allows us
       to simplify the import argument handling, everything is a hash
-      now (or can be converted into one).
+      now (or can be converted into one). (Michael G Schwern)
+
+    Test Fixes
+    * Fix tests for Carp 1.25 [github 321] (Michael G Schwern)
 
 
 1.005000_005  Thu Apr 26 15:23:25 PDT 2012
@@ -285,11 +310,47 @@ See README and version control log for Test::Builder2 changes.
     Very incomplete.
 
 
-0.98_03
+0.98_04
+=======
+0.98_05
+    Doc Changes
+    * Add a shorter work around for the UTF-8 output problem.
+      (Michael G Schwern)
+
+    New Features
+    * A subtest will put its name at the front of its results to make
+      subtests easier to read. [github #290] [github #364]
+      (Brendan Byrd)
+
+
+0.98_04  Sun Apr 14 10:54:13 BST 2013
+>>>>>>> master
+    Distribution Changes
+    * Scalar::Util 1.13 (ships with Perl 5.8.1) is now required.
+      (Michael G Schwern)
+
+    Feature Changes
+    * The default name and diagnostics for isa_ok() and new_ok() have
+      changed. (Michael G Schwern)
+
+    Docs Fixes
+    * Added a COMPATIBILITY section so users know what major features were
+      added with what version of Test::More or perl. [github 343] [github 344]
+      (pdl)
+    * Fix the ok() example with grep(). (derek.mead@gmail.com)
+
+    Bug Fixes
+    * A test with no plan and missing done_testing() now exits with non-zero.
+      [github #341] (tokuhirom)
+    * isa_ok() tests were broken in 5.17 because of a change in
+      method resolution. [github #353] (Michael G Schwern)
+
+
+0.98_03  Thu Jun 21 13:04:19 PDT 2012
     New Features
     * cmp_ok() will error when used with something which is not a
       comparison operator, including =, += and the like.
-      [github 141]
+      [github 141] (Matthew Horsfall)
 
     Bug Fixes
     * use_ok() was calling class->import without quoting which could
@@ -298,8 +359,10 @@ See README and version control log for Test::Builder2 changes.
     Doc Fixes
     * use_ok() has been discouraged and de-emphasized as a general
       replacement for `use` in tests. [github #288]
+    * $thing is now $this in the docs to avoid confusing users of
+      other languages. [Karen Etheridge]
 
-    Incompatible Changes With Previous Alphas
+    Incompatible Changes With Previous Alphas (0.98_01)
     * use_ok() will no longer apply lexical pragams.  The incompatibilities
       and extra complexity is not worth the marginal use.
       [github #287]

@@ -10,7 +10,7 @@ with 'TB2::EventHandler',
      'TB2::CanTry',
      'TB2::CanLoad';
 
-our $VERSION = '1.005000_005';
+our $VERSION = '1.005000_006';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 
@@ -67,7 +67,7 @@ new() takes the following options.
 =head3 store_events
 
 If true, $history will keep a complete record of all test events
-accessable via L<events> and L<results>.  This will cause memory usage
+accessible via L<events> and L<results>.  This will cause memory usage
 to grow over the life of the test.
 
 If false, $history will discard events and only keep a summary of
@@ -348,6 +348,16 @@ That is any result for which C<is_pass> is true.
 A count of the number of failed tests seen.
 
 That is any result for which C<is_fail> is true.
+
+=head3 literal_pass_count
+
+A count of the number of tests passed without regard to any modifiers applied
+to the test result.
+
+=head3 literal_fail_count
+
+A count of the number of tests failed without regard to any modifiers applied
+to the test result.
 
 =head3 todo_count
 
@@ -630,7 +640,7 @@ History records the $process_id at the time the test has started.
 
 has pid_at_test_start =>
   is            => 'rw',
-  isa           => 'TB2::Positive_NonZero_Int',
+  isa           => 'TB2::NonZero_Int',
 ;
 
 

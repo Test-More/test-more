@@ -4,7 +4,7 @@ use TB2::Mouse;
 use TB2::Types;
 with 'TB2::Event';
 
-our $VERSION = '1.005000_005';
+our $VERSION = '1.005000_006';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 my $CLASS = __PACKAGE__;
@@ -244,6 +244,48 @@ sub types {
     }
 
     return \%types;
+}
+
+=head2 as_tb1_details_hash
+
+    my $hash = $result->as_tb1_details_hash;
+
+Returns the Result object converted to a hash reference matching the
+format defined in L<Test::Builder/details>.
+
+It's major use case is for replacing code like this:
+
+    my $details = $builder->details->[-1];
+
+with this:
+
+    my $details = $builder->history->last_result->as_tb1_details_hash;
+
+Please don't use this method for anything other than legacy support
+for existing test modules.  You will find the result object should
+provide a far less ambiguous representation of the test results.
+
+=cut
+
+sub as_tb1_details_hash {
+    my $self = shift;
+
+    my $types = $self->types;
+    my $type = $self->type eq 'todo_skip' ? "todo_skip"        :
+               $types->{unknown}            ? "unknown"          :
+               $types->{todo}               ? "todo"             :
+               $types->{skip}               ? "skip"             :
+                                            ""                 ;
+
+    my $actual_ok = $types->{unknown} ? undef : $self->literal_pass;
+
+    return {
+        'ok'       => $self->is_fail ? 0 : 1,
+        actual_ok  => $actual_ok,
+        name       => $self->name || "",
+        type       => $type,
+        reason     => $self->reason || "",
+    };
 }
 
 no TB2::Mouse;

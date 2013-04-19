@@ -2,7 +2,7 @@ package Test::Builder::Tester;
 
 use TB2::Mouse;
 BEGIN {
-    our $VERSION = "1.24_005";
+    our $VERSION = "1.24_006";
 
     extends 'Test::Builder::Module';
     with 'TB2::CanLoad';
@@ -11,7 +11,7 @@ BEGIN {
     our @EXPORT_OK = qw(color change_formatter_class);
 }
 
-use Test::Builder;
+use Test::Builder 1.005;
 use Carp;
 
 

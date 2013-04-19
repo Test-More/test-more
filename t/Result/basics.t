@@ -105,6 +105,25 @@ sub tests {
             diag            => [],
         }, 'as_hash';
     }
+
+    note "as_tb1_legacy_hash"; {
+        my $result = $new_ok->([
+            pass            => 1,
+            name            => 'something something something test result',
+            test_number     => 23,
+            file            => 'foo.t',
+            line            => 1,
+            event_type      => 'result',
+        ]);
+
+        is_deeply $result->as_tb1_details_hash, {
+            ok => 1,
+            actual_ok => 1,
+            name => 'something something something test result',
+            type => '',
+            reason => '',
+        }, 'legacy_hash';
+    }
 }
 
 done_testing;

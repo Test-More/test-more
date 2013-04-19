@@ -4,7 +4,7 @@ use 5.008001;
 use TB2::Mouse;
 use TB2::Types;
 
-our $VERSION = '1.005000_005';
+our $VERSION = '1.005000_006';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use TB2::OnlyOnePlan;
@@ -1929,7 +1929,7 @@ sub _results {
 
     $self->croak(<<ERROR);
 Results are not stored by default (saves memory).  Consider using the
-statistical methods of the TB2::History object instead, accessable
+statistical methods of the TB2::History object instead, accessible
 as Test::Builder->history.
 ERROR
 
@@ -1940,30 +1940,9 @@ sub details {
     my $self = shift;
 
     local $Level = $Level + 1;
-    return map { $self->_result_to_hash($_) } @{$self->_results};
+    return map { $_->as_tb1_details_hash } @{$self->_results};
 }
 
-sub _result_to_hash {
-    my $self = shift;
-    my $result = shift;
-
-    my $types = $result->types;
-    my $type = $result->type eq 'todo_skip' ? "todo_skip"        :
-               $types->{unknown}            ? "unknown"          :
-               $types->{todo}               ? "todo"             :
-               $types->{skip}               ? "skip"             :
-                                            ""                 ;
-
-    my $actual_ok = $types->{unknown} ? undef : $result->literal_pass;
-
-    return {
-        'ok'       => $result->is_fail ? 0 : 1,
-        actual_ok  => $actual_ok,
-        name       => $result->name || "",
-        type       => $type,
-        reason     => $result->reason || "",
-    };
-}
 
 =item B<todo>
 
@@ -2341,6 +2320,9 @@ FAIL
         # Wrong number of tests
         elsif( $plan && !$plan->no_plan && $self->current_test != $plan->asserts_expected ) {
             return 255;
+        }
+        elsif( !$plan ) {
+            return 254;
         }
         else {
             return $real_exit_code;

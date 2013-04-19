@@ -76,3 +76,5 @@
 # Don't distribute our distribution tools
 ^dist/
 
+# Don't distribute stray *.out files
+^*.out$

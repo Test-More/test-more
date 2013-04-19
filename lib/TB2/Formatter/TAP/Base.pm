@@ -7,7 +7,7 @@ use TB2::Types;
 extends 'TB2::Formatter';
 with 'TB2::CanLoad';
 
-our $VERSION = '1.005000_005';
+our $VERSION = '1.005000_006';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Carp;
@@ -183,6 +183,12 @@ has indent =>
 sub handle_test_start {
     my $self = shift;
     my($event, $ec) = @_;
+
+    if( my $subtest = $ec->history->subtest ) {
+        my $subtest_name = $subtest->name;
+        $subtest_name = '' if !defined $subtest_name;
+        $self->note("Subtest: ".$subtest->name);
+    }
 
     # Only output the TAP version if we're showing the version
     # and if we're showing header information

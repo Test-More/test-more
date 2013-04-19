@@ -65,7 +65,8 @@ WriteMakefile(
     ($mm_ver >= 6.31 ? (LICENSE => 'perl') : ()),
 
     PREREQ_PM       => { 
-        Test::Harness   => 2.03,
+        'Test::Harness'         => 2.03,
+        'Scalar::Util'          => 1.13,
         %Prereqs
     },
 
