@@ -163,7 +163,7 @@ has coordinate_forks =>
   default       => 0,
   trigger       => sub {
       my $self = shift;
-      $self->_sync_forked_state if $self->coordinate_forks;
+      $self->_sync_forked_state if $self->coordinate_forks and $self->ec;
       return;
   };
 ;

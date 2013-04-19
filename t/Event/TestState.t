@@ -347,4 +347,13 @@ note "object_id"; {
 }
 
 
+note "coordinate_forks in constructor"; {
+    # There was a bug in which this would error out
+    my $State = TB2::TestState->create(
+        formatters => [],
+        coordinate_forks => 1
+    );
+    pass();
+}
+
 done_testing;
