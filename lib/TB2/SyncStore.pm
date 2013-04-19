@@ -68,7 +68,11 @@ has _id_to_store =>
 
 =head3 read_and_lock
 
-    $store->read_and_lock($object);
+    my $stored_object = $store->read_and_lock($object);
+
+Reads and returns the stored version of $object.
+
+Also exclusively locks the object storage.
 
 C<$object> must do the L<TB2::HasObjectID> role.
 
@@ -102,7 +106,9 @@ sub _store_for_id {
 
 =head3 write_and_unlock
 
-    my $stored_object = $store->write_and_unlock($object);
+    $store->write_and_unlock($object);
+
+Writes $object to storage and unlocks the storage.
 
 C<$object> must do the L<TB2::HasObjectID> role.
 

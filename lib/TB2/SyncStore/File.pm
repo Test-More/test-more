@@ -41,6 +41,8 @@ which created the file.
 
 The file to write to.
 
+It will be deleted on object destruction in the parent process.
+
 Defaults to a temp file.
 
 =cut
