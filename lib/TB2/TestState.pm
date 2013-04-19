@@ -146,8 +146,8 @@ sub make_default {
 
 =head3 coordinate_forks
 
-    my $is_coordinated = $state->coordiante_forks;
-    $state->coordinate_forks($coordiante_yes_no);
+    my $is_coordinated = $state->coordinate_forks;
+    $state->coordinate_forks($coordinate_yes_no);
 
 If true, the test state is shared between forked processes.  So if a
 child runs a test, its parent will know about it.  The entire test
