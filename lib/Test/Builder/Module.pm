@@ -2,7 +2,7 @@ package Test::Builder::Module;
 
 use strict;
 
-use Test::Builder 0.98;
+use Test::Builder 1.005;
 
 BEGIN {
     require Exporter;
