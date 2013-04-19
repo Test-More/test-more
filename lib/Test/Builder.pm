@@ -363,19 +363,22 @@ my %plan_cmds = (
 );
 
 sub plan {
-    my( $self, $cmd, $arg ) = @_;
-
-    return unless $cmd;
+    my $self = shift;
+    return unless @_;
 
     local $Level = $Level + 1;
 
-    if( my $method = $plan_cmds{$cmd} ) {
-        local $Level = $Level + 1;
-        $self->$method($arg);
-    }
-    else {
-        my @args = grep { defined } ( $cmd, $arg );
-        $self->croak("plan() doesn't understand @args");
+    while( @_ ) {
+        my($cmd, $arg) = splice @_, 0, 2;
+
+        if( my $method = $plan_cmds{$cmd} ) {
+            local $Level = $Level + 1;
+            $self->$method($arg);
+        }
+        else {
+            my @args = grep { defined } ( $cmd, $arg );
+            $self->croak("plan() doesn't understand @args");
+        }
     }
 
     return 1;

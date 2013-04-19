@@ -40,5 +40,3 @@ elsif ($pid) { # parent
 else {
     die $!;
 }
-
-done_testing;
