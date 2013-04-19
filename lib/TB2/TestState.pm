@@ -49,6 +49,10 @@ has sync_store =>
 
 sub BUILD {
     my $self = shift;
+    my $args = shift;
+
+    $self->_coordinator_constructor_args($args);
+    $self->push_coordinator;
 
     $self->_sync_forked_state if $self->coordinate_forks;
 
@@ -130,25 +134,6 @@ Retrieve the shared TestState.
 You should use this if you want to coordinate with other test libraries.
 
 =cut
-
-# Override create() to add the first coordinator.
-# Mouse attributes don't provide enough flexibility to have both a default
-# and the trigger to do the delegation.
-sub create {
-    my $class = shift;
-    my %args = @_;
-
-    # Roles inject methods, so we can't call SUPER. :(
-    my $self = $class->TB2::Mouse::Object::new(@_);
-
-    # Store our constructor arguments
-    $self->_coordinator_constructor_args(\%args);
-
-    $self->push_coordinator;
-
-    return $self;
-}
-
 
 sub make_default {
     my $class = shift;
