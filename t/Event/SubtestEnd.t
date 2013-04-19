@@ -24,6 +24,7 @@ note "defaults"; {
     is_deeply $event->as_hash, {
         event_type              => "subtest_end",
         object_id               => $event->object_id,
+        pid                     => $$,
         history                 => $history,
         result                  => $event->result,
     };

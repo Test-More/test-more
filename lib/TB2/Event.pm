@@ -72,6 +72,18 @@ has file =>
   isa   => 'Str',
 ;
 
+=head3 pid
+
+The ID of the process which generated this event.
+
+=cut
+
+has pid =>
+  is      => 'rw',
+  isa     => 'TB2::NonZero_Int',
+  default => sub { $$ }
+;
+
 =head3 event_type
 
 Returns the type of event this is.  For example, "result" or "test_start".

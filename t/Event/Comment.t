@@ -22,7 +22,8 @@ note "defaults"; {
     is $event->comment, $message;
     is_deeply $event->as_hash, {
         event_type      => 'comment',
-        object_id        => $event->object_id,
+        object_id       => $event->object_id,
+        pid             => $$,
         comment         => $message,
     };
 }

@@ -47,6 +47,14 @@ has sync_store =>
       return TB2::SyncStore->new( id => $self->object_id );
   };
 
+sub BUILD {
+    my $self = shift;
+
+    $self->_sync_forked_state if $self->coordinate_forks;
+
+    return $self;
+}
+
 
 =head1 NAME
 
@@ -167,7 +175,12 @@ By default, forked processes do not share state.
 has coordinate_forks =>
   is            => 'rw',
   isa           => 'Bool',
-  default       => 0
+  default       => 0,
+  trigger       => sub {
+      my $self = shift;
+      $self->_sync_forked_state if $self->coordinate_forks;
+      return;
+  };
 ;
 
 =head2 Misc

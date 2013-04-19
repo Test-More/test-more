@@ -32,8 +32,9 @@ note "Basic event with a plan"; {
     my $data = $event->as_hash;
 
     is_deeply $data, {
-        object_id                => $event->object_id,
+        object_id               => $event->object_id,
         event_type              => 'set_plan',
+        pid                     => $$,
         plan                    => { this => "that" },
         asserts_expected        => 23,
         no_plan                 => 0,

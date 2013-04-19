@@ -17,7 +17,8 @@ note "defaults"; {
     is $event->event_type, "subtest_start";
     is_deeply $event->as_hash, {
         event_type      => "subtest_start",
-        object_id        => $event->object_id,
+        object_id       => $event->object_id,
+        pid             => $$,
         name            => '',
         directives      => [],
         reason          => ''
@@ -32,7 +33,8 @@ note "depth"; {
     is $event->depth, 3;
     is_deeply $event->as_hash, {
         event_type      => "subtest_start",
-        object_id        => $event->object_id,
+        object_id       => $event->object_id,
+        pid             => $$,
         depth           => 3,
         name            => 'foo',
         directives      => [],
