@@ -3,7 +3,13 @@
 use strict;
 use warnings;
 
-BEGIN { require "t/test.pl" }
+BEGIN {
+    # Ensure things print immediately to make parent/child printing
+    # more predictable.
+    $|=1;
+
+    require "t/test.pl";
+}
 
 my $CLASS = "TB2::SyncStore";
 
@@ -26,14 +32,21 @@ note "directory sticks around through a fork"; {
 
         my $pid;
         if( $pid = fork ) { # parent
-            ok -d $store->directory;
+            note "Parent";
+            ok -d $store->directory, "parent directory still exists";
         }
         else {       # child
-            ok -d $store->directory;
+            note "Child";
+            sleep 1;       # let the parent go first
+            next_test;     # account that the parent has done a test
+            ok -d $store->directory, "child directory still exists";
             exit;
         }
 
         wait;
+
+        next_test;  # account for the child's test
+
         ok -d $store->directory;
 
         # Don't store the object else File::Temp won't destroy it.
@@ -46,3 +59,5 @@ note "directory sticks around through a fork"; {
     # The store object and File::Temp::Dir object is now destroyed
     ok !-d $dir;
 }
+
+done_testing;
