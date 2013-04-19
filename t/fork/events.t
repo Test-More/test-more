@@ -55,11 +55,13 @@ my $State = TB2::TestState->create(
         exit;
     }
 
+    # Wait for the children to finish up.
+    wait;
+
     $State->post_event(
         TB2::Event::TestEnd->new
     );
 }
-
 
 note "Events are shared"; {
     my $history = $State->history;
@@ -68,3 +70,5 @@ note "Events are shared"; {
     is $history->pass_count,   30;
     ok !$history->in_test;
 }
+
+done_testing;
