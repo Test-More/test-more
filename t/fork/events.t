@@ -69,6 +69,7 @@ note "Events are shared"; {
     is $history->result_count, 30;
     is $history->pass_count,   30;
     ok !$history->in_test;
+    ok $history->test_was_successful;
 }
 
 done_testing;
