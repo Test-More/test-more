@@ -93,7 +93,9 @@ sub _store_for_id {
         return $store;
     }
     else {
-        return $id_to_store->{$id} = TB2::SyncStore::File->new;
+        return $id_to_store->{$id} = TB2::SyncStore::File->new(
+            file => join "/", $self->directory, $id
+        );
     }
 }
 
