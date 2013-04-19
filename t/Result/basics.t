@@ -100,9 +100,10 @@ sub tests {
             test_number     => 23,
             file            => 'foo.t',
             line            => 1,
-            object_id        => $result->object_id,
+            object_id       => $result->object_id,
             event_type      => 'result',
             diag            => [],
+            pid             => $$,
         }, 'as_hash';
     }
 
