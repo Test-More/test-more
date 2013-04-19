@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 BEGIN {
-    require "t/test.pl"
+    require "t/test.pl";
     plan( skip_all => "test needs fork()" ) unless has_fork();
 }
 
