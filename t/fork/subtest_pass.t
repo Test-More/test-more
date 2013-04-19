@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 use Test::More coordinate_forks => 1;
+plan( skip_all => "test needs fork()" ) unless has_fork();
 
 subtest 'foo' => sub {
     pass 'parent one';

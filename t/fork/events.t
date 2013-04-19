@@ -3,7 +3,10 @@
 use strict;
 use warnings;
 
-BEGIN { require "t/test.pl" }
+BEGIN {
+    require "t/test.pl"
+    plan( skip_all => "test needs fork()" ) unless has_fork();
+}
 
 use TB2::Events;
 use TB2::History;
