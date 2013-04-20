@@ -128,8 +128,6 @@ sub subtest {
         $self->croak("subtest()'s second argument must be a code ref");
     }
 
-    $self->test_start unless $self->in_test;
-
     # Save the TODO state
     my $todo_state = $self->_todo_state;
 
@@ -446,8 +444,6 @@ sub expected_tests {
         $self->croak("Number of tests must be a positive integer.  You gave it '$max'")
           unless $max =~ /^\+?\d+$/;
 
-        $self->test_start unless $self->in_test;
-
         $self->set_plan(
             asserts_expected => $max
         );
@@ -468,8 +464,6 @@ Declares that this test will run an indeterminate number of tests.
 
 sub no_plan {
     my($self, $arg) = @_;
-
-    $self->test_start unless $self->in_test;
 
     $self->set_plan(
         no_plan => 1
@@ -530,7 +524,6 @@ sub done_testing {
         }
     }
     elsif( !$self->history->plan ) {
-        $self->test_start unless $self->in_test;
         $self->set_plan( no_plan => 1 );
     }
 
@@ -577,8 +570,6 @@ sub skip_all {
     my( $self, $reason ) = @_;
 
     $reason = defined $reason ? $reason : '';
-
-    $self->test_start;
 
     $self->set_plan(
         skip            => 1,
@@ -637,16 +628,6 @@ like Test::Simple's C<ok()>.
 
 =cut
 
-sub test_start {
-    my $self = shift;
-
-    $self->test_state->post_event(
-        TB2::Event::TestStart->new( $self->_file_and_line(1) )
-    );
-
-    return;
-}
-
 sub test_end {
     my $self = shift;
 
@@ -676,7 +657,6 @@ sub post_result {
     my $self = shift;
     my $result = shift;
 
-    $self->test_start unless $self->in_test;
     $self->test_state->post_event($result);
 
     return;

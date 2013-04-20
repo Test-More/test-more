@@ -18,7 +18,6 @@ isa_ok $builder, "Test::Builder2";
 $builder->test_state->formatters([$tap]);
 
 {
-    $builder->test_start;
     $builder->set_plan( tests => 3 );
     is($tap->streamer->read('out'), "TAP version 13\n1..3\n", 'Simple builder output');
 }

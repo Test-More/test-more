@@ -22,7 +22,6 @@ note "v12 doesn't show the TAP version"; {
         formatters => [$formatter]
     );
 
-    $ec->post_event( TB2::Event::TestStart->new );
     $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 10 ) );
 
     is $streamer->read_all, "1..10\n";

@@ -28,10 +28,8 @@ note "subtest"; {
     my $state = new_state();
 
     my @events = (
-        TB2::Event::TestStart->new,
         TB2::Result->new_result( pass => 1 ),
         TB2::Event::SubtestStart->new,
-          TB2::Event::TestStart->new,
           TB2::Result->new_result( pass => 1 ),
           TB2::Result->new_result( pass => 1 ),
           TB2::Event::SetPlan->new( asserts_expected => 2 ),

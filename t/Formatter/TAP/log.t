@@ -50,7 +50,7 @@ note "warning and up"; {
 
     is last_error(), "# uhhh yeah\n";
 
-    is last_output(), '';
+    is last_output(), "TAP version 13\n";
 }
 
 
@@ -62,7 +62,10 @@ note "notice and down"; {
         level   => "notice"
     ));
 
-    is last_output(), "# this is a notice\n";
+    is last_output(), <<'OUT';
+TAP version 13
+# this is a notice
+OUT
 
     $ec->post_event( TB2::Event::Log->new(
         message => "and this is debugging",
@@ -96,7 +99,7 @@ MSG
 # 
 MSG
 
-    is last_output(), '';
+    is last_output(), "TAP version 13\n";
 }
 
 
@@ -112,6 +115,7 @@ MSG
     ));
 
     is last_output(), <<MSG, "newlines and spacing preserved";
+TAP version 13
 # # foo ## stuff
 # #
 MSG
@@ -126,8 +130,6 @@ note "->show_log"; {
 
     note "...turn show_log off";
     $formatter->show_logs(0);
-
-    $ec->post_event( TB2::Event::TestStart->new );
 
     $ec->post_event( TB2::Event::Log->new(
         message => "this should not show up",

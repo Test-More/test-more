@@ -104,8 +104,6 @@ sub _start_testing {
     );
 
     # To retain compatibility with old behaviors...
-    # start testing but don't let the formatter see it
-    $state->post_event( TB2::Event::TestStart->new );
     # use the original plan
     $state->post_event( $original_state->history->plan )
       if $original_state->history->plan;

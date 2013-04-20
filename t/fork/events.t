@@ -24,9 +24,6 @@ my $State = TB2::TestState->create(
 # Run a test with a bunch of forks
 {
     $State->post_event(
-        TB2::Event::TestStart->new
-    );
-    $State->post_event(
         TB2::Event::SetPlan->new( asserts_expected => 30 )
     );
 

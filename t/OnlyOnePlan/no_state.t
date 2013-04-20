@@ -25,10 +25,6 @@ note "Two plans from two different coordinators to one handler is ok"; {
         early_handlers  => [$onlyone]
     );
 
-    # start testing in both coordinators
-    my $start = TB2::Event::TestStart->new;
-    $_->post_event($start) for $ec1, $ec2;
-
     ok eval {
         $ec1->post_event(
             TB2::Event::SetPlan->new(

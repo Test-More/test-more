@@ -25,6 +25,7 @@ my $test = Test::Builder::NoOutput->create;
 
     $test->diag("a single line");
     is( $test->read('out'), <<'DIAG',   'diag() with todo_output set' );
+TAP version 13
 # a single line
 DIAG
 

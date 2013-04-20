@@ -154,16 +154,14 @@ note "posting events to specific handlers"; {
         formatters      => []
     );
 
-    my $start   = TB2::Event::TestStart->new;
     my $comment = TB2::Event::Comment->new( comment => "whatever" );
     my $result  = TB2::Result->new_result;
     my $end     = TB2::Event::TestEnd->new;
-    $ec->post_event($start);
     $ec->post_event($comment);
     $ec->post_event($result);
     $ec->post_event($end);
 
-    is_deeply $handler->starts, [[$start, $ec]];
+    is $handler->starts->[0][0]->event_type, "test_start";
     is_deeply $handler->ends,   [[$end, $ec]];
     is_deeply $handler->others, [[$comment, $ec], [$result, $ec]];
 }

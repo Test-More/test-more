@@ -24,7 +24,11 @@ use Test::More tests => 2;
 
     $tb->reset_outputs;
 
-    is $tb->read('out'), "# foo\n";
+    is $tb->read('out'), <<'OUT';
+TAP version 13
+# foo
+OUT
+
     is $tb->read('err'), '';
 }
 
