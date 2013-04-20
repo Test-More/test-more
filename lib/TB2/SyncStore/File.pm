@@ -202,6 +202,7 @@ sub write_file {
 sub DESTROY {
     my $self = shift;
 
+    close $self->fh; # some OSes can't unlink an open file
     unlink $self->file if $self->_created_by_pid == $$;
 
     return;
