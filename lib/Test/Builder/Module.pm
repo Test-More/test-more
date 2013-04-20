@@ -131,7 +131,15 @@ sub import {
     # Special case for 'use Test::More "no_plan"'
     # Normalize it into 'use Test::More no_plan => 1' so we can hash the
     # args list.
-    push @args, 1 if @args == 1 and $args[0] eq 'no_plan';
+    for my $idx (0..$#args) {
+        next unless $args[$idx] eq 'no_plan';
+
+        # It's already something like no_plan => 1
+        last if defined $args[$idx+1] and $args[$idx+1] =~ /^\d$/;
+
+        # Splice in a 1 after no_plan.
+        splice @args, $idx+1, 0, 1;
+    }
 
     # Let a module do whatever extra things it likes
     $class->import_extra( \@args );
