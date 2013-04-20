@@ -163,7 +163,15 @@ has coordinate_forks =>
   default       => 0,
   trigger       => sub {
       my $self = shift;
+
+      # Storable won't reliably load classes when it restores, so in
+      # case no events happen before forking let's load them.
+      $self->load("TB2::Events");
+
+      # Make sure there's a synced state on disk before we fork.
+      # Also make sure we're not in the middle of constructing ourselves.
       $self->_sync_forked_state if $self->coordinate_forks and $self->ec;
+
       return;
   };
 ;

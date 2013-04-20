@@ -74,7 +74,6 @@ Unlike other handlers, there is only one history.
 has history =>
   is            => 'rw',
   isa           => 'Object',
-  lazy          => 1,
   trigger       => sub { shared_clone($_[1]) },
   default       => sub {
       $_[0]->load("TB2::History");
@@ -101,7 +100,6 @@ and/or L<default_formatters>.
 has formatters =>
   is            => 'rw',
   isa           => 'ArrayRef',
-  lazy          => 1,
   trigger       => sub { shared_clone($_[1]) },
   builder       => 'default_formatters';
 
