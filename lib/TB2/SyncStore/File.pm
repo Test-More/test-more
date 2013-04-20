@@ -68,7 +68,7 @@ has _fh =>
 has _opened_by_pid =>
   is            => 'rw',
   isa           => 'Int',
-  default       => $$;
+  default       => 0;
 
 has _created_by_pid =>
   is            => 'ro',
