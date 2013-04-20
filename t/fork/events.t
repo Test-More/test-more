@@ -33,25 +33,36 @@ my $State = TB2::TestState->create(
 
     if ( fork ) {               # parent
         for (1..10) {
+            note "Parent";
             $State->post_event(
                 TB2::Result->new_result( pass => 1 )
             );
         }
     } else {                    # child
-        for (1..10) {
-            $State->post_event(
-                TB2::Result->new_result( pass => 1 )
-            );
-        }
-
-        unless( fork ) {        # grandchild
+        if( fork ) {
             for (1..10) {
+                note "Child";
+                $State->post_event(
+                    TB2::Result->new_result( pass => 1 )
+                  );
+            }
+        }
+        else {                  # grandchild
+            for (1..10) {
+                note "Grandchild";
                 $State->post_event(
                     TB2::Result->new_result( pass => 1 )
                 );
             }
+
+            # Exit grandchild
+            exit;
         }
 
+        # Wait for the grandchild
+        wait;
+
+        # Exit child
         exit;
     }
 
