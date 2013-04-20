@@ -1838,9 +1838,9 @@ complex data structures.
 
 =item Forking
 
-By default, Test::More if you fork and run tests in each process the
-results will overlap each other and generally not work out.  If you want
-to run tests in a fork, you must turn on "coordinate_forks" in your plan.
+By default, if you fork and run tests results from each process will
+overlap each other and generally not work out.  If you want to run
+tests in a fork, you must turn on "coordinate_forks" in your plan.
 
     use Test::More coordinate_forks => 1, tests => 4;
 
