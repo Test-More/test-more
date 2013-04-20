@@ -37,14 +37,9 @@ note "Escape # in test name"; {
         pass => 1, name => "foo # bar"
     );
 
-    $ec->post_event(
-        TB2::Event::TestStart->new
-    );
-    last_output;
-
     $ec->post_event($result);
 
-    is last_output, "ok 1 - foo \\# bar\n";
+    is last_output, "TAP version 13\nok 1 - foo \\# bar\n";
 }
 
 
@@ -55,14 +50,9 @@ note "Escape # in directive name"; {
         pass => 1, name => "foo # bar", directives => ['todo'], reason => "this # that"
     );
 
-    $ec->post_event(
-        TB2::Event::TestStart->new
-    );
-    last_output;
-
     $ec->post_event($result);
 
-    is last_output, "ok 1 - foo \\# bar # TODO this \\# that\n";
+    is last_output, "TAP version 13\nok 1 - foo \\# bar # TODO this \\# that\n";
 }
 
 

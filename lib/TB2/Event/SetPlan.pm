@@ -17,8 +17,6 @@ TB2::Event::SetPlan - Set the plan for the current test
 This is an Event indicating that the test plan for the current test
 has been set.
 
-It B<must> come between a C<test_start> and an C<test_end> Event.
-
 There B<should> be only one plan per test.  An exception is that a
 B<no_plan> can be followed by a more restrictive plan.
 

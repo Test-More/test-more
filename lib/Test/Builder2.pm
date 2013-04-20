@@ -153,29 +153,6 @@ has top_stack =>
   };
 
 
-=head3 test_start
-
-  $tb->test_start;
-
-Inform the builder that testing is about to begin.
-
-This should be called before any set of asserts is run, but L<ok> will
-do it for you if you haven't.
-
-It should eventually be followed by a call to L<test_end>.
-
-=cut
-
-sub test_start {
-    my $self = shift;
-
-    $self->test_state->post_event(
-        TB2::Event::TestStart->new( $self->_file_and_line )
-    );
-
-    return;
-}
-
 =head3 test_end
 
   $tb->test_end;
@@ -337,8 +314,6 @@ sub ok {
     my $name = shift;
 
     $self->assert_start();
-
-    $self->test_start unless $self->history->in_test;
 
     my $result = $self->result_class->new_result(
         $self->_file_and_line,

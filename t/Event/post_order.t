@@ -13,7 +13,7 @@ use TB2::Events;
     package My::Event::Incrementer;
 
     use TB2::Mouse;
-    with "TB2::EventHandler";
+    extends "TB2::History";
 
     our @Stack;
 

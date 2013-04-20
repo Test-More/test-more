@@ -16,8 +16,6 @@ TB2::Event::TestMetadata - Metadata for the current test
 This is an Event for metadata about the current test.  It can include
 things such as the time and date of the test, its name, etc...
 
-It B<must> come between a C<test_start> and an C<test_end> Event.
-
 =head1 METHODS
 
 =head2 Attributes

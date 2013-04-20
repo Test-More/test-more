@@ -14,7 +14,8 @@ note "Basic event"; {
     is $event->event_type, "test_metadata";
 
     is_deeply $event->as_hash, {
-        object_id                => $event->object_id,
+        object_id               => $event->object_id,
+        pid                     => $$,
         event_type              => 'test_metadata',
         metadata                => {},
     };
@@ -27,7 +28,8 @@ note "Basic event with metadata"; {
 
     my $data = $event->as_hash;
     is_deeply $event->as_hash, {
-        object_id                => $event->object_id,
+        object_id               => $event->object_id,
+        pid                     => $$,
         event_type              => 'test_metadata',
         metadata                => { this => 'that' },
     };

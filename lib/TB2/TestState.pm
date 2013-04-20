@@ -38,6 +38,27 @@ has coordinator_class =>
 The class to make event coordinators from.
 END
 
+has sync_store =>
+  is            => 'rw',
+  isa           => 'TB2::SyncStore',
+  default       => sub {
+      my $self = shift;
+      $self->load( "TB2::SyncStore" );
+      return TB2::SyncStore->new( id => $self->object_id );
+  };
+
+sub BUILD {
+    my $self = shift;
+    my $args = shift;
+
+    $self->_coordinator_constructor_args($args);
+    $self->push_coordinator;
+
+    $self->_sync_forked_state if $self->coordinate_forks;
+
+    return $self;
+}
+
 
 =head1 NAME
 
@@ -114,30 +135,46 @@ You should use this if you want to coordinate with other test libraries.
 
 =cut
 
-# Override create() to add the first coordinator.
-# Mouse attributes don't provide enough flexibility to have both a default
-# and the trigger to do the delegation.
-sub create {
-    my $class = shift;
-    my %args = @_;
-
-    # Roles inject methods, so we can't call SUPER. :(
-    my $self = $class->TB2::Mouse::Object::new(@_);
-
-    # Store our constructor arguments
-    $self->_coordinator_constructor_args(\%args);
-
-    $self->push_coordinator;
-
-    return $self;
-}
-
-
 sub make_default {
     my $class = shift;
     my $state = $class->create;
     return shared_clone($state);
 }
+
+
+=head2 Attributes
+
+=head3 coordinate_forks
+
+    my $is_coordinated = $state->coordinate_forks;
+    $state->coordinate_forks($coordinate_yes_no);
+
+If true, the test state is shared between forked processes.  So if a
+child runs a test, its parent will know about it.  The entire test
+state is kept in sync, including formatters and handlers.
+
+By default, forked processes do not share state.
+
+=cut
+
+has coordinate_forks =>
+  is            => 'rw',
+  isa           => 'Bool',
+  default       => 0,
+  trigger       => sub {
+      my $self = shift;
+
+      # Storable won't reliably load classes when it restores, so in
+      # case no events happen before forking let's load them.
+      $self->load("TB2::Events");
+
+      # Make sure there's a synced state on disk before we fork.
+      # Also make sure we're not in the middle of constructing ourselves.
+      $self->_sync_forked_state if $self->coordinate_forks and $self->ec;
+
+      return;
+  };
+;
 
 =head2 Misc
 
@@ -304,13 +341,54 @@ sub post_event {
     # Don't shift to preserve @_ so we can pass it along in its entirety.
     my($event) = @_;
 
+    $self->_sync_forked_state if $self->coordinate_forks;
+
     if( my $code = $special_handlers{$event->event_type} ) {
         $self->$code(@_);
     }
     else {
         $self->ec->post_event(@_);
     }
+
+    $self->_write_forked_state if $self->coordinate_forks;
 }
+
+
+sub _sync_forked_state {
+    my $self = shift;
+
+    my $ec = $self->ec;
+    my $forked_ec = $self->_read_forked_ec;
+
+    # Nobody's written a state yet
+    return if !$forked_ec;
+
+    # Formatters contain Streamers which contain filehandles which can't
+    # reliably be frozen
+    $forked_ec->formatters( $ec->formatters );
+
+    # Replace our current coordinator with the forked one
+    $self->_coordinators->[-1] = $forked_ec;
+
+    return;
+}
+
+
+sub _read_forked_ec {
+    my $self = shift;
+
+    return $self->sync_store->read_and_lock($self->ec);
+}
+
+
+sub _write_forked_state {
+    my $self = shift;
+
+    $self->sync_store->write_and_unlock($self->ec);
+
+    return;
+}
+
 
 sub handle_subtest_start {
     my $self  = shift;

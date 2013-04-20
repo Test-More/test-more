@@ -93,7 +93,6 @@ my $ec = MyEventCoordinator->new(
     my $tb = Test::Builder2->create;
     $tb->test_state->formatters([ new_formatter ]);
 
-    $tb->test_start();
     $tb->ok(1);
     $tb->ok(0);
     $tb->test_end();

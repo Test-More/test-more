@@ -128,8 +128,6 @@ sub subtest {
         $self->croak("subtest()'s second argument must be a code ref");
     }
 
-    $self->test_start unless $self->in_test;
-
     # Save the TODO state
     my $todo_state = $self->_todo_state;
 
@@ -347,6 +345,7 @@ are.  You usually only want to call one of these methods.
   $Test->plan('no_plan');
   $Test->plan( skip_all => $reason );
   $Test->plan( tests => $num_tests );
+  $Test->plan( coordinate_forks => $coordiante );
 
 A convenient way to set up your tests.  Call this and Test::Builder
 will print the appropriate headers and take the appropriate actions.
@@ -359,25 +358,54 @@ my %plan_cmds = (
     no_plan     => \&no_plan,
     skip_all    => \&skip_all,
     tests       => \&_plan_tests,
+    coordinate_forks => \&coordinate_forks,
 );
 
 sub plan {
-    my( $self, $cmd, $arg ) = @_;
-
-    return unless $cmd;
+    my $self = shift;
+    return unless @_;
 
     local $Level = $Level + 1;
 
-    if( my $method = $plan_cmds{$cmd} ) {
-        local $Level = $Level + 1;
-        $self->$method($arg);
-    }
-    else {
-        my @args = grep { defined } ( $cmd, $arg );
-        $self->croak("plan() doesn't understand @args");
+    while( @_ ) {
+        my($cmd, $arg) = splice @_, 0, 2;
+
+        if( my $method = $plan_cmds{$cmd} ) {
+            local $Level = $Level + 1;
+            $self->$method($arg);
+        }
+        else {
+            my @args = grep { defined } ( $cmd, $arg );
+            $self->croak("plan() doesn't understand @args");
+        }
     }
 
     return 1;
+}
+
+
+=item B<coordinate_forks>
+
+    $Test->coordinate_forks($coordinate);
+    $coordinate = $Test->coordinate_forks;
+
+Sets/gets whether the test state should be coordinated across forks.
+
+If true, parent and child processes will be considered a single test.
+Things such as test numbers and subtests will just work.
+
+If false, Test::Builder will have no special awareness of child processes.
+
+=cut
+
+sub coordinate_forks {
+    my $self = shift;
+
+    if( @_ ) {
+        $self->test_state->coordinate_forks(shift);
+    }
+
+    return $self->test_state->coordinate_forks;
 }
 
 
@@ -416,8 +444,6 @@ sub expected_tests {
         $self->croak("Number of tests must be a positive integer.  You gave it '$max'")
           unless $max =~ /^\+?\d+$/;
 
-        $self->test_start unless $self->in_test;
-
         $self->set_plan(
             asserts_expected => $max
         );
@@ -438,8 +464,6 @@ Declares that this test will run an indeterminate number of tests.
 
 sub no_plan {
     my($self, $arg) = @_;
-
-    $self->test_start unless $self->in_test;
 
     $self->set_plan(
         no_plan => 1
@@ -500,7 +524,6 @@ sub done_testing {
         }
     }
     elsif( !$self->history->plan ) {
-        $self->test_start unless $self->in_test;
         $self->set_plan( no_plan => 1 );
     }
 
@@ -547,8 +570,6 @@ sub skip_all {
     my( $self, $reason ) = @_;
 
     $reason = defined $reason ? $reason : '';
-
-    $self->test_start;
 
     $self->set_plan(
         skip            => 1,
@@ -607,16 +628,6 @@ like Test::Simple's C<ok()>.
 
 =cut
 
-sub test_start {
-    my $self = shift;
-
-    $self->test_state->post_event(
-        TB2::Event::TestStart->new( $self->_file_and_line(1) )
-    );
-
-    return;
-}
-
 sub test_end {
     my $self = shift;
 
@@ -646,7 +657,6 @@ sub post_result {
     my $self = shift;
     my $result = shift;
 
-    $self->test_start unless $self->in_test;
     $self->test_state->post_event($result);
 
     return;
