@@ -348,7 +348,7 @@ note "object_id"; {
     require TB2::EventCoordinator;
     my $ec = TB2::EventCoordinator->new;
 
-    cmp_ok( $state1->object_id, '=~', '^TB2::TestState', 'object_id is ours' );
+    cmp_ok( $state1->object_id, '=~', '^TB2-TestState', 'object_id is ours' );
 
     my $state1_id = $state1->object_id;
     $state1->push_coordinator($ec);
