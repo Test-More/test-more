@@ -111,8 +111,9 @@ note "basic subtest"; {
     note "...checking coordinator state";
     my $first_history  = $first_ec->history;
     my $second_history = $second_ec->history;
-    is $first_history->event_count, 1;
-    my $event = $first_history->events->[0];
+    is $first_history->event_count, 2;
+    my($test_start, $event) = @{$first_history->events};
+    is $test_start->event_type, "test_start";
     is $event->object_id, $subtest_start->object_id;
     is $event->event_type, "subtest_start",     "first level saw the start event";
     is $event->depth, 1,                        "  depth was correctly set";
@@ -126,8 +127,8 @@ note "basic subtest"; {
     is $second_history->event_count, 0,         "  second level did not see the end event";
     is $state->ec, $first_ec,  "stack popped";
 
-    is $first_history->event_count, 2;
-    $event = $first_history->events->[1];
+    is $first_history->event_count, 3;
+    $event = $first_history->events->[2];
     is $event->object_id, $subtest_end->object_id;
     is $event->event_type, "subtest_end",     "first level saw the start event";
     is $event->history, $second_history;
@@ -146,7 +147,7 @@ note "honor event presets"; {
     );
     my $history = $state->history;
     $state->post_event($subtest_start);
-    is $history->events->[0]->depth, 93;
+    is $history->events->[1]->depth, 93;
 
     note "...post a subtest with a alternate history";
     my $alternate_history = TB2::History->new;
@@ -314,14 +315,23 @@ note "handlers providing their own subtest_handler"; {
     my $substream_start = TB2::Event::SubtestStart->new;
     my $substream_end = TB2::Event::SubtestEnd->new;
     $state->post_event($_) for $substream_start, $substream_end;
+    my $substream_test_start = $state->history->test_start;
 
     my $subtest_end = TB2::Event::SubtestEnd->new;
     $state->post_event($subtest_end);
 
-    is_deeply [map { $_->object_id } $subtest_start, $subtest_end],
+    is_deeply [map { $_->object_id } $state->history->test_start, $subtest_start, $subtest_end],
               [map { $_->object_id } @{$history->events}];
 
-    is_deeply [map { $_->object_id } $subtest_start, $substream_start, $substream_end, $subtest_end],
+    my @all_events = (
+        $state->history->test_start,
+        $subtest_start,
+            $substream_test_start,
+            $substream_start,
+            $substream_end,
+        $subtest_end
+    );
+    is_deeply [map { $_->object_id } @all_events],
               [map { $_->object_id } @{$seesall->events}],
               "A handler can see all if it chooses";
 }
@@ -346,5 +356,14 @@ note "object_id"; {
     is $state1->object_id, $state1_id, 'object_id stays the same after changing coordinators';
 }
 
+
+note "coordinate_forks in constructor"; {
+    # There was a bug in which this would error out
+    my $State = TB2::TestState->create(
+        formatters => [],
+        coordinate_forks => 1
+    );
+    pass();
+}
 
 done_testing;

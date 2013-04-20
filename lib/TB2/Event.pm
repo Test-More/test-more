@@ -72,6 +72,18 @@ has file =>
   isa   => 'Str',
 ;
 
+=head3 pid
+
+The ID of the process which generated this event.
+
+=cut
+
+has pid =>
+  is      => 'rw',
+  isa     => 'TB2::NonZero_Int',
+  default => sub { $$ }
+;
+
 =head3 event_type
 
 Returns the type of event this is.  For example, "result" or "test_start".
@@ -150,6 +162,28 @@ sub keys_for_as_hash {
     return $Attributes{$class} ||= [
         grep !/^_/, map { $_->name } $class->meta->get_all_attributes
     ];
+}
+
+
+=head3 copy_context
+
+    $event->copy_context($source_event);
+
+Copies the file, line, pid and possibly other contextual information from
+C<<$source_event>> to C<<$event>>.
+
+=cut
+
+sub copy_context {
+    my $self = shift;
+    my $src  = shift;
+
+    for my $method (qw(file line pid)) {
+        my $value = $src->$method;
+        $self->$method($value) if defined $value;
+    }
+
+    return;
 }
 
 =head3 object_id

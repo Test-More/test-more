@@ -39,18 +39,22 @@ sub _print_stderr {
 }
 
 sub plan {
-    my $n;
+    my %plan;
     if (@_ == 1) {
-	$n = shift;
-	if ($n eq 'no_plan') {
-	  undef $n;
-	  $noplan = 1;
+	my $arg = shift;
+	if ($arg eq 'no_plan') {
+	  $plan{no_plan} = 1;
+	}
+	else {
+	  $plan{tests}   = $arg;
 	}
     } else {
-	my %plan = @_;
-	$n = $plan{tests};
+	%plan = @_;
     }
-    _print "1..$n\n" unless $noplan;
+
+    return skip_all($plan{skip_all}) if $plan{skip_all};
+
+    _print "1..$plan{tests}\n" unless $noplan;
     $planned = $n;
 }
 
@@ -1250,6 +1254,19 @@ sub latin1_to_native($) {
 
     eval '$string =~ tr/' . $straight . '/' . $$cp . '/';
     return $string;
+}
+
+
+# Return true if Perl supports fork, false otherwise.
+sub has_fork {
+    require Config;
+    return 1 if $Config::Config{d_fork} || $Config::Config{d_pseudofork};
+
+    if( $^O eq 'MSWin32' || $^O eq 'NetWare' ) {
+        return $Config::Config{useithreads} and $Config::Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/;
+    }
+
+    return 0;
 }
 
 1;

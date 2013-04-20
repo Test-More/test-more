@@ -37,6 +37,35 @@ note "event object_id"; {
 }
 
 
+note "copy_context"; {
+    my $e1 = My::Event->new(
+        file => "foo.t",
+        line => 23,
+        pid  => 123
+    );
+    my $e2 = My::Event->new;
+
+    $e2->copy_context($e1);
+    is $e2->file, "foo.t";
+    is $e2->line, 23;
+    is $e2->pid,  123;
+}
+
+
+note "copy_context, missing pieces"; {
+    my $e1 = My::Event->new(
+        line => 23,
+        pid  => 123
+    );
+    my $e2 = My::Event->new;
+
+    $e2->copy_context($e1);
+    is $e2->file, undef;
+    is $e2->line, 23;
+    is $e2->pid,  123;
+}
+
+
 note "Improper Event role";
 ok !eval {
     package My::Bad::Event;

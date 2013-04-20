@@ -4,6 +4,8 @@ use TB2::Mouse;
 use TB2::Types;
 use TB2::threads::shared;
 
+use TB2::Event::TestStart;
+
 with 'TB2::CanLoad', 'TB2::HasObjectID';
 
 our $VERSION = '1.005000_006';
@@ -72,7 +74,6 @@ Unlike other handlers, there is only one history.
 has history =>
   is            => 'rw',
   isa           => 'Object',
-  lazy          => 1,
   trigger       => sub { shared_clone($_[1]) },
   default       => sub {
       $_[0]->load("TB2::History");
@@ -99,7 +100,6 @@ and/or L<default_formatters>.
 has formatters =>
   is            => 'rw',
   isa           => 'ArrayRef',
-  lazy          => 1,
   trigger       => sub { shared_clone($_[1]) },
   builder       => 'default_formatters';
 
@@ -221,6 +221,13 @@ sub post_event {
     #prevent counter corruption between multiple threads
     my $history = $self->history;
     lock $history;
+
+    # If testing has not already started, start it
+    if( !$history->test_start && $event->event_type ne 'test_start' ) {
+        my $test_start = TB2::Event::TestStart->new;
+        $test_start->copy_context($event);
+        $self->post_event( $test_start );
+    }
 
     $event = shared_clone($event);
 

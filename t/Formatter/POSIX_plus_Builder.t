@@ -18,17 +18,13 @@ my $posix = TB2::Formatter::POSIX->new(
 
 $test->test_state->formatters([$posix]);
 
-$test->test_start;
-is $posix->streamer->read('out'), <<"END";
-Running $0
-END
-
 $test->ok(1, "this is a pass");
 is $posix->streamer->read('out'), <<"END";
+Running $0
 PASS: this is a pass
 END
 
 $test->ok(0, "this is a fail");
 is $posix->streamer->read('out'), "FAIL: this is a fail\n";
 
-done_testing(3);
+done_testing(2);

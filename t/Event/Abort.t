@@ -16,7 +16,8 @@ note "defaults"; {
 
     is_deeply $abort->as_hash, {
         event_type      => 'abort',
-        object_id        => $abort->object_id,
+        object_id       => $abort->object_id,
+        pid             => $$,
         reason          => ''
     };
 }

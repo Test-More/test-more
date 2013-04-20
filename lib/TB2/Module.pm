@@ -42,7 +42,6 @@ sub _module_import {
     push @input, 1 if defined $input[0] and $input[0] eq 'no_plan';
 
     if( @input ) {
-        $class->Builder->test_start;
         $class->Builder->set_plan(@input);
     }
 

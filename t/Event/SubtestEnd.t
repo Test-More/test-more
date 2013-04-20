@@ -24,6 +24,7 @@ note "defaults"; {
     is_deeply $event->as_hash, {
         event_type              => "subtest_end",
         object_id               => $event->object_id,
+        pid                     => $$,
         history                 => $history,
         result                  => $event->result,
     };
@@ -36,7 +37,6 @@ note "simple result"; {
     my $ec = TB2::EventCoordinator->new;
     $ec->clear_formatters;
     $ec->post_event( $_ ) for
-      TB2::Event::TestStart->new, 
       TB2::Event::SetPlan->new( asserts_expected => 1 ),
       TB2::Result->new_result( pass => 1 ),
       TB2::Event::TestEnd->new, 

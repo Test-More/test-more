@@ -22,7 +22,6 @@ BEGIN { require "t/test.pl" }
 
 
     # Here's the test
-    $builder->test_start();
     $builder->set_plan(
         tests       => 2
     );

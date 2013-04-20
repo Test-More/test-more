@@ -41,25 +41,9 @@ sub last_output {
     is last_output, "TAP version 13\n", "begin() with no args";
 }
 
-# Can't have a plan outside a stream
-{
-    setup;
-    ok !eval {
-        $ec->post_event(
-            TB2::Event::SetPlan->new(
-                asserts_expected => 99
-            ),
-        );
-    };
-    like $@, qr/^A plan was set but we're not testing/;
-}
-
 # Test begin
 {
     setup;
-    $ec->post_event(
-        TB2::Event::TestStart->new
-    );
     $ec->post_event(
         TB2::Event::SetPlan->new(
             asserts_expected => 99
@@ -75,9 +59,6 @@ END
 # Test end
 {
     setup;
-    $ec->post_event(
-        TB2::Event::TestStart->new
-    );
     $ec->post_event(
         TB2::Event::SetPlan->new(
             asserts_expected => 2
@@ -96,9 +77,6 @@ END
 # Test plan-at-end
 {
     setup;
-    $ec->post_event(
-        TB2::Event::TestStart->new
-    );
     my $result = TB2::Result->new_result(
         pass            => 1,
     );
@@ -137,9 +115,6 @@ END
 {
     setup;
     $ec->post_event(
-        TB2::Event::TestStart->new
-    );
-    $ec->post_event(
         TB2::Event::SetPlan->new(
             skip        => 1,
             skip_reason => "bored now"
@@ -151,9 +126,6 @@ END
 # no plan
 {
     setup;
-    $ec->post_event(
-        TB2::Event::TestStart->new
-    );
     $ec->post_event(
         TB2::Event::SetPlan->new(
             no_plan     => 1

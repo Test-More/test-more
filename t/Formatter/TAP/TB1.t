@@ -31,7 +31,6 @@ sub new_formatter {
 note "doesn't show the TAP version"; {
     my $ec = new_formatter;
 
-    $ec->post_event( TB2::Event::TestStart->new );
     $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 10 ) );
 
     is $streamer->read_all, "1..10\n";
@@ -41,7 +40,6 @@ note "doesn't show the TAP version"; {
 note "skip result"; {
     my $ec = new_formatter;
 
-    $ec->post_event( TB2::Event::TestStart->new );
     $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 1 ) );
     $ec->post_event( TB2::Result->new_result(
         pass    => 1,
@@ -61,7 +59,6 @@ END
 note "empty test name"; {
     my $ec = new_formatter;
 
-    $ec->post_event( TB2::Event::TestStart->new );
     $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 1 ) );
     $ec->post_event( TB2::Result->new_result(
         pass    => 1,
@@ -79,7 +76,6 @@ END
 note "tests but no plan"; {
     my $ec = new_formatter;
 
-    $ec->post_event( TB2::Event::TestStart->new );
     $ec->post_event( TB2::Result->new_result(
         pass    => 1,
     ));
@@ -96,7 +92,6 @@ END
 note "extra tests"; {
     my $ec = new_formatter;
 
-    $ec->post_event( TB2::Event::TestStart->new );
     $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 2 ) );
     $ec->post_event( TB2::Result->new_result(
         pass    => 1,
@@ -114,7 +109,6 @@ END
 note "failed tests"; {
     my $ec = new_formatter;
 
-    $ec->post_event( TB2::Event::TestStart->new );
     $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 2 ) );
     $ec->post_event( TB2::Result->new_result(
         pass    => 1,
@@ -138,7 +132,6 @@ END
 note "failed tests"; {
     my $ec = new_formatter;
 
-    $ec->post_event( TB2::Event::TestStart->new );
     $ec->post_event( TB2::Event::SetPlan->new( asserts_expected => 2 ) );
     $ec->post_event( TB2::Event::TestEnd->new );
 

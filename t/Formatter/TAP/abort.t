@@ -39,7 +39,7 @@ note "abort, no reason"; {
 
     $ec->post_event( TB2::Event::Abort->new );
 
-    is last_output, "Bail out!\n";
+    is last_output, "TAP version 13\nBail out!\n";
     is last_error,  "";
 }
 
@@ -51,7 +51,7 @@ note "abort, with reason"; {
         TB2::Event::Abort->new( reason => "Warp core breech imminent" )
     );
 
-    is last_output, "Bail out!  Warp core breech imminent\n";
+    is last_output, "TAP version 13\nBail out!  Warp core breech imminent\n";
     is last_error,  "";
 }
 
@@ -70,7 +70,7 @@ REASON
         )
     );
 
-    is last_output, "Bail out!  You\\ndone\\ngot\\nsmote\\n\n";
+    is last_output, "TAP version 13\nBail out!  You\\ndone\\ngot\\nsmote\\n\n";
     is last_error,  "";
 }
 

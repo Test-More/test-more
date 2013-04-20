@@ -12,8 +12,6 @@ note "History captures the plan"; {
     my $ec = TB2::EventCoordinator->new;
     $ec->clear_formatters;
 
-    $ec->post_event( TB2::Event::TestStart->new );
-
     my $plan = TB2::Event::SetPlan->new( asserts_expected => 2 );
     $ec->post_event( $plan );
 
