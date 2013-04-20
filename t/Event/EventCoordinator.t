@@ -82,7 +82,6 @@ note("posting"); {
     my %args = (
         early_handlers  => [MyEventCollector->new, MyEventCollector->new],
         late_handlers   => [MyEventCollector->new],
-        history         => MyEventCollector->new,
         formatters      => [MyEventCollector->new]
     );
 
@@ -92,12 +91,11 @@ note("posting"); {
 
     my $result = TB2::Result->new_result;
     my $event  = TB2::Event::TestStart->new;
+    $ec->post_event($event);
     $ec->post_event($result);
-    $ec->post_event ($event);
 
     my @handlers = (@{$args{early_handlers}},
                     @{$args{late_handlers}},
-                    $args{history},
                     @{$args{formatters}}
                    );
     for my $handler (@handlers) {
