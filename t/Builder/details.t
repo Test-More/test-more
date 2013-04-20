@@ -113,7 +113,7 @@ note "details() error message when storage is off"; {
 
     ok !eval { $tb->details };
     like $@, qr/^Results are not stored by default /;
-    like $@, qr/at $0 line @{[ __LINE__ - 2 ]}\.$/;
+    like $@, qr/at \Q$0\E line @{[ __LINE__ - 2 ]}\.$/;
 
     ok !eval { $tb->summary };
     like $@, qr/^Results are not stored by default /;

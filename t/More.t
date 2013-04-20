@@ -9,17 +9,19 @@ BEGIN {
 
 use lib 't/lib';
 use Test::More tests => 54;
-
-# Make sure we don't mess with $@ or $!.  Test at bottom.
-my $Err   = "this should not be touched";
-my $Errno = 42;
-$@ = $Err;
-$! = $Errno;
+use Symbol;
 
 use_ok('Dummy');
 is( $Dummy::VERSION, '0.01', 'use_ok() loads a module' );
 require_ok('Test::More');
 
+# Make sure we don't mess with $@ or $!.  Test at bottom.
+# these must come after every "use" or "require", because on Win32
+# they reset $!
+my $Err   = "this should not be touched";
+my $Errno = 42;
+$@ = $Err;
+$! = $Errno;
 
 ok( 2 eq 2,             'two is two is two is two' );
 is(   "foo", "foo",       'foo is foo' );
@@ -166,7 +168,6 @@ isa_ok( Wibble->new, 'Wibblemeister' );
 my $sub = sub {};
 is_deeply( $sub, $sub, 'the same function ref' );
 
-use Symbol;
 my $glob = gensym;
 is_deeply( $glob, $glob, 'the same glob' );
 
