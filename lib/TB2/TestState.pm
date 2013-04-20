@@ -349,10 +349,15 @@ sub post_event {
 sub _sync_forked_state {
     my $self = shift;
 
+    my $ec = $self->ec;
     my $forked_ec = $self->_read_forked_ec;
 
     # Nobody's written a state yet
     return if !$forked_ec;
+
+    # Formatters contain Streamers which contain filehandles which can't
+    # reliably be frozen
+    $forked_ec->formatters( $ec->formatters );
 
     # Replace our current coordinator with the forked one
     $self->_coordinators->[-1] = $forked_ec;

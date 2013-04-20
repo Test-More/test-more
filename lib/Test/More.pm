@@ -1883,6 +1883,9 @@ Due to the way TAP is formatted, a subtest will lock other processes
 until it is finished.  This is an implementation detail and may not be
 relied on.
 
+Due to limitations in how filehandles are represented, formatters and
+changes to formatters will not be coordinated across forks.
+
 
 =item Threads
 
