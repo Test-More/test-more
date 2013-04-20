@@ -71,10 +71,9 @@ note "two test ends"; {
 
 note "end before start"; {
     my $history = TB2::History->new;
-    my $ec = MyEventCoordinator->new( history => $history );
 
     my $end   = TB2::Event::TestEnd->new;
-    ok !eval { $ec->post_event( $end ); 1; };
+    ok !eval { $history->accept_event( $end ); 1; };
 
     ok !$history->in_test;
     ok !$history->done_testing;
