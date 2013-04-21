@@ -56,6 +56,8 @@ lib/TB2/Result/Role/unknown.pm
 lib/TB2/Streamer.pm
 lib/TB2/Streamer/Debug.pm
 lib/TB2/Streamer/Print.pm
+lib/TB2/SyncStore.pm
+lib/TB2/SyncStore/File.pm
 lib/TB2/Tester.pm
 lib/TB2/TestState.pm
 lib/TB2/threads/shared.pm
@@ -126,7 +128,6 @@ t/Builder/reset.t
 t/Builder/reset_outputs.t
 t/Builder/set_formatter.t
 t/Builder/skip_all.t
-t/Builder/test_start.t
 t/Builder/use_numbers.t
 t/Builder2/assert.t
 t/Builder2/assert_dies.t
@@ -183,6 +184,21 @@ t/fail-more.t
 t/fail_one.t
 t/filehandles.t
 t/fork.t
+t/fork/events.t
+t/fork/fail_lineno.t
+t/fork/failure_location.t
+t/fork/lazy_load.t
+t/fork/nest.t
+t/fork/nest/subtest.ttt
+t/fork/no_events_before_fork.t
+t/fork/no_plan.t
+t/fork/simple.t
+t/fork/subtest_fail.t
+t/fork/subtest_in_fork.t
+t/fork/subtest_pass.t
+t/fork/test_before_fork.t
+t/fork/toomany_run.t
+t/fork/very_simple.t
 t/Formatter/Formatter.t
 t/Formatter/Multi.t
 t/Formatter/Null.t
@@ -296,6 +312,8 @@ t/subtest/return.t
 t/subtest/threads.t
 t/subtest/todo.t
 t/subtest/wstat.t
+t/SyncStore/file.t
+t/SyncStore/SyncStore.t
 t/TB1vsTB2.t
 t/test.pl
 t/test_pl/can_isa_ok.t
@@ -312,6 +330,7 @@ t/Tester/import.t
 t/Tester/line_num.t
 t/Tester/plan.t
 t/Tester/skip.t
+t/Tester/tbt_08subtest.t
 t/Tester2/capture.t
 t/Tester2/state_untouched.t
 t/thread_taint.t
