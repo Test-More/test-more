@@ -70,6 +70,11 @@ has _opened_by_pid =>
   isa           => 'Int',
   default       => 0;
 
+has _locked_by_pid =>
+  is            => 'rw',
+  isa           => 'Int',
+  default       => 0;
+
 has _created_by_pid =>
   is            => 'ro',
   isa           => 'Int',
@@ -137,7 +142,11 @@ Throws an exception if the lock fails.
 sub get_lock {
     my $self = shift;
 
+    return if $self->_locked_by_pid == $$;
+
     flock $self->fh, LOCK_EX or croak "Can't get an exclusive lock on @{[ $self->file ]}: $!";
+
+    $self->_locked_by_pid($$);
 
     return;
 }
@@ -155,7 +164,11 @@ Throws an exception if the unlock fails.
 sub unlock {
     my $self = shift;
 
+    return unless $self->_locked_by_pid == $$;
+
     flock $self->fh, LOCK_UN or croak "Can't unlock @{[ $self->file ]}: $!";
+
+    $self->_locked_by_pid(0);
 }
 
 
@@ -202,6 +215,7 @@ sub write_file {
 sub DESTROY {
     my $self = shift;
 
+    close $self->fh; # some OSes can't unlink an open file
     unlink $self->file if $self->_created_by_pid == $$;
 
     return;

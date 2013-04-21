@@ -20,7 +20,7 @@ note "death of a subtest"; {
         });
         1;
     });
-    like( $@, qr/^Death in the subtest at $0 line /);
+    like( $@, qr/^Death in the subtest at \Q$0\E line /);
 }
 
 
