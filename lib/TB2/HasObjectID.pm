@@ -47,7 +47,11 @@ has object_id =>
 
       # Include the class in case somebody else decides to use
       # just an integer.
-      return ref($self) . '-' . $Counter++;
+      my $class = ref($self);
+      # remove non-word-characters, quite a few filesystems object to
+      # things like '::' in their pathnames
+      $class =~ s{\W+}{-}g;
+      return $class . '-' . $Counter++;
   }
 ;
 
