@@ -313,7 +313,9 @@ sub set_formatter {
     my $history = $builder->history;
 
 A convenience method to access the L<TB2::History> object associated
-with the C<test_state>.
+with the C<test_state>.  This contains much useful information about
+the state of the test, how many tests have been run, if it's passing
+or failing and so on.
 
 =cut
 
