@@ -3170,10 +3170,11 @@ sub _generate_accessor_any{
 					$attribute->_throw_type_constraint_error('.$value.', $constraint);' . "\n";
 		}
 
+                $accessor .= "my \$old_value = $slot;\n" if $trigger;
+
 		# if there's nothing left to do for the attribute we can return during
 		# this setter
 		$accessor .= 'return ' if !$is_weak && !$trigger && !$should_deref;
-
 		$accessor .= "$slot = $value;\n";
 
 		if ($is_weak) {
@@ -3181,7 +3182,7 @@ sub _generate_accessor_any{
 		}
 
 		if ($trigger) {
-			$accessor .= '$trigger->('.$self.', '.$value.');' . "\n";
+			$accessor .= '$trigger->('.$self.', '.$value.', $old_value);' . "\n";
 		}
 
 		$accessor .= "}\n";
