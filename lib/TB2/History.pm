@@ -45,7 +45,7 @@ The history for a test is usually accessed by going through the
 L<TB2::TestState> C<history> accessor.
 
 To save memory it does not, by default, store the complete history of
-all events.
+all events.  This can be turned on using L</store_events>.
 
 Each subtest gets its own L<TB2::EventCoordinator> and thus its own
 TB2::History object.
@@ -75,12 +75,35 @@ events.  L<events> and L<results> will throw an exception if called.
 
 Defaults to false, events are not stored by default.
 
+When turned on in the middle of a test, it will only store the
+events seen from that point forward.  This may cause the test
+statistics to differ from L<events> and L<results>.
+
+When switched off, existing events will be deleted.
+
 =cut
 
 has store_events =>
-  is            => 'ro',
+  is            => 'rw',
   isa           => 'Bool',
-  default       => 0
+  default       => 0,
+  trigger       => sub {
+      my $self = shift;
+      my($new_val, $orig_val) = @_;
+
+      # Don't trigger if the boolean state hasn't been changed.
+      # !! is the boolean value secret operator
+      return if defined $orig_val and !!$new_val == !!$orig_val;
+
+      if( $new_val ) {
+          $self->event_storage_class("TB2::History::EventStorage");
+      }
+      else {
+          $self->event_storage_class("TB2::History::NoEventStorage");
+      }
+
+      $self->event_storage( $self->_reset_event_storage );
+  }
 ;
 
 
@@ -113,6 +136,9 @@ An array ref of all events seen.
 By default, no events are stored and this will throw an exception
 unless C<< $history->store_events >> is true.
 
+For most needs you can use the statistical methods instead.
+
+
 =head3 last_event
 
     my $event = $history->last_event;
@@ -126,18 +152,24 @@ has last_event => (
     does        => 'TB2::Event',
 );
 
-sub event_storage_class {
-    return $_[0]->store_events ? "TB2::History::EventStorage" : "TB2::History::NoEventStorage";
-}
+has event_storage_class =>
+  is            => 'rw',
+  isa           => 'Str',
+  default       => 'TB2::History::NoEventStorage'
+;
 
 has event_storage =>
-  is            => 'ro',
+  is            => 'rw',
   isa           => class_type('TB2::History::EventStorage'),
-  default       => sub {
-      my $storage_class = $_[0]->event_storage_class;
-      $_[0]->load($storage_class);
-      return $storage_class->new;
-  };
+  lazy          => 1, # build after store_events
+  builder       => '_reset_event_storage'
+;
+
+sub _reset_event_storage {
+    my $storage_class = $_[0]->event_storage_class;
+    $_[0]->load($storage_class);
+    return shared_clone($storage_class->new);
+}
 
 sub events {
     my $self = shift;
@@ -253,6 +285,8 @@ Returns a list of all L<TB2::Result> objects seen in this test.
 
 By default, no results are stored and this will throw an exception
 unless C<< $history->store_events >> is true.
+
+For most purposes you can use the statistical methods instead.
 
 =cut
 
