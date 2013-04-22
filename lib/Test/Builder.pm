@@ -1817,8 +1817,10 @@ This is a logical pass/fail, so todos are passes.
 
 Of course, test #1 is $tests[0], etc...
 
-By default, this method will throw an exception unless Test::Builder has
-been configured to store events.
+By default, details are not stored and this method will throw an exception.
+To turn event storage on, set C<< Test::Builder->history->store_events(1) >>.
+However, please consider using the L<statistical methods of TB2::History|TB2::History/Statistics>
+instead as this will save memory and work.
 
 =cut
 
@@ -1848,6 +1850,11 @@ sub name {
     my @tests = $Test->details;
 
 Like C<summary()>, but with a lot more detail.
+
+By default, details are not stored and this method will throw an exception.
+To turn event storage on, set C<< Test::Builder->history->store_events(1) >>.
+However, please consider using the L<statistical methods of TB2::History|TB2::History/Statistics>
+instead as this will save memory and work.
 
     $tests[$test_num - 1] = 
             { 'ok'       => is the test considered a pass?
@@ -1889,9 +1896,6 @@ result in this structure:
         type      => 'todo',
         reason    => 'insufficient donuts'
       };
-
-By default, this test will throw an exception unless Test::Builder has
-been configured to store events.
 
 =cut
 
