@@ -66,7 +66,8 @@ WriteMakefile(
 
     PREREQ_PM       => { 
         'Test::Harness'         => 2.03,
-        'Scalar::Util'          => 1.13,
+        'Scalar::Util'          => 1.13,  # comes with 1.13
+        'File::Spec'            => 0.86,  # comes with 5.8.1
         %Prereqs
     },
 

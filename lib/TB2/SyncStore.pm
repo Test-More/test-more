@@ -97,8 +97,9 @@ sub _store_for_id {
         return $store;
     }
     else {
+        require File::Spec;
         return $id_to_store->{$id} = TB2::SyncStore::File->new(
-            file => join "/", $self->directory, $id
+            file => File::Spec->catfile($self->directory, $id)
         );
     }
 }
