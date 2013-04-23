@@ -143,9 +143,9 @@ sub as_hash {
 }
 
 
-=head3 keys_for_hash
+=head3 keys_for_as_hash
 
-    my $keys = $event->keys_for_hash;
+    my $keys = $event->keys_for_as_hash;
 
 Returns an array ref of keys for C<as_hash> to use as keys and methods
 to call on the object for the key's value.
