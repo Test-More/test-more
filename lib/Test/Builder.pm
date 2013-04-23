@@ -2359,29 +2359,32 @@ This behavior can be turned off with L<no_change_exit_code>.
 
 =head1 THREADS
 
-In perl 5.8.1 and later, Test::Builder is thread-safe.  The test
-number is shared amongst all threads.  This means if one thread sets
-the test number using C<current_test()> they will all be effected.
-
-While versions earlier than 5.8.1 had threads they contain too many
-bugs to support.
+Test::Builder is thread-safe.  The test state is shared amongst all
+threads.
 
 Test::Builder is only thread-aware if threads.pm is loaded I<before>
 Test::Builder.
 
+While we support all versions of Perl with threads, we recommend you
+use the latest version of Perl possible to avoid threading bugs.
+
+
+=head1 FORKS
+
+By default, Test::Builder is unaware of forks.  Tests in a forked
+process will not be noticed by the parent.
+
+You can turn on sharing state across forks with C<<
+Test::Builder->new->coordinated_forks(1) >>.
+
+See L</coordinated_forks> for more details.
+
+
 =head1 MEMORY
 
-An informative hash, accessible via C<<details()>>, is stored for each
-test you perform.  So memory usage will scale linearly with each test
-run. Although this is not a problem for most test suites, it can
-become an issue if you do large (hundred thousands to million)
-combinatorics tests in the same run.
-
-In such cases, you are advised to either split the test file into smaller
-ones, or use a reverse approach, doing "normal" (code) compares and
-triggering fail() should anything go unexpected.
-
-Future versions of Test::Builder will have a way to turn history off.
+Memory usage should remain constant as you run tests so long as C<<
+Test::Builder->history->store_events >> is off, which it is by
+default.
 
 
 =head1 EXAMPLES
