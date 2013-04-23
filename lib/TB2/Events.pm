@@ -6,17 +6,26 @@ use warnings;
 our $VERSION = '1.005000_006';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
+sub event_classes {
+    return qw(
+        TB2::Event::TestStart
+        TB2::Event::TestEnd
+        TB2::Event::SubtestStart
+        TB2::Event::SubtestEnd
+        TB2::Event::SetPlan
+        TB2::Event::TestMetadata
+        TB2::Event::Log
+        TB2::Event::Comment
+        TB2::Event::Abort
+        TB2::Result
+     );
+}
 
-use TB2::Event::TestStart;
-use TB2::Event::TestEnd;
-use TB2::Event::SubtestStart;
-use TB2::Event::SubtestEnd;
-use TB2::Event::SetPlan;
-use TB2::Event::TestMetadata;
-use TB2::Event::Log;
-use TB2::Event::Comment;
-use TB2::Event::Abort;
-use TB2::Result;
+BEGIN {
+    for my $class (__PACKAGE__->event_classes) {
+        eval "require $class" or die $@;
+    }
+}
 
 
 =head1 NAME
