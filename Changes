@@ -3,6 +3,12 @@
     * Add a shorter work around for the UTF-8 output problem.
       (Michael G Schwern)
 
+    Bug Fixes
+    * Test::Builder::Tester now works with subtests.
+      (Michael G Schwern) [github 350]
+    * Fix test_fail() inside a do statement.
+      (nnutter) [github #369]
+
     New Features
     * A subtest will put its name at the front of its results to make
       subtests easier to read. [github #290] [github #364]
