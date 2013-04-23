@@ -8,6 +8,10 @@
       subtests easier to read. [github #290] [github #364]
       (Brendan Byrd)
 
+    Feature Changes
+    * like() and unlike() no longer warn about undef. [github #335]
+      (Michael G Schwern)
+
 
 0.98_04  Sun Apr 14 10:54:13 BST 2013
     Distribution Changes

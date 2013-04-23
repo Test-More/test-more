@@ -1454,14 +1454,19 @@ sub _regex_ok {
     }
 
     {
-        ## no critic (BuiltinFunctions::ProhibitStringyEval)
-
         my $test;
         my $context = $self->_caller_context;
 
-        local( $@, $!, $SIG{__DIE__} );    # isolate eval
+        {
+            ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-        $test = eval $context . q{$test = $thing =~ /$usable_regex/ ? 1 : 0};
+            local( $@, $!, $SIG{__DIE__} );    # isolate eval
+
+            # No point in issuing an uninit warning, they'll see it in the diagnostics
+            no warnings 'uninitialized';
+
+            $test = eval $context . q{$test = $thing =~ /$usable_regex/ ? 1 : 0};
+        }
 
         $test = !$test if $cmp eq '!~';
 
