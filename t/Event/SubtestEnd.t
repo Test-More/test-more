@@ -25,8 +25,8 @@ note "defaults"; {
         event_type              => "subtest_end",
         object_id               => $event->object_id,
         pid                     => $$,
-        history                 => $history,
-        result                  => $event->result,
+        history                 => $history->as_hash,
+        result                  => $event->result->as_hash,
     };
 
     is $event->result->name, "No tests run in subtest";

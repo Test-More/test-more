@@ -2,6 +2,7 @@ package TB2::CanAsHash;
 
 use TB2::Mouse ();
 use TB2::Mouse::Role;
+with 'TB2::CanTry';
 
 
 =head1 NAME
@@ -25,6 +26,11 @@ TB2::CanAsHash - a role to dump an object as a hash
 Returns all the attributes and data associated with this C<$object> as
 a hash of attributes and values.
 
+Attributes with undefined values will not be dumped.
+
+It is recursive, objects encountered will have their as_hash method
+called, if they have one.
+
 The intent is to provide a way to dump all the information in an
 object without having to call methods which may or may not exist.
 
@@ -34,12 +40,19 @@ Uses L</keys_for_as_hash> to determine which attributes to access.
 
 sub as_hash {
     my $self = shift;
-    return {
-        map {
-            my $val = $self->$_();
-            defined $val ? ( $_ => $val ) : ()
-        } @{$self->keys_for_as_hash}
-    };
+
+    my %hash;
+    for my $key (@{$self->keys_for_as_hash}) {
+        my $val = $self->$key();
+
+        next unless defined $val;
+
+        $val = $val->as_hash if eval { $self->try( sub { $val->can("as_hash") } ) };
+
+        $hash{$key} = $val if defined $val;
+    }
+
+    return \%hash;
 }
 
 
