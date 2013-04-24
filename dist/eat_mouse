@@ -5,8 +5,10 @@
 # To upgrade Mouse:
 # * Get the copy of Mouse you want
 # * Build it
-# * Copy /path/to/Mouse/blib/lib/Mouse/Tiny.pm into lib/TB2/
+# * Copy /path/to/Mouse/blib/lib/Mouse/Tiny.pm into lib/TB2/Mouse.pm
 # * Run eat_mouse
+# * git diff and check that it looks ok
+# * make test
 
 use strict;
 use warnings;
