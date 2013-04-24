@@ -480,7 +480,8 @@ sub in_test {
     my $self = shift;
 
     return 0 if $self->abort;
-    return $self->test_start && !$self->test_end;
+    return 1 if $self->test_start && !$self->test_end;
+    return 0;
 }
 
 
@@ -497,7 +498,8 @@ sub done_testing {
     my $self = shift;
 
     return 0 if $self->abort;
-    return $self->test_start && $self->test_end;
+    return 1 if $self->test_start && $self->test_end;
+    return 0;
 }
 
 
