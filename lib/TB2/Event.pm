@@ -3,7 +3,7 @@ package TB2::Event;
 use TB2::Mouse ();
 use TB2::Mouse::Role;
 use TB2::Types;
-with 'TB2::HasObjectID';
+with 'TB2::HasObjectID', 'TB2::CanAsHash';
 
 requires qw( build_event_type );
 
@@ -118,52 +118,16 @@ underscores.
 
 Used to build C<event_type>
 
+
 =head2 Provided Methods
 
 =head3 as_hash
 
-    my $data = $event->as_hash;
+See L<TB2::CanAsHash/as_hash> for details.
 
-Returns all the attributes and data associated with this C<$event> as
-a hash of attributes and values.
+=head3 keys_for_as_hash
 
-The intent is to provide a way to dump all the information in an Event
-without having to call methods which may or may not exist.
-
-=cut
-
-sub as_hash {
-    my $self = shift;
-    return {
-        map {
-            my $val = $self->$_();
-            defined $val ? ( $_ => $val ) : ()
-        } @{$self->keys_for_as_hash}
-    };
-}
-
-
-=head3 keys_for_hash
-
-    my $keys = $event->keys_for_hash;
-
-Returns an array ref of keys for C<as_hash> to use as keys and methods
-to call on the object for the key's value.
-
-By default it uses the object's non-private attributes.  That should
-be sufficient for most events.
-
-=cut
-
-my %Attributes;
-sub keys_for_as_hash {
-    my $self = shift;
-    my $class = ref $self;
-    return $Attributes{$class} ||= [
-        grep !/^_/, map { $_->name } $class->meta->get_all_attributes
-    ];
-}
-
+See L<TB2::CanAshash/keys_for_as_hash> for details.
 
 =head3 copy_context
 
