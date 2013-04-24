@@ -141,6 +141,9 @@ t/Tester/tbt_04line_num.t
 t/Tester/tbt_05faildiag.t
 t/Tester/tbt_06errormess.t
 t/Tester/tbt_07args.t
+t/Tester/tbt_08subtest.t
+t/Tester/tbt_09do.t
+t/Tester/tbt_09do_script.pl
 t/thread_taint.t
 t/threads.t
 t/todo.t
