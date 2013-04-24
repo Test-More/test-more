@@ -10,7 +10,15 @@ TB2::Formatter::JSON - Output event objects as a JSON list
 
 =head1 DESCRIPTION
 
-This formatter outputs all events as a list of JSON items.
+This formatter outputs all events as a list of JSON items.  The
+items are events dumped using C<< TB2::Event->as_hash >>.  These
+events can be restored as L<TB2::Event::Generic> objects.
+
+    use TB2::Event::Generic;
+    use JSON;
+
+    my @$events_as_hash = decode_json( $events_as_json );
+    my @events = map { TB2::Event::Generic->new( $_ ) } @$events_as_hash;
 
 This is useful for debugging or as an interprocess communication
 mechanism.  The reader of the JSON stream will have all the same

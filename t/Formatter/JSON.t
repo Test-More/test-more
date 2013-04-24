@@ -9,6 +9,7 @@ BEGIN {
 }
 use MyEventCoordinator;
 use TB2::Events;
+use TB2::Event::Generic;
 
 use JSON::PP;
 
@@ -35,7 +36,15 @@ my $ec = MyEventCoordinator->new(
 
     my $json = $formatter->streamer->read;
 
-    is_deeply decode_json($json), [map { $_->as_hash } @events];
+    my $events_as_hash = decode_json($json);
+    is_deeply $events_as_hash,
+              [map { $_->as_hash } @events],
+              "events restored as hashes";
+
+    my @restored_events = map { TB2::Event::Generic->new(%$_) } @$events_as_hash;
+    is_deeply [map { $_->as_hash } @restored_events],
+              [map { $_->as_hash } @events],
+              "events restored as generic events";
 }
 
 done_testing;

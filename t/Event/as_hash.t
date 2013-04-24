@@ -6,6 +6,7 @@ use warnings;
 BEGIN { require "t/test.pl" }
 
 use TB2::Events;
+use TB2::Event::Generic;
 use TB2::History;
 
 my %Special_Constructors = (
@@ -43,8 +44,7 @@ note "as_hash / new round trip"; {
         note "Trying $class";
         my $obj = $class->$constructor;
 
-        my $duplicate = $class->$constructor( %{$obj->as_hash} );
-
+        my $duplicate = TB2::Event::Generic->new( %{$obj->as_hash} );
         is_deeply $obj->as_hash, $duplicate->as_hash, "$class round trip";
     }
 }
