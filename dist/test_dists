@@ -92,3 +92,10 @@ note "$_" for @failed_dists;
 __DATA__
 Test::Presenter
 Test::Harness::FileFilter
+mod_perl
+Tapper::CLI
+Genome
+YATT
+CommitBit
+Net::DNS::TestNS
+Net::Statsd::Server
