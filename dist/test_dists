@@ -75,8 +75,9 @@ for my $dist (@dist_list->shuffle) {
         # Save the build log.
         my $mod_file = $mod_name =~ s/::/-/gr;
         my $lib_id = $perl5lib =~ s/\//-/gr;
-        my $new_file = $temp->child("$mod_file-$lib_id-build.log");
-        path('~/.cpanm/latest-build/build.log')->copy($new_file);
+        my $latest_build_log = '~/.cpanm/latest-build/build.log';
+        my $save_build_log   = $temp->child("$mod_file-$lib_id-build.log");
+        path($latest_build_log)->copy($save_build_log) if -e $latest_build_log;
     }
 
     is( $results[0], $results[1], "$mod_name - install vs dev" ) || push @failed_dists, $mod_name;
