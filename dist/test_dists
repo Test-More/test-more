@@ -8,15 +8,20 @@
 use perl5i::2;
 use CPAN;
 
+use IPC::Run qw(run timeout);
 use Test::More;
 use Path::Tiny 0.018;
 use Getopt::Long;
-my $mirror = "file:///var/local/CPAN_mirror";
+my $mirror   = "file:///var/local/CPAN_mirror";
 my $lib_path = "/tmp/tb2/lib/perl5";
+my $timeout  = 60*5;
 my $nomirror;
-my $result = GetOptions ("nomirror" => \$nomirror,
-                        "mirror=s" => \$mirror,    # numeric
-                        "lib=s"    => \$lib_path);
+GetOptions(
+    "nomirror"     => \$nomirror,
+    "mirror=s"     => \$mirror,
+    "lib=s"        => \$lib_path,
+    "timeout=i"    => \$timeout,
+);
 
 
 CPAN::HandleConfig->load;
@@ -56,12 +61,11 @@ for my $dist (@dist_list->shuffle) {
 
         my $test_out;
         eval {
-            local $SIG{ALRM} = sub { die "Alarm!\n" };
-            alarm 60*5;
             my $mirror_settings = '';
             $mirror_settings = "--mirror $mirror --mirror-only" unless $nomirror;
-            $test_out = `cpanm $mirror_settings --test-only $mod_name 2>&1`;
-            alarm 0;
+            run [("cpanm", $mirror_settings, "--test-only", $mod_name)],
+                \undef, \$test_out, \$test_out,
+                timeout($timeout);
         };
         if( $@ ) {
             note "Test died with $@";
