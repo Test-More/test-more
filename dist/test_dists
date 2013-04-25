@@ -26,10 +26,12 @@ my %skip_dists = map { chomp; $_ => 1 } <DATA>;
 
 sub get_distributions {
     my $match = shift;
-    return map { $_->pretty_id } CPAN::Shell->expand("Distribution", $match);
+    my @dists = grep { defined $_ } map { $_->distribution } CPAN::Shell->expand("Module", $match);
+    my %unique_dists = map { ($_->pretty_id => 1) } @dists;
+    return keys %unique_dists;
 }
 
-my @dist_list = @ARGV ? @ARGV : get_distributions("/Test-/");
+my @dist_list = @ARGV ? @ARGV : get_distributions("/Test/");
 
 my @failed_dists;
 
