@@ -64,7 +64,8 @@ for my $dist (@dist_list->shuffle) {
             alarm 0;
         };
         if( $@ ) {
-            push @results, $@;
+            note "Test died with $@";
+            push @results, 0;
         }
         else {
             push @results, ($test_out =~ /^Building and testing .* OK$/ms) ? 1 : 0;
