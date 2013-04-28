@@ -709,12 +709,13 @@ my @Keys_To_Add    = qw(
     can_succeed
     test_was_successful
 );
-sub keys_for_as_hash {
+around keys_for_as_hash => sub {
+    my $orig = shift;
     my $self = shift;
 
-    my @keys = grep { !$Keys_To_Remove{$_} } @{ $self->TB2::CanAsHash::keys_for_as_hash };
+    my @keys = grep { !$Keys_To_Remove{$_} } @{ $self->$orig };
     return [ @keys, @Keys_To_Add ];
-}
+};
 
 
 no TB2::Mouse;
