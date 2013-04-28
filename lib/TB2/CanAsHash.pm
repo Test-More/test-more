@@ -2,6 +2,7 @@ package TB2::CanAsHash;
 
 use TB2::Mouse ();
 use TB2::Mouse::Role;
+use Scalar::Util ();
 with 'TB2::CanTry';
 
 
@@ -47,7 +48,7 @@ sub as_hash {
 
         next unless defined $val;
 
-        $val = $val->as_hash if eval { $self->try( sub { $val->can("as_hash") } ) };
+        $val = $val->as_hash if defined Scalar::Util::blessed($val) && $val->can("as_hash");
 
         $hash{$key} = $val if defined $val;
     }
