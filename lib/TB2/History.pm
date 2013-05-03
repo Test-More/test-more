@@ -729,6 +729,7 @@ sub consume {
 
 my %Keys_To_Remove = map { $_ => 1 } qw(
     event_storage
+    event_storage_class
     store_events
     last_event
     last_result
