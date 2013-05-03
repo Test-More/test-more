@@ -11,7 +11,7 @@ BEGIN {
     plan( skip_all => "test needs fork()" ) unless has_fork();
 }
 
-use Test::More coordinate_forks => 1;
+use Test::More coordinate_forks => 1, tests => 2;
 
 if (fork) {
     note("$$ is after the fork");
