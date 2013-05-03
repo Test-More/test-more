@@ -1844,10 +1844,8 @@ This is a logical pass/fail, so todos are passes.
 
 Of course, test #1 is $tests[0], etc...
 
-By default, details are not stored and this method will throw an exception.
-To turn event storage on, set C<< Test::Builder->history->store_events(1) >>.
-However, please consider using the L<statistical methods of TB2::History|TB2::History/Statistics>
-instead as this will save memory and work.
+By default, the summary is not stored and this method will throw an
+exception.  See L<MEMORY> for more details.
 
 =cut
 
@@ -1878,10 +1876,8 @@ sub name {
 
 Like C<summary()>, but with a lot more detail.
 
-By default, details are not stored and this method will throw an exception.
-To turn event storage on, set C<< Test::Builder->history->store_events(1) >>.
-However, please consider using the L<statistical methods of TB2::History|TB2::History/Statistics>
-instead as this will save memory and work.
+By default, details are not stored and this method will throw an
+exception.  See L<MEMORY> for more details.
 
     $tests[$test_num - 1] = 
             { 'ok'       => is the test considered a pass?
@@ -2406,16 +2402,24 @@ By default, Test::Builder is unaware of forks.  Tests in a forked
 process will not be noticed by the parent.
 
 You can turn on sharing state across forks with C<<
-Test::Builder->new->coordinated_forks(1) >>.
+Test::Builder->new->coordinate_forks(1) >>.
 
-See L</coordinated_forks> for more details.
+See L</coordinate_forks> for more details.
 
 
 =head1 MEMORY
 
-Memory usage should remain constant as you run tests so long as C<<
-Test::Builder->history->store_events >> is off, which it is by
-default.
+Memory usage should remain constant as you run tests so long as
+L<store_events> is off, which it is by default.
+
+When L<store_events> is off, L<details> and L<summary> will throw an
+exception.  When turned on, events will only be stored from that point
+forward.
+
+To turn event storage on, set C<< Test::Builder->store_events(1) >>.
+However, please consider using the L<statistical methods of
+TB2::History|TB2::History/Statistics> instead as this will save memory
+and work.
 
 
 =head1 INCOMPATIBILITIES
