@@ -103,7 +103,7 @@ has store_events =>
           $self->event_storage_class("TB2::History::NoEventStorage");
       }
 
-      $self->event_storage( $self->_reset_event_storage );
+      return;
   }
 ;
 
@@ -156,19 +156,33 @@ has last_event => (
 has event_storage_class =>
   is            => 'rw',
   isa           => 'Str',
-  default       => 'TB2::History::NoEventStorage'
+  default       => 'TB2::History::NoEventStorage',
+  trigger       => sub {
+      my $self = shift;
+      my($new_val, $orig_val) = @_;
+
+      # Don't trigger if the class didn't change.
+      return if defined $orig_val and $new_val eq $orig_val;
+
+      $self->event_storage( $self->_new_event_storage );
+
+      return;
+  }
 ;
 
 has event_storage =>
   is            => 'rw',
   isa           => class_type('TB2::History::EventStorage'),
   lazy          => 1, # build after store_events
-  builder       => '_reset_event_storage'
+  builder       => '_new_event_storage'
 ;
 
-sub _reset_event_storage {
-    my $storage_class = $_[0]->event_storage_class;
-    $_[0]->load($storage_class);
+sub _new_event_storage {
+    my $self = shift;
+
+    my $storage_class = $self->event_storage_class;
+    $self->load($storage_class);
+
     return shared_clone($storage_class->new);
 }
 
