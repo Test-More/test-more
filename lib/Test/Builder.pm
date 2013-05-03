@@ -313,7 +313,9 @@ sub set_formatter {
     my $history = $builder->history;
 
 A convenience method to access the L<TB2::History> object associated
-with the C<test_state>.
+with the C<test_state>.  This contains much useful information about
+the state of the test, how many tests have been run, if it's passing
+or failing and so on.
 
 =cut
 
@@ -1817,8 +1819,10 @@ This is a logical pass/fail, so todos are passes.
 
 Of course, test #1 is $tests[0], etc...
 
-By default, this method will throw an exception unless Test::Builder has
-been configured to store events.
+By default, details are not stored and this method will throw an exception.
+To turn event storage on, set C<< Test::Builder->history->store_events(1) >>.
+However, please consider using the L<statistical methods of TB2::History|TB2::History/Statistics>
+instead as this will save memory and work.
 
 =cut
 
@@ -1848,6 +1852,11 @@ sub name {
     my @tests = $Test->details;
 
 Like C<summary()>, but with a lot more detail.
+
+By default, details are not stored and this method will throw an exception.
+To turn event storage on, set C<< Test::Builder->history->store_events(1) >>.
+However, please consider using the L<statistical methods of TB2::History|TB2::History/Statistics>
+instead as this will save memory and work.
 
     $tests[$test_num - 1] = 
             { 'ok'       => is the test considered a pass?
@@ -1889,9 +1898,6 @@ result in this structure:
         type      => 'todo',
         reason    => 'insufficient donuts'
       };
-
-By default, this test will throw an exception unless Test::Builder has
-been configured to store events.
 
 =cut
 

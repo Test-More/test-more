@@ -76,8 +76,48 @@ note "Turn off event storage";
 
     ok !eval { $history->results; 1 };
     like $@, qr{^Results are not stored at $QFILE line @{[ __LINE__ - 1 ]}\.?\n};
+}
 
-    ok !eval { $history->store_events(1) }, "can't turn on storage for an existing object";
+note "Turn event storage on and on again"; {
+    my $history = $CLASS->new(
+        store_events => 1
+    );
+
+    $history->accept_event( $Pass ) for 1..3;
+    is $history->result_count, 3;
+    is $history->event_count, 3;
+
+    my $events = $history->events;
+    is @$events, 3;
+
+    $history->store_events(1);
+    is_deeply $history->events, $events, "storage is retained";
+}
+
+
+note "Turn event storage on and off and on again"; {
+    my $history = $CLASS->new(
+        store_events => 1
+    );
+
+    $history->accept_event( $Pass ) for 1..3;
+    is $history->result_count, 3;
+    is $history->event_count, 3;
+
+    my $events = $history->events;
+    is @$events, 3;
+
+    $history->store_events(0);
+    ok !eval { $history->events }, "storage off";
+
+    $history->store_events(1);
+    is_deeply $history->events, [], "storage is on, events are empty";
+
+    $history->accept_event( $Pass ) for 1..3;
+    is $history->result_count, 6;
+    is $history->event_count, 6;
+
+    is @{$history->events}, 3, "storage begins counting from now";
 }
 
 done_testing;
