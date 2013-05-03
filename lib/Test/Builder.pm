@@ -357,10 +357,11 @@ If you call C<plan()>, don't call any of the other methods below.
 =cut
 
 my %plan_cmds = (
-    no_plan     => \&no_plan,
-    skip_all    => \&skip_all,
-    tests       => \&_plan_tests,
-    coordinate_forks => \&coordinate_forks,
+    no_plan             => \&no_plan,
+    skip_all            => \&skip_all,
+    tests               => \&_plan_tests,
+    coordinate_forks    => \&coordinate_forks,
+    store_events        => \&store_events,
 );
 
 sub plan {
@@ -1807,6 +1808,30 @@ sub is_passing {
     my $self = shift;
 
     return $self->history->can_succeed;
+}
+
+
+=item B<store_events>
+
+    $tb->store_events($storage_on_or_off);
+    $storage_on_or_off = $tb->store_events;
+
+Gets/sets whether test events are stored.
+
+To save memory, it defaults to being off.
+
+See L<MEMORY> for more details.
+
+=cut
+
+sub store_events {
+    my $self = shift;
+
+    if( @_ ) {
+        $self->history->store_events(shift);
+    }
+
+    return $self->history->store_events;
 }
 
 
