@@ -8,15 +8,20 @@
 use perl5i::2;
 use CPAN;
 
+use IPC::Run qw(run timeout);
 use Test::More;
 use Path::Tiny 0.018;
 use Getopt::Long;
-my $mirror = "file:///var/local/CPAN_mirror";
+my $mirror   = "file:///var/local/CPAN_mirror";
 my $lib_path = "/tmp/tb2/lib/perl5";
+my $timeout  = 60*5;
 my $nomirror;
-my $result = GetOptions ("nomirror" => \$nomirror,
-                        "mirror=s" => \$mirror,    # numeric
-                        "lib=s"    => \$lib_path);
+GetOptions(
+    "nomirror"     => \$nomirror,
+    "mirror=s"     => \$mirror,
+    "lib=s"        => \$lib_path,
+    "timeout=i"    => \$timeout,
+);
 
 
 CPAN::HandleConfig->load;
@@ -26,10 +31,12 @@ my %skip_dists = map { chomp; $_ => 1 } <DATA>;
 
 sub get_distributions {
     my $match = shift;
-    return map { $_->pretty_id } CPAN::Shell->expand("Distribution", $match);
+    my @dists = grep { defined $_ } map { $_->distribution } CPAN::Shell->expand("Module", $match);
+    my %unique_dists = map { ($_->pretty_id => 1) } @dists;
+    return keys %unique_dists;
 }
 
-my @dist_list = @ARGV ? @ARGV : get_distributions("/Test-/");
+my @dist_list = @ARGV ? @ARGV : get_distributions("/Test/");
 
 my @failed_dists;
 
@@ -54,15 +61,15 @@ for my $dist (@dist_list->shuffle) {
 
         my $test_out;
         eval {
-            local $SIG{ALRM} = sub { die "Alarm!\n" };
-            alarm 60*5;
             my $mirror_settings = '';
             $mirror_settings = "--mirror $mirror --mirror-only" unless $nomirror;
-            $test_out = `cpanm $mirror_settings --test-only $mod_name 2>&1`;
-            alarm 0;
+            run [("cpanm", $mirror_settings, "--test-only", $mod_name)],
+                \undef, \$test_out, \$test_out,
+                timeout($timeout);
         };
         if( $@ ) {
-            push @results, $@;
+            note "Test died with $@";
+            push @results, 0;
         }
         else {
             push @results, ($test_out =~ /^Building and testing .* OK$/ms) ? 1 : 0;
@@ -73,8 +80,9 @@ for my $dist (@dist_list->shuffle) {
         # Save the build log.
         my $mod_file = $mod_name =~ s/::/-/gr;
         my $lib_id = $perl5lib =~ s/\//-/gr;
-        my $new_file = $temp->child("$mod_file-$lib_id-build.log");
-        path('~/.cpanm/latest-build/build.log')->copy($new_file);
+        my $latest_build_log = '~/.cpanm/latest-build/build.log';
+        my $save_build_log   = $temp->child("$mod_file-$lib_id-build.log");
+        path($latest_build_log)->copy($save_build_log) if -e $latest_build_log;
     }
 
     is( $results[0], $results[1], "$mod_name - install vs dev" ) || push @failed_dists, $mod_name;
@@ -88,3 +96,10 @@ note "$_" for @failed_dists;
 __DATA__
 Test::Presenter
 Test::Harness::FileFilter
+mod_perl
+Tapper::CLI
+Genome
+YATT
+CommitBit
+Net::DNS::TestNS
+Net::Statsd::Server

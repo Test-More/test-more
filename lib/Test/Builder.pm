@@ -2365,29 +2365,94 @@ This behavior can be turned off with L<no_change_exit_code>.
 
 =head1 THREADS
 
-In perl 5.8.1 and later, Test::Builder is thread-safe.  The test
-number is shared amongst all threads.  This means if one thread sets
-the test number using C<current_test()> they will all be effected.
-
-While versions earlier than 5.8.1 had threads they contain too many
-bugs to support.
+Test::Builder is thread-safe.  The test state is shared amongst all
+threads.
 
 Test::Builder is only thread-aware if threads.pm is loaded I<before>
 Test::Builder.
 
+While we support all versions of Perl with threads, we recommend you
+use the latest version of Perl possible to avoid threading bugs.
+
+
+=head1 FORKS
+
+By default, Test::Builder is unaware of forks.  Tests in a forked
+process will not be noticed by the parent.
+
+You can turn on sharing state across forks with C<<
+Test::Builder->new->coordinated_forks(1) >>.
+
+See L</coordinated_forks> for more details.
+
+
 =head1 MEMORY
 
-An informative hash, accessible via C<<details()>>, is stored for each
-test you perform.  So memory usage will scale linearly with each test
-run. Although this is not a problem for most test suites, it can
-become an issue if you do large (hundred thousands to million)
-combinatorics tests in the same run.
+Memory usage should remain constant as you run tests so long as C<<
+Test::Builder->history->store_events >> is off, which it is by
+default.
 
-In such cases, you are advised to either split the test file into smaller
-ones, or use a reverse approach, doing "normal" (code) compares and
-triggering fail() should anything go unexpected.
 
-Future versions of Test::Builder will have a way to turn history off.
+=head1 INCOMPATIBILITIES
+
+=head2 Between Test::Builder 0.98 and 1.5.0
+
+=head3 summary() and details() are only populated on request
+
+By default L<summary> and L<details> will throw an exception if you
+use them.  This is to keep memory usage down.  You can turn it on with
+C<< $history->store_events(1) >>, but we recommend you instead use the
+statistical methods of TB2::History instead.  See
+L<TB2::History/Statistics> and L<history> for more details.
+
+Here's an example of how you'd write code compatible across
+Test::Builder 0.98 and 1.5.0.
+
+    my $builder = Test::Builder->new;
+    if( $builder->can("history") ) {
+        my $history = $builder->history;
+        ...use TB2::History...
+    }
+    else {
+        ...use $builder->details or summary...
+    }
+
+=head3 Output handles are duplicated on first use
+
+Test::Builder will duplicate STDOUT and STDERR to make it safe for you
+to manipulate them as part of your test.  0.98 will duplicate them
+when the module is loaded, but 1.5.0 will duplicate them on first use.
+
+We recommend making any changes to the handles that you wish
+Test::Builder to see, such as turning on UTF8, as early as possible.
+
+We also recommend making any changes you I<don't> wish Test::Builder
+to see after the plan has been output.
+
+
+=head3 TAP version header
+
+1.5.0 uses TAP version 13 which will output a version header before
+anything else.
+
+    TAP version 13
+    1..1
+    ok 1
+
+If you have code which examines the output of a test, this may
+interfere.
+
+
+=head3 TAP end of test formatting
+
+The comment at the end of a failing test script has changed.
+Previously it was "Looks like you failed X test(s) of Y."  It is now
+"X test(s) of Y failed.".
+
+Other minor incompatibilities in the TAP comments will appear.  We
+recommend you do not rely on the TAP comments.  Instead use modules
+such as L<Test::Tester>, L<Test::Builder::Tester> or inspect the state
+of the test using the L<TB2::History> object.
 
 
 =head1 EXAMPLES

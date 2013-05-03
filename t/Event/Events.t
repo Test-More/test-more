@@ -6,18 +6,9 @@ use warnings;
 BEGIN { require "t/test.pl"; }
 use TB2::Events;
 
-my @events = map { "TB2::Event::".$_ }
-                 qw(TestStart TestEnd
-                    SetPlan
-                    TestMetadata
-                    Log
-                    Comment
-                    SubtestStart
-                    SubtestEnd
-                    Abort
-                 );
+my @events = TB2::Events->event_classes;
 
-for my $class (@events) {
+for my $class (grep !/TB2::Result/, @events) {
     ok $class->can("event_type"), "$class loaded";
 }
 

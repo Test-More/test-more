@@ -8,7 +8,8 @@ use TB2::threads::shared;
 
 with 'TB2::EventHandler',
      'TB2::CanTry',
-     'TB2::CanLoad';
+     'TB2::CanLoad',
+     'TB2::CanAsHash';
 
 our $VERSION = '1.005000_006';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -514,7 +515,8 @@ sub in_test {
     my $self = shift;
 
     return 0 if $self->abort;
-    return $self->test_start && !$self->test_end;
+    return 1 if $self->test_start && !$self->test_end;
+    return 0;
 }
 
 
@@ -531,7 +533,8 @@ sub done_testing {
     my $self = shift;
 
     return 0 if $self->abort;
-    return $self->test_start && $self->test_end;
+    return 1 if $self->test_start && $self->test_end;
+    return 0;
 }
 
 
@@ -721,6 +724,31 @@ sub consume {
    $self->accept_event($_) for @{ $old_history->events };
 
    return;
+}
+
+
+my %Keys_To_Remove = map { $_ => 1 } qw(
+    event_storage
+    store_events
+    last_event
+    last_result
+);
+my @Keys_To_Add    = qw(
+    subtest_depth
+    is_subtest
+    is_child_process
+    in_test
+    done_testing
+
+    can_succeed
+    test_was_successful
+);
+around keys_for_as_hash => sub {
+    my $orig = shift;
+    my $self = shift;
+
+    my @keys = grep { !$Keys_To_Remove{$_} } @{ $self->$orig };
+    return [ @keys, @Keys_To_Add ];
 };
 
 
