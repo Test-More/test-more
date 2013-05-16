@@ -210,7 +210,8 @@ expected to run.  You can omit this, in which case the number of tests
 you ran doesn't matter, just the fact that your tests ran to
 conclusion.
 
-This is safer than and replaces the "no_plan" plan.
+This is safer than and replaces the "no_plan" plan. It's available in 
+version 0.88 and later.
 
 =back
 
