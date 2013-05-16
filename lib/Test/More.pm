@@ -680,7 +680,8 @@ sub new_ok {
 
 subtest() runs the &code as its own little test with its own plan and
 its own result.  The main test counts this as a single test using the
-result of the whole subtest to determine if its ok or not ok.
+result of the whole subtest to determine if its ok or not ok. subtest() 
+was added in 0.94.
 
 For example...
 
