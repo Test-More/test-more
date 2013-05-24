@@ -268,7 +268,7 @@ sub test_diag {
 
 Actually performs the output check testing the tests, comparing the
 data (with C<eq>) that we have captured from B<Test::Builder> against
-that that was declared with C<test_out> and C<test_err>.
+what was declared with C<test_out> and C<test_err>.
 
 This takes name/value pairs that effect how the test is run.
 
@@ -436,7 +436,7 @@ L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Test-Builder-Tester>
 
 Copyright Mark Fowler E<lt>mark@twoshortplanks.comE<gt> 2002, 2004.
 
-Some code taken from B<Test::More> and B<Test::Catch>, written by by
+Some code taken from B<Test::More> and B<Test::Catch>, written by
 Michael G Schwern E<lt>schwern@pobox.comE<gt>.  Hence, those parts
 Copyright Micheal G Schwern 2001.  Used and distributed with
 permission.
