@@ -317,7 +317,7 @@ are similar to these:
     ok( $foo ne '',     "Got some foo" );
 
 C<undef> will only ever match C<undef>.  So you can test a value
-agains C<undef> like this:
+against C<undef> like this:
 
     is($not_defined, undef, "undefined as expected");
 
@@ -1178,7 +1178,7 @@ You might remember C<ok() or diag()> with the mnemonic C<open() or
 die()>.
 
 B<NOTE> The exact formatting of the diagnostic output is still
-changing, but it is guaranteed that whatever you throw at it it won't
+changing, but it is guaranteed that whatever you throw at it won't
 interfere with the test.
 
 =item B<note>
