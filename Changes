@@ -1,3 +1,6 @@
+0.99     Sat Oct 12 15:05:41 EDT 2013
+    * no changes since 0.98_06
+
 0.98_06  Fri Sep 27 10:11:05 EDT 2013
     Bug Fixes
     * Fix precedence error with (return ... and ...)
