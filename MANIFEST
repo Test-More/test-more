@@ -152,4 +152,5 @@ t/use_ok.t
 t/useing.t
 t/utf8.t
 t/versions.t
+t/xt/dependents.t
 TODO

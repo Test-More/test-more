@@ -1,4 +1,8 @@
-0.99     Sat Oct 12 15:05:41 EDT 2013
+
+1.001001_001 Wed Oct 30 20:47:23 EDT 2013
+    * no code changes, just a new version number with more room to grow
+
+0.99     Tue Oct 29 13:21:03 2013 EDT 2013
     * restore ability to use regex with test_err and test_out
       (Zefram) [rt.cpan.org #89655] [github #389] [github #387]
 
