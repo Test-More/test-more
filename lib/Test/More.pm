@@ -1294,15 +1294,17 @@ sub skip {
     my( $why, $how_many ) = @_;
     my $tb = Test::More->builder;
 
-    unless( defined $how_many ) {
-        # $how_many can only be avoided when no_plan is in use.
-        $tb->carp("skip() needs to know \$how_many tests are in the block")
-          unless $tb->has_plan eq 'no_plan';
-        $how_many = 1;
+    if( defined $how_many ) {
+        if( $how_many =~ /\D/ ) {
+            $tb->carp("skip() was passed a non-numeric number of tests.  Did you get the arguments backwards?");
+            $how_many = 1;
+        }
     }
-
-    if( defined $how_many and $how_many =~ /\D/ ) {
-        $tb->carp("skip() was passed a non-numeric number of tests.  Did you get the arguments backwards?");
+    else {
+        # $how_many can only be omitted when done_testing or no_plan is in use.
+        if( (defined $tb->has_plan) && (not $tb->has_plan eq 'no_plan') ) {
+            $tb->carp("skip() needs to know \$how_many tests are in the block");
+        }
         $how_many = 1;
     }
 
