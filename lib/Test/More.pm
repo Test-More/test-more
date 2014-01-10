@@ -1300,9 +1300,10 @@ sub skip {
             $how_many = 1;
         }
     } else {
-        # $how_many can only be avoided when no_plan is in use.
-        $tb->carp("skip() needs to know \$how_many tests are in the block")
-          unless $tb->has_plan eq 'no_plan';
+        # $how_many can only be omitted when done_testing or no_plan is in use.
+        if( (defined $tb->has_plan) && (not $tb->has_plan eq 'no_plan') ){
+            $tb->carp("skip() needs to know \$how_many tests are in the block");
+        }
         $how_many = 1;
     }
 
