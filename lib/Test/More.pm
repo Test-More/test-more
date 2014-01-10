@@ -1299,9 +1299,10 @@ sub skip {
             $tb->carp("skip() was passed a non-numeric number of tests.  Did you get the arguments backwards?");
             $how_many = 1;
         }
-    } else {
+    }
+    else {
         # $how_many can only be omitted when done_testing or no_plan is in use.
-        if( (defined $tb->has_plan) && (not $tb->has_plan eq 'no_plan') ){
+        if( (defined $tb->has_plan) && (not $tb->has_plan eq 'no_plan') ) {
             $tb->carp("skip() needs to know \$how_many tests are in the block");
         }
         $how_many = 1;
