@@ -82,9 +82,9 @@ WriteMakefile(
     ($mm_ver < 6.46 ? () : (META_MERGE => {
         resources => {
             license     =>      'http://dev.perl.org/licenses/',
-            homepage    =>      'http://github.com/schwern/test-more/',
-            bugtracker  =>      'http://github.com/schwern/test-more/issues/',
-            repository  =>      'http://github.com/schwern/test-more/',
+            homepage    =>      'http://github.com/Test-More/test-more/',
+            bugtracker  =>      'http://github.com/Test-More/test-more/issues/',
+            repository  =>      'http://github.com/Test-More/test-more/',
             MailingList =>      'http://lists.perl.org/list/perl-qa.html',
         },
     }))

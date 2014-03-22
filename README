@@ -1,5 +1,6 @@
 This is the README file for Test::Simple, basic utilities for 
-writing tests, by Michael G Schwern <schwern@pobox.com>.
+writing tests, by Michael G Schwern <schwern@pobox.com>. Maintained by Chad
+Granum <exodist@cpan.org>.
 
 After installation, please consult the tutorial for how to
 start adding tests to your modules. 'perldoc Test::Tutorial'
