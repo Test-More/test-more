@@ -223,15 +223,18 @@ sub child {
 
 =item B<subtest>
 
-    $builder->subtest($name, \&subtests);
+    $builder->subtest($name, \&subtests, @args);
 
-See documentation of C<subtest> in Test::More.
+See documentation of C<subtest> in Test::More.  
+
+C<subtest> also, and optionally, accepts arguments which will be passed to the
+subtests reference.
 
 =cut
 
 sub subtest {
     my $self = shift;
-    my($name, $subtests) = @_;
+    my($name, $subtests, @args) = @_;
 
     if ('CODE' ne ref $subtests) {
         $self->croak("subtest()'s second argument must be a code ref");
@@ -255,7 +258,7 @@ sub subtest {
         my $run_the_subtests = sub {
             # Add subtest name for clarification of starting point
             $self->note("Subtest: $name");
-            $subtests->();
+            $subtests->(@args);
             $self->done_testing unless $self->_plan_handled;
             1;
         };
