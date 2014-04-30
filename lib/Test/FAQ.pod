@@ -1,7 +1,8 @@
+=pod
+
 =head1 NAME
 
 Test::FAQ - Frequently Asked Questions about testing with Perl
-
 
 =head1 DESCRIPTION
 
@@ -14,7 +15,7 @@ L<Test::Tutorial>
 
 =head2 Are there any modules for testing?
 
-A whole bunch.  Start with Test::Simple then move onto Test::More.
+A whole bunch.  Start with L<Test::Simple> then move onto Test::More.
 
 Then go onto L<http://search.cpan.org> and search for "Test".
 
@@ -59,8 +60,8 @@ if you're feeling brave, you might want to have on hand these
 
 going back beyond 5.003 is probably beyond the call of duty.
 
-You can then add something like this to your Makefile.PL.  It
-overrides the MakeMaker test_via_harness() method to run the tests
+You can then add something like this to your F<Makefile.PL>.  It
+overrides the L<ExtUtils::MakeMaker> C<test_via_harness()> method to run the tests
 against several different versions of Perl.
 
     # If PERL_TEST_ALL is set, run "make test" against 
@@ -86,12 +87,12 @@ against several different versions of Perl.
         }
     }
 
-and re-run your Makefile.PL with the PERL_TEST_ALL environment
+and re-run your F<Makefile.PL> with the C<PERL_TEST_ALL> environment
 variable set
 
     PERL_TEST_ALL=1 perl Makefile.PL
 
-now "make test" will run against each of your other perls.
+now C<make test> will run against each of your other perls.
 
 
 =head2 If I'm testing Foo::Bar, where do I put tests for Foo::Bar::Baz?
@@ -155,12 +156,12 @@ See L<How do I get tests to run in a certain order?> for details.
 
 Finally, the grouping of tests into common bits of functionality can
 be achieved by directory and filenames.  For example, all the tests
-for Test::Builder are in the F<t/Builder/> directory.
+for L<Test::Builder> are in the F<t/Builder/> directory.
 
 As an example, F<t/Builder/reset.t> contains the tests for
 C<< Test::Builder->reset >>.  F<t/00compile.t> checks that everything
 compiles, and it will run first.  F<t/dont_overwrite_die_handler.t>
-checks that we don't overwrite the C<<$SIG{__DIE__}>> handler.
+checks that we don't overwrite the C<< $SIG{__DIE__} >> handler.
 
 
 =head2 How do I deal with tests that sometimes pass and sometimes fail?
@@ -233,19 +234,19 @@ Besides, that will cause problems on VMS.
 > I'm intimately familiar with the _disadvantages_. When you run the
 > test, you know that "test 113 failed". That's all you know, in general.
 
-Second advantage is you can easily upgrade the ok() function to fix
+Second advantage is you can easily upgrade the C<ok()> function to fix
 this, either by slapping this line in:
 
         printf "# Failed test at line %d\n", (caller)[2];
 
-or simply junking the whole thing and switching to Test::Simple or
-Test::More, which does all sorts of nice diagnostics-on-failure for
-you.  It's ok() function is backwards compatible with the above.
+or simply junking the whole thing and switching to L<Test::Simple> or
+L<Test::More>, which does all sorts of nice diagnostics-on-failure for
+you.  Its C<ok()> function is backwards compatible with the above.
 
-There's some issues with using Test::Simple to test really basic Perl
+There's some issues with using L<Test::Simple> to test really basic Perl
 functionality, you have to choose on a per test basis.  Since
-Test::Simple doesn't use pack() it's safe for t/op/pack.t to use
-Test::Simple.  I just didn't want to make the perlhack patching
+L<Test::Simple> doesn't use C<pack()> it's safe for F<t/op/pack.t> to use
+L<Test::Simple>.  I just didn't want to make the perlhack patching
 example too complicated.
 
 
@@ -273,14 +274,14 @@ person goes to write a test and they suddenly forget all basic
 programming practice.
 
 
-The reasons for using an ok() function above are the same reasons to
+The reasons for using an C<ok()> function above are the same reasons to
 use functions in general, we should all know them.  We'd laugh our
 heads off at code that repeated as much as your average test does.
 These are newbie mistakes.
 
 And the normal 'can do' flair seems to disappear.  I know Robin.  I
 *know* that in any other situation he would have come up with the
-caller() trick in about 15 seconds flat.  Instead weird, elaborate,
+C<caller()> trick in about 15 seconds flat.  Instead weird, elaborate,
 inelegant hacks are thought up to solve the simplest problems.
 
 
@@ -292,7 +293,7 @@ the first time.  I guess writing test is one of those.
 
 =head2 How do I use Test::More without depending on it?
 
-Install Test::More into t/lib under your source directory.  Then in your tests
+Install L<Test::More> into F<t/lib> under your source directory.  Then in your tests
 say C<use lib 't/lib'>.
 
 =head2 How do I deal with threads and forking?
@@ -300,7 +301,7 @@ say C<use lib 't/lib'>.
 =head2 Why do I need more than ok?
 
 Since every test can be reduced to checking if a statement is true,
-ok() can test everything.  But ok() doesn't tell you why the test
+C<ok()> can test everything.  But C<ok()> doesn't tell you why the test
 failed.  For that you need to tell the test more... which is why 
 you need L<Test::More>.
 
@@ -325,7 +326,7 @@ more information.
 Using C<is> from L<Test::More> you now know what value you got and
 what value you expected.
 
-The most useful functions in Test::More are is, like and is_deeply.
+The most useful functions in L<Test::More> are C<is()>, C<like()> and C<is_deeply()>.
 
 
 =head2 What's wrong with C<print $test ? "ok" : "not ok">?
@@ -347,7 +348,7 @@ On Mon, Mar 18, 2002 at 03:57:55AM -0500, Mark-Jason Dominus wrote:
 
 =head2 How do I use the comparison functions of a testing module without it being a test?
 
-Any testing function based on Test::Builder, most are, can be quieted so it does
+Any testing function based on L<Test::Builder>, most are, can be quieted so it does
 not do any testing.  It simply returns true or false.  Use the following code...
 
     use Test::More;     # or any testing module
