@@ -1,3 +1,8 @@
+1.001004_001 Sat May  10 08:39:00 PST 2014
+    * Doc updates
+    * Subtests accept args
+    * Outdent subtest diag
+
 1.001003     Fri Mar  21 21:12:32 PST 2014
     * Doc updates for maintainer change
 

@@ -17,7 +17,7 @@ sub _carp {
     return warn @_, " at $file line $line\n";
 }
 
-our $VERSION = '1.001003';
+our $VERSION = '1.001004_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Builder::Module 0.99;
@@ -1858,17 +1858,28 @@ magic side-effects are kept to a minimum.  WYSIWYG.
 
 =head1 SEE ALSO
 
+=head2
+
+=head2 ALTERNATIVES
+
 L<Test::Simple> if all this confuses you and you just want to write
 some tests.  You can upgrade to Test::More later (it's forward
 compatible).
 
-L<Test::Harness> is the test runner and output interpreter for Perl.
-It's the thing that powers C<make test> and where the C<prove> utility
-comes from.
-
 L<Test::Legacy> tests written with Test.pm, the original testing
 module, do not play well with other testing libraries.  Test::Legacy
 emulates the Test.pm interface and does play well with others.
+
+=head2 TESTING FRAMEWORKS
+
+L<Fennec> The Fennec framework is a testers toolbox. It uses L<Test::Builder>
+under the hood. It brings enhancements for forking, defining state, and
+mocking. Fennec enhances several modules to work better together than they
+would if you loaded them individually on your own.
+
+L<Fennec::Declare> Provides enhanced (L<Devel::Declare>) syntax for Fennec.
+
+=head2 ADDITIONAL LIBRARIES
 
 L<Test::Differences> for more ways to test complex data structures.
 And it plays well with Test::More.
@@ -1879,8 +1890,22 @@ L<Test::Deep> gives you more powerful complex data structure testing.
 
 L<Test::Inline> shows the idea of embedded testing.
 
+L<Mock::Quick> The ultimate mocking library. Easily spawn objects defined on
+the fly. Can also override, block, or reimplement packages as needed.
+
+L<Test::FixtureBuilder> Quickly define fixture data for unit tests.
+
+=head2 OTHER COMPONENTS
+
+L<Test::Harness> is the test runner and output interpreter for Perl.
+It's the thing that powers C<make test> and where the C<prove> utility
+comes from.
+
+=head2 BUNDLES
+
 L<Bundle::Test> installs a whole bunch of useful test modules.
 
+L<Test::Most> Most commonly needed test functions and features.
 
 =head1 AUTHORS
 
