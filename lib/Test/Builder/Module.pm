@@ -123,10 +123,10 @@ sub _strip_imports {
 
     Your::Module->import_extra(\@import_args);
 
-C<import_extra()< is called by C<import()>.  It provides an opportunity for you
+C<import_extra()> is called by C<import()>.  It provides an opportunity for you
 to add behaviors to your module based on its import list.
 
-Any extra arguments which shouldn't be passed on to C<plan()> should be 
+Any extra arguments which shouldn't be passed on to C<plan()> should be
 stripped off by this method.
 
 See L<Test::More> for an example of its use.
