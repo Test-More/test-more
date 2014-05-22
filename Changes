@@ -1,3 +1,7 @@
+1.001004_003 Sat May  17 13:43:00 PST 2014
+    * Another Minor doc fix to solve test bug
+    * Fix #399, conflict with strawberry-portable
+
 1.001004_002 Sat May  17 13:43:00 PST 2014
     * Minor doc fix to solve test bug
 
