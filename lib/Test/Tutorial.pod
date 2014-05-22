@@ -297,7 +297,7 @@ Now we can test bunches of dates by just adding them to
 C<%ICal_Dates>.  Now that it's less work to test with more dates, you'll
 be inclined to just throw more in as you think of them.
 Only problem is, every time we add to that we have to keep adjusting
-the L< use Test::More tests => ## >> line.  That can rapidly get
+the L<< use Test::More tests => ## >> line.  That can rapidly get
 annoying.  There are ways to make this work better.
 
 First, we can calculate the plan dynamically using the C<plan()>
