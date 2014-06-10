@@ -68,6 +68,35 @@ BEGIN {
     }
 }
 
+use Test::Builder::Stream;
+use Test::Builder::Result;
+use Test::Builder::Result::Ok;
+use Test::Builder::Result::Diag;
+use Test::Builder::Result::Note;
+use Test::Builder::Result::Plan;
+use Test::Builder::Result::Bail;
+use Test::Builder::Result::Subtest;
+
+{
+    my $stream;
+
+    sub stream {
+        my $self = shift;
+        $stream ||= Test::Builder::Stream->new();
+        return $stream;
+    }
+
+    sub _hijack {
+        my $self = shift;
+
+        my $orig = $self->stream;
+        $stream = undef;
+        $self->stream; # Generate a new one
+
+        return sub { $stream = $orig };
+    }
+}
+
 =head1 NAME
 
 Test::Builder - Backend for building test libraries
@@ -216,6 +245,7 @@ sub child {
     $child->{Parent}      = $self;
     $child->{Parent_TODO} = $orig_TODO;
     $child->{Name}        = $name || "Child of " . $self->name;
+    $child->{Depth}       = $self->depth + 1;
     $self->{Child_Name}   = $child->name;
     return $child;
 }
@@ -286,6 +316,82 @@ sub subtest {
 
     return $finalize;
 }
+
+=item B<listen>
+
+This lets you add a listener to the result stream. By default there is 1
+listener, it outputs TAP.
+
+    my $undo = $Test->listen(sub {
+        my ($TB, $item) = @_;
+        if ($item->isa('Test::Builder::Result::Ok')) {
+            ...
+        }
+        elsif($item->isa('Test::Builder::Result::Diag')) {
+            ...
+        }
+        elsif($item->isa('Test::Builder::Result::Note')) {
+            ...
+        }
+        elsif($item->isa('Test::Builder::Result::Plan')) {
+            ...
+        }
+        elsif($item->isa('Test::Builder::Result::Bail')) {
+            ...
+        }
+        elsif($item->isa('Test::Builder::Result::Subtest')) {
+            ...
+        }
+    });
+
+This method returns an anonymous sub that if run will remove the just-added
+listener. This provides you with a way to unlisten.
+
+    $undo->(); # Not listening anymore.
+
+=cut
+
+sub listen { shift->stream->listen(@_) }
+
+=item B<hijack>
+
+This will remove all listeners and mungers. You can restore the originals by
+running the C<$undo> coderef that is returned.
+
+    my $undo = $Test->hijack;
+    ...
+    $undo->(); # Listeners and Mungers are restored.
+
+This is primarily useful in Tools that test testing tools.
+
+B<Note:> Any mungers/listeners added since the hijack will be removed when you
+call the undo sub.
+
+=cut
+
+sub hijack { shift->_hijack };
+
+=item B<munge>
+
+This lets you add a kind of middleware to the result stream.
+
+    my $undo = $Test->munge(sub {
+        my ($TB, $item) = @_;
+        ...
+        return $new_item;
+    });
+
+You can modify the item that was passed in. You can also return an empty list
+to prevent any listeners from seeing it. If you like you can add new items to
+the stream by returning a list.
+
+B<Note:> Mungers run in the order they were added.
+B<Note:> Items returned by a munger will only be munged more by later mungers,
+earlier ones will never see them.
+
+=cut
+
+sub munge { shift->stream->munge(@_) }
 
 =begin _private
 
@@ -467,12 +573,16 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Start_Todo} = 0;
     $self->{Opened_Testhandles} = 0;
 
+    $self->{Depth} = 0;
+
     $self->_share_keys;
     $self->_dup_stdhandles;
 
+    $self->hijack;
+    $self->listen(\&Test::Builder::Stream::TAP);
+
     return;
 }
-
 
 # Shared scalar values are lost when a hash is copied, so we have
 # a separate method to restore them.
@@ -815,6 +925,7 @@ sub ok {
         $self->is_passing(0);
         $self->croak("Cannot run test ($name) with active children");
     }
+
     # $test might contain an object which we don't want to accidentally
     # store, so we turn it into a boolean.
     $test = $test ? 1 : 0;
@@ -838,23 +949,25 @@ ERR
 
     $self->_unoverload_str( \$todo );
 
-    my $out;
     my $result = &share( {} );
+    my $ok = Test::Builder::Result::Ok->new(
+        context => [$self->caller],
+        real_bool => $test,
+        bool => $self->in_todo ? 1 : $test,
+        name => $name || undef,
+    );
 
     unless($test) {
-        $out .= "not ";
         @$result{ 'ok', 'actual_ok' } = ( ( $self->in_todo ? 1 : 0 ), 0 );
     }
     else {
         @$result{ 'ok', 'actual_ok' } = ( 1, $test );
     }
 
-    $out .= "ok";
-    $out .= " $self->{Curr_Test}" if $self->use_numbers;
+    $ok->number($self->{Curr_Test});
 
     if( defined $name ) {
         $name =~ s|#|\\#|g;    # # in a name can confuse Test::Harness.
-        $out .= " - $name";
         $result->{name} = $name;
     }
     else {
@@ -862,9 +975,9 @@ ERR
     }
 
     if( $self->in_todo ) {
-        $out .= " # TODO $todo";
         $result->{reason} = $todo;
         $result->{type}   = 'todo';
+        $ok->todo($todo);
     }
     else {
         $result->{reason} = '';
@@ -872,9 +985,8 @@ ERR
     }
 
     $self->{Test_Results}[ $self->{Curr_Test} - 1 ] = $result;
-    $out .= "\n";
 
-    $self->_print($out);
+    $self->stream->push($self, $ok);
 
     unless($test) {
         my $msg = $self->in_todo ? "Failed (TODO)" : "Failed";
@@ -1651,7 +1763,16 @@ If set to true, no "1..N" header will be printed.
 
 =cut
 
-foreach my $attribute (qw(No_Header No_Ending No_Diag)) {
+=item B<depth>
+
+    my $d = $Test->depth;
+
+0 for the parent object, 1 for a typicial subtest, nuber grows depending on how
+deeply nested the child is.
+
+=cut
+
+foreach my $attribute (qw(No_Header No_Ending No_Diag Depth)) {
     my $method = lc $attribute;
 
     my $code = sub {
