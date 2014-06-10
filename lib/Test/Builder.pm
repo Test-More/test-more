@@ -78,7 +78,14 @@ use Test::Builder::Result::Bail;
 use Test::Builder::Result::Subtest;
 
 {
-    my $stream;
+    my $stream = Test::Builder::Stream->new();
+
+    if ($ENV{NO_TAP}) {
+        *no_tap = sub {};
+    }
+    else {
+        *no_tap = $stream->listen(\&Test::Builder::Stream::TAP);
+    }
 
     sub stream {
         my $self = shift;
@@ -578,9 +585,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->_share_keys;
     $self->_dup_stdhandles;
 
-    $self->hijack;
-    $self->listen(\&Test::Builder::Stream::TAP);
-
     return;
 }
 
@@ -955,6 +959,7 @@ ERR
         real_bool => $test,
         bool => $self->in_todo ? 1 : $test,
         name => $name || undef,
+        in_todo => $self->in_todo,
     );
 
     unless($test) {
@@ -964,7 +969,7 @@ ERR
         @$result{ 'ok', 'actual_ok' } = ( 1, $test );
     }
 
-    $ok->number($self->{Curr_Test});
+    $ok->number($self->{Curr_Test}) if $self->use_numbers;
 
     if( defined $name ) {
         $name =~ s|#|\\#|g;    # # in a name can confuse Test::Harness.
