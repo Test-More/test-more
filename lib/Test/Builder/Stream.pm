@@ -61,22 +61,4 @@ sub push {
     }
 }
 
-sub TAP {
-    my ($tb, $item) = @_;
-    if ($item->isa('Test::Builder::Result::Ok')) {
-        $tb->_print($item->to_tap);
-    }
-    elsif($item->isa('Test::Builder::Result::Diag')) {
-    }
-    elsif($item->isa('Test::Builder::Result::Note')) {
-    }
-    elsif($item->isa('Test::Builder::Result::Plan')) {
-    }
-    elsif($item->isa('Test::Builder::Result::Bail')) {
-    }
-    elsif($item->isa('Test::Builder::Result::Nest')) {
-    }
-    # Tap does not handle any others, ignore!
-}
-
 1;

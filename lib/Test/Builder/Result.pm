@@ -44,4 +44,14 @@ sub new {
     return $self;
 }
 
+sub type {
+    my $self = shift;
+    my $class = blessed($self);
+    if ($class && $class =~ m/^.*::([^:]+)$/) {
+        return lc($1);
+    }
+
+    confess "Could not determine result type for $self";
+}
+
 1;

@@ -69,6 +69,7 @@ BEGIN {
 }
 
 use Test::Builder::Stream;
+use Test::Builder::Formatter::TAP;
 use Test::Builder::Result;
 use Test::Builder::Result::Ok;
 use Test::Builder::Result::Diag;
@@ -84,7 +85,7 @@ use Test::Builder::Result::Subtest;
         *no_tap = sub {};
     }
     else {
-        *no_tap = $stream->listen(\&Test::Builder::Stream::TAP);
+        *no_tap = $stream->listen(Test::Builder::Formatter::TAP->new->to_listener);
     }
 
     sub stream {
@@ -93,7 +94,7 @@ use Test::Builder::Result::Subtest;
         return $stream;
     }
 
-    sub _hijack {
+    sub _intercept {
         my $self = shift;
 
         my $orig = $self->stream;
@@ -360,23 +361,23 @@ listener. This provides you with a way to unlisten.
 
 sub listen { shift->stream->listen(@_) }
 
-=item B<hijack>
+=item B<intercept>
 
 This will remove all listeners and mungers. You can restore the originals by
 running the C<$undo> coderef that is returned.
 
-    my $undo = $Test->hijack;
+    my $undo = $Test->intercept;
     ...
     $undo->(); # Listeners and Mungers are restored.
 
 This is primarily useful in Tools that test testing tools.
 
-B<Note:> Any mungers/listeners added since the hijack will be removed when you
+B<Note:> Any mungers/listeners added since the intercept will be removed when you
 call the undo sub.
 
 =cut
 
-sub hijack { shift->_hijack };
+sub intercept { shift->_intercept };
 
 =item B<munge>
 
