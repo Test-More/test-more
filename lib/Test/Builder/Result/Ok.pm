@@ -4,12 +4,12 @@ use warnings;
 
 use parent 'Test::Builder::Result';
 
-Test::Builder::Result::_accessors(qw/bool real_bool name number todo skip in_todo/);
+Test::Builder::Result::_accessors(qw/bool real_bool name number todo skip in_todo indent/);
 
 sub to_tap {
     my $self = shift;
 
-    my $out = "";
+    my $out = $self->indent || "";
     $out .= "not " unless $self->real_bool;
     $out .= "ok";
     $out .= " " . $self->number if $self->number;

@@ -3,6 +3,7 @@ package Test::Builder;
 use 5.006;
 use strict;
 use warnings;
+use Scalar::Util();
 
 our $VERSION = '1.001004_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -12,7 +13,6 @@ BEGIN {
         require Test::Builder::IO::Scalar;
     }
 }
-
 
 # Make Test::Builder thread-safe for ithreads.
 BEGIN {
@@ -85,7 +85,7 @@ use Test::Builder::Result::Subtest;
         *no_tap = sub {};
     }
     else {
-        *no_tap = $stream->listen(Test::Builder::Formatter::TAP->new->to_listener);
+        *no_tap = $stream->listen(Test::Builder::Formatter::TAP->new);
     }
 
     sub stream {
@@ -582,6 +582,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Opened_Testhandles} = 0;
 
     $self->{Depth} = 0;
+    $self->{_PID} = $$;
 
     $self->_share_keys;
     $self->_dup_stdhandles;
@@ -600,6 +601,7 @@ sub _share_keys {
     return;
 }
 
+sub _PID { shift->{_PID} }
 
 =back
 
@@ -956,7 +958,7 @@ ERR
 
     my $result = &share( {} );
     my $ok = Test::Builder::Result::Ok->new(
-        context => [$self->caller],
+        context => $self->context,
         real_bool => $test,
         bool => $self->in_todo ? 1 : $test,
         name => $name || undef,
@@ -1711,6 +1713,64 @@ sub level {
         $Level = $level;
     }
     return $Level;
+}
+
+=item B<no_tap>
+
+Turn off TAP output. TAP is the default listener, you can use this method to
+turn it off. If you do not add a different listener than your results will not
+be output anywhere, howwever the exit status will still note a pass or fail.
+
+=cut
+
+# Defined near the top.
+
+=item B<no_fork>
+
+    $Test->no_fork;
+
+Turn off forking support if it is active. By default forking support is turned
+off.
+
+=cut
+
+sub no_fork {
+    my $self = shift;
+    my $redirect = $self->stream->redirect;
+
+    # If these conditions are not true, then we did not add the redirect.
+    return unless $redirect;
+    return unless Scalar::Util::blessed($redirect);
+    return unless $redirect->isa('Test::Builder::Fork');
+
+    $self->stream->redirect(undef); # Turn it off.
+}
+
+=item B<use_fork>
+
+    my $reader = $Test->use_fork;
+    ...
+    $reader->cull($Test); # Read in any results from other processes
+    ...
+    $reader->cull($Test); # ...
+
+Turn on forking support. This means you can fork in your unit tests and call
+methods such as C<ok()> and have it work properly.
+
+B<Note:> You will need to call C<< $reader->cull() >> from time to time to pull
+in the results from other processes. If you never call this the results will
+never be shown or accounted for.
+
+B<Note:> You are responsible for forking, and managing the child processes.
+
+=cut
+
+sub use_fork {
+    my $self = shift;
+    my $redirect = $self->stream->redirect;
+
+    require Test::Builder::Fork;
+    $self->stream->redirect(Test::Builder::Fork->new->handler);
 }
 
 =item B<use_numbers>
@@ -2501,6 +2561,19 @@ sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
         $level--;
     } until @caller;
     return wantarray ? @caller : $caller[0];
+}
+
+sub context {
+    my $self = shift;
+    my ($height) = @_;
+    $height ||= 0;
+
+    return {
+        caller => [$self->caller($height + 1)],
+        pid => $$,
+        depth => $self->depth || 0,
+        indent => $self->_indent || "",
+    };
 }
 
 =back

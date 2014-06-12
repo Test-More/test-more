@@ -10,6 +10,30 @@ sub new {
     return bless { listeners => {}, mungers => {} }, $class;
 }
 
+sub redirect {
+    my $self = shift;
+
+    if (@_) {
+        confess "redirect already set by [" . join(', ', @{$self->{redirect_caller}}) . "]" if $self->{redirect};
+
+        my ($code) = @_;
+
+        if ($code) {
+            confess("Redirect must be a code ref")
+                unless reftype $code and reftype $code eq 'CODE';
+
+            $self->{redirect} = $code;
+            $self->{redirect_caller} = [caller];
+        }
+        else { # Turning it off
+            delete $self->{redirect};
+            delete $self->{redirect_caller};
+        }
+    }
+
+    return $self->{redirect};
+}
+
 my $listen_id = 1;
 sub listen {
     my $self = shift;
@@ -44,6 +68,12 @@ sub push {
 
     confess("Did not get a Test::Builder! ($tb)")
         unless $tb && blessed($tb) && $tb->isa('Test::Builder');
+
+    # The redirect will return true if it intends to redirect, we should then return.
+    # If it returns false that means we do not need to redirect and should act normally.
+    if (my $redirect = $self->redirect) {
+        return if $redirect->(@_);
+    }
 
     my $items = [$item];
     for my $munger_id (sort {$a <=> $b} keys %{$self->{mungers}}) {
