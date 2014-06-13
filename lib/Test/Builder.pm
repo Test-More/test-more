@@ -1389,7 +1389,12 @@ sub BAIL_OUT {
         die bless {} => 'Test::Builder::Exception';
     }
 
-    $self->_print("Bail out!  $reason");
+    my $bail = Test::Builder::Result::Bail->new(
+        context => $self->context,
+        reason  => $reason,
+    );
+    $self->stream->push($self, $bail);
+
     exit 255;
 }
 
