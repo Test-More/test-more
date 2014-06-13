@@ -20,7 +20,19 @@ sub to_tap {
         $out .= " - " . $name;
     }
 
-    $out .= " # TODO " . $self->todo if $self->in_todo;
+    if (defined $self->skip && defined $self->todo) {
+        my $why = $self->skip;
+        die "2 different reasons to skip/todo" unless $why eq $self->todo;
+        $out .= " # TODO & SKIP $why";
+    }
+    elsif (defined $self->skip) {
+        $out .= " # skip";
+        $out .= " " . $self->skip if length $self->skip;
+    }
+    elsif($self->in_todo) {
+        $out .= " # TODO " . $self->todo if $self->in_todo;
+    }
+
     $out .= "\n";
 
     return $out;

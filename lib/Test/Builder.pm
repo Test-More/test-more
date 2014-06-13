@@ -1430,15 +1430,14 @@ sub skip {
         }
     );
 
-    my $out = "ok";
-    $out .= " $self->{Curr_Test}" if $self->use_numbers;
-    $out .= " # skip";
-    $out .= " $why"               if length $why;
-    $out .= "\n";
-
-    $self->_print($out);
-
-    return 1;
+    my $ok = Test::Builder::Result::Ok->new(
+        context => $self->context,
+        real_bool => 1,
+        bool => 1,
+        skip => $why,
+    );
+    $ok->number($self->{Curr_Test}) if $self->use_numbers;
+    $self->stream->push($self, $ok);
 }
 
 =item B<todo_skip>
@@ -1470,11 +1469,15 @@ sub todo_skip {
         }
     );
 
-    my $out = "not ok";
-    $out .= " $self->{Curr_Test}" if $self->use_numbers;
-    $out .= " # TODO & SKIP $why\n";
-
-    $self->_print($out);
+    my $ok = Test::Builder::Result::Ok->new(
+        context => $self->context,
+        real_bool => 0,
+        bool => 1,
+        skip => $why,
+        todo => $why,
+    );
+    $ok->number($self->{Curr_Test}) if $self->use_numbers;
+    $self->stream->push($self, $ok);
 
     return 1;
 }
@@ -1894,7 +1897,13 @@ Mark Fowler <mark@twoshortplanks.com>
 sub diag {
     my $self = shift;
 
-    $self->_print_comment( $self->_diag_fh, @_ );
+    my $msg = join '', map { defined($_) ? $_ : 'undef' } @_;
+
+    my $r = Test::Builder::Result::Diag->new(
+        context => $self->context,
+        message => $msg,
+    );
+    $self->stream->push($self, $r);
 }
 
 =item B<note>
@@ -1909,7 +1918,13 @@ normally be seen by the user except in verbose mode.
 sub note {
     my $self = shift;
 
-    $self->_print_comment( $self->output, @_ );
+    my $msg = join '', map { defined($_) ? $_ : 'undef' } @_;
+
+    my $r = Test::Builder::Result::Note->new(
+        context => $self->context,
+        message => $msg,
+    );
+    $self->stream->push($self, $r);
 }
 
 sub _diag_fh {
@@ -1917,28 +1932,6 @@ sub _diag_fh {
 
     local $Level = $Level + 1;
     return $self->in_todo ? $self->todo_output : $self->failure_output;
-}
-
-sub _print_comment {
-    my( $self, $fh, @msgs ) = @_;
-
-    return if $self->no_diag;
-    return unless @msgs;
-
-    # Prevent printing headers when compiling (i.e. -c)
-    return if $^C;
-
-    # Smash args together like print does.
-    # Convert undef to 'undef' so its readable.
-    my $msg = join '', map { defined($_) ? $_ : 'undef' } @msgs;
-
-    # Escape the beginning, _print will take care of the rest.
-    $msg =~ s/^/# /;
-
-    local $Level = $Level + 1;
-    $self->_print_to_fh( $fh, $msg );
-
-    return 0;
 }
 
 =item B<explain>
