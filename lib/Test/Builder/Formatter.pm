@@ -7,9 +7,7 @@ use Scalar::Util qw/blessed/;
 
 sub new {
     my $class = shift;
-    # This code makes me LOL. 
-    my $self;
-    $self = bless sub { $self->handle(@_) }, $class;
+    my $self = bless {}, $class;
     return $self;
 }
 
@@ -31,6 +29,11 @@ sub handle {
     $self->$method($tb, $item);
 
     return 1;
+}
+
+sub to_handler {
+    my $self = shift;
+    return sub { $self->handle(@_) };
 }
 
 1;

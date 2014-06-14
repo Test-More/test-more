@@ -3,10 +3,13 @@ package Test::Builder;
 use 5.006;
 use strict;
 use warnings;
-use Scalar::Util();
 
 our $VERSION = '1.001004_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
+######################
+# Start MAGIC things #
+######################
 
 BEGIN {
     if( $] < 5.008 ) {
@@ -68,60 +71,85 @@ BEGIN {
     }
 }
 
-use Test::Builder::Stream;
-use Test::Builder::Formatter::TAP;
+# Prepare the result stream (This is global)
+BEGIN {
+    my ($stream, $tap);
+
+    sub stream {
+        require Test::Builder::Stream;
+        $stream ||= Test::Builder::Stream->new();
+        return $stream;
+    }
+
+    sub no_tap { 0 } # Gets redefined when tap is enabled.
+
+    sub use_tap {
+        require Test::Builder::Formatter::TAP;
+        $tap ||= Test::Builder::Formatter::TAP->new();
+        no warnings 'redefine';
+        *no_tap = stream()->listen($tap->to_handler);
+    }
+
+    use_tap() unless $ENV{NO_TAP};
+
+    sub _intercept {
+        my $orig = stream();
+        $stream = undef;
+
+        stream(); # Generate a new one
+
+        return sub { $stream = $orig };
+    }
+}
+
+# The mostly-singleton, and other package vars.
+our $Test = Test::Builder->new;
+our $Level;
+
+# Stuff to do at the very end
+END {
+    $Test->_ending if defined $Test;
+}
+
+sub DESTROY {
+    my $self = shift;
+    if ( $self->parent and $$ == $self->{Original_Pid} ) {
+        my $name = $self->name;
+        $self->diag(<<"FAIL");
+Child ($name) exited without calling finalize()
+FAIL
+        $self->parent->{In_Destroy} = 1;
+        $self->parent->ok(0, $name);
+    }
+}
+
+#####################
+# Stop MAGIC things #
+#####################
+
+use Scalar::Util();
 use Test::Builder::Result;
 use Test::Builder::Result::Ok;
 use Test::Builder::Result::Diag;
 use Test::Builder::Result::Note;
 use Test::Builder::Result::Plan;
 use Test::Builder::Result::Bail;
-use Test::Builder::Result::Subtest;
+use Test::Builder::Result::Child;
 
-{
-    my $stream = Test::Builder::Stream->new();
+sub listen    { shift->stream->listen(@_) }
+sub intercept { shift->_intercept         }
+sub munge     { shift->stream->munge(@_)  }
+sub parent    { shift->{Parent}           }
+sub name      { shift->{Name}             }
 
-    if ($ENV{NO_TAP}) {
-        *no_tap = sub {};
-    }
-    else {
-        *no_tap = $stream->listen(Test::Builder::Formatter::TAP->new);
-    }
+sub _PID      { shift->{_PID} }
 
-    sub stream {
-        my $self = shift;
-        $stream ||= Test::Builder::Stream->new();
-        return $stream;
-    }
-
-    sub _intercept {
-        my $self = shift;
-
-        my $orig = $self->stream;
-        $stream = undef;
-        $self->stream; # Generate a new one
-
-        return sub { $stream = $orig };
-    }
-}
-
-our $Test = Test::Builder->new;
 
 sub new {
     my($class) = shift;
     $Test ||= $class->create;
     return $Test;
 }
-
-sub create {
-    my $class = shift;
-
-    my $self = bless {}, $class;
-    $self->reset;
-
-    return $self;
-}
-
 
 # Copy an object, currently a shallow.
 # This does *not* bless the destination.  This keeps the destructor from
@@ -133,6 +161,15 @@ sub _copy {
     _share_keys($dest);
 
     return;
+}
+
+sub create {
+    my $class = shift;
+
+    my $self = bless {}, $class;
+    $self->reset;
+
+    return $self;
 }
 
 sub child {
@@ -172,6 +209,14 @@ sub child {
     $child->{Name}        = $name || "Child of " . $self->name;
     $child->{Depth}       = $self->depth + 1;
     $self->{Child_Name}   = $child->name;
+
+    my $res = Test::Builder::Result::Child->new(
+        context => $self->context,
+        name    => $name || undef,
+        action  => 'push',
+    );
+    $self->stream->push($self, $res);
+
     return $child;
 }
 
@@ -230,12 +275,6 @@ sub subtest {
     return $finalize;
 }
 
-sub listen { shift->stream->listen(@_) }
-
-sub intercept { shift->_intercept };
-
-sub munge { shift->stream->munge(@_) }
-
 sub _plan_handled {
     my $self = shift;
     return $self->{Have_Plan} || $self->{No_Plan} || $self->{Skip_All};
@@ -272,6 +311,13 @@ sub finalize {
     $? = $self->{Child_Error};
     delete $self->{Parent};
 
+    my $res = Test::Builder::Result::Child->new(
+        context => $self->context,
+        name    => $self->{Name} || undef,
+        action  => 'pop',
+    );
+    $self->stream->push($self, $res);
+
     return $self->is_passing;
 }
 
@@ -285,24 +331,6 @@ sub _indent      {
     return $self->{Indent};
 }
 
-sub parent { shift->{Parent} }
-
-sub name { shift->{Name} }
-
-sub DESTROY {
-    my $self = shift;
-    if ( $self->parent and $$ == $self->{Original_Pid} ) {
-        my $name = $self->name;
-        $self->diag(<<"FAIL");
-Child ($name) exited without calling finalize()
-FAIL
-        $self->parent->{In_Destroy} = 1;
-        $self->parent->ok(0, $name);
-    }
-}
-
-our $Level;
-
 sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my($self) = @_;
 
@@ -315,7 +343,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Ending}       = 0;
     $self->{Have_Plan}    = 0;
     $self->{No_Plan}      = 0;
-    $self->{Have_Output_Plan} = 0;
+    $self->{Have_Issued_Plan} = 0;
     $self->{Done_Testing} = 0;
 
     $self->{Original_Pid} = $$;
@@ -359,8 +387,6 @@ sub _share_keys {
 
     return;
 }
-
-sub _PID { shift->{_PID} }
 
 my %plan_cmds = (
     no_plan     => \&no_plan,
@@ -418,7 +444,7 @@ sub expected_tests {
         $self->{Expected_Tests} = $max;
         $self->{Have_Plan}      = 1;
 
-        $self->_output_plan($max) unless $self->no_header;
+        $self->_issue_plan($max) unless $self->no_header;
     }
     return $self->{Expected_Tests};
 }
@@ -435,17 +461,25 @@ sub no_plan {
 }
 
 sub _output_plan {
+    self->carp("_output_plan() is deprecated");
+    goto &_issue_plan;
+}
+
+sub _issue_plan {
     my($self, $max, $directive, $reason) = @_;
 
-    $self->carp("The plan was already output") if $self->{Have_Output_Plan};
+    $self->carp("The plan was already issued") if $self->{Have_Issued_Plan};
 
-    my $plan = "1..$max";
-    $plan .= " # $directive" if defined $directive;
-    $plan .= " $reason"      if defined $reason;
+    my $plan = Test::Builder::Result::Plan->new(
+        context   => $self->context,
+        max       => $max       || 0,
+        directive => $directive || undef,
+        reason    => $reason    || undef,
+    );
 
-    $self->_print("$plan\n");
+    $self->stream->push($self, $plan);
 
-    $self->{Have_Output_Plan} = 1;
+    $self->{Have_Issued_Plan} = 1;
 
     return;
 }
@@ -477,7 +511,7 @@ sub done_testing {
         $self->{Expected_Tests} = $num_tests;
     }
 
-    $self->_output_plan($num_tests) unless $self->{Have_Output_Plan};
+    $self->_issue_plan($num_tests) unless $self->{Have_Issued_Plan};
 
     $self->{Have_Plan} = 1;
 
@@ -503,7 +537,7 @@ sub skip_all {
 
     $self->{Skip_All} = $self->parent ? $reason : 1;
 
-    $self->_output_plan(0, "SKIP", $reason) unless $self->no_header;
+    $self->_issue_plan(0, "SKIP", $reason) unless $self->no_header;
     if ( $self->parent ) {
         die bless {} => 'Test::Builder::Exception';
     }
@@ -847,6 +881,8 @@ An error occurred while using $type:
 $error
 ------------------------------------
 END
+
+
 
     unless($ok) {
         $self->$unoverload( \$got, \$expect );
@@ -1592,7 +1628,7 @@ FAIL
     if(@$test_results) {
         # The plan?  We have no plan.
         if( $self->{No_Plan} ) {
-            $self->_output_plan($self->{Curr_Test}) unless $self->no_header;
+            $self->_issue_plan($self->{Curr_Test}) unless $self->no_header;
             $self->{Expected_Tests} = $self->{Curr_Test};
         }
 
@@ -1670,9 +1706,7 @@ FAIL
     $self->_whoa( 1, "We fell off the end of _ending()" );
 }
 
-END {
-    $Test->_ending if defined $Test;
-}
+
 
 1;
 
@@ -1786,7 +1820,7 @@ listener, it outputs TAP.
         elsif($item->isa('Test::Builder::Result::Bail')) {
             ...
         }
-        elsif($item->isa('Test::Builder::Result::Subtest')) {
+        elsif($item->isa('Test::Builder::Result::Child')) {
             ...
         }
     });
@@ -1941,20 +1975,20 @@ Declares that this test will run an indeterminate number of tests.
 
 =begin private
 
-=item B<_output_plan>
+=item B<_issue_plan>
 
-  $tb->_output_plan($max);
-  $tb->_output_plan($max, $directive);
-  $tb->_output_plan($max, $directive => $reason);
+  $tb->_issue_plan($max);
+  $tb->_issue_plan($max, $directive);
+  $tb->_issue_plan($max, $directive => $reason);
 
 Handles displaying the test plan.
 
 If a C<$directive> and/or C<$reason> are given they will be output with the
 plan.  So here's what skipping all tests looks like:
 
-    $tb->_output_plan(0, "SKIP", "Because I said so");
+    $tb->_issue_plan(0, "SKIP", "Because I said so");
 
-It sets C<< $tb->{Have_Output_Plan} >> and will croak if the plan was already
+It sets C<< $tb->{Have_Issued_Plan} >> and will croak if the plan was already
 output.
 
 =end private

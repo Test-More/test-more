@@ -7,7 +7,7 @@ use Scalar::Util qw/reftype blessed/;
 
 sub new {
     my $class = shift;
-    return bless { listeners => {}, mungers => {} }, $class;
+    return bless { listeners => {}, mungers => {}, counter => 0 }, $class;
 }
 
 sub redirect {
@@ -85,6 +85,7 @@ sub push {
     }
 
     for my $item (@$items) {
+        $self->{counter} += 1 if $item->isa('Test::Builder::Result::Ok');
         for my $listener (values %{$self->{listeners}}) {
             $listener->($tb, $item);
         }
