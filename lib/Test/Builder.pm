@@ -942,7 +942,7 @@ sub BAIL_OUT {
     );
     $self->stream->push($self, $bail);
 
-    exit 255;
+#    exit 255;
 }
 
 {

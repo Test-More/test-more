@@ -13,12 +13,12 @@ sub intercept(&) {
     require Test::Builder;
     my $TB = Test::Builder->new;
 
-    my @results;
+    my @items;
     my $restore = $TB->intercept;
     my $ok = eval {
         $TB->listen(sub {
             my ($tb, $item) = @_;
-            push @results => $item;
+            push @items => $item;
         });
         # I am not fond of this local, but it does the job.
         local $TB->{Curr_Test} = 0;
@@ -28,9 +28,7 @@ sub intercept(&) {
     my $error = $@;
     $restore->();
 
-    die $error unless $ok;
-
-    return \@results;
+    return { items => \@items, error => $error };
 }
 
 1;

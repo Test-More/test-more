@@ -89,6 +89,10 @@ sub push {
         for my $listener (values %{$self->{listeners}}) {
             $listener->($tb, $item);
         }
+
+        if ($item->isa('Test::Builder::Result::Bail')) {
+            die $item->to_tap;
+        }
     }
 }
 
