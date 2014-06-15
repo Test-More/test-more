@@ -23,7 +23,7 @@ sub _accessors {
     }
 }
 
-_accessors(qw/context/);
+_accessors(qw/context indent in_todo/);
 
 sub init {}
 

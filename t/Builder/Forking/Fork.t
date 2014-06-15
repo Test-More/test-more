@@ -24,14 +24,14 @@ my $Ok = Test::Builder::Result::Ok->new(
     number    => 1,
 );
 
-my $out = $handler->($TB, $Ok);
+my $out = $handler->($Ok);
 ok(!$out, "Did not snatch result in parent process");
 
 if (my $pid = fork()) {
     waitpid($pid, 0);
 }
 else {
-    $handler->($TB, $Ok);
+    $handler->($Ok);
     exit 0;
 }
 

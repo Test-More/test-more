@@ -4,7 +4,7 @@ use warnings;
 
 use parent 'Test::Builder::Result';
 
-Test::Builder::Result::_accessors(qw/bool real_bool name number todo skip in_todo indent/);
+Test::Builder::Result::_accessors(qw/bool real_bool name number todo skip/);
 
 sub to_tap {
     my $self = shift;

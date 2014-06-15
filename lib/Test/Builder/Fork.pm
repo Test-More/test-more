@@ -26,18 +26,15 @@ sub handler {
     my $id = 1;
 
     return sub {
-        my ($tb, $item) = @_;
-
-        confess "Did not get a valid Test::Builder object! ($tb)"
-            unless $tb && blessed($tb) && $tb->isa('Test::Builder');
+        my ($item) = @_;
 
         confess "Did not get a valid Test::Builder::Result object! ($item)"
             unless $item && blessed($item) && $item->isa('Test::Builder::Result');
 
         # Find parent-most TB object and get PID
-        my $root = $tb;
+        my $root = Test::Builder->new;
         while($root->parent) { $root = $root->parent }
-        return 0 if $$ eq $root->_PID;
+        return 0 if $$ eq $root->pid;
 
         # First write the file, then rename it so that it is not read before it is ready.
         my $name =  $self->tmpdir . "/$$-" . $id++;
@@ -53,7 +50,6 @@ sub handler {
 
 sub cull {
     my $self = shift;
-    my ($tb) = @_;
     my $dir = $self->tmpdir;
 
     opendir(my $dh, $dir) || die "could not open temp dir!";
@@ -64,7 +60,9 @@ sub cull {
         my $obj = eval { my $VAR1; do "$dir/$file" } || die "Failed to open $file: $@";
         die "Empty result object found" unless $obj;
 
-        $tb->stream->push($tb, $obj);
+        my $tb = Test::Builder->new;
+        confess "cull() cannot be called in a child builder!" if $tb->parent;
+        $tb->stream()->push($obj);
 
         if ($ENV{TEST_KEEP_TMP_DIR}) {
             rename("$dir/$file", "$dir/$file.complete") || die "Could not rename file";

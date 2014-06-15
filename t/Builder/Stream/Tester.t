@@ -20,8 +20,6 @@ is($results->[1]->bool, 0, "Got one fail");
 is($results->[1]->name, "Boo!", "Got test name");
 
 isa_ok($results->[2], 'Test::Builder::Result::Diag');
-is($results->[2]->message, "  Failed test 'Boo!'\n", "got error msg part 1");
-isa_ok($results->[3], 'Test::Builder::Result::Diag');
-is($results->[3]->message, "  at " . __FILE__ . " line 11.\n", "got error msg part 2");
+is($results->[2]->message, "\n  Failed test 'Boo!'\n  at " . __FILE__ . " line 11.\n", "got error msg");
 
 done_testing;

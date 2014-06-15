@@ -17,7 +17,7 @@ sub intercept(&) {
     my $restore = $TB->intercept;
     my $ok = eval {
         $TB->listen(sub {
-            my ($tb, $item) = @_;
+            my ($item) = @_;
             push @results => $item;
         });
         # I am not fond of this local, but it does the job.

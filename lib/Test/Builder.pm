@@ -11,12 +11,6 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 # Start MAGIC things #
 ######################
 
-BEGIN {
-    if( $] < 5.008 ) {
-        require Test::Builder::IO::Scalar;
-    }
-}
-
 # Make Test::Builder thread-safe for ithreads.
 BEGIN {
     use Config;
@@ -48,7 +42,6 @@ BEGIN {
             $_[0] = &threads::shared::share( $_[0] );
 
             if( $type eq 'HASH' ) {
-                %{ $_[0] } = %$data;
             }
             elsif( $type eq 'ARRAY' ) {
                 @{ $_[0] } = @$data;
@@ -71,35 +64,21 @@ BEGIN {
     }
 }
 
-# Prepare the result stream (This is global)
-BEGIN {
-    my ($stream, $tap);
+sub stream {
+    my $self = shift;
+    Carp::confess("XXX") unless Scalar::Util::blessed($self);
+    require Test::Builder::Stream;
+    $self->{stream} ||= Test::Builder::Stream->new();
+    return $self->{stream};
+}
 
-    sub stream {
-        require Test::Builder::Stream;
-        $stream ||= Test::Builder::Stream->new();
-        return $stream;
-    }
+sub intercept {
+    my $self = shift;
 
-    sub no_tap { 0 } # Gets redefined when tap is enabled.
+    my $orig = delete $self->{stream};
+    $self->stream(); # Generate a new one
 
-    sub use_tap {
-        require Test::Builder::Formatter::TAP;
-        $tap ||= Test::Builder::Formatter::TAP->new();
-        no warnings 'redefine';
-        *no_tap = stream()->listen($tap->to_handler);
-    }
-
-    use_tap() unless $ENV{NO_TAP};
-
-    sub _intercept {
-        my $orig = stream();
-        $stream = undef;
-
-        stream(); # Generate a new one
-
-        return sub { $stream = $orig };
-    }
+    return sub { $self->{stream} = $orig };
 }
 
 # The mostly-singleton, and other package vars.
@@ -137,13 +116,12 @@ use Test::Builder::Result::Bail;
 use Test::Builder::Result::Child;
 
 sub listen    { shift->stream->listen(@_) }
-sub intercept { shift->_intercept         }
 sub munge     { shift->stream->munge(@_)  }
 sub parent    { shift->{Parent}           }
 sub name      { shift->{Name}             }
-
-sub _PID      { shift->{_PID} }
-
+sub pid       { shift->{Original_Pid}     }
+sub depth     { shift->{Depth}            }
+sub tap       { shift->stream->tap        }
 
 sub new {
     my($class) = shift;
@@ -190,10 +168,7 @@ sub child {
     # Add to our indentation
     $child->_indent( $self->_indent . '    ' );
 
-    # Make the child use the same outputs as the parent
-    for my $method (qw(output failure_output todo_output)) {
-        $child->$method( $self->$method );
-    }
+    #FIXME HANDLES
 
     # Ensure the child understands if they're inside a TODO
     if( $parent_in_todo ) {
@@ -214,8 +189,10 @@ sub child {
         context => $self->context,
         name    => $name || undef,
         action  => 'push',
+        indent  => $self->_indent || "",
+        in_todo => $self->in_todo || 0,
     );
-    $self->stream->push($self, $res);
+    $self->stream->push($res);
 
     return $child;
 }
@@ -288,6 +265,11 @@ sub finalize {
         $self->croak("Can't call finalize() with child ($self->{Child_Name}) active");
     }
 
+    if ($self->tap) {
+        my $stash = $self->{IO_STASH};
+        $self->parent->tap->$_($stash->{$_}) for keys %$stash;
+    }
+
     local $? = 0;     # don't fail if $subtests happened to set $? nonzero
     $self->_ending;
 
@@ -315,8 +297,10 @@ sub finalize {
         context => $self->context,
         name    => $self->{Name} || undef,
         action  => 'pop',
+        indent  => $self->_indent || "",
+        in_todo => $self->in_todo || 0,
     );
-    $self->stream->push($self, $res);
+    $self->stream->push($res);
 
     return $self->is_passing;
 }
@@ -369,10 +353,13 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Opened_Testhandles} = 0;
 
     $self->{Depth} = 0;
-    $self->{_PID} = $$;
 
     $self->_share_keys;
-    $self->_dup_stdhandles;
+
+    unless($ENV{NO_TAP}) {
+        $self->stream->use_tap;
+        $self->stream->tap->reset_outputs
+    }
 
     return;
 }
@@ -472,12 +459,14 @@ sub _issue_plan {
 
     my $plan = Test::Builder::Result::Plan->new(
         context   => $self->context,
-        max       => $max       || 0,
-        directive => $directive || undef,
-        reason    => $reason    || undef,
+        max       => $max           || 0,
+        directive => $directive     || undef,
+        reason    => $reason        || undef,
+        indent    => $self->_indent || "",
+        in_todo   => $self->in_todo || 0,
     );
 
-    $self->stream->push($self, $plan);
+    $self->stream->push($plan);
 
     $self->{Have_Issued_Plan} = 1;
 
@@ -587,11 +576,12 @@ ERR
 
     my $result = &share( {} );
     my $ok = Test::Builder::Result::Ok->new(
-        context => $self->context,
+        context   => $self->context,
         real_bool => $test,
-        bool => $self->in_todo ? 1 : $test,
-        name => $name || undef,
-        in_todo => $self->in_todo,
+        bool      => $self->in_todo ? 1 : $test,
+        name      => $name          || undef,
+        in_todo   => $self->in_todo || 0,
+        indent    => $self->_indent || "",
     );
 
     unless($test) {
@@ -623,19 +613,18 @@ ERR
 
     $self->{Test_Results}[ $self->{Curr_Test} - 1 ] = $result;
 
-    $self->stream->push($self, $ok);
+    $self->stream->push($ok);
 
     unless($test) {
         my $msg = $self->in_todo ? "Failed (TODO)" : "Failed";
-        $self->_print_to_fh( $self->_diag_fh, "\n" ) if $ENV{HARNESS_ACTIVE};
+        my $prefix = $ENV{HARNESS_ACTIVE} ? "\n" : "";
 
-        my( undef, $file, $line ) = $self->caller;
-        if( defined $name ) {
-            $self->diag(qq[  $msg test '$name'\n]);
-            $self->diag(qq[  at $file line $line.\n]);
+        my(undef, $file, $line) = $self->caller;
+        if(defined $name) {
+            $self->diag(qq[$prefix  $msg test '$name'\n  at $file line $line.\n]);
         }
         else {
-            $self->diag(qq[  $msg test at $file line $line.\n]);
+            $self->diag(qq[$prefix  $msg test at $file line $line.\n]);
         }
     }
 
@@ -939,8 +928,10 @@ sub BAIL_OUT {
     my $bail = Test::Builder::Result::Bail->new(
         context => $self->context,
         reason  => $reason,
+        indent  => $self->_indent || "",
+        in_todo => $self->in_todo || 0,
     );
-    $self->stream->push($self, $bail);
+    $self->stream->push($bail);
 
     exit 255;
 }
@@ -969,13 +960,15 @@ sub skip {
     );
 
     my $ok = Test::Builder::Result::Ok->new(
-        context => $self->context,
+        context   => $self->context,
         real_bool => 1,
-        bool => 1,
-        skip => $why,
+        bool      => 1,
+        indent    => $self->_indent || "",
+        in_todo   => $self->in_todo || 0,
+        skip      => $why,
     );
     $ok->number($self->{Curr_Test}) if $self->use_numbers;
-    $self->stream->push($self, $ok);
+    $self->stream->push($ok);
 }
 
 sub todo_skip {
@@ -996,14 +989,16 @@ sub todo_skip {
     );
 
     my $ok = Test::Builder::Result::Ok->new(
-        context => $self->context,
+        context   => $self->context,
         real_bool => 0,
-        bool => 1,
-        skip => $why,
-        todo => $why,
+        bool      => 1,
+        indent    => $self->_indent || "",
+        in_todo   => $self->in_todo || 0,
+        skip      => $why,
+        todo      => $why,
     );
     $ok->number($self->{Curr_Test}) if $self->use_numbers;
-    $self->stream->push($self, $ok);
+    $self->stream->push($ok);
 
     return 1;
 }
@@ -1109,18 +1104,6 @@ sub _try {
     return wantarray ? ( $return, $error ) : $return;
 }
 
-sub is_fh {
-    my $self     = shift;
-    my $maybe_fh = shift;
-    return 0 unless defined $maybe_fh;
-
-    return 1 if ref $maybe_fh  eq 'GLOB';    # its a glob ref
-    return 1 if ref \$maybe_fh eq 'GLOB';    # its a glob
-
-    return eval { $maybe_fh->isa("IO::Handle") } ||
-           eval { tied($maybe_fh)->can('TIEHANDLE') };
-}
-
 sub level {
     my( $self, $level ) = @_;
 
@@ -1159,20 +1142,28 @@ sub use_numbers {
     return $self->{Use_Nums};
 }
 
-foreach my $attribute (qw(No_Header No_Ending No_Diag Depth)) {
+sub no_ending {
+    my( $self, $no ) = @_;
+
+    if( defined $no ) {
+        $self->{No_Ending} = $no;
+    }
+    return $self->{No_Ending};
+}
+
+foreach my $attribute (qw(No_Header No_Diag)) {
     my $method = lc $attribute;
 
     my $code = sub {
         my( $self, $no ) = @_;
 
-        if( defined $no ) {
-            $self->{$attribute} = $no;
-        }
-        return $self->{$attribute};
+        $self->carp("Use of \$TB->$method() is deprecated.");
+        my $tap = $self->tap || $self->croak("$method() method only applies when TAP is in use");
+        $tap->$method($no);
     };
 
     no strict 'refs';    ## no critic
-    *{ __PACKAGE__ . '::' . $method } = $code;
+    *$method = $code;
 }
 
 sub diag {
@@ -1182,9 +1173,11 @@ sub diag {
 
     my $r = Test::Builder::Result::Diag->new(
         context => $self->context,
+        indent  => $self->_indent || "",
+        in_todo => $self->in_todo || 0,
         message => $msg,
     );
-    $self->stream->push($self, $r);
+    $self->stream->push($r);
 }
 
 sub note {
@@ -1194,16 +1187,11 @@ sub note {
 
     my $r = Test::Builder::Result::Note->new(
         context => $self->context,
+        indent  => $self->_indent || "",
+        in_todo => $self->in_todo || 0,
         message => $msg,
     );
-    $self->stream->push($self, $r);
-}
-
-sub _diag_fh {
-    my $self = shift;
-
-    local $Level = $Level + 1;
-    return $self->in_todo ? $self->todo_output : $self->failure_output;
+    $self->stream->push($r);
 }
 
 sub explain {
@@ -1223,164 +1211,32 @@ sub explain {
     } @_;
 }
 
-sub _print {
-    my $self = shift;
-    return $self->_print_to_fh( $self->output, @_ );
-}
-
-sub _print_to_fh {
-    my( $self, $fh, @msgs ) = @_;
-
-    # Prevent printing headers when only compiling.  Mostly for when
-    # tests are deparsed with B::Deparse
-    return if $^C;
-
-    my $msg = join '', @msgs;
-    my $indent = $self->_indent;
-
-    local( $\, $", $, ) = ( undef, ' ', '' );
-
-    # Escape each line after the first with a # so we don't
-    # confuse Test::Harness.
-    $msg =~ s{\n(?!\z)}{\n$indent# }sg;
-
-    # Stick a newline on the end if it needs it.
-    $msg .= "\n" unless $msg =~ /\n\z/;
-
-    return print $fh $indent, $msg;
-}
-
 sub output {
-    my( $self, $fh ) = @_;
-
-    if( defined $fh ) {
-        $self->{Out_FH} = $self->_new_fh($fh);
-    }
-    return $self->{Out_FH};
+    my($self, $fh) = @_;
+    $self->carp('Use of $TB->output() is deprecated.');
+    my $tap = $self->tap || $self->croak("output() method only applies when TAP is in use");
+    return $tap->output($fh);
 }
 
 sub failure_output {
-    my( $self, $fh ) = @_;
-
-    if( defined $fh ) {
-        $self->{Fail_FH} = $self->_new_fh($fh);
-    }
-    return $self->{Fail_FH};
+    my($self, $fh) = @_;
+    $self->carp('Use of $TB->failure_output() is deprecated.');
+    my $tap = $self->tap || $self->croak("failure_output() method only applies when TAP is in use");
+    return $tap->failure_output($fh);
 }
 
 sub todo_output {
-    my( $self, $fh ) = @_;
-
-    if( defined $fh ) {
-        $self->{Todo_FH} = $self->_new_fh($fh);
-    }
-    return $self->{Todo_FH};
-}
-
-sub _new_fh {
-    my $self = shift;
-    my($file_or_fh) = shift;
-
-    my $fh;
-    if( $self->is_fh($file_or_fh) ) {
-        $fh = $file_or_fh;
-    }
-    elsif( ref $file_or_fh eq 'SCALAR' ) {
-        # Scalar refs as filehandles was added in 5.8.
-        if( $] >= 5.008 ) {
-            open $fh, ">>", $file_or_fh
-              or $self->croak("Can't open scalar ref $file_or_fh: $!");
-        }
-        # Emulate scalar ref filehandles with a tie.
-        else {
-            $fh = Test::Builder::IO::Scalar->new($file_or_fh)
-              or $self->croak("Can't tie scalar ref $file_or_fh");
-        }
-    }
-    else {
-        open $fh, ">", $file_or_fh
-          or $self->croak("Can't open test output log $file_or_fh: $!");
-        _autoflush($fh);
-    }
-
-    return $fh;
-}
-
-sub _autoflush {
-    my($fh) = shift;
-    my $old_fh = select $fh;
-    $| = 1;
-    select $old_fh;
-
-    return;
-}
-
-my( $Testout, $Testerr );
-
-sub _dup_stdhandles {
-    my $self = shift;
-
-    $self->_open_testhandles;
-
-    # Set everything to unbuffered else plain prints to STDOUT will
-    # come out in the wrong order from our own prints.
-    _autoflush($Testout);
-    _autoflush( \*STDOUT );
-    _autoflush($Testerr);
-    _autoflush( \*STDERR );
-
-    $self->reset_outputs;
-
-    return;
-}
-
-sub _open_testhandles {
-    my $self = shift;
-
-    return if $self->{Opened_Testhandles};
-
-    # We dup STDOUT and STDERR so people can change them in their
-    # test suites while still getting normal test output.
-    open( $Testout, ">&STDOUT" ) or die "Can't dup STDOUT:  $!";
-    open( $Testerr, ">&STDERR" ) or die "Can't dup STDERR:  $!";
-
-    $self->_copy_io_layers( \*STDOUT, $Testout );
-    $self->_copy_io_layers( \*STDERR, $Testerr );
-
-    $self->{Opened_Testhandles} = 1;
-
-    return;
-}
-
-sub _copy_io_layers {
-    my( $self, $src, $dst ) = @_;
-
-    $self->_try(
-        sub {
-            require PerlIO;
-            my @src_layers = PerlIO::get_layers($src);
-
-            _apply_layers($dst, @src_layers) if @src_layers;
-        }
-    );
-
-    return;
-}
-
-sub _apply_layers {
-    my ($fh, @layers) = @_;
-    my %seen;
-    my @unique = grep { $_ ne 'unix' and !$seen{$_}++ } @layers;
-    binmode($fh, join(":", "", "raw", @unique));
+    my($self, $fh) = @_;
+    $self->carp('Use of $TB->todo_output() is deprecated.');
+    my $tap = $self->tap || $self->croak("todo_output() method only applies when TAP is in use");
+    return $tap->todo_output($fh);
 }
 
 sub reset_outputs {
     my $self = shift;
-
-    $self->output        ($Testout);
-    $self->failure_output($Testerr);
-    $self->todo_output   ($Testout);
-
+    $self->carp('Use of $TB->reset_outputs() is deprecated.');
+    my $tap = $self->tap || $self->croak("reset_outputs() method only applies when TAP is in use");
+    $tap->reset_outputs;
     return;
 }
 
@@ -1704,6 +1560,51 @@ FAIL
 
     $self->is_passing(0);
     $self->_whoa( 1, "We fell off the end of _ending()" );
+}
+
+sub _diag_fh {
+    my $self = shift;
+
+    $self->carp("Use of \$TB->_diag_fh() is deprecated.");
+    my $tap = $self->tap || $self->croak("_diag_fh() method only applies when TAP is in use");
+
+    return $tap->_diag_fh($self->in_todo)
+}
+
+sub _print {
+    my $self = shift;
+
+    $self->carp("Use of \$TB->_print() is deprecated.");
+    my $tap = $self->tap || $self->croak("_print() method only applies when TAP is in use");
+
+    return $tap->_print($self->_indent, @_);
+}
+
+sub _print_to_fh {
+    my( $self, $fh, @msgs ) = @_;
+
+    $self->carp("Use of \$TB->_print_to_fh() is deprecated.");
+    my $tap = $self->tap || $self->croak("_print_to_fh() method only applies when TAP is in use");
+
+    return $tap->_print_to_fh($fh, $self->_indent, @msgs);
+}
+
+sub _new_fh {
+    my $self = shift;
+
+    $self->carp("Use of \$TB->_new_fh() is deprecated.");
+    my $tap = $self->tap || $self->croak("_new_fh() method only applies when TAP is in use");
+
+    return $tap->_new_fh(@_);
+}
+
+sub is_fh {
+    my $self = shift;
+
+    $self->carp("Use of \$TB->is_fh() is deprecated.");
+
+    require Test::Builder::Formatter::TAP;
+    return Test::Builder::Formatter::TAP->is_fh(@_);
 }
 
 
