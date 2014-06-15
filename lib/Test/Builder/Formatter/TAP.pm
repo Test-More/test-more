@@ -5,7 +5,7 @@ use warnings;
 use parent 'Test::Builder::Formatter';
 
 # The default 6 result types all have a to_tap method.
-for my $handler (qw/ok plan bail nest/) {
+for my $handler (qw/ok plan nest/) {
     my $sub = sub {
         my $self = shift;
         my ($tb, $item) = @_;
@@ -13,6 +13,15 @@ for my $handler (qw/ok plan bail nest/) {
     };
     no strict 'refs';
     *$handler = $sub;
+}
+
+sub bail {
+    my $self = shift;
+
+    my ($tb, $item) = @_;
+    $tb->_print( $item->to_tap );
+
+    exit 255;
 }
 
 sub diag {
