@@ -4,12 +4,137 @@ use 5.006;
 use strict;
 use warnings;
 
+use Scalar::Util();
+use Test::Builder::Result;
+use Test::Builder::Result::Ok;
+use Test::Builder::Result::Diag;
+use Test::Builder::Result::Note;
+use Test::Builder::Result::Plan;
+use Test::Builder::Result::Bail;
+use Test::Builder::Result::Child;
+
 our $VERSION = '1.001004_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-######################
-# Start MAGIC things #
-######################
+# The mostly-singleton, and other package vars.
+our $Test = Test::Builder->new;
+our $Level;
+
+####################
+# {{{ MAGIC things #
+####################
+
+# Stuff to do at the very end
+END { $Test->_ending if defined $Test }
+
+sub DESTROY {
+    my $self = shift;
+    if ( $self->parent and $$ == $self->{Original_Pid} ) {
+        my $name = $self->name;
+        $self->diag(<<"FAIL");
+Child ($name) exited without calling finalize()
+FAIL
+        $self->parent->{In_Destroy} = 1;
+        $self->parent->ok(0, $name);
+    }
+}
+
+####################
+# }}} MAGIC things #
+####################
+
+####################
+# {{{ Constructors #
+####################
+
+sub new {
+    my($class) = shift;
+    $Test ||= $class->create;
+    return $Test;
+}
+
+sub create {
+    my $class = shift;
+
+    my $self = bless {}, $class;
+    $self->reset;
+
+    return $self;
+}
+
+# Copy an object, currently a shallow.
+# This does *not* bless the destination.  This keeps the destructor from
+# firing when we're just storing a copy of the object to restore later.
+sub _copy {
+    my($src, $dest) = @_;
+
+    %$dest = %$src;
+    #_share_keys($dest); # Not sure the implications here.
+
+    return;
+}
+
+sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
+    my($self, $modern) = @_;
+
+    $modern = $self->modern || 0 unless defined $modern;
+    $self->modern($modern);
+
+    # We leave this a global because it has to be localized and localizing
+    # hash keys is just asking for pain.  Also, it was documented.
+    $Level = 1;
+
+    $self->stream->use_tap      unless $ENV{TB_NO_TAP};
+    $self->stream->use_lresults unless $modern || $ENV{TB_NO_LEGACY};
+
+    $self->tap->reset      if $self->tap;
+    $self->lresults->reset if $self->lresults;
+
+    $self->{Name} = $0;
+
+    $self->{Ending}           = 0;
+    $self->{Have_Plan}        = 0;
+    $self->{No_Plan}          = 0;
+    $self->{Have_Issued_Plan} = 0;
+    $self->{Done_Testing}     = 0;
+    $self->{Skip_All}         = 0;
+
+    $self->{Original_Pid} = $$;
+    $self->{Child_Name}   = undef;
+    $self->{Indent}     ||= '';
+
+    $self->{Exported_To}    = undef;
+    $self->{Expected_Tests} = 0;
+
+    $self->{Todo}       = undef;
+    $self->{Todo_Stack} = [];
+    $self->{Start_Todo} = 0;
+    $self->{Opened_Testhandles} = 0;
+
+    $self->is_passing(1);
+    $self->no_ending(0);
+
+    $self->{tests_run} = 0;
+    $self->{tests_failed} = 0;
+
+    return;
+}
+
+####################
+# }}} Constructors #
+####################
+
+##############################################
+# {{{ Simple accessors/generators/deligators #
+##############################################
+
+sub listen    { shift->stream->listen(@_) }
+sub munge     { shift->stream->munge(@_)  }
+sub parent    { shift->{Parent}           }
+sub name      { shift->{Name}             }
+sub pid       { shift->{Original_Pid}     }
+sub tap       { shift->stream->tap        }
+sub lresults  { shift->stream->lresults   }
 
 sub stream {
     my $self = shift;
@@ -27,45 +152,17 @@ sub intercept {
     return sub { $self->{stream} = $orig };
 }
 
-# The mostly-singleton, and other package vars.
-our $Test = Test::Builder->new;
-our $Level;
-
-# Stuff to do at the very end
-END { $Test->_ending if defined $Test }
-
-sub DESTROY {
+sub bailout_behavior {
     my $self = shift;
-    if ( $self->parent and $$ == $self->{Original_Pid} ) {
-        my $name = $self->name;
-        $self->diag(<<"FAIL");
-Child ($name) exited without calling finalize()
-FAIL
-        $self->parent->{In_Destroy} = 1;
-        $self->parent->ok(0, $name);
+    if (@_) {
+        my ($sub) = @_;
+        $self->croak("bailout_behavior must be a coderef, or undef")
+            if defined($sub) && Scalar::Util::reftype($sub) ne 'CODE';
+
+        $self->{bailout_behavior} = $sub;
     }
+    return $self->{bailout_behavior};
 }
-
-#######################
-# End of MAGIC things #
-#######################
-
-use Scalar::Util();
-use Test::Builder::Result;
-use Test::Builder::Result::Ok;
-use Test::Builder::Result::Diag;
-use Test::Builder::Result::Note;
-use Test::Builder::Result::Plan;
-use Test::Builder::Result::Bail;
-use Test::Builder::Result::Child;
-
-sub listen    { shift->stream->listen(@_) }
-sub munge     { shift->stream->munge(@_)  }
-sub parent    { shift->{Parent}           }
-sub name      { shift->{Name}             }
-sub pid       { shift->{Original_Pid}     }
-sub tap       { shift->stream->tap        }
-sub lresults  { shift->stream->lresults   }
 
 sub modern {
     my $self = shift;
@@ -74,46 +171,61 @@ sub modern {
     return $self->{modern} || 0;
 }
 
-sub new {
-    my($class) = shift;
-    $Test ||= $class->create;
-    return $Test;
+sub _indent {
+    my $self = shift;
+    ($self->{Indent}) = @_ if @_;
+    return $self->{Indent};
 }
 
-# Copy an object, currently a shallow.
-# This does *not* bless the destination.  This keeps the destructor from
-# firing when we're just storing a copy of the object to restore later.
-sub _copy {
-    my($src, $dest) = @_;
+sub exported_to {
+    my( $self, $pack ) = @_;
 
-    %$dest = %$src;
-    #_share_keys($dest); # Not sure the implications here.
-
-    return;
+    if( defined $pack ) {
+        $self->{Exported_To} = $pack;
+    }
+    return $self->{Exported_To};
 }
 
-sub create {
-    my $class = shift;
-
-    my $self = bless {}, $class;
-    $self->reset;
-
-    return $self;
+sub tests_run {
+    my $self = shift;
+    $self->{tests_run} ||= 0;
+    if (@_) {
+        my ($delta) = @_;
+        $self->{tests_run} += $delta;
+    }
+    return $self->{tests_run} || 0;
 }
+
+sub tests_failed {
+    my $self = shift;
+    $self->{tests_failed} ||= 0;
+    if (@_) {
+        my ($delta) = @_;
+        $self->{tests_failed} += $delta;
+    }
+    return $self->{tests_failed} || 0;
+}
+
+##############################################
+# }}} Simple accessors/generators/deligators #
+##############################################
+
+#############################
+# {{{ Children and subtests #
+#############################
 
 sub child {
     my( $self, $name ) = @_;
 
-    if( $self->{Child_Name} ) {
-        $self->croak("You already have a child named ($self->{Child_Name}) running");
-    }
+    $self->croak("You already have a child named ($self->{Child_Name}) running")
+        if $self->{Child_Name};
 
     my $parent_in_todo = $self->in_todo;
 
     # Clear $TODO for the child.
     my $orig_TODO = $self->find_TODO(undef, 1, undef);
 
-    my $class = ref $self;
+    my $class = Scalar::Util::blessed($self);
     my $child = $class->create;
 
     # Add to our indentation
@@ -152,15 +264,14 @@ sub subtest {
     my $self = shift;
     my($name, $subtests, @args) = @_;
 
-    if ('CODE' ne ref $subtests) {
-        $self->croak("subtest()'s second argument must be a code ref");
-    }
+    $self->croak("subtest()'s second argument must be a code ref")
+        if 'CODE' ne Scalar::Util::reftype($subtests);
 
     # Turn the child into the parent so anyone who has stored a copy of
     # the Test::Builder singleton will get the child.
-    my $error;
-    my $child;
+    my ($error, $child);
     my $parent = {};
+
     {
         # child() calls reset() which sets $Level to 1, so we localize
         # $Level first to limit the scope of the reset to the subtest.
@@ -246,72 +357,15 @@ sub finalize {
     return $self->is_passing;
 }
 
-sub _indent {
-    my $self = shift;
+#############################
+# }}} Children and subtests #
+#############################
 
-    if( @_ ) {
-        $self->{Indent} = shift;
-    }
+################
+# {{{ Planning #
+################
 
-    return $self->{Indent};
-}
-
-sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    my($self, $modern) = @_;
-
-    $modern = $self->modern || 0 unless defined $modern;
-    $self->modern($modern);
-
-    # We leave this a global because it has to be localized and localizing
-    # hash keys is just asking for pain.  Also, it was documented.
-    $Level = 1;
-
-    unless($ENV{TB_NO_TAP}) {
-        $self->stream->use_tap;
-        $self->tap->reset;
-    }
-
-    unless($modern || $ENV{TB_NO_LEGACY}) {
-        $self->stream->use_lresults;
-        $self->stream->lresults->reset;
-    }
-
-    $self->{Name} = $0;
-
-    $self->{Ending}           = 0;
-    $self->{Have_Plan}        = 0;
-    $self->{No_Plan}          = 0;
-    $self->{Have_Issued_Plan} = 0;
-    $self->{Done_Testing}     = 0;
-    $self->{Skip_All}         = 0;
-
-    $self->{Original_Pid} = $$;
-    $self->{Child_Name}   = undef;
-    $self->{Indent}     ||= '';
-
-    $self->{Exported_To}    = undef;
-    $self->{Expected_Tests} = 0;
-
-    $self->{Todo}       = undef;
-    $self->{Todo_Stack} = [];
-    $self->{Start_Todo} = 0;
-    $self->{Opened_Testhandles} = 0;
-
-    $self->is_passing(1);
-    $self->no_ending(0);
-
-    $self->{tests_run} = 0;
-    $self->{tests_failed} = 0;
-
-    return;
-}
-
-sub _plan_handled {
-    my $self = shift;
-    return $self->{Have_Plan} || $self->{No_Plan} || $self->{Skip_All};
-}
-
-my %plan_cmds = (
+my %PLAN_CMDS = (
     no_plan  => 'no_plan',
     skip_all => 'skip_all',
     tests    => '_plan_tests',
@@ -326,7 +380,7 @@ sub plan {
 
     $self->croak("You tried to plan twice") if $self->{Have_Plan};
 
-    if( my $method = $plan_cmds{$cmd} ) {
+    if( my $method = $PLAN_CMDS{$cmd} ) {
         local $Level = $Level + 1;
         $self->$method($arg);
     }
@@ -354,23 +408,6 @@ sub skip_all {
     $self->_issue_plan(0, "SKIP", $reason);
     die bless {} => 'Test::Builder::Exception' if $self->parent;
     exit(0);
-}
-
-sub _plan_tests {
-    my($self, $arg) = @_;
-
-    if($arg) {
-        local $Level = $Level + 1;
-        return $self->expected_tests($arg);
-    }
-    elsif( !defined $arg ) {
-        $self->croak("Got an undefined number of tests");
-    }
-    else {
-        $self->croak("You said to run 0 tests");
-    }
-
-    return;
 }
 
 sub expected_tests {
@@ -402,10 +439,26 @@ sub no_plan {
     return 1;
 }
 
-sub _output_plan {
-    my ($self) = @_;
-    $self->carp("_output_plan() is deprecated") if $self->modern;
-    goto &_issue_plan;
+sub _plan_handled {
+    my $self = shift;
+    return $self->{Have_Plan} || $self->{No_Plan} || $self->{Skip_All};
+}
+
+sub _plan_tests {
+    my($self, $arg) = @_;
+
+    if($arg) {
+        local $Level = $Level + 1;
+        return $self->expected_tests($arg);
+    }
+    elsif( !defined $arg ) {
+        $self->croak("Got an undefined number of tests");
+    }
+    else {
+        $self->croak("You said to run 0 tests");
+    }
+
+    return;
 }
 
 sub _issue_plan {
@@ -427,55 +480,13 @@ sub _issue_plan {
     return;
 }
 
-sub done_testing {
-    my($self, $num_tests) = @_;
+################
+# }}} Planning #
+################
 
-    # If done_testing() specified the number of tests, shut off no_plan.
-    if( defined $num_tests ) {
-        $self->{No_Plan} = 0;
-    }
-    else {
-        $num_tests = $self->tests_run;
-    }
-
-    if( $self->{Done_Testing} ) {
-        my($file, $line) = @{$self->{Done_Testing}}[1,2];
-        $self->ok(0, "done_testing() was already called at $file line $line");
-        return;
-    }
-
-    $self->{Done_Testing} = [caller];
-
-    if( $self->expected_tests && $num_tests != $self->expected_tests ) {
-        $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".
-                     "but done_testing() expects $num_tests");
-    }
-    elsif(!$self->expected_tests && $num_tests) {
-        local $Level = $Level + 1;
-        $self->expected_tests($num_tests);
-    }
-
-    $self->_issue_plan($num_tests) unless $self->{Have_Issued_Plan};
-
-    $self->{Have_Plan} = 1;
-
-    # The wrong number of tests were run
-    $self->is_passing(0) if $self->expected_tests != $self->tests_run;
-
-    # No tests were run
-    $self->is_passing(0) if $self->tests_run == 0;
-
-    return 1;
-}
-
-sub exported_to {
-    my( $self, $pack ) = @_;
-
-    if( defined $pack ) {
-        $self->{Exported_To} = $pack;
-    }
-    return $self->{Exported_To};
-}
+#############################
+# {{{ Base Result Producers #
+#############################
 
 sub ok {
     my( $self, $test, $name ) = @_;
@@ -549,314 +560,6 @@ ERR
     return $test ? 1 : 0;
 }
 
-sub tests_run {
-    my $self = shift;
-    $self->{tests_run} ||= 0;
-    if (@_) {
-        my ($delta) = @_;
-        $self->{tests_run} += $delta;
-    }
-    return $self->{tests_run} || 0;
-}
-
-sub tests_failed {
-    my $self = shift;
-    $self->{tests_failed} ||= 0;
-    if (@_) {
-        my ($delta) = @_;
-        $self->{tests_failed} += $delta;
-    }
-    return $self->{tests_failed} || 0;
-}
-
-
-# Check that we haven't yet violated the plan and set
-# is_passing() accordingly
-sub _check_is_passing_plan {
-    my $self = shift;
-
-    my $plan = $self->has_plan;
-    return unless defined $plan;        # no plan yet defined
-    return unless $plan !~ /\D/;        # no numeric plan
-    $self->is_passing(0) if $plan < $self->tests_run;
-}
-
-
-sub _unoverload {
-    my $self = shift;
-    my $type = shift;
-
-    $self->_try(sub { require overload; }, die_on_fail => 1);
-
-    foreach my $thing (@_) {
-        if( $self->_is_object($$thing) ) {
-            if( my $string_meth = overload::Method( $$thing, $type ) ) {
-                $$thing = $$thing->$string_meth();
-            }
-        }
-    }
-
-    return;
-}
-
-sub _is_object {
-    my( $self, $thing ) = @_;
-
-    return $self->_try( sub { ref $thing && $thing->isa('UNIVERSAL') } ) ? 1 : 0;
-}
-
-sub _unoverload_str {
-    my $self = shift;
-
-    return $self->_unoverload( q[""], @_ );
-}
-
-sub _unoverload_num {
-    my $self = shift;
-
-    $self->_unoverload( '0+', @_ );
-
-    for my $val (@_) {
-        next unless $self->_is_dualvar($$val);
-        $$val = $$val + 0;
-    }
-
-    return;
-}
-
-# This is a hack to detect a dualvar such as $!
-sub _is_dualvar {
-    my( $self, $val ) = @_;
-
-    # Objects are not dualvars.
-    return 0 if ref $val;
-
-    no warnings 'numeric';
-    my $numval = $val + 0;
-    return ($numval != 0 and $numval ne $val ? 1 : 0);
-}
-
-sub is_eq {
-    my( $self, $got, $expect, $name ) = @_;
-    local $Level = $Level + 1;
-
-    if( !defined $got || !defined $expect ) {
-        # undef only matches undef and nothing else
-        my $test = !defined $got && !defined $expect;
-
-        $self->ok( $test, $name );
-        $self->_is_diag( $got, 'eq', $expect ) unless $test;
-        return $test;
-    }
-
-    return $self->cmp_ok( $got, 'eq', $expect, $name );
-}
-
-sub is_num {
-    my( $self, $got, $expect, $name ) = @_;
-    local $Level = $Level + 1;
-
-    if( !defined $got || !defined $expect ) {
-        # undef only matches undef and nothing else
-        my $test = !defined $got && !defined $expect;
-
-        $self->ok( $test, $name );
-        $self->_is_diag( $got, '==', $expect ) unless $test;
-        return $test;
-    }
-
-    return $self->cmp_ok( $got, '==', $expect, $name );
-}
-
-sub _diag_fmt {
-    my( $self, $type, $val ) = @_;
-
-    if( defined $$val ) {
-        if( $type eq 'eq' or $type eq 'ne' ) {
-            # quote and force string context
-            $$val = "'$$val'";
-        }
-        else {
-            # force numeric context
-            $self->_unoverload_num($val);
-        }
-    }
-    else {
-        $$val = 'undef';
-    }
-
-    return;
-}
-
-sub _is_diag {
-    my( $self, $got, $type, $expect ) = @_;
-
-    $self->_diag_fmt( $type, $_ ) for \$got, \$expect;
-
-    local $Level = $Level + 1;
-    return $self->diag(<<"DIAGNOSTIC");
-         got: $got
-    expected: $expect
-DIAGNOSTIC
-
-}
-
-sub _isnt_diag {
-    my( $self, $got, $type ) = @_;
-
-    $self->_diag_fmt( $type, \$got );
-
-    local $Level = $Level + 1;
-    return $self->diag(<<"DIAGNOSTIC");
-         got: $got
-    expected: anything else
-DIAGNOSTIC
-}
-
-sub isnt_eq {
-    my( $self, $got, $dont_expect, $name ) = @_;
-    local $Level = $Level + 1;
-
-    if( !defined $got || !defined $dont_expect ) {
-        # undef only matches undef and nothing else
-        my $test = defined $got || defined $dont_expect;
-
-        $self->ok( $test, $name );
-        $self->_isnt_diag( $got, 'ne' ) unless $test;
-        return $test;
-    }
-
-    return $self->cmp_ok( $got, 'ne', $dont_expect, $name );
-}
-
-sub isnt_num {
-    my( $self, $got, $dont_expect, $name ) = @_;
-    local $Level = $Level + 1;
-
-    if( !defined $got || !defined $dont_expect ) {
-        # undef only matches undef and nothing else
-        my $test = defined $got || defined $dont_expect;
-
-        $self->ok( $test, $name );
-        $self->_isnt_diag( $got, '!=' ) unless $test;
-        return $test;
-    }
-
-    return $self->cmp_ok( $got, '!=', $dont_expect, $name );
-}
-
-sub like {
-    my( $self, $thing, $regex, $name ) = @_;
-
-    local $Level = $Level + 1;
-    return $self->_regex_ok( $thing, $regex, '=~', $name );
-}
-
-sub unlike {
-    my( $self, $thing, $regex, $name ) = @_;
-
-    local $Level = $Level + 1;
-    return $self->_regex_ok( $thing, $regex, '!~', $name );
-}
-
-my %numeric_cmps = map { ( $_, 1 ) } ( "<", "<=", ">", ">=", "==", "!=", "<=>" );
-
-# Bad, these are not comparison operators. Should we include more?
-my %cmp_ok_bl = map { ( $_, 1 ) } ( "=", "+=", ".=", "x=", "^=", "|=", "||=", "&&=", "...");
-
-sub cmp_ok {
-    my( $self, $got, $type, $expect, $name ) = @_;
-
-    if ($cmp_ok_bl{$type}) {
-        $self->croak("$type is not a valid comparison operator in cmp_ok()");
-    }
-
-    my $test;
-    my $error;
-    {
-        ## no critic (BuiltinFunctions::ProhibitStringyEval)
-
-        local( $@, $!, $SIG{__DIE__} );    # isolate eval
-
-        my($pack, $file, $line) = $self->caller();
-
-        # This is so that warnings come out at the caller's level
-        $test = eval qq[
-#line $line "(eval in cmp_ok) $file"
-\$got $type \$expect;
-];
-        $error = $@;
-    }
-    local $Level = $Level + 1;
-    my $ok = $self->ok( $test, $name );
-
-    # Treat overloaded objects as numbers if we're asked to do a
-    # numeric comparison.
-    my $unoverload
-      = $numeric_cmps{$type}
-      ? '_unoverload_num'
-      : '_unoverload_str';
-
-    $self->diag(<<"END") if $error;
-An error occurred while using $type:
-------------------------------------
-$error
-------------------------------------
-END
-
-    unless($ok) {
-        $self->$unoverload( \$got, \$expect );
-
-        if( $type =~ /^(eq|==)$/ ) {
-            $self->_is_diag( $got, $type, $expect );
-        }
-        elsif( $type =~ /^(ne|!=)$/ ) {
-            $self->_isnt_diag( $got, $type );
-        }
-        else {
-            $self->_cmp_diag( $got, $type, $expect );
-        }
-    }
-    return $ok;
-}
-
-sub _cmp_diag {
-    my( $self, $got, $type, $expect ) = @_;
-
-    $got    = defined $got    ? "'$got'"    : 'undef';
-    $expect = defined $expect ? "'$expect'" : 'undef';
-
-    local $Level = $Level + 1;
-    return $self->diag(<<"DIAGNOSTIC");
-    $got
-        $type
-    $expect
-DIAGNOSTIC
-}
-
-sub _caller_context {
-    my $self = shift;
-
-    my( $pack, $file, $line ) = $self->caller(1);
-
-    my $code = '';
-    $code .= "#line $line $file\n" if defined $file and defined $line;
-
-    return $code;
-}
-
-sub bailout_behavior {
-    my $self = shift;
-    if (@_) {
-        my ($sub) = @_;
-        $self->croak("bailout_behavior must be a coderef, or undef")
-            if defined($sub) && Scalar::Util::reftype($sub) ne 'CODE';
-
-        $self->{bailout_behavior} = $sub;
-    }
-    return $self->{bailout_behavior};
-}
-
 sub BAIL_OUT {
     my( $self, $reason ) = @_;
 
@@ -924,160 +627,6 @@ sub todo_skip {
     return 1;
 }
 
-sub maybe_regex {
-    my( $self, $regex ) = @_;
-    my $usable_regex = undef;
-
-    return $usable_regex unless defined $regex;
-
-    my( $re, $opts );
-
-    # Check for qr/foo/
-    if( _is_qr($regex) ) {
-        $usable_regex = $regex;
-    }
-    # Check for '/foo/' or 'm,foo,'
-    elsif(( $re, $opts )        = $regex =~ m{^ /(.*)/ (\w*) $ }sx              or
-          ( undef, $re, $opts ) = $regex =~ m,^ m([^\w\s]) (.+) \1 (\w*) $,sx
-    )
-    {
-        $usable_regex = length $opts ? "(?$opts)$re" : $re;
-    }
-
-    return $usable_regex;
-}
-
-sub _is_qr {
-    my $regex = shift;
-
-    # is_regexp() checks for regexes in a robust manner, say if they're
-    # blessed.
-    return re::is_regexp($regex) if defined &re::is_regexp;
-    return ref $regex eq 'Regexp';
-}
-
-sub _regex_ok {
-    my( $self, $thing, $regex, $cmp, $name ) = @_;
-
-    my $ok           = 0;
-    my $usable_regex = $self->maybe_regex($regex);
-    unless( defined $usable_regex ) {
-        local $Level = $Level + 1;
-        $ok = $self->ok( 0, $name );
-        $self->diag("    '$regex' doesn't look much like a regex to me.");
-        return $ok;
-    }
-
-    {
-        my $test;
-        my $context = $self->_caller_context;
-
-        {
-            ## no critic (BuiltinFunctions::ProhibitStringyEval)
-
-            local( $@, $!, $SIG{__DIE__} );    # isolate eval
-
-            # No point in issuing an uninit warning, they'll see it in the diagnostics
-            no warnings 'uninitialized';
-
-            $test = eval $context . q{$test = $thing =~ /$usable_regex/ ? 1 : 0};
-        }
-
-        $test = !$test if $cmp eq '!~';
-
-        local $Level = $Level + 1;
-        $ok = $self->ok( $test, $name );
-    }
-
-    unless($ok) {
-        $thing = defined $thing ? "'$thing'" : 'undef';
-        my $match = $cmp eq '=~' ? "doesn't match" : "matches";
-
-        local $Level = $Level + 1;
-        $self->diag( sprintf <<'DIAGNOSTIC', $thing, $match, $regex );
-                  %s
-    %13s '%s'
-DIAGNOSTIC
-
-    }
-
-    return $ok;
-}
-
-# I'm not ready to publish this.  It doesn't deal with array return
-# values from the code or context.
-
-sub _try {
-    my( $self, $code, %opts ) = @_;
-
-    my $error;
-    my $return;
-    {
-        local $!;               # eval can mess up $!
-        local $@;               # don't set $@ in the test
-        local $SIG{__DIE__};    # don't trip an outside DIE handler.
-        $return = eval { $code->() };
-        $error = $@;
-    }
-
-    die $error if $error and $opts{die_on_fail};
-
-    return wantarray ? ( $return, $error ) : $return;
-}
-
-sub level {
-    my( $self, $level ) = @_;
-
-    if( defined $level ) {
-        $Level = $level;
-    }
-    return $Level;
-}
-
-sub no_fork {
-    my $self = shift;
-    my $redirect = $self->stream->redirect;
-
-    # If these conditions are not true, then we did not add the redirect.
-    return unless $redirect;
-    return unless Scalar::Util::blessed($redirect);
-    return unless $redirect->isa('Test::Builder::Fork');
-
-    $self->stream->redirect(undef); # Turn it off.
-}
-
-sub use_fork {
-    my $self = shift;
-    my $redirect = $self->stream->redirect;
-
-    require Test::Builder::Fork;
-    $self->stream->redirect(Test::Builder::Fork->new->handler);
-}
-
-sub no_ending {
-    my( $self, $no ) = @_;
-
-    if( defined $no ) {
-        $self->{No_Ending} = $no;
-    }
-    return $self->{No_Ending};
-}
-
-BEGIN {
-    for my $method (qw(no_header no_diag)) {
-        my $code = sub {
-            my( $self, $no ) = @_;
-
-            $self->carp("Use of \$TB->$method() is deprecated.") if $self->modern;
-            my $tap = $self->tap || $self->croak("$method() method only applies when TAP is in use");
-            $tap->$method($no);
-        };
-
-        no strict 'refs';    ## no critic
-        *{$method} = $code;
-    }
-}
-
 sub diag {
     my $self = shift;
 
@@ -1106,6 +655,274 @@ sub note {
     $self->stream->push($r);
 }
 
+sub done_testing {
+    my($self, $num_tests) = @_;
+
+    # If done_testing() specified the number of tests, shut off no_plan.
+    if( defined $num_tests ) {
+        $self->{No_Plan} = 0;
+    }
+    else {
+        $num_tests = $self->tests_run;
+    }
+
+    if( $self->{Done_Testing} ) {
+        my($file, $line) = @{$self->{Done_Testing}}[1,2];
+        $self->ok(0, "done_testing() was already called at $file line $line");
+        return;
+    }
+
+    $self->{Done_Testing} = [caller];
+
+    if( $self->expected_tests && $num_tests != $self->expected_tests ) {
+        $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".
+                     "but done_testing() expects $num_tests");
+    }
+    elsif(!$self->expected_tests && $num_tests) {
+        local $Level = $Level + 1;
+        $self->expected_tests($num_tests);
+    }
+
+    $self->_issue_plan($num_tests) unless $self->{Have_Issued_Plan};
+
+    $self->{Have_Plan} = 1;
+
+    # The wrong number of tests were run
+    $self->is_passing(0) if $self->expected_tests != $self->tests_run;
+
+    # No tests were run
+    $self->is_passing(0) if $self->tests_run == 0;
+
+    return 1;
+}
+
+#############################
+# }}} Base Result Producers #
+#############################
+
+#################################
+# {{{ Advanced Result Producers #
+#################################
+
+my %numeric_cmps = map { ( $_, 1 ) } ( "<", "<=", ">", ">=", "==", "!=", "<=>" );
+
+# Bad, these are not comparison operators. Should we include more?
+my %cmp_ok_bl = map { ( $_, 1 ) } ( "=", "+=", ".=", "x=", "^=", "|=", "||=", "&&=", "...");
+
+sub cmp_ok {
+    my( $self, $got, $type, $expect, $name ) = @_;
+
+    if ($cmp_ok_bl{$type}) {
+        $self->croak("$type is not a valid comparison operator in cmp_ok()");
+    }
+
+    my $test;
+    my $error;
+    {
+        ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
+        local( $@, $!, $SIG{__DIE__} );    # isolate eval
+
+        my($pack, $file, $line) = $self->caller();
+
+        # This is so that warnings come out at the caller's level
+        $test = eval qq[
+#line $line "(eval in cmp_ok) $file"
+\$got $type \$expect;
+];
+        $error = $@;
+    }
+    local $Level = $Level + 1;
+    my $ok = $self->ok( $test, $name );
+
+    # Treat overloaded objects as numbers if we're asked to do a
+    # numeric comparison.
+    my $unoverload
+      = $numeric_cmps{$type}
+      ? '_unoverload_num'
+      : '_unoverload_str';
+
+    $self->diag(<<"END") if $error;
+An error occurred while using $type:
+------------------------------------
+$error
+------------------------------------
+END
+
+    unless($ok) {
+        $self->$unoverload( \$got, \$expect );
+
+        if( $type =~ /^(eq|==)$/ ) {
+            $self->_is_diag( $got, $type, $expect );
+        }
+        elsif( $type =~ /^(ne|!=)$/ ) {
+            $self->_isnt_diag( $got, $type );
+        }
+        else {
+            $self->_cmp_diag( $got, $type, $expect );
+        }
+    }
+    return $ok;
+}
+
+
+sub is_eq {
+    my( $self, $got, $expect, $name ) = @_;
+    local $Level = $Level + 1;
+
+    if( !defined $got || !defined $expect ) {
+        # undef only matches undef and nothing else
+        my $test = !defined $got && !defined $expect;
+
+        $self->ok( $test, $name );
+        $self->_is_diag( $got, 'eq', $expect ) unless $test;
+        return $test;
+    }
+
+    return $self->cmp_ok( $got, 'eq', $expect, $name );
+}
+
+sub is_num {
+    my( $self, $got, $expect, $name ) = @_;
+    local $Level = $Level + 1;
+
+    if( !defined $got || !defined $expect ) {
+        # undef only matches undef and nothing else
+        my $test = !defined $got && !defined $expect;
+
+        $self->ok( $test, $name );
+        $self->_is_diag( $got, '==', $expect ) unless $test;
+        return $test;
+    }
+
+    return $self->cmp_ok( $got, '==', $expect, $name );
+}
+
+sub isnt_eq {
+    my( $self, $got, $dont_expect, $name ) = @_;
+    local $Level = $Level + 1;
+
+    if( !defined $got || !defined $dont_expect ) {
+        # undef only matches undef and nothing else
+        my $test = defined $got || defined $dont_expect;
+
+        $self->ok( $test, $name );
+        $self->_isnt_diag( $got, 'ne' ) unless $test;
+        return $test;
+    }
+
+    return $self->cmp_ok( $got, 'ne', $dont_expect, $name );
+}
+
+sub isnt_num {
+    my( $self, $got, $dont_expect, $name ) = @_;
+    local $Level = $Level + 1;
+
+    if( !defined $got || !defined $dont_expect ) {
+        # undef only matches undef and nothing else
+        my $test = defined $got || defined $dont_expect;
+
+        $self->ok( $test, $name );
+        $self->_isnt_diag( $got, '!=' ) unless $test;
+        return $test;
+    }
+
+    return $self->cmp_ok( $got, '!=', $dont_expect, $name );
+}
+
+sub like {
+    my( $self, $thing, $regex, $name ) = @_;
+
+    local $Level = $Level + 1;
+    return $self->_regex_ok( $thing, $regex, '=~', $name );
+}
+
+sub unlike {
+    my( $self, $thing, $regex, $name ) = @_;
+
+    local $Level = $Level + 1;
+    return $self->_regex_ok( $thing, $regex, '!~', $name );
+}
+
+
+
+#################################
+# }}} Advanced Result Producers #
+#################################
+
+###############################
+# {{{ Enable/Disable features #
+###############################
+
+sub use_fork {
+    my $self = shift;
+    my $redirect = $self->stream->redirect;
+
+    require Test::Builder::Fork;
+    $self->stream->redirect(Test::Builder::Fork->new->handler);
+}
+
+sub no_fork {
+    my $self = shift;
+    my $redirect = $self->stream->redirect;
+
+    # If these conditions are not true, then we did not add the redirect.
+    return unless $redirect;
+    return unless Scalar::Util::blessed($redirect);
+    return unless $redirect->isa('Test::Builder::Fork');
+
+    $self->stream->redirect(undef); # Turn it off.
+}
+
+sub no_ending {
+    my( $self, $no ) = @_;
+
+    if( defined $no ) {
+        $self->{No_Ending} = $no;
+    }
+    return $self->{No_Ending};
+}
+
+###############################
+# }}} Enable/Disable features #
+###############################
+
+#######################
+# {{{ Public helpers #
+#######################
+
+sub maybe_regex {
+    my( $self, $regex ) = @_;
+    my $usable_regex = undef;
+
+    return $usable_regex unless defined $regex;
+
+    my( $re, $opts );
+
+    # Check for qr/foo/
+    if( _is_qr($regex) ) {
+        $usable_regex = $regex;
+    }
+    # Check for '/foo/' or 'm,foo,'
+    elsif(( $re, $opts )        = $regex =~ m{^ /(.*)/ (\w*) $ }sx              or
+          ( undef, $re, $opts ) = $regex =~ m,^ m([^\w\s]) (.+) \1 (\w*) $,sx
+    )
+    {
+        $usable_regex = length $opts ? "(?$opts)$re" : $re;
+    }
+
+    return $usable_regex;
+}
+
+sub level {
+    my( $self, $level ) = @_;
+
+    if( defined $level ) {
+        $Level = $level;
+    }
+    return $Level;
+}
+
 sub explain {
     my $self = shift;
 
@@ -1121,14 +938,6 @@ sub explain {
           }
           : $_
     } @_;
-}
-
-sub _message_at_caller {
-    my $self = shift;
-
-    local $Level = $Level + 1;
-    my( $pack, $file, $line ) = $self->caller;
-    return join( "", @_ ) . " at $file line $line.\n";
 }
 
 sub carp {
@@ -1150,6 +959,39 @@ sub is_passing {
 
     return $self->{Is_Passing};
 }
+
+sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
+    my( $self, $height ) = @_;
+    $height ||= 0;
+
+    my $level = $self->level + $height + 1;
+    my @caller;
+    do {
+        @caller = CORE::caller( $level );
+        $level--;
+    } until @caller;
+    return wantarray ? @caller : $caller[0];
+}
+
+sub context {
+    my $self = shift;
+    my ($height) = @_;
+    $height ||= 0;
+
+    return {
+        caller => [$self->caller($height + 1)],
+        pid    => $$,
+        indent => $self->_indent || "",
+    };
+}
+
+#######################
+# }}} Public helpers #
+#######################
+
+####################
+# {{{ TODO related #
+####################
 
 sub todo {
     my( $self, $pack ) = @_;
@@ -1215,29 +1057,233 @@ sub todo_end {
     return;
 }
 
-sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    my( $self, $height ) = @_;
-    $height ||= 0;
+####################
+# }}} TODO related #
+####################
 
-    my $level = $self->level + $height + 1;
-    my @caller;
-    do {
-        @caller = CORE::caller( $level );
-        $level--;
-    } until @caller;
-    return wantarray ? @caller : $caller[0];
+#######################
+# {{{ Private helpers #
+#######################
+
+# Check that we haven't yet violated the plan and set
+# is_passing() accordingly
+sub _check_is_passing_plan {
+    my $self = shift;
+
+    my $plan = $self->has_plan;
+    return unless defined $plan;        # no plan yet defined
+    return unless $plan !~ /\D/;        # no numeric plan
+    $self->is_passing(0) if $plan < $self->tests_run;
 }
 
-sub context {
-    my $self = shift;
-    my ($height) = @_;
-    $height ||= 0;
+sub _is_object {
+    my( $self, $thing ) = @_;
 
-    return {
-        caller => [$self->caller($height + 1)],
-        pid    => $$,
-        indent => $self->_indent || "",
-    };
+    return $self->_try( sub { ref $thing && $thing->isa('UNIVERSAL') } ) ? 1 : 0;
+}
+
+sub _unoverload {
+    my $self = shift;
+    my $type = shift;
+
+    $self->_try(sub { require overload; }, die_on_fail => 1);
+
+    foreach my $thing (@_) {
+        if( $self->_is_object($$thing) ) {
+            if( my $string_meth = overload::Method( $$thing, $type ) ) {
+                $$thing = $$thing->$string_meth();
+            }
+        }
+    }
+
+    return;
+}
+
+sub _unoverload_str {
+    my $self = shift;
+
+    return $self->_unoverload( q[""], @_ );
+}
+
+sub _unoverload_num {
+    my $self = shift;
+
+    $self->_unoverload( '0+', @_ );
+
+    for my $val (@_) {
+        next unless $self->_is_dualvar($$val);
+        $$val = $$val + 0;
+    }
+
+    return;
+}
+
+# This is a hack to detect a dualvar such as $!
+sub _is_dualvar {
+    my( $self, $val ) = @_;
+
+    # Objects are not dualvars.
+    return 0 if ref $val;
+
+    no warnings 'numeric';
+    my $numval = $val + 0;
+    return ($numval != 0 and $numval ne $val ? 1 : 0);
+}
+
+sub _diag_fmt {
+    my( $self, $type, $val ) = @_;
+
+    if( defined $$val ) {
+        if( $type eq 'eq' or $type eq 'ne' ) {
+            # quote and force string context
+            $$val = "'$$val'";
+        }
+        else {
+            # force numeric context
+            $self->_unoverload_num($val);
+        }
+    }
+    else {
+        $$val = 'undef';
+    }
+
+    return;
+}
+
+sub _is_diag {
+    my( $self, $got, $type, $expect ) = @_;
+
+    $self->_diag_fmt( $type, $_ ) for \$got, \$expect;
+
+    local $Level = $Level + 1;
+    return $self->diag(<<"DIAGNOSTIC");
+         got: $got
+    expected: $expect
+DIAGNOSTIC
+
+}
+
+sub _isnt_diag {
+    my( $self, $got, $type ) = @_;
+
+    $self->_diag_fmt( $type, \$got );
+
+    local $Level = $Level + 1;
+    return $self->diag(<<"DIAGNOSTIC");
+         got: $got
+    expected: anything else
+DIAGNOSTIC
+}
+
+
+sub _cmp_diag {
+    my( $self, $got, $type, $expect ) = @_;
+
+    $got    = defined $got    ? "'$got'"    : 'undef';
+    $expect = defined $expect ? "'$expect'" : 'undef';
+
+    local $Level = $Level + 1;
+    return $self->diag(<<"DIAGNOSTIC");
+    $got
+        $type
+    $expect
+DIAGNOSTIC
+}
+
+sub _caller_context {
+    my $self = shift;
+
+    my( $pack, $file, $line ) = $self->caller(1);
+
+    my $code = '';
+    $code .= "#line $line $file\n" if defined $file and defined $line;
+
+    return $code;
+}
+
+sub _is_qr {
+    my $regex = shift;
+
+    # is_regexp() checks for regexes in a robust manner, say if they're
+    # blessed.
+    return re::is_regexp($regex) if defined &re::is_regexp;
+    return ref $regex eq 'Regexp';
+}
+
+sub _regex_ok {
+    my( $self, $thing, $regex, $cmp, $name ) = @_;
+
+    my $ok           = 0;
+    my $usable_regex = $self->maybe_regex($regex);
+    unless( defined $usable_regex ) {
+        local $Level = $Level + 1;
+        $ok = $self->ok( 0, $name );
+        $self->diag("    '$regex' doesn't look much like a regex to me.");
+        return $ok;
+    }
+
+    {
+        my $test;
+        my $context = $self->_caller_context;
+
+        {
+            ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
+            local( $@, $!, $SIG{__DIE__} );    # isolate eval
+
+            # No point in issuing an uninit warning, they'll see it in the diagnostics
+            no warnings 'uninitialized';
+
+            $test = eval $context . q{$test = $thing =~ /$usable_regex/ ? 1 : 0};
+        }
+
+        $test = !$test if $cmp eq '!~';
+
+        local $Level = $Level + 1;
+        $ok = $self->ok( $test, $name );
+    }
+
+    unless($ok) {
+        $thing = defined $thing ? "'$thing'" : 'undef';
+        my $match = $cmp eq '=~' ? "doesn't match" : "matches";
+
+        local $Level = $Level + 1;
+        $self->diag( sprintf <<'DIAGNOSTIC', $thing, $match, $regex );
+                  %s
+    %13s '%s'
+DIAGNOSTIC
+
+    }
+
+    return $ok;
+}
+
+# I'm not ready to publish this.  It doesn't deal with array return
+# values from the code or context.
+sub _try {
+    my( $self, $code, %opts ) = @_;
+
+    my $error;
+    my $return;
+    {
+        local $!;               # eval can mess up $!
+        local $@;               # don't set $@ in the test
+        local $SIG{__DIE__};    # don't trip an outside DIE handler.
+        $return = eval { $code->() };
+        $error = $@;
+    }
+
+    die $error if $error and $opts{die_on_fail};
+
+    return wantarray ? ( $return, $error ) : $return;
+}
+
+sub _message_at_caller {
+    my $self = shift;
+
+    local $Level = $Level + 1;
+    my( $pack, $file, $line ) = $self->caller;
+    return join( "", @_ ) . " at $file line $line.\n";
 }
 
 #'#
@@ -1269,6 +1315,10 @@ sub _my_exit {
 
     return 1;
 }
+
+#######################
+# }}} Private helpers #
+#######################
 
 sub _ending {
     my $self = shift;
@@ -1391,6 +1441,32 @@ FAIL
     $self->_whoa( 1, "We fell off the end of _ending()" );
 }
 
+################################################
+# {{{ Everything below this line is deprecated #
+# But it must be maintained for legacy...      #
+################################################
+
+BEGIN {
+    for my $method (qw(no_header no_diag)) {
+        my $code = sub {
+            my( $self, $no ) = @_;
+
+            $self->carp("Use of \$TB->$method() is deprecated.") if $self->modern;
+            my $tap = $self->tap || $self->croak("$method() method only applies when TAP is in use");
+            $tap->$method($no);
+        };
+
+        no strict 'refs';    ## no critic
+        *{$method} = $code;
+    }
+}
+
+sub _output_plan {
+    my ($self) = @_;
+    $self->carp("_output_plan() is deprecated") if $self->modern;
+    goto &_issue_plan;
+}
+
 sub _diag_fh {
     my $self = shift;
 
@@ -1496,7 +1572,7 @@ sub current_test {
     my $self = shift;
 
     $self->carp('Use of $TB->current_test() is deprecated.') if $self->modern;
-    my $lresults = $self->lresults || $self->croak("current_test() method only applies when TAP is in use");
+    my $lresults = $self->lresults || $self->croak("current_test() method only applies when legacy results are in use");
 
     return $lresults->current_test($self, @_);
 }
@@ -1506,6 +1582,10 @@ sub BAILOUT {
     $self->carp("Use of \$TB->BAILOUT() is deprecated.") if $self->modern;
     goto &BAIL_OUT;
 }
+
+###################################
+# }}} End of deprecations section #
+###################################
 
 1;
 

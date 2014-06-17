@@ -10,7 +10,11 @@ sub to_tap {
     my $self = shift;
 
     my $msg = $self->message;
-    $msg =~ s/^/# / unless $msg =~ m/^\n/s;
+    unless($msg =~ m/^\n/s) {
+        if($msg =~ s/^/# /s) {
+            $msg =~ s/# $//;
+        }
+    }
 
     return $msg;
 }
