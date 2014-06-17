@@ -17,7 +17,7 @@ sub init {
 }
 
 # The default 6 result types all have a to_tap method.
-for my $handler (qw/plan bail nest/) {
+for my $handler (qw/bail nest/) {
     my $sub = sub {
         my $self = shift;
         my ($item) = @_;
@@ -27,10 +27,17 @@ for my $handler (qw/plan bail nest/) {
     *$handler = $sub;
 }
 
+sub plan {
+    my $self = shift;
+    my ($item) = @_;
+    return if $self->no_header;
+    $self->_print($item->indent || "", $item->to_tap);
+}
+
 sub ok {
-     my $self = shift;
-     my ($item) = @_;
-     $self->_print($item->indent || "", $item->to_tap($self->test_number(1)));
+    my $self = shift;
+    my ($item) = @_;
+    $self->_print($item->indent || "", $item->to_tap($self->test_number(1)));
 }
 
 sub diag {

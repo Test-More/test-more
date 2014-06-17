@@ -203,11 +203,6 @@ sub subtest {
     return $finalize;
 }
 
-sub _plan_handled {
-    my $self = shift;
-    return $self->{Have_Plan} || $self->{No_Plan} || $self->{Skip_All};
-}
-
 sub finalize {
     my $self = shift;
 
@@ -311,10 +306,15 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     return;
 }
 
+sub _plan_handled {
+    my $self = shift;
+    return $self->{Have_Plan} || $self->{No_Plan} || $self->{Skip_All};
+}
+
 my %plan_cmds = (
-    no_plan  => \&no_plan,
-    skip_all => \&skip_all,
-    tests    => \&_plan_tests,
+    no_plan  => 'no_plan',
+    skip_all => 'skip_all',
+    tests    => '_plan_tests',
 );
 
 sub plan {
@@ -338,6 +338,23 @@ sub plan {
     return 1;
 }
 
+sub has_plan {
+    my $self = shift;
+
+    return($self->expected_tests) if $self->expected_tests;
+    return('no_plan') if $self->{No_Plan};
+    return(undef);
+}
+
+sub skip_all {
+    my( $self, $reason ) = @_;
+
+    $self->{Skip_All} = $self->parent ? $reason : 1;
+
+    $self->_issue_plan(0, "SKIP", $reason);
+    die bless {} => 'Test::Builder::Exception' if $self->parent;
+    exit(0);
+}
 
 sub _plan_tests {
     my($self, $arg) = @_;
@@ -358,16 +375,17 @@ sub _plan_tests {
 
 sub expected_tests {
     my $self = shift;
-    my($max) = @_;
 
     if(@_) {
+        my ($max) = @_;
         $self->croak("Number of tests must be a positive integer.  You gave it '$max'")
           unless $max =~ /^\+?\d+$/;
 
         $self->{Expected_Tests} = $max;
         $self->{Have_Plan}      = 1;
 
-        $self->_issue_plan($max) unless $self->no_header;
+        local $Level = $Level + 1;
+        $self->_issue_plan($max);
     }
 
     return $self->{Expected_Tests};
@@ -393,7 +411,7 @@ sub _output_plan {
 sub _issue_plan {
     my($self, $max, $directive, $reason) = @_;
 
-    $self->carp("The plan was already issued") if $self->{Have_Issued_Plan};
+    $self->carp("The plan was already issued") if $self->{Have_Issued_Plan}++;
 
     my $plan = Test::Builder::Result::Plan->new(
         context   => $self->context,
@@ -405,8 +423,6 @@ sub _issue_plan {
     );
 
     $self->stream->push($plan);
-
-    $self->{Have_Issued_Plan} = 1;
 
     return;
 }
@@ -434,7 +450,8 @@ sub done_testing {
         $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".
                      "but done_testing() expects $num_tests");
     }
-    else {
+    elsif(!$self->expected_tests && $num_tests) {
+        local $Level = $Level + 1;
         $self->expected_tests($num_tests);
     }
 
@@ -449,26 +466,6 @@ sub done_testing {
     $self->is_passing(0) if $self->tests_run == 0;
 
     return 1;
-}
-
-sub has_plan {
-    my $self = shift;
-
-    return($self->expected_tests) if $self->expected_tests;
-    return('no_plan') if $self->{No_Plan};
-    return(undef);
-}
-
-sub skip_all {
-    my( $self, $reason ) = @_;
-
-    $self->{Skip_All} = $self->parent ? $reason : 1;
-
-    $self->_issue_plan(0, "SKIP", $reason) unless $self->no_header;
-    if ( $self->parent ) {
-        die bless {} => 'Test::Builder::Exception';
-    }
-    exit(0);
 }
 
 sub exported_to {
