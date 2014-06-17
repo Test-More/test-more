@@ -804,8 +804,6 @@ $error
 ------------------------------------
 END
 
-
-
     unless($ok) {
         $self->$unoverload( \$got, \$expect );
 
@@ -884,11 +882,6 @@ sub BAIL_OUT {
     else {
         exit 255;
     }
-}
-
-{
-    no warnings 'once';
-    *BAILOUT = \&BAIL_OUT;
 }
 
 sub skip {
@@ -1506,6 +1499,12 @@ sub current_test {
     my $lresults = $self->lresults || $self->croak("current_test() method only applies when TAP is in use");
 
     return $lresults->current_test($self, @_);
+}
+
+sub BAILOUT {
+    my ($self) = @_;
+    $self->carp("Use of \$TB->BAILOUT() is deprecated.") if $self->modern;
+    goto &BAIL_OUT;
 }
 
 1;
