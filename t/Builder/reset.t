@@ -70,7 +70,6 @@ $Test->is_eq( fileno $tb->todo_output,
 # The reset Test::Builder will take over from here.
 $Test->no_ending(1);
 
-
 $tb->current_test($Test->current_test);
 $tb->level(0);
 $tb->ok(1, 'final test to make sure output was reset');

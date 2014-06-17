@@ -7,7 +7,7 @@ use Scalar::Util qw/reftype blessed/;
 
 sub new {
     my $class = shift;
-    return bless { listeners => {}, mungers => {}, counter => 0 }, $class;
+    return bless { listeners => {}, mungers => {} }, $class;
 }
 
 sub redirect {
@@ -34,32 +34,92 @@ sub redirect {
     return $self->{redirect};
 }
 
-my $listen_id = 1;
-sub listen {
+sub listener {
     my $self = shift;
-    my ($listener) = @_;
-
-    confess("Listeners must be code refs")
-        unless $listener && reftype $listener and reftype $listener eq 'CODE';
-
-    my $id = $listen_id++;
-    my $listeners = $self->{listeners};
-    $listeners->{$id} = $listener;
-    return sub { delete $listeners->{$id} };
+    my ($id) = @_;
+    confess("You must provide an ID for your listener") unless $id;
+    return $self->{listeners}->{$id};
 }
 
-my $munge_id = 1;
+sub listen {
+    my $self = shift;
+    my ($id, $listener) = @_;
+
+    confess("You must provide an ID for your listener") unless $id;
+
+    confess("Listeners must be code refs, or objects that implement handle(), got: $listener")
+        unless $listener && (
+            (reftype $listener && reftype $listener eq 'CODE')
+            ||
+            (blessed $listener && $listener->can('handle'))
+        );
+
+    my $listeners = $self->{listeners};
+
+    confess("There is already a listener with ID: $id")
+        if $listeners->{$id};
+
+    $listeners->{$id} = $listener;
+    return sub { $self->unlisten($id) };
+}
+
+sub unlisten {
+    my $self = shift;
+    my ($id) = @_;
+
+    confess("You must provide an ID for your listener") unless $id;
+
+    my $listeners = $self->{listeners};
+
+    confess("There is no listener with ID: $id")
+        unless $listeners->{$id};
+
+    delete $listeners->{$id};
+}
+
+sub munger {
+    my $self = shift;
+    my ($id) = @_;
+    confess("You must provide an ID for your munger") unless $id;
+    return $self->{mungers}->{$id};
+}
+
 sub munge {
     my $self = shift;
-    my ($munger) = @_;
+    my ($id, $munger) = @_;
 
-    confess("Mungers must be code refs")
-        unless $munger && reftype $munger and reftype $munger eq 'CODE';
+    confess("You must provide an ID for your munger") unless $id;
 
-    my $id = $munge_id++;
+    confess("Mungers must be code refs, or objects that implement handle(), got: $munger")
+        unless $munger && (
+            (reftype $munger && reftype $munger eq 'CODE')
+            ||
+            (blessed $munger && $munger->can('handle'))
+        );
+
     my $mungers = $self->{mungers};
+
+    confess("There is already a munger with ID: $id")
+        if $mungers->{$id};
+
+    push @{$self->{munge_order}} => $id;
     $mungers->{$id} = $munger;
-    return sub { delete $mungers->{$id} };
+
+    return sub { $self->unmunge($id) };
+}
+
+sub unmunge {
+    my $self = shift;
+    my ($id) = @_;
+    my $mungers = $self->{mungers};
+
+    confess("You must provide an ID for your munger") unless $id;
+
+    confess("There is no munger with ID: $id")
+        unless $mungers->{$id};
+
+    $self->{munge_order} = [ grep { $_ ne $id } @{$self->{munge_order}} ];
+    delete $mungers->{$id};
 }
 
 sub push {
@@ -73,35 +133,57 @@ sub push {
     }
 
     my $items = [$item];
-    for my $munger_id (sort {$a <=> $b} keys %{$self->{mungers}}) {
-        my $new_items;
-
-        push @$new_items => $self->{mungers}->{$munger_id}->($_) for @$items;
+    for my $munger_id (@{$self->{munge_order}}) {
+        my $new_items = [];
+        my $munger = $self->munger($munger_id) || next;
+        
+        for my $item (@$items) {
+            push @$new_items => reftype $munger eq 'CODE' ? $munger->($item) : $munger->handle($item);
+        }
 
         $items = $new_items;
     }
 
     for my $item (@$items) {
-        $self->{counter} += 1 if $item->isa('Test::Builder::Result::Ok');
         for my $listener (values %{$self->{listeners}}) {
-            $listener->($item);
+            if (reftype $listener eq 'CODE') {
+                $listener->($item)
+            }
+            else {
+                $listener->handle($item);
+            }
         }
-        $self->tap->handle($item) if $self->tap;
     }
 
 }
 
-sub tap { shift->{tap} }
+sub tap { shift->listener('LEGACY_TAP') }
 
 sub use_tap {
     my $self = shift;
+    return if $self->tap;
     require Test::Builder::Formatter::TAP;
-    $self->{tap} ||= Test::Builder::Formatter::TAP->new();
+    $self->listen(LEGACY_TAP => Test::Builder::Formatter::TAP->new());
 }
 
 sub no_tap {
     my $self = shift;
-    delete $self->{tap};
+    $self->unlisten('LEGACY_TAP');
+    return;
+}
+
+sub lresults { shift->listener('LEGACY_RESULTS') }
+
+sub use_lresults {
+    my $self = shift;
+    return if $self->lresults;
+    require Test::Builder::Formatter::LegacyResults;
+    $self->listen(LEGACY_RESULTS => Test::Builder::Formatter::LegacyResults->new());
+}
+
+sub no_lresults {
+    my $self = shift;
+    $self->unlisten('LEGACY_RESULTS');
     return;
 }
 
@@ -109,9 +191,33 @@ sub clone {
     my $self = shift;
     my $new = blessed($self)->new();
 
-    $new->{listeners} = $self->{listeners};
-    $new->{mungers}   = $self->{mungers};
-    $new->use_tap if $self->tap;
+    $new->{redirect} = $self->redirect;
+
+    my $refs = {
+        listeners => $self->{listeners},
+        mungers   => $self->{mungers},
+    };
+
+    for my $type (keys %$refs) {
+        for my $key (keys %{$refs->{$type}}) {
+            next if $key eq 'LEGACY_TAP';
+            next if $key eq 'LEGACY_RESULTS';
+            $self->{$type}->{$key} = sub {
+                my $item = $refs->{$type}->{$key} || return;
+                return $item->(@_) if reftype $item eq 'CODE';
+                $item->handle(@_);
+            };
+        }
+    }
+
+    if ($self->tap) {
+        $new->use_tap;
+        for my $field (qw/output failure_output todo_output/) {
+            $new->tap->$field($self->tap->$field);
+        }
+    }
+
+    $new->use_lresults if $self->lresults;
 
     return $new;
 }

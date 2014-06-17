@@ -62,6 +62,10 @@ sub cull {
 
         my $tb = Test::Builder->new;
         confess "cull() cannot be called in a child builder!" if $tb->parent;
+        if ($obj->isa('Test::Builder::Result::Ok')) {
+            $tb->tests_run(1);
+            $tb->tests_failed(1) unless $obj->bool;
+        }
         $tb->stream()->push($obj);
 
         if ($ENV{TEST_KEEP_TMP_DIR}) {

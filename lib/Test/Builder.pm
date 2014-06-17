@@ -11,62 +11,8 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 # Start MAGIC things #
 ######################
 
-# Make Test::Builder thread-safe for ithreads.
-BEGIN {
-    use Config;
-    # Load threads::shared when threads are turned on.
-    # 5.8.0's threads are so busted we no longer support them.
-    if( $] >= 5.008001 && $Config{useithreads} && $INC{'threads.pm'} ) {
-        require threads::shared;
-
-        # Hack around YET ANOTHER threads::shared bug.  It would
-        # occasionally forget the contents of the variable when sharing it.
-        # So we first copy the data, then share, then put our copy back.
-        *share = sub (\[$@%]) {
-            my $type = ref $_[0];
-            my $data;
-
-            if( $type eq 'HASH' ) {
-                %$data = %{ $_[0] };
-            }
-            elsif( $type eq 'ARRAY' ) {
-                @$data = @{ $_[0] };
-            }
-            elsif( $type eq 'SCALAR' ) {
-                $$data = ${ $_[0] };
-            }
-            else {
-                die( "Unknown type: " . $type );
-            }
-
-            $_[0] = &threads::shared::share( $_[0] );
-
-            if( $type eq 'HASH' ) {
-            }
-            elsif( $type eq 'ARRAY' ) {
-                @{ $_[0] } = @$data;
-            }
-            elsif( $type eq 'SCALAR' ) {
-                ${ $_[0] } = $$data;
-            }
-            else {
-                die( "Unknown type: " . $type );
-            }
-
-            return $_[0];
-        };
-    }
-    # 5.8.0's threads::shared is busted when threads are off
-    # and earlier Perls just don't have that module at all.
-    else {
-        *share = sub { return $_[0] };
-        *lock  = sub { 0 };
-    }
-}
-
 sub stream {
     my $self = shift;
-    Carp::confess("XXX") unless Scalar::Util::blessed($self);
     require Test::Builder::Stream;
     $self->{stream} ||= Test::Builder::Stream->new();
     return $self->{stream};
@@ -86,9 +32,7 @@ our $Test = Test::Builder->new;
 our $Level;
 
 # Stuff to do at the very end
-END {
-    $Test->_ending if defined $Test;
-}
+END { $Test->_ending if defined $Test }
 
 sub DESTROY {
     my $self = shift;
@@ -102,9 +46,9 @@ FAIL
     }
 }
 
-#####################
-# Stop MAGIC things #
-#####################
+#######################
+# End of MAGIC things #
+#######################
 
 use Scalar::Util();
 use Test::Builder::Result;
@@ -120,8 +64,15 @@ sub munge     { shift->stream->munge(@_)  }
 sub parent    { shift->{Parent}           }
 sub name      { shift->{Name}             }
 sub pid       { shift->{Original_Pid}     }
-sub depth     { shift->{Depth}            }
 sub tap       { shift->stream->tap        }
+sub lresults  { shift->stream->lresults   }
+
+sub modern {
+    my $self = shift;
+    $self->{modern} = 1 if $ENV{TB_MODERN} && !exists $self->{modern};
+    ($self->{modern}) = @_ if @_;
+    return $self->{modern} || 0;
+}
 
 sub new {
     my($class) = shift;
@@ -136,7 +87,7 @@ sub _copy {
     my($src, $dest) = @_;
 
     %$dest = %$src;
-    _share_keys($dest);
+    #_share_keys($dest); # Not sure the implications here.
 
     return;
 }
@@ -168,21 +119,21 @@ sub child {
     # Add to our indentation
     $child->_indent( $self->_indent . '    ' );
 
-    #FIXME HANDLES
+    $child->{stream} = $self->stream->clone;
 
     # Ensure the child understands if they're inside a TODO
-    if( $parent_in_todo ) {
-        $child->failure_output( $self->todo_output );
-    }
+    $child->tap->failure_output($self->tap->todo_output)
+        if $parent_in_todo && $self->tap;
 
     # This will be reset in finalize. We do this here lest one child failure
     # cause all children to fail.
     $child->{Child_Error} = $?;
     $?                    = 0;
+
     $child->{Parent}      = $self;
     $child->{Parent_TODO} = $orig_TODO;
     $child->{Name}        = $name || "Child of " . $self->name;
-    $child->{Depth}       = $self->depth + 1;
+
     $self->{Child_Name}   = $child->name;
 
     my $res = Test::Builder::Result::Child->new(
@@ -265,31 +216,26 @@ sub finalize {
         $self->croak("Can't call finalize() with child ($self->{Child_Name}) active");
     }
 
-    if ($self->tap) {
-        my $stash = $self->{IO_STASH};
-        $self->parent->tap->$_($stash->{$_}) for keys %$stash;
-    }
-
     local $? = 0;     # don't fail if $subtests happened to set $? nonzero
     $self->_ending;
 
-    # XXX This will only be necessary for TAP envelopes (we think)
-    #$self->_print( $self->is_passing ? "PASS\n" : "FAIL\n" );
-
     local $Test::Builder::Level = $Test::Builder::Level + 1;
+
     my $ok = 1;
     $self->parent->{Child_Name} = undef;
+
     unless ($self->{Bailed_Out}) {
         if ( $self->{Skip_All} ) {
             $self->parent->skip($self->{Skip_All});
         }
-        elsif ( not @{ $self->{Test_Results} } ) {
+        elsif ( ! $self->tests_run ) {
             $self->parent->ok( 0, sprintf q[No tests run for subtest "%s"], $self->name );
         }
         else {
             $self->parent->ok( $self->is_passing, $self->name );
         }
     }
+
     $? = $self->{Child_Error};
     delete $self->{Parent};
 
@@ -305,7 +251,7 @@ sub finalize {
     return $self->is_passing;
 }
 
-sub _indent      {
+sub _indent {
     my $self = shift;
 
     if( @_ ) {
@@ -316,69 +262,59 @@ sub _indent      {
 }
 
 sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    my($self) = @_;
+    my($self, $modern) = @_;
+
+    $modern = $self->modern || 0 unless defined $modern;
+    $self->modern($modern);
 
     # We leave this a global because it has to be localized and localizing
     # hash keys is just asking for pain.  Also, it was documented.
     $Level = 1;
 
-    $self->{Name}         = $0;
-    $self->is_passing(1);
-    $self->{Ending}       = 0;
-    $self->{Have_Plan}    = 0;
-    $self->{No_Plan}      = 0;
+    unless($ENV{TB_NO_TAP}) {
+        $self->stream->use_tap;
+        $self->tap->reset;
+    }
+
+    unless($modern || $ENV{TB_NO_LEGACY}) {
+        $self->stream->use_lresults;
+        $self->stream->lresults->reset;
+    }
+
+    $self->{Name} = $0;
+
+    $self->{Ending}           = 0;
+    $self->{Have_Plan}        = 0;
+    $self->{No_Plan}          = 0;
     $self->{Have_Issued_Plan} = 0;
-    $self->{Done_Testing} = 0;
+    $self->{Done_Testing}     = 0;
+    $self->{Skip_All}         = 0;
 
     $self->{Original_Pid} = $$;
     $self->{Child_Name}   = undef;
     $self->{Indent}     ||= '';
 
-    $self->{Curr_Test} = 0;
-    $self->{Test_Results} = &share( [] );
-
     $self->{Exported_To}    = undef;
     $self->{Expected_Tests} = 0;
-
-    $self->{Skip_All} = 0;
-
-    $self->{Use_Nums} = 1;
-
-    $self->{No_Header} = 0;
-    $self->{No_Ending} = 0;
 
     $self->{Todo}       = undef;
     $self->{Todo_Stack} = [];
     $self->{Start_Todo} = 0;
     $self->{Opened_Testhandles} = 0;
 
-    $self->{Depth} = 0;
+    $self->is_passing(1);
+    $self->no_ending(0);
 
-    $self->_share_keys;
-
-    unless($ENV{NO_TAP}) {
-        $self->stream->use_tap;
-        $self->stream->tap->reset_outputs
-    }
-
-    return;
-}
-
-# Shared scalar values are lost when a hash is copied, so we have
-# a separate method to restore them.
-# Shared references are retained across copies.
-sub _share_keys {
-    my $self = shift;
-
-    share( $self->{Curr_Test} );
+    $self->{tests_run} = 0;
+    $self->{tests_failed} = 0;
 
     return;
 }
 
 my %plan_cmds = (
-    no_plan     => \&no_plan,
-    skip_all    => \&skip_all,
-    tests       => \&_plan_tests,
+    no_plan  => \&no_plan,
+    skip_all => \&skip_all,
+    tests    => \&_plan_tests,
 );
 
 sub plan {
@@ -433,6 +369,7 @@ sub expected_tests {
 
         $self->_issue_plan($max) unless $self->no_header;
     }
+
     return $self->{Expected_Tests};
 }
 
@@ -448,7 +385,8 @@ sub no_plan {
 }
 
 sub _output_plan {
-    self->carp("_output_plan() is deprecated");
+    my ($self) = @_;
+    $self->carp("_output_plan() is deprecated") if $self->modern;
     goto &_issue_plan;
 }
 
@@ -481,7 +419,7 @@ sub done_testing {
         $self->{No_Plan} = 0;
     }
     else {
-        $num_tests = $self->current_test;
+        $num_tests = $self->tests_run;
     }
 
     if( $self->{Done_Testing} ) {
@@ -497,7 +435,7 @@ sub done_testing {
                      "but done_testing() expects $num_tests");
     }
     else {
-        $self->{Expected_Tests} = $num_tests;
+        $self->expected_tests($num_tests);
     }
 
     $self->_issue_plan($num_tests) unless $self->{Have_Issued_Plan};
@@ -505,10 +443,10 @@ sub done_testing {
     $self->{Have_Plan} = 1;
 
     # The wrong number of tests were run
-    $self->is_passing(0) if $self->{Expected_Tests} != $self->{Curr_Test};
+    $self->is_passing(0) if $self->expected_tests != $self->tests_run;
 
     # No tests were run
-    $self->is_passing(0) if $self->{Curr_Test} == 0;
+    $self->is_passing(0) if $self->tests_run == 0;
 
     return 1;
 }
@@ -516,7 +454,7 @@ sub done_testing {
 sub has_plan {
     my $self = shift;
 
-    return( $self->{Expected_Tests} ) if $self->{Expected_Tests};
+    return($self->expected_tests) if $self->expected_tests;
     return('no_plan') if $self->{No_Plan};
     return(undef);
 }
@@ -555,9 +493,6 @@ sub ok {
     # store, so we turn it into a boolean.
     $test = $test ? 1 : 0;
 
-    lock $self->{Curr_Test};
-    $self->{Curr_Test}++;
-
     # In case $name is a string overloaded object, force it to stringify.
     $self->_unoverload_str( \$name );
 
@@ -574,7 +509,6 @@ ERR
 
     $self->_unoverload_str( \$todo );
 
-    my $result = &share( {} );
     my $ok = Test::Builder::Result::Ok->new(
         context   => $self->context,
         real_bool => $test,
@@ -584,34 +518,16 @@ ERR
         indent    => $self->_indent || "",
     );
 
-    unless($test) {
-        @$result{ 'ok', 'actual_ok' } = ( ( $self->in_todo ? 1 : 0 ), 0 );
-    }
-    else {
-        @$result{ 'ok', 'actual_ok' } = ( 1, $test );
-    }
-
-    $ok->number($self->{Curr_Test}) if $self->use_numbers;
-
-    if( defined $name ) {
-        $name =~ s|#|\\#|g;    # # in a name can confuse Test::Harness.
-        $result->{name} = $name;
-    }
-    else {
-        $result->{name} = '';
-    }
+    # # in a name can confuse Test::Harness.
+    $name =~ s|#|\\#|g if defined $name;
 
     if( $self->in_todo ) {
-        $result->{reason} = $todo;
-        $result->{type}   = 'todo';
         $ok->todo($todo);
-    }
-    else {
-        $result->{reason} = '';
-        $result->{type}   = '';
+        $ok->in_todo(1);
     }
 
-    $self->{Test_Results}[ $self->{Curr_Test} - 1 ] = $result;
+    $self->tests_run(1);
+    $self->tests_failed(1) unless $test || $self->in_todo;
 
     $self->stream->push($ok);
 
@@ -636,6 +552,26 @@ ERR
     return $test ? 1 : 0;
 }
 
+sub tests_run {
+    my $self = shift;
+    $self->{tests_run} ||= 0;
+    if (@_) {
+        my ($delta) = @_;
+        $self->{tests_run} += $delta;
+    }
+    return $self->{tests_run} || 0;
+}
+
+sub tests_failed {
+    my $self = shift;
+    $self->{tests_failed} ||= 0;
+    if (@_) {
+        my ($delta) = @_;
+        $self->{tests_failed} += $delta;
+    }
+    return $self->{tests_failed} || 0;
+}
+
 
 # Check that we haven't yet violated the plan and set
 # is_passing() accordingly
@@ -645,7 +581,7 @@ sub _check_is_passing_plan {
     my $plan = $self->has_plan;
     return unless defined $plan;        # no plan yet defined
     return unless $plan !~ /\D/;        # no numeric plan
-    $self->is_passing(0) if $plan < $self->{Curr_Test};
+    $self->is_passing(0) if $plan < $self->tests_run;
 }
 
 
@@ -914,6 +850,18 @@ sub _caller_context {
     return $code;
 }
 
+sub bailout_behavior {
+    my $self = shift;
+    if (@_) {
+        my ($sub) = @_;
+        $self->croak("bailout_behavior must be a coderef, or undef")
+            if defined($sub) && Scalar::Util::reftype($sub) ne 'CODE';
+
+        $self->{bailout_behavior} = $sub;
+    }
+    return $self->{bailout_behavior};
+}
+
 sub BAIL_OUT {
     my( $self, $reason ) = @_;
 
@@ -933,7 +881,12 @@ sub BAIL_OUT {
     );
     $self->stream->push($bail);
 
-    exit 255;
+    if( my $behavior = $self->bailout_behavior ) {
+        $behavior->($bail);
+    }
+    else {
+        exit 255;
+    }
 }
 
 {
@@ -946,19 +899,6 @@ sub skip {
     $why ||= '';
     $self->_unoverload_str( \$why );
 
-    lock( $self->{Curr_Test} );
-    $self->{Curr_Test}++;
-
-    $self->{Test_Results}[ $self->{Curr_Test} - 1 ] = &share(
-        {
-            'ok'      => 1,
-            actual_ok => 1,
-            name      => '',
-            type      => 'skip',
-            reason    => $why,
-        }
-    );
-
     my $ok = Test::Builder::Result::Ok->new(
         context   => $self->context,
         real_bool => 1,
@@ -967,26 +907,15 @@ sub skip {
         in_todo   => $self->in_todo || 0,
         skip      => $why,
     );
-    $ok->number($self->{Curr_Test}) if $self->use_numbers;
+
+    $self->tests_run(1);
+
     $self->stream->push($ok);
 }
 
 sub todo_skip {
     my( $self, $why ) = @_;
     $why ||= '';
-
-    lock( $self->{Curr_Test} );
-    $self->{Curr_Test}++;
-
-    $self->{Test_Results}[ $self->{Curr_Test} - 1 ] = &share(
-        {
-            'ok'      => 1,
-            actual_ok => 0,
-            name      => '',
-            type      => 'todo_skip',
-            reason    => $why,
-        }
-    );
 
     my $ok = Test::Builder::Result::Ok->new(
         context   => $self->context,
@@ -997,7 +926,9 @@ sub todo_skip {
         skip      => $why,
         todo      => $why,
     );
-    $ok->number($self->{Curr_Test}) if $self->use_numbers;
+
+    $self->tests_run(1);
+
     $self->stream->push($ok);
 
     return 1;
@@ -1133,15 +1064,6 @@ sub use_fork {
     $self->stream->redirect(Test::Builder::Fork->new->handler);
 }
 
-sub use_numbers {
-    my( $self, $use_nums ) = @_;
-
-    if( defined $use_nums ) {
-        $self->{Use_Nums} = $use_nums;
-    }
-    return $self->{Use_Nums};
-}
-
 sub no_ending {
     my( $self, $no ) = @_;
 
@@ -1151,19 +1073,19 @@ sub no_ending {
     return $self->{No_Ending};
 }
 
-foreach my $attribute (qw(No_Header No_Diag)) {
-    my $method = lc $attribute;
+BEGIN {
+    for my $method (qw(no_header no_diag)) {
+        my $code = sub {
+            my( $self, $no ) = @_;
 
-    my $code = sub {
-        my( $self, $no ) = @_;
+            $self->carp("Use of \$TB->$method() is deprecated.") if $self->modern;
+            my $tap = $self->tap || $self->croak("$method() method only applies when TAP is in use");
+            $tap->$method($no);
+        };
 
-        $self->carp("Use of \$TB->$method() is deprecated.");
-        my $tap = $self->tap || $self->croak("$method() method only applies when TAP is in use");
-        $tap->$method($no);
-    };
-
-    no strict 'refs';    ## no critic
-    *$method = $code;
+        no strict 'refs';    ## no critic
+        *{$method} = $code;
+    }
 }
 
 sub diag {
@@ -1211,35 +1133,6 @@ sub explain {
     } @_;
 }
 
-sub output {
-    my($self, $fh) = @_;
-    $self->carp('Use of $TB->output() is deprecated.');
-    my $tap = $self->tap || $self->croak("output() method only applies when TAP is in use");
-    return $tap->output($fh);
-}
-
-sub failure_output {
-    my($self, $fh) = @_;
-    $self->carp('Use of $TB->failure_output() is deprecated.');
-    my $tap = $self->tap || $self->croak("failure_output() method only applies when TAP is in use");
-    return $tap->failure_output($fh);
-}
-
-sub todo_output {
-    my($self, $fh) = @_;
-    $self->carp('Use of $TB->todo_output() is deprecated.');
-    my $tap = $self->tap || $self->croak("todo_output() method only applies when TAP is in use");
-    return $tap->todo_output($fh);
-}
-
-sub reset_outputs {
-    my $self = shift;
-    $self->carp('Use of $TB->reset_outputs() is deprecated.');
-    my $tap = $self->tap || $self->croak("reset_outputs() method only applies when TAP is in use");
-    $tap->reset_outputs;
-    return;
-}
-
 sub _message_at_caller {
     my $self = shift;
 
@@ -1258,37 +1151,6 @@ sub croak {
     return die $self->_message_at_caller(@_);
 }
 
-sub current_test {
-    my( $self, $num ) = @_;
-
-    lock( $self->{Curr_Test} );
-    if( defined $num ) {
-        $self->{Curr_Test} = $num;
-
-        # If the test counter is being pushed forward fill in the details.
-        my $test_results = $self->{Test_Results};
-        if( $num > @$test_results ) {
-            my $start = @$test_results ? @$test_results : 0;
-            for( $start .. $num - 1 ) {
-                $test_results->[$_] = &share(
-                    {
-                        'ok'      => 1,
-                        actual_ok => undef,
-                        reason    => 'incrementing test number',
-                        type      => 'unknown',
-                        name      => undef
-                    }
-                );
-            }
-        }
-        # If backward, wipe history.  Its their funeral.
-        elsif( $num < @$test_results ) {
-            $#{$test_results} = $num - 1;
-        }
-    }
-    return $self->{Curr_Test};
-}
-
 sub is_passing {
     my $self = shift;
 
@@ -1297,17 +1159,6 @@ sub is_passing {
     }
 
     return $self->{Is_Passing};
-}
-
-sub summary {
-    my($self) = shift;
-
-    return map { $_->{'ok'} } @{ $self->{Test_Results} };
-}
-
-sub details {
-    my $self = shift;
-    return @{ $self->{Test_Results} };
 }
 
 sub todo {
@@ -1329,6 +1180,7 @@ sub find_TODO {
     return unless $pack;
 
     no strict 'refs';    ## no critic
+    no warnings 'once';
     my $old_value = ${ $pack . '::TODO' };
     $set and ${ $pack . '::TODO' } = $new_value;
     return $old_value;
@@ -1393,8 +1245,7 @@ sub context {
 
     return {
         caller => [$self->caller($height + 1)],
-        pid => $$,
-        depth => $self->depth || 0,
+        pid    => $$,
         indent => $self->_indent || "",
     };
 }
@@ -1403,9 +1254,9 @@ sub context {
 sub _sanity_check {
     my $self = shift;
 
-    $self->_whoa( $self->{Curr_Test} < 0, 'Says here you ran a negative number of tests!' );
-    $self->_whoa( $self->{Curr_Test} != @{ $self->{Test_Results} },
-        'Somehow you got a different number of results than tests ran!' );
+    $self->_whoa( $self->tests_run < 0, 'Says here you ran a negative number of tests!' );
+
+    $self->lresults->sanity_check($self) if $self->lresults;
 
     return;
 }
@@ -1443,27 +1294,23 @@ sub _ending {
     }
 
     # Ran tests but never declared a plan or hit done_testing
-    if( !$self->{Have_Plan} and $self->{Curr_Test} ) {
+    if( !$self->{Have_Plan} and $self->tests_run ) {
         $self->is_passing(0);
         $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
 
         if($real_exit_code) {
+            my $run = $self->tests_run;
             $self->diag(<<"FAIL");
-Looks like your test exited with $real_exit_code just after $self->{Curr_Test}.
+Looks like your test exited with $real_exit_code just after $run.
 FAIL
             $self->is_passing(0);
             _my_exit($real_exit_code) && return;
         }
 
         # But if the tests ran, handle exit code.
-        my $test_results = $self->{Test_Results};
-        if(@$test_results) {
-            my $num_failed = grep !$_->{'ok'}, @{$test_results}[ 0 .. $self->{Curr_Test} - 1 ];
-            if ($num_failed > 0) {
-
-                my $exit_code = $num_failed <= 254 ? $num_failed : 254;
-                _my_exit($exit_code) && return;
-            }
+        if ($self->tests_run && $self->tests_failed > 0) {
+            my $exit_code = $self->tests_failed <= 254 ? $self->tests_failed : 254;
+            _my_exit($exit_code) && return;
         }
         _my_exit(254) && return;
     }
@@ -1480,37 +1327,28 @@ FAIL
         return;
     }
     # Figure out if we passed or failed and print helpful messages.
-    my $test_results = $self->{Test_Results};
-    if(@$test_results) {
+    if($self->tests_run) {
         # The plan?  We have no plan.
         if( $self->{No_Plan} ) {
-            $self->_issue_plan($self->{Curr_Test}) unless $self->no_header;
-            $self->{Expected_Tests} = $self->{Curr_Test};
+            $self->_issue_plan($self->tests_run) unless $self->no_header;
+            $self->{Expected_Tests} = $self->tests_run;
         }
 
-        # Auto-extended arrays and elements which aren't explicitly
-        # filled in with a shared reference will puke under 5.8.0
-        # ithreads.  So we have to fill them in by hand. :(
-        my $empty_result = &share( {} );
-        for my $idx ( 0 .. $self->{Expected_Tests} - 1 ) {
-            $test_results->[$idx] = $empty_result
-              unless defined $test_results->[$idx];
-        }
+        my $num_failed = $self->tests_failed;
 
-        my $num_failed = grep !$_->{'ok'}, @{$test_results}[ 0 .. $self->{Curr_Test} - 1 ];
-
-        my $num_extra = $self->{Curr_Test} - $self->{Expected_Tests};
+        my $num_extra = $self->tests_run - $self->{Expected_Tests};
 
         if( $num_extra != 0 ) {
+            my $ran = $self->tests_run;
             my $s = $self->{Expected_Tests} == 1 ? '' : 's';
             $self->diag(<<"FAIL");
-Looks like you planned $self->{Expected_Tests} test$s but ran $self->{Curr_Test}.
+Looks like you planned $self->{Expected_Tests} test$s but ran $ran.
 FAIL
             $self->is_passing(0);
         }
 
         if($num_failed) {
-            my $num_tests = $self->{Curr_Test};
+            my $num_tests = $self->tests_run;
             my $s = $num_failed == 1 ? '' : 's';
 
             my $qualifier = $num_extra == 0 ? '' : ' run';
@@ -1522,8 +1360,9 @@ FAIL
         }
 
         if($real_exit_code) {
+            my $run = $self->tests_run;
             $self->diag(<<"FAIL");
-Looks like your test exited with $real_exit_code just after $self->{Curr_Test}.
+Looks like your test exited with $real_exit_code just after $run.
 FAIL
             $self->is_passing(0);
             _my_exit($real_exit_code) && return;
@@ -1565,7 +1404,7 @@ FAIL
 sub _diag_fh {
     my $self = shift;
 
-    $self->carp("Use of \$TB->_diag_fh() is deprecated.");
+    $self->carp("Use of \$TB->_diag_fh() is deprecated.") if $self->modern;
     my $tap = $self->tap || $self->croak("_diag_fh() method only applies when TAP is in use");
 
     return $tap->_diag_fh($self->in_todo)
@@ -1574,7 +1413,7 @@ sub _diag_fh {
 sub _print {
     my $self = shift;
 
-    $self->carp("Use of \$TB->_print() is deprecated.");
+    $self->carp("Use of \$TB->_print() is deprecated.") if $self->modern;
     my $tap = $self->tap || $self->croak("_print() method only applies when TAP is in use");
 
     return $tap->_print($self->_indent, @_);
@@ -1583,7 +1422,7 @@ sub _print {
 sub _print_to_fh {
     my( $self, $fh, @msgs ) = @_;
 
-    $self->carp("Use of \$TB->_print_to_fh() is deprecated.");
+    $self->carp("Use of \$TB->_print_to_fh() is deprecated.") if $self->modern;
     my $tap = $self->tap || $self->croak("_print_to_fh() method only applies when TAP is in use");
 
     return $tap->_print_to_fh($fh, $self->_indent, @msgs);
@@ -1592,7 +1431,7 @@ sub _print_to_fh {
 sub _new_fh {
     my $self = shift;
 
-    $self->carp("Use of \$TB->_new_fh() is deprecated.");
+    $self->carp("Use of \$TB->_new_fh() is deprecated.") if $self->modern;
     my $tap = $self->tap || $self->croak("_new_fh() method only applies when TAP is in use");
 
     return $tap->_new_fh(@_);
@@ -1600,14 +1439,77 @@ sub _new_fh {
 
 sub is_fh {
     my $self = shift;
+    $self = $self->new unless Scalar::Util::blessed($self);
 
-    $self->carp("Use of \$TB->is_fh() is deprecated.");
+    $self->carp("Use of \$TB->is_fh() is deprecated.") if $self->modern;
 
     require Test::Builder::Formatter::TAP;
     return Test::Builder::Formatter::TAP->is_fh(@_);
 }
 
+sub output {
+    my($self, $fh) = @_;
+    $self->carp('Use of $TB->output() is deprecated.') if $self->modern;
+    my $tap = $self->tap || $self->croak("output() method only applies when TAP is in use");
+    return $tap->output($fh);
+}
 
+sub failure_output {
+    my($self, $fh) = @_;
+    $self->carp('Use of $TB->failure_output() is deprecated.') if $self->modern;
+    my $tap = $self->tap || $self->croak("failure_output() method only applies when TAP is in use");
+    return $tap->failure_output($fh);
+}
+
+sub todo_output {
+    my($self, $fh) = @_;
+    $self->carp('Use of $TB->todo_output() is deprecated.') if $self->modern;
+    my $tap = $self->tap || $self->croak("todo_output() method only applies when TAP is in use");
+    return $tap->todo_output($fh);
+}
+
+sub reset_outputs {
+    my $self = shift;
+    $self->carp('Use of $TB->reset_outputs() is deprecated.') if $self->modern;
+    my $tap = $self->tap || $self->croak("reset_outputs() method only applies when TAP is in use");
+    $tap->reset_outputs;
+    return;
+}
+
+sub use_numbers {
+    my $self = shift;
+
+    $self->carp('Use of $TB->use_numbers() is deprecated.') if $self->modern;
+    my $tap = $self->tap || $self->croak("use_numbers() method only applies when TAP is in use");
+
+    return $self->tap->use_numbers(@_);
+}
+
+sub summary {
+    my($self) = shift;
+
+    $self->carp('Use of $TB->summary() is deprecated.') if $self->modern;
+    my $lresults = $self->lresults || $self->croak("summary() method only applies when legacy results are in use");
+
+    return $lresults->summary;
+}
+
+sub details {
+    my $self = shift;
+    $self->carp('Use of $TB->details() is deprecated.') if $self->modern;
+    my $lresults = $self->lresults || $self->croak("details() method only applies when legacy results are in use");
+
+    return $lresults->details;
+}
+
+sub current_test {
+    my $self = shift;
+
+    $self->carp('Use of $TB->current_test() is deprecated.') if $self->modern;
+    my $lresults = $self->lresults || $self->croak("current_test() method only applies when TAP is in use");
+
+    return $lresults->current_test($self, @_);
+}
 
 1;
 

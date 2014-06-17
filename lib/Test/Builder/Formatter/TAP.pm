@@ -13,10 +13,11 @@ use parent 'Test::Builder::Formatter';
 sub init {
     my $self = shift;
     $self->reset_outputs;
+    $self->use_numbers(1);
 }
 
 # The default 6 result types all have a to_tap method.
-for my $handler (qw/ok plan bail nest/) {
+for my $handler (qw/plan bail nest/) {
     my $sub = sub {
         my $self = shift;
         my ($item) = @_;
@@ -24,6 +25,12 @@ for my $handler (qw/ok plan bail nest/) {
     };
     no strict 'refs';
     *$handler = $sub;
+}
+
+sub ok {
+     my $self = shift;
+     my ($item) = @_;
+     $self->_print($item->indent || "", $item->to_tap($self->test_number(1)));
 }
 
 sub diag {
@@ -50,7 +57,18 @@ sub note {
     $self->_print_to_fh( $self->output, $item->indent || "", $item->to_tap );
 }
 
-foreach my $attribute (qw(No_Header No_Diag Depth)) {
+sub test_number {
+    my $self = shift;
+    return unless $self->use_numbers;
+    if (@_) {
+        my ($num) = @_;
+        $num ||= 0;
+        $self->{number} += $num;
+    }
+    return $self->{number} || 0;
+}
+
+for my $attribute (qw(No_Header No_Diag Depth Use_Numbers)) {
     my $method = lc $attribute;
 
     my $code = sub {
@@ -229,6 +247,14 @@ sub is_fh {
 
     return eval { $maybe_fh->isa("IO::Handle") } ||
            eval { tied($maybe_fh)->can('TIEHANDLE') };
+}
+
+sub reset {
+    my $self = shift;
+    $self->reset_outputs;
+    $self->no_header(0);
+    $self->use_numbers(1);
+    $self->{number} = 0;
 }
 
 1;

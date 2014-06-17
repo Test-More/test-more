@@ -40,9 +40,9 @@ subtest 'fork within subtest' => sub {
         # Force all T::B output into the pipe, for the parent
         # builder as well as the current subtest builder.
         no warnings 'redefine';
-        *Test::Builder::output         = sub { $pipe };
-        *Test::Builder::failure_output = sub { $pipe };
-        *Test::Builder::todo_output    = sub { $pipe };
+        *Test::Builder::Formatter::TAP::output         = sub { $pipe };
+        *Test::Builder::Formatter::TAP::failure_output = sub { $pipe };
+        *Test::Builder::Formatter::TAP::todo_output    = sub { $pipe };
         
         diag 'Child Done';
         exit 0;

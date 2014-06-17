@@ -15,18 +15,29 @@ sub intercept(&) {
 
     my @results;
     my $restore = $TB->intercept;
+
+    my $orig_bail = $TB->bailout_behavior;
+    $TB->bailout_behavior(sub {
+        my $bail = @_;
+        die $bail->reason;
+    });
+
     my $ok = eval {
-        $TB->listen(sub {
+        $TB->listen(INTERCEPTOR => sub {
             my ($item) = @_;
             push @results => $item;
+            if ($item->isa('Test::Builder::Result::Ok')) {
+                $TB->tests_run(-1);
+                $TB->tests_failed(-1) unless $item->bool;
+            }
         });
-        # I am not fond of this local, but it does the job.
-        local $TB->{Curr_Test} = 0;
         $code->();
         1;
     };
     my $error = $@;
+
     $restore->();
+    $TB->bailout_behavior($orig_bail);
 
     die $error unless $ok;
 
