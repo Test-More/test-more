@@ -31,10 +31,8 @@ sub handler {
         confess "Did not get a valid Test::Builder::Result object! ($item)"
             unless $item && blessed($item) && $item->isa('Test::Builder::Result');
 
-        # Find parent-most TB object and get PID
-        my $root = Test::Builder->new;
-        while($root->parent) { $root = $root->parent }
-        return 0 if $$ eq $root->pid;
+        my $stream = Test::Builder::Stream->shared;
+        return 0 if $$ == $stream->pid;
 
         # First write the file, then rename it so that it is not read before it is ready.
         my $name =  $self->tmpdir . "/$$-" . $id++;
@@ -60,13 +58,7 @@ sub cull {
         my $obj = eval { my $VAR1; do "$dir/$file" } || die "Failed to open $file: $@";
         die "Empty result object found" unless $obj;
 
-        my $tb = Test::Builder->new;
-        confess "cull() cannot be called in a child builder!" if $tb->parent;
-        if ($obj->isa('Test::Builder::Result::Ok')) {
-            $tb->tests_run(1);
-            $tb->tests_failed(1) unless $obj->bool;
-        }
-        $tb->stream()->push($obj);
+        Test::Builder::Stream->shared->send($obj);
 
         if ($ENV{TEST_KEEP_TMP_DIR}) {
             rename("$dir/$file", "$dir/$file.complete") || die "Could not rename file";

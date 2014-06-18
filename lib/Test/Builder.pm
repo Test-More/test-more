@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use Scalar::Util();
+use Test::Builder::Stream;
 use Test::Builder::Result;
 use Test::Builder::Result::Ok;
 use Test::Builder::Result::Diag;
@@ -23,9 +24,6 @@ our $Level;
 ####################
 # {{{ MAGIC things #
 ####################
-
-# Stuff to do at the very end
-END { $Test->_ending if defined $Test }
 
 sub DESTROY {
     my $self = shift;
@@ -48,16 +46,19 @@ FAIL
 ####################
 
 sub new {
-    my($class) = shift;
-    $Test ||= $class->create;
+    my $class = shift;
+    my %params = @_;
+    $Test ||= $class->create(shared_stream => 1);
+
     return $Test;
 }
 
 sub create {
     my $class = shift;
+    my %params = @_;
 
     my $self = bless {}, $class;
-    $self->reset;
+    $self->reset(%params);
 
     return $self;
 }
@@ -75,26 +76,31 @@ sub _copy {
 }
 
 sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    my($self, $modern) = @_;
+    my $self = shift;
+    my %params = @_;
 
-    $modern = $self->modern || 0 unless defined $modern;
+    my $modern = $params{modern} || $self->modern || 0;
     $self->modern($modern);
 
     # We leave this a global because it has to be localized and localizing
     # hash keys is just asking for pain.  Also, it was documented.
     $Level = 1;
 
-    $self->stream->use_tap      unless $ENV{TB_NO_TAP};
-    $self->stream->use_lresults unless $modern || $ENV{TB_NO_LEGACY};
+    if ($params{new_stream} || !$params{shared_stream}) {
+        $self->{stream} = Test::Builder::Stream->new;
+    }
+
+    $self->stream->use_tap      unless $params{no_tap} || $ENV{TB_NO_TAP};
+    $self->stream->use_lresults unless $modern || $params{no_legacy} || $ENV{TB_NO_LEGACY};
+
+    $self->stream->no_ending(0);
 
     $self->tap->reset      if $self->tap;
     $self->lresults->reset if $self->lresults;
 
-    $self->{Name} = $0;
+    $self->{Name}  = $0;
+    $self->{Depth} = 0;
 
-    $self->{Ending}           = 0;
-    $self->{Have_Plan}        = 0;
-    $self->{No_Plan}          = 0;
     $self->{Have_Issued_Plan} = 0;
     $self->{Done_Testing}     = 0;
     $self->{Skip_All}         = 0;
@@ -111,12 +117,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Start_Todo} = 0;
     $self->{Opened_Testhandles} = 0;
 
-    $self->is_passing(1);
-    $self->no_ending(0);
-
-    $self->{tests_run} = 0;
-    $self->{tests_failed} = 0;
-
     return;
 }
 
@@ -132,24 +132,12 @@ sub listen    { shift->stream->listen(@_) }
 sub munge     { shift->stream->munge(@_)  }
 sub parent    { shift->{Parent}           }
 sub name      { shift->{Name}             }
-sub pid       { shift->{Original_Pid}     }
 sub tap       { shift->stream->tap        }
 sub lresults  { shift->stream->lresults   }
 
 sub stream {
     my $self = shift;
-    require Test::Builder::Stream;
-    $self->{stream} ||= Test::Builder::Stream->new();
-    return $self->{stream};
-}
-
-sub intercept {
-    my $self = shift;
-
-    my $orig = delete $self->{stream};
-    $self->stream(); # Generate a new one
-
-    return sub { $self->{stream} = $orig };
+    return $self->{stream} || Test::Builder::Stream->shared;
 }
 
 sub bailout_behavior {
@@ -186,24 +174,9 @@ sub exported_to {
     return $self->{Exported_To};
 }
 
-sub tests_run {
+sub is_passing {
     my $self = shift;
-    $self->{tests_run} ||= 0;
-    if (@_) {
-        my ($delta) = @_;
-        $self->{tests_run} += $delta;
-    }
-    return $self->{tests_run} || 0;
-}
-
-sub tests_failed {
-    my $self = shift;
-    $self->{tests_failed} ||= 0;
-    if (@_) {
-        my ($delta) = @_;
-        $self->{tests_failed} += $delta;
-    }
-    return $self->{tests_failed} || 0;
+    return $self->stream->is_passing(@_);
 }
 
 ##############################################
@@ -231,7 +204,7 @@ sub child {
     # Add to our indentation
     $child->_indent( $self->_indent . '    ' );
 
-    $child->{stream} = $self->stream->clone;
+    $child->{stream} = $self->stream->spawn;
 
     # Ensure the child understands if they're inside a TODO
     $child->tap->failure_output($self->tap->todo_output)
@@ -255,7 +228,7 @@ sub child {
         indent  => $self->_indent || "",
         in_todo => $self->in_todo || 0,
     );
-    $self->stream->push($res);
+    $self->stream->send($res);
 
     return $child;
 }
@@ -265,7 +238,7 @@ sub subtest {
     my($name, $subtests, @args) = @_;
 
     $self->croak("subtest()'s second argument must be a code ref")
-        if 'CODE' ne Scalar::Util::reftype($subtests);
+        unless $subtests && 'CODE' eq Scalar::Util::reftype($subtests);
 
     # Turn the child into the parent so anyone who has stored a copy of
     # the Test::Builder singleton will get the child.
@@ -287,7 +260,7 @@ sub subtest {
 
         my $run_the_subtests = sub {
             $subtests->(@args);
-            $self->done_testing unless $self->_plan_handled;
+            $self->done_testing unless defined $self->stream->plan;
             1;
         };
 
@@ -334,7 +307,7 @@ sub finalize {
         if ( $self->{Skip_All} ) {
             $self->parent->skip($self->{Skip_All});
         }
-        elsif ( ! $self->tests_run ) {
+        elsif ( ! $self->stream->tests_run ) {
             $self->parent->ok( 0, sprintf q[No tests run for subtest "%s"], $self->name );
         }
         else {
@@ -352,7 +325,7 @@ sub finalize {
         indent  => $self->_indent || "",
         in_todo => $self->in_todo || 0,
     );
-    $self->stream->push($res);
+    $self->stream->send($res);
 
     return $self->is_passing;
 }
@@ -378,8 +351,6 @@ sub plan {
 
     local $Level = $Level + 1;
 
-    $self->croak("You tried to plan twice") if $self->{Have_Plan};
-
     if( my $method = $PLAN_CMDS{$cmd} ) {
         local $Level = $Level + 1;
         $self->$method($arg);
@@ -392,40 +363,15 @@ sub plan {
     return 1;
 }
 
-sub has_plan {
-    my $self = shift;
-
-    return($self->expected_tests) if $self->expected_tests;
-    return('no_plan') if $self->{No_Plan};
-    return(undef);
-}
-
 sub skip_all {
     my( $self, $reason ) = @_;
 
     $self->{Skip_All} = $self->parent ? $reason : 1;
 
+    local $Level = $Level + 1;
     $self->_issue_plan(0, "SKIP", $reason);
     die bless {} => 'Test::Builder::Exception' if $self->parent;
     exit(0);
-}
-
-sub expected_tests {
-    my $self = shift;
-
-    if(@_) {
-        my ($max) = @_;
-        $self->croak("Number of tests must be a positive integer.  You gave it '$max'")
-          unless $max =~ /^\+?\d+$/;
-
-        $self->{Expected_Tests} = $max;
-        $self->{Have_Plan}      = 1;
-
-        local $Level = $Level + 1;
-        $self->_issue_plan($max);
-    }
-
-    return $self->{Expected_Tests};
 }
 
 sub no_plan {
@@ -433,15 +379,10 @@ sub no_plan {
 
     $self->carp("no_plan takes no arguments") if $arg;
 
-    $self->{No_Plan}   = 1;
-    $self->{Have_Plan} = 1;
+    local $Level = $Level + 1;
+    $self->_issue_plan(undef, "NO_PLAN");
 
     return 1;
-}
-
-sub _plan_handled {
-    my $self = shift;
-    return $self->{Have_Plan} || $self->{No_Plan} || $self->{Skip_All};
 }
 
 sub _plan_tests {
@@ -449,7 +390,10 @@ sub _plan_tests {
 
     if($arg) {
         local $Level = $Level + 1;
-        return $self->expected_tests($arg);
+        $self->croak("Number of tests must be a positive integer.  You gave it '$arg'")
+            unless $arg =~ /^\+?\d+$/;
+
+        $self->_issue_plan($arg);
     }
     elsif( !defined $arg ) {
         $self->croak("Got an undefined number of tests");
@@ -464,18 +408,25 @@ sub _plan_tests {
 sub _issue_plan {
     my($self, $max, $directive, $reason) = @_;
 
-    $self->carp("The plan was already issued") if $self->{Have_Issued_Plan}++;
+    local $Level = $Level + 1;
+    if ($directive && $directive eq 'OVERRIDE') {
+        $directive = undef;
+    }
+    elsif ($self->stream->plan) {
+        $self->croak("You tried to plan twice");
+    }
 
     my $plan = Test::Builder::Result::Plan->new(
         context   => $self->context,
-        max       => $max           || 0,
         directive => $directive     || undef,
         reason    => $reason        || undef,
         indent    => $self->_indent || "",
         in_todo   => $self->in_todo || 0,
+
+        max => defined($max) ? $max : undef,
     );
 
-    $self->stream->push($plan);
+    $self->stream->send($plan);
 
     return;
 }
@@ -534,10 +485,7 @@ ERR
         $ok->in_todo(1);
     }
 
-    $self->tests_run(1);
-    $self->tests_failed(1) unless $test || $self->in_todo;
-
-    $self->stream->push($ok);
+    $self->stream->send($ok);
 
     unless($test) {
         my $msg = $self->in_todo ? "Failed (TODO)" : "Failed";
@@ -577,7 +525,7 @@ sub BAIL_OUT {
         indent  => $self->_indent || "",
         in_todo => $self->in_todo || 0,
     );
-    $self->stream->push($bail);
+    $self->stream->send($bail);
 
     if( my $behavior = $self->bailout_behavior ) {
         $behavior->($bail);
@@ -601,9 +549,7 @@ sub skip {
         skip      => $why,
     );
 
-    $self->tests_run(1);
-
-    $self->stream->push($ok);
+    $self->stream->send($ok);
 }
 
 sub todo_skip {
@@ -620,9 +566,7 @@ sub todo_skip {
         todo      => $why,
     );
 
-    $self->tests_run(1);
-
-    $self->stream->push($ok);
+    $self->stream->send($ok);
 
     return 1;
 }
@@ -638,7 +582,7 @@ sub diag {
         in_todo => $self->in_todo || 0,
         message => $msg,
     );
-    $self->stream->push($r);
+    $self->stream->send($r);
 }
 
 sub note {
@@ -652,18 +596,19 @@ sub note {
         in_todo => $self->in_todo || 0,
         message => $msg,
     );
-    $self->stream->push($r);
+    $self->stream->send($r);
 }
 
 sub done_testing {
     my($self, $num_tests) = @_;
 
+    my $expected = $self->stream->expected_tests;
+    my $total    = $self->stream->tests_run;
+
     # If done_testing() specified the number of tests, shut off no_plan.
-    if( defined $num_tests ) {
-        $self->{No_Plan} = 0;
-    }
-    else {
-        $num_tests = $self->tests_run;
+    if(defined $num_tests && !defined $expected) {
+        $self->_issue_plan($num_tests, 'OVERRIDE');
+        $expected = $num_tests;
     }
 
     if( $self->{Done_Testing} ) {
@@ -674,24 +619,16 @@ sub done_testing {
 
     $self->{Done_Testing} = [caller];
 
-    if( $self->expected_tests && $num_tests != $self->expected_tests ) {
-        $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".
-                     "but done_testing() expects $num_tests");
-    }
-    elsif(!$self->expected_tests && $num_tests) {
-        local $Level = $Level + 1;
-        $self->expected_tests($num_tests);
-    }
+    $self->ok(0, "planned to run $expected but done_testing() expects $num_tests")
+        if $expected && defined($num_tests) && $num_tests != $expected;
 
-    $self->_issue_plan($num_tests) unless $self->{Have_Issued_Plan};
-
-    $self->{Have_Plan} = 1;
+    $self->_issue_plan($total) unless $expected;
 
     # The wrong number of tests were run
-    $self->is_passing(0) if $self->expected_tests != $self->tests_run;
+    $self->is_passing(0) if defined $expected && $expected != $total;
 
     # No tests were run
-    $self->is_passing(0) if $self->tests_run == 0;
+    $self->is_passing(0) unless $total;
 
     return 1;
 }
@@ -874,15 +811,6 @@ sub no_fork {
     $self->stream->redirect(undef); # Turn it off.
 }
 
-sub no_ending {
-    my( $self, $no ) = @_;
-
-    if( defined $no ) {
-        $self->{No_Ending} = $no;
-    }
-    return $self->{No_Ending};
-}
-
 ###############################
 # }}} Enable/Disable features #
 ###############################
@@ -950,16 +878,6 @@ sub croak {
     return die $self->_message_at_caller(@_);
 }
 
-sub is_passing {
-    my $self = shift;
-
-    if( @_ ) {
-        $self->{Is_Passing} = shift;
-    }
-
-    return $self->{Is_Passing};
-}
-
 sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my( $self, $height ) = @_;
     $height ||= 0;
@@ -983,6 +901,14 @@ sub context {
         pid    => $$,
         indent => $self->_indent || "",
     };
+}
+
+sub has_plan {
+    my $self = shift;
+
+    return($self->stream->expected_tests) if $self->stream->expected_tests;
+    return('no_plan') if $self->stream->plan;
+    return(undef);
 }
 
 #######################
@@ -1070,10 +996,10 @@ sub todo_end {
 sub _check_is_passing_plan {
     my $self = shift;
 
-    my $plan = $self->has_plan;
+    my $plan = $self->stream->expected_tests;
     return unless defined $plan;        # no plan yet defined
     return unless $plan !~ /\D/;        # no numeric plan
-    $self->is_passing(0) if $plan < $self->tests_run;
+    $self->is_passing(0) if $plan < $self->stream->tests_run;
 }
 
 sub _is_object {
@@ -1290,7 +1216,7 @@ sub _message_at_caller {
 sub _sanity_check {
     my $self = shift;
 
-    $self->_whoa( $self->tests_run < 0, 'Says here you ran a negative number of tests!' );
+    $self->_whoa( $self->stream->tests_run < 0, 'Says here you ran a negative number of tests!' );
 
     $self->lresults->sanity_check($self) if $self->lresults;
 
@@ -1310,136 +1236,9 @@ WHOA
     return;
 }
 
-sub _my_exit {
-    $? = $_[0];    ## no critic (Variables::RequireLocalizedPunctuationVars)
-
-    return 1;
-}
-
 #######################
 # }}} Private helpers #
 #######################
-
-sub _ending {
-    my $self = shift;
-    return if $self->no_ending;
-    return if $self->{Ending}++;
-
-    my $real_exit_code = $?;
-
-    # Don't bother with an ending if this is a forked copy.  Only the parent
-    # should do the ending.
-    if( $self->{Original_Pid} != $$ ) {
-        return;
-    }
-
-    # Ran tests but never declared a plan or hit done_testing
-    if( !$self->{Have_Plan} and $self->tests_run ) {
-        $self->is_passing(0);
-        $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
-
-        if($real_exit_code) {
-            my $run = $self->tests_run;
-            $self->diag(<<"FAIL");
-Looks like your test exited with $real_exit_code just after $run.
-FAIL
-            $self->is_passing(0);
-            _my_exit($real_exit_code) && return;
-        }
-
-        # But if the tests ran, handle exit code.
-        if ($self->tests_run && $self->tests_failed > 0) {
-            my $exit_code = $self->tests_failed <= 254 ? $self->tests_failed : 254;
-            _my_exit($exit_code) && return;
-        }
-        _my_exit(254) && return;
-    }
-
-    # Exit if plan() was never called.  This is so "require Test::Simple"
-    # doesn't puke.
-    if( !$self->{Have_Plan} ) {
-        return;
-    }
-
-    # Don't do an ending if we bailed out.
-    if( $self->{Bailed_Out} ) {
-        $self->is_passing(0);
-        return;
-    }
-    # Figure out if we passed or failed and print helpful messages.
-    if($self->tests_run) {
-        # The plan?  We have no plan.
-        if( $self->{No_Plan} ) {
-            $self->_issue_plan($self->tests_run) unless $self->no_header;
-            $self->{Expected_Tests} = $self->tests_run;
-        }
-
-        my $num_failed = $self->tests_failed;
-
-        my $num_extra = $self->tests_run - $self->{Expected_Tests};
-
-        if( $num_extra != 0 ) {
-            my $ran = $self->tests_run;
-            my $s = $self->{Expected_Tests} == 1 ? '' : 's';
-            $self->diag(<<"FAIL");
-Looks like you planned $self->{Expected_Tests} test$s but ran $ran.
-FAIL
-            $self->is_passing(0);
-        }
-
-        if($num_failed) {
-            my $num_tests = $self->tests_run;
-            my $s = $num_failed == 1 ? '' : 's';
-
-            my $qualifier = $num_extra == 0 ? '' : ' run';
-
-            $self->diag(<<"FAIL");
-Looks like you failed $num_failed test$s of $num_tests$qualifier.
-FAIL
-            $self->is_passing(0);
-        }
-
-        if($real_exit_code) {
-            my $run = $self->tests_run;
-            $self->diag(<<"FAIL");
-Looks like your test exited with $real_exit_code just after $run.
-FAIL
-            $self->is_passing(0);
-            _my_exit($real_exit_code) && return;
-        }
-
-        my $exit_code;
-        if($num_failed) {
-            $exit_code = $num_failed <= 254 ? $num_failed : 254;
-        }
-        elsif( $num_extra != 0 ) {
-            $exit_code = 255;
-        }
-        else {
-            $exit_code = 0;
-        }
-
-        _my_exit($exit_code) && return;
-    }
-    elsif( $self->{Skip_All} ) {
-        _my_exit(0) && return;
-    }
-    elsif($real_exit_code) {
-        $self->diag(<<"FAIL");
-Looks like your test exited with $real_exit_code before it could output anything.
-FAIL
-        $self->is_passing(0);
-        _my_exit($real_exit_code) && return;
-    }
-    else {
-        $self->diag("No tests run!\n");
-        $self->is_passing(0);
-        _my_exit(255) && return;
-    }
-
-    $self->is_passing(0);
-    $self->_whoa( 1, "We fell off the end of _ending()" );
-}
 
 ################################################
 # {{{ Everything below this line is deprecated #
@@ -1583,6 +1382,32 @@ sub BAILOUT {
     goto &BAIL_OUT;
 }
 
+sub no_ending {
+    my($self, $no) = @_;
+    $self->carp("Use of \$TB->no_ending() is deprecated.") if $self->modern;
+    return $self->stream->no_ending($no);
+}
+
+sub expected_tests {
+    my $self = shift;
+
+    if(@_) {
+        my ($max) = @_;
+        $self->carp("Use of \$TB->expected_tests(\$max) is deprecated.") if $self->modern;
+        local $Level = $Level + 1;
+        $self->_issue_plan($max);
+    }
+
+    return $self->stream->expected_tests || 0;
+}
+
+sub _ending {
+    my $self = shift;
+    require Test::Builder::ExitMagic;
+    my $ending = Test::Builder::ExitMagic->new(tb => $self, stream => $self->stream);
+    $ending->do_magic;
+}
+
 ###################################
 # }}} End of deprecations section #
 ###################################
@@ -1708,20 +1533,6 @@ This method returns an anonymous sub that if run will remove the just-added
 listener. This provides you with a way to unlisten.
 
     $undo->(); # Not listening anymore.
-
-=item B<intercept>
-
-This will remove all listeners and mungers. You can restore the originals by
-running the C<$undo> coderef that is returned.
-
-    my $undo = $Test->intercept;
-    ...
-    $undo->(); # Listeners and Mungers are restored.
-
-This is primarily useful in Tools that test testing tools.
-
-B<Note:> Any mungers/listeners added since the intercept will be removed when you
-call the undo sub.
 
 =item B<munge>
 

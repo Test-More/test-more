@@ -8,12 +8,20 @@ BEGIN {
     }
 }
 
+use Test::Builder::Threads;
+
 use parent 'Test::Builder::Formatter';
 
 sub init {
     my $self = shift;
     $self->reset_outputs;
     $self->use_numbers(1);
+
+    $self->{number} = 0;
+    share( $self->{number} );
+
+    $self->{ok_lock} = 1;
+    share( $self->{ok_lock} );
 }
 
 # The default 6 result types all have a to_tap method.
@@ -27,16 +35,45 @@ for my $handler (qw/bail nest/) {
     *$handler = $sub;
 }
 
+sub finish {
+    my $self = shift;
+    my ($item) = @_;
+
+    return if $self->no_header;
+    return unless $item->tests_run;
+
+    my $plan = $self->_the_plan;
+    return unless $plan;
+
+    if ($plan) {
+        return unless $plan->directive;
+        return unless $plan->directive eq 'NO_PLAN';
+    }
+
+    my $total = $item->tests_run;
+    $self->_print($item->indent || '', "1..$total\n");
+}
+
 sub plan {
     my $self = shift;
     my ($item) = @_;
+
+    $self->_the_plan($item);
+
     return if $self->no_header;
-    $self->_print($item->indent || "", $item->to_tap);
+
+    return if $item->directive && $item->directive eq 'NO_PLAN';
+
+    my $out = $item->to_tap;
+    return unless $out;
+
+    $self->_print($item->indent || "", $out);
 }
 
 sub ok {
     my $self = shift;
     my ($item) = @_;
+    lock $self->{ok_lock};
     $self->_print($item->indent || "", $item->to_tap($self->test_number(1)));
 }
 
@@ -70,9 +107,10 @@ sub test_number {
     if (@_) {
         my ($num) = @_;
         $num ||= 0;
+        lock $self->{number};
         $self->{number} += $num;
     }
-    return $self->{number} || 0;
+    return $self->{number};
 }
 
 for my $attribute (qw(No_Header No_Diag Depth Use_Numbers)) {
@@ -88,6 +126,12 @@ for my $attribute (qw(No_Header No_Diag Depth Use_Numbers)) {
 
     no strict 'refs';    ## no critic
     *$method = $code;
+}
+
+sub _the_plan {
+    my $self = shift;
+    ($self->{_the_plan}) = @_ if @_;
+    return $self->{_the_plan};
 }
 
 sub _diag_fh {
@@ -262,6 +306,7 @@ sub reset {
     $self->no_header(0);
     $self->use_numbers(1);
     $self->{number} = 0;
+    share( $self->{number} );
 }
 
 1;

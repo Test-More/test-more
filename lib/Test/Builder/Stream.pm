@@ -4,10 +4,107 @@ use warnings;
 
 use Carp qw/confess/;
 use Scalar::Util qw/reftype blessed/;
+use Test::Builder::ExitMagic;
+use Test::Builder::Threads;
+
+{
+    my ($root, $shared);
+
+    sub root { $root };
+
+    sub shared {
+        $root   ||= __PACKAGE__->new;
+        $shared ||= $root;
+        return $shared;
+    };
+
+    sub clear { $root = undef; $shared = undef }
+
+    sub intercept {
+        my $class = shift;
+        my ($code) = @_;
+
+        confess "argument to intercept must be a coderef, got: $code"
+            unless reftype $code eq 'CODE';
+
+        my $orig = $shared;
+        $shared = $class->new || die "Internal error!";
+        local $@;
+        my $ok = eval { $code->($shared); 1 };
+        my $error = $@;
+        $shared = $orig;
+        die $error unless $ok;
+        return $ok;
+    }
+}
 
 sub new {
     my $class = shift;
-    return bless { listeners => {}, mungers => {} }, $class;
+    my %params = @_;
+    my $self = bless {
+        listeners    => {},
+        mungers      => {},
+        tests_run    => 0,
+        tests_failed => 0,
+        pid          => $$,
+        plan         => undef,
+        is_passing   => 1,
+    }, $class;
+
+    share($self->{tests_run});
+    share($self->{tests_failed});
+
+    $self->use_tap      if $params{use_tap};
+    $self->use_lresults if $params{use_lresults};
+
+    return $self;
+}
+
+sub pid { shift->{pid} }
+
+sub plan {
+    my $self = shift;
+    ($self->{plan}) = @_ if @_;
+    return $self->{plan};
+}
+
+sub expected_tests {
+    my $self = shift;
+    my $plan = $self->plan;
+    return undef unless $plan;
+    return $plan->max;
+}
+
+sub is_passing {
+    my $self = shift;
+    ($self->{is_passing}) = @_ if @_;
+    return $self->{is_passing};
+}
+
+sub no_ending {
+    my $self = shift;
+    ($self->{no_ending}) = @_ if @_;
+    return $self->{no_ending} || 0;
+}
+
+sub tests_run {
+    my $self = shift;
+    if (@_) {
+        my ($delta) = @_;
+        lock $self->{tests_run};
+        $self->{tests_run} += $delta;
+    }
+    return $self->{tests_run};
+}
+
+sub tests_failed {
+    my $self = shift;
+    if (@_) {
+        my ($delta) = @_;
+        lock $self->{tests_failed};
+        $self->{tests_failed} += $delta;
+    }
+    return $self->{tests_failed};
 }
 
 sub redirect {
@@ -38,6 +135,10 @@ sub listener {
     my $self = shift;
     my ($id) = @_;
     confess("You must provide an ID for your listener") unless $id;
+
+    confess("Listener ID's may not start with 'LEGACY_', those are reserved")
+        if $id =~ m/^LEGACY_/ && caller ne __PACKAGE__;
+
     return $self->{listeners}->{$id};
 }
 
@@ -46,6 +147,9 @@ sub listen {
     my ($id, $listener) = @_;
 
     confess("You must provide an ID for your listener") unless $id;
+
+    confess("Listener ID's may not start with 'LEGACY_', those are reserved")
+        if $id =~ m/^LEGACY_/ && caller ne __PACKAGE__;
 
     confess("Listeners must be code refs, or objects that implement handle(), got: $listener")
         unless $listener && (
@@ -68,6 +172,9 @@ sub unlisten {
     my ($id) = @_;
 
     confess("You must provide an ID for your listener") unless $id;
+
+    confess("Listener ID's may not start with 'LEGACY_', those are reserved")
+        if $id =~ m/^LEGACY_/ && caller ne __PACKAGE__;
 
     my $listeners = $self->{listeners};
 
@@ -122,7 +229,7 @@ sub unmunge {
     delete $mungers->{$id};
 }
 
-sub push {
+sub send {
     my $self = shift;
     my ($item) = @_;
 
@@ -136,7 +243,7 @@ sub push {
     for my $munger_id (@{$self->{munge_order}}) {
         my $new_items = [];
         my $munger = $self->munger($munger_id) || next;
-        
+
         for my $item (@$items) {
             push @$new_items => reftype $munger eq 'CODE' ? $munger->($item) : $munger->handle($item);
         }
@@ -145,6 +252,13 @@ sub push {
     }
 
     for my $item (@$items) {
+        if ($item->isa('Test::Builder::Result::Plan')) {
+            $self->plan($item);
+        }
+        if ($item->isa('Test::Builder::Result::Ok')) {
+            $self->tests_run(1);
+            $self->tests_failed(1) unless $item->bool;
+        }
         for my $listener (values %{$self->{listeners}}) {
             if (reftype $listener eq 'CODE') {
                 $listener->($item)
@@ -154,7 +268,6 @@ sub push {
             }
         }
     }
-
 }
 
 sub tap { shift->listener('LEGACY_TAP') }
@@ -187,8 +300,10 @@ sub no_lresults {
     return;
 }
 
-sub clone {
+sub spawn {
     my $self = shift;
+    my (%params) = @_;
+
     my $new = blessed($self)->new();
 
     $new->{redirect} = $self->redirect;
@@ -210,16 +325,17 @@ sub clone {
         }
     }
 
-    if ($self->tap) {
+    if ($self->tap && !$params{no_tap}) {
         $new->use_tap;
         for my $field (qw/output failure_output todo_output/) {
             $new->tap->$field($self->tap->$field);
         }
     }
 
-    $new->use_lresults if $self->lresults;
+    $new->use_lresults if $self->lresults && !$params{no_lresults};
 
     return $new;
 }
 
 1;
+

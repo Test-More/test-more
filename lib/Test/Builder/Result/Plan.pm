@@ -13,6 +13,8 @@ sub to_tap {
     my $directive = $self->directive;
     my $reason    = $self->reason;
 
+    return if $directive && $directive eq 'NO_PLAN';
+
     my $plan = "1..$max";
     $plan .= " # $directive" if defined $directive;
     $plan .= " $reason"      if defined $reason;
