@@ -61,11 +61,7 @@ sub do_magic {
             tests_run    => $total,
             tests_failed => $fails,
             depth        => $tb->depth,
-
-            context => {
-                caller => [__PACKAGE__, __FILE__, __LINE__],
-                pid    => $$,
-            },
+            source       => $tb->name,
         )
     );
 

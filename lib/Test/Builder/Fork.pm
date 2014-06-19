@@ -85,6 +85,8 @@ sub DESTROY {
     opendir(my $dh, $dir) || die "Could not open temp dir!";
     while(my $file = readdir($dh)) {
         next if $file =~ m/^\.+$/;
+        die "Unculled result! You ran tests in a child process, but never pulled them in!\n"
+            if $file !~ m/\.complete$/;
         unlink("$dir/$file") || die "Could not unlink file: $file";
     }
     closedir($dh);

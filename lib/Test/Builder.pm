@@ -229,10 +229,9 @@ sub child {
     $self->{Child_Name}   = $child->name;
 
     my $res = Test::Builder::Result::Child->new(
-        context => $self->context,
+        $self->context,
         name    => $name || undef,
         action  => 'push',
-        depth   => $child->depth,
         in_todo => $self->in_todo || 0,
     );
     $self->stream->send($res);
@@ -326,10 +325,9 @@ sub finalize {
     delete $self->{Parent};
 
     my $res = Test::Builder::Result::Child->new(
-        context => $self->context,
+        $self->context,
         name    => $self->{Name} || undef,
         action  => 'pop',
-        depth   => $self->depth,
         in_todo => $self->in_todo || 0,
     );
     $self->stream->send($res);
@@ -424,10 +422,9 @@ sub _issue_plan {
     }
 
     my $plan = Test::Builder::Result::Plan->new(
-        context   => $self->context,
+        $self->context,
         directive => $directive     || undef,
         reason    => $reason        || undef,
-        depth     => $self->depth,
         in_todo   => $self->in_todo || 0,
 
         max => defined($max) ? $max : undef,
@@ -476,12 +473,11 @@ ERR
     $self->_unoverload_str( \$todo );
 
     my $ok = Test::Builder::Result::Ok->new(
-        context   => $self->context,
+        $self->context,
         real_bool => $test,
         bool      => $self->in_todo ? 1 : $test,
         name      => $name          || undef,
         in_todo   => $self->in_todo || 0,
-        depth     => $self->depth,
     );
 
     # # in a name can confuse Test::Harness.
@@ -527,9 +523,8 @@ sub BAIL_OUT {
     }
 
     my $bail = Test::Builder::Result::Bail->new(
-        context => $self->context,
+        $self->context,
         reason  => $reason,
-        depth   => $self->depth,
         in_todo => $self->in_todo || 0,
     );
     $self->stream->send($bail);
@@ -548,10 +543,9 @@ sub skip {
     $self->_unoverload_str( \$why );
 
     my $ok = Test::Builder::Result::Ok->new(
-        context   => $self->context,
+        $self->context,
         real_bool => 1,
         bool      => 1,
-        depth     => $self->depth,
         in_todo   => $self->in_todo || 0,
         skip      => $why,
     );
@@ -564,10 +558,9 @@ sub todo_skip {
     $why ||= '';
 
     my $ok = Test::Builder::Result::Ok->new(
-        context   => $self->context,
+        $self->context,
         real_bool => 0,
         bool      => 1,
-        depth     => $self->depth,
         in_todo   => $self->in_todo || 0,
         skip      => $why,
         todo      => $why,
@@ -584,8 +577,7 @@ sub diag {
     my $msg = join '', map { defined($_) ? $_ : 'undef' } @_;
 
     my $r = Test::Builder::Result::Diag->new(
-        context => $self->context,
-        depth   => $self->depth,
+        $self->context,
         in_todo => $self->in_todo || 0,
         message => $msg,
     );
@@ -598,8 +590,7 @@ sub note {
     my $msg = join '', map { defined($_) ? $_ : 'undef' } @_;
 
     my $r = Test::Builder::Result::Note->new(
-        context => $self->context,
-        depth   => $self->depth,
+        $self->context,
         in_todo => $self->in_todo || 0,
         message => $msg,
     );
@@ -903,11 +894,11 @@ sub context {
     my ($height) = @_;
     $height ||= 0;
 
-    return {
+    return (
         caller => [$self->caller($height + 1)],
-        pid    => $$,
         depth  => $self->depth,
-    };
+        source => $self->name || "",
+    );
 }
 
 sub has_plan {

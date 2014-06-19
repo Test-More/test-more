@@ -23,7 +23,7 @@ sub _accessors {
     }
 }
 
-_accessors(qw/context depth in_todo/);
+_accessors(qw/caller pid depth in_todo source/);
 
 sub init {}
 
@@ -32,9 +32,9 @@ sub new {
     my $self = bless {}, $class;
     my %params = @_;
 
-    confess "No context provided, it is mandatory!"
-        unless $params{context};
-   
+    $params{pid} ||= $$;
+    $params{caller} ||= [caller];
+
     for my $param (keys %params) {
         next unless $self->can($param);
         $self->$param($params{$param});
