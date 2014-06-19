@@ -3,7 +3,6 @@
 Changes
 examples/indent.pl
 examples/subtest.t
-foo.pl
 lib/Test/Builder.pm
 lib/Test/Builder/ExitMagic.pm
 lib/Test/Builder/Fork.pm
@@ -172,5 +171,4 @@ t/useing.t
 t/utf8.t
 t/versions.t
 t/xt/dependents.t
-todo
 TODO

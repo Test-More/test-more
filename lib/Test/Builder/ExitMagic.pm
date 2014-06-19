@@ -60,7 +60,7 @@ sub do_magic {
         Test::Builder::Result::Finish->new(
             tests_run    => $total,
             tests_failed => $fails,
-            indent       => $tb->_indent || "",
+            depth        => $tb->depth,
 
             context => {
                 caller => [__PACKAGE__, __FILE__, __LINE__],

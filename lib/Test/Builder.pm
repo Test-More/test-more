@@ -159,12 +159,6 @@ sub modern {
     return $self->{modern} || 0;
 }
 
-sub _indent {
-    my $self = shift;
-    ($self->{Indent}) = @_ if @_;
-    return $self->{Indent};
-}
-
 sub exported_to {
     my( $self, $pack ) = @_;
 
@@ -177,6 +171,12 @@ sub exported_to {
 sub is_passing {
     my $self = shift;
     return $self->stream->is_passing(@_);
+}
+
+sub depth {
+    my $self = shift;
+    ($self->{depth}) = @_ if @_;
+    return $self->{depth} || 0;
 }
 
 ##############################################
@@ -201,8 +201,7 @@ sub child {
     my $class = Scalar::Util::blessed($self);
     my $child = $class->create;
 
-    # Add to our indentation
-    $child->_indent( $self->_indent . '    ' );
+    $child->depth($self->depth + 1);
 
     $child->{stream} = $self->stream->spawn;
 
@@ -225,7 +224,7 @@ sub child {
         context => $self->context,
         name    => $name || undef,
         action  => 'push',
-        indent  => $self->_indent || "",
+        depth   => $child->depth,
         in_todo => $self->in_todo || 0,
     );
     $self->stream->send($res);
@@ -322,7 +321,7 @@ sub finalize {
         context => $self->context,
         name    => $self->{Name} || undef,
         action  => 'pop',
-        indent  => $self->_indent || "",
+        depth   => $self->depth,
         in_todo => $self->in_todo || 0,
     );
     $self->stream->send($res);
@@ -420,7 +419,7 @@ sub _issue_plan {
         context   => $self->context,
         directive => $directive     || undef,
         reason    => $reason        || undef,
-        indent    => $self->_indent || "",
+        depth     => $self->depth,
         in_todo   => $self->in_todo || 0,
 
         max => defined($max) ? $max : undef,
@@ -474,7 +473,7 @@ ERR
         bool      => $self->in_todo ? 1 : $test,
         name      => $name          || undef,
         in_todo   => $self->in_todo || 0,
-        indent    => $self->_indent || "",
+        depth     => $self->depth,
     );
 
     # # in a name can confuse Test::Harness.
@@ -522,7 +521,7 @@ sub BAIL_OUT {
     my $bail = Test::Builder::Result::Bail->new(
         context => $self->context,
         reason  => $reason,
-        indent  => $self->_indent || "",
+        depth   => $self->depth,
         in_todo => $self->in_todo || 0,
     );
     $self->stream->send($bail);
@@ -544,7 +543,7 @@ sub skip {
         context   => $self->context,
         real_bool => 1,
         bool      => 1,
-        indent    => $self->_indent || "",
+        depth     => $self->depth,
         in_todo   => $self->in_todo || 0,
         skip      => $why,
     );
@@ -560,7 +559,7 @@ sub todo_skip {
         context   => $self->context,
         real_bool => 0,
         bool      => 1,
-        indent    => $self->_indent || "",
+        depth     => $self->depth,
         in_todo   => $self->in_todo || 0,
         skip      => $why,
         todo      => $why,
@@ -578,7 +577,7 @@ sub diag {
 
     my $r = Test::Builder::Result::Diag->new(
         context => $self->context,
-        indent  => $self->_indent || "",
+        depth   => $self->depth,
         in_todo => $self->in_todo || 0,
         message => $msg,
     );
@@ -592,7 +591,7 @@ sub note {
 
     my $r = Test::Builder::Result::Note->new(
         context => $self->context,
-        indent  => $self->_indent || "",
+        depth   => $self->depth,
         in_todo => $self->in_todo || 0,
         message => $msg,
     );
@@ -899,7 +898,7 @@ sub context {
     return {
         caller => [$self->caller($height + 1)],
         pid    => $$,
-        indent => $self->_indent || "",
+        depth  => $self->depth,
     };
 }
 
@@ -1236,6 +1235,13 @@ WHOA
     return;
 }
 
+sub _ending {
+    my $self = shift;
+    require Test::Builder::ExitMagic;
+    my $ending = Test::Builder::ExitMagic->new(tb => $self, stream => $self->stream);
+    $ending->do_magic;
+}
+
 #######################
 # }}} Private helpers #
 #######################
@@ -1258,6 +1264,13 @@ BEGIN {
         no strict 'refs';    ## no critic
         *{$method} = $code;
     }
+}
+
+sub _indent {
+    my $self = shift;
+    $self->carp("_indent() is deprecated") if $self->modern;
+    return '' unless $self->depth;
+    return '    ' x $self->depth
 }
 
 sub _output_plan {
@@ -1399,13 +1412,6 @@ sub expected_tests {
     }
 
     return $self->stream->expected_tests || 0;
-}
-
-sub _ending {
-    my $self = shift;
-    require Test::Builder::ExitMagic;
-    my $ending = Test::Builder::ExitMagic->new(tb => $self, stream => $self->stream);
-    $ending->do_magic;
 }
 
 ###################################

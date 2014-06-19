@@ -23,7 +23,7 @@ sub _accessors {
     }
 }
 
-_accessors(qw/context indent in_todo/);
+_accessors(qw/context depth in_todo/);
 
 sub init {}
 
@@ -52,6 +52,12 @@ sub type {
     }
 
     confess "Could not determine result type for $self";
+}
+
+sub indent {
+    my $self = shift;
+    return '' unless $self->depth;
+    return '    ' x $self->depth;
 }
 
 1;

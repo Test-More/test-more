@@ -488,7 +488,7 @@ sub _account_for_subtest {
     my( $self, $check ) = @_;
 
     # Since we ship with Test::Builder, calling a private method is safe...ish.
-    return ref($check) ? $check : $t->_indent . $check;
+    return ref($check) ? $check : ($t->depth ? '    ' x $t->depth : '') . $check;
 }
 
 sub _translate_Failed_check {
