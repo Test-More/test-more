@@ -17,6 +17,12 @@ sub intercept(&) {
 
     require Test::Builder;
     my $TB = Test::Builder->new;
+    my $orig_skipall = $TB->skipall_behavior;
+    $TB->skipall_behavior(sub {
+        my $plan = shift;
+        die $plan->reason;
+    });
+
     my $orig_bail = $TB->bailout_behavior;
     $TB->bailout_behavior(sub {
         my $bail = shift;
@@ -37,6 +43,7 @@ sub intercept(&) {
     };
     my $error = $@;
 
+    $TB->skipall_behavior($orig_skipall);
     $TB->bailout_behavior($orig_bail);
 
     die $error unless $ok;

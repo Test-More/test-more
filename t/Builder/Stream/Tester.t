@@ -22,4 +22,15 @@ is($results->[1]->name, "Boo!", "Got test name");
 isa_ok($results->[2], 'Test::Builder::Result::Diag');
 is($results->[2]->message, "\n  Failed test 'Boo!'\n  at " . __FILE__ . " line 11.\n", "got error msg");
 
+{
+    eval {
+        intercept {
+            plan skip_all => 'All tests are skipped';
+        };
+    };
+
+    like( $@, qr/All tests are skipped/, 'got skip msg' );
+
+}
+
 done_testing;
