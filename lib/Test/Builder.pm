@@ -77,7 +77,15 @@ sub _copy {
 
 sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my $self = shift;
-    my %params = @_;
+    my %params;
+
+    if (@_) {
+        %params = @_;
+        $self->{reset_params} = \%params;
+    }
+    else {
+        %params = %{$self->{reset_params} || {}};
+    }
 
     my $modern = $params{modern} || $self->modern || 0;
     $self->modern($modern);
