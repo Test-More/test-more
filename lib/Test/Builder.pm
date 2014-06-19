@@ -98,13 +98,15 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
         $self->{stream} = Test::Builder::Stream->new;
     }
 
-    $self->stream->use_tap      unless $params{no_tap} || $ENV{TB_NO_TAP};
-    $self->stream->use_lresults unless $modern || $params{no_legacy} || $ENV{TB_NO_LEGACY};
+    $self->stream->use_tap unless $params{no_tap} || $ENV{TB_NO_TAP};
 
-    $self->stream->no_ending(0);
-
-    $self->tap->reset      if $self->tap;
-    $self->lresults->reset if $self->lresults;
+    # Don't reset stream stuff when reseting/creating a modern TB object
+    unless ($modern) {
+        $self->stream->use_lresults unless $modern || $params{no_legacy} || $ENV{TB_NO_LEGACY};
+        $self->stream->no_ending(0);
+        $self->tap->reset      if $self->tap;
+        $self->lresults->reset if $self->lresults;
+    }
 
     $self->{Name}  = $0;
     $self->{Depth} = 0;
