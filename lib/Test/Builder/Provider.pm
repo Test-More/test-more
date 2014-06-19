@@ -16,8 +16,6 @@ sub import {
         shared_stream => 1,
     );
 
-    $tb->anoint(provider => $caller);
-
     my $meta = {};
     my %subs;
 
@@ -46,7 +44,7 @@ sub import {
         my @list = @_;
         my $caller = caller;
 
-        $tb->anoint(tester => $caller);
+        $tb->anoint($caller);
 
         @list = keys %$meta unless @list;
         for my $name (@list) {
