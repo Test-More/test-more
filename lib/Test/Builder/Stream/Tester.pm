@@ -19,7 +19,7 @@ sub intercept(&) {
     my $TB = Test::Builder->new;
     my $orig_bail = $TB->bailout_behavior;
     $TB->bailout_behavior(sub {
-        my $bail = @_;
+        my $bail = shift;
         die $bail->reason;
     });
 
