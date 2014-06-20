@@ -6,7 +6,7 @@ use Carp qw/croak/;
 use Scalar::Util qw/reftype blessed/;
 
 my $meta = {};
-sub tb_export_meta { $meta };
+sub TB_EXPORT_META { $meta };
 
 exports(qw/import export accessor accessors delta deltas export_to transform/);
 
@@ -33,7 +33,7 @@ sub import {
     if (grep {$_ eq 'import'} @_) {
         my $meta = {};
         no strict 'refs';
-        *{"$caller\::tb_export_meta"} = sub { $meta };
+        *{"$caller\::TB_EXPORT_META"} = sub { $meta };
     }
 
     $class->export_to($caller, @_) if @_;
@@ -46,14 +46,14 @@ sub export_to {
     my ($to, @subs) = @_;
 
     croak "package '$from' is not a TB exporter"
-        unless $from->can('tb_export_meta');
+        unless $from->can('TB_EXPORT_META');
 
     croak "No destination package specified."
         unless $to;
 
     return unless @subs;
 
-    my $meta = $from->tb_export_meta;
+    my $meta = $from->TB_EXPORT_META;
 
     for my $name (@subs) {
         my $ref = $meta->{$name} || croak "$from does not export '$name'";
@@ -68,9 +68,9 @@ sub exports {
     my $caller = caller;
 
     croak "$caller is not an exporter!"
-        unless $caller->can('tb_export_meta');
+        unless $caller->can('TB_EXPORT_META');
 
-    my $meta = $caller->tb_export_meta;
+    my $meta = $caller->TB_EXPORT_META;
 
     for my $name (@_) {
         my $ref = $caller->can($name);
@@ -99,7 +99,7 @@ sub export {
         unless ref $ref;
 
     croak "$caller is not an exporter!"
-        unless $caller->can('tb_export_meta');
+        unless $caller->can('TB_EXPORT_META');
 
     croak "Already exporting '$name'"
         if $meta->{$name};

@@ -6,9 +6,17 @@ use Test::Builder;
 use Carp qw/croak/;
 use Scalar::Util qw/blessed reftype/;
 
+
+my %SIG_MAP = (
+    '$' => 'SCALAR',
+    '@' => 'ARRAY',
+    '%' => 'HASH',
+    '&' => 'CODE',
+);
+
 sub import {
     my $class = shift;
-    my @sub_list = @_;
+    my @sym_list = @_;
     my $caller = caller;
 
     my $tb = Test::Builder->create(
@@ -19,46 +27,68 @@ sub import {
     my $meta = {};
     my %subs;
 
-    $subs{TB_META} = sub { $meta };
-    $subs{TB}      = sub { $tb   };
+    $subs{TB_PROVIDER_META} = sub { $meta };
 
-    $subs{provide} = sub {
-        my ($name, $code) = @_;
+    # to help transition legacy
+    $subs{builder} = sub { $tb };
+    $subs{TB}      = sub { $tb };
+
+    $subs{anoint} = sub { $tb->anoint($_[1], $_[0]) };
+
+    $subs{provides} = sub { $subs{provide}->($_) for @_ };
+    $subs{provide}  = sub {
+        my ($name, $ref) = @_;
 
         croak "$caller already provides '$name'"
             if $meta->{$name};
 
-        croak "The second argument to provide() must be a coderef"
-            if $code && !(reftype($code) && reftype($code) eq 'CODE');
+        croak "The second argument to provide() must be a ref, got: $ref"
+            if $ref && !ref $ref;
 
-        $code ||= $caller->can($name);
-        croak "$caller has no sub named '$name', and no subref was given"
-            unless $code;
+        $ref ||= $caller->can($name);
+        croak "$caller has no sub named '$name', and no ref was given"
+            unless $ref;
 
-        bless $code, $class;
-        $meta->{$name} = $code;
+        bless $ref, $class;
+        $meta->{$name} = $ref;
     };
 
     $subs{import} = sub {
-        my $self = shift;
+        my $class = shift;
         my @list = @_;
         my $caller = caller;
 
-        $tb->anoint($caller);
+        $class->anoint($caller);
 
         @list = keys %$meta unless @list;
         for my $name (@list) {
+            if ($name =~ s/^(\$|\@|\%)//) {
+                my $sig = $1;
+
+                croak "$class does not export '$sig$name'"
+                    unless $meta->{$name}
+                        && reftype $meta->{$name} eq $SIG_MAP{$sig};
+            }
+
+            croak "$class does not export '$name'"
+                unless $meta->{$name};
+
             no strict 'refs';
-            *{"$caller\::$name"} = $subs{$name};
+            *{"$caller\::$name"} = $meta->{$name};
         }
+
+        $class->after_import(@_) if $class->can('after_import');
 
         1;
     };
 
-    @sub_list = keys %subs unless @sub_list;
-    for my $name (@sub_list) {
+    @sym_list = keys %subs unless @sym_list;
+
+    for my $name (@sym_list) {
         no strict 'refs';
-        *{"$caller\::$name"} = $subs{$name};
+        my $ref = $subs{$name} || $class->can($name);
+        croak "$class does not export '$name'" unless $ref;
+        *{"$caller\::$name"} = $ref ;
     }
 
     1;

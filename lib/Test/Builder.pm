@@ -331,6 +331,92 @@ sub finalize {
 # }}} Children and subtests #
 #############################
 
+#####################################
+# {{{ Finding Testers and Providers #
+#####################################
+
+sub trace_anointed {
+    my $class = shift;
+    my ($provider, $anointed) = @_;
+    my $depth = 0;
+
+    my $found;
+    while (my @call = caller($depth++)) {
+        # Make sure we have a/the anointed
+        next unless $call[0]->can('TB_TESTER_META');
+        next if $anointed && $call[0] ne $anointed;
+        my $found_anointed = $call[0];
+
+        # See if we can find the sub that was called, if so see if it is a
+        # blessed provider.
+        my $sub_is_p = 0;
+        my ($pkg, $sub) = ($call[3] =~ m/^(.*)::([^:]+)$/);
+        if ($sub && $sub ne '__ANON__') {
+            my $ref = $pkg->can($sub);
+            $sub_is_p = 1 if $ref
+                && Scalar::Util::blessed($ref)
+                    && $ref->isa(__PACKAGE__);
+        }
+
+        # If we could not find the sub, or it is not blessed, see if the
+        # package it is in is a provider.
+        unless($sub_is_p) {
+            next unless $pkg;
+            next if $pkg eq $found_anointed && ($provider && $found_anointed ne $provider);
+            next unless $pkg->can('TB_PROVIDER_META');
+        }
+
+        next if $provider && !($pkg && $pkg eq $provider);
+
+        $found = \@call;
+    }
+
+    return $found;
+}
+
+sub trace_provider {
+    my $class = shift;
+    my ($provider) = @_;
+
+    my $depth = 0;
+
+    while (my @call = caller($depth++)) {
+        next unless $call[0]->can('TB_PROVIDER_META');
+        next if $provider && $call[0] ne $provider;
+        return \@call;
+    }
+}
+
+sub anoint {
+    my $class = shift;
+    my ($target, $oil) = @_;
+
+    unless ($target->can('TB_TESTER_META')) {
+        no strict 'refs';
+        *{"$target\::TB_TESTER_META"} = sub {{}};
+    }
+
+    my $meta = $target->TB_TESTER_META;
+    $meta->{$oil} = 1;
+}
+
+sub find_TODO {
+    my( $self, $pack, $set, $new_value ) = @_;
+
+    $pack = $pack || $self->caller(1) || $self->exported_to;
+    return unless $pack;
+
+    no strict 'refs';    ## no critic
+    no warnings 'once';
+    my $old_value = ${ $pack . '::TODO' };
+    $set and ${ $pack . '::TODO' } = $new_value;
+    return $old_value;
+}
+
+#####################################
+# }}} Finding Testers and Providers #
+#####################################
+
 ################
 # {{{ Planning #
 ################
@@ -882,19 +968,6 @@ sub todo {
     return $todo if defined $todo;
 
     return '';
-}
-
-sub find_TODO {
-    my( $self, $pack, $set, $new_value ) = @_;
-
-    $pack = $pack || $self->caller(1) || $self->exported_to;
-    return unless $pack;
-
-    no strict 'refs';    ## no critic
-    no warnings 'once';
-    my $old_value = ${ $pack . '::TODO' };
-    $set and ${ $pack . '::TODO' } = $new_value;
-    return $old_value;
 }
 
 sub in_todo {
