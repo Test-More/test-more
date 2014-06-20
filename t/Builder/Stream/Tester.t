@@ -25,6 +25,17 @@ is($results->[2]->message, "\n  Failed test 'Boo!'\n  at " . __FILE__ . " line 1
 {
     eval {
         intercept {
+            BAIL_OUT( 'bail out' );
+        };
+    };
+
+    like( $@, qr/bail out/, 'got bail out msg' );
+}
+
+
+{
+    eval {
+        intercept {
             plan skip_all => 'All tests are skipped';
         };
     };
