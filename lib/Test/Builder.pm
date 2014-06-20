@@ -76,61 +76,6 @@ sub _copy {
     return;
 }
 
-sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    my $self = shift;
-    my %params;
-
-    if (@_) {
-        %params = @_;
-        $self->{reset_params} = \%params;
-    }
-    else {
-        %params = %{$self->{reset_params} || {}};
-    }
-
-    my $modern = $params{modern} || $self->modern || 0;
-    $self->modern($modern);
-
-    # We leave this a global because it has to be localized and localizing
-    # hash keys is just asking for pain.  Also, it was documented.
-    $Level = 1;
-
-    if ($params{new_stream} || !$params{shared_stream}) {
-        $self->{stream} = Test::Builder::Stream->new;
-    }
-
-    $self->stream->use_tap unless $params{no_tap} || $ENV{TB_NO_TAP};
-
-    # Don't reset stream stuff when reseting/creating a modern TB object
-    unless ($modern) {
-        $self->stream->use_lresults unless $modern || $params{no_legacy} || $ENV{TB_NO_LEGACY};
-        $self->stream->no_ending(0);
-        $self->tap->reset      if $self->tap;
-        $self->lresults->reset if $self->lresults;
-    }
-
-    $self->{Name}  = $0;
-    $self->{Depth} = 0;
-
-    $self->{Have_Issued_Plan} = 0;
-    $self->{Done_Testing}     = 0;
-    $self->{Skip_All}         = 0;
-
-    $self->{Original_Pid} = $$;
-    $self->{Child_Name}   = undef;
-    $self->{Indent}     ||= '';
-
-    $self->{Exported_To}    = undef;
-    $self->{Expected_Tests} = 0;
-
-    $self->{Todo}       = undef;
-    $self->{Todo_Stack} = [];
-    $self->{Start_Todo} = 0;
-    $self->{Opened_Testhandles} = 0;
-
-    return;
-}
-
 ####################
 # }}} Constructors #
 ####################
@@ -159,32 +104,6 @@ sub stream {
     # shared cause shared is a stack, not a constant, and we always want the
     # top.
     return $self->{stream} || Test::Builder::Stream->shared;
-}
-
-sub skipall_behavior {
-    my $self = shift;
-
-    if (@_) {
-        my ($sub) = @_;
-        $self->croak("skipall_behavior must be a coderef, or undef")
-            if defined($sub) && Scalar::Util::reftype($sub) ne 'CODE';
-
-        $self->{skipall_behavior} = $sub;
-    }
-    return $self->{skipall_behavior};
-
-}
-
-sub bailout_behavior {
-    my $self = shift;
-    if (@_) {
-        my ($sub) = @_;
-        $self->croak("bailout_behavior must be a coderef, or undef")
-            if defined($sub) && Scalar::Util::reftype($sub) ne 'CODE';
-
-        $self->{bailout_behavior} = $sub;
-    }
-    return $self->{bailout_behavior};
 }
 
 sub level {
@@ -480,15 +399,8 @@ sub skip_all {
     $self->{Skip_All} = $self->parent ? $reason : 1;
 
     local $Level = $Level + 1;
-    my $plan = $self->_issue_plan(0, "SKIP", $reason);
     die bless {} => 'Test::Builder::Exception' if $self->parent;
-
-    if( my $behavior = $self->skipall_behavior ) {
-        $behavior->($plan);
-    }
-    else {
-        exit(0);
-    }
+    $self->_issue_plan(0, "SKIP", $reason);
 }
 
 sub no_plan {
@@ -640,13 +552,6 @@ sub BAIL_OUT {
         in_todo => $self->in_todo || 0,
     );
     $self->stream->send($bail);
-
-    if( my $behavior = $self->bailout_behavior ) {
-        $behavior->($bail);
-    }
-    else {
-        exit 255;
-    }
 }
 
 sub skip {
@@ -951,19 +856,6 @@ sub croak {
     return die $self->_message_at_caller(@_);
 }
 
-sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    my( $self, $height ) = @_;
-    $height ||= 0;
-
-    my $level = $self->level + $height + 1;
-    my @caller;
-    do {
-        @caller = CORE::caller( $level );
-        $level--;
-    } until @caller;
-    return wantarray ? @caller : $caller[0];
-}
-
 sub context {
     my $self = shift;
     my ($height) = @_;
@@ -983,6 +875,62 @@ sub has_plan {
     return('no_plan') if $self->stream->plan;
     return(undef);
 }
+
+sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
+    my $self = shift;
+    my %params;
+
+    if (@_) {
+        %params = @_;
+        $self->{reset_params} = \%params;
+    }
+    else {
+        %params = %{$self->{reset_params} || {}};
+    }
+
+    my $modern = $params{modern} || $self->modern || 0;
+    $self->modern($modern);
+
+    # We leave this a global because it has to be localized and localizing
+    # hash keys is just asking for pain.  Also, it was documented.
+    $Level = 1;
+
+    if ($params{new_stream} || !$params{shared_stream}) {
+        $self->{stream} = Test::Builder::Stream->new;
+    }
+
+    $self->stream->use_tap unless $params{no_tap} || $ENV{TB_NO_TAP};
+
+    # Don't reset stream stuff when reseting/creating a modern TB object
+    unless ($modern) {
+        $self->stream->use_lresults unless $modern || $params{no_legacy} || $ENV{TB_NO_LEGACY};
+        $self->stream->no_ending(0);
+        $self->tap->reset      if $self->tap;
+        $self->lresults->reset if $self->lresults;
+    }
+
+    $self->{Name}  = $0;
+    $self->{Depth} = 0;
+
+    $self->{Have_Issued_Plan} = 0;
+    $self->{Done_Testing}     = 0;
+    $self->{Skip_All}         = 0;
+
+    $self->{Original_Pid} = $$;
+    $self->{Child_Name}   = undef;
+    $self->{Indent}     ||= '';
+
+    $self->{Exported_To}    = undef;
+    $self->{Expected_Tests} = 0;
+
+    $self->{Todo}       = undef;
+    $self->{Todo_Stack} = [];
+    $self->{Start_Todo} = 0;
+    $self->{Opened_Testhandles} = 0;
+
+    return;
+}
+
 
 #######################
 # }}} Public helpers #
@@ -1422,6 +1370,22 @@ sub expected_tests {
 
     return $self->stream->expected_tests || 0;
 }
+
+sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
+    my( $self, $height ) = @_;
+    $height ||= 0;
+
+    $self->carp("Use of \$TB->caller() is deprecated.") if $self->modern;
+
+    my $level = $self->level + $height + 1;
+    my @caller;
+    do {
+        @caller = CORE::caller( $level );
+        $level--;
+    } until @caller;
+    return wantarray ? @caller : $caller[0];
+}
+
 
 ###################################
 # }}} End of deprecations section #

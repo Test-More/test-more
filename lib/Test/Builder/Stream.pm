@@ -2,7 +2,7 @@ package Test::Builder::Stream;
 use strict;
 use warnings;
 
-use Carp qw/confess/;
+use Carp qw/confess croak/;
 use Scalar::Util qw/reftype blessed/;
 use Test::Builder::ExitMagic;
 use Test::Builder::Threads;
@@ -16,6 +16,7 @@ accessor is_passing   => sub { 1 };
 accessor _listeners   => sub {{ }};
 accessor _mungers     => sub {{ }};
 accessor _munge_order => sub {[ ]};
+accessor _follow_up   => sub {{ }};
 
 sub pid { shift->{pid} }
 
@@ -40,7 +41,7 @@ sub pid { shift->{pid} }
             unless reftype $code eq 'CODE';
 
         my $orig = $shared;
-        $shared = $class->new || die "Internal error!";
+        $shared = $class->new(no_follow => 1) || die "Internal error!";
         local $@;
         my $ok = eval { $code->($shared); 1 };
         my $error = $@;
@@ -58,10 +59,41 @@ sub new {
     share($self->{tests_run});
     share($self->{tests_failed});
 
-    $self->use_tap      if $params{use_tap};
-    $self->use_lresults if $params{use_lresults};
+    $self->use_tap          if $params{use_tap};
+    $self->use_lresults     if $params{use_lresults};
+    $self->default_followup unless $params{no_follow};
 
     return $self;
+}
+
+sub follow_up {
+    my $self = shift;
+    my ($type, @action) = @_;
+    croak "'$type' is not a result type"
+        unless $type && $type->isa('Test::Builder::Result');
+
+    if (@action) {
+        my ($sub) = @action;
+        croak "The second argument to follow_up() must be a coderef, got: $sub"
+            if $sub && !(ref $sub && reftype $sub eq 'CODE');
+
+        $self->_follow_up->{$type} = $sub;
+    }
+
+    return $self->_follow_up->{$type};
+}
+
+sub default_followup {
+    my $self = shift;
+    $self->_follow_up({
+        'Test::Builder::Result::Bail' => sub { exit 255 },
+        'Test::Builder::Result::Plan' => sub {
+            my ($plan) = @_;
+            return unless $plan->directive;
+            return unless $plan->directive eq 'SKIP';
+            exit 0;
+        },
+    });
 }
 
 sub expected_tests {
@@ -207,6 +239,12 @@ sub send {
                 $listener->handle($item);
             }
         }
+    }
+
+    for my $item (@$items) {
+        my $type = blessed $item;
+        my $follow = $self->follow_up($type) || next;
+        $follow->($item);
     }
 }
 
