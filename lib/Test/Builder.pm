@@ -161,6 +161,20 @@ sub stream {
     return $self->{stream} || Test::Builder::Stream->shared;
 }
 
+sub skipall_behavior {
+    my $self = shift;
+
+    if (@_) {
+        my ($sub) = @_;
+        $self->croak("skipall_behavior must be a coderef, or undef")
+            if defined($sub) && Scalar::Util::reftype($sub) ne 'CODE';
+
+        $self->{skipall_behavior} = $sub;
+    }
+    return $self->{skipall_behavior};
+
+}
+
 sub bailout_behavior {
     my $self = shift;
     if (@_) {
@@ -452,9 +466,15 @@ sub skip_all {
     $self->{Skip_All} = $self->parent ? $reason : 1;
 
     local $Level = $Level + 1;
-    $self->_issue_plan(0, "SKIP", $reason);
+    my $plan = $self->_issue_plan(0, "SKIP", $reason);
     die bless {} => 'Test::Builder::Exception' if $self->parent;
-    exit(0);
+
+    if( my $behavior = $self->skipall_behavior ) {
+        $behavior->($plan);
+    }
+    else {
+        exit(0);
+    }
 }
 
 sub no_plan {
@@ -510,7 +530,7 @@ sub _issue_plan {
 
     $self->stream->send($plan);
 
-    return;
+    return $plan;
 }
 
 ################
