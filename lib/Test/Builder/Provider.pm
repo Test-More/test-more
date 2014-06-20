@@ -6,7 +6,6 @@ use Test::Builder;
 use Carp qw/croak/;
 use Scalar::Util qw/blessed reftype/;
 
-
 my %SIG_MAP = (
     '$' => 'SCALAR',
     '@' => 'ARRAY',
@@ -49,8 +48,16 @@ sub import {
         croak "$caller has no sub named '$name', and no ref was given"
             unless $ref;
 
+        # Voodoo....
+        # Insert an anonymous sub, and use a trick to make caller() think its
+        # name is this string, which tells us how to find the thing that was
+        # actually called.
+        my $subname = __PACKAGE__ . "::__ANON__|$caller\->TB_PROVIDER_META->{$name}";
         bless $ref, $class;
-        $meta->{$name} = $ref;
+        $meta->{$name} = bless sub {
+            local *__ANON__ = $subname; # Name the sub so we can find it for real.
+            $ref->(@_);
+        }, $class;
     };
 
     $subs{import} = sub {

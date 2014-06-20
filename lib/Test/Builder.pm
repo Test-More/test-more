@@ -352,7 +352,7 @@ sub finalize {
 sub trace_anointed {
     my $class = shift;
     my ($provider, $anointed) = @_;
-    my $depth = 0;
+    my $depth = 1;
 
     my $found;
     while (my @call = caller($depth++)) {
@@ -364,25 +364,37 @@ sub trace_anointed {
         # See if we can find the sub that was called, if so see if it is a
         # blessed provider.
         my $sub_is_p = 0;
-        my ($pkg, $sub) = ($call[3] =~ m/^(.*)::([^:]+)$/);
-        if ($sub && $sub ne '__ANON__') {
-            my $ref = $pkg->can($sub);
-            $sub_is_p = 1 if $ref
-                && Scalar::Util::blessed($ref)
-                    && $ref->isa(__PACKAGE__);
+        my $subname = $call[3];
+
+        my ($pkg, $sub);
+        if ($subname =~ m/^.*\|(.*)->TB_PROVIDER_META->{(.*)}$/) {
+            ($pkg, $sub) = ($1, $2);
+            $sub_is_p = 1 if $pkg && $sub;
+        }
+        else {
+            ($pkg, $sub) = ($subname =~ m/^(.+)::([^:]+)$/);
+            if ($sub && $sub ne '__ANON__') {
+                my $ref = $pkg->can($sub);
+                $sub_is_p = 1 if $ref && Scalar::Util::blessed($ref) && $ref->isa('Test::Builder::Provider');
+            }
         }
 
         # If we could not find the sub, or it is not blessed, see if the
         # package it is in is a provider.
         unless($sub_is_p) {
             next unless $pkg;
-            next if $pkg eq $found_anointed && ($provider && $found_anointed ne $provider);
+            # If the provider is also the anointed we will skip it unless that
+            # is what was requested.
+            unless($provider && $provider eq $found_anointed) {
+                next if $pkg eq $found_anointed;
+            }
             next unless $pkg->can('TB_PROVIDER_META');
         }
 
+        # This may not be the provider we asked for...
         next if $provider && !($pkg && $pkg eq $provider);
 
-        $found = \@call;
+        $found = [@call[0..2]];
     }
 
     return $found;
@@ -392,12 +404,12 @@ sub trace_provider {
     my $class = shift;
     my ($provider) = @_;
 
-    my $depth = 0;
+    my $depth = 1;
 
     while (my @call = caller($depth++)) {
         next unless $call[0]->can('TB_PROVIDER_META');
         next if $provider && $call[0] ne $provider;
-        return \@call;
+        return [@call[0..2]];
     }
 }
 
@@ -406,10 +418,12 @@ sub anoint {
     my ($target, $oil) = @_;
 
     unless ($target->can('TB_TESTER_META')) {
+        my $meta = {};
         no strict 'refs';
-        *{"$target\::TB_TESTER_META"} = sub {{}};
+        *{"$target\::TB_TESTER_META"} = sub {$meta};
     }
 
+    return 1 unless $oil;
     my $meta = $target->TB_TESTER_META;
     $meta->{$oil} = 1;
 }
