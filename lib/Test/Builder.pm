@@ -98,23 +98,50 @@ BEGIN {
     Test::Builder::Util::accessor(depth  => sub { 0 });
 }
 
+##############################################
+# }}} Simple accessors/generators/deligators #
+##############################################
+
+#########################
+# {{{ Stream Management #
+#########################
+
 sub stream {
     my $self = shift;
+
+    ($self->{stream}) = @_ if @_;
+
     # If no stream is set use shared. We do not want to cache that we use
     # shared cause shared is a stack, not a constant, and we always want the
     # top.
     return $self->{stream} || Test::Builder::Stream->shared;
 }
 
-sub level {
-    my( $self, $level ) = @_;
-    $Level = $level if defined $level;
-    return $Level;
+sub intercept {
+    my $self = shift;
+    my ($code) = @_;
+
+    Carp::croak("argument to intercept must be a coderef, got: $code")
+        unless reftype $code eq 'CODE';
+
+    my $stream = Test::Builder::Stream->new(no_follow => 1) || die "Internal Error!";
+    $stream->exception_followup;
+
+    local $self->{stream} = $stream;
+
+    my @results;
+    $stream->listen(INTERCEPTOR => sub {
+        my ($item) = @_;
+        push @results => $item;
+    });
+    $code->($stream);
+
+    return @results;
 }
 
-##############################################
-# }}} Simple accessors/generators/deligators #
-##############################################
+#########################
+# }}} Stream Management #
+#########################
 
 #############################
 # {{{ Children and subtests #
@@ -1386,6 +1413,12 @@ sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     return wantarray ? @caller : $caller[0];
 }
 
+sub level {
+    my( $self, $level ) = @_;
+    $self->carp("Use of \$TB->level() is deprecated.") if $self->modern;
+    $Level = $level if defined $level;
+    return $Level;
+}
 
 ###################################
 # }}} End of deprecations section #

@@ -28,8 +28,8 @@ $results = intercept {
     ok(0, "Should not see this");
 };
 is(@$results, 2, "Only got 2");
-isa_ok($results->[0], 'Test::Builder::Result::Ok', "Got the first OK");
-isa_ok($results->[1], 'Test::Builder::Result::Bail', "Got the Bailout");
+isa_ok($results->[0], 'Test::Builder::Result::Ok');
+isa_ok($results->[1], 'Test::Builder::Result::Bail');
 
 $results = intercept {
     plan skip_all => 'All tests are skipped';
@@ -39,6 +39,6 @@ $results = intercept {
     ok(0, "Should not see this");
 };
 is(@$results, 1, "Only got 1");
-isa_ok($results->[0], 'Test::Builder::Result::Plan', "Got the skipall plan");
+isa_ok($results->[0], 'Test::Builder::Result::Plan');
 
 done_testing;

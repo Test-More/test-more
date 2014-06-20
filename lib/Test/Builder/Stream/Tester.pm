@@ -11,8 +11,8 @@ use parent 'Test::Builder::Formatter';
 
 our @EXPORT = qw/intercept/;
 
-sub intercept(&;$) {
-    my ($code, $tb) = @_;
+sub intercept(&) {
+    my ($code) = @_;
 
     my @results;
 
@@ -20,14 +20,7 @@ sub intercept(&;$) {
     my $ok = eval {
         Test::Builder::Stream->intercept(sub {
             my $stream = shift;
-
-            $stream->follow_up('Test::Builder::Result::Bail' => sub {die $_[0]});
-            $stream->follow_up('Test::Builder::Result::Plan' => sub {
-                my $plan = shift;
-                return unless $plan->directive;
-                return unless $plan->directive eq 'SKIP';
-                die $plan;
-            });
+            $stream->exception_followup;
 
             $stream->listen(INTERCEPTOR => sub {
                 my ($item) = @_;

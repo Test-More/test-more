@@ -59,9 +59,9 @@ sub new {
     share($self->{tests_run});
     share($self->{tests_failed});
 
-    $self->use_tap          if $params{use_tap};
-    $self->use_lresults     if $params{use_lresults};
-    $self->default_followup unless $params{no_follow};
+    $self->use_tap         if $params{use_tap};
+    $self->use_lresults    if $params{use_lresults};
+    $self->legacy_followup unless $params{no_follow};
 
     return $self;
 }
@@ -83,7 +83,7 @@ sub follow_up {
     return $self->_follow_up->{$type};
 }
 
-sub default_followup {
+sub legacy_followup {
     my $self = shift;
     $self->_follow_up({
         'Test::Builder::Result::Bail' => sub { exit 255 },
@@ -92,6 +92,20 @@ sub default_followup {
             return unless $plan->directive;
             return unless $plan->directive eq 'SKIP';
             exit 0;
+        },
+    });
+}
+
+sub exception_followup {
+    my $self = shift;
+
+    $self->_follow_up({
+        'Test::Builder::Result::Bail' => sub {die $_[0]},
+        'Test::Builder::Result::Plan' => sub {
+            my $plan = shift;
+            return unless $plan->directive;
+            return unless $plan->directive eq 'SKIP';
+            die $plan;
         },
     });
 }
