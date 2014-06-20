@@ -4,6 +4,7 @@ use warnings;
 
 use parent 'Test::Builder::Result';
 
-Test::Builder::Result::_accessors(qw/tests_run tests_failed/);
+use Test::Builder::Util qw/accessors/;
+accessors qw/tests_run tests_failed/;
 
 1;

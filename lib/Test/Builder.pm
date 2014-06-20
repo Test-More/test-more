@@ -4,6 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
+use Test::Builder::Util;
 use Scalar::Util();
 use Test::Builder::Stream;
 use Test::Builder::Result;
@@ -138,15 +139,25 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 # {{{ Simple accessors/generators/deligators #
 ##############################################
 
-sub listen    { shift->stream->listen(@_) }
-sub munge     { shift->stream->munge(@_)  }
-sub parent    { shift->{Parent}           }
-sub name      { shift->{Name}             }
-sub tap       { shift->stream->tap        }
-sub lresults  { shift->stream->lresults   }
+sub listen     { shift->stream->listen(@_)     }
+sub munge      { shift->stream->munge(@_)      }
+sub tap        { shift->stream->tap            }
+sub lresults   { shift->stream->lresults       }
+sub is_passing { shift->stream->is_passing(@_) }
+sub use_fork   { shift->stream->use_fork       }
+sub no_fork    { shift->stream->no_fork        }
+
+BEGIN {
+    Test::Builder::Util::accessors(qw/Parent Name/);
+    Test::Builder::Util::accessor(modern => sub {$ENV{TB_MODERN} || 0});
+    Test::Builder::Util::accessor(depth  => sub { 0 });
+}
 
 sub stream {
     my $self = shift;
+    # If no stream is set use shared. We do not want to cache that we use
+    # shared cause shared is a stack, not a constant, and we always want the
+    # top.
     return $self->{stream} || Test::Builder::Stream->shared;
 }
 
@@ -162,31 +173,10 @@ sub bailout_behavior {
     return $self->{bailout_behavior};
 }
 
-sub modern {
-    my $self = shift;
-    $self->{modern} = 1 if $ENV{TB_MODERN} && !exists $self->{modern};
-    ($self->{modern}) = @_ if @_;
-    return $self->{modern} || 0;
-}
-
-sub exported_to {
-    my( $self, $pack ) = @_;
-
-    if( defined $pack ) {
-        $self->{Exported_To} = $pack;
-    }
-    return $self->{Exported_To};
-}
-
-sub is_passing {
-    my $self = shift;
-    return $self->stream->is_passing(@_);
-}
-
-sub depth {
-    my $self = shift;
-    ($self->{depth}) = @_ if @_;
-    return $self->{depth} || 0;
+sub level {
+    my( $self, $level ) = @_;
+    $Level = $level if defined $level;
+    return $Level;
 }
 
 ##############################################
@@ -787,34 +777,6 @@ sub unlike {
 # }}} Advanced Result Producers #
 #################################
 
-###############################
-# {{{ Enable/Disable features #
-###############################
-
-sub use_fork {
-    my $self = shift;
-    my $redirect = $self->stream->redirect;
-
-    require Test::Builder::Fork;
-    $self->stream->redirect(Test::Builder::Fork->new->handler);
-}
-
-sub no_fork {
-    my $self = shift;
-    my $redirect = $self->stream->redirect;
-
-    # If these conditions are not true, then we did not add the redirect.
-    return unless $redirect;
-    return unless Scalar::Util::blessed($redirect);
-    return unless $redirect->isa('Test::Builder::Fork');
-
-    $self->stream->redirect(undef); # Turn it off.
-}
-
-###############################
-# }}} Enable/Disable features #
-###############################
-
 #######################
 # {{{ Public helpers #
 #######################
@@ -840,15 +802,6 @@ sub maybe_regex {
     }
 
     return $usable_regex;
-}
-
-sub level {
-    my( $self, $level ) = @_;
-
-    if( defined $level ) {
-        $Level = $level;
-    }
-    return $Level;
 }
 
 sub explain {
@@ -1253,18 +1206,38 @@ sub _ending {
 ################################################
 
 BEGIN {
-    for my $method (qw(no_header no_diag)) {
-        my $code = sub {
-            my( $self, $no ) = @_;
+    my %generate = (
+        lresults => [qw/summary details/],
+        stream   => [qw/no_ending/],
+        tap => [qw/
+            no_header no_diag output failure_output todo_output reset_outputs
+            use_numbers _new_fh
+        /],
+    );
 
-            $self->carp("Use of \$TB->$method() is deprecated.") if $self->modern;
-            my $tap = $self->tap || $self->croak("$method() method only applies when TAP is in use");
-            $tap->$method($no);
-        };
+    for my $delegate (keys %generate) {
+        for my $method (@{$generate{$delegate}}) {
+            #print STDERR "Adding: $method ($delegate)\n";
+            my $code = sub {
+                my $self = shift;
 
-        no strict 'refs';    ## no critic
-        *{$method} = $code;
+                $self->carp("Use of \$TB->$method() is deprecated.") if $self->modern;
+                my $d = $self->$delegate || $self->croak("$method() method only applies when $delegate is in use");
+
+                $d->$method(@_);
+            };
+
+            no strict 'refs';    ## no critic
+            *{$method} = $code;
+        }
     }
+}
+
+sub exported_to {
+    my($self, $pack) = @_;
+    $self->carp("exported_to() is deprecated") if $self->modern;
+    $self->{Exported_To} = $pack if defined $pack;
+    return $self->{Exported_To};
 }
 
 sub _indent {
@@ -1307,86 +1280,20 @@ sub _print_to_fh {
     return $tap->_print_to_fh($fh, $self->_indent, @msgs);
 }
 
-sub _new_fh {
-    my $self = shift;
-
-    $self->carp("Use of \$TB->_new_fh() is deprecated.") if $self->modern;
-    my $tap = $self->tap || $self->croak("_new_fh() method only applies when TAP is in use");
-
-    return $tap->_new_fh(@_);
-}
-
 sub is_fh {
     my $self = shift;
-    $self = $self->new unless Scalar::Util::blessed($self);
 
-    $self->carp("Use of \$TB->is_fh() is deprecated.") if $self->modern;
+    $self->carp("Use of \$TB->is_fh() is deprecated.")
+        if Scalar::Util::blessed($self) && $self->modern;
 
     require Test::Builder::Formatter::TAP;
     return Test::Builder::Formatter::TAP->is_fh(@_);
 }
 
-sub output {
-    my($self, $fh) = @_;
-    $self->carp('Use of $TB->output() is deprecated.') if $self->modern;
-    my $tap = $self->tap || $self->croak("output() method only applies when TAP is in use");
-    return $tap->output($fh);
-}
-
-sub failure_output {
-    my($self, $fh) = @_;
-    $self->carp('Use of $TB->failure_output() is deprecated.') if $self->modern;
-    my $tap = $self->tap || $self->croak("failure_output() method only applies when TAP is in use");
-    return $tap->failure_output($fh);
-}
-
-sub todo_output {
-    my($self, $fh) = @_;
-    $self->carp('Use of $TB->todo_output() is deprecated.') if $self->modern;
-    my $tap = $self->tap || $self->croak("todo_output() method only applies when TAP is in use");
-    return $tap->todo_output($fh);
-}
-
-sub reset_outputs {
-    my $self = shift;
-    $self->carp('Use of $TB->reset_outputs() is deprecated.') if $self->modern;
-    my $tap = $self->tap || $self->croak("reset_outputs() method only applies when TAP is in use");
-    $tap->reset_outputs;
-    return;
-}
-
-sub use_numbers {
-    my $self = shift;
-
-    $self->carp('Use of $TB->use_numbers() is deprecated.') if $self->modern;
-    my $tap = $self->tap || $self->croak("use_numbers() method only applies when TAP is in use");
-
-    return $self->tap->use_numbers(@_);
-}
-
-sub summary {
-    my($self) = shift;
-
-    $self->carp('Use of $TB->summary() is deprecated.') if $self->modern;
-    my $lresults = $self->lresults || $self->croak("summary() method only applies when legacy results are in use");
-
-    return $lresults->summary;
-}
-
-sub details {
-    my $self = shift;
-    $self->carp('Use of $TB->details() is deprecated.') if $self->modern;
-    my $lresults = $self->lresults || $self->croak("details() method only applies when legacy results are in use");
-
-    return $lresults->details;
-}
-
 sub current_test {
     my $self = shift;
-
     $self->carp('Use of $TB->current_test() is deprecated.') if $self->modern;
     my $lresults = $self->lresults || $self->croak("current_test() method only applies when legacy results are in use");
-
     return $lresults->current_test($self, @_);
 }
 
@@ -1394,12 +1301,6 @@ sub BAILOUT {
     my ($self) = @_;
     $self->carp("Use of \$TB->BAILOUT() is deprecated.") if $self->modern;
     goto &BAIL_OUT;
-}
-
-sub no_ending {
-    my($self, $no) = @_;
-    $self->carp("Use of \$TB->no_ending() is deprecated.") if $self->modern;
-    return $self->stream->no_ending($no);
 }
 
 sub expected_tests {

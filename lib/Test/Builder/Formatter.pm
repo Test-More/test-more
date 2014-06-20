@@ -5,12 +5,7 @@ use warnings;
 use Carp qw/confess/;
 use Scalar::Util qw/blessed/;
 
-sub new {
-    my $class = shift;
-    my $self = bless {}, $class;
-    $self->init(@_) if $self->can('init');
-    return $self;
-}
+use Test::Builder::Util qw/new/;
 
 sub handle {
     my $self = shift;

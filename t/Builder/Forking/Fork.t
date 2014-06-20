@@ -17,11 +17,9 @@ is(ref $handler, 'CODE', "Handler is a coderef");
 my $TB = Test::Builder->new;
 
 my $Ok = Test::Builder::Result::Ok->new(
-    context   => {fake => 1},
     bool      => 1,
     real_bool => 1,
     name      => 'fake',
-    number    => 1,
 );
 
 my $out = $handler->($Ok);

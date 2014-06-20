@@ -5,43 +5,16 @@ use warnings;
 use Carp qw/confess/;
 use Scalar::Util qw/blessed/;
 
-sub _accessors {
-    my $package = caller;
-    for my $accessor (@_) {
-        my $code = sub {
-            my $self = shift;
-    
-            confess "Method '$accessor' called on non-Result '$self'?"
-                unless $self && blessed $self && $self->isa(__PACKAGE__);
-    
-            ($self->{$accessor}) = @_ if @_;
-    
-            return $self->{$accessor};
-        };
-        no strict 'refs';
-        *{"$package\::$accessor"} = $code;
-    }
-}
+use Test::Builder::Util qw/accessors new/;
 
-_accessors(qw/caller pid depth in_todo source/);
+accessors(qw/caller pid depth in_todo source/);
 
-sub init {}
-
-sub new {
-    my $class = shift;
-    my $self = bless {}, $class;
+sub init {
+    my $self = shift;
     my %params = @_;
 
-    $params{pid} ||= $$;
-    $params{caller} ||= [caller];
-
-    for my $param (keys %params) {
-        next unless $self->can($param);
-        $self->$param($params{$param});
-    }
-
-    $self->init(%params);
-    return $self;
+    $self->pid($$)             unless $params{pid};
+    $self->caller([caller(2)]) unless $params{caller};
 }
 
 sub type {

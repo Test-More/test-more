@@ -4,7 +4,8 @@ use warnings;
 
 use parent 'Test::Builder::Result';
 
-Test::Builder::Result::_accessors(qw/reason/);
+use Test::Builder::Util qw/accessors/;
+accessors qw/reason/;
 
 sub to_tap {
     my $self = shift;

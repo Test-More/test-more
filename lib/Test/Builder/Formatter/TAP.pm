@@ -9,8 +9,14 @@ BEGIN {
 }
 
 use Test::Builder::Threads;
+use Test::Builder::Util qw/accessors transform/;
 
 use parent 'Test::Builder::Formatter';
+
+accessors qw/No_Header No_Diag Depth Use_Numbers _the_plan/;
+transform output         => ('Out_FH',  '_new_fh');
+transform failure_output => ('Fail_FH', '_new_fh');
+transform todo_output    => ('Todo_FH', '_new_fh');
 
 sub init {
     my $self = shift;
@@ -113,27 +119,6 @@ sub test_number {
     return $self->{number};
 }
 
-for my $attribute (qw(No_Header No_Diag Depth Use_Numbers)) {
-    my $method = lc $attribute;
-
-    my $code = sub {
-        my ($self, $no) = @_;
-        if( defined $no ) {
-            $self->{$attribute} = $no;
-        }
-        return $self->{$attribute};
-    };
-
-    no strict 'refs';    ## no critic
-    *$method = $code;
-}
-
-sub _the_plan {
-    my $self = shift;
-    ($self->{_the_plan}) = @_ if @_;
-    return $self->{_the_plan};
-}
-
 sub _diag_fh {
     my $self = shift;
     my ($in_todo) = @_;
@@ -166,33 +151,6 @@ sub _print_to_fh {
     $msg .= "\n" unless $msg =~ /\n\z/;
 
     return print $fh $indent, $msg;
-}
-
-sub output {
-    my( $self, $fh ) = @_;
-
-    if( defined $fh ) {
-        $self->{Out_FH} = $self->_new_fh($fh);
-    }
-    return $self->{Out_FH};
-}
-
-sub failure_output {
-    my( $self, $fh ) = @_;
-
-    if( defined $fh ) {
-        $self->{Fail_FH} = $self->_new_fh($fh);
-    }
-    return $self->{Fail_FH};
-}
-
-sub todo_output {
-    my( $self, $fh ) = @_;
-
-    if( defined $fh ) {
-        $self->{Todo_FH} = $self->_new_fh($fh);
-    }
-    return $self->{Todo_FH};
 }
 
 my( $Testout, $Testerr );

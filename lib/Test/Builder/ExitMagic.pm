@@ -2,33 +2,12 @@ package Test::Builder::ExitMagic;
 use strict;
 use warnings;
 
+use Test::Builder::Util qw/new accessors/;
+
+accessors qw/stream tb ended/;
+
 my $global = __PACKAGE__->new;
 END { $global->do_magic() if $global }
-
-sub new {
-    my $class = shift;
-    my $params = {@_};
-    return bless $params, $class;
-}
-
-sub stream {
-    my $self = shift;
-    ($self->{stream}) = @_ if @_;
-    return $self->{stream};
-}
-
-sub tb {
-    my $self = shift;
-    ($self->{tb}) = @_ if @_;
-    return $self->{tb};
-}
-
-sub ended {
-    my $self = shift;
-    ($self->{ended}) = @_ if @_;
-    return $self->{ended};
-}
-
 
 sub do_magic {
     my $self = shift;
@@ -89,9 +68,7 @@ sub do_magic {
     }
 
     if($real_exit_code) {
-        $tb->diag(<<"FAIL");
-Looks like your test exited with $real_exit_code before it could output anything.
-FAIL
+        $tb->diag("Looks like your test exited with $real_exit_code before it could output anything.\n");
         $stream->is_passing(0);
         $? = $real_exit_code;
         return;
@@ -116,20 +93,20 @@ sub no_plan_magic {
 
     $stream->is_passing(0);
     $tb->diag("Tests were run but no plan was declared and done_testing() was not seen.");
-    
+
     if($real_exit_code) {
         $tb->diag("Looks like your test exited with $real_exit_code just after $total.\n");
         $? = $real_exit_code;
         return;
     }
-    
+
     # But if the tests ran, handle exit code.
     if ($total && $fails) {
         my $exit_code = $fails <= 254 ? $fails : 254;
         $? = $exit_code;
         return;
     }
-    
+
     $? = 254;
     return;
 }

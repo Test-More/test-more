@@ -6,6 +6,18 @@ use Carp qw/confess/;
 use Scalar::Util qw/reftype blessed/;
 use Test::Builder::ExitMagic;
 use Test::Builder::Threads;
+use Test::Builder::Util qw/accessors accessor deltas/;
+
+accessors qw/plan/;
+deltas qw/tests_run tests_failed/;
+
+accessor no_ending    => sub { 0 };
+accessor is_passing   => sub { 1 };
+accessor _listeners   => sub {{ }};
+accessor _mungers     => sub {{ }};
+accessor _munge_order => sub {[ ]};
+
+sub pid { shift->{pid} }
 
 {
     my ($root, $shared);
@@ -41,15 +53,7 @@ use Test::Builder::Threads;
 sub new {
     my $class = shift;
     my %params = @_;
-    my $self = bless {
-        listeners    => {},
-        mungers      => {},
-        tests_run    => 0,
-        tests_failed => 0,
-        pid          => $$,
-        plan         => undef,
-        is_passing   => 1,
-    }, $class;
+    my $self = bless { pid => $$ }, $class;
 
     share($self->{tests_run});
     share($self->{tests_failed});
@@ -60,75 +64,11 @@ sub new {
     return $self;
 }
 
-sub pid { shift->{pid} }
-
-sub plan {
-    my $self = shift;
-    ($self->{plan}) = @_ if @_;
-    return $self->{plan};
-}
-
 sub expected_tests {
     my $self = shift;
     my $plan = $self->plan;
     return undef unless $plan;
     return $plan->max;
-}
-
-sub is_passing {
-    my $self = shift;
-    ($self->{is_passing}) = @_ if @_;
-    return $self->{is_passing};
-}
-
-sub no_ending {
-    my $self = shift;
-    ($self->{no_ending}) = @_ if @_;
-    return $self->{no_ending} || 0;
-}
-
-sub tests_run {
-    my $self = shift;
-    if (@_) {
-        my ($delta) = @_;
-        lock $self->{tests_run};
-        $self->{tests_run} += $delta;
-    }
-    return $self->{tests_run};
-}
-
-sub tests_failed {
-    my $self = shift;
-    if (@_) {
-        my ($delta) = @_;
-        lock $self->{tests_failed};
-        $self->{tests_failed} += $delta;
-    }
-    return $self->{tests_failed};
-}
-
-sub redirect {
-    my $self = shift;
-
-    if (@_) {
-        confess "redirect already set by [" . join(', ', @{$self->{redirect_caller}}) . "]" if $self->{redirect};
-
-        my ($code) = @_;
-
-        if ($code) {
-            confess("Redirect must be a code ref")
-                unless reftype $code and reftype $code eq 'CODE';
-
-            $self->{redirect} = $code;
-            $self->{redirect_caller} = [caller];
-        }
-        else { # Turning it off
-            delete $self->{redirect};
-            delete $self->{redirect_caller};
-        }
-    }
-
-    return $self->{redirect};
 }
 
 sub listener {
@@ -139,7 +79,7 @@ sub listener {
     confess("Listener ID's may not start with 'LEGACY_', those are reserved")
         if $id =~ m/^LEGACY_/ && caller ne __PACKAGE__;
 
-    return $self->{listeners}->{$id};
+    return $self->_listeners->{$id};
 }
 
 sub listen {
@@ -158,7 +98,7 @@ sub listen {
             (blessed $listener && $listener->can('handle'))
         );
 
-    my $listeners = $self->{listeners};
+    my $listeners = $self->_listeners;
 
     confess("There is already a listener with ID: $id")
         if $listeners->{$id};
@@ -176,7 +116,7 @@ sub unlisten {
     confess("Listener ID's may not start with 'LEGACY_', those are reserved")
         if $id =~ m/^LEGACY_/ && caller ne __PACKAGE__;
 
-    my $listeners = $self->{listeners};
+    my $listeners = $self->_listeners;
 
     confess("There is no listener with ID: $id")
         unless $listeners->{$id};
@@ -188,7 +128,7 @@ sub munger {
     my $self = shift;
     my ($id) = @_;
     confess("You must provide an ID for your munger") unless $id;
-    return $self->{mungers}->{$id};
+    return $self->_mungers->{$id};
 }
 
 sub munge {
@@ -204,12 +144,12 @@ sub munge {
             (blessed $munger && $munger->can('handle'))
         );
 
-    my $mungers = $self->{mungers};
+    my $mungers = $self->_mungers;
 
     confess("There is already a munger with ID: $id")
         if $mungers->{$id};
 
-    push @{$self->{munge_order}} => $id;
+    push @{$self->_munge_order} => $id;
     $mungers->{$id} = $munger;
 
     return sub { $self->unmunge($id) };
@@ -218,14 +158,14 @@ sub munge {
 sub unmunge {
     my $self = shift;
     my ($id) = @_;
-    my $mungers = $self->{mungers};
+    my $mungers = $self->_mungers;
 
     confess("You must provide an ID for your munger") unless $id;
 
     confess("There is no munger with ID: $id")
         unless $mungers->{$id};
 
-    $self->{munge_order} = [ grep { $_ ne $id } @{$self->{munge_order}} ];
+    $self->_munge_order([ grep { $_ ne $id } @{$self->_munge_order} ]);
     delete $mungers->{$id};
 }
 
@@ -235,12 +175,12 @@ sub send {
 
     # The redirect will return true if it intends to redirect, we should then return.
     # If it returns false that means we do not need to redirect and should act normally.
-    if (my $redirect = $self->redirect) {
+    if (my $redirect = $self->{fork}) {
         return if $redirect->(@_);
     }
 
     my $items = [$item];
-    for my $munger_id (@{$self->{munge_order}}) {
+    for my $munger_id (@{$self->_munge_order}) {
         my $new_items = [];
         my $munger = $self->munger($munger_id) || next;
 
@@ -259,7 +199,7 @@ sub send {
             $self->tests_run(1);
             $self->tests_failed(1) unless $item->bool;
         }
-        for my $listener (values %{$self->{listeners}}) {
+        for my $listener (values %{$self->_listeners}) {
             if (reftype $listener eq 'CODE') {
                 $listener->($item)
             }
@@ -300,18 +240,37 @@ sub no_lresults {
     return;
 }
 
+sub use_fork {
+    my $self = shift;
+
+    return if $self->{fork};
+
+    require Test::Builder::Fork;
+    $self->{fork} = Test::Builder::Fork->new->handler;
+}
+
+sub no_fork {
+    my $self = shift;
+
+    return unless $self->{fork};
+
+    delete $self->{fork}; # Turn it off.
+}
+
 sub spawn {
     my $self = shift;
     my (%params) = @_;
 
     my $new = blessed($self)->new();
 
-    $new->{redirect} = $self->redirect;
+    $new->{fork} = $self->{fork};
 
     my $refs = {
-        listeners => $self->{listeners},
-        mungers   => $self->{mungers},
+        listeners => $self->_listeners,
+        mungers   => $self->_mungers,
     };
+
+    $new->_munge_order([@{$self->_munge_order}]);
 
     for my $type (keys %$refs) {
         for my $key (keys %{$refs->{$type}}) {

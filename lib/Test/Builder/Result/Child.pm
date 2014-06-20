@@ -6,7 +6,8 @@ use parent 'Test::Builder::Result';
 
 use Carp qw/confess/;
 
-Test::Builder::Result::_accessors(qw/name/);
+use Test::Builder::Util qw/accessors/;
+accessors qw/name/;
 
 sub action {
     my $self = shift;
