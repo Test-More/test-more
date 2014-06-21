@@ -62,10 +62,12 @@ sub import {
 
     $subs{import} = sub {
         my $class = shift;
-        my @list = @_;
         my $caller = caller;
 
         $class->anoint($caller);
+
+        $class->before_import(\@_) if $class->can('before_import');
+        my @list = @_;
 
         @list = keys %$meta unless @list;
         for my $name (@list) {
