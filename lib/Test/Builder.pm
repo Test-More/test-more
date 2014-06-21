@@ -1379,7 +1379,7 @@ sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my( $self, $height ) = @_;
     $height ||= 0;
 
-    $self->carp("Use of \$TB->caller() is deprecated.") if $self->modern;
+    warn ("Use of Test::Builder->caller() is deprecated.\n") if $self->modern;
 
     my $level = $self->level + $height + 1;
     my @caller;
@@ -1392,7 +1392,7 @@ sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
 sub level {
     my( $self, $level ) = @_;
-    $self->carp("Use of \$TB->level() is deprecated.") if $self->modern;
+    warn("Use of Test::Builder->level() is deprecated.\n") if $self->modern;
     $Level = $level if defined $level;
     return $Level;
 }
