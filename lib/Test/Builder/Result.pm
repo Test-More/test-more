@@ -7,7 +7,7 @@ use Scalar::Util qw/blessed/;
 
 use Test::Builder::Util qw/accessors new/;
 
-accessors(qw/caller pid depth in_todo source/);
+accessors(qw/caller pid depth in_todo source anointed provider/);
 
 sub init {
     my $self = shift;

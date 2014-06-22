@@ -19,8 +19,8 @@ our $VERSION = '1.001004_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 # The mostly-singleton, and other package vars.
-our $Test = Test::Builder->new;
-our $Level;
+our $Test   = Test::Builder->new;
+our $Level  = 1;
 
 ####################
 # {{{ MAGIC things #
@@ -161,7 +161,6 @@ sub child {
     my $class = Scalar::Util::blessed($self);
     my $child = $class->create;
 
-    $child->depth($self->depth + 1);
 
     $child->{stream} = $self->stream->spawn;
 
@@ -179,6 +178,8 @@ sub child {
     $child->{Name}        = $name || "Child of " . $self->name;
 
     $self->{Child_Name}   = $child->name;
+
+    $child->depth($self->depth + 1);
 
     my $res = Test::Builder::Result::Child->new(
         $self->context,
@@ -206,15 +207,17 @@ sub subtest {
     {
         # child() calls reset() which sets $Level to 1, so we localize
         # $Level first to limit the scope of the reset to the subtest.
-        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        local $Level = $Level + 1;
 
         # Add subtest name for clarification of starting point
         $self->note("Subtest: $name");
 
         # Store the guts of $self as $parent and turn $child into $self.
         $child  = $self->child($name);
+
         _copy($self,  $parent);
         _copy($child, $self);
+        Test::Builder::Stream->intercept_start($self->stream);
 
         my $run_the_subtests = sub {
             $subtests->(@args);
@@ -228,6 +231,7 @@ sub subtest {
     }
 
     # Restore the parent and the copied child.
+    Test::Builder::Stream->intercept_stop($self->stream);
     _copy($self,   $child);
     _copy($parent, $self);
 
@@ -237,7 +241,7 @@ sub subtest {
     # Die *after* we restore the parent.
     die $error if $error and !eval { $error->isa('Test::Builder::Exception') };
 
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    local $Level = $Level + 1;
     my $finalize = $child->finalize;
 
     $self->BAIL_OUT($child->{Bailed_Out_Reason}) if $child->{Bailed_Out};
@@ -256,7 +260,7 @@ sub finalize {
     local $? = 0;     # don't fail if $subtests happened to set $? nonzero
     $self->_ending;
 
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    local $Level = $Level + 1;
 
     my $ok = 1;
     $self->parent->{Child_Name} = undef;
@@ -315,6 +319,7 @@ sub trace_anointed {
         my ($pkg, $sub);
         if ($subname =~ m/^.*\|(.*)->TB_PROVIDER_META->{(.*)}$/) {
             ($pkg, $sub) = ($1, $2);
+            next if $sub eq '__HIDE__';
             $sub_is_p = 1 if $pkg && $sub;
         }
         else {
@@ -340,10 +345,11 @@ sub trace_anointed {
         # This may not be the provider we asked for...
         next if $provider && !($pkg && $pkg eq $provider);
 
+        return [@call[0..2]];
         $found = [@call[0..2]];
     }
 
-    return $found;
+    return $found || undef;
 }
 
 sub trace_provider {
@@ -357,6 +363,8 @@ sub trace_provider {
         next if $provider && $call[0] ne $provider;
         return [@call[0..2]];
     }
+
+    return undef;
 }
 
 sub anoint {
@@ -367,6 +375,15 @@ sub anoint {
         my $meta = {};
         no strict 'refs';
         *{"$target\::TB_TESTER_META"} = sub {$meta};
+    }
+
+    unless ($target->can('TB_INSTANCE')) {
+        my $tb = Test::Builder->create(
+            modern        => 1,
+            shared_stream => 1,
+        );
+        no strict 'refs';
+        *{"$target\::TB_INSTANCE"} = sub {$tb};
     }
 
     return 1 unless $oil;
@@ -500,14 +517,35 @@ sub done_testing {
 
     if( $self->{Done_Testing} ) {
         my($file, $line) = @{$self->{Done_Testing}}[1,2];
-        $self->ok(0, "done_testing() was already called at $file line $line");
+        my $ok = Test::Builder::Result::Ok->new(
+            $self->context,
+            real_bool => 0,
+            name      => "done_testing() was already called at $file line $line",
+            bool      => $self->in_todo ? 1 : 0,
+            in_todo   => $self->in_todo || 0,
+            todo      => $self->in_todo ? $self->todo() || "" : "",
+        );
+        $self->stream->send($ok);
+        $self->is_passing(0) unless $self->in_todo;
+
         return;
     }
 
     $self->{Done_Testing} = [caller];
 
-    $self->ok(0, "planned to run $expected but done_testing() expects $num_tests")
-        if $expected && defined($num_tests) && $num_tests != $expected;
+    if ($expected && defined($num_tests) && $num_tests != $expected) {
+        my $ok = Test::Builder::Result::Ok->new(
+            $self->context,
+            real_bool => 0,
+            name      => "planned to run $expected but done_testing() expects $num_tests",
+            bool      => $self->in_todo ? 1 : 0,
+            in_todo   => $self->in_todo || 0,
+            todo      => $self->in_todo ? $self->todo() || "" : "",
+        );
+        $self->stream->send($ok);
+        $self->is_passing(0) unless $self->in_todo;
+    }
+
 
     $self->_issue_plan($total) unless $expected;
 
@@ -574,19 +612,6 @@ ERR
     }
 
     $self->stream->send($ok);
-
-    unless($test) {
-        my $msg = $self->in_todo ? "Failed (TODO)" : "Failed";
-        my $prefix = $ENV{HARNESS_ACTIVE} ? "\n" : "";
-
-        my(undef, $file, $line) = $self->caller;
-        if(defined $name) {
-            $self->diag(qq[$prefix  $msg test '$name'\n  at $file line $line.\n]);
-        }
-        else {
-            $self->diag(qq[$prefix  $msg test at $file line $line.\n]);
-        }
-    }
 
     $self->is_passing(0) unless $test || $self->in_todo;
 
@@ -865,10 +890,23 @@ sub context {
     my ($height) = @_;
     $height ||= 0;
 
+    my $anointed = $self->trace_anointed;
+    my $caller;
+
+    unless($self->modern) {
+        my $add = 1;
+        do {
+            $caller = [$self->caller($height + $add)];
+            $add++;
+        } while $caller->[0] eq __PACKAGE__;
+    }
+
     return (
-        caller => [$self->caller($height + 1)],
-        depth  => $self->depth,
-        source => $self->name || "",
+        depth    => $self->depth,
+        source   => $self->name || "",
+        anointed => $anointed,
+        provider => $self->trace_provider,
+        caller   => $caller || $anointed || [caller(1)],
     );
 }
 
@@ -897,7 +935,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     # We leave this a global because it has to be localized and localizing
     # hash keys is just asking for pain.  Also, it was documented.
-    $Level = 1;
+    $Level  = 1;
 
     if ($params{new_stream} || !$params{shared_stream}) {
         $self->{stream} = Test::Builder::Stream->new;
@@ -914,7 +952,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     }
 
     $self->{Name}  = $0;
-    $self->{Depth} = 0;
 
     $self->{Have_Issued_Plan} = 0;
     $self->{Done_Testing}     = 0;
@@ -923,6 +960,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Original_Pid} = $$;
     $self->{Child_Name}   = undef;
     $self->{Indent}     ||= '';
+    $self->{Depth}        = 0;
 
     $self->{Exported_To}    = undef;
     $self->{Expected_Tests} = 0;
@@ -1379,7 +1417,7 @@ sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my( $self, $height ) = @_;
     $height ||= 0;
 
-    warn ("Use of Test::Builder->caller() is deprecated.\n") if $self->modern;
+    #Carp::carp("Use of Test::Builder->caller() is deprecated.\n") if $self->modern;
 
     my $level = $self->level + $height + 1;
     my @caller;
@@ -1392,7 +1430,7 @@ sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
 sub level {
     my( $self, $level ) = @_;
-    warn("Use of Test::Builder->level() is deprecated.\n") if $self->modern;
+    #Carp::carp("Use of Test::Builder->level() is deprecated.\n") if $self->modern;
     $Level = $level if defined $level;
     return $Level;
 }
@@ -1683,22 +1721,11 @@ Find the caller-stack-frame where the provider tool handed off the work. For
 instance if your provider calls C<< $TB->ok(...) >> that is the information
 this will return.
 
-sub trace_provider {
+=item $Test->anoint($TARGET_PACKAGE)
 
-sub anoint {
-    my $class = shift;
-    my ($target, $oil) = @_;
+=item $Test->anoint($TARGET_PACKAGE, $ANOINTED_BY_PACKAGE)
 
-    unless ($target->can('TB_TESTER_META')) {
-        my $meta = {};
-        no strict 'refs';
-        *{"$target\::TB_TESTER_META"} = sub {$meta};
-    }
-
-    return 1 unless $oil;
-    my $meta = $target->TB_TESTER_META;
-    $meta->{$oil} = 1;
-}
+Used to anoint a package as a testing package.
 
 =item $reason = $Test->find_TODO
 

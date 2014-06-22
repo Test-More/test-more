@@ -21,17 +21,17 @@ accessor _follow_up   => sub {{ }};
 sub pid { shift->{pid} }
 
 {
-    my ($root, $shared);
+    my ($root, @shared);
 
     sub root { $root };
 
     sub shared {
-        $root   ||= __PACKAGE__->new;
-        $shared ||= $root;
-        return $shared;
+        $root ||= __PACKAGE__->new;
+        push @shared => $root unless @shared;
+        return $shared[-1];
     };
 
-    sub clear { $root = undef; $shared = undef }
+    sub clear { $root = undef; @shared = () }
 
     sub intercept {
         my $class = shift;
@@ -40,14 +40,28 @@ sub pid { shift->{pid} }
         confess "argument to intercept must be a coderef, got: $code"
             unless reftype $code eq 'CODE';
 
-        my $orig = $shared;
-        $shared = $class->new(no_follow => 1) || die "Internal error!";
+        my $orig = $class->intercept_start();
         local $@;
-        my $ok = eval { $code->($shared); 1 };
+        my $ok = eval { $code->($shared[-1]); 1 };
         my $error = $@;
-        $shared = $orig;
+        $class->intercept_stop($orig);
         die $error unless $ok;
         return $ok;
+    }
+
+    sub intercept_start {
+        my $class = shift;
+        my $new = $_[0] || $class->new(no_follow => 1) || die "Internal error!";
+        push @shared => $new;
+        return $new;
+    }
+
+    sub intercept_stop {
+        my $class = shift;
+        my ($orig) = @_;
+        confess "intercept nesting inconsistancy!"
+            unless $shared[-1] == $orig;
+        return pop @shared;
     }
 }
 
@@ -257,6 +271,10 @@ sub send {
 
     for my $item (@$items) {
         my $type = blessed $item;
+#        if ($type eq 'Test::Builder::Result::Ok') {
+#            use Data::Dumper;
+#            print $self . ": " . Dumper($item);
+#        }
         my $follow = $self->follow_up($type) || next;
         $follow->($item);
     }

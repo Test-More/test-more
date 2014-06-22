@@ -7,11 +7,40 @@ use strict;
 our $VERSION = '1.001004_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Builder::Module 0.99;
-our @ISA    = qw(Test::Builder::Module);
-our @EXPORT = qw(ok);
+use Test::Builder::Provider;
 
-my $CLASS = __PACKAGE__;
+provides qw/ok/;
+
+sub before_import {
+    my $class = shift;
+    my $list  = shift;
+
+    my $other = [];
+    my $idx   = 0;
+    while( $idx <= $#{$list} ) {
+        my $item = $list->[$idx++];
+
+        if( defined $item and $item eq 'no_diag' ) {
+            $class->builder->no_diag(1);
+        }
+        elsif( $item eq 'tests' || $item eq 'skip_all' ) {
+            $class->builder->plan($item => $list->[$idx++]);
+        }
+        elsif( $item eq 'no_plan' ) {
+            $class->builder->plan($item);
+        }
+        elsif( $item eq 'import' ) {
+            push @$other => @{$list->[$idx++]};
+        }
+        else {
+            Carp::croak("Unknown option: $item");
+        }
+    }
+
+    @$list = @$other;
+
+    return;
+}
 
 =head1 NAME
 
@@ -77,7 +106,7 @@ will do what you mean (fail if stuff is empty)
 =cut
 
 sub ok ($;$) {    ## no critic (Subroutines::ProhibitSubroutinePrototypes)
-    return $CLASS->builder->ok(@_);
+    return builder()->ok(@_);
 }
 
 =back

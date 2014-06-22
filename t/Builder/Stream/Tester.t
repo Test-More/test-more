@@ -1,7 +1,7 @@
 use strict;
 use warnings;
-use Test::More;
 
+use Test::More;
 use Test::Builder::Stream::Tester;
 
 can_ok( __PACKAGE__, 'intercept' );
@@ -18,9 +18,6 @@ is($results->[0]->name, "Woo!", "Got test name");
 isa_ok($results->[1], 'Test::Builder::Result::Ok');
 is($results->[1]->bool, 0, "Got one fail");
 is($results->[1]->name, "Boo!", "Got test name");
-
-isa_ok($results->[2], 'Test::Builder::Result::Diag');
-is($results->[2]->message, "\n  Failed test 'Boo!'\n  at " . __FILE__ . " line 11.\n", "got error msg");
 
 $results = intercept {
     ok(1, "Woo!");

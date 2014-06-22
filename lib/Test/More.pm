@@ -43,6 +43,8 @@ provides qw(
   BAIL_OUT
 );
 
+#untracably_provides qw/subtest/;
+
 provide TODO => \$TODO;
 
 sub plan {
@@ -51,13 +53,11 @@ sub plan {
     return $tb->plan(@_);
 }
 
-# This implements "use Test::More 'no_diag'" but the behavior is
-# deprecated.
 sub before_import {
     my $class = shift;
     my $list  = shift;
 
-    my @other = ();
+    my $other = [];
     my $idx   = 0;
     while( $idx <= $#{$list} ) {
         my $item = $list->[$idx++];
@@ -71,12 +71,15 @@ sub before_import {
         elsif( $item eq 'no_plan' ) {
             $class->builder->plan($item);
         }
+        elsif( $item eq 'import' ) {
+            push @$other => @{$list->[$idx++]};
+        }
         else {
-            push @other, $item;
+            Carp::croak("Unknown option: $item");
         }
     }
 
-    @$list = @other;
+    @$list = @$other;
 
     return;
 }
@@ -1602,6 +1605,7 @@ The test will exit with 255.
 
 For even better control look at L<Test::Most>.
 
+=back
 
 =head2 Discouraged comparison functions
 

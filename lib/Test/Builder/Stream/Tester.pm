@@ -4,12 +4,10 @@ use warnings;
 
 use Test::Builder::Stream;
 
-use Exporter qw/import/;
 use Scalar::Util qw/blessed/;
 
-use parent 'Test::Builder::Formatter';
-
-our @EXPORT = qw/intercept/;
+use Test::Builder::Provider;
+provides qw/intercept/;
 
 sub intercept(&) {
     my ($code) = @_;

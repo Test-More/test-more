@@ -81,6 +81,33 @@ sub ok {
     my ($item) = @_;
     lock $self->{ok_lock};
     $self->_print($item->indent || "", $item->to_tap($self->test_number(1)));
+
+    unless($item->real_bool) {
+        my $msg = $item->in_todo ? "Failed (TODO)" : "Failed";
+        my $prefix = $ENV{HARNESS_ACTIVE} ? "\n" : "";
+
+        my ($file, $line);
+        if ($item->anointed) {
+            (undef, $file, $line) = @{$item->anointed};
+        }
+        else {
+            (undef, $file, $line) = @{$item->caller};
+        }
+
+        if(defined $item->name) {
+            my $name = $item->name;
+            $msg = qq[$prefix  $msg test '$name'\n  at $file line $line.\n];
+        }
+        else {
+            $msg = qq[$prefix  $msg test at $file line $line.\n];
+        }
+
+        my $diag = Test::Builder::Result::Diag->new(
+            message => $msg || "",
+            map {($_ => $item->$_ || undef)} qw/caller pid depth in_todo source anointed provider/,
+        );
+        $self->diag($diag);
+    }
 }
 
 sub diag {

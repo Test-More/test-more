@@ -135,6 +135,7 @@ sub _accessor {
 
         $self->{$attr} = $self->$default if $default && !exists $self->{$attr};
         ($self->{$attr}) = @_ if @_;
+
         return $self->{$attr};
     };
 

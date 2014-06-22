@@ -143,7 +143,7 @@ ok( !eq_hash(\%hash1, \%hash2),
     'eq_hash with slightly different complicated hashes' );
 is @Test::More::Data_Stack, 0;
 
-is( Test::Builder->new, Test::More->builder,    'builder()' );
+is( Test::Builder->new, Test::More->builder, 'builder()' );
 
 
 cmp_ok(42, '==', 42,        'cmp_ok ==');
