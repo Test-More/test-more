@@ -6,10 +6,10 @@ use Carp qw/confess croak/;
 use Scalar::Util qw/reftype blessed/;
 use Test::Builder::ExitMagic;
 use Test::Builder::Threads;
-use Test::Builder::Util qw/accessors accessor deltas/;
+use Test::Builder::Util qw/accessors accessor atomic_deltas/;
 
 accessors qw/plan/;
-deltas qw/tests_run tests_failed/;
+atomic_deltas qw/tests_run tests_failed/;
 
 accessor no_ending    => sub { 0 };
 accessor is_passing   => sub { 1 };
@@ -271,10 +271,6 @@ sub send {
 
     for my $item (@$items) {
         my $type = blessed $item;
-#        if ($type eq 'Test::Builder::Result::Ok') {
-#            use Data::Dumper;
-#            print $self . ": " . Dumper($item);
-#        }
         my $follow = $self->follow_up($type) || next;
         $follow->($item);
     }

@@ -4,11 +4,15 @@ use warnings;
 
 use Carp qw/croak/;
 use Scalar::Util qw/reftype blessed/;
+use Test::Builder::Threads;
 
 my $meta = {};
 sub TB_EXPORT_META { $meta };
 
-exports(qw/import export accessor accessors delta deltas export_to transform/);
+exports(qw/
+    import export accessor accessors delta deltas export_to transform
+    atomic_delta atomic_deltas
+/);
 
 export(new => sub {
     my $class = shift;
@@ -172,16 +176,28 @@ sub delta {
     my ($name, $initial) = @_;
     my $caller = caller;
 
-    _delta($caller, $name, $initial || 0);
+    _delta($caller, $name, $initial || 0, 0);
 }
 
 sub deltas {
     my $caller = caller;
-    _delta($caller, "$_", 0) for @_;
+    _delta($caller, "$_", 0, 0) for @_;
+}
+
+sub atomic_delta {
+    my ($name, $initial) = @_;
+    my $caller = caller;
+
+    _delta($caller, $name, $initial || 0, 1);
+}
+
+sub atomic_deltas {
+    my $caller = caller;
+    _delta($caller, "$_", 0, 1) for @_;
 }
 
 sub _delta {
-    my ($caller, $attr, $initial) = @_;
+    my ($caller, $attr, $initial, $atomic) = @_;
     my $name = lc $attr;
 
     my $sub = sub {
@@ -190,6 +206,7 @@ sub _delta {
         croak "$name\() must be called on a blessed instance, got: $self"
             unless blessed $self;
 
+        lock $self->{$attr} if $atomic;
         $self->{$attr} = $initial unless exists $self->{$attr};
         $self->{$attr} += $_[0] if @_;
 
