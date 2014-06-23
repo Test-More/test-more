@@ -39,11 +39,10 @@ provides qw(
   done_testing
   can_ok isa_ok new_ok
   diag note explain
-  subtest
   BAIL_OUT
 );
 
-#untracably_provides qw/subtest/;
+provide_nests qw/subtest/;
 
 provide TODO => \$TODO;
 

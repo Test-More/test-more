@@ -19,17 +19,20 @@ sub import {
     my @sym_list = @_;
     my $caller = caller;
 
-    my $meta = {};
+    my $meta = {refs => {}, attrs => {}};
     my %subs;
 
     $subs{TB_PROVIDER_META} = sub { $meta };
 
     # to help transition legacy
     my $builder = sub {
-        my $call = Test::Builder->trace_anointed($class);
+        my $trace = Test::Builder->trace_test;
 
-        return $call->[0]->TB_INSTANCE
-            if $call && @$call && $call->[0]->can('TB_INSTANCE');
+        if ($trace && $trace->{report}) {
+            my $pkg = $trace->{package};
+            return $pkg->TB_INSTANCE
+                if $pkg && $pkg->can('TB_INSTANCE');
+        }
 
         return Test::Builder->new;
     };
@@ -39,13 +42,13 @@ sub import {
 
     $subs{anoint} = sub { Test::Builder->anoint($_[1], $_[0]) };
 
-    $subs{untracably_provides} = sub {
+    $subs{provide_nests} = sub {
         for my $provide (@_) {
-            $subs{provide}->($provide, undef, hidden => 1);
+            $subs{provide}->($provide, undef, nest => 1);
         }
     };
-    $subs{untracably_provide} = sub {
-        $subs{provide}->($_[0], $_[1], hidden => 1);
+    $subs{provide_nest} = sub {
+        $subs{provide}->($_[0], $_[1], nest => 1);
     };
 
     $subs{provides} = sub { $subs{provide}->($_) for @_ };
@@ -53,7 +56,7 @@ sub import {
         my ($name, $ref, %params) = @_;
 
         croak "$caller already provides '$name'"
-            if $meta->{$name};
+            if $meta->{refs}->{$name};
 
         croak "The second argument to provide() must be a ref, got: $ref"
             if $ref && !ref $ref;
@@ -62,21 +65,22 @@ sub import {
         croak "$caller has no sub named '$name', and no ref was given"
             unless $ref;
 
-        return $meta->{$name} = $ref unless reftype $ref eq 'CODE';
+        $meta->{attrs}->{$name} = {%params, package => $caller, name => $name};
+
+        return $meta->{refs}->{$name} = $ref unless reftype $ref eq 'CODE';
 
         bless $ref, $class;
 
         my $o_name = B::svref_2object($ref)->GV->NAME;
-        if ($o_name && $o_name ne '__ANON__' && !$params{hidden}) { #sub has a name
-            $meta->{$name} = $ref;
+        if ($o_name && $o_name ne '__ANON__') { #sub has a name
+            $meta->{refs}->{$name} = $ref;
         }
         else {
             # Voodoo....
             # Insert an anonymous sub, and use a trick to make caller() think its
             # name is this string, which tells us how to find the thing that was
             # actually called.
-            my $key = $params{hidden} ? '__HIDE__' : $name;
-            my $subname = __PACKAGE__ . "::__ANON__|$caller\->TB_PROVIDER_META->{$key}";
+            my $subname = __PACKAGE__ . "::__ANON__|$caller\->TB_PROVIDER_META->{refs}->{$name}";
 
             my $code = sub {
                 no warnings 'once';
@@ -90,7 +94,7 @@ sub import {
             my $proto = prototype($ref);
             &set_prototype($code, $proto) if $proto;
 
-            $meta->{$name} = bless $code, $class;
+            $meta->{refs}->{$name} = bless $code, $class;
         }
     };
 
@@ -111,21 +115,21 @@ sub import {
             }
         }
 
-        @list = grep { !$no{$_} } keys %$meta unless @list;
+        @list = grep { !$no{$_} } keys %{$meta->{refs}} unless @list;
         for my $name (@list) {
             if ($name =~ s/^(\$|\@|\%)//) {
                 my $sig = $1;
 
                 croak "$class does not export '$sig$name'"
-                    unless $meta->{$name}
-                        && reftype $meta->{$name} eq $SIG_MAP{$sig};
+                    unless $meta->{refs}->{$name}
+                        && reftype $meta->{refs}->{$name} eq $SIG_MAP{$sig};
             }
 
             croak "$class does not export '$name'"
-                unless $meta->{$name};
+                unless $meta->{refs}->{$name};
 
             no strict 'refs';
-            *{"$caller\::$name"} = $meta->{$name};
+            *{"$caller\::$name"} = $meta->{refs}->{$name};
         }
 
         $class->after_import(@_) if $class->can('after_import');

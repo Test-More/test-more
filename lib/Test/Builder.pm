@@ -158,10 +158,8 @@ sub child {
     # Clear $TODO for the child.
     my $orig_TODO = $self->find_TODO(undef, 1, undef);
 
-    my $old_level = $Level;
     my $class = Scalar::Util::blessed($self);
     my $child = $class->create;
-    $child->_old_level($old_level);
 
     $child->{stream} = $self->stream->spawn;
 
@@ -276,8 +274,6 @@ sub finalize {
     $? = $self->{Child_Error};
     delete $self->{Parent};
 
-    $Level = $self->_old_level;
-
     my $res = Test::Builder::Result::Child->new(
         $self->context,
         name    => $self->{Name} || undef,
@@ -297,87 +293,134 @@ sub finalize {
 # {{{ Finding Testers and Providers #
 #####################################
 
-sub trace_anointed {
-    my $class = shift;
-    my ($add) = @_;
-    $add ||= 0;
-    my $level = $class->_trace_anointed(@_);
-    return undef unless defined $level;
-    my @call = CORE::caller($level - 1 + $Level + $add);
-    return undef unless @call && $call[0];
-    return [@call[0..2]];
-}
+my %BUILDER_PACKAGES = (
+    __PACKAGE__, 1,
 
-sub _trace_anointed {
-    my $class = shift;
-    my ($provider, $anointed) = @_;
-    my $depth = 0;
+    'Test::Builder::Util'          => 1,
+    'Test::Builder::Stream'        => 1,
+    'Test::Builder::Result'        => 1,
+    'Test::Builder::Result::Ok'    => 1,
+    'Test::Builder::Result::Diag'  => 1,
+    'Test::Builder::Result::Note'  => 1,
+    'Test::Builder::Result::Plan'  => 1,
+    'Test::Builder::Result::Bail'  => 1,
+    'Test::Builder::Result::Child' => 1,
+);
 
-    my $found;
-    while (my @call = CORE::caller(++$depth)) {
-        # Make sure we have a/the anointed
-        next unless $call[0]->can('TB_TESTER_META');
-        next if $anointed && $call[0] ne $anointed;
-        my $found_anointed = $call[0];
+sub trace_test {
+    my (@stack, @anointed, @transition, @level, @tools);
 
-        # See if we can find the sub that was called, if so see if it is a
-        # blessed provider.
-        my $sub_is_p = 0;
-        my $subname = $call[3];
+    my $level  = 0;
+    my $last   = __PACKAGE__;
+    my $blevel = 0; # We are the builder!
+    my $nest   = undef;
+    my $report = undef;
+    my $report_jump = 0;
 
-        my ($pkg, $sub);
-        if ($subname =~ m/^.*\|(.*)->TB_PROVIDER_META->{(.*)}$/) {
-            ($pkg, $sub) = ($1, $2);
-            next if $sub eq '__HIDE__';
-            $sub_is_p = 1 if $pkg && $sub;
-        }
-        else {
-            ($pkg, $sub) = ($subname =~ m/^(.+)::([^:]+)$/);
-            if ($sub && $sub ne '__ANON__') {
-                my $ref = $pkg->can($sub);
-                $sub_is_p = 1 if $ref && Scalar::Util::blessed($ref) && $ref->isa('Test::Builder::Provider');
-            }
-        }
+    while(my @call = CORE::caller($level++)) {
+        my ($pkg, $file, $line, $sub) = @call;
 
-        # If we could not find the sub, or it is not blessed, see if the
-        # package it is in is a provider.
-        next unless $sub_is_p;
-        #unless($sub_is_p) {
-        #    # If the provider is also the anointed we will skip it unless that
-        #    # is what was requested.
-        #    unless($provider && $provider eq $found_anointed) {
-        #        next if $pkg && $pkg eq $found_anointed;
-        #    }
-        #    next if $pkg && !($pkg eq __PACKAGE__ || $pkg->can('TB_PROVIDER_META'));
-        #}
-
-        # This may not be the provider we asked for...
-        next if $provider && !($pkg && $pkg eq $provider);
-
-        if($found_anointed->can('TB_PROVIDER_META')) {
-            $found = $depth;
+        if ($BUILDER_PACKAGES{$pkg}) {
+            $last   = $pkg;
+            $blevel = $level - 1; # Stupid Legacy
             next;
         }
 
-        return $depth;
+        my $entry = {};
+
+        if(my $attrs = _is_provider_tool(@call)) {
+            $entry->{provider_tool} = $attrs;
+            # UHG - subtests are the root of all evil Stupid LEgacy
+            $blevel = $level - 1 if $attrs->{name} eq 'subtest' && $attrs->{package} eq 'Test::More';
+            if ($attrs->{nest}) {
+                last if $nest;
+                $nest = $entry;
+            }
+        }
+
+        $entry->{transition} = 1 if !$last || $BUILDER_PACKAGES{$last};
+        $entry->{anointed}   = 1 if $pkg->can('TB_TESTER_META') && $sub ne 'Test::Builder::subtest';
+
+        # Stupid Legacy
+        if ($Level && $Level == (($level - 1) - $blevel)) {
+            # Only the anointed can be level!
+            # UHG - subtests are the root of all evil
+            if ($entry->{anointed} && $sub ne 'Test::Builder::subtest') {
+                $entry->{level} = 1;
+            }
+            elsif($stack[-1] && $stack[-1]->{anointed}) {
+                $entry->{false_level} = -1;
+                $stack[-1]->{level} = 1;
+                push @level => $stack[-1];
+            }
+            # UHG - subtests are the root of all evil
+            elsif($sub eq 'Test::Builder::subtest') {
+                $entry->{false_level} = 3;
+                $report_jump = 3;
+            }
+        }
+
+        next unless keys %$entry;
+
+        @$entry{qw/package file line/} = @call;
+
+        # Technically this is the depth + 1, but does not matter.
+        $entry->{depth} = $level;
+
+        push @stack      => $entry;
+        push @tools      => $entry if $entry->{provider_tool} && !$entry->{provider_tool}->{nest};
+        push @anointed   => $entry if $entry->{anointed};
+        push @transition => $entry if $entry->{transition};
+        push @level      => $entry if $entry->{level};
+
+        if ($report_jump) {
+            $report_jump--;
+            $report = $entry unless $report_jump;
+        }
+
+        $last = $pkg;
     }
 
-    return $found || undef;
+    unless($report) {
+        # If we have a level and a tool, we want the deeper one.
+        ($report) = @level && @tools ? (sort {$b->{depth} <=> $a->{depth}} $level[0], $tools[-1]) : (undef);
+        $report ||= $level[0] || $tools[-1] || $nest || $anointed[0] || $transition[-1];
+    }
+
+    $report->{report} = 1 if $report;
+
+    # No longer need this, the depth is useless outside of this sub
+    delete $_->{depth} for @stack;
+
+    return {
+        report => $report || undef,
+        stack  => \@stack,
+    };
 }
 
-sub trace_provider {
-    my $class = shift;
-    my ($provider) = @_;
+sub _is_provider_tool {
+    my @call = @_;
 
-    my $depth = 1;
+    my $sub_is_p = 0;
+    my $subname = $call[3];
+    return if $subname eq '(eval)';
 
-    while (my @call = CORE::caller($depth++)) {
-        next unless $call[0]->can('TB_PROVIDER_META');
-        next if $provider && $call[0] ne $provider;
-        return [@call[0..2]];
+    my ($pkg, $sub);
+    if ($subname =~ m/^.*\|(.*)->TB_PROVIDER_META->{refs}->{(.*)}$/) {
+        ($pkg, $sub) = ($1, $2);
+        $sub_is_p = 1 if $pkg && $sub;
+    }
+    else {
+        ($pkg, $sub) = ($subname =~ m/^(.+)::([^:]+)$/);
+        die "$subname: $pkg, $sub: " . join(", " => @call) . "\n" unless $pkg;
+        if ($pkg->can('TB_PROVIDER_META') && $sub && $sub ne '__ANON__') {
+            my $ref = $pkg->can($sub);
+            $sub_is_p = 1 if $ref && Scalar::Util::blessed($ref) && $ref->isa('Test::Builder::Provider');
+        }
     }
 
-    return undef;
+    return undef unless $sub_is_p;
+    return $pkg->TB_PROVIDER_META->{attrs}->{$sub} || die "Could not find attributes for $call[3]";
 }
 
 sub anoint {
@@ -407,7 +450,12 @@ sub anoint {
 sub find_TODO {
     my( $self, $pack, $set, $new_value ) = @_;
 
-    $pack = $pack || $self->caller() || $self->exported_to;
+    if (!$pack) {
+        my $trace = $self->trace_test;
+        $pack = $trace->{report}->{package};
+    }
+
+    $pack ||= $self->exported_to;
     return unless $pack;
 
     no strict 'refs';    ## no critic
@@ -887,15 +935,12 @@ sub croak {
 sub context {
     my $self = shift;
 
-    my $anointed = $self->trace_anointed;
-    my $call = $anointed || [$self->caller()];
+    my $trace = $self->trace_test;
 
     return (
-        depth    => $self->depth,
-        source   => $self->name || "",
-        anointed => $anointed,
-        provider => $self->trace_provider,
-        caller   => $call,
+        depth  => $self->depth,
+        source => $self->name || "",
+        trace  => $trace,
     );
 }
 
@@ -1229,8 +1274,8 @@ sub _try {
 sub _message_at_caller {
     my $self = shift;
 
-    my $call = $self->trace_anointed() || [$self->caller()];
-    my( $pack, $file, $line ) = @$call;
+    my $trace = $self->trace_test;
+    my( $pack, $file, $line ) = @{$trace->{report}}{qw/package file line/};
     return join( "", @_ ) . " at $file line $line.\n";
 }
 
@@ -1393,26 +1438,15 @@ sub expected_tests {
 }
 
 sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    my( $self, $height ) = @_;
-    $height ||= 0;
+    my $self = shift;
 
-    #Carp::carp("Use of Test::Builder->caller() is deprecated.\n") if $self->modern;
+    Carp::carp("Use of Test::Builder->caller() is deprecated.\n") if $self->modern;
 
-    my @caller;
-    my $level;
-    my $L = 0;
-    while(@caller = CORE::caller(++$L)) {
-        $level = $L if $caller[0] eq __PACKAGE__;
-    }
+    my $trace = $self->trace_test;
 
-    $level += $self->level + $height + 2;
+    my @call = @{$trace->{report} || {}}{qw/package file line/};
 
-    do {
-        @caller = CORE::caller($level);
-        $level--;
-    } until @caller;
-
-    return wantarray ? @caller : $caller[0];
+    return wantarray ? @call : $call[0];
 }
 
 sub level {
@@ -1475,9 +1509,9 @@ Test::Builder - Backend for building test libraries
     sub is { ... }
     sub is_deeply { ... }
 
-B<Note:> You MUST use 'provide' or 'provides' to export testing tools, this
-allows you to use the C<< builder()->trace_* >> tools to determine what
-file/line a failed test came from.
+B<Note:> You MUST use 'provide', 'provides', 'provide_nest' or 'provide_nests'
+to export testing tools, this allows you to use the C<< builder()->trace_test >>
+tools to determine what file/line a failed test came from.
 
 =head1 DESCRIPTION
 
@@ -1508,7 +1542,7 @@ Create a Test::Builder object that does not include any legacy cruft.
     my $Test = Test::Builder->create(modern => 1);
 
 B<NOTE>: C<$Level> is tied to the package, not the instance. Basically this
-means you should avoid using $Level in favor of the trace_* methods. $Level
+means you should avoid using $Level in favor of the trace_test method. $Level
 still exists purely for legacy support.
 
 =item $Test = Test::Builder->new B<***DEPRECATED***>
@@ -1670,42 +1704,89 @@ the desired caller frame.
 
 =over 4
 
-=item $call = $Test->trace_anointed()
+=item $trace = $Test->trace_test()
 
-=item $call = $Test->trace_anointed($provider)
+$trace looks like this:
 
-=item $call = $Test->trace_anointed(undef, $anointed)
+    {
+        # This is the caller info that should be used when reporting failures
+        report => {
+            'line' => 2300,
+            'package' => 'XXX::Tester',
+            'file' => 't/Builder/provider_trace.t',
+            'provider_tool' => {package => 'XXX::Tester', name => 'explodable'},
+            'anointed' => 1,
+            'report' => 1,
+        },
+        # This is a more detailed stack, it only includes relevent frames, lots
+        # has been filtered out for you.
+        stack => [
+            {
+                'transition' => 1,
+                'file' => 't/Builder/provider_trace.t',
+                'line' => 5,
+                'package' => 'main',
+            },
+            {
+                'line' => 2100,
+                'package' => 'XXX::Tester',
+                'provider_tool' => {package => 'XXX::Provider', name => 'explode'},
+                'anointed' => 1,
+                'file' => 't/Builder/provider_trace.t'
+            },
+            {
+                'provider_tool' => {package => 'XXX::Tester', name => 'explodable'},
+                'file' => 't/Builder/provider_trace.t',
+                'anointed' => 1,
+                'line' => 2300,
+                'package' => 'XXX::Tester',
+                'report' => 1,
+            }
+        ],
+    }
 
-=item $call = $Test->trace_anointed($provider, $anointed)
+The 'report' is not always the lowest frame in the stack, always check the
+'report' key, or look for the C<< 'report' => 1 >> in the frame.
 
-Find the caller-stack-frame where the tester called something from the
-provider. You can give specific provider and test packages, otherwise any
-test/provider will do.
+These are the attributes that may be present in a stack frame and/or report:
 
-C<$call> is a 3 element array containing the package, file, and line number of
-the call, just like you get from C<my @call = caller()>.
+=over 4
 
-B<Note:> I<anointed> is the term given to an package that has been 'anointed'
-as a test package.
+=item provider_tool => {...}
 
-Example:
+When present, it means the frame made a call to a test provider tool. The value
+will be a hashref with metadata about the tool.
 
-    # foo.pl
-    1|  package Foo;
-    2|  use My::Provider qw/ok/;
-    3|  ok(1, "stuff");
-    4|  ...
+=item package => 'Foo::Bar'
 
-calling C<trace_anointed> from inside C<ok()> will give you
-C<['Foo', 'foo.pl', 3]>.
+Package the call was made in, like what C<CORE::caller()> returns.
 
-=item $call = $Test->trace_provider()
+=item file => 'some_test.t'
 
-=item $call = $Test->trace_provider($provider)
+File the call was made in, like what C<CORE::caller()> returns.
 
-Find the caller-stack-frame where the provider tool handed off the work. For
-instance if your provider calls C<< $TB->ok(...) >> that is the information
-this will return.
+=item line => 42
+
+Line the call was made on, like what C<CORE::caller()> returns.
+
+=item transition => $BOOL
+
+True if the frame is where a call was made on a Test::Builder subroutine
+
+=item anointed => $BOOL
+
+True if the call was made from an anointed test package.
+
+=item level => $BOOL
+
+True if the frame was included because $Level was in use. This is mainly for
+legacy support.
+
+=item report => $BOOL
+
+True if this is the frame that should be used when reporting test failures.
+
+=back
 
 =item $Test->anoint($TARGET_PACKAGE)
 

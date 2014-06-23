@@ -86,13 +86,7 @@ sub ok {
         my $msg = $item->in_todo ? "Failed (TODO)" : "Failed";
         my $prefix = $ENV{HARNESS_ACTIVE} ? "\n" : "";
 
-        my ($file, $line);
-        if ($item->anointed) {
-            (undef, $file, $line) = @{$item->anointed};
-        }
-        else {
-            (undef, $file, $line) = @{$item->caller};
-        }
+        my ($file, $line) = @{$item->trace->{report}}{qw/file line/};
 
         if(defined $item->name) {
             my $name = $item->name;
@@ -104,7 +98,7 @@ sub ok {
 
         my $diag = Test::Builder::Result::Diag->new(
             message => $msg || "",
-            map {($_ => $item->$_ || undef)} qw/caller pid depth in_todo source anointed provider/,
+            map {($_ => $item->$_ || undef)} qw/trace pid depth in_todo source/,
         );
         $self->diag($diag);
     }
