@@ -32,7 +32,6 @@ sub foobar_ok ($;$) {
     my ($value, $name) = @_;
     $name ||= "foobar_ok";
 
-    use Data::Dumper;
     local $Test::Builder::Level = $Test::Builder::Level + 1;
     subtest $name => sub {
         plan tests => 2;
@@ -56,7 +55,6 @@ sub foobar_ok ($;$) {
 
     test_test("foobar_ok failing line numbers");
 }
-die;
 
 # Wrap foobar_ok() to make another new predicate...
 

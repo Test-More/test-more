@@ -7,12 +7,13 @@ use Scalar::Util qw/blessed/;
 
 use Test::Builder::Util qw/accessors new/;
 
-accessors(qw/caller pid depth in_todo source anointed provider/);
+accessors(qw/caller pid depth in_todo source anointed provider constructed/);
 
 sub init {
     my $self = shift;
     my %params = @_;
 
+    $self->constructed([caller(1)]);
     $self->pid($$)             unless $params{pid};
     $self->caller([caller(2)]) unless $params{caller};
 }

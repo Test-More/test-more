@@ -16,7 +16,7 @@ my $default_lvl = $Test->level;
 $Test->level(0);
 
 $Test->ok( 1,  'compiled and new()' );
-$Test->ok( $default_lvl == 1,      'level()' );
+$Test->ok( $default_lvl == 0,      'level()' );
 
 $Test->is_eq('foo', 'foo',      'is_eq');
 $Test->is_num('23.0', '23',     'is_num');

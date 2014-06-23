@@ -252,7 +252,6 @@ sub new_ok {
     my $obj;
     my( $success, $error ) = $tb->_try( sub { $obj = $class->new(@$args); 1 } );
     if($success) {
-        local $Test::Builder::Level = $Test::Builder::Level + 1;
         isa_ok $obj, $class, $object_name;
     }
     else {

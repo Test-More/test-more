@@ -19,8 +19,8 @@ our $VERSION = '1.001004_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 # The mostly-singleton, and other package vars.
-our $Test   = Test::Builder->new;
-our $Level  = 1;
+our $Test  = Test::Builder->new;
+our $Level = 0;
 
 ####################
 # {{{ MAGIC things #
@@ -93,7 +93,7 @@ sub use_fork   { shift->stream->use_fork       }
 sub no_fork    { shift->stream->no_fork        }
 
 BEGIN {
-    Test::Builder::Util::accessors(qw/Parent Name/);
+    Test::Builder::Util::accessors(qw/Parent Name _old_level/);
     Test::Builder::Util::accessor(modern => sub {$ENV{TB_MODERN} || 0});
     Test::Builder::Util::accessor(depth  => sub { 0 });
 }
@@ -158,9 +158,10 @@ sub child {
     # Clear $TODO for the child.
     my $orig_TODO = $self->find_TODO(undef, 1, undef);
 
+    my $old_level = $Level;
     my $class = Scalar::Util::blessed($self);
     my $child = $class->create;
-
+    $child->_old_level($old_level);
 
     $child->{stream} = $self->stream->spawn;
 
@@ -205,12 +206,10 @@ sub subtest {
     my $parent = {};
 
     {
-        # child() calls reset() which sets $Level to 1, so we localize
-        # $Level first to limit the scope of the reset to the subtest.
-        local $Level = $Level + 1;
-
         # Add subtest name for clarification of starting point
         $self->note("Subtest: $name");
+
+        local $Level = $Level;
 
         # Store the guts of $self as $parent and turn $child into $self.
         $child  = $self->child($name);
@@ -241,7 +240,6 @@ sub subtest {
     # Die *after* we restore the parent.
     die $error if $error and !eval { $error->isa('Test::Builder::Exception') };
 
-    local $Level = $Level + 1;
     my $finalize = $child->finalize;
 
     $self->BAIL_OUT($child->{Bailed_Out_Reason}) if $child->{Bailed_Out};
@@ -260,8 +258,6 @@ sub finalize {
     local $? = 0;     # don't fail if $subtests happened to set $? nonzero
     $self->_ending;
 
-    local $Level = $Level + 1;
-
     my $ok = 1;
     $self->parent->{Child_Name} = undef;
 
@@ -279,6 +275,8 @@ sub finalize {
 
     $? = $self->{Child_Error};
     delete $self->{Parent};
+
+    $Level = $self->_old_level;
 
     my $res = Test::Builder::Result::Child->new(
         $self->context,
@@ -301,11 +299,22 @@ sub finalize {
 
 sub trace_anointed {
     my $class = shift;
+    my ($add) = @_;
+    $add ||= 0;
+    my $level = $class->_trace_anointed(@_);
+    return undef unless defined $level;
+    my @call = CORE::caller($level - 1 + $Level + $add);
+    return undef unless @call && $call[0];
+    return [@call[0..2]];
+}
+
+sub _trace_anointed {
+    my $class = shift;
     my ($provider, $anointed) = @_;
-    my $depth = 1;
+    my $depth = 0;
 
     my $found;
-    while (my @call = caller($depth++)) {
+    while (my @call = CORE::caller(++$depth)) {
         # Make sure we have a/the anointed
         next unless $call[0]->can('TB_TESTER_META');
         next if $anointed && $call[0] ne $anointed;
@@ -332,21 +341,25 @@ sub trace_anointed {
 
         # If we could not find the sub, or it is not blessed, see if the
         # package it is in is a provider.
-        unless($sub_is_p) {
-            next unless $pkg;
-            # If the provider is also the anointed we will skip it unless that
-            # is what was requested.
-            unless($provider && $provider eq $found_anointed) {
-                next if $pkg eq $found_anointed;
-            }
-            next unless $pkg->can('TB_PROVIDER_META');
-        }
+        next unless $sub_is_p;
+        #unless($sub_is_p) {
+        #    # If the provider is also the anointed we will skip it unless that
+        #    # is what was requested.
+        #    unless($provider && $provider eq $found_anointed) {
+        #        next if $pkg && $pkg eq $found_anointed;
+        #    }
+        #    next if $pkg && !($pkg eq __PACKAGE__ || $pkg->can('TB_PROVIDER_META'));
+        #}
 
         # This may not be the provider we asked for...
         next if $provider && !($pkg && $pkg eq $provider);
 
-        return [@call[0..2]];
-        $found = [@call[0..2]];
+        if($found_anointed->can('TB_PROVIDER_META')) {
+            $found = $depth;
+            next;
+        }
+
+        return $depth;
     }
 
     return $found || undef;
@@ -358,7 +371,7 @@ sub trace_provider {
 
     my $depth = 1;
 
-    while (my @call = caller($depth++)) {
+    while (my @call = CORE::caller($depth++)) {
         next unless $call[0]->can('TB_PROVIDER_META');
         next if $provider && $call[0] ne $provider;
         return [@call[0..2]];
@@ -394,7 +407,7 @@ sub anoint {
 sub find_TODO {
     my( $self, $pack, $set, $new_value ) = @_;
 
-    $pack = $pack || $self->caller(1) || $self->exported_to;
+    $pack = $pack || $self->caller() || $self->exported_to;
     return unless $pack;
 
     no strict 'refs';    ## no critic
@@ -423,10 +436,7 @@ sub plan {
 
     return unless $cmd;
 
-    local $Level = $Level + 1;
-
     if( my $method = $PLAN_CMDS{$cmd} ) {
-        local $Level = $Level + 1;
         $self->$method($arg);
     }
     else {
@@ -442,7 +452,6 @@ sub skip_all {
 
     $self->{Skip_All} = $self->parent ? $reason : 1;
 
-    local $Level = $Level + 1;
     die bless {} => 'Test::Builder::Exception' if $self->parent;
     $self->_issue_plan(0, "SKIP", $reason);
 }
@@ -452,7 +461,6 @@ sub no_plan {
 
     $self->carp("no_plan takes no arguments") if $arg;
 
-    local $Level = $Level + 1;
     $self->_issue_plan(undef, "NO_PLAN");
 
     return 1;
@@ -462,7 +470,6 @@ sub _plan_tests {
     my($self, $arg) = @_;
 
     if($arg) {
-        local $Level = $Level + 1;
         $self->croak("Number of tests must be a positive integer.  You gave it '$arg'")
             unless $arg =~ /^\+?\d+$/;
 
@@ -481,7 +488,6 @@ sub _plan_tests {
 sub _issue_plan {
     my($self, $max, $directive, $reason) = @_;
 
-    local $Level = $Level + 1;
     if ($directive && $directive eq 'OVERRIDE') {
         $directive = undef;
     }
@@ -736,7 +742,6 @@ sub cmp_ok {
 ];
         $error = $@;
     }
-    local $Level = $Level + 1;
     my $ok = $self->ok( $test, $name );
 
     # Treat overloaded objects as numbers if we're asked to do a
@@ -772,7 +777,6 @@ END
 
 sub is_eq {
     my( $self, $got, $expect, $name ) = @_;
-    local $Level = $Level + 1;
 
     if( !defined $got || !defined $expect ) {
         # undef only matches undef and nothing else
@@ -788,7 +792,6 @@ sub is_eq {
 
 sub is_num {
     my( $self, $got, $expect, $name ) = @_;
-    local $Level = $Level + 1;
 
     if( !defined $got || !defined $expect ) {
         # undef only matches undef and nothing else
@@ -804,7 +807,6 @@ sub is_num {
 
 sub isnt_eq {
     my( $self, $got, $dont_expect, $name ) = @_;
-    local $Level = $Level + 1;
 
     if( !defined $got || !defined $dont_expect ) {
         # undef only matches undef and nothing else
@@ -820,7 +822,6 @@ sub isnt_eq {
 
 sub isnt_num {
     my( $self, $got, $dont_expect, $name ) = @_;
-    local $Level = $Level + 1;
 
     if( !defined $got || !defined $dont_expect ) {
         # undef only matches undef and nothing else
@@ -837,14 +838,12 @@ sub isnt_num {
 sub like {
     my( $self, $thing, $regex, $name ) = @_;
 
-    local $Level = $Level + 1;
     return $self->_regex_ok( $thing, $regex, '=~', $name );
 }
 
 sub unlike {
     my( $self, $thing, $regex, $name ) = @_;
 
-    local $Level = $Level + 1;
     return $self->_regex_ok( $thing, $regex, '!~', $name );
 }
 
@@ -887,26 +886,16 @@ sub croak {
 
 sub context {
     my $self = shift;
-    my ($height) = @_;
-    $height ||= 0;
 
     my $anointed = $self->trace_anointed;
-    my $caller;
-
-    unless($self->modern) {
-        my $add = 1;
-        do {
-            $caller = [$self->caller($height + $add)];
-            $add++;
-        } while $caller->[0] eq __PACKAGE__;
-    }
+    my $call = $anointed || [$self->caller()];
 
     return (
         depth    => $self->depth,
         source   => $self->name || "",
         anointed => $anointed,
         provider => $self->trace_provider,
-        caller   => $caller || $anointed || [caller(1)],
+        caller   => $call,
     );
 }
 
@@ -935,7 +924,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     # We leave this a global because it has to be localized and localizing
     # hash keys is just asking for pain.  Also, it was documented.
-    $Level  = 1;
+    $Level = 0;
 
     if ($params{new_stream} || !$params{shared_stream}) {
         $self->{stream} = Test::Builder::Stream->new;
@@ -987,7 +976,6 @@ sub todo {
 
     return $self->{Todo} if defined $self->{Todo};
 
-    local $Level = $Level + 1;
     my $todo = $self->find_TODO($pack);
     return $todo if defined $todo;
 
@@ -997,7 +985,6 @@ sub todo {
 sub in_todo {
     my $self = shift;
 
-    local $Level = $Level + 1;
     return( defined $self->{Todo} || $self->find_TODO ) ? 1 : 0;
 }
 
@@ -1131,7 +1118,6 @@ sub _is_diag {
 
     $self->_diag_fmt( $type, $_ ) for \$got, \$expect;
 
-    local $Level = $Level + 1;
     return $self->diag(<<"DIAGNOSTIC");
          got: $got
     expected: $expect
@@ -1144,7 +1130,6 @@ sub _isnt_diag {
 
     $self->_diag_fmt( $type, \$got );
 
-    local $Level = $Level + 1;
     return $self->diag(<<"DIAGNOSTIC");
          got: $got
     expected: anything else
@@ -1158,7 +1143,6 @@ sub _cmp_diag {
     $got    = defined $got    ? "'$got'"    : 'undef';
     $expect = defined $expect ? "'$expect'" : 'undef';
 
-    local $Level = $Level + 1;
     return $self->diag(<<"DIAGNOSTIC");
     $got
         $type
@@ -1169,7 +1153,7 @@ DIAGNOSTIC
 sub _caller_context {
     my $self = shift;
 
-    my( $pack, $file, $line ) = $self->caller(1);
+    my( $pack, $file, $line ) = $self->caller();
 
     my $code = '';
     $code .= "#line $line $file\n" if defined $file and defined $line;
@@ -1183,7 +1167,6 @@ sub _regex_ok {
     my $ok           = 0;
     my $usable_regex = _is_qr($regex) ? $regex : $self->maybe_regex($regex);
     unless( defined $usable_regex ) {
-        local $Level = $Level + 1;
         $ok = $self->ok( 0, $name );
         $self->diag("    '$regex' doesn't look much like a regex to me.");
         return $ok;
@@ -1206,7 +1189,6 @@ sub _regex_ok {
 
         $test = !$test if $cmp eq '!~';
 
-        local $Level = $Level + 1;
         $ok = $self->ok( $test, $name );
     }
 
@@ -1214,7 +1196,6 @@ sub _regex_ok {
         $thing = defined $thing ? "'$thing'" : 'undef';
         my $match = $cmp eq '=~' ? "doesn't match" : "matches";
 
-        local $Level = $Level + 1;
         $self->diag( sprintf <<'DIAGNOSTIC', $thing, $match, $regex );
                   %s
     %13s '%s'
@@ -1248,8 +1229,8 @@ sub _try {
 sub _message_at_caller {
     my $self = shift;
 
-    local $Level = $Level + 1;
-    my( $pack, $file, $line ) = $self->caller;
+    my $call = $self->trace_anointed() || [$self->caller()];
+    my( $pack, $file, $line ) = @$call;
     return join( "", @_ ) . " at $file line $line.\n";
 }
 
@@ -1267,7 +1248,6 @@ sub _sanity_check {
 sub _whoa {
     my( $self, $check, $desc ) = @_;
     if($check) {
-        local $Level = $Level + 1;
         $self->croak(<<"WHOA");
 WHOA!  $desc
 This should never happen!  Please contact the author immediately!
@@ -1406,7 +1386,6 @@ sub expected_tests {
     if(@_) {
         my ($max) = @_;
         $self->carp("Use of \$TB->expected_tests(\$max) is deprecated.") if $self->modern;
-        local $Level = $Level + 1;
         $self->_issue_plan($max);
     }
 
@@ -1419,18 +1398,25 @@ sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     #Carp::carp("Use of Test::Builder->caller() is deprecated.\n") if $self->modern;
 
-    my $level = $self->level + $height + 1;
     my @caller;
+    my $level;
+    my $L = 0;
+    while(@caller = CORE::caller(++$L)) {
+        $level = $L if $caller[0] eq __PACKAGE__;
+    }
+
+    $level += $self->level + $height + 2;
+
     do {
-        @caller = CORE::caller( $level );
+        @caller = CORE::caller($level);
         $level--;
     } until @caller;
+
     return wantarray ? @caller : $caller[0];
 }
 
 sub level {
     my( $self, $level ) = @_;
-    #Carp::carp("Use of Test::Builder->level() is deprecated.\n") if $self->modern;
     $Level = $level if defined $level;
     return $Level;
 }
