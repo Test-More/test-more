@@ -1495,6 +1495,10 @@ Test::Builder - Backend for building test libraries
 
 =head1 SYNOPSIS
 
+In general you probably do not want to use this module directly, but instead
+want to use L<Test::Builder::Provider> which will help you roll out a testing
+library.
+
     package My::Test::Module;
     use Test::Builder::Provider;
 
@@ -1509,9 +1513,25 @@ Test::Builder - Backend for building test libraries
     sub is { ... }
     sub is_deeply { ... }
 
+See L<Test::Builder::Provider> for more details.
+
 B<Note:> You MUST use 'provide', 'provides', 'provide_nest' or 'provide_nests'
 to export testing tools, this allows you to use the C<< builder()->trace_test >>
 tools to determine what file/line a failed test came from.
+
+=head2 LOW-LEVEL
+
+    use Test::Builder;
+    my $tb = Test::Builder->create(modern => 1, shared_stream => 1);
+    $tb->ok(1);
+    ....
+
+=head2 DEPRECATED
+
+    use Test::Builder;
+    my $tb = Test::Builder->new;
+    $tb->ok(1);
+    ...
 
 =head1 DESCRIPTION
 
@@ -1519,6 +1539,17 @@ L<Test::Simple> and L<Test::More> have proven to be popular testing modules,
 but they're not always flexible enough.  Test::Builder provides a
 building block upon which to write your own test libraries I<which can
 work together>.
+
+=head1 TEST COMPONTENT MAP
+
+  [Test Script] > [Test Tool] > [Test::Builder] > [Test::Bulder::Stream] > [Result Formatter]
+                                      ^
+                                 You are here
+
+A test script uses a test tool such as L<Test::More>, which uses Test::Builder
+to produce results. The results are sent to L<Test::Builder::Stream> which then
+forwards them on to one or more formatters. The default formatter is
+L<Test::Builder::Fromatter::TAP> which produces TAP output.
 
 =head1 METHODS
 
@@ -1681,7 +1712,7 @@ top of the stack.
 =item $results = $Test->intercept(\&code)
 
 Any tests run inside the codeblock will be intercepted and not sent to the
-normal stream. Instead they wil be added to C<$results> which is an array of
+normal stream. Instead they will be added to C<$results> which is an array of
 L<Test::Builder::Result> objects.
 
 B<Note:> This will also intercept BAIL_OUT and skipall.
@@ -1699,7 +1730,7 @@ the global stream.
 
 When a test fails it will report the filename and line where the failure
 occured. In order to do this it needs to look at the stack and figure out where
-your tests stop, and the toold you are using begin. These methods help you find
+your tests stop, and the tools you are using begin. These methods help you find
 the desired caller frame.
 
 =over 4
@@ -2033,9 +2064,9 @@ test might be run multiple times in the same process.
 Returns a hash of contextual info.
 
     (
-        caller => [PACKAGE, FILE, NUMBER],
         depth  => DEPTH,
         source => NAME,
+        trace  => TRACE,
     )
 
 =back
@@ -2399,6 +2430,9 @@ So the exit codes are...
     any other number    how many failed (including missing or extras)
 
 If you fail more than 254 tests, it will be reported as 254.
+
+B<Note:> The magic that accomplishes this has been moved to
+L<Test::Builder::ExitMagic>
 
 =head1 THREADS
 

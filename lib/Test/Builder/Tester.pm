@@ -12,6 +12,11 @@ use Carp;
 Test::Builder::Tester - test testsuites that have been built with
 Test::Builder
 
+=head1 DEPRECATED
+
+B<This module is deprecated.> Please see L<Test::Builder::Stream::Tester> for a
+better alternative that does not involve dealing with TAP/string output.
+
 =head1 SYNOPSIS
 
     use Test::Builder::Tester tests => 1;

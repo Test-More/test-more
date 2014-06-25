@@ -15,6 +15,11 @@ $VERSION = eval $VERSION;      ## no critic (BuiltinFunctions::ProhibitStringyEv
 
 Test::Builder::Module - Base class for test modules
 
+=head1 DEPRECATED
+
+B<This module is deprecated> See L<Test::Builder::PRovider> for what you should
+use instead.
+
 =head1 SYNOPSIS
 
   # Emulates Test::Simple

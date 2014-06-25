@@ -36,3 +36,19 @@ sub intercept(&) {
 }
 
 1;
+
+__END__
+
+=head1 TEST COMPONTENT MAP
+
+  [Test Script] > [Test Tool] > [Test::Builder] > [Test::Bulder::Stream] > [Result Formatter]
+                                                                   \          /
+                                                                   You are here
+
+A test script uses a test tool such as L<Test::More>, which uses Test::Builder
+to produce results. The results are sent to L<Test::Builder::Stream> which then
+forwards them on to one or more formatters. The default formatter is
+L<Test::Builder::Fromatter::TAP> which produces TAP output.
+
+
+

@@ -52,6 +52,16 @@ Test::Simple - Basic utilities for writing tests.
 
   ok( $foo eq $bar, 'foo is bar' );
 
+=head1 TEST COMPONTENT MAP
+
+  [Test Script] > [Test Tool] > [Test::Builder] > [Test::Bulder::Stream] > [Result Formatter]
+                       ^
+                 You are here
+
+A test script uses a test tool such as L<Test::More>, which uses Test::Builder
+to produce results. The results are sent to L<Test::Builder::Stream> which then
+forwards them on to one or more formatters. The default formatter is
+L<Test::Builder::Fromatter::TAP> which produces TAP output.
 
 =head1 DESCRIPTION
 
@@ -239,6 +249,8 @@ E<lt>schwern@pobox.comE<gt>, wardrobe by Calvin Klein.
 =head1 COPYRIGHT
 
 Copyright 2001-2008 by Michael G Schwern E<lt>schwern@pobox.comE<gt>.
+
+Copyright 2004 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or 
 modify it under the same terms as Perl itself.

@@ -20,13 +20,8 @@ sub _carp {
 our $VERSION = '1.001004_004';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-#use Test::Builder::Module 0.99;
-#our @ISA    = qw(Test::Builder::Module);
 our $TODO;
 use Test::Builder::Provider;
-
-# XXX TODO: Remove this
-builder->modern(0);
 
 provides qw(
   ok use_ok require_ok
@@ -807,9 +802,21 @@ Test::More - yet another framework for writing test scripts
 
   BAIL_OUT($why);
 
+  done_testing;
+
   # UNIMPLEMENTED!!!
   my @status = Test::More::status;
 
+=head1 TEST COMPONTENT MAP
+
+  [Test Script] > [Test Tool] > [Test::Builder] > [Test::Bulder::Stream] > [Result Formatter]
+                       ^
+                 You are here
+
+A test script uses a test tool such as L<Test::More>, which uses Test::Builder
+to produce results. The results are sent to L<Test::Builder::Stream> which then
+forwards them on to one or more formatters. The default formatter is
+L<Test::Builder::Fromatter::TAP> which produces TAP output.
 
 =head1 DESCRIPTION
 
@@ -1197,7 +1204,7 @@ result of the whole subtest to determine if its ok or not ok.
 For example...
 
   use Test::More tests => 3;
- 
+
   pass("First test");
 
   subtest 'An example subtest' => sub {
@@ -1731,7 +1738,7 @@ Subtests were released in Test::More 0.94, which came with Perl 5.12.0. Subtests
 
 =item C<done_testing()>
 
-This was released in Test::More 0.88 and first shipped with Perl in 5.10.1 as part of Test::More 0.92. 
+This was released in Test::More 0.88 and first shipped with Perl in 5.10.1 as part of Test::More 0.92.
 
 =item C<cmp_ok()>
 
@@ -1892,11 +1899,6 @@ the perl-qa gang.
 =back
 
 
-=head1 BUGS
-
-See F<http://rt.cpan.org> to report and view bugs.
-
-
 =head1 SOURCE
 
 The source code repository for Test::More can be found at
@@ -1906,6 +1908,8 @@ F<http://github.com/Test-More/test-more/>.
 =head1 COPYRIGHT
 
 Copyright 2001-2008 by Michael G Schwern E<lt>schwern@pobox.comE<gt>.
+
+Copyright 2004 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

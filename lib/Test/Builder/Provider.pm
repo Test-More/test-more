@@ -18,6 +18,7 @@ sub import {
     my $class = shift;
     my @sym_list = @_;
     my $caller = caller;
+    my $root = $caller;
 
     my $meta = {refs => {}, attrs => {}};
     my %subs;
@@ -51,12 +52,14 @@ sub import {
         $subs{provide}->($_[0], $_[1], nest => 1);
     };
 
+    $subs{gives}    = sub { $subs{provide}->($_, undef, give => 1) for @_ };
+    $subs{give}     = sub { $subs{provide}->(@_, give => 1 ) };
     $subs{provides} = sub { $subs{provide}->($_) for @_ };
     $subs{provide}  = sub {
         my ($name, $ref, %params) = @_;
 
-        croak "$caller already provides '$name'"
-            if $meta->{refs}->{$name};
+        croak "$caller already provides or gives '$name'"
+            if $meta->{attrs}->{$name};
 
         croak "The second argument to provide() must be a ref, got: $ref"
             if $ref && !ref $ref;
@@ -67,7 +70,8 @@ sub import {
 
         $meta->{attrs}->{$name} = {%params, package => $caller, name => $name};
 
-        return $meta->{refs}->{$name} = $ref unless reftype $ref eq 'CODE';
+        # If this is just giving, or not a coderef
+        return $meta->{refs}->{$name} = $ref if $params{give} || reftype $ref ne 'CODE';
 
         bless $ref, $class;
 
@@ -98,15 +102,12 @@ sub import {
         }
     };
 
-    $subs{import} = sub {
+    $subs{export} = sub {
         my $class = shift;
-        my $caller = caller;
+        my ($caller, @args) = @_;
 
-        $class->anoint($caller);
-
-        $class->before_import(\@_) if $class->can('before_import');
         my (%no, @list);
-        for my $thing (@_) {
+        for my $thing (@args) {
             if ($thing =~ m/^!(.*)$/) {
                 $no{$1}++;
             }
@@ -115,22 +116,51 @@ sub import {
             }
         }
 
-        @list = grep { !$no{$_} } keys %{$meta->{refs}} unless @list;
-        for my $name (@list) {
-            if ($name =~ s/^(\$|\@|\%)//) {
-                my $sig = $1;
-
-                croak "$class does not export '$sig$name'"
-                    unless $meta->{refs}->{$name}
-                        && reftype $meta->{refs}->{$name} eq $SIG_MAP{$sig};
-            }
-
-            croak "$class does not export '$name'"
-                unless $meta->{refs}->{$name};
-
+        my (%export, %export_ok);
+        {
             no strict 'refs';
-            *{"$caller\::$name"} = $meta->{refs}->{$name};
+            %export    = map {($_ => 1)} @{"$class\::EXPORT"};
+            %export_ok = map {($_ => 1)} @{"$class\::EXPORT_OK"}, @{"$class\::EXPORT"};
         }
+        warn "package '$class' uses \@EXPORT and/or \@EXPORT_OK, this is deprecated since '$root' is no longer a subclass of 'Exporter'\n"
+            if keys %export_ok;
+
+        unless(@list) {
+            my %seen;
+            @list = grep { !($no{$_} || $seen{$_}++) } keys(%{$meta->{refs}}), keys(%export);
+        }
+        for my $name (@list) {
+            if ($name =~ m/^(\$|\@|\%)(.*)$/) {
+                my ($sig, $sym) = ($1, $2);
+
+                croak "$class does not export '$name'"
+                    unless ($meta->{refs}->{$sym} && reftype $meta->{refs}->{$sym} eq $SIG_MAP{$sig})
+                        || ($export_ok{$name});
+
+                no strict 'refs';
+                *{"$caller\::$sym"} = $meta->{refs}->{$name} || *{"$class\::$sym"}{$sig}
+                    || croak "'$class' has no symbol named '$name'";
+            }
+            else {
+                croak "$class does not export '$name'"
+                    unless $meta->{refs}->{$name} || $export_ok{$name};
+
+                no strict 'refs';
+                *{"$caller\::$name"} = $meta->{refs}->{$name} || $class->can($name)
+                    || croak "'$class' has no sub named '$name'";
+            }
+        }
+    };
+
+    $subs{import} = sub {
+        my $class = shift;
+        my $caller = caller;
+
+        $class->anoint($caller);
+
+        $class->before_import(\@_) if $class->can('before_import');
+
+        $class->export($caller, @_);
 
         $class->after_import(@_) if $class->can('after_import');
 
