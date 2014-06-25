@@ -724,8 +724,6 @@ sub todo_skip {
     );
 
     $self->stream->send($ok);
-
-    return 1;
 }
 
 sub diag {
