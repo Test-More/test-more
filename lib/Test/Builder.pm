@@ -411,7 +411,7 @@ sub _is_provider_tool {
         $sub_is_p = 1 if $pkg && $sub;
     }
     else {
-        ($pkg, $sub) = ($subname =~ m/^(.+)::(.+)$/);
+        ($pkg, $sub) = ($subname =~ m/^(.+)::([_\w][_\w0-9]*)/);
         die "$subname: $pkg, $sub: " . join(", " => @call) . "\n" unless $pkg;
         if ($pkg->can('TB_PROVIDER_META') && $sub && $sub ne '__ANON__') {
             my $ref = $pkg->can($sub);
