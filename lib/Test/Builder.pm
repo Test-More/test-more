@@ -148,7 +148,7 @@ sub intercept {
 #############################
 
 sub child {
-    my( $self, $name ) = @_;
+    my( $self, $name, $is_subtest ) = @_;
 
     $self->croak("You already have a child named ($self->{Child_Name}) running")
         if $self->{Child_Name};
@@ -185,6 +185,7 @@ sub child {
         name    => $name || undef,
         action  => 'push',
         in_todo => $self->in_todo || 0,
+        is_subtest => $is_subtest || 0,
     );
     $self->stream->send($res);
 
@@ -204,13 +205,10 @@ sub subtest {
     my $parent = {};
 
     {
-        # Add subtest name for clarification of starting point
-        $self->note("Subtest: $name");
-
         local $Level = $Level;
 
         # Store the guts of $self as $parent and turn $child into $self.
-        $child  = $self->child($name);
+        $child  = $self->child($name, 1);
 
         _copy($self,  $parent);
         _copy($child, $self);
@@ -238,7 +236,7 @@ sub subtest {
     # Die *after* we restore the parent.
     die $error if $error and !eval { $error->isa('Test::Builder::Exception') };
 
-    my $finalize = $child->finalize;
+    my $finalize = $child->finalize(1);
 
     $self->BAIL_OUT($child->{Bailed_Out_Reason}) if $child->{Bailed_Out};
 
@@ -247,6 +245,7 @@ sub subtest {
 
 sub finalize {
     my $self = shift;
+    my ($is_subtest) = @_;
 
     return unless $self->parent;
     if( $self->{Child_Name} ) {
@@ -279,6 +278,7 @@ sub finalize {
         name    => $self->{Name} || undef,
         action  => 'pop',
         in_todo => $self->in_todo || 0,
+        is_subtest => $is_subtest || 0,
     );
     $self->stream->send($res);
 
@@ -779,7 +779,7 @@ sub cmp_ok {
 
         local( $@, $!, $SIG{__DIE__} );    # isolate eval
 
-        my($pack, $file, $line) = $self->caller();
+        my($pack, $file, $line) = @{$self->trace_test->{report}}{qw/package file line/};
 
         # This is so that warnings come out at the caller's level
         $test = eval qq[
@@ -1196,7 +1196,7 @@ DIAGNOSTIC
 sub _caller_context {
     my $self = shift;
 
-    my( $pack, $file, $line ) = $self->caller();
+    my($pack, $file, $line) = @{$self->trace_test->{report}}{qw/package file line/};
 
     my $code = '';
     $code .= "#line $line $file\n" if defined $file and defined $line;
@@ -1438,7 +1438,7 @@ sub expected_tests {
 sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my $self = shift;
 
-    Carp::carp("Use of Test::Builder->caller() is deprecated.\n") if $self->modern;
+    Carp::confess("Use of Test::Builder->caller() is deprecated.\n") if $self->modern;
 
     my $trace = $self->trace_test;
 

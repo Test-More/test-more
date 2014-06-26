@@ -9,7 +9,7 @@ accessors qw/reason/;
 
 sub to_tap {
     my $self = shift;
-    return "Bail out!  " . $self->reason;
+    return "Bail out!  " . $self->reason . "\n";
 }
 
 1;

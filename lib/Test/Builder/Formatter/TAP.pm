@@ -30,7 +30,6 @@ sub init {
     share( $self->{ok_lock} );
 }
 
-# The default 6 result types all have a to_tap method.
 for my $handler (qw/bail nest/) {
     my $sub = sub {
         my $self = shift;
@@ -39,6 +38,16 @@ for my $handler (qw/bail nest/) {
     };
     no strict 'refs';
     *$handler = $sub;
+}
+
+sub child {
+    my $self = shift;
+    my ($item) = @_;
+
+    return unless $item->action eq 'push' && $item->is_subtest;
+
+    my $name = $item->name;
+    $self->_print_to_fh( $self->output, $item->indent || "", "# Subtest: $name\n" );
 }
 
 sub finish {
@@ -82,7 +91,7 @@ sub ok {
     lock $self->{ok_lock};
     $self->_print($item->indent || "", $item->to_tap($self->test_number(1)));
 
-    unless($item->real_bool) {
+    unless($item->real_bool || ($item->skip && $item->todo)) {
         my $msg = $item->in_todo ? "Failed (TODO)" : "Failed";
         my $prefix = $ENV{HARNESS_ACTIVE} ? "\n" : "";
 
@@ -164,14 +173,9 @@ sub _print_to_fh {
 
     local( $\, $", $, ) = ( undef, ' ', '' );
 
-    # Escape each line after the first with a # so we don't
-    # confuse Test::Harness.
-    $msg =~ s{\n(?!\z)}{\n$indent# }sg;
+    $msg =~ s/^/$indent/mg;
 
-    # Stick a newline on the end if it needs it.
-    $msg .= "\n" unless $msg =~ /\n\z/;
-
-    return print $fh $indent, $msg;
+    return print $fh $msg;
 }
 
 my( $Testout, $Testerr );

@@ -81,10 +81,11 @@ C<import_extra()>.
 sub import {
     my($class) = shift;
 
+    my $test = $class->builder;
+    warn __PACKAGE__ . " is deprecated!\n" if $test->modern;
+
     # Don't run all this when loading ourself.
     return 1 if $class eq 'Test::Builder::Module';
-
-    my $test = $class->builder;
 
     my $caller = caller;
 

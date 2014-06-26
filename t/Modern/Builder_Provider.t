@@ -105,13 +105,13 @@ is_deeply( # The call will trace to here.
             'package' => 'XXX::Tester',
             'provider_tool' => {package => 'XXX::Tester', name => 'explodable'},
             'anointed' => 1,
-            'file' => 't/Builder/provider_trace.t',
+            'file' => __FILE__,
             'report' => 1,
         },
         stack => [
             {
                 'transition' => 1,
-                'file' => 't/Builder/provider_trace.t',
+                'file' => __FILE__,
                 'line' => 5,
                 'package' => 'main',
             },
@@ -120,11 +120,11 @@ is_deeply( # The call will trace to here.
                 'package' => 'XXX::Tester',
                 'provider_tool' => {package => 'XXX::Provider', name => 'explode'},
                 'anointed' => 1,
-                'file' => 't/Builder/provider_trace.t'
+                'file' => __FILE__
             },
             {
                 'provider_tool' => {package => 'XXX::Tester', name => 'explodable'},
-                'file' => 't/Builder/provider_trace.t',
+                'file' => __FILE__,
                 'anointed' => 1,
                 'line' => 2300,
                 'package' => 'XXX::Tester',
@@ -142,7 +142,7 @@ is_deeply(
         report => {
             'line' => 2200,
             'package' => 'XXX::Tester',
-            'file' => 't/Builder/provider_trace.t',
+            'file' => __FILE__,
             'provider_tool' => {package => 'XXX::Provider', name => 'explode'},
             'anointed' => 1,
             'report' => 1,
@@ -152,12 +152,12 @@ is_deeply(
                 'line' => 5,
                 'package' => 'main',
                 'transition' => 1,
-                'file' => 't/Builder/provider_trace.t',
+                'file' => __FILE__,
             },
             {
                 'line' => 2200,
                 'package' => 'XXX::Tester',
-                'file' => 't/Builder/provider_trace.t',
+                'file' => __FILE__,
                 'provider_tool' => {package => 'XXX::Provider', name => 'explode'},
                 'anointed' => 1,
                 'report' => 1,
@@ -165,7 +165,7 @@ is_deeply(
             {
                 'line' => 2400,
                 'package' => 'XXX::Tester',
-                'file' => 't/Builder/provider_trace.t',
+                'file' => __FILE__,
                 'anointed' => 1,
             },
         ],
@@ -181,14 +181,14 @@ is_deeply( # The call will trace to here
             'provider_tool' => {package => 'XXX::Provider', name => 'explode'},
             'anointed' => 1,
             'line' => 2500,
-            'file' => 't/Builder/provider_trace.t',
+            'file' => __FILE__,
             'package' => 'XXX::Tester',
             'report' => 1,
         },
         stack => [
             {
                 'line' => 5,
-                'file' => 't/Builder/provider_trace.t',
+                'file' => __FILE__,
                 'transition' => 1,
                 'package' => 'main',
             },
@@ -196,7 +196,7 @@ is_deeply( # The call will trace to here
                 'provider_tool' => {package => 'XXX::Provider', name => 'explode'},
                 'anointed' => 1,
                 'line' => 2500,
-                'file' => 't/Builder/provider_trace.t',
+                'file' => __FILE__,
                 'package' => 'XXX::Tester',
                 'report' => 1,
             },
@@ -213,13 +213,13 @@ is_deeply(
             'line' => 2600,
             'anointed' => 1,
             'package' => 'XXX::Tester',
-            'file' => 't/Builder/provider_trace.t',
+            'file' => __FILE__,
             'report' => 1,
             'level' => 1,
         },
         'stack' => [
             {
-                'file' => 't/Builder/provider_trace.t',
+                'file' => __FILE__,
                 'package' => 'XXX::LegacyProvider',
                 'line' => 1605,
                 'transition' => 1
@@ -228,7 +228,7 @@ is_deeply(
                 'line' => 2600,
                 'anointed' => 1,
                 'package' => 'XXX::Tester',
-                'file' => 't/Builder/provider_trace.t',
+                'file' => __FILE__,
                 'report' => 1,
                 'level' => 1,
             },
@@ -244,14 +244,14 @@ is_deeply(
         'report' => {
             'line' => 2700,
             'package' => 'XXX::Tester',
-            'file' => 't/Builder/provider_trace.t',
+            'file' => __FILE__,
             'report' => 1,
             'level' => 1,
             'anointed' => 1,
         },
         'stack' => [
             {
-                'file' => 't/Builder/provider_trace.t',
+                'file' => __FILE__,
                 'package' => 'XXX::LegacyProvider',
                 'line' => 1605,
                 'transition' => 1,
@@ -259,7 +259,7 @@ is_deeply(
             {
                 'line' => 2700,
                 'package' => 'XXX::Tester',
-                'file' => 't/Builder/provider_trace.t',
+                'file' => __FILE__,
                 'report' => 1,
                 'level' => 1,
                 'anointed' => 1,

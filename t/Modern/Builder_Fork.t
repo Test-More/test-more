@@ -11,9 +11,6 @@ my $one = $CLASS->new;
 isa_ok($one, $CLASS);
 ok($one->tmpdir, "Got temp dir");
 
-my $handler = $one->handler;
-is(ref $handler, 'CODE', "Handler is a coderef");
-
 my $TB = Test::Builder->new;
 
 my $Ok = Test::Builder::Result::Ok->new(
@@ -22,18 +19,18 @@ my $Ok = Test::Builder::Result::Ok->new(
     name      => 'fake',
 );
 
-my $out = $handler->($Ok);
+my $out = $one->handle($Ok);
 ok(!$out, "Did not snatch result in parent process");
 
 if (my $pid = fork()) {
     waitpid($pid, 0);
 }
 else {
-    $handler->($Ok);
+    $one->handle($Ok);
     exit 0;
 }
 
-my $results = intercept { $one->cull($TB) };
+my $results = intercept { $one->cull() };
 
 is_deeply(
     $results,

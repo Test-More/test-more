@@ -69,6 +69,8 @@ sub before_import {
 
     my $caller = caller;
 
+    warn __PACKAGE__ . " is deprecated!\n" if builder()->modern;
+
     builder()->exported_to($caller);
     builder()->plan(@$args);
 

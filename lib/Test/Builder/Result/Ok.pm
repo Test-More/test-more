@@ -4,7 +4,11 @@ use warnings;
 
 use parent 'Test::Builder::Result';
 
+use Data::Dumper;
+
+use Carp qw/confess/;
 use Test::Builder::Util qw/accessors/;
+
 accessors qw/bool real_bool name todo skip/;
 
 sub to_tap {
@@ -24,7 +28,10 @@ sub to_tap {
 
     if (defined $self->skip && defined $self->todo) {
         my $why = $self->skip;
-        die "2 different reasons to skip/todo" unless $why eq $self->todo;
+
+        confess "2 different reasons to skip/todo: " . Dumper($self)
+            unless $why eq $self->todo;
+
         $out .= " # TODO & SKIP $why";
     }
     elsif (defined $self->skip) {
@@ -34,6 +41,8 @@ sub to_tap {
     elsif($self->in_todo) {
         $out .= " # TODO " . $self->todo if $self->in_todo;
     }
+
+    $out =~ s/\n/\n# /g;
 
     $out .= "\n";
 

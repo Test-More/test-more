@@ -1,3 +1,5 @@
+
+__END__
 package Test::Builder::Stream;
 use strict;
 use warnings;

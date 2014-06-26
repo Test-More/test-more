@@ -7,7 +7,7 @@ use Test::Builder::Stream;
 use Scalar::Util qw/blessed/;
 
 use Test::Builder::Provider;
-provides qw/intercept/;
+gives qw/intercept/;
 
 sub intercept(&) {
     my ($code) = @_;

@@ -41,6 +41,11 @@ provide_nests qw/subtest/;
 
 provide TODO => \$TODO;
 
+give cull => sub {
+    my $fork = Test::More->builder->stream->fork || return 0;
+    $fork->cull;
+};
+
 sub plan {
     my $tb = Test::More->builder;
 
@@ -67,6 +72,14 @@ sub before_import {
         }
         elsif( $item eq 'import' ) {
             push @$other => @{$list->[$idx++]};
+        }
+        elsif( $item eq 'enable_forking' ) {
+            Test::More->builder->stream->use_fork;
+        }
+        elsif( $item eq 'modern' ) {
+            Test::More->builder->stream->use_fork;
+            Test::More->builder->stream->no_lresults;
+            Test::More->builder->modern(1);
         }
         else {
             Carp::croak("Unknown option: $item");
@@ -150,7 +163,7 @@ sub can_ok ($@) {
 
     my $ok = $tb->ok( !@nok, $name );
 
-    $tb->diag( map "    $class->can('$_') failed\n", @nok );
+    $tb->diag("    $class->can('$_') failed") for @nok;
 
     return $ok;
 }
@@ -901,6 +914,38 @@ you ran doesn't matter, just the fact that your tests ran to
 conclusion.
 
 This is safer than and replaces the "no_plan" plan.
+
+=back
+
+=head2 Other import options
+
+=over 4
+
+=item use Test::More 'enable_forking';
+
+Turn on forking support. This lets you fork and generate results from each
+process. It is your job to call C<cull()> periodically in the original process
+to collect the results from other processes.
+
+    use strict;
+    use warnings;
+    use Test::More tests => 2, qw/enable_forking/;
+
+    ok(1, "Result in parent" );
+
+    if (my $pid = fork()) {
+        waitpid($pid, 0);
+        cull();
+    }
+    else {
+        ok(1, "Result in child");
+        exit 0;
+    }
+
+=item use Test::More 'modern';
+
+enables forking, disables legacy_results support, and issues warnings when
+using deprecated code.
 
 =back
 
@@ -1726,31 +1771,53 @@ Test::More works with Perls as old as 5.8.1.
 Thread support is not very reliable before 5.10.1, but that's
 because threads are not very reliable before 5.10.1.
 
-Although Test::More has been a core module in versions of Perl since 5.6.2, Test::More has evolved since then, and not all of the features you're used to will be present in the shipped version of Test::More. If you are writing a module, don't forget to indicate in your package metadata the minimum version of Test::More that you require. For instance, if you want to use C<done_testing()> but want your test script to run on Perl 5.10.0, you will need to explicitly require Test::More > 0.88.
+Although Test::More has been a core module in versions of Perl since 5.6.2,
+Test::More has evolved since then, and not all of the features you're used to
+will be present in the shipped version of Test::More. If you are writing a
+module, don't forget to indicate in your package metadata the minimum version
+of Test::More that you require. For instance, if you want to use
+C<done_testing()> but want your test script to run on Perl 5.10.0, you will
+need to explicitly require Test::More > 0.88.
 
 Key feature milestones include:
 
 =over 4
 
+=item result stream
+
+=item forking support
+
+=item test tracing
+
+Test::Builder and Test::More version 1.001004 introduce these major
+modernizations.
+
 =item subtests
 
-Subtests were released in Test::More 0.94, which came with Perl 5.12.0. Subtests did not implicitly call C<done_testing()> until 0.96; the first Perl with that fix was Perl 5.14.0 with 0.98.
+Subtests were released in Test::More 0.94, which came with Perl 5.12.0.
+Subtests did not implicitly call C<done_testing()> until 0.96; the first Perl
+with that fix was Perl 5.14.0 with 0.98.
 
 =item C<done_testing()>
 
-This was released in Test::More 0.88 and first shipped with Perl in 5.10.1 as part of Test::More 0.92.
+This was released in Test::More 0.88 and first shipped with Perl in 5.10.1 as
+part of Test::More 0.92.
 
 =item C<cmp_ok()>
 
-Although C<cmp_ok()> was introduced in 0.40, 0.86 fixed an important bug to make it safe for overloaded objects; the fixed first shipped with Perl in 5.10.1 as part of Test::More 0.92.
+Although C<cmp_ok()> was introduced in 0.40, 0.86 fixed an important bug to
+make it safe for overloaded objects; the fixed first shipped with Perl in
+5.10.1 as part of Test::More 0.92.
 
 =item C<new_ok()> C<note()> and C<explain()>
 
-These were was released in Test::More 0.82, and first shipped with Perl in 5.10.1 as part of Test::More 0.92. 
+These were was released in Test::More 0.82, and first shipped with Perl in
+5.10.1 as part of Test::More 0.92.
 
 =back
 
-There is a full version history in the Changes file, and the Test::More versions included as core can be found using L<Module::CoreList>:
+There is a full version history in the Changes file, and the Test::More
+versions included as core can be found using L<Module::CoreList>:
 
     $ corelist -a Test::More
 

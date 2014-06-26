@@ -10,7 +10,7 @@ my $meta = {};
 sub TB_EXPORT_META { $meta };
 
 exports(qw/
-    import export accessor accessors delta deltas export_to transform
+    import export exports accessor accessors delta deltas export_to transform
     atomic_delta atomic_deltas
 /);
 
@@ -104,6 +104,8 @@ sub export {
 
     croak "$caller is not an exporter!"
         unless $caller->can('TB_EXPORT_META');
+
+    my $meta = $caller->TB_EXPORT_META;
 
     croak "Already exporting '$name'"
         if $meta->{$name};

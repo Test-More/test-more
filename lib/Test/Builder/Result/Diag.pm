@@ -10,14 +10,10 @@ accessors qw/message/;
 sub to_tap {
     my $self = shift;
 
-    my $msg = $self->message;
-    unless($msg =~ m/^\n/s) {
-        if($msg =~ s/^/# /s) {
-            $msg =~ s/# $//;
-        }
-    }
-
-    return $msg;
+    chomp(my $msg = $self->message);
+    $msg = "# $msg" unless $msg =~ m/^\n/;
+    $msg =~ s/\n/\n# /g;
+    return "$msg\n";
 }
 
 

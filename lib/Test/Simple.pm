@@ -32,6 +32,10 @@ sub before_import {
         elsif( $item eq 'import' ) {
             push @$other => @{$list->[$idx++]};
         }
+        elsif( $item eq 'modern' ) {
+            builder()->stream->no_lresults;
+            builder()->modern(1);
+        }
         else {
             Carp::croak("Unknown option: $item");
         }
@@ -41,6 +45,14 @@ sub before_import {
 
     return;
 }
+
+sub ok ($;$) {    ## no critic (Subroutines::ProhibitSubroutinePrototypes)
+    return builder()->ok(@_);
+}
+
+1;
+
+__END__
 
 =head1 NAME
 
@@ -112,12 +124,6 @@ All tests are run in scalar context.  So this:
     ok( @stuff, 'I have some stuff' );
 
 will do what you mean (fail if stuff is empty)
-
-=cut
-
-sub ok ($;$) {    ## no critic (Subroutines::ProhibitSubroutinePrototypes)
-    return builder()->ok(@_);
-}
 
 =back
 
@@ -256,7 +262,3 @@ This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
 See F<http://www.perl.com/perl/misc/Artistic.html>
-
-=cut
-
-1;

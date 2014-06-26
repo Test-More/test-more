@@ -20,30 +20,26 @@ sub new {
     return $self;
 }
 
-sub handler {
+my $id = 1;
+sub handle {
     my $self = shift;
+    my ($item) = @_;
 
-    my $id = 1;
+    confess "Did not get a valid Test::Builder::Result object! ($item)"
+        unless $item && blessed($item) && $item->isa('Test::Builder::Result');
 
-    return sub {
-        my ($item) = @_;
+    my $stream = Test::Builder::Stream->shared;
+    return 0 if $$ == $stream->pid;
 
-        confess "Did not get a valid Test::Builder::Result object! ($item)"
-            unless $item && blessed($item) && $item->isa('Test::Builder::Result');
+    # First write the file, then rename it so that it is not read before it is ready.
+    my $name =  $self->tmpdir . "/$$-" . $id++;
+    open(my $fh, '>', $name) || die "Could not create temp file";
+    local $Data::Dumper::Indent = 0;
+    print $fh Dumper($item);
+    close $fh;
+    rename($name, "$name.ready") || die "Could not rename file";
 
-        my $stream = Test::Builder::Stream->shared;
-        return 0 if $$ == $stream->pid;
-
-        # First write the file, then rename it so that it is not read before it is ready.
-        my $name =  $self->tmpdir . "/$$-" . $id++;
-        open(my $fh, '>', $name) || die "Could not create temp file";
-        local $Data::Dumper::Indent = 0;
-        print $fh Dumper($item);
-        close $fh;
-        rename($name, "$name.ready") || die "Could not rename file";
-
-        return 1;
-    };
+    return 1;
 }
 
 sub cull {
@@ -94,3 +90,9 @@ sub DESTROY {
 }
 
 1;
+
+__END__
+
+=pod
+
+see also L<Child>
