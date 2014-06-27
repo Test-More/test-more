@@ -401,26 +401,23 @@ sub trace_test {
 sub _is_provider_tool {
     my @call = @_;
 
-    my $sub_is_p = 0;
     my $subname = $call[3];
     return if $subname eq '(eval)';
 
-    my ($pkg, $sub);
-    if ($subname =~ m/^.*\|(.*)->TB_PROVIDER_META->{refs}->{(.*)}$/) {
-        ($pkg, $sub) = ($1, $2);
-        $sub_is_p = 1 if $pkg && $sub;
+    if ($subname =~ m/^Test\::Builder\::Provider\::__ANON(\d+)__/) {
+        no strict 'refs';
+        return \%{$subname};
     }
     else {
-        ($pkg, $sub) = ($subname =~ m/^(.+)::([_\w][_\w0-9]*)/);
-        die "$subname: $pkg, $sub: " . join(", " => @call) . "\n" unless $pkg;
+        my ($pkg, $sub) = ($subname =~ m/^(.+)::([_\w][_\w0-9]*)/);
         if ($pkg->can('TB_PROVIDER_META') && $sub && $sub ne '__ANON__') {
             my $ref = $pkg->can($sub);
-            $sub_is_p = 1 if $ref && Scalar::Util::blessed($ref) && $ref->isa('Test::Builder::Provider');
+            return unless $ref && Scalar::Util::blessed($ref) && $ref->isa('Test::Builder::Provider');
+            return $pkg->TB_PROVIDER_META->{attrs}->{$sub} || die "Could not find attributes for $call[3]";
         }
     }
 
-    return undef unless $sub_is_p;
-    return $pkg->TB_PROVIDER_META->{attrs}->{$sub} || die "Could not find attributes for $call[3]";
+    return;
 }
 
 sub anoint {

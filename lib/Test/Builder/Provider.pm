@@ -14,6 +14,7 @@ my %SIG_MAP = (
     '&' => 'CODE',
 );
 
+my $id = 1;
 sub import {
     my $class = shift;
     my @sym_list = @_;
@@ -68,7 +69,8 @@ sub import {
         croak "$caller has no sub named '$name', and no ref was given"
             unless $ref;
 
-        $meta->{attrs}->{$name} = {%params, package => $caller, name => $name};
+        my $attrs = {%params, package => $caller, name => $name};
+        $meta->{attrs}->{$name} = $attrs;
 
         # If this is just giving, or not a coderef
         return $meta->{refs}->{$name} = $ref if $params{give} || reftype $ref ne 'CODE';
@@ -84,11 +86,11 @@ sub import {
             # Insert an anonymous sub, and use a trick to make caller() think its
             # name is this string, which tells us how to find the thing that was
             # actually called.
-            my $subname = __PACKAGE__ . "::__ANON__|$caller\->TB_PROVIDER_META->{refs}->{$name}";
+            my $globname = __PACKAGE__ . '::__ANON' . ($id++) . '__';
 
             my $code = sub {
                 no warnings 'once';
-                local *__ANON__ = $subname; # Name the sub so we can find it for real.
+                local *__ANON__ = $globname; # Name the sub so we can find it for real.
                 $ref->(@_);
             };
 
@@ -99,6 +101,10 @@ sub import {
             &set_prototype($code, $proto) if $proto;
 
             $meta->{refs}->{$name} = bless $code, $class;
+
+            no strict 'refs';
+            *$globname = $code;
+            *$globname = $attrs;
         }
     };
 
