@@ -269,7 +269,7 @@ sub test_diag {
 
     # expect the same thing, but prepended with "#     "
     local $_;
-    $err->expect( map { "# $_" } @_ );
+    $err->expect( map { m/\S/ ? "# $_" : "" } @_ );
 }
 
 =item test_test
