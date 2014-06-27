@@ -11,197 +11,193 @@ use vars qw( @ISA );
 
 # Make Test::Tester::Capture thread-safe for ithreads.
 BEGIN {
-	use Config;
-	if( $] >= 5.008 && $Config{useithreads} ) {
-		require threads::shared;
-		threads::shared->import;
-	}
-	else {
-		*share = sub { 0 };
-		*lock  = sub { 0 };
-	}
+    use Config;
+    if ($] >= 5.008 && $Config{useithreads}) {
+        require threads::shared;
+        threads::shared->import;
+    }
+    else {
+        *share = sub { 0 };
+        *lock  = sub { 0 };
+    }
 }
 
-my $Curr_Test = 0;      share($Curr_Test);
-my @Test_Results = ();  share(@Test_Results);
-my $Prem_Diag = {diag => ""};	 share($Curr_Test);
+my $Curr_Test = 0;
+share($Curr_Test);
+my @Test_Results = ();
+share(@Test_Results);
+my $Prem_Diag = {diag => ""};
+share($Curr_Test);
 
-sub new
-{
-  # Test::Tester::Capgture::new used to just return __PACKAGE__
-  # because Test::Builder::new enforced it's singleton nature by
-  # return __PACKAGE__. That has since changed, Test::Builder::new now
-  # returns a blessed has and around version 0.78, Test::Builder::todo
-  # started wanting to modify $self. To cope with this, we now return
-  # a blessed hash. This is a short-term hack, the correct thing to do
-  # is to detect which style of Test::Builder we're dealing with and
-  # act appropriately.
+sub new {
+    # Test::Tester::Capgture::new used to just return __PACKAGE__
+    # because Test::Builder::new enforced it's singleton nature by
+    # return __PACKAGE__. That has since changed, Test::Builder::new now
+    # returns a blessed has and around version 0.78, Test::Builder::todo
+    # started wanting to modify $self. To cope with this, we now return
+    # a blessed hash. This is a short-term hack, the correct thing to do
+    # is to detect which style of Test::Builder we're dealing with and
+    # act appropriately.
 
-  my $class = shift;
-  return bless {}, $class;
+    my $class = shift;
+    return bless {}, $class;
 }
 
 sub ok {
-	my($self, $test, $name) = @_;
+    my ($self, $test, $name) = @_;
 
-	# $test might contain an object which we don't want to accidentally
-	# store, so we turn it into a boolean.
-	$test = $test ? 1 : 0;
+    # $test might contain an object which we don't want to accidentally
+    # store, so we turn it into a boolean.
+    $test = $test ? 1 : 0;
 
-	lock $Curr_Test;
-	$Curr_Test++;
+    lock $Curr_Test;
+    $Curr_Test++;
 
-	my($pack, $file, $line) = $self->caller;
+    my ($pack, $file, $line) = $self->caller;
 
-	my $todo = $self->todo($pack);
+    my $todo = $self->todo($pack);
 
-	my $result = {};
-	share($result);
+    my $result = {};
+    share($result);
 
-	unless( $test ) {
-		@$result{ 'ok', 'actual_ok' } = ( ( $todo ? 1 : 0 ), 0 );
-	}
-	else {
-		@$result{ 'ok', 'actual_ok' } = ( 1, $test );
-	}
+    unless ($test) {
+        @$result{'ok', 'actual_ok'} = (($todo ? 1 : 0), 0);
+    }
+    else {
+        @$result{'ok', 'actual_ok'} = (1, $test);
+    }
 
-	if( defined $name ) {
-		$name =~ s|#|\\#|g;	 # # in a name can confuse Test::Harness.
-		$result->{name} = $name;
-	}
-	else {
-		$result->{name} = '';
-	}
+    if (defined $name) {
+        $name =~ s|#|\\#|g;    # # in a name can confuse Test::Harness.
+        $result->{name} = $name;
+    }
+    else {
+        $result->{name} = '';
+    }
 
-	if( $todo ) {
-		my $what_todo = $todo;
-		$result->{reason} = $what_todo;
-		$result->{type}   = 'todo';
-	}
-	else {
-		$result->{reason} = '';
-		$result->{type}   = '';
-	}
+    if ($todo) {
+        my $what_todo = $todo;
+        $result->{reason} = $what_todo;
+        $result->{type}   = 'todo';
+    }
+    else {
+        $result->{reason} = '';
+        $result->{type}   = '';
+    }
 
-	$Test_Results[$Curr_Test-1] = $result;
+    $Test_Results[$Curr_Test - 1] = $result;
 
-	unless( $test ) {
-		my $msg = $todo ? "Failed (TODO)" : "Failed";
-		$result->{fail_diag} = ("	$msg test ($file at line $line)\n");
-	} 
+    unless ($test) {
+        my $msg = $todo ? "Failed (TODO)" : "Failed";
+        $result->{fail_diag} = ("	$msg test ($file at line $line)\n");
+    }
 
-	$result->{diag} = "";
-	$result->{_level} = $Test::Builder::Level;
-	$result->{_depth} = Test::Tester::find_run_tests();
+    $result->{diag}   = "";
+    $result->{_level} = $Test::Builder::Level;
+    $result->{_depth} = Test::Tester::find_run_tests();
 
-	return $test ? 1 : 0;
+    return $test ? 1 : 0;
 }
 
 sub skip {
-	my($self, $why) = @_;
-	$why ||= '';
+    my ($self, $why) = @_;
+    $why ||= '';
 
-	lock($Curr_Test);
-	$Curr_Test++;
+    lock($Curr_Test);
+    $Curr_Test++;
 
-	my %result;
-	share(%result);
-	%result = (
-		'ok'	  => 1,
-		actual_ok => 1,
-		name	  => '',
-		type	  => 'skip',
-		reason	=> $why,
-		diag    => "",
-		_level   => $Test::Builder::Level,
-		_depth => Test::Tester::find_run_tests(),
-	);
-	$Test_Results[$Curr_Test-1] = \%result;
+    my %result;
+    share(%result);
+    %result = (
+        'ok'      => 1,
+        actual_ok => 1,
+        name      => '',
+        type      => 'skip',
+        reason    => $why,
+        diag      => "",
+        _level    => $Test::Builder::Level,
+        _depth    => Test::Tester::find_run_tests(),
+    );
+    $Test_Results[$Curr_Test - 1] = \%result;
 
-	return 1;
+    return 1;
 }
 
 sub todo_skip {
-	my($self, $why) = @_;
-	$why ||= '';
+    my ($self, $why) = @_;
+    $why ||= '';
 
-	lock($Curr_Test);
-	$Curr_Test++;
+    lock($Curr_Test);
+    $Curr_Test++;
 
-	my %result;
-	share(%result);
-	%result = (
-		'ok'	  => 1,
-		actual_ok => 0,
-		name	  => '',
-		type	  => 'todo_skip',
-		reason	=> $why,
-		diag    => "",
-		_level   => $Test::Builder::Level,
-		_depth => Test::Tester::find_run_tests(),
-	);
+    my %result;
+    share(%result);
+    %result = (
+        'ok'      => 1,
+        actual_ok => 0,
+        name      => '',
+        type      => 'todo_skip',
+        reason    => $why,
+        diag      => "",
+        _level    => $Test::Builder::Level,
+        _depth    => Test::Tester::find_run_tests(),
+    );
 
-	$Test_Results[$Curr_Test-1] = \%result;
+    $Test_Results[$Curr_Test - 1] = \%result;
 
-	return 1;
+    return 1;
 }
 
 sub diag {
-	my($self, @msgs) = @_;
-	return unless @msgs;
+    my ($self, @msgs) = @_;
+    return unless @msgs;
 
-	# Prevent printing headers when compiling (i.e. -c)
-	return if $^C;
+    # Prevent printing headers when compiling (i.e. -c)
+    return if $^C;
 
-	# Escape each line with a #.
-	foreach (@msgs) {
-		$_ = 'undef' unless defined;
-	}
+    # Escape each line with a #.
+    foreach (@msgs) {
+        $_ = 'undef' unless defined;
+    }
 
-	push @msgs, "\n" unless $msgs[-1] =~ /\n\Z/;
+    push @msgs, "\n" unless $msgs[-1] =~ /\n\Z/;
 
-	my $result = $Curr_Test ? $Test_Results[$Curr_Test - 1] : $Prem_Diag;
+    my $result = $Curr_Test ? $Test_Results[$Curr_Test - 1] : $Prem_Diag;
 
-	$result->{diag} .= join("", @msgs);
+    $result->{diag} .= join("", @msgs);
 
-	return 0;
+    return 0;
 }
 
 sub details {
-	return @Test_Results;
+    return @Test_Results;
 }
-
 
 # Stub. Feel free to send me a patch to implement this.
 sub note {
 }
 
 sub explain {
-	return Test::Builder::explain(@_);
+    return Test::Builder::explain(@_);
 }
 
-sub premature
-{
-	return $Prem_Diag->{diag};
+sub premature {
+    return $Prem_Diag->{diag};
 }
 
-sub current_test
-{
-	if (@_ > 1)
-	{
-		die "Don't try to change the test number!";
-	}
-	else
-	{
-		return $Curr_Test;
-	}
+sub current_test {
+    if (@_ > 1) {
+        die "Don't try to change the test number!";
+    }
+    else {
+        return $Curr_Test;
+    }
 }
 
-sub reset
-{
-	$Curr_Test = 0;
-	@Test_Results = ();
-	$Prem_Diag = {diag => ""};
+sub reset {
+    $Curr_Test    = 0;
+    @Test_Results = ();
+    $Prem_Diag    = {diag => ""};
 }
 
 1;
