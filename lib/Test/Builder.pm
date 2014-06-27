@@ -1719,8 +1719,8 @@ B<Note:> This will only intercept results generated with the Test::Builder
 object on which C<intercept()> was called. Other builders will still send to
 the normal places.
 
-See L<Test::Builder::Stream::Tester> for a method of capturing results sent to
-the global stream.
+See L<Test::Tester2> for a method of capturing results sent to the global
+stream.
 
 =back
 

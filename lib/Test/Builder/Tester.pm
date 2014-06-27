@@ -9,12 +9,12 @@ use Carp;
 
 =head1 NAME
 
-Test::Builder::Tester - test testsuites that have been built with
+Test::Builder::Tester - *DEPRECATED* test testsuites that have been built with
 Test::Builder
 
 =head1 DEPRECATED
 
-B<This module is deprecated.> Please see L<Test::Builder::Stream::Tester> for a
+B<This module is deprecated.> Please see L<Test::Tester2> for a
 better alternative that does not involve dealing with TAP/string output.
 
 =head1 SYNOPSIS

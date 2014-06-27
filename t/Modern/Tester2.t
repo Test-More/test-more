@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use Test::More 'modern';
-use Test::Builder::Stream::Tester;
+use Test::Tester2;
 
 can_ok( __PACKAGE__, 'intercept' );
 

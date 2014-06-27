@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use Test::Simple tests => 4, 'modern';
-use Test::Builder::Stream::Tester;
+use Test::Tester2;
 
 ok(Test::Simple->can('TB_PROVIDER_META'), "Test::Simple is a provider");
 

@@ -1,4 +1,4 @@
-package Test::Builder::Stream::Tester;
+package Test::Tester2;
 use strict;
 use warnings;
 

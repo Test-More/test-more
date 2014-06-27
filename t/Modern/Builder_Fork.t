@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use Test::More;
-use Test::Builder::Stream::Tester;
+use Test::Tester2;
 use Test::Builder::Result::Ok;
 
 my $CLASS = 'Test::Builder::Fork';
