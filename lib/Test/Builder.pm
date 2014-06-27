@@ -1535,7 +1535,7 @@ but they're not always flexible enough.  Test::Builder provides a
 building block upon which to write your own test libraries I<which can
 work together>.
 
-=head1 TEST COMPONTENT MAP
+=head1 TEST COMPONENT MAP
 
   [Test Script] > [Test Tool] > [Test::Builder] > [Test::Bulder::Stream] > [Result Formatter]
                                       ^
