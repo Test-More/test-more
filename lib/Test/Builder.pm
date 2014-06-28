@@ -15,7 +15,7 @@ use Test::Builder::Result::Plan;
 use Test::Builder::Result::Bail;
 use Test::Builder::Result::Child;
 
-our $VERSION = '1.001004_004';
+our $VERSION = '1.301001_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 # The mostly-singleton, and other package vars.
