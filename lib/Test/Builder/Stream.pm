@@ -255,16 +255,39 @@ sub send {
         if ($item->isa('Test::Builder::Result::Plan')) {
             $self->plan($item);
         }
-        if ($item->isa('Test::Builder::Result::Ok')) {
-            $self->tests_run(1);
-            $self->tests_failed(1) unless $item->bool;
-        }
+
         for my $listener (values %{$self->_listeners}) {
             if (reftype $listener eq 'CODE') {
                 $listener->($item)
             }
             else {
                 $listener->handle($item);
+            }
+        }
+
+        if ($item->isa('Test::Builder::Result::Ok')) {
+            $self->tests_run(1);
+            $self->tests_failed(1) unless $item->bool;
+
+            unless($item->real_bool || ($item->skip && $item->todo)) {
+                my $msg = $item->in_todo ? "Failed (TODO)" : "Failed";
+                my $prefix = $ENV{HARNESS_ACTIVE} ? "\n" : "";
+
+                my ($file, $line) = @{$item->trace->{report}}{qw/file line/};
+
+                if(defined $item->name) {
+                    my $name = $item->name;
+                    $msg = qq[$prefix  $msg test '$name'\n  at $file line $line.\n];
+                }
+                else {
+                    $msg = qq[$prefix  $msg test at $file line $line.\n];
+                }
+
+                my $diag = Test::Builder::Result::Diag->new(
+                    message => $msg || "",
+                    map {($_ => $item->$_ || undef)} qw/trace pid depth in_todo source/,
+                );
+                $self->send($diag);
             }
         }
     }
