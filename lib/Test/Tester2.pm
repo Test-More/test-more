@@ -529,7 +529,7 @@ effect checks before they are seen.
 
 =item '!filter_providers' => [...]
 
-Filter results so that yuo only see ones where the tool provider matches one or
+Filter results so that you only see ones where the tool provider matches one or
 more of the conditions specified. Conditions may be a value to match, a regex
 to match, or a codref that takes the provider name and validates it returning
 either true or false.
