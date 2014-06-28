@@ -438,6 +438,10 @@ hard to find space and tab related problems.
 
 =item depth
 
+B<Note:> Depth checking is disabled on newer versions of Test::Builder which no
+longer uses $Test::Builder::Level. In these versions this will simple produce a
+dummy true result.
+
 This allows you to check that your test module is setting the correct value
 for $Test::Builder::Level and thus giving the correct file and line number
 when a test fails. It is calculated by looking at caller() and

@@ -410,7 +410,7 @@ sub is_deeply {
     unless( @_ == 2 or @_ == 3 ) {
         my $msg = <<'WARNING';
 is_deeply() takes two or three args, you gave %d.
-This usually means you passed an array or hash instead 
+This usually means you passed an array or hash instead
 of a reference to it
 WARNING
         chop $msg;    # clip off newline so carp() will put in line/file
@@ -1155,7 +1155,7 @@ C<is()>'s use of C<eq> will interfere:
 
     cmp_ok( $big_hairy_number, '==', $another_big_hairy_number );
 
-It's especially useful when comparing greater-than or smaller-than 
+It's especially useful when comparing greater-than or smaller-than
 relation between values:
 
     cmp_ok( $some_value, '<=', $upper_limit );
@@ -1172,9 +1172,9 @@ Checks to make sure the $module or $object can do these @methods
 
 is almost exactly like saying:
 
-    ok( Foo->can('this') && 
-        Foo->can('that') && 
-        Foo->can('whatever') 
+    ok( Foo->can('this') &&
+        Foo->can('that') &&
+        Foo->can('whatever')
       );
 
 only without all the typing and with a better interface.  Handy for
@@ -1511,7 +1511,7 @@ or
 
 Sometimes running a test under certain conditions will cause the
 test script to die.  A certain function or method isn't implemented
-(such as C<fork()> on MacOS), some resource isn't available (like a 
+(such as C<fork()> on MacOS), some resource isn't available (like a
 net connection) or a module isn't available.  In these cases it's
 necessary to skip tests, or declare that they are supposed to fail
 but will work in the future (a todo test).
@@ -1669,7 +1669,7 @@ These functions are usually used inside an C<ok()>.
 
     ok( eq_array(\@got, \@expected) );
 
-C<is_deeply()> can do that better and with diagnostics.  
+C<is_deeply()> can do that better and with diagnostics.
 
     is_deeply( \@got, \@expected );
 

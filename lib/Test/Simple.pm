@@ -258,7 +258,7 @@ Copyright 2001-2008 by Michael G Schwern E<lt>schwern@pobox.comE<gt>.
 
 Copyright 2004 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
-This program is free software; you can redistribute it and/or 
+This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
 See F<http://www.perl.com/perl/misc/Artistic.html>

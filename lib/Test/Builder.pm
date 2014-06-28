@@ -2185,7 +2185,7 @@ moved to its own object to contain the legacy code.
 
 Like C<summary()>, but with a lot more detail.
 
-    $tests[$test_num - 1] = 
+    $tests[$test_num - 1] =
             { 'ok'       => is the test considered a pass?
               actual_ok  => did it literally say 'ok'?
               name       => name of the test (if any)

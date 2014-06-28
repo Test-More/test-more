@@ -34,7 +34,7 @@ use instead.
       my $tb = $CLASS->builder;
       return $tb->ok(@_);
   }
-  
+
   1;
 
 
@@ -61,8 +61,8 @@ same basic way as L<Test::More>'s, setting the plan and controlling
 exporting of functions and variables.  This allows your module to set
 the plan independent of L<Test::More>.
 
-All arguments passed to C<import()> are passed onto 
-C<< Your::Module->builder->plan() >> with the exception of 
+All arguments passed to C<import()> are passed onto
+C<< Your::Module->builder->plan() >> with the exception of
 C<< import =>[qw(things to import)] >>.
 
     use Your::Module import => [qw(this that)], tests => 23;
