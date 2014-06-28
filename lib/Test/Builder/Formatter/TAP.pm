@@ -2,12 +2,6 @@ package Test::Builder::Formatter::TAP;
 use strict;
 use warnings;
 
-BEGIN {
-    if( $] < 5.008 ) {
-        require Test::Builder::IO::Scalar;
-    }
-}
-
 use Test::Builder::Threads;
 use Test::Builder::Util qw/accessors transform/;
 
@@ -242,16 +236,8 @@ sub _new_fh {
         $fh = $file_or_fh;
     }
     elsif( ref $file_or_fh eq 'SCALAR' ) {
-        # Scalar refs as filehandles was added in 5.8.
-        if( $] >= 5.008 ) {
-            open $fh, ">>", $file_or_fh
-              or $self->croak("Can't open scalar ref $file_or_fh: $!");
-        }
-        # Emulate scalar ref filehandles with a tie.
-        else {
-            $fh = Test::Builder::IO::Scalar->new($file_or_fh)
-              or $self->croak("Can't tie scalar ref $file_or_fh");
-        }
+        open $fh, ">>", $file_or_fh
+          or $self->croak("Can't open scalar ref $file_or_fh: $!");
     }
     else {
         open $fh, ">", $file_or_fh
