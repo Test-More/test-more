@@ -46,6 +46,26 @@ give cull => sub {
     $fork->cull;
 };
 
+give helpers => sub {
+    my $caller = caller;
+
+    # These both get cached, so they will be quick if called multiple times.
+    my $meta    = Test::Builder::Provider->make_provider($caller);
+    my $provide = Test::Builder::Provider->_build_provide($caller, $meta);
+
+    $provide->($_) for @_;
+};
+
+give nesting_helpers => sub {
+    my $caller = caller;
+
+    # These both get cached, so they will be quick if called multiple times.
+    my $meta    = Test::Builder::Provider->make_provider($caller);
+    my $provide = Test::Builder::Provider->_build_provide($caller, $meta);
+
+    $provide->($_, undef, nest => 1) for @_;
+};
+
 sub plan {
     my $tb = Test::More->builder;
 
@@ -815,6 +835,29 @@ Test::More - yet another framework for writing test scripts
 
   BAIL_OUT($why);
 
+  helpers 'my_checker';
+  sub my_checker {
+      ok(...);
+      ok(...);
+  }
+
+  # Failures in the 'ok' calls above will report here instead of there.
+  my_checker(...);
+  my_checker(...);
+  my_checker(...);
+
+  nesting_helpers 'my_check_wrapper';
+  sub my_check_wrapper(&) {
+      my ($code) = @_;
+      ok( $code->(), "code ran" );
+  }
+
+  my_check_wrapper {
+      ok(...); # Failures report here
+      ok(...); # Failures report here
+      return $BOOL;
+  }; # Overall failure reported here
+
   done_testing;
 
   # UNIMPLEMENTED!!!
@@ -946,6 +989,33 @@ to collect the results from other processes.
 
 enables forking, disables legacy_results support, and issues warnings when
 using deprecated code.
+
+=back
+
+=head2 Helpers
+
+Sometimes you want to write functions for things you do frequently that include
+calling ok() or other test functions. Doing this can make it hard to debug
+problems as failures will be reported in your sub, and not at the place where
+you called your sub. Now there is a solution to this, we call these subs
+helpers. You just need to mark such subs as special.
+
+B<Note:> If you are going to be doing complicated things, or intend to re-use
+these helpers in other test files, consider making a L<Test::Builder::Provider>
+library instead.
+
+=over 4
+
+=item helpers(qw/sub1 sub2 .../)
+
+This will mark any sub listed as a helper. This means that any failures within
+the sub will report to where you called the sub.
+
+=item nesting_helpers(qw/sub1 sub2 .../)
+
+Nesting helpers are helpers that run subs you define on the fly, a good example
+is C<subtests { ... }>. Errors in the sub report to their call inside the sub,
+errors in the helper itself report to where the helper was called.
 
 =back
 

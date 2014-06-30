@@ -27,10 +27,9 @@ sub export_into {
     my $class = shift;
     my ($dest, @sym_list) = @_;
 
-    my $meta = {refs => {}, attrs => {}};
     my %subs;
 
-    $subs{TB_PROVIDER_META} = sub { $meta };
+    my $meta = $class->make_provider($dest);
 
     $subs{TB}      = \&find_builder;
     $subs{builder} = \&find_builder;
@@ -48,7 +47,7 @@ sub export_into {
     @sym_list = keys %subs unless @sym_list;
 
     my %seen;
-    for my $name (grep { !$seen{$_}++ } @sym_list, qw/TB_PROVIDER_META/) {
+    for my $name (grep { !$seen{$_}++ } @sym_list) {
         no strict 'refs';
         my $ref = $subs{$name} || $class->can($name);
         croak "$class does not export '$name'" unless $ref;
@@ -58,11 +57,26 @@ sub export_into {
     1;
 }
 
+sub make_provider {
+    my $class = shift;
+    my ($dest) = @_;
+
+    my $meta = $dest->can('TB_PROVIDER_META') ? $dest->TB_PROVIDER_META : undef;
+
+    unless ($meta) {
+        $meta = {refs => {}, attrs => {}};
+        no strict 'refs';
+        *{"$dest\::TB_PROVIDER_META"} = sub { $meta };
+    }
+
+    return $meta;
+}
+
 sub _build_provide {
     my $class = shift;
     my ($dest, $meta) = @_;
 
-    return sub {
+    $meta->{provide} ||= sub {
         my ($name, $ref, %params) = @_;
 
         croak "$dest already provides or gives '$name'"
@@ -113,6 +127,8 @@ sub _build_provide {
             *$globname = $attrs;
         }
     };
+
+    return $meta->{provide};
 }
 
 sub _build_export {
