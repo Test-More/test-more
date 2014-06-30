@@ -5,7 +5,7 @@ use Test::Tester;
 use Data::Dumper qw(Dumper);
 
 my $test = Test::Builder->new;
-$test->plan(tests => 48);
+$test->plan(tests => 54);
 
 my $cap;
 
@@ -28,6 +28,7 @@ my $cap;
 	$test->is_eq($res->{reason}, "", "run pass reason");
 	$test->is_eq($res->{type}, "", "run pass type");
 	$test->is_eq($res->{diag}, "", "run pass diag");
+	$test->is_num($res->{depth}, 0, "run pass depth");
 }
 
 {
@@ -48,6 +49,7 @@ my $cap;
 	$test->is_eq($res->{reason}, "", "run fail reason");
 	$test->is_eq($res->{type}, "", "run fail type");
 	$test->is_eq($res->{diag}, "", "run fail diag");
+	$test->is_num($res->{depth}, 0, "run fail depth");
 }
 
 {
@@ -68,6 +70,7 @@ my $cap;
 	$test->is_eq($res->{reason}, "just because", "skip reason");
 	$test->is_eq($res->{type}, "skip", "skip type");
 	$test->is_eq($res->{diag}, "", "skip diag");
+	$test->is_num($res->{depth}, 0, "skip depth");
 }
 
 {
@@ -88,6 +91,7 @@ my $cap;
 	$test->is_eq($res->{reason}, "just because", "todo_skip reason");
 	$test->is_eq($res->{type}, "todo_skip", "todo_skip type");
 	$test->is_eq($res->{diag}, "", "todo_skip diag");
+	$test->is_num($res->{depth}, 0, "todo_skip depth");
 }
 
 {
@@ -126,6 +130,7 @@ my $cap;
 	$test->is_eq($res_pass->{type}, "", "run multi pass type");
 	$test->is_eq($res_pass->{diag}, "multi pass diag1\nmulti pass diag2\n",
 		"run multi pass diag");
+	$test->is_num($res_pass->{depth}, 0, "run multi pass depth");
 
 	my $res_fail = $results[1];
 
@@ -135,5 +140,6 @@ my $cap;
 	$test->is_eq($res_pass->{reason}, "", "run multi fail reason");
 	$test->is_eq($res_pass->{type}, "", "run multi fail type");
 	$test->is_eq($res_fail->{diag}, "multi fail diag\n", "run multi fail diag");
+	$test->is_num($res_pass->{depth}, 0, "run multi fail depth");
 }
 

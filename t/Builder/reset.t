@@ -53,7 +53,7 @@ $tb->reset;
 # Test the state of the reset builder
 $Test->ok( !defined $tb->exported_to, 'exported_to' );
 $Test->is_eq( $tb->expected_tests, 0, 'expected_tests' );
-$Test->is_eq( $tb->level,          0, 'level' );
+$Test->is_eq( $tb->level,          1, 'level' );
 $Test->is_eq( $tb->use_numbers,    1, 'use_numbers' );
 $Test->is_eq( $tb->no_header,      0, 'no_header' );
 $Test->is_eq( $tb->no_ending,      0, 'no_ending' );

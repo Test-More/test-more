@@ -20,7 +20,8 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 # The mostly-singleton, and other package vars.
 our $Test  = Test::Builder->new;
-our $Level = 0;
+our $Level = 1;
+our $BLevel = 1;
 
 ####################
 # {{{ MAGIC things #
@@ -203,9 +204,8 @@ sub subtest {
     # the Test::Builder singleton will get the child.
     my ($error, $child);
     my $parent = {};
-
     {
-        local $Level = $Level;
+        local $Level = $Level + 1; local $BLevel = $BLevel + 1;
 
         # Store the guts of $self as $parent and turn $child into $self.
         $child  = $self->child($name, 1);
@@ -236,6 +236,7 @@ sub subtest {
     # Die *after* we restore the parent.
     die $error if $error and !eval { $error->isa('Test::Builder::Exception') };
 
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
     my $finalize = $child->finalize(1);
 
     $self->BAIL_OUT($child->{Bailed_Out_Reason}) if $child->{Bailed_Out};
@@ -255,6 +256,7 @@ sub finalize {
     local $? = 0;     # don't fail if $subtests happened to set $? nonzero
     $self->_ending;
 
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
     my $ok = 1;
     $self->parent->{Child_Name} = undef;
 
@@ -342,7 +344,7 @@ sub trace_test {
         $entry->{anointed}   = 1 if $pkg->can('TB_TESTER_META') && $sub ne 'Test::Builder::subtest';
 
         # Stupid Legacy
-        if ($Level && $Level == (($level - 1) - $blevel)) {
+        if (($Level != $BLevel) && (1 + $Level - $BLevel) == ($level - $blevel)) {
             # Only the anointed can be level!
             # UHG - subtests are the root of all evil
             if ($entry->{anointed} && $sub ne 'Test::Builder::subtest') {
@@ -481,7 +483,10 @@ sub plan {
 
     return unless $cmd;
 
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
+
     if( my $method = $PLAN_CMDS{$cmd} ) {
+        local $Level = $Level + 1; local $BLevel = $BLevel + 1;
         $self->$method($arg);
     }
     else {
@@ -785,6 +790,7 @@ sub cmp_ok {
 ];
         $error = $@;
     }
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
     my $ok = $self->ok( $test, $name );
 
     # Treat overloaded objects as numbers if we're asked to do a
@@ -820,6 +826,7 @@ END
 
 sub is_eq {
     my( $self, $got, $expect, $name ) = @_;
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
 
     if( !defined $got || !defined $expect ) {
         # undef only matches undef and nothing else
@@ -835,6 +842,7 @@ sub is_eq {
 
 sub is_num {
     my( $self, $got, $expect, $name ) = @_;
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
 
     if( !defined $got || !defined $expect ) {
         # undef only matches undef and nothing else
@@ -850,6 +858,7 @@ sub is_num {
 
 sub isnt_eq {
     my( $self, $got, $dont_expect, $name ) = @_;
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
 
     if( !defined $got || !defined $dont_expect ) {
         # undef only matches undef and nothing else
@@ -865,6 +874,7 @@ sub isnt_eq {
 
 sub isnt_num {
     my( $self, $got, $dont_expect, $name ) = @_;
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
 
     if( !defined $got || !defined $dont_expect ) {
         # undef only matches undef and nothing else
@@ -880,12 +890,14 @@ sub isnt_num {
 
 sub like {
     my( $self, $thing, $regex, $name ) = @_;
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
 
     return $self->_regex_ok( $thing, $regex, '=~', $name );
 }
 
 sub unlike {
     my( $self, $thing, $regex, $name ) = @_;
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
 
     return $self->_regex_ok( $thing, $regex, '!~', $name );
 }
@@ -964,7 +976,8 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     # We leave this a global because it has to be localized and localizing
     # hash keys is just asking for pain.  Also, it was documented.
-    $Level = 0;
+    $Level = 1;
+    $BLevel = 1;
 
     if ($params{new_stream} || !$params{shared_stream}) {
         $self->{stream} = Test::Builder::Stream->new;
@@ -1016,6 +1029,7 @@ sub todo {
 
     return $self->{Todo} if defined $self->{Todo};
 
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
     my $todo = $self->find_TODO($pack);
     return $todo if defined $todo;
 
@@ -1025,6 +1039,7 @@ sub todo {
 sub in_todo {
     my $self = shift;
 
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
     return( defined $self->{Todo} || $self->find_TODO ) ? 1 : 0;
 }
 
@@ -1155,6 +1170,7 @@ sub _diag_fmt {
 
 sub _is_diag {
     my( $self, $got, $type, $expect ) = @_;
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
 
     $self->_diag_fmt( $type, $_ ) for \$got, \$expect;
 
@@ -1167,6 +1183,7 @@ DIAGNOSTIC
 
 sub _isnt_diag {
     my( $self, $got, $type ) = @_;
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
 
     $self->_diag_fmt( $type, \$got );
 
@@ -1183,6 +1200,7 @@ sub _cmp_diag {
     $got    = defined $got    ? "'$got'"    : 'undef';
     $expect = defined $expect ? "'$expect'" : 'undef';
 
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
     return $self->diag(<<"DIAGNOSTIC");
     $got
         $type
@@ -1207,6 +1225,7 @@ sub _regex_ok {
     my $ok           = 0;
     my $usable_regex = _is_qr($regex) ? $regex : $self->maybe_regex($regex);
     unless( defined $usable_regex ) {
+        local $Level = $Level + 1; local $BLevel = $BLevel + 1;
         $ok = $self->ok( 0, $name );
         $self->diag("    '$regex' doesn't look much like a regex to me.");
         return $ok;
@@ -1229,6 +1248,7 @@ sub _regex_ok {
 
         $test = !$test if $cmp eq '!~';
 
+        local $Level = $Level + 1; local $BLevel = $BLevel + 1;
         $ok = $self->ok( $test, $name );
     }
 
@@ -1236,6 +1256,7 @@ sub _regex_ok {
         $thing = defined $thing ? "'$thing'" : 'undef';
         my $match = $cmp eq '=~' ? "doesn't match" : "matches";
 
+        local $Level = $Level + 1; local $BLevel = $BLevel + 1;
         $self->diag( sprintf <<'DIAGNOSTIC', $thing, $match, $regex );
                   %s
     %13s '%s'
@@ -1269,6 +1290,7 @@ sub _try {
 sub _message_at_caller {
     my $self = shift;
 
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
     my $trace = $self->trace_test;
     my( $pack, $file, $line ) = @{$trace->{report}}{qw/package file line/};
     return join( "", @_ ) . " at $file line $line.\n";
@@ -1288,6 +1310,7 @@ sub _sanity_check {
 sub _whoa {
     my( $self, $check, $desc ) = @_;
     if($check) {
+        local $Level = $Level + 1; local $BLevel = $BLevel + 1;
         $self->croak(<<"WHOA");
 WHOA!  $desc
 This should never happen!  Please contact the author immediately!
@@ -1376,6 +1399,7 @@ sub _diag_fh {
     $self->carp("Use of \$TB->_diag_fh() is deprecated.") if $self->modern;
     my $tap = $self->tap || $self->croak("_diag_fh() method only applies when TAP is in use");
 
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
     return $tap->_diag_fh($self->in_todo)
 }
 
@@ -1437,6 +1461,7 @@ sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     Carp::confess("Use of Test::Builder->caller() is deprecated.\n") if $self->modern;
 
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
     my $trace = $self->trace_test;
 
     my @call = @{$trace->{report} || {}}{qw/package file line/};

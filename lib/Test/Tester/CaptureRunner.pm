@@ -33,7 +33,6 @@ sub get_results {
     foreach my $res (@results) {
         next if defined $res->{depth};
         my $depth = $res->{_depth} - $res->{_level} - $start - 3;
-#		print "my $depth = $res->{_depth} - $res->{_level} - $start - 1\n";
         $res->{depth} = $depth;
     }
 

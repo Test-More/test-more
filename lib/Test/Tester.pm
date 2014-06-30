@@ -73,7 +73,7 @@ sub find_run_tests {
         $d++;
     }
 
-#	die "Didn't find 'run_tests' in caller stack" unless $found;
+	die "Didn't find 'run_tests' in caller stack" unless $found;
     return $d;
 }
 
