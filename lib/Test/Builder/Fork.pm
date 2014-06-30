@@ -93,6 +93,78 @@ sub DESTROY {
 
 __END__
 
-=pod
+=head1 NAME
 
-see also L<Child>
+Test::Builder::Fork - Fork support for Test::Builder
+
+=head1 DESCRIPTION
+
+This module is used by L<Test::Builder::Stream> to support forking.
+
+=head1 SYNOPSYS
+
+    use Test::Builder::Fork;
+
+    my $f = Test::Builder::Fork;
+
+    if ($pid = fork) {
+        waitpid($pid, 0);
+        $f->cull;
+    }
+    else {
+        $f->handle(Test::Builder::Result::Ok->new(bool => 1);
+    }
+
+    ...
+
+=head1 METHODS
+
+=over 4
+
+=item $f = $class->new
+
+Create a new instance
+
+=item $f->pid
+
+Original PID in which the fork object was created.
+
+=item $f->tmpdir
+
+Temp dir used to share results between procs
+
+=item $f->handle($result)
+
+Send a result object to the parent
+
+=item $f->cull
+
+Retrieve result objects and send them to the stream
+
+=back
+
+=head1 SEE ALSO
+
+L<Child> - Makes forking easier.
+
+=head1 AUTHORS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 SOURCE
+
+The source code repository for Test::More can be found at
+F<http://github.com/Test-More/test-more/>.
+
+=head1 COPYRIGHT
+
+Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http://www.perl.com/perl/misc/Artistic.html>

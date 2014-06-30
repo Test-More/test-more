@@ -19,6 +19,8 @@ A whole bunch.  Start with L<Test::Simple> then move onto Test::More.
 
 Then go onto L<http://search.cpan.org> and search for "Test".
 
+Also check out L<Fennec>.
+
 =head2 Are there any modules for testing web pages/CGI programs?
 
 L<Test::WWW::Mechanize>, L<Test::WWW::Selenium>
@@ -297,6 +299,12 @@ Install L<Test::More> into F<t/lib> under your source directory.  Then in your t
 say C<use lib 't/lib'>.
 
 =head2 How do I deal with threads and forking?
+
+    use Test::More qw/enable_forking/;
+
+or
+
+    use Test::More qw/modern/;
 
 =head2 Why do I need more than ok?
 

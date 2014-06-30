@@ -220,3 +220,115 @@ sub _delta {
 }
 
 1;
+
+__END__
+
+=head1 NAME
+
+Test::Builder::Util - Internal tools for Test::Builder and friends
+
+=head1 DESCRIPTION
+
+Tools for generating accessors and other object bits and pieces.
+
+=head1 SYNOPSYS
+
+    #Imports a sub named 'new' and all the other tools.
+    use Test::Builder::Util;
+
+    # Define some exports
+    export 'foo'; # Export the 'foo' sub
+    export bar => sub { ... }; # export an anon sub named bar
+
+    # Generate some accessors
+    accessors qw/yabba dabba doo/;
+
+=head1 EXPORTS
+
+=over 4
+
+=item $class->new(...)
+
+Generic constructor method, can be used in almost any package. Takes key/value
+pairs as arguments. Key is assumed to be the name of a method or accessor. The
+method named for the key is called with the value as an argument. You can also
+define an 'init' method which this will call for you on the newly created
+object.
+
+=item $class->import(@list)
+
+Importing this method lets you define exports.
+
+=item $class->export_to($dest_package, @names)
+
+Export @names to the package $dest_package
+
+=item exports(@names)
+
+Export the subs named in @names.
+
+=item export($name)
+
+=item export($name => sub { ... })
+
+Export a sub named $name. Optionally a coderef may be used.
+
+=item accessor($name)
+
+=item accessor($name, sub { return $DEFAULT })
+
+Define an accessor. A default value can be specified via a coderef.
+
+=item accessors(qw/sub1 sub2 .../)
+
+Define several read/write accessors at once.
+
+=item transform($name, sub { ($self, @args) = @_; ... })
+
+=item transform($name, $attr, sub { ($self, @args) = @_; ... })
+
+Define a read/write accessor that transforms whatever you assign to it via the
+given coderef. $attr is optional and defaults to $name. $attr is the key inside
+the blessed object hash used to store the field.
+
+=item delta($name)
+
+=item delta($name => $default)
+
+=item deltas(qw/name1 name2 .../)
+
+=item atomic_delta($name)
+
+=item atomic_delta($name => $default)
+
+=item atomic_deltas(qw/name1 name2 .../)
+
+A delta accessor is an accessor that adds the numeric argument to the current
+value. Optionally a default value can be specified, otherwise 0 is used.
+
+The atomic variations are thread-safe.
+
+=back
+
+=head1 AUTHORS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 SOURCE
+
+The source code repository for Test::More can be found at
+F<http://github.com/Test-More/test-more/>.
+
+=head1 COPYRIGHT
+
+Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http://www.perl.com/perl/misc/Artistic.html>
+
