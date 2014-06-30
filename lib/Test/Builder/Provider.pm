@@ -66,6 +66,7 @@ sub make_provider {
     unless ($meta) {
         $meta = {refs => {}, attrs => {}};
         no strict 'refs';
+        $meta->{export} = \@{"$dest\::EXPORT"};
         *{"$dest\::TB_PROVIDER_META"} = sub { $meta };
     }
 
@@ -91,6 +92,9 @@ sub _build_provide {
 
         my $attrs = {%params, package => $dest, name => $name};
         $meta->{attrs}->{$name} = $attrs;
+
+        # Stupid Legacy! This can go away when https://github.com/Ovid/test--most/pull/9 is merged.
+        push @{$meta->{export}} => $name;
 
         # If this is just giving, or not a coderef
         return $meta->{refs}->{$name} = $ref if $params{give} || reftype $ref ne 'CODE';
@@ -155,12 +159,14 @@ sub _build_export {
             %export    = map {($_ => 1)} @{"$class\::EXPORT"};
             %export_ok = map {($_ => 1)} @{"$class\::EXPORT_OK"}, @{"$class\::EXPORT"};
         }
-        warn "package '$class' uses \@EXPORT and/or \@EXPORT_OK, this is deprecated since '$dest' is no longer a subclass of 'Exporter'\n"
-            if keys %export_ok;
+        #warn "package '$class' uses \@EXPORT and/or \@EXPORT_OK, this is deprecated since '$dest' is no longer a subclass of 'Exporter'\n"
+        #    if keys %export_ok;
 
         unless(@list) {
             my %seen;
-            @list = grep { !($no{$_} || $seen{$_}++) } keys(%{$meta->{refs}}), keys(%export);
+            #@list = grep { !($no{$_} || $seen{$_}++) } keys(%{$meta->{refs}}), keys(%export);
+            # Stupid Legacy! This can go away when https://github.com/Ovid/test--most/pull/9 is merged.
+            @list = grep { !($no{$_} || $seen{$_}++) } keys(%export);
         }
         for my $name (@list) {
             if ($name =~ m/^(\$|\@|\%)(.*)$/) {
