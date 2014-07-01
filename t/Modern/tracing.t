@@ -60,10 +60,8 @@ BEGIN {
     sub do_it {
         my $builder = __PACKAGE__->builder;
 
-        local $Test::Builder::Level = $Test::Builder::Level + 1;
-
         my $trace = Test::Builder->trace_test;
-        return $trace; 
+        return $trace;
     }
 
 # line 1700
@@ -75,9 +73,10 @@ BEGIN {
 # line 1800
     sub do_nestit(&) {
         my ($code) = @_;
-        local $Test::Builder::Level = $Test::Builder::Level + 1;
+        my $trace = Test::Builder->trace_test;
+        # TODO: I Think this is wrong...
+        local $Test::Builder::Level = $Test::Builder::Level + 3;
         $code->();
-        my $trace = main::trace();
         return $trace;
     }
 }
@@ -215,13 +214,12 @@ is_deeply(
             'package' => 'XXX::Tester',
             'file' => __FILE__,
             'report' => 1,
-            'level' => 1,
         },
         'stack' => [
             {
                 'file' => __FILE__,
                 'package' => 'XXX::LegacyProvider',
-                'line' => 1605,
+                'line' => 1603,
                 'transition' => 1
             },
             {
@@ -230,7 +228,6 @@ is_deeply(
                 'package' => 'XXX::Tester',
                 'file' => __FILE__,
                 'report' => 1,
-                'level' => 1,
             },
         ],
     },
@@ -246,14 +243,14 @@ is_deeply(
             'package' => 'XXX::Tester',
             'file' => __FILE__,
             'report' => 1,
-            'level' => 1,
             'anointed' => 1,
+            'level' => 1,
         },
         'stack' => [
             {
                 'file' => __FILE__,
                 'package' => 'XXX::LegacyProvider',
-                'line' => 1605,
+                'line' => 1603,
                 'transition' => 1,
             },
             {
@@ -261,8 +258,8 @@ is_deeply(
                 'package' => 'XXX::Tester',
                 'file' => __FILE__,
                 'report' => 1,
-                'level' => 1,
                 'anointed' => 1,
+                'level' => 1,
             },
         ],
     },

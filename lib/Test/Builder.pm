@@ -314,17 +314,17 @@ sub trace_test {
 
     my $level  = 0;
     my $last   = __PACKAGE__;
-    my $blevel = 0; # We are the builder!
     my $nest   = undef;
     my $report = undef;
-    my $report_jump = 0;
+
+    my $seek_level = $Level - $BLevel;
+    my $notb_level = 0;
 
     while(my @call = CORE::caller($level++)) {
         my ($pkg, $file, $line, $sub) = @call;
 
         if ($BUILDER_PACKAGES{$pkg}) {
-            $last   = $pkg;
-            $blevel = $level - 1; # Stupid Legacy
+            $last = $pkg;
             next;
         }
 
@@ -333,7 +333,6 @@ sub trace_test {
         if(my $attrs = _is_provider_tool(@call)) {
             $entry->{provider_tool} = $attrs;
             # UHG - subtests are the root of all evil Stupid LEgacy
-            $blevel = $level - 1 if $attrs->{name} eq 'subtest' && $attrs->{package} eq 'Test::More';
             if ($attrs->{nest}) {
                 last if $nest;
                 $nest = $entry;
@@ -343,24 +342,11 @@ sub trace_test {
         $entry->{transition} = 1 if !$last || $BUILDER_PACKAGES{$last};
         $entry->{anointed}   = 1 if $pkg->can('TB_TESTER_META') && $sub ne 'Test::Builder::subtest';
 
-        # Stupid Legacy
-        if (($Level != $BLevel) && (1 + $Level - $BLevel) == ($level - $blevel)) {
-            # Only the anointed can be level!
-            # UHG - subtests are the root of all evil
-            if ($entry->{anointed} && $sub ne 'Test::Builder::subtest') {
-                $entry->{level} = 1;
-            }
-            elsif($stack[-1] && $stack[-1]->{anointed}) {
-                $entry->{false_level} = -1;
-                $stack[-1]->{level} = 1;
-                push @level => $stack[-1];
-            }
-            # UHG - subtests are the root of all evil
-            elsif($sub eq 'Test::Builder::subtest') {
-                $entry->{false_level} = 3;
-                $report_jump = 3;
-            }
-        }
+        $notb_level++ unless $entry->{transition};
+
+        $entry->{level} = 1 if $seek_level && $notb_level - 1 == $seek_level;
+
+        $report = $tools[-1] if $entry->{level} && !$entry->{anointed};
 
         next unless keys %$entry;
 
@@ -371,22 +357,20 @@ sub trace_test {
 
         push @stack      => $entry;
         push @tools      => $entry if $entry->{provider_tool} && !$entry->{provider_tool}->{nest};
-        push @anointed   => $entry if $entry->{anointed};
+        push @anointed   => $entry if $entry->{anointed} && !$entry->{provider_tool};
         push @transition => $entry if $entry->{transition};
         push @level      => $entry if $entry->{level};
-
-        if ($report_jump) {
-            $report_jump--;
-            $report = $entry unless $report_jump;
-        }
 
         $last = $pkg;
     }
 
-    unless($report) {
-        # If we have a level and a tool, we want the deeper one.
+    unless ($report) {
         ($report) = @level && @tools ? (sort {$b->{depth} <=> $a->{depth}} $level[0], $tools[-1]) : (undef);
-        $report ||= $level[0] || $tools[-1] || $nest || $anointed[0] || $transition[-1];
+        $report ||= $level[0] || $tools[-1];
+        if (!$report && $nest && $anointed[0]) {
+            ($report) = (sort {($a->{transition} || 0) <=> ($b->{transition} || 0) || $a->{depth} <=> $b->{depth}} $nest, $anointed[0]);
+        }
+        $report ||= $nest || $anointed[0] || $transition[-1];
     }
 
     $report->{report} = 1 if $report;

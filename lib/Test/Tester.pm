@@ -66,12 +66,10 @@ sub find_run_tests {
     my $d     = 1;
     my $found = 0;
     while ((not $found) and (my ($sub) = (caller($d))[3])) {
-#		print "$d: $sub\n";
         $found = ($sub eq "Test::Tester::run_tests");
         $d++;
     }
 
-	die "Didn't find 'run_tests' in caller stack" unless $found;
     return $d;
 }
 
