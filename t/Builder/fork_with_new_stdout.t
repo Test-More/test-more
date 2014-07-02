@@ -24,8 +24,11 @@ else {
 my $pipe = IO::Pipe->new;
 if ( my $pid = fork ) {
   $pipe->reader;
-  $b->ok((<$pipe> =~ /FROM CHILD: ok 1/), "ok 1 from child");
-  $b->ok((<$pipe> =~ /FROM CHILD: 1\.\.1/), "1..1 from child");
+  my $first = <$pipe>;
+  $b->ok(($first =~ /ok 1/), "ok 1 from child");
+
+  my $second = <$pipe>;
+  $b->ok(( $second=~ /1\.\.1/), "1..1 from child");
   waitpid($pid, 0);
 }
 else {
@@ -34,9 +37,9 @@ else {
   close STDOUT;
   open(STDOUT, ">&$pipe_fd");
   my $b = Test::Builder->new;
-  $b->reset;
-  $b->no_plan;
+  $b->reset(shared_stream => 0, new_stream => 1);
   $b->ok(1);
+  $b->done_testing;
 } 
 
 
