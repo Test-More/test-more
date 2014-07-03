@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-use 5.008;
+use 5.008001;
 
 use Config;
 use ExtUtils::MakeMaker;
@@ -24,10 +24,7 @@ CHANGE_WARN
 
         sleep 5;
     }
-    if( $] >= 5.008001 && $Config{useithreads} &&
-        $PACKAGE_VERSION < $LAST_THREAD_CHANGE 
-      ) 
-    {
+    if( $Config{useithreads} && $PACKAGE_VERSION < $LAST_THREAD_CHANGE ) {
         printf <<"THREAD_WARN", $LAST_THREAD_CHANGE;
 
 NOTE: The behavior of Test::More and threads has changed between this
@@ -70,14 +67,12 @@ WriteMakefile(
         %Prereqs
     },
 
-    # Added to the core in 5.7.3 and also 5.6.2.
-    INSTALLDIRS     => $] >= 5.006002 ? 'perl' : 'site',
-
+    INSTALLDIRS        => 'site',
     test        => {
         TESTS           => 't/*.t t/*/*.t',
     },
 
-    ($mm_ver < 6.48 ? () : (MIN_PERL_VERSION => 5.008)),
+    ($mm_ver < 6.48 ? () : (MIN_PERL_VERSION => 5.008001)),
 
     ($mm_ver < 6.46 ? () : (META_MERGE => {
         resources => {
