@@ -126,6 +126,15 @@ sub ok {
 
 __END__
 
+=head1 NAME
+
+Test::Builder::Formatter::LegacyResults - Encapsulate some legacy stuff.
+
+=head1 DESCRIPTION
+
+Older versions kept track of test results using an array of hashes. This is now
+deprecated, but needs to still work for legacy code.
+
 =head1 TEST COMPONENT MAP
 
   [Test Script] > [Test Tool] > [Test::Builder] > [Test::Bulder::Stream] > [Result Formatter]
@@ -137,4 +146,24 @@ to produce results. The results are sent to L<Test::Builder::Stream> which then
 forwards them on to one or more formatters. The default formatter is
 L<Test::Builder::Fromatter::TAP> which produces TAP output.
 
+=head1 AUTHORS
 
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 SOURCE
+
+The source code repository for Test::More can be found at
+F<http://github.com/Test-More/test-more/>.
+
+=head1 COPYRIGHT
+
+Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http://www.perl.com/perl/misc/Artistic.html>
