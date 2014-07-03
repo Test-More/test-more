@@ -29,4 +29,20 @@ sub to_handler {
     return sub { $self->handle(@_) };
 }
 
+sub listen {
+    my $class = shift;
+    my %params = @_;
+    my $caller = caller;
+
+    my $tb = $params{tb};
+    $tb ||= $caller->can('TB_INSTANCE') ? $caller->TB_INSTANCE : undef;
+
+    my $stream = delete $params{stream} || ($tb ? $tb->stream : undef) || Test::Builder::Stream->shared;
+
+    my $id = delete $params{id};
+    ($id) = ($class =~ m/^.*::([^:]+)$/g) unless $id;
+
+    return $stream->listen($id => $class->new(%params));
+}
+
 1;
