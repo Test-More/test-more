@@ -1,3 +1,16 @@
+1.301001_001 Wed Jul  02 20:14:22 PST 2014
+    * Normalize version number across all versioned files
+    * Result stream!
+    * Results as objects
+    * Deprecate: Test::Builder::Tester, Test::Tester, Test::Builder::Module, $Level
+    * Bundle Test::Tester
+    * Add Test::Tester2
+    * Add Test::Builder::Provider
+    * Support for result handlers/formatters
+    * Forking support
+    * Refactor functionality into encapsulation modules (ExitMagic, Tap, etc...)
+    * Add Test Tracing instead of $Level
+
 1.001004_003 Sat May  17 13:43:00 PST 2014
     * Another Minor doc fix to solve test bug
     * Fix #399, conflict with strawberry-portable
