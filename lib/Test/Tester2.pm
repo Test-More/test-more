@@ -42,14 +42,15 @@ sub results_are {
 
     my @res_list = @$results;
 
+    my $overall_name;
     my $seek = 0;
     my $skip = 0;
     my $ok = 1;
     my $wnum = 0;
     my @diag;
 
-    while(my $action = shift @checks) {
-        last unless $ok;
+    while($ok && @checks) {
+        my $action = shift @checks;
 
         if ($action =~ m/^(!)?filter_providers?$/) {
             @res_list = _filter_list(
@@ -86,17 +87,21 @@ sub results_are {
                 $ok = 0;
                 push @diag => "Expected end of results, but more results remain";
             }
+            $overall_name = shift @checks;
             last;
         }
+        elsif ($action eq 'name') {
+            $overall_name = shift @checks;
+            next;
+        }
 
-        my $name = $action;
-        my ($type) = ($action =~ m/^([^_\s]+)/);
+        my $type = $action;
         my $got  = shift @res_list;
         my $want = shift @checks; $wnum++;
-        $name = $wnum if $name eq $type;
+        my $id = "$type " . (delete $want->{id} || $wnum);
 
         $want ||= "(UNDEF)";
-        croak "($name) '$type' must be paired with a hashref, but you gave: '$want'"
+        croak "($id) '$type' must be paired with a hashref, but you gave: '$want'"
             unless $want && ref $want && reftype $want eq 'HASH';
 
         $got = shift(@res_list) while ($skip || $seek) && $got && $type ne $got->type;
@@ -104,13 +109,13 @@ sub results_are {
 
         if (!$got) {
             $ok = 0;
-            push @diag => "($name) Wanted result type '$type', But no more results left to check!";
+            push @diag => "($id) Wanted result type '$type', But no more results left to check!";
             last;
         }
 
         if ($type ne $got->type) {
             $ok = 0;
-            push @diag => "($name) Wanted result type '$type', But got: '" . $got->type . "'";
+            push @diag => "($id) Wanted result type '$type', But got: '" . $got->type . "'";
             last;
         }
 
@@ -127,35 +132,42 @@ sub results_are {
             if ($rtype eq 'CODE') {
                 $field_ok = $wval->($gval);
                 $gval = "(UNDEF)" unless defined $gval;
-                push @diag => "($name) $key => '$gval' did not validate via coderef" unless $field_ok;
+                push @diag => "($id) $key => '$gval' did not validate via coderef" unless $field_ok;
             }
             elsif ($rtype eq 'REGEXP') {
                 $field_ok = defined $gval && $gval =~ $wval;
                 $gval = "(UNDEF)" unless defined $gval;
-                push @diag => "($name) $key => '$gval' does not match $wval" unless $field_ok;
+                push @diag => "($id) $key => '$gval' does not match $wval" unless $field_ok;
             }
             elsif(!exists $fields->{$key}) {
                 $field_ok = 0;
-                push @diag => "($name) Wanted $key => '$wval', but '$key' does not exist" unless $field_ok;
+                push @diag => "($id) Wanted $key => '$wval', but '$key' does not exist" unless $field_ok;
             }
             elsif(defined $wval && !defined $gval) {
                 $field_ok = 0;
-                push @diag => "($name) Wanted $key => '$wval', but '$key' is not defined" unless $field_ok;
+                push @diag => "($id) Wanted $key => '$wval', but '$key' is not defined" unless $field_ok;
             }
             elsif($wval =~ m/^\d+x?[\d\.e_]*$/i && $gval =~ m/^\d+x?[\d\.e_]*$/i) {
                 $field_ok = $wval == $gval;
-                push @diag => "($name) Wanted $key => '$wval', but got $key => '$gval'" unless $field_ok;
+                push @diag => "($id) Wanted $key => '$wval', but got $key => '$gval'" unless $field_ok;
             }
             else {
                 $field_ok = "$wval" eq "$gval";
-                push @diag => "($name) Wanted $key => '$wval', but got $key => '$gval'" unless $field_ok;
+                push @diag => "($id) Wanted $key => '$wval', but got $key => '$gval'" unless $field_ok;
             }
 
             $ok &&= $field_ok;
         }
+        last unless $ok;
     }
 
-    builder()->ok($ok, "Got expected results");
+    # Find the test name
+    while(my $action = shift @checks) {
+        next unless $action eq 'end' || $action eq 'name';
+        $overall_name = shift @checks;
+    }
+
+    builder()->ok($ok, $overall_name || "Got expected results");
     builder()->diag($_) for @diag;
     return $ok;
 }
@@ -230,11 +242,14 @@ L<Test::Builder::Fromatter::TAP> which produces TAP output.
     # With help
     results_are(
         $results,
-        ok_a => { bool => 1, name => 'pass' },
-        ok_b => { bool => 0, name => 'fail' },
-        diag => { message => qr/Failed test 'fail'/ },
-        diag => { message => qr/xxx/ },
-        'end'
+        ok   => { id => 'a', bool => 1, name => 'pass' },
+
+        ok   => { id => 'b1', bool => 0, name => 'fail',         line => 7, file => 'my_test.t' },
+        diag => { id => 'b2', message => qr/Failed test 'fail'/, line => 7, file => 'my_test.t' },
+
+        diag => { id => 'c', message => qr/xxx/ },
+
+        end => 'Name of this test',
     );
 
     # You can combine the 2:
@@ -303,11 +318,12 @@ All results will be subclasses of L<Test::Builder::Result>
 
     results_are(
         $results,
-        ok_a => { bool => 1, name => 'pass' },          # check an 'ok' name the check 'a'
-        ok_b => { bool => 0, name => 'fail' },          # check an 'ok' name the check 'b'
-        diag => { message => qr/Failed test 'fail'/ },  # check a 'diag' unnamed
-        diag => { message => qr/xxx/ },                 # check a 'diag' unnamed
-        'end'                                           # directive 'end'
+        name => 'Name of the test',                       # Name this overall test
+        ok   => { id => 'a', bool => 1, name => 'pass' }, # check an 'ok' with ID 'a'
+        ok   => { id => 'b', bool => 0, name => 'fail' }, # check an 'ok' with ID 'b'
+        diag => { message => qr/Failed test 'fail'/ },    # check a 'diag' no ID
+        diag => { message => qr/xxx/ },                   # check a 'diag' no ID
+        'end'                                             # directive 'end'
     );
 
 The first argument to C<results_are()> must be an arrayref containing
@@ -319,18 +335,13 @@ for 'end'). The key must either be a directive, or a result-type optionally
 followed by a name. Values for directives are specific to the directives.
 Values for result types must always be hashrefs with 0 or more fields to check.
 
-=head2 TYPES AND NAMES
+=head2 TYPES AND IDS
 
-Since you can provide many checks, it can be handy to name them. If you do not
-provide a name then they will be assigned a number in sequence starting at 1.
-When specifying a result check you start with the result type, then either a
-space or underscore, then the name.
+Since you can provide many checks, it can be handy to ID them. If you do not
+provide an ID then they will be assigned a number in sequence starting at 1.
+You can specify an ID by passing in the 'id' parameter.
 
-    ok_check_foo => { ... }
-
-or
-
-    "ok check foo" => { ... }
+    ok => { id => 'foo', ... }
 
 This can be very helpful when tracking down the location of a failing check.
 
@@ -714,15 +725,30 @@ this on and off any time.
 
 =back
 
+=head3 name
+
+=over 4
+
+=item name => "Name of test"
+
+Used to name the test when not using 'end'.
+
+=back
+
 =head3 end
 
 =over 4
 
 =item 'end'
 
+=item end => 'Test Name'
+
 Used to say that there should not be any more results. Without this any results
 after your last check are simply ignored. This will generate a failure if any
 unchecked results remain.
+
+This is also how you can name the overall test. The default name is 'Got
+expected results'.
 
 =back
 

@@ -42,33 +42,34 @@ results_are(
     intercept {
         results_are(
             intercept { ok(1, "foo") },
-            "ok blah" => {bool => 0},
+            ok => {id => 'blah', bool => 0},
+            end => 'Lets name this test!',
         );
     },
 
-    ok_first => {bool => 0},
+    ok => {id => 'first', bool => 0},
 
-    diag => {message => qr{Failed test 'Got expected results'.*at t/Modern/Tester2\.t line}s},
+    diag => {message => qr{Failed test 'Lets name this test!'.*at t/Modern/Tester2\.t line}s},
     diag => {message => q{(ok blah) Wanted bool => '0', but got bool => '1'}},
 
-    'end'
+    end => 'Failure diag checking',
 );
 
 results_are(
     intercept {
         results_are(
             intercept { ok(1, "foo"); ok(1, "bar") },
-            "ok blah" => {bool => 1},
+            ok => {id => 'blah', bool => 1},
             'end'
         );
     },
 
-    ok_first => {bool => 0},
+    ok => {id => 'first', bool => 0},
 
     diag => {},
     diag => {message => q{Expected end of results, but more results remain}},
 
-    'end'
+    end => 'skipping a diag',
 );
 
 DOCS_1: {
@@ -85,11 +86,11 @@ DOCS_1: {
     # With help
     results_are(
         $results,
-        ok_a => { bool => 1, name => 'pass' },
-        ok_b => { bool => 0, name => 'fail' },
+        ok   => { id => 'a', bool => 1, name => 'pass' },
+        ok   => { id => 'b', bool => 0, name => 'fail' },
         diag => { message => qr/Failed test 'fail'/ },
         diag => { message => qr/xxx/ },
-        'end'
+        end => 'docs 1',
     );
 }
 
@@ -112,6 +113,8 @@ DOCS_2: {
 
         # So it goes right to the Test::Simple result.
         ok => { name => "bat" },
+
+        end => 'docs 2',
     );
 }
 
@@ -139,6 +142,8 @@ DOCS_3: {
 
         # So it goes right to the next diag.
         diag => { message => 'ZZZ' },
+
+        end => 'docs 3',
     );
 }
 
@@ -165,6 +170,8 @@ DOCS_4: {
         skip => 2, # Skips a diag and an ok
 
         diag => { message => 'ZZZ' },
+
+        end => 'docs 4'
     );
 }
 
@@ -186,6 +193,8 @@ DOCS_5: {
         skip => '*', # Skip until the next 'ok' is found since that is our next check.
 
         ok => { name => "bar" },
+
+        end => 'docs 5',
     );
 }
 
@@ -207,6 +216,8 @@ DOCS_6: {
             results_are(
                 $results,
 
+                name => 'docs 6 inner',
+
                 seek => 1,
                 ok => { name => "foo" },
                 # The diags are ignored,
@@ -220,8 +231,10 @@ DOCS_6: {
         },
 
         ok => { bool => 0 },
-        diag => {},
-        diag => { message => q{(3) Wanted result type 'ok', But got: 'diag'} },
+        diag => { message => qr/Failed test 'docs 6 inner'/ },
+        diag => { message => q{(ok 3) Wanted result type 'ok', But got: 'diag'} },
+
+        end => 'docs 6',
     );
 }
 
