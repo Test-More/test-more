@@ -309,6 +309,7 @@ my %BUILDER_PACKAGES = (
     'Test::Builder::Result::Child' => 1,
 );
 
+my $level_warned = 0;
 sub trace_test {
     my (@stack, @anointed, @transition, @level, @tools);
 
@@ -347,6 +348,9 @@ sub trace_test {
         $entry->{level} = 1 if $seek_level && $notb_level - 1 == $seek_level;
 
         $report = $tools[-1] if $entry->{level} && !$entry->{anointed};
+
+        warn "\$Test::Builder::Level was used to trace a test! \$Test::Builder::Level is deprecated!\n"
+            if $INC{'Test/Tester2.pm'} && $entry->{level} && !$level_warned++;
 
         next unless keys %$entry;
 
