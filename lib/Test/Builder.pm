@@ -420,6 +420,7 @@ sub anoint {
         my $tb = Test::Builder->create(
             modern        => 1,
             shared_stream => 1,
+            no_reset_plan => 1,
         );
         no strict 'refs';
         *{"$target\::TB_INSTANCE"} = sub {$tb};
@@ -968,6 +969,8 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     }
 
     $self->stream->use_tap unless $params{no_tap} || $ENV{TB_NO_TAP};
+
+    $self->stream->plan(undef) unless $params{no_reset_plan};
 
     # Don't reset stream stuff when reseting/creating a modern TB object
     unless ($modern) {

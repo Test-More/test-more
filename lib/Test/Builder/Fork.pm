@@ -25,6 +25,8 @@ sub handle {
     my $self = shift;
     my ($item) = @_;
 
+    return if $item && blessed($item) && $item->isa('Test::Builder::Result::Finish');
+
     confess "Did not get a valid Test::Builder::Result object! ($item)"
         unless $item && blessed($item) && $item->isa('Test::Builder::Result');
 

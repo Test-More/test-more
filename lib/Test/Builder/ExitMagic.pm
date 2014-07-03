@@ -26,10 +26,6 @@ sub do_magic {
 
     my $real_exit_code = $?;
 
-    # Don't bother with an ending if this is a forked copy.  Only the parent
-    # should do the ending.
-    return unless $stream->pid == $$;
-
     my $plan  = $stream->plan;
     my $total = $stream->tests_run;
     my $fails = $stream->tests_failed;
@@ -43,6 +39,10 @@ sub do_magic {
             source       => $tb->name,
         )
     );
+
+    # Don't bother with an ending if this is a forked copy.  Only the parent
+    # should do the ending.
+    return unless $stream->pid == $$;
 
     # Ran tests but never declared a plan or hit done_testing
     return $self->no_plan_magic($stream, $tb, $total, $fails, $real_exit_code)
