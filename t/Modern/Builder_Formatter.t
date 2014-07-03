@@ -13,4 +13,20 @@ isa_ok($one, 'Test::Builder::Formatter');
 my $ref = ref $one->to_handler;
 is($ref, 'CODE', 'handler returns a coderef');
 
+{
+    package My::Listener;
+
+    use parent 'Test::Builder::Formatter';
+
+    sub ok { $main::SEEN++ }
+}
+
+My::Listener->listen;
+
+ok(1, "Just a result");
+is($main::SEEN, 1, "Listener saw the result");
+
+ok(1, "Just a result");
+is($main::SEEN, 3, "Listener saw the other results too");
+
 done_testing;
