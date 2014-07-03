@@ -1,7 +1,7 @@
 package Test::Builder::Tester;
 
 use strict;
-our $VERSION = "1.23_003";
+our $VERSION = '1.301001_001';
 
 use Test::Builder 0.98;
 use Symbol;
@@ -9,8 +9,13 @@ use Carp;
 
 =head1 NAME
 
-Test::Builder::Tester - test testsuites that have been built with
+Test::Builder::Tester - *DEPRECATED* test testsuites that have been built with
 Test::Builder
+
+=head1 DEPRECATED
+
+B<This module is deprecated.> Please see L<Test::Tester2> for a
+better alternative that does not involve dealing with TAP/string output.
 
 =head1 SYNOPSIS
 
@@ -48,35 +53,36 @@ output.
 # set up testing
 ####
 
-my $t = Test::Builder->new;
+#my $t = Test::Builder->new;
 
 ###
 # make us an exporter
 ###
 
-use Exporter;
-our @ISA = qw(Exporter);
+use Test::Builder::Provider;
 
-our @EXPORT = qw(test_out test_err test_fail test_diag test_test line_num);
+provides qw(test_out test_err test_fail test_diag test_test line_num);
 
-sub import {
+sub before_import {
     my $class = shift;
-    my(@plan) = @_;
+    my ($args) = @_;
 
     my $caller = caller;
 
-    $t->exported_to($caller);
-    $t->plan(@plan);
+    warn __PACKAGE__ . " is deprecated!\n" if builder()->modern;
+
+    builder()->exported_to($caller);
+    builder()->plan(@$args);
 
     my @imports = ();
-    foreach my $idx ( 0 .. $#plan ) {
-        if( $plan[$idx] eq 'import' ) {
-            @imports = @{ $plan[ $idx + 1 ] };
+    foreach my $idx ( 0 .. @$args ) {
+        if( $args->[$idx] && $args->[$idx] eq 'import' ) {
+            @imports = @{ $args->[ $idx + 1 ] };
             last;
         }
     }
 
-    __PACKAGE__->export_to_level( 1, __PACKAGE__, @imports );
+    @$args = @imports;
 }
 
 ###
@@ -100,6 +106,8 @@ my $testing = 0;
 my $testing_num;
 my $original_is_passing;
 
+my $original_stream;
+
 # remembering where the file handles were originally connected
 my $original_output_handle;
 my $original_failure_handle;
@@ -115,14 +123,14 @@ sub _start_testing {
     $ENV{HARNESS_ACTIVE} = 0;
 
     # remember what the handles were set to
-    $original_output_handle  = $t->output();
-    $original_failure_handle = $t->failure_output();
-    $original_todo_handle    = $t->todo_output();
+    $original_output_handle  = builder()->output();
+    $original_failure_handle = builder()->failure_output();
+    $original_todo_handle    = builder()->todo_output();
 
     # switch out to our own handles
-    $t->output($output_handle);
-    $t->failure_output($error_handle);
-    $t->todo_output($output_handle);
+    builder()->output($output_handle);
+    builder()->failure_output($error_handle);
+    builder()->todo_output($output_handle);
 
     # clear the expected list
     $out->reset();
@@ -130,13 +138,13 @@ sub _start_testing {
 
     # remember that we're testing
     $testing     = 1;
-    $testing_num = $t->current_test;
-    $t->current_test(0);
-    $original_is_passing  = $t->is_passing;
-    $t->is_passing(1);
+    $testing_num = builder()->current_test;
+    builder()->current_test(0);
+    $original_is_passing  = builder()->is_passing;
+    builder()->is_passing(1);
 
     # look, we shouldn't do the ending stuff
-    $t->no_ending(1);
+    builder()->no_ending(1);
 }
 
 =head2 Functions
@@ -261,7 +269,7 @@ sub test_diag {
 
     # expect the same thing, but prepended with "#     "
     local $_;
-    $err->expect( map { "# $_" } @_ );
+    $err->expect( map { m/\S/ ? "# $_" : "" } @_ );
 }
 
 =item test_test
@@ -322,21 +330,21 @@ sub test_test {
       unless $testing;
 
     # okay, reconnect the test suite back to the saved handles
-    $t->output($original_output_handle);
-    $t->failure_output($original_failure_handle);
-    $t->todo_output($original_todo_handle);
+    builder()->output($original_output_handle);
+    builder()->failure_output($original_failure_handle);
+    builder()->todo_output($original_todo_handle);
 
     # restore the test no, etc, back to the original point
-    $t->current_test($testing_num);
+    builder()->current_test($testing_num);
     $testing = 0;
-    $t->is_passing($original_is_passing);
+    builder()->is_passing($original_is_passing);
 
     # re-enable the original setting of the harness
     $ENV{HARNESS_ACTIVE} = $original_harness_env;
 
     # check the output we've stashed
-    unless( $t->ok( ( $args{skip_out} || $out->check ) &&
-                    ( $args{skip_err} || $err->check ), $mess ) 
+    unless( builder()->ok( ( $args{skip_out} || $out->check ) &&
+                    ( $args{skip_err} || $err->check ), $mess )
     )
     {
         # print out the diagnostic information about why this
@@ -344,10 +352,10 @@ sub test_test {
 
         local $_;
 
-        $t->diag( map { "$_\n" } $out->complaint )
+        builder()->diag( map { "$_\n" } $out->complaint )
           unless $args{skip_out} || $out->check;
 
-        $t->diag( map { "$_\n" } $err->complaint )
+        builder()->diag( map { "$_\n" } $err->complaint )
           unless $args{skip_err} || $err->check;
     }
 }
@@ -487,8 +495,9 @@ sub expect {
 sub _account_for_subtest {
     my( $self, $check ) = @_;
 
+    my $builder = Test::Builder::Tester->builder();
     # Since we ship with Test::Builder, calling a private method is safe...ish.
-    return ref($check) ? $check : $t->_indent . $check;
+    return ref($check) ? $check : ($builder->depth ? '    ' x $builder->depth : '') . $check;
 }
 
 sub _translate_Failed_check {

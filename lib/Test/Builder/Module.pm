@@ -7,13 +7,18 @@ use Test::Builder 0.99;
 require Exporter;
 our @ISA = qw(Exporter);
 
-our $VERSION = '1.001004_003';
+our $VERSION = '1.301001_001';
 $VERSION = eval $VERSION;      ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 
 =head1 NAME
 
-Test::Builder::Module - Base class for test modules
+Test::Builder::Module - *DEPRECATED* Base class for test modules
+
+=head1 DEPRECATED
+
+B<This module is deprecated> See L<Test::Builder::Provider> for what you should
+use instead.
 
 =head1 SYNOPSIS
 
@@ -29,7 +34,7 @@ Test::Builder::Module - Base class for test modules
       my $tb = $CLASS->builder;
       return $tb->ok(@_);
   }
-  
+
   1;
 
 
@@ -56,8 +61,8 @@ same basic way as L<Test::More>'s, setting the plan and controlling
 exporting of functions and variables.  This allows your module to set
 the plan independent of L<Test::More>.
 
-All arguments passed to C<import()> are passed onto 
-C<< Your::Module->builder->plan() >> with the exception of 
+All arguments passed to C<import()> are passed onto
+C<< Your::Module->builder->plan() >> with the exception of
 C<< import =>[qw(things to import)] >>.
 
     use Your::Module import => [qw(this that)], tests => 23;
@@ -76,10 +81,11 @@ C<import_extra()>.
 sub import {
     my($class) = shift;
 
+    my $test = $class->builder;
+    warn __PACKAGE__ . " is deprecated!\n" if $test->modern;
+
     # Don't run all this when loading ourself.
     return 1 if $class eq 'Test::Builder::Module';
-
-    my $test = $class->builder;
 
     my $caller = caller;
 

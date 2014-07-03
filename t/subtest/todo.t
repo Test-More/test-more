@@ -89,7 +89,6 @@ sub main::subtest_at_level {
     my ($name, $code, $level) = @_;
 
     if ($level > 1) {
-        local $Test::Builder::Level = $Test::Builder::Level + 1;
         main::subtest_at_level($name, $code, $level-1);
     }
     else {
