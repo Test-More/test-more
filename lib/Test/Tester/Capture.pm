@@ -12,7 +12,7 @@ use vars qw( @ISA );
 # Make Test::Tester::Capture thread-safe for ithreads.
 BEGIN {
     use Config;
-    if ($] >= 5.008 && $Config{useithreads}) {
+    if ($Config{useithreads}) {
         require threads::shared;
         threads::shared->import;
     }

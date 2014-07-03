@@ -6,8 +6,7 @@ use warnings;
 BEGIN {
     use Config;
     # Load threads::shared when threads are turned on.
-    # 5.8.0's threads are so busted we no longer support them.
-    if( $] >= 5.008001 && $Config{useithreads} && $INC{'threads.pm'} ) {
+    if( $Config{useithreads} && $INC{'threads.pm'} ) {
         require threads::shared;
 
         # Hack around YET ANOTHER threads::shared bug.  It would
@@ -47,8 +46,6 @@ BEGIN {
             return $_[0];
         };
     }
-    # 5.8.0's threads::shared is busted when threads are off
-    # and earlier Perls just don't have that module at all.
     else {
         *share = sub { return $_[0] };
         *lock  = sub { 0 };
