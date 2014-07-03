@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-use 5.006;
+use 5.008;
 
 use Config;
 use ExtUtils::MakeMaker;
@@ -77,7 +77,7 @@ WriteMakefile(
         TESTS           => 't/*.t t/*/*.t',
     },
 
-    ($mm_ver < 6.48 ? () : (MIN_PERL_VERSION => 5.006)),
+    ($mm_ver < 6.48 ? () : (MIN_PERL_VERSION => 5.008)),
 
     ($mm_ver < 6.46 ? () : (META_MERGE => {
         resources => {
@@ -117,13 +117,13 @@ MAKE
         $make =~ s{\s+\z}{\n};
 
         my @perls = qw(
-            perl5.14.1
-            perl5.12.4
-            perl5.12.3
+            perl5.20.0
+            perl5.18.2
+            perl5.16.3
+            perl5.14.4
+            perl5.12.5
             perl5.10.1
-            perl5.10.0
             perl5.8.9
-            perl5.6.2
         );
 
         for my $perl (@perls) {

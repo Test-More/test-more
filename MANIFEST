@@ -193,6 +193,7 @@ t/todo.t
 t/TTLegacy/auto.t
 t/TTLegacy/capture.t
 t/TTLegacy/check_tests.t
+t/TTLegacy/depth.t
 t/TTLegacy/run_test.t
 t/undef.t
 t/use_ok.t
