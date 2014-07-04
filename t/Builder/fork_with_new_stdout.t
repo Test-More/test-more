@@ -25,8 +25,8 @@ if (my $pid = fork) {
     $pipe->reader;
     sleep 2;
     my @output = <$pipe>;
-    $b->ok(($output[0] && $output[0] =~ /FROM CHILD: ok 1/),   "ok 1 from child");
-    $b->ok(($output[1] && $output[1] =~ /FROM CHILD: 1\.\.1/), "1..1 from child");
+    $b->like($output[0], qr/ok 1/,   "ok 1 from child");
+    $b->like($output[1], qr/1\.\.1/, "1..1 from child");
     waitpid($pid, 0);
 }
 else {
