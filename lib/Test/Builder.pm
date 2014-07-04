@@ -220,8 +220,15 @@ sub subtest {
             1;
         };
 
-        if( !eval { $run_the_subtests->() } ) {
-            $error = $@;
+        {
+            local $@;
+            local $!;
+            local $_;
+            {
+                if( !eval { $run_the_subtests->() } ) {
+                    $error = $@;
+                }
+            }
         }
     }
 
@@ -234,7 +241,7 @@ sub subtest {
     $self->find_TODO(undef, 1, $child->{Parent_TODO});
 
     # Die *after* we restore the parent.
-    die $error if $error and !eval { $error->isa('Test::Builder::Exception') };
+    die $error if $error && !(Scalar::Util::blessed($error) && $error->isa('Test::Builder::Exception'));
 
     local $Level = $Level + 1; local $BLevel = $BLevel + 1;
     my $finalize = $child->finalize(1);

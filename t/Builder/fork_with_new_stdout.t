@@ -23,6 +23,7 @@ else {
 my $pipe = IO::Pipe->new;
 if (my $pid = fork) {
     $pipe->reader;
+    sleep 2;
     my @output = <$pipe>;
     $b->ok(($output[0] && $output[0] =~ /FROM CHILD: ok 1/),   "ok 1 from child");
     $b->ok(($output[1] && $output[1] =~ /FROM CHILD: 1\.\.1/), "1..1 from child");

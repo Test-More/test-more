@@ -53,10 +53,17 @@ sub cull {
         next if $file =~ m/^\.+$/;
         next unless $file =~ m/\.ready$/;
 
-        my $obj = eval { my $VAR1; do "$dir/$file" } || die "Failed to open $file: $@";
-        die "Empty result object found" unless $obj;
+        {
+            local $@;
+            local $!;
+            local $_;
+            {
+                my $obj = eval { my $VAR1; do "$dir/$file" } || die "Failed to open $file: $@";
+                die "Empty result object found" unless $obj;
 
-        Test::Builder::Stream->shared->send($obj);
+                Test::Builder::Stream->shared->send($obj);
+            }
+        }
 
         if ($ENV{TEST_KEEP_TMP_DIR}) {
             rename("$dir/$file", "$dir/$file.complete") || die "Could not rename file";
