@@ -14,23 +14,27 @@ provides qw/results_are/;
 sub intercept(&) {
     my ($code) = @_;
 
-    my @results;
+    my(@results, $error, $ok);
 
-    local $@;
-    my $ok = eval {
-        Test::Builder::Stream->intercept(sub {
-            my $stream = shift;
-            $stream->exception_followup;
+    {
+        local $@;
+        local $!;
+        local $_;
+        $ok = eval {
+            Test::Builder::Stream->intercept(sub {
+                my $stream = shift;
+                $stream->exception_followup;
 
-            $stream->listen(INTERCEPTOR => sub {
-                my ($item) = @_;
-                push @results => $item;
+                $stream->listen(INTERCEPTOR => sub {
+                    my ($item) = @_;
+                    push @results => $item;
+                });
+                $code->();
             });
-            $code->();
-        });
-        1;
-    };
-    my $error = $@;
+            1;
+        };
+        $error = $@ || "Error was squashed!";
+    }
 
     die $error unless $ok || (blessed($error) && $error->isa('Test::Builder::Result'));
 

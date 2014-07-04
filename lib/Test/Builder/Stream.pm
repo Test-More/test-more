@@ -41,9 +41,14 @@ sub pid { shift->{pid} }
             unless reftype $code eq 'CODE';
 
         my $orig = $class->intercept_start();
-        local $@;
-        my $ok = eval { $code->($shared[-1]); 1 };
-        my $error = $@;
+        my ($error, $ok);
+        {
+            local $@;
+            local $_;
+            local $!;
+            $ok = eval { $code->($shared[-1]); 1 };
+            $error = $@ || "Error was Squashed!";
+        }
         $class->intercept_stop($orig);
         die $error unless $ok;
         return $ok;
