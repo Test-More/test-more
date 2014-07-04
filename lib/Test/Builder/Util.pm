@@ -209,7 +209,7 @@ sub _delta {
             unless blessed $self;
 
         lock $self->{$attr} if $atomic;
-        $self->{$attr} = $initial unless exists $self->{$attr};
+        $self->{$attr} = $initial unless defined $self->{$attr};
         $self->{$attr} += $_[0] if @_;
 
         return $self->{$attr};

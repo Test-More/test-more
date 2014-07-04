@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Test::Builder::Util qw/new accessors/;
+require Test::Builder::Result::Finish;
 
 accessors qw/stream tb ended/;
 
@@ -30,7 +31,6 @@ sub do_magic {
     my $total = $stream->tests_run;
     my $fails = $stream->tests_failed;
 
-    require Test::Builder::Result::Finish;
     $stream->send(
         Test::Builder::Result::Finish->new(
             tests_run    => $total,

@@ -126,6 +126,7 @@ sub results_are {
         for my $key (keys %$want) {
             my $wval = $want->{$key};
             my $rtype = reftype($wval) || "";
+            $rtype = 'REGEXP' if $rtype eq 'SCALAR' && "$wval" =~ m/^\(\?[-xism]{5}:.*\)$/;
             my $gval = $fields->{$key};
 
             my $field_ok;
