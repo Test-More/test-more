@@ -22,6 +22,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 our $TODO;
 use Test::Builder::Provider;
+*EXPORT = TB_PROVIDER_META()->{export};
 
 provides qw(
   ok use_ok require_ok

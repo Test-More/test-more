@@ -64,9 +64,8 @@ sub make_provider {
     my $meta = $dest->can('TB_PROVIDER_META') ? $dest->TB_PROVIDER_META : undef;
 
     unless ($meta) {
-        $meta = {refs => {}, attrs => {}};
+        $meta = {refs => {}, attrs => {}, export => []};
         no strict 'refs';
-        $meta->{export} = \@{"$dest\::EXPORT"};
         *{"$dest\::TB_PROVIDER_META"} = sub { $meta };
     }
 
@@ -153,28 +152,17 @@ sub _build_export {
             }
         }
 
-        my (%export, %export_ok);
-        {
-            no strict 'refs';
-            %export    = map {($_ => 1)} @{"$class\::EXPORT"};
-            %export_ok = map {($_ => 1)} @{"$class\::EXPORT_OK"}, @{"$class\::EXPORT"};
-        }
-        #warn "package '$class' uses \@EXPORT and/or \@EXPORT_OK, this is deprecated since '$dest' is no longer a subclass of 'Exporter'\n"
-        #    if keys %export_ok;
-
         unless(@list) {
             my %seen;
-            #@list = grep { !($no{$_} || $seen{$_}++) } keys(%{$meta->{refs}}), keys(%export);
-            # Stupid Legacy! This can go away when https://github.com/Ovid/test--most/pull/9 is merged.
-            @list = grep { !($no{$_} || $seen{$_}++) } keys(%export);
+            @list = grep { !($no{$_} || $seen{$_}++) } @{$meta->{export}};
         }
+
         for my $name (@list) {
             if ($name =~ m/^(\$|\@|\%)(.*)$/) {
                 my ($sig, $sym) = ($1, $2);
 
                 croak "$class does not export '$name'"
-                    unless ($meta->{refs}->{$sym} && reftype $meta->{refs}->{$sym} eq $SIG_MAP{$sig})
-                        || ($export_ok{$name});
+                    unless ($meta->{refs}->{$sym} && reftype $meta->{refs}->{$sym} eq $SIG_MAP{$sig});
 
                 no strict 'refs';
                 *{"$caller\::$sym"} = $meta->{refs}->{$name} || *{"$class\::$sym"}{$sig}
@@ -182,7 +170,7 @@ sub _build_export {
             }
             else {
                 croak "$class does not export '$name'"
-                    unless $meta->{refs}->{$name} || $export_ok{$name};
+                    unless $meta->{refs}->{$name};
 
                 no strict 'refs';
                 *{"$caller\::$name"} = $meta->{refs}->{$name} || $class->can($name)
@@ -346,6 +334,12 @@ any references to C<$Test::Builder::Level> which is now deprecated.
     sub echo { print @_ }
     sub echo_stdout { ... }
     sub echo_stderr { ... }
+
+=head2 SUPPORTING OLD VERSIONS
+
+See L<Test::Builder::Compat> which is a seperate dist that has no dependancies.
+You can use it to write providers that make use of the new Test::Builder, while
+also working fine on older versions of Test::Builder.
 
 =head1 META-DATA
 
