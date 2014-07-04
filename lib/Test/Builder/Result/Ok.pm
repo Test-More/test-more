@@ -2,7 +2,7 @@ package Test::Builder::Result::Ok;
 use strict;
 use warnings;
 
-use parent 'Test::Builder::Result';
+use base 'Test::Builder::Result';
 
 use Data::Dumper;
 

@@ -16,7 +16,7 @@ is($ref, 'CODE', 'handler returns a coderef');
 {
     package My::Listener;
 
-    use parent 'Test::Builder::Formatter';
+    use base 'Test::Builder::Formatter';
 
     sub ok { $main::SEEN++ }
 }

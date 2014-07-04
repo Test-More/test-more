@@ -5,7 +5,7 @@ use warnings;
 use Test::Builder::Threads;
 use Test::Builder::Util qw/accessors transform/;
 
-use parent 'Test::Builder::Formatter';
+use base 'Test::Builder::Formatter';
 
 accessors qw/No_Header No_Diag Depth Use_Numbers _the_plan/;
 transform output         => ('Out_FH',  '_new_fh');

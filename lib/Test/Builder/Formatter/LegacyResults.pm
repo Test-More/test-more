@@ -2,7 +2,7 @@ package Test::Builder::Formatter::LegacyResults;
 use strict;
 use warnings;
 
-use parent 'Test::Builder::Formatter';
+use base 'Test::Builder::Formatter';
 
 use Test::Builder::Threads;
 

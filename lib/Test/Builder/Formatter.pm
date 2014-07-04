@@ -73,7 +73,7 @@ L<Test::Builder::Fromatter::TAP> which produces TAP output.
 =head1 SYNOPSYS
 
     package My::Formatter;
-    use parent 'Test::Builder::Formatter';
+    use base 'Test::Builder::Formatter';
 
     sub ok {
         my $self = shift;

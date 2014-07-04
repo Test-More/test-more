@@ -2,7 +2,7 @@ package Test::Builder::Result::Plan;
 use strict;
 use warnings;
 
-use parent 'Test::Builder::Result';
+use base 'Test::Builder::Result';
 
 use Test::Builder::Util qw/accessors/;
 accessors qw/max directive reason/;

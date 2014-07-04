@@ -2,7 +2,7 @@ package Test::Builder::Result::Child;
 use strict;
 use warnings;
 
-use parent 'Test::Builder::Result';
+use base 'Test::Builder::Result';
 
 use Carp qw/confess/;
 
