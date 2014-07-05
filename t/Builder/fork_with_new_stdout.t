@@ -23,7 +23,6 @@ else {
 my $pipe = IO::Pipe->new;
 if (my $pid = fork) {
     $pipe->reader;
-    sleep 2;
     my @output = <$pipe>;
     $b->like($output[0], qr/ok 1/,   "ok 1 from child");
     $b->like($output[1], qr/1\.\.1/, "1..1 from child");
