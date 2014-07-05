@@ -88,7 +88,7 @@ sub before_import {
         }
         elsif( $item eq 'tests' || $item eq 'skip_all' ) {
             $class->builder->plan($item => $list->[$idx++]);
-            return 0;
+            return 0 if $item eq 'skip_all';
         }
         elsif( $item eq 'no_plan' ) {
             $class->builder->plan($item);
