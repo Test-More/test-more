@@ -19,7 +19,7 @@ require Exporter;
 use vars qw( @ISA @EXPORT $VERSION );
 
 
-our $VERSION = '1.301001_002';
+our $VERSION = '1.301001_003';
 
 @EXPORT  = qw( run_tests check_tests check_test cmp_results show_space );
 @ISA     = qw( Exporter );
