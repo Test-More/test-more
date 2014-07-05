@@ -81,12 +81,14 @@ sub before_import {
     my $idx   = 0;
     while( $idx <= $#{$list} ) {
         my $item = $list->[$idx++];
+        next unless $item;
 
-        if( defined $item and $item eq 'no_diag' ) {
+        if( $item eq 'no_diag' ) {
             $class->builder->no_diag(1);
         }
         elsif( $item eq 'tests' || $item eq 'skip_all' ) {
             $class->builder->plan($item => $list->[$idx++]);
+            return 0;
         }
         elsif( $item eq 'no_plan' ) {
             $class->builder->plan($item);
@@ -109,7 +111,7 @@ sub before_import {
 
     @$list = @$other;
 
-    return;
+    return 1;
 }
 
 sub done_testing {
