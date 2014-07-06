@@ -540,7 +540,7 @@ have a newline appended.
 
    # expect two lines of diag
    test_diag(
-     ["The value ", qr/[0-9]+/, " is too high."],
+     ["The value ", qr/[0-9]+/, " is too high.","\n"],
      "Expected a value below 10.",
    );
 
