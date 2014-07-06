@@ -22,7 +22,7 @@ is Test::Builder::Tester::reset_string(), "RESET", "nada for reset";
 
 # check that the complaints are what we'd expect
 {
-	my $tbtt = bless {}, "Test::Builder::Tester::Tie";
+	my $tbtt = bless { type => "" }, "Test::Builder::Tester::Tie";
 	$tbtt->expect(["foo","bar","baz"]);
 	$tbtt->PRINT("foobarbAz");
 	is(
@@ -33,7 +33,7 @@ is Test::Builder::Tester::reset_string(), "RESET", "nada for reset";
 }
 
 {
-	my $tbtt = bless {}, "Test::Builder::Tester::Tie";
+	my $tbtt = bless { type => "" }, "Test::Builder::Tester::Tie";
 	$tbtt->expect(["foo","/bar/","baz"]);
 	$tbtt->PRINT("foobarbAz");
 	is(
@@ -44,7 +44,7 @@ is Test::Builder::Tester::reset_string(), "RESET", "nada for reset";
 }
 
 {
-	my $tbtt = bless {}, "Test::Builder::Tester::Tie";
+	my $tbtt = bless { type => "" }, "Test::Builder::Tester::Tie";
 	$tbtt->expect(["foo","/bar/","baz"]);
 	$tbtt->PRINT("foobArbaz");
 	is(
