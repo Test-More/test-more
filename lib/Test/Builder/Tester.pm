@@ -530,14 +530,13 @@ as a plain old string starting and ending with C</>, i.e. C<"/foo/">
 (which allow you to write tests compatible with ancient versions of Perl
 that don't support C<qr//>.)
 
-Unlike plain strings, regular expressions 
-
-with a newline appeneded if it's a plain string
-and in the case of C<test_diag>, C<# > prepended to it.   If you want
+Each plain string argument to C<test_out>, C<test_err> or
+C<test_diag> has a newline automatically added.  If you want
 to test a single line with a combination of strings and regular
 expressions (allowing Test::Builder::Tester to give better colored
 output than using a single regular expression should the test fail)
-you can use an array reference:
+you can use an array reference to indicate nothing within it should
+have a newline appended.
 
    # expect two lines of diag
    test_diag(
