@@ -19,8 +19,8 @@ ok($anointed, "Importing our provider anointed us");
 can_ok(
     'My::Provider',
     qw{
-        TB_PROVIDER_META builder TB anoint provide_nests provide_nest provide
-        gives give provides provide export import
+        TB_PROVIDER_META builder TB anoint gives give provides provide export
+        import nest
     }
 );
 
@@ -38,20 +38,20 @@ isa_ok(My::Provider->TB,      'Test::Builder');
     give xxx => sub { 'xxx' };
     give arr => [ 1 .. 5 ];
 
-    provide_nest nestx => sub(&) { TB->ok($_[0]->(), "Internal") };
+    provide nestx => sub(&) { TB->ok(&nest($_[0]), "Internal") };
 
     provides qw/bar baz/;
     gives    qw/aaa bbb/;
 
-    provide_nests qw/nesta nestb/;
+    provides qw/nesta nestb/;
 
     sub bar { 'bar' }
     sub baz { 'baz' }
     sub aaa { 'aaa' }
     sub bbb { 'bbb' }
 
-    sub nesta { $_->[0]->() }
-    sub nestb { $_->[0]->() }
+    sub nesta { &nest($_->[0]) }
+    sub nestb { &nest($_->[0]) }
 }
 
 My::Provider->import();

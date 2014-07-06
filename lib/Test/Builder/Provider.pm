@@ -35,11 +35,10 @@ sub export_into {
     $subs{builder} = \&find_builder;
     $subs{anoint}  = \&anoint;
     $subs{import}  = \&provider_import;
+    $subs{nest}    = \&nest;
     $subs{provide} = $class->_build_provide($dest, $meta);
     $subs{export}  = $class->_build_export($dest, $meta);
 
-    $subs{provide_nests} = sub { $subs{provide}->($_,    undef, nest => 1) for @_ };
-    $subs{provide_nest}  = sub { $subs{provide}->($_[0], $_[1], nest => 1)        };
     $subs{gives}         = sub { $subs{provide}->($_,    undef, give => 1) for @_ };
     $subs{give}          = sub { $subs{provide}->($_[0], $_[1], give => 1)        };
     $subs{provides}      = sub { $subs{provide}->($_)                      for @_ };
@@ -55,6 +54,11 @@ sub export_into {
     }
 
     1;
+}
+
+sub nest(&) {
+    my $tb = find_builder();
+    return $tb->nest(@_);
 }
 
 sub make_provider {
@@ -264,12 +268,15 @@ functions to define exports on the fly.
     sub is_deeply { ... };
 
     # Provide a 'subtests' function. Functions that accept a block like this
-    # that may run other tests should be use provide_nest to mark them as
-    # nested providers.
-    provide_nest subtests => sub(&) { ... };
+    # that may run other tests should be use nest() to run the codeblocks they
+    # recieve to mark them as nested providers.
+    provide subtests => sub(&) {
+        my $code = shift;
+        nest { $code->() };       # OR: nest(\&$code)   OR: &nest($code);
+    };
 
     # Provide a couple nested functions defined in our package
-    provide_nests qw/subtests_alt subtests_xxx/;
+    provide qw/subtests_alt subtests_xxx/;
     sub subtests_alt(&) { ... }
     sub subtests_xxx(&) { ... }
 
@@ -299,8 +306,7 @@ functions to define exports on the fly.
 =head2 USING EXTERNAL EXPORT LIBRARIES
 
 Maybe you like L<Exporter> or another export tool. In that case you still need
-the 'provides' and 'provide_nests' functions from here to mark testing tools as
-such.
+the 'provides' and 'nest' functions from here to mark testing tools as such.
 
 This is also a quick way to update an old library, but you also need to remove
 any references to C<$Test::Builder::Level> which is now deprecated.
@@ -324,8 +330,8 @@ any references to C<$Test::Builder::Level> which is now deprecated.
     sub is { ... }
     sub is_deeply { ... };
 
-    # *mark* the nesting test tools
-    provide_nests qw/subtests subtests_alt subtests_xxx/;
+    # Remember to use nest()
+    provide qw/subtests subtests_alt subtests_xxx/;
     sub subtests(&) { ... }
     sub subtests_alt(&) { ... }
     sub subtests_xxx(&) { ... }
@@ -400,16 +406,14 @@ You may also use this to export refs of any type.
 
 Like provide except you can specify multiple subs to export.
 
-=item provide_nest $name
+=item nest { ... }
 
-=item provide_nest $name => sub(&) { ... }
+=item nest(\&$code)
 
-Like provide, but use on tools like subtests that accept a block of tests to be
-run.
+=item &nest($code)
 
-=item provide_nests qw/sub1 sub2 .../
-
-Same as providesm, but used on nesting tools.
+Used as a tracing barrier, any results generated inside the nest will trace to
+the nest as opposed to the call to your provided tool.
 
 =item give $name
 

@@ -31,7 +31,7 @@ BEGIN {
 
     sub nestit(&) {
         my ($code) = @_;
-        $code->();
+        nest{ $code->() };
         return main::trace();
     }
 
@@ -42,7 +42,7 @@ BEGIN {
     }
 
     BEGIN {
-        provide_nests qw/nestit/;
+        provides qw/nestit/;
 
         provides qw/nonest/;
     }

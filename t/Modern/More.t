@@ -19,8 +19,14 @@ is(Test::Builder::Stream->shared->tests_run, 2, "Got the forked result");
 helpers qw/my_ok/;
 sub my_ok { Test::Builder->new->ok(@_) }
 
-nesting_helpers qw/my_nester/;
-sub my_nester(&) { Test::Builder->new->ok($_[0]->(), "my_nester exit" )}
+helpers qw/my_nester/;
+sub my_nester(&) {
+    my $code = shift;
+    Test::Builder->new->ok(
+        nest {$code->()},
+        "my_nester exit"
+    )
+}
 
 my @lines;
 
@@ -50,6 +56,37 @@ results_are(
     ok   => { line => $lines[4], bool => 0, name => "bad nested" },
     diag => { line => $lines[4], message => qr/failed test 'bad nested'/i },
     ok   => { line => $lines[5], bool => 0, name => "my_nester exit" },
+);
+
+helpers 'helped';
+
+my %place;
+sub helped(&) {
+    my ($CODE) = @_;
+
+    diag( 'setup' );
+    ok( nest(\&$CODE), 'test ran' );
+    diag( 'teardown' );
+};
+
+$results = intercept {
+    helped {
+        ok(0 ,'helped test' ); $place{helped} = __LINE__; 0;
+    }; $place{inhelp} = __LINE__;
+};
+
+results_are(
+    $results,
+
+    diag => { message => 'setup' },
+
+    ok => { bool => 0, line => $place{helped} },
+    diag => { message => qr/failed test.*$place{helped}/ism, line => $place{helped} },
+
+    ok => { bool => 0, line => $place{inhelp} },
+    diag => { message => qr/failed test.*$place{inhelp}/ism, line => $place{inhelp} },
+
+    diag => { message => 'teardown' },
 );
 
 done_testing;

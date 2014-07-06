@@ -15,7 +15,7 @@ use Test::Builder::Result::Plan;
 use Test::Builder::Result::Bail;
 use Test::Builder::Result::Child;
 
-our $VERSION = '1.301001_003';
+our $VERSION = '1.301001_004';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 # The mostly-singleton, and other package vars.
@@ -225,7 +225,7 @@ sub subtest {
             local $!;
             local $_;
             {
-                if( !eval { $run_the_subtests->() } ) {
+                if( !eval { $self->nest($run_the_subtests) } ) {
                     $error = $@;
                 }
             }
@@ -316,13 +316,18 @@ my %BUILDER_PACKAGES = (
     'Test::Builder::Result::Child' => 1,
 );
 
+sub nest {
+    my $self = shift;
+    my ($code, @args) = @_;
+    $code->(@args);
+}
+
 my $level_warned = 0;
 sub trace_test {
     my (@stack, @anointed, @transition, @level, @tools);
 
     my $level  = 0;
     my $last   = __PACKAGE__;
-    my $nest   = undef;
     my $report = undef;
 
     my $seek_level = $Level - $BLevel;
@@ -330,6 +335,8 @@ sub trace_test {
 
     while(my @call = CORE::caller($level++)) {
         my ($pkg, $file, $line, $sub) = @call;
+
+        last if $call[3] eq 'Test::Builder::nest';
 
         if ($BUILDER_PACKAGES{$pkg}) {
             $last = $pkg;
@@ -340,11 +347,6 @@ sub trace_test {
 
         if(my $attrs = _is_provider_tool(@call)) {
             $entry->{provider_tool} = $attrs;
-            # UHG - subtests are the root of all evil Stupid LEgacy
-            if ($attrs->{nest}) {
-                last if $nest;
-                $nest = $entry;
-            }
         }
 
         $entry->{transition} = 1 if !$last || $BUILDER_PACKAGES{$last};
@@ -367,7 +369,7 @@ sub trace_test {
         $entry->{depth} = $level;
 
         push @stack      => $entry;
-        push @tools      => $entry if $entry->{provider_tool} && !$entry->{provider_tool}->{nest};
+        push @tools      => $entry if $entry->{provider_tool};
         push @anointed   => $entry if $entry->{anointed} && !$entry->{provider_tool};
         push @transition => $entry if $entry->{transition};
         push @level      => $entry if $entry->{level};
@@ -378,10 +380,7 @@ sub trace_test {
     unless ($report) {
         ($report) = @level && @tools ? (sort {$b->{depth} <=> $a->{depth}} $level[0], $tools[-1]) : (undef);
         $report ||= $level[0] || $tools[-1];
-        if (!$report && $nest && $anointed[0]) {
-            ($report) = (sort {($a->{transition} || 0) <=> ($b->{transition} || 0) || $a->{depth} <=> $b->{depth}} $nest, $anointed[0]);
-        }
-        $report ||= $nest || $anointed[0] || $transition[-1];
+        $report ||= $anointed[0] || $transition[-1];
     }
 
     $report->{report} = 1 if $report;
@@ -1533,9 +1532,9 @@ library.
 
 See L<Test::Builder::Provider> for more details.
 
-B<Note:> You MUST use 'provide', 'provides', 'provide_nest' or 'provide_nests'
-to export testing tools, this allows you to use the C<< builder()->trace_test >>
-tools to determine what file/line a failed test came from.
+B<Note:> You MUST use 'provide', or 'provides' to export testing tools, this
+allows you to use the C<< builder()->trace_test >> tools to determine what
+file/line a failed test came from.
 
 =head2 LOW-LEVEL
 
@@ -1752,6 +1751,11 @@ your tests stop, and the tools you are using begin. These methods help you find
 the desired caller frame.
 
 =over 4
+
+=item $Test->nest(sub { ... })
+
+Used as a tracing barrier. Results produced in the coderef will trace to that
+coderef and no deeper.
 
 =item $trace = $Test->trace_test()
 

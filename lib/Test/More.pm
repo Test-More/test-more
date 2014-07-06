@@ -17,7 +17,7 @@ sub _carp {
     return warn @_, " at $file line $line\n";
 }
 
-our $VERSION = '1.301001_002';
+our $VERSION = '1.301001_004';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 our $TODO;
@@ -36,9 +36,9 @@ provides qw(
   can_ok isa_ok new_ok
   diag note explain
   BAIL_OUT
+  subtest
+  nest
 );
-
-provide_nests qw/subtest/;
 
 provide TODO => \$TODO;
 
@@ -55,16 +55,6 @@ give helpers => sub {
     my $provide = Test::Builder::Provider->_build_provide($caller, $meta);
 
     $provide->($_) for @_;
-};
-
-give nesting_helpers => sub {
-    my $caller = caller;
-
-    # These both get cached, so they will be quick if called multiple times.
-    my $meta    = Test::Builder::Provider->make_provider($caller);
-    my $provide = Test::Builder::Provider->_build_provide($caller, $meta);
-
-    $provide->($_, undef, nest => 1) for @_;
 };
 
 sub plan {
@@ -849,10 +839,10 @@ Test::More - yet another framework for writing test scripts
   my_checker(...);
   my_checker(...);
 
-  nesting_helpers 'my_check_wrapper';
+  helpers 'my_check_wrapper';
   sub my_check_wrapper(&) {
       my ($code) = @_;
-      ok( $code->(), "code ran" );
+      ok( nest {$code->()}, "code ran" );
   }
 
   my_check_wrapper {
@@ -1014,11 +1004,14 @@ library instead.
 This will mark any sub listed as a helper. This means that any failures within
 the sub will report to where you called the sub.
 
-=item nesting_helpers(qw/sub1 sub2 .../)
+=item nest { ... }
 
-Nesting helpers are helpers that run subs you define on the fly, a good example
-is C<subtests { ... }>. Errors in the sub report to their call inside the sub,
-errors in the helper itself report to where the helper was called.
+=item &nest($coderef)
+
+=item nest(\&$coderef)
+
+Any test errors from inside the nested coderef will trace to that coderef
+instead of to your tool, useful for testing utilities that accept a codeblock.
 
 =back
 
