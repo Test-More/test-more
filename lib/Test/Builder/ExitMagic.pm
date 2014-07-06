@@ -7,8 +7,7 @@ require Test::Builder::Result::Finish;
 
 accessors qw/stream tb ended/;
 
-my $global = __PACKAGE__->new;
-END { $global->do_magic() if $global }
+END { __PACKAGE__->new->do_magic() }
 
 sub do_magic {
     my $self = shift;
