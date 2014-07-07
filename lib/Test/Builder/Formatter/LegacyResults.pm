@@ -40,7 +40,7 @@ sub current_test {
         my $delta = $num - $self->{Curr_Test};
         $self->{Curr_Test} = $num;
 
-        $tb->stream->tests_run($delta);
+        $tb->stream->tests_run(0 - $tb->stream->tests_run + $num);
         $tb->tap->test_number($delta) if $tb->tap;
 
         # If the test counter is being pushed forward fill in the details.

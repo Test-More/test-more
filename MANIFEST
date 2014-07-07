@@ -156,6 +156,7 @@ t/plan_skip_all.t
 t/pod-coverage.t
 t/pod.t
 t/require_ok.t
+t/ribasushi_threads.t
 t/simple.t
 t/Simple/load.t
 t/skip.t
