@@ -38,6 +38,7 @@ else {
     $b->reset;
     $b->no_plan;
     $b->ok(1);
+    exit 0;
 }
 
 =pod

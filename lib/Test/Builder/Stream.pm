@@ -4,11 +4,10 @@ use warnings;
 
 use Carp qw/confess croak/;
 use Scalar::Util qw/reftype blessed/;
-use Test::Builder::ExitMagic;
 use Test::Builder::Threads;
 use Test::Builder::Util qw/accessors accessor atomic_deltas/;
 
-accessors qw/plan/;
+accessors qw/plan bailed_out/;
 atomic_deltas qw/tests_run tests_failed/;
 
 accessor no_ending    => sub { 0 };
@@ -44,10 +43,11 @@ sub pid { shift->{pid} }
         my ($error, $ok);
         {
             local $@;
-            local $_;
             local $!;
-            $ok = eval { $code->($shared[-1]); 1 };
-            $error = $@ || "Error was Squashed!";
+            {
+                $ok = eval { $code->($shared[-1]); 1 };
+                $error = $@ || "Error was Squashed!";
+            }
         }
         $class->intercept_stop($orig);
         die $error unless $ok;
@@ -261,7 +261,14 @@ sub send {
             $self->plan($item);
         }
 
+        if ($item->isa('Test::Builder::Result::Bail')) {
+            $self->bailed_out($item);
+        }
+
         for my $listener (values %{$self->_listeners}) {
+            local $!;
+            local $@;
+
             if (reftype $listener eq 'CODE') {
                 $listener->($item)
             }

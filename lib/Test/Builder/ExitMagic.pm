@@ -5,24 +5,27 @@ use warnings;
 use Test::Builder::Util qw/new accessors/;
 require Test::Builder::Result::Finish;
 
-accessors qw/stream tb ended/;
+accessors qw/stream tb ended pid/;
 
-END { __PACKAGE__->new->do_magic() }
+sub init {
+    my $self = shift;
+    $self->pid($$);
+}
 
 sub do_magic {
     my $self = shift;
 
-    local $@;
+    return if $self->ended; $self->ended(1);
 
-    require Test::Builder::Stream;
-    require Test::Builder;
+    # Don't bother with an ending if this is a forked copy.  Only the parent
+    # should do the ending.
+    return unless $self->pid == $$;
 
     my $stream = $self->stream || (Test::Builder::Stream->root ? Test::Builder::Stream->shared : undef);
     return unless $stream; # No stream? no point!
-    my $tb = $self->tb || Test::Builder->new;
+    my $tb = $self->tb;
 
     return if $stream->no_ending;
-    return if $self->ended; $self->ended(1);
 
     my $real_exit_code = $?;
 
@@ -39,10 +42,6 @@ sub do_magic {
         )
     );
 
-    # Don't bother with an ending if this is a forked copy.  Only the parent
-    # should do the ending.
-    return unless $stream->pid == $$;
-
     # Ran tests but never declared a plan or hit done_testing
     return $self->no_plan_magic($stream, $tb, $total, $fails, $real_exit_code)
         if $total && !$plan;
@@ -52,8 +51,8 @@ sub do_magic {
     return unless $plan;
 
     # Don't do an ending if we bailed out.
-    if( $tb->{Bailed_Out} ) {
-        $tb->is_passing(0);
+    if( $stream->bailed_out ) {
+        $stream->is_passing(0);
         return;
     }
 

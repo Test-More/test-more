@@ -39,6 +39,12 @@ FAIL
     }
 }
 
+require Test::Builder::ExitMagic;
+my $final = Test::Builder::ExitMagic->new(
+    tb => Test::Builder->create(shared_stream => 1),
+);
+END { $final->do_magic() }
+
 ####################
 # }}} MAGIC things #
 ####################
@@ -94,7 +100,7 @@ sub use_fork   { shift->stream->use_fork       }
 sub no_fork    { shift->stream->no_fork        }
 
 BEGIN {
-    Test::Builder::Util::accessors(qw/Parent Name _old_level/);
+    Test::Builder::Util::accessors(qw/Parent Name _old_level _bailed_out/);
     Test::Builder::Util::accessor(modern => sub {$ENV{TB_MODERN} || 0});
     Test::Builder::Util::accessor(depth  => sub { 0 });
 }
@@ -246,7 +252,7 @@ sub subtest {
     local $Level = $Level + 1; local $BLevel = $BLevel + 1;
     my $finalize = $child->finalize(1);
 
-    $self->BAIL_OUT($child->{Bailed_Out_Reason}) if $child->{Bailed_Out};
+    $self->BAIL_OUT($child->{Bailed_Out_Reason}) if $child->_bailed_out;
 
     return $finalize;
 }
@@ -267,7 +273,7 @@ sub finalize {
     my $ok = 1;
     $self->parent->{Child_Name} = undef;
 
-    unless ($self->{Bailed_Out}) {
+    unless ($self->_bailed_out) {
         if ( $self->{Skip_All} ) {
             $self->parent->skip($self->{Skip_All});
         }
@@ -675,7 +681,7 @@ ERR
 sub BAIL_OUT {
     my( $self, $reason ) = @_;
 
-    $self->{Bailed_Out} = 1;
+    $self->_bailed_out(1);
 
     if ($self->parent) {
         $self->{Bailed_Out_Reason} = $reason;
@@ -977,6 +983,8 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     if ($params{new_stream} || !$params{shared_stream}) {
         $self->{stream} = Test::Builder::Stream->new;
     }
+
+    $final->pid($$) if $final;
 
     $self->stream->use_tap unless $params{no_tap} || $ENV{TB_NO_TAP};
 
