@@ -179,6 +179,9 @@ be able perform further tests to the normal output in the normal way
 until you call C<test_test> (well, unless you manually meddle with the
 output filehandles)
 
+You can also pass regular expressions to C<test_out> and C<test_err>,
+which is documented below in L</Testing For Regular Expressions>
+
 =cut
 
 sub test_out {
@@ -261,6 +264,9 @@ You would do
 
 without the newlines.
 
+You can also pass regular expressions to C<test_diag>, which is
+documented below in L</Testing For Regular Expressions>
+
 =cut
 
 sub test_diag {
@@ -269,7 +275,14 @@ sub test_diag {
 
     # expect the same thing, but prepended with "#     "
     local $_;
-    $err->expect( map { m/\S/ ? "# $_" : "" } @_ );
+    $err->expect( map {
+            [ "# ",
+              ref eq "ARRAY"     ? @{ $_ } :
+              ref || m,^/(.*)/$, ? $_ :
+              "$_\n"
+            ]
+        } @_
+    )
 }
 
 =item test_test
@@ -342,21 +355,23 @@ sub test_test {
     # re-enable the original setting of the harness
     $ENV{HARNESS_ACTIVE} = $original_harness_env;
 
+    my $out_complaint = $out->complaint;
+    my $err_complaint = $err->complaint;
+
     # check the output we've stashed
-    unless( builder()->ok( ( $args{skip_out} || $out->check ) &&
-                    ( $args{skip_err} || $err->check ), $mess )
-    )
-    {
+    unless( builder()->ok( ( $args{skip_out} || !defined($out_complaint) ) &&
+                           ( $args{skip_err} || !defined($err_complaint) ), $mess ) 
+    ) {
         # print out the diagnostic information about why this
         # test failed
 
         local $_;
 
-        builder()->diag( map { "$_\n" } $out->complaint )
-          unless $args{skip_out} || $out->check;
+        builder()->diag( $out_complaint )
+          unless $args{skip_out} || !defined $out_complaint;
 
-        builder()->diag( map { "$_\n" } $err->complaint )
-          unless $args{skip_err} || $err->check;
+        builder()->diag( $err_complaint )
+          unless $args{skip_err} || !defined $err_complaint;
     }
 }
 
@@ -415,6 +430,40 @@ L<Text::Builder::Tester::Color> module like so:
 Or by including the L<Test::Builder::Tester::Color> module directly in
 the PERL5LIB.
 
+=item green_string
+
+Returns the current ANSI escape sequences for the I<green> color.
+When C<color> is not enabled this is always returns the empty string.
+
+You can set a new string to be used by passing an argument.  By
+default, or if you set the string to an undefined value, this will
+attempt to use Term::ANSIColor to render black text on a green background
+(In this situation if you do not have Term::ANSIColor installed
+then the empty string will be returned.)
+
+=item red_string
+
+Returns the current ANSI escape sequences for the I<red> color.
+When C<color> is not enabled this is always returns the empty string.
+
+You can set a new string to be used by passing an argument.  By
+default, or if you set the string to an undefined value, this will
+attempt to use Term::ANSIColor to render black text on a red background
+(In this situation if you do not have Term::ANSIColor installed
+then the empty string will be returned.)
+
+=item reset_string
+
+Returns the current ANSI escape sequences for the resetting the
+terminal to the default color.  When C<color> is not enabled this
+always returns the empty string.
+
+You can set a new string to be used by passing an argument.  By
+default, or if you set the string to an undefined value, this will
+attempt to use Term::ANSIColor to reset the terminal to default
+(In this situation if you do not have Term::ANSIColor installed
+then the empty string will be returned.)
+
 =cut
 
 my $color;
@@ -424,7 +473,76 @@ sub color {
     $color;
 }
 
+my $green_string;
+sub green_string {
+    $green_string = shift if @_;
+    return "" unless color();
+    return $green_string if defined $green_string;
+
+    return eval {
+        require Term::ANSIColor;
+        Term::ANSIColor::color("black") . Term::ANSIColor::color("on_green")
+    } || ""
+}
+
+my $red_string;
+sub red_string {
+    $red_string = shift if @_;
+    return "" unless color();
+    return $red_string if defined $red_string;
+
+    return eval {
+        require Term::ANSIColor;
+        Term::ANSIColor::color("black") . Term::ANSIColor::color("on_red")
+    } || ""
+}
+
+my $reset_string;
+sub reset_string {
+    $reset_string = shift if @_;
+    return "" unless color();
+    return $reset_string if defined $reset_string;
+
+    return eval {
+        require Term::ANSIColor;
+        Term::ANSIColor::color("reset")
+    } || ""
+}
+
 =back
+
+=head2 Testing For Regular Expressions
+
+As well as checking for simple strings, you can also check for
+regular expressions when using C<test_out>, C<test_err> or
+C<test_diag>.
+
+    test_out('/not ok [0-9]+ - (.*)\n/');
+    test_fail(+2);
+    test_diag(qr/fo+\n/);
+    ok(0,"oh no");
+    diag("foo");
+    test_test();
+
+The regular expressions can be passed in one of two forms;  A
+standard regular expression reference of the form C<qr/foo/> or
+as a plain old string starting and ending with C</>, i.e. C<"/foo/">
+(which allow you to write tests compatible with ancient versions of Perl
+that don't support C<qr//>.)
+
+Each plain string argument to C<test_out>, C<test_err> or
+C<test_diag> has a newline automatically added.  If you want
+to test a single line with a combination of strings and regular
+expressions (allowing Test::Builder::Tester to give better colored
+output than using a single regular expression should the test fail)
+you can use an array reference to indicate nothing within it should
+have a newline appended.
+
+   # expect two lines of diag
+   test_diag(
+     ["The value ", qr/[0-9]+/, " is too high.","\n"],
+     "Expected a value below 10.",
+   );
 
 =head1 BUGS
 
@@ -436,13 +554,12 @@ had that we were testing for as real failures.
 The color function doesn't work unless L<Term::ANSIColor> is
 compatible with your terminal.
 
-Bugs (and requests for new features) can be reported to the author
-though the CPAN RT system:
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Test-Builder-Tester>
+See F<http://rt.cpan.org> to report and view bugs.
 
 =head1 AUTHOR
 
-Copyright Mark Fowler E<lt>mark@twoshortplanks.comE<gt> 2002, 2004.
+Copyright Mark Fowler E<lt>mark@twoshortplanks.comE<gt> 2002, 2004,
+2014.
 
 Some code taken from L<Test::More> and L<Test::Catch>, written by
 Michael G Schwern E<lt>schwern@pobox.comE<gt>.  Hence, those parts
@@ -483,15 +600,53 @@ package Test::Builder::Tester::Tie;
 
 sub expect {
     my $self = shift;
-
-    my @checks = @_;
-    foreach my $check (@checks) {
-        $check = $self->_account_for_subtest($check);
-        $check = $self->_translate_Failed_check($check);
-        push @{ $self->{wanted} }, ref $check ? $check : "$check\n";
-    }
+    push @{ $self->{wanted} },
+        map { $self->_translate_Failed_check($_) }
+        map { $self->_account_for_subtest($_) }
+        $self->_group_checks(
+            map { $self->_flatten_and_add_return($_) } @_
+        );
 }
 
+# takes a list of string and regex checks and returns
+# a list with all adjacent string checks concatinated into
+# single checks.  This is so we look in the string checks
+# for the very old school failed test string declarations 
+sub _group_checks {
+    my $self = shift;
+    return unless @_;
+    my @r = shift @_;
+    my $regex = ref $r[0] || $r[0] =~ m'\A/.*/\z';
+    foreach (@_) {
+        if (ref || m'\A/.*/\z') {
+            push @r, $_;
+            $regex = 1;
+            next;
+        }
+        if ($regex) {
+            push @r, $_;
+            undef $regex;
+        } else {
+            $r[-1] .= $_;
+        }
+    }
+    return @r;
+}
+
+sub _flatten_and_add_return {
+    my $self = shift;
+    my $check = shift;
+
+    if (ref($check) eq "ARRAY") {
+        return @{ $check };
+    }
+
+    return $check if ref $check || $check =~ m'\A/.*/\z';
+    return "$check\n";
+}
+
+# TODO: This should probably return a two element list, the indent and the check
+# when it's passed a regex, but that's a change in behavior, so...don't fix now
 sub _account_for_subtest {
     my( $self, $check ) = @_;
 
@@ -503,32 +658,15 @@ sub _account_for_subtest {
 sub _translate_Failed_check {
     my( $self, $check ) = @_;
 
-    if( $check =~ /\A(.*)#     (Failed .*test) \((.*?) at line (\d+)\)\Z(?!\n)/ ) {
-        $check = "/\Q$1\E#\\s+\Q$2\E.*?\\n?.*?\Qat $3\E line \Q$4\E.*\\n?/";
+    my @ret = ($check);
+    while ( $ret[0] =~ /\A(.*)#     (Failed .*test) \((.*?) at line (\d+)\)\n?(.*)\z/s ) {
+        splice @ret, 0, 1, $1, "/#\\s+\Q$2\E.*?\\n?.*?\Qat $3\E line \Q$4\E.*\\n?/", $5;
     }
 
-    return $check;
+    return @ret;
 }
 
 ##
-# return true iff the expected data matches the got data
-
-sub check {
-    my $self = shift;
-
-    # turn off warnings as these might be undef
-    local $^W = 0;
-
-    my @checks = @{ $self->{wanted} };
-    my $got    = $self->{got};
-    foreach my $check (@checks) {
-        $check = "\Q$check\E" unless( $check =~ s,^/(.*)/$,$1, or ref $check );
-        return 0 unless $got =~ s/^$check//;
-    }
-
-    return length $got == 0;
-}
-
 ##
 # a complaint message about the inputs not matching (to be
 # used for debugging messages)
@@ -537,42 +675,126 @@ sub complaint {
     my $self   = shift;
     my $type   = $self->type;
     my $got    = $self->got;
-    my $wanted = join '', @{ $self->wanted };
+    my @checks = (@{ $self->wanted }, "");
 
-    # are we running in colour mode?
-    if(Test::Builder::Tester::color) {
-        # get color
-        eval { require Term::ANSIColor };
-        unless($@) {
-            # colours
+    my $got_output = "";
+    my $wanted_output = "";
 
-            my $green = Term::ANSIColor::color("black") . Term::ANSIColor::color("on_green");
-            my $red   = Term::ANSIColor::color("black") . Term::ANSIColor::color("on_red");
-            my $reset = Term::ANSIColor::color("reset");
+    # the colors
+    my $red   = Test::Builder::Tester::red_string();
+    my $green = Test::Builder::Tester::green_string();
+    my $reset = Test::Builder::Tester::reset_string();
 
-            # work out where the two strings start to differ
-            my $char = 0;
-            $char++ while substr( $got, $char, 1 ) eq substr( $wanted, $char, 1 );
+    my $failing;
+    foreach my $check (@checks) {
 
-            # get the start string and the two end strings
-            my $start = $green . substr( $wanted, 0, $char );
-            my $gotend    = $red . substr( $got,    $char ) . $reset;
-            my $wantedend = $red . substr( $wanted, $char ) . $reset;
+        # are we failing?  If we are, just convert each
+        # check into a failing block
+        if ($failing) {
+            my $str = "$check";
+            $str =~ s/\n/$reset\n$red/g;
+            $wanted_output .= $red . $str . $reset;
 
-            # make the start turn green on and off
-            $start =~ s/\n/$reset\n$green/g;
+            next;
+        }
 
-            # make the ends turn red on and off
-            $gotend    =~ s/\n/$reset\n$red/g;
-            $wantedend =~ s/\n/$reset\n$red/g;
+        # are we testing against a regex?
+        my $potential_regex = $check;
+        if (ref $potential_regex || $potential_regex =~ s,^/(.*)/$,$1,) {
 
-            # rebuild the strings
-            $got    = $start . $gotend;
-            $wanted = $start . $wantedend;
+            # check the regex matches
+            my $matched;
+            unless ($got =~ s/\A($potential_regex)//) {
+                $failing = 1;
+                $got =~ s/\n/$reset\n$red/g;
+                $got_output .= $red . $got . $reset;
+                redo;
+            }
+            $matched = $1;
+
+            # markup what we matched and add it to the output
+            $matched =~ s/\n/$reset\n$green/g;
+            $got_output .= $green . $matched . $reset;
+            $wanted_output .= $green . $check . $reset;
+
+            next;
+        }
+
+        # we're testing against a plain old string.
+        my $index = 0;
+        while (1) {
+
+            # did we run out of "got"?
+            if ($index > length($got)) {
+                $failing = 1;
+
+                # append the "matched" part to both
+                $got =~ s/\n/$reset\n$green/g;
+                $got = $green. $got . $reset;
+                $got_output .= $got;
+                $wanted_output .= $got;
+
+                # append the rest of "not matched" stuff to expected
+                my $not_matched = substr($check,$index);
+                $not_matched =~ s/\n/$reset\n$red/g;
+                $wanted_output .= $red . $not_matched . $reset;
+
+                last;
+            }
+
+            # did we run out of text in this check
+            # (in which case we move onto the next one)
+            if ($index == length($check)) {
+
+                # append the "matched" part to both
+                my $matched = substr($got,0,$index,"");
+                $matched =~ s/\n/$reset\n$green/g;
+                $matched = $green. $matched . $reset;
+                $got_output .= $matched;
+                $wanted_output .= $matched;
+
+                last;
+            }
+
+            # did we have a non matching character?
+            if (substr($got, $index, 1) ne substr($check, $index, 1)) {
+                $failing = 1;
+
+                # append the "matched" part to both
+                my $matched = substr($got,0,$index,"");
+                $matched =~ s/\n/$reset\n$green/g;
+                $matched = $green. $matched . $reset;
+                $got_output .= $matched;
+                $wanted_output .= $matched;
+
+                # append the not matched part
+                $got =~ s/\n/$reset\n$red/g;
+                $got_output .= $red. $got . $reset;
+
+                # append the rest of "not matched" stuff to expected
+                my $check_not_matched = substr($check,$index);
+                $check_not_matched =~ s/\n/$reset\n$red/g;
+                $wanted_output .= $red . $check_not_matched . $reset;
+
+                last;
+            }
+
+            $index++;
         }
     }
 
-    return "$type is:\n" . "$got\nnot:\n$wanted\nas expected";
+    unless ($failing) {
+        return unless length $got;
+        $got =~ s/\n/$reset\n$red/g;
+        $got_output .= $red. $got . $reset;
+    }
+
+    return "$type is:\n" . "$got_output\nnot:\n$wanted_output\nas expected";
+}
+
+sub check {
+    my $self = shift;
+    return !defined $self->complaint;
 }
 
 ##
