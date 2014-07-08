@@ -4,7 +4,7 @@ use warnings;
 
 use Test::Builder;
 use Carp qw/croak/;
-use Scalar::Util qw/blessed reftype set_prototype/;
+use Scalar::Util qw/reftype set_prototype/;
 use B();
 
 my %SIG_MAP = (
@@ -96,19 +96,18 @@ sub _build_provide {
         my $attrs = {%params, package => $dest, name => $name};
         $meta->{attrs}->{$name} = $attrs;
 
-        # Stupid Legacy! This can go away when https://github.com/Ovid/test--most/pull/9 is merged.
         push @{$meta->{export}} => $name;
 
         # If this is just giving, or not a coderef
         return $meta->{refs}->{$name} = $ref if $params{give} || reftype $ref ne 'CODE';
 
-        bless $ref, $class;
-
         my $o_name = B::svref_2object($ref)->GV->NAME;
         if ($o_name && $o_name ne '__ANON__') { #sub has a name
             $meta->{refs}->{$name} = $ref;
+            $attrs->{named} = 1;
         }
         else {
+            $attrs->{named} = 0;
             # Voodoo....
             # Insert an anonymous sub, and use a trick to make caller() think its
             # name is this string, which tells us how to find the thing that was
@@ -127,7 +126,7 @@ sub _build_provide {
             my $proto = prototype($ref);
             &set_prototype($code, $proto) if $proto;
 
-            $meta->{refs}->{$name} = bless $code, $class;
+            $meta->{refs}->{$name} = $code;
 
             no strict 'refs';
             *$globname = $code;

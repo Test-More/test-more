@@ -405,8 +405,10 @@ sub _is_provider_tool {
         my ($pkg, $sub) = ($subname =~ m/^(.+)::([_\w][_\w0-9]*)/);
         if ($pkg->can('TB_PROVIDER_META') && $sub && $sub ne '__ANON__') {
             my $ref = $pkg->can($sub);
-            return unless $ref && Scalar::Util::blessed($ref) && $ref->isa('Test::Builder::Provider');
-            return $pkg->TB_PROVIDER_META->{attrs}->{$sub} || die "Could not find attributes for $call[3]";
+            return unless $ref;
+            my $attrs = $pkg->TB_PROVIDER_META->{attrs}->{$sub};
+            return unless $attrs->{named};
+            return $attrs;
         }
     }
 

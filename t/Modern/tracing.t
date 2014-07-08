@@ -102,7 +102,7 @@ is_deeply( # The call will trace to here.
         report => {
             'line' => 2300,
             'package' => 'XXX::Tester',
-            'provider_tool' => {package => 'XXX::Tester', name => 'explodable'},
+            'provider_tool' => {package => 'XXX::Tester', name => 'explodable', named => 1},
             'anointed' => 1,
             'file' => __FILE__,
             'report' => 1,
@@ -117,12 +117,12 @@ is_deeply( # The call will trace to here.
             {
                 'line' => 2100,
                 'package' => 'XXX::Tester',
-                'provider_tool' => {package => 'XXX::Provider', name => 'explode'},
+                'provider_tool' => {package => 'XXX::Provider', name => 'explode', named => 0},
                 'anointed' => 1,
                 'file' => __FILE__
             },
             {
-                'provider_tool' => {package => 'XXX::Tester', name => 'explodable'},
+                'provider_tool' => {package => 'XXX::Tester', name => 'explodable', named => 1},
                 'file' => __FILE__,
                 'anointed' => 1,
                 'line' => 2300,
@@ -142,7 +142,7 @@ is_deeply(
             'line' => 2200,
             'package' => 'XXX::Tester',
             'file' => __FILE__,
-            'provider_tool' => {package => 'XXX::Provider', name => 'explode'},
+            'provider_tool' => {package => 'XXX::Provider', name => 'explode', named => 0},
             'anointed' => 1,
             'report' => 1,
         },
@@ -157,7 +157,7 @@ is_deeply(
                 'line' => 2200,
                 'package' => 'XXX::Tester',
                 'file' => __FILE__,
-                'provider_tool' => {package => 'XXX::Provider', name => 'explode'},
+                'provider_tool' => {package => 'XXX::Provider', name => 'explode', named => 0},
                 'anointed' => 1,
                 'report' => 1,
             },
@@ -177,7 +177,7 @@ is_deeply( # The call will trace to here
     explode(),
     {
         report => {
-            'provider_tool' => {package => 'XXX::Provider', name => 'explode'},
+            'provider_tool' => {package => 'XXX::Provider', name => 'explode', named => 0},
             'anointed' => 1,
             'line' => 2500,
             'file' => __FILE__,
@@ -192,7 +192,7 @@ is_deeply( # The call will trace to here
                 'package' => 'main',
             },
             {
-                'provider_tool' => {package => 'XXX::Provider', name => 'explode'},
+                'provider_tool' => {package => 'XXX::Provider', name => 'explode', named => 0},
                 'anointed' => 1,
                 'line' => 2500,
                 'file' => __FILE__,
