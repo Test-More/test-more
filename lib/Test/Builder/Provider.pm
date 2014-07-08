@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Test::Builder;
+use Test::Builder::Util qw/package_sub is_tester is_provider find_builder/;
 use Carp qw/croak/;
 use Scalar::Util qw/reftype set_prototype/;
 use B();
@@ -48,7 +49,7 @@ sub export_into {
     my %seen;
     for my $name (grep { !$seen{$_}++ } @sym_list) {
         no strict 'refs';
-        my $ref = $subs{$name} || $class->can($name);
+        my $ref = $subs{$name} || package_sub($class, $name);
         croak "$class does not export '$name'" unless $ref;
         *{"$dest\::$name"} = $ref ;
     }
@@ -65,7 +66,7 @@ sub make_provider {
     my $class = shift;
     my ($dest) = @_;
 
-    my $meta = $dest->can('TB_PROVIDER_META') ? $dest->TB_PROVIDER_META : undef;
+    my $meta = is_provider($dest);
 
     unless ($meta) {
         $meta = {refs => {}, attrs => {}, export => []};
@@ -89,7 +90,7 @@ sub _build_provide {
         croak "The second argument to provide() must be a ref, got: $ref"
             if $ref && !ref $ref;
 
-        $ref ||= $dest->can($name);
+        $ref ||= package_sub($dest, $name);
         croak "$dest has no sub named '$name', and no ref was given"
             unless $ref;
 
@@ -176,7 +177,7 @@ sub _build_export {
                     unless $meta->{refs}->{$name};
 
                 no strict 'refs';
-                *{"$caller\::$name"} = $meta->{refs}->{$name} || $class->can($name)
+                *{"$caller\::$name"} = $meta->{refs}->{$name} || package_sub($class, $name)
                     || croak "'$class' has no sub named '$name'";
             }
         }
@@ -193,18 +194,6 @@ sub provider_import {
     $class->after_import(@_)   if $class->can('after_import');
 
     1;
-}
-
-sub find_builder {
-    my $trace = Test::Builder->trace_test;
-
-    if ($trace && $trace->{report}) {
-        my $pkg = $trace->{package};
-        return $pkg->TB_INSTANCE
-            if $pkg && $pkg->can('TB_INSTANCE');
-    }
-
-    return Test::Builder->new;
 }
 
 sub anoint { Test::Builder->anoint($_[1], $_[0]) };

@@ -12,6 +12,7 @@ sub TB_EXPORT_META { $meta };
 exports(qw/
     import export exports accessor accessors delta deltas export_to transform
     atomic_delta atomic_deltas try protect
+    package_sub is_tester is_provider find_builder
 /);
 
 export(new => sub {
@@ -50,7 +51,7 @@ sub export_to {
     my ($to, @subs) = @_;
 
     croak "package '$from' is not a TB exporter"
-        unless $from->can('TB_EXPORT_META');
+        unless is_exporter($from);
 
     croak "No destination package specified."
         unless $to;
@@ -71,10 +72,8 @@ sub export_to {
 sub exports {
     my $caller = caller;
 
-    croak "$caller is not an exporter!"
-        unless $caller->can('TB_EXPORT_META');
-
-    my $meta = $caller->TB_EXPORT_META;
+    my $meta = is_exporter($caller)
+        || croak "$caller is not an exporter!";
 
     for my $name (@_) {
         my $ref = $caller->can($name);
@@ -102,10 +101,8 @@ sub export {
     croak "The second argument to export() must be a reference"
         unless ref $ref;
 
-    croak "$caller is not an exporter!"
-        unless $caller->can('TB_EXPORT_META');
-
-    my $meta = $caller->TB_EXPORT_META;
+    my $meta = is_exporter($caller)
+        || croak "$caller is not an exporter!";
 
     croak "Already exporting '$name'"
         if $meta->{$name};
@@ -247,6 +244,48 @@ sub try(&) {
     return wantarray ? ($ok, $error) : $ok;
 }
 
+sub package_sub {
+    my ($pkg, $sub) = @_;
+    no warnings 'once';
+
+    my $globref = do {
+        no strict 'refs';
+        \*{"$pkg\::$sub"};
+    };
+
+    return *$globref{CODE} || undef;
+}
+
+sub is_exporter {
+    my $pkg = shift;
+    return unless package_sub($pkg, 'TB_EXPORT_META');
+    return $pkg->TB_EXPORT_META;
+}
+
+sub is_tester {
+    my $pkg = shift;
+    return unless package_sub($pkg, 'TB_TESTER_META');
+    return $pkg->TB_TESTER_META;
+}
+
+sub is_provider {
+    my $pkg = shift;
+    return unless package_sub($pkg, 'TB_PROVIDER_META');
+    return $pkg->TB_PROVIDER_META;
+}
+
+sub find_builder {
+    my $trace = Test::Builder->trace_test;
+
+    if ($trace && $trace->{report}) {
+        my $pkg = $trace->{package};
+        return $pkg->TB_INSTANCE
+            if $pkg && package_sub($pkg, 'TB_INSTANCE');
+    }
+
+    return Test::Builder->new;
+}
+
 1;
 
 __END__
@@ -350,6 +389,24 @@ Similar to try, except that it does not catch exceptions. The idea here is to
 protect $@ and $! from changes. $@ and $! will be restored to whatever they
 were before the run so long as it is successful. If the run fails $! will still
 be restored, but $@ will contain the exception being thrown.
+
+=item $coderef = package_sub($package, $subname)
+
+Find a sub in a package, returns the coderef if it is present, otherwise it
+returns undef. This is similar to C<< $package->can($subname) >> except that it
+ignores inheritance.
+
+=item $meta = is_tester($package)
+
+Check if a package is a tester, return the metadata if it is.
+
+=item $meta = is_provider($package)
+
+Check if a package is a provider, return the metadata if it is.
+
+=item $TB = find_builder()
+
+Find the Test::Builder instance to use.
 
 =back
 

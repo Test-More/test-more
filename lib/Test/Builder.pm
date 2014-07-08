@@ -4,7 +4,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-use Test::Builder::Util qw/try/;
+use Test::Builder::Util qw/try is_tester is_provider package_sub/;
 use Scalar::Util();
 use Test::Builder::Stream;
 use Test::Builder::Result;
@@ -347,7 +347,7 @@ sub trace_test {
         }
 
         $entry->{transition} = 1 if !$last || $BUILDER_PACKAGES{$last};
-        $entry->{anointed}   = 1 if $pkg->can('TB_TESTER_META') && $sub ne 'Test::Builder::subtest';
+        $entry->{anointed}   = 1 if is_tester($pkg) && $sub ne 'Test::Builder::subtest';
 
         $notb_level++ unless $entry->{transition};
 
@@ -403,9 +403,7 @@ sub _is_provider_tool {
     }
     else {
         my ($pkg, $sub) = ($subname =~ m/^(.+)::([_\w][_\w0-9]*)/);
-        if ($pkg->can('TB_PROVIDER_META') && $sub && $sub ne '__ANON__') {
-            my $ref = $pkg->can($sub);
-            return unless $ref;
+        if (is_provider($pkg) && $sub && $sub ne '__ANON__') {
             my $attrs = $pkg->TB_PROVIDER_META->{attrs}->{$sub};
             return unless $attrs->{named};
             return $attrs;
@@ -419,13 +417,13 @@ sub anoint {
     my $class = shift;
     my ($target, $oil) = @_;
 
-    unless ($target->can('TB_TESTER_META')) {
+    unless (is_tester($target)) {
         my $meta = {};
         no strict 'refs';
         *{"$target\::TB_TESTER_META"} = sub {$meta};
     }
 
-    unless ($target->can('TB_INSTANCE')) {
+    unless (package_sub($target, 'TB_INSTANCE')) {
         my $tb = Test::Builder->create(
             modern        => 1,
             shared_stream => 1,

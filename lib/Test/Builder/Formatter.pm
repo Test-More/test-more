@@ -5,7 +5,7 @@ use warnings;
 use Carp qw/confess/;
 use Scalar::Util qw/blessed/;
 
-use Test::Builder::Util qw/new/;
+use Test::Builder::Util qw/new package_sub/;
 
 sub handle {
     my $self = shift;
@@ -35,7 +35,7 @@ sub listen {
     my $caller = caller;
 
     my $tb = $params{tb};
-    $tb ||= $caller->can('TB_INSTANCE') ? $caller->TB_INSTANCE : undef;
+    $tb ||= package_sub($caller, 'TB_INSTANCE') ? $caller->TB_INSTANCE : undef;
 
     my $stream = delete $params{stream} || ($tb ? $tb->stream : undef) || Test::Builder::Stream->shared;
 
