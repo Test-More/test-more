@@ -232,7 +232,7 @@ L<Test::Builder::Fromatter::TAP> which produces TAP output.
 =head1 SYNOPSIS
 
     use Test::More;
-    use Test::Tester;
+    use Test::Tester2;
 
     # Intercept all the Test::Builder::Result objects produced in the block.
     my $results = intercept {
