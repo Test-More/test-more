@@ -5,7 +5,7 @@ use warnings;
 use Carp qw/confess croak/;
 use Scalar::Util qw/reftype blessed/;
 use Test::Builder::Threads;
-use Test::Builder::Util qw/accessors accessor atomic_deltas/;
+use Test::Builder::Util qw/accessors accessor atomic_deltas try protect/;
 
 accessors qw/plan bailed_out/;
 atomic_deltas qw/tests_run tests_failed/;
@@ -40,15 +40,8 @@ sub pid { shift->{pid} }
             unless reftype $code eq 'CODE';
 
         my $orig = $class->intercept_start();
-        my ($error, $ok);
-        {
-            local $@;
-            local $!;
-            {
-                $ok = eval { $code->($shared[-1]); 1 };
-                $error = $@ || "Error was Squashed!";
-            }
-        }
+        my ($ok, $error) = try { $code->($shared[-1]) };
+
         $class->intercept_stop($orig);
         die $error unless $ok;
         return $ok;
@@ -266,15 +259,14 @@ sub send {
         }
 
         for my $listener (values %{$self->_listeners}) {
-            local $!;
-            local $@;
-
-            if (reftype $listener eq 'CODE') {
-                $listener->($item)
-            }
-            else {
-                $listener->handle($item);
-            }
+            protect {
+                if (reftype $listener eq 'CODE') {
+                    $listener->($item)
+                }
+                else {
+                    $listener->handle($item);
+                }
+            };
         }
 
         if ($item->isa('Test::Builder::Result::Ok')) {

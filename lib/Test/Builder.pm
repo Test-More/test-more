@@ -4,7 +4,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-use Test::Builder::Util;
+use Test::Builder::Util qw/try/;
 use Scalar::Util();
 use Test::Builder::Stream;
 use Test::Builder::Result;
@@ -208,7 +208,7 @@ sub subtest {
 
     # Turn the child into the parent so anyone who has stored a copy of
     # the Test::Builder singleton will get the child.
-    my ($error, $child);
+    my ($success, $error, $child);
     my $parent = {};
     {
         local $Level = $Level + 1; local $BLevel = $BLevel + 1;
@@ -226,16 +226,7 @@ sub subtest {
             1;
         };
 
-        {
-            local $@;
-            local $!;
-            local $_;
-            {
-                if( !eval { $self->nest($run_the_subtests) } ) {
-                    $error = $@;
-                }
-            }
-        }
+        ($success, $error) = try { $self->nest($run_the_subtests) };
     }
 
     # Restore the parent and the copied child.
@@ -777,20 +768,19 @@ sub cmp_ok {
 
     my $test;
     my $error;
-    {
-        ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-        local( $@, $!, $SIG{__DIE__} );    # isolate eval
+    my($pack, $file, $line) = @{$self->trace_test->{report}}{qw/package file line/};
 
-        my($pack, $file, $line) = @{$self->trace_test->{report}}{qw/package file line/};
-
+    (undef, $error) = try {
         # This is so that warnings come out at the caller's level
-        $test = eval qq[
+        ## no critic (BuiltinFunctions::ProhibitStringyEval)
+        eval qq[
 #line $line "(eval in cmp_ok) $file"
-\$got $type \$expect;
-];
-        $error = $@;
-    }
+\$test = \$got $type \$expect;
+1;
+        ] || die $@;
+    };
+
     local $Level = $Level + 1; local $BLevel = $BLevel + 1;
     my $ok = $self->ok( $test, $name );
 
@@ -1240,16 +1230,12 @@ sub _regex_ok {
         my $test;
         my $context = $self->_caller_context;
 
-        {
-            ## no critic (BuiltinFunctions::ProhibitStringyEval)
-
-            local( $@, $!, $SIG{__DIE__} );    # isolate eval
-
+        try {
             # No point in issuing an uninit warning, they'll see it in the diagnostics
             no warnings 'uninitialized';
-
+            ## no critic (BuiltinFunctions::ProhibitStringyEval)
             $test = eval $context . q{$test = $thing =~ /$usable_regex/ ? 1 : 0};
-        }
+        };
 
         $test = !$test if $cmp eq '!~';
 
@@ -1277,19 +1263,12 @@ DIAGNOSTIC
 sub _try {
     my( $self, $code, %opts ) = @_;
 
-    my $error;
-    my $return;
-    {
-        local $!;               # eval can mess up $!
-        local $@;               # don't set $@ in the test
-        local $SIG{__DIE__};    # don't trip an outside DIE handler.
-        $return = eval { $code->() };
-        $error = $@;
-    }
+    my $result;
+    my ($ok, $error) = try { $result = $code->() };
 
-    die $error if $error and $opts{die_on_fail};
+    die $error if $opts{die_on_fail} && !$ok;
 
-    return wantarray ? ( $return, $error ) : $return;
+    return wantarray ? ( $result, $error ) : $result;
 }
 
 sub _message_at_caller {

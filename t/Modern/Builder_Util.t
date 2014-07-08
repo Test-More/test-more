@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 use Test::More 'modern';
+use Test::Builder::Util qw/try protect/;
 
 {
     package My::Example;
@@ -86,5 +87,45 @@ is($one->a_number(-2), 5, "Delta add the number");
 is($one->a_alpha, 0, "default");
 is($one->a_alpha(2), 2, "Delta add the number");
 is($one->a_alpha(-2), 0, "Delta add the number");
+
+can_ok( __PACKAGE__, 'try' );
+
+{
+    local $@ = "Blah";
+    local $! = 23;
+    my ($ok, $error) = try { $! = 22; die "XXX"; 1 };
+    ok(!$ok, "Exception in the try");
+    ok($! == 23, '$! is preserved');
+    is($@, "Blah", '$@ is preserved');
+    like($error, qr/XXX/, "Got exception");
+}
+
+{
+    local $@ = "Blah";
+    local $! = 23;
+    my ($ok, $error) = try { $! = 22; $@ = 'XXX'; 1 };
+    ok($ok, "No exception in the try");
+    ok($! == 23, '$! is preserved');
+    is($@, "Blah", '$@ is preserved');
+}
+
+{
+    local $@ = "Blah";
+    local $! = 23;
+    my $ok;
+    eval { $ok = protect { $! = 22; die "XXX"; 1 } };
+    like($@, qr/XXX/, 'Threw exception');
+    ok(!$ok, "Exception in the try");
+    ok($! == 23, '$! is preserved');
+}
+
+{
+    local $@ = "Blah";
+    local $! = 23;
+    my $ok = protect { $! = 22; $@ = 'XXX'; 1 };
+    ok($ok, "Success");
+    ok($! == 23, '$! is preserved');
+    is($@, "Blah", '$@ is preserved');
+}
 
 done_testing;

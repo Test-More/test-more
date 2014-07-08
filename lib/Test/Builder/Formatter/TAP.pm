@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Test::Builder::Threads;
-use Test::Builder::Util qw/accessors transform/;
+use Test::Builder::Util qw/accessors transform try protect/;
 
 use base 'Test::Builder::Formatter';
 
@@ -185,14 +185,9 @@ sub _init_handles {
 sub _copy_io_layers {
     my($src, $dst) = @_;
 
-    eval {
-        local $!;               # eval can mess up $!
-        local $@;               # don't set $@ in the test
-        local $SIG{__DIE__};    # don't trip an outside DIE handler.
-
+    try {
         require PerlIO;
         my @src_layers = PerlIO::get_layers($src);
-
         _apply_layers($dst, @src_layers) if @src_layers;
     };
 
@@ -244,8 +239,13 @@ sub is_fh {
     return 1 if ref $maybe_fh  eq 'GLOB';    # its a glob ref
     return 1 if ref \$maybe_fh eq 'GLOB';    # its a glob
 
-    return eval { $maybe_fh->isa("IO::Handle") } ||
-           eval { tied($maybe_fh)->can('TIEHANDLE') };
+    my $out;
+    protect {
+        $out = eval { $maybe_fh->isa("IO::Handle") }
+            || eval { tied($maybe_fh)->can('TIEHANDLE') };
+    };
+
+    return $out;
 }
 
 sub reset {

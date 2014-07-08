@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Test::Builder::Stream;
+use Test::Builder::Util qw/try/;
 
 use Scalar::Util qw/blessed reftype/;
 use Carp qw/croak/;
@@ -14,27 +15,24 @@ provides qw/results_are/;
 sub intercept(&) {
     my ($code) = @_;
 
-    my(@results, $error, $ok);
+    my @results;
 
-    {
-        local $@;
-        local $!;
-        local $_;
-        $ok = eval {
-            Test::Builder::Stream->intercept(sub {
+    my ($ok, $error) = try {
+        Test::Builder::Stream->intercept(
+            sub {
                 my $stream = shift;
                 $stream->exception_followup;
 
-                $stream->listen(INTERCEPTOR => sub {
-                    my ($item) = @_;
-                    push @results => $item;
-                });
+                $stream->listen(
+                    INTERCEPTOR => sub {
+                        my ($item) = @_;
+                        push @results => $item;
+                    }
+                );
                 $code->();
-            });
-            1;
-        };
-        $error = $@ || "Error was squashed!";
-    }
+            }
+        );
+    };
 
     die $error unless $ok || (blessed($error) && $error->isa('Test::Builder::Result'));
 

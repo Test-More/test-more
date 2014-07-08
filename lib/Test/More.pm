@@ -95,7 +95,7 @@ sub before_import {
             Test::More->builder->modern(1);
         }
         else {
-            Carp::croak("Unknown option: $item");
+            Carp::carp("Unknown option: $item");
         }
     }
 

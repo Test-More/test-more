@@ -11,7 +11,7 @@ sub TB_EXPORT_META { $meta };
 
 exports(qw/
     import export exports accessor accessors delta deltas export_to transform
-    atomic_delta atomic_deltas
+    atomic_delta atomic_deltas try protect
 /);
 
 export(new => sub {
@@ -219,6 +219,34 @@ sub _delta {
     *{"$caller\::$name"} = $sub;
 }
 
+sub protect(&) {
+    my $code = shift;
+    local $@;
+    local $!;
+
+    my $ok = eval { $code->(); 1 } || 0;
+    my $error = $@ || "Error was squashed!\n";
+    die $error unless $ok;
+    return $ok;
+}
+
+sub try(&) {
+    my $code = shift;
+    my $error;
+    my $ok;
+
+    local $@;
+    local $!;
+    local $SIG{__DIE__};
+
+    $ok = eval { $code->(); 1 } || 0;
+    unless($ok) {
+        $error = $@ || "Error was squashed!\n";
+    }
+
+    return wantarray ? ($ok, $error) : $ok;
+}
+
 1;
 
 __END__
@@ -307,6 +335,21 @@ A delta accessor is an accessor that adds the numeric argument to the current
 value. Optionally a default value can be specified, otherwise 0 is used.
 
 The atomic variations are thread-safe.
+
+=item $success = try { ... }
+
+=item ($success, $error) = try { ... }
+
+Eval the codeblock, return success or failure, and optionally the error
+message. This code protects $@ and $!, they will be restored by the end of the
+run. This code also temporarily blocks $SIG{DIE} handlers.
+
+=item protect { ... }
+
+Similar to try, except that it does not catch exceptions. The idea here is to
+protect $@ and $! from changes. $@ and $! will be restored to whatever they
+were before the run so long as it is successful. If the run fails $! will still
+be restored, but $@ will contain the exception being thrown.
 
 =back
 
