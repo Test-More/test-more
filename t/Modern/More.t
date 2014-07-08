@@ -89,4 +89,7 @@ results_are(
     diag => { message => 'teardown' },
 );
 
+my $ok = eval { Test::More->import(import => ['$TODO']) };
+ok($ok, "Can import \$TODO");
+
 done_testing;

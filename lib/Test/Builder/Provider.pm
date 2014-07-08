@@ -169,7 +169,7 @@ sub _build_export {
                     unless ($meta->{refs}->{$sym} && reftype $meta->{refs}->{$sym} eq $SIG_MAP{$sig});
 
                 no strict 'refs';
-                *{"$caller\::$sym"} = $meta->{refs}->{$name} || *{"$class\::$sym"}{$sig}
+                *{"$caller\::$sym"} = $meta->{refs}->{$name} || *{"$class\::$sym"}{$SIG_MAP{$sig}}
                     || croak "'$class' has no symbol named '$name'";
             }
             else {
