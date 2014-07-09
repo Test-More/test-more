@@ -1622,7 +1622,7 @@ with modern practices instead of deprecated ones.
 
 =item $Test->depth
 
-Det/Set the depth. This is usually set for Child tests.
+Get/Set the depth. This is usually set for Child tests.
 
 =back
 
