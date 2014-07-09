@@ -218,11 +218,14 @@ sub _delta {
 
 sub protect(&) {
     my $code = shift;
-    local $@;
-    local $!;
 
-    my $ok = eval { $code->(); 1 } || 0;
-    my $error = $@ || "Error was squashed!\n";
+    my ($ok, $error);
+    {
+        local $@;
+        local $!;
+        $ok = eval { $code->(); 1 } || 0;
+        $error = $@ || "Error was squashed!\n";
+    }
     die $error unless $ok;
     return $ok;
 }
