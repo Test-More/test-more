@@ -33,8 +33,8 @@ sub before_import {
             push @$other => @{$list->[$idx++]};
         }
         elsif( $item eq 'modern' ) {
-            builder()->stream->no_lresults;
-            builder()->modern(1);
+            $class->builder->stream->no_lresults;
+            $class->builder->modern(1);
         }
         else {
             Carp::croak("Unknown option: $item");
