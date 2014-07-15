@@ -1,4 +1,4 @@
-1.301001_001 Wed Jul  02 20:14:22 PST 2014
+1.301001_ALPHAS
     * Normalize version number across all versioned files
     * Result stream!
     * Results as objects
@@ -10,6 +10,7 @@
     * Forking support
     * Refactor functionality into encapsulation modules (ExitMagic, Tap, etc...)
     * Add Test Tracing instead of $Level
+    * Bugfixes!
 
 1.001004_003 Sat May  17 13:43:00 PST 2014
     * Another Minor doc fix to solve test bug
