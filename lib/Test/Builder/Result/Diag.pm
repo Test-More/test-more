@@ -4,6 +4,7 @@ use warnings;
 
 use base 'Test::Builder::Result';
 
+use Scalar::Util();
 use Test::Builder::Util qw/accessors/;
 accessors qw/message/;
 
@@ -14,6 +15,17 @@ sub to_tap {
     $msg = "# $msg" unless $msg =~ m/^\n/;
     $msg =~ s/\n/\n# /g;
     return "$msg\n";
+}
+
+sub linked {
+    my $self = shift;
+
+    if (@_) {
+        ($self->{linked}) = @_;
+        Scalar::Util::weaken($self->{linked}) if defined $self->{linked};
+    }
+
+    return $self->{linked};
 }
 
 1;
@@ -74,6 +86,13 @@ inside a subtest.
 =item $r->constructed 
 
 Package, File, and Line in which the result was built.
+
+=item $r->linked
+
+If this diag is linked to a specific L<Test::Builder::Result::Ok> object, this
+will be set to the object. Note this is automatically turned into a weak
+reference as it is assumed that the Ok will also link to this object. This is
+to avoid cycled and memory leaks.
 
 =back
 

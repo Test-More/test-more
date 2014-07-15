@@ -258,41 +258,26 @@ sub send {
             $self->bailed_out($item);
         }
 
-        for my $listener (values %{$self->_listeners}) {
-            protect {
-                if (reftype $listener eq 'CODE') {
-                    $listener->($item)
-                }
-                else {
-                    $listener->handle($item);
-                }
-            };
-        }
-
         if ($item->isa('Test::Builder::Result::Ok')) {
             $self->tests_run(1);
             $self->tests_failed(1) unless $item->bool;
+        }
 
-            unless($item->real_bool || ($item->skip && $item->todo)) {
-                my $msg = $item->in_todo ? "Failed (TODO)" : "Failed";
-                my $prefix = $ENV{HARNESS_ACTIVE} ? "\n" : "";
-
-                my ($file, $line) = @{$item->trace->{report}}{qw/file line/};
-
-                if(defined $item->name) {
-                    my $name = $item->name;
-                    $msg = qq[$prefix  $msg test '$name'\n  at $file line $line.\n];
+        for my $listener (values %{$self->_listeners}) {
+            protect {
+                if (reftype $listener eq 'CODE') {
+                    $listener->($item);
+                    if ($item->can('diag') && $item->diag) {
+                        $listener->($_) for grep {$_} @{$item->diag};
+                    }
                 }
                 else {
-                    $msg = qq[$prefix  $msg test at $file line $line.\n];
+                    $listener->handle($item);
+                    if ($item->can('diag') && $item->diag) {
+                        $listener->handle($_) for grep {$_} @{$item->diag};
+                    }
                 }
-
-                my $diag = Test::Builder::Result::Diag->new(
-                    message => $msg || "",
-                    map {($_ => $item->$_ || undef)} qw/trace pid depth in_todo source/,
-                );
-                $self->send($diag);
-            }
+            };
         }
     }
 

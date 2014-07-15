@@ -5,6 +5,7 @@ use warnings;
 use base 'Test::Builder::Result';
 
 use Carp qw/confess/;
+use Scalar::Util qw/blessed/;
 use Test::Builder::Util qw/accessors/;
 
 accessors qw/bool real_bool name todo skip/;
@@ -47,6 +48,57 @@ sub to_tap {
     $out .= "\n";
 
     return $out;
+}
+
+sub clear_diag {
+    my $self = shift;
+    my @out = @{delete $self->{diag} || []};
+    $_->linked(undef) for @out;
+    return @out;
+}
+
+sub diag {
+    my $self = shift;
+
+    if (@_) {
+        $self->{diag} ||= [];
+        for my $d (@_) {
+            next unless $d;
+
+            confess "Only Diag objects can be linked to results."
+                unless blessed($d) && $d->isa('Test::Builder::Result::Diag');
+
+            confess "Diag argument '$d' is already linked to a result."
+                if $d->linked;
+
+            $d->linked($self);
+            push @{$self->{diag}} => $d;
+        }
+    }
+
+    unless ($self->{diag} || $self->real_bool || ($self->skip && $self->todo)) {
+        my $msg    = $self->in_todo       ? "Failed (TODO)" : "Failed";
+        my $prefix = $ENV{HARNESS_ACTIVE} ? "\n"            : "";
+
+        my ($file, $line) = @{$self->trace->{report}}{qw/file line/};
+
+        if (defined $self->name) {
+            my $name = $self->name;
+            $msg = qq[$prefix  $msg test '$name'\n  at $file line $line.\n];
+        }
+        else {
+            $msg = qq[$prefix  $msg test at $file line $line.\n];
+        }
+
+        my $diag = Test::Builder::Result::Diag->new(
+            linked  => $self,
+            message => $msg || "",
+            map { ($_ => $self->$_ || undef) } qw/trace pid depth in_todo source/,
+        );
+        $self->{diag} = [$diag];
+    }
+
+    return $self->{diag};
 }
 
 1;
@@ -120,9 +172,25 @@ True if the result was generated inside a todo.
 Builder that created the result, usually $0, but the name of a subtest when
 inside a subtest.
 
-=item $r->constructed 
+=item $r->constructed
 
 Package, File, and Line in which the result was built.
+
+=item $r->diag
+
+Either undef, or an arrayref of L<Test::Builder::Result::Diag> objects. These
+objects will be linked to this Ok result. Calling C<< $diag->linked >> on them
+will return this Ok object. Refierences here are strong references, references
+to this object from the linked Diag objects are weakened to avoid cycles.
+
+You can push diag objects into the arrayref by using them as arguments to this
+method. Objects will be validated to ensure that they are Diag objects, and not
+already linked to a result. As well C<linked> will be set on them.
+
+=item $r->clear_diag
+
+Remove all linked Diag objects, also removes the link within the Diags. Returns
+a list of the objects.
 
 =back
 
