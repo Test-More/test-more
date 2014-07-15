@@ -49,7 +49,7 @@ results_are(
 
     ok => {id => 'first', bool => 0},
 
-    diag => {message => qr{Failed test 'Lets name this test!'.*at t/Modern/Tester2\.t line}s},
+    diag => {message => qr{Failed test 'Lets name this test!'.*at (\./)?t/Modern/Tester2\.t line}s},
     diag => {message => q{(ok blah) Wanted bool => '0', but got bool => '1'}},
 
     end => 'Failure diag checking',
