@@ -5,7 +5,6 @@ use warnings;
 use Carp qw/confess/;
 use Scalar::Util qw/blessed/;
 use File::Temp();
-use Data::Dumper;
 use Test::Builder::Util qw/try/;
 
 sub tmpdir { shift->{tmpdir} }
@@ -37,8 +36,9 @@ sub handle {
     # First write the file, then rename it so that it is not read before it is ready.
     my $name =  $self->tmpdir . "/$$-" . $id++;
     open(my $fh, '>', $name) || die "Could not create temp file";
+    require Data::Dumper;
     local $Data::Dumper::Indent = 0;
-    print $fh Dumper($item);
+    print $fh Data::Dumper::Dumper($item);
     close $fh;
     rename($name, "$name.ready") || die "Could not rename file";
 

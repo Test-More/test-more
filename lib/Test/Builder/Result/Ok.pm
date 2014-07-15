@@ -4,8 +4,6 @@ use warnings;
 
 use base 'Test::Builder::Result';
 
-use Data::Dumper;
-
 use Carp qw/confess/;
 use Test::Builder::Util qw/accessors/;
 
@@ -29,8 +27,10 @@ sub to_tap {
     if (defined $self->skip && defined $self->todo) {
         my $why = $self->skip;
 
-        confess "2 different reasons to skip/todo: " . Dumper($self)
-            unless $why eq $self->todo;
+        unless ($why eq $self->todo) {
+            require Data::Dumper;
+            confess "2 different reasons to skip/todo: " . Data::Dumper::Dumper($self);
+        }
 
         $out .= " # TODO & SKIP $why";
     }
