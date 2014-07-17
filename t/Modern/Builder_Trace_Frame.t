@@ -103,18 +103,18 @@ is_deeply(
 }
 
 my $A = $CLASS->new(2, 'Test::A', __FILE__, 42, 'Test::A::whatever');
-print "XXX: " . $A->todo . "\n";
+ok($A->todo, "todo cause of Test::More");
 
 my $B = $CLASS->new(2, 'Test::B', __FILE__, 42, 'Test::A::whatever');
-print "XXX: " . $B->todo . "\n";
+ok($B->todo, "todo cause defined");
 
 my $C = $CLASS->new(2, 'Test::C', __FILE__, 42, 'Test::A::whatever');
-print "XXX: " . $C->todo . "\n";
+ok($C->todo, "todo cause set");
 
 my $D = $CLASS->new(2, 'Test::D', __FILE__, 42, 'Test::A::whatever');
-print "XXX: " . $D->todo . "\n";
+ok(!$D->todo, "Not todo cause not defined (not ideal, but can't fix)");
 
 my $E = $CLASS->new(2, 'Test::E', __FILE__, 42, 'Test::A::whatever');
-print "XXX: " . $E->todo . "\n";
+ok(!$E->todo, "Not todo cause variable does not exist");
 
 done_testing;

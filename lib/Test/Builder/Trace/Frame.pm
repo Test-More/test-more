@@ -70,7 +70,7 @@ accessor transition => sub {
 
     return $BUILDER_PACKAGES{$pkg} || 0;
 };
- 
+
 accessor nest => sub {
     my $self = shift;
     return 0 unless $self->subname eq 'Test::Builder::Trace::nest';
@@ -189,6 +189,13 @@ The state of these booleans will be determined the first time they are called.
 They will be cached for future calls.
 
 =over 4
+
+=item $todo = $frame->todo
+
+True if the frame comes from a package where $TODO is present.
+
+B<Caveat> Will not find the $TODO if it is undefined UNLESS the $TODO came from
+L<Test::More>.
 
 =item $bool = $frame->nest
 

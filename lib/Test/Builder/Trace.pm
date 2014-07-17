@@ -240,6 +240,11 @@ This stack contains all the frames that are calls to provider tools.
 This stack contains all the frames that act as transitions between external
 code and L<Test::Builder> related code.
 
+=item $arrayref - $trace->todo
+
+This stack contains all the frames that seem to have a $TODO variable available
+to them. See L<Test::Builder::Trace::Frame> for caveats.
+
 =back
 
 =head1 AUTHORS
