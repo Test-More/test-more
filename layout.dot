@@ -1,0 +1,62 @@
+digraph overview {
+    subgraph cluster_1 {
+        label="Test::Builder Framework"
+
+        More   [label="Test::More"]
+        Simple [label="Test::Simple"]
+        AnyT   [label="Test::*"]
+        TB     [label="Test::Builder"]
+        TBS    [label="Test::Builder::Stream"]
+        Fork   [label="Test::Builder::Fork"]
+        TAP    [label="Test::Builder::Formatter::TAP"]
+        LRes   [label="Test::Builder::Formatter::LegacyResults"]
+        AnyF   [label="Test::Builder::Formatter::*"]
+        TT2    [label="Test::Tester2"]
+        Trace  [label="Test::Builder::Trace"]
+        Result [label="Test::Builder::Result"]
+
+        {rank=same; More Simple AnyT}
+        {rank=same; TAP  LRes   AnyF}
+        {rank=same; Fork TBS TT2}
+        {rank=same; TB Result Trace}
+
+        More->TB
+        Simple->TB
+        AnyT->TB
+
+        Trace->TB
+        Result->TB
+        TB->Trace
+        TB->Result
+
+        TB->TBS
+
+        TBS->Fork
+        Fork->TBS
+        TBS->TT2
+        TT2->TBS
+
+        TBS->TAP
+        TBS->LRes
+        TBS->AnyF
+    }
+
+    subgraph cluster_2 {
+        label="Test File"
+
+        ok
+        is
+        is_deeply
+        thing_ok
+        my_check
+
+        {rank=same; ok is is_deeply}
+    }
+
+    ok->Simple
+    is->More
+    is_deeply->More
+    thing_ok->AnyT
+    my_check->TB
+}
+
