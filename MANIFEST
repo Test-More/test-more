@@ -3,6 +3,7 @@
 Changes
 examples/indent.pl
 examples/subtest.t
+layout.dot
 lib/Test/Builder.pm
 lib/Test/Builder/ExitMagic.pm
 lib/Test/Builder/Fork.pm
@@ -23,6 +24,8 @@ lib/Test/Builder/Stream.pm
 lib/Test/Builder/Tester.pm
 lib/Test/Builder/Tester/Color.pm
 lib/Test/Builder/Threads.pm
+lib/Test/Builder/Trace.pm
+lib/Test/Builder/Trace/Frame.pm
 lib/Test/Builder/Util.pm
 lib/Test/More.pm
 lib/Test/Simple.pm
@@ -135,8 +138,11 @@ t/Modern/Builder_Result_Ok.t
 t/Modern/Builder_Result_Plan.t
 t/Modern/Builder_Stream.t
 t/Modern/Builder_Tester.t
+t/Modern/Builder_Trace.t
+t/Modern/Builder_Trace_Frame.t
 t/Modern/Builder_Util.t
 t/Modern/More.t
+t/Modern/NotTB15.t
 t/Modern/Simple.t
 t/Modern/Tester2.t
 t/Modern/tracing.t
@@ -156,6 +162,7 @@ t/plan_skip_all.t
 t/pod-coverage.t
 t/pod.t
 t/require_ok.t
+t/ribasushi_diag.t
 t/ribasushi_threads.t
 t/simple.t
 t/Simple/load.t
