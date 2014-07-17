@@ -1,6 +1,18 @@
 use strict;
 use warnings;
 
+use Test::More;
+
+BEGIN {
+    my $has_module = eval { require SQL::Abstract::Test; 1 };
+    my $required = $ENV{AUTHOR_TESTING};
+
+    die "This test requires 'SQL::Abstract::Test' to be installed when AUTHOR_TESTING.\n"
+        if $required && !$has_module;
+
+    plan skip_all => "'SQL::Abstract::Test' not installed" if !$has_module;
+}
+
 {
     package Worker;
 
@@ -10,7 +22,6 @@ use warnings;
     }
 }
 
-use Test::More;
 use SQL::Abstract::Test;
 use Test::Tester2;
 
@@ -35,7 +46,7 @@ results_are(
     diag => { in_todo => 1 },
     note => { in_todo => 1 },
     note => { in_todo => 1 },
-    'end'
+    end => "All results are TODO"
 );
 
 done_testing;
