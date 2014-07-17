@@ -96,181 +96,53 @@ sub explodable    { explode() };
 sub explodadouble { explode() };
 
 # line 2300
-is_deeply( # The call will trace to here.
-    explodable(),
-    {
-        report => {
-            'line' => 2300,
-            'package' => 'XXX::Tester',
-            'provider_tool' => {package => 'XXX::Tester', name => 'explodable', named => 1},
-            'anointed' => 1,
-            'file' => __FILE__,
-            'report' => 1,
-        },
-        stack => [
-            {
-                'transition' => 1,
-                'file' => __FILE__,
-                'line' => 5,
-                'package' => 'main',
-            },
-            {
-                'line' => 2100,
-                'package' => 'XXX::Tester',
-                'provider_tool' => {package => 'XXX::Provider', name => 'explode', named => 0},
-                'anointed' => 1,
-                'file' => __FILE__
-            },
-            {
-                'provider_tool' => {package => 'XXX::Tester', name => 'explodable', named => 1},
-                'file' => __FILE__,
-                'anointed' => 1,
-                'line' => 2300,
-                'package' => 'XXX::Tester',
-                'report' => 1,
-            }
-        ],
-    },
-    "Properly traced call to tool provided by this package"
+my $trace = explodable();
+is($trace->report->line,    2300,          "got correct line");
+is($trace->report->package, 'XXX::Tester', "got correct package");
+is_deeply(
+    $trace->report->provider_tool,
+    {package => 'XXX::Tester', name => 'explodable', named => 1},
+    "got tool info"
 );
 
 # line 2400
+$trace = explodadouble();
+is($trace->report->line,    2200,          "got correct line");
+is($trace->report->package, 'XXX::Tester', "got correct package");
 is_deeply(
-    explodadouble(),
-    {
-        report => {
-            'line' => 2200,
-            'package' => 'XXX::Tester',
-            'file' => __FILE__,
-            'provider_tool' => {package => 'XXX::Provider', name => 'explode', named => 0},
-            'anointed' => 1,
-            'report' => 1,
-        },
-        stack => [
-            {
-                'line' => 5,
-                'package' => 'main',
-                'transition' => 1,
-                'file' => __FILE__,
-            },
-            {
-                'line' => 2200,
-                'package' => 'XXX::Tester',
-                'file' => __FILE__,
-                'provider_tool' => {package => 'XXX::Provider', name => 'explode', named => 0},
-                'anointed' => 1,
-                'report' => 1,
-            },
-            {
-                'line' => 2400,
-                'package' => 'XXX::Tester',
-                'file' => __FILE__,
-                'anointed' => 1,
-            },
-        ],
-    },
-    "Exploadadouble is not 'provided' so the trace goes to the tool call within"
+    $trace->report->provider_tool,
+    {package => 'XXX::Provider', name => 'explode', named => 0},
+    "got tool info"
 );
 
 # line 2500
-is_deeply( # The call will trace to here
-    explode(),
-    {
-        report => {
-            'provider_tool' => {package => 'XXX::Provider', name => 'explode', named => 0},
-            'anointed' => 1,
-            'line' => 2500,
-            'file' => __FILE__,
-            'package' => 'XXX::Tester',
-            'report' => 1,
-        },
-        stack => [
-            {
-                'line' => 5,
-                'file' => __FILE__,
-                'transition' => 1,
-                'package' => 'main',
-            },
-            {
-                'provider_tool' => {package => 'XXX::Provider', name => 'explode', named => 0},
-                'anointed' => 1,
-                'line' => 2500,
-                'file' => __FILE__,
-                'package' => 'XXX::Tester',
-                'report' => 1,
-            },
-        ],
-    },
-    "Properly traced call to tool provided by external package"
+$trace = explode();
+is($trace->report->line,    2500,          "got correct line");
+is($trace->report->package, 'XXX::Tester', "got correct package");
+is_deeply(
+    $trace->report->provider_tool,
+    {package => 'XXX::Provider', name => 'explode', named => 0},
+    "got tool info"
 );
 
 # line 2600
-is_deeply(
-    do_it,
-    {
-        'report' => {
-            'line' => 2600,
-            'anointed' => 1,
-            'package' => 'XXX::Tester',
-            'file' => __FILE__,
-            'report' => 1,
-        },
-        'stack' => [
-            {
-                'file' => __FILE__,
-                'package' => 'XXX::LegacyProvider',
-                'line' => 1603,
-                'transition' => 1
-            },
-            {
-                'line' => 2600,
-                'anointed' => 1,
-                'package' => 'XXX::Tester',
-                'file' => __FILE__,
-                'report' => 1,
-            },
-        ],
-    },
-    "Trace with legacy style provider using \$Level"
-);
+$trace = do_it();
+is($trace->report->line,    2600,          "got correct line");
+is($trace->report->package, 'XXX::Tester', "got correct package");
+ok(!$trace->report->provider_tool, "No Tool");
 
 # line 2700
-is_deeply(
-    do_it_2,
-    {
-        'report' => {
-            'line' => 2700,
-            'package' => 'XXX::Tester',
-            'file' => __FILE__,
-            'report' => 1,
-            'anointed' => 1,
-            'level' => 1,
-        },
-        'stack' => [
-            {
-                'file' => __FILE__,
-                'package' => 'XXX::LegacyProvider',
-                'line' => 1603,
-                'transition' => 1,
-            },
-            {
-                'line' => 2700,
-                'package' => 'XXX::Tester',
-                'file' => __FILE__,
-                'report' => 1,
-                'anointed' => 1,
-                'level' => 1,
-            },
-        ],
-    },
-    "Trace with legacy style provider using a deeper \$Level"
-);
+$trace = do_it_2();
+is($trace->report->line,    2700,          "got correct line");
+is($trace->report->package, 'XXX::Tester', "got correct package");
+is($trace->report->level,   1,             "Is level");
+ok(!$trace->report->provider_tool, "No Tool");
 
 my @results;
 
 # Here we simulate subtests
 # line 2800
-my $trace = nestit {
+$trace = nestit {
     push @results => explodable();
     push @results => explodadouble();
     push @results => explode();
@@ -278,13 +150,13 @@ my $trace = nestit {
     push @results => do_it_2();
 }; # Report line is here
 
-is($trace->{report}->{line}, 2806, "Nesting tool reported correct line");
+is($trace->report->line, 2806, "Nesting tool reported correct line");
 
-is($results[0]->{report}->{line}, 2801, "Got nested line, our tool");
-is($results[1]->{report}->{line}, 2200, "Nested, but tool is not 'provided' so goes up to provided");
-is($results[2]->{report}->{line}, 2803, "Got nested line external tool");
-is($results[3]->{report}->{line}, 2804, "Got nested line legacy tool");
-is($results[4]->{report}->{line}, 2805, "Got nested line deeper legacy tool");
+is($results[0]->report->line, 2801, "Got nested line, our tool");
+is($results[1]->report->line, 2200, "Nested, but tool is not 'provided' so goes up to provided");
+is($results[2]->report->line, 2803, "Got nested line external tool");
+is($results[3]->report->line, 2804, "Got nested line legacy tool");
+is($results[4]->report->line, 2805, "Got nested line deeper legacy tool");
 
 @results = ();
 my $outer;
@@ -300,15 +172,15 @@ $outer = nestit {
 };
 
 # line 2920
-is($outer->{report}->{line}, 2908, "Nesting tool reported correct line");
-is($trace->{report}->{line}, 2907, "Nesting tool reported correct line");
+is($outer->report->line, 2908, "Nesting tool reported correct line");
+is($trace->report->line, 2907, "Nesting tool reported correct line");
 
 # line 2930
-is($results[0]->{report}->{line}, 2902, "Got nested line, our tool");
-is($results[1]->{report}->{line}, 2200, "Nested, but tool is not 'provided' so goes up to provided");
-is($results[2]->{report}->{line}, 2904, "Got nested line external tool");
-is($results[3]->{report}->{line}, 2905, "Got nested line legacy tool");
-is($results[4]->{report}->{line}, 2906, "Got nested line deeper legacy tool");
+is($results[0]->report->line, 2902, "Got nested line, our tool");
+is($results[1]->report->line, 2200, "Nested, but tool is not 'provided' so goes up to provided");
+is($results[2]->report->line, 2904, "Got nested line external tool");
+is($results[3]->report->line, 2905, "Got nested line legacy tool");
+is($results[4]->report->line, 2906, "Got nested line deeper legacy tool");
 
 @results = ();
 # line 3000
@@ -320,13 +192,13 @@ $trace = nonest {
     push @results => do_it_2();
 }; # Report line is here
 
-is($trace->{report}->{line}, 3006, "NoNesting tool reported correct line");
+is($trace->report->line, 3006, "NoNesting tool reported correct line");
 
-is($results[0]->{report}->{line}, 3006, "Lowest tool is nonest, so these get squashed (Which is why you use nesting)");
-is($results[1]->{report}->{line}, 3006, "Lowest tool is nonest, so these get squashed (Which is why you use nesting)");
-is($results[2]->{report}->{line}, 3006, "Lowest tool is nonest, so these get squashed (Which is why you use nesting)");
-is($results[3]->{report}->{line}, 3006, "Lowest tool is nonest, so these get squashed(Legacy) (Which is why you use nesting)");
-is($results[4]->{report}->{line}, 3006, "Lowest tool is nonest, so these get squashed(Legacy) (Which is why you use nesting)");
+is($results[0]->report->line, 3006, "Lowest tool is nonest, so these get squashed (Which is why you use nesting)");
+is($results[1]->report->line, 3006, "Lowest tool is nonest, so these get squashed (Which is why you use nesting)");
+is($results[2]->report->line, 3006, "Lowest tool is nonest, so these get squashed (Which is why you use nesting)");
+is($results[3]->report->line, 3006, "Lowest tool is nonest, so these get squashed(Legacy) (Which is why you use nesting)");
+is($results[4]->report->line, 3006, "Lowest tool is nonest, so these get squashed(Legacy) (Which is why you use nesting)");
 
 @results = ();
 
@@ -339,13 +211,13 @@ $trace = do_nestit {
     push @results => do_it_2();
 }; # Report line is here
 
-is($trace->{report}->{line}, 3106, "Nesting tool reported correct line");
+is($trace->report->line, 3106, "Nesting tool reported correct line");
 
-is($results[0]->{report}->{line}, 3101, "Got nested line, our tool");
-is($results[1]->{report}->{line}, 2200, "Nested, but tool is not 'provided' so goes up to provided");
-is($results[2]->{report}->{line}, 3103, "Got nested line external tool");
-is($results[3]->{report}->{line}, 3104, "Got nested line legacy tool");
-is($results[4]->{report}->{line}, 3105, "Got nested line deeper legacy tool");
+is($results[0]->report->line, 3101, "Got nested line, our tool");
+is($results[1]->report->line, 2200, "Nested, but tool is not 'provided' so goes up to provided");
+is($results[2]->report->line, 3103, "Got nested line external tool");
+is($results[3]->report->line, 3104, "Got nested line legacy tool");
+is($results[4]->report->line, 3105, "Got nested line deeper legacy tool");
 
 done_testing;
 

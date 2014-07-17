@@ -13,7 +13,7 @@ provides qw/ok/;
 
 sub before_import {
     my $class = shift;
-    my $list  = shift;
+    my ($list, $dest) = @_;
 
     my $other = [];
     my $idx   = 0;
@@ -33,8 +33,7 @@ sub before_import {
             push @$other => @{$list->[$idx++]};
         }
         elsif( $item eq 'modern' ) {
-            builder()->stream->no_lresults;
-            builder()->modern(1);
+            modernize($dest);
         }
         else {
             Carp::croak("Unknown option: $item");

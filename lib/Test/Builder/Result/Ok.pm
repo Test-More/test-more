@@ -80,7 +80,7 @@ sub diag {
         my $msg    = $self->in_todo       ? "Failed (TODO)" : "Failed";
         my $prefix = $ENV{HARNESS_ACTIVE} ? "\n"            : "";
 
-        my ($file, $line) = @{$self->trace->{report}}{qw/file line/};
+        my ($pkg, $file, $line) = $self->trace->report->call;
 
         if (defined $self->name) {
             my $name = $self->name;

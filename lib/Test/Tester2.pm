@@ -58,7 +58,7 @@ sub results_are {
             @res_list = _filter_list(
                 $1 || 0,
                 shift(@checks),
-                sub { $_[0]->trace->{report}->{provider_tool}->{package} },
+                sub { $_[0]->trace->report->provider_tool->{package} },
                 @res_list
             );
             next;
@@ -121,9 +121,9 @@ sub results_are {
             last;
         }
 
-        my $report = $got->trace->{report};
-        my $fields = {%$got, map {$_ => $report->{$_}} qw/line file package/};
-        @{$fields}{qw/tool_package tool_name/} = @{$report->{provider_tool}}{qw/package name/} if $report->{provider_tool};
+        my $report = $got->trace->report;
+        my $fields = {%$got, map {$_ => $report->$_} qw/line file package/};
+        @{$fields}{qw/tool_package tool_name/} = @{$report->provider_tool}{qw/package name/} if $report->provider_tool;
 
         for my $key (keys %$want) {
             my $wval = $want->{$key};

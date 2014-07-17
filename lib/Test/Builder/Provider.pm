@@ -4,6 +4,7 @@ use warnings;
 
 use Test::Builder;
 use Test::Builder::Util qw/package_sub is_tester is_provider find_builder/;
+use Test::Builder::Trace;
 use Carp qw/croak/;
 use Scalar::Util qw/reftype set_prototype/;
 use B();
@@ -39,6 +40,7 @@ sub export_into {
     $subs{nest}    = \&nest;
     $subs{provide} = $class->_build_provide($dest, $meta);
     $subs{export}  = $class->_build_export($dest, $meta);
+    $subs{modernize} = \&modernize;
 
     $subs{gives}         = sub { $subs{provide}->($_,    undef, give => 1) for @_ };
     $subs{give}          = sub { $subs{provide}->($_[0], $_[1], give => 1)        };
@@ -58,8 +60,7 @@ sub export_into {
 }
 
 sub nest(&) {
-    my $tb = find_builder();
-    return $tb->nest(@_);
+    return Test::Builder::Trace->nest(@_);
 }
 
 sub make_provider {
@@ -189,14 +190,36 @@ sub provider_import {
     my $caller = caller;
 
     $class->anoint($caller);
-    $class->before_import(\@_) if $class->can('before_import');
+    $class->before_import(\@_, $caller) if $class->can('before_import');
     $class->export($caller, @_);
     $class->after_import(@_)   if $class->can('after_import');
 
     1;
 }
 
-sub anoint { Test::Builder->anoint($_[1], $_[0]) };
+sub anoint { Test::Builder::Trace->anoint($_[1], $_[0]) };
+
+sub modernize {
+    my $target = shift;
+
+    if (package_sub($target, 'TB_INSTANCE')) {
+        my $tb = $target->TB_INSTANCE;
+        $tb->stream->use_fork;
+        $tb->stream->no_lresults;
+        $tb->modern(1);
+    }
+    else {
+        my $tb = Test::Builder->create(
+            modern        => 1,
+            shared_stream => 1,
+            no_reset_plan => 1,
+        );
+        $tb->stream->use_fork;
+        $tb->stream->no_lresults;
+        no strict 'refs';
+        *{"$target\::TB_INSTANCE"} = sub {$tb};
+    }
+}
 
 1;
 

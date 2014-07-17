@@ -280,8 +280,8 @@ sub is_provider {
 sub find_builder {
     my $trace = Test::Builder->trace_test;
 
-    if ($trace && $trace->{report}) {
-        my $pkg = $trace->{package};
+    if ($trace && $trace->report) {
+        my $pkg = $trace->report->package;
         return $pkg->TB_INSTANCE
             if $pkg && package_sub($pkg, 'TB_INSTANCE');
     }

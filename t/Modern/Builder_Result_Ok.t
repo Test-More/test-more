@@ -9,8 +9,16 @@ isa_ok('Test::Builder::Result::Ok', 'Test::Builder::Result');
 
 can_ok('Test::Builder::Result::Ok', qw/bool real_bool name todo skip/);
 
+my $trace = bless {
+    _report => bless {
+        file => 'fake.t',
+        line => 42,
+        package => 'Fake::Fake',
+    }, 'Test::Builder::Trace::Frame'
+}, 'Test::Builder::Trace';
+
 my $one = Test::Builder::Result::Ok->new(
-    trace => {report => {file => 'fake.t', line => 42, package => 'Fake::Fake'}},
+    trace => $trace,
     bool => 1,
     real_bool => 1,
     name => 'fake',
@@ -46,7 +54,7 @@ like( $@, qr{^2 different reasons to skip/todo: \$VAR1}, "Useful message" );
 
 
 my $two = Test::Builder::Result::Ok->new(
-    trace => {report => {file => 'fake.t', line => 42, package => 'Fake::Fake'}},
+    trace => $trace,
     bool => 1,
     real_bool => 1,
     name => 'fake',
@@ -90,6 +98,13 @@ is($two->diag, undef, "Removed diag");
 
 ok(!$diag_a->linked, "Removed link");
 ok(!$diag_b->linked, "Removed link");
+
+$two->in_todo(1);
+$two->todo("blah");
+$two->skip(undef);
+$two->real_bool(0);
+$two->bool(1);
+ok($two->diag->[0]->{in_todo}, "in_todo passed to the diag");
 
 done_testing;
 

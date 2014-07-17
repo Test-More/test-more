@@ -63,9 +63,11 @@ sub plan {
     return $tb->plan(@_);
 }
 
+sub modern_default { 0 }
+
 sub before_import {
     my $class = shift;
-    my $list  = shift;
+    my ($list, $dest) = @_;
 
     my $other = [];
     my $idx   = 0;
@@ -87,12 +89,10 @@ sub before_import {
             push @$other => @{$list->[$idx++]};
         }
         elsif( $item eq 'enable_forking' ) {
-            Test::More->builder->stream->use_fork;
+            builder->stream->use_fork;
         }
         elsif( $item eq 'modern' ) {
-            Test::More->builder->stream->use_fork;
-            Test::More->builder->stream->no_lresults;
-            Test::More->builder->modern(1);
+            modernize($dest);
         }
         else {
             Carp::carp("Unknown option: $item");

@@ -13,6 +13,6 @@ my $results = intercept {
 
 ok(@$results == 3, "found 3 results (2 oks, and 1 diag)");
 
-ok($results->[0]->{trace}->{report}->{line} == 10, "Reported correct line result 1");
-ok($results->[2]->{trace}->{report}->{line} == 11, "Reported correct line result 2");
+ok($results->[0]->trace->report->line == 10, "Reported correct line result 1");
+ok($results->[2]->trace->report->line == 11, "Reported correct line result 2");
 
