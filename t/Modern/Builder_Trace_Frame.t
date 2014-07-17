@@ -85,4 +85,36 @@ is_deeply(
     "provider tool (anon)"
 );
 
+
+{
+    package Test::A;
+    use Test::More;
+
+    package Test::B;
+    our $TODO = "";
+
+    package Test::C;
+    our $TODO = "xxx";
+
+    package Test::D;
+    our $TODO;
+
+    package Test::E;
+}
+
+my $A = $CLASS->new(2, 'Test::A', __FILE__, 42, 'Test::A::whatever');
+print "XXX: " . $A->todo . "\n";
+
+my $B = $CLASS->new(2, 'Test::B', __FILE__, 42, 'Test::A::whatever');
+print "XXX: " . $B->todo . "\n";
+
+my $C = $CLASS->new(2, 'Test::C', __FILE__, 42, 'Test::A::whatever');
+print "XXX: " . $C->todo . "\n";
+
+my $D = $CLASS->new(2, 'Test::D', __FILE__, 42, 'Test::A::whatever');
+print "XXX: " . $D->todo . "\n";
+
+my $E = $CLASS->new(2, 'Test::E', __FILE__, 42, 'Test::A::whatever');
+print "XXX: " . $E->todo . "\n";
+
 done_testing;

@@ -12,6 +12,7 @@ accessor level       => sub { [] };
 accessor tools       => sub { [] };
 accessor transitions => sub { [] };
 accessor stack       => sub { [] };
+accessor todo        => sub { [] };
 
 accessors qw/_report parent/;
 
@@ -58,13 +59,14 @@ sub new {
                 if $INC{'Test/Tester2.pm'} && !$LEVEL_WARNED++;
         }
 
-        next unless grep { $frame->$_ } qw/provider_tool anointed transition level/;
+        next unless grep { $frame->$_ } qw/provider_tool anointed transition level todo/;
 
         push @{$current->stack}       => $frame;
         push @{$current->tools}       => $frame if $frame->provider_tool;
         push @{$current->anointed}    => $frame if $frame->anointed;
         push @{$current->transitions} => $frame if $frame->transition;
         push @{$current->level}       => $frame if $frame->level;
+        push @{$current->todo}        => $frame if $frame->todo;
     }
 
     $current->report;
@@ -74,8 +76,9 @@ sub new {
 
 sub todo_package {
     my $self = shift;
-    return unless @{$self->anointed};
-    return $self->anointed->[0]->package;
+    return $self->report->package          if $self->report && $self->report->todo;
+    return $self->todo->[-1]->package      if @{$self->todo};
+    return $self->anointed->[-1]->package  if @{$self->anointed};
 }
 
 sub report {

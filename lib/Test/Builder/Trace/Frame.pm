@@ -47,6 +47,17 @@ sub call {
     );
 }
 
+accessor todo => sub {
+    my $self = shift;
+    no strict 'refs';
+    no warnings 'once';
+
+    my $ref = *{$self->package . '::TODO'}{SCALAR};
+    return 1 if $ref == *Test::More::TODO{SCALAR};
+    return 0 unless defined $$ref;
+    return 1;
+};
+
 accessor transition => sub {
     my $self = shift;
 
