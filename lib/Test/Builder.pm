@@ -1350,6 +1350,40 @@ sub maybe_regex {
 # }}} End of deprecations section #
 ###################################
 
+####################
+# {{{ TB1.5 stuff  #
+####################
+
+# This is just a list of method Test::Builder current does not have that Test::Builder 1.5 does.
+my @TB15_METHODS = qw{
+    _file_and_line _join_message _make_default _my_exit _reset_todo_state
+    _result_to_hash _results _todo_state formatter history in_subtest in_test
+    no_change_exit_code post_event post_result set_formatter set_plan test_end
+    test_exit_code test_start test_state
+};
+
+for my $m (@TB15_METHODS) {
+    # Don't set this if the method actually exists in this version.
+    next if __PACKAGE__->can($m);
+
+    no strict 'refs';
+    *$m = sub {
+        die <<"        EOT";
+    *************************************************************************
+    '$m' is a Test::Builder 1.5 method. Test::Builder 1.5 is a dead branch.
+    You need to update your code so that it no longer treats Test::Builders
+    over a specific version number as anything special.
+
+    See: http://blogs.perl.org/users/chad_exodist_granum/2014/03/testmore---new-maintainer-also-stop-version-checking.html
+    *************************************************************************
+        EOT
+    };
+}
+
+####################
+# }}} TB1.5 stuff  #
+####################
+
 1;
 
 __END__
