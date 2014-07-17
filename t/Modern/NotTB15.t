@@ -12,6 +12,17 @@ my @TB15_METHODS = qw{
     test_exit_code test_start test_state
 };
 
+for my $method (qw/foo bar baz/) {
+    my $success = !eval { Test::Builder->$method; 1 }; my $line = __LINE__;
+    my $error = $@;
+    ok($success, "Threw an exception ($method)");
+    is(
+        $error,
+        qq{Can't locate object method "$method" via package "Test::Builder" at } . __FILE__ . " line $line\n",
+        "Did not auto-create random sub ($method)"
+    );
+}
+
 for my $method (@TB15_METHODS) {
     my $success = !eval { Test::Builder->$method; 1 };
     my $error = $@;
