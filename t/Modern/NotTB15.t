@@ -23,13 +23,16 @@ for my $method (qw/foo bar baz/) {
     );
 }
 
+my $file = __FILE__;
 for my $method (@TB15_METHODS) {
-    my $success = !eval { Test::Builder->$method; 1 };
+    my $success = !eval { Test::Builder->$method; 1 }; my $line = __LINE__;
     my $error = $@;
 
     ok($success, "Threw an exception ($method)");
 
     is($error, <<"    EOT", "Got expected error ($method)");
+Can't locate object method "$method" via package "Test::Builder" at $file line $line
+
     *************************************************************************
     '$method' is a Test::Builder 1.5 method. Test::Builder 1.5 is a dead branch.
     You need to update your code so that it no longer treats Test::Builders

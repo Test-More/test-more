@@ -16,7 +16,7 @@ use Test::Builder::Result::Bail;
 use Test::Builder::Result::Child;
 use Test::Builder::Trace;
 
-our $VERSION = '1.301001_012';
+our $VERSION = '1.301001_013';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 # The mostly-singleton, and other package vars.
@@ -1367,12 +1367,11 @@ sub AUTOLOAD {
     $AUTOLOAD =~ m/^(.*)::([^:]+)$/;
     my ($package, $sub) = ($1, $2);
 
-    unless ($TB15_METHODS{$sub}) {
-        my @caller = CORE::caller();
-        die qq{Can't locate object method "$sub" via package "$package" at $caller[1] line $caller[2]\n};
-    }
+    my @caller = CORE::caller();
+    my $msg = qq{Can't locate object method "$sub" via package "$package" at $caller[1] line $caller[2]\n};
 
-    die <<"    EOT";
+    $msg .= <<"    EOT" if $TB15_METHODS{$sub};
+
     *************************************************************************
     '$sub' is a Test::Builder 1.5 method. Test::Builder 1.5 is a dead branch.
     You need to update your code so that it no longer treats Test::Builders
@@ -1381,6 +1380,8 @@ sub AUTOLOAD {
     See: http://blogs.perl.org/users/chad_exodist_granum/2014/03/testmore---new-maintainer-also-stop-version-checking.html
     *************************************************************************
     EOT
+
+    die $msg;
 }
 
 ####################
