@@ -89,7 +89,7 @@ sub before_import {
             push @$other => @{$list->[$idx++]};
         }
         elsif( $item eq 'enable_forking' ) {
-            builder->stream->use_fork;
+            $class->builder->stream->use_fork;
         }
         elsif( $item eq 'modern' ) {
             modernize($dest);
