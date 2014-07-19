@@ -190,7 +190,7 @@ sub child {
 
     my $res = Test::Builder::Result::Child->new(
         $self->context,
-        name    => $name || undef,
+        name    => $child->name,
         action  => 'push',
         in_todo => $self->in_todo || 0,
         is_subtest => $is_subtest || 0,
