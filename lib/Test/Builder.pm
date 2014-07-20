@@ -161,12 +161,12 @@ sub tap_encoding {
     my ($encoding) = @_;
 
     if (!$self->tap) {
-        $self->croak("TAP don't be used");
+        $self->croak("TAP is not used");
     }
 
     require Encode;
     if (!$encoding or !Encode::find_encoding($encoding)) {
-        $self->croak("invalid encoding");
+        $self->croak("invalid encoding is specified");
     }
 
     $self->tap->encoding($encoding);
