@@ -151,6 +151,31 @@ sub intercept {
 # }}} Stream Management #
 #########################
 
+###########################
+# {{{ Encoding Management #
+###########################
+
+sub tap_encoding {
+    my $self = shift;
+
+    my ($encoding) = @_;
+
+    if (!$self->tap) {
+        $self->croak("TAP don't be used");
+    }
+
+    require Encode;
+    if (!$encoding or !Encode::find_encoding($encoding)) {
+        $self->croak("invalid encoding");
+    }
+
+    $self->tap->encoding($encoding);
+}
+
+###########################
+# }}} Encoding Management #
+###########################
+
 #############################
 # {{{ Children and subtests #
 #############################
@@ -170,6 +195,11 @@ sub child {
     my $child = $class->create;
 
     $child->{stream} = $self->stream->spawn;
+
+    # copy encoding
+    if ($self->tap && $self->tap->encoding) {
+        $child->tap->encoding($self->tap->encoding);
+    }
 
     # Ensure the child understands if they're inside a TODO
     $child->tap->failure_output($self->tap->todo_output)

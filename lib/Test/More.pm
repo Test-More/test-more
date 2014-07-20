@@ -38,6 +38,7 @@ provides qw(
   BAIL_OUT
   subtest
   nest
+  tap_encoding
 );
 
 provide TODO => \$TODO;
@@ -93,6 +94,12 @@ sub before_import {
         }
         elsif( $item eq 'modern' ) {
             modernize($dest);
+        }
+        elsif( $item eq 'encoding' ) {
+            $class->builder->tap_encoding($list->[$idx++]);
+        }
+        elsif( $item eq 'utf8' ) {
+            $class->builder->tap_encoding('UTF-8');
         }
         else {
             Carp::carp("Unknown option: $item");
@@ -770,6 +777,13 @@ sub eq_set {
         [ grep( ref, @$a1 ), sort( grep( !ref, @$a1 ) ) ],
         [ grep( ref, @$a2 ), sort( grep( !ref, @$a2 ) ) ],
     );
+}
+
+sub tap_encoding($) {
+    my $encoding = shift;
+
+    my $tb = Test::More->builder;
+    $tb->tap_encoding($encoding);
 }
 
 1;
@@ -1784,6 +1798,39 @@ L<Test::Deep> contains much better set comparison functions.
 
 =back
 
+=head2 Support TAP encoding
+
+=over 4
+
+=item tap_encoding
+
+If you use utf8 or other non-ASCII characters with Test::More you
+might get a "Wide character in print" warning. In such a case, using
+a tap_encoding function, it changes the encoding of the string of TAP
+so that the encoding of a terminal may be suited. 
+
+  use Test::More;
+  use utf8;
+  tap_encoding('UTF-8');
+
+  ok( $foo, 'test message with UTF-8 - Ā' ); # -> no warning
+
+Or declare the encoding when you use Test::More.
+
+  Test::More encoding => 'UTF-8';
+  Test::More qw/utf8/; # shortcut for UTF-8
+
+Since Test::More sends the string changed into the encoding specified
+using the Encode module to STDOUT and STDERR, "Wide character in print"
+warning is no longer displayed. 
+
+Probably, it is good to use an Encode::Locale Module, when the encoding
+of a terminal cannot assume beforehand. 
+
+  use Encode::Locale;
+  tap_encoding($Encode::Locale::ENCODING_CONSOLE_OUT);
+
+=back
 
 =head2 Extending and Embedding Test::More
 
@@ -1855,6 +1902,8 @@ Key feature milestones include:
 
 =item test tracing
 
+=item encoding support
+
 Test::Builder and Test::More version 1.001004 introduce these major
 modernizations.
 
@@ -1891,31 +1940,6 @@ versions included as core can be found using L<Module::CoreList>:
 =head1 CAVEATS and NOTES
 
 =over 4
-
-=item utf8 / "Wide character in print"
-
-If you use utf8 or other non-ASCII characters with Test::More you
-might get a "Wide character in print" warning.  Using
-C<< binmode STDOUT, ":utf8" >> will not fix it.
-L<Test::Builder> (which powers
-Test::More) duplicates STDOUT and STDERR.  So any changes to them,
-including changing their output disciplines, will not be seem by
-Test::More.
-
-One work around is to apply encodings to STDOUT and STDERR as early
-as possible and before Test::More (or any other Test module) loads.
-
-    use open ':std', ':encoding(utf8)';
-    use Test::More;
-
-A more direct work around is to change the filehandles used by
-L<Test::Builder>.
-
-    my $builder = Test::More->builder;
-    binmode $builder->output,         ":encoding(utf8)";
-    binmode $builder->failure_output, ":encoding(utf8)";
-    binmode $builder->todo_output,    ":encoding(utf8)";
-
 
 =item Overloaded objects
 

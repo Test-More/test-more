@@ -7,7 +7,7 @@ use Test::Builder::Util qw/accessors transform try protect/;
 
 use base 'Test::Builder::Formatter';
 
-accessors qw/No_Header No_Diag Depth Use_Numbers _the_plan/;
+accessors qw/No_Header No_Diag Depth Use_Numbers _the_plan encoding/;
 transform output         => ('Out_FH',  '_new_fh');
 transform failure_output => ('Fail_FH', '_new_fh');
 transform todo_output    => ('Todo_FH', '_new_fh');
@@ -148,6 +148,11 @@ sub _print_to_fh {
 
     $msg =~ s/^/$indent/mg;
 
+    if ($self->encoding) {
+        require Encode;
+        $msg = Encode::encode($self->encoding, $msg);
+    }
+
     return print $fh $msg;
 }
 
@@ -185,13 +190,9 @@ sub _init_handles {
 sub _copy_io_layers {
     my($src, $dst) = @_;
 
-    try {
-        require PerlIO;
-        my @src_layers = PerlIO::get_layers($src);
-        _apply_layers($dst, @src_layers) if @src_layers;
-    };
-
-    return;
+    require PerlIO;
+    my @src_layers = PerlIO::get_layers($src);
+    _apply_layers($dst, @src_layers) if @src_layers;
 }
 
 sub _apply_layers {
