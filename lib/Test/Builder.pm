@@ -161,7 +161,7 @@ sub tap_encoding {
     my ($encoding) = @_;
 
     if (!$self->tap) {
-        $self->croak("TAP is not used");
+        $self->croak("TAP is not currently in use");
     }
 
     require Encode;
