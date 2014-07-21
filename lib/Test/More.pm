@@ -95,7 +95,7 @@ sub before_import {
         elsif( $item eq 'modern' ) {
             modernize($dest);
         }
-        elsif( $item eq 'encoding' ) {
+        elsif( $item eq 'tap_encoding' ) {
             $class->builder->tap_encoding($list->[$idx++]);
         }
         elsif( $item eq 'utf8' ) {
@@ -789,6 +789,8 @@ sub tap_encoding($) {
 1;
 
 __END__
+
+=encoding utf-8
 
 =head1 NAME
 
@@ -1806,7 +1808,7 @@ L<Test::Deep> contains much better set comparison functions.
 
 If you use utf8 or other non-ASCII characters with Test::More you
 might get a "Wide character in print" warning. In such a case, using
-a tap_encoding function, it changes the encoding of the string of TAP
+a tap_encoding function, it changes the encoding of the stream of TAP
 so that the encoding of a terminal may be suited. 
 
   use Test::More;
@@ -1817,12 +1819,26 @@ so that the encoding of a terminal may be suited.
 
 Or declare the encoding when you use Test::More.
 
-  Test::More encoding => 'UTF-8';
+  Test::More tap_encoding => 'UTF-8';
   Test::More qw/utf8/; # shortcut for UTF-8
 
 Since Test::More sends the string changed into the encoding specified
 using the Encode module to STDOUT and STDERR, "Wide character in print"
 warning is no longer displayed. 
+
+when using tap_encoding, you must pass the 'character' to the test functions
+( 'ok', 'diag' and all other Test::More's fucntions ), not 'byte'.
+
+  use Test::More tap_encoding => 'UTF-8';
+  use utf8; # All the strings on a script are interpreted as a character.
+
+  diag( 'Ā' );
+
+or
+
+  use Test::More tap_encoding => 'UTF-8';
+
+  diag( "\x{0100}" ); # Unicode notation for characters
 
 Probably, it is good to use an Encode::Locale Module, when the encoding
 of a terminal cannot assume beforehand. 
