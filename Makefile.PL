@@ -68,7 +68,7 @@ WriteMakefile(
         %Prereqs
     },
 
-    INSTALLDIRS => $install_dir
+    INSTALLDIRS => $install_dir,
     test        => {
         TESTS           => 't/*.t t/*/*.t',
     },
