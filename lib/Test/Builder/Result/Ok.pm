@@ -180,7 +180,7 @@ Package, File, and Line in which the result was built.
 
 Either undef, or an arrayref of L<Test::Builder::Result::Diag> objects. These
 objects will be linked to this Ok result. Calling C<< $diag->linked >> on them
-will return this Ok object. Refierences here are strong references, references
+will return this Ok object. References here are strong references, references
 to this object from the linked Diag objects are weakened to avoid cycles.
 
 You can push diag objects into the arrayref by using them as arguments to this
