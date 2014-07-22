@@ -1804,12 +1804,12 @@ L<Test::Deep> contains much better set comparison functions.
 
 =over 4
 
-=item tap_encoding
+=item B<tap_encoding>
 
 Changes the encoding of the TAP output.
         
 If you use utf8 or other non-ASCII characters with Test::More you
-might get a "Wide character in print" warning. Using 'tap_encoding'
+might get a "Wide character in print" warning. Using C<tap_encoding>
 function will fix it.
 
   use Test::More;
@@ -1823,11 +1823,11 @@ Or declare the encoding when you use Test::More.
   Test::More tap_encoding => 'UTF-8';
   Test::More qw/utf8/; # shortcut for UTF-8
 
-Using 'tap_encoding', Test::More changes the encoding of the TAP output
-by Encode module.Therefore, the warning is no longer outputted.
+Using C<tap_encoding>, Test::More changes the encoding of the TAP output
+by L<Encode> module.Therefore, the warning is no longer outputted.
                     
-When using 'tap_encoding', you must pass the 'character strings' to the test
-functions ( 'ok', 'diag' and all other Test::More's fucntions ), not
+When using C<tap_encoding>, you must pass the 'character strings' to the test
+functions ( C<ok>, C<diag> and all other Test::More's fucntions ), not
 'byte strings'.
 
   use Test::More tap_encoding => 'UTF-8';
@@ -1954,6 +1954,39 @@ versions included as core can be found using L<Module::CoreList>:
 =head1 CAVEATS and NOTES
 
 =over 4
+
+=item utf8 / "Wide character in print"
+
+If you use utf8 or other non-ASCII characters with Test::More you
+might get a "Wide character in print" warning.  Using
+C<< binmode STDOUT, ":utf8" >> will not fix it.
+L<Test::Builder> (which powers
+Test::More) duplicates STDOUT and STDERR.  So any changes to them,
+including changing their output disciplines, will not be seem by
+Test::More.
+
+In such a case, should use C<tap_encoding> function. 
+
+A other work around is to apply encodings to STDOUT and STDERR as early
+as possible and before Test::More (or any other Test module) loads.
+
+    use open ':std', ':encoding(utf8)';
+    use Test::More;
+
+However, since it depends for this method in order of a modules,
+recommendation is a not.
+
+A more direct work around is to change the filehandles used by
+L<Test::Builder>.
+
+    my $builder = Test::More->builder;
+    binmode $builder->output,         ":encoding(utf8)";
+    binmode $builder->failure_output, ":encoding(utf8)";
+    binmode $builder->todo_output,    ":encoding(utf8)";
+
+However, also in this method, since the output ( and failure_output and
+todo_output ) method of Test::Builder was set to deparecated,
+recommendation is a not.
 
 =item Overloaded objects
 
