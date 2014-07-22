@@ -1806,10 +1806,11 @@ L<Test::Deep> contains much better set comparison functions.
 
 =item tap_encoding
 
+Changes the encoding of the TAP output.
+        
 If you use utf8 or other non-ASCII characters with Test::More you
-might get a "Wide character in print" warning. In such a case, using
-a tap_encoding function, it changes the encoding of the stream of TAP
-so that the encoding of a terminal may be suited. 
+might get a "Wide character in print" warning. Using 'tap_encoding'
+function will fix it.
 
   use Test::More;
   use utf8;
@@ -1822,12 +1823,12 @@ Or declare the encoding when you use Test::More.
   Test::More tap_encoding => 'UTF-8';
   Test::More qw/utf8/; # shortcut for UTF-8
 
-Since Test::More sends the string changed into the encoding specified
-using the Encode module to STDOUT and STDERR, "Wide character in print"
-warning is no longer displayed. 
-
-when using tap_encoding, you must pass the 'character' to the test functions
-( 'ok', 'diag' and all other Test::More's fucntions ), not 'byte'.
+Using 'tap_encoding', Test::More changes the encoding of the TAP output
+by Encode module.Therefore, the warning is no longer outputted.
+                    
+When using 'tap_encoding', you must pass the 'character strings' to the test
+functions ( 'ok', 'diag' and all other Test::More's fucntions ), not
+'byte strings'.
 
   use Test::More tap_encoding => 'UTF-8';
   use utf8; # All the strings on a script are interpreted as a character.
@@ -1840,11 +1841,8 @@ or
 
   diag( "\x{0100}" ); # Unicode notation for characters
 
-Probably, it is good to use an Encode::Locale Module, when the encoding
-of a terminal cannot assume beforehand. 
-
-  use Encode::Locale;
-  tap_encoding($Encode::Locale::ENCODING_CONSOLE_OUT);
+See L<perlunitut> for the difference between
+'Character strings' and 'Byte strings'.
 
 =back
 
