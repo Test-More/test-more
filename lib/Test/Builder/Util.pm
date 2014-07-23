@@ -13,6 +13,7 @@ exports(qw/
     import export exports accessor accessors delta deltas export_to transform
     atomic_delta atomic_deltas try protect
     package_sub is_tester is_provider find_builder
+    type_isa
 /);
 
 export(new => sub {
@@ -287,6 +288,12 @@ sub find_builder {
     }
 
     return Test::Builder->new;
+}
+
+sub type_isa {
+    my ($type, @want) = @_;
+    no warnings;
+    return $type->isa(@want);
 }
 
 1;

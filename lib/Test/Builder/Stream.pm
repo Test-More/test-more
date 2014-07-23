@@ -5,7 +5,7 @@ use warnings;
 use Carp qw/confess croak/;
 use Scalar::Util qw/reftype blessed/;
 use Test::Builder::Threads;
-use Test::Builder::Util qw/accessors accessor atomic_deltas try protect/;
+use Test::Builder::Util qw/accessors accessor atomic_deltas try protect type_isa/;
 
 accessors qw/plan bailed_out/;
 atomic_deltas qw/tests_run tests_failed/;
@@ -81,8 +81,9 @@ sub new {
 sub follow_up {
     my $self = shift;
     my ($type, @action) = @_;
+
     croak "'$type' is not a result type"
-        unless $type && $type->isa('Test::Builder::Result');
+        unless $type && type_isa($type, 'Test::Builder::Result');
 
     if (@action) {
         my ($sub) = @action;
@@ -250,15 +251,15 @@ sub send {
     }
 
     for my $item (@$items) {
-        if ($item->isa('Test::Builder::Result::Plan')) {
+        if (type_isa($item, 'Test::Builder::Result::Plan')) {
             $self->plan($item);
         }
 
-        if ($item->isa('Test::Builder::Result::Bail')) {
+        if (type_isa($item, 'Test::Builder::Result::Bail')) {
             $self->bailed_out($item);
         }
 
-        if ($item->isa('Test::Builder::Result::Ok')) {
+        if (type_isa($item, 'Test::Builder::Result::Ok')) {
             $self->tests_run(1);
             $self->tests_failed(1) unless $item->bool;
         }
