@@ -292,6 +292,11 @@ sub find_builder {
 
 sub type_isa {
     my ($type, @want) = @_;
+    # We really just need: no warnings 'UNIVERSAL::isa';
+    # But if UNIVERSAL::isa is not loaded thats a compile-time error
+    # We do not want to load it ourselves.
+    # Checking to see if it is loaded each run of this method is a PITA and
+    # error prone (and also does not fix the UNIVERSAL::isa test suite.
     no warnings;
     return $type->isa(@want);
 }
