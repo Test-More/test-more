@@ -73,6 +73,7 @@ is($two->diag, undef, "No diag on todo+skip result");
 
 $two->in_todo(0);
 $two->todo(undef);
+$two->_default_diag;
 ok($two->diag, "added diag on skip result");
 
 $two->skip(undef);
@@ -99,11 +100,13 @@ is($two->diag, undef, "Removed diag");
 ok(!$diag_a->linked, "Removed link");
 ok(!$diag_b->linked, "Removed link");
 
+$two->clear_diag;
 $two->in_todo(1);
 $two->todo("blah");
 $two->skip(undef);
 $two->real_bool(0);
 $two->bool(1);
+$two->_default_diag;
 ok($two->diag->[0]->{in_todo}, "in_todo passed to the diag");
 
 done_testing;

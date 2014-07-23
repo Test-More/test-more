@@ -21,7 +21,11 @@ is($one->to_tap, "# foo bar\n", "simple tap");
 is($one->linked, undef, "Not linked");
 
 require Test::Builder::Result::Ok;
-my $ok = Test::Builder::Result::Ok->new(bool => 0, real_bool => 0);
+my $ok = Test::Builder::Result::Ok->new(
+    bool      => 0,
+    real_bool => 0,
+    trace     => Test::Builder::Trace->new
+);
 
 $one->linked($ok);
 is($one->linked, $ok, "Now linked");

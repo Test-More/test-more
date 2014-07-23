@@ -10,6 +10,15 @@ use Test::Builder::Util qw/accessors/;
 
 accessors qw/bool real_bool name todo skip/;
 
+sub init {
+    my $self = shift;
+    my %params = @_;
+
+    $self->SUPER::init(%params);
+
+    $self->_default_diag();
+}
+
 sub to_tap {
     my $self = shift;
     my ($num) = @_;
@@ -60,45 +69,49 @@ sub clear_diag {
 sub diag {
     my $self = shift;
 
-    if (@_) {
-        $self->{diag} ||= [];
-        for my $d (@_) {
-            next unless $d;
+    for my $d (@_) {
+        next unless $d;
 
+        if (ref $d) {
             confess "Only Diag objects can be linked to results."
                 unless blessed($d) && $d->isa('Test::Builder::Result::Diag');
 
             confess "Diag argument '$d' is already linked to a result."
                 if $d->linked;
-
-            $d->linked($self);
-            push @{$self->{diag}} => $d;
-        }
-    }
-
-    unless ($self->{diag} || $self->real_bool || ($self->skip && $self->todo)) {
-        my $msg    = $self->in_todo       ? "Failed (TODO)" : "Failed";
-        my $prefix = $ENV{HARNESS_ACTIVE} ? "\n"            : "";
-
-        my ($pkg, $file, $line) = $self->trace->report->call;
-
-        if (defined $self->name) {
-            my $name = $self->name;
-            $msg = qq[$prefix  $msg test '$name'\n  at $file line $line.\n];
         }
         else {
-            $msg = qq[$prefix  $msg test at $file line $line.\n];
+            $d = Test::Builder::Result::Diag->new(
+                message => $d,
+                map { ($_ => $self->$_ || undef) } qw/trace pid depth in_todo source/,
+            );
         }
 
-        my $diag = Test::Builder::Result::Diag->new(
-            linked  => $self,
-            message => $msg || "",
-            map { ($_ => $self->$_ || undef) } qw/trace pid depth in_todo source/,
-        );
-        $self->{diag} = [$diag];
+        $d->linked($self);
+        push @{$self->{diag}} => $d;
     }
 
     return $self->{diag};
+}
+
+sub _default_diag {
+    my $self = shift;
+
+    return if $self->real_bool || ($self->skip && $self->todo);
+
+    my $msg    = $self->in_todo       ? "Failed (TODO)" : "Failed";
+    my $prefix = $ENV{HARNESS_ACTIVE} ? "\n"            : "";
+
+    my ($pkg, $file, $line) = $self->trace->report->call;
+
+    if (defined $self->name) {
+        my $name = $self->name;
+        $msg = qq[$prefix  $msg test '$name'\n  at $file line $line.\n];
+    }
+    else {
+        $msg = qq[$prefix  $msg test at $file line $line.\n];
+    }
+
+    $self->diag($msg);
 }
 
 1;
