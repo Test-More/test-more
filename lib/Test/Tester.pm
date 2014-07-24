@@ -2,7 +2,8 @@ use strict;
 
 package Test::Tester;
 
-warn "Test::Tester is deprecated, see Test::Tester2\n";
+# Turn this back on later
+#warn "Test::Tester is deprecated, see Test::Tester2\n";
 
 BEGIN {
     if (*Test::Builder::new{CODE}) {
