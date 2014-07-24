@@ -4,7 +4,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-use Test::Builder::Util qw/try type_isa/;
+use Test::Builder::Util qw/try/;
 use Scalar::Util();
 use Test::Builder::Stream;
 use Test::Builder::Result;
@@ -239,7 +239,7 @@ sub subtest {
     $self->find_TODO(undef, 1, $child->{Parent_TODO});
 
     # Die *after* we restore the parent.
-    die $error if $error && !(Scalar::Util::blessed($error) && type_isa($error, 'Test::Builder::Exception'));
+    die $error if $error && !(Scalar::Util::blessed($error) && $error->isa('Test::Builder::Exception'));
 
     local $Level = $Level + 1; local $BLevel = $BLevel + 1;
     my $finalize = $child->finalize(1);
@@ -953,7 +953,7 @@ sub _check_is_passing_plan {
 sub _is_object {
     my( $self, $thing ) = @_;
 
-    return $self->_try( sub { ref $thing && type_isa($thing, 'UNIVERSAL') } ) ? 1 : 0;
+    return $self->_try( sub { ref $thing && $thing->isa('UNIVERSAL') } ) ? 1 : 0;
 }
 
 sub _unoverload {

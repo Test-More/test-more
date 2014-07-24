@@ -22,7 +22,6 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 our $TODO;
 use Test::Builder::Provider;
-use Test::Builder::Util qw/type_isa/;
 *EXPORT = TB_PROVIDER_META()->{export};
 
 provides qw(
@@ -204,7 +203,7 @@ sub isa_ok ($$;$) {
     }
 
     # We can't use UNIVERSAL::isa because we want to honor isa() overrides
-    my( $rslt, $error ) = $tb->_try( sub { type_isa($thing, $class) } );
+    my( $rslt, $error ) = $tb->_try( sub { $thing->isa($class) } );
 
     if($error) {
         die <<WHOA unless $error =~ /^Can't (locate|call) method "isa"/;

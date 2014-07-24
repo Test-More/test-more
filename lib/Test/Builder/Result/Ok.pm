@@ -6,7 +6,7 @@ use base 'Test::Builder::Result';
 
 use Carp qw/confess/;
 use Scalar::Util qw/blessed reftype/;
-use Test::Builder::Util qw/accessors type_isa/;
+use Test::Builder::Util qw/accessors/;
 
 accessors qw/bool real_bool name todo skip/;
 
@@ -110,7 +110,7 @@ sub diag {
         for my $d (@$array) {
             if (ref $d) {
                 confess "Only Diag objects can be linked to results."
-                    unless blessed($d) && type_isa($d, 'Test::Builder::Result::Diag');
+                    unless blessed($d) && $d->isa('Test::Builder::Result::Diag');
 
                 confess "Diag argument '$d' is already linked to a result."
                     if $d->linked;

@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Test::Builder::Threads;
-use Test::Builder::Util qw/accessors transform try protect type_isa/;
+use Test::Builder::Util qw/accessors transform try protect/;
 
 use base 'Test::Builder::Formatter';
 
@@ -241,7 +241,7 @@ sub is_fh {
 
     my $out;
     protect {
-        $out = eval { type_isa($maybe_fh, "IO::Handle") }
+        $out = eval { $maybe_fh->isa("IO::Handle") }
             || eval { tied($maybe_fh)->can('TIEHANDLE') };
     };
 

@@ -5,14 +5,14 @@ use warnings;
 use Carp qw/confess/;
 use Scalar::Util qw/blessed/;
 
-use Test::Builder::Util qw/new package_sub type_isa/;
+use Test::Builder::Util qw/new package_sub/;
 
 sub handle {
     my $self = shift;
     my ($item) = @_;
 
     confess "Handler did not get a valid Test::Builder::Result object! ($item)"
-        unless $item && blessed($item) && type_isa($item, 'Test::Builder::Result');
+        unless $item && blessed($item) && $item->isa('Test::Builder::Result');
 
     my $method = $item->type;
 

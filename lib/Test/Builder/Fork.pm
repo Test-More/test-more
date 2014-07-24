@@ -5,7 +5,7 @@ use warnings;
 use Carp qw/confess/;
 use Scalar::Util qw/blessed/;
 use File::Temp();
-use Test::Builder::Util qw/try type_isa/;
+use Test::Builder::Util qw/try/;
 
 sub tmpdir { shift->{tmpdir} }
 sub pid    { shift->{pid}    }
@@ -25,10 +25,10 @@ sub handle {
     my $self = shift;
     my ($item) = @_;
 
-    return if $item && blessed($item) && type_isa($item, 'Test::Builder::Result::Finish');
+    return if $item && blessed($item) && $item->isa('Test::Builder::Result::Finish');
 
     confess "Did not get a valid Test::Builder::Result object! ($item)"
-        unless $item && blessed($item) && type_isa($item, 'Test::Builder::Result');
+        unless $item && blessed($item) && $item->isa('Test::Builder::Result');
 
     my $stream = Test::Builder::Stream->shared;
     return 0 if $$ == $stream->pid;

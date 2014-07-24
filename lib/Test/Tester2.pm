@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Test::Builder::Stream;
-use Test::Builder::Util qw/try type_isa/;
+use Test::Builder::Util qw/try/;
 
 use Scalar::Util qw/blessed reftype/;
 use Carp qw/croak/;
@@ -34,7 +34,7 @@ sub intercept(&) {
         );
     };
 
-    die $error unless $ok || (blessed($error) && type_isa($error, 'Test::Builder::Result'));
+    die $error unless $ok || (blessed($error) && $error->isa('Test::Builder::Result'));
 
     return \@results;
 }
