@@ -165,11 +165,12 @@ sub tap_encoding {
     }
 
     require Encode;
-    if (!$encoding or !Encode::find_encoding($encoding)) {
+    my $encode = Encode::find_encoding($encoding);
+    if (!$encoding or !$encode) {
         $self->croak("invalid encoding is specified");
     }
 
-    $self->tap->encoding($encoding);
+    $self->tap->encoding($encode);
 }
 
 ###########################
@@ -195,11 +196,6 @@ sub child {
     my $child = $class->create;
 
     $child->{stream} = $self->stream->spawn;
-
-    # copy encoding
-    if ($self->tap && $self->tap->encoding) {
-        $child->tap->encoding($self->tap->encoding);
-    }
 
     # Ensure the child understands if they're inside a TODO
     $child->tap->failure_output($self->tap->todo_output)

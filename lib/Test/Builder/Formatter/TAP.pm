@@ -149,8 +149,7 @@ sub _print_to_fh {
     $msg =~ s/^/$indent/mg;
 
     if ($self->encoding) {
-        require Encode;
-        $msg = Encode::encode($self->encoding, $msg);
+        $msg = $self->encoding->encode($msg);
     }
 
     return print $fh $msg;
@@ -195,6 +194,7 @@ sub _copy_io_layers {
     _apply_layers($dst, @src_layers) if @src_layers;
 }
 
+    my ($src, $field) = @_;
 sub _apply_layers {
     my ($fh, @layers) = @_;
     my %seen;

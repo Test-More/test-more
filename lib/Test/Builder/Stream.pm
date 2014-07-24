@@ -369,6 +369,9 @@ sub spawn {
         for my $field (qw/output failure_output todo_output/) {
             $new->tap->$field($self->tap->$field);
         }
+
+        # copy tap encoding
+        $new->tap->encoding($self->tap->encoding) if $self->tap->encoding;
     }
 
     $new->use_lresults if $self->lresults && !$params{no_lresults};
