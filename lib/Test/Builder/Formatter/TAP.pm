@@ -170,13 +170,15 @@ sub reset_outputs {
 
 sub _init_handles {
 
+    # We dup STDOUT and STDERR so people can change them in their
+    # test suites while still getting normal test output.
     if (!$Testout) {
-        # We dup STDOUT and STDERR so people can change them in their
-        # test suites while still getting normal test output.
         open( $Testout, ">&STDOUT" ) or die "Can't dup STDOUT:  $!";
-        open( $Testerr, ">&STDERR" ) or die "Can't dup STDERR:  $!";
-
         _copy_io_layers( \*STDOUT, $Testout );
+    }
+
+    if(!$Testerr) {
+        open( $Testerr, ">&STDERR" ) or die "Can't dup STDERR:  $!";
         _copy_io_layers( \*STDERR, $Testerr );
     }
 
