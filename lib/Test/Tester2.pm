@@ -170,8 +170,7 @@ sub results_are {
         $overall_name = shift @checks;
     }
 
-    builder()->ok($ok, $overall_name || "Got expected results");
-    builder()->diag($_) for @diag;
+    builder()->ok($ok, $overall_name || "Got expected results", @diag);
     return $ok;
 }
 

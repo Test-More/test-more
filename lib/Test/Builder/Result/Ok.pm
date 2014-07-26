@@ -105,8 +105,9 @@ sub diag {
 
     for my $i (@_) {
         next unless $i;
+        my $type = reftype $i || "";
 
-        my $array = reftype $i eq 'ARRAY' ? $i : [$i];
+        my $array = $type eq 'ARRAY' ? $i : [$i];
         for my $d (@$array) {
             if (ref $d) {
                 confess "Only Diag objects can be linked to results."

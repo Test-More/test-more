@@ -32,11 +32,8 @@ sub DESTROY {
     my $self = shift;
     if ( $self->parent and $$ == $self->{Original_Pid} ) {
         my $name = $self->name;
-        $self->diag(<<"FAIL");
-Child ($name) exited without calling finalize()
-FAIL
         $self->parent->{In_Destroy} = 1;
-        $self->parent->ok(0, $name);
+        $self->parent->ok(0, $name, "Child ($name) exited without calling finalize()\n");
     }
 }
 
@@ -475,8 +472,9 @@ sub done_testing {
 # {{{ Base Result Producers #
 #############################
 
-sub ok {
-    my( $self, $test, $name ) = @_;
+sub _ok_obj {
+    my $self = shift;
+    my( $test, $name, @diag ) = @_;
 
     if ( $self->{Child_Name} and not $self->{In_Destroy} ) {
         $name = 'unnamed test' unless defined $name;
@@ -490,11 +488,6 @@ sub ok {
 
     # In case $name is a string overloaded object, force it to stringify.
     $self->_unoverload_str( \$name );
-
-    $self->diag(<<"ERR") if defined $name and $name =~ /^[\d\s]+$/;
-    You named your test '$name'.  You shouldn't use numbers for your test names.
-    Very confusing.
-ERR
 
     # Capture the value of $TODO for the rest of this ok() call
     # so it can more easily be found by other routines.
@@ -510,6 +503,7 @@ ERR
         bool      => $self->in_todo ? 1 : $test,
         name      => $name          || undef,
         in_todo   => $self->in_todo || 0,
+        diag      => \@diag,
     );
 
     # # in a name can confuse Test::Harness.
@@ -520,14 +514,36 @@ ERR
         $ok->in_todo(1);
     }
 
+    if (defined $name and $name =~ /^[\d\s]+$/) {
+        $ok->diag(<<"        ERR");
+    You named your test '$name'.  You shouldn't use numbers for your test names.
+    Very confusing.
+        ERR
+    }
+
+    return $ok;
+}
+
+sub ok {
+    my $self = shift;
+    my( $test, $name, @diag ) = @_;
+
+    my $ok = $self->_ok_obj($test, $name, @diag);
+    $self->_record_ok($ok);
+
+    return $test ? 1 : 0;
+}
+
+sub _record_ok {
+    my $self = shift;
+    my ($ok) = @_;
+
     $self->stream->send($ok);
 
-    $self->is_passing(0) unless $test || $self->in_todo;
+    $self->is_passing(0) unless $ok->real_bool || $self->in_todo;
 
     # Check that we haven't violated the plan
     $self->_check_is_passing_plan();
-
-    return $test ? 1 : 0;
 }
 
 sub BAIL_OUT {
@@ -643,7 +659,7 @@ sub cmp_ok {
     };
 
     local $Level = $Level + 1; local $BLevel = $BLevel + 1;
-    my $ok = $self->ok( $test, $name );
+    my $ok = $self->_ok_obj( $test, $name );
 
     # Treat overloaded objects as numbers if we're asked to do a
     # numeric comparison.
@@ -652,27 +668,28 @@ sub cmp_ok {
       ? '_unoverload_num'
       : '_unoverload_str';
 
-    $self->diag(<<"END") if $error;
+    $ok->diag(<<"END") if $error;
 An error occurred while using $type:
 ------------------------------------
 $error
 ------------------------------------
 END
 
-    unless($ok) {
+    unless($test) {
         $self->$unoverload( \$got, \$expect );
 
         if( $type =~ /^(eq|==)$/ ) {
-            $self->_is_diag( $got, $type, $expect );
+            $self->_is_diag( $ok, $got, $type, $expect );
         }
         elsif( $type =~ /^(ne|!=)$/ ) {
-            $self->_isnt_diag( $got, $type );
+            $self->_isnt_diag( $ok, $got, $type );
         }
         else {
-            $self->_cmp_diag( $got, $type, $expect );
+            $self->_cmp_diag( $ok, $got, $type, $expect );
         }
     }
-    return $ok;
+    $self->_record_ok($ok);
+    return $test ? 1 : 0;
 }
 
 
@@ -684,8 +701,9 @@ sub is_eq {
         # undef only matches undef and nothing else
         my $test = !defined $got && !defined $expect;
 
-        $self->ok( $test, $name );
-        $self->_is_diag( $got, 'eq', $expect ) unless $test;
+        my $ok = $self->_ok_obj( $test, $name );
+        $self->_is_diag( $ok, $got, 'eq', $expect ) unless $test;
+        $self->_record_ok($ok);
         return $test;
     }
 
@@ -700,8 +718,9 @@ sub is_num {
         # undef only matches undef and nothing else
         my $test = !defined $got && !defined $expect;
 
-        $self->ok( $test, $name );
-        $self->_is_diag( $got, '==', $expect ) unless $test;
+        my $ok = $self->_ok_obj( $test, $name );
+        $self->_is_diag( $ok, $got, '==', $expect ) unless $test;
+        $self->_record_ok($ok);
         return $test;
     }
 
@@ -716,8 +735,9 @@ sub isnt_eq {
         # undef only matches undef and nothing else
         my $test = defined $got || defined $dont_expect;
 
-        $self->ok( $test, $name );
-        $self->_isnt_diag( $got, 'ne' ) unless $test;
+        my $ok = $self->_ok_obj( $test, $name );
+        $self->_isnt_diag( $ok, $got, 'ne' ) unless $test;
+        $self->_record_ok($ok);
         return $test;
     }
 
@@ -732,8 +752,9 @@ sub isnt_num {
         # undef only matches undef and nothing else
         my $test = defined $got || defined $dont_expect;
 
-        $self->ok( $test, $name );
-        $self->_isnt_diag( $got, '!=' ) unless $test;
+        my $ok = $self->_ok_obj( $test, $name );
+        $self->_isnt_diag( $ok, $got, '!=' ) unless $test;
+        $self->_record_ok($ok);
         return $test;
     }
 
@@ -1025,25 +1046,24 @@ sub _diag_fmt {
 }
 
 sub _is_diag {
-    my( $self, $got, $type, $expect ) = @_;
+    my( $self, $ok, $got, $type, $expect ) = @_;
     local $Level = $Level + 1; local $BLevel = $BLevel + 1;
 
     $self->_diag_fmt( $type, $_ ) for \$got, \$expect;
 
-    return $self->diag(<<"DIAGNOSTIC");
+    return $ok->diag(<<"DIAGNOSTIC");
          got: $got
     expected: $expect
 DIAGNOSTIC
-
 }
 
 sub _isnt_diag {
-    my( $self, $got, $type ) = @_;
+    my( $self, $ok, $got, $type ) = @_;
     local $Level = $Level + 1; local $BLevel = $BLevel + 1;
 
     $self->_diag_fmt( $type, \$got );
 
-    return $self->diag(<<"DIAGNOSTIC");
+    return $ok->diag(<<"DIAGNOSTIC");
          got: $got
     expected: anything else
 DIAGNOSTIC
@@ -1051,13 +1071,13 @@ DIAGNOSTIC
 
 
 sub _cmp_diag {
-    my( $self, $got, $type, $expect ) = @_;
+    my( $self, $ok, $got, $type, $expect ) = @_;
 
     $got    = defined $got    ? "'$got'"    : 'undef';
     $expect = defined $expect ? "'$expect'" : 'undef';
 
     local $Level = $Level + 1; local $BLevel = $BLevel + 1;
-    return $self->diag(<<"DIAGNOSTIC");
+    return $ok->diag(<<"DIAGNOSTIC");
     $got
         $type
     $expect
@@ -1082,41 +1102,40 @@ sub _regex_ok {
     my $usable_regex = _is_qr($regex) ? $regex : $self->maybe_regex($regex);
     unless( defined $usable_regex ) {
         local $Level = $Level + 1; local $BLevel = $BLevel + 1;
-        $ok = $self->ok( 0, $name );
-        $self->diag("    '$regex' doesn't look much like a regex to me.");
+        $ok = $self->ok( 0, $name, "    '$regex' doesn't look much like a regex to me.");
         return $ok;
     }
 
-    {
-        my $test;
-        my $context = $self->_caller_context;
+    my $test;
+    my $context = $self->_caller_context;
 
-        try {
-            # No point in issuing an uninit warning, they'll see it in the diagnostics
-            no warnings 'uninitialized';
-            ## no critic (BuiltinFunctions::ProhibitStringyEval)
-            $test = eval $context . q{$test = $thing =~ /$usable_regex/ ? 1 : 0};
-        };
+    try {
+        # No point in issuing an uninit warning, they'll see it in the diagnostics
+        no warnings 'uninitialized';
+        ## no critic (BuiltinFunctions::ProhibitStringyEval)
+        $test = eval $context . q{$test = $thing =~ /$usable_regex/ ? 1 : 0};
+    };
 
-        $test = !$test if $cmp eq '!~';
+    $test = !$test if $cmp eq '!~';
 
-        local $Level = $Level + 1; local $BLevel = $BLevel + 1;
-        $ok = $self->ok( $test, $name );
-    }
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
+    $ok = $self->_ok_obj( $test, $name );
 
-    unless($ok) {
+    unless($test) {
         $thing = defined $thing ? "'$thing'" : 'undef';
         my $match = $cmp eq '=~' ? "doesn't match" : "matches";
 
         local $Level = $Level + 1; local $BLevel = $BLevel + 1;
-        $self->diag( sprintf <<'DIAGNOSTIC', $thing, $match, $regex );
+        $ok->diag( sprintf <<'DIAGNOSTIC', $thing, $match, $regex );
                   %s
     %13s '%s'
 DIAGNOSTIC
 
     }
 
-    return $ok;
+    $self->_record_ok($ok);
+
+    return $test;
 }
 
 # I'm not ready to publish this.  It doesn't deal with array return
@@ -1740,8 +1759,14 @@ into the result stream.
 
 =item $Test->ok($test, $name)
 
+=item $Test->ok($test, $name, @diag)
+
 Your basic test.  Pass if C<$test> is true, fail if $test is false.  Just
 like L<Test::Simple>'s C<ok()>.
+
+You may also specify diagnostics messages in the form of simple strings, or
+complete <Test::Builder::Result> objects. Typically you would only do this in a
+failure, but you are allowed to add diags to passes as well.
 
 =item $Test->BAIL_OUT($reason);
 
