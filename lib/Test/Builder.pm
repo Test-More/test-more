@@ -1415,6 +1415,18 @@ __END__
 
 Test::Builder - Backend for building test libraries
 
+=head1 NOTE ON DEPRECATIONS
+
+With version 1.301001 many old methods and practices have been deprecated. What
+we mean when we say "deprecated" is that the practices or methods are not to be
+used in any new code. Old code that uses them will still continue to work,
+possibly forever, but new code should use the newer and better alternatives.
+
+In the future, if enough (read: pretty much everything) is updated and few if
+any modules still use these old items, they will be removed completely. This is
+not super likely to happen just because of the sheer number of modules that use
+Test::Builder.
+
 =head1 SYNOPSIS
 
 In general you probably do not want to use this module directly, but instead
@@ -2211,6 +2223,9 @@ If C<caller()> winds up off the top of the stack it report the highest context.
 
 =item $Test->level($how_high)
 
+B<DEPRECATED> See deprecation notes at the top. The use of C<level()> and
+C<$Level> are deprecated.
+
 How far up the call stack should C<$Test> look when reporting where the
 test failed.
 
@@ -2226,7 +2241,8 @@ localized:
         $TB->ok($test);
     }
 
-To be polite to other functions wrapping your own you usually want to increment C<$Level> rather than set it to a constant.
+To be polite to other functions wrapping your own you usually want to increment
+C<$Level> rather than set it to a constant.
 
 =item $Test->maybe_regex(qr/$regex/)
 
