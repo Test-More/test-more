@@ -2,7 +2,8 @@ use strict;
 
 package Test::Tester;
 
-warn "Test::Tester is deprecated, see Test::Tester2\n";
+# Turn this back on later
+#warn "Test::Tester is deprecated, see Test::Tester2\n";
 
 BEGIN {
     if (*Test::Builder::new{CODE}) {
@@ -19,7 +20,8 @@ require Exporter;
 use vars qw( @ISA @EXPORT $VERSION );
 
 
-our $VERSION = '1.301001_013';
+our $VERSION = '1.301001_015';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 @EXPORT  = qw( run_tests check_tests check_test cmp_results show_space );
 @ISA     = qw( Exporter );

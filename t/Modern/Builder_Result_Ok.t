@@ -17,7 +17,7 @@ my $trace = bless {
     }, 'Test::Builder::Trace::Frame'
 }, 'Test::Builder::Trace';
 
-my $one = Test::Builder::Result::Ok->new(
+my %init = (
     trace => $trace,
     bool => 1,
     real_bool => 1,
@@ -26,6 +26,8 @@ my $one = Test::Builder::Result::Ok->new(
     todo => undef,
     skip => undef,
 );
+
+my $one = Test::Builder::Result::Ok->new(%init);
 
 is($one->to_tap(1), "ok 1 - fake\n", "TAP output, success");
 
@@ -53,36 +55,25 @@ ok( !eval { $one->to_tap; 1}, "Different reasons dies" );
 like( $@, qr{^2 different reasons to skip/todo: \$VAR1}, "Useful message" );
 
 
-my $two = Test::Builder::Result::Ok->new(
-    trace => $trace,
-    bool => 1,
-    real_bool => 1,
-    name => 'fake',
-    in_todo => 0,
-    todo => undef,
-    skip => undef,
-);
+my $two = Test::Builder::Result::Ok->new(%init);
 
 is($two->diag, undef, "No diag on bool => true result");
 
-$two->in_todo(1);
-$two->todo("blah");
-$two->skip("blah");
-$two->real_bool(0);
+$two = Test::Builder::Result::Ok->new(%init, in_todo => 1, todo => 'blah', skip => 'blah', real_bool => 1);
 is($two->diag, undef, "No diag on todo+skip result");
 
-$two->in_todo(0);
-$two->todo(undef);
+$two = Test::Builder::Result::Ok->new(%init, skip => 'blah', real_bool => 0, bool => 0);
 ok($two->diag, "added diag on skip result");
 
-$two->skip(undef);
-$two->real_bool(1);
+$two = Test::Builder::Result::Ok->new(%init, bool => 0,  real_bool => 0);
+ok($two->diag, "Have diag");
 $two->clear_diag;
 is($two->diag, undef, "Removed diag");
 
 my $diag_a = Test::Builder::Result::Diag->new(message => 'foo');
 my $diag_b = Test::Builder::Result::Diag->new(message => 'bar');
 
+$two = Test::Builder::Result::Ok->new(%init);
 $two->diag($diag_a);
 is_deeply($two->diag, [$diag_a], "pushed diag");
 is($diag_a->linked, $two, "Added link");
@@ -99,12 +90,18 @@ is($two->diag, undef, "Removed diag");
 ok(!$diag_a->linked, "Removed link");
 ok(!$diag_b->linked, "Removed link");
 
-$two->in_todo(1);
-$two->todo("blah");
-$two->skip(undef);
-$two->real_bool(0);
-$two->bool(1);
+$two = Test::Builder::Result::Ok->new(%init, in_todo => 1, todo => 'blah', real_bool => 0);
 ok($two->diag->[0]->{in_todo}, "in_todo passed to the diag");
+
+my $d = Test::Builder::Result::Ok->new(
+    bool      => 0,
+    real_bool => 0,
+    name      => 'blah',
+    trace     => $trace,
+    diag      => [ 'hello' ],
+);
+
+is(@{$d->diag}, 2, "Normal Diag + the one we spec'd");
 
 done_testing;
 

@@ -5,10 +5,53 @@ use warnings;
 use base 'Test::Builder::Result';
 
 use Carp qw/confess/;
-use Scalar::Util qw/blessed/;
+use Scalar::Util qw/blessed reftype/;
 use Test::Builder::Util qw/accessors/;
 
 accessors qw/bool real_bool name todo skip/;
+
+sub init_order {
+    my $self = shift;
+    my @attrs = @_;
+
+    my @out;
+    my $diag;
+    for my $i (@attrs) {
+        if ($i eq 'diag') {
+            $diag++;
+            next;
+        }
+
+        push @out => $i;
+    }
+
+    push @out => 'diag' if $diag;
+
+    return @out;
+}
+
+sub pre_init {
+    my $self = shift;
+    my ($params) = @_;
+
+    return if $params->{real_bool} || ($params->{skip} && $params->{todo});
+
+    my $msg    = $params->{in_todo}   ? "Failed (TODO)" : "Failed";
+    my $prefix = $ENV{HARNESS_ACTIVE} ? "\n"            : "";
+
+    my ($pkg, $file, $line) = $params->{trace}->report->call;
+
+    if (defined $params->{name}) {
+        my $name = $params->{name};
+        $msg = qq[$prefix  $msg test '$name'\n  at $file line $line.\n];
+    }
+    else {
+        $msg = qq[$prefix  $msg test at $file line $line.\n];
+    }
+
+    $params->{diag} ||= [];
+    unshift @{$params->{diag}} => $msg;
+}
 
 sub to_tap {
     my $self = shift;
@@ -60,42 +103,29 @@ sub clear_diag {
 sub diag {
     my $self = shift;
 
-    if (@_) {
-        $self->{diag} ||= [];
-        for my $d (@_) {
-            next unless $d;
+    for my $i (@_) {
+        next unless $i;
 
-            confess "Only Diag objects can be linked to results."
-                unless blessed($d) && $d->isa('Test::Builder::Result::Diag');
+        my $array = reftype $i eq 'ARRAY' ? $i : [$i];
+        for my $d (@$array) {
+            if (ref $d) {
+                confess "Only Diag objects can be linked to results."
+                    unless blessed($d) && $d->isa('Test::Builder::Result::Diag');
 
-            confess "Diag argument '$d' is already linked to a result."
-                if $d->linked;
+                confess "Diag argument '$d' is already linked to a result."
+                    if $d->linked;
+            }
+            else {
+                $d = Test::Builder::Result::Diag->new( message => $d );
+            }
+
+            for (qw/trace pid depth in_todo source/) {
+                $d->$_($self->$_) unless $d->$_;
+            }
 
             $d->linked($self);
             push @{$self->{diag}} => $d;
         }
-    }
-
-    unless ($self->{diag} || $self->real_bool || ($self->skip && $self->todo)) {
-        my $msg    = $self->in_todo       ? "Failed (TODO)" : "Failed";
-        my $prefix = $ENV{HARNESS_ACTIVE} ? "\n"            : "";
-
-        my ($pkg, $file, $line) = $self->trace->report->call;
-
-        if (defined $self->name) {
-            my $name = $self->name;
-            $msg = qq[$prefix  $msg test '$name'\n  at $file line $line.\n];
-        }
-        else {
-            $msg = qq[$prefix  $msg test at $file line $line.\n];
-        }
-
-        my $diag = Test::Builder::Result::Diag->new(
-            linked  => $self,
-            message => $msg || "",
-            map { ($_ => $self->$_ || undef) } qw/trace pid depth in_todo source/,
-        );
-        $self->{diag} = [$diag];
     }
 
     return $self->{diag};
@@ -180,7 +210,7 @@ Package, File, and Line in which the result was built.
 
 Either undef, or an arrayref of L<Test::Builder::Result::Diag> objects. These
 objects will be linked to this Ok result. Calling C<< $diag->linked >> on them
-will return this Ok object. Refierences here are strong references, references
+will return this Ok object. References here are strong references, references
 to this object from the linked Diag objects are weakened to avoid cycles.
 
 You can push diag objects into the arrayref by using them as arguments to this

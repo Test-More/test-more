@@ -51,6 +51,7 @@ if ($mm_ver =~ /_/) { # dev version
 my %Prereqs;
 $Prereqs{'ExtUtils::MakeMaker'} = 6.27 if $^O eq 'MSWin32';
 
+my $install_dir = $] >= 5.006002 && $] < 5.012000 ? 'perl' : 'site';
 
 WriteMakefile(
     NAME            => $PACKAGE,
@@ -67,7 +68,7 @@ WriteMakefile(
         %Prereqs
     },
 
-    INSTALLDIRS        => 'site',
+    INSTALLDIRS => $install_dir,
     test        => {
         TESTS           => 't/*.t t/*/*.t',
     },

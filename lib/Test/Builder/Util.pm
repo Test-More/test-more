@@ -21,7 +21,12 @@ export(new => sub {
 
     my $self = bless {}, $class;
 
-    for my $attr (keys %params) {
+    $self->pre_init(\%params) if $self->can('pre_init');
+
+    my @attrs = keys %params;
+    @attrs = $self->init_order(@attrs) if @attrs && $self->can('init_order');
+
+    for my $attr (@attrs) {
         croak "$class has no method named '$attr'" unless $self->can($attr);
         $self->$attr($params{$attr});
     }
