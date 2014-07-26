@@ -17,7 +17,3 @@ make install
 
 It requires Perl version 5.8.1 or newer and Test::Harness 2.03 or newer.
 
-
-* More Info
-
-More information can be found at http://test-more.googlecode.com/
