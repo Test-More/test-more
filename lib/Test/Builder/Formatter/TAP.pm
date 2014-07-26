@@ -161,7 +161,7 @@ sub reset_outputs {
     my $self = shift;
 
     # init only once. not init at subtest
-    _init_handles() unless $Testout;
+    _init_handles();
 
     $self->output        ($Testout);
     $self->failure_output($Testerr);
@@ -169,13 +169,16 @@ sub reset_outputs {
 }
 
 sub _init_handles {
-    # We dup STDOUT and STDERR so people can change them in their
-    # test suites while still getting normal test output.
-    open( $Testout, ">&STDOUT" ) or die "Can't dup STDOUT:  $!";
-    open( $Testerr, ">&STDERR" ) or die "Can't dup STDERR:  $!";
 
-    _copy_io_layers( \*STDOUT, $Testout );
-    _copy_io_layers( \*STDERR, $Testerr );
+    if (!$Testout) {
+        # We dup STDOUT and STDERR so people can change them in their
+        # test suites while still getting normal test output.
+        open( $Testout, ">&STDOUT" ) or die "Can't dup STDOUT:  $!";
+        open( $Testerr, ">&STDERR" ) or die "Can't dup STDERR:  $!";
+
+        _copy_io_layers( \*STDOUT, $Testout );
+        _copy_io_layers( \*STDERR, $Testerr );
+    }
 
     # Set everything to unbuffered else plain prints to STDOUT will
     # come out in the wrong order from our own prints.
