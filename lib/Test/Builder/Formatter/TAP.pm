@@ -198,7 +198,6 @@ sub _copy_io_layers {
     _apply_layers($dst, @src_layers) if @src_layers;
 }
 
-    my ($src, $field) = @_;
 sub _apply_layers {
     my ($fh, @layers) = @_;
     my %seen;
