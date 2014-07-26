@@ -160,7 +160,8 @@ my( $Testout, $Testerr );
 sub reset_outputs {
     my $self = shift;
 
-    _init_handles();
+    # init only once. not init at subtest
+    _init_handles() unless $Testout;
 
     $self->output        ($Testout);
     $self->failure_output($Testerr);

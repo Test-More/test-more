@@ -32,9 +32,10 @@ else {
     Test::Builder::Stream->clear;
     $pipe->writer;
     my $pipe_fd = $pipe->fileno;
-    close STDOUT;
-    open(STDOUT, ">&$pipe_fd");
     my $b = Test::Builder->create(shared_stream => 1);
+    my $output = $b->tap->output;
+    close $output;
+    open($output, ">&$pipe_fd");
     $b->reset;
     $b->no_plan;
     $b->ok(1);
