@@ -4,6 +4,7 @@ use warnings;
 
 use Test::Builder::Threads;
 use Test::Builder::Util qw/accessors transform try protect/;
+use PerlIO;
 
 use base 'Test::Builder::Formatter';
 
@@ -185,19 +186,43 @@ sub _init_handles {
 sub _copy_io_layers {
     my($src, $dst) = @_;
 
-    try {
-        require PerlIO;
-        my @src_layers = PerlIO::get_layers($src);
-        _apply_layers($dst, @src_layers) if @src_layers;
-    };
+    my @src_layers = PerlIO::get_layers($src);
+    _apply_layers($dst, @src_layers) if @src_layers;
 
     return;
 }
 
+# There is no function or tool to figure out the default IO layers. I could
+# make assumptions based on platform and other things, but that is fragile.
+# Instead we will reset STDIO so that it will take on the defaults, we then
+# query them. After we are done we restore it to the original IO layers.
+# We then check that we actually restored them, if not we die so that we don't
+# create a hard to trace bug for other people.
+my %DEFAULT_IO_LAYERS;
+BEGIN {
+    my @initial = sort(PerlIO::get_layers(\*STDOUT));
+
+    try {
+        binmode(STDOUT, ':raw');
+        %DEFAULT_IO_LAYERS = map { $_ => 1 } PerlIO::get_layers(\*STDOUT);
+
+        binmode( STDOUT, join ":" => (
+            "",
+            "raw",
+            grep { !$DEFAULT_IO_LAYERS{$_} } @initial
+        ));
+    };
+
+    my @now = sort(PerlIO::get_layers(\*STDOUT));
+
+    die "Failed to restore IO layers!"
+        unless join(':', @initial) eq join(':', @now);
+}
+
 sub _apply_layers {
     my ($fh, @layers) = @_;
-    my %seen;
-    my @unique = grep { $_ ne 'unix' and !$seen{$_}++ } @layers;
+    my %seen = (%DEFAULT_IO_LAYERS);
+    my @unique = grep { !$seen{$_}++ } @layers;
     binmode($fh, join(":", "", "raw", @unique));
 }
 
