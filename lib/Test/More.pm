@@ -38,6 +38,7 @@ provides qw(
   BAIL_OUT
   subtest
   nest
+  tap_encoding
 );
 
 provide TODO => \$TODO;
@@ -93,6 +94,12 @@ sub before_import {
         }
         elsif( $item eq 'modern' ) {
             modernize($dest);
+        }
+        elsif( $item eq 'tap_encoding' ) {
+            $class->builder->tap_encoding($list->[$idx++]);
+        }
+        elsif( $item eq 'utf8' ) {
+            $class->builder->tap_encoding('UTF-8');
         }
         else {
             Carp::carp("Unknown option: $item");
@@ -772,9 +779,18 @@ sub eq_set {
     );
 }
 
+sub tap_encoding($) {
+    my $encoding = shift;
+
+    my $tb = Test::More->builder;
+    $tb->tap_encoding($encoding);
+}
+
 1;
 
 __END__
+
+=encoding utf-8
 
 =head1 NAME
 
@@ -1796,6 +1812,51 @@ L<Test::Deep> contains much better set comparison functions.
 
 =back
 
+=head2 Support TAP encoding
+
+=over 4
+
+=item B<tap_encoding>
+
+Changes the encoding of the TAP output.
+        
+If you use utf8 or other non-ASCII characters with Test::More you
+might get a "Wide character in print" warning. Using C<tap_encoding>
+function will fix it.
+
+  use Test::More;
+  use utf8;
+  tap_encoding('UTF-8');
+
+  ok( $foo, 'test message with UTF-8 - Ā' ); # -> no warning
+
+Or declare the encoding when you use Test::More.
+
+  Test::More tap_encoding => 'UTF-8';
+  Test::More qw/utf8/; # shortcut for UTF-8
+
+Using C<tap_encoding>, Test::More changes the encoding of the TAP output
+by L<Encode> module.Therefore, the warning is no longer outputted.
+                    
+When using C<tap_encoding>, you must pass the 'character strings' to the test
+functions ( C<ok>, C<diag> and all other Test::More's fucntions ), not
+'byte strings'.
+
+  use Test::More tap_encoding => 'UTF-8';
+  use utf8; # All the strings on a script are interpreted as a character.
+
+  diag( 'Ā' );
+
+or
+
+  use Test::More tap_encoding => 'UTF-8';
+
+  diag( "\x{0100}" ); # Unicode notation for characters
+
+See L<perlunitut> for the difference between
+'Character strings' and 'Byte strings'.
+
+=back
 
 =head2 Extending and Embedding Test::More
 
@@ -1867,6 +1928,8 @@ Key feature milestones include:
 
 =item test tracing
 
+=item encoding support
+
 Test::Builder and Test::More version 1.001004 introduce these major
 modernizations.
 
@@ -1914,11 +1977,16 @@ Test::More) duplicates STDOUT and STDERR.  So any changes to them,
 including changing their output disciplines, will not be seem by
 Test::More.
 
-One work around is to apply encodings to STDOUT and STDERR as early
+In such a case, should use C<tap_encoding> function. 
+
+A other work around is to apply encodings to STDOUT and STDERR as early
 as possible and before Test::More (or any other Test module) loads.
 
     use open ':std', ':encoding(utf8)';
     use Test::More;
+
+However, since it depends for this method in order of a modules,
+recommendation is a not.
 
 A more direct work around is to change the filehandles used by
 L<Test::Builder>.
@@ -1928,6 +1996,9 @@ L<Test::Builder>.
     binmode $builder->failure_output, ":encoding(utf8)";
     binmode $builder->todo_output,    ":encoding(utf8)";
 
+However, also in this method, since the output ( and failure_output and
+todo_output ) method of Test::Builder was set to deparecated,
+recommendation is a not.
 
 =item Overloaded objects
 

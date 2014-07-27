@@ -8,7 +8,7 @@ use PerlIO;
 
 use base 'Test::Builder::Formatter';
 
-accessors qw/No_Header No_Diag Depth Use_Numbers _the_plan/;
+accessors qw/No_Header No_Diag Depth Use_Numbers _the_plan encoding/;
 transform output         => ('Out_FH',  '_new_fh');
 transform failure_output => ('Fail_FH', '_new_fh');
 transform todo_output    => ('Todo_FH', '_new_fh');
@@ -149,6 +149,10 @@ sub _print_to_fh {
 
     $msg =~ s/^/$indent/mg;
 
+    if ($self->encoding) {
+        $msg = $self->encoding->encode($msg);
+    }
+
     return print $fh $msg;
 }
 
@@ -157,6 +161,7 @@ my( $Testout, $Testerr );
 sub reset_outputs {
     my $self = shift;
 
+    # init only once. not init at subtest
     _init_handles();
 
     $self->output        ($Testout);
@@ -165,13 +170,18 @@ sub reset_outputs {
 }
 
 sub _init_handles {
+
     # We dup STDOUT and STDERR so people can change them in their
     # test suites while still getting normal test output.
-    open( $Testout, ">&STDOUT" ) or die "Can't dup STDOUT:  $!";
-    open( $Testerr, ">&STDERR" ) or die "Can't dup STDERR:  $!";
+    if (!$Testout) {
+        open( $Testout, ">&STDOUT" ) or die "Can't dup STDOUT:  $!";
+        _copy_io_layers( \*STDOUT, $Testout );
+    }
 
-    _copy_io_layers( \*STDOUT, $Testout );
-    _copy_io_layers( \*STDERR, $Testerr );
+    if(!$Testerr) {
+        open( $Testerr, ">&STDERR" ) or die "Can't dup STDERR:  $!";
+        _copy_io_layers( \*STDERR, $Testerr );
+    }
 
     # Set everything to unbuffered else plain prints to STDOUT will
     # come out in the wrong order from our own prints.
@@ -217,6 +227,7 @@ BEGIN {
 
     die "Failed to restore IO layers!"
         unless join(':', @initial) eq join(':', @now);
+>>>>>>> master
 }
 
 sub _apply_layers {

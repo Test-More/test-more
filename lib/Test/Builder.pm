@@ -148,6 +148,32 @@ sub intercept {
 # }}} Stream Management #
 #########################
 
+###########################
+# {{{ Encoding Management #
+###########################
+
+sub tap_encoding {
+    my $self = shift;
+
+    my ($encoding) = @_;
+
+    if (!$self->tap) {
+        $self->croak("TAP is not currently in use");
+    }
+
+    require Encode;
+    my $encode = Encode::find_encoding($encoding);
+    if (!$encoding or !$encode) {
+        $self->croak("invalid encoding is specified");
+    }
+
+    $self->tap->encoding($encode);
+}
+
+###########################
+# }}} Encoding Management #
+###########################
+
 #############################
 # {{{ Children and subtests #
 #############################
