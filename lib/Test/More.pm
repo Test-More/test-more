@@ -17,7 +17,7 @@ sub _carp {
     return warn @_, " at $file line $line\n";
 }
 
-our $VERSION = '1.301001_015';
+our $VERSION = '1.301001_016';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 our $TODO;
@@ -882,6 +882,18 @@ A test script uses a test tool such as L<Test::More>, which uses Test::Builder
 to produce results. The results are sent to L<Test::Builder::Stream> which then
 forwards them on to one or more formatters. The default formatter is
 L<Test::Builder::Fromatter::TAP> which produces TAP output.
+
+=head1 NOTE ON DEPRECATIONS
+
+With version 1.301001 many old methods and practices have been deprecated. What
+we mean when we say "deprecated" is that the practices or methods are not to be
+used in any new code. Old code that uses them will still continue to work,
+possibly forever, but new code should use the newer and better alternatives.
+
+In the future, if enough (read: pretty much everything) is updated and few if
+any modules still use these old items, they will be removed completely. This is
+not super likely to happen just because of the sheer number of modules that use
+Test::More.
 
 =head1 DESCRIPTION
 

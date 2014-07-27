@@ -7,10 +7,12 @@ BEGIN {
     my $has_module = eval { require SQL::Abstract::Test; 1 };
     my $required = $ENV{AUTHOR_TESTING};
 
-    die "This test requires 'SQL::Abstract::Test' to be installed when AUTHOR_TESTING.\n"
-        if $required && !$has_module;
-
-    plan skip_all => "'SQL::Abstract::Test' not installed" if !$has_module;
+    if ($required && !$has_module) {
+        die "This test requires 'SQL::Abstract::Test' to be installed when AUTHOR_TESTING.\n";
+    }
+    else {
+        plan skip_all => "Only run when AUTHOR_TESTING is set";
+    }
 }
 
 {
