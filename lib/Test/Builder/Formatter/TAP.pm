@@ -192,31 +192,13 @@ sub _copy_io_layers {
     return;
 }
 
-# There is no function or tool to figure out the default IO layers. I could
-# make assumptions based on platform and other things, but that is fragile.
-# Instead we will reset STDIO so that it will take on the defaults, we then
-# query them. After we are done we restore it to the original IO layers.
-# We then check that we actually restored them, if not we die so that we don't
-# create a hard to trace bug for other people.
 my %DEFAULT_IO_LAYERS;
 BEGIN {
-    my @initial = PerlIO::get_layers(\*STDOUT);
-
     try {
-        binmode(STDOUT, ':raw');
-        %DEFAULT_IO_LAYERS = map { $_ => 1 } PerlIO::get_layers(\*STDOUT);
-
-        binmode( STDOUT, join ":" => (
-            "",
-            "raw",
-            grep { !$DEFAULT_IO_LAYERS{$_} } @initial
-        ));
-    };
-
-    my @now = PerlIO::get_layers(\*STDOUT);
-
-    die "Failed to restore IO layers!"
-        unless join(':', @initial) eq join(':', @now);
+        require File::Temp;
+        my ($fh, $fn) = File::Temp::tempfile();
+        %DEFAULT_IO_LAYERS = map {$_ => 1} PerlIO::get_layers($fh);
+    }
 }
 
 sub _apply_layers {
