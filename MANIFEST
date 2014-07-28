@@ -153,6 +153,7 @@ t/no_tests.t
 t/note.t
 t/overload.t
 t/overload_threads.t
+t/PerlIO.t
 t/plan.t
 t/plan_bad.t
 t/plan_is_noplan.t
