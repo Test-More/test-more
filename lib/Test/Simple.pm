@@ -4,7 +4,7 @@ use 5.008001;
 
 use strict;
 
-our $VERSION = '1.301001_016';
+our $VERSION = '1.301001_017';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Builder::Provider;
