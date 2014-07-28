@@ -98,7 +98,7 @@ sub use_fork   { shift->stream->use_fork       }
 sub no_fork    { shift->stream->no_fork        }
 
 BEGIN {
-    Test::Builder::Util::accessors(qw/Parent Name _old_level _bailed_out/);
+    Test::Builder::Util::accessors(qw/Parent Name _old_level _bailed_out default_name/);
     Test::Builder::Util::accessor(modern => sub {$ENV{TB_MODERN} || 0});
     Test::Builder::Util::accessor(depth  => sub { 0 });
 }
@@ -501,7 +501,7 @@ sub _ok_obj {
         $self->context,
         real_bool => $test,
         bool      => $self->in_todo ? 1 : $test,
-        name      => $name          || undef,
+        name      => $name          || $self->default_name || undef,
         in_todo   => $self->in_todo || 0,
         diag      => \@diag,
     );
@@ -1553,6 +1553,13 @@ with modern practices instead of deprecated ones.
 =item $Test->depth
 
 Get/Set the depth. This is usually set for Child tests.
+
+=item $Test->default_name
+
+Get/Set the default name for tests where no name was provided. Typically this
+should be set to undef, there are very few real-world use cases for this.
+B<Note:> This functionality was added specifically for L<Test::Exception>,
+which has one of the few real-world use cases.
 
 =back
 
