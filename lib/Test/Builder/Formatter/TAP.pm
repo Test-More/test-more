@@ -152,12 +152,10 @@ sub _print_to_fh {
     return print $fh $msg;
 }
 
-my( $Testout, $Testerr );
-
 sub reset_outputs {
     my $self = shift;
 
-    _init_handles();
+    my( $Testout, $Testerr ) = _init_handles();
 
     $self->output        ($Testout);
     $self->failure_output($Testerr);
@@ -167,8 +165,8 @@ sub reset_outputs {
 sub _init_handles {
     # We dup STDOUT and STDERR so people can change them in their
     # test suites while still getting normal test output.
-    open( $Testout, ">&STDOUT" ) or die "Can't dup STDOUT:  $!";
-    open( $Testerr, ">&STDERR" ) or die "Can't dup STDERR:  $!";
+    open( my $Testout, ">&STDOUT" ) or die "Can't dup STDOUT:  $!";
+    open( my $Testerr, ">&STDERR" ) or die "Can't dup STDERR:  $!";
 
     _copy_io_layers( \*STDOUT, $Testout );
     _copy_io_layers( \*STDERR, $Testerr );
@@ -180,7 +178,7 @@ sub _init_handles {
     _autoflush($Testerr);
     _autoflush( \*STDERR );
 
-    return;
+    return ($Testout, $Testerr);
 }
 
 sub _copy_io_layers {
@@ -257,7 +255,6 @@ sub is_fh {
 
 sub reset {
     my $self = shift;
-    $self->reset_outputs;
     $self->no_header(0);
     $self->use_numbers(1);
     $self->{number} = 0;
