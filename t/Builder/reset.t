@@ -48,7 +48,7 @@ $tb->done_testing;  # make sure done_testing gets reset
 
 # Now reset it.
 $tb->reset;
-$tb->reset_outputs;
+
 
 # Test the state of the reset builder
 $Test->ok( !defined $tb->exported_to, 'exported_to' );
@@ -60,14 +60,11 @@ $Test->is_eq( $tb->no_ending,      0, 'no_ending' );
 $Test->is_eq( $tb->current_test,   0, 'current_test' );
 $Test->is_eq( scalar $tb->summary, 0, 'summary' );
 $Test->is_eq( scalar $tb->details, 0, 'details' );
-$Test->ok( fileno $tb->output,          'effective handle - output' );
-$Test->ok( fileno $tb->failure_output,  'effective handle - failure_output' );
-$Test->ok( fileno $tb->todo_output,     'effective handle - todo_output' );
-$Test->isnt_eq( fileno $tb->output,
+$Test->is_eq( fileno $tb->output,
               fileno $Original_Output{output},         'output' );
-$Test->isnt_eq( fileno $tb->failure_output,
+$Test->is_eq( fileno $tb->failure_output,
               fileno $Original_Output{failure_output}, 'failure_output' );
-$Test->isnt_eq( fileno $tb->todo_output,
+$Test->is_eq( fileno $tb->todo_output,
               fileno $Original_Output{todo_output},    'todo_output' );
 
 # The reset Test::Builder will take over from here.

@@ -30,12 +30,6 @@ use Test::More 'no_plan';
     $tb->reset_outputs;
 
     for my $method (qw(output failure_output todo_output)) {
-        isnt $tb->$method(), $fh,
-             "reset_outputs() resets $method - not match file handle";
-    }
-
-    for my $method (qw(output failure_output todo_output)) {
-        isnt $tb->$method(), $original_outputs{$method},
-             "reset_outputs() resets $method - not match original file handle";
+        is $tb->$method(), $original_outputs{$method}, "reset_outputs() resets $method";
     }
 }
