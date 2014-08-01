@@ -200,7 +200,7 @@ sub _copy_io_layers {
 # create a hard to trace bug for other people.
 my %DEFAULT_IO_LAYERS;
 BEGIN {
-    my @initial = PerlIO::get_layers(\*STDOUT);
+    my @initial = sort(PerlIO::get_layers(\*STDOUT));
 
     try {
         binmode(STDOUT, ':raw');
@@ -213,7 +213,7 @@ BEGIN {
         ));
     };
 
-    my @now = PerlIO::get_layers(\*STDOUT);
+    my @now = sort(PerlIO::get_layers(\*STDOUT));
 
     die "Failed to restore IO layers!"
         unless join(':', @initial) eq join(':', @now);
