@@ -645,6 +645,7 @@ sub cmp_ok {
 
     my $test;
     my $error;
+    my @diag;
 
     my($pack, $file, $line) = $self->trace_test->report->call;
 
@@ -658,9 +659,6 @@ sub cmp_ok {
         ] || die $@;
     };
 
-    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
-    my $ok = $self->_ok_obj( $test, $name );
-
     # Treat overloaded objects as numbers if we're asked to do a
     # numeric comparison.
     my $unoverload
@@ -668,7 +666,7 @@ sub cmp_ok {
       ? '_unoverload_num'
       : '_unoverload_str';
 
-    $ok->diag(<<"END") if $error;
+    push @diag => <<"END" if $error;
 An error occurred while using $type:
 ------------------------------------
 $error
@@ -679,16 +677,19 @@ END
         $self->$unoverload( \$got, \$expect );
 
         if( $type =~ /^(eq|==)$/ ) {
-            $self->_is_diag( $ok, $got, $type, $expect );
+            push @diag => $self->_is_diag( $got, $type, $expect );
         }
         elsif( $type =~ /^(ne|!=)$/ ) {
-            $self->_isnt_diag( $ok, $got, $type );
+            push @diag => $self->_isnt_diag( $got, $type );
         }
         else {
-            $self->_cmp_diag( $ok, $got, $type, $expect );
+            push @diag => $self->_cmp_diag( $got, $type, $expect );
         }
     }
-    $self->_record_ok($ok);
+
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
+    $self->ok($test, $name, @diag);
+
     return $test ? 1 : 0;
 }
 
@@ -701,9 +702,7 @@ sub is_eq {
         # undef only matches undef and nothing else
         my $test = !defined $got && !defined $expect;
 
-        my $ok = $self->_ok_obj( $test, $name );
-        $self->_is_diag( $ok, $got, 'eq', $expect ) unless $test;
-        $self->_record_ok($ok);
+        $self->ok($test, $name, $test ? () : $self->_is_diag( $got, 'eq', $expect ));
         return $test;
     }
 
@@ -718,9 +717,7 @@ sub is_num {
         # undef only matches undef and nothing else
         my $test = !defined $got && !defined $expect;
 
-        my $ok = $self->_ok_obj( $test, $name );
-        $self->_is_diag( $ok, $got, '==', $expect ) unless $test;
-        $self->_record_ok($ok);
+        $self->ok($test, $name, $test ? () : $self->_is_diag( $got, '==', $expect ));
         return $test;
     }
 
@@ -735,9 +732,7 @@ sub isnt_eq {
         # undef only matches undef and nothing else
         my $test = defined $got || defined $dont_expect;
 
-        my $ok = $self->_ok_obj( $test, $name );
-        $self->_isnt_diag( $ok, $got, 'ne' ) unless $test;
-        $self->_record_ok($ok);
+        $self->ok( $test, $name, $test ? () : $self->_isnt_diag( $got, 'ne' ));
         return $test;
     }
 
@@ -752,9 +747,7 @@ sub isnt_num {
         # undef only matches undef and nothing else
         my $test = defined $got || defined $dont_expect;
 
-        my $ok = $self->_ok_obj( $test, $name );
-        $self->_isnt_diag( $ok, $got, '!=' ) unless $test;
-        $self->_record_ok($ok);
+        $self->ok( $test, $name, $test ? () : $self->_isnt_diag( $got, '!=' ));
         return $test;
     }
 
@@ -1046,24 +1039,24 @@ sub _diag_fmt {
 }
 
 sub _is_diag {
-    my( $self, $ok, $got, $type, $expect ) = @_;
+    my( $self, $got, $type, $expect ) = @_;
     local $Level = $Level + 1; local $BLevel = $BLevel + 1;
 
     $self->_diag_fmt( $type, $_ ) for \$got, \$expect;
 
-    return $ok->diag(<<"DIAGNOSTIC");
+    return <<"DIAGNOSTIC";
          got: $got
     expected: $expect
 DIAGNOSTIC
 }
 
 sub _isnt_diag {
-    my( $self, $ok, $got, $type ) = @_;
+    my( $self, $got, $type ) = @_;
     local $Level = $Level + 1; local $BLevel = $BLevel + 1;
 
     $self->_diag_fmt( $type, \$got );
 
-    return $ok->diag(<<"DIAGNOSTIC");
+    return <<"DIAGNOSTIC";
          got: $got
     expected: anything else
 DIAGNOSTIC
@@ -1071,13 +1064,13 @@ DIAGNOSTIC
 
 
 sub _cmp_diag {
-    my( $self, $ok, $got, $type, $expect ) = @_;
+    my( $self, $got, $type, $expect ) = @_;
 
     $got    = defined $got    ? "'$got'"    : 'undef';
     $expect = defined $expect ? "'$expect'" : 'undef';
 
     local $Level = $Level + 1; local $BLevel = $BLevel + 1;
-    return $ok->diag(<<"DIAGNOSTIC");
+    return <<"DIAGNOSTIC";
     $got
         $type
     $expect
