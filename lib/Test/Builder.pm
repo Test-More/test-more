@@ -1111,22 +1111,19 @@ sub _regex_ok {
 
     $test = !$test if $cmp eq '!~';
 
-    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
-    $ok = $self->_ok_obj( $test, $name );
-
+    my @diag;
     unless($test) {
         $thing = defined $thing ? "'$thing'" : 'undef';
         my $match = $cmp eq '=~' ? "doesn't match" : "matches";
 
-        local $Level = $Level + 1; local $BLevel = $BLevel + 1;
-        $ok->diag( sprintf <<'DIAGNOSTIC', $thing, $match, $regex );
+        push @diag => sprintf( <<'DIAGNOSTIC', $thing, $match, $regex );
                   %s
     %13s '%s'
 DIAGNOSTIC
-
     }
 
-    $self->_record_ok($ok);
+    local $Level = $Level + 1; local $BLevel = $BLevel + 1;
+    $self->ok( $test, $name, @diag );
 
     return $test;
 }

@@ -1401,7 +1401,8 @@ successfully load.  For example, you'll often want a first test which
 simply loads all the modules in the distribution to make sure they
 work before going on to do more complicated testing.
 
-For such purposes we have C<use_ok> and C<require_ok>.
+For such purposes we have C<require_ok>, and C<use ok 'module'>. C<use_ok> is
+still around, but is considered deprecated in favor of C<use ok 'module'>.
 
 =over 4
 
@@ -1430,7 +1431,35 @@ No exception will be thrown if the load fails.
         require_ok $module or BAIL_OUT "Can't load $module";
     }
 
+=item B<use ok 'module'>
+
+=item B<use ok 'module', @args>
+
+    use ok 'Some::Module';
+    use ok 'Another::Module', qw/import_a import_b/;
+
+This will load the specified module and pass through any extra arguments to
+that module. This will also produce a test result.
+
+B<Note - Do not do this:>
+
+    my $class = 'My::Module';
+    use ok $class;
+
+The value 'My::Module' is not assigned to the C<$class> variable until
+run-time, but the C<use ok $class> statement is run at compile time. The result
+of this is that we try to load 'undef' as a module. This will generate an
+exception: C<'use ok' called with an empty argument, did you try to use a package name from an uninitialized variable?>
+
+If you must do something like this, here is a more-correct way:
+
+    my $class;
+    BEGIN { $class = 'My::Module' }
+    use ok $class;
+
 =item B<use_ok>
+
+B<Deprecated!> See C<use ok 'module'>
 
    BEGIN { use_ok($module); }
    BEGIN { use_ok($module, @imports); }

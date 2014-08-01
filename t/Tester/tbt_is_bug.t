@@ -18,4 +18,14 @@ check_test(
     {ok => 0},
 );
 
+check_test(
+    sub { like "Baz", qr/uhg/ },
+    {ok => 0},
+);
+
+check_test(
+    sub { like "Baz", qr/a/ },
+    {ok => 1},
+);
+
 done_testing();
