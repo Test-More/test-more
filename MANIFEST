@@ -4,6 +4,7 @@ Changes
 examples/indent.pl
 examples/subtest.t
 layout.dot
+lib/ok.pm
 lib/Test/Builder.pm
 lib/Test/Builder/ExitMagic.pm
 lib/Test/Builder/Fork.pm
@@ -35,6 +36,7 @@ lib/Test/Tester/CaptureRunner.pm
 lib/Test/Tester/Delegate.pm
 lib/Test/Tester2.pm
 lib/Test/Tutorial.pod
+lib/Test/use/ok.pm
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.SKIP
@@ -186,6 +188,7 @@ t/subtest/threads.t
 t/subtest/todo.t
 t/subtest/wstat.t
 t/tbm_doesnt_set_exported_to.t
+t/test_use_ok.t
 t/Tester/tbt_01basic.t
 t/Tester/tbt_02fhrestore.t
 t/Tester/tbt_03die.t
@@ -196,6 +199,7 @@ t/Tester/tbt_07args.t
 t/Tester/tbt_08subtest.t
 t/Tester/tbt_09do.t
 t/Tester/tbt_09do_script.pl
+t/Tester/tbt_is_bug.t
 t/thread_taint.t
 t/threads.t
 t/todo.t
