@@ -197,7 +197,7 @@ sub _copy_io_layers {
 sub _apply_layers {
     my ($fh, @layers) = @_;
     my %seen;
-    my @unique = grep { $_ ne 'unix' and !$seen{$_}++ } @layers;
+    my @unique = grep { $_ !~ /^(unix|perlio)$/ and !$seen{$_}++ } @layers;
     binmode($fh, join(":", "", "raw", @unique));
 }
 
