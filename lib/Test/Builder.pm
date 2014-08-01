@@ -4,7 +4,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-use Test::Builder::Util qw/try/;
+use Test::Builder::Util qw/try protect/;
 use Scalar::Util();
 use Test::Builder::Stream;
 use Test::Builder::Result;
@@ -298,7 +298,9 @@ sub finalize {
 #####################################
 
 sub trace_test {
-    return Test::Builder::Trace->new;
+    my $out;
+    protect { $out = Test::Builder::Trace->new };
+    return $out;
 }
 
 sub find_TODO {

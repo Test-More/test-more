@@ -240,13 +240,15 @@ sub try(&) {
     my $error;
     my $ok;
 
-    local $@;
-    local $!;
-    local $SIG{__DIE__};
+    {
+        local $@;
+        local $!;
+        local $SIG{__DIE__};
 
-    $ok = eval { $code->(); 1 } || 0;
-    unless($ok) {
-        $error = $@ || "Error was squashed!\n";
+        $ok = eval { $code->(); 1 } || 0;
+        unless($ok) {
+            $error = $@ || "Error was squashed!\n";
+        }
     }
 
     return wantarray ? ($ok, $error) : $ok;
