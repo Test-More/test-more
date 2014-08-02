@@ -24,6 +24,8 @@ sub import {
 
 __END__
 
+=encoding utf8
+
 =head1 NAME
 
 ok - Alternative to Test::More::use_ok
