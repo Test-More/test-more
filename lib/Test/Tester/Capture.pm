@@ -2,7 +2,7 @@ use strict;
 
 package Test::Tester::Capture;
 
-warn "Test::Tester::Capture is deprecated, see Test::Tester2\n";
+#warn "Test::Tester::Capture is deprecated, see Test::Tester2\n";
 
 use Test::Builder;
 
