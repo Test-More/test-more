@@ -2270,7 +2270,7 @@ could be written as:
 =head1 PACKAGE VARIABLES
 
 B<NOTE>: These are tied to the package, not the instance. Basically that means
-touching these can effect more things than you expect. Using these can lead to
+touching these can affect more things than you expect. Using these can lead to
 unexpected interactions at a distance.
 
 =over 4
