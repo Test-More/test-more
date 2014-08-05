@@ -1498,10 +1498,6 @@ Create a Test::Builder object that does not include any legacy cruft.
 
     my $Test = Test::Builder->create(modern => 1);
 
-B<NOTE>: C<$Level> is tied to the package, not the instance. Basically this
-means you should avoid using $Level in favor of the trace_test method. $Level
-still exists purely for legacy support.
-
 =item $Test = Test::Builder->new B<***DEPRECATED***>
 
     my $Test = Test::Builder->new;
@@ -1943,9 +1939,8 @@ empty string even when inside a TODO block.  Use C<< $Test->in_todo >>
 to determine if you are currently inside a TODO block.
 
 C<todo()> is about finding the right package to look for C<$TODO> in.  It's
-pretty good at guessing the right package to look at.  It first looks for
-the caller based on C<$Level + 1>, since C<todo()> is usually called inside
-a test function.  As a last resort it will use C<exported_to()>.
+pretty good at guessing the right package to look at. It considers the stack
+trace, C<$Level>, and metadata associated with various packages.
 
 Sometimes there is some confusion about where C<todo()> should be looking
 for the C<$TODO> variable.  If you want to be sure, tell it explicitly
@@ -2222,8 +2217,8 @@ If C<caller()> winds up off the top of the stack it report the highest context.
 
 =item $Test->level($how_high)
 
-B<DEPRECATED> See deprecation notes at the top. The use of C<level()> and
-C<$Level> are deprecated.
+B<DEPRECATED> See deprecation notes at the top. The use of C<level()> is
+deprecated.
 
 How far up the call stack should C<$Test> look when reporting where the
 test failed.
@@ -2269,6 +2264,52 @@ could be written as:
           unless $usable_regex;
       $self->ok($thing =~ m/$usable_regex/, $name);
   }
+
+=back
+
+=head1 PACKAGE VARIABLES
+
+B<NOTE>: These are tied to the package, not the instance. Basically that means
+touching these can effect more things than you expect. Using these can lead to
+unexpected interactions at a distance.
+
+=over 4
+
+=item C<$Level>
+
+Originally this was the only way to tell Test::Builder where in the stack
+errors should be reported. Now the preferred method of finding where errors
+should be reported is using the L<Test::Builder::Trace> and
+L<Test::Builder::Provider> modules.
+
+C<$Level> should be considered deprecated when possible, that said it will not
+be removed any time soon. There is too much legacy code that depends on
+C<$Level>. There are also a couple situations in which C<$Level> is necessary:
+
+=over 4
+
+=item Backwards compatibility
+
+If code simply cannot depend on a recent version of Test::Builder, then $Level
+must be used as there is no alternative. See L<Test::Builder::Compat> for tools
+to help make test tools that work in old and new versions.
+
+=item Stack Management
+
+Using L<Test::Builder::Provider> is not practical for situations like in
+L<Test::Exception> where one needs to munge the call stack to hide frames.
+
+=back
+
+=item C<$BLevel>
+
+Used internally by the L<Test::Builder::Trace>, do not modify or rely on this
+in your own code. Documented for completeness.
+
+=item C<$Test>
+
+The singleton returned by C<new()>, which is deprecated in favor of
+C<create()>.
 
 =back
 
