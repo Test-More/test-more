@@ -3,32 +3,52 @@ use strict;
 use warnings;
 
 use Test::Builder::Threads;
-use Test::Builder::Util qw/accessors transform try protect/;
+use Test::Builder::Util qw/accessors try protect new accessor/;
+use Carp qw/croak confess/;
 
 use base 'Test::Builder::Formatter';
 
 accessors qw/No_Header No_Diag Depth Use_Numbers _the_plan/;
-transform output         => ('Out_FH',  '_new_fh');
-transform failure_output => ('Fail_FH', '_new_fh');
-transform todo_output    => ('Todo_FH', '_new_fh');
+
+accessor io_sets => sub { {} };
+
+use constant OUT  => 0;
+use constant FAIL => 1;
+use constant TODO => 2;
+
+#######################
+# {{{ INITIALIZATION
+#######################
 
 sub init {
     my $self = shift;
-    $self->reset_outputs;
+
+    $self->no_header(0);
     $self->use_numbers(1);
 
     $self->{number} = 0;
-    share( $self->{number} );
 
-    $self->{ok_lock} = 1;
-    share( $self->{ok_lock} );
+    $self->{lock} = 1;
+    share($self->{lock});
+
+    $self->init_legacy;
+
+    return $self;
 }
+
+#######################
+# }}} INITIALIZATION
+#######################
+
+#######################
+# {{{ RESULT METHODS
+#######################
 
 for my $handler (qw/bail nest/) {
     my $sub = sub {
         my $self = shift;
         my ($item) = @_;
-        $self->_print($item->indent || "", $item->to_tap);
+        $self->_print_to_fh($self->result_handle($item, OUT), $item->indent || "", $item->to_tap);
     };
     no strict 'refs';
     *$handler = $sub;
@@ -41,7 +61,7 @@ sub child {
     return unless $item->action eq 'push' && $item->is_subtest;
 
     my $name = $item->name;
-    $self->_print_to_fh( $self->output, $item->indent || "", "# Subtest: $name\n" );
+    $self->_print_to_fh($self->result_handle($item, OUT), $item->indent || "", "# Subtest: $name\n");
 }
 
 sub finish {
@@ -60,7 +80,7 @@ sub finish {
     }
 
     my $total = $item->tests_run;
-    $self->_print($item->indent || '', "1..$total\n");
+    $self->_print_to_fh($self->result_handle($item, OUT), $item->indent || '', "1..$total\n");
 }
 
 sub plan {
@@ -76,14 +96,18 @@ sub plan {
     my $out = $item->to_tap;
     return unless $out;
 
-    $self->_print($item->indent || "", $out);
+    my $handle = $self->result_handle($item, OUT);
+    $self->_print_to_fh($handle, $item->indent || "", $out);
 }
 
 sub ok {
     my $self = shift;
     my ($item) = @_;
-    lock $self->{ok_lock};
-    $self->_print($item->indent || "", $item->to_tap($self->test_number(1)));
+
+    $self->atomic_result(sub {
+        my $num = $self->use_numbers ? ++($self->{number}) : undef;
+        $self->_print_to_fh($self->result_handle($item, OUT), $item->indent || "", $item->to_tap($num));
+    });
 }
 
 sub diag {
@@ -95,7 +119,10 @@ sub diag {
     # Prevent printing headers when compiling (i.e. -c)
     return if $^C;
 
-    $self->_print_to_fh( $self->_diag_fh($item->in_todo), $item->indent || "", $item->to_tap );
+    my $want_handle = $item->in_todo ? TODO : FAIL;
+    my $handle = $self->result_handle($item, $want_handle);
+
+    $self->_print_to_fh( $handle, $item->indent || "", $item->to_tap );
 }
 
 sub note {
@@ -107,19 +134,141 @@ sub note {
     # Prevent printing headers when compiling (i.e. -c)
     return if $^C;
 
-    $self->_print_to_fh( $self->output, $item->indent || "", $item->to_tap );
+    $self->_print_to_fh( $self->result_handle($item, OUT), $item->indent || "", $item->to_tap );
 }
 
-sub test_number {
+#######################
+# }}} RESULT METHODS
+#######################
+
+##############################
+# {{{ IO accessors
+##############################
+
+sub io_set {
     my $self = shift;
-    return unless $self->use_numbers;
-    if (@_) {
-        my ($num) = @_;
-        $num ||= 0;
-        lock $self->{number};
-        $self->{number} += $num;
+    my ($name, @handles) = @_;
+
+    if (@handles) {
+        my ($out, $fail, $todo) = @handles;
+        $out = $self->_new_fh($out);
+
+        $fail = $fail ? $self->_new_fh($fail) : $out;
+        $todo = $todo ? $self->_new_fh($todo) : $out;
+
+        $self->io_sets->{$name} = [$out, $fail, $todo];
     }
-    return $self->{number};
+
+    return $self->io_sets->{$name};
+}
+
+sub locale_set {
+    my $self = shift;
+    my ($locale) = @_;
+
+    $self->io_sets->{$locale} ||= do {
+        my ($out, $fail) = $self->open_handles();
+        my $todo = $out;
+
+        binmode($out, ":$locale");
+        binmode($fail, ":$locale");
+
+        [$out, $fail, $todo];
+    };
+
+    return $self->io_sets->{$locale};
+}
+
+sub result_handle {
+    my $self = shift;
+    my ($result, $index) = @_;
+
+    my $rlocale = $result ? $result->locale : undef;
+
+    # Open handles in the locale if one is set.
+    $self->locale_set($rlocale) if $rlocale && $rlocale ne 'legacy';
+
+    for my $name ($rlocale, qw/utf8 legacy/) {
+        next unless $name;
+        my $handles = $self->io_set($name);
+        return $handles->[$index]
+            if $handles;
+    }
+
+    confess "This should not happen";
+}
+
+##############################
+# }}} IO accessors
+##############################
+
+########################
+# {{{ Legacy Support
+########################
+
+my $LEGACY;
+
+sub full_reset { $LEGACY = undef }
+
+sub init_legacy {
+    my $self = shift;
+
+    unless ($LEGACY) {
+        my ($out, $err) = $self->open_handles();
+
+        _copy_io_layers(\*STDOUT, $out);
+        _copy_io_layers(\*STDERR, $err);
+
+        _autoflush($out);
+        _autoflush($err);
+
+        # LEGACY, BAH!
+        _autoflush(\*STDOUT);
+        _autoflush(\*STDERR);
+
+        $LEGACY = [$out, $err, $out];
+    }
+
+    $self->reset_outputs;
+}
+
+sub reset_outputs {
+    my $self = shift;
+    my ($out, $fail, $todo) = @$LEGACY;
+    $self->io_sets->{legacy} = [$out, $fail, $todo];
+}
+
+sub reset {
+    my $self = shift;
+    $self->reset_outputs;
+    $self->no_header(0);
+    $self->use_numbers(1);
+    lock $self->{lock};
+    $self->{number} = 0;
+    share( $self->{number} );
+
+    1;
+}
+
+sub output {
+    my $self = shift;
+    my $handles = $self->io_set('legacy');
+    ($handles->[OUT]) = $self->_new_fh($_[0]) if @_;
+    return $handles->[OUT];
+}
+
+sub failure_output {
+    my $self = shift;
+    my $handles = $self->io_set('legacy');
+    ($handles->[FAIL]) = $self->_new_fh($_[0]) if @_;
+    return $handles->[FAIL];
+}
+
+sub todo_output {
+    my $self = shift;
+    my $handles = $self->io_set('legacy');
+    ($handles->[TODO]) = $self->_new_fh($_[0]) if @_;
+    return $handles->[TODO];
 }
 
 sub _diag_fh {
@@ -134,6 +283,14 @@ sub _print {
     my ($indent, @msgs) = @_;
     return $self->_print_to_fh( $self->output, $indent, @msgs );
 }
+
+########################
+# }}} Legacy Support
+########################
+
+###############
+# {{{ UTILS
+###############
 
 sub _print_to_fh {
     my( $self, $fh, $indent, @msgs ) = @_;
@@ -151,33 +308,30 @@ sub _print_to_fh {
     return print $fh $msg;
 }
 
-my( $Testout, $Testerr );
-
-sub reset_outputs {
+sub open_handles {
     my $self = shift;
 
-    _init_handles();
+    open( my $out, ">&STDOUT" ) or die "Can't dup STDOUT:  $!";
+    open( my $err, ">&STDERR" ) or die "Can't dup STDERR:  $!";
 
-    $self->output        ($Testout);
-    $self->failure_output($Testerr);
-    $self->todo_output   ($Testout);
+    _autoflush($out);
+    _autoflush($err);
+
+    return ($out, $err);
 }
 
-sub _init_handles {
-    # We dup STDOUT and STDERR so people can change them in their
-    # test suites while still getting normal test output.
-    open( $Testout, ">&STDOUT" ) or die "Can't dup STDOUT:  $!";
-    open( $Testerr, ">&STDERR" ) or die "Can't dup STDERR:  $!";
+sub atomic_result {
+    my $self = shift;
+    my ($code) = @_;
+    lock $self->{lock};
+    $code->();
+}
 
-    _copy_io_layers( \*STDOUT, $Testout );
-    _copy_io_layers( \*STDERR, $Testerr );
-
-    # Set everything to unbuffered else plain prints to STDOUT will
-    # come out in the wrong order from our own prints.
-    _autoflush($Testout);
-    _autoflush( \*STDOUT );
-    _autoflush($Testerr);
-    _autoflush( \*STDERR );
+sub _autoflush {
+    my($fh) = shift;
+    my $old_fh = select $fh;
+    $| = 1;
+    select $old_fh;
 
     return;
 }
@@ -194,41 +348,24 @@ sub _copy_io_layers {
     return;
 }
 
-sub _apply_layers {
-    my ($fh, @layers) = @_;
-    my %seen;
-    my @unique = grep { $_ !~ /^(unix|perlio)$/ and !$seen{$_}++ } @layers;
-    binmode($fh, join(":", "", "raw", @unique));
-}
-
 sub _new_fh {
     my $self = shift;
     my($file_or_fh) = shift;
 
+    return $file_or_fh if $self->is_fh($file_or_fh);
+
     my $fh;
-    if( $self->is_fh($file_or_fh) ) {
-        $fh = $file_or_fh;
-    }
-    elsif( ref $file_or_fh eq 'SCALAR' ) {
+    if( ref $file_or_fh eq 'SCALAR' ) {
         open $fh, ">>", $file_or_fh
-          or $self->croak("Can't open scalar ref $file_or_fh: $!");
+          or croak("Can't open scalar ref $file_or_fh: $!");
     }
     else {
         open $fh, ">", $file_or_fh
-          or $self->croak("Can't open test output log $file_or_fh: $!");
+          or croak("Can't open test output log $file_or_fh: $!");
         _autoflush($fh);
     }
 
     return $fh;
-}
-
-sub _autoflush {
-    my($fh) = shift;
-    my $old_fh = select $fh;
-    $| = 1;
-    select $old_fh;
-
-    return;
 }
 
 sub is_fh {
@@ -248,14 +385,10 @@ sub is_fh {
     return $out;
 }
 
-sub reset {
-    my $self = shift;
-    $self->reset_outputs;
-    $self->no_header(0);
-    $self->use_numbers(1);
-    $self->{number} = 0;
-    share( $self->{number} );
-}
+
+###############
+# }}} UTILS
+###############
 
 1;
 

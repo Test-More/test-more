@@ -29,6 +29,7 @@ if (my $pid = fork) {
     waitpid($pid, 0);
 }
 else {
+    Test::Builder::Formatter::TAP->full_reset;
     Test::Builder::Stream->clear;
     $pipe->writer;
     my $pipe_fd = $pipe->fileno;

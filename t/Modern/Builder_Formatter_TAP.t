@@ -13,7 +13,7 @@ can_ok(
         no_header no_diag depth use_numbers
         output failure_output todo_output
         bail nest child finish plan ok diag note
-        test_number reset_outputs is_fh reset
+        reset_outputs is_fh reset
     }
 );
 

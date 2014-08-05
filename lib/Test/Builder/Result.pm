@@ -33,6 +33,13 @@ sub indent {
     return '    ' x $self->depth;
 }
 
+sub locale {
+    my $self = shift;
+    return unless $self->trace;
+    return unless @{$self->trace->anointed};
+    return $self->trace->anointed->[0]->package->TB_TESTER_META->{locale};
+}
+
 1;
 
 __END__

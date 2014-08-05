@@ -35,11 +35,8 @@ sub handle {
 
     # First write the file, then rename it so that it is not read before it is ready.
     my $name =  $self->tmpdir . "/$$-" . $id++;
-    open(my $fh, '>', $name) || die "Could not create temp file";
-    require Data::Dumper;
-    local $Data::Dumper::Indent = 0;
-    print $fh Data::Dumper::Dumper($item);
-    close $fh;
+    require Storable;
+    Storable::store($item, $name);
     rename($name, "$name.ready") || die "Could not rename file";
 
     return 1;
@@ -54,11 +51,10 @@ sub cull {
         next if $file =~ m/^\.+$/;
         next unless $file =~ m/\.ready$/;
 
-        my $obj;
-        my ($ok, $error) = try { my $VAR1; $obj = do "$dir/$file" };
-        die $error unless $ok;
-
+        require Storable;
+        my $obj = Storable::retrieve("$dir/$file");
         die "Empty result object found" unless $obj;
+
         Test::Builder::Stream->shared->send($obj);
 
         if ($ENV{TEST_KEEP_TMP_DIR}) {

@@ -4,6 +4,8 @@ use 5.008001;
 use strict;
 use warnings;
 
+use Test::Builder::Util qw/is_tester/;
+
 #---- perlcritic exemptions. ----#
 
 # We use a lot of subroutine prototypes
@@ -38,6 +40,7 @@ provides qw(
   BAIL_OUT
   subtest
   nest
+  set_tap_locale
 );
 
 provide TODO => \$TODO;
@@ -69,6 +72,9 @@ sub before_import {
     my $class = shift;
     my ($list, $dest) = @_;
 
+    _set_tap_locale($dest, 'legacy');
+
+    my $locale_set = 0;
     my $other = [];
     my $idx   = 0;
     while( $idx <= $#{$list} ) {
@@ -93,6 +99,16 @@ sub before_import {
         }
         elsif( $item eq 'modern' ) {
             modernize($dest);
+            _set_tap_locale($dest, 'utf8') unless $locale_set;
+        }
+        elsif ($item eq 'utf8') {
+            $locale_set++;
+            _set_tap_locale($dest, 'utf8');
+        }
+        elsif ($item eq 'locale') {
+            $locale_set++;
+            my $locale = @{$list->[$idx++]};
+            _set_tap_locale($dest, $locale);
         }
         else {
             Carp::carp("Unknown option: $item");
@@ -102,6 +118,19 @@ sub before_import {
     @$list = @$other;
 
     return 1;
+}
+
+sub _set_tap_locale {
+    my ($test, $locale) = @_;
+    my $meta = is_tester($test);
+    require Carp;
+    Carp::croak "package '$test' is not a tester!" unless $meta;
+    $meta->{locale} = $locale;
+}
+
+sub set_tap_locale {
+    my $caller = caller;
+    _set_tap_locale($caller, @_);
 }
 
 sub done_testing {
@@ -782,12 +811,19 @@ Test::More - yet another framework for writing test scripts
 
 =head1 SYNOPSIS
 
+  use Test::More 'modern';
+  # or
+  use Test::More;   # see done_testing()
+  # or
   use Test::More tests => 23;
   # or
   use Test::More skip_all => $reason;
   # or
-  use Test::More;   # see done_testing()
 
+  # Switch to utf8 for all TAP produced by THIS PACKAGE
+  set_tap_locale 'utf8';
+
+  use ok 'Some::Module';
   require_ok( 'Some::Module' );
 
   # Various ways to say "ok"
@@ -992,10 +1028,41 @@ to collect the results from other processes.
 
 =item use Test::More 'modern';
 
-enables forking, disables legacy_results support, and issues warnings when
-using deprecated code.
+enables forking, enabled utf8, disables legacy_results support, and issues
+warnings when using deprecated code.
+
+=item use Test::More 'utf8';
+
+=item use Test::More locale => 'utf8'
+
+These both work the same, they enable utf8 output in TAP.
+
+=item use Test::More locale => ...
+
+Switch TAP output to whatever locale you want.
+
+B<Note>: This is effective only for the current package. Other packages can/may
+select other locales for their TAP output. For packages where none is
+specified, the original STDOUT and STDERR settings are used, the results are
+unpredictable.
 
 =back
+
+=head2 TAP Encoding
+
+    set_tap_locale 'utf8';
+
+or
+
+    set_tap_locale YOUR_ENCODING;
+
+The C<set_tap_locale($locale)> function will ensure that any B<FUTURE> TAP
+output produced by I<This Package> will be output in the specified locale.
+
+B<Note>: This is effective only for the current package. Other packages can/may
+select other locales for their TAP output. For packages where none is
+specified, the original STDOUT and STDERR settings are used, the results are
+unpredictable.
 
 =head2 Helpers
 
@@ -1509,7 +1576,6 @@ import anything, use C<require_ok>.
   BEGIN { require_ok "Foo" }
 
 =back
-
 
 =head2 Complex data structures
 

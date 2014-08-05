@@ -41,7 +41,7 @@ sub current_test {
         $self->{Curr_Test} = $num;
 
         $tb->stream->tests_run(0 - $tb->stream->tests_run + $num);
-        $tb->tap->test_number($delta) if $tb->tap;
+        $tb->tap->atomic_result(sub { $tb->tap->{number} = $num }) if $tb->tap;
 
         # If the test counter is being pushed forward fill in the details.
         my $test_results = $self->{Test_Results};

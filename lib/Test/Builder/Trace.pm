@@ -131,14 +131,14 @@ sub anoint {
     my ($target, $oil) = @_;
 
     unless (is_tester($target)) {
-        my $meta = {};
+        my $meta = {anointed_by => {}};
         no strict 'refs';
         *{"$target\::TB_TESTER_META"} = sub {$meta};
     }
 
     return 1 unless $oil;
     my $meta = $target->TB_TESTER_META;
-    $meta->{$oil} = 1;
+    $meta->{anointed_by}->{$oil} = 1;
 }
 
 1;

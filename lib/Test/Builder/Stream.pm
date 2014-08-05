@@ -299,7 +299,7 @@ sub use_tap {
 
 sub no_tap {
     my $self = shift;
-    $self->unlisten('LEGACY_TAP');
+    $self->unlisten('LEGACY_TAP') if $self->tap;
     return;
 }
 
@@ -314,7 +314,7 @@ sub use_lresults {
 
 sub no_lresults {
     my $self = shift;
-    $self->unlisten('LEGACY_RESULTS');
+    $self->unlisten('LEGACY_RESULTS') if $self->lresults;
     return;
 }
 
@@ -366,9 +366,7 @@ sub spawn {
 
     if ($self->tap && !$params{no_tap}) {
         $new->use_tap;
-        for my $field (qw/output failure_output todo_output/) {
-            $new->tap->$field($self->tap->$field);
-        }
+        $new->tap->io_sets({%{$self->tap->io_sets}});
     }
 
     $new->use_lresults if $self->lresults && !$params{no_lresults};

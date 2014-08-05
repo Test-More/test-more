@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test::More qw/modern/;
 use Test::Tester2;
+use utf8;
 
 ok(1, "Result in parent" );
 
@@ -91,5 +92,54 @@ results_are(
 
 my $ok = eval { Test::More->import(import => ['$TODO']) };
 ok($ok, "Can import \$TODO");
+
+{
+    package main_modern;
+    use Test::More 'modern';
+    use Test::Tester2;
+
+    my $results = intercept { ok(1, "blah") };
+    is($results->[0]->locale, 'utf8', "output defaults to utf8");
+
+    my @warnings;
+    {
+        local $SIG{__WARN__} = sub { push @warnings => @_ };
+        ok(1, "Ճȴģȳф utf8 name");
+    }
+    ok(!@warnings, "no warnings");
+}
+
+{
+    package main_old;
+    use Test::More;
+    use Test::Tester2;
+
+    my $results = intercept { ok(1, "blah") };
+    is($results->[0]->locale, 'legacy', "legacy locale set for non-modern");
+
+    my @warnings;
+    {
+        local $SIG{__WARN__} = sub { push @warnings => @_ };
+        ok(1, "Ճȴģȳф utf8 name");
+    }
+    use warnings;
+    use Data::Dumper;
+    like( $warnings[0], qr/Wide character in print/, "utf8 is not on" );
+}
+
+{
+    package main_oblivious;
+    use Test::Tester2;
+
+    my $results = intercept { Test::More::ok(1, "blah") };
+    Test::More::is($results->[0]->locale, undef, "no locale set for non-consumer");
+}
+
+require PerlIO;
+my $legacy = Test::Builder->new->tap->io_set('legacy')->[0];
+my $modern = Test::Builder->new->tap->io_set('utf8')->[0];
+ok( !(grep { m/^utf8$/ } PerlIO::get_layers(\*STDOUT)), "Did not add utf8 to STDOUT" );
+ok( !(grep { m/^utf8$/ } PerlIO::get_layers($legacy)),  "Did not add utf8 to legacy" );
+ok(  (grep { m/^utf8$/ } PerlIO::get_layers($modern)),  "Did add utf8 to UTF8 handle" );
 
 done_testing;
