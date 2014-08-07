@@ -17,6 +17,7 @@ chdir 't';
 use Test::Builder;
 my $Test = Test::Builder->new;
 my $tb = Test::Builder->create;
+$tb->stream->use_lresults;
 
 # We'll need this later to know the outputs were reset
 my %Original_Output;

@@ -33,15 +33,12 @@ sub details {
 }
 
 sub current_test {
-    my ($self, $tb, $num) = @_;
+    my ($self, $num) = @_;
 
     lock( $self->{Curr_Test} );
     if( defined $num ) {
         my $delta = $num - $self->{Curr_Test};
         $self->{Curr_Test} = $num;
-
-        $tb->stream->tests_run(0 - $tb->stream->tests_run + $num);
-        $tb->tap->atomic_result(sub { $tb->tap->{number} = $num }) if $tb->tap;
 
         # If the test counter is being pushed forward fill in the details.
         my $test_results = $self->{Test_Results};

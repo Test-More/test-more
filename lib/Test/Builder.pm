@@ -848,7 +848,9 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $BLevel = 1;
 
     if ($params{new_stream} || !$params{shared_stream}) {
+        my $olds = $self->stream;
         $self->{stream} = Test::Builder::Stream->new;
+        $self->{stream}->use_lresults if $olds->lresults;
     }
 
     $final->pid($$) if $final;
@@ -859,7 +861,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     # Don't reset stream stuff when reseting/creating a modern TB object
     unless ($modern) {
-        $self->stream->use_lresults unless $modern || $params{no_legacy} || $ENV{TB_NO_LEGACY};
         $self->stream->no_ending(0);
         $self->tap->reset      if $self->tap;
         $self->lresults->reset if $self->lresults;
@@ -1289,9 +1290,20 @@ sub is_fh {
 
 sub current_test {
     my $self = shift;
-    $self->carp('Use of $TB->current_test() is deprecated.') if $self->modern;
-    my $lresults = $self->lresults || $self->croak("current_test() method only applies when legacy results are in use");
-    return $lresults->current_test($self, @_);
+
+    my $tap      = $self->tap;
+    my $lresults = $self->lresults;
+
+    if (@_) {
+        my ($num) = @_;
+
+        $lresults->current_test($num) if $lresults;
+        $tap->current_test($num)      if $tap;
+
+        $self->stream->tests_run(0 - $self->stream->tests_run + $num);
+    }
+
+    return $self->stream->tests_run;
 }
 
 sub BAILOUT {
@@ -2347,6 +2359,10 @@ Test::Builder.
 
 =head1 MEMORY
 
+B<Note:> This only applies if you turn lresults on.
+
+    $Test->stream->no_lresults;
+
 An informative hash, accessible via C<details()>, is stored for each
 test you perform.  So memory usage will scale linearly with each test
 run. Although this is not a problem for most test suites, it can
@@ -2356,12 +2372,6 @@ combinatorics tests in the same run.
 In such cases, you are advised to either split the test file into smaller
 ones, or use a reverse approach, doing "normal" (code) compares and
 triggering C<fail()> should anything go unexpected.
-
-You can turn this off:
-
-    $Test->stream->no_lresults;
-
-The shared stream has it on by default.
 
 =head1 EXAMPLES
 

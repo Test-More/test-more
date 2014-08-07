@@ -205,7 +205,6 @@ sub modernize {
     if (package_sub($target, 'TB_INSTANCE')) {
         my $tb = $target->TB_INSTANCE;
         $tb->stream->use_fork;
-        $tb->stream->no_lresults;
         $tb->modern(1);
     }
     else {
@@ -215,7 +214,6 @@ sub modernize {
             no_reset_plan => 1,
         );
         $tb->stream->use_fork;
-        $tb->stream->no_lresults;
         no strict 'refs';
         *{"$target\::TB_INSTANCE"} = sub {$tb};
     }

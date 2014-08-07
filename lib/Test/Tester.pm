@@ -12,6 +12,7 @@ BEGIN {
 }
 
 use Test::Builder;
+BEGIN { Test::Builder::Stream->shared->use_lresults }
 use Test::Tester::CaptureRunner;
 use Test::Tester::Delegate;
 

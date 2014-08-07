@@ -284,6 +284,17 @@ sub _print {
     return $self->_print_to_fh( $self->output, $indent, @msgs );
 }
 
+sub current_test {
+    my $self = shift;
+
+    if (@_) {
+        my ($new) = @_;
+        $self->atomic_result(sub { $self->{number} = $new });
+    }
+
+    return $self->{number};
+}
+
 ########################
 # }}} Legacy Support
 ########################

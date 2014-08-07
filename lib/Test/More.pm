@@ -75,31 +75,33 @@ sub before_import {
     _set_tap_encoding($dest, 'legacy');
 
     my $encoding_set = 0;
-    my $other = [];
-    my $idx   = 0;
-    while( $idx <= $#{$list} ) {
+    my $other        = [];
+    my $idx          = 0;
+    my $modern       = 0;
+    while ($idx <= $#{$list}) {
         my $item = $list->[$idx++];
         next unless $item;
 
-        if( $item eq 'no_diag' ) {
+        if ($item eq 'no_diag') {
             $class->builder->no_diag(1);
         }
-        elsif( $item eq 'tests' || $item eq 'skip_all' ) {
+        elsif ($item eq 'tests' || $item eq 'skip_all') {
             $class->builder->plan($item => $list->[$idx++]);
             return 0 if $item eq 'skip_all';
         }
-        elsif( $item eq 'no_plan' ) {
+        elsif ($item eq 'no_plan') {
             $class->builder->plan($item);
         }
-        elsif( $item eq 'import' ) {
+        elsif ($item eq 'import') {
             push @$other => @{$list->[$idx++]};
         }
-        elsif( $item eq 'enable_forking' ) {
+        elsif ($item eq 'enable_forking') {
             builder->stream->use_fork;
         }
-        elsif( $item eq 'modern' ) {
+        elsif ($item eq 'modern') {
             modernize($dest);
             _set_tap_encoding($dest, 'utf8') unless $encoding_set;
+            $modern++;
         }
         elsif ($item eq 'utf8') {
             $encoding_set++;
@@ -116,6 +118,8 @@ sub before_import {
     }
 
     @$list = @$other;
+
+    Test::Builder::Stream->shared->use_lresults unless $modern;
 
     return 1;
 }
