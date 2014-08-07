@@ -138,8 +138,8 @@ ok($ok, "Can import \$TODO");
 require PerlIO;
 my $legacy = Test::Builder->new->tap->io_set('legacy')->[0];
 my $modern = Test::Builder->new->tap->io_set('utf8')->[0];
-ok( !(grep { m/^utf8$/ } PerlIO::get_layers(\*STDOUT)), "Did not add utf8 to STDOUT" );
-ok( !(grep { m/^utf8$/ } PerlIO::get_layers($legacy)),  "Did not add utf8 to legacy" );
-ok(  (grep { m/^utf8$/ } PerlIO::get_layers($modern)),  "Did add utf8 to UTF8 handle" );
+ok( !(grep { $_ eq 'utf8' } PerlIO::get_layers(\*STDOUT)), "Did not add utf8 to STDOUT" );
+ok( !(grep { $_ eq 'utf8' } PerlIO::get_layers($legacy)),  "Did not add utf8 to legacy" );
+ok(  (grep { $_ eq 'utf8' } PerlIO::get_layers($modern)),  "Did add utf8 to UTF8 handle" );
 
 done_testing;
