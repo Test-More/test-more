@@ -162,33 +162,33 @@ sub io_set {
     return $self->io_sets->{$name};
 }
 
-sub locale_set {
+sub encoding_set {
     my $self = shift;
-    my ($locale) = @_;
+    my ($encoding) = @_;
 
-    $self->io_sets->{$locale} ||= do {
+    $self->io_sets->{$encoding} ||= do {
         my ($out, $fail) = $self->open_handles();
         my $todo = $out;
 
-        binmode($out, ":$locale");
-        binmode($fail, ":$locale");
+        binmode($out, ":$encoding");
+        binmode($fail, ":$encoding");
 
         [$out, $fail, $todo];
     };
 
-    return $self->io_sets->{$locale};
+    return $self->io_sets->{$encoding};
 }
 
 sub result_handle {
     my $self = shift;
     my ($result, $index) = @_;
 
-    my $rlocale = $result ? $result->locale : undef;
+    my $rencoding = $result ? $result->encoding : undef;
 
-    # Open handles in the locale if one is set.
-    $self->locale_set($rlocale) if $rlocale && $rlocale ne 'legacy';
+    # Open handles in the encoding if one is set.
+    $self->encoding_set($rencoding) if $rencoding && $rencoding ne 'legacy';
 
-    for my $name ($rlocale, qw/utf8 legacy/) {
+    for my $name ($rencoding, qw/utf8 legacy/) {
         next unless $name;
         my $handles = $self->io_set($name);
         return $handles->[$index]

@@ -40,7 +40,7 @@ provides qw(
   BAIL_OUT
   subtest
   nest
-  set_tap_locale
+  tap_encoding
 );
 
 provide TODO => \$TODO;
@@ -72,9 +72,9 @@ sub before_import {
     my $class = shift;
     my ($list, $dest) = @_;
 
-    _set_tap_locale($dest, 'legacy');
+    _set_tap_encoding($dest, 'legacy');
 
-    my $locale_set = 0;
+    my $encoding_set = 0;
     my $other = [];
     my $idx   = 0;
     while( $idx <= $#{$list} ) {
@@ -99,16 +99,16 @@ sub before_import {
         }
         elsif( $item eq 'modern' ) {
             modernize($dest);
-            _set_tap_locale($dest, 'utf8') unless $locale_set;
+            _set_tap_encoding($dest, 'utf8') unless $encoding_set;
         }
         elsif ($item eq 'utf8') {
-            $locale_set++;
-            _set_tap_locale($dest, 'utf8');
+            $encoding_set++;
+            _set_tap_encoding($dest, 'utf8');
         }
-        elsif ($item eq 'locale') {
-            $locale_set++;
-            my $locale = @{$list->[$idx++]};
-            _set_tap_locale($dest, $locale);
+        elsif ($item eq 'encoding') {
+            $encoding_set++;
+            my $encoding = @{$list->[$idx++]};
+            _set_tap_encoding($dest, $encoding);
         }
         else {
             Carp::carp("Unknown option: $item");
@@ -120,17 +120,20 @@ sub before_import {
     return 1;
 }
 
-sub _set_tap_locale {
-    my ($test, $locale) = @_;
+sub _set_tap_encoding {
+    my ($test, $encoding) = @_;
     my $meta = is_tester($test);
     require Carp;
     Carp::croak "package '$test' is not a tester!" unless $meta;
-    $meta->{locale} = $locale;
+
+    $meta->{encoding} = $encoding if defined $encoding;
+
+    return $meta->{encoding};
 }
 
-sub set_tap_locale {
+sub tap_encoding {
     my $caller = caller;
-    _set_tap_locale($caller, @_);
+    _set_tap_encoding($caller, @_);
 }
 
 sub done_testing {
@@ -821,7 +824,7 @@ Test::More - yet another framework for writing test scripts
   # or
 
   # Switch to utf8 for all TAP produced by THIS PACKAGE
-  set_tap_locale 'utf8';
+  tap_encoding 'utf8';
 
   use ok 'Some::Module';
   require_ok( 'Some::Module' );
@@ -1033,16 +1036,16 @@ warnings when using deprecated code.
 
 =item use Test::More 'utf8';
 
-=item use Test::More locale => 'utf8'
+=item use Test::More encoding => 'utf8'
 
 These both work the same, they enable utf8 output in TAP.
 
-=item use Test::More locale => ...
+=item use Test::More encoding => ...
 
-Switch TAP output to whatever locale you want.
+Switch TAP output to whatever encoding you want.
 
 B<Note>: This is effective only for the current package. Other packages can/may
-select other locales for their TAP output. For packages where none is
+select other encodings for their TAP output. For packages where none is
 specified, the original STDOUT and STDERR settings are used, the results are
 unpredictable.
 
@@ -1050,17 +1053,17 @@ unpredictable.
 
 =head2 TAP Encoding
 
-    set_tap_locale 'utf8';
+    tap_encoding 'utf8';
 
 or
 
-    set_tap_locale YOUR_ENCODING;
+    tap_encoding YOUR_ENCODING;
 
-The C<set_tap_locale($locale)> function will ensure that any B<FUTURE> TAP
-output produced by I<This Package> will be output in the specified locale.
+The C<tap_encoding($encoding)> function will ensure that any B<FUTURE> TAP
+output produced by I<This Package> will be output in the specified encoding.
 
 B<Note>: This is effective only for the current package. Other packages can/may
-select other locales for their TAP output. For packages where none is
+select other encodings for their TAP output. For packages where none is
 specified, the original STDOUT and STDERR settings are used, the results are
 unpredictable.
 

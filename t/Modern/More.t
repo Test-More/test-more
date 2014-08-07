@@ -99,7 +99,7 @@ ok($ok, "Can import \$TODO");
     use Test::Tester2;
 
     my $results = intercept { ok(1, "blah") };
-    is($results->[0]->locale, 'utf8', "output defaults to utf8");
+    is($results->[0]->encoding, 'utf8', "output defaults to utf8");
 
     my @warnings;
     {
@@ -115,7 +115,7 @@ ok($ok, "Can import \$TODO");
     use Test::Tester2;
 
     my $results = intercept { ok(1, "blah") };
-    is($results->[0]->locale, 'legacy', "legacy locale set for non-modern");
+    is($results->[0]->encoding, 'legacy', "legacy encoding set for non-modern");
 
     my @warnings;
     {
@@ -132,7 +132,7 @@ ok($ok, "Can import \$TODO");
     use Test::Tester2;
 
     my $results = intercept { Test::More::ok(1, "blah") };
-    Test::More::is($results->[0]->locale, undef, "no locale set for non-consumer");
+    Test::More::is($results->[0]->encoding, undef, "no encoding set for non-consumer");
 }
 
 require PerlIO;

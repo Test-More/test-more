@@ -16,9 +16,9 @@ sub before_import {
     my $class = shift;
     my ($list, $dest) = @_;
 
-    Test::More::_set_tap_locale($dest, 'legacy');
+    Test::More::_set_tap_encoding($dest, 'legacy');
 
-    my $locale_set = 0; 
+    my $encoding_set = 0; 
     my $other = [];
     my $idx   = 0;
     while( $idx <= $#{$list} ) {
@@ -38,16 +38,16 @@ sub before_import {
         }
         elsif( $item eq 'modern' ) {
             modernize($dest);
-            Test::More::_set_tap_locale($dest, 'utf8') unless $locale_set;
+            Test::More::_set_tap_encoding($dest, 'utf8') unless $encoding_set;
         }
         elsif ($item eq 'utf8') {
-            Test::More::_set_tap_locale($dest, 'utf8');
-            $locale_set++;
+            Test::More::_set_tap_encoding($dest, 'utf8');
+            $encoding_set++;
         }
-        elsif ($item eq 'locale') {
-            my $locale = @{$list->[$idx++]};
-            Test::More::_set_tap_locale($dest, $locale);
-            $locale_set++;
+        elsif ($item eq 'encoding') {
+            my $encoding = @{$list->[$idx++]};
+            Test::More::_set_tap_encoding($dest, $encoding);
+            $encoding_set++;
         }
 
         else {
