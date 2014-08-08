@@ -147,6 +147,7 @@ t/Modern/More.t
 t/Modern/NotTB15.t
 t/Modern/Simple.t
 t/Modern/Tester2.t
+t/Modern/Tester2_subtest.t
 t/Modern/tracing.t
 t/More.t
 t/new_ok.t

@@ -356,7 +356,7 @@ sub spawn {
         for my $key (keys %{$refs->{$type}}) {
             next if $key eq 'LEGACY_TAP';
             next if $key eq 'LEGACY_RESULTS';
-            $self->{$type}->{$key} = sub {
+            $new->{"_$type"}->{$key} = sub {
                 my $item = $refs->{$type}->{$key} || return;
                 return $item->(@_) if reftype $item eq 'CODE';
                 $item->handle(@_);
@@ -531,7 +531,7 @@ switch to legacy follow-up behavior. This means exiting for bailout or skip_all.
 =item $stream->exception_followup
 
 Switch to exception follow-up behavior. This means throwing an exception on
-bailout or skip_all. This is necessary for intercepting results. 
+bailout or skip_all. This is necessary for intercepting results.
 
 =item $fork_handler = $stream->fork
 

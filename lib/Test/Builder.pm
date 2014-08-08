@@ -216,7 +216,6 @@ sub subtest {
 
         _copy($self,  $parent);
         _copy($child, $self);
-        Test::Builder::Stream->intercept_start($self->stream);
 
         my $run_the_subtests = sub {
             $subtests->(@args);
@@ -228,7 +227,6 @@ sub subtest {
     }
 
     # Restore the parent and the copied child.
-    Test::Builder::Stream->intercept_stop($self->stream);
     _copy($self,   $child);
     _copy($parent, $self);
 
@@ -275,7 +273,7 @@ sub finalize {
     }
 
     $? = $self->{Child_Error};
-    delete $self->{Parent};
+    my $parent = delete $self->{Parent};
 
     my $res = Test::Builder::Result::Child->new(
         $self->context,
@@ -284,7 +282,7 @@ sub finalize {
         in_todo => $self->in_todo || 0,
         is_subtest => $is_subtest || 0,
     );
-    $self->stream->send($res);
+    $parent->stream->send($res);
 
     return $self->is_passing;
 }

@@ -396,13 +396,19 @@ True if the result was generated inside a todo.
 
 Line number to which failures will be reported.
 
+(This is actually usually undefined for plan and finish)
+
 =item file
 
-File to qhich failures will be reported
+File to which failures will be reported
+
+(This is actually usually undefined for plan and finish)
 
 =item package
 
 package to which errors will be reported
+
+(This is actually usually undefined for plan and finish)
 
 =item tool_package
 
