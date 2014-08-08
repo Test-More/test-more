@@ -51,7 +51,23 @@ results_are(
 
     diag => {message => qr{Failed test 'Lets name this test!'.*at (\./)?t/Modern/Tester2\.t line}s},
     diag => {message => q{(ok blah) Wanted bool => '0', but got bool => '1'}},
-
+    diag => {message => <<"    EOT"},
+Full result found was: ok => {
+  name: foo
+  bool: 1
+  real_bool: 1
+  in_todo: 0
+  package: main
+  file: t/Modern/Tester2.t
+  line: 44
+  pid: $$
+  depth: 0
+  source: t/Modern/Tester2.t
+  tool_name: ok
+  tool_package: Test::More
+  tap: ok - foo
+}
+    EOT
     end => 'Failure diag checking',
 );
 
@@ -248,6 +264,7 @@ DOCS_6: {
         ok => { bool => 0 },
         diag => { message => qr/Failed test 'docs 6 inner'/ },
         diag => { message => q{(ok 3) Wanted result type 'ok', But got: 'diag'} },
+        diag => { message => qr/Full result found was:/ },
 
         end => 'docs 6',
     );
