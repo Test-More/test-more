@@ -170,8 +170,8 @@ sub encoding_set {
         my ($out, $fail) = $self->open_handles();
         my $todo = $out;
 
-        binmode($out, ":$encoding");
-        binmode($fail, ":$encoding");
+        binmode($out, ":encoding($encoding)");
+        binmode($fail, ":encoding($encoding)");
 
         [$out, $fail, $todo];
     };

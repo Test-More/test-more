@@ -5,13 +5,25 @@ use warnings;
 use base 'Test::Builder::Result';
 
 use Scalar::Util();
-use Test::Builder::Util qw/accessors/;
+use Test::Builder::Util qw/accessors try/;
+use Encode();
 accessors qw/message/;
 
 sub to_tap {
     my $self = shift;
 
     chomp(my $msg = $self->message);
+
+    if ($self->trace && $self->trace->report) {
+        my $encoding = $self->trace->encoding;
+        if ($encoding && $encoding ne 'legacy') {
+            my $file = $self->trace->report->file;
+            my $decoded;
+            try { $decoded = Encode::decode($encoding, "$file", Encode::FB_CROAK) };
+            $msg =~ s/$file/$decoded/g if $decoded;
+        }
+    }
+
     $msg = "# $msg" unless $msg =~ m/^\n/;
     $msg =~ s/\n/\n# /g;
     return "$msg\n";
@@ -83,7 +95,7 @@ True if the result was generated inside a todo.
 Builder that created the result, usually $0, but the name of a subtest when
 inside a subtest.
 
-=item $r->constructed 
+=item $r->constructed
 
 Package, File, and Line in which the result was built.
 

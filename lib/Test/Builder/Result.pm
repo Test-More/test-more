@@ -36,8 +36,7 @@ sub indent {
 sub encoding {
     my $self = shift;
     return unless $self->trace;
-    return unless @{$self->trace->anointed};
-    return $self->trace->anointed->[0]->package->TB_TESTER_META->{encoding};
+    return $self->trace->encoding;
 }
 
 1;
@@ -90,7 +89,7 @@ True if the result was generated inside a todo.
 Builder that created the result, usually $0, but the name of a subtest when
 inside a subtest.
 
-=item $r->constructed 
+=item $r->constructed
 
 Package, File, and Line in which the result was built.
 
