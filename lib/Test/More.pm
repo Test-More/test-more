@@ -99,15 +99,15 @@ sub before_import {
             builder->stream->use_fork;
         }
         elsif ($item eq 'modern') {
-            modernize($dest);
-            _set_tap_encoding($dest, 'utf8') unless $encoding_set;
-            $modern++;
+            modernize($dest) unless $modern++;
         }
         elsif ($item eq 'utf8') {
+            modernize($dest) unless $modern++;
             $encoding_set++;
             _set_tap_encoding($dest, 'utf8');
         }
         elsif ($item eq 'encoding') {
+            modernize($dest) unless $modern++;
             $encoding_set++;
             my $encoding = @{$list->[$idx++]};
             _set_tap_encoding($dest, $encoding);
@@ -1035,14 +1035,13 @@ to collect the results from other processes.
 
 =item use Test::More 'modern';
 
-enables forking, enabled utf8, disables legacy_results support, and issues
-warnings when using deprecated code.
+enables forking, and issues warnings when using deprecated code.
 
 =item use Test::More 'utf8';
 
 =item use Test::More encoding => 'utf8'
 
-These both work the same, they enable utf8 output in TAP.
+These both work the same, they enable utf8 output in TAP. They also imply 'modern'.
 
 =item use Test::More encoding => ...
 
@@ -1052,6 +1051,8 @@ B<Note>: This is effective only for the current package. Other packages can/may
 select other encodings for their TAP output. For packages where none is
 specified, the original STDOUT and STDERR settings are used, the results are
 unpredictable.
+
+This implies the 'modern' flag.
 
 =back
 

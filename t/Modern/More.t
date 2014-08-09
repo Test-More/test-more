@@ -4,19 +4,6 @@ use Test::More qw/modern/;
 use Test::Tester2;
 use utf8;
 
-ok(1, "Result in parent" );
-
-if (my $pid = fork()) {
-    waitpid($pid, 0);
-    cull();
-}
-else {
-    ok(1, "Result in child");
-    exit 0;
-}
-
-is(Test::Builder::Stream->shared->tests_run, 2, "Got the forked result");
-
 helpers qw/my_ok/;
 sub my_ok { Test::Builder->new->ok(@_) }
 
@@ -95,11 +82,10 @@ ok($ok, "Can import \$TODO");
 
 {
     package main_modern;
-    use Test::More 'modern';
+    use Test::More 'utf8';
     use Test::Tester2;
 
     my $results = intercept { ok(1, "blah") };
-    is($results->[0]->encoding, 'utf8', "output defaults to utf8");
 
     my @warnings;
     {

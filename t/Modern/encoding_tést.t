@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use utf8;
 
-use Test::More qw/modern/;
+use Test::More qw/utf8/;
 use Test::Tester2;
 
 BEGIN {
@@ -11,6 +11,8 @@ BEGIN {
 }
 
 my $results = intercept {
+    my $orig = tap_encoding;
+    tap_encoding 'utf8';
     ok(0, "test failure" );
 
     subtest 'subtest' => sub {
@@ -18,8 +20,8 @@ my $results = intercept {
     };
 
     tap_encoding 'legacy';
-    ok(0, "latin1 failure");
-    tap_encoding 'utf8';
+    ok(0, "legacy failure");
+    tap_encoding($orig);
 };
 
 my $legacy_name = __FILE__;

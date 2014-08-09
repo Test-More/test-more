@@ -191,8 +191,7 @@ sub result_handle {
     for my $name ($rencoding, qw/utf8 legacy/) {
         next unless $name;
         my $handles = $self->io_set($name);
-        return $handles->[$index]
-            if $handles;
+        return $handles->[$index] if $handles;
     }
 
     confess "This should not happen";
