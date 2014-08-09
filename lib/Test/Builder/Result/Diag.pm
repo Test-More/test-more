@@ -9,6 +9,8 @@ use Test::Builder::Util qw/accessors try/;
 use Encode();
 accessors qw/message/;
 
+my $NORMALIZE = eval { require Unicode::Normalize; 1 };
+
 sub to_tap {
     my $self = shift;
 
@@ -20,7 +22,10 @@ sub to_tap {
             my $file = $self->trace->report->file;
             my $decoded;
             try { $decoded = Encode::decode($encoding, "$file", Encode::FB_CROAK) };
-            $msg =~ s/$file/$decoded/g if $decoded;
+            if ($decoded) {
+                $decoded = Unicode::Normalize::NFKC($decoded) if $NORMALIZE;
+                $msg =~ s/$file/$decoded/g;
+            }
         }
     }
 

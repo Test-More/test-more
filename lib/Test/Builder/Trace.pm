@@ -5,7 +5,6 @@ use warnings;
 use Test::Builder::Util qw/accessor accessors is_tester try/;
 use Test::Builder::Trace::Frame;
 use List::Util qw/first/;
-use Encode();
 
 accessor anointed    => sub { [] };
 accessor full        => sub { [] };
@@ -85,30 +84,6 @@ sub encoding {
     }
 
     return $self->{encoding};
-}
-
-sub decode {
-    my $self = shift;
-
-    my $current = $self;
-    while($current) {
-        $current->_decode;
-        $current = $current->parent;
-    }
-
-    return;
-}
-
-sub _decode {
-    my $self = shift;
-    my $encoding = $self->encoding || return;
-    return if $encoding eq 'legacy';
-
-    for my $frame (@{$self->full}) {
-        my $file = $frame->file;
-        try { $file = Encode::decode($encoding, "$file", Encode::FB_CROAK) } || next;
-        $frame->file($file);
-    }
 }
 
 sub todo_package {
@@ -241,14 +216,6 @@ is set as the parent. You can use this to examine the stack beyond the main
 trace.
 
 =back
-
-=item $trace->decode
-
-This will iterate over every L<Test::Builder::Trace::Frame> object and
-translate the filename into the tap_encoding that was set when the stack was
-created. This can be useful in cases where the filename is in utf8 since perl
-will not make that translation for you due to uncertainties about the
-filesystem on any given platform.
 
 =head1 STACKS
 
