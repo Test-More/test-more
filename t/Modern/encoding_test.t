@@ -5,6 +5,8 @@ use utf8;
 use Test::More qw/utf8/;
 use Test::Tester2;
 
+# line 8 encoding_tést.t
+
 BEGIN {
     my $norm = eval { require Unicode::Normalize; 1 };
     plan skip_all => 'Unicode::Normalize is required for this test' unless $norm;

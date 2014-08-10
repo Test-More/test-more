@@ -143,7 +143,7 @@ t/Modern/Builder_Tester.t
 t/Modern/Builder_Trace.t
 t/Modern/Builder_Trace_Frame.t
 t/Modern/Builder_Util.t
-t/Modern/encoding_tést.t
+t/Modern/encoding_test.t
 t/Modern/More.t
 t/Modern/NotTB15.t
 t/Modern/Simple.t
