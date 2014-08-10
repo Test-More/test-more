@@ -7,7 +7,18 @@ BEGIN {
     }
 }
 
-use Test::More tests => 17;
+use Test::More;
+
+BEGIN {
+    my $dw = 0;
+    local $SIG{__WARN__} = sub { $dw++ };
+    no strict 'refs';
+    no warnings 'redefine';
+    *{":invalid symbol"} = sub { 1 };
+    *{":invalid symbol"} = sub { 2 };
+
+    plan skip_all => '-W appears active, skipping test' if $dw;
+}
 
 # If we skip with the same name, Test::Harness will report it back and
 # we won't get lots of false bug reports.
@@ -96,3 +107,5 @@ SKIP: {
 
     like $warning, qr/^skip\(\) was passed a non-numeric number of tests/;
 }
+
+done_testing;

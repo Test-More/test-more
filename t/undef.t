@@ -11,7 +11,18 @@ BEGIN {
 }
 
 use strict;
-use Test::More tests => 21;
+use Test::More;
+
+BEGIN {
+    my $dw = 0;
+    local $SIG{__WARN__} = sub { $dw++ };
+    no strict 'refs';
+    no warnings 'redefine';
+    *{":invalid symbol"} = sub { 1 };
+    *{":invalid symbol"} = sub { 2 };
+
+    plan skip_all => '-W appears active, skipping test' if $dw;
+}
 
 BEGIN { $^W = 1; }
 
@@ -96,3 +107,5 @@ no_warnings;
     is_deeply([ undef ], [ undef ]);
     no_warnings;
 }
+
+done_testing;

@@ -8,6 +8,17 @@ BEGIN {
 use Test::More;
 
 BEGIN {
+    {
+        my $dw = 0;
+        local $SIG{__WARN__} = sub { $dw++ };
+        no strict 'refs';
+        no warnings 'redefine';
+        *{":invalid symbol"} = sub { 1 };
+        *{":invalid symbol"} = sub { 2 };
+
+        plan skip_all => '-W appears active, skipping test' if $dw;
+    }
+
     if( !$ENV{HARNESS_ACTIVE} && $ENV{PERL_CORE} ) {
         plan skip_all => "Won't work with t/TEST";
     }
