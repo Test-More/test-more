@@ -4,7 +4,7 @@ use 5.008001;
 use strict;
 use warnings;
 
-use Test::Builder::Util qw/is_tester/;
+use Test::Builder::Util qw/is_tester try/;
 
 #---- perlcritic exemptions. ----#
 
@@ -125,12 +125,23 @@ sub before_import {
 }
 
 sub _set_tap_encoding {
-    my ($test, $encoding) = @_;
+    my ($test, $encoding, $run) = @_;
     my $meta = is_tester($test);
     require Carp;
     Carp::croak "package '$test' is not a tester!" unless $meta;
 
-    $meta->{encoding} = $encoding if defined $encoding;
+    if (defined $run) {
+        my $old = $meta->{encoding};
+        $meta->{encoding} = $encoding;
+        
+        my ($ok, $error) = try { $run->() };
+
+        $meta->{encoding} = $old;
+        die $error unless $ok;
+    }
+    else {
+        $meta->{encoding} = $encoding if defined $encoding;
+    }
 
     return $meta->{encoding};
 }
@@ -1058,19 +1069,40 @@ This implies the 'modern' flag.
 
 =head2 TAP Encoding
 
-    tap_encoding 'utf8';
+=over 4
 
-or
+=item tap_encoding 'utf8';
 
-    tap_encoding YOUR_ENCODING;
+=item tap_encoding 'YOUR_ENCODING';
+
+=item tap_encoding 'xxx' => sub { ... };
 
 The C<tap_encoding($encoding)> function will ensure that any B<FUTURE> TAP
 output produced by I<This Package> will be output in the specified encoding.
+
+You may also provide a codeblock in which case the scope of the encoding change
+will only apply to that codeblock.
 
 B<Note>: This is effective only for the current package. Other packages can/may
 select other encodings for their TAP output. For packages where none is
 specified, the original STDOUT and STDERR settings are used, the results are
 unpredictable.
+
+B<Note>: Filenames are a touchy subject:
+
+Different OS's and filesystems handle filenames differently. When you do not
+specify an encoding, the filename will be unmodified, you get whatever perl
+thinks it is. If you do specify an encoding, the filename will be assumed to be
+in that encoding, and an attempt will be made to unscramble it. If the
+unscrambling fails the original name will be used.
+
+This filename unscrambling is necessary for example on linux systems when you
+use utf8 encoding and a utf8 filename. Perl will read the bytes of the name,
+and treat them as bytes. if you then try to print the name to a utf8 handle it
+will treat each byte as a different character. Test::More attempts to fix this
+scrambling for you. 
+
+=back
 
 =head2 Helpers
 

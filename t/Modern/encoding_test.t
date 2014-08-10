@@ -1,57 +1,56 @@
 use strict;
 use warnings;
-use utf8;
+no utf8;
 
-use Test::More qw/utf8/;
+use Test::More qw/modern/;
 use Test::Tester2;
 
-# line 8 encoding_tést.t
-
 BEGIN {
-    my $norm = eval { require Unicode::Normalize; 1 };
+    my $norm = eval { require Unicode::Normalize; require Encode; 1 };
     plan skip_all => 'Unicode::Normalize is required for this test' unless $norm;
 }
 
-my $results = intercept {
-    my $orig = tap_encoding;
-    tap_encoding 'utf8';
-    ok(0, "test failure" );
+my $filename = "encoding_tést.t";
+ok(!utf8::is_utf8($filename), "filename is not in utf8 already");
+my $utf8name = Unicode::Normalize::NFKC(Encode::decode('utf8', "$filename", Encode::FB_CROAK));
+ok( $filename ne $utf8name, "sanity check" );
 
-    subtest 'subtest' => sub {
-        ok(0, "sub test failure" );
-    };
+tap_encoding 'utf8';
+my $trace_utf8 = Test::Builder::Trace->new();
+$trace_utf8->report->file($filename);
 
-    tap_encoding 'legacy';
-    ok(0, "legacy failure");
-    tap_encoding($orig);
-};
+tap_encoding 'legacy';
+my $trace_legacy = Test::Builder::Trace->new();
+$trace_legacy->report->file($filename);
 
-my $legacy_name = __FILE__;
-my $utf8_name = Unicode::Normalize::NFKC('encoding_tést.t');
-results_are(
-    $results,
+is($trace_utf8->encoding, 'utf8', "got a utf8 trace");
+is($trace_legacy->encoding, 'legacy', "got a legacy trace");
 
-    ok   => {bool => 0},
-    diag => {tap  => qr/\Q$utf8_name\E/},
-
-    child => {action => 'push'},
-
-        ok   => {bool => 0},
-        diag => {tap  => qr/\Q$utf8_name\E/},
-
-        plan   => {},
-        finish => {},
-
-        diag => {tap  => qr/Looks like you failed 1 test of 1/},
-        ok   => {bool => 0,},
-        diag => {tap  => qr/\Q$utf8_name\E/},
-
-    child => {action => 'pop'},
-
-    ok   => {bool => 0},
-    diag => {tap  => qr/\Q$legacy_name\E/},
-
-    end => "Encoding is honored by the stack tracing",
+my $diag_utf8 = Test::Builder::Result::Diag->new(
+    message => "failed blah de blah\nFatal error in $filename line 42.\n",
+    trace   => $trace_utf8,
 );
+
+my $diag_legacy = Test::Builder::Result::Diag->new(
+    message => "failed blah de blah\nFatal error in $filename line 42.\n",
+    trace   => $trace_legacy,
+);
+
+ok( $diag_legacy->to_tap ne $diag_utf8->to_tap, "The utf8 diag has a different output" );
+
+is(
+    $diag_legacy->to_tap,
+    "# failed blah de blah\n# Fatal error in $filename line 42.\n",
+    "Got unaltered filename in legacy"
+);
+
+# Change encoding for the scope of the next test so that errors make more sense.
+tap_encoding 'utf8' => sub {
+    is(
+        $diag_utf8->to_tap,
+        "# failed blah de blah\n# Fatal error in $utf8name line 42.\n",
+        "Got transcoded filename in utf8"
+    );
+};
 
 done_testing;
