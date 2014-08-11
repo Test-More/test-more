@@ -5,7 +5,7 @@ use warnings;
 use Test::More ();
 use Carp qw/croak/;
 
-our $VERSION = '1.301001_028';
+our $VERSION = '1.301001_029';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 sub import {
