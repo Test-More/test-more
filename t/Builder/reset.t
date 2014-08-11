@@ -13,8 +13,8 @@ BEGIN {
 }
 chdir 't';
 
-
 use Test::Builder;
+use Test::Builder::Formatter::LegacyResults;
 my $Test = Test::Builder->new;
 my $tb = Test::Builder->create;
 $tb->stream->use_lresults;

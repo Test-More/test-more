@@ -16,5 +16,6 @@ BEGIN {
 
 use Test::More tests => 2;
 
+$handler_called = 0;
 ok !eval { die };
 is $handler_called, 1, 'existing DIE handler not overridden';

@@ -9,7 +9,7 @@ use Test::Builder::Util qw/accessors try/;
 use Encode();
 accessors qw/message/;
 
-my $NORMALIZE = eval { require Unicode::Normalize; 1 };
+my $NORMALIZE = try { require Unicode::Normalize; 1 };
 
 sub to_tap {
     my $self = shift;
