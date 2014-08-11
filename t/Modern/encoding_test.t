@@ -53,4 +53,14 @@ tap_encoding 'utf8' => sub {
     );
 };
 
+{
+    eval {
+        tap_encoding 'invalid_encoding';
+    };
+
+    like($@, qr/encoding 'invalid_encoding' is invalid/, 'validate encoding');
+};
+
+
+
 done_testing;

@@ -130,6 +130,12 @@ sub _set_tap_encoding {
     require Carp;
     Carp::croak "package '$test' is not a tester!" unless $meta;
 
+    if ($encoding and $encoding ne 'legacy') {
+        require Encode;
+        Carp::croak "encoding '$encoding' is invalid!"
+            unless Encode::find_encoding($encoding);
+    }
+
     if (defined $run) {
         my $old = $meta->{encoding};
         $meta->{encoding} = $encoding;
