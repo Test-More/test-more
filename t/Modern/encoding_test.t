@@ -54,11 +54,11 @@ tap_encoding 'utf8' => sub {
 };
 
 {
-    eval {
-        tap_encoding 'invalid_encoding';
-    };
-
-    like($@, qr/encoding 'invalid_encoding' is invalid/, 'validate encoding');
+    my $file = __FILE__;
+    my $success = eval { tap_encoding 'invalid_encoding'; 1 }; my $line = __LINE__;
+    my $error = $@;
+    ok(!$success, "Threw an exception when using invalid encoding");
+    is($error, "encoding 'invalid_encoding' is not valid, or not available at $file line $line.\n", 'validate encoding');
 };
 
 

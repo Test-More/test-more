@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use Test::Builder::Util qw/is_tester try/;
+use Encode();
 
 #---- perlcritic exemptions. ----#
 
@@ -131,15 +132,14 @@ sub _set_tap_encoding {
     Carp::croak "package '$test' is not a tester!" unless $meta;
 
     if ($encoding and $encoding ne 'legacy') {
-        require Encode;
-        Carp::croak "encoding '$encoding' is invalid!"
+        Carp::croak "encoding '$encoding' is not valid, or not available"
             unless Encode::find_encoding($encoding);
     }
 
     if (defined $run) {
         my $old = $meta->{encoding};
         $meta->{encoding} = $encoding;
-        
+
         my ($ok, $error) = try { $run->() };
 
         $meta->{encoding} = $old;
