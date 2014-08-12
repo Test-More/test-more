@@ -91,6 +91,10 @@ ok($ok, "Can import \$TODO");
     {
         local $SIG{__WARN__} = sub { push @warnings => @_ };
         ok(1, "Ճȴģȳф utf8 name");
+        subtest 'Ճȴģȳф utf8 name - subtest name' => sub {
+            ok(1, "Ճȴģȳф utf8 name - in subtest");
+        };
+        ok(1, "Ճȴģȳф utf8 name - after subtest");
     }
     ok(!@warnings, "no warnings");
 }
@@ -107,10 +111,20 @@ ok($ok, "Can import \$TODO");
     {
         local $SIG{__WARN__} = sub { push @warnings => @_ };
         ok(1, "Ճȴģȳф utf8 name");
+        subtest 'Ճȴģȳф utf8 name - subtest name' => sub {
+            ok(1, "Ճȴģȳф utf8 name - in subtest");
+        };
+        ok(1, "Ճȴģȳф utf8 name - after subtest");
     }
     use warnings;
     use Data::Dumper;
-    like( $warnings[0], qr/Wide character in print/, "utf8 is not on" );
+    my $counter = 0;
+    like(
+            $warnings[$counter++],
+            qr/Wide character in print/,
+            "utf8 is not on - warning count $counter"
+            ) for @warnings;
+    is( @warnings, 5, 'number of wide character warnings' );
 }
 
 {
