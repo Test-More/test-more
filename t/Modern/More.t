@@ -116,15 +116,19 @@ ok($ok, "Can import \$TODO");
         };
         ok(1, "Ճȴģȳф utf8 name - after subtest");
     }
-    use warnings;
-    use Data::Dumper;
-    my $counter = 0;
-    like(
-            $warnings[$counter++],
-            qr/Wide character in print/,
-            "utf8 is not on - warning count $counter"
-            ) for @warnings;
-    is( @warnings, 5, 'number of wide character warnings' );
+
+    chomp(@warnings);
+    is_deeply(
+        [ map { s/ at.*$//; $_ } @warnings],
+        [
+            'Wide character in print',
+            'Wide character in print',
+            'Wide character in print',
+            'Wide character in print',
+            'Wide character in print',
+        ],
+        "utf8 is not on."
+    );
 }
 
 {
