@@ -1,17 +1,21 @@
-1.301001_ALPHAS
+1.301001
     * Normalize version number across all versioned files
     * Result stream!
     * Results as objects
-    * Deprecate: Test::Builder::Tester, Test::Tester, Test::Builder::Module, $Level
+    * Diags can be tied to their ok's
+    * Deprecate: Test::Builder::Tester, Test::Tester, Test::Builder::Module
+    * Add Provider as an easier alternative to $Level
     * Bundle Test::Tester
     * Add Test::Tester2
-    * Add Test::Builder::Provider
     * Support for result handlers/formatters
-    * Forking support
+    * Limited Forking support
     * Refactor functionality into encapsulation modules (ExitMagic, Tap, etc...)
-    * Add Test Tracing instead of $Level
-    * Add tap_encoding function
-    * Bugfixes!
+    * Add Test Tracing
+    * Better encoding support in TAP output
+    * Add the 'modern' flag to disable old features
+    * Reduce dependancy on singleton pattern, each test can have its own builder
+    * Drop perl5.6 support
+    * Bugfixes
 
 1.001004_003 Sat May  17 13:43:00 PST 2014
     * Another Minor doc fix to solve test bug
