@@ -2008,7 +2008,9 @@ Key feature milestones include:
 
 =item test tracing
 
-Test::Builder and Test::More version 1.001004 introduce these major
+=item tap encoding
+
+Test::Builder and Test::More version 1.301001 introduce these major
 modernizations.
 
 =item subtests
@@ -2048,12 +2050,23 @@ versions included as core can be found using L<Module::CoreList>:
 =item utf8 / "Wide character in print"
 
 If you use utf8 or other non-ASCII characters with Test::More you
-might get a "Wide character in print" warning.  Using
-C<< binmode STDOUT, ":utf8" >> will not fix it.
-L<Test::Builder> (which powers
-Test::More) duplicates STDOUT and STDERR.  So any changes to them,
-including changing their output disciplines, will not be seem by
-Test::More.
+might get a "Wide character in print" warning.
+Using C<< binmode STDOUT, ":utf8" >> will not fix it.
+
+Use the C<tap_encoding> function such cases.
+
+    use utf8;
+    use Test::More;
+    tap_encoding 'utf8';
+
+L<Test::Builder> (which powers Test::More) duplicates STDOUT and STDERR.
+So any changes to them, including changing their output disciplines,
+will not be seem by Test::More.
+
+B<Note>:deprecated ways for utf8 or other non-ASCII characters
+
+There has been necessary to carry out the deal, such as the following before,
+but it was no longer needed with the introduction of C<tap_encoding> function.
 
 One work around is to apply encodings to STDOUT and STDERR as early
 as possible and before Test::More (or any other Test module) loads.
