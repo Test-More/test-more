@@ -2053,7 +2053,7 @@ If you use utf8 or other non-ASCII characters with Test::More you
 might get a "Wide character in print" warning.
 Using C<< binmode STDOUT, ":utf8" >> will not fix it.
 
-Use the C<tap_encoding> function such cases.
+Use the C<tap_encoding> function to configure the TAP stream encoding.
 
     use utf8;
     use Test::More;
@@ -2061,22 +2061,21 @@ Use the C<tap_encoding> function such cases.
 
 L<Test::Builder> (which powers Test::More) duplicates STDOUT and STDERR.
 So any changes to them, including changing their output disciplines,
-will not be seem by Test::More.
+will not be seen by Test::More.
 
-B<Note>:deprecated ways for utf8 or other non-ASCII characters
+B<Note>:deprecated ways to use utf8 or other non-ASCII characters.
 
-There has been necessary to carry out the deal, such as the following before,
-but it was no longer needed with the introduction of C<tap_encoding> function.
+In the past it was necessary to alter the filehandle encoding prior to loading
+Test::More. This is no longer necessary thanks to C<tap_encoding()>.
 
-One work around is to apply encodings to STDOUT and STDERR as early
-as possible and before Test::More (or any other Test module) loads.
-
+    # *** DEPRECATED WAY ***
     use open ':std', ':encoding(utf8)';
     use Test::More;
 
 A more direct work around is to change the filehandles used by
 L<Test::Builder>.
 
+    # *** EVEN MORE DEPRECATED WAY ***
     my $builder = Test::More->builder;
     binmode $builder->output,         ":encoding(utf8)";
     binmode $builder->failure_output, ":encoding(utf8)";
