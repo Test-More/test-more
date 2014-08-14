@@ -2,6 +2,7 @@ package Test::Tester2;
 use strict;
 use warnings;
 
+use Test::Builder 1.301001;
 use Test::Builder::Stream;
 use Test::Builder::Util qw/try/;
 

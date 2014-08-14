@@ -11,7 +11,7 @@ BEGIN {
     }
 }
 
-use Test::Builder;
+use Test::Builder 1.301001;
 BEGIN { Test::Builder::Stream->shared->use_lresults }
 use Test::Tester::CaptureRunner;
 use Test::Tester::Delegate;

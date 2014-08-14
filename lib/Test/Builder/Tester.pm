@@ -4,7 +4,7 @@ use strict;
 our $VERSION = '1.301001_033';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Builder 0.98;
+use Test::Builder 1.301001;
 use Symbol;
 use Carp;
 

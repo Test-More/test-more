@@ -2,7 +2,7 @@ package ok;
 use strict;
 use warnings;
 
-use Test::More ();
+use Test::More 1.301001 ();
 use Carp qw/croak/;
 
 our $VERSION = '1.301001_033';

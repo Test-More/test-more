@@ -2,7 +2,7 @@ package Test::Builder::Provider;
 use strict;
 use warnings;
 
-use Test::Builder;
+use Test::Builder 1.301001;
 use Test::Builder::Util qw/package_sub is_tester is_provider find_builder/;
 use Test::Builder::Trace;
 use Carp qw/croak/;
