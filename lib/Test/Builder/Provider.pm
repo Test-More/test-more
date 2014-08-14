@@ -325,7 +325,7 @@ any references to C<$Test::Builder::Level> which is now deprecated.
     use warnings;
 
     use base 'Exporter';
-    use Test::Builder::Provider qw/provides provide_nests/;
+    use Test::Builder::Provider qw/provides nest/;
 
     our @EXPORT = qw{
         ok is is_deeply
