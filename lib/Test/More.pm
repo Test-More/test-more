@@ -1106,7 +1106,7 @@ This filename unscrambling is necessary for example on linux systems when you
 use utf8 encoding and a utf8 filename. Perl will read the bytes of the name,
 and treat them as bytes. if you then try to print the name to a utf8 handle it
 will treat each byte as a different character. Test::More attempts to fix this
-scrambling for you. 
+scrambling for you.
 
 =back
 

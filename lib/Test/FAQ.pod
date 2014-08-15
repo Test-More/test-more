@@ -66,7 +66,7 @@ You can then add something like this to your F<Makefile.PL>.  It
 overrides the L<ExtUtils::MakeMaker> C<test_via_harness()> method to run the tests
 against several different versions of Perl.
 
-    # If PERL_TEST_ALL is set, run "make test" against 
+    # If PERL_TEST_ALL is set, run "make test" against
     # other perls as well as the current perl.
     {
         package MY;
@@ -218,7 +218,7 @@ On Tue, Aug 28, 2001 at 02:12:46PM +0100, Robin Houston wrote:
 > Michael Schwern wrote:
 > > Ah HA!  I've been wondering why nobody ever thinks to write a simple
 > > ok() function for their tests!  perlhack has bad testing advice.
-> 
+>
 > Could you explain the advantage of having a "simple ok() function"?
 
 Because writing:
@@ -310,7 +310,7 @@ or
 
 Since every test can be reduced to checking if a statement is true,
 C<ok()> can test everything.  But C<ok()> doesn't tell you why the test
-failed.  For that you need to tell the test more... which is why 
+failed.  For that you need to tell the test more... which is why
 you need L<Test::More>.
 
     ok $pirate->name eq "Roberts", "person's name";
@@ -342,15 +342,15 @@ The most useful functions in L<Test::More> are C<is()>, C<like()> and C<is_deepl
 =head2 How do I check for an infinite loop?
 
 On Mon, Mar 18, 2002 at 03:57:55AM -0500, Mark-Jason Dominus wrote:
-> 
+>
 > Michael The Schwern <schwern@pobox.com> says:
 > > Use alarm and skip the test if $Config{d_alarm} is false (see
 > > t/op/alarm.t for an example).  If you think the infinite loop is due
 > > to a programming glitch, as opposed to a cross-platform issue, this
 > > will be enough.
-> 
+>
 > Thanks very much!
-> 
+>
 
 =head2 How can I check that flock works?
 
@@ -360,7 +360,7 @@ Any testing function based on L<Test::Builder>, most are, can be quieted so it d
 not do any testing.  It simply returns true or false.  Use the following code...
 
     use Test::More;     # or any testing module
-    
+
     use Test::Builder;
     use File::Spec;
 
@@ -368,7 +368,7 @@ not do any testing.  It simply returns true or false.  Use the following code...
     my $tb = Test::Builder->new;
 
     $tb->plan("no_plan");
-    
+
     # Keep Test::Builder from displaying anything
     $tb->no_diag(1);
     $tb->no_ending(1);

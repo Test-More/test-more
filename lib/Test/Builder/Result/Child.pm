@@ -97,7 +97,7 @@ True if the result was generated inside a todo.
 Builder that created the result, usually $0, but the name of a subtest when
 inside a subtest.
 
-=item $r->constructed 
+=item $r->constructed
 
 Package, File, and Line in which the result was built.
 

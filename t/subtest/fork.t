@@ -33,7 +33,7 @@ subtest 'fork within subtest' => sub {
 
         is $?, 0, 'child exit status';
         like $child_output, qr/^[\s#]+Child Done\s*\z/, 'child output';
-    } 
+    }
     else {
         $pipe->writer;
 
@@ -43,7 +43,7 @@ subtest 'fork within subtest' => sub {
         $builder->tap->output($pipe);
         $builder->tap->failure_output($pipe);
         $builder->tap->todo_output($pipe);
-        
+
         diag 'Child Done';
         exit 0;
     }
