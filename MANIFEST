@@ -42,7 +42,6 @@ MANIFEST			This list of files
 MANIFEST.SKIP
 README
 t/00compile.t
-t/00test_harness_check.t
 t/bad_plan.t
 t/bail_out.t
 t/BEGIN_require_ok.t
@@ -164,7 +163,6 @@ t/plan_is_noplan.t
 t/plan_no_plan.t
 t/plan_shouldnt_import.t
 t/plan_skip_all.t
-t/pod-coverage.t
 t/pod.t
 t/require_ok.t
 t/ribasushi_diag.t
