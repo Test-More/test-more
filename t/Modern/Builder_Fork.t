@@ -3,6 +3,17 @@ use warnings;
 use Test::More;
 use Test::Tester2;
 use Test::Builder::Event::Ok;
+use Config;
+
+my $Can_Fork = $Config{d_fork} ||
+               (($^O eq 'MSWin32' || $^O eq 'NetWare') and
+                $Config{useithreads} and
+                $Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/
+               );
+
+if( !$Can_Fork ) {
+    plan 'skip_all' => "This system cannot fork";
+}
 
 my $CLASS = 'Test::Builder::Fork';
 require_ok $CLASS;
