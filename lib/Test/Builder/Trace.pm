@@ -161,7 +161,7 @@ __END__
 
 =head1 NAME
 
-Test::Builder::Trace - Module to represent a stack trace from a test result.
+Test::Builder::Trace - Module to represent a stack trace from a test event.
 
 =head1 DESCRIPTION
 
@@ -182,7 +182,7 @@ Create a new object tracing from itself to the deepest stack frame.
 
 =item $class->nest(sub { ... })
 
-Used as a tracing barrier. Results produced in the coderef will trace to that
+Used as a tracing barrier. Events produced in the coderef will trace to that
 coderef and no deeper.
 
 =item $class->anoint($TARGET_PACKAGE)

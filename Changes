@@ -1,13 +1,13 @@
 1.301001
     * Normalize version number across all versioned files
-    * Result stream!
-    * Results as objects
+    * Event stream!
+    * Events as objects
     * Diags can be tied to their ok's
     * Deprecate: Test::Builder::Tester, Test::Tester, Test::Builder::Module
     * Add Provider as an easier alternative to $Level
     * Bundle Test::Tester
     * Add Test::Tester2
-    * Support for result handlers/formatters
+    * Support for event handlers/formatters
     * Limited Forking support
     * Refactor functionality into encapsulation modules (ExitMagic, Tap, etc...)
     * Add Test Tracing

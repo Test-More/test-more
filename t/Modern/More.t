@@ -18,7 +18,7 @@ sub my_nester(&) {
 
 my @lines;
 
-my $results = intercept {
+my $events = intercept {
     my_ok( 1, "good" ); push @lines => __LINE__;
     my_ok( 0, "bad" );  push @lines => __LINE__;
 
@@ -31,8 +31,8 @@ my $results = intercept {
     }; push @lines => __LINE__;
 };
 
-results_are(
-    $results,
+events_are(
+    $events,
 
     ok   => { line => $lines[0], bool => 1, name => "good" },
     ok   => { line => $lines[1], bool => 0, name => "bad" },
@@ -57,14 +57,14 @@ sub helped(&) {
     diag( 'teardown' );
 };
 
-$results = intercept {
+$events = intercept {
     helped {
         ok(0 ,'helped test' ); $place{helped} = __LINE__; 0;
     }; $place{inhelp} = __LINE__;
 };
 
-results_are(
-    $results,
+events_are(
+    $events,
 
     diag => { message => 'setup' },
 
@@ -85,7 +85,7 @@ ok($ok, "Can import \$TODO");
     use Test::More 'utf8';
     use Test::Tester2;
 
-    my $results = intercept { ok(1, "blah") };
+    my $events = intercept { ok(1, "blah") };
 
     my @warnings;
     {
@@ -104,8 +104,8 @@ ok($ok, "Can import \$TODO");
     use Test::More;
     use Test::Tester2;
 
-    my $results = intercept { ok(1, "blah") };
-    is($results->[0]->encoding, 'legacy', "legacy encoding set for non-modern");
+    my $events = intercept { ok(1, "blah") };
+    is($events->[0]->encoding, 'legacy', "legacy encoding set for non-modern");
 
     my @warnings;
     {
@@ -135,8 +135,8 @@ ok($ok, "Can import \$TODO");
     package main_oblivious;
     use Test::Tester2;
 
-    my $results = intercept { Test::More::ok(1, "blah") };
-    Test::More::is($results->[0]->encoding, undef, "no encoding set for non-consumer");
+    my $events = intercept { Test::More::ok(1, "blah") };
+    Test::More::is($events->[0]->encoding, undef, "no encoding set for non-consumer");
 }
 
 require PerlIO;

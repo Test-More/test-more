@@ -9,25 +9,25 @@ digraph overview {
         TBS    [label="Test::Builder::Stream"]
         Fork   [label="Test::Builder::Fork"]
         TAP    [label="Test::Builder::Formatter::TAP"]
-        LRes   [label="Test::Builder::Formatter::LegacyResults"]
+        LRes   [label="Test::Builder::Formatter::LegacyEvents"]
         AnyF   [label="Test::Builder::Formatter::*"]
         TT2    [label="Test::Tester2"]
         Trace  [label="Test::Builder::Trace"]
-        Result [label="Test::Builder::Result"]
+        Event  [label="Test::Builder::Event"]
 
         {rank=same; More Simple AnyT}
         {rank=same; TAP  LRes   AnyF}
         {rank=same; Fork TBS TT2}
-        {rank=same; TB Result Trace}
+        {rank=same; TB Event Trace}
 
         More->TB
         Simple->TB
         AnyT->TB
 
         Trace->TB
-        Result->TB
+        Event->TB
         TB->Trace
-        TB->Result
+        TB->Event
 
         TB->TBS
 
