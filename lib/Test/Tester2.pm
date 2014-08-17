@@ -359,7 +359,7 @@ print when there is a mismatch to show you the event.
 
 These will print the render_event string to STDERR.
 
-=head1 INTERCEPTING RESULTS
+=head1 INTERCEPTING EVENTS
 
     my $events = intercept {
         ok(1, "pass");
@@ -370,7 +370,7 @@ These will print the render_event string to STDERR.
 Any events generated within the block will be intercepted and placed inside
 the C<$events> array reference.
 
-=head2 RESULT TYPES
+=head2 EVENT TYPES
 
 All events will be subclasses of L<Test::Builder::Event>
 
@@ -392,7 +392,7 @@ All events will be subclasses of L<Test::Builder::Event>
 
 =back
 
-=head1 VALIDATING RESULTS
+=head1 VALIDATING EVENTS
 
     my $events = intercept {
         ok(1, "pass");
@@ -453,7 +453,7 @@ argument. The coderef should return true for valid, false for invalid.
 
 =back
 
-=head2 FIELDS PRESENT FOR ALL RESULT TYPES
+=head2 FIELDS PRESENT FOR ALL EVENT TYPES
 
 =over 4
 
@@ -522,7 +522,7 @@ encoding, the original message however will be untranslated.
 
 =back
 
-=head2 RESULT SPECIFIC FIELDS
+=head2 EVENT SPECIFIC FIELDS
 
 =head3 ok
 

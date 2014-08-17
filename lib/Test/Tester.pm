@@ -387,7 +387,7 @@ should allow your test scripts to do
 
 and after that any tests inside your module will captured.
 
-=head1 TEST RESULTS
+=head1 TEST EVENTS
 
 The result of each test is captured in a hash. These hashes are the same as
 the hashes returned by Test::Builder->details but with a couple of extra

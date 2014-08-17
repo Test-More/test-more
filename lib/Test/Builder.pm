@@ -1834,7 +1834,7 @@ normally be seen by the user except in verbose mode.
 
 =back
 
-=head2 ADVANCED RESULT PRODUCERS
+=head2 ADVANCED EVENT PRODUCERS
 
 =over 4
 

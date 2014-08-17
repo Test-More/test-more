@@ -601,7 +601,7 @@ Disable the legacy tap listener.
 
 =back
 
-=head3 LEGACY RESULTS LISTENER
+=head3 LEGACY EVENTS LISTENER
 
 =over 4
 
@@ -650,7 +650,7 @@ Remove a munger by id.
 
 =back
 
-=head2 PROVIDING RESULTS
+=head2 PROVIDING EVENTS
 
 =over 4
 
