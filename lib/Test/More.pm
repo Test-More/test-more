@@ -1094,6 +1094,22 @@ select other encodings for their TAP output. For packages where none is
 specified, the original STDOUT and STDERR settings are used, the results are
 unpredictable.
 
+B<Note>: The encoding of the TAP, it is necessary to set to match the
+locale of the encoding of the terminal.
+
+However, in tests code that are performed in a variety of environments,
+it can not be assumed in advance the encoding of the locale of the terminal,
+it is recommended how to set the encoding to your environment using the
+C<Encode::Locale> module.
+
+The following is an example of code.
+
+  use utf8;
+  use Test::More;
+  use Encode::Locale;
+
+  tap_encoding('console_out');
+
 B<Note>: Filenames are a touchy subject:
 
 Different OS's and filesystems handle filenames differently. When you do not
