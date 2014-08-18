@@ -89,6 +89,7 @@ ok($ok, "Can import \$TODO");
     use Test::Tester2;
 
     my $events = intercept { ok(1, "blah") };
+    is($events->[0]->encoding, 'utf8', "utf8 encoding set for modern");
 
     my @warnings;
     {
@@ -144,6 +145,23 @@ SKIP: {
     my $events = intercept { Test::More::ok(1, "blah") };
     Test::More::is($events->[0]->encoding, undef, "no encoding set for non-consumer");
 }
+
+{
+    package arg_encoding;
+    use Test::More encoding => 'utf8';
+    use Test::Tester2;
+
+    my $events = intercept { ok(1, "blah") };
+    is($events->[0]->encoding, 'utf8', "utf8 encoding set by arg encoding");
+
+    my @warnings;
+    {
+        local $SIG{__WARN__} = sub { push @warnings => @_ };
+        ok(1, "Ճȴģȳф utf8 name");
+    }
+    ok(!@warnings, "no warnings - argument 'encoding'");
+}
+
 
 require PerlIO;
 my $legacy = Test::Builder->new->tap->io_set('legacy')->[0];

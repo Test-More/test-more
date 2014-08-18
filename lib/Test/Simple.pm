@@ -47,7 +47,7 @@ sub before_import {
             $encoding_set++;
         }
         elsif ($item eq 'encoding') {
-            my $encoding = @{$list->[$idx++]};
+            my $encoding = $list->[$idx++];
             Test::More::_set_tap_encoding($dest, $encoding);
             $encoding_set++;
         }
