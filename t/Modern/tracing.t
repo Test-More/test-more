@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 sub trace {
-    my $trace = Test::Builder->trace_test;
+    my $trace = Test::Builder->new->trace_test;
     return $trace;
 }
 
@@ -60,7 +60,7 @@ BEGIN {
     sub do_it {
         my $builder = __PACKAGE__->builder;
 
-        my $trace = Test::Builder->trace_test;
+        my $trace = Test::Builder->new->trace_test;
         return $trace;
     }
 
@@ -73,7 +73,7 @@ BEGIN {
 # line 1800
     sub do_nestit(&) {
         my ($code) = @_;
-        my $trace = Test::Builder->trace_test;
+        my $trace = Test::Builder->new->trace_test;
         # TODO: I Think this is wrong...
         local $Test::Builder::Level = $Test::Builder::Level + 3;
         $code->();

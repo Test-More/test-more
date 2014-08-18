@@ -88,21 +88,6 @@ events_are(
     end => 'skipping a diag',
 );
 
-{
-    my @warn;
-    local $SIG{__WARN__} = sub { push @warn => @_ };
-    my $doit = sub {
-        local $Test::Builder::Level = $Test::Builder::Level + 1;
-        ok(1, "example");
-    };
-
-    # The events generated here are to be ignored. We are just checking on warnings.
-    intercept { $doit->(); $doit->(); $doit->() };
-
-    is(@warn, 1, "got a warning, but only once");
-    like($warn[0], qr/\$Test::Builder::Level was used to trace a test! \$Test::Builder::Level is deprecated!/, "Expected warning");
-}
-
 DOCS_1: {
     # Intercept all the Test::Builder::Event objects produced in the block.
     my $events = intercept {

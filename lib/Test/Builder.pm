@@ -296,15 +296,24 @@ sub finalize {
 #####################################
 
 sub trace_test {
+    my $self = shift;
+    return $self->{_trace_cache} if $self->{_trace_cache};
     my $out;
     protect { $out = Test::Builder::Trace->new };
     return $out;
 }
 
 sub find_TODO {
-    my( $self, $pack, $set, $new_value ) = @_;
+    my( $self, $where, $set, $new_value ) = @_;
 
-    $pack ||= $self->trace_test->todo_package || $self->exported_to;
+    my $pack;
+    if ($where && Scalar::Util::blessed($where) && $where->isa('Test::Builder::Trace')) {
+        $pack = $where->todo_package || $self->exported_to;
+    }
+    else {
+        $pack = $where || $self->trace_test->todo_package || $self->exported_to;
+    }
+
     return unless $pack;
 
     no strict 'refs';    ## no critic
@@ -526,6 +535,7 @@ sub _ok_obj {
 
 sub ok {
     my $self = shift;
+    local $self->{_trace_cache} = $self->trace_test unless $self->{_trace_cache};
     my( $test, $name, @diag ) = @_;
 
     my $ok = $self->_ok_obj($test, $name, @diag);
@@ -647,17 +657,25 @@ sub cmp_ok {
     my $error;
     my @diag;
 
-    my($pack, $file, $line) = $self->trace_test->report->call;
+    local $self->{_trace_cache} = $self->trace_test unless $self->{_trace_cache};
 
+    my @warnings;
     (undef, $error) = try {
+        local $SIG{__WARN__} = sub { push @warnings => @_ };
         # This is so that warnings come out at the caller's level
         ## no critic (BuiltinFunctions::ProhibitStringyEval)
         eval qq[
-#line $line "(eval in cmp_ok) $file"
+#line 999 "__REPLACE__ME__"
 \$test = \$got $type \$expect;
 1;
         ] || die $@;
     };
+
+    for my $warn (@warnings) {
+        my ($pkg, $file, $line) = $self->trace_test->report->call;
+        $warn =~ s/at __REPLACE__ME__ line 999/at (eval in cmp_ok) $file line $line/g;
+        warn $warn;
+    }
 
     # Treat overloaded objects as numbers if we're asked to do a
     # numeric comparison.
@@ -1101,14 +1119,21 @@ sub _regex_ok {
     }
 
     my $test;
-    my $context = $self->_caller_context;
+    my $context = '#line 999 "__REPLACE__ME__"' . "\n";
 
+    my @warnings;
     try {
+        local $SIG{__WARN__} = sub { push @warnings => @_ };
         # No point in issuing an uninit warning, they'll see it in the diagnostics
         no warnings 'uninitialized';
         ## no critic (BuiltinFunctions::ProhibitStringyEval)
         $test = eval $context . q{$test = $thing =~ /$usable_regex/ ? 1 : 0};
     };
+    for my $warn (@warnings) {
+        my ($pkg, $file, $line) = $self->trace_test->report->call;
+        $warn =~ s/at __REPLACE__ME__ line 999/at $file line $line/g;
+        warn $warn;
+    }
 
     $test = !$test if $cmp eq '!~';
 

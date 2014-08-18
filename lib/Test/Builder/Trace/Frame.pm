@@ -20,13 +20,13 @@ my %BUILDER_PACKAGES = (
 );
 
 accessors qw{
-    depth package file line subname
+    depth package file line subname todo
     level report
 };
 
 sub new {
     my $class = shift;
-    my ($depth, $pkg, $file, $line, $sub) = @_;
+    my ($depth, $pkg, $file, $line, $sub, $todo) = @_;
 
     return bless {
         depth   => $depth || 0,
@@ -34,6 +34,7 @@ sub new {
         file    => $file  || undef,
         line    => $line  || 0,
         subname => $sub   || undef,
+        todo    => $todo  || undef,
     }, $class;
 }
 
@@ -46,17 +47,6 @@ sub call {
         $self->subname,
     );
 }
-
-accessor todo => sub {
-    my $self = shift;
-    no strict 'refs';
-    no warnings 'once';
-
-    my $ref = *{$self->package . '::TODO'}{SCALAR};
-    return 1 if $ref == *Test::More::TODO{SCALAR};
-    return 0 unless defined $$ref;
-    return 1;
-};
 
 accessor transition => sub {
     my $self = shift;
@@ -192,10 +182,7 @@ They will be cached for future calls.
 
 =item $todo = $frame->todo
 
-True if the frame comes from a package where $TODO is present.
-
-B<Caveat> Will not find the $TODO if it is undefined UNLESS the $TODO came from
-L<Test::More>.
+Returns the TODO message if $TODO is set in the package the frame is from.
 
 =item $bool = $frame->nest
 
