@@ -110,7 +110,7 @@ sub before_import {
         elsif ($item eq 'encoding') {
             modernize($dest) unless $modern++;
             $encoding_set++;
-            my $encoding = @{$list->[$idx++]};
+            my $encoding = $list->[$idx++];
             _set_tap_encoding($dest, $encoding);
         }
         else {
