@@ -12,23 +12,17 @@ sub TB_EXPORT_META { $meta };
 exports(qw/
     import export exports accessor accessors delta deltas export_to transform
     atomic_delta atomic_deltas try protect
-    package_sub is_tester is_provider find_builder
+    package_sub is_tester init_tester
 /);
 
 export(new => sub {
-    my $class = shift;
-    my %params = @_;
+    my ($class, %params) = @_;
 
     my $self = bless {}, $class;
 
-    $self->pre_init(\%params) if $self->can('pre_init');
-
-    my @attrs = keys %params;
-    @attrs = $self->init_order(@attrs) if @attrs && $self->can('init_order');
-
-    for my $attr (@attrs) {
-        croak "$class has no method named '$attr'" unless $self->can($attr);
-        $self->$attr($params{$attr});
+    while( my ($k, $v) = each(%params) ) {
+        croak "$class has no method named '$k'" unless $self->can($k);
+        $self->$k($v);
     }
 
     $self->init(%params) if $self->can('init');
@@ -119,9 +113,6 @@ sub accessor {
     my ($name, $default) = @_;
     my $caller = caller;
 
-    croak "The second argument to accessor() must be a coderef, not '$default'"
-        if $default && !(ref $default && reftype $default eq 'CODE');
-
     _accessor($caller, $name, $default);
 }
 
@@ -137,21 +128,56 @@ sub _accessor {
     my $name = lc $attr;
 
     my $sub;
-    if ($default) {
-        $sub = sub {
-            my $self = shift;
-
-            $self->{$attr} = $self->$default unless exists $self->{$attr};
-            ($self->{$attr}) = @_ if @_;
-
-            return $self->{$attr};
-        };
+    if (defined $default) {
+        if (ref $default && ref $default eq 'CODE') {
+            $sub = sub {
+                if (@_ > 1) {
+                    $_[0]->{$attr} = $_[1];
+                }
+                elsif(!exists $_[0]->{$attr}) {
+                    $_[0]->{$attr} = $_[0]->$default;
+                }
+                $_[0]->{$attr};
+            };
+        }
+        elsif ($default eq 'ARRAYREF') {
+            $sub = sub {
+                if (@_ > 1) {
+                    $_[0]->{$attr} = $_[1];
+                }
+                elsif(!exists $_[0]->{$attr}) {
+                    $_[0]->{$attr} = [];
+                }
+                $_[0]->{$attr};
+            };
+        }
+        elsif ($default eq 'HASHREF') {
+            $sub = sub {
+                if (@_ > 1) {
+                    $_[0]->{$attr} = $_[1];
+                }
+                elsif(!exists $_[0]->{$attr}) {
+                    $_[0]->{$attr} = {};
+                }
+                $_[0]->{$attr};
+            };
+        }
+        else {
+            $sub = sub {
+                if (@_ > 1) {
+                    $_[0]->{$attr} = $_[1];
+                }
+                elsif(!exists $_[0]->{$attr}) {
+                    $_[0]->{$attr} = $default;
+                }
+                $_[0]->{$attr};
+            };
+        }
     }
     else {
         $sub = sub {
-            my $self = shift;
-            ($self->{$attr}) = @_ if @_;
-            return $self->{$attr};
+            $_[0]->{$attr} = $_[1] if @_ > 1;
+            $_[0]->{$attr};
         };
     }
 
@@ -212,18 +238,22 @@ sub _delta {
     my ($caller, $attr, $initial, $atomic) = @_;
     my $name = lc $attr;
 
-    my $sub = sub {
-        my $self = shift;
-
-        croak "$name\() must be called on a blessed instance, got: $self"
-            unless blessed $self;
-
-        lock $self->{$attr} if $atomic;
-        $self->{$attr} = $initial unless defined $self->{$attr};
-        $self->{$attr} += $_[0] if @_;
-
-        return $self->{$attr};
-    };
+    my $sub;
+    if ($atomic) {
+        $sub = sub {
+            lock $_[0]->{$attr};
+            $_[0]->{$attr} = $initial unless defined $_[0]->{$attr};
+            $_[0]->{$attr} += $_[1] if @_ > 1;
+            $_[0]->{$attr};
+        };
+    }
+    else {
+        $sub = sub {
+            $_[0]->{$attr} = $initial unless defined $_[0]->{$attr};
+            $_[0]->{$attr} += $_[1] if @_ > 1;
+            $_[0]->{$attr};
+        };
+    }
 
     no strict 'refs';
     *{"$caller\::$name"} = $sub;
@@ -234,8 +264,7 @@ sub protect(&) {
 
     my ($ok, $error);
     {
-        local $@;
-        local $!;
+        local ($@, local $!);
         $ok = eval { $code->(); 1 } || 0;
         $error = $@ || "Error was squashed!\n";
     }
@@ -249,10 +278,7 @@ sub try(&) {
     my $ok;
 
     {
-        local $@;
-        local $!;
-        local $SIG{__DIE__};
-
+        local ($@, $!, $SIG{__DIE__});
         $ok = eval { $code->(); 1 } || 0;
         unless($ok) {
             $error = $@ || "Error was squashed!\n";
@@ -265,12 +291,8 @@ sub try(&) {
 sub package_sub {
     my ($pkg, $sub) = @_;
     no warnings 'once';
-
-    my $globref = do {
-        no strict 'refs';
-        \*{"$pkg\::$sub"};
-    };
-
+    no strict 'refs';
+    my $globref = \*{"$pkg\::$sub"};
     return *$globref{CODE} || undef;
 }
 
@@ -286,20 +308,19 @@ sub is_tester {
     return $pkg->TB_TESTER_META;
 }
 
-sub is_provider {
+sub init_tester {
     my $pkg = shift;
-    return unless package_sub($pkg, 'TB_PROVIDER_META');
-    return $pkg->TB_PROVIDER_META;
-}
+    return $pkg->TB_TESTER_META if package_sub($pkg, 'TB_TESTER_META');
 
-sub find_builder {
-    my $level = 1;
-    while (my @call = caller($level++)) {
-        next unless package_sub($call[0], 'TB_INSTANCE');
-        return $call[0]->TB_INSTANCE;
-    }
+    no strict 'refs';
+    my $todo = \*{"$pkg\::TODO"};
+    use strict 'refs';
 
-    return Test::Builder->new;
+    my $meta = { todo => $todo, encoding => 'legacy' };
+
+    *{"$pkg\::TB_TESTER_META"} = sub { $meta };
+
+    return $meta;
 }
 
 1;
@@ -415,14 +436,6 @@ ignores inheritance.
 =item $meta = is_tester($package)
 
 Check if a package is a tester, return the metadata if it is.
-
-=item $meta = is_provider($package)
-
-Check if a package is a provider, return the metadata if it is.
-
-=item $TB = find_builder()
-
-Find the Test::Builder instance to use.
 
 =back
 

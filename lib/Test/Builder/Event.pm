@@ -2,41 +2,44 @@ package Test::Builder::Event;
 use strict;
 use warnings;
 
-use Carp qw/confess/;
+use Carp qw/confess croak/;
 use Scalar::Util qw/blessed/;
 
-use Test::Builder::Util qw/accessors new/;
+use Test::Builder::Util qw/accessors/;
 
-accessors(qw/trace pid depth in_todo source constructed/);
+my @ACCESSORS = qw/created context/;
 
-sub init {
-    my $self = shift;
-    my %params = @_;
+sub init {};
 
-    $self->constructed([caller(1)]);
-    $self->pid($$) unless $params{pid};
-}
+sub new {
+    my ($class, $context, $created, @more) = @_;
 
-sub type {
-    my $self = shift;
-    my $class = blessed($self);
-    if ($class && $class =~ m/^.*::([^:]+)$/) {
-        return lc($1);
+    croak "No context provided!" unless $context;
+
+    unless($created) {
+        my ($p, $f, $l, $s) = caller;
+        $created = [$p, $f, $l, $s];
     }
 
-    confess "Could not determine event type for $self";
+    my $self = bless {
+        context => $context,
+        created => $created,
+    }, $class;
+
+    $self->init($context, @more) if @more;
+
+    return $self;
+}
+
+for my $name (@ACCESSORS) {
+    no strict 'refs';
+    *$name = sub { $_[0]->{$name} };
 }
 
 sub indent {
     my $self = shift;
-    return '' unless $self->depth;
-    return '    ' x $self->depth;
-}
-
-sub encoding {
-    my $self = shift;
-    return unless $self->trace;
-    return $self->trace->encoding;
+    my $depth = $self->{context}->depth || return;
+    return '    ' x $depth;
 }
 
 1;
@@ -61,53 +64,6 @@ L<Test::Builder::Stream>.
 =item $r = $class->new(...)
 
 Create a new instance
-
-=back
-
-=head2 SIMPLE READ/WRITE ACCESSORS
-
-=over 4
-
-=item $r->trace
-
-Get the test trace info, including where to report errors.
-
-=item $r->pid
-
-PID in which the event was created.
-
-=item $r->depth
-
-Builder depth of the event (0 for normal, 1 for subtest, 2 for nested, etc).
-
-=item $r->in_todo
-
-True if the event was generated inside a todo.
-
-=item $r->source
-
-Builder that created the event, usually $0, but the name of a subtest when
-inside a subtest.
-
-=item $r->constructed
-
-Package, File, and Line in which the event was built.
-
-=back
-
-=head2 INFORMATION
-
-=over 4
-
-=item $r->type
-
-Type of event. Usually this is the lowercased name from the end of the
-package. L<Test::Builder::Event::Ok> = 'ok'.
-
-=item $r->indent
-
-Returns the indentation that should be used to display the event ('    ' x
-depth).
 
 =back
 

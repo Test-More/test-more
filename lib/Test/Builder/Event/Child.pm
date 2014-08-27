@@ -6,23 +6,18 @@ use base 'Test::Builder::Event';
 
 use Carp qw/confess/;
 
-use Test::Builder::Util qw/accessors/;
-accessors qw/name is_subtest/;
+sub action { $_[0]->{action} }
+sub name   { $_[0]->{name}   }
 
-sub action {
-    my $self = shift;
-    if (@_) {
-        my ($action) = @_;
-        confess "action must be one of 'push' or 'pop'"
-            unless $action =~ m/^(push|pop)$/;
+sub init {
+    my ($self, $context, $action, $name) = @_;
 
-        $self->{action} = $action;
-    }
+    confess "did not get an action" unless $action;
+    confess "action must be either 'push' or 'pop', not '$action'"
+        unless $action =~ m/^(push|pop)$/;
 
-    confess "action was never set!"
-        unless $self->{action};
-
-    return $self->{action};
+    $self->{action} = $action;
+    $self->{name}   = $name || "";
 }
 
 sub to_tap { }
@@ -61,65 +56,6 @@ Create a new instance
 
 Either 'push' or 'pop'. When a child is created a push is sent, when a child
 exits a pop is sent.
-
-=back
-
-=head2 SIMPLE READ/WRITE ACCESSORS
-
-=over 4
-
-=item $r->name
-
-Name of the child
-
-=item $r->is_subtest
-
-True if the child was spawned for a subtest.
-
-=item $r->trace
-
-Get the test trace info, including where to report errors.
-
-=item $r->pid
-
-PID in which the event was created.
-
-=item $r->depth
-
-Builder depth of the event (0 for normal, 1 for subtest, 2 for nested, etc).
-
-=item $r->in_todo
-
-True if the event was generated inside a todo.
-
-=item $r->source
-
-Builder that created the event, usually $0, but the name of a subtest when
-inside a subtest.
-
-=item $r->constructed
-
-Package, File, and Line in which the event was built.
-
-=back
-
-=head2 INFORMATION
-
-=over 4
-
-=item $r->to_tap
-
-no-op, return nothing.
-
-=item $r->type
-
-Type of event. Usually this is the lowercased name from the end of the
-package. L<Test::Builder::Event::Ok> = 'ok'.
-
-=item $r->indent
-
-Returns the indentation that should be used to display the event ('    ' x
-depth).
 
 =back
 

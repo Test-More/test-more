@@ -4,8 +4,15 @@ use warnings;
 
 use base 'Test::Builder::Event';
 
-use Test::Builder::Util qw/accessors/;
-accessors qw/tests_run tests_failed/;
+sub tests_run    { $_[0]->{tests_run}    }
+sub tests_failed { $_[0]->{tests_failed} }
+
+sub init {
+    my ($self, $context, $run, $failed) = @_;
+
+    $self->{tests_run}    = $run;
+    $self->{tests_failed} = $failed;
+}
 
 1;
 
@@ -30,61 +37,6 @@ See L<Test::Builder::Event> which is the base class for this module.
 =item $r = $class->new(...)
 
 Create a new instance
-
-=back
-
-=head2 SIMPLE READ/WRITE ACCESSORS
-
-=over 4
-
-=item $r->tests_run
-
-How many tests were run.
-
-=item $r->tests_failed
-
-How many tests failed.
-
-=item $r->trace
-
-Get the test trace info, including where to report errors.
-
-=item $r->pid
-
-PID in which the event was created.
-
-=item $r->depth
-
-Builder depth of the event (0 for normal, 1 for subtest, 2 for nested, etc).
-
-=item $r->in_todo
-
-True if the event was generated inside a todo.
-
-=item $r->source
-
-Builder that created the event, usually $0, but the name of a subtest when
-inside a subtest.
-
-=item $r->constructed
-
-Package, File, and Line in which the event was built.
-
-=back
-
-=head2 INFORMATION
-
-=over 4
-
-=item $r->type
-
-Type of event. Usually this is the lowercased name from the end of the
-package. L<Test::Builder::Event::Ok> = 'ok'.
-
-=item $r->indent
-
-Returns the indentation that should be used to display the event ('    ' x
-depth).
 
 =back
 

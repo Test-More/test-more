@@ -10,12 +10,12 @@ use Test::Builder::Util qw/accessors accessor atomic_deltas try protect/;
 accessors qw/plan bailed_out/;
 atomic_deltas qw/tests_run tests_failed/;
 
-accessor no_ending    => sub { 0 };
-accessor is_passing   => sub { 1 };
-accessor _listeners   => sub {{ }};
-accessor _mungers     => sub {{ }};
-accessor _munge_order => sub {[ ]};
-accessor _follow_up   => sub {{ }};
+accessor no_ending    => 0;
+accessor is_passing   => 1;
+accessor _listeners   => 'HASHREF';
+accessor _mungers     => 'HASHREF';
+accessor _follow_up   => 'HASHREF';
+accessor _munge_order => 'ARRAYREF';
 
 sub pid { shift->{pid} }
 

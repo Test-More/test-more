@@ -10,12 +10,14 @@ isa_ok('Test::Builder::Event::Ok', 'Test::Builder::Event');
 can_ok('Test::Builder::Event::Ok', qw/bool real_bool name todo skip/);
 
 my $trace = bless {
-    _report => bless {
-        file => 'fake.t',
-        line => 42,
-        package => 'Fake::Fake',
-    }, 'Test::Builder::Trace::Frame'
-}, 'Test::Builder::Trace';
+    report => bless [
+        'Fake::Fake',
+        'fake.t',
+        42,
+        0,
+        {},
+    ], 'Test::Builder::PP::Frame'
+}, 'Test::Builder::PP::Trace';
 
 my %init = (
     trace => $trace,

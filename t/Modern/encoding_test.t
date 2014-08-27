@@ -15,13 +15,15 @@ ok(!utf8::is_utf8($filename), "filename is not in utf8 already");
 my $utf8name = Unicode::Normalize::NFKC(Encode::decode('utf8', "$filename", Encode::FB_CROAK));
 ok( $filename ne $utf8name, "sanity check" );
 
+my $scoper = sub { Test::Builder::Trace->new() };
+
 tap_encoding 'utf8';
-my $trace_utf8 = Test::Builder::Trace->new();
-$trace_utf8->report->file($filename);
+my $trace_utf8 = $scoper->();
+$trace_utf8->report->[1] = $filename;
 
 tap_encoding 'legacy';
-my $trace_legacy = Test::Builder::Trace->new();
-$trace_legacy->report->file($filename);
+my $trace_legacy = $scoper->();;
+$trace_legacy->report->[1] = $filename;
 
 is($trace_utf8->encoding, 'utf8', "got a utf8 trace");
 is($trace_legacy->encoding, 'legacy', "got a legacy trace");

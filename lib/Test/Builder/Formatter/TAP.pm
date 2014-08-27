@@ -10,7 +10,7 @@ use base 'Test::Builder::Formatter';
 
 accessors qw/No_Header No_Diag Depth Use_Numbers _the_plan/;
 
-accessor io_sets => sub { {} };
+accessor io_sets => 'HASHREF';
 
 use constant OUT  => 0;
 use constant FAIL => 1;

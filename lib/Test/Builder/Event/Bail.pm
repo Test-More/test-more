@@ -4,8 +4,12 @@ use warnings;
 
 use base 'Test::Builder::Event';
 
-use Test::Builder::Util qw/accessors/;
-accessors qw/reason/;
+sub reason { $_[0]->{reason} }
+
+sub init {
+    my ($self, $context, $reason) = @_;
+    $self->{reason} = $reason;
+}
 
 sub to_tap {
     my $self = shift;
@@ -66,10 +70,6 @@ True if the event was generated inside a todo.
 
 Builder that created the event, usually $0, but the name of a subtest when
 inside a subtest.
-
-=item $r->constructed
-
-Package, File, and Line in which the event was built.
 
 =back
 

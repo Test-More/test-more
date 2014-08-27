@@ -59,7 +59,7 @@ sub events_are {
             @res_list = _filter_list(
                 $1 || 0,
                 shift(@checks),
-                sub { $_[0]->trace->report->provider_tool->{package} },
+                sub { $_[0]->trace->report->provider->{package} },
                 @res_list
             );
             next;
@@ -235,7 +235,7 @@ sub _simplify_event {
     if ($r->trace && $r->trace->report) {
         my $report = $r->trace->report;
         @{$fields}{qw/line file package/} = map { $report->$_ } qw/line file package/;
-        @{$fields}{qw/tool_package tool_name/} = @{$report->provider_tool}{qw/package name/} if $report->provider_tool;
+        @{$fields}{qw/tool_package tool_name/} = @{$report->provider}{qw/package name/} if $report->provider;
     }
 
     $fields->{tap} = $r->to_tap if $r->can('to_tap');

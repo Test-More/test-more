@@ -104,7 +104,7 @@ test_subtest_in_todo("plan, no tests run", sub {
     1..2
     # No tests run!
 END
-
+__END__
 test_subtest_in_todo("noplan, no tests run", sub {
     plan 'no_plan';
 }, <<END, 1);

@@ -100,7 +100,7 @@ my $trace = explodable();
 is($trace->report->line,    2300,          "got correct line");
 is($trace->report->package, 'XXX::Tester', "got correct package");
 is_deeply(
-    $trace->report->provider_tool,
+    $trace->report->provider,
     {package => 'XXX::Tester', name => 'explodable', named => 1},
     "got tool info"
 );
@@ -110,7 +110,7 @@ $trace = explodadouble();
 is($trace->report->line,    2200,          "got correct line");
 is($trace->report->package, 'XXX::Tester', "got correct package");
 is_deeply(
-    $trace->report->provider_tool,
+    $trace->report->provider,
     {package => 'XXX::Provider', name => 'explode', named => 0},
     "got tool info"
 );
@@ -120,7 +120,7 @@ $trace = explode();
 is($trace->report->line,    2500,          "got correct line");
 is($trace->report->package, 'XXX::Tester', "got correct package");
 is_deeply(
-    $trace->report->provider_tool,
+    $trace->report->provider,
     {package => 'XXX::Provider', name => 'explode', named => 0},
     "got tool info"
 );
@@ -129,14 +129,14 @@ is_deeply(
 $trace = do_it();
 is($trace->report->line,    2600,          "got correct line");
 is($trace->report->package, 'XXX::Tester', "got correct package");
-ok(!$trace->report->provider_tool, "No Tool");
+ok(!$trace->report->provider, "No Tool");
 
 # line 2700
 $trace = do_it_2();
 is($trace->report->line,    2700,          "got correct line");
 is($trace->report->package, 'XXX::Tester', "got correct package");
 is($trace->report->level,   1,             "Is level");
-ok(!$trace->report->provider_tool, "No Tool");
+ok(!$trace->report->provider, "No Tool");
 
 my @events;
 

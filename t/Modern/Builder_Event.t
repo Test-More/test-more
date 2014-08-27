@@ -17,7 +17,6 @@ my $one = Test::Builder::Event->new(
 isa_ok($one, 'Test::Builder::Event');
 is($one->depth, 1, "Got depth");
 is($one->pid, $$, "Auto-populated pid");
-ok($one->constructed, "auto-populated constructed" );
 
 is($one->type, 'event', "Got type");
 
