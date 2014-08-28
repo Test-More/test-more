@@ -7,24 +7,26 @@ use base 'Test::Builder::Event';
 use Test::Builder::Util qw/try/;
 use Encode();
 use Carp qw/confess/;
+use Test::Builder::ArrayBase;
+BEGIN {
+    accessors qw/message/;
+    Test::Builder::ArrayBase->cleanup;
+};
 
 my $NORMALIZE = try { require Unicode::Normalize; 1 };
 
-sub message { $_[0]->{message} }
-
 sub init {
-    my ($self, $context, $message) = @_;
-    $self->{message} = $message || confess "No message set for diag!";
+    confess "No message set for diag!" unless $_[0]->[MESSAGE];
 }
 
 sub to_tap {
     my $self = shift;
 
-    chomp(my $msg = $self->message);
+    chomp(my $msg = $self->[MESSAGE]);
 
-    my $encoding = $self->context->encoding;
+    my $encoding = $self->[CONTEXT]->encoding;
     if ($encoding ne 'legacy') {
-        my $file = $self->context->file;
+        my $file = $self->[CONTEXT]->file;
         my $decoded;
         try { $decoded = Encode::decode($encoding, "$file", Encode::FB_CROAK) };
         if ($decoded) {

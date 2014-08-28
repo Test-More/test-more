@@ -4,12 +4,11 @@ use warnings;
 
 use base 'Test::Builder::Event';
 
-sub reason { $_[0]->{reason} }
-
-sub init {
-    my ($self, $context, $reason) = @_;
-    $self->{reason} = $reason;
-}
+use Test::Builder::ArrayBase;
+BEGIN {
+    accessors qw/reason/;
+    Test::Builder::ArrayBase->cleanup;
+};
 
 sub to_tap {
     my $self = shift;

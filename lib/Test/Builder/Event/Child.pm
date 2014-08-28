@@ -5,19 +5,18 @@ use warnings;
 use base 'Test::Builder::Event';
 
 use Carp qw/confess/;
-
-sub action { $_[0]->{action} }
-sub name   { $_[0]->{name}   }
+use Test::Builder::ArrayBase;
+BEGIN {
+    accessors qw/action name/;
+    Test::Builder::ArrayBase->cleanup;
+};
 
 sub init {
-    my ($self, $context, $action, $name) = @_;
+    confess "did not get an action" unless $_[0]->[ACTION];
+    confess "action must be either 'push' or 'pop', not '$_[0]->[ACTION]'"
+        unless $_[0]->[ACTION] =~ m/^(push|pop)$/;
 
-    confess "did not get an action" unless $action;
-    confess "action must be either 'push' or 'pop', not '$action'"
-        unless $action =~ m/^(push|pop)$/;
-
-    $self->{action} = $action;
-    $self->{name}   = $name || "";
+    $_[0]->[NAME] ||= "";
 }
 
 sub to_tap { }

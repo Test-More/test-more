@@ -3,42 +3,20 @@ use strict;
 use warnings;
 
 use Carp qw/confess croak/;
-use Scalar::Util qw/blessed/;
 
-use Test::Builder::Util qw/accessors/;
+use Test::Builder::ArrayBase;
+BEGIN {
+    accessors qw/context created/;
+    Test::Builder::ArrayBase->cleanup;
+};
 
-my @ACCESSORS = qw/created context/;
-
-sub init {};
-
-sub new {
-    my ($class, $context, $created, @more) = @_;
-
-    croak "No context provided!" unless $context;
-
-    unless($created) {
-        my ($p, $f, $l, $s) = caller;
-        $created = [$p, $f, $l, $s];
-    }
-
-    my $self = bless {
-        context => $context,
-        created => $created,
-    }, $class;
-
-    $self->init($context, @more) if @more;
-
-    return $self;
-}
-
-for my $name (@ACCESSORS) {
-    no strict 'refs';
-    *$name = sub { $_[0]->{$name} };
+sub init {
+    confess "No context provided!" unless $_[0]->[CONTEXT];
 }
 
 sub indent {
     my $self = shift;
-    my $depth = $self->{context}->depth || return;
+    my $depth = $self->[CONTEXT]->depth || return;
     return '    ' x $depth;
 }
 

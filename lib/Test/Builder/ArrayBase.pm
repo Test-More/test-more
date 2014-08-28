@@ -3,15 +3,33 @@ use strict;
 use warnings;
 
 use Test::Builder::Exporter;
+use Carp qw/confess/;
+
+my $LOCKED = sub {
+    confess <<"    EOT";
+Attempt to add a new accessor to $_[0]!
+Index is already locked due to a subclass being initialized.
+    EOT
+};
 
 sub after_import {
     my ($class, $importer, $stash, @args) = @_;
 
-    # If we are a subclass of another ArrayBase class we will start our indexes after the others.
-    my $IDX = $class->can('AB_IDX') ? $class->AB_IDX : 0;
+    # If we are a subclass of another ArrayBase class we will start our indexes
+    # after the others.
+    my $IDX = 0;
+    if ($importer->can('AB_IDX')) {
+        $IDX = $importer->AB_IDX;
+        my $parent = $importer->AB_CLASS;
+        no strict 'refs';
+        no warnings 'redefine';
+        *{"$parent\::AB_NEW_IDX"} = $LOCKED;
+    }
+
     no strict 'refs';
     *{"$importer\::AB_IDX"}     = sub { $IDX };
     *{"$importer\::AB_NEW_IDX"} = sub { $IDX++ };
+    *{"$importer\::AB_CLASS"}   = sub { $importer };
 }
 
 exports qw/accessor accessors/;
