@@ -4,260 +4,16 @@ use warnings;
 
 use Carp qw/croak/;
 use Scalar::Util qw/reftype blessed/;
-use Test::Builder::Threads;
+use Test::Builder::Exporter qw/import export_to exports package_sub/;
 
-my $meta = {};
-sub TB_EXPORT_META { $meta };
+exports qw/
+    try protect
+    package_sub
+    is_tester
+    init_tester
+/;
 
-exports(qw/
-    import export exports accessor accessors delta deltas export_to transform
-    atomic_delta atomic_deltas try protect
-    package_sub is_tester init_tester
-/);
-
-export(new => sub {
-    my ($class, %params) = @_;
-
-    my $self = bless {}, $class;
-
-    while( my ($k, $v) = each(%params) ) {
-        croak "$class has no method named '$k'" unless $self->can($k);
-        $self->$k($v);
-    }
-
-    $self->init(%params) if $self->can('init');
-
-    return $self;
-});
-
-sub import {
-    my $class = shift;
-    my $caller = caller;
-
-    if (grep {$_ eq 'import'} @_) {
-        my $meta = {};
-        no strict 'refs';
-        *{"$caller\::TB_EXPORT_META"} = sub { $meta };
-    }
-
-    $class->export_to($caller, @_) if @_;
-
-    1;
-}
-
-sub export_to {
-    my $from = shift;
-    my ($to, @subs) = @_;
-
-    croak "package '$from' is not a TB exporter"
-        unless is_exporter($from);
-
-    croak "No destination package specified."
-        unless $to;
-
-    return unless @subs;
-
-    my $meta = $from->TB_EXPORT_META;
-
-    for my $name (@subs) {
-        my $ref = $meta->{$name} || croak "$from does not export '$name'";
-        no strict 'refs';
-        *{"$to\::$name"} = $ref;
-    }
-
-    1;
-}
-
-sub exports {
-    my $caller = caller;
-
-    my $meta = is_exporter($caller)
-        || croak "$caller is not an exporter!";
-
-    for my $name (@_) {
-        my $ref = $caller->can($name);
-        croak "$caller has no sub named '$name'" unless $ref;
-
-        croak "Already exporting '$name'"
-            if $meta->{$name};
-
-        $meta->{$name} = $ref;
-    }
-}
-
-sub export {
-    my ($name, $ref) = @_;
-    my $caller = caller;
-
-    croak "The first argument to export() must be a symbol name"
-        unless $name;
-
-    $ref ||= $caller->can($name);
-    croak "$caller has no sub named '$name', and no ref was provided"
-        unless $ref;
-
-    # Allow any type of ref, people can export scalars, hashes, etc.
-    croak "The second argument to export() must be a reference"
-        unless ref $ref;
-
-    my $meta = is_exporter($caller)
-        || croak "$caller is not an exporter!";
-
-    croak "Already exporting '$name'"
-        if $meta->{$name};
-
-    $meta->{$name} = $ref;
-}
-
-sub accessor {
-    my ($name, $default) = @_;
-    my $caller = caller;
-
-    _accessor($caller, $name, $default);
-}
-
-sub accessors {
-    my ($name) = @_;
-    my $caller = caller;
-
-    _accessor($caller, "$_") for @_;
-}
-
-sub _accessor {
-    my ($caller, $attr, $default) = @_;
-    my $name = lc $attr;
-
-    my $sub;
-    if (defined $default) {
-        if (ref $default && ref $default eq 'CODE') {
-            $sub = sub {
-                if (@_ > 1) {
-                    $_[0]->{$attr} = $_[1];
-                }
-                elsif(!exists $_[0]->{$attr}) {
-                    $_[0]->{$attr} = $_[0]->$default;
-                }
-                $_[0]->{$attr};
-            };
-        }
-        elsif ($default eq 'ARRAYREF') {
-            $sub = sub {
-                if (@_ > 1) {
-                    $_[0]->{$attr} = $_[1];
-                }
-                elsif(!exists $_[0]->{$attr}) {
-                    $_[0]->{$attr} = [];
-                }
-                $_[0]->{$attr};
-            };
-        }
-        elsif ($default eq 'HASHREF') {
-            $sub = sub {
-                if (@_ > 1) {
-                    $_[0]->{$attr} = $_[1];
-                }
-                elsif(!exists $_[0]->{$attr}) {
-                    $_[0]->{$attr} = {};
-                }
-                $_[0]->{$attr};
-            };
-        }
-        else {
-            $sub = sub {
-                if (@_ > 1) {
-                    $_[0]->{$attr} = $_[1];
-                }
-                elsif(!exists $_[0]->{$attr}) {
-                    $_[0]->{$attr} = $default;
-                }
-                $_[0]->{$attr};
-            };
-        }
-    }
-    else {
-        $sub = sub {
-            $_[0]->{$attr} = $_[1] if @_ > 1;
-            $_[0]->{$attr};
-        };
-    }
-
-    no strict 'refs';
-    *{"$caller\::$name"} = $sub;
-}
-
-sub transform {
-    my $name = shift;
-    my $code = pop;
-    my ($attr) = @_;
-    my $caller = caller;
-
-    $attr ||= $name;
-
-    croak "name is mandatory"              unless $name;
-    croak "takes a minimum of 2 arguments" unless $code;
-
-    my $sub = sub {
-        my $self = shift;
-        croak "$name\() must be called on a blessed instance, got: $self"
-            unless blessed $self;
-
-        $self->{$attr} = $self->$code(@_) if @_ and defined $_[0];
-
-        return $self->{$attr};
-    };
-
-    no strict 'refs';
-    *{"$caller\::$name"} = $sub;
-}
-
-sub delta {
-    my ($name, $initial) = @_;
-    my $caller = caller;
-
-    _delta($caller, $name, $initial || 0, 0);
-}
-
-sub deltas {
-    my $caller = caller;
-    _delta($caller, "$_", 0, 0) for @_;
-}
-
-sub atomic_delta {
-    my ($name, $initial) = @_;
-    my $caller = caller;
-
-    _delta($caller, $name, $initial || 0, 1);
-}
-
-sub atomic_deltas {
-    my $caller = caller;
-    _delta($caller, "$_", 0, 1) for @_;
-}
-
-sub _delta {
-    my ($caller, $attr, $initial, $atomic) = @_;
-    my $name = lc $attr;
-
-    my $sub;
-    if ($atomic) {
-        $sub = sub {
-            lock $_[0]->{$attr};
-            $_[0]->{$attr} = $initial unless defined $_[0]->{$attr};
-            $_[0]->{$attr} += $_[1] if @_ > 1;
-            $_[0]->{$attr};
-        };
-    }
-    else {
-        $sub = sub {
-            $_[0]->{$attr} = $initial unless defined $_[0]->{$attr};
-            $_[0]->{$attr} += $_[1] if @_ > 1;
-            $_[0]->{$attr};
-        };
-    }
-
-    no strict 'refs';
-    *{"$caller\::$name"} = $sub;
-}
+Test::Builder::Exporter->cleanup();
 
 sub protect(&) {
     my $code = shift;
@@ -286,20 +42,6 @@ sub try(&) {
     }
 
     return wantarray ? ($ok, $error) : $ok;
-}
-
-sub package_sub {
-    my ($pkg, $sub) = @_;
-    no warnings 'once';
-    no strict 'refs';
-    my $globref = \*{"$pkg\::$sub"};
-    return *$globref{CODE} || undef;
-}
-
-sub is_exporter {
-    my $pkg = shift;
-    return unless package_sub($pkg, 'TB_EXPORT_META');
-    return $pkg->TB_EXPORT_META;
 }
 
 sub is_tester {
@@ -337,80 +79,11 @@ Tools for generating accessors and other object bits and pieces.
 
 =head1 SYNOPSYS
 
-    #Imports a sub named 'new' and all the other tools.
-    use Test::Builder::Util;
-
-    # Define some exports
-    export 'foo'; # Export the 'foo' sub
-    export bar => sub { ... }; # export an anon sub named bar
-
-    # Generate some accessors
-    accessors qw/yabba dabba doo/;
+    ...
 
 =head1 EXPORTS
 
 =over 4
-
-=item $class->new(...)
-
-Generic constructor method, can be used in almost any package. Takes key/value
-pairs as arguments. Key is assumed to be the name of a method or accessor. The
-method named for the key is called with the value as an argument. You can also
-define an 'init' method which this will call for you on the newly created
-object.
-
-=item $class->import(@list)
-
-Importing this method lets you define exports.
-
-=item $class->export_to($dest_package, @names)
-
-Export @names to the package $dest_package
-
-=item exports(@names)
-
-Export the subs named in @names.
-
-=item export($name)
-
-=item export($name => sub { ... })
-
-Export a sub named $name. Optionally a coderef may be used.
-
-=item accessor($name)
-
-=item accessor($name, sub { return $DEFAULT })
-
-Define an accessor. A default value can be specified via a coderef.
-
-=item accessors(qw/sub1 sub2 .../)
-
-Define several read/write accessors at once.
-
-=item transform($name, sub { ($self, @args) = @_; ... })
-
-=item transform($name, $attr, sub { ($self, @args) = @_; ... })
-
-Define a read/write accessor that transforms whatever you assign to it via the
-given coderef. $attr is optional and defaults to $name. $attr is the key inside
-the blessed object hash used to store the field.
-
-=item delta($name)
-
-=item delta($name => $default)
-
-=item deltas(qw/name1 name2 .../)
-
-=item atomic_delta($name)
-
-=item atomic_delta($name => $default)
-
-=item atomic_deltas(qw/name1 name2 .../)
-
-A delta accessor is an accessor that adds the numeric argument to the current
-value. Optionally a default value can be specified, otherwise 0 is used.
-
-The atomic variations are thread-safe.
 
 =item $success = try { ... }
 
@@ -436,6 +109,11 @@ ignores inheritance.
 =item $meta = is_tester($package)
 
 Check if a package is a tester, return the metadata if it is.
+
+=item $meta = init_tester($package)
+
+Check if a package is a tester, return the metadata if it is, otherwise turn it
+into a tester and return the newly created metadata.
 
 =back
 
