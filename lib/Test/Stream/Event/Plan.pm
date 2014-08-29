@@ -1,32 +1,27 @@
-package Test::Builder::Event::Plan;
+package Test::Stream::Event::Plan;
 use strict;
 use warnings;
 
-use base 'Test::Builder::Event';
+use Test::Stream qw/OUT_STD/;
+use Test::Stream::Event;
+BEGIN {
+    accessors qw/max directive reason/;
+    Test::Stream::Event->cleanup;
+};
 
 use Carp qw/confess/;
 
-sub max       { $_[0]->{max}       }
-sub directive { $_[0]->{directive} }
-sub reason    { $_[0]->{reason}    }
-
 sub init {
-    my ($self, $context, $max, $directive, $reason) = @_;
-
     confess "Cannot have a reason without a directive!"
-        if defined $reason && !defined $directive;
-
-    $self->{max}       = $max;
-    $self->{directive} = $directive;
-    $self->{reason}    = $reason;
+        if defined $_[0]->[REASON] && !defined $_[0]->[DIRECTIVE];
 }
 
 sub to_tap {
     my $self = shift;
 
-    my $max       = $self->{max};
-    my $directive = $self->{directive};
-    my $reason    = $self->{reason};
+    my $max       = $self->[MAX];
+    my $directive = $self->[DIRECTIVE];
+    my $reason    = $self->[REASON];
 
     return if $directive && $directive eq 'NO_PLAN';
 
@@ -36,7 +31,7 @@ sub to_tap {
         $plan .= " $reason" if defined $reason;
     }
 
-    return "$plan\n";
+    return (OUT_STD, "$plan\n");
 }
 
 1;
@@ -45,7 +40,7 @@ __END__
 
 =head1 NAME
 
-Test::Builder::Event::Plan - The event of a plan
+Test::Stream::Event::Plan - The event of a plan
 
 =head1 DESCRIPTION
 
@@ -53,7 +48,7 @@ The plan event object.
 
 =head1 METHODS
 
-See L<Test::Builder::Event> which is the base class for this module.
+See L<Test::Stream::Event> which is the base class for this module.
 
 =head2 CONSTRUCTORS
 

@@ -1,4 +1,4 @@
-package Test::Builder::Exporter;
+package Test::Stream::Exporter;
 use strict;
 use warnings;
 
@@ -60,6 +60,8 @@ sub cleanup {
     my $class = shift;
     my $caller = caller;
 
+    croak "Cannot cleanup ourselves!" if $class eq $caller;
+
     my $is_exporter = package_sub($class, 'TB_EXPORTER_META');
     croak "$class is not an exporter!?" unless $is_exporter;
     my $meta = $is_exporter->();
@@ -83,7 +85,8 @@ sub cleanup {
         }
 
         no strict 'refs';
-        undef &{"$caller\::$name"};
+        no warnings 'redefine';
+        *{"$caller\::$name"} = sub { croak "sub '$caller\::$name' has been removed" };
     }
 }
 

@@ -1,18 +1,20 @@
-package Test::Builder::Event::Bail;
+package Test::Stream::Event::Bail;
 use strict;
 use warnings;
 
-use base 'Test::Builder::Event';
-
-use Test::Builder::ArrayBase;
+use Test::Stream qw/OUT_STD/;
+use Test::Stream::Event;
 BEGIN {
     accessors qw/reason/;
-    Test::Builder::ArrayBase->cleanup;
+    Test::Stream::Event->cleanup;
 };
 
 sub to_tap {
     my $self = shift;
-    return "Bail out!  " . $self->reason . "\n";
+    return (
+        OUT_STD,
+        "Bail out!  " . $self->reason . "\n",
+    );
 }
 
 1;
@@ -21,7 +23,7 @@ __END__
 
 =head1 NAME
 
-Test::Builder::Event::Bail - Bailout!
+Test::Stream::Event::Bail - Bailout!
 
 =head1 DESCRIPTION
 
@@ -29,7 +31,7 @@ Sent when the test needs to bail out.
 
 =head1 METHODS
 
-See L<Test::Builder::Event> which is the base class for this module.
+See L<Test::Stream::Event> which is the base class for this module.
 
 =head2 CONSTRUCTORS
 
@@ -83,7 +85,7 @@ Returns the TAP string for the plan (not indented).
 =item $r->type
 
 Type of event. Usually this is the lowercased name from the end of the
-package. L<Test::Builder::Event::Ok> = 'ok'.
+package. L<Test::Stream::Event::Ok> = 'ok'.
 
 =item $r->indent
 

@@ -1,9 +1,9 @@
-package Test::Builder::ExitMagic;
+package Test::Stream::ExitMagic;
 use strict;
 use warnings;
 
-use Test::Builder::Util qw/new accessors/;
-require Test::Builder::Event::Finish;
+use Test::Stream::Util qw/new accessors/;
+require Test::Stream::Event::Finish;
 
 accessors qw/stream tb ended pid/;
 
@@ -21,7 +21,7 @@ sub do_magic {
     # should do the ending.
     return unless $self->pid == $$;
 
-    my $stream = $self->stream || (Test::Builder::Stream->root ? Test::Builder::Stream->shared : undef);
+    my $stream = $self->stream || (Test::Stream->root ? Test::Stream->shared : undef);
     return unless $stream; # No stream? no point!
     my $tb = $self->tb;
 
@@ -34,7 +34,7 @@ sub do_magic {
     my $fails = $stream->tests_failed;
 
     $stream->send(
-        Test::Builder::Event::Finish->new(
+        Test::Stream::Event::Finish->new(
             tests_run    => $total,
             tests_failed => $fails,
             depth        => $tb->depth,
@@ -157,7 +157,7 @@ __END__
 
 =head1 NAME
 
-Test::Builder::ExitMagic - Encapsulate the magic exit logic used by
+Test::Stream::ExitMagic - Encapsulate the magic exit logic used by
 Test::Builder.
 
 =head1 DESCRIPTION

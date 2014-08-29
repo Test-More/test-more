@@ -1,8 +1,8 @@
-package Test::Builder::ArrayBase;
+package Test::Stream::ArrayBase;
 use strict;
 use warnings;
 
-use Test::Builder::Exporter;
+use Test::Stream::Exporter;
 use Carp qw/confess/;
 
 my $LOCKED = sub {
@@ -18,21 +18,34 @@ sub after_import {
     # If we are a subclass of another ArrayBase class we will start our indexes
     # after the others.
     my $IDX = 0;
+    my $fields;
+
     if ($importer->can('AB_IDX')) {
         $IDX = $importer->AB_IDX;
+        $fields = [@{$importer->AB_FIELDS}];
+
         my $parent = $importer->AB_CLASS;
         no strict 'refs';
         no warnings 'redefine';
         *{"$parent\::AB_NEW_IDX"} = $LOCKED;
+
+        for(my $i = 0; $i < @$fields; $i++) {
+            *{$importer . '::' . uc($fields->[$i])} = sub() { $i };
+        }
+    }
+    else {
+        $fields = [];
     }
 
     no strict 'refs';
     *{"$importer\::AB_IDX"}     = sub { $IDX };
     *{"$importer\::AB_NEW_IDX"} = sub { $IDX++ };
     *{"$importer\::AB_CLASS"}   = sub { $importer };
+    *{"$importer\::AB_FIELDS"}  = sub { $fields };
 }
 
-exports qw/accessor accessors/;
+exports qw/accessor accessors to_hash/;
+unexports qw/accessor accessors/;
 
 export new => sub {
     my $class = shift;
@@ -41,23 +54,36 @@ export new => sub {
     return $self;
 };
 
-Test::Builder::Exporter->cleanup;
+sub to_hash {
+    my $array_obj = shift;
+    my $fields = $array_obj->AB_FIELDS;
+    my %out;
+    for(my $i = 0; $i < @$fields; $i++) {
+        $out{$fields->[$i]} = $array_obj->[$i];
+    }
+    return \%out;
+};
+
+Test::Stream::Exporter->cleanup;
 
 sub accessor {
     my($name, $default) = @_;
     my $caller = caller;
-    _accessor($caller, $name, $default);
+    my $fields = $caller->AB_FIELDS;
+    _accessor($caller, $fields, $name, $default);
 }
 
 sub accessors {
     my $caller = caller;
-    _accessor($caller, $_) for @_;
+    my $fields = $caller->AB_FIELDS;
+    _accessor($caller, $fields, $_) for @_;
 }
 
 sub _accessor {
-    my ($caller, $name, $default) = @_;
+    my ($caller, $fields, $name, $default) = @_;
 
     my $idx = $caller->AB_NEW_IDX;
+    push @$fields => $name;
 
     my $const = uc $name;
     my $gname = lc $name;

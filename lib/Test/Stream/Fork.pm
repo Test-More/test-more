@@ -1,11 +1,11 @@
-package Test::Builder::Fork;
+package Test::Stream::Fork;
 use strict;
 use warnings;
 
 use Carp qw/confess/;
 use Scalar::Util qw/blessed/;
 use File::Temp();
-use Test::Builder::Util qw/try/;
+use Test::Stream::Util qw/try/;
 
 sub tmpdir { shift->{tmpdir} }
 sub pid    { shift->{pid}    }
@@ -25,12 +25,12 @@ sub handle {
     my $self = shift;
     my ($item) = @_;
 
-    return if $item && blessed($item) && $item->isa('Test::Builder::Event::Finish');
+    return if $item && blessed($item) && $item->isa('Test::Stream::Event::Finish');
 
-    confess "Did not get a valid Test::Builder::Event object! ($item)"
-        unless $item && blessed($item) && $item->isa('Test::Builder::Event');
+    confess "Did not get a valid Test::Stream::Event object! ($item)"
+        unless $item && blessed($item) && $item->isa('Test::Stream::Event');
 
-    my $stream = Test::Builder::Stream->shared;
+    my $stream = Test::Stream->shared;
     return 0 if $$ == $stream->pid;
 
     # First write the file, then rename it so that it is not read before it is ready.
@@ -55,7 +55,7 @@ sub cull {
         my $obj = Storable::retrieve("$dir/$file");
         die "Empty event object found" unless $obj;
 
-        Test::Builder::Stream->shared->send($obj);
+        Test::Stream->shared->send($obj);
 
         if ($ENV{TEST_KEEP_TMP_DIR}) {
             rename("$dir/$file", "$dir/$file.complete") || die "Could not rename file";
@@ -96,24 +96,24 @@ __END__
 
 =head1 NAME
 
-Test::Builder::Fork - Fork support for Test::Builder
+Test::Stream::Fork - Fork support for Test::Builder
 
 =head1 DESCRIPTION
 
-This module is used by L<Test::Builder::Stream> to support forking.
+This module is used by L<Test::Stream> to support forking.
 
 =head1 SYNOPSYS
 
-    use Test::Builder::Fork;
+    use Test::Stream::Fork;
 
-    my $f = Test::Builder::Fork;
+    my $f = Test::Stream::Fork;
 
     if ($pid = fork) {
         waitpid($pid, 0);
         $f->cull;
     }
     else {
-        $f->handle(Test::Builder::Event::Ok->new(bool => 1);
+        $f->handle(Test::Stream::Event::Ok->new(bool => 1);
     }
 
     ...

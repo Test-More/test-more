@@ -1,12 +1,12 @@
-package Test::Builder::Formatter::TAP;
+package Test::Stream::Formatter::TAP;
 use strict;
 use warnings;
 
-use Test::Builder::Threads;
-use Test::Builder::Util qw/accessors try protect new accessor/;
+use Test::Stream::Threads;
+use Test::Stream::Util qw/accessors try protect new accessor/;
 use Carp qw/croak confess/;
 
-use base 'Test::Builder::Formatter';
+use base 'Test::Stream::Formatter';
 
 accessors qw/No_Header No_Diag Depth Use_Numbers _the_plan/;
 
@@ -406,7 +406,7 @@ __END__
 
 =head1 NAME
 
-Test::Builder::Formatter::TAP - TAP formatter.
+Test::Stream::Formatter::TAP - TAP formatter.
 
 =head1 TEST COMPONENT MAP
 
@@ -415,9 +415,9 @@ Test::Builder::Formatter::TAP - TAP formatter.
                                                                              You are here
 
 A test script uses a test tool such as L<Test::More>, which uses Test::Builder
-to produce events. The events are sent to L<Test::Builder::Stream> which then
+to produce events. The events are sent to L<Test::Stream> which then
 forwards them on to one or more formatters. The default formatter is
-L<Test::Builder::Fromatter::TAP> which produces TAP output.
+L<Test::Stream::Fromatter::TAP> which produces TAP output.
 
 =head1 DESCRIPTION
 

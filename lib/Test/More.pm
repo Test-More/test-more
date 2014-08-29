@@ -136,6 +136,8 @@ sub _set_tap_encoding {
             unless Encode::find_encoding($encoding);
     }
 
+    # Make sure to init the IOSets handles for this encoding.
+
     if (defined $run) {
         my $old = $meta->{encoding};
         $meta->{encoding} = $encoding;

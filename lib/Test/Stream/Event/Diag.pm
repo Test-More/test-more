@@ -1,22 +1,32 @@
-package Test::Builder::Event::Diag;
+package Test::Stream::Event::Diag;
 use strict;
 use warnings;
 
-use base 'Test::Builder::Event';
-
-use Test::Builder::Util qw/try/;
-use Encode();
-use Carp qw/confess/;
-use Test::Builder::ArrayBase;
+use Test::Stream qw/OUT_ERR OUT_TODO/;
+use Test::Stream::Event;
 BEGIN {
-    accessors qw/message/;
-    Test::Builder::ArrayBase->cleanup;
+    accessors qw/message linked/;
+    Test::Stream::Event->cleanup;
 };
+
+use Encode();
+use Test::Stream::Util qw/try/;
+use Scalar::Util qw/weaken/;
+use Carp qw/confess/;
 
 my $NORMALIZE = try { require Unicode::Normalize; 1 };
 
 sub init {
     confess "No message set for diag!" unless $_[0]->[MESSAGE];
+    weaken($_[0]->[LINKED]) if $_[0]->[LINKED];
+}
+
+sub link {
+    my $self = shift;
+    my ($to) = @_;
+    confess "Already linked!" if $self->[LINKED];
+    $self->[LINKED] = $to;
+    weaken($self->[LINKED]);
 }
 
 sub to_tap {
@@ -37,7 +47,11 @@ sub to_tap {
 
     $msg = "# $msg" unless $msg =~ m/^\n/;
     $msg =~ s/\n/\n# /g;
-    return "$msg\n";
+
+    return (
+        ($self->[CONTEXT]->is_todo ? OUT_TODO : OUT_ERR),
+        "$msg\n",
+    );
 }
 
 1;
@@ -46,7 +60,7 @@ __END__
 
 =head1 NAME
 
-Test::Builder::Event::Diag - Diag event type
+Test::Stream::Event::Diag - Diag event type
 
 =head1 DESCRIPTION
 
@@ -54,7 +68,7 @@ The diag event type.
 
 =head1 METHODS
 
-See L<Test::Builder::Event> which is the base class for this module.
+See L<Test::Stream::Event> which is the base class for this module.
 
 =head2 CONSTRUCTORS
 

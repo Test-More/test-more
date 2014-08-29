@@ -1,14 +1,12 @@
-package Test::Builder::Event::Child;
+package Test::Stream::Event::Child;
 use strict;
 use warnings;
 
-use base 'Test::Builder::Event';
-
 use Carp qw/confess/;
-use Test::Builder::ArrayBase;
+use Test::Stream::Event;
 BEGIN {
     accessors qw/action name/;
-    Test::Builder::ArrayBase->cleanup;
+    Test::Stream::Event->cleanup;
 };
 
 sub init {
@@ -19,15 +17,13 @@ sub init {
     $_[0]->[NAME] ||= "";
 }
 
-sub to_tap { }
-
 1;
 
 __END__
 
 =head1 NAME
 
-Test::Builder::Event::Child - Child event type
+Test::Stream::Event::Child - Child event type
 
 =head1 DESCRIPTION
 
@@ -35,7 +31,7 @@ Sent when a child Builder is spawned, such as a subtest.
 
 =head1 METHODS
 
-See L<Test::Builder::Event> which is the base class for this module.
+See L<Test::Stream::Event> which is the base class for this module.
 
 =head2 CONSTRUCTORS
 

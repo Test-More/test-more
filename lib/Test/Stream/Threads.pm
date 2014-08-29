@@ -1,8 +1,7 @@
-package Test::Builder::Threads;
+package Test::Stream::Threads;
 use strict;
 use warnings;
 
-# Make Test::Builder thread-safe for ithreads.
 BEGIN {
     use Config;
     # Load threads::shared when threads are turned on.
@@ -67,7 +66,7 @@ __END__
 
 =head1 NAME
 
-Test::Builder::Threads - Helper Test::Builder uses when threaded.
+Test::Stream::Threads - Helper Test::Builder uses when threaded.
 
 =head1 DESCRIPTION
 
@@ -76,7 +75,7 @@ Helper Test::Builder uses when threaded.
 =head1 SYNOPSYS
 
     use threads;
-    use Test::Builder::Threads;
+    use Test::Stream::Threads;
 
     share(...);
     lock(...);

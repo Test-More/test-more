@@ -1,8 +1,8 @@
-package Test::Builder::HashBase;
+package Test::Stream::HashBase;
 use strict;
 use warnings;
 
-use Test::Builder::Exporter;
+use Test::Stream::Exporter;
 use Carp qw/croak/;
 
 exports qw/accessor accessors/;
@@ -22,7 +22,7 @@ export new => sub {
     return $self;
 };
 
-Test::Builder::Exporter->cleanup;
+Test::Stream::Exporter->cleanup;
 
 sub accessor {
     my ($name, $default) = @_;

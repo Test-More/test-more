@@ -1,10 +1,10 @@
-package Test::Builder::Util;
+package Test::Stream::Util;
 use strict;
 use warnings;
 
 use Carp qw/croak/;
 use Scalar::Util qw/reftype blessed/;
-use Test::Builder::Exporter qw/import export_to exports package_sub/;
+use Test::Stream::Exporter qw/import export_to exports package_sub/;
 
 exports qw/
     try protect
@@ -13,7 +13,7 @@ exports qw/
     init_tester
 /;
 
-Test::Builder::Exporter->cleanup();
+Test::Stream::Exporter->cleanup();
 
 sub protect(&) {
     my $code = shift;
@@ -60,6 +60,7 @@ sub init_tester {
 
     my $meta = { todo => $todo, encoding => 'legacy' };
 
+    no strict 'refs';
     *{"$pkg\::TB_TESTER_META"} = sub { $meta };
 
     return $meta;
@@ -71,7 +72,7 @@ __END__
 
 =head1 NAME
 
-Test::Builder::Util - Internal tools for Test::Builder and friends
+Test::Stream::Util - Internal tools for Test::Builder and friends
 
 =head1 DESCRIPTION
 

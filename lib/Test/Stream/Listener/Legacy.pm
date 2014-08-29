@@ -1,10 +1,10 @@
-package Test::Builder::Formatter::LegacyResults;
+package Test::Stream::Listener::Legacy;
 use strict;
 use warnings;
 
-use base 'Test::Builder::Formatter';
+use base 'Test::Stream::Formatter';
 
-use Test::Builder::Threads;
+use Test::Stream::Threads;
 
 sub init {
     my $self = shift;
@@ -125,7 +125,7 @@ __END__
 
 =head1 NAME
 
-Test::Builder::Formatter::LegacyResults - Encapsulate some legacy stuff.
+Test::Stream::Formatter::LegacyResults - Encapsulate some legacy stuff.
 
 =head1 DESCRIPTION
 
@@ -139,9 +139,9 @@ deprecated, but needs to still work for legacy code.
                                                                              You are here
 
 A test script uses a test tool such as L<Test::More>, which uses Test::Builder
-to produce results. The results are sent to L<Test::Builder::Stream> which then
+to produce results. The results are sent to L<Test::Stream> which then
 forwards them on to one or more formatters. The default formatter is
-L<Test::Builder::Fromatter::TAP> which produces TAP output.
+L<Test::Stream::Fromatter::TAP> which produces TAP output.
 
 =head1 AUTHORS
 

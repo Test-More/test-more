@@ -1,15 +1,15 @@
-package Test::Builder::Provider;
+package Test::Stream::Provider;
 use strict;
 use warnings;
 
-use Test::Builder::Context;
+use Test::Stream::Context;
 
-use Test::Builder::Util qw/init_tester/;
+use Test::Stream::Util qw/init_tester/;
 use Exporter qw/import/;
 
 our @EXPORT = ('context', 'anoint');
 
-BEGIN { *context = \&Test::Builder::Context::context }
+BEGIN { *context = \&Test::Stream::Context::context }
 
 sub anoint {
     my ($target, $oil) = @_;
@@ -23,7 +23,7 @@ sub anoint {
 
 =head1 NAME
 
-Test::Builder::Provider - Helper for writing testing tools
+Test::Stream::Provider - Helper for writing testing tools
 
 =head1 TEST COMPONENT MAP
 
@@ -32,9 +32,9 @@ Test::Builder::Provider - Helper for writing testing tools
                   You are here
 
 A test script uses a test tool such as L<Test::More>, which uses Test::Builder
-to produce events. The events are sent to L<Test::Builder::Stream> which then
+to produce events. The events are sent to L<Test::Stream> which then
 forwards them on to one or more formatters. The default formatter is
-L<Test::Builder::Fromatter::TAP> which produces TAP output.
+L<Test::Stream::Fromatter::TAP> which produces TAP output.
 
 =head1 DESCRIPTION
 

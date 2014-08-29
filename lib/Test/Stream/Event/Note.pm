@@ -1,23 +1,28 @@
-package Test::Builder::Event::Note;
+package Test::Stream::Event::Note;
 use strict;
 use warnings;
 
-use base 'Test::Builder::Event';
+use Test::Stream qw/OUT_STD/;
+use Test::Stream::Event;
+BEGIN {
+    accessors qw/message/;
+    Test::Stream::Event->cleanup;
+};
 
 use Carp qw/confess/;
 
 sub init {
-    my ($self, $context, $message) = @_;
-    $self->{message} = $message || confess "No message set for note!";
+    confess "No message set for note!" unless $_[0]->[MESSAGE];
 }
 
 sub to_tap {
     my $self = shift;
 
-    chomp(my $msg = $self->message);
+    chomp(my $msg = $self->[MESSAGE]);
     $msg = "# $msg" unless $msg =~ m/^\n/;
     $msg =~ s/\n/\n# /g;
-    return "$msg\n";
+
+    return (OUT_STD, "$msg\n");
 }
 
 1;
@@ -26,7 +31,7 @@ __END__
 
 =head1 NAME
 
-Test::Builder::Event::Note - Note event type
+Test::Stream::Event::Note - Note event type
 
 =head1 DESCRIPTION
 
@@ -34,7 +39,7 @@ Notes in tests
 
 =head1 METHODS
 
-See L<Test::Builder::Event> which is the base class for this module.
+See L<Test::Stream::Event> which is the base class for this module.
 
 =head2 CONSTRUCTORS
 

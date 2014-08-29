@@ -1,24 +1,12 @@
-package Test::Builder::Event;
+package Test::Stream::Event::Finish;
 use strict;
 use warnings;
 
-use Carp qw/confess croak/;
-
-use Test::Builder::ArrayBase;
+use Test::Stream::Event;
 BEGIN {
-    accessors qw/context created/;
-    Test::Builder::ArrayBase->cleanup;
+    accessors qw/tests_run tests_failed/;
+    Test::Stream::Event->cleanup;
 };
-
-sub init {
-    confess "No context provided!" unless $_[0]->[CONTEXT];
-}
-
-sub indent {
-    my $self = shift;
-    my $depth = $self->[CONTEXT]->depth || return;
-    return '    ' x $depth;
-}
 
 1;
 
@@ -26,14 +14,15 @@ __END__
 
 =head1 NAME
 
-Test::Builder::Event - Base class for events
+Test::Stream::Event::Finish - The finish event type
 
 =head1 DESCRIPTION
 
-Base class for all event objects that get passed through
-L<Test::Builder::Stream>.
+Sent after testing is finished.
 
 =head1 METHODS
+
+See L<Test::Stream::Event> which is the base class for this module.
 
 =head2 CONSTRUCTORS
 
