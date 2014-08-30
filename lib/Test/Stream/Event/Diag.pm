@@ -49,7 +49,7 @@ sub to_tap {
     $msg =~ s/\n/\n# /g;
 
     return (
-        ($self->[CONTEXT]->is_todo ? OUT_TODO : OUT_ERR),
+        ($self->[CONTEXT]->in_todo ? OUT_TODO : OUT_ERR),
         "$msg\n",
     );
 }
@@ -69,16 +69,6 @@ The diag event type.
 =head1 METHODS
 
 See L<Test::Stream::Event> which is the base class for this module.
-
-=head2 CONSTRUCTORS
-
-=over 4
-
-=item $r = $class->new(...)
-
-Create a new instance
-
-=back
 
 =head1 AUTHORS
 

@@ -4,29 +4,94 @@ use 5.008001;
 use strict;
 use warnings;
 
-use Test::Builder::Util qw/is_tester try/;
-use Encode();
-
-#---- perlcritic exemptions. ----#
-
-# We use a lot of subroutine prototypes
-## no critic (Subroutines::ProhibitSubroutinePrototypes)
-
-# Can't use Carp because it might cause C<use_ok()> to accidentally succeed
-# even though the module being used forgot to use Carp.  Yes, this
-# actually happened.
-sub _carp {
-    my( $file, $line ) = ( caller(1) )[ 1, 2 ];
-    return warn @_, " at $file line $line\n";
-}
-
-our $VERSION = '1.301001_040';
+our $VERSION = '1.301001_041';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-our $TODO;
-use Test::Builder::Provider;
-*EXPORT = TB_PROVIDER_META()->{export};
+use Carp qw/croak/;
+use Encode();
 
+use Test::Provider;
+use Test::Stream;
+
+use Test::Stream::Exporter;
+our $TODO;
+export '$TODO' => \$TODO;
+exports qw{
+    ok
+};
+Test::Stream::Exporter->cleanup;
+
+sub before_import {
+    my $class = shift;
+    my ($importer, $list) = @_;
+
+    my $context = context(1);
+
+    my $meta = init_tester($importer);
+
+    my $other        = [];
+    my $idx          = 0;
+    my $modern       = 0;
+    while ($idx <= $#{$list}) {
+        my $item = $list->[$idx++];
+        next unless $item;
+
+        if (defined $item and $item eq 'no_diag') {
+            Test::Stream->shared->set_no_diag(1);
+        }
+        elsif ($item eq 'modern') {
+            $modern = 1;
+        }
+        elsif ($item eq 'tests') {
+            $context->plan($list->[$idx++]);
+        }
+        elsif ($item eq 'skip_all') {
+            $context->plan(0, 'SKIP', $list->[$idx++]);
+        }
+        elsif ($item eq 'no_plan') {
+            $context->plan(0, 'NO_PLAN');
+        }
+        elsif ($item eq 'import') {
+            push @$other => @{$list->[$idx++]};
+        }
+        elsif ($item eq 'enable_forking') {
+            Test::Stream->shared->use_fork;
+        }
+        elsif ($item eq 'utf8') {
+            $context->set_encoding('utf8');
+            Test::Stream->shared->io_sets->init_encoding('utf8');
+            $meta->{encoding} = 'utf8';
+        }
+        elsif ($item eq 'encoding') {
+            my $encoding = $list->[$idx++];
+
+            croak "encoding '$encoding' is not valid, or not available"
+                unless Encode::find_encoding($encoding);
+
+            $context->set_encoding($encoding);
+            $meta->{encoding} = $encoding;
+        }
+        else {
+            Carp::carp("Unknown option: $item");
+        }
+    }
+
+    @$list = @$other;
+
+    Test::Stream->shared->set_use_legacy([]) unless $modern;
+
+    return;
+}
+
+sub ok ($;$) {
+    my $ctx = context();
+    return $ctx->ok(@_);
+    return $_[0] ? 1 : 0;
+}
+
+1;
+
+__END__
 provides qw(
   ok use_ok require_ok
   is isnt like unlike is_deeply
@@ -60,14 +125,6 @@ give helpers => sub {
 
     $provide->($_) for @_;
 };
-
-sub plan {
-    my $tb = Test::More->builder;
-
-    return $tb->plan(@_);
-}
-
-sub modern_default { 0 }
 
 sub before_import {
     my $class = shift;
@@ -153,6 +210,13 @@ sub _set_tap_encoding {
 
     return $meta->{encoding};
 }
+
+sub plan {
+    my $tb = Test::More->builder;
+
+    return $tb->plan(@_);
+}
+
 
 sub tap_encoding {
     my $caller = caller;

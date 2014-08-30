@@ -50,16 +50,6 @@ The plan event object.
 
 See L<Test::Stream::Event> which is the base class for this module.
 
-=head2 CONSTRUCTORS
-
-=over 4
-
-=item $r = $class->new(...)
-
-Create a new instance
-
-=back
-
 =head1 AUTHORS
 
 =over 4

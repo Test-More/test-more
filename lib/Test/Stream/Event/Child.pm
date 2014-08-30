@@ -33,27 +33,6 @@ Sent when a child Builder is spawned, such as a subtest.
 
 See L<Test::Stream::Event> which is the base class for this module.
 
-=head2 CONSTRUCTORS
-
-=over 4
-
-=item $r = $class->new(...)
-
-Create a new instance
-
-=back
-
-=head2 ATTRIBUTES
-
-=over 4
-
-=item $r->action
-
-Either 'push' or 'pop'. When a child is created a push is sent, when a child
-exits a pop is sent.
-
-=back
-
 =head1 AUTHORS
 
 =over 4

@@ -1,14 +1,13 @@
-package Test::Stream::Tools;
+package Test::Provider::Tools;
 use strict;
 use warnings;
 
-use Exporter qw/import/;
-
-our @EXPORT = qw{
-    mostly_like
-};
+use Test::Stream::Exporter;
+exports qw/mostly_like/;
+Test::Stream::Exporter->cleanup;
 
 sub mostly_like($$) { _mostly_like(@_) }
+
 
 #============================
 

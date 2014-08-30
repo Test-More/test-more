@@ -4,14 +4,9 @@ use warnings;
 
 use Carp qw/croak/;
 use Scalar::Util qw/reftype blessed/;
-use Test::Stream::Exporter qw/import export_to exports package_sub/;
+use Test::Stream::Exporter qw/import export_to exports/;
 
-exports qw/
-    try protect
-    package_sub
-    is_tester
-    init_tester
-/;
+exports qw/try protect/;
 
 Test::Stream::Exporter->cleanup();
 
@@ -44,35 +39,13 @@ sub try(&) {
     return wantarray ? ($ok, $error) : $ok;
 }
 
-sub is_tester {
-    my $pkg = shift;
-    return unless package_sub($pkg, 'TB_TESTER_META');
-    return $pkg->TB_TESTER_META;
-}
-
-sub init_tester {
-    my $pkg = shift;
-    return $pkg->TB_TESTER_META if package_sub($pkg, 'TB_TESTER_META');
-
-    no strict 'refs';
-    my $todo = \*{"$pkg\::TODO"};
-    use strict 'refs';
-
-    my $meta = { todo => $todo, encoding => 'legacy' };
-
-    no strict 'refs';
-    *{"$pkg\::TB_TESTER_META"} = sub { $meta };
-
-    return $meta;
-}
-
 1;
 
 __END__
 
 =head1 NAME
 
-Test::Stream::Util - Internal tools for Test::Builder and friends
+Test::Stream::Util
 
 =head1 DESCRIPTION
 
@@ -100,21 +73,6 @@ Similar to try, except that it does not catch exceptions. The idea here is to
 protect $@ and $! from changes. $@ and $! will be restored to whatever they
 were before the run so long as it is successful. If the run fails $! will still
 be restored, but $@ will contain the exception being thrown.
-
-=item $coderef = package_sub($package, $subname)
-
-Find a sub in a package, returns the coderef if it is present, otherwise it
-returns undef. This is similar to C<< $package->can($subname) >> except that it
-ignores inheritance.
-
-=item $meta = is_tester($package)
-
-Check if a package is a tester, return the metadata if it is.
-
-=item $meta = init_tester($package)
-
-Check if a package is a tester, return the metadata if it is, otherwise turn it
-into a tester and return the newly created metadata.
 
 =back
 

@@ -2,11 +2,15 @@ package Test::Stream::IOSets;
 use strict;
 use warnings;
 
+use Test::Stream::Util qw/protect/;
+
+init_legacy();
+
 sub new {
     my $class = shift;
     my $self = bless {}, $class;
 
-    $self->init_legacy();
+    $self->reset_legacy;
 
     return $self;
 }
@@ -25,8 +29,8 @@ sub init_encoding {
             ($out, $fail) = $self->open_handles();
         }
 
-        binmode($out,  ":name($name)");
-        binmode($fail, ":name($name)");
+        binmode($out,  ":encoding($name)");
+        binmode($fail, ":encoding($name)");
 
         $self->{$name} = [$out, $fail, $todo || $out];
     }
@@ -35,31 +39,26 @@ sub init_encoding {
 }
 
 my $LEGACY;
-sub full_reset { $LEGACY = undef }
 sub init_legacy {
-    my $self = shift;
+    return if $LEGACY;
 
-    unless ($LEGACY) {
-        my ($out, $err) = $self->open_handles();
+    my ($out, $err) = open_handles();
 
-        _copy_io_layers(\*STDOUT, $out);
-        _copy_io_layers(\*STDERR, $err);
+    _copy_io_layers(\*STDOUT, $out);
+    _copy_io_layers(\*STDERR, $err);
 
-        _autoflush($out);
-        _autoflush($err);
+    _autoflush($out);
+    _autoflush($err);
 
-        # LEGACY, BAH!
-        # This is necessary to avoid out of sequence writes to the handles
-        _autoflush(\*STDOUT);
-        _autoflush(\*STDERR);
+    # LEGACY, BAH!
+    # This is necessary to avoid out of sequence writes to the handles
+    _autoflush(\*STDOUT);
+    _autoflush(\*STDERR);
 
-        $LEGACY = [$out, $err, $out];
-    }
-
-    $self->reset_outputs;
+    $LEGACY = [$out, $err, $out];
 }
 
-sub reset_outputs {
+sub reset_legacy {
     my $self = shift;
     my ($out, $fail, $todo) = @$LEGACY;
     $self->{legacy} = [$out, $fail, $todo];
@@ -68,7 +67,7 @@ sub reset_outputs {
 sub _copy_io_layers {
     my($src, $dst) = @_;
 
-    try {
+    protect {
         require PerlIO;
         my @src_layers = PerlIO::get_layers($src);
         _apply_layers($dst, @src_layers) if @src_layers;
@@ -94,6 +93,13 @@ sub open_handles {
     _autoflush($err);
 
     return ($out, $err);
+}
+
+sub _apply_layers {
+    my ($fh, @layers) = @_;
+    my %seen;
+    my @unique = grep { $_ !~ /^(unix|perlio)$/ && !$seen{$_}++ } @layers;
+    binmode($fh, join(":", "", "raw", @unique));
 }
 
 1;

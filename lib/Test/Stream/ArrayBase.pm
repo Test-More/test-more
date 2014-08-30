@@ -4,6 +4,7 @@ use warnings;
 
 use Test::Stream::Exporter;
 use Carp qw/confess/;
+use Scalar::Util();
 
 my $LOCKED = sub {
     confess <<"    EOT";
@@ -59,7 +60,9 @@ sub to_hash {
     my $fields = $array_obj->AB_FIELDS;
     my %out;
     for(my $i = 0; $i < @$fields; $i++) {
-        $out{$fields->[$i]} = $array_obj->[$i];
+        my $inner = $array_obj->[$i];
+        my $ao = Scalar::Util::blessed($inner) && $inner->isa(__PACKAGE__);
+        $out{$fields->[$i]} = $ao ? $ao->to_hash : $array_obj->[$i];
     }
     return \%out;
 };

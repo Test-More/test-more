@@ -16,7 +16,7 @@ use Test::Builder::Event::Bail;
 use Test::Builder::Event::Child;
 use Test::Builder::Trace;
 
-our $VERSION = '1.301001_040';
+our $VERSION = '1.301001_041';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 # The mostly-singleton, and other package vars.

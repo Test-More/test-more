@@ -3,68 +3,52 @@ package Test::Simple;
 use 5.008001;
 
 use strict;
+use warnings;
 
-our $VERSION = '1.301001_040';
+our $VERSION = '1.301001_041';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Builder::Provider;
-use Test::Builder::Exporter;
+use Test::Provider;
+use Test::Stream;
 
+use Test::Stream::Exporter;
 exports qw/ok/;
+Test::Stream::Exporter->cleanup;
 
-Test::Builder::Exporter->cleanup;
+sub before_import {
+    my $class = shift;
+    my ($importer, $list) = @_;
 
-#sub before_import {
-#    my $class = shift;
-#    my ($list, $dest) = @_;
-#
-#    Test::More::_set_tap_encoding($dest, 'legacy');
-#
-#    my $encoding_set = 0;
-#    my $other        = [];
-#    my $idx          = 0;
-#    my $modern       = 0;
-#    while ($idx <= $#{$list}) {
-#        my $item = $list->[$idx++];
-#
-#        if (defined $item and $item eq 'no_diag') {
-#            $class->builder->no_diag(1);
-#        }
-#        elsif ($item eq 'tests' || $item eq 'skip_all') {
-#            $class->builder->plan($item => $list->[$idx++]);
-#        }
-#        elsif ($item eq 'no_plan') {
-#            $class->builder->plan($item);
-#        }
-#        elsif ($item eq 'import') {
-#            push @$other => @{$list->[$idx++]};
-#        }
-#        elsif ($item eq 'modern') {
-#            modernize($dest);
-#            Test::More::_set_tap_encoding($dest, 'utf8') unless $encoding_set;
-#            $modern++;
-#        }
-#        elsif ($item eq 'utf8') {
-#            Test::More::_set_tap_encoding($dest, 'utf8');
-#            $encoding_set++;
-#        }
-#        elsif ($item eq 'encoding') {
-#            my $encoding = $list->[$idx++];
-#            Test::More::_set_tap_encoding($dest, $encoding);
-#            $encoding_set++;
-#        }
-#
-#        else {
-#            Carp::croak("Unknown option: $item");
-#        }
-#    }
-#
-#    @$list = @$other;
-#
-#    Test::Builder::Stream->shared->use_lresults unless $modern;
-#
-#    return;
-#}
+    my $context = context(1);
+    my $idx = 0;
+    my $other = [];
+    while ($idx <= $#{$list}) {
+        my $item = $list->[$idx++];
+
+        if (defined $item and $item eq 'no_diag') {
+            Test::Stream->shared->set_no_diag(1);
+        }
+        elsif ($item eq 'tests') {
+            $context->plan($list->[$idx++]);
+        }
+        elsif ($item eq 'skip_all') {
+            $context->plan(0, 'SKIP', $list->[$idx++]);
+        }
+        elsif ($item eq 'no_plan') {
+            $context->plan(0, 'NO_PLAN');
+        }
+        elsif ($item eq 'import') {
+            push @$other => @{$list->[$idx++]};
+        }
+        else {
+            Carp::croak("Unknown option: $item");
+        }
+    }
+
+    @$list = @$other;
+
+    return;
+}
 
 sub ok ($;$) {    ## no critic (Subroutines::ProhibitSubroutinePrototypes)
     my $ctx = context();

@@ -36,10 +36,10 @@ sub init {
         my ($pkg, $file, $line) = $ctx->call;
 
         if (defined $name) {
-            $msg = qq[$prefix  $msg test '$name'\n  at $file line $line.\n];
+            $msg = qq[$prefix  $msg test '$name'\n  at $file line $line.];
         }
         else {
-            $msg = qq[$prefix  $msg test at $file line $line.\n];
+            $msg = qq[$prefix  $msg test at $file line $line.];
         }
 
         $self->add_diag($msg);
@@ -99,15 +99,16 @@ sub add_diag {
     for my $item (@_) {
         next unless $item;
 
-        unless (ref $item) {
+        if (ref $item) {
+            confess "Only diag objects can be linked to events."
+                unless blessed($item) && $item->isa('Test::Stream::Event::Diag');
+    
+            $item->link($self);
+        }
+        else {
             $item = Test::Stream::Event::Diag->new($context, $created, $item, $self);
-            next;
         }
 
-        confess "Only diag objects can be linked to events."
-            unless blessed($item) && $item->isa('Test::Stream::Event::Diag');
-    
-        $item->link($self);
         push @{$self->[DIAG]} => $item;
     }
 }
@@ -140,31 +141,6 @@ The ok event type.
 =head1 METHODS
 
 See L<Test::Stream::Event> which is the base class for this module.
-
-=head2 CONSTRUCTORS
-
-=over 4
-
-=item $r = $class->new(...)
-
-Create a new instance
-
-=back
-
-=head2 INFORMATION
-
-=over 4
-
-=item $r->to_tap
-
-Returns the TAP string for the plan (not indented).
-
-=item $r->indent
-
-Returns the indentation that should be used to display the event ('    ' x
-depth).
-
-=back
 
 =head1 AUTHORS
 

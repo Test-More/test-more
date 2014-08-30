@@ -33,67 +33,6 @@ Sent when the test needs to bail out.
 
 See L<Test::Stream::Event> which is the base class for this module.
 
-=head2 CONSTRUCTORS
-
-=over 4
-
-=item $r = $class->new(...)
-
-Create a new instance
-
-=back
-
-=head2 SIMPLE READ/WRITE ACCESSORS
-
-=over 4
-
-=item $r->reason
-
-Reason for the bailout.
-
-=item $r->trace
-
-Get the test trace info, including where to report errors.
-
-=item $r->pid
-
-PID in which the event was created.
-
-=item $r->depth
-
-Builder depth of the event (0 for normal, 1 for subtest, 2 for nested, etc).
-
-=item $r->in_todo
-
-True if the event was generated inside a todo.
-
-=item $r->source
-
-Builder that created the event, usually $0, but the name of a subtest when
-inside a subtest.
-
-=back
-
-=head2 INFORMATION
-
-=over 4
-
-=item $r->to_tap
-
-Returns the TAP string for the plan (not indented).
-
-=item $r->type
-
-Type of event. Usually this is the lowercased name from the end of the
-package. L<Test::Stream::Event::Ok> = 'ok'.
-
-=item $r->indent
-
-Returns the indentation that should be used to display the event ('    ' x
-depth).
-
-=back
-
 =head1 AUTHORS
 
 =over 4

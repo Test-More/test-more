@@ -1,23 +1,16 @@
-package Test::Stream::Provider;
+package Test::Provider;
 use strict;
 use warnings;
 
-use Test::Stream::Context;
+our $VERSION = '1.301001_041';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Stream::Util qw/init_tester/;
-use Exporter qw/import/;
+use Test::Provider::Context qw/context/;
+use Test::Provider::Util    qw/is_tester init_tester anoint/;
 
-our @EXPORT = ('context', 'anoint');
-
-BEGIN { *context = \&Test::Stream::Context::context }
-
-sub anoint {
-    my ($target, $oil) = @_;
-    $oil ||= caller;
-
-    my $meta = init_tester($target);
-    $meta->{anointed_by}->{$oil} = 1;
-}
+use Test::Stream::Exporter qw/import export_to exports/;
+exports qw/is_tester init_tester context anoint/;
+Test::Stream::Exporter->cleanup();
 
 1;
 
@@ -27,14 +20,14 @@ Test::Stream::Provider - Helper for writing testing tools
 
 =head1 TEST COMPONENT MAP
 
-  [Test Script] > [Test Tool] > [Test::Builder] > [Test::Bulder::Stream] > [Event Formatter]
+  [Test Script] > [Test Tool] > [Test::Stream] > [Event Formatter]
                        ^
                   You are here
 
-A test script uses a test tool such as L<Test::More>, which uses Test::Builder
+A test script uses a test tool such as L<Test::More>, which uses Test::Provider
 to produce events. The events are sent to L<Test::Stream> which then
-forwards them on to one or more formatters. The default formatter is
-L<Test::Stream::Fromatter::TAP> which produces TAP output.
+forwards them on to one or more formatters. By default the stream will produce
+TAP forall events.
 
 =head1 DESCRIPTION
 
