@@ -256,6 +256,7 @@ sub subtest {
     my $ctx = context();
     my $ok = $ctx->nest($code);
     $ctx->ok($ok, $name);
+    return $ok;
 }
 
 1;
@@ -277,14 +278,6 @@ provides qw(
   nest
   tap_encoding
 );
-
-
-sub subtest {
-    my ($name, $subtests) = @_;
-
-    my $tb = Test::More->builder;
-    return $tb->subtest(@_);
-}
 
 sub require_ok ($) {
     my($module) = shift;
