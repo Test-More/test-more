@@ -350,11 +350,8 @@ sub todo_skip {
 
 sub BAIL_OUT {
     my ($reason) = @_;
-
-#    my $reason = shift;
-#    my $tb     = Test::More->builder;
-#
-#    $tb->BAIL_OUT($reason);
+    my $ctx = context();
+    $ctx->bail($reason);
 }
 
 

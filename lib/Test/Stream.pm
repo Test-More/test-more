@@ -193,6 +193,7 @@ sub send {
             }
             elsif ($e->isa('Test::Stream::Event::Bail')) {
                 $self->[BAILED_OUT] = $e;
+                $self->[NO_ENDING]  = 1;
                 die $e unless $self->[EXIT_ON_DISRUPTION];
                 exit 255;
             }
