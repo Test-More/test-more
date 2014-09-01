@@ -243,7 +243,56 @@ sub new_check {
     }
 }
 
+sub require_check {
+    my ($us, $thing, $version) = @_;
 
+    my $ctx = context();
+    my $fool_me = "#line " . $ctx->line . ' "' . $ctx->file . '"';
+    my $file_exists = -f $thing;
+    my $valid_name = !grep { m/^[a-zA-Z]\w*$/ ? 0 : 1 } split /\b::\b/, $thing;
+
+    $ctx->alert("'$thing' appears to be both a file that exists, and a valid module name, trying both.")
+        if $file_exists && $valid_name && !$version;
+
+    my ($fsucc, $msucc, $ferr, $merr, $name);
+
+    my $mfile = "$thing.pm";
+    $mfile =~ s{::}{/}g;
+
+    if ($file_exists && !defined $version) {
+        $name = "require '$thing'";
+        ($fsucc, $ferr) = try { eval "$fool_me\nrequire \$thing" || die $@ }
+    }
+
+    if ($valid_name || defined $version) {
+        $name = "require $thing";
+        if ($INC{$mfile}) {
+            $msucc = 1;
+        }
+        else {
+            ($msucc, $merr) = try { eval "$fool_me\nrequire \$mfile" || die $@ };
+        }
+    }
+
+    $ctx->throw( "'$thing' was successfully loaded as both the file '$thing' and the module '$mfile', this is probably not what you want!" )
+        if $msucc && $fsucc;
+
+    unless ($msucc || $fsucc) {
+        return ("require ...", 0, "    '$thing' does not look like a file or a module name") unless $file_exists || $valid_name;
+
+        return ("require ...", 0, "    '$thing' does not load as either a module or a file\n    File Error: $ferr\n    Module Error: $merr")
+            if $file_exists && $valid_name;
+
+        my $error = $merr || $ferr || "Unknown error";
+        return ($name, 0, "    tried to $name.\n    Error:  $error");
+    }
+
+    return ($name, 1) unless defined $version;
+
+    my ($ok, $error) = try { $thing->VERSION($version) };
+    return ($name, 1) if $ok;
+    return ($name, 0, "    tried to $name.\n    Error:  $error");
+}
 
 
 

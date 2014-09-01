@@ -33,7 +33,7 @@ exports qw{
     mostly_like
     can_ok isa_ok new_ok
     pass fail
-
+    require_ok
     subtest
 };
 Test::Stream::Exporter->cleanup;
@@ -256,6 +256,15 @@ sub subtest {
     my $ctx = context();
     my $ok = $ctx->nest($code);
     $ctx->ok($ok, $name);
+    return $ok;
+}
+
+sub require_ok($;$) {
+    my ($thing, $version) = @_;
+    my $ctx = context();
+
+    my ($name, $ok, @diag) = tmt->require_check($thing, $version);
+    $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
 
