@@ -14,6 +14,7 @@ use Test::Provider;
 use Test::Provider::Meta;
 use Test::Provider::Tools;
 use Test::More::Tools;
+use Test::More::DeepCheck;
 use Test::Stream;
 
 use Test::Stream::Exporter;
@@ -31,6 +32,7 @@ exports qw{
     like unlike
     cmp_ok
     mostly_like is_deeply
+    eq_array eq_hash eq_set
     can_ok isa_ok new_ok
     pass fail
     require_ok use_ok
@@ -40,7 +42,8 @@ exports qw{
 
     diag note
 
-    skip todo_skip BAIL_OUT
+    skip todo_skip
+    BAIL_OUT
 };
 Test::Stream::Exporter->cleanup;
 
@@ -354,312 +357,10 @@ sub BAIL_OUT {
     $ctx->bail($reason);
 }
 
-
-sub is_deeply { die }
-
-1;
-
-__END__
-provides qw(
-  ok use_ok require_ok
-  is isnt like unlike is_deeply
-  cmp_ok
-  skip todo_skip
-  pass fail
-  eq_array eq_hash eq_set
-  plan
-  done_testing
-  can_ok isa_ok new_ok
-  diag note explain
-  BAIL_OUT
-  subtest
-  nest
-  tap_encoding
-);
-
-
-
-## no critic (Subroutines::RequireFinalReturn)
-#'#
-sub eq_array {
-    local @Data_Stack = ();
-    _deep_check(@_);
-}
-
-sub _eq_array {
-    my( $a1, $a2 ) = @_;
-
-    if( grep _type($_) ne 'ARRAY', $a1, $a2 ) {
-        warn "eq_array passed a non-array ref";
-        return 0;
-    }
-
-    return 1 if $a1 eq $a2;
-
-    my $ok = 1;
-    my $max = $#$a1 > $#$a2 ? $#$a1 : $#$a2;
-    for( 0 .. $max ) {
-        my $e1 = $_ > $#$a1 ? $DNE : $a1->[$_];
-        my $e2 = $_ > $#$a2 ? $DNE : $a2->[$_];
-
-        next if _equal_nonrefs($e1, $e2);
-
-        push @Data_Stack, { type => 'ARRAY', idx => $_, vals => [ $e1, $e2 ] };
-        $ok = _deep_check( $e1, $e2 );
-        pop @Data_Stack if $ok;
-
-        last unless $ok;
-    }
-
-    return $ok;
-}
-
-sub _equal_nonrefs {
-    my( $e1, $e2 ) = @_;
-
-    return if ref $e1 or ref $e2;
-
-    if ( defined $e1 ) {
-        return 1 if defined $e2 and $e1 eq $e2;
-    }
-    else {
-        return 1 if !defined $e2;
-    }
-
-    return;
-}
-
-sub _deep_check {
-    my( $e1, $e2 ) = @_;
-    my $tb = Test::More->builder;
-
-    my $ok = 0;
-
-    # Effectively turn %Refs_Seen into a stack.  This avoids picking up
-    # the same referenced used twice (such as [\$a, \$a]) to be considered
-    # circular.
-    local %Refs_Seen = %Refs_Seen;
-
-    {
-        $tb->_unoverload_str( \$e1, \$e2 );
-
-        # Either they're both references or both not.
-        my $same_ref = !( !ref $e1 xor !ref $e2 );
-        my $not_ref = ( !ref $e1 and !ref $e2 );
-
-        if( defined $e1 xor defined $e2 ) {
-            $ok = 0;
-        }
-        elsif( !defined $e1 and !defined $e2 ) {
-            # Shortcut if they're both undefined.
-            $ok = 1;
-        }
-        elsif( _dne($e1) xor _dne($e2) ) {
-            $ok = 0;
-        }
-        elsif( $same_ref and( $e1 eq $e2 ) ) {
-            $ok = 1;
-        }
-        elsif($not_ref) {
-            push @Data_Stack, { type => '', vals => [ $e1, $e2 ] };
-            $ok = 0;
-        }
-        else {
-            if( $Refs_Seen{$e1} ) {
-                return $Refs_Seen{$e1} eq $e2;
-            }
-            else {
-                $Refs_Seen{$e1} = "$e2";
-            }
-
-            my $type = _type($e1);
-            $type = 'DIFFERENT' unless _type($e2) eq $type;
-
-            if( $type eq 'DIFFERENT' ) {
-                push @Data_Stack, { type => $type, vals => [ $e1, $e2 ] };
-                $ok = 0;
-            }
-            elsif( $type eq 'ARRAY' ) {
-                $ok = _eq_array( $e1, $e2 );
-            }
-            elsif( $type eq 'HASH' ) {
-                $ok = _eq_hash( $e1, $e2 );
-            }
-            elsif( $type eq 'REF' ) {
-                push @Data_Stack, { type => $type, vals => [ $e1, $e2 ] };
-                $ok = _deep_check( $$e1, $$e2 );
-                pop @Data_Stack if $ok;
-            }
-            elsif( $type eq 'SCALAR' ) {
-                push @Data_Stack, { type => 'REF', vals => [ $e1, $e2 ] };
-                $ok = _deep_check( $$e1, $$e2 );
-                pop @Data_Stack if $ok;
-            }
-            elsif($type) {
-                push @Data_Stack, { type => $type, vals => [ $e1, $e2 ] };
-                $ok = 0;
-            }
-            else {
-                _whoa( 1, "No type in _deep_check" );
-            }
-        }
-    }
-
-    return $ok;
-}
-
-sub _whoa {
-    my( $check, $desc ) = @_;
-    if($check) {
-        die <<"WHOA";
-WHOA!  $desc
-This should never happen!  Please contact the author immediately!
-WHOA
-    }
-}
-
-sub eq_hash {
-    local @Data_Stack = ();
-    return _deep_check(@_);
-}
-
-sub _eq_hash {
-    my( $a1, $a2 ) = @_;
-
-    if( grep _type($_) ne 'HASH', $a1, $a2 ) {
-        warn "eq_hash passed a non-hash ref";
-        return 0;
-    }
-
-    return 1 if $a1 eq $a2;
-
-    my $ok = 1;
-    my $bigger = keys %$a1 > keys %$a2 ? $a1 : $a2;
-    foreach my $k ( keys %$bigger ) {
-        my $e1 = exists $a1->{$k} ? $a1->{$k} : $DNE;
-        my $e2 = exists $a2->{$k} ? $a2->{$k} : $DNE;
-
-        next if _equal_nonrefs($e1, $e2);
-
-        push @Data_Stack, { type => 'HASH', idx => $k, vals => [ $e1, $e2 ] };
-        $ok = _deep_check( $e1, $e2 );
-        pop @Data_Stack if $ok;
-
-        last unless $ok;
-    }
-
-    return $ok;
-}
-
-sub eq_set {
-    my( $a1, $a2 ) = @_;
-    return 0 unless @$a1 == @$a2;
-
-    no warnings 'uninitialized';
-
-    # It really doesn't matter how we sort them, as long as both arrays are
-    # sorted with the same algorithm.
-    #
-    # Ensure that references are not accidentally treated the same as a
-    # string containing the reference.
-    #
-    # Have to inline the sort routine due to a threading/sort bug.
-    # See [rt.cpan.org 6782]
-    #
-    # I don't know how references would be sorted so we just don't sort
-    # them.  This means eq_set doesn't really work with refs.
-    return eq_array(
-        [ grep( ref, @$a1 ), sort( grep( !ref, @$a1 ) ) ],
-        [ grep( ref, @$a2 ), sort( grep( !ref, @$a2 ) ) ],
-    );
-}
-
-sub _eval {
-    my( $code, @args ) = @_;
-
-    # Work around oddities surrounding resetting of $@ by immediately
-    # storing it.
-    my( $sigdie, $eval_result, $eval_error );
-    {
-        local( $@, $!, $SIG{__DIE__} );    # isolate eval
-        $eval_result = eval $code;              ## no critic (BuiltinFunctions::ProhibitStringyEval)
-        $eval_error  = $@;
-        $sigdie      = $SIG{__DIE__} || undef;
-    }
-    # make sure that $code got a chance to set $SIG{__DIE__}
-    $SIG{__DIE__} = $sigdie if defined $sigdie;
-
-    return( $eval_result, $eval_error );
-}
-
-our( @Data_Stack, %Refs_Seen );
-my $DNE = bless [], 'Does::Not::Exist';
-
-sub _dne {
-    return ref $_[0] eq ref $DNE;
-}
-
-sub _format_stack {
-    my(@Stack) = @_;
-
-    my $var       = '$FOO';
-    my $did_arrow = 0;
-    foreach my $entry (@Stack) {
-        my $type = $entry->{type} || '';
-        my $idx = $entry->{'idx'};
-        if( $type eq 'HASH' ) {
-            $var .= "->" unless $did_arrow++;
-            $var .= "{$idx}";
-        }
-        elsif( $type eq 'ARRAY' ) {
-            $var .= "->" unless $did_arrow++;
-            $var .= "[$idx]";
-        }
-        elsif( $type eq 'REF' ) {
-            $var = "\${$var}";
-        }
-    }
-
-    my @vals = @{ $Stack[-1]{vals} }[ 0, 1 ];
-    my @vars = ();
-    ( $vars[0] = $var ) =~ s/\$FOO/     \$got/;
-    ( $vars[1] = $var ) =~ s/\$FOO/\$expected/;
-
-    my $out = "Structures begin differing at:\n";
-    foreach my $idx ( 0 .. $#vals ) {
-        my $val = $vals[$idx];
-        $vals[$idx]
-          = !defined $val ? 'undef'
-          : _dne($val)    ? "Does not exist"
-          : ref $val      ? "$val"
-          :                 "'$val'";
-    }
-
-    $out .= "$vars[0] = $vals[0]\n";
-    $out .= "$vars[1] = $vals[1]\n";
-
-    $out =~ s/^/    /msg;
-    return $out;
-}
-
-sub _type {
-    my $thing = shift;
-
-    return '' if !ref $thing;
-
-    for my $type (qw(Regexp ARRAY HASH REF SCALAR GLOB CODE)) {
-        return $type if UNIVERSAL::isa( $thing, $type );
-    }
-
-    return '';
-}
-
-
 sub is_deeply {
     my ($got, $want, $name) = @_;
 
     my $ctx = context();
-    $ctx->throw("todo");
 
     unless( @_ == 2 or @_ == 3 ) {
         my $msg = <<'WARNING';
@@ -675,11 +376,19 @@ WARNING
         return 0;
     }
 
-    my ($ok, @diag) = tmt->is_deeply($got, $want);
+    my $checker = Test::More::DeepCheck->new($got, $want);
+    my ($ok, @diag) = checker->check;
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
 
+sub eq_array  { die }
+sub eq_hash   { die }
+sub eq_set    { die }
+
+1;
+
+__END__
 
 
 
