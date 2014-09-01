@@ -33,7 +33,7 @@ exports qw{
     mostly_like
     can_ok isa_ok new_ok
     pass fail
-    require_ok
+    require_ok use_ok
     subtest
 };
 Test::Stream::Exporter->cleanup;
@@ -268,6 +268,15 @@ sub require_ok($;$) {
     return $ok;
 }
 
+sub use_ok($;@) {
+    my ($module, @imports) = @_;
+    my $ctx = context();
+
+    my ($ok, @diag) = tmt->use_check($module, @imports);
+    $ctx->ok($ok, "use $module;", \@diag);
+    return $ok;
+}
+
 1;
 
 __END__
@@ -288,47 +297,6 @@ provides qw(
   tap_encoding
 );
 
-sub require_ok ($) {
-    my($module) = shift;
-    my $tb = Test::More->builder;
-
-    my $pack = caller;
-
-    # Try to determine if we've been given a module name or file.
-    # Module names must be barewords, files not.
-    $module = qq['$module'] unless _is_module_name($module);
-
-    my $code = <<REQUIRE;
-package $pack;
-require $module;
-1;
-REQUIRE
-
-    my( $eval_result, $eval_error ) = _eval($code);
-    my $ok = $tb->ok( $eval_result, "require $module;" );
-
-    unless($ok) {
-        chomp $eval_error;
-        $tb->diag(<<DIAGNOSTIC);
-    Tried to require '$module'.
-    Error:  $eval_error
-DIAGNOSTIC
-
-    }
-
-    return $ok;
-}
-
-sub _is_module_name {
-    my $module = shift;
-
-    # Module names start with a letter.
-    # End with an alphanumeric.
-    # The rest is an alphanumeric or ::
-    $module =~ s/\b::\b//g;
-
-    return $module =~ /^[a-zA-Z]\w*$/ ? 1 : 0;
-}
 
 sub use_ok ($;@) {
     my( $module, @imports ) = @_;

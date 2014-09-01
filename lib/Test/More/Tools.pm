@@ -244,29 +244,30 @@ sub new_check {
 }
 
 sub require_check {
-    my ($us, $thing, $version) = @_;
+    my ($us, $thing, $version, $force_module) = @_;
 
     my $ctx = context();
     my $fool_me = "#line " . $ctx->line . ' "' . $ctx->file . '"';
-    my $file_exists = -f $thing;
+    my $file_exists = !$version && !$force_module && -f $thing;
     my $valid_name = !grep { m/^[a-zA-Z]\w*$/ ? 0 : 1 } split /\b::\b/, $thing;
 
     $ctx->alert("'$thing' appears to be both a file that exists, and a valid module name, trying both.")
-        if $file_exists && $valid_name && !$version;
+        if $file_exists && $valid_name && !($version || $force_module);
 
     my ($fsucc, $msucc, $ferr, $merr, $name);
 
     my $mfile = "$thing.pm";
     $mfile =~ s{::}{/}g;
 
-    if ($file_exists && !defined $version) {
+    if ($file_exists && !($force_module ||defined $version)) {
         $name = "require '$thing'";
         ($fsucc, $ferr) = try { eval "$fool_me\nrequire \$thing" || die $@ }
     }
 
-    if ($valid_name || defined $version) {
+    if ($valid_name || $force_module || defined $version) {
+        my $load = $force_module || 'require';
         # In cases of both, this name takes priority for legacy reasons
-        $name = "require $thing";
+        $name = "$load $thing";
         $name .= " version $version" if defined $version;
         if ($INC{$mfile}) {
             $msucc = 1;
@@ -295,6 +296,26 @@ sub require_check {
     return ("$name", 1) if $ok;
     return ($name, 0, "    tried to $name.\n    Error:  $error");
 }
+
+sub use_check {
+    my ($us, $module, @imports) = @_;
+    my $version = (@imports && $imports[0] =~ m/^\d[0-9\.]+$/) ? shift(@imports) : undef;
+
+    my ($name, $ok, @diag) = $us->require_check($module, $version, 'use');
+    return ($ok, @diag) unless $ok;
+
+    # Do the import
+    my $ctx = context();
+    my ($succ, $error) = try {
+        my ($p, $f, $l) = $ctx->call;
+        eval qq{package $p;\n#line $l "$f"\n$module->import(\@imports); 1} || die $@
+    };
+
+    return (1) if $succ;
+    return (0, "    Tried to use '$module'.\n    Error:  $error");
+}
+
+
 
 
 
