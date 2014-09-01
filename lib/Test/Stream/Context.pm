@@ -18,7 +18,7 @@ sub register_event {
         use strict 'refs';
         my $self = shift;
         my @call = caller(0);
-        my $e = $pkg->new($self->stash, [@call[0 .. 4]], @_);
+        my $e = $pkg->new($self->snapshot, [@call[0 .. 4]], @_);
         $self->stream->send($e);
         return $e;
     };
@@ -54,7 +54,7 @@ sub send {
     $self->stream->send(@_);
 }
 
-for my $stub (qw/frame stream encoding in_todo todo depth pid skip stage nest new stash/) {
+for my $stub (qw/frame stream encoding in_todo todo depth pid skip stage nest new snapshot/) {
     no strict 'refs';
     *$stub = sub {
         use strict 'refs';

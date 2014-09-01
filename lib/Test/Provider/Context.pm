@@ -4,7 +4,7 @@ use warnings;
 
 use Scalar::Util();
 
-use Test::Provider::Util qw/init_tester/;
+use Test::Provider::Meta qw/init_tester/;
 
 # Load all the events to generate event methods
 use Test::Stream;
@@ -19,7 +19,7 @@ use Test::Stream::Event::Plan;
 
 use Test::Stream::ArrayBase;
 BEGIN {
-    accessors qw/frame stack stream encoding in_todo todo depth pid skip meta/;
+    accessors qw/frame stack stream encoding in_todo todo modern on_error depth pid skip/;
     Test::Stream::ArrayBase->cleanup;
 }
 
@@ -32,10 +32,10 @@ our $CURRENT;
 
 sub init {
     $_[0]->[FRAME]    ||= _find_context(1);                # +1 for call to init
-    $_[0]->[STACK]    ||= [ $_[0]->[FRAME] ];
     $_[0]->[STREAM]   ||= Test::Stream->shared;
     $_[0]->[ENCODING] ||= 'legacy';
     $_[0]->[PID]      ||= $$;
+    $_[0]->[ON_ERROR] ||= 'diag';
 }
 
 sub context {
@@ -61,21 +61,26 @@ sub context {
     # Check if $TODO is set in the package, if not check if Test::Builder is
     # loaded, and if so if it has Todo set. We check the element directly for
     # performance.
-    my $todo = ${*{$meta->{todo}}{SCALAR}} || $Test::Builder::Test ? $Test::Builder::Test->{Todo} : undef;
+    my $todo;
+    {
+        no strict 'refs'; no warnings 'once';
+        $todo = $meta->[Test::Provider::Meta::TODO] || ${"$pkg\::TODO"} || ($Test::Builder::Test ? $Test::Builder::Test->{Todo} : undef);
+    };
     my $in_todo = defined $todo;
 
     my $ctx = bless(
         [
             $call,
             [ $call ],
-            $meta->{stream}   || Test::Stream->shared,
-            $meta->{encoding} || 'legacy',
+            $meta->[Test::Provider::Meta::STREAM]   || Test::Stream->shared,
+            $meta->[Test::Provider::Meta::ENCODING] || 'legacy',
             $in_todo,
             $todo,
+            $meta->[Test::Provider::Meta::MODERN]   || 0,
+            $meta->[Test::Provider::Meta::ON_ERROR] || 'diag',
             $DEPTH,
             $$,
             undef,
-            $meta,
         ],
         __PACKAGE__
     );
@@ -106,10 +111,10 @@ sub file    { $_[0]->[FRAME]->[1] }
 sub line    { $_[0]->[FRAME]->[2] }
 sub subname { $_[0]->[FRAME]->[3] }
 
-sub stash {
-    die "Fix for stack";
-    $_[0]->[_STASH] ||= bless [@{$_[0]}], Scalar::Util::blessed($_[0]);
-    return $_[0]->[_STASH];
+sub snapshot {
+    my $clone = bless [@{$_[0]}], Scalar::Util::blessed($_[0]);
+    $clone->[STACK] = [@{$clone->[STACK]}] if $clone->[STACK];
+    return $clone;
 }
 
 sub send {

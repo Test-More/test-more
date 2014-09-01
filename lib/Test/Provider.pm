@@ -6,7 +6,7 @@ our $VERSION = '1.301001_041';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Provider::Context qw/context/;
-use Test::Provider::Util    qw/is_tester init_tester anoint/;
+use Test::Provider::Meta    qw/is_tester init_tester anoint/;
 
 use Test::Stream::Exporter qw/import export_to exports/;
 exports qw/is_tester init_tester context anoint/;

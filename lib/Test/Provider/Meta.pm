@@ -1,10 +1,27 @@
-package Test::Provider::Util;
+package Test::Provider::Meta;
 use strict;
 use warnings;
 
+use Scalar::Util();
+
+use Test::Stream::ArrayBase;
+BEGIN {
+    accessors qw/encoding modern on_error todo stream/;
+    Test::Stream::ArrayBase->cleanup;
+}
+
 use Test::Stream::Exporter qw/import export_to exports package_sub/;
-exports qw/is_tester init_tester anoint/;
+exports qw{
+    ENCODING MODERN ON_ERROR TODO STREAM
+    is_tester init_tester anoint
+};
 Test::Stream::Exporter->cleanup();
+
+sub snapshot {
+    my $self = shift;
+    my $class = Scalar::Util::blessed($self);
+    return bless [@$self], $class;
+}
 
 sub is_tester {
     my $pkg = shift;
@@ -16,14 +33,10 @@ sub init_tester {
     my $pkg = shift;
     return $pkg->TB_TESTER_META if package_sub($pkg, 'TB_TESTER_META');
 
+    my $meta = bless ['legacy', 0, 'diag', undef], __PACKAGE__;
+
     no strict 'refs';
     no warnings 'once';
-    my $todo = \*{"$pkg\::TODO"};
-    use strict 'refs';
-
-    my $meta = { todo => $todo, encoding => 'legacy' };
-
-    no strict 'refs';
     *{"$pkg\::TB_TESTER_META"} = sub { $meta };
 
     return $meta;

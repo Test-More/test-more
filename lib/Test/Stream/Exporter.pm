@@ -52,6 +52,7 @@ sub export_to {
     for my $name (@imports) {
         my $ref = $meta->{export}->{$name} || croak "$class does not export $name";
         no strict 'refs';
+        $name =~ s/^[\$\@\%\&]//;
         *{"$dest\::$name"} = $ref;
     }
 }

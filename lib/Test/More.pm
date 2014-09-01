@@ -11,6 +11,7 @@ use Carp qw/croak/;
 use Encode();
 
 use Test::Provider;
+use Test::Provider::Meta;
 use Test::Provider::Tools;
 use Test::More::Tools;
 use Test::Stream;
@@ -54,7 +55,7 @@ sub before_import {
         }
         elsif ($item eq 'modern') {
             $modern = 1;
-            $context->meta->{modern} = 1;
+            $context->meta->[MODERN] = 1;
         }
         elsif ($item eq 'tests') {
             $context->plan($list->[$idx++]);
@@ -74,7 +75,7 @@ sub before_import {
         elsif ($item eq 'utf8') {
             $context->stream->io_sets->init_encoding('utf8');
             $context->set_encoding('utf8');
-            $meta->{encoding} = 'utf8';
+            $meta->[ENCODING] = 'utf8';
         }
         elsif ($item eq 'encoding') {
             my $encoding = $list->[$idx++];
@@ -84,7 +85,7 @@ sub before_import {
 
             $context->stream->io_sets->init_encoding($encoding);
             $context->set_encoding($encoding);
-            $meta->{encoding} = $encoding;
+            $meta->[ENCODING] = $encoding;
         }
         else {
             Carp::carp("Unknown option: $item");
@@ -106,13 +107,15 @@ sub ok ($;$) {
 
 sub tap_encoding {
     my ($encoding) = @_;
-    my $ctx = context();
 
     croak "encoding '$encoding' is not valid, or not available"
         unless $encoding eq 'legacy' || Encode::find_encoding($encoding);
 
+    my $ctx = context();
     $ctx->stream->io_sets->init_encoding($encoding);
-    $ctx->meta->{encoding} = $encoding;
+
+    my $meta = init_tester($ctx->package);
+    $meta->[ENCODING] = $encoding;
 }
 
 sub cull {
