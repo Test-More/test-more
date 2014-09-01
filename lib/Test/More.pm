@@ -12,7 +12,7 @@ use Encode();
 
 use Test::Provider;
 use Test::Provider::Tools;
-use Test::Builder::Tools;
+use Test::More::Tools;
 use Test::Stream;
 
 use Test::Stream::Exporter;
