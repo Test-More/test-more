@@ -265,6 +265,7 @@ sub require_check {
     }
 
     if ($valid_name || defined $version) {
+        # In cases of both, this name takes priority for legacy reasons
         $name = "require $thing";
         $name .= " version $version" if defined $version;
         if ($INC{$mfile}) {
