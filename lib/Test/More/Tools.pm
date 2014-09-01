@@ -315,6 +315,49 @@ sub use_check {
     return (0, "    Tried to use '$module'.\n    Error:  $error");
 }
 
+#sub is_deeply {
+#    my($us, $got, $expected) = @_;
+#
+#    $us->_unoverload_str( \$expected, \$got );
+#
+#    # neither is a reference
+#    return $us->is_eq($got, $expected)
+#        if !ref $got and !ref $expected;
+#
+#    # one's a reference, one isn't
+#    return (0,  _format_stack({ vals => [ $got, $expected ] }))
+#        if !ref $got xor !ref $expected;
+#
+#    # both references
+#    local @Data_Stack = ();
+#    if( _deep_check( $got, $expected ) ) {
+#        $ok = $tb->ok( 1, $name );
+#    }
+#    else {
+#        $ok = $tb->ok( 0, $name );
+#        $tb->diag( _format_stack(@Data_Stack) );
+#    }
+#
+#    return $ok;
+#}
+
+sub explain {
+    my ($us, @args) = @_;
+    protect { require Data::Dumper };
+
+    return map {
+        ref $_
+          ? do {
+            my $dumper = Data::Dumper->new( [$_] );
+            $dumper->Indent(1)->Terse(1);
+            $dumper->Sortkeys(1) if $dumper->can("Sortkeys");
+            $dumper->Dump;
+          }
+          : $_
+    } @args;
+}
+
+
 
 
 

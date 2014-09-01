@@ -6,6 +6,8 @@ use Test::Stream::Exporter;
 exports qw/pt/;
 Test::Stream::Exporter->cleanup;
 
+use Scalar::Util qw/reftype blessed/;
+
 sub pt() { __PACKAGE__ }
 
 sub mostly_like {

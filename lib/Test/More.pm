@@ -30,11 +30,17 @@ exports qw{
     is isnt
     like unlike
     cmp_ok
-    mostly_like
+    mostly_like is_deeply
     can_ok isa_ok new_ok
     pass fail
     require_ok use_ok
     subtest
+
+    explain
+
+    diag note
+
+    skip todo_skip BAIL_OUT
 };
 Test::Stream::Exporter->cleanup;
 
@@ -144,9 +150,25 @@ sub done_testing {
     $ctx->plan($num);
 }
 
-sub mostly_like($$;$) {
+sub mostly_like {
     my ($got, $want, $name) = @_;
+
     my $ctx = context();
+
+    unless( @_ == 2 or @_ == 3 ) {
+        my $msg = <<'WARNING';
+mostly_like() takes two or three args, you gave %d.
+This usually means you passed an array or hash instead
+of a reference to it
+WARNING
+        chop $msg;    # clip off newline so carp() will put in line/file
+
+        $ctx->alert(sprintf $msg, scalar @_);
+
+        $ctx->ok(0, undef, ['incorrect number of args']);
+        return 0;
+    }
+
     my ($ok, @diag) = pt->mostly_like($got, $want);
     $ctx->ok($ok, $name, \@diag);
     return $ok;
@@ -277,6 +299,67 @@ sub use_ok($;@) {
     return $ok;
 }
 
+sub explain {
+    my $ctx = context();
+    tmt->explain(@_);
+}
+
+sub diag {
+    my $ctx = context();
+    $ctx->diag($_) for @_;
+}
+
+sub note {
+    my $ctx = context();
+    $ctx->note($_) for @_;
+}
+
+sub skip {
+    my( $why, $how_many ) = @_;
+    my $ctx = context();
+
+    my $plan = $ctx->stream->plan;
+
+    # If there is no plan we do not need to worry about counts
+    my $need_count = $plan ? !($plan->directive && $plan->directive eq 'NO_PLAN') : 0;
+
+    $ctx->alert("skip() needs to know \$how_many tests are in the block")
+        if $need_count && !defined $how_many;
+
+    $ctx->alert("skip() was passed a non-numeric number of tests.  Did you get the arguments backwards?")
+        if defined $how_many and $how_many =~ /\D/;
+
+    $ctx->set_skip($why);
+    $how_many ||= 1;
+    for( 1 .. $how_many ) {
+        $ctx->ok(1);
+    }
+
+    no warnings 'exiting';
+    last SKIP;
+}
+
+sub todo_skip {
+    my($why, $how_many) = @_;
+
+    my $ctx = context();
+    $ctx->set_in_todo(1);
+    $ctx->set_todo($why);
+    skip($why, $how_many);
+}
+
+sub BAIL_OUT {
+    my ($reason) = @_;
+
+#    my $reason = shift;
+#    my $tb     = Test::More->builder;
+#
+#    $tb->BAIL_OUT($reason);
+}
+
+
+sub is_deeply { die }
+
 1;
 
 __END__
@@ -298,240 +381,8 @@ provides qw(
 );
 
 
-sub use_ok ($;@) {
-    my( $module, @imports ) = @_;
-    @imports = () unless @imports;
-    my $tb = Test::More->builder;
-
-    my( $pack, $filename, $line ) = caller;
-    $filename =~ y/\n\r/_/; # so it doesn't run off the "#line $line $f" line
-
-    my $code;
-    if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
-        # probably a version check.  Perl needs to see the bare number
-        # for it to work with non-Exporter based modules.
-        $code = <<USE;
-package $pack;
-
-#line $line $filename
-use $module $imports[0];
-1;
-USE
-    }
-    else {
-        $code = <<USE;
-package $pack;
-
-#line $line $filename
-use $module \@{\$args[0]};
-1;
-USE
-    }
-
-    my( $eval_result, $eval_error ) = _eval( $code, \@imports );
-    my $ok = $tb->ok( $eval_result, "use $module;" );
-
-    unless($ok) {
-        chomp $eval_error;
-        $@ =~ s{^BEGIN failed--compilation aborted at .*$}
-                {BEGIN failed--compilation aborted at $filename line $line.}m;
-        $tb->diag(<<DIAGNOSTIC);
-    Tried to use '$module'.
-    Error:  $eval_error
-DIAGNOSTIC
-
-    }
-
-    return $ok;
-}
-
-sub _eval {
-    my( $code, @args ) = @_;
-
-    # Work around oddities surrounding resetting of $@ by immediately
-    # storing it.
-    my( $sigdie, $eval_result, $eval_error );
-    {
-        local( $@, $!, $SIG{__DIE__} );    # isolate eval
-        $eval_result = eval $code;              ## no critic (BuiltinFunctions::ProhibitStringyEval)
-        $eval_error  = $@;
-        $sigdie      = $SIG{__DIE__} || undef;
-    }
-    # make sure that $code got a chance to set $SIG{__DIE__}
-    $SIG{__DIE__} = $sigdie if defined $sigdie;
-
-    return( $eval_result, $eval_error );
-}
-
-our( @Data_Stack, %Refs_Seen );
-my $DNE = bless [], 'Does::Not::Exist';
-
-sub _dne {
-    return ref $_[0] eq ref $DNE;
-}
-
-## no critic (Subroutines::RequireArgUnpacking)
-sub is_deeply {
-    my $tb = Test::More->builder;
-
-    unless( @_ == 2 or @_ == 3 ) {
-        my $msg = <<'WARNING';
-is_deeply() takes two or three args, you gave %d.
-This usually means you passed an array or hash instead
-of a reference to it
-WARNING
-        chop $msg;    # clip off newline so carp() will put in line/file
-
-        _carp sprintf $msg, scalar @_;
-
-        return $tb->ok(0);
-    }
-
-    my( $got, $expected, $name ) = @_;
-
-    $tb->_unoverload_str( \$expected, \$got );
-
-    my $ok;
-    if( !ref $got and !ref $expected ) {    # neither is a reference
-        $ok = $tb->is_eq( $got, $expected, $name );
-    }
-    elsif( !ref $got xor !ref $expected ) {    # one's a reference, one isn't
-        $ok = $tb->ok( 0, $name );
-        $tb->diag( _format_stack({ vals => [ $got, $expected ] }) );
-    }
-    else {                                     # both references
-        local @Data_Stack = ();
-        if( _deep_check( $got, $expected ) ) {
-            $ok = $tb->ok( 1, $name );
-        }
-        else {
-            $ok = $tb->ok( 0, $name );
-            $tb->diag( _format_stack(@Data_Stack) );
-        }
-    }
-
-    return $ok;
-}
-
-sub _format_stack {
-    my(@Stack) = @_;
-
-    my $var       = '$FOO';
-    my $did_arrow = 0;
-    foreach my $entry (@Stack) {
-        my $type = $entry->{type} || '';
-        my $idx = $entry->{'idx'};
-        if( $type eq 'HASH' ) {
-            $var .= "->" unless $did_arrow++;
-            $var .= "{$idx}";
-        }
-        elsif( $type eq 'ARRAY' ) {
-            $var .= "->" unless $did_arrow++;
-            $var .= "[$idx]";
-        }
-        elsif( $type eq 'REF' ) {
-            $var = "\${$var}";
-        }
-    }
-
-    my @vals = @{ $Stack[-1]{vals} }[ 0, 1 ];
-    my @vars = ();
-    ( $vars[0] = $var ) =~ s/\$FOO/     \$got/;
-    ( $vars[1] = $var ) =~ s/\$FOO/\$expected/;
-
-    my $out = "Structures begin differing at:\n";
-    foreach my $idx ( 0 .. $#vals ) {
-        my $val = $vals[$idx];
-        $vals[$idx]
-          = !defined $val ? 'undef'
-          : _dne($val)    ? "Does not exist"
-          : ref $val      ? "$val"
-          :                 "'$val'";
-    }
-
-    $out .= "$vars[0] = $vals[0]\n";
-    $out .= "$vars[1] = $vals[1]\n";
-
-    $out =~ s/^/    /msg;
-    return $out;
-}
-
-sub _type {
-    my $thing = shift;
-
-    return '' if !ref $thing;
-
-    for my $type (qw(Regexp ARRAY HASH REF SCALAR GLOB CODE)) {
-        return $type if UNIVERSAL::isa( $thing, $type );
-    }
-
-    return '';
-}
-
-sub diag {
-    return Test::More->builder->diag(@_);
-}
-
-sub note {
-    return Test::More->builder->note(@_);
-}
-
-sub explain {
-    return Test::More->builder->explain(@_);
-}
 
 ## no critic (Subroutines::RequireFinalReturn)
-sub skip {
-    my( $why, $how_many ) = @_;
-    my $tb = Test::More->builder;
-
-    unless( defined $how_many ) {
-        # $how_many can only be avoided when no_plan is in use.
-        _carp "skip() needs to know \$how_many tests are in the block"
-          unless $tb->has_plan eq 'no_plan';
-        $how_many = 1;
-    }
-
-    if( defined $how_many and $how_many =~ /\D/ ) {
-        _carp
-          "skip() was passed a non-numeric number of tests.  Did you get the arguments backwards?";
-        $how_many = 1;
-    }
-
-    for( 1 .. $how_many ) {
-        $tb->skip($why);
-    }
-
-    no warnings 'exiting';
-    last SKIP;
-}
-
-sub todo_skip {
-    my( $why, $how_many ) = @_;
-    my $tb = Test::More->builder;
-
-    unless( defined $how_many ) {
-        # $how_many can only be avoided when no_plan is in use.
-        _carp "todo_skip() needs to know \$how_many tests are in the block"
-          unless $tb->has_plan eq 'no_plan';
-        $how_many = 1;
-    }
-
-    for( 1 .. $how_many ) {
-        $tb->todo_skip($why);
-    }
-
-    no warnings 'exiting';
-    last TODO;
-}
-
-sub BAIL_OUT {
-    my $reason = shift;
-    my $tb     = Test::More->builder;
-
-    $tb->BAIL_OUT($reason);
-}
-
 #'#
 sub eq_array {
     local @Data_Stack = ();
@@ -725,6 +576,115 @@ sub eq_set {
         [ grep( ref, @$a2 ), sort( grep( !ref, @$a2 ) ) ],
     );
 }
+
+sub _eval {
+    my( $code, @args ) = @_;
+
+    # Work around oddities surrounding resetting of $@ by immediately
+    # storing it.
+    my( $sigdie, $eval_result, $eval_error );
+    {
+        local( $@, $!, $SIG{__DIE__} );    # isolate eval
+        $eval_result = eval $code;              ## no critic (BuiltinFunctions::ProhibitStringyEval)
+        $eval_error  = $@;
+        $sigdie      = $SIG{__DIE__} || undef;
+    }
+    # make sure that $code got a chance to set $SIG{__DIE__}
+    $SIG{__DIE__} = $sigdie if defined $sigdie;
+
+    return( $eval_result, $eval_error );
+}
+
+our( @Data_Stack, %Refs_Seen );
+my $DNE = bless [], 'Does::Not::Exist';
+
+sub _dne {
+    return ref $_[0] eq ref $DNE;
+}
+
+sub _format_stack {
+    my(@Stack) = @_;
+
+    my $var       = '$FOO';
+    my $did_arrow = 0;
+    foreach my $entry (@Stack) {
+        my $type = $entry->{type} || '';
+        my $idx = $entry->{'idx'};
+        if( $type eq 'HASH' ) {
+            $var .= "->" unless $did_arrow++;
+            $var .= "{$idx}";
+        }
+        elsif( $type eq 'ARRAY' ) {
+            $var .= "->" unless $did_arrow++;
+            $var .= "[$idx]";
+        }
+        elsif( $type eq 'REF' ) {
+            $var = "\${$var}";
+        }
+    }
+
+    my @vals = @{ $Stack[-1]{vals} }[ 0, 1 ];
+    my @vars = ();
+    ( $vars[0] = $var ) =~ s/\$FOO/     \$got/;
+    ( $vars[1] = $var ) =~ s/\$FOO/\$expected/;
+
+    my $out = "Structures begin differing at:\n";
+    foreach my $idx ( 0 .. $#vals ) {
+        my $val = $vals[$idx];
+        $vals[$idx]
+          = !defined $val ? 'undef'
+          : _dne($val)    ? "Does not exist"
+          : ref $val      ? "$val"
+          :                 "'$val'";
+    }
+
+    $out .= "$vars[0] = $vals[0]\n";
+    $out .= "$vars[1] = $vals[1]\n";
+
+    $out =~ s/^/    /msg;
+    return $out;
+}
+
+sub _type {
+    my $thing = shift;
+
+    return '' if !ref $thing;
+
+    for my $type (qw(Regexp ARRAY HASH REF SCALAR GLOB CODE)) {
+        return $type if UNIVERSAL::isa( $thing, $type );
+    }
+
+    return '';
+}
+
+
+sub is_deeply {
+    my ($got, $want, $name) = @_;
+
+    my $ctx = context();
+    $ctx->throw("todo");
+
+    unless( @_ == 2 or @_ == 3 ) {
+        my $msg = <<'WARNING';
+mostly_like() takes two or three args, you gave %d.
+This usually means you passed an array or hash instead
+of a reference to it
+WARNING
+        chop $msg;    # clip off newline so carp() will put in line/file
+
+        $ctx->alert(sprintf $msg, scalar @_);
+
+        $ctx->ok(0, undef, ['incorrect number of args']);
+        return 0;
+    }
+
+    my ($ok, @diag) = tmt->is_deeply($got, $want);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+
+
 
 1;
 
