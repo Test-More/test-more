@@ -5,13 +5,13 @@ use warnings;
 use Test::Provider::Context;
 
 use Test::Stream::Exporter;
-exports qw/tbt/;
+exports qw/tmt/;
 Test::Stream::Exporter->cleanup;
 
 use Test::Stream::Util qw/try protect is_regex/;
 use Scalar::Util qw/blessed/;
 
-sub tbt() { __PACKAGE__ }
+sub tmt() { __PACKAGE__ }
 
 # Bad, these are not comparison operators. Should we include more?
 my %CMP_OK_BL    = map { ( $_, 1 ) } ( "=", "+=", ".=", "x=", "^=", "|=", "||=", "&&=", "...");
@@ -169,6 +169,83 @@ sub can_check {
 
     return (!@diag, @diag)
 }
+
+sub isa_check {
+    my($us, $thing, $class, $thing_name) = @_;
+
+    my ($whatami, $try_isa, $diag, $type);
+    if( !defined $thing ) {
+        $whatami = 'undef';
+        $$thing_name = "undef" unless defined $$thing_name;
+        $diag = defined $thing ? "'$$thing_name' isn't a '$class'" : "'$$thing_name' isn't defined";
+    }
+    elsif($type = blessed $thing) {
+        $whatami = 'object';
+        $try_isa = 1;
+        $$thing_name = "An object of class '$type'" unless defined $$thing_name;
+        $diag = "The object of class '$type' isn't a '$class'";
+    }
+    elsif($type = ref $thing) {
+        $whatami = 'reference';
+        $$thing_name = "A reference of type '$type'" unless defined $$thing_name;
+        $diag = "The reference of type '$type' isn't a '$class'";
+    }
+    else {
+        $whatami = 'class';
+        $try_isa = 1;
+        $$thing_name = "The class (or class-like) '$thing'" unless defined $$thing_name;
+        $diag = "$thing_name isn't a '$class'";
+    }
+
+    my $ok;
+    if ($try_isa) {
+        # We can't use UNIVERSAL::isa because we want to honor isa() overrides
+        my ($success, $error) = try {
+            my $ctx = context();
+            my ($p, $f, $l) = $ctx->call;
+            eval qq{#line $l "$f"\n\$ok = \$thing\->isa(\$class); 1} || die $@;
+        };
+
+        die <<"        WHOA" unless $success;
+WHOA! I tried to call ->isa on your $whatami and got some weird error.
+Here's the error.
+$error
+        WHOA
+    }
+    else {
+        # Special case for isa_ok( [], "ARRAY" ) and like
+        $ok = UNIVERSAL::isa($thing, $class);
+    }
+
+    return ($ok) if $ok;
+    return ($ok, "    $diag\n");
+}
+
+sub new_check {
+    my($us, $class, $args, $object_name) = @_;
+
+    $args ||= [];
+
+    my $obj;
+    my($success, $error) = try {
+        my $ctx = context();
+        my ($p, $f, $l) = $ctx->call;
+        eval qq{#line $l "$f"\n\$obj = \$class\->new(\@\$args); 1} || die $@;
+    };
+    if($success) {
+        my ($ok, @diag) = $us->isa_check($obj, $class, \$object_name);
+        my $name = "$object_name isa '$class'";
+        return ($obj, $name, $ok, @diag);
+    }
+    else {
+        $class = 'undef' unless defined $class;
+        return (undef, "$class->new() died", 0, "    Error was:  $error");
+    }
+}
+
+
+
+
 
 
 

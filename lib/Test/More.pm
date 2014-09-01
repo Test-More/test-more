@@ -31,7 +31,10 @@ exports qw{
     like unlike
     cmp_ok
     mostly_like
-    can_ok
+    can_ok isa_ok new_ok
+    pass fail
+
+    subtest
 };
 Test::Stream::Exporter->cleanup;
 
@@ -152,7 +155,7 @@ sub mostly_like($$;$) {
 sub is($$;$) {
     my ($got, $want, $name) = @_;
     my $ctx = context();
-    my ($ok, @diag) = tbt->is_eq($got, $want);
+    my ($ok, @diag) = tmt->is_eq($got, $want);
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
@@ -160,7 +163,7 @@ sub is($$;$) {
 sub isnt ($$;$) {
     my ($got, $forbid, $name) = @_;
     my $ctx = context();
-    my ($ok, @diag) = tbt->isnt_eq($got, $forbid);
+    my ($ok, @diag) = tmt->isnt_eq($got, $forbid);
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
@@ -174,7 +177,7 @@ sub isnt ($$;$) {
 sub like ($$;$) {
     my ($got, $forbid, $name) = @_;
     my $ctx = context();
-    my ($ok, @diag) = tbt->regex_check($got, $forbid, '=~');
+    my ($ok, @diag) = tmt->regex_check($got, $forbid, '=~');
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
@@ -182,7 +185,7 @@ sub like ($$;$) {
 sub unlike ($$;$) {
     my ($got, $forbid, $name) = @_;
     my $ctx = context();
-    my ($ok, @diag) = tbt->regex_check($got, $forbid, '!~');
+    my ($ok, @diag) = tmt->regex_check($got, $forbid, '!~');
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
@@ -190,7 +193,7 @@ sub unlike ($$;$) {
 sub cmp_ok($$$;$) {
     my ($got, $type, $expect, $name) = @_;
     my $ctx = context();
-    my ($ok, @diag) = tbt->cmp_check($got, $type, $expect);
+    my ($ok, @diag) = tmt->cmp_check($got, $type, $expect);
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
@@ -209,7 +212,7 @@ sub can_ok($@) {
         ($ok, @diag) = (0, "    can_ok() called with empty class or reference");
     }
     else {
-        ($ok, @diag) = tbt->can_check($thing, $class, @methods);
+        ($ok, @diag) = tmt->can_check($thing, $class, @methods);
     }
 
     my $name = (@methods == 1)
@@ -217,6 +220,42 @@ sub can_ok($@) {
         : "$class->can(...)";
 
     $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub isa_ok ($$;$) {
+    my ($thing, $class, $thing_name) = @_;
+    my $ctx = context();
+    my ($ok, @diag) = tmt->isa_check($thing, $class, \$thing_name);
+    my $name = "$thing_name isa '$class'";
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub new_ok {
+    croak "new_ok() must be given at least a class" unless @_;
+    my ($class, $args, $object_name) = @_;
+    my $ctx = context();
+    my ($obj, $name, $ok, @diag) = tmt->new_check($class, $args, $object_name);
+    $ctx->ok($ok, $name, \@diag);
+    return $obj;
+}
+
+sub pass (;$) {
+    my $ctx = context();
+    return $ctx->ok(1, @_);
+}
+
+sub fail (;$) {
+    my $ctx = context();
+    return $ctx->ok(0, @_);
+}
+
+sub subtest {
+    my ($name, $code) = @_;
+    my $ctx = context();
+    my $ok = $ctx->nest($code);
+    $ctx->ok($ok, $name);
 }
 
 1;
@@ -240,125 +279,11 @@ provides qw(
 );
 
 
-sub isa_ok ($$;$) {
-    my( $thing, $class, $thing_name ) = @_;
-    my $tb = Test::More->builder;
-
-    my $whatami;
-    if( !defined $thing ) {
-        $whatami = 'undef';
-    }
-    elsif( ref $thing ) {
-        $whatami = 'reference';
-
-        local($@,$!);
-        require Scalar::Util;
-        if( Scalar::Util::blessed($thing) ) {
-            $whatami = 'object';
-        }
-    }
-    else {
-        $whatami = 'class';
-    }
-
-    # We can't use UNIVERSAL::isa because we want to honor isa() overrides
-    my( $rslt, $error ) = $tb->_try( sub { $thing->isa($class) } );
-
-    if($error) {
-        die <<WHOA unless $error =~ /^Can't (locate|call) method "isa"/;
-WHOA! I tried to call ->isa on your $whatami and got some weird error.
-Here's the error.
-$error
-WHOA
-    }
-
-    # Special case for isa_ok( [], "ARRAY" ) and like
-    if( $whatami eq 'reference' ) {
-        $rslt = UNIVERSAL::isa($thing, $class);
-    }
-
-    my($diag, $name);
-    if( defined $thing_name ) {
-        $name = "'$thing_name' isa '$class'";
-        $diag = defined $thing ? "'$thing_name' isn't a '$class'" : "'$thing_name' isn't defined";
-    }
-    elsif( $whatami eq 'object' ) {
-        my $my_class = ref $thing;
-        $thing_name = qq[An object of class '$my_class'];
-        $name = "$thing_name isa '$class'";
-        $diag = "The object of class '$my_class' isn't a '$class'";
-    }
-    elsif( $whatami eq 'reference' ) {
-        my $type = ref $thing;
-        $thing_name = qq[A reference of type '$type'];
-        $name = "$thing_name isa '$class'";
-        $diag = "The reference of type '$type' isn't a '$class'";
-    }
-    elsif( $whatami eq 'undef' ) {
-        $thing_name = 'undef';
-        $name = "$thing_name isa '$class'";
-        $diag = "$thing_name isn't defined";
-    }
-    elsif( $whatami eq 'class' ) {
-        $thing_name = qq[The class (or class-like) '$thing'];
-        $name = "$thing_name isa '$class'";
-        $diag = "$thing_name isn't a '$class'";
-    }
-    else {
-        die;
-    }
-
-    my $ok;
-    if($rslt) {
-        $ok = $tb->ok( 1, $name );
-    }
-    else {
-        $ok = $tb->ok( 0, $name );
-        $tb->diag("    $diag\n");
-    }
-
-    return $ok;
-}
-
-sub new_ok {
-    my $tb = Test::More->builder;
-    $tb->croak("new_ok() must be given at least a class") unless @_;
-
-    my( $class, $args, $object_name ) = @_;
-
-    $args ||= [];
-
-    my $obj;
-    my( $success, $error ) = $tb->_try( sub { $obj = $class->new(@$args); 1 } );
-    if($success) {
-        isa_ok $obj, $class, $object_name;
-    }
-    else {
-        $class = 'undef' if !defined $class;
-        $tb->ok( 0, "$class->new() died" );
-        $tb->diag("    Error was:  $error");
-    }
-
-    return $obj;
-}
-
 sub subtest {
     my ($name, $subtests) = @_;
 
     my $tb = Test::More->builder;
     return $tb->subtest(@_);
-}
-
-sub pass (;$) {
-    my $tb = Test::More->builder;
-
-    return $tb->ok( 1, @_ );
-}
-
-sub fail (;$) {
-    my $tb = Test::More->builder;
-
-    return $tb->ok( 0, @_ );
 }
 
 sub require_ok ($) {

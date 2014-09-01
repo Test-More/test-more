@@ -4,6 +4,7 @@ use warnings;
 
 use Scalar::Util();
 
+use Test::Stream::Util qw/try/;
 use Test::Provider::Meta qw/init_tester/;
 
 # Load all the events to generate event methods
@@ -130,6 +131,8 @@ sub nest {
     my $self = shift;
     my ($code, @args) = @_;
 
+    my $pass;
+
     $self->child('push');
 
     my ($ok, $error) = try {
@@ -137,12 +140,17 @@ sub nest {
         local $CURRENT = undef;
         no warnings 'once'; # PITA
         local $Test::Buider::Level = 1;
+        $self->stream->push_state;
         $code->(@args);
+        $pass = $self->stream->is_passing;
+        $self->stream->pop_state;
     };
 
     $self->child('pop');
 
     die $error unless $ok;
+
+    return $pass;
 }
 
 1;

@@ -93,8 +93,9 @@ sub init {
     sub intercept_start {
         my $class = shift;
         my $new = $class->new();
+        my $old = $stack[-1];
         push @stack => $new;
-        return $new;
+        return ($new, $old);
     }
 
     sub intercept_stop {
@@ -107,13 +108,13 @@ sub init {
 
 sub intercept {
     my $class = shift;
-    my ($code, @args) = @_;
+    my ($code) = @_;
 
     croak "The first argument to intercept must be a coderef"
         unless $code && ref $code && ref $code eq 'CODE';
 
-    my $new = $class->intercept_start(@args);
-    my ($ok, $error) = try { $code->($new) };
+    my ($new, $old) = $class->intercept_start();
+    my ($ok, $error) = try { $code->($new, $old) };
     $class->intercept_stop($new);
 
     die $error unless $ok;
@@ -199,7 +200,7 @@ sub send {
     }
 }
 
-sub push_state { push @{$_[0]->[STATE]} => share([0, 0]) }
+sub push_state { push @{$_[0]->[STATE]} => share([0, 0, undef, 1]) }
 sub pop_state  { pop  @{$_[0]->[STATE]} }
 
 sub sub_state {
