@@ -266,6 +266,7 @@ sub require_check {
 
     if ($valid_name || defined $version) {
         $name = "require $thing";
+        $name .= " version $version" if defined $version;
         if ($INC{$mfile}) {
             $msucc = 1;
         }
@@ -287,10 +288,10 @@ sub require_check {
         return ($name, 0, "    tried to $name.\n    Error:  $error");
     }
 
-    return ($name, 1) unless defined $version;
+    return ("$name;", 1) unless defined $version;
 
-    my ($ok, $error) = try { $thing->VERSION($version) };
-    return ($name, 1) if $ok;
+    my ($ok, $error) = try { eval "$fool_me\n$thing->VERSION($version)" || die $@ };
+    return ("$name", 1) if $ok;
     return ($name, 0, "    tried to $name.\n    Error:  $error");
 }
 
