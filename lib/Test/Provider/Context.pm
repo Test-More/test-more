@@ -19,7 +19,7 @@ use Test::Stream::Event::Plan;
 
 use Test::Stream::ArrayBase;
 BEGIN {
-    accessors qw/frame stack stream encoding in_todo todo modern on_error depth pid skip/;
+    accessors qw/frame stream encoding in_todo todo modern depth pid skip/;
     Test::Stream::ArrayBase->cleanup;
 }
 
@@ -35,23 +35,18 @@ sub init {
     $_[0]->[STREAM]   ||= Test::Stream->shared;
     $_[0]->[ENCODING] ||= 'legacy';
     $_[0]->[PID]      ||= $$;
-    $_[0]->[ON_ERROR] ||= 'diag';
 }
 
 sub context {
-    my ($level, $silent) = @_;
-    my $call = _find_context($level); # the only arg is an integer to add to the caller level
-
     # If the context has already been initialized we simply return it, we
     # ignore any additional parameters as they no longer matter. The first
     # thing to ask for a context wins, anything context aware that is called
     # later MUST expect that it can get a context found by something down the
     # stack.
-    if ($CURRENT) {
-        push @{$CURRENT->[STACK]} => $call unless $silent; # So we can trace the tools
-        return $CURRENT;
-    }
+    return $CURRENT if $CURRENT;
 
+    my ($level) = @_;
+    my $call = _find_context($level); # the only arg is an integer to add to the caller level
     my $pkg  = $call->[0];
 
     # init_tester returns ther meta if found, otherwise it creates it and then
@@ -71,13 +66,11 @@ sub context {
     my $ctx = bless(
         [
             $call,
-            [ $call ],
             $meta->[Test::Provider::Meta::STREAM]   || Test::Stream->shared,
             $meta->[Test::Provider::Meta::ENCODING] || 'legacy',
             $in_todo,
             $todo,
             $meta->[Test::Provider::Meta::MODERN]   || 0,
-            $meta->[Test::Provider::Meta::ON_ERROR] || 'diag',
             $DEPTH,
             $$,
             undef,
@@ -85,10 +78,8 @@ sub context {
         __PACKAGE__
     );
 
-    unless ($silent) {
-        $CURRENT = $ctx;
-        Scalar::Util::weaken($CURRENT);
-    }
+    $CURRENT = $ctx;
+    Scalar::Util::weaken($CURRENT);
     return $ctx;
 }
 
@@ -112,9 +103,8 @@ sub line    { $_[0]->[FRAME]->[2] }
 sub subname { $_[0]->[FRAME]->[3] }
 
 sub snapshot {
-    my $clone = bless [@{$_[0]}], Scalar::Util::blessed($_[0]);
-    $clone->[STACK] = [@{$clone->[STACK]}] if $clone->[STACK];
-    return $clone;
+    return $_[0];
+    return bless [@{$_[0]}], Scalar::Util::blessed($_[0]);
 }
 
 sub send {

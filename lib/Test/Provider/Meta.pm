@@ -6,13 +6,13 @@ use Scalar::Util();
 
 use Test::Stream::ArrayBase;
 BEGIN {
-    accessors qw/encoding modern on_error todo stream/;
+    accessors qw/encoding modern todo stream/;
     Test::Stream::ArrayBase->cleanup;
 }
 
 use Test::Stream::Exporter qw/import export_to exports package_sub/;
 exports qw{
-    ENCODING MODERN ON_ERROR TODO STREAM
+    ENCODING MODERN TODO STREAM
     is_tester init_tester anoint
 };
 Test::Stream::Exporter->cleanup();
@@ -33,7 +33,7 @@ sub init_tester {
     my $pkg = shift;
     return $pkg->TB_TESTER_META if package_sub($pkg, 'TB_TESTER_META');
 
-    my $meta = bless ['legacy', 0, 'diag', undef], __PACKAGE__;
+    my $meta = bless ['legacy', 0, undef], __PACKAGE__;
 
     no strict 'refs';
     no warnings 'once';

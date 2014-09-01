@@ -54,7 +54,7 @@ sub send {
     $self->stream->send(@_);
 }
 
-for my $stub (qw/frame stream encoding in_todo todo depth pid skip stage nest new snapshot/) {
+for my $stub (qw/frame stream encoding in_todo todo depth pid skip stage nest new snapshot modern/) {
     no strict 'refs';
     *$stub = sub {
         use strict 'refs';

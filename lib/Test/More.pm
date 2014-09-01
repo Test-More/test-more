@@ -55,7 +55,7 @@ sub before_import {
         }
         elsif ($item eq 'modern') {
             $modern = 1;
-            $context->meta->[MODERN] = 1;
+            $meta->[MODERN] = 1;
         }
         elsif ($item eq 'tests') {
             $context->plan($list->[$idx++]);
