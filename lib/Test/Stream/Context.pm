@@ -18,11 +18,34 @@ sub register_event {
         use strict 'refs';
         my $self = shift;
         my @call = caller(0);
-        my $e = $pkg->new($self, [@call[0 .. 4]], @_);
+        my $e = $pkg->new($self->stash, [@call[0 .. 4]], @_);
         $self->stream->send($e);
         return $e;
     };
 }
+
+sub alert {
+    my $self = shift;
+    my ($msg) = @_;
+
+    my @call = $self->call;
+
+    warn "$msg at $call[1] line $call[2]\n";
+}
+
+sub throw {
+    my $self = shift;
+    my ($msg) = @_;
+
+    my @call = $self->call;
+
+    die "$msg at $call[1] line $call[2]\n";
+}
+
+sub package { $_[0]->frame->[0] }
+sub file    { $_[0]->frame->[1] }
+sub line    { $_[0]->frame->[2] }
+sub subname { $_[0]->frame->[3] }
 
 sub call { $_[0]->frame->[0,4] }
 
@@ -31,7 +54,7 @@ sub send {
     $self->stream->send(@_);
 }
 
-for my $stub (qw/frame stream encoding in_todo todo depth pid skip stage nest new/) {
+for my $stub (qw/frame stream encoding in_todo todo depth pid skip stage nest new stash/) {
     no strict 'refs';
     *$stub = sub {
         use strict 'refs';

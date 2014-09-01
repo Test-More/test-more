@@ -11,13 +11,26 @@ use Carp qw/croak/;
 use Encode();
 
 use Test::Provider;
+use Test::Provider::Tools;
+use Test::Builder::Tools;
 use Test::Stream;
 
 use Test::Stream::Exporter;
 our $TODO;
 export '$TODO' => \$TODO;
 exports qw{
+    context
+    tap_encoding
+    cull
+
+    plan done_testing
+
     ok
+    is isnt
+    like unlike
+    cmp_ok
+    mostly_like
+    can_ok
 };
 Test::Stream::Exporter->cleanup;
 
@@ -41,6 +54,7 @@ sub before_import {
         }
         elsif ($item eq 'modern') {
             $modern = 1;
+            $context->meta->{modern} = 1;
         }
         elsif ($item eq 'tests') {
             $context->plan($list->[$idx++]);
@@ -58,8 +72,8 @@ sub before_import {
             Test::Stream->shared->use_fork;
         }
         elsif ($item eq 'utf8') {
+            $context->stream->io_sets->init_encoding('utf8');
             $context->set_encoding('utf8');
-            Test::Stream->shared->io_sets->init_encoding('utf8');
             $meta->{encoding} = 'utf8';
         }
         elsif ($item eq 'encoding') {
@@ -68,6 +82,7 @@ sub before_import {
             croak "encoding '$encoding' is not valid, or not available"
                 unless Encode::find_encoding($encoding);
 
+            $context->stream->io_sets->init_encoding($encoding);
             $context->set_encoding($encoding);
             $meta->{encoding} = $encoding;
         }
@@ -87,6 +102,118 @@ sub ok ($;$) {
     my $ctx = context();
     return $ctx->ok(@_);
     return $_[0] ? 1 : 0;
+}
+
+sub tap_encoding {
+    my ($encoding) = @_;
+    my $ctx = context();
+
+    croak "encoding '$encoding' is not valid, or not available"
+        unless $encoding eq 'legacy' || Encode::find_encoding($encoding);
+
+    $ctx->stream->io_sets->init_encoding($encoding);
+    $ctx->meta->{encoding} = $encoding;
+}
+
+sub cull {
+    my $ctx = context();
+    $ctx->stream->fork_cull();
+}
+
+sub plan {
+    my ($directive, $arg) = @_;
+    my $ctx = context();
+
+    if ($directive eq 'tests') {
+        $ctx->plan($arg);
+    }
+    else {
+        $ctx->plan(0, $directive, $arg);
+    }
+}
+
+sub done_testing {
+    my $ctx = context();
+    my $num = $ctx->stream->count;
+    $ctx->plan($num);
+}
+
+sub mostly_like($$;$) {
+    my ($got, $want, $name) = @_;
+    my $ctx = context();
+    my ($ok, @diag) = pt->mostly_like($got, $want);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub is($$;$) {
+    my ($got, $want, $name) = @_;
+    my $ctx = context();
+    my ($ok, @diag) = tbt->is_eq($got, $want);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub isnt ($$;$) {
+    my ($got, $forbid, $name) = @_;
+    my $ctx = context();
+    my ($ok, @diag) = tbt->isnt_eq($got, $forbid);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+{
+    no warnings 'once';
+    *isn't = \&isnt;
+    # ' to unconfuse syntax higlighters
+}
+
+sub like ($$;$) {
+    my ($got, $forbid, $name) = @_;
+    my $ctx = context();
+    my ($ok, @diag) = tbt->regex_check($got, $forbid, '=~');
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub unlike ($$;$) {
+    my ($got, $forbid, $name) = @_;
+    my $ctx = context();
+    my ($ok, @diag) = tbt->regex_check($got, $forbid, '!~');
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub cmp_ok($$$;$) {
+    my ($got, $type, $expect, $name) = @_;
+    my $ctx = context();
+    my ($ok, @diag) = tbt->cmp_check($got, $type, $expect);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub can_ok($@) {
+    my ($thing, @methods) = @_;
+    my $ctx = context();
+
+    my $class = ref $thing || $thing;
+    my ($ok, @diag);
+
+    if (!@methods) {
+        ($ok, @diag) = (0, "    can_ok() called with no methods");
+    }
+    elsif (!$class) {
+        ($ok, @diag) = (0, "    can_ok() called with empty class or reference");
+    }
+    else {
+        ($ok, @diag) = tbt->can_check($thing, $class, @methods);
+    }
+
+    my $name = (@methods == 1)
+        ? "$class->can('$methods[0]')"
+        : "$class->can(...)";
+
+    $ctx->ok($ok, $name, \@diag);
 }
 
 1;
@@ -109,196 +236,6 @@ provides qw(
   tap_encoding
 );
 
-provide TODO => \$TODO;
-
-give cull => sub {
-    my $fork = Test::More->builder->stream->fork || return 0;
-    $fork->cull;
-};
-
-give helpers => sub {
-    my $caller = caller;
-
-    # These both get cached, so they will be quick if called multiple times.
-    my $meta    = Test::Builder::Provider->make_provider($caller);
-    my $provide = Test::Builder::Provider->_build_provide($caller, $meta);
-
-    $provide->($_) for @_;
-};
-
-sub before_import {
-    my $class = shift;
-    my ($list, $dest) = @_;
-
-    _set_tap_encoding($dest, 'legacy');
-
-    my $encoding_set = 0;
-    my $other        = [];
-    my $idx          = 0;
-    my $modern       = 0;
-    while ($idx <= $#{$list}) {
-        my $item = $list->[$idx++];
-        next unless $item;
-
-        if ($item eq 'no_diag') {
-            $class->builder->no_diag(1);
-        }
-        elsif ($item eq 'tests' || $item eq 'skip_all') {
-            $class->builder->plan($item => $list->[$idx++]);
-            return 0 if $item eq 'skip_all';
-        }
-        elsif ($item eq 'no_plan') {
-            $class->builder->plan($item);
-        }
-        elsif ($item eq 'import') {
-            push @$other => @{$list->[$idx++]};
-        }
-        elsif ($item eq 'enable_forking') {
-            builder->stream->use_fork;
-        }
-        elsif ($item eq 'modern') {
-            modernize($dest) unless $modern++;
-        }
-        elsif ($item eq 'utf8') {
-            modernize($dest) unless $modern++;
-            $encoding_set++;
-            _set_tap_encoding($dest, 'utf8');
-        }
-        elsif ($item eq 'encoding') {
-            modernize($dest) unless $modern++;
-            $encoding_set++;
-            my $encoding = $list->[$idx++];
-            _set_tap_encoding($dest, $encoding);
-        }
-        else {
-            Carp::carp("Unknown option: $item");
-        }
-    }
-
-    @$list = @$other;
-
-    Test::Builder::Stream->shared->use_lresults unless $modern;
-
-    return 1;
-}
-
-sub _set_tap_encoding {
-    my ($test, $encoding, $run) = @_;
-    my $meta = is_tester($test);
-    require Carp;
-    Carp::croak "package '$test' is not a tester!" unless $meta;
-
-    if ($encoding and $encoding ne 'legacy') {
-        Carp::croak "encoding '$encoding' is not valid, or not available"
-            unless Encode::find_encoding($encoding);
-    }
-
-    # Make sure to init the IOSets handles for this encoding.
-
-    if (defined $run) {
-        my $old = $meta->{encoding};
-        $meta->{encoding} = $encoding;
-
-        my ($ok, $error) = try { $run->() };
-
-        $meta->{encoding} = $old;
-        die $error unless $ok;
-    }
-    else {
-        $meta->{encoding} = $encoding if defined $encoding;
-    }
-
-    return $meta->{encoding};
-}
-
-sub plan {
-    my $tb = Test::More->builder;
-
-    return $tb->plan(@_);
-}
-
-
-sub tap_encoding {
-    my $caller = caller;
-    _set_tap_encoding($caller, @_);
-}
-
-sub done_testing {
-    my $tb = Test::More->builder;
-    $tb->done_testing(@_);
-}
-
-sub ok ($;$) {
-    my( $test, $name ) = @_;
-    my $tb = Test::More->builder;
-
-    return $tb->ok( $test, $name );
-}
-
-sub is ($$;$) {
-    my $tb = Test::More->builder;
-
-    return $tb->is_eq(@_);
-}
-
-sub isnt ($$;$) {
-    my $tb = Test::More->builder;
-
-    return $tb->isnt_eq(@_);
-}
-
-*isn't = \&isnt;
-# ' to unconfuse syntax higlighters
-
-sub like ($$;$) {
-    my $tb = Test::More->builder;
-
-    return $tb->like(@_);
-}
-
-sub unlike ($$;$) {
-    my $tb = Test::More->builder;
-
-    return $tb->unlike(@_);
-}
-
-sub cmp_ok($$$;$) {
-    my $tb = Test::More->builder;
-
-    return $tb->cmp_ok(@_);
-}
-
-sub can_ok ($@) {
-    my( $proto, @methods ) = @_;
-    my $class = ref $proto || $proto;
-    my $tb = Test::More->builder;
-
-    unless($class) {
-        my $ok = $tb->ok( 0, "->can(...)" );
-        $tb->diag('    can_ok() called with empty class or reference');
-        return $ok;
-    }
-
-    unless(@methods) {
-        my $ok = $tb->ok( 0, "$class->can(...)" );
-        $tb->diag('    can_ok() called with no methods');
-        return $ok;
-    }
-
-    my @nok = ();
-    foreach my $method (@methods) {
-        $tb->_try( sub { $proto->can($method) } ) or push @nok, $method;
-    }
-
-    my $name = (@methods == 1) ? "$class->can('$methods[0]')" :
-                                 "$class->can(...)"           ;
-
-    my $ok = $tb->ok( !@nok, $name );
-
-    $tb->diag("    $class->can('$_') failed") for @nok;
-
-    return $ok;
-}
 
 sub isa_ok ($$;$) {
     my( $thing, $class, $thing_name ) = @_;

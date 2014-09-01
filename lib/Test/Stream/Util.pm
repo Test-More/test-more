@@ -6,7 +6,7 @@ use Carp qw/croak/;
 use Scalar::Util qw/reftype blessed/;
 use Test::Stream::Exporter qw/import export_to exports/;
 
-exports qw/try protect/;
+exports qw/try protect is_regex/;
 
 Test::Stream::Exporter->cleanup();
 
@@ -37,6 +37,22 @@ sub try(&) {
     }
 
     return wantarray ? ($ok, $error) : $ok;
+}
+
+sub is_regex {
+    my ($pattern) = @_;
+
+    return undef unless defined $pattern;
+
+    if (defined &re::is_regexp) {
+        return re::is_regexp($pattern) || undef;
+    }
+
+    my $type = reftype($pattern) || return undef;
+
+    return $pattern if $type =~ m/^regexp?$/i;
+    return undef unless $type eq 'SCALAR';
+    return $pattern if $pattern =~ m/^\(\?.+:.*\)$/;
 }
 
 1;

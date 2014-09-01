@@ -19,7 +19,7 @@ use Test::Stream::Event::Plan;
 
 use Test::Stream::ArrayBase;
 BEGIN {
-    accessors qw/frame stream encoding in_todo todo depth pid skip/;
+    accessors qw/frame stack stream encoding in_todo todo depth pid skip meta/;
     Test::Stream::ArrayBase->cleanup;
 }
 
@@ -27,26 +27,31 @@ use Test::Stream::Exporter qw/import export_to exports/;
 exports qw/context/;
 Test::Stream::Exporter->cleanup();
 
-
 our $DEPTH = 0;
 our $CURRENT;
 
 sub init {
     $_[0]->[FRAME]    ||= _find_context(1);                # +1 for call to init
+    $_[0]->[STACK]    ||= [ $_[0]->[FRAME] ];
     $_[0]->[STREAM]   ||= Test::Stream->shared;
     $_[0]->[ENCODING] ||= 'legacy';
     $_[0]->[PID]      ||= $$;
 }
 
 sub context {
+    my ($level, $silent) = @_;
+    my $call = _find_context($level); # the only arg is an integer to add to the caller level
+
     # If the context has already been initialized we simply return it, we
     # ignore any additional parameters as they no longer matter. The first
     # thing to ask for a context wins, anything context aware that is called
     # later MUST expect that it can get a context found by something down the
     # stack.
-    return $$CURRENT if $CURRENT;
+    if ($CURRENT) {
+        push @{$CURRENT->[STACK]} => $call unless $silent; # So we can trace the tools
+        return $CURRENT;
+    }
 
-    my $call = _find_context(@_); # the only arg is an integer to add to the caller level
     my $pkg  = $call->[0];
 
     # init_tester returns ther meta if found, otherwise it creates it and then
@@ -62,19 +67,23 @@ sub context {
     my $ctx = bless(
         [
             $call,
+            [ $call ],
             $meta->{stream}   || Test::Stream->shared,
             $meta->{encoding} || 'legacy',
             $in_todo,
             $todo,
             $DEPTH,
             $$,
-            undef
+            undef,
+            $meta,
         ],
         __PACKAGE__
     );
 
-    $CURRENT = \$ctx;
-    Scalar::Util::weaken($CURRENT);
+    unless ($silent) {
+        $CURRENT = $ctx;
+        Scalar::Util::weaken($CURRENT);
+    }
     return $ctx;
 }
 
@@ -92,6 +101,17 @@ sub _find_context {
 
 sub call { @{$_[0]->[FRAME]} }
 
+sub package { $_[0]->[FRAME]->[0] }
+sub file    { $_[0]->[FRAME]->[1] }
+sub line    { $_[0]->[FRAME]->[2] }
+sub subname { $_[0]->[FRAME]->[3] }
+
+sub stash {
+    die "Fix for stack";
+    $_[0]->[_STASH] ||= bless [@{$_[0]}], Scalar::Util::blessed($_[0]);
+    return $_[0]->[_STASH];
+}
+
 sub send {
     my $self = shift;
     $self->[STREAM]->send(@_);
@@ -104,7 +124,7 @@ sub stage {
     my ($ok, $error) = try {
         my $clone = bless [@$self], __PACKAGE__;
         $clone->[FRAME] = [$self->call];
-        local $CURRENT = \$clone;
+        local $CURRENT = $clone;
         $code->($self, $clone);
     };
 
@@ -121,7 +141,7 @@ sub nest {
         local $DEPTH = $DEPTH + 1;
         local $CURRENT = undef;
         no warnings 'once'; # PITA
-        local $Test::Stream::Level = 1;
+        local $Test::Buider::Level = 1;
         $code->(@args);
     };
 

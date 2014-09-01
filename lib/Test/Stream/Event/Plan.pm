@@ -11,9 +11,24 @@ BEGIN {
 
 use Carp qw/confess/;
 
+my %ALLOWED = (
+    'SKIP'    => 1,
+    'NO_PLAN' => 1,
+);
+
 sub init {
-    confess "Cannot have a reason without a directive!"
-        if defined $_[0]->[REASON] && !defined $_[0]->[DIRECTIVE];
+    if ($_[0]->[DIRECTIVE]) {
+        $_[0]->[DIRECTIVE] = 'SKIP'    if $_[0]->[DIRECTIVE] eq 'skip_all';
+        $_[0]->[DIRECTIVE] = 'NO PLAN' if $_[0]->[DIRECTIVE] eq 'no_plan';
+
+        confess "'" . $_[0]->[DIRECTIVE] . "' is not a valid plan directive"
+            unless $ALLOWED{$_[0]->[DIRECTIVE]};
+    }
+    else {
+        $_[0]->[DIRECTIVE] = '';
+        confess "Cannot have a reason without a directive!"
+            if defined $_[0]->[REASON];
+    }
 }
 
 sub to_tap {
@@ -26,7 +41,7 @@ sub to_tap {
     return if $directive && $directive eq 'NO_PLAN';
 
     my $plan = "1..$max";
-    if (defined $directive) {
+    if ($directive) {
         $plan .= " # $directive";
         $plan .= " $reason" if defined $reason;
     }

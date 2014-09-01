@@ -3,11 +3,15 @@ use strict;
 use warnings;
 
 use Test::Stream::Exporter;
-exports qw/mostly_like/;
+exports qw/pt/;
 Test::Stream::Exporter->cleanup;
 
-sub mostly_like($$) { _mostly_like(@_) }
+sub pt() { __PACKAGE__ }
 
+sub mostly_like {
+    my ($class, $got, $want) = @_;
+    _mostly_like($got, $want);
+}
 
 #============================
 

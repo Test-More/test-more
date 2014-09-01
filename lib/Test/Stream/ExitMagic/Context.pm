@@ -16,4 +16,6 @@ sub init {
     $_[0]->[DEPTH]    = 0;
 }
 
+sub stash { $_[0] }
+
 1;
