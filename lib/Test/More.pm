@@ -376,15 +376,34 @@ WARNING
         return 0;
     }
 
-    my $checker = Test::More::DeepCheck->new($got, $want);
-    my ($ok, @diag) = checker->check;
+    my ($ok, @diag) = Test::More::DeepCheck->check($got, $want);
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
 
-sub eq_array  { die }
-sub eq_hash   { die }
-sub eq_set    { die }
+sub eq_array {
+    my ($got, $want, $name) = @_;
+    my $ctx = context();
+    my ($ok, @diag) = Test::More::DeepCheck->check_array($got, $want);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub eq_hash {
+    my ($got, $want, $name) = @_;
+    my $ctx = context();
+    my ($ok, @diag) = Test::More::DeepCheck->check_hash($got, $want);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub eq_set {
+    my ($got, $want, $name) = @_;
+    my $ctx = context();
+    my ($ok, @diag) = Test::More::DeepCheck->check_set($got, $want);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
 
 1;
 
