@@ -250,15 +250,14 @@ sub subtest {
         # $Level first to limit the scope of the reset to the subtest.
         local $Test::Builder::Level = $Test::Builder::Level + 1;
 
-        # Add subtest name for clarification of starting point
-        $self->note("Subtest: $name");
-
         # Store the guts of $self as $parent and turn $child into $self.
         $child  = $self->child($name);
         _copy($self,  $parent);
         _copy($child, $self);
 
         my $run_the_subtests = sub {
+            # Add subtest name for clarification of starting point
+            $self->note("Subtest: $name");
             $subtests->(@args);
             $self->done_testing unless $self->_plan_handled;
             1;
