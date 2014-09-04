@@ -8,7 +8,7 @@ use Test::Stream::Exporter;
 exports qw/tmt/;
 Test::Stream::Exporter->cleanup;
 
-use Test::Stream::Util qw/try protect is_regex/;
+use Test::Stream::Util qw/try protect is_regex unoverload_str unoverload_num/;
 use Scalar::Util qw/blessed/;
 
 sub tmt() { __PACKAGE__ }
@@ -49,10 +49,10 @@ $error
         # Treat overloaded objects as numbers if we're asked to do a
         # numeric comparison.
         my $unoverload = $NUMERIC_CMPS{$type}
-            ? '_unoverload_num'
-            : '_unoverload_str';
+            ? \&unoverload_num
+            : \&unoverload_str;
 
-        $class->$unoverload( \$got, \$expect );
+        $unoverload->(\$got, \$expect);
 
         if( $type =~ /^(eq|==)$/ ) {
             push @diag => $class->_is_diag( $got, $type, $expect );
@@ -331,64 +331,6 @@ sub explain {
     } @args;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-sub _unoverload_str {
-    my $class = shift;
-    return $class->_unoverload(q[""], @_);
-}
-
-sub _unoverload_num {
-    my $class = shift;
-
-    $class->_unoverload('0+', @_);
-
-    for my $val (@_) {
-        next unless $class->_is_dualvar($$val);
-        $$val = $$val + 0;
-    }
-
-    return;
-}
-
-# This is a hack to detect a dualvar such as $!
-sub _is_dualvar {
-    my($class, $val) = @_;
-
-    # Objects are not dualvars.
-    return 0 if ref $val;
-
-    no warnings 'numeric';
-    my $numval = $val + 0;
-    return ($numval != 0 and $numval ne $val ? 1 : 0);
-}
-
-sub _unoverload {
-    my $class = shift;
-    my $type  = shift;
-
-    protect { require overload };
-
-    foreach my $thing (@_) {
-        if (blessed $$thing) {
-            if (my $string_meth = overload::Method($$thing, $type)) {
-                $$thing = $$thing->$string_meth();
-            }
-        }
-    }
-
-    return;
-}
-
 sub _diag_fmt {
     my( $class, $type, $val ) = @_;
 
@@ -399,7 +341,7 @@ sub _diag_fmt {
         }
         else {
             # force numeric context
-            $class->_unoverload_num($val);
+            unoverload_num($val);
         }
     }
     else {
@@ -445,10 +387,4 @@ sub _cmp_diag {
 DIAGNOSTIC
 }
 
-
 1;
-
-__END__
-
-
-

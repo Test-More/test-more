@@ -5,6 +5,7 @@ use warnings;
 use Carp qw/cluck/;
 use Test::More::Tools;
 use Scalar::Util qw/reftype/;
+use Test::Stream::Util qw/try unoverload_str/;
 
 use base 'Test::More::DeepCheck';
 use Test::Stream::ArrayBase;
@@ -19,7 +20,7 @@ sub check {
     my $class = shift;
     my ($got, $expect) = @_;
 
-    tmt->_unoverload_str(\$got, \$expect);
+    unoverload_str(\$got, \$expect);
     my $self = $class->new();
 
     # neither is a reference
@@ -82,7 +83,7 @@ sub _deep_check {
     my $self = shift;
     my($e1, $e2) = @_;
 
-    tmt->_unoverload_str( \$e1, \$e2 );
+    unoverload_str( \$e1, \$e2 );
 
     # Either they're both references or both not.
     my $same_ref = !(!ref $e1 xor !ref $e2);

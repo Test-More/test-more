@@ -6,7 +6,10 @@ use Carp qw/croak/;
 use Scalar::Util qw/reftype blessed/;
 use Test::Stream::Exporter qw/import export_to exports/;
 
-exports qw/try protect is_regex/;
+exports qw{
+    try protect is_regex is_dualvar
+    unoverload unoverload_str unoverload_num
+};
 
 Test::Stream::Exporter->cleanup();
 
@@ -15,7 +18,7 @@ sub protect(&) {
 
     my ($ok, $error);
     {
-        local ($@, local $!);
+        local ($@, $!);
         $ok = eval { $code->(); 1 } || 0;
         $error = $@ || "Error was squashed!\n";
     }
@@ -54,6 +57,46 @@ sub is_regex {
     return undef unless $type eq 'SCALAR';
     return $pattern if $pattern =~ m/^\(\?.+:.*\)$/;
 }
+
+sub unoverload_str { unoverload(q[""], @_) }
+
+sub unoverload_num {
+    unoverload('0+', @_);
+
+    for my $val (@_) {
+        next unless is_dualvar($$val);
+        $$val = $$val + 0;
+    }
+
+    return;
+}
+
+# This is a hack to detect a dualvar such as $!
+sub is_dualvar {
+    my($val) = @_;
+
+    # Objects are not dualvars.
+    return 0 if ref $val;
+
+    no warnings 'numeric';
+    my $numval = $val + 0;
+    return ($numval != 0 and $numval ne $val ? 1 : 0);
+}
+
+sub unoverload {
+    my $type = shift;
+
+    protect { require overload };
+
+    for my $thing (@_) {
+        if (blessed $$thing) {
+            if (my $string_meth = overload::Method($$thing, $type)) {
+                $$thing = $$thing->$string_meth();
+            }
+        }
+    }
+}
+
 
 1;
 

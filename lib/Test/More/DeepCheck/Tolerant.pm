@@ -5,7 +5,7 @@ use warnings;
 use Carp qw/cluck/;
 use Test::More::Tools;
 use Scalar::Util qw/reftype blessed/;
-use Test::Stream::Util qw/try/;
+use Test::Stream::Util qw/try unoverload_str/;
 
 use base 'Test::More::DeepCheck';
 use Test::Stream::ArrayBase;
@@ -20,7 +20,7 @@ sub check {
     my $class = shift;
     my ($got, $expect) = @_;
 
-    tmt->_unoverload_str(\$got, \$expect);
+    unoverload_str(\$got, \$expect);
     my $self = $class->new();
 
     # neither is a reference

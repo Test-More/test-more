@@ -139,8 +139,6 @@ sub nest {
     my ($ok, $error) = try {
         local $DEPTH = $DEPTH + 1;
         local $CURRENT = undef;
-        no warnings 'once'; # PITA
-        local $Test::Buider::Level = 1;
         $self->stream->push_state;
         $code->(@args);
         $pass = $self->stream->is_passing;
