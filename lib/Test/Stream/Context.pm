@@ -24,6 +24,10 @@ sub register_event {
     };
 }
 
+sub done_testing {
+    $_[0]->stream->done_testing(@_);
+}
+
 sub alert {
     my $self = shift;
     my ($msg) = @_;

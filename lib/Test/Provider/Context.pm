@@ -38,6 +38,8 @@ sub init {
     $_[0]->[PID]      ||= $$;
 }
 
+sub peek { $CURRENT }
+
 sub context {
     # If the context has already been initialized we simply return it, we
     # ignore any additional parameters as they no longer matter. The first
@@ -104,7 +106,6 @@ sub line    { $_[0]->[FRAME]->[2] }
 sub subname { $_[0]->[FRAME]->[3] }
 
 sub snapshot {
-    return $_[0];
     return bless [@{$_[0]}], Scalar::Util::blessed($_[0]);
 }
 

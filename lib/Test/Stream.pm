@@ -33,18 +33,20 @@ use constant STATE_COUNT   => 0;
 use constant STATE_FAILED  => 1;
 use constant STATE_PLAN    => 2;
 use constant STATE_PASSING => 3;
+use constant STATE_ENDED   => 4;
 
 use constant OUT_STD  => 0;
 use constant OUT_ERR  => 1;
 use constant OUT_TODO => 2;
 
 use Test::Stream::Exporter;
-exports qw/OUT_STD OUT_ERR OUT_TODO STATE_COUNT STATE_FAILED STATE_PLAN/;
+exports qw/OUT_STD OUT_ERR OUT_TODO STATE_COUNT STATE_FAILED STATE_PLAN STATE_ENDED/;
 Test::Stream::Exporter->cleanup;
 
-sub plan   { $_[0]->[STATE]->[-1]->[STATE_PLAN] }
-sub count  { $_[0]->[STATE]->[-1]->[STATE_COUNT] }
+sub plan   { $_[0]->[STATE]->[-1]->[STATE_PLAN]   }
+sub count  { $_[0]->[STATE]->[-1]->[STATE_COUNT]  }
 sub failed { $_[0]->[STATE]->[-1]->[STATE_FAILED] }
+sub ended  { $_[0]->[STATE]->[-1]->[STATE_ENDED]  }
 
 sub is_passing {
     my $self = shift;
@@ -182,8 +184,14 @@ sub send {
 
         if (!$is_ok) {
             if ($e->isa('Test::Stream::Event::Plan')) {
-                confess "Tried to plan twice!"
-                    if $self->[STATE]->[-1]->[STATE_PLAN];
+                my $existing = $self->[STATE]->[-1]->[STATE_PLAN];
+                my $directive = $existing ? $existing->directive : '';
+
+                if ($existing && (!$directive || $directive eq 'NO PLAN')) {
+                    my ($p1, $f1, $l1) = $existing->context->call;
+                    my ($p2, $f2, $l2) = $e->context->call;
+                    die "Tried to plan twice!\n    $f1 line $l1\n    $f2 line $l2\n";
+                }
 
                 $self->[STATE]->[-1]->[STATE_PLAN] = $e;
                 next unless $e->directive;
@@ -320,6 +328,33 @@ sub DESTROY {
     }
     closedir($dh);
     rmdir($dir) || warn "Could not remove temp dir ($dir)";
+}
+
+sub done_testing {
+    my $self = shift;
+    my ($ctx, $num) = @_;
+    my $state = $self->[STATE]->[-1];
+
+    if (my $old = $state->[STATE_ENDED]) {
+        my ($p1, $f1, $l1) = $old->call;
+        my ($p2, $f2, $l2) = $ctx->call;
+        $ctx->ok(0, "done_testing() was already called at $f1 line $l1 (at $f2 line $l2)");
+        return;
+    }
+    $state->[STATE_ENDED] = $ctx->snapshot;
+
+    my $ran  = $state->[STATE_COUNT];
+    my $plan = $state->[STATE_PLAN] ? $state->[STATE_PLAN]->max : 0;
+
+    if (defined($num) && $plan && $num != $plan) {
+        $ctx->ok(0, "planned to run $plan but done_testing() expects $num");
+    }
+
+    $ctx->plan($num || $plan || $ran);
+
+    $state->[STATE_PASSING] = 0 if $plan && $plan != $ran;
+    $state->[STATE_PASSING] = 0 if $num  && $num  != $ran;
+    $state->[STATE_PASSING] = 0 unless $ran;
 }
 
 1;

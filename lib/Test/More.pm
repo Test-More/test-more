@@ -105,8 +105,6 @@ sub before_import {
 
     @$list = @$other;
 
-    Test::Stream->shared->set_use_legacy([]) unless $modern;
-
     return;
 }
 
@@ -147,9 +145,9 @@ sub plan {
 }
 
 sub done_testing {
+    my ($num) = @_;
     my $ctx = context();
-    my $num = $ctx->stream->count;
-    $ctx->plan($num);
+    $ctx->done_testing($num);
 }
 
 sub mostly_like {
