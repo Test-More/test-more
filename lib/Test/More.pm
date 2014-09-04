@@ -12,9 +12,9 @@ use Encode();
 
 use Test::Provider;
 use Test::Provider::Meta;
-use Test::Provider::Tools;
 use Test::More::Tools;
-use Test::More::DeepCheck;
+use Test::More::DeepCheck::Strict;
+use Test::More::DeepCheck::Tolerant;
 use Test::Stream;
 
 use Test::Stream::Exporter;
@@ -52,12 +52,11 @@ sub before_import {
     my ($importer, $list) = @_;
 
     my $context = context(1);
+    my $meta    = init_tester($importer);
+    my $other   = [];
+    my $idx     = 0;
+    my $modern  = 0;
 
-    my $meta = init_tester($importer);
-
-    my $other        = [];
-    my $idx          = 0;
-    my $modern       = 0;
     while ($idx <= $#{$list}) {
         my $item = $list->[$idx++];
         next unless $item;
@@ -172,7 +171,7 @@ WARNING
         return 0;
     }
 
-    my ($ok, @diag) = pt->mostly_like($got, $want);
+    my ($ok, @diag) = Test::More::DeepCheck::Tolerant->check($got, $want);
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
@@ -376,7 +375,7 @@ WARNING
         return 0;
     }
 
-    my ($ok, @diag) = Test::More::DeepCheck->check($got, $want);
+    my ($ok, @diag) = Test::More::DeepCheck::Strict->check($got, $want);
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
@@ -384,7 +383,7 @@ WARNING
 sub eq_array {
     my ($got, $want, $name) = @_;
     my $ctx = context();
-    my ($ok, @diag) = Test::More::DeepCheck->check_array($got, $want);
+    my ($ok, @diag) = Test::More::DeepCheck::Strict->check_array($got, $want);
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
@@ -392,7 +391,7 @@ sub eq_array {
 sub eq_hash {
     my ($got, $want, $name) = @_;
     my $ctx = context();
-    my ($ok, @diag) = Test::More::DeepCheck->check_hash($got, $want);
+    my ($ok, @diag) = Test::More::DeepCheck::Strict->check_hash($got, $want);
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
@@ -400,7 +399,7 @@ sub eq_hash {
 sub eq_set {
     my ($got, $want, $name) = @_;
     my $ctx = context();
-    my ($ok, @diag) = Test::More::DeepCheck->check_set($got, $want);
+    my ($ok, @diag) = Test::More::DeepCheck::Strict->check_set($got, $want);
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
