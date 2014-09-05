@@ -10,13 +10,13 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 use Carp qw/croak/;
 use Encode();
 
-use Test::Provider;
-use Test::Provider::Meta;
 use Test::More::Tools;
 use Test::More::DeepCheck::Strict;
 use Test::More::DeepCheck::Tolerant;
 use Test::Stream;
 use Test::Stream::Util qw/protect/;
+use Test::Stream::Meta;
+use Test::Stream::Toolset;
 
 use Test::Stream::Exporter;
 our $TODO;

@@ -1,4 +1,4 @@
-package Test::Provider::Meta;
+package Test::Stream::Meta;
 use strict;
 use warnings;
 

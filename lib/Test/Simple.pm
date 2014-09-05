@@ -8,8 +8,8 @@ use warnings;
 our $VERSION = '1.301001_041';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Provider;
 use Test::Stream;
+use Test::Stream::Toolset;
 
 use Test::Stream::Exporter;
 exports qw/ok/;

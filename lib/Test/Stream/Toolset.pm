@@ -1,12 +1,18 @@
-package Test::Provider;
+package Test::Stream::Toolset;
 use strict;
 use warnings;
 
-our $VERSION = '1.301001_041';
-$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+use Test::Stream::Context qw/context/;
+use Test::Stream::Meta    qw/is_tester init_tester anoint/;
 
-use Test::Provider::Context qw/context/;
-use Test::Provider::Meta    qw/is_tester init_tester anoint/;
+# Preload these so the autoload is not necessary
+use Test::Stream::Event::Bail;
+use Test::Stream::Event::Child;
+use Test::Stream::Event::Diag;
+use Test::Stream::Event::Finish;
+use Test::Stream::Event::Note;
+use Test::Stream::Event::Ok;
+use Test::Stream::Event::Plan;
 
 use Test::Stream::Exporter qw/import export_to exports/;
 exports qw/is_tester init_tester context anoint/;
@@ -16,7 +22,7 @@ Test::Stream::Exporter->cleanup();
 
 =head1 NAME
 
-Test::Stream::Provider - Helper for writing testing tools
+Test::Stream::Toolset - Helper for writing testing tools
 
 =head1 TEST COMPONENT MAP
 

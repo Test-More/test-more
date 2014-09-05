@@ -2,7 +2,6 @@ package Test::Stream::ExitMagic;
 use strict;
 use warnings;
 
-require Test::Stream::Event::Finish;
 require Test::Stream::ExitMagic::Context;
 
 use Test::Stream::ArrayBase;

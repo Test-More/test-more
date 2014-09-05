@@ -2,7 +2,7 @@ package Test::More::Tools;
 use strict;
 use warnings;
 
-use Test::Provider::Context;
+use Test::Stream::Context;
 
 use Test::Stream::Exporter;
 exports qw/tmt/;

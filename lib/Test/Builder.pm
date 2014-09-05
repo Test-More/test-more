@@ -8,10 +8,12 @@ our $VERSION = '1.301001_041';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::More::Tools;
-use Test::Provider();
-use Test::Provider::Context;
+
 use Test::Stream;
+use Test::Stream::Toolset;
+use Test::Stream::Context;
 use Test::Stream::Threads;
+
 use Test::Stream::Util qw/try protect unoverload_str is_regex/;
 use Scalar::Util qw/blessed reftype/;
 
@@ -25,7 +27,7 @@ our $Level = 1;
 
 sub ctx {
     my $self = shift || die "No self in context";
-    my $ctx = Test::Provider::context($Level);
+    my $ctx = Test::Stream::Context::context($Level);
     $ctx->set_stream($self->{stream}) if $self->{stream};
     return $ctx;
 }
@@ -96,7 +98,7 @@ sub subtest {
 sub find_TODO {
     my ($self, $pack, $set, $new_value) = @_;
 
-    if (my $ctx = Test::Provider::Context->peek) {
+    if (my $ctx = Test::Stream::Context->peek) {
         $pack = $ctx->package;
         my $old = $ctx->todo;
         $ctx->set_todo($new_value) if $set;
