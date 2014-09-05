@@ -4,6 +4,7 @@ use warnings;
 
 use Scalar::Util();
 
+use Carp qw/confess/;
 use Test::Stream::Util qw/try/;
 use Test::Provider::Meta qw/init_tester/;
 
@@ -95,6 +96,7 @@ sub _find_context {
     # 2 - call to tool
     my $level = 2 + $add;
     my ($package, $file, $line, $subname) = caller($level);
+    confess "Level: $level" unless $package;
     return [$package, $file, $line, $subname];
 }
 
@@ -141,7 +143,16 @@ sub nest {
         local $CURRENT = undef;
         $self->stream->push_state;
         $code->(@args);
+
+        use Data::Dumper;
+        unless ($self->stream->ended) {
+            my $ctx = $self->snapshot;
+            $ctx->[DEPTH] = $DEPTH;
+            $ctx->done_testing;
+        }
+
         $pass = $self->stream->is_passing;
+
         $self->stream->pop_state;
     };
 

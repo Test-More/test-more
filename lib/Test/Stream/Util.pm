@@ -47,15 +47,27 @@ sub is_regex {
 
     return undef unless defined $pattern;
 
-    if (defined &re::is_regexp) {
-        return re::is_regexp($pattern) || undef;
-    }
+    return $pattern if defined &re::is_regexp
+                    && re::is_regexp($pattern);
 
-    my $type = reftype($pattern) || return undef;
+    my $type = reftype($pattern) || '';
 
     return $pattern if $type =~ m/^regexp?$/i;
-    return undef unless $type eq 'SCALAR';
-    return $pattern if $pattern =~ m/^\(\?.+:.*\)$/;
+    return $pattern if $type eq 'SCALAR' && $pattern =~ m/^\(\?.+:.*\)$/;
+
+    my ($re, $opts);
+
+    if ( $pattern =~ m{^ /(.*)/ (\w*) $ }sx) {
+        ($re, $opts) = ($1, $2);
+    }
+    elsif ($pattern =~ m,^ m([^\w\s]) (.+) \1 (\w*) $,sx) {
+        ($re, $opts) = ($2, $3);
+    }
+    else {
+        return;
+    }
+
+    return length $opts ? "(?$opts)$re" : $re;
 }
 
 sub unoverload_str { unoverload(q[""], @_) }

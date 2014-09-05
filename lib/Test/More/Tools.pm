@@ -21,7 +21,10 @@ sub cmp_check {
     my($class, $got, $type, $expect) = @_;
 
     my $ctx = context();
-    $ctx->throw("$type is not a valid comparison operator in cmp_check()")
+    my $name = $ctx->subname;
+    $name =~ s/^.*:://g;
+    $name = 'cmp_check' if $name eq '__ANON__';
+    $ctx->throw("$type is not a valid comparison operator in $name\()")
         if $CMP_OK_BL{$type};
 
     my ($p, $file, $line) = $ctx->call;
@@ -117,10 +120,11 @@ sub isnt_num {
 }
 
 sub regex_check {
-    my($class, $thing, $regex, $cmp) = @_;
+    my($class, $thing, $got_regex, $cmp) = @_;
 
-    return (0, "    '$regex' doesn't look much like a regex to me.")
-        unless is_regex($regex);
+    my $regex = is_regex($got_regex);
+    return (0, "    '$got_regex' doesn't look much like a regex to me.")
+        unless $regex;
 
     my $ctx = context();
     my ($p, $file, $line) = $ctx->call;
@@ -133,7 +137,7 @@ sub regex_check {
         # No point in issuing an uninit warning, they'll see it in the diagnostics
         no warnings 'uninitialized';
         ## no critic (BuiltinFunctions::ProhibitStringyEval)
-        eval $mock . q{$test = $thing =~ $regex ? 1 : 0; 1} || die $@;
+        protect { eval $mock . q{$test = $thing =~ /$regex/ ? 1 : 0; 1} || die $@ };
     };
 
     return (0, "Exception: $error") unless $success;
@@ -248,7 +252,8 @@ sub require_check {
 
     my $ctx = context();
     my $fool_me = "#line " . $ctx->line . ' "' . $ctx->file . '"';
-    my $file_exists = !$version && !$force_module && -f $thing;
+    my $file_exists;
+    protect { $file_exists = !$version && !$force_module && -f $thing };
     my $valid_name = !grep { m/^[a-zA-Z]\w*$/ ? 0 : 1 } split /\b::\b/, $thing;
 
     $ctx->alert("'$thing' appears to be both a file that exists, and a valid module name, trying both.")

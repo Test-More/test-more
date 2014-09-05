@@ -7,22 +7,28 @@ use warnings;
 our $VERSION = '1.301001_041';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
+use Test::More::Tools;
 use Test::Provider();
 use Test::Provider::Context;
 use Test::Stream;
 use Test::Stream::Threads;
-use Test::Stream::Util qw/try protect unoverload_str/;
-use Scalar::Util qw/blessed/;
+use Test::Stream::Util qw/try protect unoverload_str is_regex/;
+use Scalar::Util qw/blessed reftype/;
 
 BEGIN {
-    Test::Stream->shared->set_use_legacy([]);
+    Test::Stream->shared->set_use_legacy(1);
 }
 
 # The mostly-singleton, and other package vars.
 our $Test  = Test::Builder->new;
 our $Level = 1;
 
-sub ctx { Test::Provider::context($Level + 1) }
+sub ctx {
+    my $self = shift || die "No self in context";
+    my $ctx = Test::Provider::context($Level);
+    $ctx->set_stream($self->{stream}) if $self->{stream};
+    return $ctx;
+}
 
 ####################
 # {{{ Constructors #
@@ -63,136 +69,20 @@ sub _copy {
 # {{{ Children and subtests #
 #############################
 
-sub child {
-    my( $self, $name, $is_subtest ) = @_;
-
-    $self->croak("You already have a child named ($self->{Child_Name}) running")
-        if $self->{Child_Name};
-
-    my $parent_in_todo = $self->in_todo;
-
-    # Clear $TODO for the child.
-    my $orig_TODO = $self->find_TODO(undef, 1, undef);
-
-    my $class = blessed($self);
-    my $child = $class->create;
-
-    $child->{stream} = $self->stream->spawn;
-
-    # Ensure the child understands if they're inside a TODO
-    $child->tap->failure_output($self->tap->todo_output)
-        if $parent_in_todo && $self->tap;
-
-    # This will be reset in finalize. We do this here lest one child failure
-    # cause all children to fail.
-    $child->{Child_Error} = $?;
-    $?                    = 0;
-
-    $child->{Parent}      = $self;
-    $child->{Parent_TODO} = $orig_TODO;
-    $child->{Name}        = $name || "Child of " . $self->name;
-
-    $self->{Child_Name}   = $child->name;
-
-    $child->depth($self->depth + 1);
-
-    my $res = Test::Builder::Event::Child->new(
-        $self->context,
-        name    => $child->name,
-        action  => 'push',
-        in_todo => $self->in_todo || 0,
-        is_subtest => $is_subtest || 0,
-    );
-    $self->stream->send($res);
-
-    return $child;
-}
-
 sub subtest {
     my $self = shift;
     my($name, $subtests, @args) = @_;
 
-    $self->croak("subtest()'s second argument must be a code ref")
-        unless $subtests && 'CODE' eq Scalar::Util::reftype($subtests);
+    my $ctx = $self->ctx();
 
-    # Turn the child into the parent so anyone who has stored a copy of
-    # the Test::Builder singleton will get the child.
-    my ($success, $error, $child);
-    my $parent = {};
-    {
-        local $Level = 1;
-        # Store the guts of $self as $parent and turn $child into $self.
-        $child  = $self->child($name, 1);
+    $ctx->throw("subtest()'s second argument must be a code ref")
+        unless $subtests && 'CODE' eq reftype($subtests);
 
-        _copy($self,  $parent);
-        _copy($child, $self);
+    local $Level = 1;
+    my $ok = $ctx->nest($subtests, @args);
+    $ctx->ok($ok, $name);
 
-        my $run_the_subtests = sub {
-            $subtests->(@args);
-            $self->done_testing unless defined $self->stream->plan;
-            1;
-        };
-
-        ($success, $error) = try { Test::Builder::Trace->nest($run_the_subtests) };
-    }
-
-    # Restore the parent and the copied child.
-    _copy($self,   $child);
-    _copy($parent, $self);
-
-    # Restore the parent's $TODO
-    $self->find_TODO(undef, 1, $child->{Parent_TODO});
-
-    # Die *after* we restore the parent.
-    die $error if $error && !(blessed($error) && $error->isa('Test::Builder::Exception'));
-
-    my $finalize = $child->finalize(1);
-
-    $self->BAIL_OUT($child->{Bailed_Out_Reason}) if $child->_bailed_out;
-
-    return $finalize;
-}
-
-sub finalize {
-    my $self = shift;
-    my ($is_subtest) = @_;
-
-    return unless $self->parent;
-    if( $self->{Child_Name} ) {
-        $self->croak("Can't call finalize() with child ($self->{Child_Name}) active");
-    }
-
-    local $? = 0;     # don't fail if $subtests happened to set $? nonzero
-    $self->_ending;
-
-    my $ok = 1;
-    $self->parent->{Child_Name} = undef;
-
-    unless ($self->_bailed_out) {
-        if ( $self->{Skip_All} ) {
-            $self->parent->skip($self->{Skip_All});
-        }
-        elsif ( ! $self->stream->tests_run ) {
-            $self->parent->ok( 0, sprintf q[No tests run for subtest "%s"], $self->name );
-        }
-        else {
-            $self->parent->ok( $self->is_passing, $self->name );
-        }
-    }
-
-    $? = $self->{Child_Error};
-    my $parent = delete $self->{Parent};
-
-    my $res = Test::Builder::Event::Child->new(
-        $self->context,
-        name    => $self->{Name} || undef,
-        action  => 'pop',
-        in_todo => $self->in_todo || 0,
-        is_subtest => $is_subtest || 0,
-    );
-    $parent->stream->send($res);
-
-    return $self->is_passing;
+    return $ok;
 }
 
 #############################
@@ -256,7 +146,7 @@ sub todo_end {
     my $self = shift;
 
     if (!$self->{Start_Todo}) {
-        ctx()->throw('todo_end() called without todo_start()');
+        $self->ctx()->throw('todo_end() called without todo_start()');
     }
 
     $self->{Start_Todo}--;
@@ -294,7 +184,7 @@ sub plan {
     }
     else {
         my @args = grep { defined } ($cmd, $arg);
-        ctx->throw("plan() doesn't understand @args");
+        $self->ctx->throw("plan() doesn't understand @args");
     }
 
     return 1;
@@ -306,14 +196,14 @@ sub skip_all {
     $self->{Skip_All} = $self->parent ? $reason : 1;
 
     die bless {} => 'Test::Builder::Exception' if $self->parent;
-    ctx()->plan(0, 'SKIP', $reason);
+    $self->ctx()->plan(0, 'SKIP', $reason);
 }
 
 sub no_plan {
     my ($self, @args) = @_;
 
-    ctx()->alert("no_plan takes no arguments") if @args;
-    ctx()->plan(0, 'NO_PLAN');
+    $self->ctx()->alert("no_plan takes no arguments") if @args;
+    $self->ctx()->plan(0, 'NO_PLAN');
 
     return 1;
 }
@@ -322,16 +212,16 @@ sub _plan_tests {
     my ($self, $arg) = @_;
 
     if ($arg) {
-        ctx()->throw("Number of tests must be a positive integer.  You gave it '$arg'")
+        $self->ctx()->throw("Number of tests must be a positive integer.  You gave it '$arg'")
             unless $arg =~ /^\+?\d+$/;
 
-        ctx()->plan($arg);
+        $self->ctx()->plan($arg);
     }
     elsif (!defined $arg) {
-        ctx()->throw("Got an undefined number of tests");
+        $self->ctx()->throw("Got an undefined number of tests");
     }
     else {
-        ctx()->throw("You said to run 0 tests");
+        $self->ctx()->throw("You said to run 0 tests");
     }
 
     return;
@@ -339,7 +229,7 @@ sub _plan_tests {
 
 sub done_testing {
     my ($self, $num_tests) = @_;
-    ctx()->done_testing($num_tests);
+    $self->ctx()->done_testing($num_tests);
 }
 
 ################
@@ -353,14 +243,12 @@ sub done_testing {
 sub ok {
     my $self = shift;
     my($test, $name) = @_;
-    ctx()->ok($test, $name);
+    $self->ctx()->ok($test, $name);
     return $test ? 1 : 0;
 }
 
 sub BAIL_OUT {
     my( $self, $reason ) = @_;
-
-    $self->_bailed_out(1);
 
     if ($self->parent) {
         $self->{Bailed_Out_Reason} = $reason;
@@ -368,7 +256,7 @@ sub BAIL_OUT {
         die bless {} => 'Test::Builder::Exception';
     }
 
-    ctx()->bail($reason);
+    $self->ctx()->bail($reason);
 }
 
 sub skip {
@@ -376,7 +264,7 @@ sub skip {
     $why ||= '';
     unoverload_str( \$why );
 
-    my $ctx = ctx();
+    my $ctx = $self->ctx();
     $ctx->set_skip($why);
     $ctx->ok(1);
     $ctx->set_skip(undef);
@@ -387,7 +275,7 @@ sub todo_skip {
     $why ||= '';
     unoverload_str( \$why );
 
-    my $ctx = ctx();
+    my $ctx = $self->ctx();
     $ctx->set_skip($why);
     $ctx->set_todo($why);
     $ctx->ok(1);
@@ -398,18 +286,372 @@ sub todo_skip {
 sub diag {
     my $self = shift;
     my $msg = join '', map { defined($_) ? $_ : 'undef' } @_;
-    ctx->diag($msg);
+    $self->ctx->diag($msg);
 }
 
 sub note {
     my $self = shift;
     my $msg = join '', map { defined($_) ? $_ : 'undef' } @_;
-    ctx->note($msg);
+    $self->ctx->note($msg);
 }
 
 #############################
 # }}} Base Event Producers #
 #############################
+
+#######################
+# {{{ Public helpers #
+#######################
+
+sub explain {
+    my $self = shift;
+
+    return map {
+        ref $_
+          ? do {
+            protect { require Data::Dumper };
+            my $dumper = Data::Dumper->new( [$_] );
+            $dumper->Indent(1)->Terse(1);
+            $dumper->Sortkeys(1) if $dumper->can("Sortkeys");
+            $dumper->Dump;
+          }
+          : $_
+    } @_;
+}
+
+sub carp {
+    my $self = shift;
+    $self->ctx->alert(join '' => @_);
+}
+
+sub croak {
+    my $self = shift;
+    $self->ctx->throw(join '' => @_);
+}
+
+sub has_plan {
+    my $self = shift;
+
+    my $plan = $self->ctx->stream->plan || return undef;
+    return 'no_plan' if $plan->directive && $plan->directive eq 'NO_PLAN';
+    return $plan->max;
+}
+
+sub reset {
+    my $self = shift;
+    my %params = @_;
+
+    $self->{stream} = Test::Stream->new()
+        unless $params{shared_stream};
+
+    # We leave this a global because it has to be localized and localizing
+    # hash keys is just asking for pain.  Also, it was documented.
+    $Level = 1;
+
+    $self->{Name} = $0;
+
+    $self->{Original_Pid} = $$;
+    $self->{Child_Name}   = undef;
+
+    $self->{Exported_To} = undef;
+
+    $self->{Todo}               = undef;
+    $self->{Todo_Stack}         = [];
+    $self->{Start_Todo}         = 0;
+    $self->{Opened_Testhandles} = 0;
+
+    return;
+}
+
+#######################
+# }}} Public helpers #
+#######################
+
+#################################
+# {{{ Advanced Event Producers #
+#################################
+
+sub cmp_ok {
+    my( $self, $got, $type, $expect, $name ) = @_;
+    my $ctx = $self->ctx;
+    my ($ok, @diag) = tmt->cmp_check($got, $type, $expect);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub is_eq {
+    my( $self, $got, $expect, $name ) = @_;
+    my $ctx = $self->ctx;
+    my ($ok, @diag) = tmt->is_eq($got, $expect);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub is_num {
+    my( $self, $got, $expect, $name ) = @_;
+    my $ctx = $self->ctx;
+    my ($ok, @diag) = tmt->is_num($got, $expect);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub isnt_eq {
+    my( $self, $got, $dont_expect, $name ) = @_;
+    my $ctx = $self->ctx;
+    my ($ok, @diag) = tmt->isnt_eq($got, $dont_expect);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub isnt_num {
+    my( $self, $got, $dont_expect, $name ) = @_;
+    my $ctx = $self->ctx;
+    my ($ok, @diag) = tmt->isnt_num($got, $dont_expect);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub like {
+    my( $self, $thing, $regex, $name ) = @_;
+    my $ctx = $self->ctx;
+    my ($ok, @diag) = tmt->regex_check($thing, $regex, '=~');
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub unlike {
+    my( $self, $thing, $regex, $name ) = @_;
+    my $ctx = $self->ctx;
+    my ($ok, @diag) = tmt->regex_check($thing, $regex, '!~');
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+#################################
+# }}} Advanced Event Producers #
+#################################
+
+################################################
+# {{{ Misc #
+################################################
+
+#output failure_output todo_output
+
+sub _new_fh {
+    my $self = shift;
+    my($file_or_fh) = shift;
+
+    return $file_or_fh if $self->is_fh($file_or_fh);
+
+    my $fh;
+    if( ref $file_or_fh eq 'SCALAR' ) {
+        open $fh, ">>", $file_or_fh
+          or croak("Can't open scalar ref $file_or_fh: $!");
+    }
+    else {
+        open $fh, ">", $file_or_fh
+          or croak("Can't open test output log $file_or_fh: $!");
+        Test::Stream::IOSets_autoflush($fh);
+    }
+
+    return $fh;
+}
+
+sub output {
+    my $self = shift;
+    my $handles = $self->ctx->stream->io_sets->init_encoding('legacy');
+    $handles->[0] = $self->_new_fh(@_) if @_;
+    return $handles->[0];
+}
+
+sub failure_output {
+    my $self = shift;
+    my $handles = $self->ctx->stream->io_sets->init_encoding('legacy');
+    $handles->[1] = $self->_new_fh(@_) if @_;
+    return $handles->[1];
+}
+
+sub todo_output {
+    my $self = shift;
+    my $handles = $self->ctx->stream->io_sets->init_encoding('legacy');
+    $handles->[2] = $self->_new_fh(@_) if @_;
+    return $handles->[2] || $handles->[0];
+}
+
+sub reset_outputs {
+    my $self = shift;
+    my $ctx = $self->ctx;
+    $ctx->stream->io_sets->reset_legacy;
+}
+
+sub use_numbers {
+    my $self = shift;
+    my $ctx = $self->ctx;
+    $ctx->stream->set_use_numbers(@_) if @_;
+    $ctx->stream->use_numbers;
+}
+
+sub no_ending {
+    my $self = shift;
+    my $ctx = $self->ctx;
+    $ctx->stream->set_no_ending(@_) if @_;
+    $ctx->stream->no_ending;
+}
+
+sub no_header {
+    my $self = shift;
+    my $ctx = $self->ctx;
+    $ctx->stream->set_no_header(@_) if @_;
+    $ctx->stream->no_header;
+}
+
+sub no_diag {
+    my $self = shift;
+    my $ctx = $self->ctx;
+    $ctx->stream->set_no_diag(@_) if @_;
+    $ctx->stream->no_diag;
+}
+
+sub exported_to {
+    my($self, $pack) = @_;
+    $self->{Exported_To} = $pack if defined $pack;
+    return $self->{Exported_To};
+}
+
+sub is_fh {
+    my $self     = shift;
+    my $maybe_fh = shift;
+    return 0 unless defined $maybe_fh;
+
+    return 1 if ref $maybe_fh  eq 'GLOB';    # its a glob ref
+    return 1 if ref \$maybe_fh eq 'GLOB';    # its a glob
+
+    my $out;
+    protect {
+        $out = eval { $maybe_fh->isa("IO::Handle") }
+            || eval { tied($maybe_fh)->can('TIEHANDLE') };
+    };
+
+    return $out;
+}
+
+sub BAILOUT { goto &BAIL_OUT }
+
+sub expected_tests {
+    my $self = shift;
+
+    my $ctx = $self->ctx;
+    $ctx->plan(@_) if @_;
+
+    my $plan = $ctx->plan || return 0;
+    return $plan->max || 0;
+}
+
+sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
+    my $self = shift;
+
+    my $ctx = $self->ctx;
+
+    return wantarray ? $ctx->call : $ctx->package;
+}
+
+sub level {
+    my( $self, $level ) = @_;
+    $Level = $level if defined $level;
+    return $Level;
+}
+
+sub maybe_regex {
+    my ($self, $regex) = @_;
+    return is_regex($regex);
+}
+
+sub is_passing {
+    my $self = shift;
+    my $ctx = $self->ctx;
+    $ctx->stream->is_passing(@_);
+}
+
+sub current_test {
+    my $self = shift;
+
+    my $ctx = $self->ctx;
+
+    if (@_) {
+        my ($num) = @_;
+        my $state = $ctx->stream->state->[-1];
+        my $start = $state->[STATE_COUNT];
+        $state->[STATE_COUNT] = $num;
+        if ($start > $num) {
+            $state->[STATE_LEGACY] = [$state->[STATE_LEGACY]->[0 .. $num]];
+        }
+        elsif ($start < $num) {
+            my $nctx = $ctx->snapshot;
+            $nctx->set_todo('incrementing test number');
+            $nctx->set_in_todo(1);
+            my $ok = Test::Stream::Event::Ok->new(
+                $ctx,
+                [CORE::caller()],
+                undef,
+                'FAKE',
+                undef,
+                1,
+            );
+            push @{$state->[STATE_LEGACY]} => $ok for $num - $start;
+        }
+    }
+
+    $ctx->stream->count;
+}
+
+sub details {
+    my $self = shift;
+    my $ctx = $self->ctx;
+    my $state = $ctx->stream->state;
+    return unless $state->[STATE_LEGACY];
+    return map {
+        my $result = &share( {} );
+
+        $result->{ok} = $_->bool;
+        $result->{actual_ok} = $_->real_bool;
+        $result->{name} = $_->name || '';
+
+        if($_->skip && ($_->in_todo || $_->todo)) {
+            $result->{type} = 'todo_skip',
+            $result->{reason} = $_->skip || $_->todo;
+        }
+        elsif($_->in_todo || $_->todo) {
+            $result->{reason} = $_->todo;
+            $result->{type}   = 'todo';
+        }
+        elsif($_->skip) {
+            $result->{reason} = $_->skip;
+            $result->{type}   = 'skip';
+        }
+        else {
+            $result->{reason} = '';
+            $result->{type}   = '';
+        }
+
+        if ($result->{reason} eq 'incrementing test number') {
+            $result->{type} = 'unknown';
+        }
+
+        $result;
+    } @{$state->[STATE_LEGACY]};
+}
+
+sub summary {
+    my $self = shift;
+    my $ctx = $self->ctx;
+    my $state = $ctx->stream->state;
+    return unless $state->[STATE_LEGACY];
+    return map { $_->bool ? 1 : 0 } @{$state->[STATE_LEGACY]};
+}
+
+###################################
+# }}} Misc #
+###################################
 
 ####################
 # {{{ TB1.5 stuff  #

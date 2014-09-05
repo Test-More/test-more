@@ -16,6 +16,7 @@ use Test::More::Tools;
 use Test::More::DeepCheck::Strict;
 use Test::More::DeepCheck::Tolerant;
 use Test::Stream;
+use Test::Stream::Util qw/protect/;
 
 use Test::Stream::Exporter;
 our $TODO;
@@ -46,6 +47,11 @@ exports qw{
     BAIL_OUT
 };
 Test::Stream::Exporter->cleanup;
+
+sub builder {
+    protect { require Test::Builder };
+    return Test::Builder->new;
+}
 
 sub before_import {
     my $class = shift;
@@ -102,6 +108,8 @@ sub before_import {
             Carp::carp("Unknown option: $item");
         }
     }
+
+    protect {require Test::Builder} unless $modern;
 
     @$list = @$other;
 
@@ -197,9 +205,9 @@ sub isnt ($$;$) {
 }
 
 sub like ($$;$) {
-    my ($got, $forbid, $name) = @_;
+    my ($got, $check, $name) = @_;
     my $ctx = context();
-    my ($ok, @diag) = tmt->regex_check($got, $forbid, '=~');
+    my ($ok, @diag) = tmt->regex_check($got, $check, '=~');
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
@@ -382,7 +390,6 @@ sub eq_array {
     my ($got, $want, $name) = @_;
     my $ctx = context();
     my ($ok, @diag) = Test::More::DeepCheck::Strict->check_array($got, $want);
-    $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
 
@@ -390,7 +397,6 @@ sub eq_hash {
     my ($got, $want, $name) = @_;
     my $ctx = context();
     my ($ok, @diag) = Test::More::DeepCheck::Strict->check_hash($got, $want);
-    $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
 
@@ -398,7 +404,6 @@ sub eq_set {
     my ($got, $want, $name) = @_;
     my $ctx = context();
     my ($ok, @diag) = Test::More::DeepCheck::Strict->check_set($got, $want);
-    $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
 

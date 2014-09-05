@@ -15,14 +15,14 @@ use Test::Stream::ExitMagic;
 use Test::Stream::ArrayBase;
 BEGIN {
     accessors qw{
-        no_ending
-        no_diag
+        no_ending no_diag no_header
         pid
         state
         listeners mungers
         bailed_out
         exit_on_disruption
         use_tap use_legacy _use_fork
+        use_numbers
         io_sets
         event_id
     };
@@ -33,20 +33,22 @@ use constant STATE_COUNT   => 0;
 use constant STATE_FAILED  => 1;
 use constant STATE_PLAN    => 2;
 use constant STATE_PASSING => 3;
-use constant STATE_ENDED   => 4;
+use constant STATE_LEGACY  => 4;
+use constant STATE_ENDED   => 5;
 
 use constant OUT_STD  => 0;
 use constant OUT_ERR  => 1;
 use constant OUT_TODO => 2;
 
 use Test::Stream::Exporter;
-exports qw/OUT_STD OUT_ERR OUT_TODO STATE_COUNT STATE_FAILED STATE_PLAN STATE_ENDED/;
+exports qw/OUT_STD OUT_ERR OUT_TODO STATE_COUNT STATE_FAILED STATE_PLAN STATE_ENDED STATE_LEGACY/;
 Test::Stream::Exporter->cleanup;
 
 sub plan   { $_[0]->[STATE]->[-1]->[STATE_PLAN]   }
 sub count  { $_[0]->[STATE]->[-1]->[STATE_COUNT]  }
 sub failed { $_[0]->[STATE]->[-1]->[STATE_FAILED] }
 sub ended  { $_[0]->[STATE]->[-1]->[STATE_ENDED]  }
+sub legacy { $_[0]->[STATE]->[-1]->[STATE_LEGACY] }
 
 sub is_passing {
     my $self = shift;
@@ -57,12 +59,13 @@ sub is_passing {
 sub init {
     my $self = shift;
 
-    $self->[PID]       = $$;
-    $self->[STATE]     = [[0, 0, undef, 1]];
-    $self->[USE_TAP]   = 1;
-    $self->[IO_SETS]   = Test::Stream::IOSets->new;
-    $self->[EVENT_ID]  = 1;
-    $self->[NO_ENDING] = 1;
+    $self->[PID]         = $$;
+    $self->[STATE]       = [[0, 0, undef, 1]];
+    $self->[USE_TAP]     = 1;
+    $self->[USE_NUMBERS] = 1;
+    $self->[IO_SETS]     = Test::Stream::IOSets->new;
+    $self->[EVENT_ID]    = 1;
+    $self->[NO_ENDING]   = 1;
 
     share($self->[STATE]);
 
@@ -133,10 +136,11 @@ sub send {
         @events = $_->($self, @events) for @{$self->[MUNGERS]};
     }
 
-    push @{$self->[USE_LEGACY]} => @events if $self->[USE_LEGACY];
+    push @{$self->[STATE]->[-1]->[STATE_LEGACY]} => @events if $self->[USE_LEGACY];
 
     for my $e (@events) {
         my $is_ok = 0;
+        my $no_out = 0;
         my @sub_events;
         if ($e->isa('Test::Stream::Event::Ok')) {
             $is_ok = 1;
@@ -148,7 +152,7 @@ sub send {
 
             @sub_events = @{$e->diag} if $e->diag && !$self->[NO_DIAG];
         }
-        elsif ($e->isa('Test::Stream::Event::Finish')) {
+        elsif (!$self->[NO_HEADER] && $e->isa('Test::Stream::Event::Finish')) {
             $is_ok = 1;
             $self->[STATE]->[-1]->[STATE_COUNT]++;
             my $plan = $self->[STATE]->[-1]->[STATE_PLAN];
@@ -159,17 +163,21 @@ sub send {
             }
         }
         elsif ($self->[NO_DIAG] && $e->isa('Test::Stream::Event::Diag')) {
-            next;
+            $no_out = 1;
+        }
+        elsif ($self->[NO_HEADER] && $e->isa('Test::Stream::Event::Plan')) {
+            $no_out = 1;
         }
 
-        if (!$^C && $self->[USE_TAP] && $is_ok || $e->can('to_tap')) {
+        if (!($^C || $no_out) && $self->[USE_TAP] && ($is_ok || $e->can('to_tap'))) {
             for my $se ($e, @sub_events) {
-                if(my ($hid, $msg) = $se->to_tap($self->[STATE]->[-1]->[STATE_COUNT])) {
+                my $num = $self->use_numbers ? $self->[STATE]->[-1]->[STATE_COUNT] : undef;
+                if(my ($hid, $msg) = $se->to_tap($num)) {
                     my $enc = $se->encoding || confess "Could not find encoding!";
-    
+
                     if(my $io = $self->[IO_SETS]->{$enc}->[$hid]) {
                         my $indent = $se->indent;
-    
+
                         local($\, $", $,) = (undef, ' ', '');
                         $msg =~ s/^/$indent/mg;
                         print $io $msg if $io && $msg;
@@ -350,11 +358,22 @@ sub done_testing {
         $ctx->ok(0, "planned to run $plan but done_testing() expects $num");
     }
 
-    $ctx->plan($num || $plan || $ran);
+    $ctx->plan($num || $plan || $ran) unless $state->[STATE_PLAN];
 
-    $state->[STATE_PASSING] = 0 if $plan && $plan != $ran;
-    $state->[STATE_PASSING] = 0 if $num  && $num  != $ran;
-    $state->[STATE_PASSING] = 0 unless $ran;
+    if ($plan && $plan != $ran) {
+        $state->[STATE_PASSING] = 0;
+        $ctx->diag("Planned to run $plan but ran $ran!");
+    }
+
+    if ($num && $num  != $ran) {
+        $state->[STATE_PASSING] = 0;
+        $ctx->diag("done_testing expected $num tests but ran $ran!");
+    }
+
+    unless ($ran) {
+        $state->[STATE_PASSING] = 0;
+        $ctx->diag("did not run any tests!");
+    }
 }
 
 1;

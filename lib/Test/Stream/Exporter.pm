@@ -2,7 +2,7 @@ package Test::Stream::Exporter;
 use strict;
 use warnings;
 
-use Carp qw/croak/;
+use Carp qw/croak confess/;
 
 {
     my $META = {};
@@ -143,8 +143,8 @@ sub _unexport {
 
 sub package_sub {
     my ($pkg, $sub) = @_;
-    croak "you must specify a package" unless $pkg;
-    croak "you must specify a subname" unless $sub;
+    confess "you must specify a package" unless $pkg;
+    confess "you must specify a subname" unless $sub;
     no warnings 'once';
     no strict 'refs';
     my $globref = \*{"$pkg\::$sub"};

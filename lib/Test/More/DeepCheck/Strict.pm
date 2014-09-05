@@ -2,7 +2,7 @@ package Test::More::DeepCheck::Strict;
 use strict;
 use warnings;
 
-use Carp qw/cluck/;
+use Carp qw/cluck confess/;
 use Test::More::Tools;
 use Scalar::Util qw/reftype/;
 use Test::Stream::Util qw/try unoverload_str/;
@@ -49,14 +49,13 @@ sub check_hash {
     my $class = shift;
     my ($got, $expect) = @_;
     my $self = $class->new();
-    my $ok = $class->_deep_check($got, $expect);
+    my $ok = $self->_deep_check($got, $expect);
     return ($ok, $ok ? () : $self->format_stack);
 }
 
 sub check_set {
     my $class = shift;
     my ($got, $expect) = @_;
-    my $self = $class->new();
 
     return 0 unless @$got == @$expect;
 
@@ -73,7 +72,7 @@ sub check_set {
     #
     # I don't know how references would be sorted so we just don't sort
     # them.  This means eq_set doesn't really work with refs.
-    return $self->check_array(
+    return $class->check_array(
         [ grep( ref, @$got ),    sort( grep( !ref, @$got ) )    ],
         [ grep( ref, @$expect ), sort( grep( !ref, @$expect ) ) ],
     );
@@ -81,6 +80,7 @@ sub check_set {
 
 sub _deep_check {
     my $self = shift;
+    confess "XXX" unless ref $self;
     my($e1, $e2) = @_;
 
     unoverload_str( \$e1, \$e2 );
@@ -129,7 +129,7 @@ sub _inner_check {
 
     if ($type1 eq 'REF' || $type1 eq 'SCALAR') {
         push @$self => {type => 'REF', vals => [$e1, $e2], line => __LINE__};
-        my $ok = _deep_check($$e1, $$e2);
+        my $ok = $self->_deep_check($$e1, $$e2);
         pop @$self if $ok;
         return $ok;
     }
