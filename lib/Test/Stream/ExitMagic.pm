@@ -34,7 +34,7 @@ sub do_magic {
     my $total = $stream->count;
     my $fails = $stream->failed;
 
-    my $context = Test::Stream::ExitMagic::Context->new($stream, [caller()]);
+    my $context = Test::Stream::ExitMagic::Context->new([caller()], $stream);
     $context->finish($total, $fails);
 
     # Ran tests but never declared a plan or hit done_testing

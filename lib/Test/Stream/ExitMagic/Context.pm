@@ -5,10 +5,7 @@ use warnings;
 use base 'Test::Stream::Context';
 
 use Test::Stream::ArrayBase;
-BEGIN {
-    accessors qw/stream frame encoding in_todo todo depth pid skip/;
-    Test::Stream::ArrayBase->cleanup;
-}
+BEGIN { Test::Stream::ArrayBase->cleanup }
 
 sub init {
     $_[0]->[PID]      = $$;

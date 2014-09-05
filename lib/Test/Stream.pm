@@ -10,7 +10,6 @@ use Carp qw/croak confess/;
 use Test::Stream::IOSets;
 use Test::Stream::Threads;
 use Test::Stream::Util qw/try/;
-use Test::Stream::ExitMagic;
 
 use Test::Stream::ArrayBase;
 BEGIN {
@@ -83,6 +82,12 @@ sub init {
 
         @stack = ($root = $class->new(0));
         $root->[NO_ENDING] = 0;
+
+        require Test::Stream::Context;
+        require Test::Stream::Event::Finish;
+        require Test::Stream::ExitMagic;
+        require Test::Stream::ExitMagic::Context;
+
         $magic = Test::Stream::ExitMagic->new;
 
         return $root;

@@ -149,7 +149,7 @@ sub regex_check {
     unless($test) {
         $thing = defined $thing ? "'$thing'" : 'undef';
         my $match = $negate ? "matches" : "doesn't match";
-        my $diag = sprintf(qq{               \%s\n \%13s '\%s'\n}, $thing, $match, $regex);
+        my $diag = sprintf(qq{                  \%s\n    \%13s '\%s'\n}, $thing, $match, $got_regex);
         return (0, $diag);
     }
 

@@ -29,6 +29,10 @@ sub ctx {
     my $self = shift || die "No self in context";
     my $ctx = Test::Stream::Context::context($Level);
     $ctx->set_stream($self->{stream}) if $self->{stream};
+    if (defined $self->{Todo}) {
+        $ctx->set_in_todo(1);
+        $ctx->set_todo($self->{Todo});
+    }
     return $ctx;
 }
 
@@ -289,6 +293,7 @@ sub diag {
     my $self = shift;
     my $msg = join '', map { defined($_) ? $_ : 'undef' } @_;
     $self->ctx->diag($msg);
+    return;
 }
 
 sub note {

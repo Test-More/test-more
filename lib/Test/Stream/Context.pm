@@ -54,7 +54,7 @@ sub context {
     my $todo;
     {
         no strict 'refs'; no warnings 'once';
-        $todo = $meta->[Test::Stream::Meta::TODO] || ${"$pkg\::TODO"} || ($Test::Builder::Test ? $Test::Builder::Test->{Todo} : undef);
+        $todo = $meta->[Test::Stream::Meta::TODO] || ${"$pkg\::TODO"} || undef;
     };
     my $in_todo = defined $todo;
 

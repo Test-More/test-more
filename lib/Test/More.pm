@@ -232,7 +232,7 @@ sub can_ok($@) {
     my ($thing, @methods) = @_;
     my $ctx = context();
 
-    my $class = ref $thing || $thing;
+    my $class = ref $thing || $thing || '';
     my ($ok, @diag);
 
     if (!@methods) {
@@ -245,9 +245,9 @@ sub can_ok($@) {
         ($ok, @diag) = tmt->can_check($thing, $class, @methods);
     }
 
-    my $name = (@methods == 1)
-        ? "$class->can('$methods[0]')"
-        : "$class->can(...)";
+    my $name = (@methods == 1 && defined $methods[0])
+        ? "$class\->can('$methods[0]')"
+        : "$class\->can(...)";
 
     $ctx->ok($ok, $name, \@diag);
     return $ok;
