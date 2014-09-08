@@ -145,6 +145,7 @@ sub send {
 
     for my $e (@events) {
         my $is_ok = 0;
+        my $is_plan = 0;
         my $no_out = 0;
         my @sub_events;
         if ($e->isa('Test::Stream::Event::Ok')) {
@@ -161,7 +162,7 @@ sub send {
             $is_ok = 1;
             $self->[STATE]->[-1]->[STATE_COUNT]++;
             my $plan = $self->[STATE]->[-1]->[STATE_PLAN];
-            if ($plan && $plan->directive eq 'NO_PLAN') {
+            if ($plan && $plan->directive eq 'NO PLAN') {
                 $plan->set_max($self->[STATE]->[-1]->[STATE_COUNT] - 1);
                 $plan->set_directive(undef);
                 push @sub_events => $plan;
@@ -170,8 +171,23 @@ sub send {
         elsif ($self->[NO_DIAG] && $e->isa('Test::Stream::Event::Diag')) {
             $no_out = 1;
         }
-        elsif ($self->[NO_HEADER] && $e->isa('Test::Stream::Event::Plan')) {
-            $no_out = 1;
+        elsif ($e->isa('Test::Stream::Event::Plan')) {
+            $is_plan = 1;
+            if($self->[NO_HEADER]) {
+                $no_out = 1;
+            }
+            elsif(my $existing = $self->[STATE]->[-1]->[STATE_PLAN]) {
+                my $directive = $existing ? $existing->directive : '';
+    
+                if ($existing && (!$directive || $directive eq 'NO PLAN')) {
+                    my ($p1, $f1, $l1) = $existing->context->call;
+                    my ($p2, $f2, $l2) = $e->context->call;
+                    die "Tried to plan twice!\n    $f1 line $l1\n    $f2 line $l2\n";
+                }
+            }
+
+            my $directive = $e->directive;
+            $no_out = 1 if $directive && $directive eq 'NO PLAN';
         }
 
         if (!($^C || $no_out) && $self->[USE_TAP] && ($is_ok || $e->can('to_tap'))) {
@@ -195,29 +211,18 @@ sub send {
             $_->($self, $e) for @{$self->[LISTENERS]};
         }
 
-        if (!$is_ok) {
-            if ($e->isa('Test::Stream::Event::Plan')) {
-                my $existing = $self->[STATE]->[-1]->[STATE_PLAN];
-                my $directive = $existing ? $existing->directive : '';
-
-                if ($existing && (!$directive || $directive eq 'NO PLAN')) {
-                    my ($p1, $f1, $l1) = $existing->context->call;
-                    my ($p2, $f2, $l2) = $e->context->call;
-                    die "Tried to plan twice!\n    $f1 line $l1\n    $f2 line $l2\n";
-                }
-
-                $self->[STATE]->[-1]->[STATE_PLAN] = $e;
-                next unless $e->directive;
-                next unless $e->directive eq 'SKIP';
-                die $e unless $self->[EXIT_ON_DISRUPTION];
-                exit 0;
-            }
-            elsif ($e->isa('Test::Stream::Event::Bail')) {
-                $self->[BAILED_OUT] = $e;
-                $self->[NO_ENDING]  = 1;
-                die $e unless $self->[EXIT_ON_DISRUPTION];
-                exit 255;
-            }
+        if ($is_plan) {
+            $self->[STATE]->[-1]->[STATE_PLAN] = $e;
+            next   unless $e->directive;
+            next   unless $e->directive eq 'SKIP';
+            die $e unless $self->[EXIT_ON_DISRUPTION];
+            exit 0;
+        }
+        elsif (!$is_ok && $e->isa('Test::Stream::Event::Bail')) {
+            $self->[BAILED_OUT] = $e;
+            $self->[NO_ENDING]  = 1;
+            die $e unless $self->[EXIT_ON_DISRUPTION];
+            exit 255;
         }
     }
 }

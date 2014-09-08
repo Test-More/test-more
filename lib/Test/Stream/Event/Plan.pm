@@ -13,7 +13,7 @@ use Carp qw/confess/;
 
 my %ALLOWED = (
     'SKIP'    => 1,
-    'NO_PLAN' => 1,
+    'NO PLAN' => 1,
 );
 
 sub init {

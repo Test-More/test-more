@@ -42,6 +42,7 @@ sub format_stack {
             unless ($did_arrow) {
                 push @parts1 => '->';
                 push @parts2 => '->';
+                $did_arrow++;
             }
             push @parts1 => "{$idx}";
             push @parts2 => "{$idx}";
@@ -57,6 +58,7 @@ sub format_stack {
             unless ($did_arrow) {
                 push @parts1 => '->';
                 push @parts2 => '->';
+                $did_arrow++;
             }
             push @parts1 => "[$idx]";
             push @parts2 => "[$idx]";

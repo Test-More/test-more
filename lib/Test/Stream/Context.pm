@@ -87,6 +87,10 @@ sub _find_context {
     # 2 - call to tool
     my $level = 2 + $add;
     my ($package, $file, $line, $subname) = caller($level);
+    while ($package eq 'Test::Builder') {
+        ($package, $file, $line, $subname) = caller(++$level);
+    }
+    
     confess "Level: $level" unless $package;
     return [$package, $file, $line, $subname];
 }
@@ -101,7 +105,7 @@ sub alert {
 
     my @call = $self->call;
 
-    warn "$msg at $call[1] line $call[2]\n";
+    warn "$msg at $call[1] line $call[2].\n";
 }
 
 sub throw {
@@ -110,7 +114,9 @@ sub throw {
 
     my @call = $self->call;
 
-    die "$msg at $call[1] line $call[2]\n";
+    $CURRENT = undef if $CURRENT = $self;
+
+    die "$msg at $call[1] line $call[2].\n";
 }
 
 sub call { @{$_[0]->[FRAME]} }

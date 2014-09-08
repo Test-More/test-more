@@ -6,6 +6,7 @@ use base 'Test::Stream::Event';
 
 use Carp qw/confess/;
 use Scalar::Util qw/blessed/;
+use Test::Stream::Util qw/unoverload_str/;
 
 use Test::Stream qw/OUT_STD/;
 use Test::Stream::Event;
@@ -45,6 +46,9 @@ sub init {
         $self->add_diag($msg);
     }
 
+    $self->add_diag("    You named your test '$name'.  You shouldn't use numbers for your test names.\n    Very confusing.")
+        if $name && $name =~ m/^\d/;
+
     $self->add_diag(@$diag) if $diag && @$diag;
 }
 
@@ -60,6 +64,8 @@ sub to_tap {
     push @out => "not" unless $self->[REAL_BOOL];
     push @out => "ok";
     push @out => $num if defined $num;
+
+    unoverload_str \$name if defined $name;
 
     if (defined $name) {
         $name =~ s|#|\\#|g;    # # in a name can confuse Test::Harness.

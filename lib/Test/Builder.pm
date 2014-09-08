@@ -36,6 +36,14 @@ sub ctx {
     return $ctx;
 }
 
+# This is only for unit tests at this point.
+sub _ending {
+    my $self = shift;
+    require Test::Stream::ExitMagic;
+    $self->{stream}->set_no_ending(0);
+    Test::Stream::ExitMagic->new->do_magic($self->{stream});
+}
+
 ####################
 # {{{ Constructors #
 ####################
@@ -185,6 +193,8 @@ sub plan {
     my ($self, $cmd, $arg) = @_;
     return unless $cmd;
 
+    my $ctx = $self->ctx;
+
     if (my $method = $PLAN_CMDS{$cmd}) {
         $self->$method($arg);
     }
@@ -209,7 +219,7 @@ sub no_plan {
     my ($self, @args) = @_;
 
     $self->ctx()->alert("no_plan takes no arguments") if @args;
-    $self->ctx()->plan(0, 'NO_PLAN');
+    $self->ctx()->plan(0, 'NO PLAN');
 
     return 1;
 }
@@ -340,7 +350,7 @@ sub has_plan {
     my $self = shift;
 
     my $plan = $self->ctx->stream->plan || return undef;
-    return 'no_plan' if $plan->directive && $plan->directive eq 'NO_PLAN';
+    return 'no_plan' if $plan->directive && $plan->directive eq 'NO PLAN';
     return $plan->max;
 }
 

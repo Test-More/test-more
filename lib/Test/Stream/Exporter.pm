@@ -47,9 +47,20 @@ sub export_to {
     croak "$class is not an exporter!?" unless $is_exporter;
     my $meta = $is_exporter->();
 
-    @imports = keys %{$meta->{export}} unless @imports;
+    my (@include, %exclude);
+    for my $import (@imports) {
+        if ($import =~ m/^!(.*)$/) {
+            $exclude{$1}++;
+        }
+        else {
+            push @include => $import;
+        }
+    }
 
-    for my $name (@imports) {
+    @include = keys %{$meta->{export}} unless @include;
+
+    for my $name (@include) {
+        next if $exclude{$name};
         my $ref = $meta->{export}->{$name} || croak "$class does not export $name";
         no strict 'refs';
         $name =~ s/^[\$\@\%\&]//;

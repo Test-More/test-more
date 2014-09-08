@@ -256,6 +256,7 @@ sub can_ok($@) {
 sub isa_ok ($$;$) {
     my ($thing, $class, $thing_name) = @_;
     my $ctx = context();
+    $thing_name = "'$thing_name'" if $thing_name;
     my ($ok, @diag) = tmt->isa_check($thing, $class, \$thing_name);
     my $name = "$thing_name isa '$class'";
     $ctx->ok($ok, $name, \@diag);
@@ -326,6 +327,16 @@ sub skip {
     my( $why, $how_many ) = @_;
     my $ctx = context();
 
+    _skip($why, $how_many);
+
+    no warnings 'exiting';
+    last SKIP;
+}
+
+sub _skip {
+    my( $why, $how_many ) = @_;
+    my $ctx = context();
+
     my $plan = $ctx->stream->plan;
 
     # If there is no plan we do not need to worry about counts
@@ -342,9 +353,6 @@ sub skip {
     for( 1 .. $how_many ) {
         $ctx->ok(1);
     }
-
-    no warnings 'exiting';
-    last SKIP;
 }
 
 sub todo_skip {
@@ -353,7 +361,10 @@ sub todo_skip {
     my $ctx = context();
     $ctx->set_in_todo(1);
     $ctx->set_todo($why);
-    skip($why, $how_many);
+    _skip($why, $how_many);
+
+    no warnings 'exiting';
+    last TODO;
 }
 
 sub BAIL_OUT {
@@ -369,7 +380,7 @@ sub is_deeply {
 
     unless( @_ == 2 or @_ == 3 ) {
         my $msg = <<'WARNING';
-mostly_like() takes two or three args, you gave %d.
+is_deeply() takes two or three args, you gave %d.
 This usually means you passed an array or hash instead
 of a reference to it
 WARNING

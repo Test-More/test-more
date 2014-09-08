@@ -34,7 +34,7 @@ sub cmp_check {
         # This is so that warnings come out at the caller's level
         ## no critic (BuiltinFunctions::ProhibitStringyEval)
         eval qq[
-#line $line "$file"
+#line $line "(eval in $name) $file"
 \$test = \$got $type \$expect;
 1;
         ] || die $@;
@@ -167,7 +167,9 @@ sub can_check {
             push @diag => "    $class\->can('$method') failed" unless $ok;
         }
         else {
-            push @diag => "    $class\->can('$method') failed with an exception:\n$error"
+            my $file = __FILE__;
+            $error =~ s/ at $file line \d+//;
+            push @diag => "    $class\->can('$method') failed with an exception:\n    $error";
         }
     }
 
@@ -181,24 +183,24 @@ sub isa_check {
     if( !defined $thing ) {
         $whatami = 'undef';
         $$thing_name = "undef" unless defined $$thing_name;
-        $diag = defined $thing ? "'$$thing_name' isn't a '$class'" : "'$$thing_name' isn't defined";
+        $diag = defined $thing ? "$$thing_name isn't a '$class'" : "$$thing_name isn't defined";
     }
     elsif($type = blessed $thing) {
         $whatami = 'object';
         $try_isa = 1;
         $$thing_name = "An object of class '$type'" unless defined $$thing_name;
-        $diag = "The object of class '$type' isn't a '$class'";
+        $diag = "$$thing_name isn't a '$class'";
     }
     elsif($type = ref $thing) {
         $whatami = 'reference';
         $$thing_name = "A reference of type '$type'" unless defined $$thing_name;
-        $diag = "The reference of type '$type' isn't a '$class'";
+        $diag = "$$thing_name isn't a '$class'";
     }
     else {
         $whatami = 'class';
         $try_isa = 1;
         $$thing_name = "The class (or class-like) '$thing'" unless defined $$thing_name;
-        $diag = "$thing_name isn't a '$class'";
+        $diag = "$$thing_name isn't a '$class'";
     }
 
     my $ok;
@@ -237,6 +239,7 @@ sub new_check {
         eval qq{#line $l "$f"\n\$obj = \$class\->new(\@\$args); 1} || die $@;
     };
     if($success) {
+        $object_name = "'$object_name'" if $object_name;
         my ($ok, @diag) = $us->isa_check($obj, $class, \$object_name);
         my $name = "$object_name isa '$class'";
         return ($obj, $name, $ok, @diag);
@@ -292,14 +295,14 @@ sub require_check {
             if $file_exists && $valid_name;
 
         my $error = $merr || $ferr || "Unknown error";
-        return ($name, 0, "    tried to $name.\n    Error:  $error");
+        return ("$name;", 0, "    Tried to " . ($force_module || 'require') . " '$thing'.\n    Error:  $error");
     }
 
     return ("$name;", 1) unless defined $version;
 
     my ($ok, $error) = try { eval "$fool_me\n$thing->VERSION($version)" || die $@ };
-    return ("$name", 1) if $ok;
-    return ($name, 0, "    tried to $name.\n    Error:  $error");
+    return ($name, 1) if $ok;
+    return ($name, 0, "    Tried to $name.\n    Error:  $error");
 }
 
 sub use_check {
