@@ -160,13 +160,14 @@ sub nest {
     $self->child('push');
     $self->note("Subtest: $name");
 
+    my $eod = $self->stream->exit_on_disruption;
+    $self->stream->set_exit_on_disruption(0);
+    $self->stream->push_state;
     my ($ok, $error) = try {
         local $DEPTH = $DEPTH + 1;
         local $CURRENT = undef;
-        $self->stream->push_state;
         $code->(@args);
 
-        use Data::Dumper;
         unless ($self->stream->ended) {
             my $ctx = $self->snapshot;
             $ctx->[DEPTH] = $DEPTH;
@@ -174,9 +175,9 @@ sub nest {
         }
 
         $pass = $self->stream->is_passing;
-
-        $self->stream->pop_state;
     };
+    $self->stream->pop_state;
+    $self->stream->set_exit_on_disruption($eod);
 
     $self->child('pop');
 

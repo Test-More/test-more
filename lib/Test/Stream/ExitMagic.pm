@@ -17,7 +17,7 @@ sub init {
 
 sub do_magic {
     my $self = shift;
-    my ($stream) = @_;
+    my ($stream, $context) = @_;
     return unless $stream;
     return if $stream->no_ending;
 
@@ -34,7 +34,7 @@ sub do_magic {
     my $total = $stream->count;
     my $fails = $stream->failed;
 
-    my $context = Test::Stream::ExitMagic::Context->new([caller()], $stream);
+    $context ||= Test::Stream::ExitMagic::Context->new([caller()], $stream);
     $context->finish($total, $fails);
 
     # Ran tests but never declared a plan or hit done_testing

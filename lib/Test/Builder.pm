@@ -29,6 +29,7 @@ sub ctx {
     my $self = shift || die "No self in context";
     my $ctx = Test::Stream::Context::context($Level, \&_find_context);
     $ctx->set_stream($self->{stream}) if $self->{stream};
+    $ctx->set_depth($self->{depth})   if $self->{depth};
     if (defined $self->{Todo}) {
         $ctx->set_in_todo(1);
         $ctx->set_todo($self->{Todo});
@@ -50,16 +51,17 @@ sub _find_context {
     else {
         ($package, $file, $line, $subname) = caller(--$level) until $package;
     }
-    
+
     return [$package, $file, $line, $subname];
 }
 
 # This is only for unit tests at this point.
 sub _ending {
     my $self = shift;
+    my ($ctx) = @_;
     require Test::Stream::ExitMagic;
     $self->{stream}->set_no_ending(0);
-    Test::Stream::ExitMagic->new->do_magic($self->{stream});
+    Test::Stream::ExitMagic->new->do_magic($self->{stream}, $ctx);
 }
 
 ####################
@@ -117,6 +119,46 @@ sub subtest {
     return $ok;
 }
 
+sub child {
+    my( $self, $name ) = @_;
+
+    my $ctx = $self->ctx;
+    $ctx->child('push');
+
+    my $child = bless {%$self, '?' => $?, parent => $self, depth => 1 + ($self->{depth} || 0)};
+
+    $child->{stream} = Test::Stream->new;
+    $child->{stream}->set_io_sets($ctx->stream->io_sets);
+    $child->{stream}->set_exit_on_disruption(0);
+
+    $? = 0;
+    $child->{Name} = $name || "Child of " . $self->{Name};
+
+    return $child;
+}
+
+sub finalize {
+    my $self = shift;
+
+    return unless $self->{parent};
+
+    my $ctx = $self->ctx;
+    $self->_ending($ctx);
+    my $passing = $ctx->stream->is_passing;
+    my $name = $self->{Name};
+    $ctx = undef;
+
+    my $parent = $self->parent;
+    $? = $self->{'?'};
+
+    $ctx = $parent->ctx;
+    $ctx->child('pop');
+    $ctx->ok($passing, $name);
+}
+
+sub parent { $_[0]->{parent} }
+sub name   { $_[0]->{Name} }
+
 #############################
 # }}} Children and subtests #
 #############################
@@ -135,7 +177,7 @@ sub find_TODO {
             $ctx->set_todo($new_value) if $set;
             return $old;
         }
-    
+
         $pack = $self->exported_to || return;
     }
 
@@ -618,7 +660,7 @@ sub current_test {
         my ($num) = @_;
         my $state = $ctx->stream->state->[-1];
         $state->[STATE_COUNT] = $num;
-        
+
         my $old = $state->[STATE_LEGACY] || [];
         my $new = [];
 
