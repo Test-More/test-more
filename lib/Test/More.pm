@@ -81,7 +81,7 @@ sub before_import {
             $context->plan(0, 'SKIP', $list->[$idx++]);
         }
         elsif ($item eq 'no_plan') {
-            $context->plan(0, 'NO_PLAN');
+            $context->plan(0, 'NO PLAN');
         }
         elsif ($item eq 'import') {
             push @$other => @{$list->[$idx++]};
@@ -285,7 +285,7 @@ sub fail (;$) {
 sub subtest {
     my ($name, $code) = @_;
     my $ctx = context();
-    my $ok = $ctx->nest($code);
+    my $ok = $ctx->nest($code, $name);
     $ctx->ok($ok, $name);
     return $ok;
 }
@@ -327,31 +327,31 @@ sub skip {
     my( $why, $how_many ) = @_;
     my $ctx = context();
 
-    _skip($why, $how_many);
+    _skip($why, $how_many, 'skip', 1);
 
     no warnings 'exiting';
     last SKIP;
 }
 
 sub _skip {
-    my( $why, $how_many ) = @_;
+    my( $why, $how_many, $func, $bool ) = @_;
     my $ctx = context();
 
     my $plan = $ctx->stream->plan;
 
     # If there is no plan we do not need to worry about counts
-    my $need_count = $plan ? !($plan->directive && $plan->directive eq 'NO_PLAN') : 0;
+    my $need_count = $plan ? !($plan->directive && $plan->directive eq 'NO PLAN') : 1;
 
-    $ctx->alert("skip() needs to know \$how_many tests are in the block")
+    $ctx->alert("$func() needs to know \$how_many tests are in the block")
         if $need_count && !defined $how_many;
 
-    $ctx->alert("skip() was passed a non-numeric number of tests.  Did you get the arguments backwards?")
+    $ctx->alert("$func() was passed a non-numeric number of tests.  Did you get the arguments backwards?")
         if defined $how_many and $how_many =~ /\D/;
 
     $ctx->set_skip($why);
     $how_many ||= 1;
     for( 1 .. $how_many ) {
-        $ctx->ok(1);
+        $ctx->ok($bool, '');
     }
 }
 
@@ -361,7 +361,7 @@ sub todo_skip {
     my $ctx = context();
     $ctx->set_in_todo(1);
     $ctx->set_todo($why);
-    _skip($why, $how_many);
+    _skip($why, $how_many, 'todo_skip', 0);
 
     no warnings 'exiting';
     last TODO;

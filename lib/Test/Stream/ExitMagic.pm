@@ -75,7 +75,6 @@ sub do_magic {
     }
 
     $stream->is_passing(0);
-    print STDERR "We fell off the end of ExitMagic!\n";
     $? = 255;
 }
 
@@ -108,7 +107,7 @@ sub be_helpful_magic {
     my ($stream, $context, $total, $fails, $plan, $real_exit_code) = @_;
 
     my $planned   = $plan->max;
-    my $num_extra = $plan->directive && $plan->directive eq 'NO_PLAN' ? 0 : $total - $planned;
+    my $num_extra = $plan->directive && $plan->directive eq 'NO PLAN' ? 0 : $total - $planned;
 
     if ($num_extra != 0) {
         my $s = $planned == 1 ? '' : 's';

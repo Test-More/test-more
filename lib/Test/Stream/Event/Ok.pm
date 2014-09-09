@@ -20,6 +20,10 @@ sub todo { $_[0]->[CONTEXT]->todo }
 
 sub init {
     my $self = shift;
+
+    # Do not store objects here, only true/false
+    $self->[REAL_BOOL] = 1 if $self->[REAL_BOOL];
+
     my $ctx  = $self->[CONTEXT];
     my $rb   = $self->[REAL_BOOL];
     my $todo = $ctx->in_todo;
@@ -67,7 +71,7 @@ sub to_tap {
 
     unoverload_str \$name if defined $name;
 
-    if (defined $name) {
+    if ($name) {
         $name =~ s|#|\\#|g;    # # in a name can confuse Test::Harness.
         push @out => ("-", $name);
     }

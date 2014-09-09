@@ -40,8 +40,9 @@ sub context {
     # stack.
     return $CURRENT if $CURRENT;
 
-    my ($level) = @_;
-    my $call = _find_context($level); # the only arg is an integer to add to the caller level
+    my ($level, $seeker) = @_;
+    # the only arg is an integer to add to the caller level
+    my $call = $seeker ? $seeker->($level) : _find_context($level);
     my $pkg  = $call->[0];
 
     # init_tester returns ther meta if found, otherwise it creates it and then
@@ -55,6 +56,7 @@ sub context {
     {
         no strict 'refs'; no warnings 'once';
         $todo = $meta->[Test::Stream::Meta::TODO] || ${"$pkg\::TODO"} || undef;
+        $todo ||= Test::Builder->new->{Todo} if $Test::Builder::Test;
     };
     my $in_todo = defined $todo;
 
@@ -151,11 +153,12 @@ sub stage {
 
 sub nest {
     my $self = shift;
-    my ($code, @args) = @_;
+    my ($code, $name, @args) = @_;
 
     my $pass;
 
     $self->child('push');
+    $self->note("Subtest: $name");
 
     my ($ok, $error) = try {
         local $DEPTH = $DEPTH + 1;

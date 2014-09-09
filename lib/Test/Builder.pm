@@ -27,13 +27,31 @@ our $Level = 1;
 
 sub ctx {
     my $self = shift || die "No self in context";
-    my $ctx = Test::Stream::Context::context($Level);
+    my $ctx = Test::Stream::Context::context($Level, \&_find_context);
     $ctx->set_stream($self->{stream}) if $self->{stream};
     if (defined $self->{Todo}) {
         $ctx->set_in_todo(1);
         $ctx->set_todo($self->{Todo});
     }
     return $ctx;
+}
+
+sub _find_context {
+    my ($add) = @_;
+    $add ||= 0;
+
+    # See Test::Stream::Context for magic number of 2
+    my $level = 2 + $add;
+    my ($package, $file, $line, $subname) = caller($level);
+
+    if ($package) {
+        ($package, $file, $line, $subname) = caller(++$level) while $package eq 'Test::Builder';
+    }
+    else {
+        ($package, $file, $line, $subname) = caller(--$level) until $package;
+    }
+    
+    return [$package, $file, $line, $subname];
 }
 
 # This is only for unit tests at this point.
@@ -93,7 +111,7 @@ sub subtest {
         unless $subtests && 'CODE' eq reftype($subtests);
 
     local $Level = 1;
-    my $ok = $ctx->nest($subtests, @args);
+    my $ok = $ctx->nest($subtests, $name, @args);
     $ctx->ok($ok, $name);
 
     return $ok;
@@ -110,14 +128,16 @@ sub subtest {
 sub find_TODO {
     my ($self, $pack, $set, $new_value) = @_;
 
-    if (my $ctx = Test::Stream::Context->peek) {
-        $pack = $ctx->package;
-        my $old = $ctx->todo;
-        $ctx->set_todo($new_value) if $set;
-        return $old;
+    unless ($pack) {
+        if (my $ctx = Test::Stream::Context->peek) {
+            $pack = $ctx->package;
+            my $old = $ctx->todo;
+            $ctx->set_todo($new_value) if $set;
+            return $old;
+        }
+    
+        $pack = $self->exported_to || return;
     }
-
-    $pack = $self->exported_to || return;
 
     no strict 'refs';    ## no critic
     no warnings 'once';
@@ -130,6 +150,8 @@ sub todo {
     my ($self, $pack) = @_;
 
     return $self->{Todo} if defined $self->{Todo};
+
+    my $ctx = $self->ctx;
 
     my $todo = $self->find_TODO($pack);
     return $todo if defined $todo;
@@ -190,17 +212,17 @@ my %PLAN_CMDS = (
 );
 
 sub plan {
-    my ($self, $cmd, $arg) = @_;
+    my ($self, $cmd, @args) = @_;
     return unless $cmd;
 
     my $ctx = $self->ctx;
 
     if (my $method = $PLAN_CMDS{$cmd}) {
-        $self->$method($arg);
+        $self->$method(@args);
     }
     else {
-        my @args = grep { defined } ($cmd, $arg);
-        $self->ctx->throw("plan() doesn't understand @args");
+        my @in = grep { defined } ($cmd, @args);
+        $self->ctx->throw("plan() doesn't understand @in");
     }
 
     return 1;
@@ -209,9 +231,8 @@ sub plan {
 sub skip_all {
     my ($self, $reason) = @_;
 
-    $self->{Skip_All} = $self->parent ? $reason : 1;
+    $self->{Skip_All} = 1;
 
-    die bless {} => 'Test::Builder::Exception' if $self->parent;
     $self->ctx()->plan(0, 'SKIP', $reason);
 }
 
@@ -265,13 +286,6 @@ sub ok {
 
 sub BAIL_OUT {
     my( $self, $reason ) = @_;
-
-    if ($self->parent) {
-        $self->{Bailed_Out_Reason} = $reason;
-        $self->no_ending(1);
-        die bless {} => 'Test::Builder::Exception';
-    }
-
     $self->ctx()->bail($reason);
 }
 
@@ -282,7 +296,7 @@ sub skip {
 
     my $ctx = $self->ctx();
     $ctx->set_skip($why);
-    $ctx->ok(1);
+    $ctx->ok(1, '');
     $ctx->set_skip(undef);
 }
 
@@ -294,7 +308,7 @@ sub todo_skip {
     my $ctx = $self->ctx();
     $ctx->set_skip($why);
     $ctx->set_todo($why);
-    $ctx->ok(1);
+    $ctx->ok(0, '');
     $ctx->set_skip(undef);
     $ctx->set_todo(undef);
 }
@@ -358,8 +372,14 @@ sub reset {
     my $self = shift;
     my %params = @_;
 
-    $self->{stream} = Test::Stream->new()
-        unless $params{shared_stream};
+    $self->{use_shared} = 1 if $params{shared_stream};
+
+    if ($self->{use_shared}) {
+        Test::Stream->shared->state->[-1]->[STATE_LEGACY] = [];
+    }
+    else {
+        $self->{stream} = Test::Stream->new()
+    }
 
     # We leave this a global because it has to be localized and localizing
     # hash keys is just asking for pain.  Also, it was documented.
@@ -452,8 +472,6 @@ sub unlike {
 # {{{ Misc #
 ################################################
 
-#output failure_output todo_output
-
 sub _new_fh {
     my $self = shift;
     my($file_or_fh) = shift;
@@ -468,7 +486,7 @@ sub _new_fh {
     else {
         open $fh, ">", $file_or_fh
           or croak("Can't open test output log $file_or_fh: $!");
-        Test::Stream::IOSets_autoflush($fh);
+        Test::Stream::IOSets->_autoflush($fh);
     }
 
     return $fh;
@@ -512,21 +530,21 @@ sub no_ending {
     my $self = shift;
     my $ctx = $self->ctx;
     $ctx->stream->set_no_ending(@_) if @_;
-    $ctx->stream->no_ending;
+    $ctx->stream->no_ending || 0;
 }
 
 sub no_header {
     my $self = shift;
     my $ctx = $self->ctx;
     $ctx->stream->set_no_header(@_) if @_;
-    $ctx->stream->no_header;
+    $ctx->stream->no_header || 0;
 }
 
 sub no_diag {
     my $self = shift;
     my $ctx = $self->ctx;
     $ctx->stream->set_no_diag(@_) if @_;
-    $ctx->stream->no_diag;
+    $ctx->stream->no_diag || 0;
 }
 
 sub exported_to {
@@ -560,7 +578,7 @@ sub expected_tests {
     my $ctx = $self->ctx;
     $ctx->plan(@_) if @_;
 
-    my $plan = $ctx->plan || return 0;
+    my $plan = $ctx->stream->state->[-1]->[STATE_PLAN] || return 0;
     return $plan->max || 0;
 }
 
@@ -589,6 +607,8 @@ sub is_passing {
     $ctx->stream->is_passing(@_);
 }
 
+# Yeah, this is not efficient, but it is only legacy support, barely anything
+# uses it, and they really should not.
 sub current_test {
     my $self = shift;
 
@@ -597,25 +617,31 @@ sub current_test {
     if (@_) {
         my ($num) = @_;
         my $state = $ctx->stream->state->[-1];
-        my $start = $state->[STATE_COUNT];
         $state->[STATE_COUNT] = $num;
-        if ($start > $num) {
-            $state->[STATE_LEGACY] = [$state->[STATE_LEGACY]->[0 .. $num]];
-        }
-        elsif ($start < $num) {
-            my $nctx = $ctx->snapshot;
-            $nctx->set_todo('incrementing test number');
-            $nctx->set_in_todo(1);
-            my $ok = Test::Stream::Event::Ok->new(
-                $ctx,
+        
+        my $old = $state->[STATE_LEGACY] || [];
+        my $new = [];
+
+        my $nctx = $ctx->snapshot;
+        $nctx->set_todo('incrementing test number');
+        $nctx->set_in_todo(1);
+
+        for (1 .. $num) {
+            my $i;
+            $i = shift @$old while @$old && (!$i || !$i->isa('Test::Stream::Event::Ok'));
+            $i ||= Test::Stream::Event::Ok->new(
+                $nctx,
                 [CORE::caller()],
                 undef,
-                'FAKE',
+                undef,
                 undef,
                 1,
             );
-            push @{$state->[STATE_LEGACY]} => $ok for $num - $start;
+
+            push @$new => $i;
         }
+
+        $state->[STATE_LEGACY] = $new;
     }
 
     $ctx->stream->count;
@@ -624,25 +650,30 @@ sub current_test {
 sub details {
     my $self = shift;
     my $ctx = $self->ctx;
-    my $state = $ctx->stream->state;
-    return unless $state->[STATE_LEGACY];
-    return map {
+    my $state = $ctx->stream->state->[-1];
+    my @out;
+    return @out unless $state->[STATE_LEGACY];
+
+    for my $e (@{$state->[STATE_LEGACY]}) {
+        next unless $e && $e->isa('Test::Stream::Event::Ok');
         my $result = &share( {} );
 
-        $result->{ok} = $_->bool;
-        $result->{actual_ok} = $_->real_bool;
-        $result->{name} = $_->name || '';
+        $result->{ok}        = $e->bool;
+        $result->{actual_ok} = $e->real_bool;
+        $result->{name}      = $e->name;
 
-        if($_->skip && ($_->in_todo || $_->todo)) {
+        my $ctx = $e->context;
+
+        if($e->skip && ($ctx->in_todo || $ctx->todo)) {
             $result->{type} = 'todo_skip',
-            $result->{reason} = $_->skip || $_->todo;
+            $result->{reason} = $ctx->skip || $ctx->todo;
         }
-        elsif($_->in_todo || $_->todo) {
-            $result->{reason} = $_->todo;
+        elsif($ctx->in_todo || $ctx->todo) {
+            $result->{reason} = $ctx->todo;
             $result->{type}   = 'todo';
         }
-        elsif($_->skip) {
-            $result->{reason} = $_->skip;
+        elsif($ctx->skip) {
+            $result->{reason} = $ctx->skip;
             $result->{type}   = 'skip';
         }
         else {
@@ -654,16 +685,18 @@ sub details {
             $result->{type} = 'unknown';
         }
 
-        $result;
-    } @{$state->[STATE_LEGACY]};
+        push @out => $result;
+    }
+
+    return @out;
 }
 
 sub summary {
     my $self = shift;
     my $ctx = $self->ctx;
-    my $state = $ctx->stream->state;
-    return unless $state->[STATE_LEGACY];
-    return map { $_->bool ? 1 : 0 } @{$state->[STATE_LEGACY]};
+    my $state = $ctx->stream->state->[-1];
+    return @{[]} unless $state->[STATE_LEGACY];
+    return map { $_->isa('Test::Stream::Event::Ok') ? ($_->bool ? 1 : 0) : ()} @{$state->[STATE_LEGACY]};
 }
 
 ###################################

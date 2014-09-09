@@ -28,6 +28,11 @@ sub init {
         $_[0]->[DIRECTIVE] = '';
         confess "Cannot have a reason without a directive!"
             if defined $_[0]->[REASON];
+
+        confess "No number of tests specified"
+            unless defined $_[0]->[MAX];
+
+
     }
 }
 
@@ -38,7 +43,7 @@ sub to_tap {
     my $directive = $self->[DIRECTIVE];
     my $reason    = $self->[REASON];
 
-    return if $directive && $directive eq 'NO_PLAN';
+    return if $directive && $directive eq 'NO PLAN';
 
     my $plan = "1..$max";
     if ($directive) {

@@ -35,7 +35,7 @@ sub before_import {
             $context->plan(0, 'SKIP', $list->[$idx++]);
         }
         elsif ($item eq 'no_plan') {
-            $context->plan(0, 'NO_PLAN');
+            $context->plan(0, 'NO PLAN');
         }
         elsif ($item eq 'import') {
             push @$other => @{$list->[$idx++]};

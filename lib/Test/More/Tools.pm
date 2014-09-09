@@ -250,8 +250,10 @@ sub new_check {
     }
 }
 
-sub require_check {
-    my ($us, $thing, $version, $force_module) = @_;
+sub _require_check {
+    my ($us, $thing, $version, $force_module, $sigdie) = @_;
+
+    local $SIG{__DIE__} = undef;
 
     my $ctx = context();
     my $fool_me = "#line " . $ctx->line . ' "' . $ctx->file . '"';
@@ -267,9 +269,15 @@ sub require_check {
     my $mfile = "$thing.pm";
     $mfile =~ s{::}{/}g;
 
+    my $checked = 0;
+
     if ($file_exists && !($force_module ||defined $version)) {
         $name = "require '$thing'";
-        ($fsucc, $ferr) = try { eval "$fool_me\nrequire \$thing" || die $@ }
+        ($fsucc, $ferr) = try {
+            eval "$fool_me\nrequire \$thing" || die $@;
+            $$sigdie = $SIG{__DIE__};
+        };
+        $checked++;
     }
 
     if ($valid_name || $force_module || defined $version) {
@@ -281,8 +289,20 @@ sub require_check {
             $msucc = 1;
         }
         else {
-            ($msucc, $merr) = try { eval "$fool_me\nrequire \$mfile" || die $@ };
+            ($msucc, $merr) = try {
+                eval "$fool_me\nrequire \$mfile" || die $@;
+                $$sigdie = $SIG{__DIE__};
+            };
         }
+        $checked++;
+    }
+
+    unless($checked) {
+        $name = "require '$thing'";
+        ($fsucc, $ferr) = try {
+            eval "$fool_me\nrequire \$thing" || die $@;
+            $$sigdie = $SIG{__DIE__};
+        };
     }
 
     $ctx->throw( "'$thing' was successfully loaded as both the file '$thing' and the module '$mfile', this is probably not what you want!" )
@@ -305,6 +325,16 @@ sub require_check {
     return ($name, 0, "    Tried to $name.\n    Error:  $error");
 }
 
+sub require_check {
+    my ($us, $thing, $version, $force_module) = @_;
+    my $sigdie = undef;
+    my ($name, $bool, @diag) = $us->_require_check( $thing, $version, $force_module, \$sigdie);
+
+    $SIG{__DIE__} = $sigdie if defined $sigdie;
+
+    return ($name, $bool, @diag);
+}
+
 sub use_check {
     my ($us, $module, @imports) = @_;
     my $version = (@imports && $imports[0] =~ m/^\d[0-9\.]+$/) ? shift(@imports) : undef;
@@ -313,11 +343,16 @@ sub use_check {
     return ($ok, @diag) unless $ok;
 
     # Do the import
+    my $sigdie = undef;
     my $ctx = context();
     my ($succ, $error) = try {
+        local $SIG{__DIE__} = undef;
         my ($p, $f, $l) = $ctx->call;
-        eval qq{package $p;\n#line $l "$f"\n$module->import(\@imports); 1} || die $@
+        eval qq{package $p;\n#line $l "$f"\n\$module->import(\@imports); 1} || die $@;
+        $sigdie = $SIG{__DIE__} if defined $SIG{__DIE__};
     };
+
+    $SIG{__DIE__} = $sigdie if defined $sigdie;
 
     return (1) if $succ;
     return (0, "    Tried to use '$module'.\n    Error:  $error");

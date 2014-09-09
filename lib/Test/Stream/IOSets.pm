@@ -39,6 +39,7 @@ sub init_encoding {
 }
 
 my $LEGACY;
+sub hard_reset { $LEGACY = undef }
 sub init_legacy {
     return if $LEGACY;
 
@@ -60,6 +61,7 @@ sub init_legacy {
 
 sub reset_legacy {
     my $self = shift;
+    init_legacy() unless $LEGACY;
     my ($out, $fail, $todo) = @$LEGACY;
     $self->{legacy} = [$out, $fail, $todo];
 }

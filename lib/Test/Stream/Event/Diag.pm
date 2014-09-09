@@ -17,7 +17,7 @@ use Carp qw/confess/;
 my $NORMALIZE = try { require Unicode::Normalize; 1 };
 
 sub init {
-    confess "No message set for diag!" unless $_[0]->[MESSAGE];
+    $_[0]->[MESSAGE] ||= 'undef';
     weaken($_[0]->[LINKED]) if $_[0]->[LINKED];
 }
 

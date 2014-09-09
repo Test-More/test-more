@@ -51,8 +51,21 @@ sub legacy { $_[0]->[STATE]->[-1]->[STATE_LEGACY] }
 
 sub is_passing {
     my $self = shift;
-    ($self->[STATE]->[-1]->[STATE_PASSING]) = @_ if @_;
-    return $self->[STATE]->[-1]->[STATE_PASSING];
+
+    if (@_) {
+        ($self->[STATE]->[-1]->[STATE_PASSING]) = @_;
+    }
+
+    my $current = $self->[STATE]->[-1]->[STATE_PASSING];
+
+    my $plan = $self->[STATE]->[-1]->[STATE_PLAN];
+    return $current if $self->[STATE]->[-1]->[STATE_ENDED];
+    return $current unless $plan;
+    return $current unless $plan->max;
+    return $current if $plan->directive && $plan->directive eq 'NO PLAN';
+    return $current unless $self->[STATE]->[-1]->[STATE_COUNT] > $plan->max;
+
+    return $self->[STATE]->[-1]->[STATE_PASSING] = 0;
 }
 
 sub init {
@@ -94,6 +107,7 @@ sub init {
     }
 
     sub clear {
+        use Carp qw/cluck/;
         $root->[NO_ENDING] = 1;
         $root  = undef;
         $magic = undef;
@@ -159,6 +173,7 @@ sub send {
             @sub_events = @{$e->diag} if $e->diag && !$self->[NO_DIAG];
         }
         elsif (!$self->[NO_HEADER] && $e->isa('Test::Stream::Event::Finish')) {
+            $self->[STATE]->[-1]->[STATE_ENDED] = $e->context->snapshot;
             $is_ok = 1;
             $self->[STATE]->[-1]->[STATE_COUNT]++;
             my $plan = $self->[STATE]->[-1]->[STATE_PLAN];
@@ -355,8 +370,7 @@ sub done_testing {
 
     if (my $old = $state->[STATE_ENDED]) {
         my ($p1, $f1, $l1) = $old->call;
-        my ($p2, $f2, $l2) = $ctx->call;
-        $ctx->ok(0, "done_testing() was already called at $f1 line $l1 (at $f2 line $l2)");
+        $ctx->ok(0, "done_testing() was already called at $f1 line $l1");
         return;
     }
     $state->[STATE_ENDED] = $ctx->snapshot;
@@ -375,7 +389,7 @@ sub done_testing {
         $ctx->diag("Planned to run $plan but ran $ran!");
     }
 
-    if ($num && $num  != $ran) {
+    if ($num && $num != $ran) {
         $state->[STATE_PASSING] = 0;
         $ctx->diag("done_testing expected $num tests but ran $ran!");
     }
