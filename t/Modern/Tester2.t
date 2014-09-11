@@ -19,6 +19,25 @@ isa_ok($events->[1], 'Test::Stream::Event::Ok');
 is($events->[1]->bool, 0, "Got one fail");
 is($events->[1]->name, "Boo!", "Got test name");
 
+$events = undef;
+my $grab = grab();
+my $got = $grab ? 1 : 0;
+ok(1, "Intercepted!");
+ok(0, "Also Intercepted!");
+$events = $grab->finish;
+ok($got, "Delayed test that we did in fact get a grab object");
+is($grab, undef, "Poof! vanished!");
+is(@$events, 3, "got 3 events (2 ok, 1 diag)");
+events_are(
+    $events,
+    check {
+        event ok => { bool => 1 };
+        event ok => { bool => 0 };
+        event diag => { };
+        dir end => 'intercepted via grab';
+    }
+);
+
 $events = intercept {
     ok(1, "Woo!");
     BAIL_OUT("Ooops");
@@ -38,6 +57,8 @@ $events = intercept {
 is(@$events, 1, "Only got 1");
 isa_ok($events->[0], 'Test::Stream::Event::Plan');
 
+my $file = __FILE__;
+my $line = __LINE__ + 4;
 events_are(
     intercept {
         events_are(
@@ -52,20 +73,23 @@ events_are(
     diag => {message => qr{Failed test 'Lets name this test!'.*at (\./)?t/Modern/Tester2\.t line}s},
     diag => {message => q{(ok blah) Wanted bool => '0', but got bool => '1'}},
     diag => {message => <<"    EOT"},
-Full event found was: ok => {
+Got Event: ok => {
   name: foo
   bool: 1
   real_bool: 1
   in_todo: 0
   package: main
-  file: t/Modern/Tester2.t
-  line: 44
+  file: $file
+  line: $line
   pid: $$
   depth: 0
   encoding: legacy
   tool_name: ok
   tool_package: Test::More
   tap: ok - foo
+}
+Expected: ok => {
+  bool: 0
 }
     EOT
     end => 'Failure diag checking',

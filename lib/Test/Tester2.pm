@@ -26,6 +26,7 @@ export dir => \&directive;
 
 sub grab {
     require Test::Tester2::Grab;
+    return Test::Tester2::Grab->new;
 }
 
 our $EVENTS;
@@ -389,6 +390,13 @@ L<Test::Builder::Fromatter::TAP> which produces TAP output.
         ok(0, "fail");
         diag("xxx");
     };
+
+    # Or grab them without adding a scope to your stack:
+    my $grab = grab();
+    ok(1, "pass");
+    ok(0, "fail");
+    diag("xxx");
+    my $events = $grab->finish; # Note, $grab is undef after this.
 
     # By Hand
     is($events->[0]->{bool}, 1, "First event passed");
