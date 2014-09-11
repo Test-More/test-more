@@ -42,5 +42,4 @@ ok 3
 not ok 4 - planned to run 3 but done_testing() expects 2
 #   Failed test 'planned to run 3 but done_testing() expects 2'
 #   at $0 line 24.
-# done_testing expected 2 tests but ran 3!
 END

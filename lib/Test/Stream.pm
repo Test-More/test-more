@@ -391,19 +391,16 @@ sub done_testing {
 
     if ($plan && $plan != $ran) {
         $state->[STATE_PASSING] = 0;
-#        $ctx->diag("Planned to run $plan but ran $ran!");
         return;
     }
 
     if ($num && $num != $ran) {
         $state->[STATE_PASSING] = 0;
-#        $ctx->diag("done_testing expected $num tests but ran $ran!");
         return;
     }
 
     unless ($ran) {
         $state->[STATE_PASSING] = 0;
-#        $ctx->diag("did not run any tests!");
         return;
     }
 }

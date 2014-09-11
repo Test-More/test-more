@@ -111,6 +111,7 @@ sub intercept(&) {
     return \@events;
 }
 
+# Yikes! 140 lines...
 sub events_are {
     my ($events, @checks) = @_;
     my $ctx = context();

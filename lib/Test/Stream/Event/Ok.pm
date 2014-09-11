@@ -32,7 +32,7 @@ sub init {
     my $diag = delete $self->[DIAG];
     my $name = $self->[NAME];
 
-    $self->[BOOL] = $b;
+    $self->[BOOL] = $b ? 1 : 0;
 
     unless ($rb || ($todo && $skip)) {
         my $msg = $todo ? "Failed (TODO)" : "Failed";
@@ -94,8 +94,9 @@ sub to_tap {
         push @out => $skip if length $skip;
     }
 
+    use Data::Dumper;
     my $out = join " " => @out;
-    $out =~ s/\s+$//ms;
+#    $out =~ s/\s+$//ms;
     $out =~ s/\n/\n# /g;
 
     return (OUT_STD, "$out\n");
@@ -113,7 +114,7 @@ sub add_diag {
         if (ref $item) {
             confess "Only diag objects can be linked to events."
                 unless blessed($item) && $item->isa('Test::Stream::Event::Diag');
-    
+
             $item->link($self);
         }
         else {
