@@ -30,7 +30,7 @@ $Test->plan(tests => 2);
 plan tests => 4;
 
 ok 'foo';
-eval {
+my $ok = eval {
     subtest 'bar' => sub {
         plan tests => 3;
         ok 'sub_foo';
@@ -43,6 +43,7 @@ eval {
         };
         ok 'sub_baz';
     };
+    1;
 };
 
 $Test->is_eq( $output, <<'OUT' );

@@ -119,6 +119,11 @@ sub init {
         my $new = $class->new();
         my $old = $stack[-1];
         push @stack => $new;
+
+        $new->set_exit_on_disruption(0);
+        $new->set_use_tap(0);
+        $new->set_use_legacy(0);
+
         return ($new, $old);
     }
 
@@ -175,10 +180,9 @@ sub send {
         elsif (!$self->[NO_HEADER] && $e->isa('Test::Stream::Event::Finish')) {
             $self->[STATE]->[-1]->[STATE_ENDED] = $e->context->snapshot;
             $is_ok = 1;
-            $self->[STATE]->[-1]->[STATE_COUNT]++;
             my $plan = $self->[STATE]->[-1]->[STATE_PLAN];
-            if ($plan && $plan->directive eq 'NO PLAN') {
-                $plan->set_max($self->[STATE]->[-1]->[STATE_COUNT] - 1);
+            if ($e->tests_run && $plan && $plan->directive eq 'NO PLAN') {
+                $plan->set_max($self->[STATE]->[-1]->[STATE_COUNT]);
                 $plan->set_directive(undef);
                 push @sub_events => $plan;
             }
@@ -193,7 +197,7 @@ sub send {
             }
             elsif(my $existing = $self->[STATE]->[-1]->[STATE_PLAN]) {
                 my $directive = $existing ? $existing->directive : '';
-    
+
                 if ($existing && (!$directive || $directive eq 'NO PLAN')) {
                     my ($p1, $f1, $l1) = $existing->context->call;
                     my ($p2, $f2, $l2) = $e->context->call;
@@ -223,7 +227,7 @@ sub send {
         }
 
         if ($self->[LISTENERS]) {
-            $_->($self, $e) for @{$self->[LISTENERS]};
+            $_->($self, $e, @sub_events) for @{$self->[LISTENERS]};
         }
 
         if ($is_plan) {
@@ -380,23 +384,27 @@ sub done_testing {
 
     if (defined($num) && $plan && $num != $plan) {
         $ctx->ok(0, "planned to run $plan but done_testing() expects $num");
+        return;
     }
 
     $ctx->plan($num || $plan || $ran) unless $state->[STATE_PLAN];
 
     if ($plan && $plan != $ran) {
         $state->[STATE_PASSING] = 0;
-        $ctx->diag("Planned to run $plan but ran $ran!");
+#        $ctx->diag("Planned to run $plan but ran $ran!");
+        return;
     }
 
     if ($num && $num != $ran) {
         $state->[STATE_PASSING] = 0;
-        $ctx->diag("done_testing expected $num tests but ran $ran!");
+#        $ctx->diag("done_testing expected $num tests but ran $ran!");
+        return;
     }
 
     unless ($ran) {
         $state->[STATE_PASSING] = 0;
-        $ctx->diag("did not run any tests!");
+#        $ctx->diag("did not run any tests!");
+        return;
     }
 }
 

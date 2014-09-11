@@ -19,6 +19,7 @@ sub before_import {
     my $class = shift;
     my ($importer, $list) = @_;
 
+    my $meta    = init_tester($importer);
     my $context = context(1);
     my $idx = 0;
     my $other = [];

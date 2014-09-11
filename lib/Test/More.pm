@@ -8,13 +8,14 @@ our $VERSION = '1.301001_041';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Carp qw/croak/;
+use Scalar::Util qw/blessed/;
 use Encode();
 
 use Test::More::Tools;
 use Test::More::DeepCheck::Strict;
 use Test::More::DeepCheck::Tolerant;
 use Test::Stream;
-use Test::Stream::Util qw/protect/;
+use Test::Stream::Util qw/protect try/;
 use Test::Stream::Meta;
 use Test::Stream::Toolset;
 
@@ -48,6 +49,11 @@ exports qw{
 };
 Test::Stream::Exporter->cleanup;
 
+{
+    no warnings 'once';
+    $Test::Builder::Level ||= 1;
+}
+
 sub builder {
     protect { require Test::Builder };
     return Test::Builder->new;
@@ -57,8 +63,8 @@ sub before_import {
     my $class = shift;
     my ($importer, $list) = @_;
 
-    my $context = context(1);
     my $meta    = init_tester($importer);
+    my $context = context(1);
     my $other   = [];
     my $idx     = 0;
     my $modern  = 0;
@@ -283,10 +289,34 @@ sub fail (;$) {
 }
 
 sub subtest {
-    my ($name, $code) = @_;
+    my ($name, $code, @args) = @_;
     my $ctx = context();
-    my $ok = $ctx->nest($code, $name);
-    $ctx->ok($ok, $name);
+    my ($ok, $state);
+    my ($succ, $err) = try {
+        ($ok, $state) = $ctx->nest($code, $name, @args)
+    };
+
+    unless ($succ) {
+        die $err unless blessed($err) && $err->isa('Test::Stream::Event');
+        if ($err->isa('Test::Stream::Event::Plan')) {
+            $ok = 1;
+            $ctx->set_skip("skip_all");
+        }
+        elsif ($err->isa('Test::Stream::Event::Bail')) {
+            $ctx->bail($err->reason, 1);
+        }
+        else {
+            die $err;
+        }
+    }
+
+    if (!$ok && !$state->[STATE_COUNT]) {
+        $ctx->ok(0, "No tests run for subtest \"$name\"");
+    }
+    else {
+        $ctx->ok($ok, $name);
+    }
+
     return $ok;
 }
 

@@ -49,7 +49,7 @@ sub to_tap {
     $msg =~ s/\n/\n# /g;
 
     return (
-        ($self->[CONTEXT]->in_todo ? OUT_TODO : OUT_ERR),
+        ($self->[CONTEXT]->diag_todo ? OUT_TODO : OUT_ERR),
         "$msg\n",
     );
 }

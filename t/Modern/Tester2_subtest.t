@@ -23,6 +23,16 @@ my $events = intercept {
     ok(1, "another test success" );
 };
 
+#events_are {
+#    check $events;
+#    check intercept {
+#
+#    };
+#
+#    e ok => {};
+#    e ok => {};
+#}
+
 events_are(
     $events,
 
@@ -31,11 +41,13 @@ events_are(
     ok   => {bool => 1},
 
     child => {action => 'push'},
+        note => {message => 'Subtest: subtest'},
         ok   => {bool => 0},
         diag => {},
         ok   => {bool => 1},
 
         child => {action => 'push'},
+            note => {message => 'Subtest: subtest_deeper'},
             ok   => {bool => 0},
             diag => {},
             ok   => {bool => 1},

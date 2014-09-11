@@ -28,7 +28,7 @@ sub init {
     my $rb   = $self->[REAL_BOOL];
     my $todo = $ctx->in_todo;
     my $skip = defined $ctx->skip;
-    my $b    = $rb || $todo || $skip;
+    my $b    = $rb || $todo || $skip || 0;
     my $diag = delete $self->[DIAG];
     my $name = $self->[NAME];
 
@@ -51,7 +51,7 @@ sub init {
     }
 
     $self->add_diag("    You named your test '$name'.  You shouldn't use numbers for your test names.\n    Very confusing.")
-        if $name && $name =~ m/^\d/;
+        if $name && $name =~ m/^[\d\s]+$/;
 
     $self->add_diag(@$diag) if $diag && @$diag;
 }
@@ -95,6 +95,7 @@ sub to_tap {
     }
 
     my $out = join " " => @out;
+    $out =~ s/\s+$//ms;
     $out =~ s/\n/\n# /g;
 
     return (OUT_STD, "$out\n");

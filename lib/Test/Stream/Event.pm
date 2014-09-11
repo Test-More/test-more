@@ -3,8 +3,7 @@ use strict;
 use warnings;
 
 use Carp qw/confess croak/;
-
-use Test::Stream::Context;
+use Scalar::Util qw/blessed/;
 
 use Test::Stream::ArrayBase;
 BEGIN {
@@ -46,6 +45,14 @@ sub indent {
 }
 
 sub encoding { $_[0]->[CONTEXT]->encoding }
+
+sub type {
+    my $self = shift;
+    my $class = blessed($self);
+    my $type = $class;
+    $type =~ s/^.*:://g;
+    return lc($type);
+}
 
 1;
 

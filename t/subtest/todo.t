@@ -54,12 +54,14 @@ sub test_subtest_in_todo {
         test_out(
             "# Subtest: xxx",
             @outlines,
-            "not ok 1 - $xxx # TODO $todo_reason",
-            "#   Failed (TODO) test '$xxx'",
-            "#   at $0 line $line{xxx}.",
-            "not ok 2 - regular todo test # TODO $todo_reason",
-            "#   Failed (TODO) test 'regular todo test'",
-            "#   at $0 line $line{reg}.",
+            map { my $x = $_; $x =~ s/\s+$//; $x } (
+                "not ok 1 - $xxx # TODO $todo_reason",
+                "#   Failed (TODO) test '$xxx'",
+                "#   at $0 line $line{xxx}.",
+                "not ok 2 - regular todo test # TODO $todo_reason",
+                "#   Failed (TODO) test 'regular todo test'",
+                "#   at $0 line $line{reg}.",
+            )
         );
 
         {
@@ -77,7 +79,7 @@ sub test_subtest_in_todo {
             }
         }
 
-        test_test("$name ($level), todo [$todo_reason] set via $set_via");
+        last unless test_test("$name ($level), todo [$todo_reason] set via $set_via");
     }
 }
 
@@ -89,6 +91,7 @@ sub main::subtest_at_level {
     my ($name, $code, $level) = @_;
 
     if ($level > 1) {
+        local $Test::Builder::Level = $Test::Builder::Level + 1;
         main::subtest_at_level($name, $code, $level-1);
     }
     else {
@@ -104,7 +107,7 @@ test_subtest_in_todo("plan, no tests run", sub {
     1..2
     # No tests run!
 END
-__END__
+
 test_subtest_in_todo("noplan, no tests run", sub {
     plan 'no_plan';
 }, <<END, 1);

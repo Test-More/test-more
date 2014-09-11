@@ -3,15 +3,31 @@ use strict;
 use warnings;
 
 use Test::Builder 1.301001;
-use Test::Builder::Stream;
-use Test::Builder::Util qw/try/;
+use Test::Stream;
+use Test::Stream::Util qw/try/;
 
 use Scalar::Util qw/blessed reftype/;
-use Carp qw/croak/;
+use Carp qw/croak confess/;
 
-use Test::Builder::Provider;
-gives qw/intercept display_events display_event render_event/;
-provides qw/events_are/;
+use Test::Stream::Toolset;
+use Test::Stream::Exporter;
+exports qw/intercept display_events display_event render_event events_are e d/;
+
+our $D_OK = 0;
+sub e(&) {
+    my $code = shift;
+
+    local $D_OK = 1;
+    my %data = $code->();
+
+    return \%data;
+}
+
+sub d {
+    croak "Cannot use d() ourside of an e{} block!" unless $D_OK;
+    my @call = caller(0);
+    return debug_line => $call[2], @_;
+}
 
 sub intercept(&) {
     my ($code) = @_;
@@ -19,15 +35,13 @@ sub intercept(&) {
     my @events;
 
     my ($ok, $error) = try {
-        Test::Builder::Stream->intercept(
+        Test::Stream->intercept(
             sub {
                 my $stream = shift;
-                $stream->exception_followup;
-
                 $stream->listen(
-                    INTERCEPTOR => sub {
-                        my ($item) = @_;
-                        push @events => $item;
+                    sub {
+                        shift; # Stream
+                        push @events => @_;
                     }
                 );
                 $code->();
@@ -35,13 +49,14 @@ sub intercept(&) {
         );
     };
 
-    die $error unless $ok || (blessed($error) && $error->isa('Test::Builder::Event'));
+    die $error unless $ok || (blessed($error) && $error->isa('Test::Stream::Event'));
 
     return \@events;
 }
 
 sub events_are {
     my ($events, @checks) = @_;
+    my $ctx = context();
 
     my @res_list = @$events;
 
@@ -59,7 +74,7 @@ sub events_are {
             @res_list = _filter_list(
                 $1 || 0,
                 shift(@checks),
-                sub { $_[0]->trace->report->provider->{package} },
+                sub { $_[0]->context->provider->[0] },
                 @res_list
             );
             next;
@@ -101,7 +116,9 @@ sub events_are {
         my $type = $action;
         my $got  = shift @res_list;
         my $want = shift @checks; $wnum++;
-        my $id = "$type " . (delete $want->{id} || $wnum);
+        my $line = delete $want->{debug_line};
+        my $id   = "$type " . (delete $want->{id} || $wnum);
+        $id .= " on line $line" if $line;
 
         $want ||= "(UNDEF)";
         croak "($id) '$type' must be paired with a hashref, but you gave: '$want'"
@@ -113,7 +130,6 @@ sub events_are {
         if (!$got) {
             $ok = 0;
             push @diag => "($id) Wanted event type '$type', But no more events left to check!";
-            push @diag => "Full event found was: " . render_event($got);
             last;
         }
 
@@ -175,7 +191,7 @@ sub events_are {
         $overall_name = shift @checks;
     }
 
-    builder()->ok($ok, $overall_name || "Got expected events", @diag);
+    $ctx->ok($ok, $overall_name || "Got expected events", \@diag);
     return $ok;
 }
 
@@ -193,9 +209,10 @@ sub render_event {
 
     my @order = qw/
         name bool real_bool action max
-        directive reason in_todo
+        in_todo todo skip
         package file line pid
         depth is_subtest source tests_failed tests_run
+        encoding
         tool_name tool_package
         message
         tap
@@ -228,15 +245,19 @@ sub render_event {
 
 sub _simplify_event {
     my ($r) = @_;
+    my $fields = $r->to_hash;
 
-    my $fields = {map { ref $r->{$_} ? () : ($_ => $r->{$_}) } keys %$r};
+    for my $k (keys %$fields) {
+        delete $fields->{$k} if ref $fields->{$k};
+    }
     $fields->{type} = $r->type;
 
-    if ($r->trace && $r->trace->report) {
-        my $report = $r->trace->report;
-        @{$fields}{qw/line file package/} = map { $report->$_ } qw/line file package/;
-        @{$fields}{qw/tool_package tool_name/} = @{$report->provider}{qw/package name/} if $report->provider;
-    }
+    @{$fields}{qw/package file line/} = $r->context->call;
+    @{$fields}{qw/tool_package tool_name/} = @{$r->context->provider};
+    my $tpkg = $fields->{tool_package};
+    $fields->{tool_name} =~ s/^\Q$tpkg\E:://;
+
+    $fields->{$_} = $r->context->$_ for qw/encoding in_todo todo depth pid skip/;
 
     $fields->{tap} = $r->to_tap if $r->can('to_tap');
     chomp($fields->{tap}) if $fields->{tap};

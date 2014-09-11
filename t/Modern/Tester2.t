@@ -11,11 +11,11 @@ my $events = intercept {
     ok(0, "Boo!");
 };
 
-isa_ok($events->[0], 'Test::Builder::Event::Ok');
+isa_ok($events->[0], 'Test::Stream::Event::Ok');
 is($events->[0]->bool, 1, "Got one success");
 is($events->[0]->name, "Woo!", "Got test name");
 
-isa_ok($events->[1], 'Test::Builder::Event::Ok');
+isa_ok($events->[1], 'Test::Stream::Event::Ok');
 is($events->[1]->bool, 0, "Got one fail");
 is($events->[1]->name, "Boo!", "Got test name");
 
@@ -25,8 +25,8 @@ $events = intercept {
     ok(0, "Should not see this");
 };
 is(@$events, 2, "Only got 2");
-isa_ok($events->[0], 'Test::Builder::Event::Ok');
-isa_ok($events->[1], 'Test::Builder::Event::Bail');
+isa_ok($events->[0], 'Test::Stream::Event::Ok');
+isa_ok($events->[1], 'Test::Stream::Event::Bail');
 
 $events = intercept {
     plan skip_all => 'All tests are skipped';
@@ -36,7 +36,7 @@ $events = intercept {
     ok(0, "Should not see this");
 };
 is(@$events, 1, "Only got 1");
-isa_ok($events->[0], 'Test::Builder::Event::Plan');
+isa_ok($events->[0], 'Test::Stream::Event::Plan');
 
 events_are(
     intercept {
@@ -62,7 +62,7 @@ Full event found was: ok => {
   line: 44
   pid: $$
   depth: 0
-  source: t/Modern/Tester2.t
+  encoding: legacy
   tool_name: ok
   tool_package: Test::More
   tap: ok - foo
@@ -89,7 +89,7 @@ events_are(
 );
 
 DOCS_1: {
-    # Intercept all the Test::Builder::Event objects produced in the block.
+    # Intercept all the Test::Stream::Event objects produced in the block.
     my $events = intercept {
         ok(1, "pass");
         ok(0, "fail");
@@ -97,7 +97,7 @@ DOCS_1: {
     };
 
     # By Hand
-    is($events->[0]->{bool}, 1, "First event passed");
+    is($events->[0]->bool, 1, "First event passed");
 
     # With help
     events_are(

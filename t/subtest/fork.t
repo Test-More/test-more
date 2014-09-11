@@ -40,9 +40,9 @@ subtest 'fork within subtest' => sub {
         # Force all T::B output into the pipe, for the parent
         # builder as well as the current subtest builder.
         my $builder = Test::Builder->new;
-        $builder->tap->output($pipe);
-        $builder->tap->failure_output($pipe);
-        $builder->tap->todo_output($pipe);
+        $builder->output($pipe);
+        $builder->failure_output($pipe);
+        $builder->todo_output($pipe);
 
         diag 'Child Done';
         exit 0;

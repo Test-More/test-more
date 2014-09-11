@@ -60,31 +60,47 @@ output.
 # make us an exporter
 ###
 
-use Test::Builder::Provider;
-
-provides qw(test_out test_err test_fail test_diag test_test line_num);
+use Test::Stream::Toolset;
+use Test::Stream::Exporter;
+exports qw/test_out test_err test_fail test_diag test_test line_num/;
 
 sub before_import {
     my $class = shift;
-    my ($args) = @_;
+    my ($importer, $list) = @_;
 
-    my $caller = caller;
+    my $meta    = init_tester($importer);
+    my $context = context(1);
+    my $other   = [];
+    my $idx     = 0;
 
-    warn __PACKAGE__ . " is deprecated!\n" if builder()->modern;
+    while ($idx <= $#{$list}) {
+        my $item = $list->[$idx++];
+        next unless $item;
 
-    builder()->exported_to($caller);
-    builder()->plan(@$args);
-
-    my @imports = ();
-    foreach my $idx ( 0 .. @$args ) {
-        if( $args->[$idx] && $args->[$idx] eq 'import' ) {
-            @imports = @{ $args->[ $idx + 1 ] };
-            last;
+        if (defined $item and $item eq 'no_diag') {
+            Test::Stream->shared->set_no_diag(1);
+        }
+        elsif ($item eq 'tests') {
+            $context->plan($list->[$idx++]);
+        }
+        elsif ($item eq 'skip_all') {
+            $context->plan(0, 'SKIP', $list->[$idx++]);
+        }
+        elsif ($item eq 'no_plan') {
+            $context->plan(0, 'NO PLAN');
+        }
+        elsif ($item eq 'import') {
+            push @$other => @{$list->[$idx++]};
         }
     }
 
-    @$args = @imports;
+    @$list = @$other;
+
+    return;
 }
+
+
+sub builder { Test::Builder->new }
 
 ###
 # set up file handles
@@ -183,6 +199,7 @@ output filehandles)
 =cut
 
 sub test_out {
+    my $ctx = context;
     # do we need to do any setup?
     _start_testing() unless $testing;
 
@@ -190,6 +207,7 @@ sub test_out {
 }
 
 sub test_err {
+    my $ctx = context;
     # do we need to do any setup?
     _start_testing() unless $testing;
 
@@ -223,6 +241,7 @@ more simply as:
 =cut
 
 sub test_fail {
+    my $ctx = context;
     # do we need to do any setup?
     _start_testing() unless $testing;
 
@@ -265,6 +284,7 @@ without the newlines.
 =cut
 
 sub test_diag {
+    my $ctx = context;
     # do we need to do any setup?
     _start_testing() unless $testing;
 
@@ -313,6 +333,7 @@ will function normally and cause success/errors for L<Test::Harness>.
 =cut
 
 sub test_test {
+    my $ctx = context;
     # decode the arguments as described in the pod
     my $mess;
     my %args;

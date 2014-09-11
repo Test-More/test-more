@@ -19,7 +19,7 @@ sub do_magic {
     my $self = shift;
     my ($stream, $context) = @_;
     return unless $stream;
-    return if $stream->no_ending;
+    return if $stream->no_ending && !$context;
 
     # Don't bother with an ending if this is a forked copy.  Only the parent
     # should do the ending.

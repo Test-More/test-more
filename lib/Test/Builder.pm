@@ -27,7 +27,8 @@ our $Level = 1;
 
 sub ctx {
     my $self = shift || die "No self in context";
-    my $ctx = Test::Stream::Context::context($Level, \&_find_context);
+    my ($add) = @_;
+    my $ctx = Test::Stream::Context::context(2 + ($add || 0));
     $ctx->set_stream($self->{stream}) if $self->{stream};
     $ctx->set_depth($self->{depth})   if $self->{depth};
     if (defined $self->{Todo}) {
@@ -37,23 +38,7 @@ sub ctx {
     return $ctx;
 }
 
-sub _find_context {
-    my ($add) = @_;
-    $add ||= 0;
-
-    # See Test::Stream::Context for magic number of 2
-    my $level = 2 + $add;
-    my ($package, $file, $line, $subname) = caller($level);
-
-    if ($package) {
-        ($package, $file, $line, $subname) = caller(++$level) while $package eq 'Test::Builder';
-    }
-    else {
-        ($package, $file, $line, $subname) = caller(--$level) until $package;
-    }
-
-    return [$package, $file, $line, $subname];
-}
+sub depth { $_[0]->{depth} || 0 }
 
 # This is only for unit tests at this point.
 sub _ending {
@@ -112,9 +97,31 @@ sub subtest {
     $ctx->throw("subtest()'s second argument must be a code ref")
         unless $subtests && 'CODE' eq reftype($subtests);
 
-    local $Level = 1;
-    my $ok = $ctx->nest($subtests, $name, @args);
-    $ctx->ok($ok, $name);
+    my ($ok, $state);
+    my ($succ, $err) = try {
+        ($ok, $state) = $ctx->nest($subtests, $name, @args)
+    };
+
+    unless ($succ) {
+        die $err unless blessed $err && $err->isa('Test::Stream:::Event');
+        if ($err->isa('Test::Stream::Event::Plan')) {
+            $ok = 1;
+            $ctx->set_skip("skip_all");
+        }
+        elsif ($err->isa('Test::Stream::Event::Bail')) {
+            $ctx->bail($err->reason, 1);
+        }
+        else {
+            die $err;
+        }
+    }
+
+    if (!$ok && !$state->[STATE_COUNT]) {
+        $ctx->ok(0, "No tests run for subtest \"$name\"");
+    }
+    else {
+        $ctx->ok($ok, $name);
+    }
 
     return $ok;
 }
@@ -125,11 +132,18 @@ sub child {
     my $ctx = $self->ctx;
     $ctx->child('push');
 
-    my $child = bless {%$self, '?' => $?, parent => $self, depth => 1 + ($self->{depth} || 0)};
+    my $stream = $self->{stream} || Test::Stream->shared;
 
-    $child->{stream} = Test::Stream->new;
-    $child->{stream}->set_io_sets($ctx->stream->io_sets);
-    $child->{stream}->set_exit_on_disruption(0);
+    my $child = bless {
+        %$self,
+        '?' => $?,
+        parent => $self,
+        depth => 1 + ($self->{depth} || 0),
+        eod => $stream->exit_on_disruption || 0,
+    };
+
+    $stream->push_state;
+    $stream->set_exit_on_disruption(0);
 
     $? = 0;
     $child->{Name} = $name || "Child of " . $self->{Name};
@@ -145,15 +159,25 @@ sub finalize {
     my $ctx = $self->ctx;
     $self->_ending($ctx);
     my $passing = $ctx->stream->is_passing;
+    my $count = $ctx->stream->count;
     my $name = $self->{Name};
     $ctx = undef;
+
+    my $stream = $self->{stream} || Test::Stream->shared;
+    $stream->pop_state;
+    $stream->set_exit_on_disruption($self->{eod});
 
     my $parent = $self->parent;
     $? = $self->{'?'};
 
     $ctx = $parent->ctx;
     $ctx->child('pop');
-    $ctx->ok($passing, $name);
+    if ($count > 0) {
+        $ctx->ok($passing, $name);
+    }
+    else {
+        $ctx->ok(0, "No tests run for subtest \"$name\"");
+    }
 }
 
 sub parent { $_[0]->{parent} }
@@ -224,7 +248,7 @@ sub todo_end {
     my $self = shift;
 
     if (!$self->{Start_Todo}) {
-        $self->ctx()->throw('todo_end() called without todo_start()');
+        $self->ctx(-1)->throw('todo_end() called without todo_start()');
     }
 
     $self->{Start_Todo}--;
@@ -764,7 +788,7 @@ sub AUTOLOAD {
     my ($package, $sub) = ($1, $2);
 
     my @caller = CORE::caller();
-    my $msg    = qq{Can't locate object method "$sub" via package "$package" at $caller[1] line $caller[2]\n};
+    my $msg    = qq{Can't locate object method "$sub" via package "$package" at $caller[1] line $caller[2].\n};
 
     $msg .= <<"    EOT" if $TB15_METHODS{$sub};
 
