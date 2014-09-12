@@ -11,7 +11,7 @@ use Test::Stream::Util qw/unoverload_str/;
 use Test::Stream qw/OUT_STD/;
 use Test::Stream::Event;
 BEGIN {
-    accessors qw/real_bool name diag bool/;
+    accessors qw/real_bool name diag bool level/;
     Test::Stream::Event->cleanup;
 };
 
@@ -23,6 +23,7 @@ sub init {
 
     # Do not store objects here, only true/false
     $self->[REAL_BOOL] = 1 if $self->[REAL_BOOL];
+    $self->[LEVEL] = $Test::Builder::Level;
 
     my $ctx  = $self->[CONTEXT];
     my $rb   = $self->[REAL_BOOL];
@@ -136,6 +137,40 @@ sub add_diag {
         $_->clear_linked for @$out;
         return $out;
     }
+}
+
+sub to_legacy {
+    my $self = shift;
+
+    my $result = {};
+    $result->{ok}        = $self->bool;
+    $result->{actual_ok} = $self->real_bool;
+    $result->{name}      = $self->name;
+
+    my $ctx = $self->context;
+
+    if($self->skip && ($ctx->in_todo || $ctx->todo)) {
+        $result->{type} = 'todo_skip',
+        $result->{reason} = $ctx->skip || $ctx->todo;
+    }
+    elsif($ctx->in_todo || $ctx->todo) {
+        $result->{reason} = $ctx->todo;
+        $result->{type}   = 'todo';
+    }
+    elsif($ctx->skip) {
+        $result->{reason} = $ctx->skip;
+        $result->{type}   = 'skip';
+    }
+    else {
+        $result->{reason} = '';
+        $result->{type}   = '';
+    }
+
+    if ($result->{reason} eq 'incrementing test number') {
+        $result->{type} = 'unknown';
+    }
+
+    return $result;
 }
 
 1;

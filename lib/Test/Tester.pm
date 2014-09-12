@@ -5,33 +5,19 @@ package Test::Tester;
 # Turn this back on later
 #warn "Test::Tester is deprecated, see Test::Tester2\n";
 
-BEGIN {
-    if (*Test::Builder::new{CODE}) {
-        warn "You should load Test::Tester before Test::Builder (or anything that loads Test::Builder)";
-    }
-}
-
 use Test::Builder 1.301001;
-use Test::Tester::CaptureRunner;
-use Test::Tester::Delegate;
+use Test::Stream::Toolset;
+use Test::More::Tools;
 
 require Exporter;
 
 use vars qw( @ISA @EXPORT $VERSION );
-
 
 our $VERSION = '1.301001_041';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 @EXPORT  = qw( run_tests check_tests check_test cmp_results show_space );
 @ISA     = qw( Exporter );
-
-my $Test      = Test::Builder->new;
-my $Capture   = Test::Tester::Capture->new;
-my $Delegator = Test::Tester::Delegate->new;
-$Delegator->{Object} = $Test;
-
-my $runner = Test::Tester::CaptureRunner->new;
 
 my $want_space = $ENV{TESTTESTERSPACE};
 
@@ -51,21 +37,6 @@ if (my $want_colour = $ENV{TESTTESTERCOLOUR} || $ENV{TESTTESTERCOLOUR}) {
 
 }
 
-sub new_new {
-    return $Delegator;
-}
-
-sub capture {
-    return Test::Tester::Capture->new;
-}
-
-sub fh {
-    # experiment with capturing output, I don't like it
-    $runner = Test::Tester::FHRunner->new;
-
-    return $Test;
-}
-
 sub find_run_tests {
     my $d     = 1;
     my $found = 0;
@@ -78,11 +49,59 @@ sub find_run_tests {
 }
 
 sub run_tests {
-    local ($Delegator->{Object}) = $Capture;
+    my $test = shift;
 
-    $runner->run_tests(@_);
+    my ($stream, $old) = Test::Stream->intercept_start;
+    $stream->set_use_legacy(1);
 
-    return ($runner->get_premature, $runner->get_results);
+    my @events;
+    $stream->listen(
+        sub {
+            shift;    # Stream
+            push @events => @_;
+        }
+    );
+
+    my $level = $Test::Builder::Level;
+
+    my @out;
+    my $prem = "";
+    my $ok = eval {
+        $test->();
+
+        for my $e (@events) {
+            if ($e->isa('Test::Stream::Event::Ok')) {
+                push @out => $e->to_legacy;
+                $out[-1]->{diag} ||= "";
+                $out[-1]->{depth} = $e->level - $level;
+                for my $d (@{$e->diag || []}) {
+                    next if $d->message =~ m{Failed test .*\n\s*at .* line \d+\.};
+                    chomp(my $msg = $d->message);
+                    $msg .= "\n";
+                    $out[-1]->{diag} .= $msg;
+                }
+            }
+            elsif ($e->isa('Test::Stream::Event::Diag')) {
+                chomp(my $msg = $e->message);
+                $msg .= "\n";
+                if (!@out) {
+                    $prem .= $msg;
+                    next;
+                }
+                next if $msg =~ m{Failed test .*\n\s*at .* line \d+\.};
+                $out[-1]->{diag} .= $msg;
+            }
+        }
+
+        1;
+    };
+    my $err = $@;
+
+    Test::Stream->intercept_stop($stream);
+
+    die $err unless $ok;
+
+    return ($prem, @out);
 }
 
 sub check_test {
@@ -103,11 +122,16 @@ sub check_tests {
 
     my ($prem, @results) = eval { run_tests($test, $name) };
 
-    $Test->ok(!$@, "Test '$name' completed") || $Test->diag($@);
-    $Test->ok(!length($prem), "Test '$name' no premature diagnostication")
-        || $Test->diag("Before any testing anything, your tests said\n$prem");
+    my $ctx = context();
 
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
+    my $ok = !$@;
+    $ctx->ok($ok, "Test '$name' completed");
+    $ctx->diag($@) unless $ok;
+
+    $ok = !length($prem);
+    $ctx->ok($ok, "Test '$name' no premature diagnostication");
+    $ctx->diag("Before any testing anything, your tests said\n$prem") unless $ok;
+
     cmp_results(\@results, $expects, $name);
     return ($prem, @results);
 }
@@ -115,8 +139,9 @@ sub check_tests {
 sub cmp_field {
     my ($result, $expect, $field, $desc) = @_;
 
+    my $ctx = context();
     if (defined $expect->{$field}) {
-        $Test->is_eq(
+        Test::More::Tools->is_eq(
             $result->{$field}, $expect->{$field},
             "$desc compare $field"
         );
@@ -126,14 +151,14 @@ sub cmp_field {
 sub cmp_result {
     my ($result, $expect, $name) = @_;
 
+    my $ctx = context();
+
     my $sub_name = $result->{name};
     $sub_name = "" unless defined($name);
 
     my $desc = "subtest '$sub_name' of '$name'";
 
     {
-        local $Test::Builder::Level = $Test::Builder::Level + 1;
-
         cmp_field($result, $expect, "ok", $desc);
 
         cmp_field($result, $expect, "actual_ok", $desc);
@@ -153,7 +178,7 @@ sub cmp_result {
 
     # if depth was explicitly undef then don't test it
     if (defined $depth) {
-        $Test->ok(1, "depth checking is deprecated, dummy pass result...");
+        $ctx->ok(1, "depth checking is deprecated, dummy pass result...");
     }
 
     if (defined(my $exp = $expect->{diag})) {
@@ -161,13 +186,12 @@ sub cmp_result {
         # there already
 
         $exp .= "\n" if (length($exp) and $exp !~ /\n$/);
-        if (
-            not $Test->ok(
-                $result->{diag} eq $exp,
-                "subtest '$sub_name' of '$name' compare diag"
-            )
-            )
-        {
+        my $ok = $result->{diag} eq $exp;
+        $ctx->ok(
+            $ok,
+            "subtest '$sub_name' of '$name' compare diag"
+        );
+        unless($ok) {
             my $got  = $result->{diag};
             my $glen = length($got);
             my $elen = length($exp);
@@ -186,7 +210,7 @@ sub cmp_result {
                 );
             }
 
-            $Test->diag(<<EOM);
+            $ctx->diag(<<EOM);
 Got diag ($glen bytes):
 $got
 Expected diag ($elen bytes):
@@ -215,24 +239,25 @@ sub escape {
 sub cmp_results {
     my ($results, $expects, $name) = @_;
 
-    $Test->is_num(scalar @$results, scalar @$expects, "Test '$name' result count");
+    my $ctx = context();
+
+    Test::More::Tools->is_num(scalar @$results, scalar @$expects, "Test '$name' result count");
 
     for (my $i = 0; $i < @$expects; $i++) {
         my $expect = $expects->[$i];
         my $result = $results->[$i];
 
-        local $Test::Builder::Level = $Test::Builder::Level + 1;
         cmp_result($result, $expect, $name);
     }
 }
 
 ######## nicked from Test::More
-sub plan {
-    my (@plan) = @_;
+sub import {
+    my $class = shift;
+    my @plan = @_;
 
     my $caller = caller;
-
-    $Test->exported_to($caller);
+    my $ctx = context();
 
     my @imports = ();
     foreach my $idx (0 .. $#plan) {
@@ -243,18 +268,15 @@ sub plan {
         }
     }
 
-    $Test->plan(@plan);
-
-    __PACKAGE__->_export_to_level(1, __PACKAGE__, @imports);
-}
-
-sub import {
-    my ($class) = shift;
-    {
-        no warnings 'redefine';
-        *Test::Builder::new = \&new_new;
+    my ($directive, $arg) = @plan;
+    if ($directive eq 'tests') {
+        $ctx->plan($arg);
     }
-    goto &plan;
+    elsif ($directive) {
+        $ctx->plan(0, $directive, $arg);
+    }
+
+    $class->_export_to_level(1, __PACKAGE__, @imports);
 }
 
 sub _export_to_level {

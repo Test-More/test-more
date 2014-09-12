@@ -139,6 +139,9 @@ sub _start_testing {
     $original_harness_env = $ENV{HARNESS_ACTIVE} || 0;
     $ENV{HARNESS_ACTIVE} = 0;
 
+    $original_stream = builder->{stream} || Test::Stream->shared;
+    $original_stream->push_state;
+
     # remember what the handles were set to
     $original_output_handle  = builder()->output();
     $original_failure_handle = builder()->failure_output();
@@ -364,6 +367,8 @@ sub test_test {
     # re-enable the original setting of the harness
     $ENV{HARNESS_ACTIVE} = $original_harness_env;
 
+    $original_stream->pop_state;
+
     # check the output we've stashed
     unless( builder()->ok( ( $args{skip_out} || $out->check ) &&
                     ( $args{skip_err} || $err->check ), $mess )
@@ -517,9 +522,9 @@ sub expect {
 sub _account_for_subtest {
     my( $self, $check ) = @_;
 
-    my $builder = Test::Builder::Tester->builder();
+    my $ctx = Test::Stream::Context::context();
     # Since we ship with Test::Builder, calling a private method is safe...ish.
-    return ref($check) ? $check : ($builder->depth ? '    ' x $builder->depth : '') . $check;
+    return ref($check) ? $check : ($ctx->depth ? '    ' x $ctx->depth : '') . $check;
 }
 
 sub _translate_Failed_check {

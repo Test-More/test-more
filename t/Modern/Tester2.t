@@ -34,9 +34,24 @@ events_are(
         event ok => { bool => 1 };
         event ok => { bool => 0 };
         event diag => { };
-        dir end => 'intercepted via grab';
+        dir end => 'intercepted via grab 1';
     }
 );
+
+$events = undef;
+$grab = grab();
+ok(1, "Intercepted!");
+ok(0, "Also Intercepted!");
+events_are(
+    $grab,
+    check {
+        event ok => { bool => 1 };
+        event ok => { bool => 0 };
+        event diag => { };
+        dir end => 'intercepted via grab 2';
+    }
+);
+ok(!$grab, "Maybe it never existed?");
 
 $events = intercept {
     ok(1, "Woo!");
@@ -87,6 +102,7 @@ Got Event: ok => {
   tool_name: ok
   tool_package: Test::More
   tap: ok - foo
+  level: 1
 }
 Expected: ok => {
   bool: 0

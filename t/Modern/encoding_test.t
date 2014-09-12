@@ -11,31 +11,33 @@ BEGIN {
 }
 
 my $filename = "encoding_tést.t";
-ok(!utf8::is_utf8($filename), "filename is not in utf8 already");
+ok(!utf8::is_utf8($filename), "filename is not in utf8 yet");
 my $utf8name = Unicode::Normalize::NFKC(Encode::decode('utf8', "$filename", Encode::FB_CROAK));
 ok( $filename ne $utf8name, "sanity check" );
 
-my $scoper = sub { Test::Builder::Trace->new() };
+my $scoper = sub { context()->snapshot };
 
 tap_encoding 'utf8';
-my $trace_utf8 = $scoper->();
-$trace_utf8->report->[1] = $filename;
+my $ctx_utf8 = $scoper->();
+$ctx_utf8->frame->[1] = $filename;
 
 tap_encoding 'legacy';
-my $trace_legacy = $scoper->();;
-$trace_legacy->report->[1] = $filename;
+my $ctx_legacy = $scoper->();;
+$ctx_legacy->frame->[1] = $filename;
 
-is($trace_utf8->encoding, 'utf8', "got a utf8 trace");
-is($trace_legacy->encoding, 'legacy', "got a legacy trace");
+is($ctx_utf8->encoding,   'utf8',   "got a utf8 context");
+is($ctx_legacy->encoding, 'legacy', "got a legacy context");
 
-my $diag_utf8 = Test::Builder::Event::Diag->new(
-    message => "failed blah de blah\nFatal error in $filename line 42.\n",
-    trace   => $trace_utf8,
+my $diag_utf8 = Test::Stream::Event::Diag->new(
+    $ctx_utf8,
+    [],
+    "failed blah de blah\nFatal error in $filename line 42.\n",
 );
 
-my $diag_legacy = Test::Builder::Event::Diag->new(
-    message => "failed blah de blah\nFatal error in $filename line 42.\n",
-    trace   => $trace_legacy,
+my $diag_legacy = Test::Stream::Event::Diag->new(
+    $ctx_legacy,
+    [],
+    "failed blah de blah\nFatal error in $filename line 42.\n",
 );
 
 ok( $diag_legacy->to_tap ne $diag_utf8->to_tap, "The utf8 diag has a different output" );

@@ -116,7 +116,14 @@ sub events_are {
     my ($events, @checks) = @_;
     my $ctx = context();
 
-    my @res_list = @$events;
+    my @res_list;
+    if (blessed($events) && $events->isa('Test::Tester2::Grab')) {
+        # use $_[0] directly so that the variable used in the method call can be undef'd
+        @res_list = @{$_[0]->finish};
+    }
+    else {
+        @res_list = @$events;
+    }
 
     my $overall_name;
     my $seek = 0;
@@ -382,6 +389,8 @@ L<Test::Builder::Fromatter::TAP> which produces TAP output.
 
 =head1 SYNOPSIS
 
+=head2 TIMTOWTDI
+
     use Test::More;
     use Test::Tester2;
 
@@ -433,6 +442,53 @@ L<Test::Builder::Fromatter::TAP> which produces TAP output.
     );
 
     done_testing;
+
+
+=head2 BEST PRACTICE
+
+    use Test::More;
+    use Test::Tester2;
+
+    # Start capturing events. We use grab() instead of intercept {} to avoid
+    # adding stack frames.
+    my $grab = grab();
+
+    # Generate some events.
+    my $success = eval { # Wrap in an eval since we also test BAIL_OUT
+        ok(1, "pass");
+        ok(0, "fail");
+        diag("xxx");
+
+        # BAIL_OUT and plan SKIP_ALL must be run in an eval since they throw
+        # their events as exceptions (the events are also added to the grab
+        # object).
+        BAIL_OUT "oops";
+
+        ok(0, "Should not see this");
+
+        1;
+    };
+    # Save the error for later
+    my $error = $@;
+
+    # Stop capturing events, and validate the ones recieved.
+    # We use check {} with event() for useful debugging.
+    events_are( $grab, check {
+        event ok => { bool => 1, name => 'pass' };
+        event ok => { bool => 0, name => 'fail' };
+        event diag => { message => 'xxx' };
+        event bail => { reason  => 'oops' };
+        directive end => 'Validate our Grab results';
+    });
+
+    # $grab is now undef, it no longer exists.
+
+    ok(!$success, "Eval did not succeed, BAIL_OUT killed the test");
+
+    # Make sure we got the event as an exception
+    isa_ok($error, 'Test::Stream::Event::Bail');
+
+    done_testing
 
 =head1 EXPORTS
 

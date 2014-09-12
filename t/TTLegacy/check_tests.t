@@ -1,15 +1,15 @@
 use strict;
 
 use Test::Tester;
+use Test::More;
 
 use Data::Dumper qw(Dumper);
 
 my $test = Test::Builder->new;
-$test->plan(tests => 105);
 
 my $cap;
 
-$cap = Test::Tester->capture;
+$cap = $test;
 
 my @tests = (
 	[
@@ -115,3 +115,5 @@ foreach my $test (@tests)
 my $big_test_sub = eval "sub {$big_code}";
 
 check_tests($big_test_sub, \@big_expect, "run all");
+
+done_testing;

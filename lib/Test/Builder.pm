@@ -722,35 +722,7 @@ sub details {
 
     for my $e (@{$state->[STATE_LEGACY]}) {
         next unless $e && $e->isa('Test::Stream::Event::Ok');
-        my $result = &share( {} );
-
-        $result->{ok}        = $e->bool;
-        $result->{actual_ok} = $e->real_bool;
-        $result->{name}      = $e->name;
-
-        my $ctx = $e->context;
-
-        if($e->skip && ($ctx->in_todo || $ctx->todo)) {
-            $result->{type} = 'todo_skip',
-            $result->{reason} = $ctx->skip || $ctx->todo;
-        }
-        elsif($ctx->in_todo || $ctx->todo) {
-            $result->{reason} = $ctx->todo;
-            $result->{type}   = 'todo';
-        }
-        elsif($ctx->skip) {
-            $result->{reason} = $ctx->skip;
-            $result->{type}   = 'skip';
-        }
-        else {
-            $result->{reason} = '';
-            $result->{type}   = '';
-        }
-
-        if ($result->{reason} eq 'incrementing test number') {
-            $result->{type} = 'unknown';
-        }
-
+        my $result = &share( $e->to_legacy );
         push @out => $result;
     }
 
