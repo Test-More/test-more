@@ -6,7 +6,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 use Test::Builder 1.301001;
 use Symbol;
-use Carp;
+use Test::Stream::Carp;
 
 =head1 NAME
 

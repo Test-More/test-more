@@ -9,7 +9,7 @@ BEGIN {
     Test::Stream::Event->cleanup;
 };
 
-use Carp qw/confess/;
+use Test::Stream::Carp qw/confess/;
 
 sub init {
     confess "No message set for note!" unless $_[0]->[MESSAGE];

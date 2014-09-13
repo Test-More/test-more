@@ -4,9 +4,9 @@ use warnings;
 
 use base 'Test::Stream::Event';
 
-use Carp qw/confess/;
 use Scalar::Util qw/blessed/;
 use Test::Stream::Util qw/unoverload_str/;
+use Test::Stream::Carp qw/confess/;
 
 use Test::Stream qw/OUT_STD/;
 use Test::Stream::Event;
@@ -61,9 +61,10 @@ sub to_tap {
     my $self = shift;
     my ($num) = @_;
 
-    my $name = $self->[NAME];
-    my $skip = $self->[CONTEXT]->skip;
-    my $todo = $self->[CONTEXT]->todo;
+    my $name    = $self->[NAME];
+    my $context = $self->[CONTEXT];
+    my $skip    = $context->skip;
+    my $todo    = $context->todo;
 
     my @out;
     push @out => "not" unless $self->[REAL_BOOL];
@@ -78,11 +79,6 @@ sub to_tap {
     }
 
     if (defined $skip && defined $todo) {
-        unless ($skip eq $todo) {
-            require Data::Dumper;
-            confess "2 different reasons to skip/todo: " . $self->field_dump;
-        }
-
         push @out => "# TODO & SKIP";
         push @out => $todo if length $todo;
     }
@@ -95,9 +91,7 @@ sub to_tap {
         push @out => $skip if length $skip;
     }
 
-    use Data::Dumper;
     my $out = join " " => @out;
-#    $out =~ s/\s+$//ms;
     $out =~ s/\n/\n# /g;
 
     return (OUT_STD, "$out\n");
@@ -113,7 +107,7 @@ sub add_diag {
         next unless $item;
 
         if (ref $item) {
-            confess "Only diag objects can be linked to events."
+            confess("Only diag objects can be linked to events.")
                 unless blessed($item) && $item->isa('Test::Stream::Event::Diag');
 
             $item->link($self);

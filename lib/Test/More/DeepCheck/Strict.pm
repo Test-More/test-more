@@ -2,9 +2,9 @@ package Test::More::DeepCheck::Strict;
 use strict;
 use warnings;
 
-use Carp qw/cluck confess/;
-use Test::More::Tools;
 use Scalar::Util qw/reftype/;
+use Test::More::Tools;
+use Test::Stream::Carp qw/cluck confess/;
 use Test::Stream::Util qw/try unoverload_str/;
 
 use base 'Test::More::DeepCheck';

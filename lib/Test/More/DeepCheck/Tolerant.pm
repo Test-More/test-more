@@ -2,7 +2,6 @@ package Test::More::DeepCheck::Tolerant;
 use strict;
 use warnings;
 
-use Carp qw/cluck/;
 use Test::More::Tools;
 use Scalar::Util qw/reftype blessed/;
 use Test::Stream::Util qw/try unoverload_str/;

@@ -5,11 +5,10 @@ use warnings;
 our $VERSION = '1.301001_041';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Carp qw/croak confess/;
-
 use Test::Stream::IOSets;
 use Test::Stream::Threads;
 use Test::Stream::Util qw/try/;
+use Test::Stream::Carp qw/croak confess/;
 
 use Test::Stream::ArrayBase;
 BEGIN {

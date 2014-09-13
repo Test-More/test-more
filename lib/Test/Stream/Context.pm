@@ -3,7 +3,8 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/blessed weaken/;
-use Carp qw/confess cluck/;
+
+use Test::Stream::Carp qw/confess/;
 
 use Test::Stream;
 use Test::Stream::Event();
@@ -321,15 +322,18 @@ sub register_event {
     confess "Method '$name' is already defined, event '$pkg' cannot get a context method!"
         if $class->can($name);
 
-    no strict 'refs';
-    *$name = sub {
-        use strict 'refs';
-        my $self = shift;
-        my @call = caller(0);
-        my $e = $pkg->new($self->snapshot, [@call[0 .. 4]], @_);
-        $self->stream->send($e);
-        return $e;
-    };
+    # Use a string eval so that we get a names sub instead of __ANON__
+    local ($@, $!);
+    eval qq|
+        sub $name {
+            my \$self = shift;
+            my \@call = caller(0);
+            my \$e = \$pkg->new(\$self->snapshot, [\@call[0 .. 4]], \@_);
+            \$self->stream->send(\$e);
+            return \$e;
+        };
+        1;
+    | || die $@;
 }
 
 sub diag_todo {

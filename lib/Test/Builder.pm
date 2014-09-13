@@ -130,6 +130,12 @@ sub child {
     my( $self, $name ) = @_;
 
     my $ctx = $self->ctx;
+
+    if ($self->{child}) {
+        my $cname = $self->{child}->{Name};
+        $ctx->throw("You already have a child named ($cname) running");
+    }
+
     $ctx->child('push');
 
     my $stream = $self->{stream} || Test::Stream->shared;
@@ -147,6 +153,8 @@ sub child {
 
     $? = 0;
     $child->{Name} = $name || "Child of " . $self->{Name};
+    $self->{child} = $child;
+    Scalar::Util::weaken($self->{child});
 
     return $child;
 }
@@ -157,6 +165,12 @@ sub finalize {
     return unless $self->{parent};
 
     my $ctx = $self->ctx;
+
+    if ($self->{child}) {
+        my $cname = $self->{child}->{Name};
+        $ctx->throw("Can't call finalize() with child ($cname) active");
+    }
+
     $self->_ending($ctx);
     my $passing = $ctx->stream->is_passing;
     my $count = $ctx->stream->count;
@@ -168,6 +182,9 @@ sub finalize {
     $stream->set_exit_on_disruption($self->{eod});
 
     my $parent = $self->parent;
+    $self->{parent}->{child} = undef;
+    $self->{parent} = undef;
+
     $? = $self->{'?'};
 
     $ctx = $parent->ctx;
@@ -178,10 +195,20 @@ sub finalize {
     else {
         $ctx->ok(0, "No tests run for subtest \"$name\"");
     }
+
 }
 
 sub parent { $_[0]->{parent} }
 sub name   { $_[0]->{Name} }
+
+sub DESTROY {
+    my $self = shift;
+    return unless $self->{parent};
+    return if $self->{Skip_All};
+    $self->{parent}->is_passing(0);
+    my $name = $self->{Name};
+    die "Child ($name) exited without calling finalize()";
+}
 
 #############################
 # }}} Children and subtests #
@@ -346,7 +373,14 @@ sub done_testing {
 sub ok {
     my $self = shift;
     my($test, $name) = @_;
-    $self->ctx()->ok($test, $name);
+    my $ctx = $self->ctx();
+
+    if ($self->{child}) {
+        $self->is_passing(0);
+        $ctx->throw("Cannot run test ($name) with active children");
+    }
+
+    $ctx->ok($test, $name);
     return $test ? 1 : 0;
 }
 

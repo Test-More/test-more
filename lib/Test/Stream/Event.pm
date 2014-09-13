@@ -2,8 +2,8 @@ package Test::Stream::Event;
 use strict;
 use warnings;
 
-use Carp qw/confess croak/;
 use Scalar::Util qw/blessed/;
+use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::ArrayBase;
 BEGIN {
@@ -31,11 +31,12 @@ sub import {
     { no strict 'refs'; push @{"$caller\::ISA"} => $class }
     Test::Stream::ArrayBase->export_to($caller);
     Test::Stream::ArrayBase->after_import($caller);
+    require Test::Stream::Context;
     Test::Stream::Context->register_event($caller);
 }
 
 sub init {
-    confess "No context provided!" unless $_[0]->[CONTEXT];
+    confess("No context provided!") unless $_[0]->[CONTEXT];
 }
 
 sub indent {

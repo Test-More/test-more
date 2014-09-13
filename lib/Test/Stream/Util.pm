@@ -2,7 +2,6 @@ package Test::Stream::Util;
 use strict;
 use warnings;
 
-use Carp qw/croak/;
 use Scalar::Util qw/reftype blessed/;
 use Test::Stream::Exporter qw/import export_to exports/;
 

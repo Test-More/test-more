@@ -12,7 +12,7 @@ BEGIN {
 use Encode();
 use Test::Stream::Util qw/try/;
 use Scalar::Util qw/weaken/;
-use Carp qw/confess/;
+use Test::Stream::Carp qw/confess/;
 
 my $NORMALIZE = try { require Unicode::Normalize; 1 };
 

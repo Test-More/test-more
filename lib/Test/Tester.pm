@@ -141,10 +141,11 @@ sub cmp_field {
 
     my $ctx = context();
     if (defined $expect->{$field}) {
-        Test::More::Tools->is_eq(
-            $result->{$field}, $expect->{$field},
-            "$desc compare $field"
+        my ($ok, @diag) = Test::More::Tools->is_eq(
+            $result->{$field},
+            $expect->{$field},
         );
+        $ctx->ok($ok, "$desc compare $field"); 
     }
 }
 
@@ -241,7 +242,8 @@ sub cmp_results {
 
     my $ctx = context();
 
-    Test::More::Tools->is_num(scalar @$results, scalar @$expects, "Test '$name' result count");
+    my ($ok, @diag) = Test::More::Tools->is_num(scalar @$results, scalar @$expects, "Test '$name' result count");
+    $ctx->ok($ok, @diag);
 
     for (my $i = 0; $i < @$expects; $i++) {
         my $expect = $expects->[$i];

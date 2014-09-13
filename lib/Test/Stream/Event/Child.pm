@@ -2,7 +2,7 @@ package Test::Stream::Event::Child;
 use strict;
 use warnings;
 
-use Carp qw/confess/;
+use Test::Stream::Carp qw/confess/;
 use Test::Stream::Event;
 BEGIN {
     accessors qw/action name/;

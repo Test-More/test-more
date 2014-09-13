@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Test::Stream::Exporter;
-use Carp qw/confess/;
+use Test::Stream::Carp qw/confess/;
 use Scalar::Util();
 
 my $LOCKED = sub {
@@ -45,15 +45,15 @@ sub after_import {
     *{"$importer\::AB_FIELDS"}  = sub { $fields };
 }
 
-exports qw/accessor accessors to_hash/;
+exports qw/accessor accessors to_hash new/;
 unexports qw/accessor accessors/;
 
-export new => sub {
+sub new {
     my $class = shift;
     my $self = bless [@_], $class;
     $self->init if $self->can('init');
     return $self;
-};
+}
 
 sub to_hash {
     my $array_obj = shift;
@@ -93,45 +93,30 @@ sub _accessor {
     my $sname = "set_$gname";
     my $cname = "clear_$gname";
 
-    my $get;
-    my $clr = sub { $_[0]->[$idx] = undef };
-    my $set = sub { $_[0]->[$idx] = $_[1] };
-
+    my $get = "";
     if (defined $default) {
         if (ref $default && ref $default eq 'CODE') {
-            $get = sub {
-                $_[0]->[$idx] = $_[0]->$default unless exists $_[0]->[$idx];
-                $_[0]->[$idx];
-            };
+            $get = qq|\$_[0]->[$idx] = \$_[0]->\$default unless exists \$_[0]->[$idx];|;
         }
         elsif ($default eq 'ARRAYREF') {
-            $get = sub {
-                $_[0]->[$idx] = [] unless exists $_[0]->[$idx];
-                $_[0]->[$idx];
-            };
+            $get = qq|\$_[0]->[$idx] = [] unless exists \$_[0]->[$idx];|;
         }
         elsif ($default eq 'HASHREF') {
-            $get = sub {
-                $_[0]->[$idx] = {} unless exists $_[0]->[$idx];
-                $_[0]->[$idx];
-            };
+            $get = qq|\$_[0]->[$idx] = {} unless exists \$_[0]->[$idx];|;
         }
         else {
-            $get = sub {
-                $_[0]->[$idx] = $_[1] unless exists $_[0]->[$idx];
-                $_[0]->[$idx];
-            };
+            $get = qq|\$_[0]->[$idx] = \$_[1] unless exists \$_[0]->[$idx];|;
         }
     }
-    else {
-        $get = sub { $_[0]->[$idx] };
-    }
 
-    no strict 'refs';
-    *{"$caller\::$gname"} = $get;
-    *{"$caller\::$sname"} = $set;
-    *{"$caller\::$cname"} = $clr;
-    *{"$caller\::$const"} = sub() { $idx };
+    eval qq|
+        package $caller;
+        sub $gname { $get \$_[0]->[$idx] }
+        sub $sname { \$_[0]->[$idx] = \$_[1] }
+        sub $cname { \$_[0]->[$idx] = undef  }
+        sub $const() { $idx }
+        1
+    | || die $@;
 }
 
 1;

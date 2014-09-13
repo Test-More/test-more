@@ -2,8 +2,6 @@ package Test::Stream::Exporter;
 use strict;
 use warnings;
 
-use Carp qw/croak confess/;
-
 {
     my $META = {};
     sub TB_EXPORTER_META { $META };
@@ -12,6 +10,10 @@ use Carp qw/croak confess/;
 sub export;
 sub exports;
 sub unexports;
+
+# Test::Stream::Carp uses this module.
+sub croak   { require Carp; goto &Carp::croak }
+sub confess { require Carp; goto &Carp::confess }
 
 sub import {
     my $class = shift;

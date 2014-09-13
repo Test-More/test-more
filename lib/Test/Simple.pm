@@ -42,7 +42,7 @@ sub before_import {
             push @$other => @{$list->[$idx++]};
         }
         else {
-            Carp::croak("Unknown option: $item");
+            $context->throw("Unknown option: $item");
         }
     }
 

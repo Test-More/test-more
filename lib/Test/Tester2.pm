@@ -7,7 +7,7 @@ use Test::Stream;
 use Test::Stream::Util qw/try/;
 
 use Scalar::Util qw/blessed reftype/;
-use Carp qw/croak confess/;
+use Test::Stream::Carp qw/croak/;
 
 use Test::Stream::Toolset;
 use Test::Stream::Exporter;

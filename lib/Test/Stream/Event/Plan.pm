@@ -9,7 +9,7 @@ BEGIN {
     Test::Stream::Event->cleanup;
 };
 
-use Carp qw/confess/;
+use Test::Stream::Carp qw/confess/;
 
 my %ALLOWED = (
     'SKIP'    => 1,
