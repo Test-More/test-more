@@ -65,14 +65,14 @@ sub context {
         no strict 'refs';
         no warnings 'once';
         if ($todo = $meta->[Test::Stream::Meta::TODO]) {
-            $in_todo = 'META';
+            $in_todo = 1;
         }
         elsif ($todo = ${"$pkg\::TODO"}) {
-            $in_todo = 'PKG';
+            $in_todo = 1;
         }
         elsif ($Test::Builder::Test && defined $Test::Builder::Test->{Todo}) {
             $todo    = $Test::Builder::Test->{Todo};
-            $in_todo = 'TB';
+            $in_todo = 1;
         }
         else {
             $in_todo = 0;

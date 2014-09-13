@@ -10,7 +10,8 @@ BEGIN {
     if ($required && !$has_module) {
         die "This test requires 'SQL::Abstract::Test' to be installed when AUTHOR_TESTING.\n";
     }
-    else {
+
+    unless($required) {
         plan skip_all => "Only run when AUTHOR_TESTING is set";
     }
 }
@@ -42,10 +43,10 @@ my $events = intercept {
 
 events_are(
     $events,
-    ok   => { in_todo => 'PKG' },
-    diag => { in_todo => 'PKG' },
-    note => { in_todo => 'PKG' },
-    note => { in_todo => 'PKG' },
+    ok   => { in_todo => 1 },
+    diag => { in_todo => 1 },
+    note => { in_todo => 1 },
+    note => { in_todo => 1 },
     end => "All events are TODO"
 );
 
