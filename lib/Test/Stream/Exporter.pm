@@ -147,6 +147,8 @@ sub _export {
 
     croak "$class already exports something called '$name'" if $meta->{export}->{$name};
     $meta->{export}->{$name} = $ref;
+    no strict 'refs';
+    push @{"$class\::EXPORT"} => $name;
 }
 
 sub _unexport {
