@@ -4,61 +4,24 @@ use warnings;
 
 BEGIN {
     use Config;
-    # Load threads::shared when threads are turned on.
     if( $Config{useithreads} && $INC{'threads.pm'} ) {
-        require threads::shared;
-
-        # Hack around YET ANOTHER threads::shared bug.  It would
-        # occasionally forget the contents of the variable when sharing it.
-        # So we first copy the data, then share, then put our copy back.
-        *share = sub (\[$@%]) {
-            my $type = ref $_[0];
-            my $data;
-
-            if( $type eq 'HASH' ) {
-                %$data = %{ $_[0] };
-            }
-            elsif( $type eq 'ARRAY' ) {
-                @$data = @{ $_[0] };
-            }
-            elsif( $type eq 'SCALAR' ) {
-                $$data = ${ $_[0] };
-            }
-            else {
-                die( "Unknown type: " . $type );
-            }
-
-            $_[0] = &threads::shared::share( $_[0] );
-
-            if( $type eq 'HASH' ) {
-            }
-            elsif( $type eq 'ARRAY' ) {
-                @{ $_[0] } = @$data;
-            }
-            elsif( $type eq 'SCALAR' ) {
-                ${ $_[0] } = $$data;
-            }
-            else {
-                die( "Unknown type: " . $type );
-            }
-
-            return $_[0];
-        };
+        eval q|
+            sub get_tid { threads->tid() }
+            sub USE_THREADS() { 1 }
+            1;
+        | || die $@;
     }
     else {
-        *share = sub { return $_[0] };
-        *lock  = sub { 0 };
+        eval q|
+            sub get_tid() { 0 }
+            sub USE_THREADS() { 0 }
+            1;
+        | || die $@;
     }
 }
 
-sub import {
-    my $class = shift;
-    my $caller = caller;
-
-    no strict 'refs';
-    *{"$caller\::share"} = $class->can('share') if $class->can('share');
-    *{"$caller\::lock"}  = $class->can('lock')  if $class->can('lock');
-}
+use Test::Stream::Exporter;
+exports qw/get_tid USE_THREADS/;
 
 1;
 

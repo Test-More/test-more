@@ -12,7 +12,6 @@ use Test::More::Tools;
 use Test::Stream;
 use Test::Stream::Toolset;
 use Test::Stream::Context;
-use Test::Stream::Threads;
 
 use Test::Stream::Util qw/try protect unoverload_str is_regex/;
 use Scalar::Util qw/blessed reftype/;
@@ -756,8 +755,7 @@ sub details {
 
     for my $e (@{$state->[STATE_LEGACY]}) {
         next unless $e && $e->isa('Test::Stream::Event::Ok');
-        my $result = &share( $e->to_legacy );
-        push @out => $result;
+        push @out => $e->to_legacy;
     }
 
     return @out;

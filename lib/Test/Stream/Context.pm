@@ -7,6 +7,7 @@ use Scalar::Util qw/blessed weaken/;
 use Test::Stream::Carp qw/confess/;
 
 use Test::Stream;
+use Test::Stream::Threads;
 use Test::Stream::Event();
 use Test::Stream::Util qw/try/;
 use Test::Stream::Meta qw/init_tester is_tester/;
@@ -83,10 +84,15 @@ sub context {
         ($ppkg, $pname) = ($provider[3] =~ m/^(.*)::([^:]+)$/);
     }
 
+    my $stream = $meta->[Test::Stream::Meta::STREAM] || Test::Stream->shared;
+    if ((USE_THREADS || $stream->_use_fork) && ($stream->pid == $$ && $stream->tid == get_tid())) {
+        $stream->fork_cull();
+    }
+
     my $ctx = bless(
         [
             $call,
-            $meta->[Test::Stream::Meta::STREAM]   || Test::Stream->shared,
+            $stream,
             $meta->[Test::Stream::Meta::ENCODING] || 'legacy',
             $in_todo,
             $todo,

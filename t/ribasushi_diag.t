@@ -32,22 +32,20 @@ my $events = intercept {
 
     Worker::do_work(
         sub {
-
             SQL::Abstract::Test::is_same_sql_bind(
                 'buh', [],
                 'bah', [1],
             );
-
         }
     );
 };
 
 events_are(
     $events,
-    ok   => { in_todo => 1 },
-    diag => { in_todo => 1 },
-    note => { in_todo => 1 },
-    note => { in_todo => 1 },
+    ok   => { in_todo => 'PKG' },
+    diag => { in_todo => 'PKG' },
+    note => { in_todo => 'PKG' },
+    note => { in_todo => 'PKG' },
     end => "All events are TODO"
 );
 

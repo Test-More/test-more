@@ -5,8 +5,8 @@ use warnings;
 our $VERSION = '1.301001_041';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Stream::IOSets;
 use Test::Stream::Threads;
+use Test::Stream::IOSets;
 use Test::Stream::Util qw/try/;
 use Test::Stream::Carp qw/croak confess/;
 
@@ -14,7 +14,7 @@ use Test::Stream::ArrayBase;
 BEGIN {
     accessors qw{
         no_ending no_diag no_header
-        pid
+        pid tid
         state
         listeners mungers
         bailed_out
@@ -71,6 +71,7 @@ sub init {
     my $self = shift;
 
     $self->[PID]         = $$;
+    $self->[TID]         = get_tid();
     $self->[STATE]       = [[0, 0, undef, 1]];
     $self->[USE_TAP]     = 1;
     $self->[USE_NUMBERS] = 1;
@@ -78,7 +79,7 @@ sub init {
     $self->[EVENT_ID]    = 1;
     $self->[NO_ENDING]   = 1;
 
-    share($self->[STATE]);
+    $self->use_fork if USE_THREADS;
 
     $self->[EXIT_ON_DISRUPTION] = 1;
 }
@@ -151,9 +152,10 @@ sub intercept {
 
 sub send {
     my ($self, @events) = @_;
-    lock($self->[STATE]);
 
-    return $self->fork_out(@events) if $self->[_USE_FORK] && $$ != $self->[PID];
+     return $self->fork_out(@events)
+        if $self->[_USE_FORK]
+        && ($$ != $self->[PID] || get_tid() != $self->[TID]);
 
     if ($self->[MUNGERS]) {
         @events = $_->($self, @events) for @{$self->[MUNGERS]};
@@ -245,7 +247,7 @@ sub send {
     }
 }
 
-sub push_state { push @{$_[0]->[STATE]} => share([0, 0, undef, 1]) }
+sub push_state { push @{$_[0]->[STATE]} => [0, 0, undef, 1] }
 sub pop_state  { pop  @{$_[0]->[STATE]} }
 
 sub sub_state {
@@ -299,12 +301,16 @@ sub fork_out {
     my $tempdir = $self->[_USE_FORK];
     confess "Fork support has not been turned on!" unless $tempdir;
 
+    my $tid = get_tid();
+
     for my $event (@_) {
         next unless $event;
         next if $event->isa('Test::Stream::Event::Finish');
 
+
         # First write the file, then rename it so that it is not read before it is ready.
-        my $name =  $tempdir . "/$$-" . ($self->[EVENT_ID]++);
+        my $name =  $tempdir . "/$$-$tid-" . ($self->[EVENT_ID]++);
+        $event->context->set_stream(undef);
         Storable::store($event, $name);
         rename($name, "$name.ready") || confess "Could not rename file '$name' -> '$name.ready'";
     }
@@ -314,7 +320,10 @@ sub fork_cull {
     my $self = shift;
 
     confess "fork_cull() can only be called from the parent process!"
-        if $$ eq $self->[PID];
+        if $$ != $self->[PID];
+
+    confess "fork_cull() can only be called from the parent thread!"
+        if get_tid() != $self->[TID];
 
     my $tempdir = $self->[_USE_FORK];
     confess "Fork support has not been turned on!" unless $tempdir;
@@ -325,9 +334,9 @@ sub fork_cull {
         next if $file =~ m/^\.+$/;
         next unless $file =~ m/\.ready$/;
 
-        require Storable;
         my $obj = Storable::retrieve("$tempdir/$file");
         confess "Empty event object found '$tempdir/$file'" unless $obj;
+        $obj->context->set_stream($self);
 
         $self->send($obj);
 
@@ -346,7 +355,7 @@ sub fork_cull {
 sub DESTROY {
     my $self = shift;
 
-    return unless $$ == $self->pid;
+    return unless $$ == $self->pid && get_tid() == $self->tid;
 
     my $dir = $self->[_USE_FORK] || return;
 
