@@ -11,13 +11,47 @@ my $events = intercept {
     ok(0, "Boo!");
 };
 
-isa_ok($events->[0], 'Test::Builder::Event::Ok');
+isa_ok($events->[0], 'Test::Stream::Event::Ok');
 is($events->[0]->bool, 1, "Got one success");
 is($events->[0]->name, "Woo!", "Got test name");
 
-isa_ok($events->[1], 'Test::Builder::Event::Ok');
+isa_ok($events->[1], 'Test::Stream::Event::Ok');
 is($events->[1]->bool, 0, "Got one fail");
 is($events->[1]->name, "Boo!", "Got test name");
+
+$events = undef;
+my $grab = grab();
+my $got = $grab ? 1 : 0;
+ok(1, "Intercepted!");
+ok(0, "Also Intercepted!");
+$events = $grab->finish;
+ok($got, "Delayed test that we did in fact get a grab object");
+is($grab, undef, "Poof! vanished!");
+is(@$events, 3, "got 3 events (2 ok, 1 diag)");
+events_are(
+    $events,
+    check {
+        event ok => { bool => 1 };
+        event ok => { bool => 0 };
+        event diag => { };
+        dir end => 'intercepted via grab 1';
+    }
+);
+
+$events = undef;
+$grab = grab();
+ok(1, "Intercepted!");
+ok(0, "Also Intercepted!");
+events_are(
+    $grab,
+    check {
+        event ok => { bool => 1 };
+        event ok => { bool => 0 };
+        event diag => { };
+        dir end => 'intercepted via grab 2';
+    }
+);
+ok(!$grab, "Maybe it never existed?");
 
 $events = intercept {
     ok(1, "Woo!");
@@ -25,8 +59,8 @@ $events = intercept {
     ok(0, "Should not see this");
 };
 is(@$events, 2, "Only got 2");
-isa_ok($events->[0], 'Test::Builder::Event::Ok');
-isa_ok($events->[1], 'Test::Builder::Event::Bail');
+isa_ok($events->[0], 'Test::Stream::Event::Ok');
+isa_ok($events->[1], 'Test::Stream::Event::Bail');
 
 $events = intercept {
     plan skip_all => 'All tests are skipped';
@@ -36,8 +70,10 @@ $events = intercept {
     ok(0, "Should not see this");
 };
 is(@$events, 1, "Only got 1");
-isa_ok($events->[0], 'Test::Builder::Event::Plan');
+isa_ok($events->[0], 'Test::Stream::Event::Plan');
 
+my $file = __FILE__;
+my $line = __LINE__ + 4;
 events_are(
     intercept {
         events_are(
@@ -52,20 +88,24 @@ events_are(
     diag => {message => qr{Failed test 'Lets name this test!'.*at (\./)?t/Modern/Tester2\.t line}s},
     diag => {message => q{(ok blah) Wanted bool => '0', but got bool => '1'}},
     diag => {message => <<"    EOT"},
-Full event found was: ok => {
+Got Event: ok => {
   name: foo
   bool: 1
   real_bool: 1
   in_todo: 0
   package: main
-  file: t/Modern/Tester2.t
-  line: 44
+  file: $file
+  line: $line
   pid: $$
   depth: 0
-  source: t/Modern/Tester2.t
+  encoding: legacy
   tool_name: ok
   tool_package: Test::More
   tap: ok - foo
+  level: 1
+}
+Expected: ok => {
+  bool: 0
 }
     EOT
     end => 'Failure diag checking',
@@ -89,7 +129,7 @@ events_are(
 );
 
 DOCS_1: {
-    # Intercept all the Test::Builder::Event objects produced in the block.
+    # Intercept all the Test::Stream::Event objects produced in the block.
     my $events = intercept {
         ok(1, "pass");
         ok(0, "fail");
@@ -97,7 +137,7 @@ DOCS_1: {
     };
 
     # By Hand
-    is($events->[0]->{bool}, 1, "First event passed");
+    is($events->[0]->bool, 1, "First event passed");
 
     # With help
     events_are(

@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Test::More 'modern';
+use Test::Builder;
 
 # This is just a list of method Test::Builder current does not have that Test::Builder 1.5 does.
 my @TB15_METHODS = qw{
@@ -18,7 +19,7 @@ for my $method (qw/foo bar baz/) {
     ok($success, "Threw an exception ($method)");
     is(
         $error,
-        qq{Can't locate object method "$method" via package "Test::Builder" at } . __FILE__ . " line $line\n",
+        qq{Can't locate object method "$method" via package "Test::Builder" at } . __FILE__ . " line $line.\n",
         "Did not auto-create random sub ($method)"
     );
 }
@@ -31,7 +32,7 @@ for my $method (@TB15_METHODS) {
     ok($success, "Threw an exception ($method)");
 
     is($error, <<"    EOT", "Got expected error ($method)");
-Can't locate object method "$method" via package "Test::Builder" at $file line $line
+Can't locate object method "$method" via package "Test::Builder" at $file line $line.
 
     *************************************************************************
     '$method' is a Test::Builder 1.5 method. Test::Builder 1.5 is a dead branch.

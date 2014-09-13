@@ -26,41 +26,45 @@ my $events = intercept {
 events_are(
     $events,
 
-    ok   => {bool => 0},
-    diag => {},
-    ok   => {bool => 1},
+    check {
+        event ok   => {bool => 0};
+        event diag => {};
+        event ok   => {bool => 1};
 
-    child => {action => 'push'},
-        ok   => {bool => 0},
-        diag => {},
-        ok   => {bool => 1},
+        event child => {action => 'push'};
+        event     note => {message => 'Subtest: subtest'};
+        event     ok   => {bool => 0};
+        event     diag => {};
+        event     ok   => {bool => 1};
 
-        child => {action => 'push'},
-            ok   => {bool => 0},
-            diag => {},
-            ok   => {bool => 1},
+        event     child => {action => 'push'};
+        event         note => {message => 'Subtest: subtest_deeper'};
+        event         ok   => {bool => 0};
+        event         diag => {};
+        event         ok   => {bool => 1};
 
-            plan   => {},
-            finish => {},
+        event         plan   => {};
+        event         finish => {};
 
-            diag => {tap  => qr/Looks like you failed 1 test of 2/},
-            ok   => {bool => 0},
-            diag => {},
-        child => {action => 'pop'},
+        event         diag => {tap  => qr/Looks like you failed 1 test of 2/};
+        event     child => {action => 'pop'};
+        event     ok   => {bool => 0};
+        event     diag => {};
 
-        plan   => {},
-        finish => {},
+        event     plan   => {};
+        event     finish => {};
 
-        diag => {tap  => qr/Looks like you failed 2 tests of 3/},
-        ok   => {bool => 0},
-        diag => {},
-    child => {action => 'pop'},
+        event     diag => {tap  => qr/Looks like you failed 2 tests of 3/};
+        event child => {action => 'pop'};
+        event ok   => {bool => 0};
+        event diag => {};
 
-    ok   => {bool => 0},
-    diag => {},
-    ok   => {bool => 1},
+        event ok   => {bool => 0};
+        event diag => {};
+        event ok   => {bool => 1};
 
-    end => "subtest events as expected",
+        dir end => "subtest events as expected";
+    }
 );
 
 done_testing;

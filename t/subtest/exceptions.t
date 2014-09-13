@@ -17,11 +17,12 @@ use Test::More tests => 7;
 
 {
     my $tb = Test::Builder::NoOutput->create;
-    $tb->child('one');
+    my $child = $tb->child('one');
     eval { $tb->child('two') };
     my $error = $@;
     like $error, qr/\QYou already have a child named (one) running/,
       'Trying to create a child with another one active should fail';
+    $child->finalize;
 }
 {
     my $tb    = Test::Builder::NoOutput->create;
@@ -31,14 +32,17 @@ use Test::More tests => 7;
     my $error = $@;
     like $error, qr/\QCan't call finalize() with child (two) active/,
       '... but trying to finalize() a child with open children should fail';
+    $child2->finalize;
+    $child->finalize;
 }
 {
     my $tb    = Test::Builder::NoOutput->create;
     my $child = $tb->child('one');
-    undef $child;
-    like $tb->read, qr/\QChild (one) exited without calling finalize()/,
+    eval { $child->DESTROY };
+    like $@, qr/\QChild (one) exited without calling finalize()/,
       'Failing to call finalize should issue an appropriate diagnostic';
     ok !$tb->is_passing, '... and should cause the test suite to fail';
+    $child->finalize;
 }
 {
     my $tb = Test::Builder::NoOutput->create;

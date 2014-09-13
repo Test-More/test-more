@@ -10,7 +10,8 @@ BEGIN {
     if ($required && !$has_module) {
         die "This test requires 'SQL::Abstract::Test' to be installed when AUTHOR_TESTING.\n";
     }
-    else {
+
+    unless($required) {
         plan skip_all => "Only run when AUTHOR_TESTING is set";
     }
 }
@@ -32,12 +33,10 @@ my $events = intercept {
 
     Worker::do_work(
         sub {
-
             SQL::Abstract::Test::is_same_sql_bind(
                 'buh', [],
                 'bah', [1],
             );
-
         }
     );
 };

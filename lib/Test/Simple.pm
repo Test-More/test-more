@@ -3,69 +3,58 @@ package Test::Simple;
 use 5.008001;
 
 use strict;
+use warnings;
 
-our $VERSION = '1.301001_039';
+our $VERSION = '1.301001_041';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Builder::Provider;
-require Test::More;
+use Test::Stream;
+use Test::Stream::Toolset;
 
-provides qw/ok/;
+use Test::Stream::Exporter;
+exports qw/ok/;
+Test::Stream::Exporter->cleanup;
 
 sub before_import {
     my $class = shift;
-    my ($list, $dest) = @_;
+    my ($importer, $list) = @_;
 
-    Test::More::_set_tap_encoding($dest, 'legacy');
-
-    my $encoding_set = 0;
-    my $other        = [];
-    my $idx          = 0;
-    my $modern       = 0;
+    my $meta    = init_tester($importer);
+    my $context = context(1);
+    my $idx = 0;
+    my $other = [];
     while ($idx <= $#{$list}) {
         my $item = $list->[$idx++];
 
         if (defined $item and $item eq 'no_diag') {
-            $class->builder->no_diag(1);
+            Test::Stream->shared->set_no_diag(1);
         }
-        elsif ($item eq 'tests' || $item eq 'skip_all') {
-            $class->builder->plan($item => $list->[$idx++]);
+        elsif ($item eq 'tests') {
+            $context->plan($list->[$idx++]);
+        }
+        elsif ($item eq 'skip_all') {
+            $context->plan(0, 'SKIP', $list->[$idx++]);
         }
         elsif ($item eq 'no_plan') {
-            $class->builder->plan($item);
+            $context->plan(0, 'NO PLAN');
         }
         elsif ($item eq 'import') {
             push @$other => @{$list->[$idx++]};
         }
-        elsif ($item eq 'modern') {
-            modernize($dest);
-            Test::More::_set_tap_encoding($dest, 'utf8') unless $encoding_set;
-            $modern++;
-        }
-        elsif ($item eq 'utf8') {
-            Test::More::_set_tap_encoding($dest, 'utf8');
-            $encoding_set++;
-        }
-        elsif ($item eq 'encoding') {
-            my $encoding = $list->[$idx++];
-            Test::More::_set_tap_encoding($dest, $encoding);
-            $encoding_set++;
-        }
-
         else {
-            Carp::croak("Unknown option: $item");
+            $context->throw("Unknown option: $item");
         }
     }
 
     @$list = @$other;
 
-    Test::Builder::Stream->shared->use_lresults unless $modern;
-
     return;
 }
 
 sub ok ($;$) {    ## no critic (Subroutines::ProhibitSubroutinePrototypes)
-    return builder()->ok(@_);
+    my $ctx = context();
+    return $ctx->ok(@_);
+    return $_[0] ? 1 : 0;
 }
 
 1;

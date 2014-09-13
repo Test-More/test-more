@@ -22,6 +22,7 @@ $tb->like( $@, qr/^\Qsubtest()'s second argument must be a code ref/ );
 $tb->ok( !eval { $tb->subtest("foo") } );
 $tb->like( $@, qr/^\Qsubtest()'s second argument must be a code ref/ );
 
+use Carp qw/confess/;
 $tb->subtest('Arg passing', sub {
     my $foo = shift;
     my $child = Test::Builder->new;

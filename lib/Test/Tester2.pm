@@ -3,15 +3,88 @@ use strict;
 use warnings;
 
 use Test::Builder 1.301001;
-use Test::Builder::Stream;
-use Test::Builder::Util qw/try/;
+use Test::Stream;
+use Test::Stream::Util qw/try/;
 
 use Scalar::Util qw/blessed reftype/;
-use Carp qw/croak/;
+use Test::Stream::Carp qw/croak/;
 
-use Test::Builder::Provider;
-gives qw/intercept display_events display_event render_event/;
-provides qw/events_are/;
+use Test::Stream::Toolset;
+use Test::Stream::Exporter;
+exports qw{
+    intercept grab
+
+    events_are check
+        event
+        directive
+
+    display_events display_event
+    render_event
+};
+
+export dir => \&directive;
+
+sub grab {
+    require Test::Tester2::Grab;
+    return Test::Tester2::Grab->new;
+}
+
+our $EVENTS;
+sub check(&) {
+    my ($code) = @_;
+
+    local $EVENTS = [];
+
+    $code->($EVENTS);
+
+    return @$EVENTS;
+}
+
+sub event {
+    my ($type, @data) = @_;
+
+    croak "event() cannot be used outside of a check { ... } block"
+        unless $EVENTS;
+
+    my $class = 'Test::Stream::Event::' . ucfirst($type);
+    croak "$type ($class) is not a valid event type!"
+        unless $class->isa('Test::Stream::Event');
+
+    my $props;
+
+    if (@data == 1 && ref $data[0]) {
+        croak "event() takes a type, followed by a list or hashref"
+            unless reftype $data[0] eq 'HASH';
+
+        $props = { %{$data[0]} };
+    }
+    elsif (@data % 2) {
+        require Data::Dumper;
+        croak "event() needs an even list to turn into a hash, got:\n" . Data::Dumper::Dumper({
+            @data, '(NULL)'
+        });
+    }
+    else {
+        $props = {@data};
+    }
+
+    my @call = caller(0);
+    $props->{debug_line} = $call[2];
+
+    push @$EVENTS => $type, $props;
+}
+
+sub directive {
+    my ($directive, @args) = @_;
+
+    croak "directive() cannot be used outside of a check { ... } block"
+        unless $EVENTS;
+
+    croak "Directive '$directive' requires exactly 1 argument"
+        unless (@args && @args == 1) || $directive eq 'end';
+
+    push @$EVENTS => $directive, @args;
+}
 
 sub intercept(&) {
     my ($code) = @_;
@@ -19,15 +92,13 @@ sub intercept(&) {
     my @events;
 
     my ($ok, $error) = try {
-        Test::Builder::Stream->intercept(
+        Test::Stream->intercept(
             sub {
                 my $stream = shift;
-                $stream->exception_followup;
-
                 $stream->listen(
-                    INTERCEPTOR => sub {
-                        my ($item) = @_;
-                        push @events => $item;
+                    sub {
+                        shift; # Stream
+                        push @events => @_;
                     }
                 );
                 $code->();
@@ -35,15 +106,24 @@ sub intercept(&) {
         );
     };
 
-    die $error unless $ok || (blessed($error) && $error->isa('Test::Builder::Event'));
+    die $error unless $ok || (blessed($error) && $error->isa('Test::Stream::Event'));
 
     return \@events;
 }
 
+# Yikes! 140 lines...
 sub events_are {
     my ($events, @checks) = @_;
+    my $ctx = context();
 
-    my @res_list = @$events;
+    my @res_list;
+    if (blessed($events) && $events->isa('Test::Tester2::Grab')) {
+        # use $_[0] directly so that the variable used in the method call can be undef'd
+        @res_list = @{$_[0]->finish};
+    }
+    else {
+        @res_list = @$events;
+    }
 
     my $overall_name;
     my $seek = 0;
@@ -59,7 +139,7 @@ sub events_are {
             @res_list = _filter_list(
                 $1 || 0,
                 shift(@checks),
-                sub { $_[0]->trace->report->provider_tool->{package} },
+                sub { $_[0]->context->provider->[0] },
                 @res_list
             );
             next;
@@ -101,7 +181,9 @@ sub events_are {
         my $type = $action;
         my $got  = shift @res_list;
         my $want = shift @checks; $wnum++;
-        my $id = "$type " . (delete $want->{id} || $wnum);
+        my $line = delete $want->{debug_line};
+        my $id   = "$type " . (delete $want->{id} || $wnum);
+        $id .= " on line $line" if $line;
 
         $want ||= "(UNDEF)";
         croak "($id) '$type' must be paired with a hashref, but you gave: '$want'"
@@ -113,7 +195,6 @@ sub events_are {
         if (!$got) {
             $ok = 0;
             push @diag => "($id) Wanted event type '$type', But no more events left to check!";
-            push @diag => "Full event found was: " . render_event($got);
             last;
         }
 
@@ -164,7 +245,7 @@ sub events_are {
         }
 
         unless ($ok) {
-            push @diag => "Full event found was: " . render_event($got);
+            push @diag => "Got Event: " . render_event($got) . "Expected: " . render_check({%$want, type => $type});
             last;
         }
     }
@@ -175,7 +256,7 @@ sub events_are {
         $overall_name = shift @checks;
     }
 
-    builder()->ok($ok, $overall_name || "Got expected events", @diag);
+    $ctx->ok($ok, $overall_name || "Got expected events", \@diag);
     return $ok;
 }
 
@@ -191,17 +272,23 @@ sub display_event {
 sub render_event {
     my ($event) = @_;
 
+    my $fields = _simplify_event($event);
+    return render_check($fields);
+}
+
+sub render_check {
+    my ($fields) = @_;
+
     my @order = qw/
         name bool real_bool action max
-        directive reason in_todo
+        in_todo todo skip
         package file line pid
         depth is_subtest source tests_failed tests_run
+        encoding
         tool_name tool_package
         message
         tap
     /;
-
-    my $fields = _simplify_event($event);
 
     my %seen;
     my $out = "$fields->{type} => {\n";
@@ -228,15 +315,19 @@ sub render_event {
 
 sub _simplify_event {
     my ($r) = @_;
+    my $fields = $r->to_hash;
 
-    my $fields = {map { ref $r->{$_} ? () : ($_ => $r->{$_}) } keys %$r};
+    for my $k (keys %$fields) {
+        delete $fields->{$k} if ref $fields->{$k};
+    }
     $fields->{type} = $r->type;
 
-    if ($r->trace && $r->trace->report) {
-        my $report = $r->trace->report;
-        @{$fields}{qw/line file package/} = map { $report->$_ } qw/line file package/;
-        @{$fields}{qw/tool_package tool_name/} = @{$report->provider_tool}{qw/package name/} if $report->provider_tool;
-    }
+    @{$fields}{qw/package file line/} = $r->context->call;
+    @{$fields}{qw/tool_package tool_name/} = @{$r->context->provider};
+    my $tpkg = $fields->{tool_package};
+    $fields->{tool_name} =~ s/^\Q$tpkg\E:://;
+
+    $fields->{$_} = $r->context->$_ for qw/encoding in_todo todo depth pid skip/;
 
     $fields->{tap} = $r->to_tap if $r->can('to_tap');
     chomp($fields->{tap}) if $fields->{tap};
@@ -298,6 +389,8 @@ L<Test::Builder::Fromatter::TAP> which produces TAP output.
 
 =head1 SYNOPSIS
 
+=head2 TIMTOWTDI
+
     use Test::More;
     use Test::Tester2;
 
@@ -308,18 +401,25 @@ L<Test::Builder::Fromatter::TAP> which produces TAP output.
         diag("xxx");
     };
 
+    # Or grab them without adding a scope to your stack:
+    my $grab = grab();
+    ok(1, "pass");
+    ok(0, "fail");
+    diag("xxx");
+    my $events = $grab->finish; # Note, $grab is undef after this.
+
     # By Hand
     is($events->[0]->{bool}, 1, "First event passed");
 
     # With help
     events_are(
         $events,
-        ok   => { id => 'a', bool => 1, name => 'pass' },
+        ok   => { bool => 1, name => 'pass' },
 
-        ok   => { id => 'b1', bool => 0, name => 'fail',         line => 7, file => 'my_test.t' },
-        diag => { id => 'b2', message => qr/Failed test 'fail'/, line => 7, file => 'my_test.t' },
+        ok   => { bool => 0, name => 'fail',         line => 7, file => 'my_test.t' },
+        diag => { message => qr/Failed test 'fail'/, line => 7, file => 'my_test.t' },
 
-        diag => { id => 'c', message => qr/xxx/ },
+        diag => { message => qr/xxx/, debug_line => __LINE__ },
 
         end => 'Name of this test',
     );
@@ -331,7 +431,64 @@ L<Test::Builder::Fromatter::TAP> which produces TAP output.
         ...
     );
 
+    # With better debugging, this automatically adds debug_line => __LINE__ for events
+    events_are(
+        $events,
+        check {
+            event ok => { bool => 1 };
+            ...
+            dir end => 'name of test';
+        }
+    );
+
     done_testing;
+
+
+=head2 BEST PRACTICE
+
+    use Test::More;
+    use Test::Tester2;
+
+    # Start capturing events. We use grab() instead of intercept {} to avoid
+    # adding stack frames.
+    my $grab = grab();
+
+    # Generate some events.
+    my $success = eval { # Wrap in an eval since we also test BAIL_OUT
+        ok(1, "pass");
+        ok(0, "fail");
+        diag("xxx");
+
+        # BAIL_OUT and plan SKIP_ALL must be run in an eval since they throw
+        # their events as exceptions (the events are also added to the grab
+        # object).
+        BAIL_OUT "oops";
+
+        ok(0, "Should not see this");
+
+        1;
+    };
+    # Save the error for later
+    my $error = $@;
+
+    # Stop capturing events, and validate the ones recieved.
+    # We use check {} with event() for useful debugging.
+    events_are( $grab, check {
+        event ok => { bool => 1, name => 'pass' };
+        event ok => { bool => 0, name => 'fail' };
+        event diag => { message => 'xxx' };
+        event bail => { reason  => 'oops' };
+        directive end => 'Validate our Grab results';
+    });
+
+    # $grab is now undef, it no longer exists.
+
+    ok(!$success, "Eval did not succeed, BAIL_OUT killed the test");
+
+    # Make sure we got the event as an exception
+    isa_ok($error, 'Test::Stream::Event::Bail');
+
+    done_testing
 
 =head1 EXPORTS
 
@@ -344,6 +501,55 @@ Capture the L<Test::Builder::Event> objects generated by tests inside the block.
 =item events_are($events, ...)
 
 Validate the given events.
+
+=item @checks = check { ... };
+
+Produce an array of checks for use in events_are.
+
+    events_are {
+        $EVENTS,
+        check {
+            # The list that check() returns is passed in as a reference as the
+            # only argument to the block.
+            my ($OUTPUT) = @_;
+
+            event TYPE => ( ... );
+            ...
+        }
+        # When the block exits, all events and directives are returned. The
+        # benefit here is that debugging information such as the line number
+        # the event check was defined on is added for you, this makes it easier
+        # to figure out where your expectations and results diverge.
+    }
+
+=item event TYPE => { ... };
+
+=item event TYPE => ( ... );
+
+Define an event and push it onto the list that will be returned by the
+enclosing C<check { ... }> block. Will fail if run outside a check block. This
+will fail if you give it an invalid event type.
+
+You may give it a hashref, or an even list as arguments, your choice.
+
+debug_line => __LINE__ is effectively added to each item, this makes tracing a
+problem easier.
+
+B<CAVEAT> the line given to debug_line is taken from C<caller()>, so it will
+normally be the line of the final semicolon. This is only noticable on
+multi-line event checks, but is rarely an issue.
+
+=item dir 'DIRECTIVE';
+
+=item directive 'DIRECTIVE';
+
+=item dir DIRECTIVE => 'ARG';
+
+=item directive DIRECTIVE => 'ARG';
+
+Define a directive and push it onto the list that will be returned by the
+enclosing C<check { ... }> block. This will fail if run outside of a check
+block.
 
 =item $dump = render_event($event)
 

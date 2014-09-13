@@ -10,7 +10,7 @@ $test->plan(tests => 54);
 my $cap;
 
 {
-	$cap = Test::Tester->capture;
+	$cap = $test;
 	my ($prem, @results) = run_tests(
 		sub {$cap->ok(1, "run pass")}
 	);

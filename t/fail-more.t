@@ -27,19 +27,23 @@ my $TB = Test::Builder->create;
 $TB->plan(tests => 80);
 
 sub like ($$;$) {
+    my $c = Test::Stream::Context::context();
     $TB->like(@_);
 }
 
 sub is ($$;$) {
+    my $c = Test::Stream::Context::context();
     $TB->is_eq(@_);
 }
 
 sub main::out_ok ($$) {
+    my $c = Test::Stream::Context::context();
     $TB->is_eq( $out->read, shift );
     $TB->is_eq( $err->read, shift );
 }
 
 sub main::out_like ($$) {
+    my $c = Test::Stream::Context::context();
     my($output, $failure) = @_;
 
     $TB->like( $out->read, qr/$output/ );
@@ -233,7 +237,8 @@ not ok - ARRAY->can('foo')
 OUT
 #   Failed test 'ARRAY->can('foo')'
 #   at $0 line 228.
-#     ARRAY->can('foo') failed
+#     ARRAY->can('foo') failed with an exception:
+#     Can't call method "can" on unblessed reference.
 ERR
 
 #line 238
@@ -243,7 +248,7 @@ not ok - An object of class 'Foo' isa 'Wibble'
 OUT
 #   Failed test 'An object of class 'Foo' isa 'Wibble''
 #   at $0 line 238.
-#     The object of class 'Foo' isn't a 'Wibble'
+#     An object of class 'Foo' isn't a 'Wibble'
 ERR
 
 #line 248
@@ -283,7 +288,7 @@ not ok - A reference of type 'ARRAY' isa 'HASH'
 OUT
 #   Failed test 'A reference of type 'ARRAY' isa 'HASH''
 #   at $0 line 268.
-#     The reference of type 'ARRAY' isn't a 'HASH'
+#     A reference of type 'ARRAY' isn't a 'HASH'
 ERR
 
 #line 278
@@ -328,7 +333,7 @@ not ok - A reference of type 'HASH' isa 'Bar'
 OUT
 #   Failed test 'A reference of type 'HASH' isa 'Bar''
 #   at $0 line 313.
-#     The reference of type 'HASH' isn't a 'Bar'
+#     A reference of type 'HASH' isn't a 'Bar'
 ERR
 
 #line 323
@@ -338,7 +343,7 @@ not ok - An object of class 'Wibble' isa 'Baz'
 OUT
 #   Failed test 'An object of class 'Wibble' isa 'Baz''
 #   at $0 line 323.
-#     The object of class 'Wibble' isn't a 'Baz'
+#     An object of class 'Wibble' isn't a 'Baz'
 ERR
 
 #line 333

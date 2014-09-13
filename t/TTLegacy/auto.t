@@ -11,7 +11,7 @@ BEGIN {
     }
 }
 
-use Test::Tester tests => 5;
+use Test::Tester tests => 4;
 
 use SmallTest;
 
@@ -30,5 +30,3 @@ use MyTest;
     is_eq($results[0]->{name}, "run fail");
     is_num($results[0]->{ok}, 0);
 }
-
-is_eq(ref(SmallTest::getTest()), "Test::Tester::Delegate");

@@ -14,10 +14,8 @@ BEGIN {
 chdir 't';
 
 use Test::Builder;
-use Test::Builder::Formatter::LegacyResults;
 my $Test = Test::Builder->new;
 my $tb = Test::Builder->create;
-$tb->stream->use_lresults;
 
 # We'll need this later to know the outputs were reset
 my %Original_Output;
@@ -57,7 +55,6 @@ $Test->is_eq( $tb->expected_tests, 0, 'expected_tests' );
 $Test->is_eq( $tb->level,          1, 'level' );
 $Test->is_eq( $tb->use_numbers,    1, 'use_numbers' );
 $Test->is_eq( $tb->no_header,      0, 'no_header' );
-$Test->is_eq( $tb->no_ending,      0, 'no_ending' );
 $Test->is_eq( $tb->current_test,   0, 'current_test' );
 $Test->is_eq( scalar $tb->summary, 0, 'summary' );
 $Test->is_eq( scalar $tb->details, 0, 'details' );

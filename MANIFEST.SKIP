@@ -72,3 +72,7 @@
 
 # Don't include our dist director
 ^Test-Simple-
+
+# Profiling stuff
+^nytp*
+^profile

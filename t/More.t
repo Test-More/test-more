@@ -9,6 +9,7 @@ BEGIN {
 
 use lib 't/lib';
 use Test::More tests => 54;
+use Test::Builder;
 
 # Make sure we don't mess with $@ or $!.  Test at bottom.
 my $Err   = "this should not be touched";
