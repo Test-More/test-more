@@ -220,7 +220,7 @@ sub send {
                         my $indent = $se->indent;
 
                         local($\, $", $,) = (undef, ' ', '');
-                        $msg =~ s/^/$indent/mg;
+                        $msg =~ s/^/$indent/mg unless $e->isa('Test::Stream::Event::Bail');
                         print $io $msg if $io && $msg;
                     }
                 }
