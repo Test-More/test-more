@@ -17,6 +17,8 @@ BEGIN {
         pid tid
         state
         subtests subtest_todo
+        subtest_tap_instant
+        subtest_tap_delayed
         listeners
         bailed_out
         exit_on_disruption
@@ -84,6 +86,9 @@ sub init {
     $self->[EVENT_ID]    = 1;
     $self->[NO_ENDING]   = 1;
     $self->[SUBTESTS]    = [];
+
+    $self->[SUBTEST_TAP_INSTANT] = 1;
+    $self->[SUBTEST_TAP_DELAYED] = 0;
 
     $self->use_fork if USE_THREADS;
 
@@ -314,12 +319,22 @@ sub send {
     my ($self, $e) = @_;
 
     # Subtest state management
+    my $no_subtest = 0;
     if ($e->isa('Test::Stream::Event::Child')) {
         if ($e->action eq 'push') {
             push @{$self->[STATE]} => [0, 0, undef, 1];
             push @{$self->[SUBTESTS]} => [];
             push @{$self->[SUBTEST_TODO]} => $e->context->in_todo;
-            return $e;
+
+            return $e unless $self->[SUBTEST_TAP_INSTANT];
+
+            $no_subtest = 1;
+            $e = Test::Stream::Event::Note->new_from_pairs(
+                context => $e->context,
+                created => $e->created,
+                message => "Subtest: " . $e->name,
+                in_subtest => scalar(@{$self->[SUBTESTS]}) - 1,
+            );
         }
         else {
             pop @{$self->[SUBTEST_TODO]};
@@ -340,12 +355,12 @@ sub send {
     my $cache = $self->_update_state($self->[STATE]->[-1], $e);
 
     # Subtests get dibbs on events
-    if (@{$self->[SUBTESTS]}) {
+    if (!$no_subtest && @{$self->[SUBTESTS]}) {
         $e->context->set_diag_todo(1) if $self->[SUBTEST_TODO]->[-1];
         $e->set_in_subtest(scalar @{$self->[SUBTESTS]});
         push @{$self->[SUBTESTS]->[-1]} => $e;
 
-        $self->_render_tap($cache) unless $cache->{no_out};
+        $self->_render_tap($cache) if $self->[SUBTEST_TAP_INSTANT] && !$cache->{no_out};
     }
     elsif($self->[_USE_FORK] && ($$ != $self->[PID] || get_tid() != $self->[TID])) {
         $self->fork_out($e);
@@ -431,7 +446,7 @@ sub _render_tap {
     return unless $cache->{do_tap} || $e->can('to_tap');
 
     my $num = $self->use_numbers ? $cache->{number} : undef;
-    my @sets = $e->to_tap($num);
+    my @sets = $e->to_tap($num, $self->[SUBTEST_TAP_DELAYED]);
 
     my $in_subtest = $e->in_subtest || 0;
     my $indent = '    ' x $in_subtest;
@@ -439,6 +454,7 @@ sub _render_tap {
     for(my $i = 0; $i < @sets; $i += 2) {
         my $hid = $sets[$i];
         my $msg = $sets[$i + 1];
+        my $fmsg = $msg;
         my $enc = $e->encoding || confess "Could not find encoding!";
 
         if(my $io = $self->[IO_SETS]->{$enc}->[$hid]) {

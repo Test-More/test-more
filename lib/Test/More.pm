@@ -95,6 +95,28 @@ sub before_import {
         elsif ($item eq 'enable_forking') {
             Test::Stream->shared->use_fork;
         }
+        elsif ($item eq 'subtest_tap') {
+            my $val = $list->[$idx++];
+            if (!$val || $val eq 'none') {
+                $context->stream->set_subtest_tap_instant(0);
+                $context->stream->set_subtest_tap_delayed(0);
+            }
+            elsif ($val eq 'instant') {
+                $context->stream->set_subtest_tap_instant(1);
+                $context->stream->set_subtest_tap_delayed(0);
+            }
+            elsif ($val eq 'delayed') {
+                $context->stream->set_subtest_tap_instant(0);
+                $context->stream->set_subtest_tap_delayed(1);
+            }
+            elsif ($val eq 'both') {
+                $context->stream->set_subtest_tap_instant(1);
+                $context->stream->set_subtest_tap_delayed(1);
+            }
+            else {
+                croak "'$val' is not a valid option for '$item'";
+            }
+        }
         elsif ($item eq 'utf8') {
             $context->stream->io_sets->init_encoding('utf8');
             $context->set_encoding('utf8');

@@ -44,11 +44,43 @@ sub init {
 
 sub to_tap {
     my $self = shift;
-    my ($num) = @_;
+    my ($num, $delayed) = @_;
 
-    return if $self->[EXCEPTION] && $self->[EXCEPTION]->isa('Test::Stream::Event::Bail');
+    unless($delayed) {
+        return if $self->[EXCEPTION]
+               && $self->[EXCEPTION]->isa('Test::Stream::Event::Bail');
 
-    return $self->SUPER::to_tap($num);
+        return $self->SUPER::to_tap($num);
+    }
+
+    # Subtest final result first
+    $self->[NAME] =~ s/$/ {/mg;
+    my @out = (
+        $self->SUPER::to_tap($num),
+        $self->_render_events(@_),
+        OUT_STD, "}\n",
+    );
+    $self->[NAME] =~ s/ {$//mg;
+    return @out;
+}
+
+sub _render_events {
+    my $self = shift;
+    my ($num, $delayed) = @_;
+
+    my $idx = 0;
+    my @out;
+    for my $e (@{$self->events}) {
+        next unless $e->can('to_tap');
+        $idx++ if $e->isa('Test::Stream::Event::Ok');
+        push @out => $e->to_tap($idx, $delayed);
+    }
+
+    for (my $i = 1; $i < @out; $i += 2) {
+        $out[$i] =~ s/^/    /mg;
+    }
+
+    return @out;
 }
 
 1;

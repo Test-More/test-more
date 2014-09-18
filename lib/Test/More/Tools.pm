@@ -438,8 +438,6 @@ sub subtest {
     $ctx->throw("subtest()'s second argument must be a code ref")
         unless $code && 'CODE' eq reftype($code);
 
-    $ctx->note("Subtest: $name");
-
     $ctx->child('push', $name);
     $ctx->clear;
     my $todo = $ctx->hide_todo;
