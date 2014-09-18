@@ -191,7 +191,20 @@ sub fork_out {
 
         # First write the file, then rename it so that it is not read before it is ready.
         my $name =  $tempdir . "/$$-$tid-" . ($self->[EVENT_ID]++);
-        $event->context->set_stream(undef);
+        my @events = ($event);
+        while (my $e = shift @events) {
+            next unless $e;
+            $e->context->set_stream(undef);
+            next unless $e->isa('Test::Stream::Event::Ok');
+            push @events => @{$e->diag}   if $e->diag;
+            next unless $e->isa('Test::Stream::Event::Subtest');
+            push @events => @{$e->events};
+            push @events => $e->exception if $e->exception;
+            push @events => $e->state->[STATE_PLAN] if $e->state->[STATE_PLAN];
+            $e->state->[STATE_LEGACY] = undef if $e->state->[STATE_LEGACY];
+            $e->state->[STATE_ENDED]  = undef if $e->state->[STATE_ENDED];
+        }
+
         Storable::store($event, $name);
         rename($name, "$name.ready") || confess "Could not rename file '$name' -> '$name.ready'";
     }
