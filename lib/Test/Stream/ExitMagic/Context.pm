@@ -10,7 +10,6 @@ BEGIN { Test::Stream::ArrayBase->cleanup }
 sub init {
     $_[0]->[PID]      = $$;
     $_[0]->[ENCODING] = 'legacy';
-    $_[0]->[DEPTH]    = 0;
 }
 
 sub snapshot { $_[0] }

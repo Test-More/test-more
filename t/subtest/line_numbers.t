@@ -98,9 +98,10 @@ sub run_the_subtest {
     test_out( "# Subtest: namehere");
     test_out( "    1..0");
     test_err( "    # No tests run!");
-    test_out( 'not ok 1 - No tests run for subtest "namehere"');
-    test_err(q{#   Failed test 'No tests run for subtest "namehere"'});
+    test_out( 'not ok 1 - namehere');
+    test_err(q{#   Failed test 'namehere'});
     test_err( "#   at $0 line $line{outerfail4}.");
+    test_err( "#   No tests run for subtest.");
 
     subtest namehere => sub {
         done_testing;

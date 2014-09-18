@@ -27,13 +27,17 @@ ok(0, "Also Intercepted!");
 $events = $grab->finish;
 ok($got, "Delayed test that we did in fact get a grab object");
 is($grab, undef, "Poof! vanished!");
-is(@$events, 3, "got 3 events (2 ok, 1 diag)");
+is(@$events, 2, "got 2 events (2 ok)");
 events_are(
     $events,
     check {
         event ok => { bool => 1 };
-        event ok => { bool => 0 };
-        event diag => { };
+        event ok => {
+            bool => 0,
+            diag => check {
+                event diag => { };
+            },
+        };
         dir end => 'intercepted via grab 1';
     }
 );
@@ -46,8 +50,7 @@ events_are(
     $grab,
     check {
         event ok => { bool => 1 };
-        event ok => { bool => 0 };
-        event diag => { };
+        event ok => { bool => 0, diag => check { diag => {} } };
         dir end => 'intercepted via grab 2';
     }
 );
@@ -83,11 +86,12 @@ events_are(
         );
     },
 
-    ok => {id => 'first', bool => 0},
-
-    diag => {message => qr{Failed test 'Lets name this test!'.*at (\./)?t/Modern/Tester2\.t line}s},
-    diag => {message => q{(ok blah) Wanted bool => '0', but got bool => '1'}},
-    diag => {message => <<"    EOT"},
+    ok => {
+        id => 'first', bool => 0,
+        diag => [
+            diag => {message => qr{Failed test 'Lets name this test!'.*at (\./)?t/Modern/Tester2\.t line}s},
+            diag => {message => q{(ok blah) Wanted bool => '0', but got bool => '1'}},
+            diag => {message => <<"            EOT"},
 Got Event: ok => {
   name: foo
   bool: 1
@@ -97,17 +101,21 @@ Got Event: ok => {
   file: $file
   line: $line
   pid: $$
-  depth: 0
   encoding: legacy
   tool_name: ok
   tool_package: Test::More
   tap: ok - foo
+  diag: [0]
+  in_subtest: 0
   level: 1
 }
 Expected: ok => {
   bool: 0
 }
-    EOT
+            EOT
+        ],
+    },
+
     end => 'Failure diag checking',
 );
 
@@ -120,10 +128,16 @@ events_are(
         );
     },
 
-    ok => {id => 'first', bool => 0},
+    ok => {
+        id => 'first', bool => 0,
+        diag => [
+            diag => {},
+            diag => {message => q{Expected end of events, but more events remain}},
+            diag => {},
 
-    diag => {},
-    diag => {message => q{Expected end of events, but more events remain}},
+            'end',
+        ],
+    },
 
     end => 'skipping a diag',
 );
@@ -143,8 +157,12 @@ DOCS_1: {
     events_are(
         $events,
         ok   => { id => 'a', bool => 1, name => 'pass' },
-        ok   => { id => 'b', bool => 0, name => 'fail' },
-        diag => { message => qr/Failed test 'fail'/ },
+        ok   => {
+            id => 'b', bool => 0, name => 'fail',
+            diag => [
+                diag => { message => qr/Failed test 'fail'/ },
+            ],
+        },
         diag => { message => qr/xxx/ },
         end => 'docs 1',
     );
@@ -286,10 +304,14 @@ DOCS_6: {
             );
         },
 
-        ok => { bool => 0 },
-        diag => { message => qr/Failed test 'docs 6 inner'/ },
-        diag => { message => q{(ok 3) Wanted event type 'ok', But got: 'diag'} },
-        diag => { message => qr/Full event found was:/ },
+        ok => {
+            bool => 0,
+            diag => [
+                diag => { message => qr/Failed test 'docs 6 inner'/ },
+                diag => { message => q{(ok 3) Wanted event type 'ok', But got: 'diag'} },
+                diag => { message => qr/Full event found was:/ },
+            ],
+        },
 
         end => 'docs 6',
     );

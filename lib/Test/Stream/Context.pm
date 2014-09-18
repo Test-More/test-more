@@ -14,7 +14,7 @@ use Test::Stream::Meta qw/init_tester is_tester/;
 
 use Test::Stream::ArrayBase;
 BEGIN {
-    accessors qw/frame stream encoding in_todo todo modern depth pid skip parent provider/;
+    accessors qw/frame stream encoding in_todo todo modern pid skip diag_todo provider/;
     Test::Stream::ArrayBase->cleanup;
 }
 
@@ -27,19 +27,22 @@ Test::Stream::Exporter->cleanup();
     $Test::Builder::Level ||= 1;
 }
 
-our $DEPTH = 0;
-our $CURRENT;
-our $PARENT;
+my $CURRENT;
 
 sub init {
     $_[0]->[FRAME]    ||= _find_context(1);                # +1 for call to init
     $_[0]->[STREAM]   ||= Test::Stream->shared;
     $_[0]->[ENCODING] ||= 'legacy';
     $_[0]->[PID]      ||= $$;
-    $_[0]->[PARENT]   ||= $PARENT;
 }
 
-sub peek { $CURRENT }
+sub peek  { $CURRENT }
+sub clear { $CURRENT = undef }
+
+sub set {
+    $CURRENT = pop;
+    weaken($CURRENT);
+}
 
 sub context {
     # If the context has already been initialized we simply return it, we
@@ -97,10 +100,9 @@ sub context {
             $in_todo,
             $todo,
             $meta->[Test::Stream::Meta::MODERN]   || 0,
-            $DEPTH,
             $$,
             undef,
-            $PARENT || undef,
+            $in_todo,
             [$ppkg, $pname]
         ],
         __PACKAGE__
@@ -208,66 +210,26 @@ sub send {
     $self->[STREAM]->send(@_);
 }
 
-sub stage {
-    my $self = shift;
-    my ($code) = @_;
+sub register_event {
+    my $class = shift;
+    my ($pkg) = @_;
+    my $name = lc($pkg);
+    $name =~ s/^.*:://g;
 
-    my ($ok, $error) = try {
-        my $clone = bless [@$self], __PACKAGE__;
-        $clone->[FRAME] = [$self->call];
-        local $CURRENT = $clone;
-        $code->($self, $clone);
-    };
+    confess "Method '$name' is already defined, event '$pkg' cannot get a context method!"
+        if $class->can($name);
 
-    die $error unless $ok;
-}
-
-sub nest {
-    my $self = shift;
-    my ($code, $name, @args) = @_;
-
-    confess "nest() only works on the CURRENT context"
-        unless $CURRENT && $self == $CURRENT;
-
-    my $pass;
-
-    $self->child('push');
-    $self->note("Subtest: $name");
-
-    my $eod = $self->stream->exit_on_disruption;
-    $self->stream->set_exit_on_disruption(0);
-    $self->stream->push_state;
-    my $todo = $self->hide_todo;
-    my ($ok, $error) = try {
-        local $DEPTH = $DEPTH + 1;
-        {
-            local $PARENT = $self->snapshot;
-            local $CURRENT = undef;
-            local $Test::Builder::Level = 1;
-            $code->(@args);
-        }
-
-        my $ctx = $self->snapshot;
-        $ctx->[DEPTH] = $DEPTH;
-        $ctx->done_testing unless $self->[STREAM]->plan || $self->stream->ended;
-
-        require Test::Stream::ExitMagic;
-        {
-            local $? = 0;
-            Test::Stream::ExitMagic->new->do_magic($ctx->stream, $ctx);
-        }
-
-        $pass = $self->stream->is_passing && $self->stream->count > 0;
-    };
-    my $state = $self->stream->pop_state;
-    $self->stream->set_exit_on_disruption($eod);
-    $self->restore_todo($todo);
-
-    $self->child('pop');
-
-    die $error unless $ok;
-
-    return $pass, $state;
+    # Use a string eval so that we get a names sub instead of __ANON__
+    local ($@, $!);
+    eval qq|
+        sub $name {
+            my \$self = shift;
+            my \@call = caller(0);
+            my \$e = \$pkg->new(\$self->snapshot, [\@call[0 .. 4]], 0, \@_);
+            return \$self->stream->send(\$e);
+        };
+        1;
+    | || die $@;
 }
 
 sub hide_todo {
@@ -319,34 +281,6 @@ sub restore_todo {
     return;
 }
 
-sub register_event {
-    my $class = shift;
-    my ($pkg) = @_;
-    my $name = lc($pkg);
-    $name =~ s/^.*:://g;
-
-    confess "Method '$name' is already defined, event '$pkg' cannot get a context method!"
-        if $class->can($name);
-
-    # Use a string eval so that we get a names sub instead of __ANON__
-    local ($@, $!);
-    eval qq|
-        sub $name {
-            my \$self = shift;
-            my \@call = caller(0);
-            my \$e = \$pkg->new(\$self->snapshot, [\@call[0 .. 4]], \@_);
-            \$self->stream->send(\$e);
-            return \$e;
-        };
-        1;
-    | || die $@;
-}
-
-sub diag_todo {
-    return 1 if $_[0]->[IN_TODO];
-    return 0 unless $_[0]->[PARENT];
-    return $_[0]->[PARENT]->diag_todo;
-}
 
 our $AUTOLOAD;
 sub AUTOLOAD {

@@ -14,7 +14,6 @@ my $events = intercept {
         ok(1, "subtest success" );
 
         subtest 'subtest_deeper' => sub {
-            ok(0, "deeper subtest failure" );
             ok(1, "deeper subtest success" );
         };
     };
@@ -27,41 +26,40 @@ events_are(
     $events,
 
     check {
-        event ok   => {bool => 0};
-        event diag => {};
+        event ok   => {bool => 0, diag => check { event diag => {} }};
         event ok   => {bool => 1};
 
-        event child => {action => 'push'};
-        event     note => {message => 'Subtest: subtest'};
-        event     ok   => {bool => 0};
-        event     diag => {};
-        event     ok   => {bool => 1};
+        event note => {message => 'Subtest: subtest'};
+        event subtest => {
+            name => 'subtest',
+            bool => 0,
+            diag => check {
+                event diag => {message => qr/Failed test 'subtest'/};
+            },
 
-        event     child => {action => 'push'};
-        event         note => {message => 'Subtest: subtest_deeper'};
-        event         ok   => {bool => 0};
-        event         diag => {};
-        event         ok   => {bool => 1};
+            events => check {
+                event ok => {bool => 0};
+                event ok => {bool => 1};
 
-        event         plan   => {};
-        event         finish => {};
+                event note => {message => 'Subtest: subtest_deeper'};
+                event subtest => {
+                    bool => 1,
+                    name => 'subtest_deeper',
+                    events => check {
+                        event ok => { bool => 1 };
+                    },
+                };
 
-        event         diag => {tap  => qr/Looks like you failed 1 test of 2/};
-        event     child => {action => 'pop'};
-        event     ok   => {bool => 0};
-        event     diag => {};
+                event plan   => { max => 3 };
+                event finish => { tests_run => 3, tests_failed => 1 };
+                event diag   => { message => qr/Looks like you failed 1 test of 3/ };
 
-        event     plan   => {};
-        event     finish => {};
+                dir end => 'End of subtests events';
+            },
+        };
 
-        event     diag => {tap  => qr/Looks like you failed 2 tests of 3/};
-        event child => {action => 'pop'};
-        event ok   => {bool => 0};
-        event diag => {};
-
-        event ok   => {bool => 0};
-        event diag => {};
-        event ok   => {bool => 1};
+        event ok => {bool => 0};
+        event ok => {bool => 1};
 
         dir end => "subtest events as expected";
     }

@@ -43,7 +43,8 @@ plan tests => 8 * @test_combos;
 sub test_subtest_in_todo {
     my ($name, $code, $want_out, $no_tests_run) = @_;
 
-    my $xxx = $no_tests_run ? 'No tests run for subtest "xxx"' : 'xxx';
+    #my $xxx = $no_tests_run ? 'No tests run for subtest "xxx"' : 'xxx';
+    my @no_test_err = $no_tests_run ? ('#   No tests run for subtest.') : ();
 
     chomp $want_out;
     my @outlines = split /\n/, $want_out;
@@ -55,9 +56,10 @@ sub test_subtest_in_todo {
             "# Subtest: xxx",
             @outlines,
             map { my $x = $_; $x =~ s/\s+$//; $x } (
-                "not ok 1 - $xxx # TODO $todo_reason",
-                "#   Failed (TODO) test '$xxx'",
+                "not ok 1 - xxx # TODO $todo_reason",
+                "#   Failed (TODO) test 'xxx'",
                 "#   at $0 line $line{xxx}.",
+                @no_test_err,
                 "not ok 2 - regular todo test # TODO $todo_reason",
                 "#   Failed (TODO) test 'regular todo test'",
                 "#   at $0 line $line{reg}.",

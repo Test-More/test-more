@@ -7,7 +7,7 @@ use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::ArrayBase;
 BEGIN {
-    accessors qw/context created/;
+    accessors qw/context created in_subtest/;
     Test::Stream::ArrayBase->cleanup;
 };
 
@@ -20,6 +20,7 @@ sub cleanup {
 
 sub import {
     my $class = shift;
+    my ($base) = @_;
 
     # Import should only when event is imported, subclasses do not use this
     # import.
@@ -28,7 +29,7 @@ sub import {
     my $caller = caller;
 
     # @ISA must be set before we load ArrayBase
-    { no strict 'refs'; push @{"$caller\::ISA"} => $class }
+    { no strict 'refs'; push @{"$caller\::ISA"} => $base || $class }
     Test::Stream::ArrayBase->export_to($caller);
     Test::Stream::ArrayBase->after_import($caller);
     require Test::Stream::Context;
@@ -37,12 +38,6 @@ sub import {
 
 sub init {
     confess("No context provided!") unless $_[0]->[CONTEXT];
-}
-
-sub indent {
-    my $self = shift;
-    my $depth = $self->[CONTEXT]->depth || return '';
-    return '    ' x $depth;
 }
 
 sub encoding { $_[0]->[CONTEXT]->encoding }

@@ -289,35 +289,8 @@ sub fail (;$) {
 }
 
 sub subtest {
-    my ($name, $code, @args) = @_;
     my $ctx = context();
-    my ($ok, $state);
-    my ($succ, $err) = try {
-        ($ok, $state) = $ctx->nest($code, $name, @args)
-    };
-
-    unless ($succ) {
-        die $err unless blessed($err) && $err->isa('Test::Stream::Event');
-        if ($err->isa('Test::Stream::Event::Plan')) {
-            $ok = 1;
-            $ctx->set_skip("skip_all");
-        }
-        elsif ($err->isa('Test::Stream::Event::Bail')) {
-            $ctx->bail($err->reason, 1);
-        }
-        else {
-            die $err;
-        }
-    }
-
-    if (!$ok && !$state->[STATE_COUNT]) {
-        $ctx->ok(0, "No tests run for subtest \"$name\"");
-    }
-    else {
-        $ctx->ok($ok, $name);
-    }
-
-    return $ok;
+    return tmt->subtest(@_);
 }
 
 sub require_ok($;$) {

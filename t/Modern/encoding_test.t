@@ -31,12 +31,14 @@ is($ctx_legacy->encoding, 'legacy', "got a legacy context");
 my $diag_utf8 = Test::Stream::Event::Diag->new(
     $ctx_utf8,
     [],
+    0,
     "failed blah de blah\nFatal error in $filename line 42.\n",
 );
 
 my $diag_legacy = Test::Stream::Event::Diag->new(
     $ctx_legacy,
     [],
+    0,
     "failed blah de blah\nFatal error in $filename line 42.\n",
 );
 

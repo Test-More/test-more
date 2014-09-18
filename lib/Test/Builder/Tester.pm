@@ -124,6 +124,7 @@ my $testing_num;
 my $original_is_passing;
 
 my $original_stream;
+my $original_state;
 
 # remembering where the file handles were originally connected
 my $original_output_handle;
@@ -140,7 +141,7 @@ sub _start_testing {
     $ENV{HARNESS_ACTIVE} = 0;
 
     $original_stream = builder->{stream} || Test::Stream->shared;
-    $original_stream->push_state;
+    $original_state  = [@{$original_stream->state->[-1]}];
 
     # remember what the handles were set to
     $original_output_handle  = builder()->output();
@@ -367,7 +368,7 @@ sub test_test {
     # re-enable the original setting of the harness
     $ENV{HARNESS_ACTIVE} = $original_harness_env;
 
-    $original_stream->pop_state;
+    $original_stream->state->[-1] = $original_state;
 
     # check the output we've stashed
     unless( builder()->ok( ( $args{skip_out} || $out->check ) &&
@@ -523,8 +524,9 @@ sub _account_for_subtest {
     my( $self, $check ) = @_;
 
     my $ctx = Test::Stream::Context::context();
+    my $depth = @{$ctx->stream->subtests};
     # Since we ship with Test::Builder, calling a private method is safe...ish.
-    return ref($check) ? $check : ($ctx->depth ? '    ' x $ctx->depth : '') . $check;
+    return ref($check) ? $check : ($depth ? '    ' x $depth : '') . $check;
 }
 
 sub _translate_Failed_check {

@@ -94,7 +94,12 @@ sub to_tap {
     my $out = join " " => @out;
     $out =~ s/\n/\n# /g;
 
-    return (OUT_STD, "$out\n");
+    return (OUT_STD, "$out\n") unless $self->[DIAG];
+
+    return (
+        OUT_STD, "$out\n",
+        map {$_->to_tap($num)} @{$self->[DIAG]},
+    );
 }
 
 sub add_diag {
@@ -113,7 +118,7 @@ sub add_diag {
             $item->link($self);
         }
         else {
-            $item = Test::Stream::Event::Diag->new($context, $created, $item, $self);
+            $item = Test::Stream::Event::Diag->new($context, $created, $self->[IN_SUBTEST], $item, $self);
         }
 
         push @{$self->[DIAG]} => $item;

@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Test::Stream::Exporter;
-use Test::Stream::Carp qw/confess/;
+use Test::Stream::Carp qw/confess croak/;
 use Scalar::Util();
 
 my $LOCKED = sub {
@@ -45,12 +45,28 @@ sub after_import {
     *{"$importer\::AB_FIELDS"}  = sub { $fields };
 }
 
-exports qw/accessor accessors to_hash new/;
+exports qw/accessor accessors to_hash new new_from_pairs/;
 unexports qw/accessor accessors/;
 
 sub new {
     my $class = shift;
     my $self = bless [@_], $class;
+    $self->init if $self->can('init');
+    return $self;
+}
+
+sub new_from_pairs {
+    my $class = shift;
+    my %params = @_;
+    my $self = bless [], $class;
+
+    while (my ($k, $v) = each %params) {
+        my $const = uc($k);
+        croak "$class has no accessor named '$k'" unless $class->can($const);
+        my $id = $class->$const;
+        $self->[$id] = $v;
+    }
+
     $self->init if $self->can('init');
     return $self;
 }

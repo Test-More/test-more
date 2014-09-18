@@ -29,10 +29,10 @@ sub ctx {
     my ($add) = @_;
     my $ctx = Test::Stream::Context::context(2 + ($add || 0));
     $ctx->set_stream($self->{stream}) if $self->{stream};
-    $ctx->set_depth($self->{depth})   if $self->{depth};
     if (defined $self->{Todo}) {
         $ctx->set_in_todo(1);
         $ctx->set_todo($self->{Todo});
+        $ctx->set_diag_todo(1);
     }
     return $ctx;
 }
@@ -89,40 +89,8 @@ sub _copy {
 
 sub subtest {
     my $self = shift;
-    my($name, $subtests, @args) = @_;
-
     my $ctx = $self->ctx();
-
-    $ctx->throw("subtest()'s second argument must be a code ref")
-        unless $subtests && 'CODE' eq reftype($subtests);
-
-    my ($ok, $state);
-    my ($succ, $err) = try {
-        ($ok, $state) = $ctx->nest($subtests, $name, @args)
-    };
-
-    unless ($succ) {
-        die $err unless blessed $err && $err->isa('Test::Stream:::Event');
-        if ($err->isa('Test::Stream::Event::Plan')) {
-            $ok = 1;
-            $ctx->set_skip("skip_all");
-        }
-        elsif ($err->isa('Test::Stream::Event::Bail')) {
-            $ctx->bail($err->reason, 1);
-        }
-        else {
-            die $err;
-        }
-    }
-
-    if (!$ok && !$state->[STATE_COUNT]) {
-        $ctx->ok(0, "No tests run for subtest \"$name\"");
-    }
-    else {
-        $ctx->ok($ok, $name);
-    }
-
-    return $ok;
+    return tmt->subtest(@_);
 }
 
 sub child {
@@ -135,7 +103,8 @@ sub child {
         $ctx->throw("You already have a child named ($cname) running");
     }
 
-    $ctx->child('push');
+    $name ||= "Child of " . $self->{Name};
+    $ctx->child('push', $name);
 
     my $stream = $self->{stream} || Test::Stream->shared;
 
@@ -143,15 +112,10 @@ sub child {
         %$self,
         '?' => $?,
         parent => $self,
-        depth => 1 + ($self->{depth} || 0),
-        eod => $stream->exit_on_disruption || 0,
     };
 
-    $stream->push_state;
-    $stream->set_exit_on_disruption(0);
-
     $? = 0;
-    $child->{Name} = $name || "Child of " . $self->{Name};
+    $child->{Name} = $name;
     $self->{child} = $child;
     Scalar::Util::weaken($self->{child});
 
@@ -177,8 +141,6 @@ sub finalize {
     $ctx = undef;
 
     my $stream = $self->{stream} || Test::Stream->shared;
-    $stream->pop_state;
-    $stream->set_exit_on_disruption($self->{eod});
 
     my $parent = $self->parent;
     $self->{parent}->{child} = undef;
@@ -187,14 +149,7 @@ sub finalize {
     $? = $self->{'?'};
 
     $ctx = $parent->ctx;
-    $ctx->child('pop');
-    if ($count > 0) {
-        $ctx->ok($passing, $name);
-    }
-    else {
-        $ctx->ok(0, "No tests run for subtest \"$name\"");
-    }
-
+    $ctx->child('pop', $self->{Name});
 }
 
 sub parent { $_[0]->{parent} }
@@ -731,6 +686,7 @@ sub current_test {
             $i ||= Test::Stream::Event::Ok->new(
                 $nctx,
                 [CORE::caller()],
+                0,
                 undef,
                 undef,
                 undef,

@@ -57,6 +57,8 @@ ok 1
         ok 1
         ok 2
         Bail out!  ROCKS FALL! EVERYONE DIES!
+    Bail out!  ROCKS FALL! EVERYONE DIES!
+Bail out!  ROCKS FALL! EVERYONE DIES!
 OUT
 
 $Test->is_eq( $Exit_Code, 255 );
