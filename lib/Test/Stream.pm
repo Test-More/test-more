@@ -319,22 +319,15 @@ sub send {
     my ($self, $e) = @_;
 
     # Subtest state management
-    my $no_subtest = 0;
     if ($e->isa('Test::Stream::Event::Child')) {
         if ($e->action eq 'push') {
+            $e->context->note("Subtest: " . $e->name) if $self->[SUBTEST_TAP_INSTANT] && !$e->no_note;
+
             push @{$self->[STATE]} => [0, 0, undef, 1];
             push @{$self->[SUBTESTS]} => [];
             push @{$self->[SUBTEST_TODO]} => $e->context->in_todo;
 
-            return $e unless $self->[SUBTEST_TAP_INSTANT];
-
-            $no_subtest = 1;
-            $e = Test::Stream::Event::Note->new_from_pairs(
-                context => $e->context,
-                created => $e->created,
-                message => "Subtest: " . $e->name,
-                in_subtest => scalar(@{$self->[SUBTESTS]}) - 1,
-            );
+            return $e;
         }
         else {
             pop @{$self->[SUBTEST_TODO]};
@@ -355,7 +348,7 @@ sub send {
     my $cache = $self->_update_state($self->[STATE]->[-1], $e);
 
     # Subtests get dibbs on events
-    if (!$no_subtest && @{$self->[SUBTESTS]}) {
+    if (@{$self->[SUBTESTS]}) {
         $e->context->set_diag_todo(1) if $self->[SUBTEST_TODO]->[-1];
         $e->set_in_subtest(scalar @{$self->[SUBTESTS]});
         push @{$self->[SUBTESTS]->[-1]} => $e;

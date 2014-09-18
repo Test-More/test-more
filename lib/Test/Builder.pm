@@ -104,7 +104,7 @@ sub child {
     }
 
     $name ||= "Child of " . $self->{Name};
-    $ctx->child('push', $name);
+    $ctx->child('push', $name, 1);
 
     my $stream = $self->{stream} || Test::Stream->shared;
 
