@@ -21,8 +21,13 @@ sub todo { $_[0]->[CONTEXT]->todo }
 sub init {
     my $self = shift;
 
-    # Do not store objects here, only true/false
-    $self->[REAL_BOOL] = 1 if $self->[REAL_BOOL];
+    # Do not store objects here, only true/false/undef
+    if ($self->[REAL_BOOL]) {
+        $self->[REAL_BOOL] = 1;
+    }
+    elsif(defined $self->[REAL_BOOL]) {
+        $self->[REAL_BOOL] = 0;
+    }
     $self->[LEVEL] = $Test::Builder::Level;
 
     my $ctx  = $self->[CONTEXT];
@@ -142,7 +147,7 @@ sub to_legacy {
     my $self = shift;
 
     my $result = {};
-    $result->{ok}        = $self->bool;
+    $result->{ok}        = $self->bool ? 1 : 0;
     $result->{actual_ok} = $self->real_bool;
     $result->{name}      = $self->name;
 

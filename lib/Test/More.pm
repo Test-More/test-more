@@ -373,6 +373,8 @@ sub _skip {
     $ctx->alert("$func() was passed a non-numeric number of tests.  Did you get the arguments backwards?")
         if defined $how_many and $how_many =~ /\D/;
 
+    return unless $how_many || !$bool;
+
     $ctx->set_skip($why);
     $how_many ||= 1;
     for( 1 .. $how_many ) {
