@@ -127,13 +127,19 @@ sub init {
 
     sub intercept_start {
         my $class = shift;
-        my $new = $class->new();
-        my $old = $stack[-1];
-        push @stack => $new;
+        my ($new) = @_;
 
-        $new->set_exit_on_disruption(0);
-        $new->set_use_tap(0);
-        $new->set_use_legacy(0);
+        my $old = $stack[-1];
+
+        unless($new) {
+            $new = $class->new();
+
+            $new->set_exit_on_disruption(0);
+            $new->set_use_tap(0);
+            $new->set_use_legacy(0);
+        }
+
+        push @stack => $new;
 
         return ($new, $old);
     }

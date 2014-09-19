@@ -3,29 +3,22 @@ use strict;
 use warnings;
 
 use base 'Test::Builder';
+use Test::Stream;
 
 sub new {
     my $class = shift;
     my $self = $class->SUPER::create(@_);
     $self->{stream}->set_use_tap(0);
-
-    $self->{stream}->listen(
-        sub {
-            shift;    # Stream
-            push @{$self->{EVENTS}} => @_;
-        }
-    );
-
+    $self->{stream}->set_use_legacy(1);
     return $self;
 }
 
 sub details {
     my $self = shift;
-    my $events = $self->{EVENTS};
 
     my $prem;
     my @out;
-    for my $e (@$events) {
+    for my $e (@{$self->{stream}->state->[-1]->[STATE_LEGACY]}) {
         if ($e->isa('Test::Stream::Event::Ok')) {
             push @out => $e->to_legacy;
             $out[-1]->{diag} ||= "";

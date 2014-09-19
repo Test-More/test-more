@@ -8,6 +8,8 @@ package Test::Tester;
 use Test::Builder 1.301001;
 use Test::Stream::Toolset;
 use Test::More::Tools;
+use Test::Stream;
+use Test::Tester::Capture;
 
 require Exporter;
 
@@ -37,12 +39,8 @@ if (my $want_colour = $ENV{TESTTESTERCOLOUR} || $ENV{TESTTESTERCOLOUR}) {
 
 }
 
-my $capture;
-sub capture {
-    require Test::Tester::Capture;
-    $capture ||= Test::Tester::Capture->new;
-    return $capture;
-}
+my $capture = Test::Tester::Capture->new;
+sub capture { $capture }
 
 sub find_run_tests {
     my $d     = 1;
@@ -58,28 +56,24 @@ sub find_run_tests {
 sub run_tests {
     my $test = shift;
 
-    my ($stream, $old) = Test::Stream->intercept_start;
-    $stream->set_use_legacy(1);
+    my $cstream;
+    if ($capture) {
+        $cstream = $capture->{stream};
+    }
 
-    my @events;
-    $stream->listen(
-        sub {
-            shift;    # Stream
-            push @events => @_;
-        }
-    );
+    my ($stream, $old) = Test::Stream->intercept_start($cstream);
+    $stream->set_use_legacy(1);
+    $stream->state->[-1] = [0, 0, undef, 1];
 
     my $level = $Test::Builder::Level;
 
     my @out;
     my $prem = "";
 
-    my $cap_stream = $capture ? delete $capture->{stream} : undef;
-
     my $ok = eval {
         $test->();
 
-        for my $e (@events) {
+        for my $e (@{$stream->state->[-1]->[STATE_LEGACY]}) {
             if ($e->isa('Test::Stream::Event::Ok')) {
                 push @out => $e->to_legacy;
                 $out[-1]->{diag} ||= "";
@@ -107,7 +101,7 @@ sub run_tests {
     };
     my $err = $@;
 
-    $capture->{stream} = $cap_stream if $cap_stream;
+    $stream->state->[-1] = [0, 0, undef, 1];
 
     Test::Stream->intercept_stop($stream);
 
