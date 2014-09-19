@@ -1,8 +1,10 @@
+-
 .perlcriticrc
 .perltidyrc
 Changes
 examples/indent.pl
 examples/subtest.t
+level
 lib/ok.pm
 lib/Test/Builder.pm
 lib/Test/Builder/Module.pm
@@ -27,6 +29,7 @@ lib/Test/Stream/Event/Finish.pm
 lib/Test/Stream/Event/Note.pm
 lib/Test/Stream/Event/Ok.pm
 lib/Test/Stream/Event/Plan.pm
+lib/Test/Stream/Event/Subtest.pm
 lib/Test/Stream/ExitMagic.pm
 lib/Test/Stream/ExitMagic/Context.pm
 lib/Test/Stream/Exporter.pm
@@ -36,6 +39,7 @@ lib/Test/Stream/Threads.pm
 lib/Test/Stream/Toolset.pm
 lib/Test/Stream/Util.pm
 lib/Test/Tester.pm
+lib/Test/Tester/Capture.pm
 lib/Test/Tester2.pm
 lib/Test/Tester2/Grab.pm
 lib/Test/Tutorial.pod
@@ -44,6 +48,7 @@ Makefile.PL
 MANIFEST			This list of files
 MANIFEST.SKIP
 README
+set_use_tap(0)
 t/00compile.t
 t/bad_plan.t
 t/bail_out.t
@@ -94,6 +99,7 @@ t/fail.t
 t/fail_one.t
 t/filehandles.t
 t/fork.t
+t/fork_in_subtest.t
 t/harness_active.t
 t/import.t
 t/is_deeply_dne_bug.t

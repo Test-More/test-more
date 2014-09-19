@@ -37,6 +37,13 @@ if (my $want_colour = $ENV{TESTTESTERCOLOUR} || $ENV{TESTTESTERCOLOUR}) {
 
 }
 
+my $capture;
+sub capture {
+    require Test::Tester::Capture;
+    $capture ||= Test::Tester::Capture->new;
+    return $capture;
+}
+
 sub find_run_tests {
     my $d     = 1;
     my $found = 0;
@@ -66,6 +73,9 @@ sub run_tests {
 
     my @out;
     my $prem = "";
+
+    my $cap_stream = $capture ? delete $capture->{stream} : undef;
+
     my $ok = eval {
         $test->();
 
@@ -96,6 +106,8 @@ sub run_tests {
         1;
     };
     my $err = $@;
+
+    $capture->{stream} = $cap_stream if $cap_stream;
 
     Test::Stream->intercept_stop($stream);
 
