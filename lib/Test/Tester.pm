@@ -79,7 +79,8 @@ sub run_tests {
                 $out[-1]->{diag} ||= "";
                 $out[-1]->{depth} = $e->level - $level;
                 for my $d (@{$e->diag || []}) {
-                    next if $d->message =~ m{Failed test .*\n\s*at .* line \d+\.};
+                    next if $d->message =~ m{Failed test (.*\n\s*)?at .* line \d+\.};
+                    next if $d->message =~ m{You named your test '.*'\.  You shouldn't use numbers for your test names};
                     chomp(my $msg = $d->message);
                     $msg .= "\n";
                     $out[-1]->{diag} .= $msg;

@@ -27,8 +27,7 @@ our $Level = 1;
 sub ctx {
     my $self = shift || die "No self in context";
     my ($add) = @_;
-    my $ctx = Test::Stream::Context::context(2 + ($add || 0));
-    $ctx->set_stream($self->{stream}) if $self->{stream};
+    my $ctx = Test::Stream::Context::context(2 + ($add || 0), $self->{stream});
     if (defined $self->{Todo}) {
         $ctx->set_in_todo(1);
         $ctx->set_todo($self->{Todo});

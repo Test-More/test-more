@@ -98,7 +98,10 @@ sub init {
 {
     my ($root, @stack, $magic);
 
-    END { $magic->do_magic($root) if $magic && $root && !$root->[NO_ENDING] }
+    END {
+        $root->fork_cull if $root && $root->_use_fork && $$ == $root->[PID];
+        $magic->do_magic($root) if $magic && $root && !$root->[NO_ENDING]
+    }
 
     sub shared {
         my ($class) = @_;

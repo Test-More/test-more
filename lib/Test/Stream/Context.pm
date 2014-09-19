@@ -45,14 +45,17 @@ sub set {
 }
 
 sub context {
+    my ($level, $stream) = @_;
     # If the context has already been initialized we simply return it, we
     # ignore any additional parameters as they no longer matter. The first
     # thing to ask for a context wins, anything context aware that is called
     # later MUST expect that it can get a context found by something down the
     # stack.
-    return $CURRENT if $CURRENT;
+    if ($CURRENT) {
+        return $CURRENT unless $stream;
+        return $CURRENT if $stream == $CURRENT->[STREAM];
+    }
 
-    my ($level) = @_;
     my $call = _find_context($level);
 
     $call = _find_context_harder() unless $call && is_tester($call->[0]);
@@ -87,7 +90,7 @@ sub context {
         ($ppkg, $pname) = ($provider[3] =~ m/^(.*)::([^:]+)$/);
     }
 
-    my $stream = $meta->[Test::Stream::Meta::STREAM] || Test::Stream->shared;
+    $stream ||= $meta->[Test::Stream::Meta::STREAM] || Test::Stream->shared;
     if ((USE_THREADS || $stream->_use_fork) && ($stream->pid == $$ && $stream->tid == get_tid())) {
         $stream->fork_cull();
     }
@@ -107,6 +110,8 @@ sub context {
         ],
         __PACKAGE__
     );
+
+    return $ctx if $CURRENT;
 
     $CURRENT = $ctx;
     weaken($CURRENT);
