@@ -1,10 +1,8 @@
--
 .perlcriticrc
 .perltidyrc
 Changes
 examples/indent.pl
 examples/subtest.t
-level
 lib/ok.pm
 lib/Test/Builder.pm
 lib/Test/Builder/Module.pm
@@ -47,8 +45,9 @@ lib/Test/use/ok.pm
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.SKIP
+profiling/compile.pl
+profiling/long-run.pl
 README
-set_use_tap(0)
 t/00compile.t
 t/bad_plan.t
 t/bail_out.t
@@ -133,6 +132,7 @@ t/lib/Test/Simple/sample_tests/two_fail.plx
 t/lib/TieOut.pm
 t/missing.t
 t/Modern/encoding_test.t
+t/Modern/Munge.t
 t/Modern/NotTB15.t
 t/Modern/Tester2.t
 t/Modern/Tester2_subtest.t
