@@ -69,9 +69,7 @@ WriteMakefile(
     },
 
     INSTALLDIRS => $install_dir,
-    test        => {
-        TESTS           => 't/*.t t/*/*.t',
-    },
+    test => { RECURSIVE_TEST_FILES => 1 },
 
     ($mm_ver < 6.48 ? () : (MIN_PERL_VERSION => 5.008001)),
 
