@@ -286,6 +286,7 @@ sub restore_todo {
     return;
 }
 
+sub DESTROY { 1 }
 
 our $AUTOLOAD;
 sub AUTOLOAD {
