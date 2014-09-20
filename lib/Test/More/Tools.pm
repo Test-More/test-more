@@ -168,7 +168,7 @@ sub can_check {
         }
         else {
             my $file = __FILE__;
-            $error =~ s/ at $file line \d+//;
+            $error =~ s/ at \Q$file\E line \d+//;
             push @diag => "    $class\->can('$method') failed with an exception:\n    $error";
         }
     }

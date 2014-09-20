@@ -57,11 +57,11 @@ sub is_regex {
 
     my ($re, $opts);
 
-    if ( $pattern =~ m{^ /(.*)/ (\w*) $ }sx) {
-        ($re, $opts) = ($1, $2);
+    if ($pattern =~ m{^ /(.*)/ (\w*) $ }sx) {
+        protect { ($re, $opts) = ($1, $2) };
     }
     elsif ($pattern =~ m,^ m([^\w\s]) (.+) \1 (\w*) $,sx) {
-        ($re, $opts) = ($2, $3);
+        protect { ($re, $opts) = ($2, $3) };
     }
     else {
         return;
