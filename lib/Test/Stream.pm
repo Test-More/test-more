@@ -19,6 +19,7 @@ BEGIN {
         subtests subtest_todo
         subtest_tap_instant
         subtest_tap_delayed
+        mungers
         listeners
         bailed_out
         exit_on_disruption
@@ -179,6 +180,18 @@ sub listen {
             unless ref $sub && ref $sub eq 'CODE';
 
         push @{$self->[LISTENERS]} => $sub;
+    }
+}
+
+sub munge {
+    my $self = shift;
+    for my $sub (@_) {
+        next unless $sub;
+
+        croak "munge only takes coderefs for arguments, got '$sub'"
+            unless ref $sub && ref $sub eq 'CODE';
+
+        push @{$self->[MUNGERS]} => $sub;
     }
 }
 
@@ -431,6 +444,10 @@ sub _update_state {
 
 sub _process_event {
     my ($self, $e, $cache) = @_;
+
+    if ($self->[MUNGERS]) {
+        $_->($self, $e) for @{$self->[MUNGERS]};
+    }
 
     $self->_render_tap($cache) unless $cache->{no_out};
 
