@@ -5,7 +5,7 @@ use warnings;
 use Scalar::Util qw/reftype/;
 use Test::More::Tools;
 use Test::Stream::Carp qw/cluck confess/;
-use Test::Stream::Util qw/try unoverload_str/;
+use Test::Stream::Util qw/try unoverload_str is_regex/;
 
 use base 'Test::More::DeepCheck';
 use Test::Stream::ArrayBase;
@@ -127,7 +127,7 @@ sub _inner_check {
     return $self->_check_array($e1, $e2) if $type1 eq 'ARRAY';
     return $self->_check_hash($e1, $e2)  if $type1 eq 'HASH';
 
-    if ($type1 eq 'REF' || $type1 eq 'SCALAR') {
+    if ($type1 eq 'REF' || $type1 eq 'SCALAR' && !(is_regex($e1) && is_regex($e2))) {
         push @$self => {type => 'REF', vals => [$e1, $e2], line => __LINE__};
         my $ok = $self->_deep_check($$e1, $$e2);
         pop @$self if $ok;

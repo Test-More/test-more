@@ -52,7 +52,8 @@ sub is_regex {
     my $type = reftype($pattern) || '';
 
     return $pattern if $type =~ m/^regexp?$/i;
-    return $pattern if $type eq 'SCALAR' && $pattern =~ m/^\(\?.+:.*\)$/;
+    return $pattern if $type eq 'SCALAR' && $pattern =~ m/^\(\?.+:.*\)$/s;
+    return $pattern if !$type && $pattern =~ m/^\(\?.+:.*\)$/s;
 
     my ($re, $opts);
 

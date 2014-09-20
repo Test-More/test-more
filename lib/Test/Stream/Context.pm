@@ -230,7 +230,7 @@ sub register_event {
         sub $name {
             my \$self = shift;
             my \@call = caller(0);
-            my \$e = \$pkg->new(\$self->snapshot, [\@call[0 .. 4]], 0, \@_);
+            my \$e = '$pkg'->new(\$self->snapshot, [\@call[0 .. 4]], 0, \@_);
             return \$self->stream->send(\$e);
         };
         1;

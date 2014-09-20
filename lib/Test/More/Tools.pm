@@ -198,7 +198,7 @@ sub isa_check {
     }
     else {
         $whatami = 'class';
-        $try_isa = 1;
+        $try_isa = $thing && $thing !~ m/^\d+$/;
         $$thing_name = "The class (or class-like) '$thing'" unless defined $$thing_name;
         $diag = "$$thing_name isn't a '$class'";
     }
