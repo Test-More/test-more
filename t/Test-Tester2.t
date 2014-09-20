@@ -2,7 +2,8 @@ use strict;
 use warnings;
 
 use Test::More 'modern';
-use Test::Tester2;
+
+use ok 'Test::Tester2';
 
 can_ok( __PACKAGE__, 'intercept', 'events_are' );
 
@@ -50,7 +51,7 @@ events_are(
     $grab,
     check {
         event ok => { bool => 1 };
-        event ok => { bool => 0, diag => check { diag => {} } };
+        event ok => { bool => 0, diag => check { event diag => {} } };
         dir end => 'intercepted via grab 2';
     }
 );
@@ -89,7 +90,7 @@ events_are(
     ok => {
         id => 'first', bool => 0,
         diag => [
-            diag => {message => qr{Failed test 'Lets name this test!'.*at (\./)?t/Modern/Tester2\.t line}s},
+            diag => {message => qr{Failed test 'Lets name this test!'.*at (\./)?$0 line}s},
             diag => {message => q{(ok blah) Wanted bool => '0', but got bool => '1'}},
             diag => {message => <<"            EOT"},
 Got Event: ok => {

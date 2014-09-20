@@ -54,7 +54,7 @@ Please see L<Test::use::ok> for the full description.
 To the extent possible under law, 唐鳳 has waived all copyright and related
 or neighboring rights to L<Test-use-ok>.
 
-This work is published from Taiwan.
+This work is published from Taiwan and/or other countries.
 
 L<http://creativecommons.org/publicdomain/zero/1.0>
 

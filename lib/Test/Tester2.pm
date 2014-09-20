@@ -7,7 +7,7 @@ use Test::Stream;
 use Test::Stream::Util qw/try/;
 
 use Scalar::Util qw/blessed reftype/;
-use Test::Stream::Carp qw/croak/;
+use Test::Stream::Carp qw/croak carp/;
 
 use Test::Stream::Toolset;
 use Test::Stream::Exporter;
@@ -35,13 +35,22 @@ sub check(&) {
 
     local $EVENTS = [];
 
-    $code->($EVENTS);
+    my @out = $code->($EVENTS);
+
+    if (@out) {
+        if (@$EVENTS) {
+            carp "sub used in check(&) returned values, did you forget to prefix an event with 'event'?"
+        }
+        else {
+            croak "No events were produced by sub in check(&), but the sub returned some values, did you forget to prefix an event with 'event'?";
+        }
+    }
 
     return $EVENTS;
 }
 
-sub event {
-    my ($type, @data) = @_;
+sub event($$) {
+    my ($type, $data) = @_;
 
     croak "event() cannot be used outside of a check { ... } block"
         unless $EVENTS;
@@ -52,29 +61,20 @@ sub event {
 
     my $props;
 
-    if (@data == 1 && ref $data[0]) {
-        croak "event() takes a type, followed by a list or hashref"
-            unless reftype $data[0] eq 'HASH';
+    croak "event() takes a type, followed by a hashref"
+        unless ref $data && reftype $data eq 'HASH';
 
-        $props = { %{$data[0]} };
-    }
-    elsif (@data % 2) {
-        require Data::Dumper;
-        croak "event() needs an even list to turn into a hash, got:\n" . Data::Dumper::Dumper({
-            @data, '(NULL)'
-        });
-    }
-    else {
-        $props = {@data};
-    }
+    # Make a copy
+    $props = { %{$data} };
 
     my @call = caller(0);
     $props->{debug_line} = $call[2];
 
     push @$EVENTS => $type, $props;
+    return ();
 }
 
-sub directive {
+sub directive($;$) {
     my ($directive, @args) = @_;
 
     croak "directive() cannot be used outside of a check { ... } block"
@@ -84,6 +84,7 @@ sub directive {
         unless (@args && @args == 1) || $directive eq 'end';
 
     push @$EVENTS => $directive, @args;
+    return ();
 }
 
 sub intercept(&) {
@@ -405,16 +406,80 @@ tools.
 Unit tests are tools to validate your code. This library provides tools to
 validate your tools!
 
-=head1 TEST COMPONENT MAP
-
-  [Test Script] > [Test Tool] > [Test::Builder] > [Test::Bulder::Stream] > [Event Formatter]
-
-A test script uses a test tool such as L<Test::More>, which uses Test::Builder
-to produce events. The events are sent to L<Test::Builder::Stream> which then
-forwards them on to one or more formatters. The default formatter is
-L<Test::Builder::Fromatter::TAP> which produces TAP output.
-
 =head1 SYNOPSIS
+
+    use Test::More;
+    use Test::Tester2;
+
+    eventa_are(
+        # Capture all the events within the block
+        intercept {
+            ok(1, "pass");
+            ok(0, "fail");
+            diag("xxx");
+        },
+
+        # Describe what we expect to see
+        check {
+            event ok => {bool => 1, name => 'pass'};
+            event ok => {
+                bool => 0,
+                name => 'fail',
+                diag => check {
+                    event diag => {message => qr/^Failed test /};
+                },
+            };
+            event diag => {message => 'xxx'};
+            event bail => {reason  => 'oops'};
+            directive end => 'Validate our Grab results';
+        }
+    );
+
+    done_testing;
+
+=head2 GRAB WITH NO ADDED STACK
+
+    use Test::More;
+    use Test::Tester2;
+
+    # Start capturing events. We use grab() instead of intercept {} to avoid
+    # adding stack frames.
+    my $grab = grab();
+
+    # Generate some events.
+    ok(1, "pass");
+    ok(0, "fail");
+    diag("xxx");
+
+    my $success = eval { # Wrap in an eval since we also test BAIL_OUT
+        # BAIL_OUT and plan SKIP_ALL must be run in an eval since they throw
+        # their events as exceptions (the events are also added to the grab
+        # object).
+        BAIL_OUT "oops";
+
+        ok(0, "Should not see this");
+
+        1;
+    };
+    my $error = $@; # Save the error for later
+
+    # Stop capturing events, and validate the ones recieved.
+    events_are( $grab, check {
+        event ok => { bool => 1, name => 'pass' };
+        event ok => { bool => 0, name => 'fail' };
+        event diag => { message => 'xxx' };
+        event bail => { reason  => 'oops' };
+        directive end => 'Validate our Grab results';
+    });
+
+    # $grab is now undef, it no longer exists.
+
+    ok(!$success, "Eval did not succeed, BAIL_OUT killed the test");
+
+    # Make sure we got the event as an exception
+    isa_ok($error, 'Test::Stream::Event::Bail');
+
+    done_testing
 
 =head2 TIMTOWTDI
 
@@ -475,52 +540,6 @@ L<Test::Builder::Fromatter::TAP> which produces TAP output.
     done_testing;
 
 
-=head2 BEST PRACTICE
-
-    use Test::More;
-    use Test::Tester2;
-
-    # Start capturing events. We use grab() instead of intercept {} to avoid
-    # adding stack frames.
-    my $grab = grab();
-
-    # Generate some events.
-    my $success = eval { # Wrap in an eval since we also test BAIL_OUT
-        ok(1, "pass");
-        ok(0, "fail");
-        diag("xxx");
-
-        # BAIL_OUT and plan SKIP_ALL must be run in an eval since they throw
-        # their events as exceptions (the events are also added to the grab
-        # object).
-        BAIL_OUT "oops";
-
-        ok(0, "Should not see this");
-
-        1;
-    };
-    # Save the error for later
-    my $error = $@;
-
-    # Stop capturing events, and validate the ones recieved.
-    # We use check {} with event() for useful debugging.
-    events_are( $grab, check {
-        event ok => { bool => 1, name => 'pass' };
-        event ok => { bool => 0, name => 'fail' };
-        event diag => { message => 'xxx' };
-        event bail => { reason  => 'oops' };
-        directive end => 'Validate our Grab results';
-    });
-
-    # $grab is now undef, it no longer exists.
-
-    ok(!$success, "Eval did not succeed, BAIL_OUT killed the test");
-
-    # Make sure we got the event as an exception
-    isa_ok($error, 'Test::Stream::Event::Bail');
-
-    done_testing
-
 =head1 EXPORTS
 
 =over 4
@@ -532,6 +551,22 @@ Capture the L<Test::Builder::Event> objects generated by tests inside the block.
 =item events_are($events, ...)
 
 Validate the given events.
+
+    events_are(
+        $events, # From intercept { ... }
+        ok => { bool => 1, name => 'pass' },
+
+        ok => {
+            bool => 0, name => 'fail', line => 7, file => 'my_test.t',
+            diag => [
+                diag => { message => qr/Failed test 'fail'/, line => 7, file => 'my_test.t' },
+            ]
+        },
+
+        diag => { message => qr/xxx/, debug_line => __LINE__ },
+
+        end => 'Name of this test',
+    );
 
 =item $checks = check { ... };
 
@@ -554,8 +589,6 @@ Produce an array of checks for use in events_are.
     }
 
 =item event TYPE => { ... };
-
-=item event TYPE => ( ... );
 
 Define an event and push it onto the list that will be returned by the
 enclosing C<check { ... }> block. Will fail if run outside a check block. This

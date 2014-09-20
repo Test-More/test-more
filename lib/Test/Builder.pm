@@ -36,6 +36,11 @@ sub ctx {
     return $ctx;
 }
 
+sub stream {
+    my $self = shift;
+    return $self->{stream} || Test::Stream->shared;
+}
+
 sub depth { $_[0]->{depth} || 0 }
 
 # This is only for unit tests at this point.
@@ -768,3 +773,291 @@ sub AUTOLOAD {
 ####################
 
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+Test::Builder - *DEPRECATED* Module for building testing libraries.
+
+=head1 DESCRIPTION
+
+This module was previously the base module for almost any testing library. This
+module is now little more than a compatability wrapper around L<Test::Stream>.
+If you are looking to write or update a testing library you should look at
+L<Test::Stream::Toolset>.
+
+=head1 PACKAGE VARS
+
+=over 4
+
+=item $Test::Builder::Test
+
+The variable that holds the Test::Builder singleton.
+
+=item $Test::Builder::Level
+
+In the past this variable was used to track stack depth so that Test::Builder
+could report the correct line number. If you use Test::Builder this will still
+work, but in new code it is better to use the L<Test::Stream::Context> module.
+
+=back
+
+=head1 METHODS
+
+=head2 CONSTRUCTORS
+
+=over 4
+
+=item Test::Builder->new
+
+Returns the singleton stored in C<$Test::Builder::Test>.
+
+=item Test::Builder->create
+
+=item Test::Builder->create(use_shared => 1)
+
+Returns a new instance of Test::Builder. It is important to note that this
+instance will not use the shared L<Test::Stream> object unless you pass in the
+C<< use_shared => 1 >> argument.
+
+=back
+
+=head2 UTIL
+
+=over 4
+
+=item $TB->ctx
+
+Helper method for Test::Builder to get a L<Test::Stream::Context> object.
+
+=item $TB->depth
+
+Get the subtest depth
+
+=item $TB->find_TODO
+
+=item $TB->in_todo
+
+=item $TB->todo
+
+These all check on todo state and value
+
+=back
+
+=head2 OTHER
+
+=over 4
+
+=item $TB->caller
+
+=item $TB->carp
+
+=item $TB->croak
+
+These let you figure out when/where the test is defined in the test file.
+
+=item $TB->child
+
+Start a subtest (Please do not use this)
+
+=item $TB->finalize
+
+Finish a subtest (Please do not use this)
+
+=item $TB->explain
+
+Interface to Data::Dumper that dumps whatever you give it.
+
+=item $TB->exported_to
+
+This used to tell you what package used Test::Builder, it never worked well.
+The previous bad and unpredictable behavior of this has largely been preserved,
+however nothing internal uses it in any meaningful way anymore.
+
+=item $TB->is_fh
+
+Check if something is a filehandle
+
+=item $TB->level
+
+Get/Set C<$Test::Builder::Level>. $Level is a package var, and most thigns
+localize it, so this method is pretty useless.
+
+=item $TB->maybe_regex
+
+Check if something might be a regex.
+
+=item $TB->reset
+
+Reset the builder object to a very basic and default state. You almost
+certainly do not need this unless you are writing a tool to test testing
+libraries. Even then you probably do not want this.
+
+=item $TB->todo_end
+
+=item $TB->todo_start
+
+Start/end TODO state, there are better ways to do this now.
+
+=back
+
+=head2 STREAM INTERFACE
+
+These simply interface into functionality of L<Test::Stream>.
+
+=over 4
+
+=item $TB->failure_output
+
+=item $TB->output
+
+=item $TB->reset_outputs
+
+=item $TB->todo_output
+
+These get/set the IO handle used in the 'legacy' tap encoding.
+
+=item $TB->no_diag
+
+Do not display L<Test::Stream::Event::Diag> events.
+
+=item $TB->no_ending
+
+Do not do some special magic at the end that tells you what went wrong with
+tests.
+
+=item $TB->no_header
+
+Do not display the plan
+
+=item $TB->use_numbers
+
+Turn numbers in TAP on and off.
+
+=back
+
+=head2 HISTORY
+
+=over
+
+=item $TB->details
+
+Get all the events that occured on this object. Each event will be transformed
+into a hash that matches the legacy output of this method.
+
+=item $TB->expected_tests
+
+Set/Get expected number of tests
+
+=item $TB->has_plan
+
+Check if there is a plan
+
+=item $TB->summary
+
+List of pass/fail results.
+
+=back
+
+=head2 EVENT GENERATORS
+
+See L<Test::Stream::Context>, L<Test::Stream::Toolset>, and
+L<Test::More::Tools>. Calling the methods below is not advised.
+
+=over 4
+
+=item $TB->BAILOUT
+
+=item $TB->BAIL_OUT
+
+=item $TB->cmp_ok
+
+=item $TB->current_test
+
+=item $TB->diag
+
+=item $TB->done_testing
+
+=item $TB->is_eq
+
+=item $TB->is_num
+
+=item $TB->is_passing
+
+=item $TB->isnt_eq
+
+=item $TB->isnt_num
+
+=item $TB->like
+
+=item $TB->no_plan
+
+=item $TB->note
+
+=item $TB->ok
+
+=item $TB->plan
+
+=item $TB->skip
+
+=item $TB->skip_all
+
+=item $TB->subtest
+
+=item $TB->todo_skip
+
+=item $TB->unlike
+
+=back
+
+=head2 ACCESSORS
+
+=over 4
+
+=item $TB->stream
+
+Get the stream used by this builder (or the shared stream).
+
+=item $TB->name  
+
+Name of the test
+
+=item $TB->parent
+
+Parent if this is a child.
+
+=back
+
+=head1 AUTHORS
+
+Michael G Schwern E<lt>schwern@pobox.comE<gt> with much inspiration
+from Joshua Pritikin's Test module and lots of help from Barrie
+Slaymaker, Tony Bowden, blackstar.co.uk, chromatic, Fergal Daly and
+the perl-qa gang.
+
+=head1 MAINTAINERS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 SOURCE
+
+The source code repository for Test::More can be found at
+F<http://github.com/Test-More/test-more/>.
+
+=head1 COPYRIGHT
+
+Copyright 2001-2008 by Michael G Schwern E<lt>schwern@pobox.comE<gt>.
+
+Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http://www.perl.com/perl/misc/Artistic.html>

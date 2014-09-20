@@ -457,113 +457,67 @@ __END__
 
 =head1 NAME
 
-Test::More - yet another framework for writing test scripts
+Test::More - The defacto standard in unit testing tools.
 
 =head1 SYNOPSIS
 
-  use Test::More 'modern';
-  # or
-  use Test::More;   # see done_testing()
-  # or
-  use Test::More tests => 23;
-  # or
-  use Test::More skip_all => $reason;
-  # or
+    use Test::More 'modern';
 
-  # Switch to utf8 for all TAP produced by THIS PACKAGE
-  tap_encoding 'utf8';
+    use ok 'Some::Module';
+    require_ok( 'Some::Module' );
 
-  use ok 'Some::Module';
-  require_ok( 'Some::Module' );
+    can_ok($module, @methods);
+    isa_ok($object, $class);
 
-  # Various ways to say "ok"
-  ok($got eq $expected, $test_name);
+    pass($test_name);
+    fail($test_name);
 
-  is  ($got, $expected, $test_name);
-  isnt($got, $expected, $test_name);
+    ok($got eq $expected, $test_name);
 
-  # Rather than print STDERR "# here's what went wrong\n"
-  diag("here's what went wrong");
+    is  ($got, $expected, $test_name);
+    isnt($got, $expected, $test_name);
 
-  like  ($got, qr/expected/, $test_name);
-  unlike($got, qr/expected/, $test_name);
+    like  ($got, qr/expected/, $test_name);
+    unlike($got, qr/expected/, $test_name);
 
-  cmp_ok($got, '==', $expected, $test_name);
+    cmp_ok($got, '==', $expected, $test_name);
 
-  is_deeply($got_complex_structure, $expected_complex_structure, $test_name);
+    is_deeply(
+        $got_complex_structure,
+        $expected_complex_structure,
+        $test_name
+    );
 
-  SKIP: {
-      skip $why, $how_many unless $have_some_feature;
+    # Rather than print STDERR "# here's what went wrong\n"
+    diag("here's what went wrong");
 
-      ok( foo(),       $test_name );
-      is( foo(42), 23, $test_name );
-  };
+    SKIP: {
+        skip $why, $how_many unless $have_some_feature;
 
-  TODO: {
-      local $TODO = $why;
+        ok( foo(),       $test_name );
+        is( foo(42), 23, $test_name );
+    };
 
-      ok( foo(),       $test_name );
-      is( foo(42), 23, $test_name );
-  };
+    TODO: {
+        local $TODO = $why;
 
-  can_ok($module, @methods);
-  isa_ok($object, $class);
+        ok( foo(),       $test_name );
+        is( foo(42), 23, $test_name );
+    };
 
-  pass($test_name);
-  fail($test_name);
+    sub my_compare {
+        my ($got, $want, $name) = @_;
+        my $ctx = context();
+        my $ok = $got eq $want;
+        $ctx->ok($ok, $name);
+        ...
+        return $ok;
+    };
 
-  BAIL_OUT($why);
+    # If this fails it will report this line instead of the line in my_compare.
+    my_compare('a', 'b');
 
-  helpers 'my_checker';
-  sub my_checker {
-      ok(...);
-      ok(...);
-  }
-
-  # Failures in the 'ok' calls above will report here instead of there.
-  my_checker(...);
-  my_checker(...);
-  my_checker(...);
-
-  helpers 'my_check_wrapper';
-  sub my_check_wrapper(&) {
-      my ($code) = @_;
-      ok( nest {$code->()}, "code ran" );
-  }
-
-  my_check_wrapper {
-      ok(...); # Failures report here
-      ok(...); # Failures report here
-      return $BOOL;
-  }; # Overall failure reported here
-
-  done_testing;
-
-  # UNIMPLEMENTED!!!
-  my @status = Test::More::status;
-
-=head1 TEST COMPONENT MAP
-
-  [Test Script] > [Test Tool] > [Test::Builder] > [Test::Bulder::Stream] > [Event Formatter]
-                       ^
-                 You are here
-
-A test script uses a test tool such as L<Test::More>, which uses Test::Builder
-to produce events. The events are sent to L<Test::Builder::Stream> which then
-forwards them on to one or more formatters. The default formatter is
-L<Test::Builder::Fromatter::TAP> which produces TAP output.
-
-=head1 NOTE ON DEPRECATIONS
-
-With version 1.301001 many old methods and practices have been deprecated. What
-we mean when we say "deprecated" is that the practices or methods are not to be
-used in any new code. Old code that uses them will still continue to work,
-possibly forever, but new code should use the newer and better alternatives.
-
-In the future, if enough (read: pretty much everything) is updated and few if
-any modules still use these old items, they will be removed completely. This is
-not super likely to happen just because of the sheer number of modules that use
-Test::More.
+    done_testing;
 
 =head1 DESCRIPTION
 
@@ -576,7 +530,6 @@ utilities.  Various ways to say "ok" with better diagnostics,
 facilities to skip tests, test future features and compare complicated
 data structures.  While you can do almost anything with a simple
 C<ok()> function, it doesn't provide good diagnostic output.
-
 
 =head2 I love it when a plan comes together
 
@@ -678,7 +631,7 @@ to collect the events from other processes.
 
 =item use Test::More 'modern';
 
-enables forking, and issues warnings when using deprecated code.
+Turns off some legacy support to save you time and memory.
 
 =item use Test::More 'utf8';
 
@@ -757,30 +710,28 @@ scrambling for you.
 Sometimes you want to write functions for things you do frequently that include
 calling ok() or other test functions. Doing this can make it hard to debug
 problems as failures will be reported in your sub, and not at the place where
-you called your sub. Now there is a solution to this, we call these subs
-helpers. You just need to mark such subs as special.
+you called your sub. Now there is a solution to this, the
+L<Test::Stream::Context> object!.
 
-B<Note:> If you are going to be doing complicated things, or intend to re-use
-these helpers in other test files, consider making a L<Test::Builder::Provider>
-library instead.
+Test::More exports the C<context()> function which will return a context object
+for your use. The idea is that you generate a context object at the lowest
+level (the function you call from your test file). Deeper functions that need
+context will get the object you already generated, at least until the object
+falls out of scope or is undefined.
 
-=over 4
+    sub my_compare {
+        my ($got, $want, $name) = @_;
+        my $ctx = context();
 
-=item helpers(qw/sub1 sub2 .../)
+        # is() will find the context object above, instead of generating a new
+        # one. That way a failure will be reported to the correct line
+        is($got, $want);
 
-This will mark any sub listed as a helper. This means that any failures within
-the sub will report to where you called the sub.
-
-=item nest { ... }
-
-=item &nest($coderef)
-
-=item nest(\&$coderef)
-
-Any test errors from inside the nested coderef will trace to that coderef
-instead of to your tool, useful for testing utilities that accept a codeblock.
-
-=back
+        # This time it will generate a new context object. That means a failure
+        # will report to this line.
+        $ctx = undef;
+        is($got, $want);
+    };
 
 =head2 Test names
 
@@ -1583,26 +1534,12 @@ L<Test::Deep> contains much better set comparison functions.
 =head2 Extending and Embedding Test::More
 
 Sometimes the Test::More interface isn't quite enough.  Fortunately,
-Test::More is built on top of L<Test::Builder> which provides a single,
+Test::More is built on top of L<Test::Stream> which provides a single,
 unified backend for any test library to use.  This means two test
-libraries which both use <Test::Builder> B<can> be used together in the
+libraries which both use <Test::Stream> B<can> be used together in the
 same program>.
 
-If you simply want to do a little tweaking of how the tests behave,
-you can access the underlying L<Test::Builder> object like so:
-
-=over 4
-
-=item B<builder>
-
-    my $test_builder = Test::More->builder;
-
-Returns the L<Test::Builder> object underlying Test::More for you to play
-with.
-
-
 =back
-
 
 =head1 EXIT CODES
 
