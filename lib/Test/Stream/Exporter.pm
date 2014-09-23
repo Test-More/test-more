@@ -14,22 +14,13 @@ sub default_exports;
 sub croak   { require Carp; goto &Carp::croak }
 sub confess { require Carp; goto &Carp::confess }
 
-my %EXPORT_META = (
-    __PACKAGE__, bless(
-        { exports => {}, default => {}, package => __PACKAGE__ },
-        'Test::Stream::Exporter::Meta'
-    )
-);
+BEGIN { Test::Stream::Exporter::Meta->new(__PACKAGE__) };
 
 sub import {
     my $class = shift;
     my $caller = caller;
 
-    $EXPORT_META{$caller} ||= bless({
-        exports => {},
-        default => {},
-        package => $caller,
-    }, 'Test::Stream::Exporter::Meta');
+    Test::Stream::Exporter::Meta->new($caller);
 
     export_to($class, $caller, @_);
 }
@@ -49,7 +40,7 @@ default_export import => sub {
 
 sub export_meta {
     my $pkg = shift || caller;
-    return $EXPORT_META{$pkg};
+    return Test::Stream::Exporter::Meta->get($pkg);
 }
 
 sub export_to {

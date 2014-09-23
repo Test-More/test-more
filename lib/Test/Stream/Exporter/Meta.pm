@@ -38,4 +38,32 @@ sub add_default {
     $self->{default}->{$name} = 1;
 }
 
+my %EXPORT_META;
+
+sub new {
+    my $class = shift;
+    my ($pkg) = @_;
+
+    confess "Package is required!"
+        unless $pkg;
+
+    $EXPORT_META{$pkg} ||= bless({
+        exports => {},
+        default => {},
+        package => $pkg,
+    }, $class);
+
+    return $EXPORT_META{$pkg};
+}
+
+sub get {
+    my $class = shift;
+    my ($pkg) = @_;
+
+    confess "Package is required!"
+        unless $pkg;
+
+    return $EXPORT_META{$pkg};
+}
+
 1;
