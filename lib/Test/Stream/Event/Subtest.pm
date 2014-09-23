@@ -4,7 +4,7 @@ use warnings;
 
 use Test::Stream::Event::Ok;
 use Test::Stream::Event 'Test::Stream::Event::Ok';
-use Test::Stream;
+use Test::Stream qw/STATE_PASSING STATE_COUNT OUT_STD/;
 use Scalar::Util qw/blessed/;
 
 BEGIN {

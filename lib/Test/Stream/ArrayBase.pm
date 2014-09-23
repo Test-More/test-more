@@ -2,7 +2,7 @@ package Test::Stream::ArrayBase;
 use strict;
 use warnings;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/default_exports export_to import/;
 use Test::Stream::Carp qw/confess croak/;
 use Scalar::Util();
 
@@ -45,8 +45,9 @@ sub after_import {
     *{"$importer\::AB_FIELDS"}  = sub { $fields };
 }
 
-exports qw/accessor accessors to_hash new new_from_pairs/;
-unexports qw/accessor accessors/;
+default_exports qw/accessor accessors to_hash new new_from_pairs/;
+
+sub cleanup { }
 
 sub new {
     my $class = shift;

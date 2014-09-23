@@ -11,10 +11,12 @@ BEGIN {
     Test::Stream::ArrayBase->cleanup;
 }
 
-use Test::Stream::Exporter qw/import export_to exports package_sub/;
-exports qw{
+use Test::Stream::PackageUtil;
+
+use Test::Stream::Exporter qw/import export_to default_exports/;
+default_exports qw{
     ENCODING MODERN TODO STREAM
-    is_tester init_tester anoint
+    is_tester init_tester
 };
 Test::Stream::Exporter->cleanup();
 
@@ -26,13 +28,13 @@ sub snapshot {
 
 sub is_tester {
     my $pkg = shift;
-    return unless package_sub($pkg, 'TB_TESTER_META');
+    return unless package_sym($pkg, 'CODE', 'TB_TESTER_META');
     return $pkg->TB_TESTER_META;
 }
 
 sub init_tester {
     my $pkg = shift;
-    return $pkg->TB_TESTER_META if package_sub($pkg, 'TB_TESTER_META');
+    return $pkg->TB_TESTER_META if package_sym($pkg, 'CODE', 'TB_TESTER_META');
 
     my $meta = bless ['legacy', 0, undef], __PACKAGE__;
 
@@ -41,14 +43,6 @@ sub init_tester {
     };
 
     return $meta;
-}
-
-sub anoint {
-    my ($target, $oil) = @_;
-    $oil ||= caller;
-
-    my $meta = init_tester($target);
-    $meta->{anointed_by}->{$oil} = 1;
 }
 
 1;

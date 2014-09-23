@@ -11,7 +11,7 @@ use Test::Stream::Carp qw/croak carp/;
 
 use Test::Stream::Toolset;
 use Test::Stream::Exporter;
-exports qw{
+default_exports qw{
     intercept grab
 
     events_are check
@@ -21,8 +21,8 @@ exports qw{
     display_events display_event
     render_event
 };
-
-export dir => \&directive;
+default_export dir => \&directive;
+Test::Stream::Exporter->cleanup;
 
 sub grab {
     require Test::Tester2::Grab;

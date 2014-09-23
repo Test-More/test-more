@@ -21,8 +21,8 @@ use Test::Stream::Toolset;
 
 use Test::Stream::Exporter;
 our $TODO;
-export '$TODO' => \$TODO;
-exports qw{
+default_export '$TODO' => \$TODO;
+default_exports qw{
     context
     tap_encoding
     cull

@@ -18,8 +18,8 @@ BEGIN {
     Test::Stream::ArrayBase->cleanup;
 }
 
-use Test::Stream::Exporter qw/import export_to exports/;
-exports qw/context/;
+use Test::Stream::Exporter qw/import export_to default_exports/;
+default_exports qw/context/;
 Test::Stream::Exporter->cleanup();
 
 {

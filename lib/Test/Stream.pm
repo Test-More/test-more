@@ -47,7 +47,6 @@ exports qw/
     OUT_STD OUT_ERR OUT_TODO
     STATE_COUNT STATE_FAILED STATE_PLAN STATE_PASSING STATE_LEGACY STATE_ENDED
 /;
-
 Test::Stream::Exporter->cleanup;
 
 sub plan   { $_[0]->[STATE]->[-1]->[STATE_PLAN]   }

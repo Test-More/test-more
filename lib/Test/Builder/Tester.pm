@@ -6,7 +6,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 use Test::Builder 1.301001;
 use Symbol;
-use Test::Stream::Carp;
+use Test::Stream::Carp qw/croak/;
 
 =head1 NAME
 
@@ -62,7 +62,8 @@ output.
 
 use Test::Stream::Toolset;
 use Test::Stream::Exporter;
-exports qw/test_out test_err test_fail test_diag test_test line_num/;
+default_exports qw/test_out test_err test_fail test_diag test_test line_num/;
+Test::Stream::Exporter->cleanup;
 
 sub before_import {
     my $class = shift;

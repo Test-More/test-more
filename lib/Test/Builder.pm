@@ -9,7 +9,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 use Test::More::Tools;
 
-use Test::Stream;
+use Test::Stream qw/ STATE_LEGACY STATE_PLAN STATE_COUNT /;
 use Test::Stream::Toolset;
 use Test::Stream::Context;
 
