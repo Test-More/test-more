@@ -22,7 +22,7 @@ sub to_tap {
     $msg = "# $msg" unless $msg =~ m/^\n/;
     $msg =~ s/\n/\n# /g;
 
-    return (OUT_STD, "$msg\n");
+    return [OUT_STD, "$msg\n"];
 }
 
 1;

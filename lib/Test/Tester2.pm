@@ -357,7 +357,11 @@ sub _simplify_event {
     $fields->{diag}   = [@{$r->diag || []}]   if $r->isa('Test::Stream::Event::Ok');
     $fields->{events} = [@{$r->events}] if $r->isa('Test::Stream::Event::Subtest');
 
-    $fields->{tap} = $r->to_tap if $r->can('to_tap');
+    # TODO: This is lame, we need a better way to validate the tap.
+    if ($r->can('to_tap')) {
+        my @sets = $r->to_tap;
+        $fields->{tap} = $sets[0]->[1] if @sets;
+    }
     chomp($fields->{tap}) if $fields->{tap};
 
     return $fields;

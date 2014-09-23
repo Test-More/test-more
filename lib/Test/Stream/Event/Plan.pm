@@ -51,7 +51,7 @@ sub to_tap {
         $plan .= " $reason" if defined $reason;
     }
 
-    return (OUT_STD, "$plan\n");
+    return [OUT_STD, "$plan\n"];
 }
 
 1;

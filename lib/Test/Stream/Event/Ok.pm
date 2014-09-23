@@ -2,8 +2,6 @@ package Test::Stream::Event::Ok;
 use strict;
 use warnings;
 
-use base 'Test::Stream::Event';
-
 use Scalar::Util qw/blessed/;
 use Test::Stream::Util qw/unoverload_str/;
 use Test::Stream::Carp qw/confess/;
@@ -79,7 +77,7 @@ sub to_tap {
     unoverload_str \$name if defined $name;
 
     if ($name) {
-        $name =~ s|#|\\#|g;    # # in a name can confuse Test::Harness.
+        $name =~ s|#|\\#|g; # # in a name can confuse Test::Harness.
         push @out => ("-", $name);
     }
 
@@ -99,10 +97,10 @@ sub to_tap {
     my $out = join " " => @out;
     $out =~ s/\n/\n# /g;
 
-    return (OUT_STD, "$out\n") unless $self->[DIAG];
+    return [OUT_STD, "$out\n"] unless $self->[DIAG];
 
     return (
-        OUT_STD, "$out\n",
+        [OUT_STD, "$out\n"],
         map {$_->to_tap($num)} @{$self->[DIAG]},
     );
 }

@@ -12,10 +12,10 @@ BEGIN {
 sub to_tap {
     my $self = shift;
     return if $self->[QUIET];
-    return (
+    return [
         OUT_STD,
         "Bail out!  " . $self->reason . "\n",
-    );
+    ];
 }
 
 1;

@@ -42,10 +42,10 @@ my $diag_legacy = Test::Stream::Event::Diag->new(
     "failed blah de blah\nFatal error in $filename line 42.\n",
 );
 
-ok( $diag_legacy->to_tap ne $diag_utf8->to_tap, "The utf8 diag has a different output" );
+ok( $diag_legacy->to_tap->[1] ne $diag_utf8->to_tap->[1], "The utf8 diag has a different output" );
 
 is(
-    $diag_legacy->to_tap,
+    $diag_legacy->to_tap->[1],
     "# failed blah de blah\n# Fatal error in $filename line 42.\n",
     "Got unaltered filename in legacy"
 );
@@ -53,7 +53,7 @@ is(
 # Change encoding for the scope of the next test so that errors make more sense.
 tap_encoding 'utf8' => sub {
     is(
-        $diag_utf8->to_tap,
+        $diag_utf8->to_tap->[1],
         "# failed blah de blah\n# Fatal error in $utf8name line 42.\n",
         "Got transcoded filename in utf8"
     );

@@ -470,17 +470,15 @@ sub _render_tap {
     my $in_subtest = $e->in_subtest || 0;
     my $indent = '    ' x $in_subtest;
 
-    for(my $i = 0; $i < @sets; $i += 2) {
-        my $hid = $sets[$i];
-        my $msg = $sets[$i + 1];
-        my $fmsg = $msg;
+    for my $set (@sets) {
+        my ($hid, $msg) = @$set;
+        next unless $msg;
         my $enc = $e->encoding || confess "Could not find encoding!";
+        my $io = $self->[IO_SETS]->{$enc}->[$hid] || confess "Could not find IO $hid for $enc";
 
-        if(my $io = $self->[IO_SETS]->{$enc}->[$hid]) {
-            local($\, $", $,) = (undef, ' ', '');
-            $msg =~ s/^/$indent/mg if $in_subtest;
-            print $io $msg if $io && $msg;
-        }
+        local($\, $", $,) = (undef, ' ', '');
+        $msg =~ s/^/$indent/mg if $in_subtest;
+        print $io $msg;
     }
 }
 

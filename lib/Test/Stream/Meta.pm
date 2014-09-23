@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Scalar::Util();
+use Test::Stream::Util qw/protect/;
 
 use Test::Stream::ArrayBase;
 BEGIN {
@@ -35,9 +36,9 @@ sub init_tester {
 
     my $meta = bless ['legacy', 0, undef], __PACKAGE__;
 
-    no strict 'refs';
-    no warnings 'once';
-    *{"$pkg\::TB_TESTER_META"} = sub { $meta };
+    protect {
+        eval "package $pkg; sub TB_TESTER_META { \$meta }; 1" || die $@;
+    };
 
     return $meta;
 }
