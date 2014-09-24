@@ -1,5 +1,6 @@
 .perlcriticrc
 .perltidyrc
+BROKEN
 Changes
 examples/indent.pl
 examples/subtest.t
@@ -16,9 +17,9 @@ lib/Test/More/Tools.pm
 lib/Test/Simple.pm
 lib/Test/Stream.pm
 lib/Test/Stream/ArrayBase.pm
+lib/Test/Stream/ArrayBase/Meta.pm
 lib/Test/Stream/Carp.pm
 lib/Test/Stream/Context.pm
-lib/Test/Stream/Deferred.pm
 lib/Test/Stream/Event.pm
 lib/Test/Stream/Event/Bail.pm
 lib/Test/Stream/Event/Child.pm
@@ -31,8 +32,10 @@ lib/Test/Stream/Event/Subtest.pm
 lib/Test/Stream/ExitMagic.pm
 lib/Test/Stream/ExitMagic/Context.pm
 lib/Test/Stream/Exporter.pm
+lib/Test/Stream/Exporter/Meta.pm
 lib/Test/Stream/IOSets.pm
 lib/Test/Stream/Meta.pm
+lib/Test/Stream/PackageUtil.pm
 lib/Test/Stream/Threads.pm
 lib/Test/Stream/Toolset.pm
 lib/Test/Stream/Util.pm
@@ -201,6 +204,10 @@ t/lib/Test/Simple/sample_tests/two_fail.plx
 t/lib/TieOut.pm
 t/Test-More.t
 t/Test-Simple.t
+t/Test-Stream-ArrayBase-Meta.t
+t/Test-Stream-ArrayBase.t
+t/Test-Stream-Exporter-Meta.t
+t/Test-Stream-Exporter.t
 t/Test-Tester2-Grab.t
 t/Test-Tester2.t
 t/Test-use-ok.t
