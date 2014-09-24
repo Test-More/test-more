@@ -9,4 +9,6 @@ export confess => sub { require Carp; goto &Carp::confess };
 export cluck   => sub { require Carp; goto &Carp::cluck };
 export carp    => sub { require Carp; goto &Carp::carp };
 
+Test::Stream::Exporter->cleanup;
+
 1;

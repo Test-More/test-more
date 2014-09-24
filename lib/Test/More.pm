@@ -14,15 +14,16 @@ use Encode();
 use Test::More::Tools;
 use Test::More::DeepCheck::Strict;
 use Test::More::DeepCheck::Tolerant;
+
 use Test::Stream;
 use Test::Stream::Util qw/protect try/;
-use Test::Stream::Meta;
+use Test::Stream::Meta qw/MODERN ENCODING/;
 use Test::Stream::Toolset;
 
 use Test::Stream::Exporter;
 our $TODO;
-export '$TODO' => \$TODO;
-exports qw{
+default_export '$TODO' => \$TODO;
+default_exports qw{
     context
     tap_encoding
     cull

@@ -2,10 +2,9 @@ package Test::Stream::ExitMagic::Context;
 use strict;
 use warnings;
 
-use base 'Test::Stream::Context';
-
-use Test::Stream::ArrayBase;
-BEGIN { Test::Stream::ArrayBase->cleanup }
+use Test::Stream::ArrayBase(
+    base => 'Test::Stream::Context',
+);
 
 sub init {
     $_[0]->[PID]      = $$;

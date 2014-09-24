@@ -21,7 +21,8 @@ BEGIN {
 }
 
 use Test::Stream::Exporter;
-exports qw/get_tid USE_THREADS/;
+default_exports qw/get_tid USE_THREADS/;
+Test::Stream::Exporter->cleanup;
 
 1;
 

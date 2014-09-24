@@ -2,52 +2,53 @@ package Test::Stream::Exporter;
 use strict;
 use warnings;
 
-{
-    my $META = {};
-    sub TB_EXPORTER_META { $META };
-}
+use Test::Stream::PackageUtil;
+use Test::Stream::Exporter::Meta;
 
 sub export;
 sub exports;
-sub unexports;
+sub default_export;
+sub default_exports;
 
 # Test::Stream::Carp uses this module.
 sub croak   { require Carp; goto &Carp::croak }
 sub confess { require Carp; goto &Carp::confess }
 
+BEGIN { Test::Stream::Exporter::Meta->new(__PACKAGE__) };
+
 sub import {
     my $class = shift;
     my $caller = caller;
 
-    unless (package_sub($caller, 'TB_EXPORTER_META')) {
-        my $meta = { export => {}, unexport => {} };
-        no strict 'refs';
-        *{"$caller\::TB_EXPORTER_META"} = sub { $meta };
-    }
+    Test::Stream::Exporter::Meta->new($caller);
 
-    $class->export_to($caller, @_);
+    export_to($class, $caller, @_);
 }
 
-exports   qw/export exports unexport unexports cleanup export_to package_sub/;
-unexports qw/export exports unexport unexports/;
+default_exports qw/export exports default_export default_exports/;
+exports         qw/export_to export_meta/;
 
-export import => sub {
+default_export import => sub {
     my $class = shift;
     my $caller = caller;
     my @args = @_;
 
     my $stash = $class->before_import($caller, \@args) if $class->can('before_import');
-    $class->export_to($caller, @args);
+    export_to($class, $caller, @args);
     $class->after_import($caller, $stash, @args) if $class->can('after_import');
 };
+
+sub export_meta {
+    my $pkg = shift || caller;
+    return Test::Stream::Exporter::Meta->get($pkg);
+}
 
 sub export_to {
     my $class = shift;
     my ($dest, @imports) = @_;
 
-    my $is_exporter = package_sub($class, 'TB_EXPORTER_META');
-    croak "$class is not an exporter!?" unless $is_exporter;
-    my $meta = $is_exporter->();
+    my $meta = export_meta($class)
+        || croak "$class is not an exporter!?";
 
     my (@include, %exclude);
     for my $import (@imports) {
@@ -59,11 +60,14 @@ sub export_to {
         }
     }
 
-    @include = keys %{$meta->{export}} unless @include;
+    @include = $meta->default unless @include;
 
     for my $name (@include) {
         next if $exclude{$name};
-        my $ref = $meta->{export}->{$name} || croak "$class does not export $name";
+
+        my $ref = $meta->exports->{$name}
+            || croak "$class does not export $name";
+
         no strict 'refs';
         $name =~ s/^[\$\@\%\&]//;
         *{"$dest\::$name"} = $ref;
@@ -71,99 +75,46 @@ sub export_to {
 }
 
 sub cleanup {
-    my $class = shift;
-    my $caller = caller;
-
-    croak "Cannot cleanup ourselves!" if $class eq $caller;
-
-    my $is_exporter = package_sub($class, 'TB_EXPORTER_META');
-    croak "$class is not an exporter!?" unless $is_exporter;
-    my $meta = $is_exporter->();
-
-    my @remove = @_;
-    @remove = keys %{$meta->{unexport}} unless @remove;
-
-    for my $name (@remove) {
-        croak "$class cannot unexport $name"
-            unless $meta->{unexport}->{$name};
-
-        my $ref = package_sub($caller, $name);
-        if (!$ref) {
-            croak "cannot unexport $name: Not found!" if @_; # Only when a list is specified
-            next;
-        }
-
-        unless($ref == $meta->{export}->{$name}) {
-            croak "cannot unexport $name: Not provided by $class" if @_;
-            next;
-        }
-
-        no strict 'refs';
-        no warnings 'redefine';
-        *{"$caller\::$name"} = sub { croak "sub '$caller\::$name' has been removed" };
-    }
+    my $pkg = caller;
+    package_purge_sym($pkg, map {(CODE => $_)} qw/export exports default_export default_exports/);
 }
 
 sub export {
     my ($name, $ref) = @_;
     my $caller = caller;
-    my $is_exporter = package_sub($caller, 'TB_EXPORTER_META');
-    croak "$caller is not an exporter!?" unless $is_exporter;
-    my $meta = $is_exporter->();
-    _export($caller, $meta, $name, $ref);
+
+    my $meta = export_meta($caller) ||
+        croak "$caller is not an exporter!?";
+
+    $meta->add($name, $ref);
 }
 
 sub exports {
     my $caller = caller;
-    my $is_exporter = package_sub($caller, 'TB_EXPORTER_META');
-    croak "$caller is not an exporter!?" unless $is_exporter;
-    my $meta = $is_exporter->();
-    _export($caller, $meta, $_) for @_;
+
+    my $meta = export_meta($caller) ||
+        croak "$caller is not an exporter!?";
+
+    $meta->add($_) for @_;
 }
 
-sub unexport {
+sub default_export {
+    my ($name, $ref) = @_;
     my $caller = caller;
-    my $is_exporter = package_sub($caller, 'TB_EXPORTER_META');
-    croak "$caller is not an exporter!?" unless $is_exporter;
-    my $meta = $is_exporter->();
-    _unexport($caller, $meta, $_[0]);
+
+    my $meta = export_meta($caller) ||
+        croak "$caller is not an exporter!?";
+
+    $meta->add_default($name, $ref);
 }
 
-sub unexports {
+sub default_exports {
     my $caller = caller;
-    my $is_exporter = package_sub($caller, 'TB_EXPORTER_META');
-    croak "$caller is not an exporter!?" unless $is_exporter;
-    my $meta = $is_exporter->();
-    _unexport($caller, $meta, $_) for @_;
-}
 
-sub _export {
-    my ($class, $meta, $name, $ref) = @_;
-    next unless $name;
+    my $meta = export_meta($caller) ||
+        croak "$caller is not an exporter!?";
 
-    my ($syg) = ($name =~ m/^(\$|\@|\%)/i);
-    croak "You must provide a reference for '$syg' exports" if $syg && !$ref;
-    $ref ||= package_sub($class, $name) || croak "$class has no sub named $name";
-
-    croak "$class already exports something called '$name'" if $meta->{export}->{$name};
-    $meta->{export}->{$name} = $ref;
-    no strict 'refs';
-    push @{"$class\::EXPORT"} => $name;
-}
-
-sub _unexport {
-    my ($caller, $meta, $name) = @_;
-    $meta->{unexport}->{$name}++;
-}
-
-sub package_sub {
-    my ($pkg, $sub) = @_;
-    confess "you must specify a package" unless $pkg;
-    confess "you must specify a subname" unless $sub;
-    no warnings 'once';
-    no strict 'refs';
-    my $globref = \*{"$pkg\::$sub"};
-    return *$globref{CODE} || undef;
+    $meta->add_default($_) for @_;
 }
 
 1;

@@ -2,11 +2,9 @@ package Test::More::DeepCheck;
 use strict;
 use warnings;
 
-use Test::Stream::ArrayBase;
-BEGIN {
-    accessors qw/seen/;
-    Test::Stream::ArrayBase->cleanup;
-}
+use Test::Stream::ArrayBase(
+    accessors => [qw/seen/],
+);
 
 sub init {
     $_[0]->[SEEN] ||= [{}];

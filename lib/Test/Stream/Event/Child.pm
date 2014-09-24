@@ -3,11 +3,9 @@ use strict;
 use warnings;
 
 use Test::Stream::Carp qw/confess/;
-use Test::Stream::Event;
-BEGIN {
-    accessors qw/action name no_note/;
-    Test::Stream::Event->cleanup;
-};
+use Test::Stream::Event(
+    accessors => [qw/action name no_note/],
+);
 
 sub init {
     confess "did not get an action" unless $_[0]->[ACTION];

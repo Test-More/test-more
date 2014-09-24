@@ -2,17 +2,14 @@ package Test::Stream::Event::Subtest;
 use strict;
 use warnings;
 
-use Test::Stream::Event::Ok;
-use Test::Stream::Event 'Test::Stream::Event::Ok';
-use Test::Stream;
 use Scalar::Util qw/blessed/;
-
-BEGIN {
-    accessors qw/state events exception/;
-    Test::Stream::Event->cleanup;
-};
-
 use Test::Stream::Carp qw/confess/;
+use Test::Stream qw/STATE_PASSING STATE_COUNT OUT_STD/;
+
+use Test::Stream::Event(
+    base      => 'Test::Stream::Event::Ok',
+    accessors => [qw/state events exception/],
+);
 
 sub init {
     my $self = shift;

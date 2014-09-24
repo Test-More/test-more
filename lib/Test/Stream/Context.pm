@@ -12,14 +12,12 @@ use Test::Stream::Event();
 use Test::Stream::Util qw/try/;
 use Test::Stream::Meta qw/init_tester is_tester/;
 
-use Test::Stream::ArrayBase;
-BEGIN {
-    accessors qw/frame stream encoding in_todo todo modern pid skip diag_todo provider/;
-    Test::Stream::ArrayBase->cleanup;
-}
+use Test::Stream::ArrayBase(
+    accessors => [qw/frame stream encoding in_todo todo modern pid skip diag_todo provider/],
+);
 
-use Test::Stream::Exporter qw/import export_to exports/;
-exports qw/context/;
+use Test::Stream::Exporter qw/import export_to default_exports/;
+default_exports qw/context/;
 Test::Stream::Exporter->cleanup();
 
 {

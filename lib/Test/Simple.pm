@@ -12,7 +12,7 @@ use Test::Stream;
 use Test::Stream::Toolset;
 
 use Test::Stream::Exporter;
-exports qw/ok/;
+default_exports qw/ok/;
 Test::Stream::Exporter->cleanup;
 
 sub before_import {

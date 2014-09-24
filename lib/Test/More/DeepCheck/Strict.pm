@@ -7,12 +7,10 @@ use Test::More::Tools;
 use Test::Stream::Carp qw/cluck confess/;
 use Test::Stream::Util qw/try unoverload_str is_regex/;
 
-use base 'Test::More::DeepCheck';
-use Test::Stream::ArrayBase;
-BEGIN {
-    accessors qw/stack_start/;
-    Test::Stream::ArrayBase->cleanup;
-}
+use Test::Stream::ArrayBase(
+    accessors => [qw/stack_start/],
+    base => 'Test::More::DeepCheck',
+);
 
 sub preface { "Structures begin differing at:\n" }
 

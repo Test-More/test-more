@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Test::Stream::Context qw/context/;
-use Test::Stream::Meta    qw/is_tester init_tester anoint/;
+use Test::Stream::Meta    qw/is_tester init_tester/;
 
 # Preload these so the autoload is not necessary
 use Test::Stream::Event::Bail;
@@ -15,8 +15,8 @@ use Test::Stream::Event::Ok;
 use Test::Stream::Event::Plan;
 use Test::Stream::Event::Subtest;
 
-use Test::Stream::Exporter qw/import export_to exports/;
-exports qw/is_tester init_tester context anoint/;
+use Test::Stream::Exporter qw/import export_to default_exports/;
+default_exports qw/is_tester init_tester context/;
 Test::Stream::Exporter->cleanup();
 
 1;
