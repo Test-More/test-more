@@ -4,11 +4,9 @@ use warnings;
 
 require Test::Stream::ExitMagic::Context;
 
-use Test::Stream::ArrayBase;
-BEGIN {
-    accessors qw/pid done/;
-    Test::Stream::ArrayBase->cleanup;
-}
+use Test::Stream::ArrayBase(
+    accessors => [qw/pid done/],
+);
 
 sub init {
     $_[0]->[PID]  = $$;

@@ -11,11 +11,18 @@ use Test::Stream::Exporter();
 sub import {
     my $class = shift;
     my $caller = caller;
-    my %args = @_;
+
+    $class->apply_to($caller, @_);
+}
+
+sub apply_to {
+    my $class = shift;
+    my ($caller, %args) = @_;
 
     # Make the calling class an exporter.
     my $exp_meta = Test::Stream::Exporter::Meta->new($caller);
-    Test::Stream::Exporter->export_to($caller, 'import');
+    Test::Stream::Exporter->export_to($caller, 'import')
+        unless $args{no_import};
 
     my $ab_meta = Test::Stream::ArrayBase::Meta->new($caller);
 
@@ -84,7 +91,7 @@ sub to_hash {
         my $i = $fields->{$f};
         my $val = $array_obj->[$i];
         my $ao = blessed($val) && $val->isa(__PACKAGE__);
-        $out{$f} = $ao ? $ao->to_hash : $val;
+        $out{$f} = $ao ? $val->to_hash : $val;
     }
     return \%out;
 };

@@ -3,15 +3,13 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/blessed/;
+use Test::Stream qw/OUT_STD/;
 use Test::Stream::Util qw/unoverload_str/;
 use Test::Stream::Carp qw/confess/;
 
-use Test::Stream qw/OUT_STD/;
-use Test::Stream::Event;
-BEGIN {
-    accessors qw/real_bool name diag bool level/;
-    Test::Stream::Event->cleanup;
-};
+use Test::Stream::Event(
+    accessors => [qw/real_bool name diag bool level/],
+);
 
 sub skip { $_[0]->[CONTEXT]->skip }
 sub todo { $_[0]->[CONTEXT]->todo }

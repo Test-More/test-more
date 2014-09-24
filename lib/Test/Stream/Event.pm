@@ -5,33 +5,23 @@ use warnings;
 use Scalar::Util qw/blessed/;
 use Test::Stream::Carp qw/confess/;
 
-use Test::Stream::ArrayBase;
-BEGIN {
-    accessors qw/context created in_subtest/;
-    Test::Stream::ArrayBase->cleanup;
-};
-
-# Haha, grody
-sub cleanup {
-    shift   @_;
-    unshift @_ => 'Test::Stream::ArrayBase';
-    goto &Test::Stream::ArrayBase::cleanup;
-}
+use Test::Stream::ArrayBase(
+    accessors => [qw/context created in_subtest/],
+    no_import => 1,
+);
 
 sub import {
     my $class = shift;
-    my ($base) = @_;
 
     # Import should only when event is imported, subclasses do not use this
     # import.
     return if $class ne __PACKAGE__;
 
     my $caller = caller;
+    my (%args) = @_;
 
-    # @ISA must be set before we load ArrayBase
-    { no strict 'refs'; push @{"$caller\::ISA"} => $base || $class }
-    Test::Stream::ArrayBase->export_to($caller);
-    Test::Stream::ArrayBase->after_import($caller);
+    # %args may override base
+    Test::Stream::ArrayBase->apply_to($caller, base => $class, %args);
     require Test::Stream::Context;
     Test::Stream::Context->register_event($caller);
 }

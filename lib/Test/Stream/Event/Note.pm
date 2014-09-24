@@ -3,11 +3,9 @@ use strict;
 use warnings;
 
 use Test::Stream qw/OUT_STD/;
-use Test::Stream::Event;
-BEGIN {
-    accessors qw/message/;
-    Test::Stream::Event->cleanup;
-};
+use Test::Stream::Event(
+    accessors => [qw/message/],
+);
 
 use Test::Stream::Carp qw/confess/;
 

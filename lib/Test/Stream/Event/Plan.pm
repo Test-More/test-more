@@ -3,11 +3,9 @@ use strict;
 use warnings;
 
 use Test::Stream qw/OUT_STD/;
-use Test::Stream::Event;
-BEGIN {
-    accessors qw/max directive reason/;
-    Test::Stream::Event->cleanup;
-};
+use Test::Stream::Event(
+    accessors => [qw/max directive reason/],
+);
 
 use Test::Stream::Carp qw/confess/;
 

@@ -6,12 +6,10 @@ use Test::More::Tools;
 use Scalar::Util qw/reftype blessed/;
 use Test::Stream::Util qw/try unoverload_str/;
 
-use base 'Test::More::DeepCheck';
-use Test::Stream::ArrayBase;
-BEGIN {
-    accessors qw/stack_start/;
-    Test::Stream::ArrayBase->cleanup;
-}
+use Test::Stream::ArrayBase(
+    accessors => [qw/stack_start/],
+    base => 'Test::More::DeepCheck',
+);
 
 sub preface { "First mismatch:\n" };
 

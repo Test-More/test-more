@@ -3,11 +3,9 @@ use strict;
 use warnings;
 
 use Test::Stream qw/OUT_ERR OUT_TODO/;
-use Test::Stream::Event;
-BEGIN {
-    accessors qw/message linked/;
-    Test::Stream::Event->cleanup;
-};
+use Test::Stream::Event(
+    accessors => [qw/message linked/],
+);
 
 use Encode();
 use Test::Stream::Util qw/try/;
