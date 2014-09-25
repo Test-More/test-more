@@ -5,7 +5,7 @@ use 5.008001;
 use Config;
 use ExtUtils::MakeMaker;
 
-my $PACKAGE = 'Test::Simple';
+my $PACKAGE = 'Test::More';
 ($PACKAGE_FILE = $PACKAGE) =~ s|::|/|g;
 my $LAST_API_CHANGE    = 0.48;
 my $LAST_THREAD_CHANGE = 0.48;
