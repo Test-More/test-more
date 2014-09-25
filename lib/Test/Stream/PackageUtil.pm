@@ -40,11 +40,11 @@ sub package_purge_sym {
             unless $SLOTS{$purge};
 
         no strict 'refs';
-        *CLONE = *{"$pkg\::$name"};
+        local *GLOBCLONE = *{"$pkg\::$name"};
         undef *{"$pkg\::$name"};
         for my $slot (@SLOTS) {
             next if $slot eq $purge;
-            *{"$pkg\::$name"} = *CLONE{$slot} if defined *CLONE{$slot};
+            *{"$pkg\::$name"} = *GLOBCLONE{$slot} if defined *GLOBCLONE{$slot};
         }
     }
 }

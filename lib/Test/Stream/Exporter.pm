@@ -48,7 +48,7 @@ sub export_to {
     my ($dest, @imports) = @_;
 
     my $meta = export_meta($class)
-        || croak "$class is not an exporter!?";
+        || confess "$class is not an exporter!?";
 
     my (@include, %exclude);
     for my $import (@imports) {
@@ -84,7 +84,7 @@ sub export {
     my $caller = caller;
 
     my $meta = export_meta($caller) ||
-        croak "$caller is not an exporter!?";
+        confess "$caller is not an exporter!?";
 
     $meta->add($name, $ref);
 }
@@ -93,7 +93,7 @@ sub exports {
     my $caller = caller;
 
     my $meta = export_meta($caller) ||
-        croak "$caller is not an exporter!?";
+        confess "$caller is not an exporter!?";
 
     $meta->add($_) for @_;
 }
@@ -103,7 +103,7 @@ sub default_export {
     my $caller = caller;
 
     my $meta = export_meta($caller) ||
-        croak "$caller is not an exporter!?";
+        confess "$caller is not an exporter!?";
 
     $meta->add_default($name, $ref);
 }
@@ -112,7 +112,7 @@ sub default_exports {
     my $caller = caller;
 
     my $meta = export_meta($caller) ||
-        croak "$caller is not an exporter!?";
+        confess "$caller is not an exporter!?";
 
     $meta->add_default($_) for @_;
 }
