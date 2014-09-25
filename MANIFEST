@@ -1,6 +1,5 @@
 .perlcriticrc
 .perltidyrc
-BROKEN
 Changes
 examples/indent.pl
 examples/subtest.t
@@ -16,6 +15,7 @@ lib/Test/More/DeepCheck/Tolerant.pm
 lib/Test/More/Tools.pm
 lib/Test/Simple.pm
 lib/Test/Stream.pm
+lib/Test/Stream/Architecture.pod
 lib/Test/Stream/ArrayBase.pm
 lib/Test/Stream/ArrayBase/Meta.pm
 lib/Test/Stream/Carp.pm
@@ -52,6 +52,7 @@ profiling/compile.pl
 profiling/long-run.pl
 README
 t/Behavior/encoding_test.t
+t/Behavior/fork_new_end.t
 t/Behavior/Munge.t
 t/Behavior/NotTB15.t
 t/Behavior/Tester2_subtest.t
@@ -202,12 +203,18 @@ t/lib/Test/Simple/sample_tests/too_few.plx
 t/lib/Test/Simple/sample_tests/too_few_fail.plx
 t/lib/Test/Simple/sample_tests/two_fail.plx
 t/lib/TieOut.pm
+t/Test-Builder.t
 t/Test-More.t
 t/Test-Simple.t
 t/Test-Stream-ArrayBase-Meta.t
 t/Test-Stream-ArrayBase.t
+t/Test-Stream-Carp.t
+t/Test-Stream-Event.t
 t/Test-Stream-Exporter-Meta.t
 t/Test-Stream-Exporter.t
+t/Test-Stream-PackageUtil.t
+t/Test-Tester-Capture.t
+t/Test-Tester.t
 t/Test-Tester2-Grab.t
 t/Test-Tester2.t
 t/Test-use-ok.t
