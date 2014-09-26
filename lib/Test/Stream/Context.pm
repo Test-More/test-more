@@ -215,21 +215,41 @@ sub send {
     $self->[STREAM]->send(@_);
 }
 
-sub ok {
-    return _ok(@_) unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG_OK != \&Test::Builder::ok;
-    my $self = shift;
-    local $Test::Builder::CTX = $self;
-    my ($bool, $name, @stash) = @_;
-    push @{$self->[MONKEYPATCH_STASH]} => \@stash;
-    my $out = Test::Builder->new->ok($bool, $name);
-    return $out;
-}
+# Uhg.. support legacy monkeypatching
+# If this is still here in 2020 I will be a sad panda.
+{
+    sub ok {
+        return _ok(@_) unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{ok} != \&Test::Builder::ok;
+        my $self = shift;
+        local $Test::Builder::CTX = $self;
+        my ($bool, $name, @stash) = @_;
+        push @{$self->[MONKEYPATCH_STASH]} => \@stash;
+        my $out = Test::Builder->new->ok($bool, $name);
+        return $out;
+    }
 
-sub _unwind_ok {
-    my $self = shift;
-    my ($bool, $name) = @_;
-    my $stash = pop @{$self->[MONKEYPATCH_STASH]};
-    return $self->_ok($bool, $name, @$stash);
+    sub _unwind_ok {
+        my $self = shift;
+        my ($bool, $name) = @_;
+        my $stash = pop @{$self->[MONKEYPATCH_STASH]};
+        return $self->_ok($bool, $name, @$stash);
+    }
+
+    sub note {
+        return _note(@_) unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{note} != \&Test::Builder::note;
+        my $self = shift;
+        local $Test::Builder::CTX = $self;
+        my $out = Test::Builder->new->note(@_);
+        return $out;
+    }
+
+    sub diag {
+        return _diag(@_) unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{diag} != \&Test::Builder::diag;
+        my $self = shift;
+        local $Test::Builder::CTX = $self;
+        my $out = Test::Builder->new->diag(@_);
+        return $out;
+    }
 }
 
 sub register_event {

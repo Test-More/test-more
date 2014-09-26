@@ -329,35 +329,51 @@ sub done_testing {
 # {{{ Base Event Producers #
 #############################
 
-our $CTX;
-our $ORIG_OK = \&ok;
 my %WARNED;
+our $CTX;
+our %ORIG = (
+    ok   => \&ok,
+    diag => \&diag,
+    note => \&note,
+    done_testing => \&done_testing,
+);
+
+sub WARN_OF_OVERRIDE {
+    my ($sub, $ctx) = @_;
+
+    return unless $ctx->modern;
+    my $old = $ORIG{$sub};
+    # Use package instead of self, we want replaced subs, not subclass overrides.
+    my $new = __PACKAGE__->can($sub);
+
+    return if $new == $old;
+
+    require B;
+    my $o    = B::svref_2object($new);
+    my $gv   = $o->GV;
+    my $st   = $o->START;
+    my $name = $gv->NAME;
+    my $pkg  = $gv->STASH->NAME;
+    my $line = $st->line;
+    my $file = $st->file;
+
+    warn <<"    EOT" unless $WARNED{"$pkg $name $file $line"}++;
+
+*******************************************************************************
+Something monkeypatched Test::Builder::$sub()!
+The new sub is '$pkg\::$name' defined in $file around line $line.
+In the near future monkeypatching Test::Builder::ok() will no longer work
+as expected.
+*******************************************************************************
+    EOT
+}
+
 sub ok {
     my $self = shift;
     my($test, $name) = @_;
 
     my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
-
-    if ($ORIG_OK != \&ok && $ctx->modern) {
-        require B;
-        my $o    = B::svref_2object(\&ok);
-        my $gv   = $o->GV;
-        my $st   = $o->START;
-        my $name = $gv->NAME;
-        my $pkg  = $gv->STASH->NAME;
-        my $line = $st->line;
-        my $file = $st->file;
-
-        warn <<"        EOT" unless $WARNED{"$pkg $name $file $line"}++
-
-*******************************************************************************
-Something monkeypatched Test::Builder::Ok()!
-The new sub is '$pkg\::$name' defined in $file around line $line.
-In the near future monkeypatching Test::Builder::ok() will no longer work
-as expected.
-*******************************************************************************
-        EOT
-    }
+    WARN_OF_OVERRIDE(ok => $ctx);
 
     if ($self->{child}) {
         $self->is_passing(0);
@@ -400,14 +416,22 @@ sub todo_skip {
 sub diag {
     my $self = shift;
     my $msg = join '', map { defined($_) ? $_ : 'undef' } @_;
-    $self->ctx->diag($msg);
+
+    my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
+    WARN_OF_OVERRIDE(diag => $ctx);
+
+    $ctx->_diag($msg);
     return;
 }
 
 sub note {
     my $self = shift;
     my $msg = join '', map { defined($_) ? $_ : 'undef' } @_;
-    $self->ctx->note($msg);
+
+    my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
+    WARN_OF_OVERRIDE(note => $ctx);
+
+    $ctx->_note($msg);
 }
 
 #############################

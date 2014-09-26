@@ -2,33 +2,31 @@ use strict;
 use warnings;
 use B;
 
-use Test::More 'modern', tests => 9;
+use Test::More 'modern', tests => 3;
 use Test::Builder; # Not loaded by default in modern mode
-my $orig = Test::Builder->can('ok');
+my $orig = Test::Builder->can('note');
 
 {
     package MyModernTester;
     use Test::More 'modern';
 
     no warnings 'redefine';
-    local *Test::Builder::ok = sub {
+    local *Test::Builder::note = sub {
         my $self = shift;
-        my ($bool, $name) = @_;
-        $name = __PACKAGE__ . ":  $name";
-        return $self->$orig($bool, $name);
+        return $self->$orig(__PACKAGE__ . ": ", @_);
     };
     use warnings;
 
     my $file = __FILE__;
     # Line number is tricky, just use what B says The sub may not actually think it
     # is on the line it is may be off by 1.
-    my $line = B::svref_2object(\&Test::Builder::ok)->START->line;
+    my $line = B::svref_2object(\&Test::Builder::note)->START->line;
 
     my @warnings;
     {
         local $SIG{__WARN__} = sub { push @warnings => @_ };
-        ok(1, "fred");
-        ok(2, "barney");
+        note('first');
+        note('seconds');
     }
     mostly_like(
         \@warnings,
@@ -45,24 +43,22 @@ my $orig = Test::Builder->can('ok');
     use Test::More 'modern';
 
     no warnings 'redefine';
-    local *Test::Builder::ok = sub {
+    local *Test::Builder::note = sub {
         my $self = shift;
-        my ($bool, $name) = @_;
-        $name = __PACKAGE__ . ": $name";
-        return $self->$orig($bool, $name);
+        return $self->$orig(__PACKAGE__ . ": ", @_);
     };
     use warnings;
 
     my $file = __FILE__;
     # Line number is tricky, just use what B says The sub may not actually think it
     # is on the line it is may be off by 1.
-    my $line = B::svref_2object(\&Test::Builder::ok)->START->line;
+    my $line = B::svref_2object(\&Test::Builder::note)->START->line;
 
     my @warnings;
     {
         local $SIG{__WARN__} = sub { push @warnings => @_ };
-        ok(1, "fred");
-        ok(2, "barney");
+        note('first');
+        note('seconds');
     }
     mostly_like(
         \@warnings,
@@ -79,24 +75,17 @@ my $orig = Test::Builder->can('ok');
     use Test::More;
 
     no warnings 'redefine';
-    local *Test::Builder::ok = sub {
+    local *Test::Builder::note = sub {
         my $self = shift;
-        my ($bool, $name) = @_;
-        $name = __PACKAGE__ . ":  $name";
-        return $self->$orig($bool, $name);
+        return $self->$orig(__PACKAGE__ . ": ", @_);
     };
     use warnings;
-
-    my $file = __FILE__;
-    # Line number is tricky, just use what B says The sub may not actually think it
-    # is on the line it is may be off by 1.
-    my $line = B::svref_2object(\&Test::Builder::ok)->START->line;
 
     my @warnings;
     {
         local $SIG{__WARN__} = sub { push @warnings => @_ };
-        ok(1, "fred");
-        ok(2, "barney");
+        note('first');
+        note('seconds');
     }
     is(@warnings, 0, "no warnings for a legacy tester");
 }

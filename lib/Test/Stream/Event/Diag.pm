@@ -4,7 +4,8 @@ use warnings;
 
 use Test::Stream qw/OUT_ERR OUT_TODO/;
 use Test::Stream::Event(
-    accessors => [qw/message linked/],
+    accessors  => [qw/message linked/],
+    ctx_method => '_diag',
 );
 
 use Test::Stream::Util qw/try/;
