@@ -54,6 +54,7 @@ README
 t/Behavior/encoding_test.t
 t/Behavior/fork_new_end.t
 t/Behavior/MonkeyPatching_diag.t
+t/Behavior/MonkeyPatching_done_testing.t
 t/Behavior/MonkeyPatching_note.t
 t/Behavior/MonkeyPatching_ok.t
 t/Behavior/Munge.t

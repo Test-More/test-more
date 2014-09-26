@@ -322,11 +322,6 @@ sub _plan_tests {
     return;
 }
 
-sub done_testing {
-    my ($self, $num_tests) = @_;
-    $self->ctx()->done_testing($num_tests);
-}
-
 ################
 # }}} Planning #
 ################
@@ -372,6 +367,16 @@ In the near future monkeypatching Test::Builder::ok() will no longer work
 as expected.
 *******************************************************************************
     EOT
+}
+
+sub done_testing {
+    my ($self, $num_tests) = @_;
+
+    my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
+    WARN_OF_OVERRIDE(done_testing => $ctx);
+
+    my $out = $ctx->stream->done_testing($ctx, $num_tests);
+    return $out;
 }
 
 sub ok {

@@ -175,10 +175,6 @@ sub _find_tester {
     return init_tester('main');
 }
 
-sub done_testing {
-    $_[0]->stream->done_testing(@_);
-}
-
 sub alert {
     my $self = shift;
     my ($msg) = @_;
@@ -237,17 +233,24 @@ sub send {
 
     sub note {
         return _note(@_) unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{note} != \&Test::Builder::note;
-        my $self = shift;
-        local $Test::Builder::CTX = $self;
+        local $Test::Builder::CTX = shift;
         my $out = Test::Builder->new->note(@_);
         return $out;
     }
 
     sub diag {
         return _diag(@_) unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{diag} != \&Test::Builder::diag;
-        my $self = shift;
-        local $Test::Builder::CTX = $self;
+        local $Test::Builder::CTX = shift;
         my $out = Test::Builder->new->diag(@_);
+        return $out;
+    }
+
+    sub done_testing {
+        return $_[0]->stream->done_testing(@_)
+            unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{done_testing} != \&Test::Builder::done_testing;
+
+        local $Test::Builder::CTX = shift;
+        my $out = Test::Builder->new->done_testing(@_);
         return $out;
     }
 }
