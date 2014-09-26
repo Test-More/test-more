@@ -56,6 +56,7 @@ t/Behavior/fork_new_end.t
 t/Behavior/Munge.t
 t/Behavior/NotTB15.t
 t/Behavior/Tester2_subtest.t
+t/Behavior/threads_with_taint_mode.t
 t/Legacy/00compile.t
 t/Legacy/bad_plan.t
 t/Legacy/bail_out.t

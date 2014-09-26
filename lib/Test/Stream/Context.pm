@@ -55,23 +55,23 @@ sub context {
     }
 
     my $call = _find_context($level);
-
-    $call = _find_context_harder() unless $call && is_tester($call->[0]);
+    $call = _find_context_harder() unless $call;
     my $pkg  = $call->[0];
 
-    my $meta = is_tester($pkg);
+    my $meta = is_tester($pkg) || _find_tester();
 
     # Check if $TODO is set in the package, if not check if Test::Builder is
     # loaded, and if so if it has Todo set. We check the element directly for
     # performance.
     my ($todo, $in_todo);
     {
+        my $todo_pkg = $meta->[Test::Stream::Meta::PACKAGE];
         no strict 'refs';
         no warnings 'once';
         if ($todo = $meta->[Test::Stream::Meta::TODO]) {
             $in_todo = 1;
         }
-        elsif ($todo = ${"$pkg\::TODO"}) {
+        elsif ($todo = ${"$todo_pkg\::TODO"}) {
             $in_todo = 1;
         }
         elsif ($Test::Builder::Test && defined $Test::Builder::Test->{Todo}) {
@@ -88,7 +88,7 @@ sub context {
         ($ppkg, $pname) = ($provider[3] =~ m/^(.*)::([^:]+)$/);
     }
 
-    $stream ||= $meta->[Test::Stream::Meta::STREAM] || Test::Stream->shared;
+    $stream ||= $meta->[Test::Stream::Meta::STREAM] || Test::Stream->shared || confess "No Stream!?";
     if ((USE_THREADS || $stream->_use_fork) && ($stream->pid == $$ && $stream->tid == get_tid())) {
         $stream->fork_cull();
     }
@@ -141,36 +141,38 @@ sub _find_context {
 
 sub _find_context_harder {
     my $level = 0;
+    my $fallback;
     while(1) {
         my ($pkg, $file, $line, $subname) = caller($level++);
-        last unless $pkg;
-        return [$pkg, $file, $line, $subname] if is_tester($pkg);
-    }
-
-    # Find, find a .t file!
-    $level = 0;
-    while(1) {
-        my ($pkg, $file, $line, $subname) = caller($level++);
-        last unless $pkg;
-        if ($file eq $0 && $file =~ m/\.t$/) {
-            init_tester($pkg);
-            return [$pkg, $file, $line, $subname];
-        }
-    }
-
-    # Final fallback, package main (If it is in the stack)
-    $level = 0;
-    while(1) {
-        my ($pkg, $file, $line, $subname) = caller($level++);
-        last unless $pkg;
-        next unless $pkg eq 'main';
-
-        init_tester($pkg);
+        $fallback ||= [$pkg, $file, $line, $subname] if $subname =~ m/::END$/;
+        next if $pkg =~ m/^Test::(Stream|Builder|More|Simple)(::.*)?$/;
         return [$pkg, $file, $line, $subname];
     }
 
-    # Give up!
-    confess "Could not find context! No tester in the stack!";
+    return $fallback if $fallback;
+    return [ '<UNKNOWN>', '<UNKNOWN>', 0, '<UNKNOWN>' ];
+}
+
+sub _find_tester {
+    my $level = 2;
+    while(1) {
+        my $pkg = caller($level++);
+        last unless $pkg;
+        my $meta = is_tester($pkg) || next;
+        return $meta;
+    }
+
+    # find a .t file!
+    $level = 0;
+    while(1) {
+        my ($pkg, $file) = caller($level++);
+        last unless $pkg;
+        if ($file eq $0 && $file =~ m/\.t$/) {
+            return init_tester($pkg);
+        }
+    }
+
+    return init_tester('main');
 }
 
 sub done_testing {
@@ -288,7 +290,7 @@ sub DESTROY { 1 }
 
 our $AUTOLOAD;
 sub AUTOLOAD {
-    my $class = blessed($_[0]) || $_[0];
+    my $class = blessed($_[0]) || $_[0] || confess $AUTOLOAD;
 
     my $name = $AUTOLOAD;
     $name =~ s/^.*:://g;

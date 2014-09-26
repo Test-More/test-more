@@ -253,10 +253,12 @@ sub new_check {
 sub _require_check {
     my ($us, $thing, $version, $force_module, $sigdie) = @_;
 
+    no warnings 'uninitialized';
     local $SIG{__DIE__} = undef;
+    use warnings;
 
     my $ctx = context();
-    my $fool_me = "#line " . $ctx->line . ' "' . $ctx->file . '"';
+    my $fool_me = "package " . $ctx->package . ";\n#line " . $ctx->line . ' "' . $ctx->file . '"';
     my $file_exists;
     protect { $file_exists = !$version && !$force_module && -f $thing };
     my $valid_name = !grep { m/^[a-zA-Z]\w*$/ ? 0 : 1 } split /\b::\b/, $thing;
@@ -346,9 +348,12 @@ sub use_check {
     my $sigdie = undef;
     my $ctx = context();
     my ($succ, $error) = try {
+        no warnings 'uninitialized';
         local $SIG{__DIE__} = undef;
+        use warnings;
         my ($p, $f, $l) = $ctx->call;
-        eval qq{package $p;\n#line $l "$f"\n\$module->import(\@imports); 1} || die $@;
+        my $imp = @imports ? '@imports' : "";
+        eval qq{package $p;\n#line $l "$f"\n\$module->import($imp); 1} || die $@;
         $sigdie = $SIG{__DIE__} if defined $SIG{__DIE__};
     };
 

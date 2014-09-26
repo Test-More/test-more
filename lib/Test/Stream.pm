@@ -20,6 +20,7 @@ use Test::Stream::ArrayBase(
         subtest_tap_delayed
         mungers
         listeners
+        follow_ups
         bailed_out
         exit_on_disruption
         use_tap use_legacy _use_fork
@@ -191,6 +192,18 @@ sub munge {
     }
 }
 
+sub follow_up {
+    my $self = shift;
+    for my $sub (@_) {
+        next unless $sub;
+
+        croak "follow_up only takes coderefs for arguments, got '$sub'"
+            unless ref $sub && ref $sub eq 'CODE';
+
+        push @{$self->[FOLLOW_UPS]} => $sub;
+    }
+}
+
 sub use_fork {
     require File::Temp;
     require Storable;
@@ -252,16 +265,20 @@ sub fork_cull {
         next if $file =~ m/^\.+$/;
         next unless $file =~ m/\.ready$/;
 
-        my $obj = Storable::retrieve("$tempdir/$file");
-        confess "Empty event object found '$tempdir/$file'" unless $obj;
+        # Untaint the path.
+        my $full = "$tempdir/$file";
+        ($full) = ($full =~ m/^(.*)$/gs);
+
+        my $obj = Storable::retrieve($full);
+        confess "Empty event object found '$full'" unless $obj;
         $obj->context->set_stream($self);
 
         if ($ENV{TEST_KEEP_TMP_DIR}) {
-            rename("$tempdir/$file", "$tempdir/$file.complete")
-                || confess "Could not rename file '$tempdir/$file', '$tempdir/$file.complete'";
+            rename($full, "$full.complete")
+                || confess "Could not rename file '$full', '$full.complete'";
         }
         else {
-            unlink("$tempdir/$file") || die "Could not unlink file: $file";
+            unlink($full) || die "Could not unlink file: $file";
         }
 
         my $cache = $self->_update_state($self->[STATE]->[0], $obj);
@@ -305,6 +322,11 @@ sub done_testing {
         $ctx->ok(0, "done_testing() was already called at $f1 line $l1");
         return;
     }
+
+    if ($self->[FOLLOW_UPS]) {
+        $_->($ctx) for @{$self->[FOLLOW_UPS]};
+    }
+
     $state->[STATE_ENDED] = $ctx->snapshot;
 
     my $ran  = $state->[STATE_COUNT];
@@ -398,7 +420,10 @@ sub _update_state {
         }
     }
     elsif (!$self->[NO_HEADER] && $e->isa('Test::Stream::Event::Finish')) {
-        $cache->{do_tap} = 1;
+        if ($self->[FOLLOW_UPS]) {
+            $_->($e->context) for @{$self->[FOLLOW_UPS]};
+        }
+
         $state->[STATE_ENDED] = $e->context->snapshot;
 
         my $plan = $state->[STATE_PLAN];
@@ -406,6 +431,11 @@ sub _update_state {
             $plan->set_max($state->[STATE_COUNT]);
             $plan->set_directive(undef);
             $cache->{tap_event} = $plan;
+            $cache->{do_tap} = 1;
+        }
+        else {
+            $cache->{do_tap} = 0;
+            $cache->{no_out} = 1;
         }
     }
     elsif ($self->[NO_DIAG] && $e->isa('Test::Stream::Event::Diag')) {
@@ -461,6 +491,7 @@ sub _render_tap {
     return unless $cache->{do_tap} || $e->can('to_tap');
 
     my $num = $self->use_numbers ? $cache->{number} : undef;
+    confess "XXX" unless $e->can('to_tap');
     my @sets = $e->to_tap($num, $self->[SUBTEST_TAP_DELAYED]);
 
     my $in_subtest = $e->in_subtest || 0;

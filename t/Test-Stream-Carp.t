@@ -1,6 +1,13 @@
 use strict;
 use warnings;
 
+BEGIN {
+    if ($INC{'Carp.pm'}) {
+        print "1..0 # Carp is already loaded before we even begin.\n";
+        exit 0;
+    }
+}
+
 use Test::More 'modern';
 
 BEGIN {

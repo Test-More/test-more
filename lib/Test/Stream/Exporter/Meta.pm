@@ -9,8 +9,8 @@ sub croak   { require Carp; goto &Carp::croak }
 sub confess { require Carp; goto &Carp::confess }
 
 sub exports { $_[0]->{exports} }
-sub default { keys %{$_[0]->{default}} }
-sub all     { keys %{$_[0]->{exports}} }
+sub default { @{$_[0]->{pdlist}} }
+sub all     { @{$_[0]->{polist}} }
 
 sub add {
     my $self = shift;
@@ -27,6 +27,7 @@ sub add {
         unless $ref && ref $ref;
 
     $self->exports->{$name} = $ref;
+    push @{$self->{polist}} => $name;
 }
 
 sub add_default {
@@ -34,6 +35,7 @@ sub add_default {
     my ($name, $ref) = @_;
 
     $self->add($name, $ref);
+    push @{$self->{pdlist}} => $name;
 
     $self->{default}->{$name} = 1;
 }
@@ -50,6 +52,8 @@ sub new {
     $EXPORT_META{$pkg} ||= bless({
         exports => {},
         default => {},
+        pdlist  => do { no strict 'refs'; no warnings 'once'; \@{"$pkg\::EXPORT"} },
+        polist  => do { no strict 'refs'; no warnings 'once'; \@{"$pkg\::EXPORT_OK"} },
         package => $pkg,
     }, $class);
 

@@ -6,7 +6,7 @@ use Scalar::Util();
 use Test::Stream::Util qw/protect/;
 
 use Test::Stream::ArrayBase(
-    accessors => [qw/encoding modern todo stream/],
+    accessors => [qw/package encoding modern todo stream/],
 );
 
 use Test::Stream::PackageUtil;
@@ -30,7 +30,7 @@ sub is_tester {
 
 sub init_tester {
     my $pkg = shift;
-    $META{$pkg} ||= bless ['legacy', 0, undef], __PACKAGE__;
+    $META{$pkg} ||= bless [$pkg, 'legacy', 0, undef], __PACKAGE__;
     return $META{$pkg};
 }
 

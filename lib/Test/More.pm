@@ -7,7 +7,7 @@ use warnings;
 our $VERSION = '1.301001_048';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Stream::Carp qw/croak/;
+use Test::Stream::Carp qw/croak carp/;
 use Scalar::Util qw/blessed/;
 use Encode();
 
@@ -134,7 +134,7 @@ sub before_import {
             $meta->[ENCODING] = $encoding;
         }
         else {
-            Carp::carp("Unknown option: $item");
+            carp("Unknown option: $item");
         }
     }
 

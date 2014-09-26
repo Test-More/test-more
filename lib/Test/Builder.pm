@@ -12,6 +12,7 @@ use Test::More::Tools;
 use Test::Stream qw/ STATE_LEGACY STATE_PLAN STATE_COUNT /;
 use Test::Stream::Toolset;
 use Test::Stream::Context;
+use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::Util qw/try protect unoverload_str is_regex/;
 use Scalar::Util qw/blessed reftype/;
@@ -328,9 +329,23 @@ sub done_testing {
 # {{{ Base Event Producers #
 #############################
 
+my $orig_ok = \&ok;
 sub ok {
     my $self = shift;
     my($test, $name) = @_;
+
+    if ($orig_ok != \&ok) {
+        require B;
+        my $name = B::svref_2object(\&ok)->GV->NAME;
+        confess <<"        EOT"
+Something overrode Test::Builder::Ok()!
+The new sub is named: $name
+    As of 1.301001 Test::Builder::Ok is not longer the only place that
+    generates 'ok' results. Overriding Test::Builder::Ok() is almost certainly
+    not what you want to do.
+        EOT
+    }
+
     my $ctx = $self->ctx();
 
     if ($self->{child}) {

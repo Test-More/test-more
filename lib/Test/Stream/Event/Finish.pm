@@ -6,8 +6,6 @@ use Test::Stream::Event(
     accessors => [qw/tests_run tests_failed/],
 );
 
-sub to_tap { }
-
 1;
 
 __END__
