@@ -8,7 +8,7 @@ use Test::Builder;
 # This is just a list of method Test::Builder current does not have that Test::Builder 1.5 does.
 my @TB15_METHODS = qw{
     _file_and_line _join_message _make_default _my_exit _reset_todo_state
-    _result_to_hash _results _todo_state formatter history in_subtest in_test
+    _result_to_hash _results _todo_state formatter history in_test
     no_change_exit_code post_event post_result set_formatter set_plan test_end
     test_exit_code test_start test_state
 };

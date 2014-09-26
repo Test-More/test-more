@@ -157,6 +157,12 @@ sub finalize {
     $ctx->child('pop', $self->{Name});
 }
 
+sub in_subtest {
+    my $self = shift;
+    my $ctx = $self->ctx;
+    return scalar @{$ctx->stream->subtests};
+}
+
 sub parent { $_[0]->{parent} }
 sub name   { $_[0]->{Name} }
 
@@ -790,7 +796,7 @@ sub summary {
 # This is just a list of method Test::Builder current does not have that Test::Builder 1.5 does.
 my %TB15_METHODS = map { $_ => 1 } qw{
     _file_and_line _join_message _make_default _my_exit _reset_todo_state
-    _result_to_hash _results _todo_state formatter history in_subtest in_test
+    _result_to_hash _results _todo_state formatter history in_test
     no_change_exit_code post_event post_result set_formatter set_plan test_end
     test_exit_code test_start test_state
 };
