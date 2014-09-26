@@ -20,10 +20,12 @@ sub import {
     my $caller = caller;
     my (%args) = @_;
 
+    my $ctx_meth = delete $args{ctx_method};
+
     # %args may override base
     Test::Stream::ArrayBase->apply_to($caller, base => $class, %args);
     require Test::Stream::Context;
-    Test::Stream::Context->register_event($caller);
+    Test::Stream::Context->register_event($caller, $ctx_meth);
 }
 
 sub init {

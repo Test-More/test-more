@@ -13,7 +13,7 @@ use Test::Stream::Util qw/try/;
 use Test::Stream::Meta qw/init_tester is_tester/;
 
 use Test::Stream::ArrayBase(
-    accessors => [qw/frame stream encoding in_todo todo modern pid skip diag_todo provider/],
+    accessors => [qw/frame stream encoding in_todo todo modern pid skip diag_todo provider monkeypatch_stash/],
 );
 
 use Test::Stream::Exporter qw/import export_to default_exports/;
@@ -215,11 +215,30 @@ sub send {
     $self->[STREAM]->send(@_);
 }
 
+sub ok {
+    return _ok(@_) unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG_OK != \&Test::Builder::ok;
+    my $self = shift;
+    local $Test::Builder::CTX = $self;
+    my ($bool, $name, @stash) = @_;
+    push @{$self->[MONKEYPATCH_STASH]} => \@stash;
+    my $out = Test::Builder->new->ok($bool, $name);
+    return $out;
+}
+
+sub _unwind_ok {
+    my $self = shift;
+    my ($bool, $name) = @_;
+    my $stash = pop @{$self->[MONKEYPATCH_STASH]};
+    return $self->_ok($bool, $name, @$stash);
+}
+
 sub register_event {
     my $class = shift;
-    my ($pkg) = @_;
-    my $name = lc($pkg);
-    $name =~ s/^.*:://g;
+    my ($pkg, $name) = @_;
+    unless($name) {
+        $name = lc($pkg);
+        $name =~ s/^.*:://g;
+    }
 
     confess "Method '$name' is already defined, event '$pkg' cannot get a context method!"
         if $class->can($name);

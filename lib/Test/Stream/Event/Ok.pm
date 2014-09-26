@@ -8,7 +8,8 @@ use Test::Stream::Util qw/unoverload_str/;
 use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::Event(
-    accessors => [qw/real_bool name diag bool level/],
+    accessors  => [qw/real_bool name diag bool level/],
+    ctx_method => '_ok',
 );
 
 sub skip { $_[0]->[CONTEXT]->skip }

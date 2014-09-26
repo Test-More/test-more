@@ -329,31 +329,42 @@ sub done_testing {
 # {{{ Base Event Producers #
 #############################
 
-my $orig_ok = \&ok;
+our $CTX;
+our $ORIG_OK = \&ok;
+my %WARNED;
 sub ok {
     my $self = shift;
     my($test, $name) = @_;
 
-    if ($orig_ok != \&ok) {
+    my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
+
+    if ($ORIG_OK != \&ok && $ctx->modern) {
         require B;
-        my $name = B::svref_2object(\&ok)->GV->NAME;
-        confess <<"        EOT"
-Something overrode Test::Builder::Ok()!
-The new sub is named: $name
-    As of 1.301001 Test::Builder::Ok is not longer the only place that
-    generates 'ok' results. Overriding Test::Builder::Ok() is almost certainly
-    not what you want to do.
+        my $o    = B::svref_2object(\&ok);
+        my $gv   = $o->GV;
+        my $st   = $o->START;
+        my $name = $gv->NAME;
+        my $pkg  = $gv->STASH->NAME;
+        my $line = $st->line;
+        my $file = $st->file;
+
+        warn <<"        EOT" unless $WARNED{"$pkg $name $file $line"}++
+
+*******************************************************************************
+Something monkeypatched Test::Builder::Ok()!
+The new sub is '$pkg\::$name' defined in $file around line $line.
+In the near future monkeypatching Test::Builder::ok() will no longer work
+as expected.
+*******************************************************************************
         EOT
     }
-
-    my $ctx = $self->ctx();
 
     if ($self->{child}) {
         $self->is_passing(0);
         $ctx->throw("Cannot run test ($name) with active children");
     }
 
-    $ctx->ok($test, $name);
+    $ctx->_unwind_ok($test, $name);
     return $test ? 1 : 0;
 }
 
