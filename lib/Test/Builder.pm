@@ -53,6 +53,47 @@ sub _ending {
     Test::Stream::ExitMagic->new->do_magic($self->{stream}, $ctx);
 }
 
+my %WARNED;
+our $CTX;
+our %ORIG = (
+    ok   => \&ok,
+    diag => \&diag,
+    note => \&note,
+    plan => \&plan,
+    done_testing => \&done_testing,
+);
+
+sub WARN_OF_OVERRIDE {
+    my ($sub, $ctx) = @_;
+
+    return unless $ctx->modern;
+    my $old = $ORIG{$sub};
+    # Use package instead of self, we want replaced subs, not subclass overrides.
+    my $new = __PACKAGE__->can($sub);
+
+    return if $new == $old;
+
+    require B;
+    my $o    = B::svref_2object($new);
+    my $gv   = $o->GV;
+    my $st   = $o->START;
+    my $name = $gv->NAME;
+    my $pkg  = $gv->STASH->NAME;
+    my $line = $st->line;
+    my $file = $st->file;
+
+    warn <<"    EOT" unless $WARNED{"$pkg $name $file $line"}++;
+
+*******************************************************************************
+Something monkeypatched Test::Builder::$sub()!
+The new sub is '$pkg\::$name' defined in $file around line $line.
+In the near future monkeypatching Test::Builder::ok() will no longer work
+as expected.
+*******************************************************************************
+    EOT
+}
+
+
 ####################
 # {{{ Constructors #
 ####################
@@ -271,9 +312,11 @@ my %PLAN_CMDS = (
 
 sub plan {
     my ($self, $cmd, @args) = @_;
-    return unless $cmd;
 
-    my $ctx = $self->ctx;
+    my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
+    WARN_OF_OVERRIDE(plan => $ctx);
+
+    return unless $cmd;
 
     if (my $method = $PLAN_CMDS{$cmd}) {
         $self->$method(@args);
@@ -291,14 +334,18 @@ sub skip_all {
 
     $self->{Skip_All} = 1;
 
-    $self->ctx()->plan(0, 'SKIP', $reason);
+    my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
+
+    $ctx->_plan(0, 'SKIP', $reason);
 }
 
 sub no_plan {
     my ($self, @args) = @_;
 
-    $self->ctx()->alert("no_plan takes no arguments") if @args;
-    $self->ctx()->plan(0, 'NO PLAN');
+    my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
+
+    $ctx->alert("no_plan takes no arguments") if @args;
+    $ctx->_plan(0, 'NO PLAN');
 
     return 1;
 }
@@ -306,67 +353,22 @@ sub no_plan {
 sub _plan_tests {
     my ($self, $arg) = @_;
 
+    my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
+
     if ($arg) {
-        $self->ctx()->throw("Number of tests must be a positive integer.  You gave it '$arg'")
+        $ctx->throw("Number of tests must be a positive integer.  You gave it '$arg'")
             unless $arg =~ /^\+?\d+$/;
 
-        $self->ctx()->plan($arg);
+        $ctx->_plan($arg);
     }
     elsif (!defined $arg) {
-        $self->ctx()->throw("Got an undefined number of tests");
+        $ctx->throw("Got an undefined number of tests");
     }
     else {
-        $self->ctx()->throw("You said to run 0 tests");
+        $ctx->throw("You said to run 0 tests");
     }
 
     return;
-}
-
-################
-# }}} Planning #
-################
-
-#############################
-# {{{ Base Event Producers #
-#############################
-
-my %WARNED;
-our $CTX;
-our %ORIG = (
-    ok   => \&ok,
-    diag => \&diag,
-    note => \&note,
-    done_testing => \&done_testing,
-);
-
-sub WARN_OF_OVERRIDE {
-    my ($sub, $ctx) = @_;
-
-    return unless $ctx->modern;
-    my $old = $ORIG{$sub};
-    # Use package instead of self, we want replaced subs, not subclass overrides.
-    my $new = __PACKAGE__->can($sub);
-
-    return if $new == $old;
-
-    require B;
-    my $o    = B::svref_2object($new);
-    my $gv   = $o->GV;
-    my $st   = $o->START;
-    my $name = $gv->NAME;
-    my $pkg  = $gv->STASH->NAME;
-    my $line = $st->line;
-    my $file = $st->file;
-
-    warn <<"    EOT" unless $WARNED{"$pkg $name $file $line"}++;
-
-*******************************************************************************
-Something monkeypatched Test::Builder::$sub()!
-The new sub is '$pkg\::$name' defined in $file around line $line.
-In the near future monkeypatching Test::Builder::ok() will no longer work
-as expected.
-*******************************************************************************
-    EOT
 }
 
 sub done_testing {
@@ -378,6 +380,14 @@ sub done_testing {
     my $out = $ctx->stream->done_testing($ctx, $num_tests);
     return $out;
 }
+
+################
+# }}} Planning #
+################
+
+#############################
+# {{{ Base Event Producers #
+#############################
 
 sub ok {
     my $self = shift;

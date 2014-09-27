@@ -4,7 +4,8 @@ use warnings;
 
 use Test::Stream qw/OUT_STD/;
 use Test::Stream::Event(
-    accessors => [qw/max directive reason/],
+    accessors  => [qw/max directive reason/],
+    ctx_method => '_plan',
 );
 
 use Test::Stream::Carp qw/confess/;

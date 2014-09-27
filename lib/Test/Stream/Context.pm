@@ -245,6 +245,17 @@ sub send {
         return $out;
     }
 
+    sub plan {
+        return _plan(@_) unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{plan} != \&Test::Builder::plan;
+        local $Test::Builder::CTX = shift;
+        my ($num, $dir, $arg) = @_;
+        $dir ||= 'tests';
+        $dir = 'skip_all' if $dir eq 'SKIP';
+        $dir = 'no_plan'  if $dir eq 'NO PLAN';
+        my $out = Test::Builder->new->plan($dir, $num || $arg || ());
+        return $out;
+    }
+
     sub done_testing {
         return $_[0]->stream->done_testing(@_)
             unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{done_testing} != \&Test::Builder::done_testing;
