@@ -42,16 +42,24 @@ if (my $want_colour = $ENV{TESTTESTERCOLOUR} || $ENV{TESTTESTERCOLOUR}) {
 my $capture = Test::Tester::Capture->new;
 sub capture { $capture }
 
-sub find_run_tests {
-    my $d     = 1;
-    my $found = 0;
-    while ((not $found) and (my ($sub) = (caller($d))[3])) {
-        $found = ($sub eq "Test::Tester::run_tests");
-        $d++;
+sub find_depth {
+    my ($start, $end);
+    my $l = 1;
+    while (my @call = caller($l++)) {
+        $start = $l if $call[3] =~ m/^Test::Builder::(ok|skip|todo_skip)$/;
+        next unless $start;
+        next unless $call[3] eq 'Test::Tester::run_tests';
+        $end = $l;
+        last;
     }
 
-    return $d;
+    # 2 the eval and the anon sub
+    return $end - $start - 2;
 }
+
+require Test::Stream::Event::Ok;
+my $META = Test::Stream::ArrayBase::Meta->get('Test::Stream::Event::Ok');
+my $idx = $META->{index} + 1;
 
 sub run_tests {
     my $test = shift;
@@ -64,6 +72,13 @@ sub run_tests {
     my ($stream, $old) = Test::Stream->intercept_start($cstream);
     $stream->set_use_legacy(1);
     $stream->state->[-1] = [0, 0, undef, 1];
+    $stream->munge(sub {
+        my ($stream, $e) = @_;
+        $e->[$idx] = find_depth() - $Test::Builder::Level;
+        $e->[$idx+1] = $Test::Builder::Level;
+        require Carp;
+        $e->[$idx + 2] = Carp::longmess();
+    });
 
     my $level = $Test::Builder::Level;
 
@@ -77,7 +92,7 @@ sub run_tests {
             if ($e->isa('Test::Stream::Event::Ok')) {
                 push @out => $e->to_legacy;
                 $out[-1]->{diag} ||= "";
-                $out[-1]->{depth} = $e->level - $level;
+                $out[-1]->{depth} = $e->[$idx];
                 for my $d (@{$e->diag || []}) {
                     next if $d->message =~ m{Failed test (.*\n\s*)?at .* line \d+\.};
                     next if $d->message =~ m{You named your test '.*'\.  You shouldn't use numbers for your test names};

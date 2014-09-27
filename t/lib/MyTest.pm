@@ -9,7 +9,6 @@ my $Test = Test::Builder->new;
 
 sub ok
 {
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
 	$Test->ok(@_);
 }
 

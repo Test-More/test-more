@@ -20,7 +20,6 @@ $test->plan(tests => 2);
 
 sub deeper
 {
-    local $Test::Builder::Level = $Test::Builder::Level + 1;
 	MyTest::ok(1);
 }
 
