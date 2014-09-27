@@ -4,7 +4,7 @@ use warnings;
 
 use Test::More::Tools;
 use Scalar::Util qw/reftype blessed/;
-use Test::Stream::Util qw/try unoverload_str/;
+use Test::Stream::Util qw/try unoverload_str is_regex/;
 
 use Test::Stream::ArrayBase(
     accessors => [qw/stack_start/],
@@ -39,7 +39,7 @@ sub _reftype {
 
     return $type unless $type eq 'SCALAR';
 
-    $type = 'REGEXP' if $thing =~ m/^\(\?\^[a-z]*:.*\)$/ || $type eq 'REGEX';
+    $type = 'REGEXP' if $type eq 'REGEX' || is_regex($thing);
 
     return $type;
 }
