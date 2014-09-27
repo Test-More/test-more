@@ -31,6 +31,7 @@ sub check {
         return (0, $self->format_stack);
     }
 
+    push @$self => {vals => [$got, $expect], line => __LINE__};
     my $ok = $self->_deep_check($got, $expect);
     return ($ok, $ok ? () : $self->format_stack);
 }
@@ -39,6 +40,7 @@ sub check_array {
     my $class = shift;
     my ($got, $expect) = @_;
     my $self = $class->new();
+    push @$self => {vals => [$got, $expect], line => __LINE__};
     my $ok = $self->_deep_check($got, $expect);
     return ($ok, $ok ? () : $self->format_stack);
 }
@@ -47,6 +49,7 @@ sub check_hash {
     my $class = shift;
     my ($got, $expect) = @_;
     my $self = $class->new();
+    push @$self => {vals => [$got, $expect], line => __LINE__};
     my $ok = $self->_deep_check($got, $expect);
     return ($ok, $ok ? () : $self->format_stack);
 }
