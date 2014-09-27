@@ -147,7 +147,7 @@ sub before_import {
 
 sub ok ($;$) {
     my $ctx = context();
-    return $ctx->ok(@_);
+    $ctx->ok(@_);
     return $_[0] ? 1 : 0;
 }
 
