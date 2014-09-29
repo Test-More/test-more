@@ -29,13 +29,13 @@ sub cmp_check {
 
     my ($p, $file, $line) = $ctx->call;
 
-    my $test;
+    my $test = 0;
     my ($success, $error) = try {
         # This is so that warnings come out at the caller's level
         ## no critic (BuiltinFunctions::ProhibitStringyEval)
         eval qq[
 #line $line "(eval in $name) $file"
-\$test = \$got $type \$expect;
+\$test = (\$got $type \$expect);
 1;
         ] || die $@;
     };
