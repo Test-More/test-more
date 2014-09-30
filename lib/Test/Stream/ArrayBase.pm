@@ -4,7 +4,7 @@ use warnings;
 
 use Test::Stream::ArrayBase::Meta;
 use Test::Stream::Carp qw/confess croak/;
-use Scalar::Util qw/blessed/;
+use Scalar::Util qw/blessed reftype/;
 
 use Test::Stream::Exporter();
 
@@ -95,6 +95,30 @@ sub to_hash {
     }
     return \%out;
 };
+
+our %DUMP_CACHE;
+sub ab_dump {
+    my $self = shift;
+
+    local %DUMP_CACHE;
+
+    require Data::Dumper;
+    my $d = Data::Dumper->new([$self]);
+    $d->Sortkeys(1);
+    $d->Freezer('_ab_freeze');
+    return $d->Dump;
+}
+
+sub _ab_freeze {
+    my ($self) = @_;
+
+    unless($DUMP_CACHE{$self}) {
+        $DUMP_CACHE{$self} = $self->to_hash;
+        $DUMP_CACHE{$self}->{__CLASS__} = blessed $self;
+    }
+
+    $_[0] = $DUMP_CACHE{$self};
+}
 
 1;
 

@@ -227,20 +227,6 @@ sub fork_out {
 
         # First write the file, then rename it so that it is not read before it is ready.
         my $name =  $tempdir . "/$$-$tid-" . ($self->[EVENT_ID]++);
-        my @events = ($event);
-        while (my $e = shift @events) {
-            next unless $e;
-            $e->context->set_stream(undef);
-            next unless $e->isa('Test::Stream::Event::Ok');
-            push @events => @{$e->diag}   if $e->diag;
-            next unless $e->isa('Test::Stream::Event::Subtest');
-            push @events => @{$e->events};
-            push @events => $e->exception if $e->exception;
-            push @events => $e->state->[STATE_PLAN] if $e->state->[STATE_PLAN];
-            $e->state->[STATE_LEGACY] = undef if $e->state->[STATE_LEGACY];
-            $e->state->[STATE_ENDED]  = undef if $e->state->[STATE_ENDED];
-        }
-
         Storable::store($event, $name);
         rename($name, "$name.ready") || confess "Could not rename file '$name' -> '$name.ready'";
     }
@@ -271,7 +257,6 @@ sub fork_cull {
 
         my $obj = Storable::retrieve($full);
         confess "Empty event object found '$full'" unless $obj;
-        $obj->context->set_stream($self);
 
         if ($ENV{TEST_KEEP_TMP_DIR}) {
             rename($full, "$full.complete")
@@ -292,6 +277,7 @@ sub fork_cull {
 sub DESTROY {
     my $self = shift;
 
+    return unless defined $self->pid;
     return unless $$ == $self->pid && get_tid() == $self->tid;
 
     my $dir = $self->[_USE_FORK] || return;
@@ -526,6 +512,19 @@ sub _finalize_event {
         exit 255;
     }
 }
+
+sub STORABLE_freeze {
+    my ($self, $cloning) = @_;
+    return if $cloning;
+    return ($self);
+}
+
+sub STORABLE_thaw {
+    my ($self, $cloning, @vals) = @_;
+    return if $cloning;
+    return Test::Stream->shared;
+}
+
 
 1;
 

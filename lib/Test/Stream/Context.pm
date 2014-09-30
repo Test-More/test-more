@@ -109,6 +109,8 @@ sub context {
         __PACKAGE__
     );
 
+    weaken($ctx->[STREAM]);
+
     return $ctx if $CURRENT;
 
     $CURRENT = $ctx;
