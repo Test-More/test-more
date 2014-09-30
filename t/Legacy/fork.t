@@ -23,8 +23,10 @@ else {
     plan tests => 1;
 }
 
-if( fork ) { # parent
+my $pid = fork;
+if( $pid ) { # parent
     pass("Only the parent should process the ending, not the child");
+    waitpid($pid, 0);
 }
 else {
     exit;   # child
