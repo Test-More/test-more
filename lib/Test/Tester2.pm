@@ -4,7 +4,7 @@ use warnings;
 
 use Test::Builder 1.301001;
 use Test::Stream;
-use Test::Stream::Util qw/try/;
+use Test::Stream::Util qw/try is_regex/;
 
 use Scalar::Util qw/blessed reftype/;
 use Test::Stream::Carp qw/croak carp/;
@@ -186,7 +186,7 @@ sub _events_are {
         my $id   = "$type " . (delete $want->{id} || $wnum);
         $id .= " on line $line" if $line;
 
-        $want ||= "(UNDEF)";
+        $want = "(UNDEF)" unless defined $want;
         croak "($id) '$type' must be paired with a hashref, but you gave: '$want'"
             unless $want && ref $want && reftype $want eq 'HASH';
 
@@ -211,43 +211,67 @@ sub _events_are {
         for my $key (keys %$want) {
             my $wval = $want->{$key};
             my $rtype = reftype($wval) || "";
-            $rtype = 'REGEXP' if $rtype eq 'SCALAR' && "$wval" =~ m/^\(\?[-xism]{5}:.*\)$/;
+            $rtype = 'REGEXP' if $wval && is_regex($wval);
             my $gval = $fields->{$key};
 
-            my $field_ok;
-            if ($rtype eq 'CODE') {
-                $field_ok = $wval->($gval);
-                $gval = "(UNDEF)" unless defined $gval;
-                push @diag => "($id) $key => '$gval' did not validate via coderef" unless $field_ok;
-            }
-            elsif ($rtype eq 'REGEXP') {
-                $field_ok = defined $gval && $gval =~ $wval;
-                $gval = "(UNDEF)" unless defined $gval;
-                push @diag => "($id) $key => '$gval' does not match $wval" unless $field_ok;
+            my $field_ok = 1;
+            if ($rtype eq 'HASH') {
+                $field_ok = 0;
+                push @diag => "($id) Invalid check, not sure what to do with a hashref ($key)";
             }
             elsif ($rtype eq 'ARRAY') {
-                my ($nest_ok, undef, @nest_diag) = _events_are($gval, $wval);
-                $field_ok = $nest_ok;
-                unless ($field_ok) {
-                    push @diag => "($id) Subevents do not match";
-                    push @diag => map { s/^/    /mg; $_ } @nest_diag;
+                my %bad;
+                my %multi;
+                my %nest;
+                for my $i (@$wval) {
+                    my $t = reftype($i) || "SCALAR";
+                    $t = 'REGEXP' if $i && is_regex($i);
+                    if ($t eq 'SCALAR') {
+                        $nest{$t}++;
+                    }
+                    elsif ($t eq 'HASH') {
+                        $nest{$t}++;
+                    }
+                    elsif ($t eq 'REGEXP') {
+                        $multi{$t}++;
+                    }
+                    elsif ($t eq 'CODE') {
+                        $multi{$t}++;
+                    }
+                    else {
+                        $bad{$t}++;
+                    }
+                }
+
+                if (keys %bad) {
+                    $field_ok = 0;
+                    push @diag => "($id) Invalid check, arrayref must either contain events, or regexp and code. ($key)";
+                }
+                elsif (keys %multi) {
+                    for my $wv (@$wval) {
+                        my $wvt = reftype $wv || '';
+                        $wvt = 'REGEXP' if is_regex($wvt);
+                        my ($new_ok, @new_diag) = _inner_check($id, $fields, $key, $wv, $gval, $wvt);
+                        $field_ok = $new_ok;
+                        unless ($new_ok) {
+                            push @diag => @new_diag;
+                            last;
+                        }
+                    }
+                }
+                else {
+                    my ($nest_ok, undef, @nest_diag) = _events_are($gval, $wval);
+                    $field_ok = $nest_ok;
+                    unless ($nest_ok) {
+                        push @diag => "($id) Subevents do not match";
+                        push @diag => map { s/^/    /mg; $_ } @nest_diag;
+                    }
                 }
             }
-            elsif(!exists $fields->{$key}) {
-                $field_ok = 0;
-                push @diag => "($id) Wanted $key => '$wval', but '$key' does not exist" unless $field_ok;
-            }
-            elsif(defined $wval && !defined $gval) {
-                $field_ok = 0;
-                push @diag => "($id) Wanted $key => '$wval', but '$key' is not defined" unless $field_ok;
-            }
-            elsif($wval =~ m/^\d+x?[\d\.e_]*$/i && $gval =~ m/^\d+x?[\d\.e_]*$/i) {
-                $field_ok = $wval == $gval;
-                push @diag => "($id) Wanted $key => '$wval', but got $key => '$gval'" unless $field_ok;
-            }
             else {
-                $field_ok = "$wval" eq "$gval";
-                push @diag => "($id) Wanted $key => '$wval', but got $key => '$gval'" unless $field_ok;
+                my @new_diag;
+                ($field_ok, @new_diag) = _inner_check($id, $fields, $key, $wval, $gval, $rtype );
+                push @diag => @new_diag unless $field_ok;
             }
 
             $ok &&= $field_ok;
@@ -268,6 +292,52 @@ sub _events_are {
     return ($ok, $overall_name, @diag);
 }
 
+sub _inner_check {
+    my ($id, $fields, $key, $wval, $gval, $rtype) = @_;
+
+    if ($rtype eq 'CODE') {
+        return (1) if $wval->($gval);
+        $gval = "(UNDEF)" unless defined $gval;
+        return (
+            0,
+            "($id) $key => '$gval' did not validate via coderef",
+        );
+    }
+    elsif ($rtype eq 'REGEXP') {
+        return (1) if defined $gval && $gval =~ $wval;
+        $gval = "(UNDEF)" unless defined $gval;
+        return (
+            0,
+            "($id) $key => '$gval' does not match $wval",
+        );
+    }
+    elsif(!exists $fields->{$key}) {
+        return (
+            0,
+            "($id) Wanted $key => '$wval', but '$key' does not exist",
+        );
+    }
+    elsif(defined $wval && !defined $gval) {
+        return (
+            0,
+            "($id) Wanted $key => '$wval', but '$key' is not defined",
+        );
+    }
+    elsif($wval =~ m/^\d+x?[\d\.e_]*$/i && $gval =~ m/^\d+x?[\d\.e_]*$/i) {
+        return (1) if $wval == $gval;
+        return (
+            0,
+            "($id) Wanted $key => '$wval', but got $key => '$gval'",
+        );
+    }
+
+    return 1 if "$wval" eq "$gval";
+
+    return (
+        0,
+        "($id) Wanted $key => '$wval', but got $key => '$gval'",
+    );
+}
 
 sub events_are {
     my $ctx = context();
@@ -325,8 +395,7 @@ sub render_check {
             }
         }
         elsif (ref $fields->{$field} && ref $fields->{$field} eq 'ARRAY') {
-            my $num = @{$fields->{$field}};
-            $num /= 2 unless $is_event;
+            my $num = $is_event ? @{$fields->{$field}} : '...';
             $out .= "  $field: [$num]\n";
         }
         else {
