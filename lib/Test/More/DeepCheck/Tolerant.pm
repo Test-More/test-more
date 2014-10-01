@@ -48,7 +48,7 @@ sub _nonref_check {
     my ($self) = shift;
     my ($got, $expect) = @_;
 
-    my $numeric = $got =~ m/^[0-9\._ef]+$/i && $expect =~ m/^[0-9\._ef]+$/i;
+    my $numeric = $got !~ m/\D/i && $expect !~ m/\D/i;
     return $numeric ? $got == $expect : "$got" eq "$expect";
 }
 
