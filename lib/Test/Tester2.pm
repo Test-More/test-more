@@ -217,7 +217,7 @@ sub _events_are {
             my $field_ok = 1;
             if ($rtype eq 'HASH') {
                 $field_ok = 0;
-                push @diag => "($id) Invalid check, not sure what to do with a hashref ($key)";
+                push @diag => "($id) $key => $wval, Invalid check, not sure what to do with a hashref.";
             }
             elsif ($rtype eq 'ARRAY') {
                 my %bad;
@@ -245,12 +245,12 @@ sub _events_are {
 
                 if (keys %bad) {
                     $field_ok = 0;
-                    push @diag => "($id) Invalid check, arrayref must either contain events, or regexp and code. ($key)";
+                    push @diag => "($id) $key => $wval, Invalid check, arrayref must either contain events, or regexp and code.";
                 }
                 elsif (keys %multi) {
                     for my $wv (@$wval) {
                         my $wvt = reftype $wv || '';
-                        $wvt = 'REGEXP' if is_regex($wvt);
+                        $wvt = 'REGEXP' if is_regex($wv);
                         my ($new_ok, @new_diag) = _inner_check($id, $fields, $key, $wv, $gval, $wvt);
                         $field_ok = $new_ok;
                         unless ($new_ok) {
