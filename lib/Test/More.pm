@@ -16,7 +16,7 @@ use Test::More::DeepCheck::Strict;
 use Test::More::DeepCheck::Tolerant;
 
 use Test::Stream;
-use Test::Stream::Util qw/protect try/;
+use Test::Stream::Util qw/protect try spoof/;
 use Test::Stream::Meta qw/MODERN ENCODING/;
 use Test::Stream::Toolset;
 
@@ -316,24 +316,6 @@ sub subtest {
     return tmt->subtest(@_);
 }
 
-sub require_ok($;$) {
-    my ($thing, $version) = @_;
-    my $ctx = context();
-
-    my ($name, $ok, @diag) = tmt->require_check($thing, $version);
-    $ctx->ok($ok, $name, \@diag);
-    return $ok;
-}
-
-sub use_ok($;@) {
-    my ($module, @imports) = @_;
-    my $ctx = context();
-
-    my ($ok, @diag) = tmt->use_check($module, @imports);
-    $ctx->ok($ok, "use $module;", \@diag);
-    return $ok;
-}
-
 sub explain {
     my $ctx = context();
     tmt->explain(@_);
@@ -446,11 +428,82 @@ sub eq_set {
     return $ok;
 }
 
-1;
+sub require_ok($;$) {
+    my($module) = shift;
+    my $ctx = context();
 
-__END__
+    # Try to determine if we've been given a module name or file.
+    # Module names must be barewords, files not.
+    $module = qq['$module'] unless _is_module_name($module);
 
+    my ($ret, $err);
+    {
+        local $SIG{__DIE__};
+        ($ret, $err) = spoof [caller] => "require $module";
+    }
 
+    my @diag;
+    unless ($ret) {
+        chomp $err;
+        push @diag => <<"        DIAG";
+    Tried to require '$module'.
+    Error:  $err
+        DIAG
+    }
+
+    $ctx->ok( $ret, "require $module;", \@diag );
+    return $ret ? 1 : 0;
+}
+
+sub _is_module_name {
+    my $module = shift;
+
+    # Module names start with a letter.
+    # End with an alphanumeric.
+    # The rest is an alphanumeric or ::
+    $module =~ s/\b::\b//g;
+
+    return $module =~ /^[a-zA-Z]\w*$/ ? 1 : 0;
+}
+
+sub use_ok($;@) {
+    my ($module, @imports) = @_;
+    @imports = () unless @imports;
+    my $ctx = context();
+
+    my($pack, $filename, $line) = caller;
+    $filename =~ y/\n\r/_/; # so it doesn't run off the "#line $line $f" line
+
+    my ($ret, $err, $newdie, @diag);
+    {
+        local $SIG{__DIE__};
+
+        if( @imports == 1 and $imports[0] =~ /^\d+(?:\.\d+)?$/ ) {
+            # probably a version check.  Perl needs to see the bare number
+            # for it to work with non-Exporter based modules.
+            ($ret, $err) = spoof [$pack, $filename, $line] => "use $module $imports[0]";
+        }
+        else {
+            ($ret, $err) = spoof [$pack, $filename, $line] => "use $module \@args", @imports;
+        }
+
+        $newdie = $SIG{__DIE__};
+    }
+
+    $SIG{__DIE__} = $newdie if defined $newdie;
+
+    unless ($ret) {
+        chomp $err;
+        push @diag => <<"        DIAG";
+    Tried to use '$module'.
+    Error:  $err
+        DIAG
+    }
+
+    $ctx->ok($ret, "use $module;", \@diag);
+
+    return $ret ? 1 : 0;
+}
 
 1;
 
@@ -465,7 +518,6 @@ Test::More - The defacto standard in unit testing tools.
     use Test::More 'modern';
 
     use ok 'Some::Module';
-    require_ok( 'Some::Module' );
 
     can_ok($module, @methods);
     isa_ok($object, $class);
@@ -1108,35 +1160,13 @@ successfully load.  For example, you'll often want a first test which
 simply loads all the modules in the distribution to make sure they
 work before going on to do more complicated testing.
 
-For such purposes we have C<require_ok>, and C<use ok 'module'>. C<use_ok> is
-still around, but is considered deprecated in favor of C<use ok 'module'>.
+For such purposes we have C<use ok 'module'>. C<use_ok> is still around, but is
+considered discouraged in favor of C<use ok 'module'>. C<require_ok> is also
+discouraged because it tries to guess if you gave it a file name or module
+name. C<require_ok>'s guessing mechanism is broken, but fixing it can break
+things.
 
 =over 4
-
-=item B<require_ok>
-
-   require_ok($module);
-   require_ok($file);
-
-Tries to C<require> the given $module or $file.  If it loads
-successfully, the test will pass.  Otherwise it fails and displays the
-load error.
-
-C<require_ok> will guess whether the input is a module name or a
-filename.
-
-No exception will be thrown if the load fails.
-
-    # require Some::Module
-    require_ok "Some::Module";
-
-    # require "Some/File.pl";
-    require_ok "Some/File.pl";
-
-    # stop testing if any of your modules will not load
-    for my $module (@module) {
-        require_ok $module or BAIL_OUT "Can't load $module";
-    }
 
 =item B<use ok 'module'>
 
@@ -1164,9 +1194,36 @@ If you must do something like this, here is a more-correct way:
     BEGIN { $class = 'My::Module' }
     use ok $class;
 
+=item B<require_ok>
+
+B<***DISCOURAGED***> - Broken guessing
+
+   require_ok($module);
+   require_ok($file);
+
+Tries to C<require> the given $module or $file.  If it loads
+successfully, the test will pass.  Otherwise it fails and displays the
+load error.
+
+C<require_ok> will guess whether the input is a module name or a
+filename.
+
+No exception will be thrown if the load fails.
+
+    # require Some::Module
+    require_ok "Some::Module";
+
+    # require "Some/File.pl";
+    require_ok "Some/File.pl";
+
+    # stop testing if any of your modules will not load
+    for my $module (@module) {
+        require_ok $module or BAIL_OUT "Can't load $module";
+    }
+
 =item B<use_ok>
 
-B<Deprecated!> See C<use ok 'module'>
+B<***DISCOURAGED***> See C<use ok 'module'>
 
    BEGIN { use_ok($module); }
    BEGIN { use_ok($module, @imports); }

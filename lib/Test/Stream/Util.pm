@@ -4,9 +4,10 @@ use warnings;
 
 use Scalar::Util qw/reftype blessed/;
 use Test::Stream::Exporter qw/import export_to exports/;
+use Test::Stream::Carp qw/croak/;
 
 exports qw{
-    try protect is_regex is_dualvar
+    try protect spoof is_regex is_dualvar
     unoverload unoverload_str unoverload_num
 };
 
@@ -33,6 +34,34 @@ sub try(&) {
     {
         local ($@, $!, $SIG{__DIE__});
         $ok = eval { $code->(); 1 } || 0;
+        unless($ok) {
+            $error = $@ || "Error was squashed!\n";
+        }
+    }
+
+    return wantarray ? ($ok, $error) : $ok;
+}
+
+sub spoof {
+    my ($call, $code, @args) = @_;
+
+    croak "The first argument to spoof must be an arrayref with package, filename, and line."
+        unless $call && @$call == 3;
+
+    croak "The second argument must be a string to run."
+        if ref $code;
+
+    my $error;
+    my $ok;
+
+    {
+        local ($@, $!);
+        $ok = eval <<"        EOT" || 0;
+package $call->[0];
+#line $call->[2] "$call->[1]"
+$code;
+1;
+        EOT
         unless($ok) {
             $error = $@ || "Error was squashed!\n";
         }

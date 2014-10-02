@@ -4,11 +4,11 @@ use warnings;
 use Test::More 'modern';
 
 use ok 'Test::Stream::Util', qw{
-    try protect is_regex is_dualvar
+    try protect spoof is_regex is_dualvar
 };
 
 can_ok(__PACKAGE__, qw{
-    try protect is_regex is_dualvar
+    try protect spoof is_regex is_dualvar
 });
 
 # $! is a dualvar.
@@ -36,5 +36,10 @@ cmp_ok($!, '==', 100, "\$! did not change");
 ok(is_regex(qr/foo bar baz/), 'qr regex');
 ok(is_regex('/xxx/'), 'slash regex');
 ok(!is_regex('xxx'), 'not a regex');
+
+my ($ret, $e) = spoof ["The::Moon", "Moon.pm", 11] => "die 'xxx' . __PACKAGE__";
+ok(!$ret, "Failed eval");
+like( $e, qr/^xxxThe::Moon at Moon\.pm line 11\.?/, "Used correct package, file, and line");
+
 
 done_testing;
