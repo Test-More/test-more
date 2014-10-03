@@ -83,6 +83,13 @@ sub is_eq {
     return $class->cmp_check($got, 'eq', $expect);
 }
 
+sub is_same_truth {
+    my($class, $got, $expect) = @_;
+
+    my $test = !!$got eq !!$expect;
+    return ($test, $test ? () : $class->_same_truth_diag($got, $expect));
+}
+
 sub is_num {
     my($class, $got, $expect) = @_;
 
@@ -269,7 +276,10 @@ sub explain {
 sub _diag_fmt {
     my( $class, $type, $val ) = @_;
 
-    if( defined $$val ) {
+    if( $type eq 'truthiness' ) {
+        $$val = $$val ? 'truthy' : 'falsy';
+    }
+    elsif( defined $$val ) {
         if( $type eq 'eq' or $type eq 'ne' ) {
             # quote and force string context
             $$val = "'$$val'";
@@ -305,6 +315,18 @@ sub _isnt_diag {
     return <<"DIAGNOSTIC";
          got: $got
     expected: anything else
+DIAGNOSTIC
+}
+
+sub _same_truth_diag {
+    my( $class, $got, $expect ) = @_;
+
+    $class->_diag_fmt( 'eq', \$got );
+    $class->_diag_fmt( 'truthiness', \$expect );
+
+    return <<"DIAGNOSTIC";
+         got: $got
+    expected: $expect
 DIAGNOSTIC
 }
 
