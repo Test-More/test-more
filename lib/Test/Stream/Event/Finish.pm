@@ -6,6 +6,11 @@ use Test::Stream::Event(
     accessors => [qw/tests_run tests_failed/],
 );
 
+sub extra_details {
+    my $self = shift;
+    return (map {($_ => $self->$_ || undef)} qw/tests_run tests_failed/);
+}
+
 1;
 
 __END__

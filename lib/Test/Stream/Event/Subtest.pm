@@ -4,7 +4,7 @@ use warnings;
 
 use Scalar::Util qw/blessed/;
 use Test::Stream::Carp qw/confess/;
-use Test::Stream qw/STATE_PASSING STATE_COUNT OUT_STD/;
+use Test::Stream qw/STATE_PASSING STATE_COUNT STATE_FAILED STATE_PLAN OUT_STD/;
 
 use Test::Stream::Event(
     base      => 'Test::Stream::Event::Ok',
@@ -78,6 +78,29 @@ sub _render_events {
     }
 
     return @out;
+}
+
+sub extra_details {
+    my $self = shift;
+
+    my @out = $self->SUPER::extra_details();
+    my $plan = $self->[STATE]->[STATE_PLAN];
+    my $exception = $self->exception;
+
+    require Test::Stream::Tester::Events;
+
+    return (
+        @out,
+
+        events => Test::Stream::Tester::Events->new(@{$self->events || []}) || undef,
+
+        exception => ($exception ? $exception->summary : undef),
+        plan      => ($plan      ? $plan->summary      : undef),
+
+        passing => $self->[STATE]->[STATE_PASSING],
+        count   => $self->[STATE]->[STATE_COUNT],
+        failed  => $self->[STATE]->[STATE_FAILED],
+    );
 }
 
 1;

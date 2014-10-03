@@ -1,4 +1,4 @@
-package Test::Tester2;
+package Test::Stream::Tester;
 use strict;
 use warnings;
 
@@ -6,39 +6,48 @@ use Test::Builder 1.301001;
 use Test::Stream;
 use Test::Stream::Util qw/try is_regex/;
 
+use B;
+
 use Scalar::Util qw/blessed reftype/;
 use Test::Stream::Carp qw/croak carp/;
+
+use Test::Stream::Tester::Checks;
+use Test::Stream::Tester::Checks::Event;
+use Test::Stream::Tester::Events;
+use Test::Stream::Tester::Events::Event;
 
 use Test::Stream::Toolset;
 use Test::Stream::Exporter;
 default_exports qw{
     intercept grab
 
-    events_are check
-        event
-        directive
-
-    display_events display_event
-    render_event
+    events_are
+    check event directive
 };
+
 default_export dir => \&directive;
 Test::Stream::Exporter->cleanup;
 
 sub grab {
-    require Test::Tester2::Grab;
-    return Test::Tester2::Grab->new;
+    require Test::Stream::Tester::Grab;
+    return Test::Stream::Tester::Grab->new;
 }
 
 our $EVENTS;
 sub check(&) {
     my ($code) = @_;
 
-    local $EVENTS = [];
+    my $o    = B::svref_2object($code);
+    my $st   = $o->START;
+    my $file = $st->file;
+    my $line = $st->line;
+
+    local $EVENTS = Test::Stream::Tester::Checks->new($file, $line);
 
     my @out = $code->($EVENTS);
 
     if (@out) {
-        if (@$EVENTS) {
+        if ($EVENTS->populated) {
             carp "sub used in check(&) returned values, did you forget to prefix an event with 'event'?"
         }
         else {
@@ -55,9 +64,9 @@ sub event($$) {
     croak "event() cannot be used outside of a check { ... } block"
         unless $EVENTS;
 
-    my $class = 'Test::Stream::Event::' . ucfirst($type);
-    croak "$type ($class) is not a valid event type!"
-        unless $class->isa('Test::Stream::Event');
+    my $etypes = Test::Stream::Context->events;
+    croak "'$type' is not a valid event type!"
+        unless $etypes->{$type};
 
     my $props;
 
@@ -68,9 +77,11 @@ sub event($$) {
     $props = { %{$data} };
 
     my @call = caller(0);
-    $props->{debug_line} = $call[2];
+    $props->{debug_package} = $call[0];
+    $props->{debug_file}    = $call[1];
+    $props->{debug_line}    = $call[2];
 
-    push @$EVENTS => $type, $props;
+    $EVENTS->add_event($type, $props);
     return ();
 }
 
@@ -80,10 +91,19 @@ sub directive($;$) {
     croak "directive() cannot be used outside of a check { ... } block"
         unless $EVENTS;
 
-    croak "Directive '$directive' requires exactly 1 argument"
-        unless (@args && @args == 1) || $directive eq 'end';
+    croak "No directive specified"
+        unless $directive;
 
-    push @$EVENTS => $directive, @args;
+    if (!ref $directive) {
+        croak "Directive '$directive' requires exactly 1 argument"
+            unless (@args && @args == 1) || $directive eq 'end';
+    }
+    else {
+        croak "directives must be a predefined name, or a sub ref"
+            unless reftype($directive) eq 'CODE';
+    }
+
+    $EVENTS->add_directive(@_);
     return ();
 }
 
@@ -112,358 +132,40 @@ sub intercept(&) {
     return \@events;
 }
 
-sub _events_are {
-    my ($events, @checks) = @_;
-    @checks = @{$checks[0]} if @checks == 1 && ref $checks[0];
-
-    my @res_list;
-    if (blessed($events) && $events->isa('Test::Tester2::Grab')) {
-        # use $_[0] directly so that the variable used in the method call can be undef'd
-        @res_list = @{$_[0]->finish};
-    }
-    else {
-        @res_list = @$events;
-    }
-
-    my $overall_name;
-    my $seek = 0;
-    my $skip = 0;
-    my $ok = 1;
-    my $wnum = 0;
-    my @diag;
-
-    while($ok && @checks) {
-        my $action = shift @checks;
-
-        if ($action =~ m/^(!)?filter_providers?$/) {
-            @res_list = _filter_list(
-                $1 || 0,
-                shift(@checks),
-                sub { $_[0]->context->provider->[0] },
-                @res_list
-            );
-            next;
-        }
-        elsif ($action =~ m/^(!)?filter_types?$/) {
-            @res_list = _filter_list(
-                $1 || 0,
-                shift(@checks),
-                sub { $_[0]->type },
-                @res_list
-            );
-            next;
-        }
-        elsif ($action eq 'skip') {
-            $skip = shift @checks;
-            next if $skip eq '*';
-
-            shift(@res_list) while $skip--;
-
-            next;
-        }
-        elsif ($action eq 'seek') {
-            $seek = shift @checks;
-            next;
-        }
-        elsif ($action eq 'end') {
-            if(@res_list) {
-                $ok = 0;
-                push @diag => "Expected end of events, but more events remain";
-                push @diag => "Next event is: " . render_event($res_list[0]);
-            }
-            $overall_name = shift @checks;
-            last;
-        }
-        elsif ($action eq 'name') {
-            $overall_name = shift @checks;
-            next;
-        }
-
-        my $type = $action;
-        my $got  = shift @res_list;
-        my $want = shift @checks; $wnum++;
-        my $line = delete $want->{debug_line};
-        my $id   = "$type " . (delete $want->{id} || $wnum);
-        $id .= " on line $line" if $line;
-
-        $want = "(UNDEF)" unless defined $want;
-        croak "($id) '$type' must be paired with a hashref, but you gave: '$want'"
-            unless $want && ref $want && reftype $want eq 'HASH';
-
-        $got = shift(@res_list) while ($skip || $seek) && $got && $type ne $got->type;
-        $skip = 0;
-
-        if (!$got) {
-            $ok = 0;
-            push @diag => "($id) Wanted event type '$type', But no more events left to check!";
-            last;
-        }
-
-        if ($type ne $got->type) {
-            $ok = 0;
-            push @diag => "($id) Wanted event type '$type', But got: '" . $got->type . "'";
-            push @diag => "Full event found was: " . render_event($got);
-            last;
-        }
-
-        my $fields = _simplify_event($got);
-
-        for my $key (keys %$want) {
-            my $wval = $want->{$key};
-            my $rtype = reftype($wval) || "";
-            $rtype = 'REGEXP' if $wval && is_regex($wval);
-            my $gval = $fields->{$key};
-
-            my $field_ok = 1;
-            if ($rtype eq 'HASH') {
-                $field_ok = 0;
-                push @diag => "($id) $key => $wval, Invalid check, not sure what to do with a hashref.";
-            }
-            elsif ($rtype eq 'ARRAY') {
-                my %bad;
-                my %multi;
-                my %nest;
-                for my $i (@$wval) {
-                    my $t = reftype($i) || "SCALAR";
-                    $t = 'REGEXP' if $i && is_regex($i);
-                    if ($t eq 'SCALAR') {
-                        $nest{$t}++;
-                    }
-                    elsif ($t eq 'HASH') {
-                        $nest{$t}++;
-                    }
-                    elsif ($t eq 'REGEXP') {
-                        $multi{$t}++;
-                    }
-                    elsif ($t eq 'CODE') {
-                        $multi{$t}++;
-                    }
-                    else {
-                        $bad{$t}++;
-                    }
-                }
-
-                if (keys %bad) {
-                    $field_ok = 0;
-                    push @diag => "($id) $key => $wval, Invalid check, arrayref must either contain events, or regexp and code.";
-                }
-                elsif (keys %multi) {
-                    for my $wv (@$wval) {
-                        my $wvt = reftype $wv || '';
-                        $wvt = 'REGEXP' if is_regex($wv);
-                        my ($new_ok, @new_diag) = _inner_check($id, $fields, $key, $wv, $gval, $wvt);
-                        $field_ok = $new_ok;
-                        unless ($new_ok) {
-                            push @diag => @new_diag;
-                            last;
-                        }
-                    }
-                }
-                else {
-                    my ($nest_ok, undef, @nest_diag) = _events_are($gval, $wval);
-                    $field_ok = $nest_ok;
-                    unless ($nest_ok) {
-                        push @diag => "($id) Subevents do not match";
-                        push @diag => map { s/^/    /mg; $_ } @nest_diag;
-                    }
-                }
-            }
-            else {
-                my @new_diag;
-                ($field_ok, @new_diag) = _inner_check($id, $fields, $key, $wval, $gval, $rtype );
-                push @diag => @new_diag unless $field_ok;
-            }
-
-            $ok &&= $field_ok;
-        }
-
-        unless ($ok) {
-            push @diag => "Got Event: " . render_event($got) . "Expected: " . render_check({%$want, type => $type});
-            last;
-        }
-    }
-
-    # Find the test name
-    while(my $action = shift @checks) {
-        next unless $action eq 'end' || $action eq 'name';
-        $overall_name = shift @checks;
-    }
-
-    return ($ok, $overall_name, @diag);
-}
-
-sub _inner_check {
-    my ($id, $fields, $key, $wval, $gval, $rtype) = @_;
-
-    if ($rtype eq 'CODE') {
-        return (1) if $wval->($gval);
-        $gval = "(UNDEF)" unless defined $gval;
-        return (
-            0,
-            "($id) $key => '$gval' did not validate via coderef",
-        );
-    }
-    elsif ($rtype eq 'REGEXP') {
-        return (1) if defined $gval && $gval =~ $wval;
-        $gval = "(UNDEF)" unless defined $gval;
-        return (
-            0,
-            "($id) $key => '$gval' does not match $wval",
-        );
-    }
-    elsif(!exists $fields->{$key}) {
-        return (
-            0,
-            "($id) Wanted $key => '$wval', but '$key' does not exist",
-        );
-    }
-    elsif(defined $wval && !defined $gval) {
-        return (
-            0,
-            "($id) Wanted $key => '$wval', but '$key' is not defined",
-        );
-    }
-    elsif($wval =~ m/^\d+x?[\d\.e_]*$/i && $gval =~ m/^\d+x?[\d\.e_]*$/i) {
-        return (1) if $wval == $gval;
-        return (
-            0,
-            "($id) Wanted $key => '$wval', but got $key => '$gval'",
-        );
-    }
-
-    return 1 if "$wval" eq "$gval";
-
-    return (
-        0,
-        "($id) Wanted $key => '$wval', but got $key => '$gval'",
-    );
-}
-
 sub events_are {
+    my ($events, $checks, $name) = @_;
+
+    croak "Did not get any events"
+        unless $events;
+
+    croak "Did not get any checks"
+        unless $checks;
+
+    croak "checks must be an instance of Test::Stream::Tester::Checks"
+        unless blessed($checks)
+            && $checks->isa('Test::Stream::Tester::Checks');
+
     my $ctx = context();
 
-    my ($ok, $overall_name, @diag) = _events_are(@_);
+    # use $_[0] directly so that the variable used in the method call can be undef'd
+    $events = @{$_[0]->finish}
+        if blessed($events)
+            && $events->isa('Test::Stream::Tester::Grab');
 
-    $ctx->ok($ok, $overall_name || "Got expected events", \@diag);
+    $events = Test::Stream::Tester::Events->new(@$events)
+        if ref($events)
+            && reftype($events) eq 'ARRAY';
+
+    croak "'$events' is not a valid set of events."
+        unless $events
+            && blessed($events)
+            && $events->isa('Test::Stream::Tester::Events');
+
+    my ($ok, @diag) = $checks->run($events);
+
+    $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
-
-sub display_events {
-    my ($events) = @_;
-    display_event($_) for @$events;
-}
-
-sub display_event {
-    print STDERR render_event(@_);
-}
-
-sub render_event {
-    my ($event) = @_;
-
-    my $fields = _simplify_event($event);
-    return render_check($fields, 1);
-}
-
-sub render_check {
-    my ($fields, $is_event) = @_;
-
-    my @order = qw/
-        name bool real_bool action max
-        in_todo todo skip
-        package file line pid
-        is_subtest source tests_failed tests_run
-        encoding
-        tool_name tool_package
-        message
-        tap
-        diag
-        events
-    /;
-
-    my %seen;
-    my $out = "$fields->{type} => {\n";
-    for my $field (@order, sort keys %$fields) {
-        next if $field eq 'type';
-        next if $seen{$field}++;
-        next unless defined $fields->{$field};
-        if ($fields->{$field} =~ m/\n/sm) {
-            $out .= "  $field:\n";
-            for my $line (split /\n+/sm, $fields->{$field}) {
-                next unless $line;
-                next if $line eq "\n";
-                $out .= "    $line\n";
-            }
-        }
-        elsif (ref $fields->{$field} && ref $fields->{$field} eq 'ARRAY') {
-            my $num = $is_event ? @{$fields->{$field}} : '...';
-            $out .= "  $field: [$num]\n";
-        }
-        else {
-            $out .= "  $field: $fields->{$field}\n";
-        }
-    }
-    $out .= "}\n";
-
-    return $out;
-}
-
-sub _simplify_event {
-    my ($r) = @_;
-    my $fields = $r->to_hash;
-
-    for my $k (keys %$fields) {
-        delete $fields->{$k} if ref $fields->{$k};
-    }
-    $fields->{type} = $r->type;
-
-    @{$fields}{qw/package file line/} = $r->context->call;
-    @{$fields}{qw/tool_package tool_name/} = @{$r->context->provider};
-    my $tpkg = $fields->{tool_package};
-    $fields->{tool_name} =~ s/^\Q$tpkg\E:://;
-
-    $fields->{$_} = $r->context->$_ for qw/encoding in_todo todo pid skip/;
-
-    $fields->{diag}   = [@{$r->diag || []}]   if $r->isa('Test::Stream::Event::Ok');
-    $fields->{events} = [@{$r->events}] if $r->isa('Test::Stream::Event::Subtest');
-
-    # TODO: This is lame, we need a better way to validate the tap.
-    if ($r->can('to_tap')) {
-        my @sets = $r->to_tap;
-        $fields->{tap} = $sets[0]->[1] if @sets;
-    }
-    chomp($fields->{tap}) if $fields->{tap};
-
-    return $fields;
-}
-
-sub _filter_list {
-    my ($negate, $args, $fetch, @items) = @_;
-
-    my (@regex, @code, %name);
-    for my $arg (ref $args && reftype $args eq 'ARRAY' ? @$args : ($args)) {
-        my $reftype = reftype $arg || "";
-        if ($reftype eq 'REGEXP') {
-            push @regex => $arg;
-        }
-        elsif($reftype eq 'CODE') {
-            push @code  => $arg;
-        }
-        else {
-            $name{$arg}++;
-        }
-    }
-
-    my @newlist;
-    for my $item (@items) {
-        my $val = $fetch->($item) || next;
-
-        my $match = $name{$val} || (grep { $_->($val) } @code) || (grep { $val =~ $_ } @regex) || 0;
-        $match = !$match if $negate;
-        push @newlist => $item if $match;
-    }
-    return @newlist;
-}
-
 
 1;
 
@@ -471,7 +173,7 @@ __END__
 
 =head1 NAME
 
-Test::Tester2 - Tools for validating the events produced by your testing
+Test::Stream::Tester - Tools for validating the events produced by your testing
 tools.
 
 =head1 DESCRIPTION
@@ -482,7 +184,7 @@ validate your tools!
 =head1 SYNOPSIS
 
     use Test::More;
-    use Test::Tester2;
+    use Test::Stream::Tester;
 
     eventa_are(
         # Capture all the events within the block
@@ -513,7 +215,7 @@ validate your tools!
 =head2 GRAB WITH NO ADDED STACK
 
     use Test::More;
-    use Test::Tester2;
+    use Test::Stream::Tester;
 
     # Start capturing events. We use grab() instead of intercept {} to avoid
     # adding stack frames.
@@ -557,7 +259,7 @@ validate your tools!
 =head2 TIMTOWTDI
 
     use Test::More;
-    use Test::Tester2;
+    use Test::Stream::Tester;
 
     # Intercept all the Test::Builder::Event objects produced in the block.
     my $events = intercept {
@@ -1248,7 +950,7 @@ VIM's sort function).
 
 =item Test::Stream
 
-=item Test::Tester2
+=item Test::Stream::Tester
 
 Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 

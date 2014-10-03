@@ -56,6 +56,11 @@ sub to_tap {
     ];
 }
 
+sub extra_details {
+    my $self = shift;
+    return (map {($_ => $self->$_ || undef)} qw/message/);
+}
+
 1;
 
 __END__

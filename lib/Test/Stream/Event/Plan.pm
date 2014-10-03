@@ -53,6 +53,11 @@ sub to_tap {
     return [OUT_STD, "$plan\n"];
 }
 
+sub extra_details {
+    my $self = shift;
+    return (map {($_ => $self->$_ || undef)} qw/max directive reason/);
+}
+
 1;
 
 __END__

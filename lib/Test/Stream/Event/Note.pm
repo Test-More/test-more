@@ -24,6 +24,11 @@ sub to_tap {
     return [OUT_STD, "$msg\n"];
 }
 
+sub extra_details {
+    my $self = shift;
+    return (map {($_ => $self->$_ || undef)} qw/message/);
+}
+
 1;
 
 __END__

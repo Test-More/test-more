@@ -268,16 +268,22 @@ sub send {
     }
 }
 
+my %EVENTS;
+sub events { \%EVENTS }
+
 sub register_event {
     my $class = shift;
     my ($pkg, $name) = @_;
-    unless($name) {
-        $name = lc($pkg);
-        $name =~ s/^.*:://g;
-    }
+
+    my $real_name = lc($pkg);
+    $real_name =~ s/^.*:://g;
+
+    $name ||= $real_name;
 
     confess "Method '$name' is already defined, event '$pkg' cannot get a context method!"
         if $class->can($name);
+
+    $EVENTS{$real_name} = $pkg;
 
     # Use a string eval so that we get a names sub instead of __ANON__
     local ($@, $!);
