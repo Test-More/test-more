@@ -6,6 +6,14 @@ use Test::Stream::Event(
     accessors => [qw/tests_run tests_failed/],
 );
 
+sub extra_details {
+    my $self = shift;
+    return (
+        tests_run    => $self->tests_run    || 0,
+        tests_failed => $self->tests_failed || 0,
+    );
+}
+
 1;
 
 __END__
@@ -58,7 +66,7 @@ VIM's sort function).
 
 =item Test::Stream
 
-=item Test::Tester2
+=item Test::Stream::Tester
 
 Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 

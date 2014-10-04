@@ -15,7 +15,7 @@ Test::Builder
 
 =head1 DEPRECATED
 
-B<This module is deprecated.> Please see L<Test::Tester2> for a
+B<This module is deprecated.> Please see L<Test::Stream::Tester> for a
 better alternative that does not involve dealing with TAP/string output.
 
 =head1 SYNOPSIS
@@ -504,7 +504,7 @@ VIM's sort function).
 
 =item Test::Stream
 
-=item Test::Tester2
+=item Test::Stream::Tester
 
 Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 

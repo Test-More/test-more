@@ -6,7 +6,7 @@ use Test::More 'modern', tests => 4;
 use Test::Builder; # Not loaded by default in modern mode
 my $orig = Test::Builder->can('done_testing');
 
-use Test::Tester2;
+use Test::Stream::Tester;
 
 my $ran = 0;
 no warnings 'redefine';

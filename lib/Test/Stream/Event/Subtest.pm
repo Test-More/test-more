@@ -4,7 +4,7 @@ use warnings;
 
 use Scalar::Util qw/blessed/;
 use Test::Stream::Carp qw/confess/;
-use Test::Stream qw/STATE_PASSING STATE_COUNT OUT_STD/;
+use Test::Stream qw/STATE_PASSING STATE_COUNT STATE_FAILED STATE_PLAN OUT_STD/;
 
 use Test::Stream::Event(
     base      => 'Test::Stream::Event::Ok',
@@ -80,6 +80,35 @@ sub _render_events {
     return @out;
 }
 
+sub extra_details {
+    my $self = shift;
+
+    my @out = $self->SUPER::extra_details();
+    my $plan = $self->[STATE]->[STATE_PLAN];
+    my $exception = $self->exception;
+
+    $plan = Test::Stream::Tester::Events::Event->new($plan->summary)
+        if $plan;
+
+    $exception = Test::Stream::Tester::Events::Event->new($exception->summary)
+        if $exception;
+
+    require Test::Stream::Tester::Events;
+
+    return (
+        @out,
+
+        events => Test::Stream::Tester::Events->new(@{$self->events || []}) || undef,
+
+        exception => $exception || undef,
+        plan      => $plan      || undef,
+
+        passing => $self->[STATE]->[STATE_PASSING],
+        count   => $self->[STATE]->[STATE_COUNT],
+        failed  => $self->[STATE]->[STATE_FAILED],
+    );
+}
+
 1;
 
 __END__
@@ -124,7 +153,7 @@ VIM's sort function).
 
 =item Test::Stream
 
-=item Test::Tester2
+=item Test::Stream::Tester
 
 Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 

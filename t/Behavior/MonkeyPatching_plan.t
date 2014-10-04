@@ -6,7 +6,7 @@ use Test::More 'modern', tests => 6;
 use Test::Builder; # Not loaded by default in modern mode
 my $orig = Test::Builder->can('plan');
 
-use Test::Tester2;
+use Test::Stream::Tester;
 
 my $ran = 0;
 no warnings 'redefine';

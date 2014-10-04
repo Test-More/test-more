@@ -24,6 +24,11 @@ sub to_tap {
     return [OUT_STD, "$msg\n"];
 }
 
+sub extra_details {
+    my $self = shift;
+    return ( message => $self->message || '' );
+}
+
 1;
 
 __END__
@@ -72,7 +77,7 @@ VIM's sort function).
 
 =item Test::Stream
 
-=item Test::Tester2
+=item Test::Stream::Tester
 
 Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 

@@ -26,7 +26,7 @@ BEGIN {
 }
 
 use SQL::Abstract::Test;
-use Test::Tester2;
+use Test::Stream::Tester;
 
 my $events = intercept {
     local $TODO = "Not today";
@@ -43,15 +43,18 @@ my $events = intercept {
 
 events_are(
     $events,
-    ok => {
-        in_todo => 1,
-        diag => [
-            diag => { in_todo => 1 },
-        ],
+    check {
+        event ok => {
+            in_todo => 1,
+            diag => check {
+                event diag => { in_todo => 1 },
+            },
+        };
+        event note => { in_todo => 1 };
+        event note => { in_todo => 1 };
+        dir 'end';
     },
-    note => { in_todo => 1 },
-    note => { in_todo => 1 },
-    end => "All events are TODO"
+    "All events are TODO"
 );
 
 done_testing;

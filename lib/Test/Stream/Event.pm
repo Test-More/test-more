@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/blessed/;
+use Test::Stream qw/OUT_STD OUT_ERR OUT_TODO/;
 use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::ArrayBase(
@@ -34,12 +35,61 @@ sub init {
 
 sub encoding { $_[0]->[CONTEXT]->encoding }
 
-sub type {
+sub extra_details {}
+
+sub summary {
     my $self = shift;
-    my $class = blessed($self);
-    my $type = $class;
+    my $type = blessed $self;
     $type =~ s/^.*:://g;
-    return lc($type);
+
+    my $ctx = $self->context;
+
+    my ($package, $file, $line) = $ctx->call;
+    my ($tool_pkg, $tool_name)  = @{$ctx->provider};
+    $tool_name =~ s/^\Q$tool_pkg\E:://;
+
+    my $tap = {};
+    if ($self->can('to_tap')) {
+        my @sets = $self->to_tap(1);
+        for my $set (@sets) {
+            my ($hid, $msg) = @$set;
+            chomp($msg);
+
+            if ($hid == OUT_STD) {
+                push @{$tap->{stdout}} => $msg;
+            }
+            elsif ($hid == OUT_ERR) {
+                push @{$tap->{stderr}} => $msg;
+            }
+            elsif ($hid == OUT_TODO) {
+                push @{$tap->{todoout}} => $msg;
+            }
+            else {
+                push @{$tap->{invalid}} => $msg;
+            }
+        }
+    }
+
+    return (
+        type => lc($type),
+
+        $self->extra_details(),
+
+        package => $package || undef,
+        file    => $file,
+        line    => $line,
+
+        tool_package => $tool_pkg,
+        tool_name    => $tool_name,
+
+        encoding => $ctx->encoding || undef,
+        in_todo  => $ctx->in_todo  || 0,
+        todo     => $ctx->todo     || '',
+        pid      => $ctx->pid      || 0,
+        skip     => $ctx->skip     || '',
+
+        tap => $tap,
+    );
 }
 
 1;
@@ -97,7 +147,7 @@ VIM's sort function).
 
 =item Test::Stream
 
-=item Test::Tester2
+=item Test::Stream::Tester
 
 Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 

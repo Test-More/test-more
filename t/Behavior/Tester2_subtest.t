@@ -3,7 +3,7 @@ use warnings;
 use utf8;
 
 use Test::More qw/modern/;
-use Test::Tester2;
+use Test::Stream::Tester;
 
 my $events = intercept {
     ok(0, "test failure" );
