@@ -3,7 +3,7 @@ use warnings;
 no utf8;
 
 use Test::More qw/modern/;
-use Test::Tester2;
+use Test::Stream::Tester;
 
 BEGIN {
     my $norm = eval { require Unicode::Normalize; require Encode; 1 };

@@ -5,7 +5,7 @@ use Test::More 'modern';
 
 use ok 'ok';
 
-use Test::Tester2;
+use Test::Stream::Tester;
 
 events_are (
     intercept {

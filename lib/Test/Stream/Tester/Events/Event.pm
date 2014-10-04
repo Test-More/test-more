@@ -8,12 +8,17 @@ sub new {
     my $class = shift;
     my $self = bless {}, $class;
 
+    my @orig = @_;
+
     while (@_) {
         my $field = shift;
         my $val   = shift;
 
-        confess "'$field' specified more than once!"
-            if exists $self->{$field};
+        if (exists $self->{$field}) {
+            use Data::Dumper;
+            print Dumper(@orig);
+            confess "'$field' specified more than once!";
+        }
 
         $self->{$field} = $val;
     }

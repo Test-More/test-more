@@ -16,7 +16,7 @@ use Test::More;
     require Test::More;
     require Test::Simple;
     require Test::Stream;
-    require Test::Tester2;
+    require Test::Stream::Tester;
     require Test::Tester;
     require Test::use::ok;
     require ok;
@@ -34,7 +34,7 @@ my @modules = qw(
     Test::More
     Test::Simple
     Test::Stream
-    Test::Tester2
+    Test::Stream::Tester
     Test::Tester
     Test::use::ok
     ok

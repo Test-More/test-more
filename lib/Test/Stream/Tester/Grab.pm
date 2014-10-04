@@ -1,4 +1,4 @@
-package Test::Tester2::Grab;
+package Test::Stream::Tester::Grab;
 use strict;
 use warnings;
 
@@ -97,7 +97,7 @@ VIM's sort function).
 
 =item Test::Stream
 
-=item Test::Tester2
+=item Test::Stream::Tester
 
 Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 

@@ -26,7 +26,7 @@ sub to_tap {
 
 sub extra_details {
     my $self = shift;
-    return (map {($_ => $self->$_ || undef)} qw/message/);
+    return ( message => $self->message || '' );
 }
 
 1;
@@ -77,7 +77,7 @@ VIM's sort function).
 
 =item Test::Stream
 
-=item Test::Tester2
+=item Test::Stream::Tester
 
 Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 

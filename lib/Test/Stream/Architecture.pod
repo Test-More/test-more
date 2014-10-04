@@ -94,7 +94,7 @@ underlying object. This design descision was made to improve performance.
 Performance was a real problem in some early alphas, the gains from the
 descision are huge.
 
-=item Test::Tester2
+=item Test::Stream::Tester
 
 This is actually what spawned the ideas for the new Test::Stream work. This is
 a module that lets you validate your testing tools.
@@ -190,7 +190,7 @@ stream should send it to the stream returned by C<< Test::Stream->shared >>.
 Nothing should ever cache this result as the B<current> stream may change.
 
 This mechanism is primarily used for intercepting, and hiding, all events for a
-limited scope. L<Test::Tester2> uses this to push a stream onto the stack so
+limited scope. L<Test::Stream::Tester> uses this to push a stream onto the stack so
 that you can generate events that do not go to the listeners or TAP. Once the
 stack is popped the previous stream is restored allowing you to generate real
 events.

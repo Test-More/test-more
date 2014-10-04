@@ -70,8 +70,7 @@ sub summary {
         }
     }
 
-    require Test::Stream::Tester::Events::Event;
-    return Test::Stream::Tester::Events::Event->new(
+    return (
         type => lc($type),
 
         $self->extra_details(),
@@ -83,7 +82,11 @@ sub summary {
         tool_package => $tool_pkg,
         tool_name    => $tool_name,
 
-        (map { ($_ => $ctx->$_ || undef) } qw/encoding in_todo todo pid skip/),
+        encoding => $ctx->encoding || undef,
+        in_todo  => $ctx->in_todo  || 0,
+        todo     => $ctx->todo     || '',
+        pid      => $ctx->pid      || 0,
+        skip     => $ctx->skip     || '',
 
         tap => $tap,
     );
@@ -144,7 +147,7 @@ VIM's sort function).
 
 =item Test::Stream
 
-=item Test::Tester2
+=item Test::Stream::Tester
 
 Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 

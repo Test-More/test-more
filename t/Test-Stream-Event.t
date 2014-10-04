@@ -23,7 +23,6 @@ can_ok('My::MockEvent', qw/foo bar baz/);
 isa_ok('My::MockEvent', 'Test::Stream::Event');
 
 my $one = My::MockEvent->new('fake');
-is($one->type, 'mockevent', "got type");
 
 can_ok('Test::Stream::Context', 'mockevent');
 

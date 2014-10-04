@@ -3,7 +3,7 @@ use strict;
 package Test::Tester;
 
 # Turn this back on later
-#warn "Test::Tester is deprecated, see Test::Tester2\n";
+#warn "Test::Tester is deprecated, see Test::Stream::Tester\n";
 
 use Test::Builder 1.301001;
 use Test::Stream::Toolset;
@@ -323,7 +323,7 @@ Test::Tester - *DEPRECATED* Ease testing test modules built with Test::Builder
 
 =head1 DEPRECATED
 
-See L<Test::Tester2> for a modern and maintained alternative.
+See L<Test::Stream::Tester> for a modern and maintained alternative.
 
 =head1 SYNOPSIS
 
@@ -706,7 +706,7 @@ VIM's sort function).
 
 =item Test::Stream
 
-=item Test::Tester2
+=item Test::Stream::Tester
 
 Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 

@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use Test::Simple tests => 1;
-use Test::Tester2;
+use Test::Stream::Tester;
 
 events_are (
     intercept {

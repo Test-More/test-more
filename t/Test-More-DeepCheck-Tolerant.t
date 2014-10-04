@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use Test::More 'modern';
-use Test::Tester2;
+use Test::Stream::Tester;
 
 use ok 'Test::More::DeepCheck::Tolerant';
 

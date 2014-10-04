@@ -241,13 +241,32 @@ sub end {
 
 sub filter_providers {
     my $self = shift;
-    my ($events, @args) = @_;
+    my ($events, $arg) = @_;
+
+    my ($neg, $val) = $arg =~ m/^(!?)(.*)$/;
+    if ($neg) {
+        @$events = grep { $_->get('tool_package') ne $val } @$events;
+    }
+    else {
+        @$events = grep { $_->get('tool_package') eq $val } @$events;
+    }
+
+    return ();
 }
 
 sub filter_types {
     my $self = shift;
-    my ($events, @args) = @_;
-}
+    my ($events, $arg) = @_;
 
+    my ($neg, $val) = $arg =~ m/^(!?)(.*)$/;
+    if ($neg) {
+        @$events = grep { $_->get('type') ne $val } @$events;
+    }
+    else {
+        @$events = grep { $_->get('type') eq $val } @$events;
+    }
+
+    return ();
+}
 
 1;

@@ -87,6 +87,12 @@ sub extra_details {
     my $plan = $self->[STATE]->[STATE_PLAN];
     my $exception = $self->exception;
 
+    $plan = Test::Stream::Tester::Events::Event->new($plan->summary)
+        if $plan;
+
+    $exception = Test::Stream::Tester::Events::Event->new($exception->summary)
+        if $exception;
+
     require Test::Stream::Tester::Events;
 
     return (
@@ -94,8 +100,8 @@ sub extra_details {
 
         events => Test::Stream::Tester::Events->new(@{$self->events || []}) || undef,
 
-        exception => ($exception ? $exception->summary : undef),
-        plan      => ($plan      ? $plan->summary      : undef),
+        exception => $exception || undef,
+        plan      => $plan      || undef,
 
         passing => $self->[STATE]->[STATE_PASSING],
         count   => $self->[STATE]->[STATE_COUNT],
@@ -147,7 +153,7 @@ VIM's sort function).
 
 =item Test::Stream
 
-=item Test::Tester2
+=item Test::Stream::Tester
 
 Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
