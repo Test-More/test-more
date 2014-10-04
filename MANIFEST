@@ -36,6 +36,12 @@ lib/Test/Stream/Exporter/Meta.pm
 lib/Test/Stream/IOSets.pm
 lib/Test/Stream/Meta.pm
 lib/Test/Stream/PackageUtil.pm
+lib/Test/Stream/Tester.pm
+lib/Test/Stream/Tester/Checks.pm
+lib/Test/Stream/Tester/Checks/Event.pm
+lib/Test/Stream/Tester/Events.pm
+lib/Test/Stream/Tester/Events/Event.pm
+lib/Test/Stream/Tester/Grab.pm
 lib/Test/Stream/Threads.pm
 lib/Test/Stream/Toolset.pm
 lib/Test/Stream/Util.pm
@@ -228,6 +234,8 @@ t/Test-Stream-Exporter.t
 t/Test-Stream-IOSets.t
 t/Test-Stream-Meta.t
 t/Test-Stream-PackageUtil.t
+t/Test-Stream-Tester-Grab.t
+t/Test-Stream-Tester.t
 t/Test-Stream-Toolset.t
 t/Test-Stream-Util.t
 t/Test-Tester-Capture.t
