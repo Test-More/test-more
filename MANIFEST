@@ -47,8 +47,6 @@ lib/Test/Stream/Toolset.pm
 lib/Test/Stream/Util.pm
 lib/Test/Tester.pm
 lib/Test/Tester/Capture.pm
-lib/Test/Tester2.pm
-lib/Test/Tester2/Grab.pm
 lib/Test/Tutorial.pod
 lib/Test/use/ok.pm
 Makefile.PL
@@ -240,7 +238,5 @@ t/Test-Stream-Toolset.t
 t/Test-Stream-Util.t
 t/Test-Tester-Capture.t
 t/Test-Tester.t
-t/Test-Tester2-Grab.t
-t/Test-Tester2.t
 t/Test-use-ok.t
 t/xt/dependents.t
