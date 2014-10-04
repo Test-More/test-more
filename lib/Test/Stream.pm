@@ -227,7 +227,12 @@ sub fork_out {
 
         # First write the file, then rename it so that it is not read before it is ready.
         my $name =  $tempdir . "/$$-$tid-" . ($self->[EVENT_ID]++);
-        Storable::store($event, $name);
+        my ($ret, $err) = try { Storable::store($event, $name) };
+        # Temporary to debug an error on one cpan-testers box
+        unless ($ret) {
+            require Data::Dumper;
+            confess(Data::Dumper::Dumper({ error => $err, event => $event}));
+        }
         rename($name, "$name.ready") || confess "Could not rename file '$name' -> '$name.ready'";
     }
 }

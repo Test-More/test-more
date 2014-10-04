@@ -113,7 +113,7 @@ sub unoverload_num {
 }
 
 # This is a hack to detect a dualvar such as $!
-sub is_dualvar {
+sub is_dualvar($) {
     my($val) = @_;
 
     # Objects are not dualvars.
@@ -122,6 +122,12 @@ sub is_dualvar {
     no warnings 'numeric';
     my $numval = $val + 0;
     return ($numval != 0 and $numval ne $val ? 1 : 0);
+}
+
+# If Scalar::Util is new enough use it
+if (my $sub = Scalar::Util->can('isdual')) {
+    no warnings 'redefine';
+    *is_dualvar = $sub;
 }
 
 sub unoverload {

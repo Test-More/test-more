@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 use Test::More 'modern';
+use Scalar::Util qw/dualvar/;
 
 use ok 'Test::Stream::Util', qw{
     try protect spoof is_regex is_dualvar
@@ -11,9 +12,7 @@ can_ok(__PACKAGE__, qw{
     try protect spoof is_regex is_dualvar
 });
 
-# $! is a dualvar.
-$! = 100;
-my $x = $!;
+my $x = dualvar( 100, 'one-hundred' );
 ok(is_dualvar($x), "Got dual var");
 $x = 1;
 ok(!is_dualvar($x), "Not dual var");
