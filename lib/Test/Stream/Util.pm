@@ -124,11 +124,12 @@ sub is_dualvar($) {
     return ($numval != 0 and $numval ne $val ? 1 : 0);
 }
 
-# If Scalar::Util is new enough use it
-if (my $sub = Scalar::Util->can('isdual')) {
-    no warnings 'redefine';
-    *is_dualvar = $sub;
-}
+## If Scalar::Util is new enough use it
+# This breaks cmp_ok diagnostics
+#if (my $sub = Scalar::Util->can('isdual')) {
+#    no warnings 'redefine';
+#    *is_dualvar = $sub;
+#}
 
 sub unoverload {
     my $type = shift;
