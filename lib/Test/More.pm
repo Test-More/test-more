@@ -31,7 +31,7 @@ default_exports qw{
     plan done_testing
 
     ok
-    is isnt
+    is isnt same_truth
     like unlike
     cmp_ok
     mostly_like is_deeply
@@ -223,6 +223,15 @@ sub isnt ($$;$) {
     my ($got, $forbid, $name) = @_;
     my $ctx = context();
     my ($ok, @diag) = tmt->isnt_eq($got, $forbid);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
+}
+
+sub same_truth($$;$) {
+#    @_ = ( !!$_[0], !!$_[1], $_[2] ); goto \&is;
+    my ($got, $want, $name) = @_;
+    my $ctx = context();
+    my ($ok, @diag) = tmt->is_same_truth($got, $want);
     $ctx->ok($ok, $name, \@diag);
     return $ok;
 }
@@ -527,8 +536,9 @@ Test::More - The defacto standard in unit testing tools.
 
     ok($got eq $expected, $test_name);
 
-    is  ($got, $expected, $test_name);
-    isnt($got, $expected, $test_name);
+    is        ($got, $expected, $test_name);
+    isnt      ($got, $expected, $test_name);
+    same_truth($got, $expected, $test_name);
 
     like  ($got, qr/expected/, $test_name);
     unlike($got, qr/expected/, $test_name);
@@ -855,12 +865,15 @@ This is the same as L<Test::Simple>'s C<ok()> routine.
 
 =item B<isnt>
 
-  is  ( $got, $expected, $test_name );
-  isnt( $got, $expected, $test_name );
+  is        ( $got, $expected, $test_name );
+  isnt      ( $got, $expected, $test_name );
+  same_truth( $got, $expected, $test_name );
 
 Similar to C<ok()>, C<is()> and C<isnt()> compare their two arguments
 with C<eq> and C<ne> respectively and use the result of that to
-determine if the test succeeded or failed.  So these:
+determine if the test succeeded or failed. To just test whether a
+value is the same truthiness, use C<same_truth()> which coerces both
+inputs using !! before testing.  So these:
 
     # Is the ultimate answer 42?
     is( ultimate_answer(), 42,          "Meaning of Life" );
@@ -868,10 +881,13 @@ determine if the test succeeded or failed.  So these:
     # $foo isn't empty
     isnt( $foo, '',     "Got some foo" );
 
+    same_truth( '42', 54, 'What is six times nine?' );
+
 are similar to these:
 
     ok( ultimate_answer() eq 42,        "Meaning of Life" );
     ok( $foo ne '',     "Got some foo" );
+    ok( !!'42' eq !!54, 'What is six times nine?' );
 
 C<undef> will only ever match C<undef>.  So you can test a value
 against C<undef> like this:
@@ -907,9 +923,10 @@ true or false!
 
 This does not check if C<exists $brooklyn{tree}> is true, it checks if
 it returns 1.  Very different.  Similar caveats exist for false and 0.
-In these cases, use C<ok()>.
+In these cases, use C<ok()> or C<same_truth()>.
 
   ok( exists $brooklyn{tree},    'A tree grows in Brooklyn' );
+  same_truth( exists $brooklyn{tree}, grep { $_ eq 'tree' } keys %brooklyn );
 
 A simple call to C<isnt()> usually does not provide a strong test but there
 are cases when you cannot say much more about a value than that it is
