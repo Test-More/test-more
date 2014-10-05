@@ -48,28 +48,6 @@ sub summary {
     my ($tool_pkg, $tool_name)  = @{$ctx->provider};
     $tool_name =~ s/^\Q$tool_pkg\E:://;
 
-    my $tap = {};
-    if ($self->can('to_tap')) {
-        my @sets = $self->to_tap(1);
-        for my $set (@sets) {
-            my ($hid, $msg) = @$set;
-            chomp($msg);
-
-            if ($hid == OUT_STD) {
-                push @{$tap->{stdout}} => $msg;
-            }
-            elsif ($hid == OUT_ERR) {
-                push @{$tap->{stderr}} => $msg;
-            }
-            elsif ($hid == OUT_TODO) {
-                push @{$tap->{todoout}} => $msg;
-            }
-            else {
-                push @{$tap->{invalid}} => $msg;
-            }
-        }
-    }
-
     return (
         type => lc($type),
 
@@ -87,8 +65,6 @@ sub summary {
         todo     => $ctx->todo     || '',
         pid      => $ctx->pid      || 0,
         skip     => $ctx->skip     || '',
-
-        tap => $tap,
     );
 }
 

@@ -87,18 +87,10 @@ sub extra_details {
     my $plan = $self->[STATE]->[STATE_PLAN];
     my $exception = $self->exception;
 
-    $plan = Test::Stream::Tester::Events::Event->new($plan->summary)
-        if $plan;
-
-    $exception = Test::Stream::Tester::Events::Event->new($exception->summary)
-        if $exception;
-
-    require Test::Stream::Tester::Events;
-
     return (
         @out,
 
-        events => Test::Stream::Tester::Events->new(@{$self->events || []}) || undef,
+        events => $self->events || undef,
 
         exception => $exception || undef,
         plan      => $plan      || undef,

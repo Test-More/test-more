@@ -13,7 +13,7 @@ events_are (
         event ok => {
             bool => 1,
             name => 'Pass',
-            diag => [],
+            diag => undef,
         };
         event ok => {
             bool => 0,

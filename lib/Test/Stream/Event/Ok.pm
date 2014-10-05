@@ -180,7 +180,7 @@ sub extra_details {
     require Test::Stream::Tester::Events;
 
     return (
-        diag => Test::Stream::Tester::Events->new(@{$self->diag || []}) || undef,
+        diag      => $self->diag      || undef,
         bool      => $self->bool      || 0,
         name      => $self->name      || undef,
         real_bool => $self->real_bool || 0

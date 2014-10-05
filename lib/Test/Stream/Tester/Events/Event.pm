@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Test::Stream::Carp qw/confess/;
+use Scalar::Util qw/reftype blessed/;
 
 sub new {
     my $class = shift;
@@ -18,6 +19,16 @@ sub new {
             use Data::Dumper;
             print Dumper(@orig);
             confess "'$field' specified more than once!";
+        }
+
+        if (my $type = reftype $val) {
+            if ($type eq 'ARRAY') {
+                $val = Test::Stream::Tester::Events->new(@$val)
+                    unless grep { !blessed($_) || !$_->isa('Test::Stream::Event') } @$val;
+            }
+            elsif (blessed($val) && $val->isa('Test::Stream::Event')) {
+                $val = $class->new($val->summary);
+            }
         }
 
         $self->{$field} = $val;

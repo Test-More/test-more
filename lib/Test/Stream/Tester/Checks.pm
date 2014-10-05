@@ -192,8 +192,13 @@ sub _check_field_noref {
     my $self = shift;
     my ($key, $wval, $gval) = @_;
 
-    return (1) if "$wval" eq "$gval";
-    return (0, "  \$got->{$key} = '$gval'", "  \$exp->{$key} = '$wval'");
+    return (1) if !defined($wval) && !defined($gval);
+    return (1) if defined($wval) && defined($gval) && "$wval" eq "$gval";
+    $wval = "'$wval'" if defined $wval;
+    $wval ||= 'undef';
+    $gval = "'$gval'" if defined $gval;
+    $gval ||= 'undef';
+    return (0, "  \$got->{$key} = $gval", "  \$exp->{$key} = $wval");
 }
 
 sub _check_field_regexp {
