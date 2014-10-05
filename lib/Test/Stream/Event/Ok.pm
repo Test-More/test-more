@@ -197,6 +197,88 @@ Test::Stream::Event::Ok - Ok event type
 
 =encoding utf8
 
+=head1 DESCRIPTION
+
+
+=head1 SYNOPSYS
+
+    use Test::Stream::Context qw/context/;
+    use Test::Stream::Event::Ok;
+
+    my $ctx = context();
+    my $event = $ctx->ok($bool, $name, \@diag);
+
+=head1 ACCESSORS
+
+=over 4
+
+=item $rb = $e->real_bool
+
+This is the true/false value of the test after TODO, SKIP, and similar
+modifiers are taken into account.
+
+=item $name = $e->name
+
+Name of the test.
+
+=item $diag = $e->diag
+
+An arrayref with all the L<Test::Stream::Event::Diag> events produced for this
+C<ok> event.
+
+=item $b = $e->bool
+
+The original true/false value of whatever was passed into the event (but
+reduced down to 1 or 0).
+
+=item $l = $e->level
+
+For legacy L<Test::Builder> support. Do not use this, it can go away, or change
+behavior at any time.
+
+=back
+
+=head1 METHODS
+
+=over 4
+
+=item $le = $e->to_legacy
+
+Returns a hashref that matches some legacy details about ok's. You should
+probably not use this for anything new.
+
+=item $e->add_diag($diag_event, "diag message" ...)
+
+Add a diag to the event. The diag may be a diag event, or a simple string.
+
+=item $diag = $e->clear_diag
+
+Remove all diag events, then return them in an arrayref.
+
+=back
+
+=head1 SUMMARY FIELDS
+
+=over 4
+
+=item diag
+
+An arrayref with all the diagnostics from the event.
+
+=item bool
+
+True/False passed into the test.
+
+=item name
+
+Name of the test.
+
+=item real_bool
+
+True/False value accounting for TODO and SKIP.
+
+=back
+
 =head1 SOURCE
 
 The source code repository for Test::More can be found at

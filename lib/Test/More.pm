@@ -1597,8 +1597,6 @@ unified backend for any test library to use.  This means two test
 libraries which both use <Test::Stream> B<can> be used together in the
 same program>.
 
-=back
-
 =head1 EXIT CODES
 
 If all your tests passed, L<Test::Builder> will exit with zero (which is

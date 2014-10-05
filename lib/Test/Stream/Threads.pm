@@ -30,19 +30,37 @@ __END__
 
 =head1 NAME
 
-Test::Stream::Threads - Helper Test::Builder uses when threaded.
+Test::Stream::Threads - Tools for using threads with Test::Stream.
 
 =head1 DESCRIPTION
 
-Helper Test::Builder uses when threaded.
+This module provides some helpers for Test::Stream and Toolsets to use to
+determine if threading is in place. In most cases you will not need to use this
+module yourself.
 
 =head1 SYNOPSYS
 
     use threads;
     use Test::Stream::Threads;
 
-    share(...);
-    lock(...);
+    if (USE_THREADS) {
+        my $tid = get_tid();
+    }
+
+=head1 EXPORTS
+
+=over 4
+
+=item USE_THREADS
+
+This is a constant, it is set to true when Test::Stream is aware of, and using, threads.
+
+=item get_tid
+
+This will return the id of the current thread when threads are enabled,
+otherwise it returns 0.
+
+=back
 
 =encoding utf8
 

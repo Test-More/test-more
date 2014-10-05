@@ -17,7 +17,7 @@ Test::Builder::Module - *DEPRECATED* Base class for test modules
 
 =head1 DEPRECATED
 
-B<This module is deprecated> See L<Test::Builder::Provider> for what you should
+B<This module is deprecated> See L<Test::Stream::Toolset> for what you should
 use instead.
 
 =head1 SYNOPSIS

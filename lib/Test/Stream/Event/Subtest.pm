@@ -113,6 +113,76 @@ sub extra_details {
 
 __END__
 
+=head1 NAME
+
+Test::Stream::Event::Subtest - Subtest event
+
+=head1 DESCRIPTION
+
+This event is used to encapsulate subtests.
+
+=head1 SYNOPSYS
+
+B<YOU PROBABLY DO NOT WANT TO DIRECTLY GENERATE A SUBTEST EVENT>. See the
+C<subtest()> function from L<Test::More::Tools> instead.
+
+=head1 INHERITENCE
+
+the C<Test::Stream::Event::Subtest> class inherits from
+L<Test::Stream::Event::Ok> and shares all of its methods and fields.
+
+=head1 ACCESSORS
+
+=over 4
+
+=item my $se = $e->events
+
+This returns an arrayref with all events generated during the subtest.
+
+=item my $x = $e->exception
+
+If the subtest was killed by a C<skip_all> or C<BAIL_OUT> the event will be
+returned by this accessor.
+
+=back
+
+=head1 SUMMARY FIELDS
+
+C<Test::Stream::Event::Subtest> inherits all of the summary fields from
+L<Test::Stream::Event::Ok>.
+
+=over 4
+
+=item events => \@subevents
+
+An arrayref containing all the events generated within the subtest, including
+plans.
+
+=item exception => \$plan_or_bail
+
+If the subtest was aborted due to a bail-out or a skip_all, the event that
+caused the abort will be here (in addition to the events arrayref.
+
+=item plan => \$plan
+
+The plan event for the subtest, this may be auto-generated.
+
+=item passing => $bool
+
+True if the subtest was passing, false otherwise. This should not be confused
+with 'bool' inherited from L<Test::Stream::Event::Ok> which takes TODO into
+account.
+
+=item count => $num
+
+Number of tests run inside the subtest.
+
+=item failed => $num
+
+Number of tests that failed inside the subtest.
+
+=back
+
 =encoding utf8
 
 =head1 SOURCE

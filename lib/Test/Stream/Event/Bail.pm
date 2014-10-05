@@ -30,6 +30,55 @@ __END__
 
 Test::Stream::Event::Bail - Bailout!
 
+=head1 DESCRIPTION
+
+The bailout event is generated when things go horribly wrong and you need to
+halt all testing in the current file.
+
+=head1 SYNOPSYS
+
+    use Test::Stream::Context qw/context/;
+    use Test::Stream::Event::Bail;
+
+    my $ctx = context();
+    my $event = $ctx->bail('Stuff is broken');
+
+=head1 METHODS
+
+Inherits from L<Test::Stream::Event>. Also defines:
+
+=over 4
+
+=item $reason = $e->reason
+
+The reason for the bailout.
+
+=item $bool = quiet
+
+Should the bailout be quiet?
+
+=back
+
+=head1 SUMMARY FIELDS
+
+These are the fields that will be present when calling
+C<< my %sum = $e->summary >>. Please note that the fields are returned as an
+order key+pair list, they can be directly assigned to a hash if desired, or
+they can be assigned to an array to preserver the order. The order is as it
+appears below, B<NOT> alphabetical.
+
+=over 4
+
+=item reason
+
+Reason for the bailout
+
+=item quiet
+
+Boolean, true if the bailout should be quiet.
+
+=back
+
 =encoding utf8
 
 =head1 SOURCE
