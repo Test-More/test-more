@@ -41,14 +41,13 @@ my $events = intercept {
     );
 };
 
+ok( !(grep { $_->context->in_todo ? 0 : 1 } @{$events->[0]->diag}), "All diag is todo" );
+
 events_are(
     $events,
     check {
         event ok => {
             in_todo => 1,
-            diag => check {
-                event diag => { in_todo => 1 },
-            },
         };
         event note => { in_todo => 1 };
         event note => { in_todo => 1 };

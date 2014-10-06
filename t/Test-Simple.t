@@ -13,14 +13,12 @@ events_are (
         event ok => {
             bool => 1,
             name => 'Pass',
-            diag => undef,
+            diag => '',
         };
         event ok => {
             bool => 0,
             name => 'Fail',
-            diag => check {
-                event diag => {};
-            },
+            diag => qr/Failed test 'Fail'/,
         };
     },
 );

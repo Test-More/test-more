@@ -35,9 +35,7 @@ events_are(
         event ok => { bool => 1 };
         event ok => {
             bool => 0,
-            diag => check {
-                event diag => { };
-            },
+            diag => qr/Failed/,
         };
         dir 'end';
     },
@@ -52,7 +50,7 @@ events_are(
     $grab,
     check {
         event ok => { bool => 1 };
-        event ok => { bool => 0, diag => check { event diag => {} } };
+        event ok => { bool => 0, diag => qr/Failed/ };
         dir 'end';
     },
     'intercepted via grab 2'
@@ -97,14 +95,13 @@ events_are(
     check {
         event ok => {
             bool => 0,
-            diag => check {
-                event diag => {message => qr{Failed test 'Lets name this test!'.*at (\./)?$0 line}s};
-                event diag => {message => qr{  Event: 'ok' from $0 line $line1}s};
-                event diag => {message => qr{  Check: 'ok' from $0 line $line2}s};
-                event diag => {message =>  q{  $got->{bool} = '1'}};
-                event diag => {message =>  q{  $exp->{bool} = '0'}};
-                dir   'end';
-            },
+            diag => [
+                qr{Failed test 'Lets name this test!'.*at (\./)?$0 line}s,
+                qr{  Event: 'ok' from \Q$0\E line $line1}s,
+                qr{  Check: 'ok' from \Q$0\E line $line2}s,
+                qr{  \$got->\{bool\} = '1'},
+                qr{  \$exp->\{bool\} = '0'},
+            ],
         };
 
         dir 'end';
@@ -128,11 +125,10 @@ events_are(
     check {
         event ok => {
             bool => 0,
-            diag => check {
-                event diag => {message => qr/Failed test 'Should Fail'/};
-                event diag => {message => qr/Expected end of events, got 'ok' from $0 line $line3/};
-                dir 'end';
-            },
+            diag => [
+                qr/Failed test 'Should Fail'/,
+                qr/Expected end of events, got 'ok' from \Q$0\E line $line3/,
+            ],
         };
     },
 

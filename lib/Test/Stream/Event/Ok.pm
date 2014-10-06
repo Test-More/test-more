@@ -179,8 +179,14 @@ sub extra_details {
 
     require Test::Stream::Tester::Events;
 
+    my $diag = join "\n", map {
+        my $msg = $_->message;
+        chomp($msg);
+        split /[\n\r]+/, $msg;
+    } @{$self->diag || []};
+
     return (
-        diag      => $self->diag      || undef,
+        diag      => $diag            || '',
         bool      => $self->bool      || 0,
         name      => $self->name      || undef,
         real_bool => $self->real_bool || 0
@@ -223,8 +229,9 @@ Name of the test.
 
 =item $diag = $e->diag
 
-An arrayref with all the L<Test::Stream::Event::Diag> events produced for this
-C<ok> event.
+An arrayref with all the L<Test::Stream::Event::Diag> events reduced down to
+just the messages. Some coaxing has beeen done to combine all the messages into
+a single string.
 
 =item $b = $e->bool
 

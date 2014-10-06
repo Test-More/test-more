@@ -15,11 +15,10 @@ events_are (
         event ok => {
             bool => 0,
             name => 'use Something::Fake;',
-            diag => check {
-                event diag => { message => qr/^\s*Failed test 'use Something::Fake;'/ };
-            },
+            diag => qr/^\s*Failed test 'use Something::Fake;'/,
         };
-    }
+    },
+    "Basic test"
 );
 
 done_testing;

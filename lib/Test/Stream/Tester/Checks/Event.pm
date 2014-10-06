@@ -69,6 +69,9 @@ sub validate_check {
         return if $val->isa('Test::Stream::Tester::Events::Event');
     }
 
+    my $type = reftype($val);
+    return if $type eq 'CODE';
+
     croak "'$val' is not a valid field check"
         unless reftype($val) eq 'ARRAY';
 

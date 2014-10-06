@@ -26,16 +26,14 @@ events_are(
     $events,
 
     check {
-        event ok   => {bool => 0, diag => check { event diag => {} }};
+        event ok   => {bool => 0, diag => qr/Fail/};
         event ok   => {bool => 1};
 
         event note => {message => 'Subtest: subtest'};
         event subtest => {
             name => 'subtest',
             bool => 0,
-            diag => check {
-                event diag => {message => qr/Failed test 'subtest'/};
-            },
+            diag => qr/Failed test 'subtest'/,
 
             events => check {
                 event ok => {bool => 0};
@@ -62,7 +60,9 @@ events_are(
         event ok => {bool => 1};
 
         dir end => "subtest events as expected";
-    }
+    },
+
+    "Subtest events"
 );
 
 done_testing;

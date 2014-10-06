@@ -108,10 +108,7 @@ events_are (
         event ok => { bool => 1 };
         event ok => {
             bool => 0,
-            diag => check {
-                event diag => {};
-                event diag => {message => qr/got: 'a'.*\n.*expected: 'b'/};
-            },
+            diag => qr/got: 'a'.*\n.*expected: 'b'/,
         };
 
         event ok => { bool => 1 };
@@ -119,56 +116,42 @@ events_are (
 
         event ok => {
             bool => 0,
-            diag => check {
-                event diag => {};
-                event diag => {message => qr/\$got->\[1\] = 'b'\n\s*\$expected->\[1\] = 'x'/};
-            },
+            diag => qr/\$got->\[1\] = 'b'\n\s*\$expected->\[1\] = 'x'/,
         };
 
         event ok => { bool => 1 };
         event ok => { bool => 1 };
 
         event ok => {
-            bool => 0 ,
-            diag => check {
-                event diag => {};
-                event diag => { message => qr/\$got->\{b\} = '2'\n\s*\$expected->\{b\} = undef/ };
-            },
+            bool => 0,
+            diag => qr/\$got->\{b\} = '2'\n\s*\$expected->\{b\} = undef/,
         };
 
         event ok => { bool => 1 };
         event ok => {
             bool => 0,
-            diag => check {
-                event diag => {};
-                event diag => { message => qr/\$got->\{b\} = 'bar'\n\s+\$expected->\{b\} = .*o/ };
-            },
+            diag => qr/\$got->\{b\} = 'bar'\n\s+\$expected->\{b\} = .*o/,
         };
 
         event ok => { bool => 1 };
         event ok => {
             bool => 0,
-            diag => check {
-                event diag => {};
-                event diag => { message => qr/\$got->\Q{a}{b}{c}{d}\E = '1'\n\s+\$expected->\Q{a}{b}{c}{d}\E = '2'/ };
-            },
+            diag => qr/\$got->\Q{a}{b}{c}{d}\E = '1'\n\s+\$expected->\Q{a}{b}{c}{d}\E = '2'/,
         };
 
         event ok => { bool => 1 };
         event ok => {
             bool => 0,
-            diag => check {
-                event diag => {};
-                event diag => { message => [
-                    qr/\[\s+\$got->invalid\(\)\] = '\(EXCEPTION\)'/,
-                    qr/\[\$expected->\{invalid\}\] = ARRAY/,
-                    qr/Can't locate object method "invalid" via package "XXX"/,
-                ]},
-            },
+            diag => [
+                qr/\[\s+\$got->invalid\(\)\] = '\(EXCEPTION\)'/,
+                qr/\[\$expected->\{invalid\}\] = ARRAY/,
+                qr/Can't locate object method "invalid" via package "XXX"/,
+            ],
         };
 
         directive 'end';
     },
+    "Tolerant"
 );
 
 done_testing;

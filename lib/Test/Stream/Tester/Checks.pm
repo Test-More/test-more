@@ -112,6 +112,7 @@ sub vtype {
     return 'regexp' if is_regex($v);
     return 'noref' unless ref $v;
     return 'array'  if reftype($v) eq 'ARRAY';
+    return 'code'   if reftype($v) eq 'CODE';
 
     confess "Invalid field check: '$v'";
 }
@@ -218,6 +219,12 @@ sub _check_field_array {
     }
 
     return (1);
+}
+
+sub _check_field_code {
+    my $self = shift;
+    my ($key, $wval, $gval) = @_;
+    $wval->($key, $gval);
 }
 
 sub seek {
