@@ -71,6 +71,52 @@ Test::Stream::Event::Diag - Diag event type
 
 =encoding utf8
 
+=head1 DESCRIPTION
+
+Diagnostics messages, typically rendered to STDERR.
+
+=head1 SYNOPSYS
+
+    use Test::Stream::Context qw/context/;
+    use Test::Stream::Event::Diag;
+
+    my $ctx = context();
+    my $event = $ctx->diag($message);
+
+=head1 ACCESSORS
+
+=over 4
+
+=item $diag->message
+
+The message for the diag.
+
+=item $diag->linked
+
+The Ok event the diag is linked to, if it is.
+
+=back
+
+=head1 METHODS
+
+=over 4
+
+=item $diag->link($ok);
+
+Link the diag to an OK event.
+
+=back
+
+=head1 SUMMARY FIELDS
+
+=over 4
+
+=item message
+
+The message from the diag.
+
+=back
+
 =head1 SOURCE
 
 The source code repository for Test::More can be found at

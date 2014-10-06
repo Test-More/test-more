@@ -205,6 +205,8 @@ Test::Stream::Event::Ok - Ok event type
 
 =head1 DESCRIPTION
 
+Ok events are generated whenever you run a test that produces a result.
+Examples are C<ok()>, and C<is()>.
 
 =head1 SYNOPSYS
 
@@ -270,7 +272,7 @@ Remove all diag events, then return them in an arrayref.
 
 =item diag
 
-An arrayref with all the diagnostics from the event.
+A single string with all the messages from the diags linked to the event.
 
 =item bool
 

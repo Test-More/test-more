@@ -39,6 +39,38 @@ Test::Stream::Event::Note - Note event type
 
 =encoding utf8
 
+=head1 DESCRIPTION
+
+Notes, typically rendered to STDOUT.
+
+=head1 SYNOPSYS
+
+    use Test::Stream::Context qw/context/;
+    use Test::Stream::Event::Note;
+
+    my $ctx = context();
+    my $event = $ctx->Note($message);
+
+=head1 ACCESSORS
+
+=over 4
+
+=item $note->message
+
+The message for the note.
+
+=back
+
+=head1 SUMMARY FIELDS
+
+=over 4
+
+=item message
+
+The message from the note.
+
+=back
+
 =head1 SOURCE
 
 The source code repository for Test::More can be found at

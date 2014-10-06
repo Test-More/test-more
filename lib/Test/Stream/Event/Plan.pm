@@ -72,6 +72,55 @@ Test::Stream::Event::Plan - The event of a plan
 
 =encoding utf8
 
+=head1 DESCRIPTION
+
+Plan events are fired off whenever a plan is declared, done testing is called,
+or a subtext completes.
+
+=head1 SYNOPSYS
+
+    use Test::Stream::Context qw/context/;
+    use Test::Stream::Event::Plan;
+
+    my $ctx = context();
+    my $event = $ctx->plan($max, $directive, $reason);
+
+=head1 ACCESSORS
+
+=over 4
+
+=item $num = $plan->max
+
+Get the number of expected tests
+
+=item $dir = $plan->directive
+
+Get the directive (such as TODO, skip_all, or no_plan).
+
+=item $reason = $plan->reason
+
+Get the reason for the directive.
+
+=back
+
+=head1 SUMMARY FIELDS
+
+=over 4
+
+=item max
+
+Number of expected tests.
+
+=item directive
+
+Directive.
+
+=item reason
+
+Reason for directive.
+
+=back
+
 =head1 SOURCE
 
 The source code repository for Test::More can be found at
