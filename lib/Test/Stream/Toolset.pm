@@ -53,7 +53,7 @@ of integrating with L<Test::Builder> and other testing tools much easier.
         my $ctx = context();
 
         my @diag;
-        push @diag => "'$test' is not true!" unless $ok;
+        push @diag => "'$test' is not true!" unless $test;
 
         $ctx->ok($test, $name, \@diag);
 
@@ -181,7 +181,7 @@ B<Note:> every munger is called for every event of every type. There is also no
 way to remove a munger. For performance reasons it is best to only ever add one
 munger per toolset which dispatches according to events and state.
 
-=head1 LISTENEING FOR EVENTS
+=head1 LISTENING FOR EVENTS
 
 If you wish to know when an event has occured so that you can do something
 after it has been processed, you can add a listener. Your listener will be
@@ -222,28 +222,9 @@ API that should be used instead of overrides.
 In the past people would override these methods on L<Test::Builder>.
 L<Test::Stream> now provides a proper API for handling all event types.
 
-If you wish to know when an event has occured so that you can do something
-after it has been processed, you can add a listener. Your listener will be
-called for every single event that occurs, after it has been processed. The
-return from a listener is ignored.
-
-    Test::Stream->shared->listen(sub {
-        my ($stream, $event) = @_;
-        ...
-    });
-
-If you want to make changes to event objects before they are processed, you can
-add a munger. The return from a munger is ignored, you must make your changes
-directly to the event object.
-
-    Test::Stream->shared->munge(sub {
-        my ($stream, $event) = @_;
-        ...
-    });
-
-In both listeners and mungers you will get 2 arguments. The first argument will
-always be the L<Test::Stream> object. The second argument will always be the
-event that has occured.
+Anything that used to be done via overrides can now be done using
+c<Test::Stream->shared->listen(sub { ... })> and
+C<Test::Stream->shared->munge(sub { ... })>, which are documented above.
 
 =item done_testing
 
