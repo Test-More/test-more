@@ -9,7 +9,7 @@ use Test::Stream::Carp qw/confess/;
 use Test::Stream;
 use Test::Stream::Threads;
 use Test::Stream::Event();
-use Test::Stream::Util qw/try/;
+use Test::Stream::Util qw/try translate_filename/;
 use Test::Stream::Meta qw/init_tester is_tester/;
 
 use Test::Stream::ArrayBase(
@@ -93,11 +93,14 @@ sub context {
         $stream->fork_cull();
     }
 
+    my $encoding = $meta->[Test::Stream::Meta::ENCODING] || 'legacy';
+    $call->[1] = translate_filename($encoding => $call->[1]) if $encoding ne 'legacy';
+
     my $ctx = bless(
         [
             $call,
             $stream,
-            $meta->[Test::Stream::Meta::ENCODING] || 'legacy',
+            $encoding,
             $in_todo,
             $todo,
             $meta->[Test::Stream::Meta::MODERN]   || 0,
@@ -291,6 +294,8 @@ sub register_event {
         sub $name {
             my \$self = shift;
             my \@call = caller(0);
+            my \$encoding = \$self->[ENCODING];
+            \$call[1] = translate_filename(\$encoding => \$call[1]) if \$encoding ne 'legacy';
             my \$e = '$pkg'->new(\$self->snapshot, [\@call[0 .. 4]], 0, \@_);
             return \$self->stream->send(\$e);
         };

@@ -9,6 +9,7 @@ use Test::Stream::Carp qw/croak/;
 exports qw{
     try protect spoof is_regex is_dualvar
     unoverload unoverload_str unoverload_num
+    translate_filename
 };
 
 Test::Stream::Exporter->cleanup();
@@ -145,6 +146,24 @@ sub unoverload {
     }
 }
 
+my $NORMALIZE = undef;
+sub translate_filename {
+    my ($encoding, $orig) = @_;
+
+    return $orig if $encoding eq 'legacy';
+
+    my $decoded;
+    require Encode;
+    try { $decoded = Encode::decode($encoding, "$orig", Encode::FB_CROAK()) };
+    return $orig unless $decoded;
+
+    unless (defined $NORMALIZE) {
+        $NORMALIZE = try { require Unicode::Normalize; 1 };
+        $NORMALIZE ||= 0;
+    }
+    $decoded = Unicode::Normalize::NFKC($decoded) if $NORMALIZE;
+    return $decoded || $orig;
+}
 
 1;
 
