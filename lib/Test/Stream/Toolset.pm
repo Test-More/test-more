@@ -30,9 +30,243 @@ Test::Stream::Toolset - Helper for writing testing tools
 This package provides you with tools to write testing tools. It makes your job
 of integrating with L<Test::Builder> and other testing tools much easier.
 
+=head1 SYNOPSYS
+
+    package My::Tester;
+    use strict;
+    use warnings;
+    use Test::Stream::Toolset;
+
+    # Optional, you can just use Exporter if you would like
+    use Test::Stream::Exporter;
+
+    # These can come from Test::More, so do not export them by default
+    # exports is the Test::Stream::Exporter equivilent to @EXPORT_OK
+    exports qw/context done_testing/;
+
+    # These are the API we want to provide, export them by default
+    # default_exports is the Test::Stream::Exporter equivilent to @EXPORT
+    default_exports qw/my_ok my_note/;
+
+    sub my_ok {
+        my ($test, $name) = @_;
+        my $ctx = context();
+
+        my @diag;
+        push @diag => "'$test' is not true!" unless $ok;
+
+        $ctx->ok($test, $name, \@diag);
+
+        return $test ? 1 : 0; # Reduce to a boolean
+    }
+
+    sub my_note {
+        my ($msg) = @_;
+        my $ctx = context();
+
+        $ctx->note($msg);
+
+        return $msg;
+    }
+
+    sub done_testing {
+        my ($expected) = @_;
+        my $ctx = context();
+        $ctx->done_testing($expected);
+    }
+
+    1;
+
+=head1 EXPORTS
+
+=over 4
+
+=item $ctx = context()
+
+The context() method is used to get the current context, generating one if
+necessary. The context object is an instance of L<Test::Stream::Context>, and
+is used to generate events suck as C<ok> and C<plan>. The context also knows
+what file+line errors should be reported at.
+
+B<WARNING:> Do not directly store the context in anything other than a lexical
+variable scoped to your function! As long as there are references to a context
+object, C<context()> will return that object. You want the object to be
+destroyed at the end of the current scope so that the next function you call
+can create a new one. If you need a copy of the context use
+C<< $ctx = $ctx->snapshot >>.
+
+=item $meta = init_tester($CLASS)
+
+This method can be used to initialize a class as a test class. In most cases
+you do not actually need to use this. If the class is already a tester this
+will return the existing meta object.
+
+=item $meta = is_tester($CLASS)
+
+This method can be used to check if an object is a tester. If the object is a
+tester it will return the meta object for the tester.
+
+=back
+
+=head1 GENERATING EVENTS
+
+Events are always generated via a context object. Whenever you load an
+L<Test::Stream::Event> class it will add a method to L<Test::Stream::Context>
+which can be used to fire off that type of event.
+
+The following event types are all loaded automatically by
+L<Test::Stream::Toolset>
+
+=over 4
+
+=item L<Test::Stream::Event::Ok>
+
+    $ctx->ok($bool, $name, \@diag)
+
+Ok events are your actual assertions. You assert that a condition is what you
+expect. It is recommended that you name your assertions. You can include an
+array of diag objects and/or diagniostics strings that will be printed to
+STDERR as comments in the event of a failure.
+
+=item L<Test::Stream::Event::Diag>
+
+    $ctx->diag($MESSAGE)
+
+Produce an independant diagnostics message.
+
+=item L<Test::Stream::Event::Note>
+
+    $ctx->note($MESSAGE)
+
+Produce a note, that is a message that is printed to STDOUT as a comment.
+
+=item L<Test::Stream::Event::Plan>
+
+    $ctx->plan($MAX, $DIRECTIVE, $REASON)
+
+This will set the plan. C<$MAX> should be the number of tests you expect to
+run. You may set this to 0 for some plan directives. Examples of directives are
+C<'skip_all'> and C<'no_plan'>. Some directives have an additional argument
+called C<$REASON> which is aptly named as the reason for the directive.
+
+=item L<Test::Stream::Event::Bail>
+
+    $ctx->bail($MESSAGE)
+
+In the event of a catostrophic failure that should terminate the test file, use
+this event to stop everything and print the reason.
+
+=item L<Test::Stream::Event::Finish>
+
+=item L<Test::Stream::Event::Child>
+
+=item L<Test::Stream::Event::Subtest>
+
+These are not intended for public use, but are documented for completeness.
+
+=back
+
+=head1 MODIFYING EVENTS
+
+If you want to make changes to event objects before they are processed, you can
+add a munger. The return from a munger is ignored, you must make your changes
+directly to the event object.
+
+    Test::Stream->shared->munge(sub {
+        my ($stream, $event) = @_;
+        ...
+    });
+
+B<Note:> every munger is called for every event of every type. There is also no
+way to remove a munger. For performance reasons it is best to only ever add one
+munger per toolset which dispatches according to events and state.
+
+=head1 LISTENEING FOR EVENTS
+
+If you wish to know when an event has occured so that you can do something
+after it has been processed, you can add a listener. Your listener will be
+called for every single event that occurs, after it has been processed. The
+return from a listener is ignored.
+
+    Test::Stream->shared->listen(sub {
+        my ($stream, $event) = @_;
+        ...
+    });
+
+B<Note:> every listener is called for every event of every type. There is also no
+way to remove a listener. For performance reasons it is best to only ever add one
+listener per toolset which dispatches according to events and state.
+
+=head1 I WANT TO EMBED FUNCTIONALITY FROM TEST::MORE
+
+Take a look at L<Test::More::Tools> which provides an interfaces to the code in
+Test::More. You can use that library to produce booleans and diagnostics
+without actually triggering events, giving you the opportunity to generate your
+own.
+
+=head1 FROM TEST::BUILDER TO TEST::STREAM
+
+This is a list of things people used to override in Test::Builder, and the new
+API that should be used instead of overrides.
+
+=over 4
+
+=item ok
+
+=item note
+
+=item diag
+
+=item plan
+
+In the past people would override these methods on L<Test::Builder>.
+L<Test::Stream> now provides a proper API for handling all event types.
+
+If you wish to know when an event has occured so that you can do something
+after it has been processed, you can add a listener. Your listener will be
+called for every single event that occurs, after it has been processed. The
+return from a listener is ignored.
+
+    Test::Stream->shared->listen(sub {
+        my ($stream, $event) = @_;
+        ...
+    });
+
+If you want to make changes to event objects before they are processed, you can
+add a munger. The return from a munger is ignored, you must make your changes
+directly to the event object.
+
+    Test::Stream->shared->munge(sub {
+        my ($stream, $event) = @_;
+        ...
+    });
+
+In both listeners and mungers you will get 2 arguments. The first argument will
+always be the L<Test::Stream> object. The second argument will always be the
+event that has occured.
+
+=item done_testing
+
+In the past people have overriden C<done_testing()> to insert some code between
+the last test and the final plan. The proper way to do this now is with a
+follow_up hook.
+
+    Test::Stream->shared->follow_up(sub {
+        my ($context) = @_;
+        ...
+    });
+
+There are multiple ways that follow_ups will be triggered, but they are
+guarenteed to only be called once, at the end of testing. This will either be
+the start of C<done_testing()>, or an END block called after your tests are
+complete.
+
+=back
+
 =head1 HOW DO I TEST MY TEST TOOLS?
 
-See L<Test::Stream::Tester>
+See L<Test::Stream::Tester>. This library gives you all the tools you need to
+test your testing tools.
 
 =encoding utf8
 
