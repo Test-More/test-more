@@ -1,100 +1,61 @@
-package Test::Stream::ArrayBase::Meta;
+package Test::MostlyLike;
 use strict;
 use warnings;
 
-use Test::Stream::Carp qw/confess/;
+use Test::Stream::Toolset;
+use Test::Stream::Exporter;
+default_exports qw/mostly_like/;
+Test::Stream::Exporter->cleanup;
 
-my %META;
+use Test::More::DeepCheck::Tolerant;
 
-sub package {     shift->{package}   }
-sub parent  {     shift->{parent}    }
-sub locked  {     shift->{locked}    }
-sub fields  {({ %{shift->{fields}} })}
+sub mostly_like {
+    my ($got, $want, $name) = @_;
 
-sub new {
-    my $class = shift;
-    my ($pkg) = @_;
+    my $ctx = context();
 
-    $META{$pkg} ||= bless {
-        package => $pkg,
-        locked  => 0,
-    }, $class;
+    unless( @_ == 2 or @_ == 3 ) {
+        my $msg = <<'WARNING';
+mostly_like() takes two or three args, you gave %d.
+This usually means you passed an array or hash instead
+of a reference to it
+WARNING
+        chop $msg;    # clip off newline so carp() will put in line/file
 
-    return $META{$pkg};
-}
+        $ctx->alert(sprintf $msg, scalar @_);
 
-sub get {
-    my $class = shift;
-    my ($pkg) = @_;
-
-    return $META{$pkg};
-}
-
-sub baseclass {
-    my $self = shift;
-    $self->{parent} = 'Test::Stream::ArrayBase';
-    $self->{index}  = 0;
-    $self->{fields} = {};
-}
-
-sub subclass {
-    my $self = shift;
-    my ($parent) = @_;
-    confess "Already a subclass of $self->{parent}! Tried to sublcass $parent" if $self->{parent};
-
-    my $pmeta = $self->get($parent) || die "$parent is not an ArrayBase object!";
-    $pmeta->{locked} = 1;
-
-    $self->{parent} = $parent;
-    $self->{index}  = $pmeta->{index};
-    $self->{fields} = $pmeta->fields; #Makes a copy
-
-    my $ex_meta = Test::Stream::Exporter::Meta->get($self->{package});
-
-    # Put parent constants into the subclass
-    for my $field (keys %{$self->{fields}}) {
-        my $const = uc $field;
-        no strict 'refs';
-        *{"$self->{package}\::$const"} = $parent->can($const) || confess "Could not find constant '$const'!";
-        $ex_meta->add($const);
+        $ctx->ok(0, undef, ['incorrect number of args']);
+        return 0;
     }
-}
 
-sub add_accessor {
-    my $self = shift;
-    my ($name) = @_;
-
-    confess "Cannot add accessor, metadata is locked due to a subclass being initialized ($self->{parent}).\n"
-        if $self->{locked};
-
-    confess "field '$name' already defined!"
-        if exists $self->{fields}->{$name};
-
-    my $idx = $self->{index}++;
-    $self->{fields}->{$name} = $idx;
-
-    my $const = uc $name;
-    my $gname = lc $name;
-    my $sname = "set_$gname";
-    my $cname = "clear_$gname";
-
-    eval qq|
-        package $self->{package};
-        sub $gname { \$_[0]->[$idx] }
-        sub $sname { \$_[0]->[$idx] = \$_[1] }
-        sub $cname { \$_[0]->[$idx] = undef  }
-        sub $const() { $idx }
-        1
-    | || confess $@;
-
-    # Add the constant as an optional export
-    my $ex_meta = Test::Stream::Exporter::Meta->get($self->{package});
-    $ex_meta->add($const);
+    my ($ok, @diag) = Test::More::DeepCheck::Tolerant->check($got, $want);
+    $ctx->ok($ok, $name, \@diag);
+    return $ok;
 }
 
 1;
 
 __END__
+
+=head1 NAME
+
+Test::MostlyLike - Relaxed checking of deep data structures.
+
+=head1 SYNOPSYS
+
+=head1 DESCRIPTION
+
+A tool based on C<is_deeply> from L<Test::More>. This tool produces nearly
+identical diagnostics. This tool gives you extra control by letting you check
+only the parts of the structure you care about, ignoring the rest.
+
+=head1 EXPORTS
+
+=over 4
+
+=item mostly_like($got, $expect, $name)
+
+=back
 
 =encoding utf8
 
@@ -140,6 +101,8 @@ here are all the original copyrights together:
 =item Test::Stream
 
 =item Test::Stream::Tester
+
+=item Test::MostlyLike
 
 Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 

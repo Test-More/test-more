@@ -8,7 +8,7 @@ package Test::Tester;
 use Test::Builder 1.301001;
 use Test::Stream::Toolset;
 use Test::More::Tools;
-use Test::Stream qw/STATE_LEGACY/;
+use Test::Stream qw/-internal STATE_LEGACY/;
 use Test::Tester::Capture;
 
 require Exporter;

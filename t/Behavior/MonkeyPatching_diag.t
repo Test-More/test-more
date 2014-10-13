@@ -2,13 +2,17 @@ use strict;
 use warnings;
 use B;
 
-use Test::More 'modern', tests => 3;
+use Test::Stream;
+use Test::MostlyLike;
+use Test::More tests => 3;
 use Test::Builder; # Not loaded by default in modern mode
 my $orig = Test::Builder->can('diag');
 
 {
     package MyModernTester;
-    use Test::More 'modern';
+    use Test::More;
+    use Test::Stream;
+    use Test::MostlyLike;
 
     no warnings 'redefine';
     local *Test::Builder::diag = sub {
@@ -40,7 +44,9 @@ my $orig = Test::Builder->can('diag');
 
 {
     package MyModernTester2;
-    use Test::More 'modern';
+    use Test::More;
+    use Test::Stream;
+    use Test::MostlyLike;
 
     no warnings 'redefine';
     local *Test::Builder::diag = sub {

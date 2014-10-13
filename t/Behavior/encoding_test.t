@@ -4,7 +4,8 @@ no utf8;
 
 # line 5 "encoding_tést.t"
 
-use Test::More qw/modern/;
+use Test::Stream;
+use Test::More;
 use Test::Stream::Tester;
 
 BEGIN {

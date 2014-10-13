@@ -4,7 +4,7 @@ use warnings;
 
 use Scalar::Util qw/blessed/;
 use Test::Stream::Carp qw/confess/;
-use Test::Stream qw/STATE_PASSING STATE_COUNT STATE_FAILED STATE_PLAN OUT_STD/;
+use Test::Stream qw/-internal STATE_PASSING STATE_COUNT STATE_FAILED STATE_PLAN/;
 
 use Test::Stream::Event(
     base      => 'Test::Stream::Event::Ok',

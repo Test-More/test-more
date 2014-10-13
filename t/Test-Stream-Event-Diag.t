@@ -1,13 +1,14 @@
 use strict;
 use warnings;
 
-use Test::More 'modern';
+use Test::Stream;
+use Test::More;
 
 use ok 'Test::Stream::Event::Diag';
 
-my $ctx = context(-1);
+my $ctx = context(-1); my $line = __LINE__;
 $ctx = $ctx->snapshot;
-is($ctx->line, 8, "usable context");
+is($ctx->line, $line, "usable context");
 
 my $diag = $ctx->diag('hello');
 ok($diag, "build diag");

@@ -1,7 +1,9 @@
 use strict;
 use warnings;
 
-use Test::More 'modern';
+use Test::Stream;
+use Test::MostlyLike;
+use Test::More;
 
 use ok 'Test::Stream::IOSets';
 

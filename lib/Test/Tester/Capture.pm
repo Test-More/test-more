@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use base 'Test::Builder';
-use Test::Stream qw/STATE_LEGACY/;
+use Test::Stream qw/-internal STATE_LEGACY/;
 
 sub new {
     my $class = shift;

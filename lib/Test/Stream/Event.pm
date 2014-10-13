@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/blessed/;
-use Test::Stream qw/OUT_STD OUT_ERR OUT_TODO/;
 use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::ArrayBase(
@@ -23,10 +22,17 @@ sub import {
 
     my $ctx_meth = delete $args{ctx_method};
 
+    require Test::Stream::Context;
+    require Test::Stream;
+
     # %args may override base
     Test::Stream::ArrayBase->apply_to($caller, base => $class, %args);
-    require Test::Stream::Context;
     Test::Stream::Context->register_event($caller, $ctx_meth);
+    Test::Stream::Exporter::export_to(
+        'Test::Stream',
+        $caller,
+        qw/OUT_STD OUT_ERR OUT_TODO/,
+    );
 }
 
 sub init {
@@ -112,10 +118,11 @@ L<Test::Stream>.
     }
 
     # If your event produces TAP output it must define this method
-    use Test::Stream qw/OUT_STD OUT_ERR OUT_TODO/;
     sub to_tap {
         my $self = shift;
         return (
+            # Constants are defined at import, all are optional, and may appear
+            # any number of times.
             [OUT_STD, $self->foo],
             [OUT_ERR, $self->bar],
             [OUT_STD, $self->baz],

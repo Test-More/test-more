@@ -2,7 +2,6 @@ package Test::Stream::Event::Note;
 use strict;
 use warnings;
 
-use Test::Stream qw/OUT_STD/;
 use Test::Stream::Event(
     accessors  => [qw/message/],
     ctx_method => '_note',

@@ -9,7 +9,7 @@ BEGIN {
                     $Config{useithreads} and
                     $Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/
                    );
-    
+
     unless( $Can_Fork ) {
         require Test::More;
         Test::More::plan(skip_all => "This system cannot fork");
@@ -17,7 +17,8 @@ BEGIN {
     }
 }
 
-use Test::More 'enable_forking';
+use Test::Stream;
+use Test::More;
 # This just goes to show how silly forking inside a subtest would actually
 # be....
 

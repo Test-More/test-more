@@ -6,7 +6,7 @@ use Scalar::Util qw/blessed weaken/;
 
 use Test::Stream::Carp qw/confess/;
 
-use Test::Stream;
+use Test::Stream '-internal';
 use Test::Stream::Threads;
 use Test::Stream::Event();
 use Test::Stream::Util qw/try translate_filename/;

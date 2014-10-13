@@ -1,7 +1,8 @@
 use strict;
 use warnings;
 
-use Test::More 'modern';
+use Test::Stream;
+use Test::More;
 
 my @warnings;
 $SIG{__WARN__} = sub { push @warnings => @_ };

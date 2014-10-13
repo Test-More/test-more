@@ -2,7 +2,6 @@ package Test::Stream::Event::Bail;
 use strict;
 use warnings;
 
-use Test::Stream qw/OUT_STD/;
 use Test::Stream::Event(
     accessors => [qw/reason quiet/],
 );

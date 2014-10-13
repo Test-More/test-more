@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/blessed/;
-use Test::Stream qw/OUT_STD/;
 use Test::Stream::Util qw/unoverload_str/;
 use Test::Stream::Carp qw/confess/;
 

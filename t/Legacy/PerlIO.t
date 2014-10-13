@@ -1,4 +1,4 @@
-use Test::More 'modern';
+use Test::More;
 require PerlIO;
 
 my $ok = 1;

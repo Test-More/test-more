@@ -1,10 +1,12 @@
 use strict;
 use warnings;
 
-use Test::More 'modern';
+use Test::Stream;
+use Test::MostlyLike;
+use Test::More;
 use Test::Stream::Tester;
 
-use ok 'Test::More::DeepCheck::Tolerant';
+use ok 'Test::MostlyLike';
 
 {
     package XXX;

@@ -1,6 +1,7 @@
 use strict;
 use warnings;
-use Test::More 'modern';
+use Test::Stream;
+use Test::More;
 use Test::Stream::Tester;
 
 events_are(

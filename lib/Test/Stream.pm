@@ -8,7 +8,9 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 use Test::Stream::Threads;
 use Test::Stream::IOSets;
 use Test::Stream::Util qw/try/;
-use Test::Stream::Carp qw/croak confess/;
+use Test::Stream::Carp qw/croak confess carp/;
+use Test::Stream::Meta qw/MODERN ENCODING init_tester/;
+use Encode();
 
 use Test::Stream::ArrayBase(
     accessors => [qw{
@@ -46,7 +48,96 @@ exports qw/
     OUT_STD OUT_ERR OUT_TODO
     STATE_COUNT STATE_FAILED STATE_PLAN STATE_PASSING STATE_LEGACY STATE_ENDED
 /;
+
+default_exports qw/ cull tap_encoding /;
+
+sub tap_encoding {
+    my ($encoding) = @_;
+
+    croak "encoding '$encoding' is not valid, or not available"
+        unless $encoding eq 'legacy' || Encode::find_encoding($encoding);
+
+    require Test::Stream::Context;
+    my $ctx = Test::Stream::Context::context();
+    $ctx->stream->io_sets->init_encoding($encoding);
+
+    my $meta = init_tester($ctx->package);
+    $meta->[ENCODING] = $encoding;
+}
+
+sub cull {
+    require Test::Stream::Context;
+    my $ctx = Test::Stream::Context::context();
+    $ctx->stream->fork_cull();
+}
+
 Test::Stream::Exporter->cleanup;
+sub before_import {
+    my $class = shift;
+    my ($importer, $list) = @_;
+
+    if (@$list && $list->[0] eq '-internal') {
+        shift @$list;
+        return;
+    }
+
+    my $meta = init_tester($importer);
+    $meta->[MODERN] = 1;
+
+    my $other  = [];
+    my $idx    = 0;
+    my $stream = $class->shared;
+
+    $stream->use_fork;
+
+    while ($idx <= $#{$list}) {
+        my $item = $list->[$idx++];
+        next unless $item;
+
+        if ($item eq 'subtest_tap') {
+            my $val = $list->[$idx++];
+            if (!$val || $val eq 'none') {
+                $stream->set_subtest_tap_instant(0);
+                $stream->set_subtest_tap_delayed(0);
+            }
+            elsif ($val eq 'instant') {
+                $stream->set_subtest_tap_instant(1);
+                $stream->set_subtest_tap_delayed(0);
+            }
+            elsif ($val eq 'delayed') {
+                $stream->set_subtest_tap_instant(0);
+                $stream->set_subtest_tap_delayed(1);
+            }
+            elsif ($val eq 'both') {
+                $stream->set_subtest_tap_instant(1);
+                $stream->set_subtest_tap_delayed(1);
+            }
+            else {
+                croak "'$val' is not a valid option for '$item'";
+            }
+        }
+        elsif ($item eq 'utf8') {
+            $stream->io_sets->init_encoding('utf8');
+            $meta->[ENCODING] = 'utf8';
+        }
+        elsif ($item eq 'encoding') {
+            my $encoding = $list->[$idx++];
+
+            croak "encoding '$encoding' is not valid, or not available"
+                unless Encode::find_encoding($encoding);
+
+            $stream->io_sets->init_encoding($encoding);
+            $meta->[ENCODING] = $encoding;
+        }
+        else {
+            push @$other => $item;
+        }
+    }
+
+    @$list = @$other;
+
+    return;
+}
 
 sub plan   { $_[0]->[STATE]->[-1]->[STATE_PLAN]   }
 sub count  { $_[0]->[STATE]->[-1]->[STATE_COUNT]  }

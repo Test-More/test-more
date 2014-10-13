@@ -2,7 +2,9 @@ use strict;
 use warnings;
 use B;
 
-use Test::More 'modern', tests => 6;
+use Test::Stream;
+use Test::MostlyLike;
+use Test::More tests => 6;
 use Test::Builder; # Not loaded by default in modern mode
 my $orig = Test::Builder->can('plan');
 

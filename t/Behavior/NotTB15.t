@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use Test::More 'modern';
+use Test::More;
 use Test::Builder;
 
 # This is just a list of method Test::Builder current does not have that Test::Builder 1.5 does.

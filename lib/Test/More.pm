@@ -9,32 +9,27 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 use Test::Stream::Carp qw/croak carp/;
 use Scalar::Util qw/blessed/;
-use Encode();
 
 use Test::More::Tools;
 use Test::More::DeepCheck::Strict;
-use Test::More::DeepCheck::Tolerant;
 
-use Test::Stream;
+use Test::Stream '-internal';
 use Test::Stream::Util qw/protect try spoof/;
-use Test::Stream::Meta qw/MODERN ENCODING/;
 use Test::Stream::Toolset;
+use Test::Stream::Meta qw/MODERN/;
 
 use Test::Stream::Exporter;
 our $TODO;
 default_export '$TODO' => \$TODO;
 default_exports qw{
     context
-    tap_encoding
-    cull
-
     plan done_testing
 
     ok
     is isnt
     like unlike
     cmp_ok
-    mostly_like is_deeply
+    is_deeply
     eq_array eq_hash eq_set
     can_ok isa_ok new_ok
     pass fail
@@ -64,11 +59,13 @@ sub before_import {
     my $class = shift;
     my ($importer, $list) = @_;
 
-    my $meta    = init_tester($importer);
+    my $meta = init_tester($importer);
+
+    protect {require Test::Builder} unless $meta->[MODERN];
+
     my $context = context(1);
     my $other   = [];
     my $idx     = 0;
-    my $modern  = 0;
 
     while ($idx <= $#{$list}) {
         my $item = $list->[$idx++];
@@ -76,10 +73,6 @@ sub before_import {
 
         if (defined $item and $item eq 'no_diag') {
             Test::Stream->shared->set_no_diag(1);
-        }
-        elsif ($item eq 'modern') {
-            $modern = 1;
-            $meta->[MODERN] = 1;
         }
         elsif ($item eq 'tests') {
             $context->plan($list->[$idx++]);
@@ -93,52 +86,10 @@ sub before_import {
         elsif ($item eq 'import') {
             push @$other => @{$list->[$idx++]};
         }
-        elsif ($item eq 'enable_forking') {
-            Test::Stream->shared->use_fork;
-        }
-        elsif ($item eq 'subtest_tap') {
-            my $val = $list->[$idx++];
-            if (!$val || $val eq 'none') {
-                $context->stream->set_subtest_tap_instant(0);
-                $context->stream->set_subtest_tap_delayed(0);
-            }
-            elsif ($val eq 'instant') {
-                $context->stream->set_subtest_tap_instant(1);
-                $context->stream->set_subtest_tap_delayed(0);
-            }
-            elsif ($val eq 'delayed') {
-                $context->stream->set_subtest_tap_instant(0);
-                $context->stream->set_subtest_tap_delayed(1);
-            }
-            elsif ($val eq 'both') {
-                $context->stream->set_subtest_tap_instant(1);
-                $context->stream->set_subtest_tap_delayed(1);
-            }
-            else {
-                croak "'$val' is not a valid option for '$item'";
-            }
-        }
-        elsif ($item eq 'utf8') {
-            $context->stream->io_sets->init_encoding('utf8');
-            $context->set_encoding('utf8');
-            $meta->[ENCODING] = 'utf8';
-        }
-        elsif ($item eq 'encoding') {
-            my $encoding = $list->[$idx++];
-
-            croak "encoding '$encoding' is not valid, or not available"
-                unless Encode::find_encoding($encoding);
-
-            $context->stream->io_sets->init_encoding($encoding);
-            $context->set_encoding($encoding);
-            $meta->[ENCODING] = $encoding;
-        }
         else {
             carp("Unknown option: $item");
         }
     }
-
-    protect {require Test::Builder} unless $modern;
 
     @$list = @$other;
 
@@ -149,24 +100,6 @@ sub ok ($;$) {
     my $ctx = context();
     $ctx->ok(@_);
     return $_[0] ? 1 : 0;
-}
-
-sub tap_encoding {
-    my ($encoding) = @_;
-
-    croak "encoding '$encoding' is not valid, or not available"
-        unless $encoding eq 'legacy' || Encode::find_encoding($encoding);
-
-    my $ctx = context();
-    $ctx->stream->io_sets->init_encoding($encoding);
-
-    my $meta = init_tester($ctx->package);
-    $meta->[ENCODING] = $encoding;
-}
-
-sub cull {
-    my $ctx = context();
-    $ctx->stream->fork_cull();
 }
 
 sub plan {
@@ -185,30 +118,6 @@ sub done_testing {
     my ($num) = @_;
     my $ctx = context();
     $ctx->done_testing($num);
-}
-
-sub mostly_like {
-    my ($got, $want, $name) = @_;
-
-    my $ctx = context();
-
-    unless( @_ == 2 or @_ == 3 ) {
-        my $msg = <<'WARNING';
-mostly_like() takes two or three args, you gave %d.
-This usually means you passed an array or hash instead
-of a reference to it
-WARNING
-        chop $msg;    # clip off newline so carp() will put in line/file
-
-        $ctx->alert(sprintf $msg, scalar @_);
-
-        $ctx->ok(0, undef, ['incorrect number of args']);
-        return 0;
-    }
-
-    my ($ok, @diag) = Test::More::DeepCheck::Tolerant->check($got, $want);
-    $ctx->ok($ok, $name, \@diag);
-    return $ok;
 }
 
 sub is($$;$) {
@@ -515,7 +424,11 @@ Test::More - The defacto standard in unit testing tools.
 
 =head1 SYNOPSIS
 
-    use Test::More 'modern';
+    # Enabled forking, and removes expensive legacy support;
+    use Test::Stream;
+
+    # Load after Test::Stream to get the benefits of removed legacy
+    use Test::More;
 
     use ok 'Some::Module';
 
@@ -657,55 +570,31 @@ This is safer than and replaces the "no_plan" plan.
 
 =back
 
-=head2 Other import options
+=head2 Test::Stream
 
-=over 4
+When you use Test::Stream, it enables support for forking in your tests. If it
+is loaded before Test::More then it will prevent the insertion of some legacy
+support shims, saving you memory and improving performance.
 
-=item use Test::More 'enable_forking';
-
-Turn on forking support. This lets you fork and generate events from each
-process. It is your job to call C<cull()> periodically in the original process
-to collect the events from other processes.
-
-    use strict;
-    use warnings;
-    use Test::More tests => 2, qw/enable_forking/;
-
-    ok(1, "Event in parent" );
-
-    if (my $pid = fork()) {
-        waitpid($pid, 0);
-        cull();
-    }
-    else {
-        ok(1, "Event in child");
-        exit 0;
-    }
-
-=item use Test::More 'modern';
-
-Turns off some legacy support to save you time and memory.
-
-=item use Test::More 'utf8';
-
-=item use Test::More encoding => 'utf8'
-
-These both work the same, they enable utf8 output in TAP. They also imply 'modern'.
-
-=item use Test::More encoding => ...
-
-Switch TAP output to whatever encoding you want.
-
-B<Note>: This is effective only for the current package. Other packages can/may
-select other encodings for their TAP output. For packages where none is
-specified, the original STDOUT and STDERR settings are used, the results are
-unpredictable.
-
-This implies the 'modern' flag.
-
-=back
+    use Test::Stream;
+    use Test::More;
 
 =head2 TAP Encoding
+
+You can now control the encoding of your TAP output using Test::Stream.
+
+    use Test::Stream; # imports tap_encoding
+    use Test::More;
+
+    tap_encoding 'utf8';
+
+You can also just set 'utf8' it at import time
+
+    use Test::Stream 'utf8';
+
+or something other than utf8
+
+    use Test::Stream encoding => 'latin1';
 
 =over 4
 
@@ -737,6 +626,7 @@ C<Encode::Locale> module.
 The following is an example of code.
 
   use utf8;
+  use Test::Stream;
   use Test::More;
   use Encode::Locale;
 
@@ -1641,8 +1531,6 @@ Key feature milestones include:
 
 =item forking support
 
-=item test tracing
-
 =item tap encoding
 
 Test::Builder and Test::More version 1.301001 introduce these major
@@ -1691,6 +1579,7 @@ Using C<< binmode STDOUT, ":utf8" >> will not fix it.
 Use the C<tap_encoding> function to configure the TAP stream encoding.
 
     use utf8;
+    use Test::Stream; # imports tap_encoding
     use Test::More;
     tap_encoding 'utf8';
 
@@ -1733,6 +1622,11 @@ complex data structures.
 
 
 =item Threads
+
+B<NOTE:> The underlying mechanism to support threads has changed as of version
+1.301001. Instead of sharing several variables and locking them, threads now
+use the same mechanism as forking support. The new system writes events to temp
+files which are culled by the main process.
 
 Test::More will only be aware of threads if C<use threads> has been done
 I<before> Test::More is loaded.  This is ok:

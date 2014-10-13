@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More 'modern';
+use Test::More;
 
 use ok 'Test::Stream::Event::Finish';
 
