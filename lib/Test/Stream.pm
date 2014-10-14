@@ -626,6 +626,329 @@ sub STORABLE_thaw {
 
 __END__
 
+=head1 NAME
+
+Test::Stream - A modern infrastructure for testing.
+
+=head1 SYNOPSYS
+
+    # Enables modern enhancements such as forking support and TAP encoding.
+    # Also turns off expensive legacy support.
+    use Test::Stream;
+    use Test::More;
+
+    # ... Tests ...
+
+    done_testing;
+
+=head1 FEATURES
+
+When you load Test::Stream inside your test file you activate forking support,
+and prevent Test::More from turning on some expensive legacy support. You will
+also get warnings if your code, or any other code you load uses deprecated or
+discouraged practices.
+
+=head1 IMPORT ARGUMENTS
+
+Any import argument not recognised will be treated as an export, if it is not a
+valid export an exception will be thrown.
+
+=over 4
+
+=item '-internal'
+
+This argument, I<when given first>, will prevent the import process from
+turning on enhanced features. This is mainly for internal use (thus the name)
+in order to access/load Test::Stream.
+
+=item subtest_tap => 'none'
+
+Do not show events within subtests, just the subtest result itself.
+
+=item subtest_tap => 'instant'
+
+Show events as they happen (this is how legacy Test::More worked). This is the
+default.
+
+=item subtest_tap => 'delayed'
+
+Show events within subtest AFTER the subtest event itself is complete.
+
+=item subtest_tap => 'both'
+
+Show events as they happen, then also display them after.
+
+=item 'utf8'
+
+Set the TAP encoding to utf8
+
+=item encoding => '...'
+
+Set the TAP encoding.
+
+=back
+
+=head1 EXPORTS
+
+=head2 DEFAULT EXPORTS
+
+=over 4
+
+=item tap_encoding( $ENCODING )
+
+Set the tap encoding from this point on.
+
+=item cull
+
+Bring in results from child processes/threads. This is automatically done
+whenever a context is obtained, but you may wish to do it on demand.
+
+=back
+
+=head2 CONSTANTS
+
+none of these are exported by default you must request them
+
+=over
+
+=item OUT_STD
+
+=item OUT_ERR
+
+=item OUT_TODO
+
+These are indexes of specific IO handles inside an IO set (each encoding has an
+IO set).
+
+=item STATE_COUNT
+
+=item STATE_FAILED
+
+=item STATE_PLAN
+
+=item STATE_PASSING
+
+=item STATE_LEGACY
+
+=item STATE_ENDED
+
+These are indexes into the STATE array present in the stream.
+
+=back
+
+=head1 THE STREAM STACK AND METHODS
+
+At any point there can be any number of streams. Most streams will be present
+in the stream stack. The stack is managed via a collection of class methods.
+You can always access the "current" or "central" stream using
+Test::Stream->shared. If you want your events to go where they are supposed to
+then you should always send them to the shared stream.
+
+It is important to note that any toogle, control, listener, munger, etc.
+applied to a stream will effect only that stream. Independant streams, streams
+down the stack, and streams added later will not get any settings from other
+stacks. Keep this in mind if you take it upon yourself to modify the stream
+stack.
+
+=head2 TOGGLES AND CONTROLS
+
+=over 4
+
+=item $stream->use_fork
+
+Turn on forking support (it cannot be turned off).
+
+=item $stream->set_subtest_tap_instant($bool)
+
+=item $bool = $stream->subtest_tap_instant
+
+Render subtest events as they happen.
+
+=item $stream->set_subtest_tap_delayed($bool)
+
+=item $bool = $stream->subtest_tap_delayed
+
+Render subtest events when printing the result of the subtest
+
+=item $stream->set_exit_on_disruption($bool)
+
+=item $bool = $stream->exit_on_disruption
+
+When true, skip_all and bailout will call exit. When false the bailout and
+skip_all events will be thrown as exceptions.
+
+=item $stream->set_use_tap($bool)
+
+=item $bool = $stream->use_tap
+
+Turn TAP rendering on or off.
+
+=item $stream->set_use_legacy($bool)
+
+=item $bool = $stream->use_legacy
+
+Turn legacy result storing on and off.
+
+=item $stream->set_use_numbers($bool)
+
+=item $bool = $stream->use_numbers
+
+Turn test numbers on and off.
+
+=back
+
+=head2 SENDING EVENTS
+
+    Test::Stream->shared->send($event)
+
+The C<send()> method is used to issue an event to the stream. This method will
+handle thread/fork sych, mungers, listeners, TAP output, etc.
+
+=head2 ALTERING EVENTS
+
+    Test::Stream->shared->munge(sub {
+        my ($stream, $event) = @_;
+
+        ... Modify the event object ...
+
+        # return is ignored.
+    });
+
+Mungers can never be removed once added. The return from a munger is ignored.
+Any changes you wish to make to the object must be done directly by altering
+it in place. The munger is called before the event is rendered as TAP, and
+AFTER the event has made any necessary state changes.
+
+=head2 LISTENING FOR EVENTS
+
+    Test::Stream->shared->listen(sub {
+        my ($stream, $event) = @_;
+
+        ... do whatever you want with the event ...
+
+        # return is ignored
+    });
+
+Listeners can never be removed once added. The return from a listener is
+ignored. Changing an event in a listener is not something you should ever do,
+though no protections are in place to prevent it (this may change!). The
+listeners are called AFTER the event has been rendered as TAP.
+
+=head2 POST-TEST BEHAVIORS
+
+    Test::Stream->shared->follow_up(sub {
+        my ($context) = @_;
+
+        ... do whatever you need to ...
+
+        # Return is ignored
+    });
+
+follow_up subs are called only once, when the stream recieves a finish event. There are 2 ways a finish event can occur:
+
+=over 4
+
+=item done_testing
+
+A finish event is generated when you call done_testing. The finish event occurs
+before the plan is output.
+
+=item EXIT MAGIC
+
+A finish event is generated when the Test::Stream END block is called, just
+before cleanup. This event will not happen if it was already geenerated by a
+call to done_testing.
+
+=back
+
+=head2 OTHER METHODS
+
+=over
+
+=item $stream->state
+
+Get the current state of the stream. The state is an array where specific
+indexes have specific meanings. These indexes are managed via constants.
+
+=item $stream->plan
+
+Get the plan event, if a plan has been issued.
+
+=item $stream->count
+
+Get the test count so far.
+
+=item $stream->failed
+
+Get the number of failed tests so far.
+
+=item $stream->ended
+
+Get the context in which the tests ended, if they have ended.
+
+=item $stream->legacy
+
+Used internally to store events for legacy support.
+
+=item $stream->is_passing
+
+Check if the test is passing its plan.
+
+=item $stream->done_testing($context, $max)
+
+Tell the stream we are done testing.
+
+=item $stream->fork_cull
+
+Gather events from other threads/processes.
+
+=back
+
+=head2 STACK METHODS AND INTERCEPTING EVENTS
+
+=over 4
+
+=item $stream = Test::Stream->shared
+
+Get the current shared stream. The shared stream is the stream at the top of
+the stack.
+
+=item Test::Stream->clear
+
+Completely remove the stream stack. It is very unlikely you will ever want to
+do this.
+
+=item ($new, $old) = Test::Stream->intercept_start($new)
+
+=item ($new, $old) = Test::Stream->intercept_start
+
+Push a new stream to the top of the stack. If you do not provide a stack a new
+one will be created for you. If you have one created for you it will have the
+following differences from a default stack:
+
+    $new->set_exit_on_disruption(0);
+    $new->set_use_tap(0);
+    $new->set_use_legacy(0);
+
+=item Test::Stream->intercept_stop($top)
+
+Pop the stack, you must pass in the instance you expect to be popped, there
+will be an exception if they do not match.
+
+=item Test::Stream->intercept(sub { ... })
+
+    Test::Stream->intercept(sub {
+        my ($new, $old) = @_;
+
+        ...
+    });
+
+Temporarily push a new stream to the top of the stack. The codeblock you pass
+in will be run. Once your codelbock returns the stack will be popped and
+restored to the previous state.
+
+=back
+
 =encoding utf8
 
 =head1 SOURCE
