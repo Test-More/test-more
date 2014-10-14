@@ -23,6 +23,7 @@ BEGIN {
 
 # The mostly-singleton, and other package vars.
 our $Test  = Test::Builder->new;
+our $_ORIG_Test = $Test;
 our $Level = 1;
 
 sub ctx {
@@ -507,7 +508,9 @@ sub reset {
         Test::Stream->shared->state->[-1]->[STATE_LEGACY] = [];
     }
     else {
-        $self->{stream} = Test::Stream->new()
+        $self->{stream} = Test::Stream->new();
+        $self->{stream}->set_use_legacy(1);
+        $self->{stream}->state->[-1]->[STATE_LEGACY] = [];
     }
 
     # We leave this a global because it has to be localized and localizing

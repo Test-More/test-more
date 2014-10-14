@@ -42,6 +42,7 @@ sub set {
     weaken($CURRENT);
 }
 
+my $WARNED;
 sub context {
     my ($level, $stream) = @_;
     # If the context has already been initialized we simply return it, we
@@ -86,6 +87,34 @@ sub context {
     my ($ppkg, $pname);
     if(my @provider = caller(1)) {
         ($ppkg, $pname) = ($provider[3] =~ m/^(.*)::([^:]+)$/);
+    }
+
+    # Uh-Oh! someone has replaced the singleton, that means they probably want
+    # everything to go through them... We can't do a whole lot about that, but
+    # we will use the singletons stream which should catch most use-cases.
+    if ($Test::Builder::_ORIG_Test && $Test::Builder::_ORIG_Test != $Test::Builder::Test) {
+        $stream ||= $Test::Builder::Test->{stream};
+
+        my $warn = $meta->[Test::Stream::Meta::MODERN]
+                && !$WARNED++;
+
+        warn <<"        EOT" if $warn;
+
+    *******************************************************************************
+    Something replaced the singleton \$Test::Builder::Test.
+
+    The Test::Builder singleton is no longer the central place for all test
+    events. Please look at Test::Stream, and Test::Stream->intercept() to
+    accomplish the type of thing that was once done with the singleton.
+
+    All attempts have been made to preserve compatability with older modules,
+    but if you experience broken behavior you may need to update your code. If
+    updating your code is not an option you will need to downgrade to a
+    Test::More prior to version 1.301001. Patches that restore compatability
+    without breaking necessary Test::Stream functionality will be gladly
+    accepted.
+    *******************************************************************************
+        EOT
     }
 
     $stream ||= $meta->[Test::Stream::Meta::STREAM] || Test::Stream->shared || confess "No Stream!?";

@@ -53,6 +53,7 @@ sub find_depth {
         last;
     }
 
+    return $Test::Builder::Level + 1 unless defined $start && defined $end;
     # 2 the eval and the anon sub
     return $end - $start - 2;
 }
@@ -91,10 +92,11 @@ sub run_tests {
         for my $e (@{$stream->state->[-1]->[STATE_LEGACY]}) {
             if ($e->isa('Test::Stream::Event::Ok')) {
                 push @out => $e->to_legacy;
+                $out[-1]->{name} ||= '';
                 $out[-1]->{diag} ||= "";
                 $out[-1]->{depth} = $e->[$idx];
                 for my $d (@{$e->diag || []}) {
-                    next if $d->message =~ m{Failed test (.*\n\s*)?at .* line \d+\.};
+                    next if $d->message =~ m{Failed (\(TODO\) )?test (.*\n\s*)?at .* line \d+\.};
                     next if $d->message =~ m{You named your test '.*'\.  You shouldn't use numbers for your test names};
                     chomp(my $msg = $d->message);
                     $msg .= "\n";
