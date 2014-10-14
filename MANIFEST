@@ -13,6 +13,7 @@ lib/Test/More/DeepCheck.pm
 lib/Test/More/DeepCheck/Strict.pm
 lib/Test/More/DeepCheck/Tolerant.pm
 lib/Test/More/Tools.pm
+lib/Test/MostlyLike.pm
 lib/Test/Simple.pm
 lib/Test/Stream.pm
 lib/Test/Stream/Architecture.pod
@@ -215,9 +216,9 @@ t/lib/Test/Simple/sample_tests/too_few_fail.plx
 t/lib/Test/Simple/sample_tests/two_fail.plx
 t/lib/TieOut.pm
 t/Test-Builder.t
-t/Test-More-DeepCheck-Tolerant.t
 t/Test-More-DeepCheck.t
 t/Test-More.t
+t/Test-MostlyLike.t
 t/Test-Simple.t
 t/Test-Stream-ArrayBase-Meta.t
 t/Test-Stream-ArrayBase.t
