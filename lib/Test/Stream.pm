@@ -2,7 +2,7 @@ package Test::Stream;
 use strict;
 use warnings;
 
-our $VERSION = '1.301001_057';
+our $VERSION = '1.301001_058';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Stream::Threads;
