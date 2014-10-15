@@ -92,7 +92,7 @@ sub run_tests {
         for my $e (@{$stream->state->[-1]->[STATE_LEGACY]}) {
             if ($e->isa('Test::Stream::Event::Ok')) {
                 push @out => $e->to_legacy;
-                $out[-1]->{name} ||= '';
+                $out[-1]->{name} = '' unless defined $out[-1]->{name};
                 $out[-1]->{diag} ||= "";
                 $out[-1]->{depth} = $e->[$idx];
                 for my $d (@{$e->diag || []}) {
