@@ -96,33 +96,182 @@ sub to_hash {
     return \%out;
 };
 
-our %DUMP_CACHE;
-sub ab_dump {
-    my $self = shift;
-
-    local %DUMP_CACHE;
-
-    require Data::Dumper;
-    my $d = Data::Dumper->new([$self]);
-    $d->Sortkeys(1);
-    $d->Freezer('_ab_freeze');
-    return $d->Dump;
-}
-
-sub _ab_freeze {
-    my ($self) = @_;
-
-    unless($DUMP_CACHE{$self}) {
-        $DUMP_CACHE{$self} = $self->to_hash;
-        $DUMP_CACHE{$self}->{__CLASS__} = blessed $self;
-    }
-
-    $_[0] = $DUMP_CACHE{$self};
-}
-
 1;
 
 __END__
+
+=head1 NAME
+
+Test::Stream::ArrayBase - Base class for classes that use an arrayref instead
+of a hash.
+
+=head1 SYNOPSYS
+
+A class:
+
+    package My::Class;
+    use strict;
+    use warnings;
+
+    use Test::Stream::ArrayBase accessors => [qw/foo bar baz/];
+
+    # Chance to initialize defaults
+    sub init {
+        my $self = shift;    # No other args
+        $self->[FOO] ||= "foo";
+        $self->[BAR] ||= "bar";
+        $self->[BAZ] ||= "baz";
+    }
+
+    sub print {
+        print join ", " => map { $self->[$_] } FOO, BAR, BAZ;
+    }
+
+Subclass it
+
+    package My::Subclass;
+    use strict;
+    use warnings;
+    use Test::Stream::ArrayBase base => 'My::Class',    # subclass
+        accessors                    => ['bat'];
+
+    sub init {
+        my $self = shift;
+
+        # We get the constants from the base class for free.
+        $self->[FOO] ||= 'SubFoo';
+        $self->[BAT] || = 'bat';
+
+        $self->SUPER::init();
+    }
+
+use it:
+
+    package main;
+    use strict;
+    use warnings;
+    use My::Class;
+
+    my $one = My::Class->new('MyFoo', 'MyBar');
+
+    # Accessors!
+    my $foo = $one->foo;    # 'MyFoo'
+    my $bar = $one->bar;    # 'MyBar'
+    my $baz = $one->baz;    # Defaulted to: 'baz'
+
+    # Setters!
+    $one->set_foo('A Foo');
+    $one->set_bar('A Bar');
+    $one->set_baz('A Baz');
+
+    # It is an arrayref, you can do this!
+    my ($foo, $bar, $baz) = @$one;
+
+    # import constants:
+    use My::Class qw/FOO BAR BAZ/;
+
+    $one->[FOO] = 'xxx';
+
+=head1 DESCRIPTION
+
+This package is used to generate classes based on arrays instead of hashes. The
+primary motivation for this is performance (not premature!). Using this class
+will give you a C<new()> method, as well as generating accessors you request.
+Generated accessors will be getters, C<set_ACCESSOR> setters will also be
+generated for you. You also get constants for each accessor (all caps) which
+return the index into the array for that accessor. Single inheritence is also
+supported. For obvious reasons you cannot use multiple inheritence with an
+array based object.
+
+=head1 METHODS
+
+=head2 PROVIDED BY ARRAY BASE
+
+=over 4
+
+=item $it = $class->new(@VALUES)
+
+Create a new instance from a list of ordered values.
+
+=item $it = $class->new_from_pairs(%ACCESSOR_VAL_PAIRS)
+
+Create a new instance using key/value pairs.
+
+=item $hr = $it->to_hash()
+
+Get a hashref dump of the object. This will also dump any ArrayBase objects
+within to a hash, but only surface-depth ones.
+
+=item $it->import()
+
+This import method is actually provided by L<Test::Stream::Exporter> and allows
+you to import the constants generated for you.
+
+=back
+
+=head2 HOOKS
+
+=over 4
+
+=item $self->init()
+
+This gives you the chance to set some default values to your fields. The only
+argument is C<$self> with its indexes already set from the constructor.
+
+=back
+
+=head1 ACCESSORS
+
+To generate accessors you list them when using the module:
+
+    use Test::Stream::ArrayBase accessors => [qw/foo/];
+
+This will generate the following subs in your namespace:
+
+=over 4
+
+=item import()
+
+This will let you import the constants
+
+=item foo()
+
+Getter, used to get the value of the C<foo> field.
+
+=item set_foo()
+
+Setter, used to set the value of the C<foo> field.
+
+=item FOO()
+
+Constant, returs the field C<foo>'s index into the class arrayref. This
+function is also exported, but only when requested. Subclasses will also get
+this function as a constant, not simply a method, that means it is copied into
+the subclass namespace.
+
+=back
+
+=head1 SUBCLASSING
+
+You can subclass an existing ArrayBase class.
+
+    use Test::Stream::ArrayBase
+        base      => 'Another::ArrayBase::Class',
+        accessors => [qw/foo bar baz/],
+
+Once an ArrayBase class is used as a subclass it is locked and no new fields
+can be added. All fields in any subclass will start at the next index after the
+last field of the parent. All constants from base classes are added to
+subclasses automatically.
+
+=head1 WHY?
+
+Switching to an arrayref base has resulted in significant performance boosts.
+
+When Test::Builder was initially refactored to support events, it was slow
+beyond reason. A large part of the slowdown was due to the use of proper
+methods instead of directly accessing elements. We also switched to using a LOT
+more objects that have methods.
 
 =encoding utf8
 

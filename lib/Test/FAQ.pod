@@ -1,5 +1,3 @@
-=pod
-
 =head1 NAME
 
 Test::FAQ - Frequently Asked Questions about testing with Perl

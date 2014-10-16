@@ -76,13 +76,11 @@ sub add_accessor {
     my $const = uc $name;
     my $gname = lc $name;
     my $sname = "set_$gname";
-    my $cname = "clear_$gname";
 
     eval qq|
         package $self->{package};
         sub $gname { \$_[0]->[$idx] }
         sub $sname { \$_[0]->[$idx] = \$_[1] }
-        sub $cname { \$_[0]->[$idx] = undef  }
         sub $const() { $idx }
         1
     | || confess $@;

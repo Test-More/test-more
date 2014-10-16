@@ -40,6 +40,9 @@ use instead.
 
 =head1 DESCRIPTION
 
+B<This module is deprecated> See L<Test::Stream::Toolset> for what you should
+use instead.
+
 This is a superclass for L<Test::Builder>-based modules.  It provides a
 handful of common functionality and a method of getting at the underlying
 L<Test::Builder> object.

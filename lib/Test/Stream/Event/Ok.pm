@@ -134,7 +134,7 @@ sub add_diag {
         return unless $self->[DIAG];
         my $out = $self->[DIAG];
         $self->[DIAG] = undef;
-        $_->clear_linked for @$out;
+        $_->set_linked(undef) for @$out;
         return $out;
     }
 }
