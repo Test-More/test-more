@@ -1,4 +1,13 @@
-1.001005     Tue Sep  2 19:47:19:00 JST 2014 
+1.001008     Wed Oct 15 20:10:22:00 PST 2014
+    * Updated Changes file
+
+1.001007     Wed Oct 15 16:37:11:00 PST 2014
+    * Fix subtest name when skip_all is used
+
+1.001006     Tue Sep  2 14:39:05:00 PST 2014
+    * Reverted change that is now part of alpha branch
+
+1.001005     Tue Sep  2 19:47:19:00 JST 2014
     * Changed install path for perl 5.12 or higher.
 
 1.001004_003 Sat May  17 13:43:00 PST 2014
