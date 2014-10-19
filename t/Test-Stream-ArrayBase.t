@@ -74,8 +74,7 @@ is($one->bar, 'b', "Accessor");
 is($one->baz, 'c', "Accessor");
 $one->set_foo('x');
 is($one->foo, 'x', "Accessor set");
-$one->clear_foo;
-is($one->foo, undef, "Accessor clear");
+$one->set_foo(undef);
 
 is_deeply(
     $one->to_hash,
