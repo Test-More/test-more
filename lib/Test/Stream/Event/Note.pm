@@ -10,7 +10,7 @@ use Test::Stream::Event(
 use Test::Stream::Carp qw/confess/;
 
 sub init {
-    confess "No message set for note!" unless defined $_[0]->[MESSAGE];
+    $_[0]->[MESSAGE] = 'undef' unless defined $_[0]->[MESSAGE];
 }
 
 sub to_tap {
