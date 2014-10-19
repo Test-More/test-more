@@ -1,11 +1,6 @@
 use Config;
 
 BEGIN {
-    print "1..0 # Skip broken\n";
-    exit 0;
-}
-
-BEGIN {
     if ($] == 5.010000) {
         print "1..0 # Threads are broken on 5.10.0\n";
         exit 0;
@@ -21,7 +16,7 @@ BEGIN {
         exit 0;
     }
 
-    unless ( $ENV{AUTHOR_TESTING} ) {
+    unless ($ENV{AUTHOR_TESTING}) {
         print "1..0 # Skip many perls have broken threads.  Enable with AUTHOR_TESTING.\n";
         exit 0;
     }
@@ -41,40 +36,42 @@ use Test::More;
 
 # basic tests
 {
-  pass('Test starts');
-  my $ct_num = Test::More->builder->current_test;
+    pass('Test starts');
+    my $ct_num = Test::More->builder->current_test;
 
-  my $newthread = async {
-    my $out = '';
+    my $newthread = async {
+        my $out = '';
 
-    #simulate a  subtest to not confuse the parent TAP emission
-    my $tb = Test::More->builder;
-    $tb->reset;
-    Test::More->builder->current_test(0);
-    for (qw/output failure_output todo_output/) {
-      close $tb->$_;
-      open ($tb->$_, '>', \$out);
-    }
+        #simulate a  subtest to not confuse the parent TAP emission
+        my $tb = Test::More->builder;
+        $tb->reset;
 
-    pass("In-thread ok") for (1,2,3);
+        Test::More->builder->current_test(0);
+        for (qw/output failure_output todo_output/) {
+            close $tb->$_;
+            open($tb->$_, '>', \$out);
+        }
 
-    done_testing;
+        pass("In-thread ok") for (1, 2, 3);
 
-    close $tb->$_ for (qw/output failure_output todo_output/);
-    sleep(1); # tasty crashes without this
+        done_testing;
 
-    $out;
-  };
-  die "Thread creation failed: $! $@" if !defined $newthread;
+        close $tb->$_ for (qw/output failure_output todo_output/);
+        sleep(1);    # tasty crashes without this
 
-  my $out = $newthread->join;
-  $out =~ s/^/   /gm;
-  print $out;
+        $out;
+    };
+    die "Thread creation failed: $! $@" if !defined $newthread;
 
-  # workaround for older Test::More confusing the plan under threads
-  Test::More->builder->current_test($ct_num);
+    my $out = $newthread->join;
+    $out =~ s/^/   /gm;
 
-  pass("Made it to the end");
+    print $out;
+
+    # workaround for older Test::More confusing the plan under threads
+    Test::More->builder->current_test($ct_num);
+
+    pass("Made it to the end");
 }
 
 done_testing;

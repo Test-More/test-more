@@ -609,6 +609,20 @@ sub _finalize_event {
     }
 }
 
+sub _reset {
+    my $self = shift;
+
+    return unless $self->pid != $$ || $self->tid != get_tid();
+
+    $self->[PID] = $$;
+    $self->[TID] = get_tid();
+    if (USE_THREADS || $self->[_USE_FORK]) {
+        $self->[_USE_FORK] = undef;
+        $self->use_fork;
+    }
+    $self->[STATE] = [[0, 0, undef, 1]];
+}
+
 sub STORABLE_freeze {
     my ($self, $cloning) = @_;
     return if $cloning;

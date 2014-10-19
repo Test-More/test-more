@@ -505,6 +505,7 @@ sub reset {
     $self->{use_shared} = 1 if $params{shared_stream};
 
     if ($self->{use_shared}) {
+        Test::Stream->shared->_reset;
         Test::Stream->shared->state->[-1]->[STATE_LEGACY] = [];
     }
     else {
