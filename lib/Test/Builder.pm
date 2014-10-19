@@ -1116,6 +1116,31 @@ that previously required monkeypatching.
 
 =encoding utf8
 
+=head1 TUTORIALS
+
+=over 4
+
+=item L<Test::Tutorial>
+
+The original L<Test::Tutorial>. Uses comedy to introduce you to testing from
+scratch.
+
+=item L<Test::Tutorial::WritingTests>
+
+The L<Test::Tutorial::WritingTests> tutorial takes a more technical approach.
+The idea behind this tutorial is to give you a technical introduction to
+testing that can easily be used as a reference. This is for people who say
+"Just tell me how to do it, and quickly!".
+
+=item L<Test::Tutorial::WritingTools>
+
+The L<Test::Tutorial::WritingTools> tutorial is an introduction to writing
+testing tools that play nicely with other L<Test::Stream> and L<Test::Builder>
+based tools. This is what you should look at if you want to write
+Test::MyWidget.
+
+=back
+
 =head1 SOURCE
 
 The source code repository for Test::More can be found at

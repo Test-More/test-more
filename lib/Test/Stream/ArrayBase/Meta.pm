@@ -94,6 +94,68 @@ sub add_accessor {
 
 __END__
 
+=head1 NAME
+
+Test::Stream::ArrayBase::Meta - Meta Object for ArrayBase objects.
+
+=head1 SYNOPSYS
+
+B<Note:> You probably do not want to directly use this object.
+
+    my $meta = Test::Stream::ArrayBase::Meta->new('Some::Class');
+    $meta->add_accessor('foo');
+
+=head1 DESCRIPTION
+
+This is the meta-object used by L<Test::Stream::ArrayBase> 
+
+=head1 METHODS
+
+=over 4
+
+=item $meta = $class->new($package)
+
+Create a new meta object for the specified class. If one already exists that
+instance is returned.
+
+=item $meta = $class->get($package)
+
+Get the meta object for the specified class. Returns C<undef> if there is none
+initiated.
+
+=item $package = $meta->package
+
+Get the package the meta-object manages.
+
+=item $package = $meta->parent
+
+Get the parent package to the one being managed.
+
+=item $bool = $meta->locked
+
+True if the package has been locked. Locked means no new accessors can be
+added. A package is locked once something else subclasses it.
+
+=item $hr = $meta->fields
+
+Get a hashref defining the fields on the package. This is primarily for
+internal use, it is not very useful outside.
+
+=item $meta->baseclass
+
+Make the package inherit from ArrayBase directly.
+
+=item $meta->subclass($package)
+
+Set C<$package> as the base class of the managed package.
+
+=item $meta->add_accessor($name)
+
+Add an accessor to the package. Also defines the C<"set_$name"> method, and the
+C<uc($name)> constant.
+
+=back
+
 =encoding utf8
 
 =head1 SOURCE
