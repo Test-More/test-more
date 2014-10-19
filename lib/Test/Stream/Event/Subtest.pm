@@ -23,8 +23,7 @@ sub init {
         $is_skip &&= $le->directive eq 'SKIP';
 
         if ($is_skip) {
-            my $skip = 'all';
-            $skip .= ": " . $le->reason if $le->reason;
+            my $skip = $le->reason || "skip all";
             # Should be a snapshot now:
             $self->[CONTEXT]->set_skip($skip);
             $self->[REAL_BOOL] = 1;
