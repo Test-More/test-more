@@ -145,6 +145,7 @@ t/Legacy/pod.t
 t/Legacy/require_ok.t
 t/Legacy/ribasushi_diag.t
 t/Legacy/ribasushi_threads.t
+t/Legacy/ribasushi_threads2.t
 t/Legacy/simple.t
 t/Legacy/Simple/load.t
 t/Legacy/skip.t
