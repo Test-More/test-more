@@ -108,6 +108,20 @@ sub format_stack {
 
 __END__
 
+=head1 NAME
+
+Test::More::DeepCheck - Base class or is_deeply() and mostly_like()
+implementations.
+
+=head1 DESCRIPTION
+
+This is the base class for deep check functions provided by L<Test::More> and
+L<Test::MostlyLike>. This class contains all the debugging and diagnostics
+code shared betweent he 2 tools.
+
+Most of this was refactored from the original C<is_deeply()> implementation. If
+you find any bugs or incompatabilities please report them.
+
 =encoding utf8
 
 =head1 SOURCE

@@ -20,7 +20,7 @@ sub package_sym {
     confess "you must specify a package" unless $pkg;
     confess "you must specify a symbol type" unless $slot;
     confess "you must specify a symbol name" unless $name;
-    
+
     confess "'$slot' is not a valid symbol type! Valid: " . join(", ", @SLOTS)
         unless $SLOTS{$slot};
 
@@ -52,6 +52,40 @@ sub package_purge_sym {
 1;
 
 __END__
+
+=head1 NAME
+
+Test::Stream::PackageUtil - Utils for manipulating package symbol tables.
+
+=head1 DESCRIPTION
+
+Collection of utilities L<Test::Stream> and friends use to manipulate package
+symbol tables. This is primarily useful when trackign things like C<$TODO>
+vars. It is also used for exporting and meta-construction of object methods.
+
+=head1 EXPORTS
+
+Both exports are exported by default, you cannot pick and choose. These work
+equally well as functions and class-methods. These will not work as object
+methods.
+
+=over 4
+
+=item $ref = package_sym($PACKAGE, $SLOT => $NAME)
+
+Get the reference to a symbol in the package. C<$PACKAGE> should be the package
+name. C<$SLOT> should be a valid typeglob slot (Supported slots: HASH SCALAR ARRAY
+IO FORMAT CODE). C<$NAME> should be the name of the symbol.
+
+=item package_purge_sym($PACKAGE, $SLOT => $NAME, $SLOT2 => $NAME2, ...)
+
+This is used to remove symbols from a package. The first argument, C<$PACKAGE>,
+should be the name of the package. The remaining arguments should be key/value
+pairs. The key in each pair should be the typeglob slot to clear (Supported
+slots: HASH SCALAR ARRAY IO FORMAT CODE). The value in the pair should be the
+name of the symbol to remove.
+
+=back
 
 =encoding utf8
 

@@ -74,6 +74,14 @@ sub get {
 
 __END__
 
+=head1 NAME
+
+Test::Stream::Exporter::Meta - Meta object for exporters.
+
+=head1 DESCRIPTION
+
+L<Test::Stream::Exporter> uses this package to manage exports.
+
 =encoding utf8
 
 =head1 SOURCE

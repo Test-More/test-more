@@ -108,6 +108,40 @@ sub _apply_layers {
 
 __END__
 
+=head1 NAME
+
+Test::Stream::IOSets - Manage sets of IO Handles in specific encodings.
+
+=head1 DESCRIPTION
+
+The module does 2 things, first it emulates the old behavior of
+L<Test::Builder> which clones and modifies the STDOUT and STDERR handles. This
+legacy behavior can be referenced as C<'legacy'> in place of an encoding. It
+also manages multiple clones of the standard file handles which are set to
+specific encodings.
+
+=head1 METHODS
+
+In general you should not use this module yourself. If you must use it directly
+then there is really only 1 method you should use:
+
+=over 4
+
+=item $ar = $ioset->init_encoding($ENCODING)
+
+=item $ar = $ioset->init_encoding('legacy')
+
+=item $ar = $ioset->init_encoding($NAME, $STDOUT, $STDERR)
+
+C<init_encoding()> will return an arrayref of 3 filehandles, STDOUT, STDERR,
+and TODO. TODO is typically just STDOUT again. If the encoding specified has
+not yet been initialized it will initialize it. If you provide filehandles they
+will be used, but only during initializatin. Typically a filehandle set is
+created by cloning STDER and STDOUT and modifying them to use the correct
+encoding.
+
+=back
+
 =encoding utf8
 
 =head1 SOURCE

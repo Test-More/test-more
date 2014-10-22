@@ -220,6 +220,15 @@ sub _hash_check {
 
 __END__
 
+=head1 NAME
+
+Test::More::DeepCheck::Tolerant - Under the hood implementation of
+mostly_like()
+
+=head1 DESCRIPTION
+
+This is where L<Test::MostlyLike> is implemented.
+
 =encoding utf8
 
 =head1 SOURCE

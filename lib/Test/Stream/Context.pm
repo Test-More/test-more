@@ -405,6 +405,135 @@ sub AUTOLOAD {
 
 __END__
 
+=head1 NAME
+
+Test::Stream::Context - Object to represent a testing context.
+
+=head1 DESCRIPTION
+
+In testing it is important to have context. It is not helpful to simply say a
+test failed, you want to know where it failed. This object is responsible for
+tracking the context of each test that is run. It makes it possible to get the
+file and line number where the failure occured .This object is also responsible
+for generating almost all the events you will encounter.
+
+=head1 SYNOPSYS
+
+    use Test::Stream::Context qw/context/;
+
+    sub my_tool {
+        my $ctx = context();
+
+        # Generate an event.
+        $ctx->ok(1, "Pass!");
+    }
+
+    1;
+
+=head1 EXPORTS
+
+=over 4
+
+=item $ctx = context()
+
+This function is used to obtain a context. If there is already a context object
+in scope this will return it, otherwise it will return a new one.
+
+It is important that you never store a context object in a variable from a
+higher scope, a package variable, or an object attribute. The scope of a
+context matters a lot.
+
+If you want to store a context for later reference use the C<snapshot()> method
+to get a clone of it that is safe to store anywhere.
+
+=back
+
+=head1 METHODS
+
+=over 4
+
+=item $ctx->alert($MESSAGE)
+
+This issues a warning at the calling context (filename and line number where
+errors should be reported).
+
+=item $ctx->throw($MESSAGE)
+
+This throws an exception at the calling context (filename and line number where
+errors should be reported).
+
+=item ($package, $file, $line, $subname) = $ctx->call()
+
+Get the caller details for the context. This is where errors should be
+reported.
+
+=item $pkg = $ctx->package
+
+Get the context package.
+
+=item $file = $ctx->file
+
+Get the context filename.
+
+=item $line = $ctx->line
+
+Get the context line number.
+
+=item $subname = $ctx->subname
+
+Get the context subroutine name.
+
+=item $ctx_copy = $ctx->snapshot
+
+Get a copy of the context object that is safe to store for later reference.
+
+=item $ctx->send($event)
+
+Send an event to the correct L<Test::Stream> object.
+
+=item $ctx = $class->peek
+
+Get the current context object, if there is one.
+
+=back
+
+=head2 DANGEROUS ONES
+
+=over 4
+
+=item $ctx->set
+
+=item $cclass->set($ctx)
+
+Set the context object as the current one, replacing any that might already be
+current.
+
+=item $class->clear
+
+Unset the current context.
+
+=item $ctx->register_event($package)
+
+=item $ctx->register_event($package, $name)
+
+Register a new event type, creating the shortcut method to generate it. If
+C<$name> is not provided it will be taken from the end of the package name, and
+will be lowercased.
+
+=item $hr = $ctx->events
+
+Get the hashref that holds C<< (name => $package) >> pairs. This is the actual
+ref used by the package, so please do not alter it.
+
+=item $stash = $ctx->hide_todo
+
+=item $ctx->restore_todo($stash)
+
+These are used to temporarily hide the TODO value in ALL places where it might
+be found. The returned C<$stash> must be used to restore it later.
+
+=back
+
 =encoding utf8
 
 =head1 SOURCE

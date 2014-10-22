@@ -38,6 +38,69 @@ sub init_tester {
 
 __END__
 
+=head1 NAME
+
+Test::Stream::Meta - Meta object for unit test packages.
+
+=head1 DESCRIPTION
+
+This object is used to track metadata for unit tests packages.
+
+=head1 SYNOPSYS
+
+    use Test::Stream::Meta qw/init_tester is_tester/;
+
+    sub import {
+        my $class = shift;
+        my $caller = caller;
+
+        my $meta = init_tester($caller);
+    }
+
+    sub check_stuff {
+        my $caller = caller;
+        my $meta = is_tester($caller) || return;
+
+        ...
+    }
+
+=head1 EXPORTS
+
+=over 4
+
+=item $meta = is_tester($package)
+
+Get the meta object for a specific package, if it has one.
+
+=item $meta = init_tester($package)
+
+Get the meta object for a specific package, or create one.
+
+=back
+
+=head1 METHODS
+
+=over 4
+
+=item $meta_copy = $meta->snapshot
+
+Get a snapshot copy of the metadata. This snapshot will not change when the
+original does.
+
+=item $val = $meta->package
+
+=item $val = $meta->encoding
+
+=item $val = $meta->modern
+
+=item $val = $meta->todo
+
+=item $val = $meta->stream
+
+These are various attributes stored on the meta object.
+
+=back
+
 =encoding utf8
 
 =head1 SOURCE

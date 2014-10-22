@@ -33,6 +33,38 @@ sub clone {
 
 1;
 
+=head1 NAME
+
+Test::Stream::Tester::Events - Event list used by L<Test::Stream::Tester>.
+
+=head1 DESCRIPTION
+
+L<Test::Stream::Tester> converts lists of events into instances of this object
+for use in various tools. You will probably never need to directly use this
+class.
+
+=head1 METHODS
+
+=over 4
+
+=item $events = $class->new(@EVENTS);
+
+Create a new instance from a list of events.
+
+=item $event = $events->next
+
+Get the next event.
+
+=item $event = $events->seek($type)
+
+Get the next event of the specific type (not a package name).
+
+=item $copy = $events->clone()
+
+Clone the events list object in its current state.
+
+=back
+
 =encoding utf8
 
 =head1 SOURCE

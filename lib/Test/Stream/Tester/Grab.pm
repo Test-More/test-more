@@ -57,6 +57,63 @@ __END__
 
 =pod
 
+=head1 NAME
+
+Test::Stream::Tester::Grab - Object used to temporarily steal all events.
+
+=head1 DESCRIPTION
+
+Once created this object will intercept and stash all events sent to the shared
+L<Test::Stream> object. Once the object is destroyed events will once again be
+sent to the shared stream.
+
+=head1 SYNOPSYS
+
+    use Test::More;
+    use Test::Stream::Tester::Grab;
+
+    my $grab = Test::Stream::Tester::Grab->new();
+
+    # Generate some events, they are intercepted.
+    ok(1, "pass");
+    ok(0, "fail");
+
+    my $events_a = $grab->flush;
+
+    # Generate some more events, they are intercepted.
+    ok(1, "pass");
+    ok(0, "fail");
+
+    # Same as flush, except it destroys the grab object.
+    my $events_b = $grab->finish;
+
+After calling C<finish()> the grab object is destroyed and C<$grab> is set to
+undef. C<$events_a> is an arrayref with the first 2 events. C<$events_b> is an
+arrayref with the second 2 events.
+
+=head1 METHODS
+
+=over 4
+
+=item $grab = $class->new()
+
+Create a new grab object, immediately starts intercepting events.
+
+=item $ar = $grab->flush()
+
+Get an arrayref of all the events so far, clearing the grab objects internal
+list.
+
+=item $ar = $grab->events()
+
+Get an arrayref of all events so far, does not clear the internal list.
+
+=item $ar = $grab->finish()
+
+Get an arrayref of all the events, then destroy the grab object.
+
+=back
+
 =encoding utf8
 
 =head1 SOURCE

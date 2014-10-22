@@ -43,6 +43,14 @@ Test::MostlyLike - Relaxed checking of deep data structures.
 
 =head1 SYNOPSYS
 
+    my $got = [qw/foo bar baz/];
+
+    mostly_like(
+        $got,
+        ['foo', qr/a/],
+        "Deeply nested structure matches (mostly)"
+    );
+
 =head1 DESCRIPTION
 
 A tool based on C<is_deeply> from L<Test::More>. This tool produces nearly
@@ -53,9 +61,133 @@ only the parts of the structure you care about, ignoring the rest.
 
 =over 4
 
-=item mostly_like($got, $expect, $name)
+=item $bool = mostly_like($got, $expect, $name)
+
+Generates a single ok event with diagnostics to help you find any failures.
+
+Got should be the data structure you want to test. $expect should be a data
+structure representing what you expect to see. Unlike C<is_deeply> any keys in
+C<$got> that do not I<exist> in C<$expect> will be ignored.
 
 =back
+
+=head1 WHAT TO EXPECT
+
+When an a blessed object is encountered in the C<$got> structure, any fields
+listed in C<$expect> will be called as methods on the C<$got> object. See the
+object/direct element access section below for bypassing this.
+
+Any keys or attributes in C<$got> will be ignored unless the also I<exist> in C<$expect>
+
+=head1 IGNORING THINGS YOU DO NOT CARE ABOUT
+
+    my $got    = { foo => 1, bar => 2 };
+    my $expect = { foo => 1 };
+
+    mostly_like($got, $expect, "Ignores 'bar'");
+
+If you want to check that a value is not set:
+
+    my $got    = { foo => 1, bar => 2 };
+    my $expect = { foo => 1, bar => undef };
+
+    mostly_like($got, $expect, "Will fail since 'bar' has a value");
+
+=head2 EXACT MATCHES
+
+    my $got    = 'foo';
+    my $expect = 'foo';
+    mostly_like($got, $expect, "Check a value directly");
+
+Also works for deeply nested structures
+
+    mostly_like(
+        [
+            {stuff => 'foo bar baz'},
+        ],
+        [
+            {stuff => 'foo bar baz'},
+        ],
+        "Check a value directly, nested"
+    );
+
+=head2 REGEX MATCHES
+
+    my $got    = 'foo bar baz';
+    my $expect = qr/bar/;
+    mostly_like($got, $expect, 'Match');
+
+Works nested as well:
+
+    mostly_like(
+        [
+            {stuff => 'foo bar baz'},
+        ],
+        [
+            {stuff => qr/bar/},
+        ],
+        "Check a value directly, nested"
+    );
+
+=head2 ARRAY ELEMENT MATCHES
+
+    my $got = [qw/foo bar baz/];
+    my $exp = [qw/foo bar/];
+
+    mostly_like($got, $exp, "Ignores unspecified indexes");
+
+You can also just check specific indexes:
+
+    my $got = [qw/foo bar baz/];
+    my $exp = { ':1' => 'bar' };
+
+    mostly_like($got, $exp, "Only checks array index 1");
+
+When doing this the index must always be prefixed with ':'.
+
+=head2 HASH ELEMENT MATCHES
+
+    my $got = { foo => 1, bar => 2 };
+    my $exp = { foo => 1 };
+
+    mostly_like($got, $exp, "Only checks foo");
+
+=head2 OBJECT METHOD MATCHES
+
+=head3 UNALTERED
+
+    sub foo { $_[0]->{foo} }
+
+    my $got = bless {foo => 1}, __PACKAGE__;
+    my $exp = { foo => 1 };
+
+    mostly_like($got, $exp, 'Checks the return of $got->foo()');
+
+=head3 WRAPPED
+
+Sometimes methods return lists, in such cases you can wrap them in arrayrefs or
+hashrefs:
+
+    sub list { qw/foo bar baz/ }
+    sub dict { foo => 0, bar => 1, baz => 2 }
+
+    my $got = bless {}, __PACKAGE__;
+    my $exp = {
+        '[list]' => [ qw/foo bar baz/ ],
+        '[dict]' => { foo => 0, bar => 1, baz => 2 },
+    };
+    mostly_like($got, $exp, "Wrapped the method calls");
+
+=head3 DIRECT ELEMENT ACCESS
+
+Sometimes you want to ignore the methods and get the hash value directly.
+
+    sub foo { die "do not call me" }
+
+    my $got = bless { foo => 'secret' }, __PACKAGE__;
+    my $exp = { ':foo' => 'secret' };
+
+    mostly_like($got, $exp, "Did not call the fatal method");
 
 =encoding utf8
 

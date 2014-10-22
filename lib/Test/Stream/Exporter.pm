@@ -121,6 +121,99 @@ sub default_exports {
 
 __END__
 
+=head1 NAME
+
+Test::Stream::Exporter - Declarative exporter for Test::Stream and friends.
+
+=head1 DESCRIPTION
+
+Test::Stream::Exporter is an internal implementation of some key features from
+L<Exporter::Declare>. This is a much more powerful exporting tool than
+L<Exporter>. This package is used to easily manage complicated EXPORT logic
+across L<Test::Stream> and friends.
+
+=head1 SYNOPSYS
+
+    use Test::Stream::Exporter;
+
+    # Export some named subs from the package
+    default_exports qw/foo bar baz/;
+    exports qw/fluxx buxx suxx/;
+
+    # Export some anonymous subs under specific names.
+    export         some_tool    => sub { ... };
+    default_export another_tool => sub { ... };
+
+    # Call this when you are done providing exports in order to cleanup your
+    # namespace.
+    Test::Stream::Exporter->cleanup;
+
+    # Hooks for import()
+
+    # Called before importing symbols listed in $args_ref. This gives you a
+    # chance to munge the arguments.
+    sub before_import {
+        my $class = shift;
+        my ($caller, $args_ref) = @_;
+        ...
+
+        return $stash; # For use in after_import, can be anything
+    }
+
+    # Chance to do something after import() is done
+    sub after_import {
+        my $class = shift;
+        my ($caller, $stash, @args) = @_;
+        ...
+    }
+
+=head1 EXPORTS
+
+=head2 DEFAULT
+
+=over 4
+
+=item import
+
+Your class needs this to function as an exporter.
+
+=item export NAME => sub { ... }
+
+=item default_export NAME => sub { ... }
+
+These are used to define exports that may not actually be subs in the current
+package.
+
+=item exports qw/foo bar baz/
+
+=item default_exports qw/foo bar baz/
+
+These let you export package subs en mass.
+
+=back
+
+=head2 AVAILABLE
+
+=over 4
+
+=item export_to($from, $dest, @symbols)
+
+=item $from->export_to($dest, @symbols)
+
+Export from the C<$from> package into the C<$dest> package. The class-method
+form only works if the method has been imported into the C<$from> package.
+
+=item $meta = export_meta($package)
+
+=item $meta = $package->export_meta()
+
+Get the export meta object from the package. The class method form only works
+if the package has imported it.
+
+=back
+
+=head1 HOOKS
+
 =encoding utf8
 
 =head1 SOURCE

@@ -55,6 +55,49 @@ sub debug {
 
 1;
 
+=head1 NAME
+
+Test::Stream::Tester::Events::Event - L<Test::Stream::Tester> representation of
+an event.
+
+=head1 DESCRIPTION
+
+L<Test::Stream::Tester> often uses this clas to represent events in a way that
+is easier to validate.
+
+=head1 SYNOPSYS
+
+    use Test::Stream::Tester::Events::Event;
+
+    my $event = Test::Stream::Tester::Events::Event->new($e->summary);
+
+    # Print the file and line number where the event was generated
+    print "Debug: " . $event->debug . "\n";
+
+    # Get an event field value
+    my $val = $event->get($field);
+
+=head1 METHODS
+
+=over 4
+
+=item $event->get($field)
+
+Get the value of a specific event field. Fields are specific to event types.
+The fields are usually the result of calling C<< $e->summary >> on the original
+event.
+
+=item $event->debug
+
+Returns a string like this:
+
+    'ok' from my_test.t line 42.
+
+Which lists the type of event, the file that generated, and the line number on
+which it was generated.
+
+=back
+
 =encoding utf8
 
 =head1 SOURCE

@@ -17,6 +17,19 @@ sub snapshot { $_[0] }
 
 __END__
 
+=head1 NAME
+
+Test::Stream::ExitMagic::Context - Special context for use in an END block.
+
+=head1 DESCRIPTION
+
+L<Test::Stream> needs to accomplish some magic in an END block. In an END block
+it is not always possible to have a true/complete context object, so this
+trivial one is used instead.
+
+B<DO NOT USE THIS>. If you find yourself thinking that you should use this then
+B<STOP!> because you are very likely to be wrong.
+
 =encoding utf8
 
 =head1 SOURCE

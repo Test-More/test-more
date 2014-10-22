@@ -369,6 +369,76 @@ sub subtest {
 
 __END__
 
+=head1 NAME
+
+Test::More::Tools - Generic form of tools from Test::More.
+
+=head1 DESCRIPTION
+
+People used to call L<Test::More> tools within other testing tools. This mostly
+works, but it generates events for each call. This package gives you access to
+the implementations directly, without generating events for you. This allows
+you to create a composite tool without generating extra events.
+
+=head1 SYNOPSYS
+
+    use Test::More::Tools qw/tmt/;
+    use Test::Stream::Toolset qw/context/;
+
+    # This is how Test::More::is is implemented
+    sub my_is {
+        my ($got, $want, $name) = @_;
+
+        my $ctx = context;
+
+        my ($ok, @diag) = tmt->is_eq($got, $want);
+
+        $ctx->ok($ok, $name, \@diag);
+    }
+
+=head1 EXPORTS
+
+=over 4
+
+=item $pkg = tmt()
+
+Simply returns the string 'Test::More::Tools';
+
+=back
+
+=head1 CLASS METHODS
+
+Not all methods are listed. The ones that have been omitted are not intuitive,
+and probably should not be used at all.
+
+=over 4
+
+=item ($bool, @diag) = tmt->cmp_check($got, $op, $want)
+
+Check 2 values using the operator specified example: C<$got == $want>
+
+=item ($bool, @diag) = tmt->is_eq($got, $want)
+
+String compare.
+
+=item ($bool, @diag) = tmt->is_num($got, $want)
+
+Numeric compare.
+
+=item ($bool, @diag) = tmt->isnt_eq($got, $dont_want)
+
+String inequality compare.
+
+=item ($bool, @diag) = tmt->isnt_num($got, $dont_want)
+
+Numeric inequality compare.
+
+=item ($bool, @diag) = tmt->regex_check($got, $regex, $op)
+
+Regex compare. C<$op> may be C<=~> or C<!~>.
+
+=back
+
 =encoding utf8
 
 =head1 SOURCE

@@ -83,6 +83,16 @@ sub validate_check {
 
 1;
 
+=head1 NAME
+
+Test::Stream::Tester::Checks::Event - Representation of an event validation
+specification.
+
+=head1 DESCRIPTION
+
+Used internally by L<Test::Stream::Tester>. Please do not use directly. No
+backwords compatability will be provided if the API for this module changes.
+
 =encoding utf8
 
 =head1 SOURCE

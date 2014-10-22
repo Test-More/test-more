@@ -283,6 +283,23 @@ sub filter_types {
 
 1;
 
+__END__
+
+=head1 NAME
+
+Test::Stream::Tester::Checks - Representation of a L<Test::Stream::Tester>
+event check.
+
+=head1 DESCRIPTION
+
+L<Test::Stream::Tester> produces this object whenever you use C<check { ... }>.
+In general you will not interact with this object directly beyond pasing it
+into C<events_are>.
+
+B<Note:> The API for this object is not published and is subject to change. No backwords
+compatability can be guarenteed if you use this object directly. Please only
+use this object in the published way specified in L<Test::Stream::Tester>.
+
 =encoding utf8
 
 =head1 SOURCE

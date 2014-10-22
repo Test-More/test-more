@@ -171,15 +171,11 @@ __END__
 
 =head1 NAME
 
-Test::Stream::Util
+Test::Stream::Util - Tools used by Test::Stream and friends.
 
 =head1 DESCRIPTION
 
-Tools for generating accessors and other object bits and pieces.
-
-=head1 SYNOPSYS
-
-    ...
+Collection of tools used by L<Test::Stream> and friends.
 
 =head1 EXPORTS
 
@@ -199,6 +195,38 @@ Similar to try, except that it does not catch exceptions. The idea here is to
 protect $@ and $! from changes. $@ and $! will be restored to whatever they
 were before the run so long as it is successful. If the run fails $! will still
 be restored, but $@ will contain the exception being thrown.
+
+=item spoof([$package, $file, $line], "Code String", @args)
+
+Eval the string provided as the second argument pretending to be the specified
+package, file, and line number. The main purpose of this is to have warnings
+and exceptions be thrown from the desired context.
+
+Additional arguments will be added to an C<@args> variable that is available to
+you inside your code string.
+
+=item $usable_pattern = is_regex($PATTERN)
+
+Check of the specified argument is a regex. This is mainly important in older
+perls where C<qr//> did not work the way it does now.
+
+=item is_dualvar
+
+Do not use this, use Scalar::Util::isdual instead. This is kept around for
+legacy support.
+
+=item unoverload
+
+=item unoverload_str
+
+=item unoverload_num
+
+Legacy tools for unoverloading things.
+
+=item $proper = translate_filename($encoding, $raw)
+
+Translate filenames from whatever perl has them stored as into the proper,
+specified, encoding.
 
 =back
 

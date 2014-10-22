@@ -15,6 +15,32 @@ Test::Stream::Exporter->cleanup;
 
 __END__
 
+=head1 NAME
+
+Test::Stream::Carp - Delayed Carp loader.
+
+=head1 DESCRIPTION
+
+Use this package instead of L<Carp> to avoid loading L<Carp> until absolutely
+necessary. This is used instead of Carp in L<Test::Stream> in order to avoid
+loading modules that packages you test may need to load themselves.
+
+=head1 SUPPORTED EXPORTS
+
+See L<Carp> for details on each of these functions.
+
+=over 4
+
+=item croak
+
+=item confess
+
+=item cluck
+
+=item carp
+
+=back
+
 =encoding utf8
 
 =head1 SOURCE
