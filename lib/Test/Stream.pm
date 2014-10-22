@@ -29,6 +29,7 @@ use Test::Stream::ArrayBase(
         use_numbers
         io_sets
         event_id
+        in_subthread
     }],
 );
 
@@ -192,6 +193,8 @@ sub init {
         $root->fork_cull if $root && $root->_use_fork && $$ == $root->[PID];
         $magic->do_magic($root) if $magic && $root && !$root->[NO_ENDING]
     }
+
+    sub _stack { @stack }
 
     sub shared {
         my ($class) = @_;
@@ -368,30 +371,6 @@ sub fork_cull {
     }
 
     closedir($dh);
-}
-
-sub DESTROY {
-    my $self = shift;
-
-    return unless defined $self->pid;
-    return unless $$ == $self->pid && get_tid() == $self->tid;
-
-    my $dir = $self->[_USE_FORK] || return;
-
-    if ($ENV{TEST_KEEP_TMP_DIR}) {
-        print STDERR "# Not removing temp dir: $dir\n";
-        return;
-    }
-
-    opendir(my $dh, $dir) || confess "Could not open temp dir! ($dir)";
-    while(my $file = readdir($dh)) {
-        next if $file =~ m/^\.+$/;
-        die "Unculled event! You ran tests in a child process, but never pulled them in!\n"
-            if $file !~ m/\.complete$/;
-        unlink("$dir/$file") || confess "Could not unlink file: '$dir/$file'";
-    }
-    closedir($dh);
-    rmdir($dir) || warn "Could not remove temp dir ($dir)";
 }
 
 sub done_testing {
@@ -621,6 +600,46 @@ sub _reset {
         $self->use_fork;
     }
     $self->[STATE] = [[0, 0, undef, 1]];
+}
+
+sub CLONE {
+    for my $stream (_stack()) {
+        next unless defined $stream->pid;
+        next unless defined $stream->tid;
+
+        next if $$ == $stream->pid && get_tid() == $stream->tid;
+
+        $stream->[IN_SUBTHREAD] = 1;
+    }
+}
+
+sub DESTROY {
+    my $self = shift;
+
+    return if $self->in_subthread;
+
+    my $dir = $self->[_USE_FORK] || return;
+
+    return unless defined $self->pid;
+    return unless defined $self->tid;
+
+    return unless $$        == $self->pid;
+    return unless get_tid() == $self->tid;
+
+    if ($ENV{TEST_KEEP_TMP_DIR}) {
+        print STDERR "# Not removing temp dir: $dir\n";
+        return;
+    }
+
+    opendir(my $dh, $dir) || confess "Could not open temp dir! ($dir)";
+    while(my $file = readdir($dh)) {
+        next if $file =~ m/^\.+$/;
+        die "Unculled event! You ran tests in a child process, but never pulled them in!\n"
+            if $file !~ m/\.complete$/;
+        unlink("$dir/$file") || confess "Could not unlink file: '$dir/$file'";
+    }
+    closedir($dh);
+    rmdir($dir) || warn "Could not remove temp dir ($dir)";
 }
 
 sub STORABLE_freeze {
