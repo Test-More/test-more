@@ -169,7 +169,7 @@ sub cmp_field {
             $result->{$field},
             $expect->{$field},
         );
-        $ctx->ok($ok, "$desc compare $field"); 
+        $ctx->ok($ok, "$desc compare $field");
     }
 }
 

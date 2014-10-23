@@ -70,6 +70,7 @@ t/Behavior/Munge.t
 t/Behavior/NotTB15.t
 t/Behavior/Tester2_subtest.t
 t/Behavior/threads_with_taint_mode.t
+t/Behavior/todo.t
 t/Legacy/00compile.t
 t/Legacy/bad_plan.t
 t/Legacy/bail_out.t

@@ -107,7 +107,7 @@ B<Note:> You probably do not want to directly use this object.
 
 =head1 DESCRIPTION
 
-This is the meta-object used by L<Test::Stream::ArrayBase> 
+This is the meta-object used by L<Test::Stream::ArrayBase>
 
 =head1 METHODS
 

@@ -29,7 +29,7 @@ $@ = 'foo';
 
 ($ok, my $err) = try { die "xxx" };
 ok(!$ok, "cought exception");
-like( $err, qr/xxx/, "expected exception"); 
+like( $err, qr/xxx/, "expected exception");
 is($@, 'foo', '$@ is saved');
 cmp_ok($!, '==', 100, "\$! did not change");
 

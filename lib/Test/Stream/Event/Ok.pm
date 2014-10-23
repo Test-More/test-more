@@ -83,7 +83,7 @@ sub to_tap {
         push @out => "# TODO & SKIP";
         push @out => $todo if length $todo;
     }
-    elsif (defined $todo) {
+    elsif ($context->in_todo) {
         push @out => "# TODO";
         push @out => $todo if length $todo;
     }
