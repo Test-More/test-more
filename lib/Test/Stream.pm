@@ -16,7 +16,7 @@ use Test::Stream::ArrayBase(
         no_ending no_diag no_header
         pid tid
         state
-        subtests subtest_todo
+        subtests subtest_todo subtest_exception
         subtest_tap_instant
         subtest_tap_delayed
         mungers
@@ -428,6 +428,7 @@ sub send {
             push @{$self->[STATE]} => [0, 0, undef, 1];
             push @{$self->[SUBTESTS]} => [];
             push @{$self->[SUBTEST_TODO]} => $e->context->in_todo;
+            push @{$self->[SUBTEST_EXCEPTION]} => undef;
 
             return $e;
         }
@@ -438,11 +439,12 @@ sub send {
             confess "Child pop left the stream without a state!" unless @{$self->[STATE]};
 
             $e = Test::Stream::Event::Subtest->new_from_pairs(
-                context => $e->context,
-                created => $e->created,
-                events  => $events,
-                state   => $state,
-                name    => $e->name,
+                context   => $e->context,
+                created   => $e->created,
+                events    => $events,
+                state     => $state,
+                name      => $e->name,
+                exception => pop @{$self->[SUBTEST_EXCEPTION]},
             );
         }
     }
@@ -578,12 +580,18 @@ sub _finalize_event {
         $cache->{state}->[STATE_PLAN] = $e;
         return unless $e->directive;
         return unless $e->directive eq 'SKIP';
+
+        $self->[SUBTEST_EXCEPTION]->[-1] = $e if $e->in_subtest;
+
         die $e if $e->in_subtest || !$self->[EXIT_ON_DISRUPTION];
         exit 0;
     }
     elsif (!$cache->{do_tap} && $e->isa('Test::Stream::Event::Bail')) {
         $self->[BAILED_OUT] = $e;
         $self->[NO_ENDING]  = 1;
+
+        $self->[SUBTEST_EXCEPTION]->[-1] = $e if $e->in_subtest;
+
         die $e if $e->in_subtest || !$self->[EXIT_ON_DISRUPTION];
         exit 255;
     }
