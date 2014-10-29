@@ -13,12 +13,15 @@ use Test::Stream qw/ -internal STATE_LEGACY STATE_PLAN STATE_COUNT /;
 use Test::Stream::Toolset;
 use Test::Stream::Context;
 use Test::Stream::Carp qw/confess/;
+use Test::Stream::Meta qw/MODERN/;
 
 use Test::Stream::Util qw/try protect unoverload_str is_regex/;
 use Scalar::Util qw/blessed reftype/;
 
 BEGIN {
-    Test::Stream->shared->set_use_legacy(1);
+    my $meta = Test::Stream::Meta->is_tester('main');
+    Test::Stream->shared->set_use_legacy(1)
+        unless $meta && $meta->[MODERN];
 }
 
 # The mostly-singleton, and other package vars.

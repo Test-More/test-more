@@ -60,6 +60,26 @@ sub subclass {
     }
 }
 
+my $IDX = -1;
+my (@CONST, @GET, @SET);
+_GROW(20);
+
+sub _GROW {
+    my ($max) = @_;
+    return if $max <= $IDX;
+    for (($IDX + 1) .. $max) {
+        # Var per sub for inlining/constant stuff.
+        my $c  = $_;
+        my $gi = $_;
+        my $si = $_;
+
+        $CONST[$_] = sub() { $c };
+        $GET[$_]   = sub   { $_[0]->[$gi] };
+        $SET[$_]   = sub { $_[0]->[$si] = $_[1] };
+    }
+    $IDX = $max;
+}
+
 *add_accessor = \&add_accessors;
 sub add_accessors {
     my $self = shift;
@@ -67,7 +87,7 @@ sub add_accessors {
     confess "Cannot add accessor, metadata is locked due to a subclass being initialized ($self->{parent}).\n"
         if $self->{locked};
 
-    my $code = "package $self->{package};";
+    my $ex_meta = Test::Stream::Exporter::Meta->get($self->{package});
 
     for my $name (@_) {
         confess "field '$name' already defined!"
@@ -76,21 +96,24 @@ sub add_accessors {
         my $idx = $self->{index}++;
         $self->{fields}->{$name} = $idx;
 
+        _GROW($IDX + 10) if $idx > $IDX;
+
         my $const = uc $name;
         my $gname = lc $name;
         my $sname = "set_$gname";
 
-        $code .= <<"        EOT";
-sub $gname { \$_[0]->[$idx] }
-sub $sname { \$_[0]->[$idx] = \$_[1] }
-sub $const() { $idx }
-\$ex_meta->add('$const');
-        EOT
-    }
+        {
+            no strict 'refs';
+            *{"$self->{package}\::$const"} = $CONST[$idx];
+            *{"$self->{package}\::$gname"} = $GET[$idx];
+            *{"$self->{package}\::$sname"} = $SET[$idx];
+        }
 
-    my $ex_meta = Test::Stream::Exporter::Meta->get($self->{package});
-    eval $code || confess $@;
+        $ex_meta->{exports}->{$const} = $CONST[$idx];
+        push @{$ex_meta->{polist}} => $const;
+    }
 }
+
 
 1;
 

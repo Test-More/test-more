@@ -16,7 +16,8 @@ use Test::More::DeepCheck::Strict;
 use Test::Stream '-internal';
 use Test::Stream::Util qw/protect try spoof/;
 use Test::Stream::Toolset;
-use Test::Stream::Meta qw/MODERN/;
+
+use Test::Builder;
 
 use Test::Stream::Exporter;
 our $TODO;
@@ -50,18 +51,13 @@ Test::Stream::Exporter->cleanup;
     $Test::Builder::Level ||= 1;
 }
 
-sub builder {
-    protect { require Test::Builder };
-    return Test::Builder->new;
-}
+sub builder { Test::Builder->new }
 
 sub before_import {
     my $class = shift;
     my ($importer, $list) = @_;
 
     my $meta = init_tester($importer);
-
-    protect {require Test::Builder} unless $meta->[MODERN];
 
     my $context = context(1);
     my $other   = [];

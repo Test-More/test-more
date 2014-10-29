@@ -97,7 +97,7 @@ sub exports {
     my $meta = export_meta($caller) ||
         confess "$caller is not an exporter!?";
 
-    $meta->add($_) for @_;
+    $meta->add_bulk(@_);
 }
 
 sub default_export {
@@ -116,7 +116,7 @@ sub default_exports {
     my $meta = export_meta($caller) ||
         confess "$caller is not an exporter!?";
 
-    $meta->add_default($_) for @_;
+    $meta->add_default_bulk(@_);
 }
 
 1;
