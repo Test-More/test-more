@@ -21,7 +21,7 @@ BEGIN {
     }
 }
 
-use Test::Stream;
+use Test::Stream 'enable_fork';
 use Test::More;
 # This just goes to show how silly forking inside a subtest would actually
 # be....

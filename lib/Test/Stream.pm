@@ -89,8 +89,6 @@ sub before_import {
     my $idx    = 0;
     my $stream = $class->shared;
 
-    $stream->use_fork;
-
     while ($idx <= $#{$list}) {
         my $item = $list->[$idx++];
         next unless $item;
@@ -129,6 +127,9 @@ sub before_import {
 
             $stream->io_sets->init_encoding($encoding);
             $meta->[ENCODING] = $encoding;
+        }
+        elsif ($item eq 'enable_fork') {
+            $stream->use_fork;
         }
         else {
             push @$other => $item;
@@ -676,10 +677,9 @@ Test::Stream - A modern infrastructure for testing.
 
 =head1 FEATURES
 
-When you load Test::Stream inside your test file you activate forking support,
-and prevent Test::More from turning on some expensive legacy support. You will
-also get warnings if your code, or any other code you load uses deprecated or
-discouraged practices.
+When you load Test::Stream inside your test file you prevent Test::More from
+turning on some expensive legacy support. You will also get warnings if your
+code, or any other code you load uses deprecated or discouraged practices.
 
 =head1 IMPORT ARGUMENTS
 
@@ -710,6 +710,12 @@ Show events within subtest AFTER the subtest event itself is complete.
 =item subtest_tap => 'both'
 
 Show events as they happen, then also display them after.
+
+=item 'enable_fork'
+
+Turns on support for code that forks. This is nto activated by default because
+it adds ~30ms to the Test::More compile-time, which can really add up in large
+test suites. Turn it on only when needed.
 
 =item 'utf8'
 
