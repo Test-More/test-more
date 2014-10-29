@@ -10,7 +10,6 @@ use Test::Stream::IOSets;
 use Test::Stream::Util qw/try/;
 use Test::Stream::Carp qw/croak confess carp/;
 use Test::Stream::Meta qw/MODERN ENCODING init_tester/;
-use Encode();
 
 use Test::Stream::ArrayBase(
     accessors => [qw{
@@ -33,27 +32,29 @@ use Test::Stream::ArrayBase(
     }],
 );
 
-use constant STATE_COUNT   => 0;
-use constant STATE_FAILED  => 1;
-use constant STATE_PLAN    => 2;
-use constant STATE_PASSING => 3;
-use constant STATE_LEGACY  => 4;
-use constant STATE_ENDED   => 5;
+sub STATE_COUNT()   { 0 }
+sub STATE_FAILED()  { 1 }
+sub STATE_PLAN()    { 2 }
+sub STATE_PASSING() { 3 }
+sub STATE_LEGACY()  { 4 }
+sub STATE_ENDED()   { 5 }
 
-use constant OUT_STD  => 0;
-use constant OUT_ERR  => 1;
-use constant OUT_TODO => 2;
+sub OUT_STD()  { 0 }
+sub OUT_ERR()  { 1 }
+sub OUT_TODO() { 2 }
 
 use Test::Stream::Exporter;
 exports qw/
     OUT_STD OUT_ERR OUT_TODO
     STATE_COUNT STATE_FAILED STATE_PLAN STATE_PASSING STATE_LEGACY STATE_ENDED
 /;
-
 default_exports qw/ cull tap_encoding /;
+Test::Stream::Exporter->cleanup;
 
 sub tap_encoding {
     my ($encoding) = @_;
+
+    require Encode;
 
     croak "encoding '$encoding' is not valid, or not available"
         unless $encoding eq 'legacy' || Encode::find_encoding($encoding);
@@ -72,7 +73,6 @@ sub cull {
     $ctx->stream->fork_cull();
 }
 
-Test::Stream::Exporter->cleanup;
 sub before_import {
     my $class = shift;
     my ($importer, $list) = @_;

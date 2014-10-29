@@ -60,34 +60,36 @@ sub subclass {
     }
 }
 
-sub add_accessor {
+*add_accessor = \&add_accessors;
+sub add_accessors {
     my $self = shift;
-    my ($name) = @_;
 
     confess "Cannot add accessor, metadata is locked due to a subclass being initialized ($self->{parent}).\n"
         if $self->{locked};
 
-    confess "field '$name' already defined!"
-        if exists $self->{fields}->{$name};
+    my $code = "package $self->{package};";
 
-    my $idx = $self->{index}++;
-    $self->{fields}->{$name} = $idx;
+    for my $name (@_) {
+        confess "field '$name' already defined!"
+            if exists $self->{fields}->{$name};
 
-    my $const = uc $name;
-    my $gname = lc $name;
-    my $sname = "set_$gname";
+        my $idx = $self->{index}++;
+        $self->{fields}->{$name} = $idx;
 
-    eval qq|
-        package $self->{package};
-        sub $gname { \$_[0]->[$idx] }
-        sub $sname { \$_[0]->[$idx] = \$_[1] }
-        sub $const() { $idx }
-        1
-    | || confess $@;
+        my $const = uc $name;
+        my $gname = lc $name;
+        my $sname = "set_$gname";
 
-    # Add the constant as an optional export
+        $code .= <<"        EOT";
+sub $gname { \$_[0]->[$idx] }
+sub $sname { \$_[0]->[$idx] = \$_[1] }
+sub $const() { $idx }
+\$ex_meta->add('$const');
+        EOT
+    }
+
     my $ex_meta = Test::Stream::Exporter::Meta->get($self->{package});
-    $ex_meta->add($const);
+    eval $code || confess $@;
 }
 
 1;
