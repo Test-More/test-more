@@ -57,6 +57,7 @@ MANIFEST			This list of files
 MANIFEST.SKIP
 profiling/compile.pl
 profiling/long-run.pl
+profiling/run.pl
 README
 t/Behavior/cmp_ok_xor.t
 t/Behavior/encoding_test.t
@@ -68,6 +69,8 @@ t/Behavior/MonkeyPatching_ok.t
 t/Behavior/MonkeyPatching_plan.t
 t/Behavior/Munge.t
 t/Behavior/NotTB15.t
+t/Behavior/skip_all_in_subtest.load
+t/Behavior/skip_all_in_subtest.t
 t/Behavior/Tester2_subtest.t
 t/Behavior/threads_with_taint_mode.t
 t/Behavior/todo.t
