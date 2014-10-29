@@ -10,7 +10,7 @@ BEGIN {
 BEGIN {
     require warnings;
     if( eval "warnings->can('carp')" ) {
-        plan skip_all => 'Modern::Open is installed, which breaks this test';
+        plan( skip_all => 'Modern::Open is installed, which breaks this test' );
     }
 }
 
