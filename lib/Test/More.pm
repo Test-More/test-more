@@ -103,6 +103,7 @@ sub ok ($;$) {
 }
 
 sub plan {
+    return unless @_;
     my ($directive, $arg) = @_;
     my $ctx = context();
 
@@ -259,8 +260,10 @@ sub _skip {
     # If there is no plan we do not need to worry about counts
     my $need_count = $plan ? !($plan->directive && $plan->directive eq 'NO PLAN') : 0;
 
-    $ctx->alert("$func() needs to know \$how_many tests are in the block")
-        if $need_count && !defined $how_many;
+    if ($need_count && !defined $how_many) {
+        $ctx->alert("$func() needs to know \$how_many tests are in the block");
+        $how_many = 1;
+    }
 
     $ctx->alert("$func() was passed a non-numeric number of tests.  Did you get the arguments backwards?")
         if defined $how_many and $how_many =~ /\D/;
