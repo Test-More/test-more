@@ -16,7 +16,8 @@ BEGIN {
         exit 0;
     }
     elsif ($^O eq 'MSWin32' && $] == 5.010000) {
-        $b->plan('skip_all' => "5.10 has fork/threading issues that break fork on win32");
+        require Test::More;
+        Test::More::plan('skip_all' => "5.10 has fork/threading issues that break fork on win32");
         exit 0;
     }
 }
