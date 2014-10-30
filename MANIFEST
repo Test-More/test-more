@@ -59,6 +59,8 @@ profiling/compile.pl
 profiling/long-run.pl
 profiling/run.pl
 README
+t/Behavior/388-threadedsubtest.load
+t/Behavior/388-threadedsubtest.t
 t/Behavior/cmp_ok_xor.t
 t/Behavior/encoding_test.t
 t/Behavior/fork_new_end.t
