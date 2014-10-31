@@ -265,6 +265,9 @@ sub todo {
 sub in_todo {
     my $self = shift;
 
+    my $ctx = $self->ctx;
+    return 1 if $ctx->in_todo;
+
     return (defined $self->{Todo} || $self->find_TODO) ? 1 : 0;
 }
 

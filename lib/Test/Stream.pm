@@ -725,7 +725,7 @@ Show events as they happen, then also display them after.
 
 =item 'enable_fork'
 
-Turns on support for code that forks. This is nto activated by default because
+Turns on support for code that forks. This is not activated by default because
 it adds ~30ms to the Test::More compile-time, which can really add up in large
 test suites. Turn it on only when needed.
 
