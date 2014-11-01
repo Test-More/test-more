@@ -7,15 +7,15 @@ use warnings;
 our $VERSION = '1.301001_070';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
+use Test::Stream 1.301001 '-internal';
+use Test::Stream::Util qw/protect try spoof/;
+use Test::Stream::Toolset;
+
 use Test::Stream::Carp qw/croak carp/;
 use Scalar::Util qw/blessed/;
 
 use Test::More::Tools;
 use Test::More::DeepCheck::Strict;
-
-use Test::Stream '-internal';
-use Test::Stream::Util qw/protect try spoof/;
-use Test::Stream::Toolset;
 
 use Test::Builder;
 

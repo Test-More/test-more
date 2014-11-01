@@ -4,6 +4,7 @@ use strict;
 our $VERSION = '1.301001_070';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
+use Test::Stream 1.301001 '-internal';
 require Test::Builder::Tester;
 
 

@@ -8,7 +8,7 @@ use warnings;
 our $VERSION = '1.301001_070';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Stream '-internal';
+use Test::Stream 1.301001_070 '-internal';
 use Test::Stream::Toolset;
 
 use Test::Stream::Exporter;

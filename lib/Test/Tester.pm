@@ -5,6 +5,7 @@ package Test::Tester;
 # Turn this back on later
 #warn "Test::Tester is deprecated, see Test::Stream::Tester\n";
 
+use Test::Stream 1.301001 '-internal';
 use Test::Builder 1.301001;
 use Test::Stream::Toolset;
 use Test::More::Tools;
