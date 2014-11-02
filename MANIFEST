@@ -249,4 +249,3 @@ t/Test-Stream-Util.t
 t/Test-Tester-Capture.t
 t/Test-Tester.t
 t/Test-use-ok.t
-t/xt/dependents.t
