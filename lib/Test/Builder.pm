@@ -1162,7 +1162,7 @@ sub cmp_ok {
         $self->croak("$type is not a valid comparison operator in cmp_ok()");
     }
 
-    my $test;
+    my ($test, $succ);
     my $error;
     {
         ## no critic (BuiltinFunctions::ProhibitStringyEval)
@@ -1172,9 +1172,10 @@ sub cmp_ok {
         my($pack, $file, $line) = $self->caller();
 
         # This is so that warnings come out at the caller's level
-        $test = eval qq[
+        $succ = eval qq[
 #line $line "(eval in cmp_ok) $file"
-\$got $type \$expect;
+\$test = (\$got $type \$expect);
+1;
 ];
         $error = $@;
     }
@@ -1188,7 +1189,7 @@ sub cmp_ok {
       ? '_unoverload_num'
       : '_unoverload_str';
 
-    $self->diag(<<"END") if $error;
+    $self->diag(<<"END") unless $succ;
 An error occurred while using $type:
 ------------------------------------
 $error
