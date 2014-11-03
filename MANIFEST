@@ -17,6 +17,7 @@ MANIFEST.SKIP
 README
 t/00compile.t
 t/00test_harness_check.t
+t/478-cmp_ok_hash.t
 t/bad_plan.t
 t/bail_out.t
 t/BEGIN_require_ok.t
