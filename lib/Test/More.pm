@@ -26,7 +26,6 @@ use Test::Stream::Exporter qw/
 our $TODO;
 default_export '$TODO' => \$TODO;
 default_exports qw{
-    context
     plan done_testing
 
     ok
@@ -426,7 +425,8 @@ Test::More - The defacto standard in unit testing tools.
 
 =head1 SYNOPSIS
 
-    # Enabled forking, and removes expensive legacy support;
+    # Enabled forking, and removes expensive legacy support
+    # Also provides context(), cull(), and tap_encoding()
     use Test::Stream;
 
     # Load after Test::Stream to get the benefits of removed legacy
@@ -475,7 +475,7 @@ Test::More - The defacto standard in unit testing tools.
 
     sub my_compare {
         my ($got, $want, $name) = @_;
-        my $ctx = context();
+        my $ctx = context(); # From Test::Stream
         my $ok = $got eq $want;
         $ctx->ok($ok, $name);
         ...
@@ -658,11 +658,11 @@ problems as failures will be reported in your sub, and not at the place where
 you called your sub. Now there is a solution to this, the
 L<Test::Stream::Context> object!.
 
-Test::More exports the C<context()> function which will return a context object
-for your use. The idea is that you generate a context object at the lowest
-level (the function you call from your test file). Deeper functions that need
-context will get the object you already generated, at least until the object
-falls out of scope or is undefined.
+L<Test::Stream> exports the C<context()> function which will return a context
+object for your use. The idea is that you generate a context object at the
+lowest level (the function you call from your test file). Deeper functions that
+need context will get the object you already generated, at least until the
+object falls out of scope or is undefined.
 
     sub my_compare {
         my ($got, $want, $name) = @_;
