@@ -95,10 +95,11 @@ sub before_import {
 }
 
 sub ok ($;$) {
-    my ($bool, $name) = @_;
+    my ($test, $name) = @_;
     my $ctx = context();
+    my $bool = $test ? 1 : 0;
     $ctx->ok($bool, $name);
-    return $bool ? 1 : 0;
+    return $bool;
 }
 
 sub plan {
