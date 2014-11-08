@@ -47,8 +47,7 @@ sub export_to {
     my $class = shift;
     my ($dest, @imports) = @_;
 
-    my $meta = Test::Stream::Exporter::Meta->get($class)
-        || confess "$class is not an exporter!?";
+    my $meta = Test::Stream::Exporter::Meta->new($class);
 
     my (@include, %exclude);
     for my $import (@imports) {
