@@ -68,7 +68,7 @@ sub export_to {
         next if $exclude{$name};
 
         my $ref = $exports->{$name}
-            || croak "$class does not export $name";
+            || croak qq{"$name" is not exported by the $class module};
 
         no strict 'refs';
         $name =~ s/^[\$\@\%\&]//;
