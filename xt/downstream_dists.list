@@ -54,7 +54,6 @@ Type::Tiny
 UNIVERSAL::isa
 URI::Find
 YAML
-YAML::LibYAML
 YAML::Syck
 version
 Test::Trap
