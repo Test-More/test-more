@@ -24,15 +24,36 @@ ok(run_string(<<"EOT"), "Installed cpanm") || exit 1;
 perlbrew exec --with TestMore$$ cpan App::cpanminus
 EOT
 
-ok(run_string(<<"EOT"), "Installed downstream modules with no issues") || exit 1;
-perlbrew exec --with TestMore$$ cpanm `cat xt/downstream_dists.list`
-EOT
+open(my $list, '<', 'xt/downstream_dists.list') || die "Could not open downstream list";
+while(my $name = <$list>) {
+    chomp($name);
+    my $ok = 0;
+    for (1 .. 2) {
+        $ok = run_string("perlbrew exec --with TestMore$$ -- cpanm $name");
+        last if $ok;
+        diag "'$name' did not install properly, trying 1 more time.";
+    }
+
+    ok($ok, "Installed downstream module '$name'") || exit 1;
+}
+close($list);
 
 TODO: {
-    local $TODO = "These are known to be broken";
-    ok(run_string(<<"    EOT"), "Known broken dists");
-    perlbrew exec --with TestMore$$ cpanm `cat xt/downstream_dists.list.known_broken`
-    EOT
+    local $TODO = "known to be broken";
+
+    open($list, '<', 'xt/downstream_dists.list.known_broken') || die "Could not open downstream list";
+    while(my $name = <$list>) {
+        chomp($name);
+        my $ok = 0;
+        for (1 .. 2) {
+            $ok = run_string("perlbrew exec --with TestMore$$ cpanm $name");
+            last if $ok;
+            diag "'$name' did not install properly, trying 1 more time.";
+        }
+
+        ok($ok, "Installed downstream module '$name'");
+    }
+    close($list);
 }
 
 ok(run_string(<<"EOT"), "Cleanup up the perlbrew");

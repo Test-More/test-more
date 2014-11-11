@@ -1,4 +1,9 @@
+Sub::Uplevel
 Test::Class
+Test::Exception
+Test::Differences
+Test::Warn
+Test::Warnings
 App::Dest
 Business::ISBN
 Carp::Assert
@@ -40,7 +45,6 @@ Scalar::Util
 Sub::Install
 Test::Base
 Test::Class::Moose
-Test::Differences
 Test::Fatal
 Test::FixtureBuilder
 Test::Harness
@@ -48,8 +52,6 @@ Test::Kwalitee
 Test::LWP::UserAgent
 Test::Most
 Test::SharedFork
-Test::Warn
-Test::Warnings
 Type::Tiny
 UNIVERSAL::isa
 URI::Find
@@ -74,6 +76,5 @@ HTML::Selector::XPath
 Math::Business::BlackScholes::Binaries
 Net::SMS::CDYNE
 OAuth::Cmdline
-Test::Exception
 Test::Mocha
 CHI
