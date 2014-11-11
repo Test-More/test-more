@@ -71,6 +71,9 @@ sub context {
         if ($todo = $meta->[Test::Stream::Meta::TODO]) {
             $in_todo = 1;
         }
+        elsif ($todo = ${"$pkg\::TODO"}) {
+            $in_todo = 1;
+        }
         elsif ($todo = ${"$todo_pkg\::TODO"}) {
             $in_todo = 1;
         }
