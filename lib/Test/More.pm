@@ -1049,6 +1049,28 @@ Use these very, very, very sparingly.
 
 =back
 
+=head2 Debugging tests
+
+Want a stack trace when a test failure occurs? Have some other hook in mind?
+Easy!
+
+    use Test::More;
+    use Carp qw/confess/;
+
+    Test::Stream->shared->listen(sub {
+        my ($stream, $event) = @_;
+
+        # Only care about 'Ok' events (this includes subtests)
+        return unless $event->isa('Test::Stream::Event::Ok');
+
+        # Only care about failures
+        return if $event->bool;
+
+        confess "Failed test! here is a stacktrace!";
+    });
+
+    ok(0, "This will give you a trace.");
+
 =head2 Module tests
 
 Sometimes you want to test if a module, or a list of modules, can
