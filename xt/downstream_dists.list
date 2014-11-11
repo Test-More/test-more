@@ -78,3 +78,5 @@ Net::SMS::CDYNE
 OAuth::Cmdline
 Test::Mocha
 CHI
+Data::Rx
+NetHack::Item
