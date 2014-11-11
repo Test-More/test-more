@@ -20,7 +20,7 @@ use Test::More::DeepCheck::Strict;
 use Test::Builder;
 
 use Test::Stream::Exporter qw/
-    default_export default_exports import export_to export_to_level
+    default_export default_exports export_to export_to_level
 /;
 
 our $TODO;
@@ -52,6 +52,19 @@ Test::Stream::Exporter->cleanup;
     no warnings 'once';
     $Test::Builder::Level ||= 1;
 }
+
+sub import {
+    my $class = shift;
+    my $caller = caller;
+    my @args = @_;
+
+    my $stash = $class->before_import($caller, \@args) if $class->can('before_import');
+    export_to($class, $caller, @args);
+    $class->after_import($caller, $stash, @args) if $class->can('after_import');
+    $class->import_extra(@args);
+}
+
+sub import_extra { 1 };
 
 sub builder { Test::Builder->new }
 
