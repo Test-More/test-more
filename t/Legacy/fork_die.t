@@ -61,6 +61,7 @@ subtest do_it => sub {
         local $SIG{ALRM} = sub { die "Read Timeout\n" };
         alarm 2;
         my @output = map {chomp($_); $_} <$read>;
+        alarm 0;
         is_deeply(
             \@output,
             [
