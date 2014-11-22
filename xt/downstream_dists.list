@@ -80,3 +80,6 @@ Test::Mocha
 CHI
 Data::Rx
 NetHack::Item
+Expect
+Test::WWW::Mechanize
+Test::Module::Used
