@@ -83,3 +83,4 @@ NetHack::Item
 Expect
 Test::WWW::Mechanize
 Test::Module::Used
+Test::Moose::More

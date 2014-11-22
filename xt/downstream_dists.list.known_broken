@@ -1,3 +1,3 @@
-Test::Moose::More
 Test::Aggregate
 Test::Wrapper
+Test::FileReferenced
