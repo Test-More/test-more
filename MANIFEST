@@ -8,6 +8,8 @@ lib/Test/Builder.pm
 lib/Test/Builder/Module.pm
 lib/Test/Builder/Tester.pm
 lib/Test/Builder/Tester/Color.pm
+lib/Test/CanFork.pm
+lib/Test/CanThread.pm
 lib/Test/More.pm
 lib/Test/More/DeepCheck.pm
 lib/Test/More/DeepCheck/Strict.pm
@@ -34,6 +36,7 @@ lib/Test/Stream/ExitMagic.pm
 lib/Test/Stream/ExitMagic/Context.pm
 lib/Test/Stream/Exporter.pm
 lib/Test/Stream/Exporter/Meta.pm
+lib/Test/Stream/ForceExit.pm
 lib/Test/Stream/IOSets.pm
 lib/Test/Stream/Meta.pm
 lib/Test/Stream/PackageUtil.pm
@@ -242,6 +245,7 @@ t/Test-Stream-Event.t
 t/Test-Stream-ExitMagic-Context.t
 t/Test-Stream-Exporter-Meta.t
 t/Test-Stream-Exporter.t
+t/Test-Stream-ForceExit.t
 t/Test-Stream-IOSets.t
 t/Test-Stream-Meta.t
 t/Test-Stream-PackageUtil.t
