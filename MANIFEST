@@ -40,6 +40,7 @@ lib/Test/Stream/ForceExit.pm
 lib/Test/Stream/IOSets.pm
 lib/Test/Stream/Meta.pm
 lib/Test/Stream/PackageUtil.pm
+lib/Test/Stream/Subtest.pm
 lib/Test/Stream/Tester.pm
 lib/Test/Stream/Tester/Checks.pm
 lib/Test/Stream/Tester/Checks/Event.pm
@@ -78,6 +79,8 @@ t/Behavior/Munge.t
 t/Behavior/NotTB15.t
 t/Behavior/skip_all_in_subtest.load
 t/Behavior/skip_all_in_subtest.t
+t/Behavior/skip_all_in_subtest1.load
+t/Behavior/skip_all_in_subtest2.load
 t/Behavior/Tester2_subtest.t
 t/Behavior/threads_with_taint_mode.t
 t/Behavior/todo.t
