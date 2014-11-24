@@ -336,16 +336,12 @@ sub subtest {
 
     my $pid = $$;
 
-    my $early_return = 1;
     my ($succ, $err) = try {
-        TEST_STREAM_SUBTEST: {
+        {
             no warnings 'once';
             local $Test::Builder::Level = 1;
             $code->(@args);
-            $early_return = 0;
         }
-
-        die $ctx->stream->subtest_exception->[-1] if $early_return;
 
         $ctx->set;
         my $stream = $ctx->stream;

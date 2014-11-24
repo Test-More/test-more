@@ -587,9 +587,7 @@ sub _finalize_event {
 
         $self->[SUBTEST_EXCEPTION]->[-1] = $e if $e->in_subtest;
 
-        no warnings 'exiting';
-        last TEST_STREAM_SUBTEST if $e->in_subtest;
-        die $e unless $self->[EXIT_ON_DISRUPTION];
+        die $e if $e->in_subtest || !$self->[EXIT_ON_DISRUPTION];
         exit 0;
     }
     elsif (!$cache->{do_tap} && $e->isa('Test::Stream::Event::Bail')) {
@@ -598,8 +596,6 @@ sub _finalize_event {
 
         $self->[SUBTEST_EXCEPTION]->[-1] = $e if $e->in_subtest;
 
-        no warnings 'exiting';
-        last TEST_STREAM_SUBTEST if $e->in_subtest;
         die $e if $e->in_subtest || !$self->[EXIT_ON_DISRUPTION];
         exit 255;
     }
