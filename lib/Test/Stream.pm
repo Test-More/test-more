@@ -577,6 +577,18 @@ sub _render_tap {
     }
 }
 
+sub _scan_for_begin {
+    my ($stop_at) = @_;
+    my $level = 2;
+
+    while (my @call = caller($level++)) {
+        return 1 if $call[3] =~ m/::BEGIN$/;
+        return 0 if $call[3] eq $stop_at;
+    }
+
+    return undef;
+}
+
 sub _finalize_event {
     my ($self, $e, $cache) = @_;
 
@@ -587,8 +599,26 @@ sub _finalize_event {
 
         $self->[SUBTEST_EXCEPTION]->[-1] = $e if $e->in_subtest;
 
-        no warnings 'exiting';
-        last TEST_STREAM_SUBTEST if $e->in_subtest;
+        if ($e->in_subtest) {
+            my $begin = _scan_for_begin('Test::Stream::Subtest::subtest');
+
+            if ($begin) {
+                warn "SKIP_ALL in subtest via 'BEGIN' or 'use', using exception for flow control\n";
+                die $e;
+            }
+            elsif(defined $begin) {
+                no warnings 'exiting';
+                eval { last TEST_STREAM_SUBTEST };
+                warn "SKIP_ALL in subtest flow control error: $@";
+                warn "Falling back to using an exception.\n";
+                die $e;
+            }
+            else {
+                warn "SKIP_ALL in subtest could not find flow-control label, using exception for flow control\n";
+                die $e;
+            }
+        }
+
         die $e unless $self->[EXIT_ON_DISRUPTION];
         exit 0;
     }
@@ -598,9 +628,27 @@ sub _finalize_event {
 
         $self->[SUBTEST_EXCEPTION]->[-1] = $e if $e->in_subtest;
 
-        no warnings 'exiting';
-        last TEST_STREAM_SUBTEST if $e->in_subtest;
-        die $e if $e->in_subtest || !$self->[EXIT_ON_DISRUPTION];
+        if ($e->in_subtest) {
+            my $begin = _scan_for_begin('Test::Stream::Subtest::subtest');
+
+            if ($begin) {
+                warn "BAILOUT in subtest via 'BEGIN' or 'use', using exception for flow control.\n";
+                die $e;
+            }
+            elsif(defined $begin) {
+                no warnings 'exiting';
+                eval { last TEST_STREAM_SUBTEST };
+                warn "BAILOUT in subtest flow control error: $@";
+                warn "Falling back to using an exception.\n";
+                die $e;
+            }
+            else {
+                warn "BAILOUT in subtest could not find flow-control label, using exception for flow control.\n";
+                die $e;
+            }
+        }
+
+        die $e unless $self->[EXIT_ON_DISRUPTION];
         exit 255;
     }
 }

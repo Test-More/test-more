@@ -141,7 +141,8 @@ sub _copy {
 sub subtest {
     my $self = shift;
     my $ctx = $self->ctx();
-    return tmt->subtest(@_);
+    require Test::Stream::Subtest;
+    return Test::Stream::Subtest::subtest(@_);
 }
 
 sub child {
