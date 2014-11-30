@@ -1,4 +1,3 @@
 Test::Aggregate
 Test::Wrapper
 Test::FileReferenced
-Test::Flatten

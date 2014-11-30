@@ -9,6 +9,7 @@ BEGIN {
     }
 }
 
+use Test::Stream;
 use Test::More;
 
 ok(run_string(<<"EOT"), "Installed a fresh perlbrew") || exit 1;
@@ -24,6 +25,7 @@ ok(run_string(<<"EOT"), "Installed cpanm") || exit 1;
 perlbrew exec --with TestMore$$ cpan App::cpanminus
 EOT
 
+my @BAD;
 open(my $list, '<', 'xt/downstream_dists.list') || die "Could not open downstream list";
 while(my $name = <$list>) {
     chomp($name);
@@ -34,7 +36,7 @@ while(my $name = <$list>) {
         diag "'$name' did not install properly, trying 1 more time.";
     }
 
-    ok($ok, "Installed downstream module '$name'") || exit 1;
+    ok($ok, "Installed downstream module '$name'") || push @BAD => $name;
 }
 close($list);
 
@@ -75,7 +77,20 @@ sub run_string {
         'TEST_VERBOSE',
     );
 
-    return !system($exec);
+    my $pid = fork;
+    die "Failed to fork!" unless defined $pid;
+    exec $exec unless $pid;
+
+    die "Something went wrong!" unless $pid;
+
+    my $got = waitpid($pid, 0);
+    my $out = !$?;
+    die "waitpid oddity, got $got, expected $pid" unless $got == $pid;
+    return $out;
 }
 
 done_testing;
+
+if (@BAD) {
+    print "Bad:\n",join( "\n", @BAD ), "\n";
+}
