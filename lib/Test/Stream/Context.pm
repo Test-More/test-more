@@ -24,6 +24,7 @@ Test::Stream::Exporter->cleanup();
     $Test::Builder::Level ||= 1;
 }
 
+my @TODO;
 my $CURRENT;
 
 sub init {
@@ -35,6 +36,10 @@ sub init {
 
 sub peek  { $CURRENT }
 sub clear { $CURRENT = undef }
+
+sub push_todo { push @TODO => $_[1] }
+sub pop_todo  { pop  @TODO          }
+sub peek_todo { @TODO ? $TODO[-1] : undef }
 
 sub set {
     $CURRENT = pop;
@@ -68,7 +73,10 @@ sub context {
         my $todo_pkg = $meta->[Test::Stream::Meta::PACKAGE];
         no strict 'refs';
         no warnings 'once';
-        if ($todo = $meta->[Test::Stream::Meta::TODO]) {
+        if (($todo) = @TODO) {
+            $in_todo = 1;
+        }
+        elsif ($todo = $meta->[Test::Stream::Meta::TODO]) {
             $in_todo = 1;
         }
         elsif ($todo = ${"$pkg\::TODO"}) {
@@ -350,11 +358,13 @@ sub hide_todo {
     my $meta = is_tester($pkg);
 
     my $found = {
+        TODO => [@TODO],
         TB   => $Test::Builder::Test ? $Test::Builder::Test->{Todo} : undef,
         META => $meta->[Test::Stream::Meta::TODO],
         PKG  => ${"$pkg\::TODO"},
     };
 
+    @TODO = ();
     $Test::Builder::Test->{Todo} = undef;
     $meta->[Test::Stream::Meta::TODO] = undef;
     ${"$pkg\::TODO"} = undef;
@@ -371,6 +381,7 @@ sub restore_todo {
     my $pkg = $self->[FRAME]->[0];
     my $meta = is_tester($pkg);
 
+    @TODO = @{$found->{TODO}};
     $Test::Builder::Test->{Todo} = $found->{TB};
     $meta->[Test::Stream::Meta::TODO] = $found->{META};
     ${"$pkg\::TODO"} = $found->{PKG};
@@ -540,6 +551,24 @@ ref used by the package, so please do not alter it.
 
 These are used to temporarily hide the TODO value in ALL places where it might
 be found. The returned C<$stash> must be used to restore it later.
+
+=back
+
+=head2 CLASS METHODS
+
+B<Note:> These can effect all test packages, if that is not what you want do not use them!.
+
+=over 4
+
+=item $msg = Test::Stream::Context->push_todo($msg)
+
+=item $msg = Test::Stream::Context->pop_todo()
+
+=item $msg = Test::Stream::Context->peek_todo()
+
+These manage a global todo stack. Any new context created will check here first
+for a TODO. Changing this will not effect any existing context instances. This
+is a reliable way to set a global todo that effects any/all packages.
 
 =back
 
