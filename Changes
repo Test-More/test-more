@@ -2,32 +2,21 @@
     * Normalize version number across all versioned files
     * Event stream!
     * Events as objects
-    * Diags can be tied to their ok's
-    * Deprecate: Test::Builder::Tester, Test::Tester, Test::Builder::Module
-    * Add Provider as an easier alternative to $Level
+    * Diags can be linked to their ok's
     * Bundle Test::Tester
-    * Add Test::Tester2
-    * Support for event handlers/formatters
-    * Limited Forking support
-    * Refactor functionality into encapsulation modules (ExitMagic, Tap, etc...)
-    * Add Test Tracing
-    * Better encoding support in TAP output
-    * Add the 'modern' flag to disable old features
-    * Reduce dependancy on singleton pattern, each test can have its own builder
-    * Drop perl5.6 support
+    * Add Test::Stream::Tester
+    * Forking support that can be turned on if requested
+    * Smash Test::Builder into multiple modules
+    * Move away from the monolithic singleton
     * Bugfixes
-
-1.001004_003 Sat May  17 13:43:00 PST 2014
-    * Another Minor doc fix to solve test bug
-    * Fix #399, conflict with strawberry-portable
-
-1.001004_002 Sat May  17 13:43:00 PST 2014
-    * Minor doc fix to solve test bug
-
-1.001004_001 Sat May  10 08:39:00 PST 2014
-    * Doc updates
     * Subtests accept args
     * Outdent subtest diag
+    * Deprecate: Test::Builder::Tester, Test::Tester, Test::Builder::Module
+    * Add Context as an easier alternative to $Level
+    * API Enhancements
+    * Better encoding support in TAP output
+    * Add the 'modern' flag to disable old features
+    * Drop perl5.6 support
 
 1.001003     Fri Mar  21 21:12:32 PST 2014
     * Doc updates for maintainer change
