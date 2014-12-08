@@ -68,6 +68,7 @@ t/Behavior/388-threadedsubtest.t
 t/Behavior/478-cmp_ok_hash.t
 t/Behavior/490-inherit_exporter.t
 t/Behavior/cmp_ok_xor.t
+t/Behavior/CustomOutput.t
 t/Behavior/encoding_test.t
 t/Behavior/fork_new_end.t
 t/Behavior/MonkeyPatching_diag.t
