@@ -540,7 +540,7 @@ sub _process_event {
     my ($self, $e, $cache) = @_;
 
     if ($self->[MUNGERS]) {
-        $_->($self, $e) for @{$self->[MUNGERS]};
+        $_->($self, $e, $e->subevents) for @{$self->[MUNGERS]};
     }
 
     $self->_render_tap($cache) unless $cache->{no_out};
