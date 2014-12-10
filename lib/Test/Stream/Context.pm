@@ -38,8 +38,8 @@ sub init {
 sub peek  { $CURRENT }
 sub clear { $CURRENT = undef }
 
-sub push_todo { push @TODO => $_[1] }
-sub pop_todo  { pop  @TODO          }
+sub push_todo { push @TODO => pop @_ }
+sub pop_todo  { pop  @TODO           }
 sub peek_todo { @TODO ? $TODO[-1] : undef }
 
 sub set {
@@ -74,7 +74,8 @@ sub context {
         my $todo_pkg = $meta->[Test::Stream::Meta::PACKAGE];
         no strict 'refs';
         no warnings 'once';
-        if (($todo) = @TODO) {
+        if (@TODO) {
+            $todo = $TODO[-1];
             $in_todo = 1;
         }
         elsif ($todo = $meta->[Test::Stream::Meta::TODO]) {
@@ -352,14 +353,14 @@ sub meta { is_tester($_[0]->[FRAME]->[0]) }
 
 sub inspect_todo {
     my ($pkg) = @_;
-    my $meta = is_tester($pkg);
+    my $meta = $pkg ? is_tester($pkg) : undef;
 
     no strict 'refs';
     return {
         TODO => [@TODO],
-        TB   => $Test::Builder::Test ? $Test::Builder::Test->{Todo} : undef,
-        META => $meta->[Test::Stream::Meta::TODO],
-        PKG  => ${"$pkg\::TODO"},
+        $Test::Builder::Test ? (TB   => $Test::Builder::Test->{Todo})      : (),
+        $meta                ? (META => $meta->[Test::Stream::Meta::TODO]) : (),
+        $pkg                 ? (PKG  => ${"$pkg\::TODO"})                  : (),
     };
 }
 
