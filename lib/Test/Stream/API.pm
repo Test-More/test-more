@@ -278,7 +278,7 @@ C<$reason> is the reason for the directive (only applicable to skip_all).
 
 =item $context->bail($reason)
 
-Isue an L<Test::Stream::Event::Bail> event.
+Issue an L<Test::Stream::Event::Bail> event.
 
 =back
 
@@ -319,7 +319,7 @@ methods do for you.
 =head1 EXPORTED FUNCTIONS
 
 All of these are functions. These functions all effect the current-shared
-<Test::Stream> object only.
+L<Test::Stream> object only.
 
 =head2 EVENT MANAGEMENT
 
@@ -443,9 +443,10 @@ subtest was started already in todo.
 Returns a hashref with the output handles:
 
     {
-        std  => $STD_HANDLE,
-        err  => $ERR_HANDLE,
-        todo => $TODO_HANDLE,
+        encoding => $encoding,
+        std      => $STD_HANDLE,
+        err      => $ERR_HANDLE,
+        todo     => $TODO_HANDLE,
     }
 
 B<Note:> The todo handle is used for failure output inside subtests where the
