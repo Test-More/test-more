@@ -15,8 +15,9 @@ use Test::Stream::ArrayBase(
     accessors => [qw/frame stream encoding in_todo todo modern pid skip diag_todo provider monkeypatch_stash/],
 );
 
-use Test::Stream::Exporter qw/import export_to default_exports/;
+use Test::Stream::Exporter qw/import export_to default_exports exports/;
 default_exports qw/context/;
+exports qw/inspect_todo/;
 Test::Stream::Exporter->cleanup();
 
 {
@@ -349,25 +350,35 @@ sub register_event {
 
 sub meta { is_tester($_[0]->[FRAME]->[0]) }
 
-sub hide_todo {
-    my $self = shift;
-    no strict 'refs';
-    no warnings 'once';
-
-    my $pkg = $self->[FRAME]->[0];
+sub inspect_todo {
+    my ($pkg) = @_;
     my $meta = is_tester($pkg);
 
-    my $found = {
+    no strict 'refs';
+    return {
         TODO => [@TODO],
         TB   => $Test::Builder::Test ? $Test::Builder::Test->{Todo} : undef,
         META => $meta->[Test::Stream::Meta::TODO],
         PKG  => ${"$pkg\::TODO"},
     };
+}
+
+sub hide_todo {
+    my $self = shift;
+
+    my $pkg = $self->[FRAME]->[0];
+    my $meta = is_tester($pkg);
+
+    my $found = inspect_todo($pkg);
 
     @TODO = ();
     $Test::Builder::Test->{Todo} = undef;
     $meta->[Test::Stream::Meta::TODO] = undef;
-    ${"$pkg\::TODO"} = undef;
+    {
+        no strict 'refs';
+        no warnings 'once';
+        ${"$pkg\::TODO"} = undef;
+    }
 
     return $found;
 }
@@ -375,8 +386,6 @@ sub hide_todo {
 sub restore_todo {
     my $self = shift;
     my ($found) = @_;
-    no strict 'refs';
-    no warnings 'once';
 
     my $pkg = $self->[FRAME]->[0];
     my $meta = is_tester($pkg);
@@ -384,18 +393,18 @@ sub restore_todo {
     @TODO = @{$found->{TODO}};
     $Test::Builder::Test->{Todo} = $found->{TB};
     $meta->[Test::Stream::Meta::TODO] = $found->{META};
-    ${"$pkg\::TODO"} = $found->{PKG};
+    {
+        no strict 'refs';
+        no warnings 'once';
+        ${"$pkg\::TODO"} = $found->{PKG};
+    }
 
-    my $found2 = {
-        TB   => $Test::Builder::Test ? $Test::Builder::Test->{Todo} : undef,
-        META => $meta->[Test::Stream::Meta::TODO] || undef,
-        PKG  => ${"$pkg\::TODO"} || undef,
-    };
+    my $found2 = inspect_todo($pkg);
 
     for my $k (qw/TB META PKG/) {
         no warnings 'uninitialized';
         next if "$found->{$k}" eq "$found2->{$k}";
-        die "Mismatch! $k:\t$found->{$k}\n\t$found2->{$k}\n"
+        die "INTERNAL ERROR: Mismatch! $k:\t$found->{$k}\n\t$found2->{$k}\n"
     }
 
     return;
