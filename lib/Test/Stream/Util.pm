@@ -14,63 +14,81 @@ exports qw{
 
 Test::Stream::Exporter->cleanup();
 
-sub protect(&) {
+sub _manual_protect(&) {
     my $code = shift;
 
     my ($ok, $error);
     {
-        my ($msg, $no, $dolocal);
-        if ($^O eq 'MSWin32' && $] < 5.020002) {
-            $dolocal = 0;
-            $msg = $@;
-            $no  = $!;
-        }
-        else {
-            $dolocal = 1;
-        }
-        local ($@, $!) if $dolocal;
+        my ($msg, $no) = ($@, $!);
         $ok = eval { $code->(); 1 } || 0;
         $error = $@ || "Error was squashed!\n";
-
-        unless ($dolocal) {
-            $@ = $msg;
-            $! = $no;
-        }
+        ($@, $!) = ($msg, $no);
     }
     die $error unless $ok;
     return $ok;
 }
 
-sub try(&) {
+sub _local_protect(&) {
+    my $code = shift;
+
+    my ($ok, $error);
+    {
+        local ($@, $!);
+        $ok = eval { $code->(); 1 } || 0;
+        $error = $@ || "Error was squashed!\n";
+    }
+    die $error unless $ok;
+    return $ok;
+}
+
+sub _manual_try(&) {
     my $code = shift;
     my $error;
     my $ok;
 
     {
-        my ($msg, $no, $dolocal, $die);
-        if ($^O eq 'MSWin32' && $] < 5.020002) {
-            $dolocal = 0;
-            $msg = $@;
-            $no  = $!;
-            $die = delete $SIG{__DIE__};
-        }
-        else {
-            $dolocal = 1;
-        }
-        local ($@, $!, $SIG{__DIE__}) if $dolocal;
+        my ($msg, $no) = ($@, $!);
+        my $die = delete $SIG{__DIE__};
+
         $ok = eval { $code->(); 1 } || 0;
         unless($ok) {
             $error = $@ || "Error was squashed!\n";
         }
-        unless ($dolocal) {
-            $@ = $msg;
-            $! = $no;
-            $SIG{__DIE__} = $die;
+
+        ($@, $!) = ($msg, $no);
+        $SIG{__DIE__} = $die;
+    }
+
+    return wantarray ? ($ok, $error) : $ok;
+}
+
+sub _local_try(&) {
+    my $code = shift;
+    my $error;
+    my $ok;
+
+    {
+        local ($@, $!, $SIG{__DIE__});
+        $ok = eval { $code->(); 1 } || 0;
+        unless($ok) {
+            $error = $@ || "Error was squashed!\n";
         }
     }
 
     return wantarray ? ($ok, $error) : $ok;
 }
+
+BEGIN {
+    if ($^O ne 'MSWin32' || $] < 5.020002) {
+        *protect = \&_manual_protect;
+        *try     = \&_manual_try;
+    }
+    else {
+        *protect = \&_local_protect;
+        *try     = \&_local_try;
+    }
+}
+
 
 sub spoof {
     my ($call, $code, @args) = @_;
