@@ -19,9 +19,23 @@ sub protect(&) {
 
     my ($ok, $error);
     {
-        local ($@, $!);
+        my ($msg, $no, $dolocal);
+        if ($^O eq 'MSWin32' && $] < 5.020002) {
+            $dolocal = 0;
+            $msg = $@;
+            $no  = $!;
+        }
+        else {
+            $dolocal = 1;
+        }
+        local ($@, $!) if $dolocal;
         $ok = eval { $code->(); 1 } || 0;
         $error = $@ || "Error was squashed!\n";
+
+        unless ($dolocal) {
+            $@ = $msg;
+            $! = $no;
+        }
     }
     die $error unless $ok;
     return $ok;
@@ -33,10 +47,25 @@ sub try(&) {
     my $ok;
 
     {
-        local ($@, $!, $SIG{__DIE__});
+        my ($msg, $no, $dolocal, $die);
+        if ($^O eq 'MSWin32' && $] < 5.020002) {
+            $dolocal = 0;
+            $msg = $@;
+            $no  = $!;
+            $die = delete $SIG{__DIE__};
+        }
+        else {
+            $dolocal = 1;
+        }
+        local ($@, $!, $SIG{__DIE__}) if $dolocal;
         $ok = eval { $code->(); 1 } || 0;
         unless($ok) {
             $error = $@ || "Error was squashed!\n";
+        }
+        unless ($dolocal) {
+            $@ = $msg;
+            $! = $no;
+            $SIG{__DIE__} = $die;
         }
     }
 
@@ -55,8 +84,7 @@ sub spoof {
     my $error;
     my $ok;
 
-    {
-        local ($@, $!);
+    protect {
         $ok = eval <<"        EOT" || 0;
 package $call->[0];
 #line $call->[2] "$call->[1]"
@@ -66,7 +94,7 @@ $code;
         unless($ok) {
             $error = $@ || "Error was squashed!\n";
         }
-    }
+    };
 
     return wantarray ? ($ok, $error) : $ok;
 }
