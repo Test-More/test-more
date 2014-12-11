@@ -17,6 +17,9 @@
     * Better encoding support in TAP output
     * Add the 'modern' flag to disable old features
     * Drop perl5.6 support
+    * Add API module to sugar-coat common tasks
+    * Enhanced support for windows+forking
+    * Work around https://rt.perl.org/rt3/Ticket/Display.html?id=40565
 
 1.001003     Fri Mar  21 21:12:32 PST 2014
     * Doc updates for maintainer change
