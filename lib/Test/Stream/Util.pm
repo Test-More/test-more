@@ -79,7 +79,7 @@ sub _local_try(&) {
 }
 
 BEGIN {
-    if ($^O ne 'MSWin32' || $] < 5.020002) {
+    if ($^O eq 'MSWin32' && $] < 5.020002) {
         *protect = \&_manual_protect;
         *try     = \&_manual_try;
     }
