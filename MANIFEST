@@ -82,6 +82,7 @@ t/Behavior/NotTB15.t
 t/Behavior/skip_all_in_subtest.t
 t/Behavior/skip_all_in_subtest1.load
 t/Behavior/skip_all_in_subtest2.load
+t/Behavior/subtest_die.t
 t/Behavior/Tester2_subtest.t
 t/Behavior/threads_with_taint_mode.t
 t/Behavior/todo.t
