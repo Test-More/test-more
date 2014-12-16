@@ -28,6 +28,8 @@ Test::Stream::Exporter->cleanup();
 my @TODO;
 my $CURRENT;
 
+sub from_end_block { 0 };
+
 sub init {
     $_[0]->[FRAME]    ||= _find_context(1);                # +1 for call to init
     $_[0]->[STREAM]   ||= Test::Stream->shared;
