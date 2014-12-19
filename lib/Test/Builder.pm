@@ -156,9 +156,8 @@ sub child {
     }
 
     $name ||= "Child of " . $self->{Name};
-    $ctx->child('push', $name, 1);
-
     my $stream = $self->{stream} || Test::Stream->shared;
+    $stream->subtest_start($name, $ctx);
 
     my $child = bless {
         %$self,
@@ -181,6 +180,8 @@ sub finalize {
 
     my $ctx = $self->ctx;
 
+    $ctx->stream->subtests->[-1]->context->set_frame($ctx->frame);
+
     if ($self->{child}) {
         my $cname = $self->{child}->{Name};
         $ctx->throw("Can't call finalize() with child ($cname) active");
@@ -190,7 +191,6 @@ sub finalize {
     my $passing = $ctx->stream->is_passing;
     my $count = $ctx->stream->count;
     my $name = $self->{Name};
-    $ctx = undef;
 
     my $stream = $self->{stream} || Test::Stream->shared;
 
@@ -200,8 +200,8 @@ sub finalize {
 
     $? = $self->{'?'};
 
-    $ctx = $parent->ctx;
-    $ctx->child('pop', $self->{Name});
+    my $st = $stream->subtest_stop($name, $ctx);
+    $parent->ctx->send($st);
 }
 
 sub in_subtest {

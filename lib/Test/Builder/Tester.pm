@@ -370,7 +370,7 @@ sub test_test {
     # re-enable the original setting of the harness
     $ENV{HARNESS_ACTIVE} = $original_harness_env;
 
-    $original_stream->state->[-1] = $original_state;
+    @{$original_stream->state->[-1]} = @$original_state;
 
     # check the output we've stashed
     unless( builder()->ok( ( $args{skip_out} || $out->check ) &&

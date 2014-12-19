@@ -12,7 +12,7 @@ use Test::Stream::Util qw/try translate_filename/;
 use Test::Stream::Meta qw/init_tester is_tester/;
 
 use Test::Stream::ArrayBase(
-    accessors => [qw/frame stream encoding in_todo todo modern pid skip diag_todo provider monkeypatch_stash/],
+    accessors => [qw/frame stream encoding in_todo todo modern pid skip diag_todo provider monkeypatch_stash todo_stash/],
 );
 
 use Test::Stream::Exporter qw/import export_to default_exports exports/;
@@ -264,6 +264,29 @@ sub send {
     $self->[STREAM]->send(@_);
 }
 
+sub subtest_start {
+    my $self = shift;
+    my ($name) = @_;
+
+    $self->clear;
+    $self->hide_todo;
+
+    my $st = $self->stream->subtest_start($name, $self);
+    return $st;
+}
+
+sub subtest_stop {
+    my $self = shift;
+    my ($name) = @_;
+
+    my $st = $self->stream->subtest_stop($name, $self);
+
+    $self->set;
+    $self->restore_todo();
+
+    return $st;
+}
+
 # Uhg.. support legacy monkeypatching
 # If this is still here in 2020 I will be a sad panda.
 {
@@ -383,12 +406,17 @@ sub hide_todo {
         ${"$pkg\::TODO"} = undef;
     }
 
-    return $found;
+    return $found if defined wantarray;
+
+    $self->[TODO_STASH] ||= [];
+    push @{$self->[TODO_STASH]} => $found;
 }
 
 sub restore_todo {
     my $self = shift;
     my ($found) = @_;
+
+    $found ||= pop @{$self->[TODO_STASH]} || confess 'wtf?';
 
     my $pkg = $self->[FRAME]->[0];
     my $meta = is_tester($pkg);

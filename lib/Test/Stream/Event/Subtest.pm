@@ -8,8 +8,15 @@ use Test::Stream qw/-internal STATE_PASSING STATE_COUNT STATE_FAILED STATE_PLAN/
 
 use Test::Stream::Event(
     base      => 'Test::Stream::Event::Ok',
-    accessors => [qw/state events exception/],
+    accessors => [qw/state events exception parent_todo finalized early_return/],
 );
+
+sub init {
+    my $self = shift;
+    $self->[EVENTS] ||= [];
+
+    # Do not call SUPER::init, which is ok's init. Finalize runs that
+}
 
 sub subevents {
     return (
@@ -18,19 +25,31 @@ sub subevents {
     );
 }
 
-sub init {
+sub push_event {
+    my $self = shift;
+    my ($e) = @_;
+
+    $e->set_in_subtest($self->[IN_SUBTEST] + 1);
+    $e->context->set_diag_todo(1) if $self->[PARENT_TODO];
+
+    push @{$self->[EVENTS]} => $e;
+}
+
+sub finalize {
     my $self = shift;
 
-    if ($self->[EXCEPTION] && !(blessed($self->[EXCEPTION]) && $self->[EXCEPTION]->isa('Test::Stream::Event'))) {
+    return if $self->[FINALIZED]++;
+
+    $self->[REAL_BOOL] = $self->[STATE]->[STATE_PASSING] && $self->[STATE]->[STATE_COUNT];
+
+    if ($self->[EXCEPTION]) {
         push @{$self->[DIAG]} => "Exception in subtest '$self->[NAME]': $self->[EXCEPTION]";
         $self->[STATE]->[STATE_PASSING] = 0;
         $self->[BOOL] = 0;
+        $self->[REAL_BOOL] = 0;
     }
 
-    $self->[REAL_BOOL] = $self->[STATE]->[STATE_PASSING] && $self->[STATE]->[STATE_COUNT];
-    $self->[EVENTS] ||= [];
-
-    if (my $le = $self->[EXCEPTION]) {
+    if (my $le = $self->[EARLY_RETURN]) {
         my $is_skip = $le->isa('Test::Stream::Event::Plan');
         $is_skip &&= $le->directive;
         $is_skip &&= $le->directive eq 'SKIP';
@@ -41,17 +60,23 @@ sub init {
             $self->[CONTEXT]->set_skip($skip);
             $self->[REAL_BOOL] = 1;
         }
+        else { # BAILOUT
+            $self->[REAL_BOOL] = 0;
+        }
     }
 
-    push @{$self->[DIAG]} => '  No tests run for subtest.'
-        unless $self->[EXCEPTION] || $self->[STATE]->[STATE_COUNT];
+    push @{$self->[DIAG]} => "  No tests run for subtest."
+        unless $self->[EXCEPTION] || $self->[EARLY_RETURN] || $self->[STATE]->[STATE_COUNT];
 
+    # Have the 'OK' init run
     $self->SUPER::init();
 }
 
 sub to_tap {
     my $self = shift;
     my ($num, $delayed) = @_;
+
+    $self->finalize;
 
     unless($delayed) {
         return if $self->[EXCEPTION]

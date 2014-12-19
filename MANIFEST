@@ -22,11 +22,11 @@ lib/Test/Stream/API.pm
 lib/Test/Stream/Architecture.pod
 lib/Test/Stream/ArrayBase.pm
 lib/Test/Stream/ArrayBase/Meta.pm
+lib/Test/Stream/Block.pm
 lib/Test/Stream/Carp.pm
 lib/Test/Stream/Context.pm
 lib/Test/Stream/Event.pm
 lib/Test/Stream/Event/Bail.pm
-lib/Test/Stream/Event/Child.pm
 lib/Test/Stream/Event/Diag.pm
 lib/Test/Stream/Event/Finish.pm
 lib/Test/Stream/Event/Note.pm
@@ -243,6 +243,7 @@ t/Test-Simple.t
 t/Test-Stream-API.t
 t/Test-Stream-ArrayBase-Meta.t
 t/Test-Stream-ArrayBase.t
+t/Test-Stream-Block.t
 t/Test-Stream-Carp.t
 t/Test-Stream-Event-Diag.t
 t/Test-Stream-Event-Finish.t
