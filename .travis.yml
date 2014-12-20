@@ -9,7 +9,14 @@ perl:
   - "5.18"
   - "5.20-thr"
   - "blead"
+matrix:
+  include:
+    - perl: 5.18
+      env: WITH_TEST_POD_COVERAGE=1
+    - perl: 5.18
+      env: WITH_SQL_ABSTRACT_TEST=1
 before_install:
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
   - source ~/travis-perl-helpers/init --auto
-  - cpan-install SQL::Abstract::Test
+  - '[ "$WITH_TEST_POD_COVERAGE" = 1 ] && cpan-install Test::Pod::Coverage || true'
+  - '[ "$WITH_SQL_ABSTRACT_TEST" = 1 ] && cpan-install SQL::Abstract::Test || true'
