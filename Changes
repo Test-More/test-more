@@ -1,3 +1,6 @@
+1.001011     Sat Dec 20 09:08:00:00 PST 2015
+    * Remove POD Coverage test
+
 1.001010     Fri Dec 19 20:16:00:00 PST 2015
     * Fix windows test bug #491
     * Integrate Test::Tester and Test::use::ok for easier downgrade from trial

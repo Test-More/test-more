@@ -123,7 +123,6 @@ t/plan_is_noplan.t
 t/plan_no_plan.t
 t/plan_shouldnt_import.t
 t/plan_skip_all.t
-t/pod-coverage.t
 t/require_ok.t
 t/run_test.t
 t/simple.t
