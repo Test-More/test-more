@@ -1,3 +1,10 @@
+1.001010     Fri Dec 19 20:16:00:00 PST 2015
+    * Fix windows test bug #491
+    * Integrate Test::Tester and Test::use::ok for easier downgrade from trial
+
+1.001009     Sun Nov  2 22:31:08:00 PST 2014
+    * Fix bug in cmp_ok
+
 1.001008     Wed Oct 15 20:10:22:00 PST 2014
     * Updated Changes file
 

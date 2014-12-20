@@ -72,3 +72,5 @@
 
 # Don't include our dist director
 ^Test-Simple-
+
+.travis.yml
