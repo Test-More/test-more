@@ -9,7 +9,11 @@ perl:
   - "5.18"
   - "5.20-thr"
   - "blead"
+matrix:
+  include:
+    - perl: "5.18"
+      env: AUTHOR_TESTING=0
 before_install:
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
   - source ~/travis-perl-helpers/init --auto
-  - cpan-install SQL::Abstract::Test
+  - '[ "$AUTHOR_TESTING" != 0 ] && cpan-install SQL::Abstract::Test || true'
