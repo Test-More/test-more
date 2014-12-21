@@ -595,7 +595,7 @@ be found. The returned C<$stash> must be used to restore it later.
 
 Used to start and stop subtests in the test stream. The stash can be used to
 configure and manipulate the subtest information. C<subtest_start> will hide
-the current TODO settings, and unset the current context. C<todo_stop> will
+the current TODO settings, and unset the current context. C<subtest_stop> will
 restore the TODO and reset the context back to what it was.
 
 B<It is your job> to take the results in the stash and produce a
