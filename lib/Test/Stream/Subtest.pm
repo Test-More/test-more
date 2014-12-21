@@ -38,7 +38,7 @@ sub subtest {
             $block->run(@args);
         }
 
-        return if $st->early_return;
+        return if $st->{early_return};
 
         $ctx->set;
         my $stream = $ctx->stream;
@@ -51,7 +51,7 @@ sub subtest {
         }
     };
 
-    my $er = $st->early_return;
+    my $er = $st->{early_return};
     if (!$succ) {
         # Early return is not a *real* exception.
         if ($er && $er == $err) {
@@ -59,7 +59,7 @@ sub subtest {
             $err = undef;
         }
         else {
-            $st->set_exception($err);
+            $st->{exception} = $err;
         }
     }
 
@@ -77,13 +77,28 @@ This is almost certainly not what you wanted. Did you fork and forget to exit?
     my $st_check = $ctx->subtest_stop($name);
     confess "Subtest mismatch!" unless $st == $st_check;
 
-    $ctx->bail($st->early_return->reason) if $er && $er->isa('Test::Stream::Event::Bail');
+    $ctx->bail($st->{early_return}->reason) if $er && $er->isa('Test::Stream::Event::Bail');
 
-    $ctx->send($st);
+    my $e = $ctx->subtest(
+        # Stuff from ok (most of this gets initialized inside)
+        undef, # real_bool, gets set properly by initializer
+        $st->{name}, # name
+        undef, # diag
+        undef, # bool
+        undef, # level
+
+        # Subtest specific stuff
+        $st->{state},
+        $st->{events},
+        $st->{exception},
+        $st->{early_return},
+        $st->{delayed},
+        $st->{instant},
+    );
 
     die $err unless $succ;
 
-    return $st->bool;
+    return $e->bool;
 }
 
 1;

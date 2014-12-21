@@ -8,37 +8,12 @@ use Test::Stream qw/-internal STATE_PASSING STATE_COUNT STATE_FAILED STATE_PLAN/
 
 use Test::Stream::Event(
     base      => 'Test::Stream::Event::Ok',
-    accessors => [qw/state events exception parent_todo finalized early_return/],
+    accessors => [qw/state events exception early_return delayed instant/],
 );
 
 sub init {
     my $self = shift;
     $self->[EVENTS] ||= [];
-
-    # Do not call SUPER::init, which is ok's init. Finalize runs that
-}
-
-sub subevents {
-    return (
-        @{$_[0]->[DIAG] || []},
-        map { $_, $_->subevents } @{$_[0]->[EVENTS] || []},
-    );
-}
-
-sub push_event {
-    my $self = shift;
-    my ($e) = @_;
-
-    $e->set_in_subtest($self->[IN_SUBTEST] + 1);
-    $e->context->set_diag_todo(1) if $self->[PARENT_TODO];
-
-    push @{$self->[EVENTS]} => $e;
-}
-
-sub finalize {
-    my $self = shift;
-
-    return if $self->[FINALIZED]++;
 
     $self->[REAL_BOOL] = $self->[STATE]->[STATE_PASSING] && $self->[STATE]->[STATE_COUNT];
 
@@ -72,11 +47,18 @@ sub finalize {
     $self->SUPER::init();
 }
 
+sub subevents {
+    return (
+        @{$_[0]->[DIAG] || []},
+        map { $_, $_->subevents } @{$_[0]->[EVENTS] || []},
+    );
+}
+
 sub to_tap {
     my $self = shift;
-    my ($num, $delayed) = @_;
+    my ($num) = @_;
 
-    $self->finalize;
+    my $delayed = $self->[DELAYED];
 
     unless($delayed) {
         return if $self->[EXCEPTION]
@@ -89,7 +71,7 @@ sub to_tap {
     $self->[NAME] =~ s/$/ {/mg;
     my @out = (
         $self->SUPER::to_tap($num),
-        $self->_render_events(@_),
+        $self->_render_events($num),
         [OUT_STD, "}\n"],
     );
     $self->[NAME] =~ s/ \{$//mg;
@@ -98,7 +80,9 @@ sub to_tap {
 
 sub _render_events {
     my $self = shift;
-    my ($num, $delayed) = @_;
+    my ($num) = @_;
+
+    my $delayed = $self->[DELAYED];
 
     my $idx = 0;
     my @out;

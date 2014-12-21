@@ -157,7 +157,7 @@ sub child {
 
     $name ||= "Child of " . $self->{Name};
     my $stream = $self->{stream} || Test::Stream->shared;
-    $stream->subtest_start($name, $ctx);
+    $ctx->subtest_start($name, parent_todo => $ctx->in_todo);
 
     my $child = bless {
         %$self,
@@ -180,8 +180,6 @@ sub finalize {
 
     my $ctx = $self->ctx;
 
-    $ctx->stream->subtests->[-1]->context->set_frame($ctx->frame);
-
     if ($self->{child}) {
         my $cname = $self->{child}->{Name};
         $ctx->throw("Can't call finalize() with child ($cname) active");
@@ -200,8 +198,24 @@ sub finalize {
 
     $? = $self->{'?'};
 
-    my $st = $stream->subtest_stop($name, $ctx);
-    $parent->ctx->send($st);
+    my $st = $ctx->subtest_stop($name);
+
+    $parent->ctx->subtest(
+        # Stuff from ok (most of this gets initialized inside)
+        undef, # real_bool, gets set properly by initializer
+        $st->{name}, # name
+        undef, # diag
+        undef, # bool
+        undef, # level
+
+        # Subtest specific stuff
+        $st->{state},
+        $st->{events},
+        $st->{exception},
+        $st->{early_return},
+        $st->{delayed},
+        $st->{instant},
+    );
 }
 
 sub in_subtest {

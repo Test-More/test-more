@@ -12,7 +12,7 @@ use Test::Stream::Util qw/try translate_filename/;
 use Test::Stream::Meta qw/init_tester is_tester/;
 
 use Test::Stream::ArrayBase(
-    accessors => [qw/frame stream encoding in_todo todo modern pid skip diag_todo provider monkeypatch_stash todo_stash/],
+    accessors => [qw/frame stream encoding in_todo todo modern pid skip diag_todo provider monkeypatch_stash/],
 );
 
 use Test::Stream::Exporter qw/import export_to default_exports exports/;
@@ -266,12 +266,14 @@ sub send {
 
 sub subtest_start {
     my $self = shift;
-    my ($name) = @_;
+    my ($name, %params) = @_;
+
+    $params{parent_todo} ||= $self->in_todo;
 
     $self->clear;
-    $self->hide_todo;
+    my $todo = $self->hide_todo;
 
-    my $st = $self->stream->subtest_start($name, $self);
+    my $st = $self->stream->subtest_start($name, todo_stash => $todo, %params);
     return $st;
 }
 
@@ -279,10 +281,10 @@ sub subtest_stop {
     my $self = shift;
     my ($name) = @_;
 
-    my $st = $self->stream->subtest_stop($name, $self);
+    my $st = $self->stream->subtest_stop($name);
 
     $self->set;
-    $self->restore_todo();
+    $self->restore_todo($st->{todo_stash});
 
     return $st;
 }
@@ -406,17 +408,12 @@ sub hide_todo {
         ${"$pkg\::TODO"} = undef;
     }
 
-    return $found if defined wantarray;
-
-    $self->[TODO_STASH] ||= [];
-    push @{$self->[TODO_STASH]} => $found;
+    return $found;
 }
 
 sub restore_todo {
     my $self = shift;
     my ($found) = @_;
-
-    $found ||= pop @{$self->[TODO_STASH]} || confess 'wtf?';
 
     my $pkg = $self->[FRAME]->[0];
     my $meta = is_tester($pkg);
@@ -563,7 +560,7 @@ Get the current context object, if there is one.
 
 =item $ctx->set
 
-=item $cclass->set($ctx)
+=item $class->set($ctx)
 
 Set the context object as the current one, replacing any that might already be
 current.
@@ -591,6 +588,20 @@ ref used by the package, so please do not alter it.
 
 These are used to temporarily hide the TODO value in ALL places where it might
 be found. The returned C<$stash> must be used to restore it later.
+
+=item $stash = $ctx->subtest_start($name, %params)
+
+=item $stash = $ctx->subtest_stop($name)
+
+Used to start and stop subtests in the test stream. The stash can be used to
+configure and manipulate the subtest information. C<subtest_start> will hide
+the current TODO settings, and unset the current context. C<todo_stop> will
+restore the TODO and reset the context back to what it was.
+
+B<It is your job> to take the results in the stash and produce a
+L<Test::Stream::Event::Subtest> event from them.
+
+B<Using this directly is not recommended>.
 
 =back
 

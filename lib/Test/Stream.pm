@@ -424,41 +424,40 @@ sub done_testing {
 
 sub subtest_start {
     my $self = shift;
-    my ($name, $ctx) = @_;
+    my ($name, %params) = @_;
 
     my $state = [0, 0, undef, 1];
 
-    push @{$self->[SUBTESTS]} => Test::Stream::Event::Subtest->new(
-        $ctx->snapshot,                 # context
-        [caller(0)],                    # created
-        scalar(@{$self->[SUBTESTS]}),   # in_subtest
-        1,                              # real_bool
-        $name,                          # name
-        undef,                          # diag
-        1,                              # real_bool
-        undef,                          # level
-        $state,                         # state
-        [],                             # events
-        undef,                          # exception
-        $ctx->in_todo,                  # parnent_todo
-    );
+    $params{parent_todo} ||= Test::Stream::Context::context->in_todo;
 
-    push @{$self->[STATE]} => $state;
+    if(@{$self->[SUBTESTS]}) {
+        $params{parent_todo} ||= $self->[SUBTESTS]->[-1]->{parent_todo};
+    }
+
+    push @{$self->[STATE]}    => $state;
+    push @{$self->[SUBTESTS]} => {
+        instant => $self->[SUBTEST_TAP_INSTANT],
+        delayed => $self->[SUBTEST_TAP_DELAYED],
+
+        %params,
+
+        state        => $state,
+        events       => [],
+        name         => $name,
+    };
 
     return $self->[SUBTESTS]->[-1];
 }
 
 sub subtest_stop {
     my $self = shift;
-    my ($name, $ctx) = @_;
+    my ($name) = @_;
 
     confess "No subtest to stop!"
         unless @{$self->[SUBTESTS]};
 
     confess "Subtest name mismatch!"
-        unless $self->[SUBTESTS]->[-1]->name eq $name;
-
-    $self->[SUBTESTS]->[-1]->finalize;
+        unless $self->[SUBTESTS]->[-1]->{name} eq $name;
 
     my $st = pop @{$self->[SUBTESTS]};
     pop @{$self->[STATE]};
@@ -474,10 +473,15 @@ sub send {
     my $cache = $self->_update_state($self->[STATE]->[-1], $e);
 
     # Subtests get dibbs on events
-    if (@{$self->[SUBTESTS]}) {
-        $self->[SUBTESTS]->[-1]->push_event($e);
+    if (my $num = @{$self->[SUBTESTS]}) {
+        my $st = $self->[SUBTESTS]->[-1];
 
-        $self->_render_tap($cache) if $self->[SUBTEST_TAP_INSTANT] && !$cache->{no_out};
+        $e->set_in_subtest($num);
+        $e->context->set_diag_todo(1) if $st->{parent_todo};
+
+        push @{$st->{events}} => $e;
+
+        $self->_render_tap($cache) if $st->{instant} && !$cache->{no_out};
     }
     elsif($self->[_USE_FORK] && ($$ != $self->[PID] || get_tid() != $self->[TID])) {
         $self->fork_out($e);
@@ -571,8 +575,7 @@ sub _render_tap {
     return unless $cache->{do_tap} || $e->can('to_tap');
 
     my $num = $self->use_numbers ? $cache->{number} : undef;
-    confess "XXX" unless $e->can('to_tap');
-    my @sets = $e->to_tap($num, $self->[SUBTEST_TAP_DELAYED]);
+    my @sets = $e->to_tap($num);
 
     my $in_subtest = $e->in_subtest || 0;
     my $indent = '    ' x $in_subtest;
@@ -611,7 +614,7 @@ sub _finalize_event {
 
         my $subtest = @{$self->[SUBTESTS]};
 
-        $self->[SUBTESTS]->[-1]->set_early_return($e) if $subtest;
+        $self->[SUBTESTS]->[-1]->{early_return} = $e if $subtest;
 
         if ($subtest) {
             my $begin = _scan_for_begin('Test::Stream::Subtest::subtest');
@@ -642,7 +645,7 @@ sub _finalize_event {
 
         my $subtest = @{$self->[SUBTESTS]};
 
-        $self->[SUBTESTS]->[-1]->set_early_return($e) if $subtest;
+        $self->[SUBTESTS]->[-1]->{early_return} = $e if $subtest;
 
         if ($subtest) {
             my $begin = _scan_for_begin('Test::Stream::Subtest::subtest');
@@ -913,6 +916,15 @@ Turn legacy result storing on and off.
 =item $bool = $stream->use_numbers
 
 Turn test numbers on and off.
+
+=item $stash = $stream->subtest_start($name, %params)
+
+=item $stash = $stream->subtest_stop($name)
+
+These will push/pop new states and subtest stashes.
+
+B<Using these directly is not recommended.> Also see the wrapper methods in
+L<Test::Stream::Context>.
 
 =back
 
