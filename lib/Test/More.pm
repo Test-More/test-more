@@ -1695,8 +1695,6 @@ magic side-effects are kept to a minimum.  WYSIWYG.
 
 =head1 SEE ALSO
 
-=head2
-
 =head2 ALTERNATIVES
 
 L<Test::Simple> if all this confuses you and you just want to write
