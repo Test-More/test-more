@@ -81,6 +81,13 @@ WriteMakefile(
             repository  =>      'http://github.com/Test-More/test-more/',
             MailingList =>      'http://lists.perl.org/list/perl-qa.html',
         },
+
+        x_breaks => {
+            # entries here declared like conflicts (see CPAN::Meta::Spec): the
+            # version range describes the versions of the module that are
+            # *incompatible* with our Test::More.
+
+        },
     }))
 );
 
