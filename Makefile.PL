@@ -105,7 +105,6 @@ WriteMakefile(
             'Test::Pretty'              => '<= 0.30',   # still broken: see GH#505
             'Test::Spec'                => '<= 100034', # still broken: see RT#100034
             'Test::Wrapper'             => '<= 0.3.0',  # still broken: see GH#489
-            'UNIVERSAL::isa'            => '<= 1.20140824',
         },
     }))
 );
