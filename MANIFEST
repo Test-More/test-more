@@ -3,7 +3,6 @@
 Changes
 examples/indent.pl
 examples/subtest.t
-lib/01-basic.t
 lib/ok.pm
 lib/Test/Builder.pm
 lib/Test/Builder/IO/Scalar.pm
@@ -24,6 +23,7 @@ MANIFEST.SKIP
 README
 t/00compile.t
 t/00test_harness_check.t
+t/01-basic.t
 t/478-cmp_ok_hash.t
 t/auto.t
 t/bad_plan.t
