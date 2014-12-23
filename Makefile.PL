@@ -81,6 +81,32 @@ WriteMakefile(
             repository  =>      'http://github.com/Test-More/test-more/',
             MailingList =>      'http://lists.perl.org/list/perl-qa.html',
         },
+
+        x_breaks => {
+            # entries here declared like conflicts (see CPAN::Meta::Spec): the
+            # version range describes the versions of the module that are
+            # *incompatible* with our Test::More.
+            'Test::Aggregate'           => '<= 0.371',  # still broken: see RT#100035
+            'Test::Bomb'                => '<= 0.007',  # still broken: see GH#449
+            'Test::Builder:Clutch'      => '<= 0.06',
+            'Test::Classy'              => '<= 0.09',
+            'Test::DBIx::Class::Schema' => '<= 1.0.6',  # still broken: see GH#481
+            'Test::FITesque'            => '<= 0.03',   # still broken: see GH485
+            'Test::FileReferenced'      => '<= 0.02',   # still broken: see RT#100501
+            'Test::Flatten'             => '<= 0.11',   # still broken: see GH#498
+            'Test::Kit'                 => '<= 2.12',
+            'Test::Kwalitee'            => '<= 1.18',
+            'Test::Modern'              => '<= 0.011',
+            'Test::Module::Used'        => '<= 0.2.4',
+            'Test::Moose'               => '<= 2.1209',
+            'Test::Moose::More'         => '<= 0.024',
+            'Test::More::Prefix'        => '<= 0.003',  # still broken: see RT#90361
+            'Test::ParallelSubtest'     => '<= 0.05',   # still broken: see RT#100757
+            'Test::Pretty'              => '<= 0.30',   # still broken: see GH#505
+            'Test::Spec'                => '<= 100034', # still broken: see RT#100034
+            'Test::Wrapper'             => '<= 0.3.0',  # still broken: see GH#489
+            'UNIVERSAL::isa'            => '<= 1.20140824',
+        },
     }))
 );
 
