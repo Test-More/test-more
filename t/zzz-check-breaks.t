@@ -37,7 +37,7 @@ sub _check_break {
     my $version = eval { $metadata->version };
     return "Missing version info for module '$module'" if not $version;
     return sprintf 'Installed version (%s) of %s is in range \'%s\'', $version, $module, $reqs->requirements_for_module($module) if $reqs->accepts_module($module, $version);
-    return;
+    return undef;
 }
 
 done_testing;
