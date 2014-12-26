@@ -12,39 +12,26 @@ $works &&= eval { require threads; 'threads'->import; 1 };
 sub import {
     my $class = shift;
 
-    if ($ENV{THREAD_TESTING}) {
-        unless ($works) {
-            require Test::More;
-            Test::More::BAIL_OUT("no working threads");
-        }
-
-        if ($INC{'Devel/Cover.pm'}) {
-            require Test::More;
-            Test::More::BAIL_OUT("Devel::Cover does not work with threads yet");
-        }
+    if ($] == 5.010000) {
+        require Test::More;
+        Test::More::plan(skip_all => "Threads are broken on 5.10.0");
     }
-    else {
-        if ($] == 5.010000) {
-            require Test::More;
-            Test::More::plan(skip_all => "5.10.0 + threads + new gcc breaks, skipping to be safe. Use the THREAD_TESTING env var to override.");
-        }
 
-        unless ($works) {
-            require Test::More;
-            Test::More::plan(skip_all => "Skip no working threads");
-        }
+    unless ($works) {
+        require Test::More;
+        Test::More::plan(skip_all => "Skip no working threads");
+    }
 
-        if ($INC{'Devel/Cover.pm'}) {
-            require Test::More;
-            Test::More::plan(skip_all => "Devel::Cover does not work with threads yet");
-        }
+    if ($INC{'Devel/Cover.pm'}) {
+        require Test::More;
+        Test::More::plan(skip_all => "Devel::Cover does not work with threads yet");
+    }
 
-        while (my $var = shift(@_)) {
-            next if $ENV{$var};
+    while(my $var = shift(@_)) {
+        next if $ENV{$var};
 
-            require Test::More;
-            Test::More::plan(skip_all => "This threaded test will only run when the '$var' environment variable is set.");
-        }
+        require Test::More;
+        Test::More::plan(skip_all => "This threaded test will only run when the '$var' environment variable is set.");
     }
 
     my $caller = caller;
@@ -64,12 +51,6 @@ Test::CanThread - Only run tests when threading is supported, optionally conditi
 Use this first thing in a test that should be skipped when threading is not
 supported. You can also specify that the test should be skipped when specific
 environment variables are not set.
-
-=head1 FORCING THREAD TESTS TO RUN
-
-The B<THREAD_TESTING> environment variable, when set, will force thread tests
-to run. The test suite will bail out if it detects a failure condition such as
-no thread support.
 
 =head1 SYNOPSYS
 
