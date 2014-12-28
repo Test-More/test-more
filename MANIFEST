@@ -166,6 +166,7 @@ t/useing.t
 t/utf8.t
 t/versions.t
 t/xt/dependents.t
+t/xxx-changes_updated.t
 TODO
 xt/downstream.t
 xt/downstream_dists.list
