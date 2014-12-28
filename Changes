@@ -1,3 +1,10 @@
+1.001014     Tue Dec 28 08:31:00:00 PST 2015
+    * Write a test to ensure this changes file gets updated
+    * Update changes file for 1.001013
+
+1.001013     Sun Dec 28 08:00:00:00 PST 2015
+    * Fix a unit test that broke on some platforms with spaces in the $^X path
+
 1.001012     Tue Dec 23 07:39:00:00 PST 2015
     * Move test that was dropped in the wrong directory
 

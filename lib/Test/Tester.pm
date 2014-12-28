@@ -18,7 +18,7 @@ require Exporter;
 
 use vars qw( @ISA @EXPORT $VERSION );
 
-$VERSION = "0.113";
+$VERSION = "0.114";
 @EXPORT = qw( run_tests check_tests check_test cmp_results show_space );
 @ISA = qw( Exporter );
 

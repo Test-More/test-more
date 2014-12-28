@@ -1,6 +1,6 @@
 package Test::use::ok;
 use 5.005;
-$Test::use::ok::VERSION = '0.15';
+$Test::use::ok::VERSION = '0.16';
 
 __END__
 
