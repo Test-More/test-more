@@ -4,6 +4,7 @@ Test::Exception
 Test::Differences
 Test::Warn
 Test::Warnings
+Test::Effects
 App::Dest
 Business::ISBN
 Carp::Assert
