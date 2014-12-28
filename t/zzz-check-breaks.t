@@ -12,7 +12,7 @@ eval {
     1
 } or plan skip_all => 'breakage test requires CPAN::Meta, CPAN::Meta::Requirements and Module::Metadata';
 
-my $breaks = CPAN::Meta->load_file('MYMETA.json')->custom('x_breaks');
+my $breaks = CPAN::Meta->load_file(-e 'MYMETA.json' ? 'MYMETA.json' : 'META.json')->custom('x_breaks');
 my $reqs = CPAN::Meta::Requirements->new;
 $reqs->add_string_requirement($_, $breaks->{$_}) foreach keys %$breaks;
 
