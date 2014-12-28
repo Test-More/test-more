@@ -9,7 +9,7 @@ my $ver = $Test::More::VERSION;
 
 my $changes = first { -f $_ } './Changes', '../Changes';
 
-plan 'skip_all' => 'Could not find changes file'
+die "Could not find the Changes file"
     unless $changes;
 
 open(my $fh, '<', $changes) || die "Could not load changes file!";
