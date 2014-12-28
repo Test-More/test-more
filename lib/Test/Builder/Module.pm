@@ -7,7 +7,7 @@ use Test::Builder 1.00;
 require Exporter;
 our @ISA = qw(Exporter);
 
-our $VERSION = '1.001012';
+our $VERSION = '1.001013';
 $VERSION = eval $VERSION;      ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 
