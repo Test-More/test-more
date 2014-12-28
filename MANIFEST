@@ -263,4 +263,5 @@ t/Test-Stream-Util.t
 t/Test-Tester-Capture.t
 t/Test-Tester.t
 t/Test-use-ok.t
+t/xxx-changes_updated.t
 t/zzz-check-breaks.t
