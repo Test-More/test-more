@@ -18,6 +18,7 @@ open(my $manifest_fh, "<", $manifest) or die "Can't open $manifest: $!";
 my @modules = map  { m{^lib/(\S+)}; $1 }
               grep { m{Can(Thread|Fork)\.pm} ? 0 : 1 }
               grep { m{^lib/Test/\S*\.pm} }
+              grep { m{Test/Tester/(Delegate|CaptureRunner).pm} ? 0 : 1 }
               grep { !m{/t/} } <$manifest_fh>;
 
 chomp @modules;
