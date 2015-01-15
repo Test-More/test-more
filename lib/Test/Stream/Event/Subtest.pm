@@ -43,6 +43,29 @@ sub init {
     push @{$self->[DIAG]} => "  No tests run for subtest."
         unless $self->[EXCEPTION] || $self->[EARLY_RETURN] || $self->[STATE]->[STATE_COUNT];
 
+    # I HAVE NO IDEA WHAT I'M DOING !!!
+    # The state of the aggregate is computed as follow:
+    # 1. If there is any real error => the aggregate is not ok. Full stop.
+    # 2. If not, if there is any TODO subtests, the aggregate is also TODO
+    # 3. If a TODO is failing, the aggregate result is not ok.
+    
+    if ( $self->real_bool ) {
+        # [8][4] == list of events. There's probably a less savage way
+        # of getting them
+        for my $event ( @{ $self->[8][4] || [] } ) {
+            # only bother if it's an OK event and it's in a todo state
+            next unless ( ref $event eq 'Test::Stream::Event::Ok' 
+                          or ref $event eq 'Test::Stream::Event::Subtest' )
+                        and $event->context->in_todo;
+
+            # force the parent test to be in a TODO state
+            $self->context->[3] ||= 1; # force to be TODO
+
+            # if a child fail, so is the parent
+            $self->set_real_bool( 0 ) if not $event->real_bool ;
+        }
+    }
+
     # Have the 'OK' init run
     $self->SUPER::init();
 }
