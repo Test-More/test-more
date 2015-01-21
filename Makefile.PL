@@ -103,6 +103,7 @@ WriteMakefile(
             'Test::More::Prefix'        => '<= 0.003',  # still broken: see RT#90361
             'Test::ParallelSubtest'     => '<= 0.05',   # still broken: see RT#100757
             'Test::Pretty'              => '<= 0.30',   # still broken: see GH#505
+            'Test::SharedFork'          => '<= 0.28',
             'Test::Spec'                => '<= 0.47', # still broken: see RT#100034
             'Test::Wrapper'             => '<= 0.3.0',  # still broken: see GH#489
         },
