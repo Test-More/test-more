@@ -533,9 +533,16 @@ already a tester it will return the existing meta-object.
 
 =item $context = context()
 
+=item $context = context($add_level)
+
 This will get the correct L<Test::Stream::Context> object. This may be one that
 was previously initialized, or it may generate a new one. Read the
 L<Test::Stream::Context> documentation for more info.
+
+Note, C<context()> assumes you are at the lowest level of your tool, and looks
+at the current caller. If you need it to look further you can call it with a
+numeric argument which is added to the level. To clarify, calling C<context()>
+is the same as calling C<context(0)>.
 
 =item $stream = current_stream()
 

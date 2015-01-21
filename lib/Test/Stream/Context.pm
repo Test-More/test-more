@@ -503,6 +503,11 @@ context matters a lot.
 If you want to store a context for later reference use the C<snapshot()> method
 to get a clone of it that is safe to store anywhere.
 
+Note, C<context()> assumes you are at the lowest level of your tool, and looks
+at the current caller. If you need it to look further you can call it with a
+numeric argument which is added to the level. To clarify, calling C<context()>
+is the same as calling C<context(0)>.
+
 =back
 
 =head1 METHODS

@@ -105,6 +105,11 @@ sequence will get independant context objects. What this means is that you
 should NEVER store a context object in a package variable or object attribute.
 You should also never assign it to a variable in a higher scope.
 
+C<context()> assumes you are at the lowest level of your tool, and looks at the
+current caller. If you need it to look further you can call it with a numeric
+argument which is added to the level. To clarify, calling C<context()> is the
+same as calling C<context(0)>.
+
 =head1 Nesting calls to other tools
 
     use Test::More;
