@@ -165,6 +165,7 @@ sub is_dualvar($) {
 
     # Objects are not dualvars.
     return 0 if ref $val;
+    return 0 unless defined $val;
 
     no warnings 'numeric';
     my $numval = $val + 0;
