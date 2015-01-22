@@ -17,6 +17,6 @@ is(B::svref_2object($x2)->REFCNT, 2, "diag does not store a ref");
 
 my $x3 = \(my $y3);
 push @events => intercept { ok($x3, "Generating") };
-is(B::svref_2object($x3)->REFCNT, 2, "ok does nto store a ref");
+is(B::svref_2object($x3)->REFCNT, 2, "ok does not store a ref");
 
 done_testing;
