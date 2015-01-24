@@ -9,6 +9,10 @@ use Test::Builder 1.301001;
 use Symbol;
 use Test::Stream::Carp qw/croak/;
 
+=pod
+
+=encoding UTF-8
+
 =head1 NAME
 
 Test::Builder::Tester - *DEPRECATED* test testsuites that have been built with
@@ -464,8 +468,6 @@ me use his testing system to try this module out on.
 =head1 SEE ALSO
 
 L<Test::Builder>, L<Test::Builder::Tester::Color>, L<Test::More>.
-
-=encoding utf8
 
 =head1 SOURCE
 

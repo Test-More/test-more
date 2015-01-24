@@ -53,11 +53,13 @@ sub extra_details {
 
 __END__
 
+=pod
+
+=encoding UTF-8
+
 =head1 NAME
 
 Test::Stream::Event::Diag - Diag event type
-
-=encoding utf8
 
 =head1 DESCRIPTION
 

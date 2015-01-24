@@ -955,6 +955,8 @@ __END__
 
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 Test::Builder - *DEPRECATED* Module for building testing libraries.
@@ -1216,8 +1218,6 @@ considered discouraged. For backwords compatability monkeypatching continues to
 work, however in the distant future it will be removed. L<Test::Stream> upon
 which Test::Builder is now built, provides hooks and API's for doing everything
 that previously required monkeypatching.
-
-=encoding utf8
 
 =head1 TUTORIALS
 

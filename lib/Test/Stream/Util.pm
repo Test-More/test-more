@@ -216,6 +216,10 @@ sub translate_filename {
 
 __END__
 
+=pod
+
+=encoding UTF-8
+
 =head1 NAME
 
 Test::Stream::Util - Tools used by Test::Stream and friends.
@@ -276,8 +280,6 @@ Translate filenames from whatever perl has them stored as into the proper,
 specified, encoding.
 
 =back
-
-=encoding utf8
 
 =head1 SOURCE
 

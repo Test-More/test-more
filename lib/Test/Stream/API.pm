@@ -116,6 +116,10 @@ sub get_tap_outputs {
 
 __END__
 
+=pod
+
+=encoding UTF-8
+
 =head1 NAME
 
 Test::Stream::API - Single point of access to Test::Stream extendability
@@ -592,8 +596,6 @@ True if the test is complete (after done_testing).
 Check if the test state is passing.
 
 =back
-
-=encoding utf8
 
 =head1 SOURCE
 

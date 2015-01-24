@@ -7,6 +7,9 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 use Test::Stream 1.301001 '-internal';
 require Test::Builder::Tester;
 
+=pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -53,8 +56,6 @@ L<Test::Builder::Tester>, L<Term::ANSIColor>
 1;
 
 __END__
-
-=encoding utf8
 
 =head1 SOURCE
 
