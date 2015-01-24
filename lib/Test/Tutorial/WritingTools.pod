@@ -1,5 +1,7 @@
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 Test::Tutorial::WritingTools - How to write testing tools.
@@ -198,8 +200,6 @@ B<DO NOT SEE> C<Test::Tester> and C<Test::Builder::Tester> which are both
 deprecated. They were once the way everyone tested their testers, but they do
 not allow you to test all events, and they are very fragile when upstream libs
 change.
-
-=encoding utf8
 
 =head1 SOURCE
 

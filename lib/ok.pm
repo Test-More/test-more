@@ -25,7 +25,9 @@ sub import {
 
 __END__
 
-=encoding utf8
+=pod
+
+=encoding UTF-8
 
 =head1 NAME
 
@@ -41,8 +43,6 @@ With this module, simply change all C<use_ok> in test scripts to C<use ok>,
 and they will be executed at C<BEGIN> time.
 
 Please see L<Test::use::ok> for the full description.
-
-=encoding utf8
 
 =head1 SOURCE
 

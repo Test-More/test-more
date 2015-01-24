@@ -320,6 +320,10 @@ sub _export_to_level {
 
 __END__
 
+=pod
+
+=encoding UTF-8
+
 =head1 NAME
 
 Test::Tester - *DEPRECATED* Ease testing test modules built with Test::Builder
@@ -668,8 +672,6 @@ for an alternative approach to the problem tackled by Test::Tester -
 captures the strings output by Test::Builder. This means you cannot get
 separate access to the individual pieces of information and you must predict
 B<exactly> what your test will output.
-
-=encoding utf8
 
 =head1 SOURCE
 

@@ -61,6 +61,10 @@ sub ok ($;$) {    ## no critic (Subroutines::ProhibitSubroutinePrototypes)
 
 __END__
 
+=pod
+
+=encoding UTF-8
+
 =head1 NAME
 
 Test::Simple - Basic utilities for writing tests.
@@ -233,9 +237,6 @@ programs and things will still work).
 =back
 
 Look in L<Test::More>'s SEE ALSO for more testing modules.
-
-
-=encoding utf8
 
 =head1 SOURCE
 

@@ -393,6 +393,10 @@ sub use_ok($;@) {
 
 __END__
 
+=pod
+
+=encoding UTF-8
+
 =head1 NAME
 
 Test::More - The defacto standard in unit testing tools.
@@ -1741,8 +1745,6 @@ comes from.
 L<Bundle::Test> installs a whole bunch of useful test modules.
 
 L<Test::Most> Most commonly needed test functions and features.
-
-=encoding utf8
 
 =head1 SOURCE
 

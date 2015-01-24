@@ -326,6 +326,10 @@ DIAGNOSTIC
 
 __END__
 
+=pod
+
+=encoding UTF-8
+
 =head1 NAME
 
 Test::More::Tools - Generic form of tools from Test::More.
@@ -395,8 +399,6 @@ Numeric inequality compare.
 Regex compare. C<$op> may be C<=~> or C<!~>.
 
 =back
-
-=encoding utf8
 
 =head1 SOURCE
 

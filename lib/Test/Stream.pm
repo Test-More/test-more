@@ -743,6 +743,10 @@ sub STORABLE_thaw {
 
 __END__
 
+=pod
+
+=encoding UTF-8
+
 =head1 NAME
 
 Test::Stream - A modern infrastructure for testing.
@@ -1079,8 +1083,6 @@ in will be run. Once your codelbock returns the stack will be popped and
 restored to the previous state.
 
 =back
-
-=encoding utf8
 
 =head1 SOURCE
 

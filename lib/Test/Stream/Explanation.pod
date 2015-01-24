@@ -2,6 +2,8 @@ package Test::Stream::Explanation;
 
 =pod
 
+=encoding UTF-8
+
 =head1 NAME
 
 Test::Stream::Explanation - Explanation of all things Test::Stream
@@ -841,8 +843,6 @@ Test::Stream has to do some fancy exporting, specially due to
 Test::Stream::ArrayBase and the attribute constants. This exporter is a very
 light implementation modeled on Exporter::Declare. It uses a meta-object to
 track exports.
-
-=encoding utf8
 
 =head1 SOURCE
 

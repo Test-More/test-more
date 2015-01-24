@@ -462,6 +462,10 @@ sub AUTOLOAD {
 
 __END__
 
+=pod
+
+=encoding UTF-8
+
 =head1 NAME
 
 Test::Stream::Context - Object to represent a testing context.
@@ -627,8 +631,6 @@ for a TODO. Changing this will not effect any existing context instances. This
 is a reliable way to set a global todo that effects any/all packages.
 
 =back
-
-=encoding utf8
 
 =head1 SOURCE
 
