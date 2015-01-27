@@ -12,7 +12,7 @@ is(@warnings, 1, "1 warning");
 
 like(
     $warnings[0],
-    qr/Use of uninitialized value \$got in numeric eq \(==\) at \(eval in cmp_ok\)/,
+    qr/Use of uninitialized value .* at \(eval in cmp_ok\)/,
     "Got the expected warning"
 );
 
