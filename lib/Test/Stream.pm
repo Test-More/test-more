@@ -404,7 +404,8 @@ sub done_testing {
         return;
     }
 
-    $ctx->plan($num || $plan || $ran) unless $state->[STATE_PLAN];
+    # Use _plan to bypass Test::Builder::plan() monkeypatching
+    $ctx->_plan($num || $plan || $ran) unless $state->[STATE_PLAN];
 
     if ($plan && $plan != $ran) {
         $state->[STATE_PASSING] = 0;
