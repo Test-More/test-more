@@ -17,6 +17,19 @@ sub tmt() { __PACKAGE__ }
 my %CMP_OK_BL    = map { ( $_, 1 ) } ( "=", "+=", ".=", "x=", "^=", "|=", "||=", "&&=", "...");
 my %NUMERIC_CMPS = map { ( $_, 1 ) } ( "<", "<=", ">", ">=", "==", "!=", "<=>" );
 
+sub _cmp_eval {
+    my ($line, $name, $file, $got, $type, $expect) = @_;
+    my $test;
+    # This is so that warnings come out at the caller's level
+    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+    eval qq[
+#line $line "(eval in $name) $file"
+\$test = (\$got $type \$expect);
+1;
+    ] || die $@;
+    return $test;
+}
+
 sub cmp_check {
     my($class, $got, $type, $expect) = @_;
 
@@ -31,13 +44,7 @@ sub cmp_check {
 
     my $test = 0;
     my ($success, $error) = try {
-        # This is so that warnings come out at the caller's level
-        ## no critic (BuiltinFunctions::ProhibitStringyEval)
-        eval qq[
-#line $line "(eval in $name) $file"
-\$test = (\$got $type \$expect);
-1;
-        ] || die $@;
+        $test = _cmp_eval($line, $name, $file, $got, $type, $expect);
     };
 
     my @diag;
