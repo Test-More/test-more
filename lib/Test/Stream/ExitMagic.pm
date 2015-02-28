@@ -4,13 +4,13 @@ use warnings;
 
 require Test::Stream::ExitMagic::Context;
 
-use Test::Stream::ArrayBase(
+use Test::Stream::HashBase(
     accessors => [qw/pid done/],
 );
 
 sub init {
-    $_[0]->[PID]  = $$;
-    $_[0]->[DONE] = 0;
+    $_[0]->{+PID}  = $$;
+    $_[0]->{+DONE} = 0;
 }
 
 sub do_magic {
@@ -21,14 +21,14 @@ sub do_magic {
 
     # Don't bother with an ending if this is a forked copy.  Only the parent
     # should do the ending.
-    return unless $self->[PID] == $$;
+    return unless $self->{+PID} == $$;
 
     # Only run once
-    return if $self->[DONE]++;
+    return if $self->{+DONE}++;
 
     my $real_exit_code = $?;
 
-    $context ||= Test::Stream::ExitMagic::Context->new([caller()], $stream);
+    $context ||= Test::Stream::ExitMagic::Context->new(frame => [caller()], stream => $stream);
 
     if (!$stream->ended && $stream->follow_ups && @{$stream->follow_ups}) {
         $context->set;

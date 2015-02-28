@@ -5,7 +5,7 @@ use warnings;
 use Scalar::Util qw/blessed reftype/;
 use Test::Stream::Carp qw/confess carp/;
 
-use Test::Stream::ArrayBase(
+use Test::Stream::HashBase(
     accessors => [qw/name coderef params caller deduced _start_line _end_line/],
 );
 
@@ -20,17 +20,17 @@ sub init {
     my $self = shift;
 
     confess "coderef is a mandatory field for " . blessed($self) . " instances"
-        unless $self->[CODEREF];
+        unless $self->{+CODEREF};
 
     confess "caller is a mandatory field for " . blessed($self) . " instances"
-        unless $self->[CALLER];
+        unless $self->{+CALLER};
 
     confess "coderef must be a code reference"
-        unless ref($self->[CODEREF]) && reftype($self->[CODEREF]) eq 'CODE';
+        unless ref($self->{+CODEREF}) && reftype($self->{+CODEREF}) eq 'CODE';
 
     $self->deduce;
 
-    $self->[PARAMS] ||= {};
+    $self->{+PARAMS} ||= {};
 }
 
 sub deduce {
@@ -38,44 +38,44 @@ sub deduce {
 
     eval { require B; 1 } || return;
 
-    my $code    = $self->[CODEREF];
+    my $code    = $self->{+CODEREF};
     my $cobj    = B::svref_2object($code);
     my $pkg     = $cobj->GV->STASH->NAME;
     my $file    = $cobj->FILE;
     my $line    = $cobj->START->line;
     my $subname = $cobj->GV->NAME;
 
-    $SUB_MAPS{$file}->{$line} = $self->[NAME];
+    $SUB_MAPS{$file}->{$line} = $self->{+NAME};
 
-    $self->[DEDUCED] = [$pkg, $file, $line, $subname];
-    $self->[NAME] ||= $subname;
+    $self->{+DEDUCED} = [$pkg, $file, $line, $subname];
+    $self->{+NAME}  ||= $subname;
 }
 
 sub merge_params {
     my $self = shift;
     my ($new) = @_;
-    my $old = $self->[PARAMS];
+    my $old = $self->{+PARAMS};
 
     # Use existing ref, merge in new ones, but old ones are kept since the
     # block can override the workflow.
     %$old = ( %$new, %$old );
 }
 
-sub package { $_[0]->[DEDUCED]->[PACKAGE] }
-sub file    { $_[0]->[DEDUCED]->[FILE]    }
-sub subname { $_[0]->[DEDUCED]->[SUBNAME] }
+sub package { $_[0]->{+DEDUCED}->[PACKAGE] }
+sub file    { $_[0]->{+DEDUCED}->[FILE]    }
+sub subname { $_[0]->{+DEDUCED}->[SUBNAME] }
 
 sub run {
     my $self = shift;
     my @args = @_;
 
-    $self->[CODEREF]->(@args);
+    $self->{+CODEREF}->(@args);
 }
 
 sub detail {
     my $self = shift;
 
-    my $name = $self->[NAME];
+    my $name = $self->{+NAME};
     my $file = $self->file;
 
     my $start = $self->start_line;
@@ -94,8 +94,8 @@ sub detail {
     }
 
     my $known = "";
-    if ($self->[DEDUCED]->[SUBNAME] ne '__ANON__') {
-        $known = " (" . $self->[DEDUCED]->[SUBNAME] . ")";
+    if ($self->{+DEDUCED}->[SUBNAME] ne '__ANON__') {
+        $known = " (" . $self->{+DEDUCED}->[SUBNAME] . ")";
     }
 
     return "${name}${known} in ${file} ${lines}";
@@ -103,27 +103,27 @@ sub detail {
 
 sub start_line {
     my $self = shift;
-    return $self->[_START_LINE] if $self->[_START_LINE];
+    return $self->{+_START_LINE} if $self->{+_START_LINE};
 
-    my $start = $self->[DEDUCED]->[LINE];
+    my $start = $self->{+DEDUCED}->[LINE];
     my $end   = $self->end_line || 0;
 
     if ($start == $end || $start == 1) {
-        $self->[_START_LINE] = $start;
+        $self->{+_START_LINE} = $start;
     }
     else {
-        $self->[_START_LINE] = $start - 1;
+        $self->{+_START_LINE} = $start - 1;
     }
 
-    return $self->[_START_LINE];
+    return $self->{+_START_LINE};
 }
 
 sub end_line {
     my $self = shift;
-    return $self->[_END_LINE] if $self->[_END_LINE];
+    return $self->{+_END_LINE} if $self->{+_END_LINE};
 
-    my $call = $self->[CALLER];
-    my $dedu = $self->[DEDUCED];
+    my $call = $self->{+CALLER};
+    my $dedu = $self->{+DEDUCED};
 
     _map_package_file($dedu->[PACKAGE], $dedu->[FILE]);
 
@@ -134,7 +134,7 @@ sub end_line {
     $match &&= !_check_interrupt($dedu->[FILE], $dedu->[LINE], $call->[LINE]);
 
     if ($match) {
-        $self->[_END_LINE] = $call->[LINE];
+        $self->{+_END_LINE} = $call->[LINE];
         return $call->[LINE];
     }
 
@@ -142,9 +142,9 @@ sub end_line {
     my @lines = sort { $a <=> $b } keys %{$SUB_MAPS{$dedu->[FILE]}};
     for my $line (@lines) {
         next if $line <= $dedu->[LINE];
-        $self->[_END_LINE] = $line;
-        $self->[_END_LINE] -= 2 unless $SUB_MAPS{$dedu->[FILE]}->{$line} eq '__EOF__';
-        return $self->[_END_LINE];
+        $self->{+_END_LINE} = $line;
+        $self->{+_END_LINE} -= 2 unless $SUB_MAPS{$dedu->[FILE]}->{$line} eq '__EOF__';
+        return $self->{+_END_LINE};
     }
 
     return undef;

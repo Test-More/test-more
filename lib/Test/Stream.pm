@@ -12,7 +12,7 @@ use Test::Stream::Util qw/try/;
 use Test::Stream::Carp qw/croak confess carp/;
 use Test::Stream::Meta qw/MODERN ENCODING init_tester/;
 
-use Test::Stream::ArrayBase(
+use Test::Stream::HashBase(
     accessors => [qw{
         no_ending no_diag no_header
         pid tid
@@ -65,7 +65,7 @@ sub tap_encoding {
     $ctx->stream->io_sets->init_encoding($encoding);
 
     my $meta = init_tester($ctx->package);
-    $meta->[ENCODING] = $encoding;
+    $meta->{+ENCODING} = $encoding;
 }
 
 sub cull {
@@ -83,7 +83,7 @@ sub before_import {
     }
 
     my $meta = init_tester($importer);
-    $meta->[MODERN] = 1;
+    $meta->{+MODERN} = 1;
 
     my $other  = [];
     my $idx    = 0;
@@ -117,7 +117,7 @@ sub before_import {
         }
         elsif ($item eq 'utf8') {
             $stream->io_sets->init_encoding('utf8');
-            $meta->[ENCODING] = 'utf8';
+            $meta->{+ENCODING} = 'utf8';
         }
         elsif ($item eq 'encoding') {
             my $encoding = $list->[$idx++];
@@ -126,7 +126,7 @@ sub before_import {
                 unless Encode::find_encoding($encoding);
 
             $stream->io_sets->init_encoding($encoding);
-            $meta->[ENCODING] = $encoding;
+            $meta->{+ENCODING} = $encoding;
         }
         elsif ($item eq 'enable_fork') {
             $stream->use_fork;
@@ -141,58 +141,58 @@ sub before_import {
     return;
 }
 
-sub plan   { $_[0]->[STATE]->[-1]->[STATE_PLAN]   }
-sub count  { $_[0]->[STATE]->[-1]->[STATE_COUNT]  }
-sub failed { $_[0]->[STATE]->[-1]->[STATE_FAILED] }
-sub ended  { $_[0]->[STATE]->[-1]->[STATE_ENDED]  }
-sub legacy { $_[0]->[STATE]->[-1]->[STATE_LEGACY] }
+sub plan   { $_[0]->{+STATE}->[-1]->[STATE_PLAN]   }
+sub count  { $_[0]->{+STATE}->[-1]->[STATE_COUNT]  }
+sub failed { $_[0]->{+STATE}->[-1]->[STATE_FAILED] }
+sub ended  { $_[0]->{+STATE}->[-1]->[STATE_ENDED]  }
+sub legacy { $_[0]->{+STATE}->[-1]->[STATE_LEGACY] }
 
 sub is_passing {
     my $self = shift;
 
     if (@_) {
-        ($self->[STATE]->[-1]->[STATE_PASSING]) = @_;
+        ($self->{+STATE}->[-1]->[STATE_PASSING]) = @_;
     }
 
-    my $current = $self->[STATE]->[-1]->[STATE_PASSING];
+    my $current = $self->{+STATE}->[-1]->[STATE_PASSING];
 
-    my $plan = $self->[STATE]->[-1]->[STATE_PLAN];
-    return $current if $self->[STATE]->[-1]->[STATE_ENDED];
+    my $plan = $self->{+STATE}->[-1]->[STATE_PLAN];
+    return $current if $self->{+STATE}->[-1]->[STATE_ENDED];
     return $current unless $plan;
     return $current unless $plan->max;
     return $current if $plan->directive && $plan->directive eq 'NO PLAN';
-    return $current unless $self->[STATE]->[-1]->[STATE_COUNT] > $plan->max;
+    return $current unless $self->{+STATE}->[-1]->[STATE_COUNT] > $plan->max;
 
-    return $self->[STATE]->[-1]->[STATE_PASSING] = 0;
+    return $self->{+STATE}->[-1]->[STATE_PASSING] = 0;
 }
 
 sub init {
     my $self = shift;
 
-    $self->[PID]         = $$;
-    $self->[TID]         = get_tid();
-    $self->[STATE]       = [[0, 0, undef, 1]];
-    $self->[USE_TAP]     = 1;
-    $self->[USE_NUMBERS] = 1;
-    $self->[IO_SETS]     = Test::Stream::IOSets->new;
-    $self->[EVENT_ID]    = 1;
-    $self->[NO_ENDING]   = 1;
-    $self->[SUBTESTS]    = [];
+    $self->{+PID}         = $$;
+    $self->{+TID}         = get_tid();
+    $self->{+STATE}       = [[0, 0, undef, 1]];
+    $self->{+USE_TAP}     = 1;
+    $self->{+USE_NUMBERS} = 1;
+    $self->{+IO_SETS}     = Test::Stream::IOSets->new;
+    $self->{+EVENT_ID}    = 1;
+    $self->{+NO_ENDING}   = 1;
+    $self->{+SUBTESTS}    = [];
 
-    $self->[SUBTEST_TAP_INSTANT] = 1;
-    $self->[SUBTEST_TAP_DELAYED] = 0;
+    $self->{+SUBTEST_TAP_INSTANT} = 1;
+    $self->{+SUBTEST_TAP_DELAYED} = 0;
 
     $self->use_fork if USE_THREADS;
 
-    $self->[EXIT_ON_DISRUPTION] = 1;
+    $self->{+EXIT_ON_DISRUPTION} = 1;
 }
 
 {
     my ($root, @stack, $magic);
 
     END {
-        $root->fork_cull if $root && $root->_use_fork && $$ == $root->[PID];
-        $magic->do_magic($root) if $magic && $root && !$root->[NO_ENDING]
+        $root->fork_cull if $root && $root->_use_fork && $$ == $root->{+PID};
+        $magic->do_magic($root) if $magic && $root && !$root->{+NO_ENDING}
     }
 
     sub _stack { @stack }
@@ -201,8 +201,8 @@ sub init {
         my ($class) = @_;
         return $stack[-1] if @stack;
 
-        @stack = ($root = $class->new(0));
-        $root->[NO_ENDING] = 0;
+        @stack = ($root = $class->new());
+        $root->{+NO_ENDING} = 0;
 
         require Test::Stream::Context;
         require Test::Stream::Event::Finish;
@@ -215,7 +215,7 @@ sub init {
     }
 
     sub clear {
-        $root->[NO_ENDING] = 1;
+        $root->{+NO_ENDING} = 1;
         $root  = undef;
         $magic = undef;
         @stack = ();
@@ -271,7 +271,7 @@ sub listen {
         croak "listen only takes coderefs for arguments, got '$sub'"
             unless ref $sub && ref $sub eq 'CODE';
 
-        push @{$self->[LISTENERS]} => $sub;
+        push @{$self->{+LISTENERS}} => $sub;
     }
 }
 
@@ -283,7 +283,7 @@ sub munge {
         croak "munge only takes coderefs for arguments, got '$sub'"
             unless ref $sub && ref $sub eq 'CODE';
 
-        push @{$self->[MUNGERS]} => $sub;
+        push @{$self->{+MUNGERS}} => $sub;
     }
 }
 
@@ -295,7 +295,7 @@ sub follow_up {
         croak "follow_up only takes coderefs for arguments, got '$sub'"
             unless ref $sub && ref $sub eq 'CODE';
 
-        push @{$self->[FOLLOW_UPS]} => $sub;
+        push @{$self->{+FOLLOW_UPS}} => $sub;
     }
 }
 
@@ -303,11 +303,11 @@ sub use_fork {
     require File::Temp;
     require Storable;
 
-    $_[0]->[_USE_FORK] ||= File::Temp::tempdir(CLEANUP => 0);
-    confess "Could not get a temp dir" unless $_[0]->[_USE_FORK];
+    $_[0]->{+_USE_FORK} ||= File::Temp::tempdir(CLEANUP => 0);
+    confess "Could not get a temp dir" unless $_[0]->{+_USE_FORK};
     if ($^O eq 'VMS') {
         require VMS::Filespec;
-        $_[0]->[_USE_FORK] = VMS::Filespec::unixify($_[0]->[_USE_FORK]);
+        $_[0]->{+_USE_FORK} = VMS::Filespec::unixify($_[0]->{+_USE_FORK});
     }
     return 1;
 }
@@ -315,7 +315,7 @@ sub use_fork {
 sub fork_out {
     my $self = shift;
 
-    my $tempdir = $self->[_USE_FORK];
+    my $tempdir = $self->{+_USE_FORK};
     confess "Fork support has not been turned on!" unless $tempdir;
 
     my $tid = get_tid();
@@ -325,7 +325,7 @@ sub fork_out {
         next if $event->isa('Test::Stream::Event::Finish');
 
         # First write the file, then rename it so that it is not read before it is ready.
-        my $name =  $tempdir . "/$$-$tid-" . ($self->[EVENT_ID]++);
+        my $name =  $tempdir . "/$$-$tid-" . ($self->{+EVENT_ID}++);
         my ($ret, $err) = try { Storable::store($event, $name) };
         # Temporary to debug an error on one cpan-testers box
         unless ($ret) {
@@ -340,12 +340,12 @@ sub fork_cull {
     my $self = shift;
 
     confess "fork_cull() can only be called from the parent process!"
-        if $$ != $self->[PID];
+        if $$ != $self->{+PID};
 
     confess "fork_cull() can only be called from the parent thread!"
-        if get_tid() != $self->[TID];
+        if get_tid() != $self->{+TID};
 
-    my $tempdir = $self->[_USE_FORK];
+    my $tempdir = $self->{+_USE_FORK};
     confess "Fork support has not been turned on!" unless $tempdir;
 
     opendir(my $dh, $tempdir) || croak "could not open temp dir ($tempdir)!";
@@ -370,7 +370,7 @@ sub fork_cull {
             unlink($full) || die "Could not unlink file: $file";
         }
 
-        my $cache = $self->_update_state($self->[STATE]->[0], $obj);
+        my $cache = $self->_update_state($self->{+STATE}->[0], $obj);
         $self->_process_event($obj, $cache);
         $self->_finalize_event($obj, $cache);
     }
@@ -381,7 +381,7 @@ sub fork_cull {
 sub done_testing {
     my $self = shift;
     my ($ctx, $num) = @_;
-    my $state = $self->[STATE]->[-1];
+    my $state = $self->{+STATE}->[-1];
 
     if (my $old = $state->[STATE_ENDED]) {
         my ($p1, $f1, $l1) = $old->call;
@@ -390,8 +390,8 @@ sub done_testing {
     }
 
     # Do not run followups in subtest!
-    if ($self->[FOLLOW_UPS] && !@{$self->[SUBTESTS]}) {
-        $_->($ctx) for @{$self->[FOLLOW_UPS]};
+    if ($self->{+FOLLOW_UPS} && !@{$self->{+SUBTESTS}}) {
+        $_->($ctx) for @{$self->{+FOLLOW_UPS}};
     }
 
     $state->[STATE_ENDED] = $ctx->snapshot;
@@ -431,14 +431,14 @@ sub subtest_start {
 
     $params{parent_todo} ||= Test::Stream::Context::context->in_todo;
 
-    if(@{$self->[SUBTESTS]}) {
-        $params{parent_todo} ||= $self->[SUBTESTS]->[-1]->{parent_todo};
+    if(@{$self->{+SUBTESTS}}) {
+        $params{parent_todo} ||= $self->{+SUBTESTS}->[-1]->{parent_todo};
     }
 
-    push @{$self->[STATE]}    => $state;
-    push @{$self->[SUBTESTS]} => {
-        instant => $self->[SUBTEST_TAP_INSTANT],
-        delayed => $self->[SUBTEST_TAP_DELAYED],
+    push @{$self->{+STATE}}    => $state;
+    push @{$self->{+SUBTESTS}} => {
+        instant => $self->{+SUBTEST_TAP_INSTANT},
+        delayed => $self->{+SUBTEST_TAP_DELAYED},
 
         %params,
 
@@ -447,7 +447,7 @@ sub subtest_start {
         name         => $name,
     };
 
-    return $self->[SUBTESTS]->[-1];
+    return $self->{+SUBTESTS}->[-1];
 }
 
 sub subtest_stop {
@@ -455,27 +455,27 @@ sub subtest_stop {
     my ($name) = @_;
 
     confess "No subtest to stop!"
-        unless @{$self->[SUBTESTS]};
+        unless @{$self->{+SUBTESTS}};
 
     confess "Subtest name mismatch!"
-        unless $self->[SUBTESTS]->[-1]->{name} eq $name;
+        unless $self->{+SUBTESTS}->[-1]->{name} eq $name;
 
-    my $st = pop @{$self->[SUBTESTS]};
-    pop @{$self->[STATE]};
+    my $st = pop @{$self->{+SUBTESTS}};
+    pop @{$self->{+STATE}};
 
     return $st;
 }
 
-sub subtest { @{$_[0]->[SUBTESTS]} ? $_[0]->[SUBTESTS]->[-1] : () }
+sub subtest { @{$_[0]->{+SUBTESTS}} ? $_[0]->{+SUBTESTS}->[-1] : () }
 
 sub send {
     my ($self, $e) = @_;
 
-    my $cache = $self->_update_state($self->[STATE]->[-1], $e);
+    my $cache = $self->_update_state($self->{+STATE}->[-1], $e);
 
     # Subtests get dibbs on events
-    if (my $num = @{$self->[SUBTESTS]}) {
-        my $st = $self->[SUBTESTS]->[-1];
+    if (my $num = @{$self->{+SUBTESTS}}) {
+        my $st = $self->{+SUBTESTS}->[-1];
 
         $e->set_in_subtest($num);
         $e->context->set_diag_todo(1) if $st->{parent_todo};
@@ -484,7 +484,7 @@ sub send {
 
         $self->_render_tap($cache) if $st->{instant} && !$cache->{no_out};
     }
-    elsif($self->[_USE_FORK] && ($$ != $self->[PID] || get_tid() != $self->[TID])) {
+    elsif($self->{+_USE_FORK} && ($$ != $self->{+PID} || get_tid() != $self->{+TID})) {
         $self->fork_out($e);
     }
     else {
@@ -508,7 +508,7 @@ sub _update_state {
             $state->[STATE_PASSING] = 0;
         }
     }
-    elsif (!$self->[NO_HEADER] && $e->isa('Test::Stream::Event::Finish')) {
+    elsif (!$self->{+NO_HEADER} && $e->isa('Test::Stream::Event::Finish')) {
         $state->[STATE_ENDED] = $e->context->snapshot;
 
         my $plan = $state->[STATE_PLAN];
@@ -523,13 +523,13 @@ sub _update_state {
             $cache->{no_out} = 1;
         }
     }
-    elsif ($self->[NO_DIAG] && $e->isa('Test::Stream::Event::Diag')) {
+    elsif ($self->{+NO_DIAG} && $e->isa('Test::Stream::Event::Diag')) {
         $cache->{no_out} = 1;
     }
     elsif ($e->isa('Test::Stream::Event::Plan')) {
         $cache->{is_plan} = 1;
 
-        if($self->[NO_HEADER]) {
+        if($self->{+NO_HEADER}) {
             $cache->{no_out} = 1;
         }
         elsif(my $existing = $state->[STATE_PLAN]) {
@@ -546,7 +546,7 @@ sub _update_state {
         $cache->{no_out} = 1 if $directive && $directive eq 'NO PLAN';
     }
 
-    push @{$state->[STATE_LEGACY]} => $e if $self->[USE_LEGACY];
+    push @{$state->[STATE_LEGACY]} => $e if $self->{+USE_LEGACY};
 
     $cache->{number} = $state->[STATE_COUNT];
 
@@ -556,14 +556,14 @@ sub _update_state {
 sub _process_event {
     my ($self, $e, $cache) = @_;
 
-    if ($self->[MUNGERS]) {
-        $_->($self, $e, $e->subevents) for @{$self->[MUNGERS]};
+    if ($self->{+MUNGERS}) {
+        $_->($self, $e, $e->subevents) for @{$self->{+MUNGERS}};
     }
 
     $self->_render_tap($cache) unless $cache->{no_out};
 
-    if ($self->[LISTENERS]) {
-        $_->($self, $e) for @{$self->[LISTENERS]};
+    if ($self->{+LISTENERS}) {
+        $_->($self, $e) for @{$self->{+LISTENERS}};
     }
 }
 
@@ -571,7 +571,7 @@ sub _render_tap {
     my ($self, $cache) = @_;
 
     return if $^C;
-    return unless $self->[USE_TAP];
+    return unless $self->{+USE_TAP};
     my $e = $cache->{tap_event};
     return unless $cache->{do_tap} || $e->can('to_tap');
 
@@ -585,7 +585,7 @@ sub _render_tap {
         my ($hid, $msg) = @$set;
         next unless $msg;
         my $enc = $e->encoding || confess "Could not find encoding!";
-        my $io = $self->[IO_SETS]->{$enc}->[$hid] || confess "Could not find IO $hid for $enc";
+        my $io = $self->{+IO_SETS}->{$enc}->[$hid] || confess "Could not find IO $hid for $enc";
 
         local($\, $", $,) = (undef, ' ', '');
         $msg =~ s/^/$indent/mg if $in_subtest;
@@ -613,9 +613,9 @@ sub _finalize_event {
         return unless $e->directive;
         return unless $e->directive eq 'SKIP';
 
-        my $subtest = @{$self->[SUBTESTS]};
+        my $subtest = @{$self->{+SUBTESTS}};
 
-        $self->[SUBTESTS]->[-1]->{early_return} = $e if $subtest;
+        $self->{+SUBTESTS}->[-1]->{early_return} = $e if $subtest;
 
         if ($subtest) {
             my $begin = _scan_for_begin('Test::Stream::Subtest::subtest');
@@ -637,16 +637,16 @@ sub _finalize_event {
             }
         }
 
-        die $e unless $self->[EXIT_ON_DISRUPTION];
+        die $e unless $self->{+EXIT_ON_DISRUPTION};
         exit 0;
     }
     elsif (!$cache->{do_tap} && $e->isa('Test::Stream::Event::Bail')) {
-        $self->[BAILED_OUT] = $e;
-        $self->[NO_ENDING]  = 1;
+        $self->{+BAILED_OUT} = $e;
+        $self->{+NO_ENDING}  = 1;
 
-        my $subtest = @{$self->[SUBTESTS]};
+        my $subtest = @{$self->{+SUBTESTS}};
 
-        $self->[SUBTESTS]->[-1]->{early_return} = $e if $subtest;
+        $self->{+SUBTESTS}->[-1]->{early_return} = $e if $subtest;
 
         if ($subtest) {
             my $begin = _scan_for_begin('Test::Stream::Subtest::subtest');
@@ -668,7 +668,7 @@ sub _finalize_event {
             }
         }
 
-        die $e unless $self->[EXIT_ON_DISRUPTION];
+        die $e unless $self->{+EXIT_ON_DISRUPTION};
         exit 255;
     }
 }
@@ -678,13 +678,13 @@ sub _reset {
 
     return unless $self->pid != $$ || $self->tid != get_tid();
 
-    $self->[PID] = $$;
-    $self->[TID] = get_tid();
-    if (USE_THREADS || $self->[_USE_FORK]) {
-        $self->[_USE_FORK] = undef;
+    $self->{+PID} = $$;
+    $self->{+TID} = get_tid();
+    if (USE_THREADS || $self->{+_USE_FORK}) {
+        $self->{+_USE_FORK} = undef;
         $self->use_fork;
     }
-    $self->[STATE] = [[0, 0, undef, 1]];
+    $self->{+STATE} = [[0, 0, undef, 1]];
 }
 
 sub CLONE {
@@ -694,7 +694,7 @@ sub CLONE {
 
         next if $$ == $stream->pid && get_tid() == $stream->tid;
 
-        $stream->[IN_SUBTHREAD] = 1;
+        $stream->{+IN_SUBTHREAD} = 1;
     }
 }
 
@@ -703,7 +703,7 @@ sub DESTROY {
 
     return if $self->in_subthread;
 
-    my $dir = $self->[_USE_FORK] || return;
+    my $dir = $self->{+_USE_FORK} || return;
 
     return unless defined $self->pid;
     return unless defined $self->tid;

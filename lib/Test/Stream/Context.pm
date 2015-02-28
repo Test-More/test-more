@@ -11,7 +11,7 @@ use Test::Stream::Event();
 use Test::Stream::Util qw/try translate_filename/;
 use Test::Stream::Meta qw/init_tester is_tester/;
 
-use Test::Stream::ArrayBase(
+use Test::Stream::HashBase(
     accessors => [qw/frame stream encoding in_todo todo modern pid skip diag_todo provider monkeypatch_stash/],
 );
 
@@ -31,10 +31,10 @@ my $CURRENT;
 sub from_end_block { 0 };
 
 sub init {
-    $_[0]->[FRAME]    ||= _find_context(1);                # +1 for call to init
-    $_[0]->[STREAM]   ||= Test::Stream->shared;
-    $_[0]->[ENCODING] ||= 'legacy';
-    $_[0]->[PID]      ||= $$;
+    $_[0]->{+FRAME}    ||= _find_context(1);                # +1 for call to init
+    $_[0]->{+STREAM}   ||= Test::Stream->shared;
+    $_[0]->{+ENCODING} ||= 'legacy';
+    $_[0]->{+PID}      ||= $$;
 }
 
 sub peek  { $CURRENT }
@@ -59,7 +59,7 @@ sub context {
     # stack.
     if ($CURRENT) {
         return $CURRENT unless $stream;
-        return $CURRENT if $stream == $CURRENT->[STREAM];
+        return $CURRENT if $stream == $CURRENT->{+STREAM};
     }
 
     my $call = _find_context($level);
@@ -73,14 +73,14 @@ sub context {
     # performance.
     my ($todo, $in_todo);
     {
-        my $todo_pkg = $meta->[Test::Stream::Meta::PACKAGE];
+        my $todo_pkg = $meta->{Test::Stream::Meta::PACKAGE};
         no strict 'refs';
         no warnings 'once';
         if (@TODO) {
             $todo = $TODO[-1];
             $in_todo = 1;
         }
-        elsif ($todo = $meta->[Test::Stream::Meta::TODO]) {
+        elsif ($todo = $meta->{Test::Stream::Meta::TODO}) {
             $in_todo = 1;
         }
         elsif ($todo = ${"$pkg\::TODO"}) {
@@ -109,7 +109,7 @@ sub context {
     if ($Test::Builder::_ORIG_Test && $Test::Builder::_ORIG_Test != $Test::Builder::Test) {
         $stream ||= $Test::Builder::Test->{stream};
 
-        my $warn = $meta->[Test::Stream::Meta::MODERN]
+        my $warn = $meta->{Test::Stream::Meta::MODERN}
                 && !$WARNED++;
 
         warn <<"        EOT" if $warn;
@@ -131,31 +131,31 @@ sub context {
         EOT
     }
 
-    $stream ||= $meta->[Test::Stream::Meta::STREAM] || Test::Stream->shared || confess "No Stream!?";
+    $stream ||= $meta->{Test::Stream::Meta::STREAM} || Test::Stream->shared || confess "No Stream!?";
     if ((USE_THREADS || $stream->_use_fork) && ($stream->pid == $$ && $stream->tid == get_tid())) {
         $stream->fork_cull();
     }
 
-    my $encoding = $meta->[Test::Stream::Meta::ENCODING] || 'legacy';
+    my $encoding = $meta->{Test::Stream::Meta::ENCODING} || 'legacy';
     $call->[1] = translate_filename($encoding => $call->[1]) if $encoding ne 'legacy';
 
     my $ctx = bless(
-        [
-            $call,
-            $stream,
-            $encoding,
-            $in_todo,
-            $todo,
-            $meta->[Test::Stream::Meta::MODERN]   || 0,
-            $$,
-            undef,
-            $in_todo,
-            [$ppkg, $pname]
-        ],
+        {
+            FRAME()     => $call,
+            STREAM()    => $stream,
+            ENCODING()  => $encoding,
+            IN_TODO()   => $in_todo,
+            TODO()      => $todo,
+            MODERN()    => $meta->{Test::Stream::Meta::MODERN} || 0,
+            PID()       => $$,
+            SKIP()      => undef,
+            DIAG_TODO() => $in_todo,
+            PROVIDER()  => [$ppkg, $pname]
+        },
         __PACKAGE__
     );
 
-    weaken($ctx->[STREAM]);
+    weaken($ctx->{+STREAM});
 
     return $ctx if $CURRENT;
 
@@ -248,20 +248,20 @@ sub throw {
     die "$msg at $call[1] line $call[2].\n";
 }
 
-sub call { @{$_[0]->[FRAME]} }
+sub call { @{$_[0]->{+FRAME}} }
 
-sub package { $_[0]->[FRAME]->[0] }
-sub file    { $_[0]->[FRAME]->[1] }
-sub line    { $_[0]->[FRAME]->[2] }
-sub subname { $_[0]->[FRAME]->[3] }
+sub package { $_[0]->{+FRAME}->[0] }
+sub file    { $_[0]->{+FRAME}->[1] }
+sub line    { $_[0]->{+FRAME}->[2] }
+sub subname { $_[0]->{+FRAME}->[3] }
 
 sub snapshot {
-    return bless [@{$_[0]}], blessed($_[0]);
+    return bless {%{$_[0]}}, blessed($_[0]);
 }
 
 sub send {
     my $self = shift;
-    $self->[STREAM]->send(@_);
+    $self->{+STREAM}->send(@_);
 }
 
 sub subtest_start {
@@ -297,7 +297,7 @@ sub subtest_stop {
         my $self = shift;
         local $Test::Builder::CTX = $self;
         my ($bool, $name, @stash) = @_;
-        push @{$self->[MONKEYPATCH_STASH]} => \@stash;
+        push @{$self->{+MONKEYPATCH_STASH}} => \@stash;
         my $out = Test::Builder->new->ok($bool, $name);
         return $out;
     }
@@ -305,7 +305,7 @@ sub subtest_stop {
     sub _unwind_ok {
         my $self = shift;
         my ($bool, $name) = @_;
-        my $stash = pop @{$self->[MONKEYPATCH_STASH]};
+        my $stash = pop @{$self->{+MONKEYPATCH_STASH}};
         return $self->_ok($bool, $name, @$stash);
     }
 
@@ -367,7 +367,7 @@ sub register_event {
         sub $name {
             my \$self = shift;
             my \@call = caller(0);
-            my \$encoding = \$self->[ENCODING];
+            my \$encoding = \$self->{+ENCODING};
             \$call[1] = translate_filename(\$encoding => \$call[1]) if \$encoding ne 'legacy';
             my \$e = '$pkg'->new(\$self->snapshot, [\@call[0 .. 4]], 0, \@_);
             return \$self->stream->send(\$e);
@@ -376,7 +376,7 @@ sub register_event {
     | || die $@;
 }
 
-sub meta { is_tester($_[0]->[FRAME]->[0]) }
+sub meta { is_tester($_[0]->{+FRAME}->[0]) }
 
 sub inspect_todo {
     my ($pkg) = @_;
@@ -386,7 +386,7 @@ sub inspect_todo {
     return {
         TODO => [@TODO],
         $Test::Builder::Test ? (TB   => $Test::Builder::Test->{Todo})      : (),
-        $meta                ? (META => $meta->[Test::Stream::Meta::TODO]) : (),
+        $meta                ? (META => $meta->{Test::Stream::Meta::TODO}) : (),
         $pkg                 ? (PKG  => ${"$pkg\::TODO"})                  : (),
     };
 }
@@ -394,14 +394,14 @@ sub inspect_todo {
 sub hide_todo {
     my $self = shift;
 
-    my $pkg = $self->[FRAME]->[0];
+    my $pkg = $self->{+FRAME}->[0];
     my $meta = is_tester($pkg);
 
     my $found = inspect_todo($pkg);
 
     @TODO = ();
     $Test::Builder::Test->{Todo} = undef;
-    $meta->[Test::Stream::Meta::TODO] = undef;
+    $meta->{Test::Stream::Meta::TODO} = undef;
     {
         no strict 'refs';
         no warnings 'once';
@@ -415,12 +415,12 @@ sub restore_todo {
     my $self = shift;
     my ($found) = @_;
 
-    my $pkg = $self->[FRAME]->[0];
+    my $pkg = $self->{+FRAME}->[0];
     my $meta = is_tester($pkg);
 
     @TODO = @{$found->{TODO}};
     $Test::Builder::Test->{Todo} = $found->{TB};
-    $meta->[Test::Stream::Meta::TODO] = $found->{META};
+    $meta->{Test::Stream::Meta::TODO} = $found->{META};
     {
         no strict 'refs';
         no warnings 'once';

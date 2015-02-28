@@ -22,7 +22,7 @@ use Test::More::Tools;
 BEGIN {
     my $meta = Test::Stream::Meta->is_tester('main');
     Test::Stream->shared->set_use_legacy(1)
-        unless $meta && $meta->[MODERN];
+        unless $meta && $meta->{+MODERN};
 }
 
 # The mostly-singleton, and other package vars.
