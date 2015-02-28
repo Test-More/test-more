@@ -305,6 +305,7 @@ methods do for you.
     );
 
     # Make the event
+            # TODO
     my $ok = Test::Stream::Event::Ok->new(
         # Should reflect where the event was produced, NOT WHERE ERRORS ARE REPORTED
         created => [__PACKAGE__, __FILE__,              __LINE__],

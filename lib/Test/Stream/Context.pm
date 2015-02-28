@@ -369,7 +369,7 @@ sub register_event {
             my \@call = caller(0);
             my \$encoding = \$self->{+ENCODING};
             \$call[1] = translate_filename(\$encoding => \$call[1]) if \$encoding ne 'legacy';
-            my \$e = '$pkg'->new(\$self->snapshot, [\@call[0 .. 4]], 0, \@_);
+            my \$e = '$pkg'->new_ordered(\$self->snapshot, [\@call[0 .. 4]], 0, \@_);
             return \$self->stream->send(\$e);
         };
         1;

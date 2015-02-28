@@ -11,8 +11,8 @@ use Test::Stream::Event(
     ctx_method => '_ok',
 );
 
-sub skip { $_[0]->[CONTEXT]->skip }
-sub todo { $_[0]->[CONTEXT]->todo }
+sub skip { $_[0]->{+CONTEXT}->skip }
+sub todo { $_[0]->{+CONTEXT}->todo }
 
 sub init {
     my $self = shift;
@@ -20,23 +20,23 @@ sub init {
     $self->SUPER::init();
 
     # Do not store objects here, only true/false/undef
-    if ($self->[REAL_BOOL]) {
-        $self->[REAL_BOOL] = 1;
+    if ($self->{+REAL_BOOL}) {
+        $self->{+REAL_BOOL} = 1;
     }
-    elsif(defined $self->[REAL_BOOL]) {
-        $self->[REAL_BOOL] = 0;
+    elsif(defined $self->{+REAL_BOOL}) {
+        $self->{+REAL_BOOL} = 0;
     }
-    $self->[LEVEL] = $Test::Builder::Level;
+    $self->{+LEVEL} = $Test::Builder::Level;
 
-    my $ctx  = $self->[CONTEXT];
-    my $rb   = $self->[REAL_BOOL];
+    my $ctx  = $self->{+CONTEXT};
+    my $rb   = $self->{+REAL_BOOL};
     my $todo = $ctx->in_todo;
     my $skip = defined $ctx->skip;
     my $b    = $rb || $todo || $skip || 0;
-    my $diag = delete $self->[DIAG];
-    my $name = $self->[NAME];
+    my $diag = delete $self->{+DIAG};
+    my $name = $self->{+NAME};
 
-    $self->[BOOL] = $b ? 1 : 0;
+    $self->{+BOOL} = $b ? 1 : 0;
 
     unless ($rb || ($todo && $skip)) {
         my $msg = $todo ? "Failed (TODO)" : "Failed";
@@ -64,13 +64,13 @@ sub to_tap {
     my $self = shift;
     my ($num) = @_;
 
-    my $name    = $self->[NAME];
-    my $context = $self->[CONTEXT];
+    my $name    = $self->{+NAME};
+    my $context = $self->{+CONTEXT};
     my $skip    = $context->skip;
     my $todo    = $context->todo;
 
     my @out;
-    push @out => "not" unless $self->[REAL_BOOL];
+    push @out => "not" unless $self->{+REAL_BOOL};
     push @out => "ok";
     push @out => $num if defined $num;
 
@@ -97,19 +97,19 @@ sub to_tap {
     my $out = join " " => @out;
     $out =~ s/\n/\n# /g;
 
-    return [OUT_STD, "$out\n"] unless $self->[DIAG];
+    return [OUT_STD, "$out\n"] unless $self->{+DIAG};
 
     return (
         [OUT_STD, "$out\n"],
-        map {$_->to_tap($num)} @{$self->[DIAG]},
+        map {$_->to_tap($num)} @{$self->{+DIAG}},
     );
 }
 
 sub add_diag {
     my $self = shift;
 
-    my $context = $self->[CONTEXT];
-    my $created = $self->[CREATED];
+    my $context = $self->{+CONTEXT};
+    my $created = $self->{+CREATED};
 
     for my $item (@_) {
         next unless $item;
@@ -121,10 +121,11 @@ sub add_diag {
             $item->link($self);
         }
         else {
-            $item = Test::Stream::Event::Diag->new($context, $created, $self->[IN_SUBTEST], $item, $self);
+            # TODO
+            $item = Test::Stream::Event::Diag->new_ordered($context, $created, $self->{+IN_SUBTEST}, $item, $self);
         }
 
-        push @{$self->[DIAG]} => $item;
+        push @{$self->{+DIAG}} => $item;
     }
 }
 
@@ -133,15 +134,15 @@ sub add_diag {
     no warnings 'redefine';
     sub clear_diag {
         my $self = shift;
-        return unless $self->[DIAG];
-        my $out = $self->[DIAG];
-        $self->[DIAG] = undef;
+        return unless $self->{+DIAG};
+        my $out = $self->{+DIAG};
+        $self->{+DIAG} = undef;
         $_->set_linked(undef) for @$out;
         return $out;
     }
 }
 
-sub subevents { @{$_[0]->[DIAG] || []} }
+sub subevents { @{$_[0]->{+DIAG} || []} }
 
 sub to_legacy {
     my $self = shift;

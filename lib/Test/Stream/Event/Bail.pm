@@ -8,7 +8,7 @@ use Test::Stream::Event(
 
 sub to_tap {
     my $self = shift;
-    return if $self->[QUIET];
+    return if $self->{+QUIET};
     return [
         OUT_STD,
         "Bail out!  " . $self->reason . "\n",

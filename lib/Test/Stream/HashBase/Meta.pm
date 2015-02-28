@@ -6,10 +6,11 @@ use Test::Stream::Carp qw/confess/;
 
 my %META;
 
-sub package {     shift->{package}   }
-sub parent  {     shift->{parent}    }
-sub locked  {     shift->{locked}    }
-sub fields  {({ %{shift->{fields}} })}
+sub package { shift->{package} }
+sub parent  { shift->{parent} }
+sub locked  { shift->{locked} }
+sub fields  { ({%{shift->{fields}}}) }
+sub order   { [@{shift->{order}}] }
 
 sub new {
     my $class = shift;
@@ -34,6 +35,7 @@ sub baseclass {
     my $self = shift;
     $self->{parent} = 'Test::Stream::HashBase';
     $self->{fields} = {};
+    $self->{order}  = [];
 }
 
 sub subclass {
@@ -46,11 +48,12 @@ sub subclass {
 
     $self->{parent} = $parent;
     $self->{fields} = $pmeta->fields; #Makes a copy
+    $self->{order}  = $pmeta->order;  #Makes a copy
 
     my $ex_meta = Test::Stream::Exporter::Meta->get($self->{package});
 
     # Put parent constants into the subclass
-    for my $field (keys %{$self->{fields}}) {
+    for my $field (@{$self->{order}}) {
         my $const = uc $field;
         no strict 'refs';
         *{"$self->{package}\::$const"} = $parent->can($const) || confess "Could not find constant '$const'!";
@@ -76,6 +79,7 @@ sub add_accessors {
             if exists $self->{fields}->{$name};
 
         $self->{fields}->{$name} = 1;
+        push @{$self->{order}} => $name;
 
         my $const = uc $name;
         my $gname = lc $name;
@@ -151,6 +155,10 @@ added. A package is locked once something else subclasses it.
 
 Get a hashref defining the fields on the package. This is primarily for
 internal use, it is not very useful outside.
+
+=item $ar = $meta->order
+
+All fields for the class in order starting with fields from base classes.
 
 =item $meta->baseclass
 
