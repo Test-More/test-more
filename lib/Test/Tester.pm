@@ -47,7 +47,7 @@ sub find_depth {
     my ($start, $end);
     my $l = 1;
     while (my @call = caller($l++)) {
-        $start = $l if $call[3] =~ m/^Test::Builder::(ok|skip|todo_skip)$/;
+        $start = $l if $call[3] =~ m/^Test::Stream::Context::|Test::Builder::(ok|skip|todo_skip)$/;
         next unless $start;
         next unless $call[3] eq 'Test::Tester::run_tests';
         $end = $l;
