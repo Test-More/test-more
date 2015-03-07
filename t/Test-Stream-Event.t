@@ -23,7 +23,7 @@ like($err, qr/No context provided/, "Need context");
 can_ok('My::MockEvent', qw/foo bar baz/);
 isa_ok('My::MockEvent', 'Test::Stream::Event');
 
-my $one = My::MockEvent->new_ordered('fake');
+my $one = My::MockEvent->new(context => 'fake');
 
 can_ok('Test::Stream::Context', 'mockevent');
 

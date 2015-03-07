@@ -4,7 +4,7 @@ use warnings;
 
 use Test::Stream::Event(
     accessors  => [qw/message/],
-    ctx_method => '_note',
+    ctx_method => ['_note' => 'message'],
 );
 
 use Test::Stream::Carp qw/confess/;

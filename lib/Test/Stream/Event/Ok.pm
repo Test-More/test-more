@@ -7,8 +7,8 @@ use Test::Stream::Util qw/unoverload_str/;
 use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::Event(
-    accessors  => [qw/real_bool name diag bool level/],
-    ctx_method => '_ok',
+    accessors   => [qw/real_bool name diag bool level/],
+    ctx_method  => [ '_ok' => qw/real_bool name diag/ ],
 );
 
 sub skip { $_[0]->{+CONTEXT}->skip }
@@ -121,8 +121,13 @@ sub add_diag {
             $item->link($self);
         }
         else {
-            # TODO
-            $item = Test::Stream::Event::Diag->new_ordered($context, $created, $self->{+IN_SUBTEST}, $item, $self);
+            $item = Test::Stream::Event::Diag->new(
+                context    => $context,
+                created    => $created,
+                in_subtest => $self->{+IN_SUBTEST},
+                message    => $item,
+                linked     => $self,
+            );
         }
 
         push @{$self->{+DIAG}} => $item;

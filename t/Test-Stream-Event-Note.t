@@ -6,7 +6,12 @@ use Test::More;
 
 use ok 'Test::Stream::Event::Note';
 
-my $note = Test::Stream::Event::Note->new_ordered('fake', 'fake', 0, "hello");
+my $note = Test::Stream::Event::Note->new(
+    context    => 'fake',
+    created    => 'fake',
+    in_subtest => 0,
+    message    => "hello",
+);
 
 is($note->message, 'hello', "got message");
 

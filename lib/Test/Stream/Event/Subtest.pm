@@ -7,8 +7,9 @@ use Test::Stream::Carp qw/confess/;
 use Test::Stream qw/-internal STATE_PASSING STATE_COUNT STATE_FAILED STATE_PLAN/;
 
 use Test::Stream::Event(
-    base      => 'Test::Stream::Event::Ok',
-    accessors => [qw/state events exception early_return delayed instant/],
+    base       => 'Test::Stream::Event::Ok',
+    accessors  => [qw/state events exception early_return delayed instant/],
+    ctx_method => [subtest => qw/real_bool name/],
 );
 
 sub init {

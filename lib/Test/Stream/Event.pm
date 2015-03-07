@@ -10,8 +10,6 @@ use Test::Stream::HashBase(
     no_import => 1,
 );
 
-
-
 sub import {
     my $class = shift;
 
@@ -23,13 +21,14 @@ sub import {
     my (%args) = @_;
 
     my $ctx_meth = delete $args{ctx_method};
+    my $accessors = $args{accessors} || [];
 
     require Test::Stream::Context;
     require Test::Stream;
 
     # %args may override base
     Test::Stream::HashBase->apply_to($caller, base => $class, %args);
-    Test::Stream::Context->register_event($caller, $ctx_meth);
+    Test::Stream::Context->register_event($caller, $ctx_meth, $accessors);
     Test::Stream::Exporter::export_to(
         'Test::Stream',
         $caller,

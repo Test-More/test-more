@@ -71,24 +71,6 @@ sub new {
     return $self;
 }
 
-sub new_ordered {
-    my $class = shift;
-    my $input = [@_];
-
-    my $meta = Test::Stream::HashBase::Meta->new($class);
-
-    my $names = $meta->order;
-    my %params;
-
-    while (@$input) {
-        my $v = shift @$input;
-        my $k = shift @$names || croak "Too many arguments, starting at '$v'";
-        $params{$k} = $v;
-    }
-
-    return $class->new(%params);;
-}
-
 1;
 
 __END__

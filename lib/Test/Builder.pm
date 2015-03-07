@@ -200,21 +200,14 @@ sub finalize {
 
     my $st = $ctx->subtest_stop($name);
 
-    $parent->ctx->subtest(
-        # Stuff from ok (most of this gets initialized inside)
-        undef, # real_bool, gets set properly by initializer
-        $st->{name}, # name
-        undef, # diag
-        undef, # bool
-        undef, # level
-
-        # Subtest specific stuff
-        $st->{state},
-        $st->{events},
-        $st->{exception},
-        $st->{early_return},
-        $st->{delayed},
-        $st->{instant},
+    $parent->ctx->send_subtest(
+        name         => $st->{name},
+        state        => $st->{state},
+        events       => $st->{events},
+        exception    => $st->{exception},
+        early_return => $st->{early_return},
+        delayed      => $st->{delayed},
+        instant      => $st->{instant},
     );
 }
 
@@ -784,15 +777,11 @@ sub current_test {
         for (1 .. $num) {
             my $i;
             $i = shift @$old while @$old && (!$i || !$i->isa('Test::Stream::Event::Ok'));
-            # TODO
-            $i ||= Test::Stream::Event::Ok->new_ordered(
-                $nctx,
-                [CORE::caller()],
-                0,
-                undef,
-                undef,
-                undef,
-                1,
+            $i ||= Test::Stream::Event::Ok->new(
+                context    => $nctx,
+                created    => [CORE::caller()],
+                in_subtest => 0,
+                bool       => 1,
             );
 
             push @$new => $i;

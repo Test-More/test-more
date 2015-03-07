@@ -349,17 +349,32 @@ sub events { \%EVENTS }
 
 sub register_event {
     my $class = shift;
-    my ($pkg, $name) = @_;
+    my ($pkg, $spec, $accessors) = @_;
 
     my $real_name = lc($pkg);
     $real_name =~ s/^.*:://g;
 
-    $name ||= $real_name;
+    my $name = $spec ? shift @$spec : $real_name;
+    my $build = "build_$real_name";
+    my $send  = "send_$real_name";
 
     confess "Method '$name' is already defined, event '$pkg' cannot get a context method!"
         if $class->can($name);
 
+    confess "Method '$build' is already defined, event '$pkg' cannot get a context builder!"
+        if $class->can($build);
+
+    confess "Method '$send' is already defined, event '$pkg' cannot get a context sender!"
+        if $class->can($send);
+
     $EVENTS{$real_name} = $pkg;
+
+    my $fields = "";
+    my $i = 0;
+    for my $field (@{$spec || $accessors}) {
+        $fields .= "$field => \$_[$i], ";
+        $i++;
+    }
 
     # Use a string eval so that we get a names sub instead of __ANON__
     local ($@, $!);
@@ -369,9 +384,42 @@ sub register_event {
             my \@call = caller(0);
             my \$encoding = \$self->{+ENCODING};
             \$call[1] = translate_filename(\$encoding => \$call[1]) if \$encoding ne 'legacy';
-            my \$e = '$pkg'->new_ordered(\$self->snapshot, [\@call[0 .. 4]], 0, \@_);
+            my \$e = '$pkg'->new(
+                context    => \$self->snapshot,
+                created    => [\@call[0 .. 4]],
+                in_subtest => 0,
+                $fields
+            );
             return \$self->stream->send(\$e);
         };
+
+        sub $build {
+            my \$self = shift;
+            my \@call = caller(0);
+            my \$encoding = \$self->{+ENCODING};
+            \$call[1] = translate_filename(\$encoding => \$call[1]) if \$encoding ne 'legacy';
+            return '$pkg'->new(
+                context    => \$self->snapshot,
+                created    => [\@call[0 .. 4]],
+                in_subtest => 0,
+                \@_,
+            );
+        }
+
+        sub $send {
+            my \$self = shift;
+            my \@call = caller(0);
+            my \$encoding = \$self->{+ENCODING};
+            \$call[1] = translate_filename(\$encoding => \$call[1]) if \$encoding ne 'legacy';
+            my \$e = '$pkg'->new(
+                context    => \$self->snapshot,
+                created    => [\@call[0 .. 4]],
+                in_subtest => 0,
+                \@_,
+            );
+            return \$self->stream->send(\$e);
+        }
+
         1;
     | || die $@;
 }
