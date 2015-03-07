@@ -949,7 +949,7 @@ __END__
 
 =head1 NAME
 
-Test::Builder - *DEPRECATED* Module for building testing libraries.
+Test::Builder - *DISCOURAGED* Module for building testing libraries.
 
 =head1 DESCRIPTION
 
@@ -958,19 +958,24 @@ module is now little more than a compatability wrapper around L<Test::Stream>.
 If you are looking to write or update a testing library you should look at
 L<Test::Stream::Toolset>.
 
+However if you must support older versions of Test-Simple/More/Builder then you
+B<MUST> use this module for your testing code.
+
 =head1 PACKAGE VARS
 
 =over 4
 
 =item $Test::Builder::Test
 
-The variable that holds the Test::Builder singleton.
+The variable that holds the Test::Builder singleton. It is best practice to
+leave this variable alone, messing with it can have unexpected consequences.
 
 =item $Test::Builder::Level
 
 In the past this variable was used to track stack depth so that Test::Builder
 could report the correct line number. If you use Test::Builder this will still
-work, but in new code it is better to use the L<Test::Stream::Context> module.
+work, but in new code it is better to use the L<Test::Stream::Context> module
+unless you must support older versions of Test-Simple.
 
 =back
 
@@ -992,27 +997,49 @@ Returns a new instance of Test::Builder. It is important to note that this
 instance will not use the shared L<Test::Stream> object unless you pass in the
 C<< use_shared => 1 >> argument.
 
+This is a way to get a new instance of Test::Builder that is not the singleton.
+This is usually done for testing code.
+
 =back
 
 =head2 UTIL
 
 =over 4
 
-=item $TB->ctx
+=item $ctx = $TB->ctx
 
-Helper method for Test::Builder to get a L<Test::Stream::Context> object.
+Helper method for Test::Builder to get a L<Test::Stream::Context> object. This
+is primarily for internal use, and is B<NOT> present on older versions of
+Test::Builder.
 
-=item $TB->depth
+=item $depth = $TB->depth
 
-Get the subtest depth
+Get the subtest depth. If this is called inside a subtest the value will be 1.
 
-=item $TB->find_TODO
+=item $todo = $TB->find_TODO($package, $set, $new_value)
 
-=item $TB->in_todo
+This is a way to find and/or set the TODO reason. This method has complex and
+unintuitive logic, it is kept for legacy reasons, but it is recommended that
+you not use it.
 
-=item $TB->todo
+Calling with no arguments it will try to find the $TODO variable for you and
+return the value.
 
-These all check on todo state and value
+Calling with a package will try to find the $TODO value of that package.
+
+If you include $set and $new_value it will set the $TODO variable for the
+specified package.
+
+=item $bool = $TB->in_todo
+
+This will return true if TODO is set, false otherwise.
+
+=item $TB->todo()
+
+=item $TB->todo($package)
+
+This finds the todo message currently set, if any. If you specify a package it
+will look there unless it finds a message set in the singleton.
 
 =back
 
@@ -1020,44 +1047,75 @@ These all check on todo state and value
 
 =over 4
 
-=item $TB->caller
+=item $pkg = $TB->caller
 
-=item $TB->carp
+=item ($pkg, $file, $line) $TB->caller
+
+This will try to find the details about where the test was called.
+
+=item $TB->carp($msg)
+
+Warn from the perspective of the test caller.
 
 =item $TB->croak
 
-These let you figure out when/where the test is defined in the test file.
+Throw an exception from the perspective of the test caller.
 
-=item $TB->child
+=item $TB->child($name)
 
-Start a subtest (Please do not use this)
+B<DISCOURAGED>
+
+This used to be used internally to start a subtest. Subtests started in this
+way must call C<finalize()> when they are done.
+
+Use of this method never gained traction, and was never strictly necessary. It
+has always been better to use the C<subtest()> method instead which handles the
+hard work for you. This is too low level for most use cases.
 
 =item $TB->finalize
 
-Finish a subtest (Please do not use this)
+B<DISCOURAGED>
 
-=item $TB->explain
+Use this to end a subtest created via C<child()>.
 
-Interface to Data::Dumper that dumps whatever you give it.
+=item $TB->explain(@stuff)
+
+Interface to Data::Dumper that dumps whatever you give it. This is really just
+a quick way to dump human readable test of structures.
 
 =item $TB->exported_to
 
-This used to tell you what package used Test::Builder, it never worked well.
-The previous bad and unpredictable behavior of this has largely been preserved,
-however nothing internal uses it in any meaningful way anymore.
+=item $TB->exported_to($package)
 
-=item $TB->is_fh
+B<DISCOURAGED>
 
-Check if something is a filehandle
+Test::Builder used to assume that tests would only ever be run from a single
+package, usually main. This is a way to tell Test::Builder what package is
+running tests. This assumption proved to be very dumb.
 
-=item $TB->level
+It is not uncommon to have tests run from many packages, as a result this
+method is pretty useless if not actively harmful. Almost nothing uses this, but
+it has been preserved for legacy modules.
+
+=item $bool = $TB->is_fh($thing)
+
+Check if something is a filehandile.
+
+=item $num = $TB->level
+
+=item $TB->level($num)
+
+B<DISCOURAGED>
 
 Get/Set C<$Test::Builder::Level>. $Level is a package var, and most things
 localize it, so this method is pretty useless.
 
-=item $TB->maybe_regex
+=item $bool = $TB->maybe_regex($thing)
 
-Check if something might be a regex.
+Check if something might be a regex. These days we have C<qr//> and other
+things that may make this method seem silly, however in older versions of perl
+we did not have such luxuries. This method exists for old code and environments
+where strings may be used as regexes.
 
 =item $TB->reset
 
@@ -1065,46 +1123,70 @@ Reset the builder object to a very basic and default state. You almost
 certainly do not need this unless you are writing a tool to test testing
 libraries. Even then you probably do not want this.
 
+In newer code using L<Test::Stream> this completely resets the state in the
+shared stream as well.
+
+=item $TB->todo_start($msg)
+
+Set a todo message. This will make all results 'TODO' if they are generated
+after this is set.
+
 =item $TB->todo_end
 
-=item $TB->todo_start
-
-Start/end TODO state, there are better ways to do this now.
+Unset the TODO message.
 
 =back
 
 =head2 STREAM INTERFACE
 
-These simply interface into functionality of L<Test::Stream>.
+In older versions of Test::Builder these methods directly effected the
+singleton. These days they are all compatability wrappers around
+L<Test::Stream>. If possible you should use the L<Test::Stream::API>, however
+if you need to support older versions of Test::Builder these will work fine for
+both.
 
 =over 4
 
-=item $TB->failure_output
+=item $fh = $TB->failure_output
 
-=item $TB->output
+=item $fh = $TB->output
+
+=item $fh = $TB->todo_output
+
+=item $TB->failure_output($fh)
+
+=item $TB->output($fh)
+
+=item $TB->todo_output($fh)
+
+These allow you to get and/or set the filehandle for various types of output.
+Note that this will not effect UTF8 or other encodings that are specified using
+the Test::Stream interface. This only effects the 'legacy' encoding used by
+Test::Stream by default.
 
 =item $TB->reset_outputs
 
-=item $TB->todo_output
-
-These get/set the IO handle used in the 'legacy' tap encoding.
+This will reset all the outputs to the default. Note this only effects the
+'legacy' encoding used by Test::Stream.
 
 =item $TB->no_diag
 
 Do not display L<Test::Stream::Event::Diag> events.
 
-=item $TB->no_ending
+=item $TB->no_ending($bool)
 
 Do not do some special magic at the end that tells you what went wrong with
 tests.
 
-=item $TB->no_header
+=item $TB->no_header($bool)
 
-Do not display the plan
+Do not display the plan.
 
-=item $TB->use_numbers
+=item $TB->use_numbers($bool)
 
 Turn numbers in TAP on and off.
+
+=item $num = $TB->current_test
 
 =back
 
@@ -1129,6 +1211,15 @@ Check if there is a plan
 
 List of pass/fail results.
 
+=item $TB->current_test($num)
+
+Get/Set the current test number. Setting the test number is probably not
+something you want to do, except when validating testing tools.
+
+=item $bool = $TB->is_passing
+
+This is a way to check if the test suite is currently passing or failing.
+
 =back
 
 =head2 EVENT GENERATORS
@@ -1138,47 +1229,114 @@ L<Test::More::Tools>. Calling the methods below is not advised.
 
 =over 4
 
-=item $TB->BAILOUT
+=item $TB->BAILOUT($reason)
 
-=item $TB->BAIL_OUT
+=item $TB->BAIL_OUT($reason)
 
-=item $TB->cmp_ok
+These will issue an L<Test::Stream::Event::Bail> event. This will cause the
+test file to stop running immedietly with a message.
 
-=item $TB->current_test
+=item $TB->cmp_ok($got, $type, $expect, $name)
 
-=item $TB->diag
+    $TB->cmp_ok('foo', 'eq', 'foo', 'check that foo is foo');
+
+Check that a comparison of C<$type> is true for the given values.
+
+=item $TB->diag($msg)
+
+    $TB->diag("This is a diagnostic message");
+
+This will print a message, typically to STDERR. This message will get a '# '
+prefix so that TAP harnesses see it as a comment.
 
 =item $TB->done_testing
 
-=item $TB->is_eq
+=item $TB->done_testing($num)
 
-=item $TB->is_num
+This will issue an L<Test::Stream::Event::Plan> event. This plan will set the
+expected number of tests to the current test count. This will also tell
+Test::Stream that the test should be done.
 
-=item $TB->is_passing
+If you provide an argument, that argument will be used as the expected number
+of tests.
 
-=item $TB->isnt_eq
+=item $TB->is_eq($got, $expect, $name)
 
-=item $TB->isnt_num
+This will issue an L<Test::Stream::Event::Ok> event. If $got matches $expect
+the test will pass, otherwise it will fail. This method expects values to be
+strings.
 
-=item $TB->like
+=item $TB->is_num($got, $expect, $name)
+
+This will issue an L<Test::Stream::Event::Ok> event. If $got matches $expect
+the test will pass, otherwise it will fail. This method expects values to be
+numerical.
+
+=item $TB->isnt_eq($got, $dont_expect, $name)
+
+This will issue an L<Test::Stream::Event::Ok> event. If $got matches $dont_expect
+the test will fail, otherwise it will pass. This method expects values to be
+strings.
+
+=item $TB->isnt_num($got, $dont_expect, $name)
+
+This will issue an L<Test::Stream::Event::Ok> event. If $got matches $dont_expect
+the test will fail, otherwise it will pass. This method expects values to be
+numerical.
+
+=item $TB->like($thing, $regex, $name)
+
+This will check $thing against the $regex. If it matches the test will pass.
+
+=item $TB->unlike($thing, $regex, $name)
+
+This will check $thing against the $regex. If it matches the test will fail.
 
 =item $TB->no_plan
 
-=item $TB->note
+This tells Test::Builder that there should be no plan, and that is the plan.
 
-=item $TB->ok
+=item $TB->note($message)
 
-=item $TB->plan
+Send a message to STDOUT, it will be prefixed with '# ' so that TAP harnesses
+will see it as a comment.
 
-=item $TB->skip
+=item $TB->ok($bool, $name)
 
-=item $TB->skip_all
+Issues an L<Test::Stream::Event::Ok> event. If $bool is true the test passes,
+otherwise it fails.
 
-=item $TB->subtest
+=item $TB->plan(tests => $num)
 
-=item $TB->todo_skip
+Set the number of tests that should be run.
 
-=item $TB->unlike
+=item $TB->plan(skip_all => $reason)
+
+Skip all the tests for the specified reason. $reason is a string.
+
+=item $TB->plan('no_plan')
+
+The plan is that there is no plan.
+
+=item $TB->skip($reason)
+
+Skip a single test for the specified reason. This generates a single
+L<Test::Stream::Event::Ok> event.
+
+=item $TB->skip_all($reason)
+
+Skip all the tests for the specified reason.
+
+=item $TB->subtest($name, sub { ... })
+
+Run the provided codeblock as a subtest. All results will be indented, and all
+that matters is the final OK.
+
+=item $TB->todo_skip($reason)
+
+Skip a single test with a todo message. This generates a single
+L<Test::Stream::Event::Ok> event, it will have both it's 'todo' and its 'skip'
+set to $reason.
 
 =back
 
@@ -1186,17 +1344,18 @@ L<Test::More::Tools>. Calling the methods below is not advised.
 
 =over 4
 
-=item $TB->stream
+=item $stream = $TB->stream
 
-Get the stream used by this builder (or the shared stream).
+Get the stream used by this builder (or the shared stream). This is not
+available on older test builders.
 
 =item $TB->name
 
-Name of the test
+Name of the test builder instance, this is only useful inside a subtest.
 
 =item $TB->parent
 
-Parent if this is a child.
+Parent builder instance, if this is a child.
 
 =back
 
