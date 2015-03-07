@@ -2,7 +2,6 @@ package Test::Stream::Tester;
 use strict;
 use warnings;
 
-use Test::Builder 1.301001;
 use Test::Stream;
 use Test::Stream::Util qw/try/;
 

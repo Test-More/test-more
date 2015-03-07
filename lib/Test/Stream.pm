@@ -676,6 +676,8 @@ sub _finalize_event {
 sub _reset {
     my $self = shift;
 
+    $self->{+STATE} = [[0, 0, undef, 1]];
+
     return unless $self->pid != $$ || $self->tid != get_tid();
 
     $self->{+PID} = $$;
@@ -684,7 +686,6 @@ sub _reset {
         $self->{+_USE_FORK} = undef;
         $self->use_fork;
     }
-    $self->{+STATE} = [[0, 0, undef, 1]];
 }
 
 sub CLONE {
