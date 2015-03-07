@@ -22,7 +22,9 @@ sub subtest {
         unless $code && 'CODE' eq reftype($code);
 
     my $block = Test::Stream::Block->new(
-        $name, $code, undef, [caller(0)],
+        name    => $name,
+        coderef => $code,
+        caller  => [caller(0)],
     );
 
     $ctx->note("Subtest: $name")

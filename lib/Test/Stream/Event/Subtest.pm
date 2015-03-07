@@ -13,18 +13,18 @@ use Test::Stream::Event(
 
 sub init {
     my $self = shift;
-    $self->[EVENTS] ||= [];
+    $self->{+EVENTS} ||= [];
 
-    $self->[REAL_BOOL] = $self->[STATE]->[STATE_PASSING] && $self->[STATE]->[STATE_COUNT];
+    $self->{+REAL_BOOL} = $self->{+STATE}->[STATE_PASSING] && $self->{+STATE}->[STATE_COUNT];
 
-    if ($self->[EXCEPTION]) {
-        push @{$self->[DIAG]} => "Exception in subtest '$self->[NAME]': $self->[EXCEPTION]";
-        $self->[STATE]->[STATE_PASSING] = 0;
-        $self->[BOOL] = 0;
-        $self->[REAL_BOOL] = 0;
+    if ($self->{+EXCEPTION}) {
+        push @{$self->{+DIAG}} => "Exception in subtest '$self->{+NAME}': $self->{+EXCEPTION}";
+        $self->{+STATE}->[STATE_PASSING] = 0;
+        $self->{+BOOL} = 0;
+        $self->{+REAL_BOOL} = 0;
     }
 
-    if (my $le = $self->[EARLY_RETURN]) {
+    if (my $le = $self->{+EARLY_RETURN}) {
         my $is_skip = $le->isa('Test::Stream::Event::Plan');
         $is_skip &&= $le->directive;
         $is_skip &&= $le->directive eq 'SKIP';
@@ -32,16 +32,16 @@ sub init {
         if ($is_skip) {
             my $skip = $le->reason || "skip all";
             # Should be a snapshot now:
-            $self->[CONTEXT]->set_skip($skip);
-            $self->[REAL_BOOL] = 1;
+            $self->{+CONTEXT}->set_skip($skip);
+            $self->{+REAL_BOOL} = 1;
         }
         else { # BAILOUT
-            $self->[REAL_BOOL] = 0;
+            $self->{+REAL_BOOL} = 0;
         }
     }
 
-    push @{$self->[DIAG]} => "  No tests run for subtest."
-        unless $self->[EXCEPTION] || $self->[EARLY_RETURN] || $self->[STATE]->[STATE_COUNT];
+    push @{$self->{+DIAG}} => "  No tests run for subtest."
+        unless $self->{+EXCEPTION} || $self->{+EARLY_RETURN} || $self->{+STATE}->[STATE_COUNT];
 
     # Have the 'OK' init run
     $self->SUPER::init();
@@ -49,8 +49,8 @@ sub init {
 
 sub subevents {
     return (
-        @{$_[0]->[DIAG] || []},
-        map { $_, $_->subevents } @{$_[0]->[EVENTS] || []},
+        @{$_[0]->{+DIAG} || []},
+        map { $_, $_->subevents } @{$_[0]->{+EVENTS} || []},
     );
 }
 
@@ -58,23 +58,23 @@ sub to_tap {
     my $self = shift;
     my ($num) = @_;
 
-    my $delayed = $self->[DELAYED];
+    my $delayed = $self->{+DELAYED};
 
     unless($delayed) {
-        return if $self->[EXCEPTION]
-               && $self->[EXCEPTION]->isa('Test::Stream::Event::Bail');
+        return if $self->{+EXCEPTION}
+               && $self->{+EXCEPTION}->isa('Test::Stream::Event::Bail');
 
         return $self->SUPER::to_tap($num);
     }
 
     # Subtest final result first
-    $self->[NAME] =~ s/$/ {/mg;
+    $self->{+NAME} =~ s/$/ {/mg;
     my @out = (
         $self->SUPER::to_tap($num),
         $self->_render_events($num),
         [OUT_STD, "}\n"],
     );
-    $self->[NAME] =~ s/ \{$//mg;
+    $self->{+NAME} =~ s/ \{$//mg;
     return @out;
 }
 
@@ -82,7 +82,7 @@ sub _render_events {
     my $self = shift;
     my ($num) = @_;
 
-    my $delayed = $self->[DELAYED];
+    my $delayed = $self->{+DELAYED};
 
     my $idx = 0;
     my @out;
@@ -103,7 +103,7 @@ sub extra_details {
     my $self = shift;
 
     my @out = $self->SUPER::extra_details();
-    my $plan = $self->[STATE]->[STATE_PLAN];
+    my $plan = $self->{+STATE}->[STATE_PLAN];
     my $exception = $self->exception;
 
     return (
@@ -114,9 +114,9 @@ sub extra_details {
         exception => $exception || undef,
         plan      => $plan      || undef,
 
-        passing => $self->[STATE]->[STATE_PASSING],
-        count   => $self->[STATE]->[STATE_COUNT],
-        failed  => $self->[STATE]->[STATE_FAILED],
+        passing => $self->{+STATE}->[STATE_PASSING],
+        count   => $self->{+STATE}->[STATE_COUNT],
+        failed  => $self->{+STATE}->[STATE_FAILED],
     );
 }
 

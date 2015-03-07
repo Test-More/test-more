@@ -22,7 +22,7 @@ use Test::More::Tools;
 BEGIN {
     my $meta = Test::Stream::Meta->is_tester('main');
     Test::Stream->shared->set_use_legacy(1)
-        unless $meta && $meta->[MODERN];
+        unless $meta && $meta->{+MODERN};
 }
 
 # The mostly-singleton, and other package vars.
@@ -784,7 +784,8 @@ sub current_test {
         for (1 .. $num) {
             my $i;
             $i = shift @$old while @$old && (!$i || !$i->isa('Test::Stream::Event::Ok'));
-            $i ||= Test::Stream::Event::Ok->new(
+            # TODO
+            $i ||= Test::Stream::Event::Ok->new_ordered(
                 $nctx,
                 [CORE::caller()],
                 0,

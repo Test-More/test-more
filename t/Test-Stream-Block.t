@@ -57,7 +57,7 @@ BEGIN {
         my %params = @_;
         my @caller = caller;
 
-        $main::BLOCKS{$name} = Test::Stream::Block->new_from_pairs(
+        $main::BLOCKS{$name} = Test::Stream::Block->new(
             name    => $name,
             params  => \%params,
             coderef => $code,

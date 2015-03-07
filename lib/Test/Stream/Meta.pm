@@ -5,7 +5,7 @@ use warnings;
 use Scalar::Util();
 use Test::Stream::Util qw/protect/;
 
-use Test::Stream::ArrayBase(
+use Test::Stream::HashBase(
     accessors => [qw/package encoding modern todo stream/],
 );
 
@@ -20,7 +20,7 @@ my %META;
 sub snapshot {
     my $self = shift;
     my $class = Scalar::Util::blessed($self);
-    return bless [@$self], $class;
+    return bless {%$self}, $class;
 }
 
 sub is_tester {
@@ -30,7 +30,14 @@ sub is_tester {
 
 sub init_tester {
     my $pkg = shift;
-    $META{$pkg} ||= bless [$pkg, 'legacy', 0, undef], __PACKAGE__;
+
+    $META{$pkg} ||= bless {
+        PACKAGE()  => $pkg,
+        ENCODING() => 'legacy',
+        MODERN()   => 0,
+        TODO()     => undef,
+    }, __PACKAGE__;
+
     return $META{$pkg};
 }
 

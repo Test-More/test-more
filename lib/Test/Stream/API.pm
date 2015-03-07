@@ -292,7 +292,7 @@ This is not recommended, but it demonstrates just how much the context shortcut
 methods do for you.
 
     # First make a context
-    my $context = Test::Stream::Context->new_from_pairs(
+    my $context = Test::Stream::Context->new(
         frame     => ..., # Where to report errors
         stream    => ..., # Test::Stream object to use
         encoding  => ..., # encoding from test package meta-data
@@ -305,7 +305,8 @@ methods do for you.
     );
 
     # Make the event
-    my $ok = Test::Stream::Event::Ok->new_from_pairs(
+            # TODO
+    my $ok = Test::Stream::Event::Ok->new(
         # Should reflect where the event was produced, NOT WHERE ERRORS ARE REPORTED
         created => [__PACKAGE__, __FILE__,              __LINE__],
         context => $context,     # A context is required

@@ -5,10 +5,12 @@ use warnings;
 use Scalar::Util qw/blessed/;
 use Test::Stream::Carp qw/confess/;
 
-use Test::Stream::ArrayBase(
+use Test::Stream::HashBase(
     accessors => [qw/context created in_subtest/],
     no_import => 1,
 );
+
+
 
 sub import {
     my $class = shift;
@@ -26,7 +28,7 @@ sub import {
     require Test::Stream;
 
     # %args may override base
-    Test::Stream::ArrayBase->apply_to($caller, base => $class, %args);
+    Test::Stream::HashBase->apply_to($caller, base => $class, %args);
     Test::Stream::Context->register_event($caller, $ctx_meth);
     Test::Stream::Exporter::export_to(
         'Test::Stream',
@@ -36,10 +38,10 @@ sub import {
 }
 
 sub init {
-    confess("No context provided!") unless $_[0]->[CONTEXT];
+    confess("No context provided!") unless $_[0]->{+CONTEXT};
 }
 
-sub encoding { $_[0]->[CONTEXT]->encoding }
+sub encoding { $_[0]->{+CONTEXT}->encoding }
 
 sub extra_details {}
 

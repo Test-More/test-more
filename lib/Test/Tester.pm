@@ -60,8 +60,8 @@ sub find_depth {
 }
 
 require Test::Stream::Event::Ok;
-my $META = Test::Stream::ArrayBase::Meta->get('Test::Stream::Event::Ok');
-my $idx = $META->{index} + 1;
+my $META = Test::Stream::HashBase::Meta->get('Test::Stream::Event::Ok');
+my $idx = 'Test::Tester';
 
 sub run_tests {
     my $test = shift;
@@ -76,10 +76,10 @@ sub run_tests {
     $stream->state->[-1] = [0, 0, undef, 1];
     $stream->munge(sub {
         my ($stream, $e) = @_;
-        $e->[$idx] = find_depth() - $Test::Builder::Level;
-        $e->[$idx+1] = $Test::Builder::Level;
+        $e->{$idx} = find_depth() - $Test::Builder::Level;
+        $e->{"${idx}_level"} = $Test::Builder::Level;
         require Carp;
-        $e->[$idx + 2] = Carp::longmess();
+        $e->{"${idx}_trace"} = Carp::longmess();
     });
 
     my $level = $Test::Builder::Level;
@@ -95,7 +95,7 @@ sub run_tests {
                 push @out => $e->to_legacy;
                 $out[-1]->{name} = '' unless defined $out[-1]->{name};
                 $out[-1]->{diag} ||= "";
-                $out[-1]->{depth} = $e->[$idx];
+                $out[-1]->{depth} = $e->{$idx};
                 for my $d (@{$e->diag || []}) {
                     next if $d->message =~ m{Failed (\(TODO\) )?test (.*\n\s*)?at .* line \d+\.};
                     next if $d->message =~ m{You named your test '.*'\.  You shouldn't use numbers for your test names};

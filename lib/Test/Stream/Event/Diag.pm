@@ -13,33 +13,33 @@ use Test::Stream::Carp qw/confess/;
 
 sub init {
     $_[0]->SUPER::init();
-    if (defined $_[0]->[MESSAGE]) {
-        $_[0]->[MESSAGE] .= "";
+    if (defined $_[0]->{+MESSAGE}) {
+        $_[0]->{+MESSAGE} .= "";
     }
     else {
-        $_[0]->[MESSAGE] = 'undef';
+        $_[0]->{+MESSAGE} = 'undef';
     }
-    weaken($_[0]->[LINKED]) if $_[0]->[LINKED];
+    weaken($_[0]->{+LINKED}) if $_[0]->{+LINKED};
 }
 
 sub link {
     my $self = shift;
     my ($to) = @_;
-    confess "Already linked!" if $self->[LINKED];
-    $self->[LINKED] = $to;
-    weaken($self->[LINKED]);
+    confess "Already linked!" if $self->{+LINKED};
+    $self->{+LINKED} = $to;
+    weaken($self->{+LINKED});
 }
 
 sub to_tap {
     my $self = shift;
 
-    chomp(my $msg = $self->[MESSAGE]);
+    chomp(my $msg = $self->{+MESSAGE});
 
     $msg = "# $msg" unless $msg =~ m/^\n/;
     $msg =~ s/\n/\n# /g;
 
     return [
-        ($self->[CONTEXT]->diag_todo ? OUT_TODO : OUT_ERR),
+        ($self->{+CONTEXT}->diag_todo ? OUT_TODO : OUT_ERR),
         "$msg\n",
     ];
 }

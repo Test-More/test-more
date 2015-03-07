@@ -17,29 +17,29 @@ my %ALLOWED = (
 sub init {
     $_[0]->SUPER::init();
 
-    if ($_[0]->[DIRECTIVE]) {
-        $_[0]->[DIRECTIVE] = 'SKIP'    if $_[0]->[DIRECTIVE] eq 'skip_all';
-        $_[0]->[DIRECTIVE] = 'NO PLAN' if $_[0]->[DIRECTIVE] eq 'no_plan';
+    if ($_[0]->{+DIRECTIVE}) {
+        $_[0]->{+DIRECTIVE} = 'SKIP'    if $_[0]->{+DIRECTIVE} eq 'skip_all';
+        $_[0]->{+DIRECTIVE} = 'NO PLAN' if $_[0]->{+DIRECTIVE} eq 'no_plan';
 
-        confess "'" . $_[0]->[DIRECTIVE] . "' is not a valid plan directive"
-            unless $ALLOWED{$_[0]->[DIRECTIVE]};
+        confess "'" . $_[0]->{+DIRECTIVE} . "' is not a valid plan directive"
+            unless $ALLOWED{$_[0]->{+DIRECTIVE}};
     }
     else {
-        $_[0]->[DIRECTIVE] = '';
+        $_[0]->{+DIRECTIVE} = '';
         confess "Cannot have a reason without a directive!"
-            if defined $_[0]->[REASON];
+            if defined $_[0]->{+REASON};
 
         confess "No number of tests specified"
-            unless defined $_[0]->[MAX];
+            unless defined $_[0]->{+MAX};
     }
 }
 
 sub to_tap {
     my $self = shift;
 
-    my $max       = $self->[MAX];
-    my $directive = $self->[DIRECTIVE];
-    my $reason    = $self->[REASON];
+    my $max       = $self->{+MAX};
+    my $directive = $self->{+DIRECTIVE};
+    my $reason    = $self->{+REASON};
 
     return if $directive && $directive eq 'NO PLAN';
 

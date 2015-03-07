@@ -58,6 +58,7 @@ sub apply_to {
 
 sub new {
     my $class = shift;
+    confess "xxx" if @_ % 2;
     my %params = @_;
     my $self = bless {}, $class;
 
@@ -68,6 +69,24 @@ sub new {
 
     $self->init if $self->can('init');
     return $self;
+}
+
+sub new_ordered {
+    my $class = shift;
+    my $input = [@_];
+
+    my $meta = Test::Stream::HashBase::Meta->new($class);
+
+    my $names = $meta->order;
+    my %params;
+
+    while (@$input) {
+        my $v = shift @$input;
+        my $k = shift @$names || croak "Too many arguments, starting at '$v'";
+        $params{$k} = $v;
+    }
+
+    return $class->new(%params);;
 }
 
 1;
