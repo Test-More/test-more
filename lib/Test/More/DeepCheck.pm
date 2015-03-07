@@ -2,12 +2,13 @@ package Test::More::DeepCheck;
 use strict;
 use warnings;
 
-use Test::Stream::ArrayBase(
-    accessors => [qw/seen/],
+use Test::Stream::HashBase(
+    accessors => [qw/stack seen/],
 );
 
 sub init {
-    $_[0]->[SEEN] ||= [{}];
+    $_[0]->{+STACK} ||= [];
+    $_[0]->{+SEEN}  ||= [{}];
 }
 
 my %PAIRS = ( '{' => '}', '[' => ']' );
@@ -20,10 +21,8 @@ sub preface { "" };
 
 sub format_stack {
     my $self = shift;
-    my $start = $self->STACK_START;
-    my $end   = @$self - 1;
 
-    my @Stack = @{$self}[$start .. $end];
+    my @Stack = @{$self->{+STACK}};
 
     my @parts1 = ('     $got');
     my @parts2 = ('$expected');

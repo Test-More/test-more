@@ -20,8 +20,6 @@ lib/Test/Simple.pm
 lib/Test/Stream.pm
 lib/Test/Stream/API.pm
 lib/Test/Stream/Architecture.pod
-lib/Test/Stream/ArrayBase.pm
-lib/Test/Stream/ArrayBase/Meta.pm
 lib/Test/Stream/Block.pm
 lib/Test/Stream/Carp.pm
 lib/Test/Stream/Context.pm
@@ -39,6 +37,8 @@ lib/Test/Stream/Explanation.pod
 lib/Test/Stream/Exporter.pm
 lib/Test/Stream/Exporter/Meta.pm
 lib/Test/Stream/ForceExit.pm
+lib/Test/Stream/HashBase.pm
+lib/Test/Stream/HashBase/Meta.pm
 lib/Test/Stream/IOSets.pm
 lib/Test/Stream/Meta.pm
 lib/Test/Stream/PackageUtil.pm
@@ -246,8 +246,6 @@ t/Test-More.t
 t/Test-MostlyLike.t
 t/Test-Simple.t
 t/Test-Stream-API.t
-t/Test-Stream-ArrayBase-Meta.t
-t/Test-Stream-ArrayBase.t
 t/Test-Stream-Block.t
 t/Test-Stream-Carp.t
 t/Test-Stream-Event-Diag.t
@@ -258,6 +256,8 @@ t/Test-Stream-ExitMagic-Context.t
 t/Test-Stream-Exporter-Meta.t
 t/Test-Stream-Exporter.t
 t/Test-Stream-ForceExit.t
+t/Test-Stream-HashBase-Meta.t
+t/Test-Stream-HashBase.t
 t/Test-Stream-IOSets.t
 t/Test-Stream-Meta.t
 t/Test-Stream-PackageUtil.t

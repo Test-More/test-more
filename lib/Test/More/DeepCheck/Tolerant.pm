@@ -6,8 +6,7 @@ use Test::More::Tools;
 use Scalar::Util qw/reftype blessed/;
 use Test::Stream::Util qw/try unoverload_str is_regex/;
 
-use Test::Stream::ArrayBase(
-    accessors => [qw/stack_start/],
+use Test::Stream::HashBase(
     base => 'Test::More::DeepCheck',
 );
 
@@ -24,7 +23,7 @@ sub check {
     return tmt->is_eq($got, $expect)
         if !ref $got and !ref $expect;
 
-    push @$self => {type => '', vals => [$got, $expect], line => __LINE__};
+    push @{$self->{+STACK}} => {type => '', vals => [$got, $expect], line => __LINE__};
     my $ok = $self->_deep_check($got, $expect);
     return ($ok, $ok ? () : $self->format_stack);
 }
@@ -59,7 +58,7 @@ sub _deep_check {
     return 1 unless defined($got) ||  defined($expect);
     return 0 if     defined($got) xor defined($expect);
 
-    my $seen = $self->[SEEN]->[-1];
+    my $seen = $self->{+SEEN}->[-1];
     return 1 if $seen->{$got} && $seen->{$got} eq $expect;
     $seen->{$got} = "$expect";
 
@@ -80,14 +79,14 @@ sub _deep_check {
 
     my $ok = 0;
     $seen = {%$seen};
-    push @{$self->[SEEN]} => $seen;
+    push @{$self->{+SEEN}} => $seen;
     if ($etype eq 'ARRAY') {
         $ok = $self->_array_check($got, $expect);
     }
     elsif ($etype eq 'HASH') {
         $ok = $self->_hash_check($got, $expect);
     }
-    pop @{$self->[SEEN]};
+    pop @{$self->{+SEEN}};
 
     return $ok;
 }
@@ -99,9 +98,9 @@ sub _array_check {
     return 0 if _reftype($got) ne 'ARRAY';
 
     for (my $i = 0; $i < @$expect; $i++) {
-        push @$self => {type => 'ARRAY', idx => $i, vals => [$got->[$i], $expect->[$i]], line => __LINE__};
+        push @{$self->{+STACK}} => {type => 'ARRAY', idx => $i, vals => [$got->[$i], $expect->[$i]], line => __LINE__};
         $self->_deep_check($got->[$i], $expect->[$i]) || return 0;
-        pop @$self;
+        pop @{$self->{+STACK}};
     }
 
     return 1;
@@ -121,7 +120,7 @@ sub _hash_check {
 
         if ($wrap) {
             if (!$blessed) {
-                push @$self => {
+                push @{$self->{+STACK}} => {
                     type  => 'OBJECT',
                     idx   => $field,
                     wrap  => $wrap,
@@ -132,7 +131,7 @@ sub _hash_check {
                 return 0;
             }
             if ($direct) {
-                push @$self => {
+                push @{$self->{+STACK}} => {
                     type  => 'OBJECT',
                     idx   => $field,
                     wrap  => $wrap,
@@ -149,7 +148,7 @@ sub _hash_check {
             if ($arrayref) {
                 $type = 'ARRAY';
                 if ($field !~ m/^-?\d+$/i) {
-                    push @$self => {
+                    push @{$self->{+STACK}} => {
                         type  => 'ARRAY',
                         idx   => $field,
                         vals  => ['(EXCEPTION)', $expect->{$key}],
@@ -162,7 +161,7 @@ sub _hash_check {
                 # Try, if they specify -1 in an empty array it may throw an exception
                 my ($success, $error) = try { $val = $got->[$field] };
                 if (!$success) {
-                    push @$self => {
+                    push @{$self->{+STACK}} => {
                         type  => 'ARRAY',
                         idx   => $field,
                         vals  => ['(EXCEPTION)', $expect->{$key}],
@@ -196,7 +195,7 @@ sub _hash_check {
                 }
             };
             if (!$success) {
-                push @$self => {
+                push @{$self->{+STACK}} => {
                     type  => 'OBJECT',
                     idx   => $field,
                     wrap  => $wrap || undef,
@@ -208,9 +207,9 @@ sub _hash_check {
             }
         }
 
-        push @$self => {type => $type, idx => $field, vals => [$val, $expect->{$key}], line => __LINE__, wrap => $wrap || undef};
+        push @{$self->{+STACK}} => {type => $type, idx => $field, vals => [$val, $expect->{$key}], line => __LINE__, wrap => $wrap || undef};
         $self->_deep_check($val, $expect->{$key}) || return 0;
-        pop @$self;
+        pop @{$self->{+STACK}};
     }
 
     return 1;

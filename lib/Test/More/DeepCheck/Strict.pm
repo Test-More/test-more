@@ -7,8 +7,7 @@ use Test::More::Tools;
 use Test::Stream::Carp qw/cluck confess/;
 use Test::Stream::Util qw/try unoverload_str is_regex/;
 
-use Test::Stream::ArrayBase(
-    accessors => [qw/stack_start/],
+use Test::Stream::HashBase(
     base => 'Test::More::DeepCheck',
 );
 
@@ -27,11 +26,11 @@ sub check {
 
     # one's a reference, one isn't
     if (!ref $got xor !ref $expect) {
-        push @$self => {vals => [$got, $expect], line => __LINE__};
+        push @{$self->{+STACK}} => {vals => [$got, $expect], line => __LINE__};
         return (0, $self->format_stack);
     }
 
-    push @$self => {vals => [$got, $expect], line => __LINE__};
+    push @{$self->{+STACK}} => {vals => [$got, $expect], line => __LINE__};
     my $ok = $self->_deep_check($got, $expect);
     return ($ok, $ok ? () : $self->format_stack);
 }
@@ -40,7 +39,7 @@ sub check_array {
     my $class = shift;
     my ($got, $expect) = @_;
     my $self = $class->new();
-    push @$self => {vals => [$got, $expect], line => __LINE__};
+    push @{$self->{+STACK}} => {vals => [$got, $expect], line => __LINE__};
     my $ok = $self->_deep_check($got, $expect);
     return ($ok, $ok ? () : $self->format_stack);
 }
@@ -49,7 +48,7 @@ sub check_hash {
     my $class = shift;
     my ($got, $expect) = @_;
     my $self = $class->new();
-    push @$self => {vals => [$got, $expect], line => __LINE__};
+    push @{$self->{+STACK}} => {vals => [$got, $expect], line => __LINE__};
     my $ok = $self->_deep_check($got, $expect);
     return ($ok, $ok ? () : $self->format_stack);
 }
@@ -96,16 +95,16 @@ sub _deep_check {
     return 1 if  $same_ref   and ($e1 eq $e2);
 
     if ($not_ref) {
-        push @$self => {type => '', vals => [$e1, $e2], line => __LINE__};
+        push @{$self->{+STACK}} => {type => '', vals => [$e1, $e2], line => __LINE__};
         return 0;
     }
 
     # This avoids picking up the same referenced used twice (such as
     # [\$a, \$a]) to be considered circular.
-    my $seen = {%{$self->[SEEN]->[-1]}};
-    push @{$self->[SEEN]} => $seen;
+    my $seen = {%{$self->{+SEEN}->[-1]}};
+    push @{$self->{+SEEN}} => $seen;
     my $ok = $self->_inner_check($seen, $e1, $e2);
-    pop @{$self->[SEEN]};
+    pop @{$self->{+SEEN}};
     return $ok;
 }
 
@@ -121,7 +120,7 @@ sub _inner_check {
     my $diff  = $type1 ne $type2;
 
     if ($diff) {
-        push @$self => {type => 'DIFFERENT', vals => [$e1, $e2], line => __LINE__};
+        push @{$self->{+STACK}} => {type => 'DIFFERENT', vals => [$e1, $e2], line => __LINE__};
         return 0;
     }
 
@@ -129,13 +128,13 @@ sub _inner_check {
     return $self->_check_hash($e1, $e2)  if $type1 eq 'HASH';
 
     if ($type1 eq 'REF' || $type1 eq 'SCALAR' && !(defined(is_regex($e1)) && defined(is_regex($e2)))) {
-        push @$self => {type => 'REF', vals => [$e1, $e2], line => __LINE__};
+        push @{$self->{+STACK}} => {type => 'REF', vals => [$e1, $e2], line => __LINE__};
         my $ok = $self->_deep_check($$e1, $$e2);
-        pop @$self if $ok;
+        pop @{$self->{+STACK}} if $ok;
         return $ok;
     }
 
-    push @$self => {type => $type1, vals => [$e1, $e2], line => __LINE__};
+    push @{$self->{+STACK}} => {type => $type1, vals => [$e1, $e2], line => __LINE__};
     return 0;
 }
 
@@ -158,9 +157,9 @@ sub _check_array {
 
         next if $self->_check_nonrefs($e1, $e2);
 
-        push @$self => {type => 'ARRAY', idx => $_, vals => [$e1, $e2], line => __LINE__};
+        push @{$self->{+STACK}} => {type => 'ARRAY', idx => $_, vals => [$e1, $e2], line => __LINE__};
         $ok = $self->_deep_check($e1, $e2);
-        pop @$self if $ok;
+        pop @{$self->{+STACK}} if $ok;
 
         last unless $ok;
     }
@@ -203,9 +202,9 @@ sub _check_hash {
 
         next if $self->_check_nonrefs($e1, $e2);
 
-        push @$self => {type => 'HASH', idx => $k, vals => [$e1, $e2], line => __LINE__};
+        push @{$self->{+STACK}} => {type => 'HASH', idx => $k, vals => [$e1, $e2], line => __LINE__};
         $ok = $self->_deep_check($e1, $e2);
-        pop @$self if $ok;
+        pop @{$self->{+STACK}} if $ok;
 
         last unless $ok;
     }

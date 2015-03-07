@@ -397,7 +397,7 @@ Misc Utilities used all over Test-Simple
 
 =back
 
-=head2 Test::Stream::ArrayBase
+=head2 Test::Stream::HashBase
 
 All objects in Test::Stream use this to generate methods and constructors. This
 is done here, and the way it is, for performance. Before implementing this ans
@@ -408,7 +408,7 @@ core.
 
 =over 4
 
-=item Test::Stream::ArrayBase::Meta
+=item Test::Stream::HashBase::Meta
 
 =back
 
@@ -798,7 +798,7 @@ Test::Class, etc.
 
 Currently TODO and tap_encoding are the only significant settings here.
 
-=head2 Test::Stream::ArrayBase
+=head2 Test::Stream::HashBase
 
 This is the OO implementation used all over Test::Stream. The initial upgrade
 to OO from a single object where hash elements were directly accessed resulted
@@ -808,11 +808,7 @@ To avoid the slowdown a couple design decision were made:
 
 =over 4
 
-=item Objects would be array based
-
 =item Constants would be used to access elements
-
-=item Single inheritance only for simplicity
 
 =item Seperate reader+writer methods
 
@@ -840,7 +836,7 @@ ultimately boils down to an 'ok'.
 =head2 Test::Stream::Exporter
 
 Test::Stream has to do some fancy exporting, specially due to
-Test::Stream::ArrayBase and the attribute constants. This exporter is a very
+Test::Stream::HashBase and the attribute constants. This exporter is a very
 light implementation modeled on Exporter::Declare. It uses a meta-object to
 track exports.
 

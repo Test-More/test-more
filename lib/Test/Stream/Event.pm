@@ -105,7 +105,11 @@ L<Test::Stream>.
     # all our fields, and fields we inherit.
     use Test::Stream::Event(
         accessors  => [qw/foo bar baz/],
-        ctx_method => 'my_event',
+        # if no ctx_method is specified it will create one from the lowercase
+        # of the last part of the package name, and it will allow you to
+        # specify any accessor field in order. Or you can manually specify the
+        # method name, and what fields it accepts.
+        ctx_method => ['my_event' => qw/foo/],
     );
 
     # Chance to initialize some defaults
@@ -158,7 +162,7 @@ L<Test::Stream>.
 =head2 ARGUMENTS
 
 In addition to the arguments listed here, you may pass in any arguments
-accepted by L<Test::Stream::ArrayBase>.
+accepted by L<Test::Stream::HashBase>.
 
 =over 4
 
@@ -201,17 +205,6 @@ context, and some other state from construction time. The context object will
 get helper methods for all events that fill in these fields for you. It is not
 advised to ever construct an event object yourself, you should I<always> use
 the context helper method.
-
-=head1 EVENTS ARE ARRAY REFERENCES
-
-Events are an arrayref. Events use L<Test::Stream::ArrayBase> under the hood to
-generate accessors, constants, and field indexes. The key thing to take away
-from this is that you cannot add attributes on the fly, you B<MUST> use
-L<Test::Stream::Event> and/or L<Test::Stream::ArrayBase> to add fields.
-
-If you need a place to store extar generic, and possibly unpredictable, data,
-you should add a field and assign a hashref to it, then use that hashref to
-store your mixed data.
 
 =head1 METHODS
 
