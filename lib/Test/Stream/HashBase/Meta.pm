@@ -86,7 +86,7 @@ sub add_accessors {
         my $sname = "set_$gname";
 
         my $cname = $name;
-        my $csub = eval "sub() { '$cname' }";
+        my $csub = sub() { $cname };
 
         {
             no strict 'refs';
