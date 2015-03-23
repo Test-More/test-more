@@ -418,58 +418,55 @@ sub _parse_event {
 }
 
 # Shortcuts
-# The indentation is for a better diff, will remove next commit
-{
-    sub ok {
-        my $self = shift;
-        my ($real_bool, $name, $diag) = @_;
-        $self->send_event('Ok', real_bool => $real_bool, name => $name, diag => $diag);
-    }
+sub ok {
+    my $self = shift;
+    my ($real_bool, $name, $diag) = @_;
+    $self->send_event('Ok', real_bool => $real_bool, name => $name, diag => $diag);
+}
 
-    sub note {
-        my $self = shift;
-        my ($message) = @_;
-        $self->send_event('Note', message => $message);
-    }
+sub note {
+    my $self = shift;
+    my ($message) = @_;
+    $self->send_event('Note', message => $message);
+}
 
-    sub diag {
-        my $self = shift;
-        my ($message) = @_;
-        $self->send_event('Diag', message => $message);
-    }
+sub diag {
+    my $self = shift;
+    my ($message) = @_;
+    $self->send_event('Diag', message => $message);
+}
 
-    sub plan {
-        my $self = shift;
-        my ($max, $directive, $reason) = @_;
-        $self->send_event('Plan', max => $max, directive => $directive, reason => $reason);
-    }
+sub plan {
+    my $self = shift;
+    my ($max, $directive, $reason) = @_;
+    $self->send_event('Plan', max => $max, directive => $directive, reason => $reason);
+}
 
-    sub bail {
-        my $self = shift;
-        my ($reason, $quiet) = @_;
-        $self->send_event('Bail', reason => $reason, quiet => $quiet);
-    }
+sub bail {
+    my $self = shift;
+    my ($reason, $quiet) = @_;
+    $self->send_event('Bail', reason => $reason, quiet => $quiet);
+}
 
-    sub finish {
-        my $self = shift;
-        my ($tests_run, $tests_failed) = @_;
-        $self->send_event('Finish', tests_run => $tests_run, tests_failed => $tests_failed);
-    }
+sub finish {
+    my $self = shift;
+    my ($tests_run, $tests_failed) = @_;
+    $self->send_event('Finish', tests_run => $tests_run, tests_failed => $tests_failed);
+}
 
-    sub subtest {
-        my $self = shift;
-        my ($real_bool, $name) = @_;
-        $self->send_event('Subtest', real_bool => $real_bool, name => $name);
-    }
+sub subtest {
+    my $self = shift;
+    my ($real_bool, $name) = @_;
+    $self->send_event('Subtest', real_bool => $real_bool, name => $name);
+}
 
-    sub done_testing {
-        return $_[0]->stream->done_testing(@_)
-            unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{done_testing} != \&Test::Builder::done_testing;
+sub done_testing {
+    return $_[0]->stream->done_testing(@_)
+        unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{done_testing} != \&Test::Builder::done_testing;
 
-        local $Test::Builder::CTX = shift;
-        my $out = Test::Builder->new->done_testing(@_);
-        return $out;
-    }
+    local $Test::Builder::CTX = shift;
+    my $out = Test::Builder->new->done_testing(@_);
+    return $out;
 }
 
 sub meta { is_tester($_[0]->{+FRAME}->[0]) }
