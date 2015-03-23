@@ -23,12 +23,10 @@ sub import {
     my $ctx_meth = delete $args{ctx_method};
     my $accessors = $args{accessors} || [];
 
-    require Test::Stream::Context;
     require Test::Stream;
 
     # %args may override base
     Test::Stream::HashBase->apply_to($caller, base => $class, %args);
-    Test::Stream::Context->register_event($caller, $ctx_meth, $accessors);
     Test::Stream::Exporter::export_to(
         'Test::Stream',
         $caller,
@@ -101,15 +99,9 @@ L<Test::Stream>.
     use warnings;
 
     # This will make our class an event subclass, add the specified accessors,
-    # inject a helper method into the context objects, and add constants for
-    # all our fields, and fields we inherit.
+    # add constants for all our fields, and fields we inherit.
     use Test::Stream::Event(
         accessors  => [qw/foo bar baz/],
-        # if no ctx_method is specified it will create one from the lowercase
-        # of the last part of the package name, and it will allow you to
-        # specify any accessor field in order. Or you can manually specify the
-        # method name, and what fields it accepts.
-        ctx_method => ['my_event' => qw/foo/],
     );
 
     # Chance to initialize some defaults

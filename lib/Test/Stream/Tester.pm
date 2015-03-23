@@ -63,10 +63,6 @@ sub event($$) {
     croak "event() cannot be used outside of a check { ... } block"
         unless $EVENTS;
 
-    my $etypes = Test::Stream::Context->events;
-    croak "'$type' is not a valid event type!"
-        unless $etypes->{$type};
-
     my $props;
 
     croak "event() takes a type, followed by a hashref"

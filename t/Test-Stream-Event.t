@@ -25,6 +25,4 @@ isa_ok('My::MockEvent', 'Test::Stream::Event');
 
 my $one = My::MockEvent->new(context => 'fake');
 
-can_ok('Test::Stream::Context', 'mockevent');
-
 done_testing;
