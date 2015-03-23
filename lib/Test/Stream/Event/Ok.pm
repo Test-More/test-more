@@ -226,6 +226,16 @@ Examples are C<ok()>, and C<is()>.
     my $ctx = context();
     my $event = $ctx->ok($bool, $name, \@diag);
 
+or:
+
+    my $ctx   = context();
+    my $event = $ctx->send_event(
+        'Ok',
+        real_bool => $bool,
+        name      => $name,
+        diag      => \@diag
+    );
+
 =head1 ACCESSORS
 
 =over 4

@@ -149,6 +149,11 @@ L<Test::Stream>.
 
     1;
 
+And to use it:
+
+    my $ctx = context();
+    $ctx->send_event('MyEvent', foo => 1, baz => 2);
+
 =head1 IMPORTING
 
 =head2 ARGUMENTS
@@ -157,12 +162,6 @@ In addition to the arguments listed here, you may pass in any arguments
 accepted by L<Test::Stream::HashBase>.
 
 =over 4
-
-=item ctx_method => $NAME
-
-This specifies the name of the helper meth that will be injected into
-L<Test::Stream::Context> to help generate your events. If this is not specified
-it will use the lowercased last section of your package name.
 
 =item base => $BASE_CLASS
 
@@ -189,14 +188,6 @@ alternative base class, which must itself subclass C<Test::Stream::Event>.
 Events B<CAN NOT> use multiple inheritance in most cases. This is mainly
 because events are arrayrefs and not hashrefs. Each subclass must add fields as
 new indexes after the last index of the parent class.
-
-=head2 CONTEXT HELPER
-
-All events need some initial fields for construction. These fields include a
-context, and some other state from construction time. The context object will
-get helper methods for all events that fill in these fields for you. It is not
-advised to ever construct an event object yourself, you should I<always> use
-the context helper method.
 
 =head1 METHODS
 

@@ -561,8 +561,11 @@ for generating almost all the events you will encounter.
     sub my_tool {
         my $ctx = context();
 
-        # Generate an event.
+        # Generate an 'Ok' event.
         $ctx->ok(1, "Pass!");
+
+        # Generate any type of event
+        $ctx->send_event('Type', ...);
     }
 
     1;
@@ -637,9 +640,60 @@ Send an event to the correct L<Test::Stream> object.
 
 Get the current context object, if there is one.
 
+=item $ctx->done_testing(...)
+
+See the C<done_testing()> method on L<Test::Stream> for arguments, this is just
+a shortcut to call done_testing on the correct stream.
+
+=item $ctx->send_event($Type, %params)
+
+Construct and send an event of type c<$Type>. C<$Type> may be the last segment
+of the C<Test::Stream::Event::*> events, or a fully qualified namespace for an
+event. C<$Type> is case sensitive, so to build a C<Test::Stream::Event::Ok>
+event use the string 'Ok'.
+
+=item $e = $ctx->build_Event($Type, %params)
+
+This is the same as C<send_event> except that it does not send the event to the
+stream, it returns it instead.
+
 =back
 
-=head2 DANGEROUS ONES
+=head2 EVENT SHORTCUTS
+
+=over 4
+
+=item ok($real_bool, $name, $diag)
+
+Generate an L<Test::Stream::Event::Ok> event.
+
+=item diag($message)
+
+Generate an L<Test::Stream::Event::Diag> event.
+
+=item note($message)
+
+Generate an L<Test::Stream::Event::Note> event.
+
+=item plan($max, $directive, $reason)
+
+Generate an L<Test::Stream::Event::Plan> event.
+
+=item bail($reason, $quiet)
+
+Generate an L<Test::Stream::Event::Bail> event.
+
+=item finish($tests_run, $tests_failed)
+
+Generate an L<Test::Stream::Event::Finish> event.
+
+=item subtest($real_bool, $name)
+
+Generate an L<Test::Stream::Event::Subtest> event.
+
+=back
+
+=head2 DANGEROUS METHODS
 
 =over 4
 
@@ -653,19 +707,6 @@ current.
 =item $class->clear
 
 Unset the current context.
-
-=item $ctx->register_event($package)
-
-=item $ctx->register_event($package, $name)
-
-Register a new event type, creating the shortcut method to generate it. If
-C<$name> is not provided it will be taken from the end of the package name, and
-will be lowercased.
-
-=item $hr = $ctx->events
-
-Get the hashref that holds C<< (name => $package) >> pairs. This is the actual
-ref used by the package, so please do not alter it.
 
 =item $stash = $ctx->hide_todo
 
