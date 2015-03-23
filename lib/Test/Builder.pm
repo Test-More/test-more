@@ -19,6 +19,8 @@ use Scalar::Util qw/blessed reftype/;
 
 use Test::More::Tools;
 
+use Test::Builder::MonkeyPatching qw/monkeypatch_all/;
+
 BEGIN {
     my $meta = Test::Stream::Meta->is_tester('main');
     Test::Stream->shared->set_use_legacy(1)
@@ -59,14 +61,11 @@ sub _ending {
 }
 
 my %WARNED;
-our $CTX;
-our %ORIG = (
-    ok   => \&ok,
-    diag => \&diag,
-    note => \&note,
-    plan => \&plan,
-    done_testing => \&done_testing,
-);
+our ($CTX, %ORIG);
+{
+    no strict 'refs';
+    %ORIG = map {$_ => \&{$_}} monkeypatch_all();
+}
 
 sub WARN_OF_OVERRIDE {
     my ($sub, $ctx) = @_;
@@ -200,7 +199,8 @@ sub finalize {
 
     my $st = $ctx->subtest_stop($name);
 
-    $parent->ctx->send_subtest(
+    $parent->ctx->send_event(
+        'Subtest',
         name         => $st->{name},
         state        => $st->{state},
         events       => $st->{events},
@@ -352,7 +352,7 @@ sub skip_all {
 
     my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
 
-    $ctx->_plan(0, 'SKIP', $reason);
+    $ctx->_unwind_event('Plan', max => 0, directive => 'SKIP', reason => $reason);
 }
 
 sub no_plan {
@@ -361,7 +361,7 @@ sub no_plan {
     my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
 
     $ctx->alert("no_plan takes no arguments") if @args;
-    $ctx->_plan(0, 'NO PLAN');
+    $ctx->_unwind_event('Plan', max => 0, directive => 'NO PLAN');
 
     return 1;
 }
@@ -375,7 +375,7 @@ sub _plan_tests {
         $ctx->throw("Number of tests must be a positive integer.  You gave it '$arg'")
             unless $arg =~ /^\+?\d+$/;
 
-        $ctx->_plan($arg);
+        $ctx->_unwind_event('Plan', max => $arg);
     }
     elsif (!defined $arg) {
         $ctx->throw("Got an undefined number of tests");
@@ -417,7 +417,7 @@ sub ok {
         $ctx->throw("Cannot run test ($name) with active children");
     }
 
-    $ctx->_unwind_ok($test, $name);
+    $ctx->_unwind_event('Ok', real_bool => $test, name => $name);
     return $test ? 1 : 0;
 }
 
@@ -457,7 +457,7 @@ sub diag {
     my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
     WARN_OF_OVERRIDE(diag => $ctx);
 
-    $ctx->_diag($msg);
+    $ctx->_unwind_event('Diag', message => $msg);
     return;
 }
 
@@ -468,7 +468,7 @@ sub note {
     my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
     WARN_OF_OVERRIDE(note => $ctx);
 
-    $ctx->_note($msg);
+    $ctx->_unwind_event('Note', message => $msg);
 }
 
 #############################

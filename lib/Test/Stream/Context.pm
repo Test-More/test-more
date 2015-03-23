@@ -289,6 +289,135 @@ sub subtest_stop {
     return $st;
 }
 
+sub send_event {
+    my $self  = shift;
+    my $event = shift;
+    my @call  = caller(0);
+
+    # Uhg.. support legacy monkeypatching
+    # If this is still here in 2020 I will be a sad panda.
+    return $self->_wind_event($event, @_)
+        if $INC{'Test/Builder.pm'}
+        && $Test::Builder::MonkeyPatching::EVENTS{$event}
+        && $Test::Builder::ORIG{lc($event)} != Test::Builder->can(lc($event));
+
+    my $encoding = $self->{+ENCODING};
+    $call[1] = translate_filename($encoding => $call[1]) if $encoding ne 'legacy';
+
+    my $pkg = $self->_parse_event($event);
+
+    my $e = $pkg->new(
+        context    => $self->snapshot,
+        created    => [@call[0 .. 4]],
+        in_subtest => 0,
+        @_,
+    );
+
+    return $self->stream->send($e);
+}
+
+sub _wind_event {
+    my $self  = shift;
+    my $event = shift;
+    my %args  = @_;
+
+    my @ordered;
+
+    if ($event eq 'Plan') {
+        my $max = $args{max};
+        my $dir = $args{directive};
+        my $msg = $args{reason};
+
+        $dir ||= 'tests';
+        $dir = 'skip_all' if $dir eq 'SKIP';
+        $dir = 'no_plan'  if $dir eq 'NO PLAN';
+
+        @ordered = ($dir, $max || $msg || ());
+    }
+    else {
+        my $fields = $Test::Builder::MonkeyPatching::EVENTS{$event};
+        push @{$self->{+MONKEYPATCH_STASH}} => \%args;
+        @ordered = @args{@$fields};
+    }
+
+    my $meth = lc($event);
+
+    my $out = Test::Builder->new->$meth(@ordered);
+    return $out;
+}
+
+sub _unwind_event {
+    my $self  = shift;
+    my $event = shift;
+    my @call  = caller(0);
+    my $stash = pop @{$self->{+MONKEYPATCH_STASH}} || {};
+
+    my $encoding = $self->{+ENCODING};
+    $call[1] = translate_filename($encoding => $call[1]) if $encoding ne 'legacy';
+
+    my $pkg = $self->_parse_event($event);
+
+    my $e = $pkg->new(
+        context    => $self->snapshot,
+        created    => [@call[0 .. 4]],
+        in_subtest => 0,
+        %$stash,
+        @_,
+    );
+
+    return $self->stream->send($e);
+}
+
+sub build_event {
+    my $self  = shift;
+    my $event = shift;
+    my @call  = caller(0);
+
+    my $encoding = $self->{+ENCODING};
+    $call[1] = translate_filename($encoding => $call[1]) if $encoding ne 'legacy';
+
+    my $pkg = $self->_parse_event($event);
+
+    my $e = $pkg->new(
+        context    => $self->snapshot,
+        created    => [@call[0 .. 4]],
+        in_subtest => 0,
+        @_,
+    );
+}
+
+my %LOADED;
+sub _parse_event {
+    my $self = shift;
+    my $event = shift;
+
+    return $LOADED{$event} if $LOADED{$event};
+
+    my $pkg;
+    if ($event =~ m/::/) {
+        $pkg = $event;
+    }
+    else {
+        $pkg = "Test::Stream::Event::$event";
+    }
+
+    my $file = $pkg;
+    $file =~ s{::}{/};
+    $file .= '.pm';
+    unless ($INC{$file} || $pkg->can('new')) {
+        my ($ok, $error) = try { require $file };
+        chomp($error);
+        confess "Could not load package '$pkg' for event '$event': $error"
+            unless $ok;
+    }
+
+    $LOADED{$pkg}   = $event;
+    $LOADED{$event} = $pkg;
+
+    return $pkg;
+}
+
+
 # Uhg.. support legacy monkeypatching
 # If this is still here in 2020 I will be a sad panda.
 {
