@@ -289,139 +289,141 @@ sub subtest_stop {
     return $st;
 }
 
-# Uhg.. support legacy monkeypatching
-# If this is still here in 2020 I will be a sad panda.
-{
-    sub ok {
-        return _ok(@_) unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{ok} != \&Test::Builder::ok;
-        my $self = shift;
-        local $Test::Builder::CTX = $self;
-        my ($bool, $name, @stash) = @_;
-        push @{$self->{+MONKEYPATCH_STASH}} => \@stash;
-        my $out = Test::Builder->new->ok($bool, $name);
-        return $out;
-    }
+sub send_event {
+    my $self  = shift;
+    my $event = shift;
+    my @call  = caller(0);
 
-    sub _unwind_ok {
-        my $self = shift;
-        my ($bool, $name) = @_;
-        my $stash = pop @{$self->{+MONKEYPATCH_STASH}};
-        return $self->_ok($bool, $name, @$stash);
-    }
+    # Uhg.. support legacy monkeypatching
+    # If this is still here in 2020 I will be a sad panda.
+    return $self->_wind_event($event, @_)
+        if $INC{'Test/Builder.pm'}
+        && $Test::Builder::MonkeyPatching::EVENTS{$event}
+        && $Test::Builder::ORIG{lc($event)} != Test::Builder->can(lc($event));
 
-    sub note {
-        return _note(@_) unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{note} != \&Test::Builder::note;
-        local $Test::Builder::CTX = shift;
-        my $out = Test::Builder->new->note(@_);
-        return $out;
-    }
+    my $encoding = $self->{+ENCODING};
+    $call[1] = translate_filename($encoding => $call[1]) if $encoding ne 'legacy';
 
-    sub diag {
-        return _diag(@_) unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{diag} != \&Test::Builder::diag;
-        local $Test::Builder::CTX = shift;
-        my $out = Test::Builder->new->diag(@_);
-        return $out;
-    }
+    my $pkg = $self->_parse_event($event);
 
-    sub plan {
-        return _plan(@_) unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{plan} != \&Test::Builder::plan;
-        local $Test::Builder::CTX = shift;
-        my ($num, $dir, $arg) = @_;
+    my $e = $pkg->new(
+        context    => $self->snapshot,
+        created    => [@call[0 .. 4]],
+        in_subtest => 0,
+        @_,
+    );
+
+    return $self->stream->send($e);
+}
+
+sub _wind_event {
+    my $self  = shift;
+    my $event = shift;
+    my %args  = @_;
+
+    my @ordered;
+
+    if ($event eq 'Plan') {
+        my $max = $args{max};
+        my $dir = $args{directive};
+        my $msg = $args{reason};
+
         $dir ||= 'tests';
         $dir = 'skip_all' if $dir eq 'SKIP';
         $dir = 'no_plan'  if $dir eq 'NO PLAN';
-        my $out = Test::Builder->new->plan($dir, $num || $arg || ());
-        return $out;
+
+        @ordered = ($dir, $max || $msg || ());
+    }
+    else {
+        my $fields = $Test::Builder::MonkeyPatching::EVENTS{$event};
+        push @{$self->{+MONKEYPATCH_STASH}} => \%args;
+        @ordered = @args{@$fields};
     }
 
-    sub done_testing {
-        return $_[0]->stream->done_testing(@_)
-            unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{done_testing} != \&Test::Builder::done_testing;
+    my $meth = lc($event);
 
-        local $Test::Builder::CTX = shift;
-        my $out = Test::Builder->new->done_testing(@_);
-        return $out;
-    }
+    my $out = Test::Builder->new->$meth(@ordered);
+    return $out;
 }
 
-my %EVENTS;
-sub events { \%EVENTS }
+sub _unwind_event {
+    my $self  = shift;
+    my $event = shift;
+    my @call  = caller(0);
+    my $stash = pop @{$self->{+MONKEYPATCH_STASH}} || {};
 
-sub register_event {
-    my $class = shift;
-    my ($pkg, $spec, $accessors) = @_;
+    my $encoding = $self->{+ENCODING};
+    $call[1] = translate_filename($encoding => $call[1]) if $encoding ne 'legacy';
 
-    my $real_name = lc($pkg);
-    $real_name =~ s/^.*:://g;
+    my $pkg = $self->_parse_event($event);
 
-    my $name = $spec ? shift @$spec : $real_name;
-    my $build = "build_$real_name";
-    my $send  = "send_$real_name";
+    my $e = $pkg->new(
+        context    => $self->snapshot,
+        created    => [@call[0 .. 4]],
+        in_subtest => 0,
+        %$stash,
+        @_,
+    );
 
-    confess "Method '$name' is already defined, event '$pkg' cannot get a context method!"
-        if $class->can($name);
+    return $self->stream->send($e);
+}
 
-    confess "Method '$build' is already defined, event '$pkg' cannot get a context builder!"
-        if $class->can($build);
+sub build_event {
+    my $self  = shift;
+    my $event = shift;
+    my @call  = caller(0);
 
-    confess "Method '$send' is already defined, event '$pkg' cannot get a context sender!"
-        if $class->can($send);
+    my $encoding = $self->{+ENCODING};
+    $call[1] = translate_filename($encoding => $call[1]) if $encoding ne 'legacy';
 
-    $EVENTS{$real_name} = $pkg;
+    my $pkg = $self->_parse_event($event);
 
-    my $fields = "";
-    my $i = 0;
-    for my $field (@{$spec || $accessors}) {
-        $fields .= "$field => \$_[$i], ";
-        $i++;
+    my $e = $pkg->new(
+        context    => $self->snapshot,
+        created    => [@call[0 .. 4]],
+        in_subtest => 0,
+        @_,
+    );
+}
+
+my %LOADED;
+sub _parse_event {
+    my $self = shift;
+    my $event = shift;
+
+    return $LOADED{$event} if $LOADED{$event};
+
+    my $pkg;
+    if ($event =~ m/::/) {
+        $pkg = $event;
+    }
+    else {
+        $pkg = "Test::Stream::Event::$event";
     }
 
-    # Use a string eval so that we get a names sub instead of __ANON__
-    local ($@, $!);
-    eval qq|
-        sub $name {
-            my \$self = shift;
-            my \@call = caller(0);
-            my \$encoding = \$self->{+ENCODING};
-            \$call[1] = translate_filename(\$encoding => \$call[1]) if \$encoding ne 'legacy';
-            my \$e = '$pkg'->new(
-                context    => \$self->snapshot,
-                created    => [\@call[0 .. 4]],
-                in_subtest => 0,
-                $fields
-            );
-            return \$self->stream->send(\$e);
-        };
+    my $file = $pkg;
+    $file =~ s{::}{/};
+    $file .= '.pm';
+    unless ($INC{$file} || $pkg->can('new')) {
+        my ($ok, $error) = try { require $file };
+        chomp($error);
+        confess "Could not load package '$pkg' for event '$event': $error"
+            unless $ok;
+    }
 
-        sub $build {
-            my \$self = shift;
-            my \@call = caller(0);
-            my \$encoding = \$self->{+ENCODING};
-            \$call[1] = translate_filename(\$encoding => \$call[1]) if \$encoding ne 'legacy';
-            return '$pkg'->new(
-                context    => \$self->snapshot,
-                created    => [\@call[0 .. 4]],
-                in_subtest => 0,
-                \@_,
-            );
-        }
+    $LOADED{$pkg}   = $event;
+    $LOADED{$event} = $pkg;
 
-        sub $send {
-            my \$self = shift;
-            my \@call = caller(0);
-            my \$encoding = \$self->{+ENCODING};
-            \$call[1] = translate_filename(\$encoding => \$call[1]) if \$encoding ne 'legacy';
-            my \$e = '$pkg'->new(
-                context    => \$self->snapshot,
-                created    => [\@call[0 .. 4]],
-                in_subtest => 0,
-                \@_,
-            );
-            return \$self->stream->send(\$e);
-        }
+    return $pkg;
+}
 
-        1;
-    | || die $@;
+sub done_testing {
+    return $_[0]->stream->done_testing(@_)
+        unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{done_testing} != \&Test::Builder::done_testing;
+
+    local $Test::Builder::CTX = shift;
+    my $out = Test::Builder->new->done_testing(@_);
+    return $out;
 }
 
 sub meta { is_tester($_[0]->{+FRAME}->[0]) }
@@ -486,24 +488,46 @@ sub restore_todo {
     return;
 }
 
-sub DESTROY { 1 }
+sub ok {
+    my $self = shift;
+    my ($real_bool, $name, $diag) = @_;
+    $self->send_event('Ok', real_bool => $real_bool, name => $name, diag => $diag);
+}
 
-our $AUTOLOAD;
-sub AUTOLOAD {
-    my $class = blessed($_[0]) || $_[0] || confess $AUTOLOAD;
+sub diag {
+    my $self = shift;
+    my ($message) = @_;
+    $self->send_event('Diag', message => $message);
+}
 
-    my $name = $AUTOLOAD;
-    $name =~ s/^.*:://g;
+sub note {
+    my $self = shift;
+    my ($message) = @_;
+    $self->send_event('Note', message => $message);
+}
 
-    my $module = 'Test/Stream/Event/' . ucfirst(lc($name)) . '.pm';
-    try { require $module };
+sub plan {
+    my $self = shift;
+    my ($max, $directive, $reason) = @_;
+    $self->send_event('Plan', max => $max, directive => $directive, reason => $reason);
+}
 
-    my $sub = $class->can($name);
-    goto &$sub if $sub;
+sub bail {
+    my $self = shift;
+    my ($reason, $quiet) = @_;
+    $self->send_event('Bail', reason => $reason, quiet => $quiet);
+}
 
-    my ($pkg, $file, $line) = caller;
+sub finish {
+    my $self = shift;
+    my ($tests_run, $tests_failed) = @_;
+    $self->send_event('Finish', tests_run => $tests_run, tests_failed => $tests_failed);
+}
 
-    die qq{Can't locate object method "$name" via package "$class" at $file line $line.\n};
+sub subtest {
+    my $self = shift;
+    my ($real_bool, $name) = @_;
+    $self->send_event('Subtest', real_bool => $real_bool, name => $name);
 }
 
 1;
@@ -533,8 +557,11 @@ for generating almost all the events you will encounter.
     sub my_tool {
         my $ctx = context();
 
-        # Generate an event.
+        # Generate an 'Ok' event.
         $ctx->ok(1, "Pass!");
+
+        # Generate any type of event
+        $ctx->send_event('Type', ...);
     }
 
     1;
@@ -609,9 +636,60 @@ Send an event to the correct L<Test::Stream> object.
 
 Get the current context object, if there is one.
 
+=item $ctx->done_testing(...)
+
+See the C<done_testing()> method on L<Test::Stream> for arguments, this is just
+a shortcut to call done_testing on the correct stream.
+
+=item $ctx->send_event($Type, %params)
+
+Construct and send an event of type c<$Type>. C<$Type> may be the last segment
+of the C<Test::Stream::Event::*> events, or a fully qualified namespace for an
+event. C<$Type> is case sensitive, so to build a C<Test::Stream::Event::Ok>
+event use the string 'Ok'.
+
+=item $e = $ctx->build_Event($Type, %params)
+
+This is the same as C<send_event> except that it does not send the event to the
+stream, it returns it instead.
+
 =back
 
-=head2 DANGEROUS ONES
+=head2 EVENT SHORTCUTS
+
+=over 4
+
+=item ok($real_bool, $name, $diag)
+
+Generate an L<Test::Stream::Event::Ok> event.
+
+=item diag($message)
+
+Generate an L<Test::Stream::Event::Diag> event.
+
+=item note($message)
+
+Generate an L<Test::Stream::Event::Note> event.
+
+=item plan($max, $directive, $reason)
+
+Generate an L<Test::Stream::Event::Plan> event.
+
+=item bail($reason, $quiet)
+
+Generate an L<Test::Stream::Event::Bail> event.
+
+=item finish($tests_run, $tests_failed)
+
+Generate an L<Test::Stream::Event::Finish> event.
+
+=item subtest($real_bool, $name)
+
+Generate an L<Test::Stream::Event::Subtest> event.
+
+=back
+
+=head2 DANGEROUS METHODS
 
 =over 4
 
@@ -625,19 +703,6 @@ current.
 =item $class->clear
 
 Unset the current context.
-
-=item $ctx->register_event($package)
-
-=item $ctx->register_event($package, $name)
-
-Register a new event type, creating the shortcut method to generate it. If
-C<$name> is not provided it will be taken from the end of the package name, and
-will be lowercased.
-
-=item $hr = $ctx->events
-
-Get the hashref that holds C<< (name => $package) >> pairs. This is the actual
-ref used by the package, so please do not alter it.
 
 =item $stash = $ctx->hide_todo
 

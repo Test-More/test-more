@@ -7,8 +7,7 @@ use Test::Stream::Util qw/unoverload_str/;
 use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::Event(
-    accessors   => [qw/real_bool name diag bool level/],
-    ctx_method  => [ '_ok' => qw/real_bool name diag/ ],
+    accessors => [qw/real_bool name diag bool level/],
 );
 
 sub skip { $_[0]->{+CONTEXT}->skip }
@@ -226,6 +225,16 @@ Examples are C<ok()>, and C<is()>.
 
     my $ctx = context();
     my $event = $ctx->ok($bool, $name, \@diag);
+
+or:
+
+    my $ctx   = context();
+    my $event = $ctx->send_event(
+        'Ok',
+        real_bool => $bool,
+        name      => $name,
+        diag      => \@diag
+    );
 
 =head1 ACCESSORS
 

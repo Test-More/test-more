@@ -404,8 +404,11 @@ sub done_testing {
         return;
     }
 
-    # Use _plan to bypass Test::Builder::plan() monkeypatching
-    $ctx->_plan($num || $plan || $ran) unless $state->[STATE_PLAN];
+    unless ($state->[STATE_PLAN]) {
+        # bypass Test::Builder::plan() monkeypatching
+        my $e = $ctx->build_event('Plan', max => $num || $plan || $ran);
+        $ctx->send($e);
+    }
 
     if ($plan && $plan != $ran) {
         $state->[STATE_PASSING] = 0;
