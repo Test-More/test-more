@@ -1,41 +1,26 @@
-package Test::Stream::Event::Note;
+package Test::Builder::MonkeyPatching;
 use strict;
 use warnings;
 
-use Test::Stream::Event(
-    accessors  => [qw/message/],
+use Test::Stream::Exporter qw/exports import/;
+exports qw/monkeypatch_events monkeypatch_subs monkeypatch_all/;
+Test::Stream::Exporter->cleanup;
+
+our %EVENTS = (
+    Ok   => [qw/real_bool name/],
+    Plan => [qw/max directive reason/],
+    Diag => [qw/message/],
+    Note => [qw/message/],
 );
 
-use Test::Stream::Carp qw/confess/;
-
-sub init {
-    $_[0]->SUPER::init();
-    if (defined $_[0]->{+MESSAGE}) {
-        $_[0]->{+MESSAGE} .= "";
-    }
-    else {
-        $_[0]->{+MESSAGE} = 'undef';
-    }
-}
-
-sub to_tap {
-    my $self = shift;
-
-    chomp(my $msg = $self->{+MESSAGE});
-    $msg = "# $msg" unless $msg =~ m/^\n/;
-    $msg =~ s/\n/\n# /g;
-
-    return [OUT_STD, "$msg\n"];
-}
-
-sub extra_details {
-    my $self = shift;
-    return ( message => $self->message || '' );
-}
+sub monkeypatch_events() { qw/ok note diag plan/ }
+sub monkeypatch_subs()   { qw/done_testing/ }
+sub monkeypatch_all()    { (monkeypatch_events(), monkeypatch_subs()) }
 
 1;
 
 __END__
+
 
 =pod
 
@@ -43,39 +28,12 @@ __END__
 
 =head1 NAME
 
-Test::Stream::Event::Note - Note event type
+Test::Builder::MonkeyPatching - Metadata for Test::Builder monkeypatching
+legacy support.
 
 =head1 DESCRIPTION
 
-Notes, typically rendered to STDOUT.
-
-=head1 SYNOPSYS
-
-    use Test::Stream::Context qw/context/;
-    use Test::Stream::Event::Note;
-
-    my $ctx = context();
-    my $event = $ctx->Note($message);
-
-=head1 ACCESSORS
-
-=over 4
-
-=item $note->message
-
-The message for the note.
-
-=back
-
-=head1 SUMMARY FIELDS
-
-=over 4
-
-=item message
-
-The message from the note.
-
-=back
+Internal use only, subject to change.
 
 =head1 SOURCE
 

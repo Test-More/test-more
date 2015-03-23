@@ -19,10 +19,6 @@ sub new {
 
     my $type = $self->get('type') || confess "No type specified!";
 
-    my $etypes = Test::Stream::Context->events;
-    confess "'$type' is not a valid event type"
-        unless $etypes->{$type};
-
     return $self;
 }
 

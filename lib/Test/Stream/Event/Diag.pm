@@ -3,8 +3,7 @@ use strict;
 use warnings;
 
 use Test::Stream::Event(
-    accessors  => [qw/message linked/],
-    ctx_method => ['_diag' => 'message'],
+    accessors => [qw/message linked/],
 );
 
 use Test::Stream::Util qw/try/;
