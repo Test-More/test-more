@@ -417,7 +417,7 @@ sub ok {
         $ctx->throw("Cannot run test ($name) with active children");
     }
 
-    $ctx->_unwind_event('Ok', real_bool => $test, name => $name);
+    $ctx->_unwind_event('Ok', pass => $test, name => $name);
     return $test ? 1 : 0;
 }
 
@@ -778,10 +778,10 @@ sub current_test {
             my $i;
             $i = shift @$old while @$old && (!$i || !$i->isa('Test::Stream::Event::Ok'));
             $i ||= Test::Stream::Event::Ok->new(
-                context    => $nctx,
-                created    => [CORE::caller()],
-                in_subtest => 0,
-                bool       => 1,
+                context        => $nctx,
+                created        => [CORE::caller()],
+                in_subtest     => 0,
+                effective_pass => 1,
             );
 
             push @$new => $i;
@@ -813,7 +813,7 @@ sub summary {
     my $ctx = $self->ctx;
     my $state = $ctx->stream->state->[-1];
     return @{[]} unless $state->[STATE_LEGACY];
-    return map { $_->isa('Test::Stream::Event::Ok') ? ($_->bool ? 1 : 0) : ()} @{$state->[STATE_LEGACY]};
+    return map { $_->isa('Test::Stream::Event::Ok') ? ($_->effective_pass ? 1 : 0) : ()} @{$state->[STATE_LEGACY]};
 }
 
 ###################################

@@ -420,8 +420,8 @@ sub _parse_event {
 # Shortcuts
 sub ok {
     my $self = shift;
-    my ($real_bool, $name, $diag) = @_;
-    $self->send_event('Ok', real_bool => $real_bool, name => $name, diag => $diag);
+    my ($pass, $name, $diag) = @_;
+    $self->send_event('Ok', pass => $pass, name => $name, diag => $diag);
 }
 
 sub note {
@@ -456,8 +456,8 @@ sub finish {
 
 sub subtest {
     my $self = shift;
-    my ($real_bool, $name) = @_;
-    $self->send_event('Subtest', real_bool => $real_bool, name => $name);
+    my ($pass, $name) = @_;
+    $self->send_event('Subtest', pass => $pass, name => $name);
 }
 
 sub done_testing {
@@ -660,7 +660,7 @@ stream, it returns it instead.
 
 =over 4
 
-=item ok($real_bool, $name, $diag)
+=item ok($pass, $name, $diag)
 
 Generate an L<Test::Stream::Event::Ok> event.
 
@@ -684,7 +684,7 @@ Generate an L<Test::Stream::Event::Bail> event.
 
 Generate an L<Test::Stream::Event::Finish> event.
 
-=item subtest($real_bool, $name)
+=item subtest($pass, $name)
 
 Generate an L<Test::Stream::Event::Subtest> event.
 

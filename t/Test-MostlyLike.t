@@ -107,43 +107,43 @@ events_are (
 
     },
     check {
-        event ok => { bool => 1 };
+        event ok => { effective_pass => 1 };
         event ok => {
-            bool => 0,
+            effective_pass => 0,
             diag => qr/got: 'a'.*\n.*expected: 'b'/,
         };
 
-        event ok => { bool => 1 };
-        event ok => { bool => 1 };
+        event ok => { effective_pass => 1 };
+        event ok => { effective_pass => 1 };
 
         event ok => {
-            bool => 0,
+            effective_pass => 0,
             diag => qr/\$got->\[1\] = 'b'\n\s*\$expected->\[1\] = 'x'/,
         };
 
-        event ok => { bool => 1 };
-        event ok => { bool => 1 };
+        event ok => { effective_pass => 1 };
+        event ok => { effective_pass => 1 };
 
         event ok => {
-            bool => 0,
+            effective_pass => 0,
             diag => qr/\$got->\{b\} = '2'\n\s*\$expected->\{b\} = undef/,
         };
 
-        event ok => { bool => 1 };
+        event ok => { effective_pass => 1 };
         event ok => {
-            bool => 0,
+            effective_pass => 0,
             diag => qr/\$got->\{b\} = 'bar'\n\s+\$expected->\{b\} = .*o/,
         };
 
-        event ok => { bool => 1 };
+        event ok => { effective_pass => 1 };
         event ok => {
-            bool => 0,
+            effective_pass => 0,
             diag => qr/\$got->\Q{a}{b}{c}{d}\E = '1'\n\s+\$expected->\Q{a}{b}{c}{d}\E = '2'/,
         };
 
-        event ok => { bool => 1 };
+        event ok => { effective_pass => 1 };
         event ok => {
-            bool => 0,
+            effective_pass => 0,
             diag => [
                 qr/\[\s+\$got->invalid\(\)\] = '\(EXCEPTION\)'/,
                 qr/\[\$expected->\{invalid\}\] = ARRAY/,

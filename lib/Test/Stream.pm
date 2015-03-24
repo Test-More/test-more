@@ -506,7 +506,7 @@ sub _update_state {
     if ($e->isa('Test::Stream::Event::Ok')) {
         $cache->{do_tap} = 1;
         $state->[STATE_COUNT]++;
-        if (!$e->bool) {
+        if (!$e->effective_pass) {
             $state->[STATE_FAILED]++;
             $state->[STATE_PASSING] = 0;
         }

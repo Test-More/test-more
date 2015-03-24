@@ -26,7 +26,7 @@ events_are(
     $events,
     check {
         event ok => {
-            bool => 0,
+            effective_pass => 0,
             diag => qr/syntax error at \(eval in cmp_ok\)/,
         };
     },

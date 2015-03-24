@@ -14,7 +14,7 @@ events_are (
     },
     check {
         event ok => {
-            bool => 0,
+            effective_pass => 0,
             name => 'use Something::Fake;',
             diag => qr/^\s*Failed test 'use Something::Fake;'/,
         };

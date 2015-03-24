@@ -285,10 +285,10 @@ proper event objects. IT is best to use the C<send_event()> method provided by
 the context object:
 
     my $ctx = context;
-    $ctx->send_event('Ok', real_bool => 1, name => "pass");
+    $ctx->send_event('Ok', pass => 1, name => "pass");
     $ctx->send_event(
         'Ok',
-        real_bool => 0,
+        pass => 0,
         name      => "fail",
         diag      => ["This test failed, here is some diag ..."],
     );

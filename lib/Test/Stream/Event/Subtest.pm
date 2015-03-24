@@ -15,13 +15,13 @@ sub init {
     my $self = shift;
     $self->{+EVENTS} ||= [];
 
-    $self->{+REAL_BOOL} = $self->{+STATE}->[STATE_PASSING] && $self->{+STATE}->[STATE_COUNT];
+    $self->{+PASS} = $self->{+STATE}->[STATE_PASSING] && $self->{+STATE}->[STATE_COUNT];
 
     if ($self->{+EXCEPTION}) {
         push @{$self->{+DIAG}} => "Exception in subtest '$self->{+NAME}': $self->{+EXCEPTION}";
         $self->{+STATE}->[STATE_PASSING] = 0;
-        $self->{+BOOL} = 0;
-        $self->{+REAL_BOOL} = 0;
+        $self->{+EFFECTIVE_PASS} = 0;
+        $self->{+PASS} = 0;
     }
 
     if (my $le = $self->{+EARLY_RETURN}) {
@@ -33,10 +33,10 @@ sub init {
             my $skip = $le->reason || "skip all";
             # Should be a snapshot now:
             $self->{+CONTEXT}->set_skip($skip);
-            $self->{+REAL_BOOL} = 1;
+            $self->{+PASS} = 1;
         }
         else { # BAILOUT
-            $self->{+REAL_BOOL} = 0;
+            $self->{+PASS} = 0;
         }
     }
 

@@ -16,16 +16,16 @@ events_are(
         }
     },
     check {
-        event ok   => {bool => 1};
-        event ok   => {bool => 1};
+        event ok   => {effective_pass => 1};
+        event ok   => {effective_pass => 1};
         event plan => {max  => 2};
 
-        event ok   => {bool => 1};
-        event ok   => {bool => 1};
+        event ok   => {effective_pass => 1};
+        event ok   => {effective_pass => 1};
         event plan => {max  => 2};
 
-        event ok   => {bool => 1};
-        event ok   => {bool => 1};
+        event ok   => {effective_pass => 1};
+        event ok   => {effective_pass => 1};
         event plan => {max  => 2};
 
         dir 'end';

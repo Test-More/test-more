@@ -27,25 +27,25 @@ events_are(
     $events,
 
     check {
-        event ok   => {bool => 0, diag => qr/Fail/};
-        event ok   => {bool => 1};
+        event ok   => {effective_pass => 0, diag => qr/Fail/};
+        event ok   => {effective_pass => 1};
 
         event note => {message => 'Subtest: subtest'};
         event subtest => {
             name => 'subtest',
-            bool => 0,
+            effective_pass => 0,
             diag => qr/Failed test 'subtest'/,
 
             events => check {
-                event ok => {bool => 0};
-                event ok => {bool => 1};
+                event ok => {effective_pass => 0};
+                event ok => {effective_pass => 1};
 
                 event note => {message => 'Subtest: subtest_deeper'};
                 event subtest => {
-                    bool => 1,
+                    effective_pass => 1,
                     name => 'subtest_deeper',
                     events => check {
-                        event ok => { bool => 1 };
+                        event ok => { effective_pass => 1 };
                     },
                 };
 
@@ -57,8 +57,8 @@ events_are(
             },
         };
 
-        event ok => {bool => 0};
-        event ok => {bool => 1};
+        event ok => {effective_pass => 0};
+        event ok => {effective_pass => 1};
 
         dir end => "subtest events as expected";
     },

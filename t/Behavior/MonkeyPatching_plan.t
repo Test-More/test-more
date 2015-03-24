@@ -28,8 +28,8 @@ events_are(
     },
     check {
         event plan => { max => 2 };
-        event ok => { bool => 1 };
-        event ok => { bool => 0 };
+        event ok => { effective_pass => 1 };
+        event ok => { effective_pass => 0 };
         directive 'end';
     },
 );
@@ -42,8 +42,8 @@ events_are(
     },
     check {
         event plan => { max => 2 };
-        event ok => { bool => 1 };
-        event ok => { bool => 0 };
+        event ok => { effective_pass => 1 };
+        event ok => { effective_pass => 0 };
         directive 'end';
     },
 );
@@ -68,8 +68,8 @@ events_are(
     },
     check {
         event plan => { directive => 'NO PLAN' };
-        event ok => { bool => 1 };
-        event ok => { bool => 0 };
+        event ok => { effective_pass => 1 };
+        event ok => { effective_pass => 0 };
         directive 'end';
     },
 );
@@ -103,9 +103,9 @@ events_are(
         };
     },
     check {
-        event ok => { bool => 1 };
-        event ok => { bool => 1 };
-        event ok => { bool => 1 };
+        event ok => { effective_pass => 1 };
+        event ok => { effective_pass => 1 };
+        event ok => { effective_pass => 1 };
         event plan => { max => 3 };
         directive 'end';
     },

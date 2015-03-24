@@ -28,8 +28,8 @@ events_are(
         done_testing;
     },
     check {
-        event ok => { bool => 1 };
-        event ok => { bool => 0 };
+        event ok => { effective_pass => 1 };
+        event ok => { effective_pass => 0 };
         event plan => { max => 2 };
         directive 'end';
     },
@@ -43,8 +43,8 @@ events_are(
         done_testing;
     },
     check {
-        event ok => { bool => 1 };
-        event ok => { bool => 0 };
+        event ok => { effective_pass => 1 };
+        event ok => { effective_pass => 0 };
         event plan => { max => 2 };
         directive 'end';
     },

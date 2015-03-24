@@ -94,7 +94,7 @@ This is almost certainly not what you wanted. Did you fork and forget to exit?
 
     die $err unless $succ;
 
-    return $e->bool;
+    return $e->effective_pass;
 }
 
 1;

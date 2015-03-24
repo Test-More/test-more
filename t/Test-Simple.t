@@ -11,12 +11,12 @@ events_are (
     },
     check {
         event ok => {
-            bool => 1,
+            effective_pass => 1,
             name => 'Pass',
             diag => '',
         };
         event ok => {
-            bool => 0,
+            effective_pass => 0,
             name => 'Fail',
             diag => qr/Failed test 'Fail'/,
         };

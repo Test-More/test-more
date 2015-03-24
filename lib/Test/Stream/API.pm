@@ -295,7 +295,7 @@ methods do for you.
         context => $context,     # A context is required
         in_subtest => 0,
 
-        bool => $bool,
+        pass => $bool,
         name => $name,
         diag => \@diag,
     );

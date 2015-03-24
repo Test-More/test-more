@@ -7,7 +7,7 @@ exports qw/monkeypatch_events monkeypatch_subs monkeypatch_all/;
 Test::Stream::Exporter->cleanup;
 
 our %EVENTS = (
-    Ok   => [qw/real_bool name/],
+    Ok   => [qw/pass name/],
     Plan => [qw/max directive reason/],
     Diag => [qw/message/],
     Note => [qw/message/],
