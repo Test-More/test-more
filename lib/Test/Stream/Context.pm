@@ -12,7 +12,7 @@ use Test::Stream::Util qw/try translate_filename/;
 use Test::Stream::Meta qw/init_tester is_tester/;
 
 use Test::Stream::HashBase(
-    accessors => [qw/frame stream encoding in_todo todo modern pid skip diag_todo provider monkeypatch_stash/],
+    accessors => [qw/frame stream encoding in_todo todo modern pid skip diag_todo provider/],
 );
 
 use Test::Stream::Exporter qw/import export_to default_exports exports/;
@@ -292,97 +292,35 @@ sub subtest_stop {
 sub send_event {
     my $self  = shift;
     my $event = shift;
-    my @call  = caller(0);
+    my %args  = @_;
 
     # Uhg.. support legacy monkeypatching
     # If this is still here in 2020 I will be a sad panda.
-    return $self->_wind_event($event, @_)
+    return Test::Builder->new->monkeypatch_event($event, %args)
         if $INC{'Test/Builder.pm'}
         && $Test::Builder::MonkeyPatching::EVENTS{$event}
         && $Test::Builder::ORIG{lc($event)} != Test::Builder->can(lc($event));
 
-    my $encoding = $self->{+ENCODING};
-    $call[1] = translate_filename($encoding => $call[1]) if $encoding ne 'legacy';
-
-    my $pkg = $self->_parse_event($event);
-
-    my $e = $pkg->new(
-        context    => $self->snapshot,
-        created    => [@call[0 .. 4]],
-        in_subtest => 0,
-        @_,
-    );
-
-    return $self->stream->send($e);
-}
-
-sub _wind_event {
-    my $self  = shift;
-    my $event = shift;
-    my %args  = @_;
-
-    my @ordered;
-
-    if ($event eq 'Plan') {
-        my $max = $args{max};
-        my $dir = $args{directive};
-        my $msg = $args{reason};
-
-        $dir ||= 'tests';
-        $dir = 'skip_all' if $dir eq 'SKIP';
-        $dir = 'no_plan'  if $dir eq 'NO PLAN';
-
-        @ordered = ($dir, $max || $msg || ());
-    }
-    else {
-        my $fields = $Test::Builder::MonkeyPatching::EVENTS{$event};
-        push @{$self->{+MONKEYPATCH_STASH}} => \%args;
-        @ordered = @args{@$fields};
-    }
-
-    my $meth = lc($event);
-
-    my $out = Test::Builder->new->$meth(@ordered);
-    return $out;
-}
-
-sub _unwind_event {
-    my $self  = shift;
-    my $event = shift;
-    my @call  = caller(0);
-    my $stash = pop @{$self->{+MONKEYPATCH_STASH}} || {};
-
-    my $encoding = $self->{+ENCODING};
-    $call[1] = translate_filename($encoding => $call[1]) if $encoding ne 'legacy';
-
-    my $pkg = $self->_parse_event($event);
-
-    my $e = $pkg->new(
-        context    => $self->snapshot,
-        created    => [@call[0 .. 4]],
-        in_subtest => 0,
-        %$stash,
-        @_,
-    );
-
-    return $self->stream->send($e);
+    my $e = $self->build_event($event, %args, CALL => [caller(0)]);
+    $self->stream->send($e);
 }
 
 sub build_event {
     my $self  = shift;
     my $event = shift;
-    my @call  = caller(0);
+    my %args  = @_;
+    my $call  = delete $args{CALL} || [caller(0)];
 
     my $encoding = $self->{+ENCODING};
-    $call[1] = translate_filename($encoding => $call[1]) if $encoding ne 'legacy';
+    $call->[1] = translate_filename($encoding => $call->[1]) if $encoding ne 'legacy';
 
     my $pkg = $self->_parse_event($event);
 
-    my $e = $pkg->new(
+    $pkg->new(
         context    => $self->snapshot,
-        created    => [@call[0 .. 4]],
+        created    => [@$call[0 .. 4]],
         in_subtest => 0,
-        @_,
+        %args,
     );
 }
 
@@ -649,10 +587,16 @@ of the C<Test::Stream::Event::*> events, or a fully qualified namespace for an
 event. C<$Type> is case sensitive, so to build a C<Test::Stream::Event::Ok>
 event use the string 'Ok'.
 
+B<Note:> If legacy code has monkeypatched Test::Builder, this method will
+filter the event through the monkeypatch for compatability reasons.
+
 =item $e = $ctx->build_Event($Type, %params)
 
 This is the same as C<send_event> except that it does not send the event to the
 stream, it returns it instead.
+
+B<Note:> Unlike C<send_event()> this method will NOT filter the event through
+Test::Builder monkeypatching.
 
 =back
 
