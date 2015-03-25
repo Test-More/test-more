@@ -1234,7 +1234,8 @@ L<Test::More::Tools>. Calling the methods below is not advised.
 =item $TB->BAIL_OUT($reason)
 
 These will issue an L<Test::Stream::Event::Bail> event. This will cause the
-test file to stop running immedietly with a message.
+test file to stop running immedietly with a message. In TAP this event is ALSO
+a signal to the harness to abort any remaining testing.
 
 =item $TB->cmp_ok($got, $type, $expect, $name)
 
