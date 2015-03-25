@@ -318,8 +318,11 @@ sub WARN_OF_OVERRIDE {
 *******************************************************************************
 Something monkeypatched Test::Builder::$sub()!
 The new sub is '$pkg\::$name' defined in $file around line $line.
-In the near future monkeypatching Test::Builder::ok() will no longer work
-as expected.
+In the future monkeypatching Test::Builder::$sub() may no longer work as
+expected.
+
+Test::Stream::API now provides tools to properly hook into events so that
+monkeypatching is no longer needed.
 *******************************************************************************
     EOT
 }
