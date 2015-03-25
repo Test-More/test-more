@@ -19,8 +19,6 @@ use Scalar::Util qw/blessed reftype/;
 
 use Test::More::Tools;
 
-use Test::Builder::MonkeyPatching qw/monkeypatch_all/;
-
 BEGIN {
     my $meta = Test::Stream::Meta->is_tester('main');
     Test::Stream->shared->set_use_legacy(1)
@@ -58,43 +56,6 @@ sub _ending {
     require Test::Stream::ExitMagic;
     $self->{stream}->set_no_ending(0);
     Test::Stream::ExitMagic->new->do_magic($self->{stream}, $ctx);
-}
-
-my %WARNED;
-our ($CTX, %ORIG);
-{
-    no strict 'refs';
-    %ORIG = map {$_ => \&{$_}} monkeypatch_all();
-}
-
-sub WARN_OF_OVERRIDE {
-    my ($sub, $ctx) = @_;
-
-    return unless $ctx->modern;
-    my $old = $ORIG{$sub};
-    # Use package instead of self, we want replaced subs, not subclass overrides.
-    my $new = __PACKAGE__->can($sub);
-
-    return if $new == $old;
-
-    require B;
-    my $o    = B::svref_2object($new);
-    my $gv   = $o->GV;
-    my $st   = $o->START;
-    my $name = $gv->NAME;
-    my $pkg  = $gv->STASH->NAME;
-    my $line = $st->line;
-    my $file = $st->file;
-
-    warn <<"    EOT" unless $WARNED{"$pkg $name $file $line"}++;
-
-*******************************************************************************
-Something monkeypatched Test::Builder::$sub()!
-The new sub is '$pkg\::$name' defined in $file around line $line.
-In the near future monkeypatching Test::Builder::ok() will no longer work
-as expected.
-*******************************************************************************
-    EOT
 }
 
 
@@ -320,6 +281,49 @@ sub todo_end {
 # {{{ Monkeypatching support
 #####################################################
 
+my %WARNED;
+our ($CTX, %ORIG);
+our %EVENTS = (
+    Ok   => [qw/pass name/],
+    Plan => [qw/max directive reason/],
+    Diag => [qw/message/],
+    Note => [qw/message/],
+);
+{
+    no strict 'refs';
+    %ORIG = map { $_ => \&{$_} } qw/ok note diag plan done_testing/;
+}
+
+sub WARN_OF_OVERRIDE {
+    my ($sub, $ctx) = @_;
+
+    return unless $ctx->modern;
+    my $old = $ORIG{$sub};
+    # Use package instead of self, we want replaced subs, not subclass overrides.
+    my $new = __PACKAGE__->can($sub);
+
+    return if $new == $old;
+
+    require B;
+    my $o    = B::svref_2object($new);
+    my $gv   = $o->GV;
+    my $st   = $o->START;
+    my $name = $gv->NAME;
+    my $pkg  = $gv->STASH->NAME;
+    my $line = $st->line;
+    my $file = $st->file;
+
+    warn <<"    EOT" unless $WARNED{"$pkg $name $file $line"}++;
+
+*******************************************************************************
+Something monkeypatched Test::Builder::$sub()!
+The new sub is '$pkg\::$name' defined in $file around line $line.
+In the near future monkeypatching Test::Builder::ok() will no longer work
+as expected.
+*******************************************************************************
+    EOT
+}
+
 sub _set_monkeypatch_args {
     my $self = shift;
     confess "monkeypatch args already set!"
@@ -364,7 +368,7 @@ sub monkeypatch_event {
         @ordered = ($dir, $max || $msg || ());
     }
     else {
-        my $fields = $Test::Builder::MonkeyPatching::EVENTS{$event};
+        my $fields = $EVENTS{$event};
         $self->_set_monkeypatch_args(\%args);
         @ordered = @args{@$fields};
     }
@@ -373,7 +377,6 @@ sub monkeypatch_event {
     $self->$meth(@ordered);
     return $self->_get_monkeypatch_event;
 }
-
 
 #####################################################
 # }}} Monkeypatching support

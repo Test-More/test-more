@@ -298,7 +298,7 @@ sub send_event {
     # If this is still here in 2020 I will be a sad panda.
     return Test::Builder->new->monkeypatch_event($event, %args)
         if $INC{'Test/Builder.pm'}
-        && $Test::Builder::MonkeyPatching::EVENTS{$event}
+        && $Test::Builder::EVENTS{$event}
         && $Test::Builder::ORIG{lc($event)} != Test::Builder->can(lc($event));
 
     my $e = $self->build_event($event, %args, CALL => [caller(0)]);

@@ -6,7 +6,6 @@ examples/subtest.t
 lib/ok.pm
 lib/Test/Builder.pm
 lib/Test/Builder/Module.pm
-lib/Test/Builder/MonkeyPatching.pm
 lib/Test/Builder/Tester.pm
 lib/Test/Builder/Tester/Color.pm
 lib/Test/CanFork.pm
