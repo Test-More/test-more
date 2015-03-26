@@ -19,8 +19,8 @@ events_are(
     check {
         directive seek => 1;
         event subtest => {
-            bool => 0,
-            real_bool => 0,
+            effective_pass => 0,
+            pass => 0,
             name => 'foo',
             exception => qr/^Ooops/,
         };

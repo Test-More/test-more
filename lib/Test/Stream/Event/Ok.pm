@@ -7,8 +7,7 @@ use Test::Stream::Util qw/unoverload_str/;
 use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::Event(
-    accessors   => [qw/real_bool name diag bool level/],
-    ctx_method  => [ '_ok' => qw/real_bool name diag/ ],
+    accessors => [qw/pass name diag effective_pass level/],
 );
 
 sub skip { $_[0]->{+CONTEXT}->skip }
@@ -20,25 +19,25 @@ sub init {
     $self->SUPER::init();
 
     # Do not store objects here, only true/false/undef
-    if ($self->{+REAL_BOOL}) {
-        $self->{+REAL_BOOL} = 1;
+    if ($self->{+PASS}) {
+        $self->{+PASS} = 1;
     }
-    elsif(defined $self->{+REAL_BOOL}) {
-        $self->{+REAL_BOOL} = 0;
+    elsif(defined $self->{+PASS}) {
+        $self->{+PASS} = 0;
     }
     $self->{+LEVEL} = $Test::Builder::Level;
 
-    my $ctx  = $self->{+CONTEXT};
-    my $rb   = $self->{+REAL_BOOL};
-    my $todo = $ctx->in_todo;
-    my $skip = defined $ctx->skip;
-    my $b    = $rb || $todo || $skip || 0;
-    my $diag = delete $self->{+DIAG};
-    my $name = $self->{+NAME};
+    my $ctx   = $self->{+CONTEXT};
+    my $pass  = $self->{+PASS};
+    my $todo  = $ctx->in_todo;
+    my $skip  = defined $ctx->skip;
+    my $epass = $pass || $todo || $skip || 0;
+    my $diag  = delete $self->{+DIAG};
+    my $name  = $self->{+NAME};
 
-    $self->{+BOOL} = $b ? 1 : 0;
+    $self->{+EFFECTIVE_PASS} = $epass ? 1 : 0;
 
-    unless ($rb || ($todo && $skip)) {
+    unless ($pass || ($todo && $skip)) {
         my $msg = $todo ? "Failed (TODO)" : "Failed";
         my $prefix = $ENV{HARNESS_ACTIVE} ? "\n" : "";
 
@@ -70,7 +69,7 @@ sub to_tap {
     my $todo    = $context->todo;
 
     my @out;
-    push @out => "not" unless $self->{+REAL_BOOL};
+    push @out => "not" unless $self->{+PASS};
     push @out => "ok";
     push @out => $num if defined $num;
 
@@ -153,8 +152,8 @@ sub to_legacy {
     my $self = shift;
 
     my $result = {};
-    $result->{ok}        = $self->bool ? 1 : 0;
-    $result->{actual_ok} = $self->real_bool;
+    $result->{ok}        = $self->effective_pass ? 1 : 0;
+    $result->{actual_ok} = $self->pass;
     $result->{name}      = $self->name;
 
     my $ctx = $self->context;
@@ -195,10 +194,10 @@ sub extra_details {
     } @{$self->diag || []};
 
     return (
-        diag      => $diag            || '',
-        bool      => $self->bool      || 0,
-        name      => $self->name      || undef,
-        real_bool => $self->real_bool || 0
+        diag           => $diag                 || '',
+        effective_pass => $self->effective_pass || 0,
+        name           => $self->name           || undef,
+        pass           => $self->pass           || 0
     );
 }
 
@@ -227,14 +226,24 @@ Examples are C<ok()>, and C<is()>.
     my $ctx = context();
     my $event = $ctx->ok($bool, $name, \@diag);
 
+or:
+
+    my $ctx   = context();
+    my $event = $ctx->send_event(
+        'Ok',
+        pass => $bool,
+        name => $name,
+        diag => \@diag
+    );
+
 =head1 ACCESSORS
 
 =over 4
 
-=item $rb = $e->real_bool
+=item $rb = $e->pass
 
-This is the true/false value of the test after TODO, SKIP, and similar
-modifiers are taken into account.
+The original true/false value of whatever was passed into the event (but
+reduced down to 1 or 0).
 
 =item $name = $e->name
 
@@ -246,10 +255,10 @@ An arrayref with all the L<Test::Stream::Event::Diag> events reduced down to
 just the messages. Some coaxing has beeen done to combine all the messages into
 a single string.
 
-=item $b = $e->bool
+=item $b = $e->effective_pass
 
-The original true/false value of whatever was passed into the event (but
-reduced down to 1 or 0).
+This is the true/false value of the test after TODO, SKIP, and similar
+modifiers are taken into account.
 
 =item $l = $e->level
 
@@ -285,15 +294,15 @@ Remove all diag events, then return them in an arrayref.
 
 A single string with all the messages from the diags linked to the event.
 
-=item bool
-
-True/False passed into the test.
-
 =item name
 
 Name of the test.
 
-=item real_bool
+=item pass
+
+True/False passed into the test.
+
+=item effective_pass
 
 True/False value accounting for TODO and SKIP.
 

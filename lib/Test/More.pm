@@ -1074,7 +1074,7 @@ Easy!
         return unless $event->isa('Test::Stream::Event::Ok');
 
         # Only care about failures
-        return if $event->bool;
+        return if $event->effective_pass;
 
         confess "Failed test! here is a stacktrace!";
     });

@@ -81,7 +81,8 @@ This is almost certainly not what you wanted. Did you fork and forget to exit?
 
     $ctx->bail($st->{early_return}->reason) if $er && $er->isa('Test::Stream::Event::Bail');
 
-    my $e = $ctx->send_subtest(
+    my $e = $ctx->send_event(
+        'Subtest',
         name         => $st->{name},
         state        => $st->{state},
         events       => $st->{events},
@@ -93,7 +94,7 @@ This is almost certainly not what you wanted. Did you fork and forget to exit?
 
     die $err unless $succ;
 
-    return $e->bool;
+    return $e->effective_pass;
 }
 
 1;

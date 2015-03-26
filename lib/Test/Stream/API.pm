@@ -239,26 +239,10 @@ example L<Test::Stream::Event::Ok> can be issued via C<< $context->ok(...) >>.
 
     use Test::Stream::API qw/ context /;
     my $context = context();
-    $context->EVENT_TYPE(...);
+    $context->send_event('EVENT_TYPE', ...);
 
-The arguments to the event method are the values for event accessors in order,
-excluding the C<context>, C<created>, and C<in_subtest> arguments. For instance
-here is how the Ok event is defined:
-
-    package Test::Stream::Event::Ok;
-    use Test::Stream::Event(
-        accessors  => [qw/real_bool name diag .../],
-        ...
-    );
-
-This means that the C<< $context->ok >> method takes up to 5 arguments. The
-first argument is a boolean true/false, the second is the name of the test, and
-the third is an arrayref of diagnostics messages or
-L<Test::Stream::Event::Diag> objects.
-
-    $context->ok($bool, $name, [$diag]);
-
-Here are the main event methods, as well as their standard arguments:
+The 5 primary event types each have a shortcut method on
+L<Test::Stream::Context>:
 
 =over 4
 
@@ -305,14 +289,13 @@ methods do for you.
     );
 
     # Make the event
-            # TODO
     my $ok = Test::Stream::Event::Ok->new(
         # Should reflect where the event was produced, NOT WHERE ERRORS ARE REPORTED
         created => [__PACKAGE__, __FILE__,              __LINE__],
         context => $context,     # A context is required
         in_subtest => 0,
 
-        bool => $bool,
+        pass => $bool,
         name => $name,
         diag => \@diag,
     );

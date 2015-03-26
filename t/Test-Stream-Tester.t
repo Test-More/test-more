@@ -14,11 +14,11 @@ my $events = intercept {
 };
 
 isa_ok($events->[0], 'Test::Stream::Event::Ok');
-is($events->[0]->bool, 1, "Got one success");
+is($events->[0]->effective_pass, 1, "Got one success");
 is($events->[0]->name, "Woo!", "Got test name");
 
 isa_ok($events->[1], 'Test::Stream::Event::Ok');
-is($events->[1]->bool, 0, "Got one fail");
+is($events->[1]->effective_pass, 0, "Got one fail");
 is($events->[1]->name, "Boo!", "Got test name");
 
 $events = undef;
@@ -33,9 +33,9 @@ is(@$events, 2, "got 2 events (2 ok)");
 events_are(
     $events,
     check {
-        event ok => { bool => 1 };
+        event ok => { effective_pass => 1 };
         event ok => {
-            bool => 0,
+            effective_pass => 0,
             diag => qr/Failed/,
         };
         dir 'end';
@@ -50,8 +50,8 @@ ok(0, "Also Intercepted!");
 events_are(
     $grab,
     check {
-        event ok => { bool => 1 };
-        event ok => { bool => 0, diag => qr/Failed/ };
+        event ok => { effective_pass => 1 };
+        event ok => { effective_pass => 0, diag => qr/Failed/ };
         dir 'end';
     },
     'intercepted via grab 2'
@@ -86,7 +86,7 @@ events_are(
             intercept { ok(1, "foo"); $line1 = __LINE__ },
             check {
                 $line2 = __LINE__ + 1;
-                event ok => {bool => 0};
+                event ok => {effective_pass => 0};
                 dir 'end';
             },
             'Lets name this test!',
@@ -95,13 +95,13 @@ events_are(
 
     check {
         event ok => {
-            bool => 0,
+            effective_pass => 0,
             diag => [
                 qr{Failed test 'Lets name this test!'.*at (\./)?\Q$0\E line}s,
                 qr{  Event: 'ok' from \Q$0\E line $line1}s,
                 qr{  Check: 'ok' from \Q$0\E line $line2}s,
-                qr{  \$got->\{bool\} = '1'},
-                qr{  \$exp->\{bool\} = '0'},
+                qr{  \$got->\{effective_pass\} = '1'},
+                qr{  \$exp->\{effective_pass\} = '0'},
             ],
         };
 
@@ -116,7 +116,7 @@ events_are(
         events_are(
             intercept { ok(1, "foo"); ok(1, "bar"); $line3 = __LINE__ },
             check {
-                event ok => {bool => 1};
+                event ok => {effective_pass => 1};
                 dir 'end'
             },
             "Should Fail"
@@ -125,7 +125,7 @@ events_are(
 
     check {
         event ok => {
-            bool => 0,
+            effective_pass => 0,
             diag => [
                 qr/Failed test 'Should Fail'/,
                 qr/Expected end of events, got 'ok' from \Q$0\E line $line3/,

@@ -88,7 +88,7 @@ is(@munge,  3, "munge got 3 events");
 is(@follow, 1, "Follow was triggered");
 
 my $want = check {
-    event ok => { bool => 1 };
+    event ok => { effective_pass => 1 };
     event diag => { message => 'foo' };
     event plan => { max => 1 };
     directive 'end';
@@ -151,7 +151,7 @@ events_are(
         event ok => {todo => '',    in_todo   => 0};
         event ok => {todo => 'foo', in_todo   => 1};
         event ok => {todo => 'bar', in_todo   => 1};
-        event ok => {bool => 1,     real_bool => 1}; # Verify peek
+        event ok => {effective_pass => 1,     pass => 1}; # Verify peek
         event ok => {todo => 'foo', in_todo   => 1};
         event ok => {todo => '',    in_todo   => 0};
     },

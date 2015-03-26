@@ -281,33 +281,18 @@ This decision will need to be made before we go stable.
 =head2 GENERATING EVENTS
 
 All event subclasses should use L<Test::Stream::Event> to set them up as
-proper event objects. They should also add a method to
-L<Test::Stream::Context> to be used as a shortcut for generating that event
-type. That will let you can fire off an event directly from your context
-object using the lowercase name of the event class.
+proper event objects. IT is best to use the C<send_event()> method provided by
+the context object:
 
     my $ctx = context;
-    $ctx->ok(1, "pass");
-    $ctx->ok(0, "fail, ["This test failed, here is some diag ..."]);
-    $ctx->note("I am a teapot");
-
-All events take a context and 2 other arguments as the first 3 arguments of
-their constructor, these shortcut methods handle those first 3 arguments for
-you, making life much easier.
-
-The other arguments are:
-
-=over 4
-
-=item created
-
-an arrayref with caller information for where the event was generated.
-
-=item in_subtest
-
-True if the event belongs in a subtest, false otherwise.
-
-=back
+    $ctx->send_event('Ok', pass => 1, name => "pass");
+    $ctx->send_event(
+        'Ok',
+        pass => 0,
+        name      => "fail",
+        diag      => ["This test failed, here is some diag ..."],
+    );
+    $ctx->send_event('Note', message => "I am a teapot");
 
 =head1 EVENT OBJECTS
 

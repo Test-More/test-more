@@ -58,46 +58,6 @@ sub _ending {
     Test::Stream::ExitMagic->new->do_magic($self->{stream}, $ctx);
 }
 
-my %WARNED;
-our $CTX;
-our %ORIG = (
-    ok   => \&ok,
-    diag => \&diag,
-    note => \&note,
-    plan => \&plan,
-    done_testing => \&done_testing,
-);
-
-sub WARN_OF_OVERRIDE {
-    my ($sub, $ctx) = @_;
-
-    return unless $ctx->modern;
-    my $old = $ORIG{$sub};
-    # Use package instead of self, we want replaced subs, not subclass overrides.
-    my $new = __PACKAGE__->can($sub);
-
-    return if $new == $old;
-
-    require B;
-    my $o    = B::svref_2object($new);
-    my $gv   = $o->GV;
-    my $st   = $o->START;
-    my $name = $gv->NAME;
-    my $pkg  = $gv->STASH->NAME;
-    my $line = $st->line;
-    my $file = $st->file;
-
-    warn <<"    EOT" unless $WARNED{"$pkg $name $file $line"}++;
-
-*******************************************************************************
-Something monkeypatched Test::Builder::$sub()!
-The new sub is '$pkg\::$name' defined in $file around line $line.
-In the near future monkeypatching Test::Builder::ok() will no longer work
-as expected.
-*******************************************************************************
-    EOT
-}
-
 
 ####################
 # {{{ Constructors #
@@ -200,7 +160,8 @@ sub finalize {
 
     my $st = $ctx->subtest_stop($name);
 
-    $parent->ctx->send_subtest(
+    $parent->ctx->send_event(
+        'Subtest',
         name         => $st->{name},
         state        => $st->{state},
         events       => $st->{events},
@@ -316,6 +277,114 @@ sub todo_end {
 # }}} Finding Testers and Providers #
 #####################################
 
+#####################################################
+# {{{ Monkeypatching support
+#####################################################
+
+my %WARNED;
+our ($CTX, %ORIG);
+our %EVENTS = (
+    Ok   => [qw/pass name/],
+    Plan => [qw/max directive reason/],
+    Diag => [qw/message/],
+    Note => [qw/message/],
+);
+{
+    no strict 'refs';
+    %ORIG = map { $_ => \&{$_} } qw/ok note diag plan done_testing/;
+}
+
+sub WARN_OF_OVERRIDE {
+    my ($sub, $ctx) = @_;
+
+    return unless $ctx->modern;
+    my $old = $ORIG{$sub};
+    # Use package instead of self, we want replaced subs, not subclass overrides.
+    my $new = __PACKAGE__->can($sub);
+
+    return if $new == $old;
+
+    require B;
+    my $o    = B::svref_2object($new);
+    my $gv   = $o->GV;
+    my $st   = $o->START;
+    my $name = $gv->NAME;
+    my $pkg  = $gv->STASH->NAME;
+    my $line = $st->line;
+    my $file = $st->file;
+
+    warn <<"    EOT" unless $WARNED{"$pkg $name $file $line"}++;
+
+*******************************************************************************
+Something monkeypatched Test::Builder::$sub()!
+The new sub is '$pkg\::$name' defined in $file around line $line.
+In the future monkeypatching Test::Builder::$sub() may no longer work as
+expected.
+
+Test::Stream::API now provides tools to properly hook into events so that
+monkeypatching is no longer needed.
+*******************************************************************************
+    EOT
+}
+
+sub _set_monkeypatch_args {
+    my $self = shift;
+    confess "monkeypatch args already set!"
+        if $self->{monkeypatch_args};
+    ($self->{monkeypatch_args}) = @_;
+}
+
+sub _set_monkeypatch_event {
+    my $self = shift;
+    confess "monkeypatch event already set!"
+        if $self->{monkeypatch_event};
+    ($self->{monkeypatch_event}) = @_;
+}
+
+# These 2 methods delete the item before returning, this is to avoid
+# contamination in later events.
+sub _get_monkeypatch_args {
+    my $self = shift;
+    return delete $self->{monkeypatch_args};
+}
+
+sub _get_monkeypatch_event {
+    my $self = shift;
+    return delete $self->{monkeypatch_event};
+}
+
+sub monkeypatch_event {
+    my $self = shift;
+    my ($event, %args) = @_;
+
+    my @ordered;
+
+    if ($event eq 'Plan') {
+        my $max = $args{max};
+        my $dir = $args{directive};
+        my $msg = $args{reason};
+
+        $dir ||= 'tests';
+        $dir = 'skip_all' if $dir eq 'SKIP';
+        $dir = 'no_plan'  if $dir eq 'NO PLAN';
+
+        @ordered = ($dir, $max || $msg || ());
+    }
+    else {
+        my $fields = $EVENTS{$event};
+        $self->_set_monkeypatch_args(\%args);
+        @ordered = @args{@$fields};
+    }
+
+    my $meth = lc($event);
+    $self->$meth(@ordered);
+    return $self->_get_monkeypatch_event;
+}
+
+#####################################################
+# }}} Monkeypatching support
+#####################################################
+
 ################
 # {{{ Planning #
 ################
@@ -347,27 +416,34 @@ sub plan {
 
 sub skip_all {
     my ($self, $reason) = @_;
+    my $mp_args = $self->_get_monkeypatch_args;
 
     $self->{Skip_All} = 1;
 
     my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
 
-    $ctx->_plan(0, 'SKIP', $reason);
+    my $e = $ctx->build_event('Plan', $mp_args ? %$mp_args : (), max => 0, directive => 'SKIP', reason => $reason);
+    $ctx->send($e);
+    $self->_set_monkeypatch_event($e) if $mp_args;
 }
 
 sub no_plan {
     my ($self, @args) = @_;
+    my $mp_args = $self->_get_monkeypatch_args;
 
     my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
 
     $ctx->alert("no_plan takes no arguments") if @args;
-    $ctx->_plan(0, 'NO PLAN');
+    my $e = $ctx->build_event('Plan', $mp_args ? %$mp_args : (), max => 0, directive => 'NO PLAN');
+    $ctx->send($e);
+    $self->_set_monkeypatch_event($e) if $mp_args;
 
     return 1;
 }
 
 sub _plan_tests {
     my ($self, $arg) = @_;
+    my $mp_args = $self->_get_monkeypatch_args;
 
     my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
 
@@ -375,7 +451,9 @@ sub _plan_tests {
         $ctx->throw("Number of tests must be a positive integer.  You gave it '$arg'")
             unless $arg =~ /^\+?\d+$/;
 
-        $ctx->_plan($arg);
+        my $e = $ctx->build_event('Plan', $mp_args ? %$mp_args : (), max => $arg);
+        $ctx->send($e);
+        $self->_set_monkeypatch_event($e) if $mp_args;
     }
     elsif (!defined $arg) {
         $ctx->throw("Got an undefined number of tests");
@@ -407,7 +485,8 @@ sub done_testing {
 
 sub ok {
     my $self = shift;
-    my($test, $name) = @_;
+    my ($test, $name) = @_;
+    my $mp_args = $self->_get_monkeypatch_args;
 
     my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
     WARN_OF_OVERRIDE(ok => $ctx);
@@ -417,7 +496,9 @@ sub ok {
         $ctx->throw("Cannot run test ($name) with active children");
     }
 
-    $ctx->_unwind_ok($test, $name);
+    my $e = $ctx->build_event('Ok', $mp_args ? %$mp_args : (), pass => $test, name => $name);
+    $ctx->send($e);
+    $self->_set_monkeypatch_event($e, $mp_args) if $mp_args;
     return $test ? 1 : 0;
 }
 
@@ -451,24 +532,31 @@ sub todo_skip {
 }
 
 sub diag {
-    my $self = shift;
-    my $msg = join '', map { defined($_) ? $_ : 'undef' } @_;
+    my $self    = shift;
+    my $msg     = join '', map { defined($_) ? $_ : 'undef' } @_;
+    my $mp_args = $self->_get_monkeypatch_args;
 
     my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
     WARN_OF_OVERRIDE(diag => $ctx);
 
-    $ctx->_diag($msg);
+    my $e = $ctx->build_event('Diag', $mp_args ? %$mp_args : (), message => $msg);
+    $ctx->send($e);
+    $self->_set_monkeypatch_event($e) if $mp_args;
     return;
 }
 
 sub note {
-    my $self = shift;
-    my $msg = join '', map { defined($_) ? $_ : 'undef' } @_;
+    my $self    = shift;
+    my $msg     = join '', map { defined($_) ? $_ : 'undef' } @_;
+    my $mp_args = $self->_get_monkeypatch_args;
 
     my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
     WARN_OF_OVERRIDE(note => $ctx);
 
-    $ctx->_note($msg);
+    my $e = $ctx->build_event('Note', $mp_args ? %$mp_args : (), message => $msg);
+    $ctx->send($e);
+    $self->_set_monkeypatch_event($e) if $mp_args;
+    return;
 }
 
 #############################
@@ -778,10 +866,10 @@ sub current_test {
             my $i;
             $i = shift @$old while @$old && (!$i || !$i->isa('Test::Stream::Event::Ok'));
             $i ||= Test::Stream::Event::Ok->new(
-                context    => $nctx,
-                created    => [CORE::caller()],
-                in_subtest => 0,
-                bool       => 1,
+                context        => $nctx,
+                created        => [CORE::caller()],
+                in_subtest     => 0,
+                effective_pass => 1,
             );
 
             push @$new => $i;
@@ -813,7 +901,7 @@ sub summary {
     my $ctx = $self->ctx;
     my $state = $ctx->stream->state->[-1];
     return @{[]} unless $state->[STATE_LEGACY];
-    return map { $_->isa('Test::Stream::Event::Ok') ? ($_->bool ? 1 : 0) : ()} @{$state->[STATE_LEGACY]};
+    return map { $_->isa('Test::Stream::Event::Ok') ? ($_->effective_pass ? 1 : 0) : ()} @{$state->[STATE_LEGACY]};
 }
 
 ###################################
