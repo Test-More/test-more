@@ -1,3 +1,14 @@
+1.301001_100
+    * Start tracking changes to alpha releases due to requests
+    * Change monkeypatch warning
+    * Cleaner support for monkeypatching
+    * Move monkeypatching code from Test::Stream::Context into Test::Builder
+    * Rename T::S::E::Ok real_bool/bool to pass/effective_pass which is more clean
+    * Demystify Context+Events by removing magic methods in favor of send_event()
+    * Documentation improvements:
+     * For events+context
+     * For bailout
+
 1.301001
     * Normalize version number across all versioned files
     * Event stream!
