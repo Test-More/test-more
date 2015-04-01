@@ -2,7 +2,7 @@
 
 # What happens when a subtest dies?
 
-use lib 't/lib';
+use lib 't/Legacy/lib';
 
 use strict;
 use Test::Builder;

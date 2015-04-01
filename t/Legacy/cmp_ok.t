@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
+use lib 't/Legacy/lib';
 
 require Test::Simple::Catch;
 my($out, $err) = Test::Simple::Catch::caught();

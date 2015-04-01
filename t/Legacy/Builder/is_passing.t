@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 use strict;
-use lib 't/lib';
+use lib 't/Legacy/lib', 't/lib';
 
 # We're going to need to override exit() later
 BEGIN {

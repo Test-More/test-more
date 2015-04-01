@@ -4,10 +4,10 @@ use strict;
 BEGIN {
     if( $ENV{PERL_CORE} ) {
         chdir 't';
-        @INC = ('../lib', 'lib');
+        @INC = ('../lib', 'Legacy/lib');
     }
     else {
-        unshift @INC, 't/lib';
+        unshift @INC, 't/Legacy/lib';
     }
 }
 

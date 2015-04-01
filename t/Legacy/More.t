@@ -3,11 +3,11 @@
 BEGIN {
     if( $ENV{PERL_CORE} ) {
         chdir 't';
-        @INC = qw(../lib ../lib/Test/Simple/t/lib);
+        @INC = qw(../lib ../lib/Test/Simple/t/Legacy/lib);
     }
 }
 
-use lib 't/lib';
+use lib 't/Legacy/lib/';
 use Test::More tests => 54;
 use Test::Builder;
 

@@ -3,7 +3,10 @@
 BEGIN {
     if( $ENV{PERL_CORE} ) {
         chdir 't';
-        @INC = '../lib';
+        @INC = ('../lib', 'Legacy/lib');
+    }
+    else {
+        unshift @INC, 't/Legacy/lib';
     }
 }
 
@@ -22,7 +25,7 @@ package main;
 require Test::Simple;
 
 chdir 't';
-push @INC, '../t/lib/';
+push @INC, '../t/Legacy/lib/';
 require Test::Simple::Catch;
 my($out, $err) = Test::Simple::Catch::caught();
 local $ENV{HARNESS_ACTIVE} = 0;

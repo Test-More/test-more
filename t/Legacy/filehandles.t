@@ -3,11 +3,13 @@
 BEGIN {
     if( $ENV{PERL_CORE} ) {
         chdir 't';
-        @INC = ('../lib', 'lib');
+        @INC = ('../lib', 'Legacy/lib');
+    }
+    else {
+        unshift @INC, 't/Legacy/lib';
     }
 }
 
-use lib 't/lib';
 use Test::More tests => 1;
 use Dev::Null;
 

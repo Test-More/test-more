@@ -6,7 +6,10 @@ package My::Test;
 BEGIN {
     if( $ENV{PERL_CORE} ) {
         chdir 't';
-        @INC = '../lib';
+        @INC = ('../lib', 'Legacy/lib');
+    }
+    else {
+        unshift @INC, 't/Legacy/lib';
     }
 }
 
@@ -83,10 +86,10 @@ my %Tests = (
             );
 
 chdir 't';
-my $lib = File::Spec->catdir(qw(lib Test Simple sample_tests));
+my $lib = File::Spec->catdir(qw(Legacy lib Test Simple sample_tests));
 while( my($test_name, $exit_code) = each %Tests ) {
     my $file = File::Spec->catfile($lib, $test_name);
-    my $wait_stat = system(qq{"$Perl" -"I../blib/lib" -"I../lib" -"I../t/lib" $file});
+    my $wait_stat = system(qq{"$Perl" -"I../blib/lib" -"I../lib" -"I../t/Legacy/lib" $file});
     my $actual_exit = exitstatus($wait_stat);
 
     if( $exit_code eq 'not zero' ) {

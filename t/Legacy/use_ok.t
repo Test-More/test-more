@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-use lib 't/lib';
+use lib 't/Legacy/lib';
 use Test::More;
 
 note "Basic use_ok"; {
