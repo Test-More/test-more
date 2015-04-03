@@ -150,7 +150,7 @@ sub context {
             PID()       => $$,
             SKIP()      => undef,
             DIAG_TODO() => $in_todo,
-            PROVIDER()  => [$ppkg, $pname]
+            ($ppkg || $pname) ? (PROVIDER() => [$ppkg, $pname]) : (),
         },
         __PACKAGE__
     );
@@ -177,7 +177,7 @@ sub _find_context {
     my ($package, $file, $line, $subname) = caller($level);
 
     if ($package) {
-        while ($package eq 'Test::Builder') {
+        while ($package && $package eq 'Test::Builder') {
             ($package, $file, $line, $subname) = caller(++$level);
         }
     }
@@ -197,7 +197,8 @@ sub _find_context_harder {
     my $fallback;
     while(1) {
         my ($pkg, $file, $line, $subname) = caller($level++);
-        $fallback ||= [$pkg, $file, $line, $subname] if $subname =~ m/::END$/;
+        last unless $pkg;
+        $fallback ||= [$pkg, $file, $line, $subname] if $subname && $subname =~ m/::END$/;
         next if $pkg =~ m/^Test::(Stream|Builder|More|Simple)(::.*)?$/;
         return [$pkg, $file, $line, $subname];
     }
@@ -207,6 +208,9 @@ sub _find_context_harder {
 }
 
 sub _find_tester {
+    # 0 - call to find_context
+    # 1 - call to context/new
+    # 2 - call to tool
     my $level = 2;
     while(1) {
         my $pkg = caller($level++);
@@ -225,6 +229,7 @@ sub _find_tester {
         }
     }
 
+    # Take a wild guess!
     return init_tester('main');
 }
 
@@ -340,11 +345,11 @@ sub _parse_event {
     }
 
     my $file = $pkg;
-    $file =~ s{::}{/};
+    $file =~ s{::}{/}g;
     $file .= '.pm';
     unless ($INC{$file} || $pkg->can('new')) {
         my ($ok, $error) = try { require $file };
-        chomp($error);
+        chomp($error) if $error;
         confess "Could not load package '$pkg' for event '$event': $error"
             unless $ok;
     }
