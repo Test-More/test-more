@@ -4,7 +4,7 @@ use warnings;
 
 use Scalar::Util qw/blessed/;
 use Test::Stream::Carp qw/confess/;
-use Test::Stream qw/-internal STATE_PASSING STATE_COUNT STATE_FAILED STATE_PLAN/;
+use Test::Stream '-internal';
 
 use Test::Stream::Event(
     base       => 'Test::Stream::Event::Ok',
@@ -15,11 +15,11 @@ sub init {
     my $self = shift;
     $self->{+EVENTS} ||= [];
 
-    $self->{+PASS} = $self->{+STATE}->[STATE_PASSING] && $self->{+STATE}->[STATE_COUNT];
+    $self->{+PASS} = $self->{+STATE}->is_passing && $self->{+STATE}->count;
 
     if ($self->{+EXCEPTION}) {
         push @{$self->{+DIAG}} => "Exception in subtest '$self->{+NAME}': $self->{+EXCEPTION}";
-        $self->{+STATE}->[STATE_PASSING] = 0;
+        $self->{+STATE}->is_passing(0);
         $self->{+EFFECTIVE_PASS} = 0;
         $self->{+PASS} = 0;
     }
@@ -41,7 +41,7 @@ sub init {
     }
 
     push @{$self->{+DIAG}} => "  No tests run for subtest."
-        unless $self->{+EXCEPTION} || $self->{+EARLY_RETURN} || $self->{+STATE}->[STATE_COUNT];
+        unless $self->{+EXCEPTION} || $self->{+EARLY_RETURN} || $self->{+STATE}->count;
 
     # Have the 'OK' init run
     $self->SUPER::init();
@@ -103,7 +103,7 @@ sub extra_details {
     my $self = shift;
 
     my @out = $self->SUPER::extra_details();
-    my $plan = $self->{+STATE}->[STATE_PLAN];
+    my $plan = $self->{+STATE}->plan;
     my $exception = $self->exception;
 
     return (
@@ -114,9 +114,9 @@ sub extra_details {
         exception => $exception || undef,
         plan      => $plan      || undef,
 
-        passing => $self->{+STATE}->[STATE_PASSING],
-        count   => $self->{+STATE}->[STATE_COUNT],
-        failed  => $self->{+STATE}->[STATE_FAILED],
+        passing => $self->{+STATE}->is_passing || 0,
+        count   => $self->{+STATE}->count      || 0,
+        failed  => $self->{+STATE}->failed     || 0,
     );
 }
 

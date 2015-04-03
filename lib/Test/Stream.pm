@@ -11,6 +11,7 @@ use Test::Stream::IOSets;
 use Test::Stream::Util qw/try/;
 use Test::Stream::Carp qw/croak confess carp/;
 use Test::Stream::Meta qw/MODERN ENCODING init_tester/;
+use Test::Stream::State qw/PLAN COUNT FAILED ENDED LEGACY/;
 
 use Test::Stream::HashBase(
     accessors => [qw{
@@ -33,17 +34,7 @@ use Test::Stream::HashBase(
     }],
 );
 
-sub STATE_COUNT()   { 0 }
-sub STATE_FAILED()  { 1 }
-sub STATE_PLAN()    { 2 }
-sub STATE_PASSING() { 3 }
-sub STATE_LEGACY()  { 4 }
-sub STATE_ENDED()   { 5 }
-
 use Test::Stream::Exporter;
-exports qw/
-    STATE_COUNT STATE_FAILED STATE_PLAN STATE_PASSING STATE_LEGACY STATE_ENDED
-/;
 default_exports qw/ cull tap_encoding context /;
 Test::Stream::Exporter->cleanup;
 
@@ -136,43 +127,34 @@ sub before_import {
     return;
 }
 
-sub plan   { $_[0]->{+STATE}->[-1]->[STATE_PLAN]   }
-sub count  { $_[0]->{+STATE}->[-1]->[STATE_COUNT]  }
-sub failed { $_[0]->{+STATE}->[-1]->[STATE_FAILED] }
-sub ended  { $_[0]->{+STATE}->[-1]->[STATE_ENDED]  }
-sub legacy { $_[0]->{+STATE}->[-1]->[STATE_LEGACY] }
+# Shortcuts to the current state attributes
+sub plan   { $_[0]->{+STATE}->[-1]->{+PLAN}   }
+sub count  { $_[0]->{+STATE}->[-1]->{+COUNT}  }
+sub failed { $_[0]->{+STATE}->[-1]->{+FAILED} }
+sub ended  { $_[0]->{+STATE}->[-1]->{+ENDED}  }
+sub legacy { $_[0]->{+STATE}->[-1]->{+LEGACY} }
 
 sub is_passing {
     my $self = shift;
-
-    if (@_) {
-        ($self->{+STATE}->[-1]->[STATE_PASSING]) = @_;
-    }
-
-    my $current = $self->{+STATE}->[-1]->[STATE_PASSING];
-
-    my $plan = $self->{+STATE}->[-1]->[STATE_PLAN];
-    return $current if $self->{+STATE}->[-1]->[STATE_ENDED];
-    return $current unless $plan;
-    return $current unless $plan->max;
-    return $current if $plan->directive && $plan->directive eq 'NO PLAN';
-    return $current unless $self->{+STATE}->[-1]->[STATE_COUNT] > $plan->max;
-
-    return $self->{+STATE}->[-1]->[STATE_PASSING] = 0;
+    my $state = $self->{+STATE}->[-1];
+    return $state->is_passing(@_);
 }
 
 sub init {
     my $self = shift;
 
-    $self->{+PID}         = $$;
-    $self->{+TID}         = get_tid();
-    $self->{+STATE}       = [[0, 0, undef, 1]];
+    $self->{+PID} = $$;
+    $self->{+TID} = get_tid();
+
     $self->{+USE_TAP}     = 1;
     $self->{+USE_NUMBERS} = 1;
-    $self->{+IO_SETS}     = Test::Stream::IOSets->new;
     $self->{+EVENT_ID}    = 1;
     $self->{+NO_ENDING}   = 1;
-    $self->{+SUBTESTS}    = [];
+
+    $self->{+STATE}   = [Test::Stream::State->new];
+    $self->{+IO_SETS} = Test::Stream::IOSets->new;
+
+    $self->{+SUBTESTS} = [];
 
     $self->{+SUBTEST_TAP_INSTANT} = 1;
     $self->{+SUBTEST_TAP_DELAYED} = 0;
@@ -365,6 +347,7 @@ sub fork_cull {
             unlink($full) || die "Could not unlink file: $file";
         }
 
+        # Things from other threads/procs always go to the root state
         my $cache = $self->_update_state($self->{+STATE}->[0], $obj);
         $self->_process_event($obj, $cache);
         $self->_finalize_event($obj, $cache);
@@ -378,7 +361,7 @@ sub done_testing {
     my ($ctx, $num) = @_;
     my $state = $self->{+STATE}->[-1];
 
-    if (my $old = $state->[STATE_ENDED]) {
+    if (my $old = $state->ended) {
         my ($p1, $f1, $l1) = $old->call;
         $ctx->ok(0, "done_testing() was already called at $f1 line $l1");
         return;
@@ -389,34 +372,35 @@ sub done_testing {
         $_->($ctx) for @{$self->{+FOLLOW_UPS}};
     }
 
-    $state->[STATE_ENDED] = $ctx->snapshot;
+    $state->set_ended($ctx->snapshot);
 
-    my $ran  = $state->[STATE_COUNT];
-    my $plan = $state->[STATE_PLAN] ? $state->[STATE_PLAN]->max : 0;
+    my $ran  = $state->count;
+    my $plan = $state->plan;
+    my $pmax = $plan ? $plan->max : 0;
 
-    if (defined($num) && $plan && $num != $plan) {
-        $ctx->ok(0, "planned to run $plan but done_testing() expects $num");
+    if (defined($num) && $pmax && $num != $pmax) {
+        $ctx->ok(0, "planned to run $pmax but done_testing() expects $num");
         return;
     }
 
-    unless ($state->[STATE_PLAN]) {
+    unless ($plan) {
         # bypass Test::Builder::plan() monkeypatching
-        my $e = $ctx->build_event('Plan', max => $num || $plan || $ran);
+        my $e = $ctx->build_event('Plan', max => $num || $pmax || $ran);
         $ctx->send($e);
     }
 
-    if ($plan && $plan != $ran) {
-        $state->[STATE_PASSING] = 0;
+    if ($pmax && $pmax != $ran) {
+        $state->is_passing(0);
         return;
     }
 
     if ($num && $num != $ran) {
-        $state->[STATE_PASSING] = 0;
+        $state->is_passing(0);
         return;
     }
 
     unless ($ran) {
-        $state->[STATE_PASSING] = 0;
+        $state->is_passing(0);
         return;
     }
 }
@@ -425,7 +409,7 @@ sub subtest_start {
     my $self = shift;
     my ($name, %params) = @_;
 
-    my $state = [0, 0, undef, 1];
+    my $state = Test::Stream::State->new;
 
     $params{parent_todo} ||= Test::Stream::Context::context->in_todo;
 
@@ -499,19 +483,15 @@ sub _update_state {
     my $cache = {tap_event => $e, state => $state};
 
     if ($e->isa('Test::Stream::Event::Ok')) {
+        $state->bump($e->effective_pass);
         $cache->{do_tap} = 1;
-        $state->[STATE_COUNT]++;
-        if (!$e->effective_pass) {
-            $state->[STATE_FAILED]++;
-            $state->[STATE_PASSING] = 0;
-        }
     }
     elsif (!$self->{+NO_HEADER} && $e->isa('Test::Stream::Event::Finish')) {
-        $state->[STATE_ENDED] = $e->context->snapshot;
+        $state->set_ended($e->context->snapshot);
 
-        my $plan = $state->[STATE_PLAN];
+        my $plan = $state->plan;
         if ($plan && $e->tests_run && $plan->directive eq 'NO PLAN') {
-            $plan->set_max($state->[STATE_COUNT]);
+            $plan->set_max($state->count);
             $plan->set_directive(undef);
             $cache->{tap_event} = $plan;
             $cache->{do_tap} = 1;
@@ -530,10 +510,10 @@ sub _update_state {
         if($self->{+NO_HEADER}) {
             $cache->{no_out} = 1;
         }
-        elsif(my $existing = $state->[STATE_PLAN]) {
-            my $directive = $existing ? $existing->directive : '';
+        elsif(my $existing = $state->plan) {
+            my $directive = $existing->directive;
 
-            if ($existing && (!$directive || $directive eq 'NO PLAN')) {
+            if (!$directive || $directive eq 'NO PLAN') {
                 my ($p1, $f1, $l1) = $existing->context->call;
                 my ($p2, $f2, $l2) = $e->context->call;
                 die "Tried to plan twice!\n    $f1 line $l1\n    $f2 line $l2\n";
@@ -544,9 +524,9 @@ sub _update_state {
         $cache->{no_out} = 1 if $directive && $directive eq 'NO PLAN';
     }
 
-    push @{$state->[STATE_LEGACY]} => $e if $self->{+USE_LEGACY};
+    $state->push_legacy($e) if $self->{+USE_LEGACY};
 
-    $cache->{number} = $state->[STATE_COUNT];
+    $cache->{number} = $state->count;
 
     return $cache;
 }
@@ -607,7 +587,7 @@ sub _finalize_event {
     my ($self, $e, $cache) = @_;
 
     if ($cache->{is_plan}) {
-        $cache->{state}->[STATE_PLAN] = $e;
+        $cache->{state}->set_plan($e);
         return unless $e->directive;
         return unless $e->directive eq 'SKIP';
 
@@ -674,7 +654,7 @@ sub _finalize_event {
 sub _reset {
     my $self = shift;
 
-    $self->{+STATE} = [[0, 0, undef, 1]];
+    $self->{+STATE} = [Test::Stream::State->new];
 
     return unless $self->pid != $$ || $self->tid != get_tid();
 
@@ -828,28 +808,6 @@ Set the tap encoding from this point on.
 
 Bring in results from child processes/threads. This is automatically done
 whenever a context is obtained, but you may wish to do it on demand.
-
-=back
-
-=head2 CONSTANTS
-
-none of these are exported by default you must request them
-
-=over
-
-=item STATE_COUNT
-
-=item STATE_FAILED
-
-=item STATE_PLAN
-
-=item STATE_PASSING
-
-=item STATE_LEGACY
-
-=item STATE_ENDED
-
-These are indexes into the STATE array present in the stream.
 
 =back
 

@@ -1,49 +1,66 @@
-package Test::Tester::Capture;
+package Test::Stream::State;
 use strict;
 use warnings;
 
-use base 'Test::Builder';
-use Test::Stream '-internal';
+use Test::Stream::HashBase(
+    accessors => [qw{count failed _passing plan ended legacy}],
+);
 
-sub new {
-    my $class = shift;
-    my $self = $class->SUPER::create(@_);
-    $self->{stream}->set_use_tap(0);
-    $self->{stream}->set_use_legacy(1);
-    return $self;
-}
+Test::Stream::Exporter->cleanup;
 
-sub details {
+sub init {
     my $self = shift;
 
-    my $prem;
-    my @out;
-    for my $e (@{$self->{stream}->legacy || []}) {
-        if ($e->isa('Test::Stream::Event::Ok')) {
-            push @out => $e->to_legacy;
-            $out[-1]->{diag} ||= "";
-            $out[-1]->{depth} = $e->level;
-            for my $d (@{$e->diag || []}) {
-                next if $d->message =~ m{Failed test .*\n\s*at .* line \d+\.};
-                chomp(my $msg = $d->message);
-                $msg .= "\n";
-                $out[-1]->{diag} .= $msg;
-            }
-        }
-        elsif ($e->isa('Test::Stream::Event::Diag')) {
-            chomp(my $msg = $e->message);
-            $msg .= "\n";
-            if (!@out) {
-                $prem .= $msg;
-                next;
-            }
-            next if $msg =~ m{Failed test .*\n\s*at .* line \d+\.};
-            $out[-1]->{diag} .= $msg;
-        }
-    }
+    $self->{+COUNT}    = 0 unless defined $self->{+COUNT};
+    $self->{+FAILED}   = 0 unless defined $self->{+FAILED};
+    $self->{+ENDED}    = 0 unless defined $self->{+ENDED};
+    $self->{+_PASSING} = 1 unless defined $self->{+_PASSING};
+}
 
-    return ($prem, @out) if $prem;
-    return @out;
+sub reset {
+    my $self = shift;
+
+    delete $self->{+PLAN};
+    delete $self->{+LEGACY};
+
+    $self->{+COUNT}   = 0;
+    $self->{+FAILED}  = 0;
+    $self->{+ENDED}   = 0;
+    $self->{+_PASSING} = 1;
+}
+
+sub is_passing {
+    my $self = shift;
+
+    ($self->{+_PASSING}) = @_ if @_;
+
+    my $pass = $self->{+_PASSING};
+    my $plan = $self->{+PLAN};
+
+    return $pass if $self->{+ENDED};
+    return $pass unless $plan;
+    return $pass unless $plan->max;
+    return $pass if $plan->directive && $plan->directive eq 'NO PLAN';
+    return $pass unless $self->{+COUNT} > $plan->max;
+
+    return $self->{+_PASSING} = 0;
+}
+
+sub bump {
+    my $self = shift;
+    my ($pass) = @_;
+
+    $self->{+COUNT}++;
+    return if $pass;
+
+    $self->{+FAILED}++;
+    $self->{+_PASSING} = 0;
+}
+
+sub push_legacy {
+    my $self = shift;
+    $self->{+LEGACY} ||= [];
+    push @{$self->{+LEGACY}} => @_;
 }
 
 1;
@@ -56,11 +73,7 @@ __END__
 
 =head1 NAME
 
-Test::Tester::Capture - Capture module for TesT::Tester
-
-=head1 DESCRIPTION
-
-Legacy support for Test::Tester.
+Test::Stream::State - Representation of the state of the testing
 
 =head1 SOURCE
 

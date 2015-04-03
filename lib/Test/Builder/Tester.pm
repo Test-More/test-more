@@ -147,7 +147,7 @@ sub _start_testing {
     $ENV{HARNESS_ACTIVE} = 0;
 
     $original_stream = builder->{stream} || Test::Stream->shared;
-    $original_state  = [@{$original_stream->state->[-1]}];
+    $original_state  = {%{$original_stream->state->[-1]}};
 
     # remember what the handles were set to
     $original_output_handle  = builder()->output();
@@ -374,7 +374,7 @@ sub test_test {
     # re-enable the original setting of the harness
     $ENV{HARNESS_ACTIVE} = $original_harness_env;
 
-    @{$original_stream->state->[-1]} = @$original_state;
+    %{$original_stream->state->[-1]} = %$original_state;
 
     # check the output we've stashed
     unless( builder()->ok( ( $args{skip_out} || $out->check ) &&

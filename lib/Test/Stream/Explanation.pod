@@ -629,11 +629,10 @@ unbelievable amount of downstream things appear to depend on them.
 
 =head2 Test::Stream
 
-The state array has an extra field identified by the constant C<STATE_LEGACY>.
-This is an array of all events of some types. Test::Builder used to maintain an
-array of hashes representing events for inspection later. Code which relied on
-this capability now depends on this and some translation logic in
-Test::Builder.
+The state object has an extra field called 'legacy'. This is an array of all
+events of some types. Test::Builder used to maintain an array of hashes
+representing events for inspection later. Code which relied on this capability
+now depends on this and some translation logic in Test::Builder.
 
 Unlike in old Test::Builder this feature can be turned off for performance and
 memory improvement.
@@ -710,8 +709,9 @@ mechanisms for actually supporting custom filehandles and encodings.
 
 =head2 Test::Tester
 
-This makes use of the STATE_LEGACY key mentioned in the Test::Stream section.
-This also needs to do some gymnastics and monkeypatching for $Level support.
+This makes use of the C<< state->legacy >> data mentioned in the Test::Stream
+section.  This also needs to do some gymnastics and monkeypatching for $Level
+support.
 
 =head1 Design Decisions
 

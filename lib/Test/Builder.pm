@@ -8,7 +8,7 @@ our $VERSION = '1.301001_100';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 
-use Test::Stream 1.301001 qw/ -internal STATE_LEGACY STATE_PLAN STATE_COUNT /;
+use Test::Stream 1.301001 '-internal';
 use Test::Stream::Toolset;
 use Test::Stream::Context;
 use Test::Stream::Carp qw/confess/;
@@ -609,12 +609,12 @@ sub reset {
 
     if ($self->{use_shared}) {
         Test::Stream->shared->_reset;
-        Test::Stream->shared->state->[-1]->[STATE_LEGACY] = [];
+        Test::Stream->shared->state->[-1]->set_legacy([]);
     }
     else {
         $self->{stream} = Test::Stream->new();
         $self->{stream}->set_use_legacy(1);
-        $self->{stream}->state->[-1]->[STATE_LEGACY] = [];
+        $self->{stream}->state->[-1]->set_legacy([]);
     }
 
     # We leave this a global because it has to be localized and localizing
@@ -814,7 +814,7 @@ sub expected_tests {
     my $ctx = $self->ctx;
     $ctx->plan(@_) if @_;
 
-    my $plan = $ctx->stream->state->[-1]->[STATE_PLAN] || return 0;
+    my $plan = $ctx->stream->plan || return 0;
     return $plan->max || 0;
 }
 
@@ -853,9 +853,9 @@ sub current_test {
     if (@_) {
         my ($num) = @_;
         my $state = $ctx->stream->state->[-1];
-        $state->[STATE_COUNT] = $num;
+        $state->set_count($num);
 
-        my $old = $state->[STATE_LEGACY] || [];
+        my $old = $state->legacy || [];
         my $new = [];
 
         my $nctx = $ctx->snapshot;
@@ -875,7 +875,7 @@ sub current_test {
             push @$new => $i;
         }
 
-        $state->[STATE_LEGACY] = $new;
+        $state->set_legacy($new);
     }
 
     $ctx->stream->count;
@@ -886,9 +886,10 @@ sub details {
     my $ctx = $self->ctx;
     my $state = $ctx->stream->state->[-1];
     my @out;
-    return @out unless $state->[STATE_LEGACY];
+    my $legacy = $state->legacy;
+    return @out unless $legacy;
 
-    for my $e (@{$state->[STATE_LEGACY]}) {
+    for my $e (@$legacy) {
         next unless $e && $e->isa('Test::Stream::Event::Ok');
         push @out => $e->to_legacy;
     }
@@ -900,8 +901,9 @@ sub summary {
     my $self = shift;
     my $ctx = $self->ctx;
     my $state = $ctx->stream->state->[-1];
-    return @{[]} unless $state->[STATE_LEGACY];
-    return map { $_->isa('Test::Stream::Event::Ok') ? ($_->effective_pass ? 1 : 0) : ()} @{$state->[STATE_LEGACY]};
+    my $legacy = $state->legacy;
+    return @{[]} unless $legacy;
+    return map { $_->isa('Test::Stream::Event::Ok') ? ($_->effective_pass ? 1 : 0) : ()} @$legacy;
 }
 
 ###################################

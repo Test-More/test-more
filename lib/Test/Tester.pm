@@ -9,7 +9,7 @@ use Test::Stream 1.301001 '-internal';
 use Test::Builder 1.301001;
 use Test::Stream::Toolset;
 use Test::More::Tools;
-use Test::Stream qw/-internal STATE_LEGACY/;
+use Test::Stream qw/-internal/;
 use Test::Tester::Capture;
 
 require Exporter;
@@ -73,7 +73,7 @@ sub run_tests {
 
     my ($stream, $old) = Test::Stream->intercept_start($cstream);
     $stream->set_use_legacy(1);
-    $stream->state->[-1] = [0, 0, undef, 1];
+    $stream->state->[-1] = Test::Stream::State->new;
     $stream->munge(sub {
         my ($stream, $e) = @_;
         $e->{$idx} = find_depth() - $Test::Builder::Level;
@@ -90,7 +90,7 @@ sub run_tests {
     my $ok = eval {
         $test->();
 
-        for my $e (@{$stream->state->[-1]->[STATE_LEGACY]}) {
+        for my $e (@{$stream->legacy}) {
             if ($e->isa('Test::Stream::Event::Ok')) {
                 push @out => $e->to_legacy;
                 $out[-1]->{name} = '' unless defined $out[-1]->{name};
@@ -120,7 +120,7 @@ sub run_tests {
     };
     my $err = $@;
 
-    $stream->state->[-1] = [0, 0, undef, 1];
+    $stream->state->[-1] = Test::Stream::State->new;
 
     Test::Stream->intercept_stop($stream);
 
