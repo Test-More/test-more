@@ -6,6 +6,8 @@ use Scalar::Util qw/blessed/;
 use Test::Stream::Util qw/unoverload_str/;
 use Test::Stream::Carp qw/confess/;
 
+use Test::Stream::Event::Diag;
+
 use Test::Stream::Event(
     accessors => [qw/pass name diag effective_pass level/],
 );
@@ -134,7 +136,7 @@ sub add_diag {
 }
 
 {
-    # Yes, we do want to override the imported one.
+    # Yes, we do want to override the generated one.
     no warnings 'redefine';
     sub clear_diag {
         my $self = shift;
