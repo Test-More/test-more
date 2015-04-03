@@ -440,9 +440,9 @@ sub subtest_start {
 
         %params,
 
-        state        => $state,
-        events       => [],
-        name         => $name,
+        state  => $state,
+        events => [],
+        name   => $name,
     };
 
     return $self->{+SUBTESTS}->[-1];
