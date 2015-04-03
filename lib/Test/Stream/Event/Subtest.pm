@@ -4,7 +4,6 @@ use warnings;
 
 use Scalar::Util qw/blessed/;
 use Test::Stream::Carp qw/confess/;
-use Test::Stream '-internal';
 
 use Test::Stream::Event(
     base       => 'Test::Stream::Event::Ok',

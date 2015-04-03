@@ -63,11 +63,6 @@ sub before_import {
     my $class = shift;
     my ($importer, $list) = @_;
 
-    if (@$list && $list->[0] eq '-internal') {
-        shift @$list;
-        return;
-    }
-
     my $meta = init_tester($importer);
     $meta->{+MODERN} = 1;
 
@@ -754,12 +749,6 @@ Any import argument not recognised will be treated as an export, if it is not a
 valid export an exception will be thrown.
 
 =over 4
-
-=item '-internal'
-
-This argument, I<when given first>, will prevent the import process from
-turning on enhanced features. This is mainly for internal use (thus the name)
-in order to access/load Test::Stream.
 
 =item subtest_tap => 'none'
 

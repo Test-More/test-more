@@ -7,7 +7,7 @@ use warnings;
 our $VERSION = '1.301001_100';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Stream 1.301001 '-internal';
+use Test::Stream 1.301001 ();
 use Test::Stream::Util qw/protect try spoof/;
 use Test::Stream::Toolset qw/is_tester init_tester context before_import/;
 use Test::Stream::Subtest qw/subtest/;

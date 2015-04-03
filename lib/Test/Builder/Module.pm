@@ -2,7 +2,7 @@ package Test::Builder::Module;
 
 use strict;
 
-use Test::Stream 1.301001 '-internal';
+use Test::Stream 1.301001 ();
 use Test::Builder 0.99;
 
 require Exporter;

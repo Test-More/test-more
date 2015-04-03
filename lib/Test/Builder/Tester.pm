@@ -4,10 +4,11 @@ use strict;
 our $VERSION = '1.301001_100';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Stream 1.301001 '-internal';
+use Test::Stream 1.301001 ();
 use Test::Builder 1.301001;
 use Symbol;
 use Test::Stream::Carp qw/croak/;
+use Test::Stream::Context qw/context/;
 
 =pod
 

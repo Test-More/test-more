@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use base 'Test::Builder';
-use Test::Stream '-internal';
 
 sub new {
     my $class = shift;
