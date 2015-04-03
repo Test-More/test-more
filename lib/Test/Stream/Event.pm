@@ -23,12 +23,12 @@ sub import {
     my $ctx_meth = delete $args{ctx_method};
     my $accessors = $args{accessors} || [];
 
-    require Test::Stream;
+    require Test::Stream::IOSets;
 
     # %args may override base
     Test::Stream::HashBase->apply_to($caller, base => $class, %args);
     Test::Stream::Exporter::export_to(
-        'Test::Stream',
+        'Test::Stream::IOSets',
         $caller,
         qw/OUT_STD OUT_ERR OUT_TODO/,
     );

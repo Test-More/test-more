@@ -4,6 +4,16 @@ use warnings;
 
 use Test::Stream::Util qw/protect/;
 
+use Test::Stream::Exporter;
+exports qw/
+    OUT_STD OUT_ERR OUT_TODO
+/;
+Test::Stream::Exporter->cleanup;
+
+sub OUT_STD()  { 0 }
+sub OUT_ERR()  { 1 }
+sub OUT_TODO() { 2 }
+
 init_legacy();
 
 sub new {
@@ -143,6 +153,23 @@ not yet been initialized it will initialize it. If you provide filehandles they
 will be used, but only during initializatin. Typically a filehandle set is
 created by cloning STDER and STDOUT and modifying them to use the correct
 encoding.
+
+=back
+
+=head1 CONSTANTS
+
+These can all be imported, but none are exported by default.
+
+=over 4
+
+=item OUT_STD
+
+=item OUT_ERR
+
+=item OUT_TODO
+
+These are indexes of specific IO handles inside an IO set (each encoding has an
+IO set).
 
 =back
 

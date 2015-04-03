@@ -40,13 +40,8 @@ sub STATE_PASSING() { 3 }
 sub STATE_LEGACY()  { 4 }
 sub STATE_ENDED()   { 5 }
 
-sub OUT_STD()  { 0 }
-sub OUT_ERR()  { 1 }
-sub OUT_TODO() { 2 }
-
 use Test::Stream::Exporter;
 exports qw/
-    OUT_STD OUT_ERR OUT_TODO
     STATE_COUNT STATE_FAILED STATE_PLAN STATE_PASSING STATE_LEGACY STATE_ENDED
 /;
 default_exports qw/ cull tap_encoding context /;
@@ -841,15 +836,6 @@ whenever a context is obtained, but you may wish to do it on demand.
 none of these are exported by default you must request them
 
 =over
-
-=item OUT_STD
-
-=item OUT_ERR
-
-=item OUT_TODO
-
-These are indexes of specific IO handles inside an IO set (each encoding has an
-IO set).
 
 =item STATE_COUNT
 

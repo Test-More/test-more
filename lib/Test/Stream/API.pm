@@ -3,9 +3,10 @@ use strict;
 use warnings;
 
 use Test::Stream::Tester qw/intercept/;
+use Test::Stream::IOSets qw/OUT_STD OUT_ERR OUT_TODO/;
 use Test::Stream::Carp qw/croak confess/;
 use Test::Stream::Meta qw/is_tester init_tester/;
-use Test::Stream qw/cull tap_encoding OUT_STD OUT_ERR OUT_TODO/;
+use Test::Stream qw/cull tap_encoding/;
 
 use Test::Stream::Exporter qw/import exports export_to/;
 exports qw{
