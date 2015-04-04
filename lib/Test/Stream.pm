@@ -12,6 +12,9 @@ use Test::Stream::Util qw/try/;
 use Test::Stream::Carp qw/croak confess carp/;
 use Test::Stream::Meta qw/MODERN ENCODING init_tester/;
 use Test::Stream::State qw/PLAN COUNT FAILED ENDED LEGACY/;
+use Test::Stream::Event::Finish;
+use Test::Stream::ExitMagic;
+use Test::Stream::ExitMagic::Context;
 
 use Test::Stream::HashBase(
     accessors => [qw{
@@ -175,11 +178,6 @@ sub init {
 
         @stack = ($root = $class->new());
         $root->{+NO_ENDING} = 0;
-
-        require Test::Stream::Context;
-        require Test::Stream::Event::Finish;
-        require Test::Stream::ExitMagic;
-        require Test::Stream::ExitMagic::Context;
 
         $magic = Test::Stream::ExitMagic->new;
 
