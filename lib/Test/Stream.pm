@@ -46,8 +46,7 @@ sub tap_encoding {
     croak "encoding '$encoding' is not valid, or not available"
         unless $encoding eq 'legacy' || Encode::find_encoding($encoding);
 
-    require Test::Stream::Context;
-    my $ctx = Test::Stream::Context::context();
+    my $ctx = context();
     $ctx->stream->io_sets->init_encoding($encoding);
 
     my $meta = init_tester($ctx->package);
@@ -55,7 +54,7 @@ sub tap_encoding {
 }
 
 sub cull {
-    my $ctx = Test::Stream::Context::context();
+    my $ctx = context();
     $ctx->stream->fork_cull();
 }
 
@@ -407,7 +406,7 @@ sub subtest_start {
 
     my $state = Test::Stream::State->new;
 
-    $params{parent_todo} ||= Test::Stream::Context::context->in_todo;
+    $params{parent_todo} ||= context()->in_todo;
 
     if(@{$self->{+SUBTESTS}}) {
         $params{parent_todo} ||= $self->{+SUBTESTS}->[-1]->{parent_todo};
