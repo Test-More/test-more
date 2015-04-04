@@ -28,13 +28,13 @@ sub subtest {
     );
 
     $ctx->note("Subtest: $name")
-        if $ctx->stream->subtest_tap_instant;
+        if $ctx->hub->subtest_tap_instant;
 
     my $st = $ctx->subtest_start($name);
 
     my $pid = $$;
     my ($succ, $err) = try {
-        TEST_STREAM_SUBTEST: {
+        TEST_HUB_SUBTEST: {
             no warnings 'once';
             local $Test::Builder::Level = 1;
             $block->run(@args);
@@ -43,13 +43,13 @@ sub subtest {
         return if $st->{early_return};
 
         $ctx->set;
-        my $stream = $ctx->stream;
-        $ctx->done_testing unless $stream->plan || $stream->ended;
+        my $hub = $ctx->hub;
+        $ctx->done_testing unless $hub->plan || $hub->ended;
 
         require Test::Stream::ExitMagic;
         {
             local $? = 0;
-            Test::Stream::ExitMagic->new->do_magic($stream, $ctx->snapshot);
+            Test::Stream::ExitMagic->new->do_magic($hub, $ctx->snapshot);
         }
     };
 
@@ -66,7 +66,7 @@ sub subtest {
     }
 
     if ($$ != $pid) {
-        warn <<"        EOT" unless $ctx->stream->_use_fork;
+        warn <<"        EOT" unless $ctx->hub->_use_fork;
 Subtest finished with a new PID ($$ vs $pid) while forking support was turned off!
 This is almost certainly not what you wanted. Did you fork and forget to exit?
         EOT

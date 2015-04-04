@@ -15,9 +15,9 @@ sub init {
 
 sub do_magic {
     my $self = shift;
-    my ($stream, $context) = @_;
-    return unless $stream;
-    return if $stream->no_ending && !$context;
+    my ($hub, $context) = @_;
+    return unless $hub;
+    return if $hub->no_ending && !$context;
 
     # Don't bother with an ending if this is a forked copy.  Only the parent
     # should do the ending.
@@ -28,22 +28,22 @@ sub do_magic {
 
     my $real_exit_code = $?;
 
-    $context ||= Test::Stream::ExitMagic::Context->new(frame => [caller()], stream => $stream);
+    $context ||= Test::Stream::ExitMagic::Context->new(frame => [caller()], hub => $hub);
 
-    if (!$stream->ended && $stream->follow_ups && @{$stream->follow_ups}) {
+    if (!$hub->ended && $hub->follow_ups && @{$hub->follow_ups}) {
         $context->set;
-        $_->($context) for @{$stream->follow_ups};
+        $_->($context) for @{$hub->follow_ups};
         $context->clear;
     }
 
-    my $plan  = $stream->plan;
-    my $total = $stream->count;
-    my $fails = $stream->failed;
+    my $plan  = $hub->plan;
+    my $total = $hub->count;
+    my $fails = $hub->failed;
 
     $context->finish($total, $fails);
 
     # Ran tests but never declared a plan or hit done_testing
-    return $self->no_plan_magic($stream, $context, $total, $fails, $real_exit_code)
+    return $self->no_plan_magic($hub, $context, $total, $fails, $real_exit_code)
         if $total && !$plan;
 
     # Exit if plan() was never called.  This is so "require Test::Simple"
@@ -51,13 +51,13 @@ sub do_magic {
     return unless $plan;
 
     # Don't do an ending if we bailed out.
-    if( $stream->bailed_out ) {
-        $stream->is_passing(0);
+    if( $hub->bailed_out ) {
+        $hub->is_passing(0);
         return;
     }
 
     # Figure out if we passed or failed and print helpful messages.
-    return $self->be_helpful_magic($stream, $context, $total, $fails, $plan, $real_exit_code)
+    return $self->be_helpful_magic($hub, $context, $total, $fails, $plan, $real_exit_code)
         if $total && $plan;
 
     if ($plan->directive && $plan->directive eq 'SKIP') {
@@ -67,27 +67,27 @@ sub do_magic {
 
     if($real_exit_code) {
         $context->diag("Looks like your test exited with $real_exit_code before it could output anything.\n");
-        $stream->is_passing(0);
+        $hub->is_passing(0);
         $? = $real_exit_code;
         return;
     }
 
     unless ($total) {
         $context->diag("No tests run!\n");
-        $stream->is_passing(0);
+        $hub->is_passing(0);
         $? = 255;
         return;
     }
 
-    $stream->is_passing(0);
+    $hub->is_passing(0);
     $? = 255;
 }
 
 sub no_plan_magic {
     my $self = shift;
-    my ($stream, $context, $total, $fails, $real_exit_code) = @_;
+    my ($hub, $context, $total, $fails, $real_exit_code) = @_;
 
-    $stream->is_passing(0);
+    $hub->is_passing(0);
     $context->diag("Tests were run but no plan was declared and done_testing() was not seen.");
 
     if($real_exit_code) {
@@ -109,7 +109,7 @@ sub no_plan_magic {
 
 sub be_helpful_magic {
     my $self = shift;
-    my ($stream, $context, $total, $fails, $plan, $real_exit_code) = @_;
+    my ($hub, $context, $total, $fails, $plan, $real_exit_code) = @_;
 
     my $planned   = $plan->max;
     my $num_extra = $plan->directive && $plan->directive eq 'NO PLAN' ? 0 : $total - $planned;
@@ -117,19 +117,19 @@ sub be_helpful_magic {
     if ($num_extra != 0) {
         my $s = $planned == 1 ? '' : 's';
         $context->diag("Looks like you planned $planned test$s but ran $total.\n");
-        $stream->is_passing(0);
+        $hub->is_passing(0);
     }
 
     if($fails) {
         my $s = $fails == 1 ? '' : 's';
         my $qualifier = $num_extra == 0 ? '' : ' run';
         $context->diag("Looks like you failed $fails test$s of ${total}${qualifier}.\n");
-        $stream->is_passing(0);
+        $hub->is_passing(0);
     }
 
     if($real_exit_code) {
         $context->diag("Looks like your test exited with $real_exit_code just after $total.\n");
-        $stream->is_passing(0);
+        $hub->is_passing(0);
         $? = $real_exit_code;
         return;
     }

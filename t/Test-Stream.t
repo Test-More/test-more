@@ -1,28 +1,26 @@
 use strict;
 use warnings;
 
-use Test::Stream;
-use Test::More;
-use Test::Stream::Tester qw/events_are event directive check/;
-use Test::MostlyLike;
-
-require Test::Builder;
-require Test::CanFork;
-
-use Test::Stream::API qw{
+use Test::Stream qw{
     listen munge follow_up
     enable_forking cull
     peek_todo push_todo pop_todo set_todo inspect_todo
     is_tester init_tester
     is_modern set_modern
     context peek_context clear_context set_context
-    intercept
     state_count state_failed state_plan state_ended is_passing
-    current_stream
+    current_hub
 
     disable_tap enable_tap subtest_tap_instant subtest_tap_delayed tap_encoding
     enable_numbers disable_numbers set_tap_outputs get_tap_outputs
 };
+
+use Test::More;
+use Test::Stream::Tester qw/events_are event directive check intercept/;
+use Test::MostlyLike;
+
+require Test::Builder;
+require Test::CanFork;
 
 can_ok(__PACKAGE__, qw{
     listen munge follow_up
@@ -31,9 +29,8 @@ can_ok(__PACKAGE__, qw{
     is_tester init_tester
     is_modern set_modern
     context peek_context clear_context set_context
-    intercept
     state_count state_failed state_plan state_ended is_passing
-    current_stream
+    current_hub
 
     disable_tap enable_tap subtest_tap_instant subtest_tap_delayed tap_encoding
     enable_numbers disable_numbers set_tap_outputs get_tap_outputs
@@ -66,7 +63,7 @@ $ctx = undef;
 $ne = context() . "" ne $ref;
 ok($ne, "New instance");
 
-isa_ok(current_stream(), 'Test::Stream');
+isa_ok(current_hub(), 'Test::Stream::Hub');
 
 my @munge;
 my @listen;

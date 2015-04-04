@@ -230,7 +230,7 @@ sub _skip {
     my( $why, $how_many, $func, $bool ) = @_;
     my $ctx = context();
 
-    my $plan = $ctx->stream->plan;
+    my $plan = $ctx->hub->plan;
 
     # If there is no plan we do not need to worry about counts
     my $need_count = $plan ? !($plan->directive && $plan->directive eq 'NO PLAN') : 0;
@@ -1068,7 +1068,7 @@ Easy!
     use Carp qw/confess/;
 
     Test::Stream->shared->listen(sub {
-        my ($stream, $event) = @_;
+        my ($hub, $event) = @_;
 
         # Only care about 'Ok' events (this includes subtests)
         return unless $event->isa('Test::Stream::Event::Ok');
@@ -1279,7 +1279,7 @@ interfere with the test.
   note(@diagnostic_message);
 
 Like C<diag()>, except the message will not be seen when the test is run
-in a harness.  It will only be visible in the verbose TAP stream.
+in a harness.  It will only be visible in the verbose TAP hub.
 
 Handy for putting in notes which might be useful for debugging, but
 don't indicate a problem.
@@ -1565,7 +1565,7 @@ Key feature milestones include:
 
 =over 4
 
-=item event stream
+=item event hub
 
 =item forking support
 
@@ -1614,7 +1614,7 @@ If you use utf8 or other non-ASCII characters with Test::More you
 might get a "Wide character in print" warning.
 Using C<< binmode STDOUT, ":utf8" >> will not fix it.
 
-Use the C<tap_encoding> function to configure the TAP stream encoding.
+Use the C<tap_encoding> function to configure the TAP hub encoding.
 
     use utf8;
     use Test::Stream; # imports tap_encoding

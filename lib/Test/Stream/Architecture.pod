@@ -104,7 +104,7 @@ This module can validate testing tools and their events.
 
 =back
 
-=head1 THE STREAM OBJECT
+=head1 THE HUB OBJECT
 
 =over 4
 
@@ -133,18 +133,18 @@ the C<ok()> method.
 
 =head2 CURRENT DESIGN
 
-L<Test::Stream> unfortunately must still act as a singleton (mostly). This
+L<Test::Stream::Hub> unfortunately must still act as a singleton (mostly). This
 time, the design put as little logic as possible into the singleton.
 
-=head3 RESPONSIBILITIES OF TEST::STREAM
+=head3 RESPONSIBILITIES OF TEST::STREAM::HUB
 
-Test::Stream has 4 main jobs:
+Test::Stream::Hub has 4 main jobs:
 
 =over 4
 
 =item Collect events from all threads and processes into 1 place
 
-    $stream->send($event);
+    $hub->send($event);
 
 The send() method will ensure that the event gets to the right place, no
 matter which thread or process your code is in. (Forking support must be turned
@@ -155,7 +155,7 @@ must remain as lean and tight as possible.
 
 =item Provide a pre-output hook to alter events
 
-    $stream->munge(sub { my ($stream, $event) = @_; ... })
+    $hub->munge(sub { my ($hub, $event) = @_; ... })
 
 C<munge()> lets you modify events before they are turned into output. It cannot
 remove the event, nor can it add events. Mungers are additive and proceessed
@@ -168,9 +168,9 @@ as fast and small as possible.
 
 =item Forward all events to all listeners (including TAP output)
 
-    $stream->listen(sub { my ($stream, $event) = @_; .... })
+    $hub->listen(sub { my ($hub, $event) = @_; .... })
 
-C<listen()> adds a listener. All events that come from the stream object will
+C<listen()> adds a listener. All events that come from the hub object will
 be sent to all listeners.
 
 There is not currently any way to remove a listener.
@@ -189,17 +189,17 @@ provides some other output such as when a test file is missing a plan.
 
 L<Test::Stream> has a semi-singleton model. Instead of 1 singleton, it has a
 singleton stack. Anything that wants to send an event to the B<current> acting
-stream should send it to the stream returned by C<Test::Stream-E<gt>shared>.
-Nothing should ever cache this result as the B<current> stream may change.
+hub should send it to the hub returned by C<Test::Stream-E<gt>shared>.
+Nothing should ever cache this result as the B<current> hub may change.
 
 This mechanism is primarily used for intercepting and hiding all events for a
-limited scope. L<Test::Stream::Tester> uses this to push a stream onto the
+limited scope. L<Test::Stream::Tester> uses this to push a hub onto the
 stack so that events can be generated that do not go to the listeners or TAP.
-Once the stack is popped, the previous stream is restored, which allows real
+Once the stack is popped, the previous hub is restored, which allows real
 events to be generated.
 
-You can also create new Test::Stream objects at-will that are not present in
-the stack. This lets you create alternate streams for any purpose you want.
+You can also create new Test::Stream::Hub objects at-will that are not present
+in the stack. This lets you create alternate hubs for any purpose you want.
 
 =head1 THE CONTEXT OBJECT
 
@@ -335,7 +335,7 @@ subtest helpers provided by L<Test::More>, or L<Test::Stream::Context>. Under
 the hood, a L<Child> event is started which adds a subtest to a stack in
 Test::Stream, and then all events get intercepted by that subtest. When the
 subtest is done, issue another Child event to close it out. Once closed, a
-Subtest event will be generated for you and sent to the stream.
+Subtest event will be generated for you and sent to the hub.
 
 =head1 SOURCE
 

@@ -99,7 +99,7 @@ updated, as well as hooks for reading/displaying/storing events after the state
 is updated. There is also a hook for the end of the test run (done_testing, or
 test ended).
 
-This is what Test::Stream is named Test::Stream, all events stream from the
+This is what Test::Stream is named Test::Stream, all events hub from the
 tools into the Test::Stream funnel, which then gets them where they need to go.
 Previously these kinds of actions required monkeypatching.
 
@@ -114,7 +114,7 @@ to do after the fact.
 Diags and oks can still exist as independent events, but by default all Test::More
 tools link the 'ok' and 'diag' events they produce. This allows code to process
 the ok and attached diagnostics as one unit. This prevents guess work
-previously required to accomplish this. Any downstream tool can also link 'ok'
+previously required to accomplish this. Any downhub tool can also link 'ok'
 and 'diag' objects, but they are not required to do so for compatibility
 reasons.
 
@@ -197,7 +197,7 @@ validating events super easy.
 
 Another validation problem solved here is that you can filter, or be selective
 about what events you care about. This allows you to test only the parts that
-your module generates. This is helpful in ensuring changes upstream do not
+your module generates. This is helpful in ensuring changes uphub do not
 break your tests unless they actually break your modules behavior.
 
 =head2 Resusable Test::More tools.
@@ -423,7 +423,7 @@ debugging.
 =head2 Test::Stream::Carp
 
 We cannot load Carp until we actually need it, if we do it can cause unexpected
-test passes downstream. This is one of few core modules I am willing to do this
+test passes downhub. This is one of few core modules I am willing to do this
 for, mainly because legacy had the same policy.
 
 This module provides the same tools as Carp, they simple load Carp and call the
@@ -623,7 +623,7 @@ never actually made it into production anywhere.
 There are several private methods (underscore prefix) that were never intended
 for external use. Despite underscores, warnings, and other such things people
 used them externally anyway. Most were purged, but these were left because an
-unbelievable amount of downstream things appear to depend on them.
+unbelievable amount of downhub things appear to depend on them.
 
 =back
 
@@ -677,7 +677,7 @@ Test::Builder has historically been very forgiving and clever when it comes to
 $Level. Context takes $Level into account when finding the proper file + line
 number for reporting errors. If $Level is wrong it attempts to be as forgiving
 as Test::Builder was. Requiring $Level to be correct breaks an unfortunate
-number of downstream tools, so we have to stay forgiving for now.
+number of downhub tools, so we have to stay forgiving for now.
 
 =item Test::Builder monkeypatching
 
@@ -781,7 +781,7 @@ somewhere else.
 In the old design events were just methods that produced TAP.  Now they are
 proper objects that can be constructed, altered, passed around, etc.
 
-=item This module is a hub through which events stream
+=item This module is a hub through which events hub
 
 Events are built by testing tools, once ready the events are given to
 Test::Stream to ensure they get to the right place.

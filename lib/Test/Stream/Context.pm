@@ -12,7 +12,7 @@ use Test::Stream::Util qw/try translate_filename/;
 use Test::Stream::Meta qw/init_tester is_tester/;
 
 use Test::Stream::HashBase(
-    accessors => [qw/frame stream encoding in_todo todo modern pid skip diag_todo provider/],
+    accessors => [qw/frame hub encoding in_todo todo modern pid skip diag_todo provider/],
 );
 
 use Test::Stream::Exporter qw/import export_to default_exports exports/;
@@ -32,7 +32,7 @@ sub from_end_block { 0 };
 
 sub init {
     $_[0]->{+FRAME}    ||= _find_context(1);                # +1 for call to init
-    $_[0]->{+STREAM}   ||= Test::Stream->shared;
+    $_[0]->{+HUB}   ||= Test::Stream->shared;
     $_[0]->{+ENCODING} ||= 'legacy';
     $_[0]->{+PID}      ||= $$;
 }
@@ -51,15 +51,15 @@ sub set {
 
 my $WARNED;
 sub context {
-    my ($level, $stream) = @_;
+    my ($level, $hub) = @_;
     # If the context has already been initialized we simply return it, we
     # ignore any additional parameters as they no longer matter. The first
     # thing to ask for a context wins, anything context aware that is called
     # later MUST expect that it can get a context found by something down the
     # stack.
     if ($CURRENT) {
-        return $CURRENT unless $stream;
-        return $CURRENT if $stream == $CURRENT->{+STREAM};
+        return $CURRENT unless $hub;
+        return $CURRENT if $hub == $CURRENT->{+HUB};
     }
 
     my $call = _find_context($level);
@@ -105,9 +105,9 @@ sub context {
 
     # Uh-Oh! someone has replaced the singleton, that means they probably want
     # everything to go through them... We can't do a whole lot about that, but
-    # we will use the singletons stream which should catch most use-cases.
+    # we will use the singletons hub which should catch most use-cases.
     if ($Test::Builder::_ORIG_Test && $Test::Builder::_ORIG_Test != $Test::Builder::Test) {
-        $stream ||= $Test::Builder::Test->{stream};
+        $hub ||= $Test::Builder::Test->{hub};
 
         my $warn = $meta->{Test::Stream::Meta::MODERN}
                 && !$WARNED++;
@@ -131,9 +131,9 @@ sub context {
         EOT
     }
 
-    $stream ||= $meta->{Test::Stream::Meta::STREAM} || Test::Stream->shared || confess "No Stream!?";
-    if ((USE_THREADS || $stream->_use_fork) && ($stream->pid == $$ && $stream->tid == get_tid())) {
-        $stream->fork_cull();
+    $hub ||= $meta->{Test::Stream::Meta::HUB} || Test::Stream->shared || confess "No Stream!?";
+    if ((USE_THREADS || $hub->_use_fork) && ($hub->pid == $$ && $hub->tid == get_tid())) {
+        $hub->fork_cull();
     }
 
     my $encoding = $meta->{Test::Stream::Meta::ENCODING} || 'legacy';
@@ -142,7 +142,7 @@ sub context {
     my $ctx = bless(
         {
             FRAME()     => $call,
-            STREAM()    => $stream,
+            HUB()    => $hub,
             ENCODING()  => $encoding,
             IN_TODO()   => $in_todo,
             TODO()      => $todo,
@@ -155,7 +155,7 @@ sub context {
         __PACKAGE__
     );
 
-    weaken($ctx->{+STREAM});
+    weaken($ctx->{+HUB});
 
     return $ctx if $CURRENT;
 
@@ -266,7 +266,7 @@ sub snapshot {
 
 sub send {
     my $self = shift;
-    $self->{+STREAM}->send(@_);
+    $self->{+HUB}->send(@_);
 }
 
 sub subtest_start {
@@ -278,7 +278,7 @@ sub subtest_start {
     $self->clear;
     my $todo = $self->hide_todo;
 
-    my $st = $self->stream->subtest_start($name, todo_stash => $todo, %params);
+    my $st = $self->hub->subtest_start($name, todo_stash => $todo, %params);
     return $st;
 }
 
@@ -286,7 +286,7 @@ sub subtest_stop {
     my $self = shift;
     my ($name) = @_;
 
-    my $st = $self->stream->subtest_stop($name);
+    my $st = $self->hub->subtest_stop($name);
 
     $self->set;
     $self->restore_todo($st->{todo_stash});
@@ -307,7 +307,7 @@ sub send_event {
         && $Test::Builder::ORIG{lc($event)} != Test::Builder->can(lc($event));
 
     my $e = $self->build_event($event, %args, CALL => [caller(0)]);
-    $self->stream->send($e);
+    $self->hub->send($e);
 }
 
 sub build_event {
@@ -404,7 +404,7 @@ sub subtest {
 }
 
 sub done_testing {
-    return $_[0]->stream->done_testing(@_)
+    return $_[0]->hub->done_testing(@_)
         unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{done_testing} != \&Test::Builder::done_testing;
 
     local $Test::Builder::CTX = shift;
@@ -574,7 +574,7 @@ Get a copy of the context object that is safe to store for later reference.
 
 =item $ctx->send($event)
 
-Send an event to the correct L<Test::Stream> object.
+Send an event to the correct L<Test::Stream::Hub> object.
 
 =item $ctx = $class->peek
 
@@ -582,8 +582,8 @@ Get the current context object, if there is one.
 
 =item $ctx->done_testing(...)
 
-See the C<done_testing()> method on L<Test::Stream> for arguments, this is just
-a shortcut to call done_testing on the correct stream.
+See the C<done_testing()> method on L<Test::Stream::Hub> for arguments, this is just
+a shortcut to call done_testing on the correct hub.
 
 =item $ctx->send_event($Type, %params)
 
@@ -598,7 +598,7 @@ filter the event through the monkeypatch for compatability reasons.
 =item $e = $ctx->build_Event($Type, %params)
 
 This is the same as C<send_event> except that it does not send the event to the
-stream, it returns it instead.
+hub, it returns it instead.
 
 B<Note:> Unlike C<send_event()> this method will NOT filter the event through
 Test::Builder monkeypatching.
@@ -665,7 +665,7 @@ be found. The returned C<$stash> must be used to restore it later.
 
 =item $stash = $ctx->subtest_stop($name)
 
-Used to start and stop subtests in the test stream. The stash can be used to
+Used to start and stop subtests in the test hub. The stash can be used to
 configure and manipulate the subtest information. C<subtest_start> will hide
 the current TODO settings, and unset the current context. C<subtest_stop> will
 restore the TODO and reset the context back to what it was.

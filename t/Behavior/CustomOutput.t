@@ -5,7 +5,7 @@ use Test::Stream;
 use Test::More;
 use Scalar::Util qw/blessed/;
 
-# This will replace the main Test::Stream object for the scope of the coderef.
+# This will replace the main Test::Stream::Hub object for the scope of the coderef.
 # We apply our output changes only in that scope so that this test itself can
 # verify things with regular TAP output. The things done inside thise sub would
 # work just fine when used by any module to alter the output.
@@ -19,7 +19,7 @@ Test::Stream->intercept(sub {
     Test::Stream->shared->set_use_legacy(0);
 
     Test::Stream->shared->listen(sub {
-        my ($stream, $event) = @_;
+        my ($hub, $event) = @_;
 
         push @OUTPUT => "We got an event of type " . blessed($event);
     });
@@ -65,14 +65,14 @@ Test::Stream->intercept(sub {
 
     my $number = 1;
     Test::Stream->shared->listen(sub {
-        my ($stream, $e) = @_;
+        my ($hub, $e) = @_;
 
         # Do not output results inside subtests
         return if $e->in_subtest;
 
         return unless $e->can('to_tap');
 
-        my $num = $stream->use_numbers ? $number++ : undef;
+        my $num = $hub->use_numbers ? $number++ : undef;
 
         # Get the TAP for the event
         my @sets;
@@ -91,7 +91,7 @@ Test::Stream->intercept(sub {
             my $enc = $e->encoding || die "Could not find encoding!";
 
             # This is how you get the proper handle to use (STDERR, STDOUT, ETC).
-            my $io = $stream->io_sets->{$enc}->[$hid] || die "Could not find IO $hid for $enc";
+            my $io = $hub->io_sets->{$enc}->[$hid] || die "Could not find IO $hid for $enc";
             $io = $IO[$hid];
 
             # Make sure we don't alter these vars.

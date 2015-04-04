@@ -198,7 +198,7 @@ See L<Test::Stream::Tester>, which lets you intercept and validate events.
 
 B<DO NOT SEE> C<Test::Tester> and C<Test::Builder::Tester> which are both
 deprecated. They were once the way everyone tested their testers, but they do
-not allow you to test all events, and they are very fragile when upstream libs
+not allow you to test all events, and they are very fragile when uphub libs
 change.
 
 =head1 SOURCE

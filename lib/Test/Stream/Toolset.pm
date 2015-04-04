@@ -244,7 +244,7 @@ add a munger. The return from a munger is ignored, you must make your changes
 directly to the event object.
 
     Test::Stream->shared->munge(sub {
-        my ($stream, $event) = @_;
+        my ($hub, $event) = @_;
         ...
     });
 
@@ -260,7 +260,7 @@ called for every single event that occurs, after it has been processed. The
 return from a listener is ignored.
 
     Test::Stream->shared->listen(sub {
-        my ($stream, $event) = @_;
+        my ($hub, $event) = @_;
         ...
     });
 
@@ -275,7 +275,7 @@ Test::More. You can use that library to produce booleans and diagnostics
 without actually triggering events, giving you the opportunity to generate your
 own.
 
-=head1 FROM TEST::BUILDER TO TEST::STREAM
+=head1 FROM TEST::BUILDER TO TEST::HUB
 
 This is a list of things people used to override in Test::Builder, and the new
 API that should be used instead of overrides.

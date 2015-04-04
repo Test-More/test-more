@@ -9,6 +9,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 
 use Test::Stream 1.301001 ();
+use Test::Stream::Hub;
 use Test::Stream::Toolset;
 use Test::Stream::Context;
 use Test::Stream::Carp qw/confess/;
@@ -33,7 +34,7 @@ our $Level = 1;
 sub ctx {
     my $self = shift || die "No self in context";
     my ($add) = @_;
-    my $ctx = Test::Stream::Context::context(2 + ($add || 0), $self->{stream});
+    my $ctx = Test::Stream::Context::context(2 + ($add || 0), $self->{hub});
     if (defined $self->{Todo}) {
         $ctx->set_in_todo(1);
         $ctx->set_todo($self->{Todo});
@@ -42,9 +43,9 @@ sub ctx {
     return $ctx;
 }
 
-sub stream {
+sub hub {
     my $self = shift;
-    return $self->{stream} || Test::Stream->shared;
+    return $self->{hub} || Test::Stream->shared;
 }
 
 sub depth { $_[0]->{depth} || 0 }
@@ -54,8 +55,8 @@ sub _ending {
     my $self = shift;
     my ($ctx) = @_;
     require Test::Stream::ExitMagic;
-    $self->{stream}->set_no_ending(0);
-    Test::Stream::ExitMagic->new->do_magic($self->{stream}, $ctx);
+    $self->{hub}->set_no_ending(0);
+    Test::Stream::ExitMagic->new->do_magic($self->{hub}, $ctx);
 }
 
 
@@ -66,7 +67,7 @@ sub _ending {
 sub new {
     my $class  = shift;
     my %params = @_;
-    $Test ||= $class->create(shared_stream => 1);
+    $Test ||= $class->create(shared_hub => 1);
 
     return $Test;
 }
@@ -116,7 +117,7 @@ sub child {
     }
 
     $name ||= "Child of " . $self->{Name};
-    my $stream = $self->{stream} || Test::Stream->shared;
+    my $hub = $self->{hub} || Test::Stream->shared;
     $ctx->subtest_start($name, parent_todo => $ctx->in_todo);
 
     my $child = bless {
@@ -146,11 +147,11 @@ sub finalize {
     }
 
     $self->_ending($ctx);
-    my $passing = $ctx->stream->is_passing;
-    my $count = $ctx->stream->count;
+    my $passing = $ctx->hub->is_passing;
+    my $count = $ctx->hub->count;
     my $name = $self->{Name};
 
-    my $stream = $self->{stream} || Test::Stream->shared;
+    my $hub = $self->{hub} || Test::Stream->shared;
 
     my $parent = $self->parent;
     $self->{parent}->{child} = undef;
@@ -175,7 +176,7 @@ sub finalize {
 sub in_subtest {
     my $self = shift;
     my $ctx = $self->ctx;
-    return scalar @{$ctx->stream->subtests};
+    return scalar @{$ctx->hub->subtests};
 }
 
 sub parent { $_[0]->{parent} }
@@ -321,7 +322,7 @@ The new sub is '$pkg\::$name' defined in $file around line $line.
 In the future monkeypatching Test::Builder::$sub() may no longer work as
 expected.
 
-Test::Stream::API now provides tools to properly hook into events so that
+Test::Stream now provides tools to properly hook into events so that
 monkeypatching is no longer needed.
 *******************************************************************************
     EOT
@@ -471,7 +472,7 @@ sub done_testing {
     my $ctx = $CTX || Test::Stream::Context->peek || $self->ctx();
     WARN_OF_OVERRIDE(done_testing => $ctx);
 
-    my $out = $ctx->stream->done_testing($ctx, $num_tests);
+    my $out = $ctx->hub->done_testing($ctx, $num_tests);
     return $out;
 }
 
@@ -596,7 +597,7 @@ sub croak {
 sub has_plan {
     my $self = shift;
 
-    my $plan = $self->ctx->stream->plan || return undef;
+    my $plan = $self->ctx->hub->plan || return undef;
     return 'no_plan' if $plan->directive && $plan->directive eq 'NO PLAN';
     return $plan->max;
 }
@@ -605,16 +606,17 @@ sub reset {
     my $self = shift;
     my %params = @_;
 
-    $self->{use_shared} = 1 if $params{shared_stream};
+    $self->{use_shared} = 1 if $params{shared_hub};
 
     if ($self->{use_shared}) {
         Test::Stream->shared->_reset;
         Test::Stream->shared->state->set_legacy([]);
     }
     else {
-        $self->{stream} = Test::Stream->new();
-        $self->{stream}->set_use_legacy(1);
-        $self->{stream}->state->set_legacy([]);
+        $self->{hub} = Test::Stream::Hub->new();
+        $self->{hub}->set_use_legacy(1);
+        $self->{hub}->state->set_legacy([]);
+        $self->{stream} = $self->{hub}; # Test::SharedFork shim
     }
 
     # We leave this a global because it has to be localized and localizing
@@ -730,21 +732,21 @@ sub _new_fh {
 
 sub output {
     my $self = shift;
-    my $handles = $self->ctx->stream->io_sets->init_encoding('legacy');
+    my $handles = $self->ctx->hub->io_sets->init_encoding('legacy');
     $handles->[0] = $self->_new_fh(@_) if @_;
     return $handles->[0];
 }
 
 sub failure_output {
     my $self = shift;
-    my $handles = $self->ctx->stream->io_sets->init_encoding('legacy');
+    my $handles = $self->ctx->hub->io_sets->init_encoding('legacy');
     $handles->[1] = $self->_new_fh(@_) if @_;
     return $handles->[1];
 }
 
 sub todo_output {
     my $self = shift;
-    my $handles = $self->ctx->stream->io_sets->init_encoding('legacy');
+    my $handles = $self->ctx->hub->io_sets->init_encoding('legacy');
     $handles->[2] = $self->_new_fh(@_) if @_;
     return $handles->[2] || $handles->[0];
 }
@@ -752,35 +754,35 @@ sub todo_output {
 sub reset_outputs {
     my $self = shift;
     my $ctx = $self->ctx;
-    $ctx->stream->io_sets->reset_legacy;
+    $ctx->hub->io_sets->reset_legacy;
 }
 
 sub use_numbers {
     my $self = shift;
     my $ctx = $self->ctx;
-    $ctx->stream->set_use_numbers(@_) if @_;
-    $ctx->stream->use_numbers;
+    $ctx->hub->set_use_numbers(@_) if @_;
+    $ctx->hub->use_numbers;
 }
 
 sub no_ending {
     my $self = shift;
     my $ctx = $self->ctx;
-    $ctx->stream->set_no_ending(@_) if @_;
-    $ctx->stream->no_ending || 0;
+    $ctx->hub->set_no_ending(@_) if @_;
+    $ctx->hub->no_ending || 0;
 }
 
 sub no_header {
     my $self = shift;
     my $ctx = $self->ctx;
-    $ctx->stream->set_no_header(@_) if @_;
-    $ctx->stream->no_header || 0;
+    $ctx->hub->set_no_header(@_) if @_;
+    $ctx->hub->no_header || 0;
 }
 
 sub no_diag {
     my $self = shift;
     my $ctx = $self->ctx;
-    $ctx->stream->set_no_diag(@_) if @_;
-    $ctx->stream->no_diag || 0;
+    $ctx->hub->set_no_diag(@_) if @_;
+    $ctx->hub->no_diag || 0;
 }
 
 sub exported_to {
@@ -814,7 +816,7 @@ sub expected_tests {
     my $ctx = $self->ctx;
     $ctx->plan(@_) if @_;
 
-    my $plan = $ctx->stream->plan || return 0;
+    my $plan = $ctx->hub->plan || return 0;
     return $plan->max || 0;
 }
 
@@ -840,7 +842,7 @@ sub maybe_regex {
 sub is_passing {
     my $self = shift;
     my $ctx = $self->ctx;
-    $ctx->stream->is_passing(@_);
+    $ctx->hub->is_passing(@_);
 }
 
 # Yeah, this is not efficient, but it is only legacy support, barely anything
@@ -852,7 +854,7 @@ sub current_test {
 
     if (@_) {
         my ($num) = @_;
-        my $state = $ctx->stream->state;
+        my $state = $ctx->hub->state;
         $state->set_count($num);
 
         my $old = $state->legacy || [];
@@ -878,13 +880,13 @@ sub current_test {
         $state->set_legacy($new);
     }
 
-    $ctx->stream->count;
+    $ctx->hub->count;
 }
 
 sub details {
     my $self = shift;
     my $ctx = $self->ctx;
-    my $state = $ctx->stream->state;
+    my $state = $ctx->hub->state;
     my @out;
     my $legacy = $state->legacy;
     return @out unless $legacy;
@@ -900,7 +902,7 @@ sub details {
 sub summary {
     my $self = shift;
     my $ctx = $self->ctx;
-    my $state = $ctx->stream->state;
+    my $state = $ctx->hub->state;
     my $legacy = $state->legacy;
     return @{[]} unless $legacy;
     return map { $_->isa('Test::Stream::Event::Ok') ? ($_->effective_pass ? 1 : 0) : ()} @$legacy;
@@ -1084,7 +1086,7 @@ Returns the singleton stored in C<$Test::Builder::Test>.
 =item Test::Builder->create(use_shared => 1)
 
 Returns a new instance of Test::Builder. It is important to note that this
-instance will not use the shared L<Test::Stream> object unless you pass in the
+instance will not use the shared L<Test::Stream::Hub> object unless you pass in the
 C<< use_shared => 1 >> argument.
 
 This is a way to get a new instance of Test::Builder that is not the singleton.
@@ -1214,7 +1216,7 @@ certainly do not need this unless you are writing a tool to test testing
 libraries. Even then you probably do not want this.
 
 In newer code using L<Test::Stream> this completely resets the state in the
-shared stream as well.
+shared hub as well.
 
 =item $TB->todo_start($msg)
 
@@ -1227,13 +1229,12 @@ Unset the TODO message.
 
 =back
 
-=head2 STREAM INTERFACE
+=head2 HUB INTERFACE
 
 In older versions of Test::Builder these methods directly effected the
 singleton. These days they are all compatability wrappers around
-L<Test::Stream>. If possible you should use the L<Test::Stream::API>, however
-if you need to support older versions of Test::Builder these will work fine for
-both.
+L<Test::Stream>. If possible you should use L<Test::Stream>, however if you
+need to support older versions of Test::Builder these will work fine for both.
 
 =over 4
 
@@ -1435,9 +1436,9 @@ set to $reason.
 
 =over 4
 
-=item $stream = $TB->stream
+=item $hub = $TB->hub
 
-Get the stream used by this builder (or the shared stream). This is not
+Get the hub used by this builder (or the shared hub). This is not
 available on older test builders.
 
 =item $TB->name

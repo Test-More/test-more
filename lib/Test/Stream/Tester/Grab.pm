@@ -7,10 +7,10 @@ sub new {
 
     my $self = bless {
         events  => [],
-        streams => [ Test::Stream->intercept_start ],
+        hubs => [ Test::Stream->intercept_start ],
     }, $class;
 
-    $self->{streams}->[0]->listen(
+    $self->{hubs}->[0]->listen(
         sub {
             shift;    # Stream
             push @{$self->{events}} => @_;
@@ -38,7 +38,7 @@ sub finish {
     $_[0] = undef;
 
     $self->{finished} = 1;
-    my ($remove) = $self->{streams}->[0];
+    my ($remove) = $self->{hubs}->[0];
     Test::Stream->intercept_stop($remove);
 
     return $self->flush;
@@ -47,7 +47,7 @@ sub finish {
 sub DESTROY {
     my $self = shift;
     return if $self->{finished};
-    my ($remove) = $self->{streams}->[0];
+    my ($remove) = $self->{hubs}->[0];
     Test::Stream->intercept_stop($remove);
 }
 
@@ -66,8 +66,8 @@ Test::Stream::Tester::Grab - Object used to temporarily steal all events.
 =head1 DESCRIPTION
 
 Once created this object will intercept and stash all events sent to the shared
-L<Test::Stream> object. Once the object is destroyed events will once again be
-sent to the shared stream.
+L<Test::Stream::Hub> object. Once the object is destroyed events will once
+again be sent to the shared hub.
 
 =head1 SYNOPSYS
 

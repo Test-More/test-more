@@ -29,14 +29,14 @@ It is mostly useful for testing Test::Builder.
 =head2 read
 
     my $all_output = $tb->read;
-    my $output     = $tb->read($stream);
+    my $output     = $tb->read($hub);
 
 Returns all the output (including failure and todo output) collected
 so far.  It is destructive, each call to read clears the output
 buffer.
 
-If $stream is given it will return just the output from that stream.
-$stream's are...
+If $hub is given it will return just the output from that hub.
+$hub's are...
 
     out         output()
     err         failure_output()
@@ -76,14 +76,14 @@ sub create {
 
 sub read {
     my $self = shift;
-    my $stream = @_ ? shift : 'all';
+    my $hub = @_ ? shift : 'all';
 
-    my $out = $self->{_outputs}{$stream};
+    my $out = $self->{_outputs}{$hub};
 
-    $self->{_outputs}{$stream} = '';
+    $self->{_outputs}{$hub} = '';
 
-    # Clear all the streams if 'all' is read.
-    if( $stream eq 'all' ) {
+    # Clear all the hubs if 'all' is read.
+    if( $hub eq 'all' ) {
         my @keys = keys %{$self->{_outputs}};
         $self->{_outputs}{$_} = '' for @keys;
     }

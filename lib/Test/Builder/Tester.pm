@@ -130,7 +130,7 @@ my $testing = 0;
 my $testing_num;
 my $original_is_passing;
 
-my $original_stream;
+my $original_hub;
 my $original_state;
 
 # remembering where the file handles were originally connected
@@ -147,8 +147,8 @@ sub _start_testing {
     $original_harness_env = $ENV{HARNESS_ACTIVE} || 0;
     $ENV{HARNESS_ACTIVE} = 0;
 
-    $original_stream = builder->{stream} || Test::Stream->shared;
-    $original_state  = {%{$original_stream->state}};
+    $original_hub = builder->{hub} || Test::Stream->shared;
+    $original_state  = {%{$original_hub->state}};
 
     # remember what the handles were set to
     $original_output_handle  = builder()->output();
@@ -266,7 +266,7 @@ sub test_fail {
 
 =item test_diag
 
-As most of the remaining expected output to the error stream will be
+As most of the remaining expected output to the error hub will be
 created by L<Test::Builder>'s C<diag> function, L<Test::Builder::Tester>
 provides a convenience function C<test_diag> that you can use instead of
 C<test_err>.
@@ -322,13 +322,13 @@ ok>.
 =item skip_out
 
 Setting this to a true value will cause the test to ignore if the
-output sent by the test to the output stream does not match that
+output sent by the test to the output hub does not match that
 declared with C<test_out>.
 
 =item skip_err
 
 Setting this to a true value will cause the test to ignore if the
-output sent by the test to the error stream does not match that
+output sent by the test to the error hub does not match that
 declared with C<test_err>.
 
 =back
@@ -375,7 +375,7 @@ sub test_test {
     # re-enable the original setting of the harness
     $ENV{HARNESS_ACTIVE} = $original_harness_env;
 
-    %{$original_stream->state} = %$original_state;
+    %{$original_hub->state} = %$original_state;
 
     # check the output we've stashed
     unless( builder()->ok( ( $args{skip_out} || $out->check ) &&
@@ -595,7 +595,7 @@ sub _account_for_subtest {
     my( $self, $check ) = @_;
 
     my $ctx = Test::Stream::Context::context();
-    my $depth = @{$ctx->stream->subtests};
+    my $depth = @{$ctx->hub->subtests};
     # Since we ship with Test::Builder, calling a private method is safe...ish.
     return ref($check) ? $check : ($depth ? '    ' x $depth : '') . $check;
 }

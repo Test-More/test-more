@@ -65,16 +65,16 @@ my $idx = 'Test::Tester';
 sub run_tests {
     my $test = shift;
 
-    my $cstream;
+    my $chub;
     if ($capture) {
-        $cstream = $capture->{stream};
+        $chub = $capture->{hub};
     }
 
-    my ($stream, $old) = Test::Stream->intercept_start($cstream);
-    $stream->set_use_legacy(1);
-    $stream->states->[-1] = Test::Stream::State->new;
-    $stream->munge(sub {
-        my ($stream, $e) = @_;
+    my ($hub, $old) = Test::Stream->intercept_start($chub);
+    $hub->set_use_legacy(1);
+    $hub->states->[-1] = Test::Stream::State->new;
+    $hub->munge(sub {
+        my ($hub, $e) = @_;
         $e->{$idx} = find_depth() - $Test::Builder::Level;
         $e->{"${idx}_level"} = $Test::Builder::Level;
         require Carp;
@@ -89,7 +89,7 @@ sub run_tests {
     my $ok = eval {
         $test->();
 
-        for my $e (@{$stream->legacy}) {
+        for my $e (@{$hub->legacy}) {
             if ($e->isa('Test::Stream::Event::Ok')) {
                 push @out => $e->to_legacy;
                 $out[-1]->{name} = '' unless defined $out[-1]->{name};
@@ -119,9 +119,9 @@ sub run_tests {
     };
     my $err = $@;
 
-    $stream->states->[-1] = Test::Stream::State->new;
+    $hub->states->[-1] = Test::Stream::State->new;
 
-    Test::Stream->intercept_stop($stream);
+    Test::Stream->intercept_stop($hub);
 
     die $err unless $ok;
 

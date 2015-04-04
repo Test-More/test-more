@@ -110,8 +110,8 @@ sub intercept(&) {
     my ($ok, $error) = try {
         Test::Stream->intercept(
             sub {
-                my $stream = shift;
-                $stream->listen(
+                my $hub = shift;
+                $hub->listen(
                     sub {
                         shift; # Stream
                         push @events => @_;

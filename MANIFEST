@@ -18,7 +18,6 @@ lib/Test/More/Tools.pm
 lib/Test/MostlyLike.pm
 lib/Test/Simple.pm
 lib/Test/Stream.pm
-lib/Test/Stream/API.pm
 lib/Test/Stream/Architecture.pod
 lib/Test/Stream/Block.pm
 lib/Test/Stream/Carp.pm
@@ -39,6 +38,7 @@ lib/Test/Stream/Exporter/Meta.pm
 lib/Test/Stream/ForceExit.pm
 lib/Test/Stream/HashBase.pm
 lib/Test/Stream/HashBase/Meta.pm
+lib/Test/Stream/Hub.pm
 lib/Test/Stream/IOSets.pm
 lib/Test/Stream/Meta.pm
 lib/Test/Stream/PackageUtil.pm
@@ -247,7 +247,6 @@ t/Test-More-DeepCheck.t
 t/Test-More.t
 t/Test-MostlyLike.t
 t/Test-Simple.t
-t/Test-Stream-API.t
 t/Test-Stream-Block.t
 t/Test-Stream-Carp.t
 t/Test-Stream-Context.t
@@ -271,6 +270,7 @@ t/Test-Stream-Tester-Grab.t
 t/Test-Stream-Tester.t
 t/Test-Stream-Toolset.t
 t/Test-Stream-Util.t
+t/Test-Stream.t
 t/Test-Tester-Capture.t
 t/Test-Tester.t
 t/Test-use-ok.t

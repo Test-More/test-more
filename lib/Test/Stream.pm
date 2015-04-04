@@ -5,218 +5,72 @@ use warnings;
 our $VERSION = '1.301001_100';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Stream::Context qw/context/;
-use Test::Stream::Threads;
-use Test::Stream::IOSets;
-use Test::Stream::Util qw/try/;
 use Test::Stream::Carp qw/croak confess carp/;
-use Test::Stream::Meta qw/MODERN ENCODING init_tester/;
-use Test::Stream::State qw/PLAN COUNT FAILED ENDED LEGACY/;
+use Test::Stream::Util qw/try/;
+use Test::Stream::Threads;
+
+############################
+# {{{ Hub stack management #
+############################
+
+use Test::Stream::Hub;
 use Test::Stream::Event::Finish;
 use Test::Stream::ExitMagic;
 use Test::Stream::ExitMagic::Context;
 
-use Test::Stream::HashBase(
-    accessors => [qw{
-        no_ending no_diag no_header
-        pid tid
-        states
-        subtests
-        subtest_tap_instant
-        subtest_tap_delayed
-        mungers
-        listeners
-        follow_ups
-        bailed_out
-        exit_on_disruption
-        use_tap use_legacy _use_fork
-        use_numbers
-        io_sets
-        event_id
-        in_subthread
-    }],
-);
+# Do not repeat Test::Builders singleton error, these are lexical vars, not package vars.
+my ($root, @stack, $magic);
 
-use Test::Stream::Exporter;
-default_exports qw/cull tap_encoding context/;
-Test::Stream::Exporter->cleanup;
-
-sub tap_encoding {
-    my ($encoding) = @_;
-
-    require Encode;
-
-    croak "encoding '$encoding' is not valid, or not available"
-        unless $encoding eq 'legacy' || Encode::find_encoding($encoding);
-
-    my $ctx = context();
-    $ctx->stream->io_sets->init_encoding($encoding);
-
-    my $meta = init_tester($ctx->package);
-    $meta->{+ENCODING} = $encoding;
+END {
+    $root->fork_cull if $root && $root->_use_fork && $$ == $root->pid;
+    $magic->do_magic($root) if $magic && $root && !$root->no_ending
 }
 
-sub cull {
-    my $ctx = context();
-    $ctx->stream->fork_cull();
+sub _stack { @stack }
+
+*current_hub = \&shared;
+sub shared {
+    return $stack[-1] if @stack;
+
+    @stack = ($root = Test::Stream::Hub->new());
+    $root->set_no_ending(0);
+
+    $magic = Test::Stream::ExitMagic->new;
+
+    return $root;
 }
 
-sub before_import {
+sub clear {
+    $root->no_ending(1);
+    $root  = undef;
+    $magic = undef;
+    @stack = ();
+}
+
+sub intercept_start {
     my $class = shift;
-    my ($importer, $list) = @_;
+    my ($new) = @_;
 
-    my $meta = init_tester($importer);
-    $meta->{+MODERN} = 1;
+    my $old = $stack[-1];
 
-    my $other  = [];
-    my $idx    = 0;
-    my $stream = $class->shared;
+    unless($new) {
+        $new = Test::Stream::Hub->new();
 
-    while ($idx <= $#{$list}) {
-        my $item = $list->[$idx++];
-        next unless $item;
-
-        if ($item eq 'subtest_tap') {
-            my $val = $list->[$idx++];
-            if (!$val || $val eq 'none') {
-                $stream->set_subtest_tap_instant(0);
-                $stream->set_subtest_tap_delayed(0);
-            }
-            elsif ($val eq 'instant') {
-                $stream->set_subtest_tap_instant(1);
-                $stream->set_subtest_tap_delayed(0);
-            }
-            elsif ($val eq 'delayed') {
-                $stream->set_subtest_tap_instant(0);
-                $stream->set_subtest_tap_delayed(1);
-            }
-            elsif ($val eq 'both') {
-                $stream->set_subtest_tap_instant(1);
-                $stream->set_subtest_tap_delayed(1);
-            }
-            else {
-                croak "'$val' is not a valid option for '$item'";
-            }
-        }
-        elsif ($item eq 'utf8') {
-            $stream->io_sets->init_encoding('utf8');
-            $meta->{+ENCODING} = 'utf8';
-        }
-        elsif ($item eq 'encoding') {
-            my $encoding = $list->[$idx++];
-
-            croak "encoding '$encoding' is not valid, or not available"
-                unless Encode::find_encoding($encoding);
-
-            $stream->io_sets->init_encoding($encoding);
-            $meta->{+ENCODING} = $encoding;
-        }
-        elsif ($item eq 'enable_fork') {
-            $stream->use_fork;
-        }
-        else {
-            push @$other => $item;
-        }
+        $new->set_exit_on_disruption(0);
+        $new->set_use_tap(0);
+        $new->set_use_legacy(0);
     }
 
-    @$list = @$other;
+    push @stack => $new;
 
-    return;
+    return ($new, $old);
 }
 
-# Shortcuts to the current state attributes
-sub state  { $_[0]->{+STATES}->[-1]            }
-sub plan   { $_[0]->{+STATES}->[-1]->{+PLAN}   }
-sub count  { $_[0]->{+STATES}->[-1]->{+COUNT}  }
-sub failed { $_[0]->{+STATES}->[-1]->{+FAILED} }
-sub ended  { $_[0]->{+STATES}->[-1]->{+ENDED}  }
-sub legacy { $_[0]->{+STATES}->[-1]->{+LEGACY} }
-
-sub is_passing {
-    my $self = shift;
-    my $state = $self->{+STATES}->[-1];
-    return $state->is_passing(@_);
-}
-
-sub init {
-    my $self = shift;
-
-    $self->{+PID} = $$;
-    $self->{+TID} = get_tid();
-
-    $self->{+USE_TAP}     = 1;
-    $self->{+USE_NUMBERS} = 1;
-    $self->{+EVENT_ID}    = 1;
-    $self->{+NO_ENDING}   = 1;
-
-    $self->{+STATES}   = [Test::Stream::State->new];
-    $self->{+IO_SETS} = Test::Stream::IOSets->new;
-
-    $self->{+SUBTESTS} = [];
-
-    $self->{+SUBTEST_TAP_INSTANT} = 1;
-    $self->{+SUBTEST_TAP_DELAYED} = 0;
-
-    $self->use_fork if USE_THREADS;
-
-    $self->{+EXIT_ON_DISRUPTION} = 1;
-}
-
-{
-    # Do not repeat Test::Builders singleton error, these are lexical vars, not package vars.
-    my ($root, @stack, $magic);
-
-    END {
-        $root->fork_cull if $root && $root->_use_fork && $$ == $root->{+PID};
-        $magic->do_magic($root) if $magic && $root && !$root->{+NO_ENDING}
-    }
-
-    sub _stack { @stack }
-
-    sub shared {
-        my ($class) = @_;
-        return $stack[-1] if @stack;
-
-        @stack = ($root = $class->new());
-        $root->{+NO_ENDING} = 0;
-
-        $magic = Test::Stream::ExitMagic->new;
-
-        return $root;
-    }
-
-    sub clear {
-        $root->{+NO_ENDING} = 1;
-        $root  = undef;
-        $magic = undef;
-        @stack = ();
-    }
-
-    sub intercept_start {
-        my $class = shift;
-        my ($new) = @_;
-
-        my $old = $stack[-1];
-
-        unless($new) {
-            $new = $class->new();
-
-            $new->set_exit_on_disruption(0);
-            $new->set_use_tap(0);
-            $new->set_use_legacy(0);
-        }
-
-        push @stack => $new;
-
-        return ($new, $old);
-    }
-
-    sub intercept_stop {
-        my $class = shift;
-        my ($current) = @_;
-        croak "Stream stack inconsistency" unless $current == $stack[-1];
-        pop @stack;
-    }
+sub intercept_stop {
+    my $class = shift;
+    my ($current) = @_;
+    croak "Stream stack inconsistency" unless $current == $stack[-1];
+    pop @stack;
 }
 
 sub intercept {
@@ -234,484 +88,219 @@ sub intercept {
     return $ok;
 }
 
-sub listen {
-    my $self = shift;
-    for my $sub (@_) {
-        next unless $sub;
+############################
+# Hub stack management }}} #
+############################
 
-        croak "listen only takes coderefs for arguments, got '$sub'"
-            unless ref $sub && ref $sub eq 'CODE';
+####################################
+# {{{ Exported Tools and shortcuts #
+####################################
 
-        push @{$self->{+LISTENERS}} => $sub;
-    }
+use Test::Stream::Context qw/context inspect_todo/;
+use Test::Stream::IOSets  qw/OUT_STD OUT_ERR OUT_TODO/;
+use Test::Stream::Meta    qw/MODERN ENCODING init_tester is_tester/;
+use Test::Stream::State   qw/PLAN COUNT FAILED ENDED LEGACY/;
+
+BEGIN {
+    *peek_context  = \&Test::Stream::Context::peek;
+    *clear_context = \&Test::Stream::Context::clear;
+    *set_context   = \&Test::Stream::Context::set;
+    *push_todo     = \&Test::Stream::Context::push_todo;
+    *pop_todo      = \&Test::Stream::Context::pop_todo;
+    *peek_todo     = \&Test::Stream::Context::peek_todo;
 }
 
-sub munge {
-    my $self = shift;
-    for my $sub (@_) {
-        next unless $sub;
+use Test::Stream::Exporter;
+default_exports qw/context/;
+exports qw{
+    listen munge follow_up
+    enable_forking cull
+    peek_todo push_todo pop_todo set_todo inspect_todo
+    is_tester init_tester
+    is_modern set_modern
+    peek_context clear_context set_context
+    state_count state_failed state_plan state_ended is_passing
+    current_hub
 
-        croak "munge only takes coderefs for arguments, got '$sub'"
-            unless ref $sub && ref $sub eq 'CODE';
+    disable_tap enable_tap subtest_tap_instant subtest_tap_delayed tap_encoding
+    enable_numbers disable_numbers set_tap_outputs get_tap_outputs
+};
+Test::Stream::Exporter->cleanup();
 
-        push @{$self->{+MUNGERS}} => $sub;
-    }
-}
+sub before_import {
+    my $class = shift;
+    my ($importer, $list) = @_;
 
-sub follow_up {
-    my $self = shift;
-    for my $sub (@_) {
-        next unless $sub;
+    my $meta = init_tester($importer);
+    $meta->{+MODERN} = 1;
 
-        croak "follow_up only takes coderefs for arguments, got '$sub'"
-            unless ref $sub && ref $sub eq 'CODE';
+    my $other  = [];
+    my $idx    = 0;
+    my $hub = shared();
 
-        push @{$self->{+FOLLOW_UPS}} => $sub;
-    }
-}
+    while ($idx <= $#{$list}) {
+        my $item = $list->[$idx++];
+        next unless $item;
 
-sub use_fork {
-    require File::Temp;
-    require Storable;
-
-    $_[0]->{+_USE_FORK} ||= File::Temp::tempdir(CLEANUP => 0);
-    confess "Could not get a temp dir" unless $_[0]->{+_USE_FORK};
-    if ($^O eq 'VMS') {
-        require VMS::Filespec;
-        $_[0]->{+_USE_FORK} = VMS::Filespec::unixify($_[0]->{+_USE_FORK});
-    }
-    return 1;
-}
-
-sub fork_out {
-    my $self = shift;
-
-    my $tempdir = $self->{+_USE_FORK};
-    confess "Fork support has not been turned on!" unless $tempdir;
-
-    my $tid = get_tid();
-
-    for my $event (@_) {
-        next unless $event;
-        next if $event->isa('Test::Stream::Event::Finish');
-
-        # First write the file, then rename it so that it is not read before it is ready.
-        my $name =  $tempdir . "/$$-$tid-" . ($self->{+EVENT_ID}++);
-        my ($ret, $err) = try { Storable::store($event, $name) };
-        # Temporary to debug an error on one cpan-testers box
-        unless ($ret) {
-            require Data::Dumper;
-            confess(Data::Dumper::Dumper({ error => $err, event => $event}));
+        if ($item eq 'subtest_tap') {
+            my $val = $list->[$idx++];
+            if (!$val || $val eq 'none') {
+                $hub->set_subtest_tap_instant(0);
+                $hub->set_subtest_tap_delayed(0);
+            }
+            elsif ($val eq 'instant') {
+                $hub->set_subtest_tap_instant(1);
+                $hub->set_subtest_tap_delayed(0);
+            }
+            elsif ($val eq 'delayed') {
+                $hub->set_subtest_tap_instant(0);
+                $hub->set_subtest_tap_delayed(1);
+            }
+            elsif ($val eq 'both') {
+                $hub->set_subtest_tap_instant(1);
+                $hub->set_subtest_tap_delayed(1);
+            }
+            else {
+                croak "'$val' is not a valid option for '$item'";
+            }
         }
-        rename($name, "$name.ready") || confess "Could not rename file '$name' -> '$name.ready'";
-    }
-}
+        elsif ($item eq 'utf8') {
+            $hub->io_sets->init_encoding('utf8');
+            $meta->{+ENCODING} = 'utf8';
+        }
+        elsif ($item eq 'encoding') {
+            my $encoding = $list->[$idx++];
 
-sub fork_cull {
-    my $self = shift;
+            croak "encoding '$encoding' is not valid, or not available"
+                unless Encode::find_encoding($encoding);
 
-    confess "fork_cull() can only be called from the parent process!"
-        if $$ != $self->{+PID};
-
-    confess "fork_cull() can only be called from the parent thread!"
-        if get_tid() != $self->{+TID};
-
-    my $tempdir = $self->{+_USE_FORK};
-    confess "Fork support has not been turned on!" unless $tempdir;
-
-    opendir(my $dh, $tempdir) || croak "could not open temp dir ($tempdir)!";
-
-    my @files = sort readdir($dh);
-    for my $file (@files) {
-        next if $file =~ m/^\.+$/;
-        next unless $file =~ m/\.ready$/;
-
-        # Untaint the path.
-        my $full = "$tempdir/$file";
-        ($full) = ($full =~ m/^(.*)$/gs);
-
-        my $obj = Storable::retrieve($full);
-        confess "Empty event object found '$full'" unless $obj;
-
-        if ($ENV{TEST_KEEP_TMP_DIR}) {
-            rename($full, "$full.complete")
-                || confess "Could not rename file '$full', '$full.complete'";
+            $hub->io_sets->init_encoding($encoding);
+            $meta->{+ENCODING} = $encoding;
+        }
+        elsif ($item eq 'enable_fork') {
+            $hub->use_fork;
         }
         else {
-            unlink($full) || die "Could not unlink file: $file";
+            push @$other => $item;
         }
-
-        # Things from other threads/procs always go to the root state
-        my $cache = $self->_preprocess_event($self->{+STATES}->[0], $obj);
-        $self->_process_event($obj, $cache);
-        $self->_postprocess_event($obj, $cache);
     }
 
-    closedir($dh);
+    @$list = @$other;
+
+    return;
 }
 
-sub done_testing {
-    my $self = shift;
-    my ($ctx, $num) = @_;
-    my $state = $self->{+STATES}->[-1];
+sub cull            { shared()->fork_cull()        }
+sub listen(&)       { shared()->listen($_[0])      }
+sub munge(&)        { shared()->munge($_[0])       }
+sub follow_up(&)    { shared()->follow_up($_[0])   }
+sub enable_forking  { shared()->use_fork()         }
+sub disable_tap     { shared()->set_use_tap(0)     }
+sub enable_tap      { shared()->set_use_tap(1)     }
+sub enable_numbers  { shared()->set_use_numbers(1) }
+sub disable_numbers { shared()->set_use_numbers(0) }
+sub state_count     { shared()->count()            }
+sub state_failed    { shared()->failed()           }
+sub state_plan      { shared()->plan()             }
+sub state_ended     { shared()->ended()            }
+sub is_passing      { shared()->is_passing         }
 
-    if (my $old = $state->ended) {
-        my ($p1, $f1, $l1) = $old->call;
-        $ctx->ok(0, "done_testing() was already called at $f1 line $l1");
-        return;
-    }
+sub tap_encoding {
+    my ($encoding) = @_;
 
-    # Do not run followups in subtest!
-    if ($self->{+FOLLOW_UPS} && !@{$self->{+SUBTESTS}}) {
-        $_->($ctx) for @{$self->{+FOLLOW_UPS}};
-    }
+    require Encode;
 
-    $state->set_ended($ctx->snapshot);
+    croak "encoding '$encoding' is not valid, or not available"
+        unless $encoding eq 'legacy' || Encode::find_encoding($encoding);
 
-    my $ran  = $state->count;
-    my $plan = $state->plan;
-    my $pmax = $plan ? $plan->max : 0;
+    my $ctx = context();
+    $ctx->hub->io_sets->init_encoding($encoding);
 
-    if (defined($num) && $pmax && $num != $pmax) {
-        $ctx->ok(0, "planned to run $pmax but done_testing() expects $num");
-        return;
-    }
-
-    unless ($plan) {
-        # bypass Test::Builder::plan() monkeypatching
-        my $e = $ctx->build_event('Plan', max => $num || $pmax || $ran);
-        $ctx->send($e);
-    }
-
-    if ($pmax && $pmax != $ran) {
-        $state->is_passing(0);
-        return;
-    }
-
-    if ($num && $num != $ran) {
-        $state->is_passing(0);
-        return;
-    }
-
-    unless ($ran) {
-        $state->is_passing(0);
-        return;
-    }
+    my $meta = init_tester($ctx->package);
+    $meta->{+ENCODING} = $encoding;
 }
 
-sub subtest_start {
-    my $self = shift;
-    my ($name, %params) = @_;
+sub subtest_tap_instant {
+    my $hub = shared();
+    $hub->set_subtest_tap_instant(1);
+    $hub->set_subtest_tap_delayed(0);
+}
 
-    my $state = Test::Stream::State->new;
+sub subtest_tap_delayed {
+    my $hub = shared();
+    $hub->set_subtest_tap_instant(0);
+    $hub->set_subtest_tap_delayed(1);
+}
 
-    $params{parent_todo} ||= context()->in_todo;
+sub is_modern {
+    my ($package) = @_;
+    my $meta = is_tester($package) || croak "'$package' is not a tester package";
+    return $meta->modern ? 1 : 0;
+}
 
-    if(@{$self->{+SUBTESTS}}) {
-        $params{parent_todo} ||= $self->{+SUBTESTS}->[-1]->{parent_todo};
-    }
+sub set_modern {
+    my $package = shift;
+    croak "set_modern takes a package and a value" unless @_;
+    my $value = shift;
+    my $meta = is_tester($package) || croak "'$package' is not a tester package";
+    return $meta->set_modern($value);
+}
 
-    push @{$self->{+STATES}}    => $state;
-    push @{$self->{+SUBTESTS}} => {
-        instant => $self->{+SUBTEST_TAP_INSTANT},
-        delayed => $self->{+SUBTEST_TAP_DELAYED},
+sub set_todo {
+    my ($pkg, $why) = @_;
+    my $meta = is_tester($pkg) || croak "'$pkg' is not a tester package";
+    $meta->set_todo($why);
+}
 
-        %params,
+sub set_tap_outputs {
+    my %params = @_;
+    my $encoding = delete $params{encoding} || 'legacy';
+    my $std      = delete $params{std};
+    my $err      = delete $params{err};
+    my $todo     = delete $params{todo};
 
-        state  => $state,
-        events => [],
-        name   => $name,
+    my @bad = keys %params;
+    croak "set_tap_output does not recognise these keys: " . join ", ", @bad
+        if @bad;
+
+    my $ioset = shared()->io_sets;
+    my $enc = $ioset->init_encoding($encoding);
+
+    $enc->[OUT_STD]  = $std  if $std;
+    $enc->[OUT_ERR]  = $err  if $err;
+    $enc->[OUT_TODO] = $todo if $todo;
+
+    return $enc;
+}
+
+sub get_tap_outputs {
+    my ($enc) = @_;
+    my $set = shared()->io_sets->init_encoding($enc || 'legacy');
+    return {
+        encoding => $enc || 'legacy',
+        std      => $set->[0],
+        err      => $set->[1],
+        todo     => $set->[2],
     };
-
-    return $self->{+SUBTESTS}->[-1];
 }
 
-sub subtest_stop {
-    my $self = shift;
-    my ($name) = @_;
+####################################
+# Exported Tools and shortcuts }}} #
+####################################
 
-    confess "No subtest to stop!"
-        unless @{$self->{+SUBTESTS}};
-
-    confess "Subtest name mismatch!"
-        unless $self->{+SUBTESTS}->[-1]->{name} eq $name;
-
-    my $st = pop @{$self->{+SUBTESTS}};
-    pop @{$self->{+STATES}};
-
-    return $st;
-}
-
-sub subtest { @{$_[0]->{+SUBTESTS}} ? $_[0]->{+SUBTESTS}->[-1] : () }
-
-sub send {
-    my ($self, $e) = @_;
-
-    my $cache = $self->_preprocess_event($self->{+STATES}->[-1], $e);
-
-    # Subtests get dibbs on events
-    if (my $num = @{$self->{+SUBTESTS}}) {
-        my $st = $self->{+SUBTESTS}->[-1];
-
-        $e->set_in_subtest($num);
-        $e->context->set_diag_todo(1) if $st->{parent_todo};
-
-        push @{$st->{events}} => $e;
-
-        $self->_render_tap($cache) if $st->{instant} && !$cache->{no_out};
-    }
-    elsif($self->{+_USE_FORK} && ($$ != $self->{+PID} || get_tid() != $self->{+TID})) {
-        $self->fork_out($e);
-    }
-    else {
-        $self->_process_event($e, $cache);
-    }
-
-    $self->_postprocess_event($e, $cache);
-
-    return $e;
-}
-
-sub _preprocess_event {
-    my ($self, $state, $e) = @_;
-    my $cache = {tap_event => $e, state => $state};
-
-    if ($e->isa('Test::Stream::Event::Ok')) {
-        $state->bump($e->effective_pass);
-        $cache->{do_tap} = 1;
-    }
-    elsif (!$self->{+NO_HEADER} && $e->isa('Test::Stream::Event::Finish')) {
-        $state->set_ended($e->context->snapshot);
-
-        my $plan = $state->plan;
-        if ($plan && $e->tests_run && $plan->directive eq 'NO PLAN') {
-            $plan->set_max($state->count);
-            $plan->set_directive(undef);
-            $cache->{tap_event} = $plan;
-            $cache->{do_tap} = 1;
-        }
-        else {
-            $cache->{do_tap} = 0;
-            $cache->{no_out} = 1;
-        }
-    }
-    elsif ($self->{+NO_DIAG} && $e->isa('Test::Stream::Event::Diag')) {
-        $cache->{no_out} = 1;
-    }
-    elsif ($e->isa('Test::Stream::Event::Plan')) {
-        $cache->{is_plan} = 1;
-
-        if($self->{+NO_HEADER}) {
-            $cache->{no_out} = 1;
-        }
-        elsif(my $existing = $state->plan) {
-            my $directive = $existing->directive;
-
-            if (!$directive || $directive eq 'NO PLAN') {
-                my ($p1, $f1, $l1) = $existing->context->call;
-                my ($p2, $f2, $l2) = $e->context->call;
-                die "Tried to plan twice!\n    $f1 line $l1\n    $f2 line $l2\n";
-            }
-        }
-
-        my $directive = $e->directive;
-        $cache->{no_out} = 1 if $directive && $directive eq 'NO PLAN';
-    }
-
-    $state->push_legacy($e) if $self->{+USE_LEGACY};
-
-    $cache->{number} = $state->count;
-
-    return $cache;
-}
-
-sub _process_event {
-    my ($self, $e, $cache) = @_;
-
-    if ($self->{+MUNGERS}) {
-        $_->($self, $e, $e->subevents) for @{$self->{+MUNGERS}};
-    }
-
-    $self->_render_tap($cache) unless $cache->{no_out};
-
-    if ($self->{+LISTENERS}) {
-        $_->($self, $e) for @{$self->{+LISTENERS}};
-    }
-}
-
-sub _render_tap {
-    my ($self, $cache) = @_;
-
-    return if $^C;
-    return unless $self->{+USE_TAP};
-    my $e = $cache->{tap_event};
-    return unless $cache->{do_tap} || $e->can('to_tap');
-
-    my $num = $self->use_numbers ? $cache->{number} : undef;
-    my @sets = $e->to_tap($num);
-
-    my $in_subtest = $e->in_subtest || 0;
-    my $indent = '    ' x $in_subtest;
-
-    for my $set (@sets) {
-        my ($hid, $msg) = @$set;
-        next unless $msg;
-        my $enc = $e->encoding || confess "Could not find encoding!";
-        my $io = $self->{+IO_SETS}->{$enc}->[$hid] || confess "Could not find IO $hid for $enc";
-
-        local($\, $", $,) = (undef, ' ', '');
-        $msg =~ s/^/$indent/mg if $in_subtest;
-        print $io $msg;
-    }
-}
-
-sub _scan_for_begin {
-    my ($stop_at) = @_;
-    my $level = 2;
-
-    while (my @call = caller($level++)) {
-        return 1 if $call[3] =~ m/::BEGIN$/;
-        return 0 if $call[3] eq $stop_at;
-    }
-
-    return undef;
-}
-
-sub _postprocess_event {
-    my ($self, $e, $cache) = @_;
-
-    if ($cache->{is_plan}) {
-        $cache->{state}->set_plan($e);
-        return unless $e->directive;
-        return unless $e->directive eq 'SKIP';
-
-        my $subtest = @{$self->{+SUBTESTS}};
-
-        $self->{+SUBTESTS}->[-1]->{early_return} = $e if $subtest;
-
-        if ($subtest) {
-            my $begin = _scan_for_begin('Test::Stream::Subtest::subtest');
-
-            if ($begin) {
-                warn "SKIP_ALL in subtest via 'BEGIN' or 'use', using exception for flow control\n";
-                die $e;
-            }
-            elsif(defined $begin) {
-                no warnings 'exiting';
-                eval { last TEST_STREAM_SUBTEST };
-                warn "SKIP_ALL in subtest flow control error: $@";
-                warn "Falling back to using an exception.\n";
-                die $e;
-            }
-            else {
-                warn "SKIP_ALL in subtest could not find flow-control label, using exception for flow control\n";
-                die $e;
-            }
-        }
-
-        die $e unless $self->{+EXIT_ON_DISRUPTION};
-        exit 0;
-    }
-    elsif (!$cache->{do_tap} && $e->isa('Test::Stream::Event::Bail')) {
-        $self->{+BAILED_OUT} = $e;
-        $self->{+NO_ENDING}  = 1;
-
-        my $subtest = @{$self->{+SUBTESTS}};
-
-        $self->{+SUBTESTS}->[-1]->{early_return} = $e if $subtest;
-
-        if ($subtest) {
-            my $begin = _scan_for_begin('Test::Stream::Subtest::subtest');
-
-            if ($begin) {
-                warn "BAILOUT in subtest via 'BEGIN' or 'use', using exception for flow control.\n";
-                die $e;
-            }
-            elsif(defined $begin) {
-                no warnings 'exiting';
-                eval { last TEST_STREAM_SUBTEST };
-                warn "BAILOUT in subtest flow control error: $@";
-                warn "Falling back to using an exception.\n";
-                die $e;
-            }
-            else {
-                warn "BAILOUT in subtest could not find flow-control label, using exception for flow control.\n";
-                die $e;
-            }
-        }
-
-        die $e unless $self->{+EXIT_ON_DISRUPTION};
-        exit 255;
-    }
-}
-
-sub _reset {
-    my $self = shift;
-
-    $self->{+STATES} = [Test::Stream::State->new];
-
-    return unless $self->pid != $$ || $self->tid != get_tid();
-
-    $self->{+PID} = $$;
-    $self->{+TID} = get_tid();
-    if (USE_THREADS || $self->{+_USE_FORK}) {
-        $self->{+_USE_FORK} = undef;
-        $self->use_fork;
-    }
-}
+# This is here to satisfy the Test::SharedFork patch until it is repatched
+sub use_fork { croak "do not use this" }
 
 sub CLONE {
-    for my $stream (_stack()) {
-        next unless defined $stream->pid;
-        next unless defined $stream->tid;
+    for my $hub (Test::Stream->_stack()) {
+        next unless defined $hub->pid;
+        next unless defined $hub->tid;
 
-        next if $$ == $stream->pid && get_tid() == $stream->tid;
+        next if $$ == $hub->pid && get_tid() == $hub->tid;
 
-        $stream->{+IN_SUBTHREAD} = 1;
+        $hub->set_in_subthread(1);
     }
 }
-
-sub DESTROY {
-    my $self = shift;
-
-    return if $self->in_subthread;
-
-    my $dir = $self->{+_USE_FORK} || return;
-
-    return unless defined $self->pid;
-    return unless defined $self->tid;
-
-    return unless $$        == $self->pid;
-    return unless get_tid() == $self->tid;
-
-    if ($ENV{TEST_KEEP_TMP_DIR}) {
-        print STDERR "# Not removing temp dir: $dir\n";
-        return;
-    }
-
-    opendir(my $dh, $dir) || confess "Could not open temp dir! ($dir)";
-    while(my $file = readdir($dh)) {
-        next if $file =~ m/^\.+$/;
-        die "Unculled event! You ran tests in a child process, but never pulled them in!\n"
-            if $file !~ m/\.complete$/;
-        unlink("$dir/$file") || confess "Could not unlink file: '$dir/$file'";
-    }
-    closedir($dh);
-    rmdir($dir) || warn "Could not remove temp dir ($dir)";
-}
-
-sub STORABLE_freeze {
-    my ($self, $cloning) = @_;
-    return if $cloning;
-    return ($self);
-}
-
-sub STORABLE_thaw {
-    my ($self, $cloning, @vals) = @_;
-    return if $cloning;
-    return Test::Stream->shared;
-}
-
 
 1;
 
@@ -782,223 +371,479 @@ Set the TAP encoding.
 
 =back
 
-=head1 EXPORTS
+=head1 COMMON TASKS
+
+=head2 MODIFYING EVENTS
+
+    use Test::Stream qw/ munge /;
+
+    munge {
+        my ($hub, $event, @subevents) = @_;
+
+        if($event->isa('Test::Stream::Diag')) {
+            $event->set_message( "KILROY WAS HERE: " . $event->message );
+        }
+    };
+
+=head2 REPLACING TAP WITH ALTERNATIVE OUTPUT
+
+    use Test::Stream qw/ disable_tap listen /;
+
+    disable_tap();
+
+    listen {
+        my $hub = shift;
+        my ($event, @subevents) = @_;
+
+        # Tracking results in a db?
+        my $id = log_event_to_db($e);
+        log_subevent_to_db($id, $_) for @subevents;
+    }
+
+=head2 END OF TEST BEHAVIORS
+
+    use Test::Stream qw/ follow_up is_passing /;
+
+    follow_up {
+        my ($context) = @_;
+
+        if (is_passing()) {
+            print "KILROY Says the test file passed!\n";
+        }
+        else {
+            print "KILROY is not happy with you!\n";
+        }
+    };
+
+=head2 ENABLING FORKING SUPPORT
+
+    use Test::More;
+    use Test::Stream qw/ enable_forking /;
+
+    enable_forking();
+
+    # This all just works now!
+    my $pid = fork();
+    if ($pid) { # Parent
+        ok(1, "From Parent");
+    }
+    else { # child
+        ok(1, "From Child");
+        exit 0;
+    }
+
+    done_testing;
+
+B<Note:> Result order between processes is not guarenteed, but the test number
+is handled for you meaning you don't need to care.
+
+Results:
+
+    ok 1 - From Child
+    ok 2 - From Parent
+
+Or:
+
+    ok 1 - From Parent
+    ok 2 - From Child
+
+=head2 REDIRECTING TAP OUTPUT
+
+You may omit any arguments to leave a specific handle unchanged. It is not
+possible to set a handle to undef or 0 or any other false value.
+
+    use Test::Stream qw/ set_tap_outputs /;
+
+    set_tap_outputs(
+        encoding => 'legacy',           # Default,
+        std      => $STD_IO_HANDLE,     # equivilent to $TB->output()
+        err      => $ERR_IO_HANDLE,     # equivilent to $TB->failure_output()
+        todo     => $TODO_IO_HANDLE,    # equivilent to $TB->todo_output()
+    );
+
+B<Note:> Each encoding has independant filehandles.
+
+=head1 GENERATING EVENTS
+
+=head2 EASY WAY
+
+The best way to generate an event is through a L<Test::Stream::Context>
+object. All events have a method associated with them on the context object.
+The method will be the last part of the evene package name lowercased, for
+example L<Test::Stream::Event::Ok> can be issued via C<< $context->ok(...) >>.
+
+    use Test::Stream qw/ context /;
+    my $context = context();
+    $context->send_event('EVENT_TYPE', ...);
+
+The 5 primary event types each have a shortcut method on
+L<Test::Stream::Context>:
+
+=over 4
+
+=item $context->ok($bool, $name, \@diag)
+
+Issue an L<Test::Stream::Event::Ok> event.
+
+=item $context->diag($msg)
+
+Issue an L<Test::Stream::Event::Diag> event.
+
+=item $context->note($msg)
+
+Issue an L<Test::Stream::Event::Note> event.
+
+=item $context->plan($max, $directive, $reason)
+
+Issue an L<Test::Stream::Event::Plan> event. C<$max> is the number of expected
+tests. C<$directive> is a plan directive such as 'no_plan' or 'skip_all'.
+C<$reason> is the reason for the directive (only applicable to skip_all).
+
+=item $context->bail($reason)
+
+Issue an L<Test::Stream::Event::Bail> event.
+
+=back
+
+=head2 HARD WAY
+
+This is not recommended, but it demonstrates just how much the context shortcut
+methods do for you.
+
+    # First make a context
+    my $context = Test::Stream::Context->new(
+        frame     => ..., # Where to report errors
+        hub       => ..., # Test::Stream object to use
+        encoding  => ..., # encoding from test package meta-data
+        in_todo   => ..., # Are we in a todo?
+        todo      => ..., # Which todo message should be used?
+        modern    => ..., # Is the test package modern?
+        pid       => ..., # Current PID
+        skip      => ..., # Are we inside a 'skip' state?
+        provider  => ..., # What tool created the context?
+    );
+
+    # Make the event
+    my $ok = Test::Stream::Event::Ok->new(
+        # Should reflect where the event was produced, NOT WHERE ERRORS ARE REPORTED
+        created => [__PACKAGE__, __FILE__,              __LINE__],
+        context => $context,     # A context is required
+        in_subtest => 0,
+
+        pass => $bool,
+        name => $name,
+        diag => \@diag,
+    );
+
+    # Send the event to the hub.
+    Test::Stream->shared->send($ok);
 
 =head2 DEFAULT EXPORTS
 
+All of these are functions. These functions all effect the current-shared
+L<Test::Stream> object only.
+
 =over 4
 
-=item tap_encoding( $ENCODING )
+=item $context = context()
 
-Set the tap encoding from this point on.
+=item $context = context($add_level)
 
-=item cull
+This will get the correct L<Test::Stream::Context> object. This may be one that
+was previously initialized, or it may generate a new one. Read the
+L<Test::Stream::Context> documentation for more info.
 
-Bring in results from child processes/threads. This is automatically done
-whenever a context is obtained, but you may wish to do it on demand.
+Note, C<context()> assumes you are at the lowest level of your tool, and looks
+at the current caller. If you need it to look further you can call it with a
+numeric argument which is added to the level. To clarify, calling C<context()>
+is the same as calling C<context(0)>.
 
 =back
 
-=head1 THE STREAM STACK AND METHODS
+=head1 AVAILABLE EXPORTS
 
-At any point there can be any number of streams. Most streams will be present
-in the stream stack. The stack is managed via a collection of class methods.
-You can always access the "current" or "central" stream using
-Test::Stream->shared. If you want your events to go where they are supposed to
-then you should always send them to the shared stream.
+All of these are functions. These functions all effect the current-shared
+L<Test::Stream> object only.
+
+=head2 EVENT MANAGEMENT
+
+These let you install a callback that is triggered for all primary events. The
+first argument is the L<Test::Stream> object, the second is the primary
+L<Test::Stream::Event>, any additional arguments are subevents. All subevents
+are L<Test::Stream::Event> objects which are directly tied to the primary one.
+The main example of a subevent is the failure L<Test::Stream::Event::Diag>
+object associated with a failed L<Test::Stream::Event::Ok>, events within a
+subtest are another example.
+
+=over 4
+
+=item listen { my ($hub, $event, @subevents) = @_; ... }
+
+Listen callbacks happen just after TAP is rendered (or just after it would be
+rendered if TAP is disabled).
+
+=item munge { my ($hub, $event, @subevents) = @_; ... }
+
+Muinspect_todonge callbacks happen just before TAP is rendered (or just before
+it would be rendered if TAP is disabled).
+
+=back
+
+=head2 POST-TEST BEHAVIOR
+
+=over 4
+
+=item follow_up { my ($context) = @_; ... }
+
+A followup callback allows you to install behavior that happens either when
+C<done_testing()> is called, or when the test file completes.
+
+B<CAVEAT:> If done_testing is not used, the callback will happen in the
+C<END {...}> block used by L<Test::Stream> to enact magic at the end of the
+test.
+
+=back
+
+=head2 CONCURRENCY
+
+=over 4
+
+=item enable_forking()
+
+Turns forking support on. This turns on a synchronization method that *just
+works* when you fork inside a test. This must be turned on prior to any
+forking.
+
+=item cull()
+
+This can only be called in the main process or thread. This is a way to
+manually pull in results from other processes or threads. Typically this
+happens automatically, but this allows you to ensure results have been gathered
+by a specific point.
+
+=back
+
+=head2 CONTROL OVER TAP
+
+=over 4
+
+=item enable_tap()
+
+Turn TAP on (on by default).
+
+=item disable_tap()
+
+Turn TAP off.
+
+=item enable_numbers()
+
+Show test numbers when rendering TAP.
+
+=item disable_numbers()
+
+Do not show test numbers when rendering TAP.
+
+=item subtest_tap_instant()
+
+This is the default way to render subtests:
+
+    # Subtest: a_subtest
+        ok 1 - pass
+        1..1
+    ok 1 - a_subtest
+
+Using this will automatically turn off C<subtest_tap_delayed>
+
+=item subtest_tap_delayed()
+
+This is an alternative way to render subtests, this method waits until the
+subtest is complete then renders it in a structured way:
+
+    ok 1 - a_subtest {
+        ok 1 - pass
+        1..1
+    }
+
+Using this will automatically turn off C<subtest_tap_instant>
+
+=item tap_encoding($ENCODING)
+
+This lets you change the encoding for TAP output. This only effects the current
+test package.
+
+=item set_tap_outputs(encoding => 'legacy', std => $IO, err => $IO, todo => $IO)
+
+This lets you replace the filehandles used to output TAP for any specific
+encoding. All fields are optional, any handles not specified will not be
+changed. The C<encoding> parameter defaults to 'legacy'.
+
+B<Note:> The todo handle is used for failure output inside subtests where the
+subtest was started already in todo.
+
+=item $hashref = get_tap_outputs($encoding)
+
+'legacy' is used when encoding is not specified.
+
+Returns a hashref with the output handles:
+
+    {
+        encoding => $encoding,
+        std      => $STD_HANDLE,
+        err      => $ERR_HANDLE,
+        todo     => $TODO_HANDLE,
+    }
+
+B<Note:> The todo handle is used for failure output inside subtests where the
+subtest was started already in todo.
+
+=back
+
+=head2 TEST PACKAGE METADATA
+
+=over 4
+
+=item $bool = is_modern($package)
+
+Check if a test package has the 'modern' flag.
+
+B<Note:> Throws an exception if C<$package> is not already a test package.
+
+=item set_modern($package, $value)
+
+Turn on the modern flag for the specified test package.
+
+B<Note:> Throws an exception if C<$package> is not already a test package.
+
+=back
+
+=head2 TODO MANAGEMENT
+
+=over 4
+
+=item push_todo($todo)
+
+=item $todo = pop_todo()
+
+=item $todo = peek_todo()
+
+These can be used to manipulate a global C<todo> state. When a true value is at
+the top of the todo stack it will effect any events generated via an
+L<Test::Stream::Context> object. Typically all events are generated this way.
+
+=item set_todo($package, $todo)
+
+This lets you set the todo state for the specified test package. This will
+throw an exception if the package is not a test package.
+
+=item $todo_hashref = inspect_todo($package)
+
+=item $todo_hashref = inspect_todo()
+
+This lets you inspect the TODO state. Optionally you can specify a package to
+inspect. The return is a hashref with several keys:
+
+    {
+        TODO => $TODO_STACK_ARRAYREF,
+        TB   => $TEST_BUILDER_TODO_STATE,
+        META => $PACKAGE_METADATA_TODO_STATE,
+        PKG  => $package::TODO,
+    }
+
+This lets you see what todo states are set where. This is primarily useful when
+debugging to see why something is unexpectedly TODO, or when something is not
+TODO despite expectations.
+
+=back
+
+=head2 TEST PACKAGE MANAGEMENT
+
+=over 4
+
+=item $meta = is_tester($package)
+
+Check if a package is a tester, if it is the meta-object for the tester is
+returned.
+
+=item $meta = init_tester($package)
+
+Set the package as a tester and return the meta-object. If the package is
+already a tester it will return the existing meta-object.
+
+=back
+
+=head2 CONTEXTUAL INFORMATION
+
+=over 4
+
+=item $hub = current_hub()
+
+This will return the current L<Test::Stream> Object. L<Test::Stream> objects
+typically live on a global stack, the topmost item on the stack is the one that
+is normally used.
+
+=back
+
+=head2 TEST STATE
+
+=over 4
+
+=item $num = state_count()
+
+Check how many tests have been run.
+
+=item $num = state_failed()
+
+Check how many tests have failed.
+
+=item $plan_event = state_plan()
+
+Check if a plan has been issued, if so the L<Test::Stream::Event::Plan>
+instance will be returned.
+
+=item $bool = state_ended()
+
+True if the test is complete (after done_testing).
+
+=item $bool = is_passing()
+
+Check if the test state is passing.
+
+=back
+
+=head1 HUB STACK FUNCTIONS
+
+At any point there can be any number of hubs. Most hubs will be present
+in the hub stack. The stack is managed via a collection of class methods.
+You can always access the "current" or "central" hub using
+C<< Test::Stream->shared >>. If you want your events to go where they are
+supposed to then you should always send them to the shared hub.
 
 It is important to note that any toogle, control, listener, munger, etc.
-applied to a stream will effect only that stream. Independant streams, streams
-down the stack, and streams added later will not get any settings from other
-stacks. Keep this in mind if you take it upon yourself to modify the stream
-stack.
-
-=head2 TOGGLES AND CONTROLS
+applied to a hub will effect only that hub. Independant hubs, hubs down the
+stack, and hubs added later will not get any settings from other hubs. Keep
+this in mind if you take it upon yourself to modify the hub stack.
 
 =over 4
 
-=item $stream->use_fork
+=item $hub = Test::Stream::shared
 
-Turn on forking support (it cannot be turned off).
+=item $hub = Test::Stream->shared
 
-=item $stream->set_subtest_tap_instant($bool)
-
-=item $bool = $stream->subtest_tap_instant
-
-Render subtest events as they happen.
-
-=item $stream->set_subtest_tap_delayed($bool)
-
-=item $bool = $stream->subtest_tap_delayed
-
-Render subtest events when printing the result of the subtest
-
-=item $stream->set_exit_on_disruption($bool)
-
-=item $bool = $stream->exit_on_disruption
-
-When true, skip_all and bailout will call exit. When false the bailout and
-skip_all events will be thrown as exceptions.
-
-=item $stream->set_use_tap($bool)
-
-=item $bool = $stream->use_tap
-
-Turn TAP rendering on or off.
-
-=item $stream->set_use_legacy($bool)
-
-=item $bool = $stream->use_legacy
-
-Turn legacy result storing on and off.
-
-=item $stream->set_use_numbers($bool)
-
-=item $bool = $stream->use_numbers
-
-Turn test numbers on and off.
-
-=item $stash = $stream->subtest_start($name, %params)
-
-=item $stash = $stream->subtest_stop($name)
-
-These will push/pop new states and subtest stashes.
-
-B<Using these directly is not recommended.> Also see the wrapper methods in
-L<Test::Stream::Context>.
-
-=back
-
-=head2 SENDING EVENTS
-
-    Test::Stream->shared->send($event)
-
-The C<send()> method is used to issue an event to the stream. This method will
-handle thread/fork sych, mungers, listeners, TAP output, etc.
-
-=head2 ALTERING EVENTS
-
-    Test::Stream->shared->munge(sub {
-        my ($stream, $event) = @_;
-
-        ... Modify the event object ...
-
-        # return is ignored.
-    });
-
-Mungers can never be removed once added. The return from a munger is ignored.
-Any changes you wish to make to the object must be done directly by altering
-it in place. The munger is called before the event is rendered as TAP, and
-AFTER the event has made any necessary state changes.
-
-=head2 LISTENING FOR EVENTS
-
-    Test::Stream->shared->listen(sub {
-        my ($stream, $event) = @_;
-
-        ... do whatever you want with the event ...
-
-        # return is ignored
-    });
-
-Listeners can never be removed once added. The return from a listener is
-ignored. Changing an event in a listener is not something you should ever do,
-though no protections are in place to prevent it (this may change!). The
-listeners are called AFTER the event has been rendered as TAP.
-
-=head2 POST-TEST BEHAVIORS
-
-    Test::Stream->shared->follow_up(sub {
-        my ($context) = @_;
-
-        ... do whatever you need to ...
-
-        # Return is ignored
-    });
-
-follow_up subs are called only once, when the stream recieves a finish event. There are 2 ways a finish event can occur:
-
-=over 4
-
-=item done_testing
-
-A finish event is generated when you call done_testing. The finish event occurs
-before the plan is output.
-
-=item EXIT MAGIC
-
-A finish event is generated when the Test::Stream END block is called, just
-before cleanup. This event will not happen if it was already geenerated by a
-call to done_testing.
-
-=back
-
-=head2 OTHER METHODS
-
-=over
-
-=item $stream->states
-
-Get the states arrayref, which holds all the active state objects.
-
-=item $stream->state
-
-Get the current state of the stream. The state is an array where specific
-indexes have specific meanings. These indexes are managed via constants.
-
-=item $stream->plan
-
-Get the plan event, if a plan has been issued.
-
-=item $stream->count
-
-Get the test count so far.
-
-=item $stream->failed
-
-Get the number of failed tests so far.
-
-=item $stream->ended
-
-Get the context in which the tests ended, if they have ended.
-
-=item $stream->legacy
-
-Used internally to store events for legacy support.
-
-=item $stream->is_passing
-
-Check if the test is passing its plan.
-
-=item $stream->done_testing($context, $max)
-
-Tell the stream we are done testing.
-
-=item $stream->fork_cull
-
-Gather events from other threads/processes.
-
-=back
-
-=head2 STACK METHODS AND INTERCEPTING EVENTS
-
-=over 4
-
-=item $stream = Test::Stream->shared
-
-Get the current shared stream. The shared stream is the stream at the top of
+Get the current shared hub. The shared hub is the hub at the top of
 the stack.
+
+=item Test::Stream::clear
 
 =item Test::Stream->clear
 
-Completely remove the stream stack. It is very unlikely you will ever want to
+Completely remove the hub stack. It is very unlikely you will ever want to
 do this.
 
 =item ($new, $old) = Test::Stream->intercept_start($new)
 
 =item ($new, $old) = Test::Stream->intercept_start
 
-Push a new stream to the top of the stack. If you do not provide a stack a new
+Push a new hub to the top of the stack. If you do not provide a stack a new
 one will be created for you. If you have one created for you it will have the
 following differences from a default stack:
 
@@ -1019,8 +864,8 @@ will be an exception if they do not match.
         ...
     });
 
-Temporarily push a new stream to the top of the stack. The codeblock you pass
-in will be run. Once your codelbock returns the stack will be popped and
+Temporarily push a new hub to the top of the stack. The codeblock you pass
+in will be run. Once your codeblock returns the stack will be popped and
 restored to the previous state.
 
 =back

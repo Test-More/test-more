@@ -26,7 +26,7 @@ else {
     my $pipe_fd = $pipe->fileno;
     close STDOUT;
     open(STDOUT, ">&$pipe_fd");
-    my $b = Test::Builder->create(shared_stream => 1);
+    my $b = Test::Builder->create(shared_hub => 1);
     $b->reset;
     $b->no_plan;
     $b->ok(1);

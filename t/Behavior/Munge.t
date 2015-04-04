@@ -8,7 +8,7 @@ events_are(
     intercept {
         my $id = 0;
         Test::Stream->shared->munge(sub {
-            my ($stream, $e) = @_;
+            my ($hub, $e) = @_;
             return unless $e->isa('Test::Stream::Event::Ok');
             return if defined $e->name;
             $e->set_name( 'flubber: ' . $id++ );

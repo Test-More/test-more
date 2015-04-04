@@ -24,7 +24,7 @@ subtest do_it => sub {
         close($read);
         Test::Stream::IOSets->_autoflush($write);
         my $ctx = context();
-        my $handles = $ctx->stream->io_sets->init_encoding('legacy');
+        my $handles = $ctx->hub->io_sets->init_encoding('legacy');
         $handles->[0] = $write;
         $handles->[1] = $write;
         $handles->[2] = $write;

@@ -7,8 +7,8 @@ use base 'Test::Builder';
 sub new {
     my $class = shift;
     my $self = $class->SUPER::create(@_);
-    $self->{stream}->set_use_tap(0);
-    $self->{stream}->set_use_legacy(1);
+    $self->{hub}->set_use_tap(0);
+    $self->{hub}->set_use_legacy(1);
     return $self;
 }
 
@@ -17,7 +17,7 @@ sub details {
 
     my $prem;
     my @out;
-    for my $e (@{$self->{stream}->legacy || []}) {
+    for my $e (@{$self->{hub}->legacy || []}) {
         if ($e->isa('Test::Stream::Event::Ok')) {
             push @out => $e->to_legacy;
             $out[-1]->{diag} ||= "";

@@ -6,7 +6,7 @@ use Scalar::Util();
 use Test::Stream::Util qw/protect/;
 
 use Test::Stream::HashBase(
-    accessors => [qw/package encoding modern todo stream/],
+    accessors => [qw/package encoding modern todo hub/],
 );
 
 use Test::Stream::PackageUtil;
@@ -106,7 +106,7 @@ original does.
 
 =item $val = $meta->todo
 
-=item $val = $meta->stream
+=item $val = $meta->hub
 
 These are various attributes stored on the meta object.
 
