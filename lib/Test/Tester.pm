@@ -72,7 +72,7 @@ sub run_tests {
 
     my ($stream, $old) = Test::Stream->intercept_start($cstream);
     $stream->set_use_legacy(1);
-    $stream->state->[-1] = Test::Stream::State->new;
+    $stream->states->[-1] = Test::Stream::State->new;
     $stream->munge(sub {
         my ($stream, $e) = @_;
         $e->{$idx} = find_depth() - $Test::Builder::Level;
@@ -119,7 +119,7 @@ sub run_tests {
     };
     my $err = $@;
 
-    $stream->state->[-1] = Test::Stream::State->new;
+    $stream->states->[-1] = Test::Stream::State->new;
 
     Test::Stream->intercept_stop($stream);
 

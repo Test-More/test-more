@@ -609,12 +609,12 @@ sub reset {
 
     if ($self->{use_shared}) {
         Test::Stream->shared->_reset;
-        Test::Stream->shared->state->[-1]->set_legacy([]);
+        Test::Stream->shared->state->set_legacy([]);
     }
     else {
         $self->{stream} = Test::Stream->new();
         $self->{stream}->set_use_legacy(1);
-        $self->{stream}->state->[-1]->set_legacy([]);
+        $self->{stream}->state->set_legacy([]);
     }
 
     # We leave this a global because it has to be localized and localizing
@@ -852,7 +852,7 @@ sub current_test {
 
     if (@_) {
         my ($num) = @_;
-        my $state = $ctx->stream->state->[-1];
+        my $state = $ctx->stream->state;
         $state->set_count($num);
 
         my $old = $state->legacy || [];
@@ -884,7 +884,7 @@ sub current_test {
 sub details {
     my $self = shift;
     my $ctx = $self->ctx;
-    my $state = $ctx->stream->state->[-1];
+    my $state = $ctx->stream->state;
     my @out;
     my $legacy = $state->legacy;
     return @out unless $legacy;
@@ -900,7 +900,7 @@ sub details {
 sub summary {
     my $self = shift;
     my $ctx = $self->ctx;
-    my $state = $ctx->stream->state->[-1];
+    my $state = $ctx->stream->state;
     my $legacy = $state->legacy;
     return @{[]} unless $legacy;
     return map { $_->isa('Test::Stream::Event::Ok') ? ($_->effective_pass ? 1 : 0) : ()} @$legacy;

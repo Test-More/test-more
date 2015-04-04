@@ -17,7 +17,7 @@ use Test::Stream::HashBase(
     accessors => [qw{
         no_ending no_diag no_header
         pid tid
-        state
+        states
         subtests
         subtest_tap_instant
         subtest_tap_delayed
@@ -35,7 +35,7 @@ use Test::Stream::HashBase(
 );
 
 use Test::Stream::Exporter;
-default_exports qw/ cull tap_encoding context /;
+default_exports qw/cull tap_encoding context/;
 Test::Stream::Exporter->cleanup;
 
 sub tap_encoding {
@@ -123,15 +123,16 @@ sub before_import {
 }
 
 # Shortcuts to the current state attributes
-sub plan   { $_[0]->{+STATE}->[-1]->{+PLAN}   }
-sub count  { $_[0]->{+STATE}->[-1]->{+COUNT}  }
-sub failed { $_[0]->{+STATE}->[-1]->{+FAILED} }
-sub ended  { $_[0]->{+STATE}->[-1]->{+ENDED}  }
-sub legacy { $_[0]->{+STATE}->[-1]->{+LEGACY} }
+sub state  { $_[0]->{+STATES}->[-1]            }
+sub plan   { $_[0]->{+STATES}->[-1]->{+PLAN}   }
+sub count  { $_[0]->{+STATES}->[-1]->{+COUNT}  }
+sub failed { $_[0]->{+STATES}->[-1]->{+FAILED} }
+sub ended  { $_[0]->{+STATES}->[-1]->{+ENDED}  }
+sub legacy { $_[0]->{+STATES}->[-1]->{+LEGACY} }
 
 sub is_passing {
     my $self = shift;
-    my $state = $self->{+STATE}->[-1];
+    my $state = $self->{+STATES}->[-1];
     return $state->is_passing(@_);
 }
 
@@ -146,7 +147,7 @@ sub init {
     $self->{+EVENT_ID}    = 1;
     $self->{+NO_ENDING}   = 1;
 
-    $self->{+STATE}   = [Test::Stream::State->new];
+    $self->{+STATES}   = [Test::Stream::State->new];
     $self->{+IO_SETS} = Test::Stream::IOSets->new;
 
     $self->{+SUBTESTS} = [];
@@ -343,7 +344,7 @@ sub fork_cull {
         }
 
         # Things from other threads/procs always go to the root state
-        my $cache = $self->_update_state($self->{+STATE}->[0], $obj);
+        my $cache = $self->_update_state($self->{+STATES}->[0], $obj);
         $self->_process_event($obj, $cache);
         $self->_finalize_event($obj, $cache);
     }
@@ -354,7 +355,7 @@ sub fork_cull {
 sub done_testing {
     my $self = shift;
     my ($ctx, $num) = @_;
-    my $state = $self->{+STATE}->[-1];
+    my $state = $self->{+STATES}->[-1];
 
     if (my $old = $state->ended) {
         my ($p1, $f1, $l1) = $old->call;
@@ -412,7 +413,7 @@ sub subtest_start {
         $params{parent_todo} ||= $self->{+SUBTESTS}->[-1]->{parent_todo};
     }
 
-    push @{$self->{+STATE}}    => $state;
+    push @{$self->{+STATES}}    => $state;
     push @{$self->{+SUBTESTS}} => {
         instant => $self->{+SUBTEST_TAP_INSTANT},
         delayed => $self->{+SUBTEST_TAP_DELAYED},
@@ -438,7 +439,7 @@ sub subtest_stop {
         unless $self->{+SUBTESTS}->[-1]->{name} eq $name;
 
     my $st = pop @{$self->{+SUBTESTS}};
-    pop @{$self->{+STATE}};
+    pop @{$self->{+STATES}};
 
     return $st;
 }
@@ -448,7 +449,7 @@ sub subtest { @{$_[0]->{+SUBTESTS}} ? $_[0]->{+SUBTESTS}->[-1] : () }
 sub send {
     my ($self, $e) = @_;
 
-    my $cache = $self->_update_state($self->{+STATE}->[-1], $e);
+    my $cache = $self->_update_state($self->{+STATES}->[-1], $e);
 
     # Subtests get dibbs on events
     if (my $num = @{$self->{+SUBTESTS}}) {
@@ -649,7 +650,7 @@ sub _finalize_event {
 sub _reset {
     my $self = shift;
 
-    $self->{+STATE} = [Test::Stream::State->new];
+    $self->{+STATES} = [Test::Stream::State->new];
 
     return unless $self->pid != $$ || $self->tid != get_tid();
 
@@ -937,6 +938,10 @@ call to done_testing.
 =head2 OTHER METHODS
 
 =over
+
+=item $stream->states
+
+Get the states arrayref, which holds all the active state objects.
 
 =item $stream->state
 
