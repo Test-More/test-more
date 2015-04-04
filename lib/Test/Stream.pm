@@ -163,6 +163,7 @@ sub init {
 }
 
 {
+    # Do not repeat Test::Builders singleton error, these are lexical vars, not package vars.
     my ($root, @stack, $magic);
 
     END {
@@ -341,9 +342,9 @@ sub fork_cull {
         }
 
         # Things from other threads/procs always go to the root state
-        my $cache = $self->_update_state($self->{+STATES}->[0], $obj);
+        my $cache = $self->_preprocess_event($self->{+STATES}->[0], $obj);
         $self->_process_event($obj, $cache);
-        $self->_finalize_event($obj, $cache);
+        $self->_postprocess_event($obj, $cache);
     }
 
     closedir($dh);
@@ -446,7 +447,7 @@ sub subtest { @{$_[0]->{+SUBTESTS}} ? $_[0]->{+SUBTESTS}->[-1] : () }
 sub send {
     my ($self, $e) = @_;
 
-    my $cache = $self->_update_state($self->{+STATES}->[-1], $e);
+    my $cache = $self->_preprocess_event($self->{+STATES}->[-1], $e);
 
     # Subtests get dibbs on events
     if (my $num = @{$self->{+SUBTESTS}}) {
@@ -466,12 +467,12 @@ sub send {
         $self->_process_event($e, $cache);
     }
 
-    $self->_finalize_event($e, $cache);
+    $self->_postprocess_event($e, $cache);
 
     return $e;
 }
 
-sub _update_state {
+sub _preprocess_event {
     my ($self, $state, $e) = @_;
     my $cache = {tap_event => $e, state => $state};
 
@@ -576,7 +577,7 @@ sub _scan_for_begin {
     return undef;
 }
 
-sub _finalize_event {
+sub _postprocess_event {
     my ($self, $e, $cache) = @_;
 
     if ($cache->{is_plan}) {
