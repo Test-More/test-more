@@ -417,8 +417,25 @@ Set the TAP encoding.
 
 =head2 ENABLING FORKING SUPPORT
 
+    use Test::Stream 'enable_fork';
     use Test::More;
+
+    # This all just works!
+    my $pid = fork();
+    if ($pid) { # Parent
+        ok(1, "From Parent");
+    }
+    else { # child
+        ok(1, "From Child");
+        exit 0;
+    }
+
+    done_testing;
+
+or:
+
     use Test::Stream qw/ enable_forking /;
+    use Test::More;
 
     enable_forking();
 
