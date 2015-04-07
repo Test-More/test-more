@@ -1,5 +1,7 @@
 package ok;
-$ok::VERSION = '0.16';
+
+our $VERSION = '1.302001_001';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use strict;
 use Test::More ();

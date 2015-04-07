@@ -2,7 +2,8 @@ package Test::Builder::Tester;
 use strict;
 use warnings;
 
-our $VERSION = "1.28";
+our $VERSION = '1.302001_001';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Engine load => __PACKAGE__;
 

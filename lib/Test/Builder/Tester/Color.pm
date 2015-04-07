@@ -1,7 +1,8 @@
 package Test::Builder::Tester::Color;
 
 use strict;
-our $VERSION = "1.290001";
+our $VERSION = '1.302001_001';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 require Test::Builder::Tester;
 
