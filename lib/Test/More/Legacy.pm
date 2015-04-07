@@ -1,4 +1,16 @@
-package Test::More;
+package Test::More::Legacy;
+
+sub import {
+    shift @_;
+    unshift @_ => 'Test::More';
+    require Carp;
+    goto &Test::Builder::Module::import;
+}
+
+package
+    Test::More;
+
+use Test::Engine verify => __PACKAGE__, __FILE__;
 
 use 5.006;
 use strict;
@@ -16,9 +28,6 @@ sub _carp {
     my( $file, $line ) = ( caller(1) )[ 1, 2 ];
     return warn @_, " at $file line $line\n";
 }
-
-our $VERSION = '1.001014';
-$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Builder::Module 0.99;
 our @ISA    = qw(Test::Builder::Module);
@@ -39,7 +48,7 @@ our @EXPORT = qw(ok use_ok require_ok
 
 =head1 NAME
 
-Test::More - yet another framework for writing test scripts
+Test::More::Legacy - yet another framework for writing test scripts
 
 =head1 SYNOPSIS
 

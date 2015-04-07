@@ -1,7 +1,17 @@
-package Test::Builder::Tester;
+package Test::Builder::Tester::Legacy;
+
+sub import {
+    shift @_;
+    unshift @_ => 'Test::Builder::Tester';
+    goto &Test::Builder::Tester::import;
+}
+
+package
+    Test::Builder::Tester;
+
+use Test::Engine verify => __PACKAGE__, __FILE__;
 
 use strict;
-our $VERSION = "1.28";
 
 use Test::Builder 0.99;
 use Symbol;
@@ -9,7 +19,7 @@ use Carp;
 
 =head1 NAME
 
-Test::Builder::Tester - test testsuites that have been built with
+Test::Builder::Tester::Legacy - test testsuites that have been built with
 Test::Builder
 
 =head1 SYNOPSIS

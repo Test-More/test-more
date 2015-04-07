@@ -1,6 +1,17 @@
 use strict;
 
-package Test::Tester;
+package Test::Tester::Legacy;
+
+sub import {
+    shift @_;
+    unshift @_ => 'Test::Tester';
+    goto &Test::Tester::import;
+}
+
+package
+    Test::Tester;
+
+use Test::Engine verify => __PACKAGE__, __FILE__;
 
 BEGIN
 {
@@ -16,9 +27,8 @@ use Test::Tester::Delegate;
 
 require Exporter;
 
-use vars qw( @ISA @EXPORT $VERSION );
+use vars qw( @ISA @EXPORT );
 
-$VERSION = "0.114";
 @EXPORT = qw( run_tests check_tests check_test cmp_results show_space );
 @ISA = qw( Exporter );
 
@@ -292,7 +302,7 @@ __END__
 
 =head1 NAME
 
-Test::Tester - Ease testing test modules built with Test::Builder
+Test::Tester::Legacy - Ease testing test modules built with Test::Builder
 
 =head1 SYNOPSIS
 

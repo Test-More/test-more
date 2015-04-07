@@ -1,11 +1,19 @@
-package Test::Simple;
+package Test::Simple::Legacy;
+
+sub import {
+    shift @_;
+    unshift @_ => 'Test::Simple';
+    goto &Test::Builder::Module::import;
+}
+
+package
+    Test::Simple;
+
+use Test::Engine verify => __PACKAGE__, __FILE__;
 
 use 5.006;
 
 use strict;
-
-our $VERSION = '1.001014';
-$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Builder::Module 0.99;
 our @ISA    = qw(Test::Builder::Module);
@@ -15,7 +23,7 @@ my $CLASS = __PACKAGE__;
 
 =head1 NAME
 
-Test::Simple - Basic utilities for writing tests.
+Test::Simple::Legacy - Basic utilities for writing tests.
 
 =head1 SYNOPSIS
 

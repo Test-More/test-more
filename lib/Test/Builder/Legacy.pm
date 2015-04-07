@@ -1,11 +1,14 @@
-package Test::Builder;
+package Test::Builder::Legacy;
+
+package
+    Test::Builder;
+
+use Test::Engine verify => __PACKAGE__, __FILE__;
 
 use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '1.001014';
-$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 BEGIN {
     if( $] < 5.008 ) {
@@ -70,7 +73,7 @@ BEGIN {
 
 =head1 NAME
 
-Test::Builder - Backend for building test libraries
+Test::Builder::Legacy - Backend for building test libraries
 
 =head1 SYNOPSIS
 
