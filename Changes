@@ -1,3 +1,7 @@
+1.302001_001 Tue Apr 07 03:01:00:00 PST 2015
+    * Test::Engine introduction for pluggable engines
+    * Key module files renamed
+
 1.001014     Tue Dec 28 08:31:00:00 PST 2014
     * Write a test to ensure this changes file gets updated
     * Update changes file for 1.001013

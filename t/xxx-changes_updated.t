@@ -14,7 +14,8 @@ die "Could not find the Changes file"
 
 open(my $fh, '<', $changes) || die "Could not load changes file!";
 chomp(my $line = <$fh>);
-like($line, qr/^\Q$ver\E/, "Changes file is up to date");
+$line =~ s/_//g;
+like($line, qr/^\Q$ver\E?/, "Changes file is up to date");
 close($fh);
 
 done_testing;
