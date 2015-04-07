@@ -211,7 +211,7 @@ An engine is a very simple:
         'Test::Simple'  => 'Test/Simple/Legacy.pm', # Use the legacy Test::Simple implementation
         'Test::Tester'  => undef,                   # Refuse to load Test::Tester in this engine
 
-        'Test::Builder::Tester' => undef,           # Refude to load Test::Builder::Tester in this engine
+        'Test::Builder::Tester' => undef,           # Refuse to load Test::Builder::Tester in this engine
     }
 
 
