@@ -2,6 +2,10 @@ package Test::Engine;
 use strict;
 use warnings;
 
+our %ENGINES = (
+    Legacy => ['Test::Engine::Legacy', 'Test/Engine/Legacy.pm'],
+);
+
 my $ENGINE_NAME;
 my $ENGINE;
 my $LOADED;
@@ -23,10 +27,12 @@ sub set_engine {
         Carp::confess("Could not load engine '$name', engine '$ENGINE_NAME' already loaded.");
     }
 
-    my $pkg = __PACKAGE__ . '::' . $name;
-    my $file = $pkg;
-    $file =~ s{::}{/}g;
-    $file .= ".pm";
+    my $spec = $ENGINES{$name};
+    if (!$spec) {
+        require Carp;
+        Carp::confess("'$name' is not a known Test::Engine engine.");
+    }
+    my ($pkg, $file) = @$spec;
     require $file;
 
     $ENGINE_NAME = $name;
