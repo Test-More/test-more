@@ -70,7 +70,7 @@ an event.
 L<Test::Stream::Tester> often uses this clas to represent events in a way that
 is easier to validate.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test::Stream::Tester::Events::Event;
 

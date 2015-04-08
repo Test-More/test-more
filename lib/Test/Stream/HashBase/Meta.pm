@@ -113,7 +113,7 @@ __END__
 
 Test::Stream::HashBase::Meta - Meta Object for HashBase objects.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 B<Note:> You probably do not want to directly use this object.
 

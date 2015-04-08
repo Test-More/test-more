@@ -41,7 +41,7 @@ to exit. If you forked below an eval the exception will be cought and you
 suddenly have an unexpected process running amok. This module can be used to
 protect you from such issues.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     eval {
         ...

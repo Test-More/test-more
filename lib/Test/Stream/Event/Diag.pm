@@ -64,7 +64,7 @@ Test::Stream::Event::Diag - Diag event type
 
 Diagnostics messages, typically rendered to STDERR.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test::Stream::Context qw/context/;
     use Test::Stream::Event::Diag;

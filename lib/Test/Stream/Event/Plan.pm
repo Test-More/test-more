@@ -77,7 +77,7 @@ Test::Stream::Event::Plan - The event of a plan
 Plan events are fired off whenever a plan is declared, done testing is called,
 or a subtext completes.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test::Stream::Context qw/context/;
     use Test::Stream::Event::Plan;

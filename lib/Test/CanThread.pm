@@ -71,7 +71,7 @@ Use this first thing in a test that should be skipped when threading is not
 supported. You can also specify that the test should be skipped when specific
 environment variables are not set.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 Skip the test if threading is unsupported:
 

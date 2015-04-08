@@ -314,7 +314,7 @@ __END__
 
 Test::Stream - A modern infrastructure for testing.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     # Enables modern enhancements such as forking support and TAP encoding.
     # Also turns off expensive legacy support.

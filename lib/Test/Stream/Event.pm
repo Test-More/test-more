@@ -92,7 +92,7 @@ Test::Stream::Event - Base class for events
 Base class for all event objects that get passed through
 L<Test::Stream>.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     package Test::Stream::Event::MyEvent;
     use strict;

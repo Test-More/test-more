@@ -49,7 +49,7 @@ Test::Stream::Event::Note - Note event type
 
 Notes, typically rendered to STDOUT.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test::Stream::Context qw/context/;
     use Test::Stream::Event::Note;

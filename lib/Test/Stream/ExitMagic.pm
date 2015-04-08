@@ -165,7 +165,7 @@ Test::Stream::ExitMagic - Encapsulate the magic exit logic
 
 It's magic! well kinda..
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 Don't use this yourself, let L<Test::Stream> handle it.
 

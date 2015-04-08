@@ -57,7 +57,7 @@ Test::Stream::Meta - Meta object for unit test packages.
 
 This object is used to track metadata for unit tests packages.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test::Stream::Meta qw/init_tester is_tester/;
 

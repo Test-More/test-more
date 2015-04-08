@@ -84,7 +84,7 @@ __END__
 Test::Stream::HashBase - Base class for classes that use a hashref
 of a hash.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 A class:
 

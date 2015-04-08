@@ -41,7 +41,7 @@ Test::Stream::Event::Bail - Bailout!
 The bailout event is generated when things go horribly wrong and you need to
 halt all testing in the current file.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test::Stream::Context qw/context/;
     use Test::Stream::Event::Bail;

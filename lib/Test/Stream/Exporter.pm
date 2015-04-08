@@ -147,7 +147,7 @@ L<Exporter::Declare>. This is a much more powerful exporting tool than
 L<Exporter>. This package is used to easily manage complicated EXPORT logic
 across L<Test::Stream> and friends.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test::Stream::Exporter;
 

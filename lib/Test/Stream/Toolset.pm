@@ -76,7 +76,7 @@ Test::Stream::Toolset - Helper for writing testing tools
 This package provides you with tools to write testing tools. It makes your job
 of integrating with L<Test::Builder> and other testing tools much easier.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     package My::Tester;
     use strict;

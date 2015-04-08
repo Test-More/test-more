@@ -44,7 +44,7 @@ __END__
 
 Test::MostlyLike - Relaxed checking of deep data structures.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     my $got = [qw/foo bar baz/];
 

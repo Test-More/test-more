@@ -135,7 +135,7 @@ Test::Stream::Event::Subtest - Subtest event
 
 This event is used to encapsulate subtests.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 B<YOU PROBABLY DO NOT WANT TO DIRECTLY GENERATE A SUBTEST EVENT>. See the
 C<subtest()> function from L<Test::More::Tools> instead.

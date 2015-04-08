@@ -348,7 +348,7 @@ works, but it generates events for each call. This package gives you access to
 the implementations directly, without generating events for you. This allows
 you to create a composite tool without generating extra events.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test::More::Tools qw/tmt/;
     use Test::Stream::Toolset qw/context/;

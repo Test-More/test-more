@@ -557,7 +557,7 @@ __END__
 
 Test::Stream::Hub - The conduit through which all events flow.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test::Stream;
     my $hub = Test::Stream->shared;

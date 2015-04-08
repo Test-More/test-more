@@ -42,7 +42,7 @@ This module provides some helpers for Test::Stream and Toolsets to use to
 determine if threading is in place. In most cases you will not need to use this
 module yourself.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use threads;
     use Test::Stream::Threads;

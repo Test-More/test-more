@@ -492,7 +492,7 @@ tracking the context of each test that is run. It makes it possible to get the
 file and line number where the failure occured .This object is also responsible
 for generating almost all the events you will encounter.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test::Stream::Context qw/context/;
 

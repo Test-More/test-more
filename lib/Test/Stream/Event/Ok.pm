@@ -220,7 +220,7 @@ Test::Stream::Event::Ok - Ok event type
 Ok events are generated whenever you run a test that produces a result.
 Examples are C<ok()>, and C<is()>.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test::Stream::Context qw/context/;
     use Test::Stream::Event::Ok;

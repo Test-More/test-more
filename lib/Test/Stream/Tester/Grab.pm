@@ -69,7 +69,7 @@ Once created this object will intercept and stash all events sent to the shared
 L<Test::Stream::Hub> object. Once the object is destroyed events will once
 again be sent to the shared hub.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test::More;
     use Test::Stream::Tester::Grab;
