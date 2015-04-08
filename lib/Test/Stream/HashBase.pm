@@ -56,19 +56,43 @@ sub apply_to {
         if $args{accessors};
 }
 
+# According to profiling, using ->can('init') instead of having this empty sub
+# is faster in isolation. However the reality is that nearly all Test::Stream
+# objects have an init method, so taking that into acount it is faster to drop
+# the ->can call and put an empty stub in the base object here.
+# The actual benefits are miniscule, but I have been pressured to remove the
+# call to can().
+sub init {}
+
 sub new {
     my $class = shift;
-    confess "xxx" if @_ % 2;
     my %params = @_;
-    my $self = bless {}, $class;
+    my $self = bless \%params, $class;
+    $self->init;
+    return $self;
+}
 
-    while (my ($k, $v) = each %params) {
-        croak "$class has no accessor named '$k'" unless $class->can($k);
-        $self->{$k} = $v;
+sub new_debug {
+    my $class = shift;
+    my %params = @_;
+
+    my $meta = Test::Stream::HashBase::Meta->get($class);
+    my $fields = $meta->fields;
+
+    for my $field (keys %params) {
+        croak "$class has no accessor named '$field'"
+            unless $fields->{$field};
     }
 
-    $self->init if $self->can('init');
+    my $self = bless \%params, $class;
+    $self->init;
     return $self;
+}
+
+# If debugging is enabled use the slower, but validating new method.
+if ($ENV{TEST_STREAM_DEBUG}) {
+    no warnings 'redefine';
+    *new = \&new_debug;
 }
 
 1;
