@@ -7,7 +7,6 @@ use Scalar::Util qw/blessed weaken/;
 use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::Threads;
-use Test::Stream::Event();
 use Test::Stream::Util qw/try translate_filename/;
 use Test::Stream::Meta qw/init_tester is_tester/;
 
@@ -32,7 +31,7 @@ sub from_end_block { 0 };
 
 sub init {
     $_[0]->{+FRAME}    ||= _find_context(1);                # +1 for call to init
-    $_[0]->{+HUB}   ||= Test::Stream->shared;
+    $_[0]->{+HUB}      ||= Test::Stream->shared;
     $_[0]->{+ENCODING} ||= 'legacy';
     $_[0]->{+PID}      ||= $$;
 }
@@ -64,13 +63,12 @@ sub context {
 
     my $call = _find_context($level);
     $call = _find_context_harder() unless $call;
-    my $pkg  = $call->[0];
+    my $pkg = $call->[0];
 
     my $meta = is_tester($pkg) || _find_tester();
 
     # Check if $TODO is set in the package, if not check if Test::Builder is
-    # loaded, and if so if it has Todo set. We check the element directly for
-    # performance.
+    # loaded, and if so if it has Todo set.
     my ($todo, $in_todo);
     {
         my $todo_pkg = $meta->{Test::Stream::Meta::PACKAGE};
@@ -103,6 +101,7 @@ sub context {
         ($ppkg, $pname) = ($provider[3] =~ m/^(.*)::([^:]+)$/);
     }
 
+    $hub ||= $meta->{Test::Stream::Meta::HUB} || Test::Stream->shared;
     # Uh-Oh! someone has replaced the singleton, that means they probably want
     # everything to go through them... We can't do a whole lot about that, but
     # we will use the singletons hub which should catch most use-cases.
@@ -131,7 +130,6 @@ sub context {
         EOT
     }
 
-    $hub ||= $meta->{Test::Stream::Meta::HUB} || Test::Stream->shared || confess "No Stream!?";
     if ((USE_THREADS || $hub->_use_fork) && ($hub->pid == $$ && $hub->tid == get_tid())) {
         $hub->fork_cull();
     }
@@ -142,7 +140,7 @@ sub context {
     my $ctx = bless(
         {
             FRAME()     => $call,
-            HUB()    => $hub,
+            HUB()       => $hub,
             ENCODING()  => $encoding,
             IN_TODO()   => $in_todo,
             TODO()      => $todo,
