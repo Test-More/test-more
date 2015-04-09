@@ -56,14 +56,10 @@ sub apply_to {
         if $args{accessors};
 }
 
-# According to profiling, using ->can('init') instead of having this empty sub
-# is faster in isolation. However the reality is that nearly all Test::Stream
-# objects have an init method, so taking that into acount it is faster to drop
-# the ->can call and put an empty stub in the base object here.
-# The actual benefits are miniscule, but I have been pressured to remove the
-# call to can().
-sub init {}
 
+# Note: There is no practical difference between always calling init() and
+# checking ->can('init') when profiled.
+sub init {}
 sub new {
     my $class = shift;
     my %params = @_;
