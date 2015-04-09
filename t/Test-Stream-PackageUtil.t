@@ -35,4 +35,24 @@ ok(!$r, "Failed to call foo()");
 like($e, qr/Can't locate object method "foo" via package "main"/, "foo() is not defined anymore");
 ok(!__PACKAGE__->can('foo'), "can() no longer thinks we can do foo()");
 
+{
+    package Foo;
+
+    sub Bar { 'bar' };
+    our $Bar = 'bar';
+    our @Bar = ('b', 'a', 'r');
+    our %Bar = (bar => 1);
+
+    package Foo::Bar;
+    sub xxx { 'xxx' };
+}
+
+package_purge_sym('Foo', CODE => 'Bar');
+ok(!Foo->can('Bar'), "Removed CODE");
+is($Foo::Bar, 'bar', 'SCALAR Preserved');
+is_deeply(\@Foo::Bar, ['b', 'a', 'r'], 'ARRAY Preserved');
+is_deeply(\%Foo::Bar, {bar => 1}, 'HASH Preserved');
+can_ok('Foo::Bar', 'xxx');
+is('Foo::Bar'->xxx, 'xxx', "nested namespace preserved");
+
 done_testing;
