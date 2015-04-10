@@ -171,3 +171,10 @@ sub builder {
 }
 
 1;
+
+__END__
+
+=head1 MAINTENANCE CATEGORY: FULL LOCKDOWN
+
+See L<Test::Simple::MaintenancePolicy> for details.
+

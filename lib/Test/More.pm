@@ -1907,6 +1907,10 @@ L<Bundle::Test> installs a whole bunch of useful test modules.
 
 L<Test::Most> Most commonly needed test functions and features.
 
+=head1 MAINTENANCE CATEGORY: FULL LOCKDOWN
+
+See L<Test::Simple::MaintenancePolicy> for details.
+
 =head1 AUTHORS
 
 Michael G Schwern E<lt>schwern@pobox.comE<gt> with much inspiration

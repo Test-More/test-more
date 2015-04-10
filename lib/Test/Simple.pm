@@ -193,6 +193,9 @@ programs and things will still work).
 
 Look in L<Test::More>'s SEE ALSO for more testing modules.
 
+=head1 MAINTENANCE CATEGORY: FULL LOCKDOWN
+
+See L<Test::Simple::MaintenancePolicy> for details.
 
 =head1 AUTHORS
 

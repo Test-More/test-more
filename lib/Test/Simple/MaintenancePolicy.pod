@@ -1,0 +1,172 @@
+package Test::Simple::MaintenancePolicy;
+
+=pod
+
+=encoding utf8
+
+=head1 NAME
+
+Test::Simple::MaintenancePolicy - Maintenance policy for the Test-Simple dist.
+
+=head1 DESCRIPTION
+
+This document defines the maintenance polciy for the Test-Simple dist, and all
+modules contained therin.
+
+
+
+
+=head1 WAYS TO MEASURE COMMUNITY BUY-IN
+
+These are the acceptible ways to measure community buy-in on changes requiring
+it.
+
+=head2 Majority consensus at the yearly perl-qa hackathons
+
+The topic is discussed at a yearly perl-qa hackathon. The discussion must end
+with an agreement among the group that there is a majority consensus.  This
+does not require a unanimous consensus, just a strong majority.
+
+=head2 A perl-qa mailing list discussion that ends in majority consensus
+
+A post must be made to the perl-qa mailing list. After a minimum of one month
+the primary maintainer and the current perl pumpking must both agree that the
+thread shows a majority consensus.
+
+
+
+
+=head1 MAINTENANCE CATEGORIES
+
+Every module in this dist falls into one of the following maintenance
+categories. Categories are listed in least permissive to most. Each module
+should list its maintenance category in the POD.
+
+The primary maintaner may change the maintenance category to a less permissive
+one any time they like. Changing the category to a less permissive one requires
+COMMUNITY BUY-IN.
+
+B<Note:> Documentation updates are allowed in all maintenance modes, so long as
+they do not reduce the usefulness of said documentation. Modules may always be
+added or removed from 'SEE ALSO' and similar sections as the ecosystem evolves.
+
+=head2 FULL LOCKDOWN
+
+When a module is in full lockdown the only modifications allowed are simple
+bugfixes, and changes required to support new versions of perl as they are
+released. The API is not allowd to change unless it is essential to fixing a
+bug, or supporting a new version of perl. This means no module interface
+changes, no output changes, and no methods or functions can be removed.
+
+Maintainers will not merge any patches for modules in this category that make
+significant changes. An exception will be made only if there is significant
+buy-in from the community. The primary maintainer of the dist must not make
+such a call on their own.
+
+=head2 BACKCOMPAT LOCK
+
+New features are allowed so long as they do not break or modify existing
+functionality. No significant changes to existing subs (remove/refactor).  New
+subs are allowed. No new default exports are allowed, but new exports that may
+be requested are allowed. Improvements to diagnostics are allowed, so long as
+it can be demonstrated that it is not common for a module to depend on the
+existing output format.
+
+=head2 ACTIVE DEVELOPMENT
+
+Existing APIs and output should be preserved, but the implementation is free to
+make significant changes. New features are welcome.
+
+=head2 UNSTABLE
+
+Do not depend on this, anything may change at any time.
+
+
+
+=head1 BUNDLING NEW MODULES
+
+Modules will only be added/bundled to the Test-Simple dist for the following
+reasons moving forward (This does not cover modules already bundled)
+
+=head2 Module is necessary for Test-Simple
+
+If a new module is written to encapsulate logic that was previously duplicated
+all over Test-Simple, it obviously is fine, and essential to bundle it. This
+also covers refactors that split logic out into new modules.
+
+
+=head2 Module must be kept in sync with Test-Simple internals
+
+Examples are Test::Tester and Test::Builder::Tester which can result in a cpan
+failure chain-reaction if they are out of sync. This only applies to prevelent
+modules.
+
+=head2 Community buy-in that the module belongs in the dist
+
+See the 'WAYS TO MEASURE COMMUNITY BUY-IN' section.
+
+
+
+=head1 OTHER CONSIDERATIONS
+
+Maintaners have permissions to the namespaces on PAUSE. They may not abuse this
+to release other dists that index the same namespaces, or squash files from
+this dist. This does not prevent maintainers from forking the dist, or
+releasing other dists that populate the namespaces so long as it does not
+override files or the index that belong to this dist.
+
+=head2 Example: This is perfectly fine
+
+Test/Alternative.pm
+
+    package Test::Alternative;
+    package # Prevent indexing the namespace
+        Test::Builder;
+
+    ...
+
+This is fine, it stays out of the index, and does not squash any files from
+Test-Simple.
+
+=head2 Example: This is NOT ok
+
+Test/Alternative.pm
+
+    package Test::Builder;
+
+This is bad because it will effect the pause/cpan index, and people installing
+Test::Builder will get yours.
+
+=head2 Example: This is also NOT ok
+
+I<In the Test-Alternative.tar.gz dist>
+
+Test/Builder.pm
+
+    require Test::MineIsBetter;
+
+This is bad because it will override the Test/Builder.pm installed by
+Test-Simple. The main issue here is that if it runs on a cpan-testers system it
+can bork future module tests.
+
+
+
+
+=head1 MAINTAINERS
+
+=head2 Primary
+
+Chad Granum (EXODIST) <exodist@cpan.org>
+
+=head2 Other (Present and Past):
+
+    Chad Granum     (Primary 2014-NOW)
+    Fergal Daly     (Test::Tester)
+    Mark Fowler     (Test::Builder::Tester)
+    Michael Schwern (Original Owner of several modules)
+    Ricardo Signes  (Some maintenance released in the past)
+    唐鳳            (Test::use::ok)
+
+=cut
+
+1;

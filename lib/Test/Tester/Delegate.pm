@@ -30,3 +30,8 @@ sub AUTOLOAD
 }
 
 1;
+
+=head1 MAINTENANCE CATEGORY: ACTIVE DEVELOPMENT
+
+See L<Test::Simple::MaintenancePolicy> for details.
+

@@ -2643,6 +2643,10 @@ L<Test::Exception> and L<Test::Differences> all use Test::Builder.
 
 L<Test::Simple>, L<Test::More>, L<Test::Harness>
 
+=head1 MAINTENANCE CATEGORY: FULL LOCKDOWN
+
+See L<Test::Simple::MaintenancePolicy> for details.
+
 =head1 AUTHORS
 
 Original code by chromatic, maintained by Michael G Schwern
