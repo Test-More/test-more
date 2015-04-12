@@ -1,5 +1,9 @@
 =pod
 
+=head1 NAME
+
+Test::Stream::Design - Design documentation
+
 =head1 DESCRIPTION
 
 This document covers some of the important design decisions that were made in
