@@ -1,0 +1,894 @@
+=pod
+
+=head1 DESCRIPTION
+
+This document covers some of the important design decisions that were made in
+Test::Stream. Each sections covers a concept that needed to be addressed, or a
+problem that needed to be solved. Along with the description of the issue, and
+requirements, is a high level overview of the design adopted. In some cases
+alternative possible implementations are listed.
+
+=head2 Document Format
+
+Each section follows this format as closely as it can.
+
+    =head1 Short Title
+
+    Problem Statement
+
+    =head2 Specification
+
+    =head2 Implementation Proposals
+
+    =head3 Selected proposal
+
+    details
+
+    Pros: ...
+    Cons: ...
+
+    =head 3 Alternate Proposal
+
+    details
+
+    Pros: ...
+    Cons: ...
+
+Please also try to limit implementation proposal code to be just enough to
+convey the idea. The code should be flexible and adaptable to backcompat needs
+and reality.
+
+
+
+
+=head1 Release Plan
+
+Test::Builder is one of the most important namespaces on cpan. Breaking
+Test::Builder would effectively break cpan. There needs to be a plan in place,
+acceptible to the community, that limits the chances of breaking everything.
+
+=head2 Specification
+
+Don't break things. Do not anger the perl-qa or toolchain groups. Do not create
+a reason for a system that lets people get namespaces taken away. Do not get
+tar and feathered.
+
+The decision for release plan is going to be a topic at the Perl-QA meeting in
+Berlin which will happen in April of 2015. No plan will be picked prior to that
+discussion.
+
+=head2 Implementation Proposals
+
+=head3 Fully Integrated
+
+This is the more contraversial option. This would be a release of a new
+non-trial Test-Simple dist where Test::Builder, Test::More, and Test::Simple
+are all updated to use Test::Stream. This one scares people, and fear is
+perfectly justified.
+
+For this to work we need to continue the blogpost campaign, frequent dev
+releases, and lots of perl-blead smoking.
+
+L<https://github.com/Test-More/test-more/tree/stream/replace> is the branch
+that implements this proposal.
+
+=head3 Untouched Legacy, bundled stream
+
+This is the middle ground as far as contraversy goes. Test/Builder.pm,
+Test/Simple.pm, Test/More.pm and other pre-existing modules in the dist will be
+completely unchanged in teh new release. Any existing tool will continue to
+work as expected using the legacy code.
+
+Test::Stream will also be part of the dist, but will not be loaded
+automatrically by any existing tool. Loading Test::Stream will result in
+alternative Test::Builder, Test::More, and Test::Simple implementations. The
+only way anyone will be 'forced' to use Test::Stream is if they use a tool that
+loads it.
+
+The contraversy here is that Test::Stream being integrated into the dist is an
+endorsement. Being integrated also means it will quickly become core with the
+rest of Test-Simple. Some members of the perl-qa group are reluctant to accept
+Test::Stream due to lack of review, and lack of involvement in the early design
+phase.
+
+L<https://github.com/Test-More/test-more/tree/stream/coexist> is the branch
+that implements this proposal.
+
+=head3 Seperate dists for a trial period
+
+The Test-Simple dist will not be modified in any way, except to document that
+the Test::More, Test::Simple, and Test::Builder namespaces are effectively
+locked to all non-critical changes. It will be made known that there are
+efforts to write a new base for testing tools. All efforts will recieve equal
+documentation in the Test::Builder pod.
+
+Test::Stream will be released as its own independant dist. Apart from being a
+seperate dist there is no effective difference from the previous proposal.
+Loading Test::Stream will load alternative Test::Builder implementations. Any
+tool that does not use Test::Stream will use the original Test-Builder code.
+
+Eventually a new, widely accepted base for testing tools will be picked, and
+integrated into the Test-Simple dist. Test::Stream may be this implementation,
+it may not be. I will focus my efforts on making Test::Stream into an
+acceptable implementation, I will not be joining any other efforts, or starting
+from scratch, unless I can be convinced it is really necessary.
+
+If someone else decides to write an alternative testing base, I will not
+protest. If a new testing base library does become widely accepted I will not
+block its inclusion in Test-Simple unless it badly breaks backwords
+compatability.
+
+L<https://github.com/Test-More/test-more/tree/stream/coexist> is the branch
+that implements this proposal and the previous (some files will need to be
+removed for the Test-Simple dist).
+
+
+
+
+
+=head1 The Object Model
+
+Legacy Test::Builder had a bad habbit of breaking encapsulation, and even
+encouraging external tools to do the same. Moving forward we want to use proper
+encapsulation. That said, we need to keep an eye on performance. Object
+methods, specially when implemented poorlyi, are significantly slower than
+direct element access. To worry too much about that in advance would be
+premature, however the Test::Stream prototype already showed that we do need to
+concern ourselves with it as performance quickly becomes an issue when we do
+not.
+
+We cannot use Moose, or any other non-core object system. This was dicated as
+far back as the Test::Builder2 prototypes. We need something simple, and
+bundled. We do not want to duplicate constructor code in every object. We want
+all objects to be consistent in both constructors and accessors.
+
+=head2 Specification
+
+The object system should give us a constructor, and allow us to specify
+attributes by name. The object system must be dead simple, we have no intention
+of duplicating Moose or its extensive functionality. Roles and anything more
+than read/write accessors would be overkill.
+
+=over 4
+
+=item Ability to generate accessors
+
+=item Ability to generate constructors
+
+=item Ability to subclass
+
+=item Ability to safely bypass accessor overhead internally
+
+=item Generated methods must be fast
+
+=back
+
+=head2 Implementation Proposals
+
+=head3 HashBase
+
+B<Note> This is the one used by Test::Stream
+
+    use HashBase(
+        accessors => [qw/foo bar baz/],
+        base      => 'My::Base::Class',
+    );
+
+    my $self = __PACKAGE__->new(foo => 1);    # Constructor
+    my $val = $self->foo;                     # Reader
+    $self->set_foo($val);                     # Writer
+    $val = $self->{+FOO};                     # Safe internal direct hash read
+    $self->{+FOO};                            # Safe internal direct hash write
+
+=over 4
+
+=item generates seperate read/write accessors for each attribute
+
+Seperate reader and writer methods are faster that a combined read/write
+accessor. Seperate methods also make intentions more clear.
+
+Generates accessors are very minimal:
+
+    sub foo     { $_[0]->{ATTRIBUTE} };
+    sub set_foo { $_[0]->{ATTRIBUTE} = $_[1] };
+
+=item generates a very basic constructor
+
+Constructor takes a list of key/value pairs and blesses a hashref with the
+pairs. There may be some extra safety checks to ensure all keys passed in are
+valid attributes.
+
+=item exports constants for each attribute that can be used internally to safely access elements directly
+
+    $val = $self->{+FOO};
+    $self->{+FOO};
+
+This is perfectly reasonable in internal object code. The constants avoid typo
+mistakes, and we avoid the overhead of method calls. External code should use
+methods to avoid breaking encapsulation.
+
+=item Uses a simple meta-object that saves you from common mistakes
+
+The meta-object prevents you from adding duplicate attributes, allows
+subclasses to inherit attribute constants, and makes the constructor faster
+when it validates the attributes you specify.
+
+=back
+
+The Test::Stream implementation can be seen in L<Test::Stream::HashBase> and
+L<Test::Stream::HashBase::Meta>.
+
+
+
+
+
+
+=head1 Diagnostics Information
+
+(This needs a better title)
+
+When an assertion such as C<ok(1)> is written in a test file, there is state
+and context information that is important for diagnostics.
+
+Standalone tools usually do not have a problem, they can get the immediate
+caller, and any additionl info without any hurdles. This is normally
+convenient, but problematic when you attempt to wrap the tool. Legacy
+Test::Builder used the C<$Level> variable for situations like this.
+Unfortunately most people did not know about the level variable, or how to use
+it properly. There are also some situations where C<$Level> is not sufficient.
+
+=head2 Specification
+
+This is a simple example to demonstrate the problem:
+
+    10: sub my_ok {
+    11:     my ($x, $y) = @_;
+    12:     ok($x, 'x is good');
+    13:     ok($y, 'y is good');
+    14: }
+    15:
+    16: my_ok(1, 0);
+    17: my_ok(0, 1);
+
+In this example, the failure on line 16 would report to line 13. The failure on
+line 17 would report to line 12. We need a simple way to have the outermost
+tool find and lock-in the diagnostics information for all inner-tools to find
+and use. In this case we want C<my_ok()> to get the caller and lock it in,
+C<ok()> would then find this locked-in information instead of using caller.
+
+C<my_ok()> would aneed to clear the information when it is done, inner tools
+would have to avoid clearing the information. This is where the use of C<local>
+on C<$Level> was useful in legacy code.
+
+State that may be useful to capture and convey:
+
+=over 4
+
+=item Caller info (File, Line, etc)
+
+=item State of the 'TODO' setting
+
+=item Process and Thread IDs
+
+=item Tool used (Test::More::ok())
+
+=back
+
+=head2 Implementation Proposals
+
+=head3 Context Object
+
+The context object is a structure that holds a snapshot of the important data.
+This structure can be obtained at any point by any tool that needs it. If
+an existing snapshot is present it should be returned. If no snapshot is
+present one should be generated. Consumers of the snapshot must not be required
+to take a stack trace of their own as they do with C<$Level>.
+
+For simplicity context should be obtained using a function called C<context()>
+that does not require any parameters (Though it can have optional parameters).
+When a context already exists it should be returned. When none exists a new one
+will be generated and returned. To establish the context, the entry sub for any
+tool should obtain the context first thing.
+
+=head4 Context Object: Weak reference
+
+B<Note:> This is the implementation Test::Stream currently uses.
+
+Psuedo-perl:
+
+    sub snapshot {
+        my $self = shift;
+        return ...shallow copy of context...
+    }
+
+    my $CONTEXT;
+    sub context {
+        return $CONTEXT if $CONTEXT;
+        my $ctx = ...generate...
+        $CONTEXT = $ctx;
+        weaken($CONTEXT);
+        return $ctx;
+    }
+
+Consumer:
+
+    sub my_ok {
+        my $ctx = context();
+        my ($x, $y) = @_;
+        ok($x, 'x is good');
+        ok($y, 'y is good');
+    }
+
+In this implementation, the first tool to ask for a context generates it. Any
+later tools find the existing context. When each tool completes, the context
+ref is uses goes away. When the root tool completes the final context reference
+will be collected and C<$CONTEXT> is automatically set to undef.
+
+Pros:
+
+=over 4
+
+=item Minimal boilerplate
+
+=item Very easy
+
+=item Context is reset for you when done
+
+=back
+
+Cons:
+
+=over 4
+
+=item Storing the context in a perminent location causes a leak.
+
+This can be mitigated with a C<snapshot()> method that returns a shallow copy
+of the context. However it is very important that nobody store the original
+context perminently.
+
+=back
+
+The current implementation can be seen in L<Test::Stream::Context>.
+
+=head4 Context Object: Manual release
+
+Psuedo-perl:
+
+    sub snapshot {
+        my $self = shift;
+        return ...shallow copy of context...
+    }
+
+    my $CONTEXT;
+
+    sub release {
+        my $self = shift;
+        $CONTEXT = undef if $CONTEXT == $self;
+    }
+
+    sub context {
+        return $CONTEXT->snapshot if $CONTEXT;
+        my $ctx = ...generate...
+        $CONTEXT = $ctx;
+        return $ctx;
+    }
+
+Consumer:
+
+    sub my_ok {
+        my $ctx = context();
+        my ($x, $y) = @_;
+        ok($x, 'x is good');
+        ok($y, 'y is good');
+        $ctx->release;
+    }
+
+In this implementation, the first tool to request a context generates it, and
+gets the original. Any future consumers get a copy of the snapshot. Each tool
+calls 'release' on the context it has when it is done with it. For snapshots
+the release method is a no-op. For the original context the release method will
+actually release it.
+
+Pros:
+
+=over 4
+
+=item No weak ref magic
+
+=back
+
+Cons:
+
+=over 4
+
+=item Must remember to release the context, which may be hard in complex tools
+
+=item Lots of extra method calls
+
+=item Can leak easily
+
+=back
+
+=head4 Context Object: Scoped
+
+Psuedo-perl:
+
+    my $CONTEXT;
+    sub context(&) {
+        my $code = shift;
+        my $unset = 0;
+        unless($CONTEXT) {
+            $unset = 1;
+            $CONTEXT = ...Generate...;
+        }
+        local $@;
+        my $lives = eval {
+            $code->($CONTEXT);
+            1;
+        };
+        my $error = $@;
+        $CONTEXT = undef if $unset;
+        die $error unless $lives;
+    }
+
+Consumer:
+
+    sub my_ok {
+        my ($x, $y) = @_;
+        context {
+            my $ctx = shift; # if you want it
+            ok($x, 'x is good');
+            ok($y, 'y is good');
+        };
+    }
+
+Pros:
+
+=over 4
+
+=item Easy to understand
+
+=item No magic
+
+=item No way to leak
+
+=item Doesn't matter what people do with their refs, or how long they keep them
+
+=back
+
+Cons:
+
+=over 4
+
+=item Annoying to keep wrapping everything
+
+=item Cluttered stack traces
+
+=item Many extra sub calls (slow)
+
+=back
+
+
+
+
+=head1 Events and Event Processing
+
+Many testing tools add behavior when events (such as ok, diag, note, plan, etc)
+occur. In the legacy code the only ways to accomplish this involve breaking
+encapsulation, either by monkeypatching or replacing the Test::Builder
+singleton. There is enough demand for hooking into these events that we need a
+formal API for doing so, one that preserves encapsulation.
+
+=head2 Specification
+
+Several events will be defined. Each event will be a fully encapsulated object.
+In order to make an assertion or report diagnostics information, you must
+create an event object. All event objects will be handed off to a processor
+which handles the rest.
+
+The processor has 2 jobs, synchrnization, and hooks. The process manages state,
+and directs events to where they need to go. In this system the processor is
+the only component that acts as a singleton. The processor should be as minimal
+as possible to avoid a monolithic singleton.
+
+There should be no restrictions against creating multiple instances of the
+processor object. There should also be a way to get a canonical processor to
+which events should be sent by default. In other words this is where a
+singleton or similar is likely to be necessary.
+
+There should be 3 primary hooks into the stream of events passing through the
+processor:
+
+=over 4
+
+=item munge
+
+This hook allows tools to modify event objects as soon as they enter the hub,
+before they effect test state or become output.
+
+=item listen
+
+This hook allows tools to monitor events. Tools use this hook to see a copy of
+all events after they have been munged, effected state, and been output to TAP
+(if tap is enabled).
+
+=item follow up
+
+This hook is called at the end of testing. This can be seen as a hook into
+C<done_testing()>, but it will also trigger at the end of the tests if
+C<done_testing> is not used. This is called before done_testing determined how
+many tests have run, so it is safe to send additional events in this hook.
+
+=back
+
+=head2 Implementation Proposals
+
+=head3 Hub and Stack
+
+Test::Builder showed us that having a monolithic singleton is a bad idea. It
+also showed us that making the variable that holds the singleton globally
+accessible is a mistake. We do need something like a singleton though, all
+producers need to send their events somewhere.
+
+The hub stack model looks like this:
+
+    {
+        my @HUB_STACK; # lexical and scoped so that it cannot be directly modified from the outside
+
+        # This is how producers get the canonical hub they should be using
+        sub shared {
+            push @HUB_STACK => Hub->new unless @HUB_STACK;
+            return $HUB_STACK[-1]
+        }
+
+        sub intercept {
+            my $hub = shift;
+            push @HUB_STACK => $hub;
+        }
+
+        sub unintercept {
+            my $hub = shift;
+            die unless $hub == $HUB_STACK[-1];
+            pop @HUB_STACK;
+        }
+    }
+
+Producers:
+
+    my $event = ...;
+    shared()->send($event);
+
+There are valid reasons to replace the hub, this is why it is a stack instead
+of a single scalar. Whatever hub is at the top of the stack will recieve all
+events. The primary reason to push a hub on the stack is test validation. Using
+this system you can replace the hub temporarily to intercept all events and
+validate that they are what you expect.
+
+The hub itself is pretty minimal. Get objects via C<< $hub->send($e) >>, each
+hook has a chance to do something with the event, and TAP is optionally output.
+Hooks will accept coderefs, and any number of coderefs can be given to a hook.
+
+    $hub->munge(sub {
+        my ($e) = @_;
+        ...
+    });
+
+
+
+
+
+=head1 Event Generation API
+
+For most tools the only thing they need is the ability to fire off events.
+Test::Builder actually got this right with a single object and methods for each
+event. This API is hard to improve upon, so we need to focus on not making it
+harder.
+
+=head2 Specification
+
+A single easy to obtain object with methods to quickly fire off events.
+Assuming the use of the context model, the context object can be what we need.
+The context object is necessary for all events anyway, so it can have
+"shortcut" methods that mirror the event methods Test::Builder had.
+
+=head2 Implementation Proposals
+
+=head3 Context object shortcuts
+
+B<Note> Test::Stream uses this design.
+
+This proposal assumes the use of the context model mentioned above.
+
+    my $tx = context();
+    $ctx->ok(1, "an example");
+    $ctx->diag("This is an example");
+
+In the context model, all events will need a copy of, or reference to the
+context. Using the context object that you already have anyway as the API for
+generating events makes sense.
+
+
+
+
+=head1 Managing Limited Scope Metadata
+
+Some tools run several test files from a single process. Examples include the
+well known L<Test:::Class>. Sometimes you want different setting in each file,
+such as having a different output encoding. Other examples include test files
+that validate testing tools and need to replace fielhandles for just their own
+scope.
+
+=head2 Specification
+
+Simple way for Test::Stream, and other test tools, to store and retrieve
+file(package) specific metadata.
+
+=head2 Implementation Proposals
+
+=head3 Meta-Object
+
+A meta-object automatically created for all packages that load a testing tool.
+It will vivify as needed. Tools that need to track meta-data can all use the
+same one instead of writing their own independant meta-objects.
+
+Test::Stream implements this in L<Test::Stream::Meta>.
+
+
+
+
+=head1 Output Encoding and filehandles
+
+Test::Builder clones STDERR and STDOUT as soon as it loads. Once the handles
+are cloned it transforms them and then stores them. All output from
+Test::Builder is sent to these cloned handles. A result of this is that setting
+an encoding on STDERR and STDOUT has no effect. Setting the encoding involves
+jumping through hoops to modify the handles before loading Test::Builder, or
+altering Test::Builders copies of the filehandles.
+
+We need to preserve backwards compatability, and doing so means preserving the
+default behavior listed above. However we need an easy way to switch encodings
+as needed.
+
+=head2 Specification
+
+=over 4
+
+=item Preserve legacy filehandle cloning
+
+=item Allow replacement of the primary filehandles (backcompat)
+
+=item Easy ways to change to other encodings such as utf8
+
+=item Different files should be able to use different encodings, even if run from a single process.
+
+=back
+
+=head2 Implementation Proposals
+
+=head3 IO Manager, scoped metadata
+
+In this model there is an object that manages all the filehandles and
+encodings. For each encoding it has the 3 filehandles Test::Builder expect,
+OUT, ERR, and TODO. Initially there is one set of filehandles called 'legacy',
+these do what Test::Builder currently does. Other encodings such as 'utf8' can
+also be initialized, and will hold the 3 expected filehandle clones.
+
+Each test package will have meta-data associated with it that includes the
+encoding to use when tap is generated from that package. By default every
+package uses the 'legacy' filehandles. There should be both a utility function,
+and an import argument, that let someone specify an alternate encoding to use
+in the test package.
+
+The current Test::Stream implementation of this can be seen in L<Test::Stream>
+itself, the IO manager is L<Test::Stream::IOSets>.
+
+The Test::Stream meta object can be found at L<Test::Stream::Meta>.
+
+
+
+
+
+
+=head1 Subtests
+
+Subtests require independant state tracking. All testing tools need to work as
+expected within subtests. In Test::Builder this was a huge pain that required a
+confusing and fragile hack. This should not be hard, and it should not be a hack.
+
+=head2 Specification
+
+=over 4
+
+=item Ability to start and stop subtests
+
+=item Independant state
+
+=item Tools must all work inside subtests
+
+=back
+
+=head2 Implementation Proposals
+
+=head3 State objects, and state stack
+
+The 'hub' object which receives all events and synchronizes state should track
+state in an encapsulated object. To take it further the hub object will have a
+stack of state objects, and any event seen will modify the state on top of the
+stack. Subtests will push a new state object when they start, and pop the state
+object when they finish.
+
+The state object can be found in L<Test::Stream::State>.
+
+
+
+
+=head1 The concurrency model
+
+Test::Builder supports threading using shared variables. There are many
+conditions that can break shared variables, such as overloaded objects. In
+addition the shared variables do not work for tests that need to fork. There
+are a lot of cpan modules that implement forking support, but none are highly
+promoted.
+
+=head2 Specification
+
+Forking, or starting new threads, then writing assertions in each one should
+just work. At the very least it should not require more than a simple 'on'
+switch. People writing tests should not need to worry about synchronizing
+things on their own.
+
+The main complications with concurrency are:
+
+=over 4
+
+=item Test Numbers
+
+=item Test Count
+
+=item Subtest state
+
+=item Subtest output
+
+=item Forking or threading in a subtest
+
+=back
+
+=head2 Implementation Proposals
+
+=head3 Children send events to parent for processing
+
+Test::Stream requires you to request concurrency. You can turn concurrency on
+either by loading threads before Test::Stream, or by an import argument. This
+is done because the concurrency support typically doubles startup time.
+
+When concurrency is turned on, a temporary directory is created for IPC. All
+events in the parent process are handled as normal. All events recieved in a
+child process are forwarded to the parent. To forward events, the child writes
+them to files in the temporary directory. The parent will frequently cull
+results from the temp directory and process them as it would any other event.
+
+Subtests are special. When you start a subtest in a child process, all events
+are handled by the subtest in the child. Once the subtest is complete the final
+subtest event itself is sent to the parent. This works fine as subtest output
+is not actually parsed in any way, only the final subtest event itself matters.
+
+The final consideration is what to do when forking occurs inside a subtest. In
+Test::Stream the subtest itself is forked, so both processes end up sending a
+final subtest event.
+
+All the logic for this is encapsulated in the L<Test::Stream:Hub> object.
+
+
+
+
+
+=head1 Test Testing Tools
+
+Validating test tools is difficult at best. Validation requires that TAP output
+and state changes are suspended and intercepted. After interception you need a
+way to check that they are what you expect. You then need to output TAP and
+modify state for real.
+
+Test::Builder::Tester intercepts the TAP and makes you compare strings. This is
+fragile as any change to output, including comments, can break any number of
+downstream tools. Test::Tester is also limited in that it does not support
+validating all events.
+
+=head2 Specification
+
+It should be trivial to suspend and intercept events. There should be tools
+that make it easy to confirm the events are what you expect. You should not be
+limited to string comparisons. In fact validation of TAP output should not be
+the test-tools job in the first place.
+
+=head2 Implementation Proposals
+
+=head3 Intercept function that takes a sub, and returns all generated events
+
+    my $events = intercept { ... };
+
+    events_are($events, ..., "Events are what we expect");
+
+See L<Test::Stream::Tester> for the implementation, it provides a lot more than
+is seen in this example. Under the hood this uses the hub-stack model to
+temporarily swap-in a second Test::Stream::Hub implementation. Using this it is
+even possible to validate the test-testing tool using itself.
+
+
+
+
+=head1 Post-Test "magic"
+
+Test::Builder has a lot of magic that it runs at the end of testing. Most of
+this magic occurs in an END block. There is a compelling argument that nearly
+all of this exit magic actually belong in the test harness. Backwords
+compatability requirements dictate that we need to preserve this behavior,
+regardless of where it actually belongs.
+
+=head2 Specification
+
+Existing behaviors to preserve:
+
+=over 4
+
+=item Setting $? to non-zero on test failure
+
+Specifically Test::Builder sets the exit status to the number of failed tests, or 255, whichever is smaller.
+
+=item Warn of no plan
+
+If no plan was output, or done_testing was not called, it will warn you.
+
+=item Print a plan if the plan was 'noplan'
+
+=item Other warnings
+
+=back
+
+=head2 Implementation Proposals
+
+=head3 ExitMagic object
+
+Test::Stream moved all the END logic into the L<Test::Stream::ExitMagic>
+module. An instance of this module is created by L<Test::Stream> when the root
+hub is initialized. When tests are done the object is told to do its thing in
+an END block. The ExitMagic module always operates on the root
+L<Test::Stream::ExitMagic> object, not the one on the top of the stack.
+
+
+
+
+=head1 AUTHORS, CONTRIBUTORS AND REVIEWERS
+
+The following people have all contributed to this document in some way, even if
+only for review.
+
+=over 4
+
+=item Chad Granum (EXODIST) E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 SOURCE
+
+The source code repository for Test::More can be found at
+F<http://github.com/Test-More/test-more/>.
+
+=head1 MAINTAINER
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 COPYRIGHT
+
+Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http://www.perl.com/perl/misc/Artistic.html>
+
+=cut
