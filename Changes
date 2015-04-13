@@ -1,3 +1,7 @@
+1.301001_101
+    * Documentation updates
+    * Fix zzz-chec-breaks.t (#563)
+
 1.301001_100
     * Start tracking changes to alpha releases due to requests
     * Change monkeypatch warning
