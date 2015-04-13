@@ -312,24 +312,44 @@ __END__
 
 =head1 NAME
 
-Test::Stream - A modern infrastructure for testing.
+Test::Stream - A modern infrastructure for writing test tools.
 
 =head1 SYNOPSIS
 
-    # Enables modern enhancements such as forking support and TAP encoding.
-    # Also turns off expensive legacy support.
-    use Test::Stream;
-    use Test::More;
+    use Test::Stream qw/context/;
 
-    # ... Tests ...
+    use Test::Stream::Exporter;
+    default_exports qw/my_ok/; # Export 'my_ok' by default
+    exports qw/my_is/;         # Export 'my_is' by request
 
-    done_testing;
+    sub my_ok {
+        my ($bool, $name) = @_;
+        my $ctx = context(); // Get the current context
+        $ctx->ok($bool, $name);
+        return $bool;
+    }
 
-=head1 FEATURES
+    sub my_is {
+        my ($got, $want, $name) = @_;
+        my $ctx = context();
+        my $bool = $got eq $want;  # This does not account for undef, numerics, or refs
+        $ctx->ok($bool, $name);
+        return $bool;
+    }
 
-When you load Test::Stream inside your test file you prevent Test::More from
-turning on some expensive legacy support. You will also get warnings if your
-code, or any other code you load uses deprecated or discouraged practices.
+    1;
+
+=head1 DESCRIPTION
+
+Test::Stream is a testing framework designed to replace Test::Builder. To be
+precise the project forked L<Test::Builder> and refactored it into its current
+design. The framework focuses on backwords compatability with L<Test::Builder>,
+and ease of use for testing tool authors.
+
+Most tools written with L<Test::Builder> will work fine and play nicely with
+Test::Stream based tools. Test::More gives you everything L<Test::Builder>
+does, and a whole lot more. If you are looking to write a new testing tool, or
+update an old one, this is the framework for you!
 
 =head1 IMPORT ARGUMENTS
 
