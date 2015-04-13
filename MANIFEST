@@ -22,6 +22,7 @@ lib/Test/Stream/Architecture.pod
 lib/Test/Stream/Block.pm
 lib/Test/Stream/Carp.pm
 lib/Test/Stream/Context.pm
+lib/Test/Stream/Design.pod
 lib/Test/Stream/Event.pm
 lib/Test/Stream/Event/Bail.pm
 lib/Test/Stream/Event/Diag.pm
@@ -52,6 +53,7 @@ lib/Test/Stream/Tester/Events/Event.pm
 lib/Test/Stream/Tester/Grab.pm
 lib/Test/Stream/Threads.pm
 lib/Test/Stream/Toolset.pm
+lib/Test/Stream/Transition.pod
 lib/Test/Stream/Util.pm
 lib/Test/Tester.pm
 lib/Test/Tester/Capture.pm
@@ -93,6 +95,13 @@ t/Behavior/subtest_die.t
 t/Behavior/Tester2_subtest.t
 t/Behavior/threads_with_taint_mode.t
 t/Behavior/todo.t
+t/Downstream/Fennec.t
+t/Downstream/Test-Class.t
+t/Downstream/Test-Fatal.t
+t/Downstream/Test-NoWarnings.t
+t/Downstream/Test-Trap.t
+t/Downstream/Test-Warn.t
+t/Downstream/Test-Warnings.t
 t/Legacy/00compile.t
 t/Legacy/bad_plan.t
 t/Legacy/bail_out.t
