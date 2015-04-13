@@ -114,13 +114,7 @@ tool that does not use Test::Stream will use the original Test-Builder code.
 Eventually a new, widely accepted base for testing tools will be picked, and
 integrated into the Test-Simple dist. Test::Stream may be this implementation,
 it may not be. I will focus my efforts on making Test::Stream into an
-acceptable implementation, I will not be joining any other efforts, or starting
-from scratch, unless I can be convinced it is really necessary.
-
-If someone else decides to write an alternative testing base, I will not
-protest. If a new testing base library does become widely accepted I will not
-block its inclusion in Test-Simple unless it badly breaks backwords
-compatability.
+acceptable implementation.
 
 L<https://github.com/Test-More/test-more/tree/stream/coexist> is the branch
 that implements this proposal and the previous (some files will need to be
