@@ -2,7 +2,7 @@ package Test::Stream;
 use strict;
 use warnings;
 
-our $VERSION = '1.301001_100';
+our $VERSION = '1.301001_101';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Stream::Carp qw/croak confess carp/;
