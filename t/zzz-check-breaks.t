@@ -8,6 +8,7 @@ use Test::More;
 eval {
     require CPAN::Meta;
     require CPAN::Meta::Requirements;
+    CPAN::Meta::Requirements->VERSION(2.120920);
     require Module::Metadata;
     1
 } or plan skip_all => 'breakage test requires CPAN::Meta, CPAN::Meta::Requirements and Module::Metadata';
