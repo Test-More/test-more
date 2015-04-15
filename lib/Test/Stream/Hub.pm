@@ -80,6 +80,12 @@ sub listen {
     }
 }
 
+sub unlisten {
+    my $self = shift;
+    my %subs = map {$_ => $_} @_;
+    ${$self->{+LISTENERS}} = grep { !$subs{$_} == $_ } @{$self->{+LISTENERS}};
+}
+
 sub munge {
     my $self = shift;
     for my $sub (@_) {
@@ -90,6 +96,12 @@ sub munge {
 
         push @{$self->{+MUNGERS}} => $sub;
     }
+}
+
+sub unmunge {
+    my $self = shift;
+    my %subs = map {$_ => $_} @_;
+    ${$self->{+MUNGERS}} = grep { !$subs{$_} == $_ } @{$self->{+MUNGERS}};
 }
 
 sub follow_up {
