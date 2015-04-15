@@ -51,13 +51,13 @@ and reality.
 Legacy Test::Builder had a bad habbit of breaking encapsulation, and even
 encouraging external tools to do the same. Moving forward we want to use proper
 encapsulation. That said, we need to keep an eye on performance. Object
-methods, specially when implemented poorlyi, are significantly slower than
+methods, specially when implemented poorly, are significantly slower than
 direct element access. To worry too much about that in advance would be
 premature, however the Test::Stream prototype already showed that we do need to
 concern ourselves with it as performance quickly becomes an issue when we do
 not.
 
-We cannot use Moose, or any other non-core object system. This was dicated as
+We cannot use Moose, or any other non-core object system. This was dictated as
 far back as the Test::Builder2 prototypes. We need something simple, and
 bundled. We do not want to duplicate constructor code in every object. We want
 all objects to be consistent in both constructors and accessors.
@@ -387,6 +387,15 @@ Cons:
 =item Many extra sub calls (slow)
 
 =back
+
+=head4 Stack traces with marked frames (Rejected)
+
+This was the first solution used in the initial refactors. This system required
+all test tools to be marked as test tools through some form of metadata. Any
+time some context info such as C<$TODO> or the place to report errors was
+needed a full stack trace would be used. This slowed down test suites by 300%.
+There was an XS implementation that made it reasonably fast, but it was clearly
+the wrong way to go.
 
 
 
