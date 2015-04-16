@@ -1,3 +1,8 @@
+1.301001_102
+    * New release per perl-qa group request for hackathon
+    * Add unmunge and unlisten
+    * Documentation Updates
+
 1.301001_101
     * Documentation updates
     * Fix zzz-chec-breaks.t (#563)
