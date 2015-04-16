@@ -1,3 +1,6 @@
+NEXT:
+    * Fix manual fork warning
+
 1.301001_103
     * Fix diag + note argument joining
     * Fix Downstream test for Test::NoWarnings
