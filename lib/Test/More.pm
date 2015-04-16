@@ -18,7 +18,7 @@ use Scalar::Util qw/blessed/;
 use Test::More::Tools;
 use Test::More::DeepCheck::Strict;
 
-use Test::Builder;
+use Test::Builder::Loader;
 
 use Test::Stream::Exporter qw/
     default_export default_exports export_to export_to_level

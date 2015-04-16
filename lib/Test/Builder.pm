@@ -67,7 +67,7 @@ sub _ending {
 sub new {
     my $class  = shift;
     my %params = @_;
-    $Test ||= $class->create(shared_hub => 1);
+    $Test ||= $class->create(shared_hub => 1, init => 1);
 
     return $Test;
 }
@@ -609,7 +609,7 @@ sub reset {
     $self->{use_shared} = 1 if $params{shared_hub};
 
     if ($self->{use_shared}) {
-        Test::Stream->shared->_reset;
+        Test::Stream->shared->_reset unless $params{init};
         Test::Stream->shared->state->set_legacy([]);
     }
     else {
@@ -924,16 +924,16 @@ my %TB15_METHODS = map { $_ => 1 } qw{
     test_exit_code test_start test_state
 };
 
-our $AUTOLOAD;
-
-sub AUTOLOAD {
-    $AUTOLOAD =~ m/^(.*)::([^:]+)$/;
-    my ($package, $sub) = ($1, $2);
-
-    my @caller = CORE::caller();
-    my $msg    = qq{Can't locate object method "$sub" via package "$package" at $caller[1] line $caller[2].\n};
-
-    $msg .= <<"    EOT" if $TB15_METHODS{$sub};
+{
+    no warnings 'redefine';
+    sub AUTOLOAD {
+        $Test::Builder::AUTOLOAD =~ m/^(.*)::([^:]+)$/;
+        my ($package, $sub) = ($1, $2);
+    
+        my @caller = CORE::caller();
+        my $msg    = qq{Can't locate object method "$sub" via package "$package" at $caller[1] line $caller[2].\n};
+    
+        $msg .= <<"        EOT" if $TB15_METHODS{$sub};
 
     *************************************************************************
     '$sub' is a Test::Builder 1.5 method. Test::Builder 1.5 is a dead branch.
@@ -942,9 +942,10 @@ sub AUTOLOAD {
 
     See: http://blogs.perl.org/users/chad_exodist_granum/2014/03/testmore---new-maintainer-also-stop-version-checking.html
     *************************************************************************
-    EOT
-
-    die $msg;
+        EOT
+    
+        die $msg;
+    }
 }
 
 ####################

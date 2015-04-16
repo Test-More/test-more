@@ -41,7 +41,7 @@ sub init {
     $self->{+EVENT_ID}    = 1;
     $self->{+NO_ENDING}   = 1;
 
-    $self->{+STATES}   = [Test::Stream::State->new];
+    $self->{+STATES}  = [Test::Stream::State->new];
     $self->{+IO_SETS} = Test::Stream::IOSets->new;
 
     $self->{+SUBTESTS} = [];

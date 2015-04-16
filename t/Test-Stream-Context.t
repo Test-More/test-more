@@ -101,7 +101,7 @@ can_ok(__PACKAGE__, qw/inspect_todo/);
 
 is_deeply(
     inspect_todo(__PACKAGE__),
-    { TODO => [], TB => undef, PKG => undef, META => undef },
+    { TODO => [], PKG => undef, META => undef },
     "Nothing TODO"
 );
 

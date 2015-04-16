@@ -87,7 +87,7 @@ sub context {
         elsif ($todo = ${"$todo_pkg\::TODO"}) {
             $in_todo = 1;
         }
-        elsif ($Test::Builder::Test && defined $Test::Builder::Test->{Todo}) {
+        elsif ($INC{'Test/Builder.pm'} && defined $Test::Builder::Test->{Todo}) {
             $todo    = $Test::Builder::Test->{Todo};
             $in_todo = 1;
         }
@@ -105,7 +105,7 @@ sub context {
     # Uh-Oh! someone has replaced the singleton, that means they probably want
     # everything to go through them... We can't do a whole lot about that, but
     # we will use the singletons hub which should catch most use-cases.
-    if ($Test::Builder::_ORIG_Test && $Test::Builder::_ORIG_Test != $Test::Builder::Test) {
+    if ($INC{'Test/Builder.pm'} && $Test::Builder::_ORIG_Test && $Test::Builder::_ORIG_Test != $Test::Builder::Test) {
         $hub ||= $Test::Builder::Test->{hub};
 
         my $warn = $meta->{Test::Stream::Meta::MODERN}
@@ -175,7 +175,8 @@ sub _find_context {
     my ($package, $file, $line, $subname) = caller($level);
 
     if ($package) {
-        while ($package && $package eq 'Test::Builder') {
+        no warnings 'uninitialized';
+        while ($package eq 'Test::Builder') {
             ($package, $file, $line, $subname) = caller(++$level);
         }
     }
@@ -419,9 +420,9 @@ sub inspect_todo {
     no strict 'refs';
     return {
         TODO => [@TODO],
-        $Test::Builder::Test ? (TB   => $Test::Builder::Test->{Todo})      : (),
-        $meta                ? (META => $meta->{Test::Stream::Meta::TODO}) : (),
-        $pkg                 ? (PKG  => ${"$pkg\::TODO"})                  : (),
+        $INC{'Test/Builder.pm'} ? (TB   => $Test::Builder::Test->{Todo})      : (),
+        $meta                   ? (META => $meta->{Test::Stream::Meta::TODO}) : (),
+        $pkg                    ? (PKG  => ${"$pkg\::TODO"})                  : (),
     };
 }
 
@@ -434,7 +435,7 @@ sub hide_todo {
     my $found = inspect_todo($pkg);
 
     @TODO = ();
-    $Test::Builder::Test->{Todo} = undef;
+    $Test::Builder::Test->{Todo} = undef if $INC{'Test/Builder.pm'};
     $meta->{Test::Stream::Meta::TODO} = undef;
     {
         no strict 'refs';
@@ -453,7 +454,7 @@ sub restore_todo {
     my $meta = is_tester($pkg);
 
     @TODO = @{$found->{TODO}};
-    $Test::Builder::Test->{Todo} = $found->{TB};
+    $Test::Builder::Test->{Todo} = $found->{TB} if $INC{'Test/Builder.pm'};
     $meta->{Test::Stream::Meta::TODO} = $found->{META};
     {
         no strict 'refs';
