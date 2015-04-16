@@ -81,6 +81,7 @@ t/Behavior/encoding_test.t
 t/Behavior/event_clone_args.t
 t/Behavior/fork_new_end.t
 t/Behavior/join_diag_and_note.t
+t/Behavior/ManualForkSupport.t
 t/Behavior/MonkeyPatching_diag.t
 t/Behavior/MonkeyPatching_done_testing.t
 t/Behavior/MonkeyPatching_note.t
