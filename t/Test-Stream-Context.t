@@ -59,7 +59,7 @@ my ($warning, $ret, $exception);
 }
 ok(!$ret, "threw exception");
 like($warning, qr/Hi there! at \Q$frame->[1]\E line \Q$frame->[2]\E/, "got warning from correct file+line");
-like($exception, qr/Game Over at \Q$frame->[1]\E line \E$frame->[2]\E/, "got exception from correct file+line");
+like($exception, qr/Game Over at \Q$frame->[1]\E line \Q$frame->[2]\E/, "got exception from correct file+line");
 
 is_deeply( [$three->call], $frame, "Call" );
 
