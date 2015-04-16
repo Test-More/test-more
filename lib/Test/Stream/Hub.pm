@@ -314,7 +314,7 @@ sub send {
         }
         else {
             warn "Forked process or new thread detected, but concurrency support is not on!"
-                unless $WARNED || ($self->{+NO_ENDING} && !$self->{+USE_NUMBERS});
+                unless $WARNED++ || ($self->{+NO_ENDING} && !$self->{+USE_NUMBERS});
             $self->_process_event($e, $cache);
         }
     }
