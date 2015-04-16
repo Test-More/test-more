@@ -176,14 +176,11 @@ sub _find_context {
 
     if ($package) {
         no warnings 'uninitialized';
-        while ($package eq 'Test::Builder') {
-            ($package, $file, $line, $subname) = caller(++$level);
-        }
+        ($package, $file, $line, $subname) = caller(++$level)
+            while $package eq 'Test::Builder';
     }
     else {
-        while (!$package) {
-            ($package, $file, $line, $subname) = caller(--$level);
-        }
+        ($package, $file, $line, $subname) = caller(--$level) while !$package;
     }
 
     return unless $package;
@@ -363,9 +360,7 @@ sub _parse_event {
 
 # Shortcuts
 sub ok {
-    my $self = shift;
-    my ($pass, $name, $diag) = @_;
-    $self->send_event('Ok', pass => $pass, name => $name, diag => $diag);
+    shift->send_event('Ok', pass => shift, name => shift, diag => shift);
 }
 
 sub note {

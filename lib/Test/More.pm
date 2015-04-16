@@ -70,16 +70,8 @@ sub import_extra { 1 };
 sub builder { Test::Builder->new }
 
 sub ok ($;$) {
-    my ($test, $name) = @_;
-    my $ctx  = context();
-    if($test) {
-        $ctx->ok(1, $name);
-        return 1;
-    }
-    else {
-        $ctx->ok(0, $name);
-        return 0;
-    }
+    my $ret;
+    context()->send_event('Ok', pass => ($ret = shift), name => shift), return $ret;
 }
 
 sub plan {

@@ -8,7 +8,7 @@ BEGIN {
 }
 
 use lib 't/Legacy/lib/';
-use Test::More tests => 54;
+use Test::More tests => 55;
 use Test::Builder;
 
 # Make sure we don't mess with $@ or $!.  Test at bottom.
@@ -22,7 +22,7 @@ is( $Dummy::VERSION, '0.01', 'use_ok() loads a module' );
 require_ok('Test::More');
 
 
-ok( 2 eq 2,             'two is two is two is two' );
+ok(ok( 2 eq 2,             'two is two is two is two' ), 'retval of ok matches ok bool arg');
 is(   "foo", "foo",       'foo is foo' );
 isnt( "foo", "bar",     'foo isnt bar');
 isn't("foo", "bar",     'foo isn\'t bar');
