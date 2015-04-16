@@ -3,6 +3,7 @@ use warnings;
 
 use Test::More;
 use Test::Stream::Tester;
+BEGIN { plan skip_all => "Only tested when releasing" unless $ENV{AUTHOR_TESTING} };
 BEGIN { eval { require Test::Deep; 1 } || plan skip_all => ($@ =~ m/^(.*) in \@INC/g)}
 use ok 'Test::Deep';
 
