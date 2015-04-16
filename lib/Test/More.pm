@@ -208,12 +208,12 @@ sub explain {
 
 sub diag {
     my $ctx = context();
-    $ctx->diag($_) for @_;
+    $ctx->diag(join '', map { defined($_) ? $_ : 'undef' } @_);
 }
 
 sub note {
     my $ctx = context();
-    $ctx->note($_) for @_;
+    $ctx->note(join '', map { defined($_) ? $_ : 'undef' } @_);
 }
 
 sub skip {
