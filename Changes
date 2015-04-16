@@ -1,5 +1,8 @@
-NEXT
+1.301001_103
     * Fix diag + note argument joining
+    * Fix Downstream test for Test::NoWarnings
+    * Make Doenstream tests AUTHOR_TESTING only
+    * Fix win32 bug in t/Test-Stream-Context.t
 
 1.301001_102
     * New release per perl-qa group request for hackathon
