@@ -87,8 +87,7 @@ WriteMakefile(
             # version range describes the versions of the module that are
             # *incompatible* with our Test::More.
             'Test::Aggregate'           => '<= 0.371',  # still broken: see RT#100035
-            'Test::Bomb'                => '<= 0.007',  # still broken: see GH#449
-            'Test::Builder:Clutch'      => '<= 0.06',
+            'Test::Builder::Clutch'     => '<= 0.06',
             'Test::Classy'              => '<= 0.09',
             'Test::DBIx::Class::Schema' => '<= 1.0.6',  # still broken: see GH#481
             'Test::FITesque'            => '<= 0.03',   # still broken: see GH485
@@ -100,11 +99,11 @@ WriteMakefile(
             'Test::Module::Used'        => '<= 0.2.4',
             'Test::Moose'               => '<= 2.1209',
             'Test::Moose::More'         => '<= 0.024',
-            'Test::More::Prefix'        => '<= 0.003',  # still broken: see RT#90361
+            'Test::More::Prefix'        => '<= 0.004',
             'Test::ParallelSubtest'     => '<= 0.05',   # still broken: see RT#100757
             'Test::Pretty'              => '<= 0.30',   # still broken: see GH#505
             'Test::SharedFork'          => '<= 0.28',
-            'Test::Spec'                => '<= 0.47', # still broken: see RT#100034
+            'Test::Spec'                => '<= 0.48',
             'Test::Wrapper'             => '<= 0.3.0',  # still broken: see GH#489
         },
     }))
