@@ -291,7 +291,6 @@ sub subtest_stop {
 
 sub subtest { @{$_[0]->{+SUBTESTS}} ? $_[0]->{+SUBTESTS}->[-1] : () }
 
-my $WARNED = 0;
 sub send {
     my ($self, $e) = @_;
 
@@ -313,8 +312,10 @@ sub send {
             $self->fork_out($e);
         }
         else {
-            warn "Forked process or new thread detected, but concurrency support is not on!"
-                unless $WARNED++ || ($self->{+NO_ENDING} && !$self->{+USE_NUMBERS});
+            # In the future this warning will be turned on. For now it is too
+            # noisy with legacy code.
+            # warn "Forked process or new thread detected, but concurrency support is not on!"
+            #    unless $WARNED++ || ($self->{+NO_ENDING} && !$self->{+USE_NUMBERS});
             $self->_process_event($e, $cache);
         }
     }
