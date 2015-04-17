@@ -19,6 +19,7 @@ Test::Builder->new->no_header(1);
 Test::Builder->new->no_ending(1);
 local $ENV{HARNESS_ACTIVE} = 0;
 
+use overload;
 
 # Can't use Test.pm, that's a 5.005 thing.
 package main;

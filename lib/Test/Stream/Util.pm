@@ -180,14 +180,14 @@ sub is_dualvar($) {
 #}
 
 sub unoverload {
-    my $type = shift;
+    if(defined $overload::VERSION) {
+        my $type = shift;
 
-    protect { require overload };
-
-    for my $thing (@_) {
-        if (blessed $$thing) {
-            if (my $string_meth = overload::Method($$thing, $type)) {
-                $$thing = $$thing->$string_meth();
+        for my $thing (@_) {
+            if (blessed $$thing) {
+                if (my $string_meth = overload::Method($$thing, $type)) {
+                    $$thing = $$thing->$string_meth();
+                }
             }
         }
     }
