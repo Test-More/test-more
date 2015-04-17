@@ -5,7 +5,6 @@ examples/indent.pl
 examples/subtest.t
 lib/ok.pm
 lib/Test/Builder.pm
-lib/Test/Builder/Loader.pm
 lib/Test/Builder/Module.pm
 lib/Test/Builder/Tester.pm
 lib/Test/Builder/Tester/Color.pm
@@ -107,7 +106,6 @@ t/Downstream/Test-NoWarnings.t
 t/Downstream/Test-Trap.t
 t/Downstream/Test-Warn.t
 t/Downstream/Test-Warnings.t
-t/Legacy/00compile.t
 t/Legacy/bad_plan.t
 t/Legacy/bail_out.t
 t/Legacy/BEGIN_require_ok.t
