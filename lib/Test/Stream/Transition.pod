@@ -8,7 +8,61 @@ Test::Stream::Transition - How to transition from Test::Builder to Test::Stream
 
 This document demonstrates how to transition code from Test::Builder to
 Test::Stream. This is a list of things people frequently need to do, and how to
-do them with both systems.
+do them with both systems. This document also provides a list of things that
+had been done in legacy Test::Builder that will break with Test::Stream.
+
+=head1 THINGS THAT BREAK
+
+=head2 Test::Builder1.5/2 Support
+
+=head3 The Problem
+
+If you modified your code or tests such that they have behavior that is
+conditional on the Test-Simple version, it is likely to break. A vast majority
+of modules broken by Test::Stream fall into this category.
+
+=head3 The Fix
+
+The fix is to remove all Test::Builder1.5/2.0 related code. Either use the
+lagacy Test::Builder API, or use Test::Stream directly.
+
+=head2 Replacing the Test::Builder singleton
+
+=head3 The Problem
+
+Some test modules would replace the Test::Builder singleton instance with their
+own instance or subclass. This was usually done to intercept, or modify results
+as they happened.
+
+The Test::Builder singleton is now a simple compatability wrapper around
+Test::Stream. The Test::Builder singleton is no longer the central place for
+results. Most results bypass the Test::Builder singleton completely, which
+breaks and behavior intended when replacing the singleton.
+
+=head3 The Fix
+
+If you simply want to intercept all results instead of letting them go to TAP,
+you should look at the L<Test::Stream> docs and read about pushing a new hub
+onto the hub stack. Replacing the hub temporarily is now the correct way to
+intercept results.
+
+If your goal is purely monitoring of events use the C<listen { ... }> sub
+exported by Test::More to watch events as they are fired. If you wish to modify
+results before they go to TAP look at the C<munge { ... }> function exported by
+Test::Stream.
+
+=head2 Directly Accessing Hash Elements
+
+=head3 The Problem
+
+Some modules look directly at hash keys on the Test::Builder singleton. The
+problem here is that the Test::Builder singleton no longer holds anything
+important.
+
+=head3 The Fix
+
+The fix is to use the API specified in L<Test::Stream> to look at or modify
+state as needed.
 
 =head1 MAKE ASSERTIONS -> SEND EVENTS
 
