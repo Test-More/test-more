@@ -33,7 +33,7 @@ default_export import => sub {
     my $caller = caller;
     my @args = @_;
 
-    my $stash = $class->before_import($caller, \@args) if $class->can('before_import');
+    my $stash = $class->can('before_import') ? $class->before_import($caller, \@args) : undef;;
     export_to($class, $caller, @args);
     $class->after_import($caller, $stash, @args) if $class->can('after_import');
 };
