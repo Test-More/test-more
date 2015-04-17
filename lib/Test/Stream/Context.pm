@@ -101,7 +101,6 @@ sub context {
         ($ppkg, $pname) = ($provider[3] =~ m/^(.*)::([^:]+)$/);
     }
 
-    $hub ||= $meta->{Test::Stream::Meta::HUB} || Test::Stream->shared;
     # Uh-Oh! someone has replaced the singleton, that means they probably want
     # everything to go through them... We can't do a whole lot about that, but
     # we will use the singletons hub which should catch most use-cases.
@@ -130,6 +129,7 @@ sub context {
         EOT
     }
 
+    $hub ||= $meta->{Test::Stream::Meta::HUB} || Test::Stream->shared || confess "No Stream!?";
     if ((USE_THREADS || $hub->_use_fork) && ($hub->pid == $$ && $hub->tid == get_tid())) {
         $hub->fork_cull();
     }

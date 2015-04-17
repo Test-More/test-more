@@ -2,6 +2,7 @@ NEXT:
     * Fix manual fork warning
     * Performance enhancements
     * Delay load Test::Builder with Test::More and Test::Simple
+    * Fix Test-BDD-Cucumber
 
 1.301001_103
     * Fix diag + note argument joining
