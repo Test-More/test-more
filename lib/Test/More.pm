@@ -88,25 +88,19 @@ sub plan {
 }
 
 sub done_testing {
-    my ($num) = @_;
-    my $ctx = context();
-    $ctx->done_testing($num);
+    context()->done_testing(shift);
 }
 
 sub is($$;$) {
-    my ($got, $want, $name) = @_;
-    my $ctx = context();
-    my ($ok, @diag) = tmt->is_eq($got, $want);
-    $ctx->ok($ok, $name, \@diag);
-    return $ok;
+    #context must be stickied to a lexical or temp on perl stack, so both is_eq
+    #and send_event can use the cached weak global
+    my ($cxt, $ok, @diag) = (context(), tmt->is_eq(shift, shift));
+    $cxt->send_event('Ok', pass => $ok, name => shift, diag => \@diag), return $ok;
 }
 
 sub isnt ($$;$) {
-    my ($got, $forbid, $name) = @_;
-    my $ctx = context();
-    my ($ok, @diag) = tmt->isnt_eq($got, $forbid);
-    $ctx->ok($ok, $name, \@diag);
-    return $ok;
+    my ($cxt, $ok, @diag) = (context(), tmt->isnt_eq(shift, shift));
+    $cxt->send_event('Ok', pass => $ok, name => shift, diag => \@diag), return $ok;
 }
 
 {
