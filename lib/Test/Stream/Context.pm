@@ -87,7 +87,7 @@ sub context {
         elsif ($todo = ${"$todo_pkg\::TODO"}) {
             $in_todo = 1;
         }
-        elsif ($INC{'Test/Builder.pm'} && defined $Test::Builder::Test->{Todo}) {
+        elsif (defined $Test::Builder::Test->{Todo}) {
             $todo    = $Test::Builder::Test->{Todo};
             $in_todo = 1;
         }
@@ -105,7 +105,7 @@ sub context {
     # Uh-Oh! someone has replaced the singleton, that means they probably want
     # everything to go through them... We can't do a whole lot about that, but
     # we will use the singletons hub which should catch most use-cases.
-    if ($INC{'Test/Builder.pm'} && $Test::Builder::_ORIG_Test && $Test::Builder::_ORIG_Test != $Test::Builder::Test) {
+    if ($Test::Builder::_ORIG_Test != $Test::Builder::Test) {
         $hub ||= $Test::Builder::Test->{hub};
 
         my $warn = $meta->{Test::Stream::Meta::MODERN}
@@ -300,10 +300,12 @@ sub send_event {
 
     # Uhg.. support legacy monkeypatching
     # If this is still here in 2020 I will be a sad panda.
-    return Test::Builder->new->monkeypatch_event($event, %args)
-        if $INC{'Test/Builder.pm'}
-        && $Test::Builder::EVENTS{$event}
-        && $Test::Builder::ORIG{lc($event)} != Test::Builder->can(lc($event));
+    if ($Test::Builder::EVENTS{$event}) {
+        my $name = lc($event);
+
+        return Test::Builder->new->monkeypatch_event($event, %args)
+            if $Test::Builder::ORIG{$name} != Test::Builder->can($name);
+    }
 
     my $e = $self->build_event($event, %args, CALL => [caller(0)]);
     $self->hub->send($e);
@@ -404,7 +406,7 @@ sub subtest {
 
 sub done_testing {
     return $_[0]->hub->done_testing(@_)
-        unless $INC{'Test/Builder.pm'} && $Test::Builder::ORIG{done_testing} != \&Test::Builder::done_testing;
+        unless $Test::Builder::ORIG{done_testing} != \&Test::Builder::done_testing;
 
     local $Test::Builder::CTX = shift;
     my $out = Test::Builder->new->done_testing(@_);
@@ -420,9 +422,9 @@ sub inspect_todo {
     no strict 'refs';
     return {
         TODO => [@TODO],
-        $INC{'Test/Builder.pm'} ? (TB   => $Test::Builder::Test->{Todo})      : (),
-        $meta                   ? (META => $meta->{Test::Stream::Meta::TODO}) : (),
-        $pkg                    ? (PKG  => ${"$pkg\::TODO"})                  : (),
+        $Test::Builder::Test ? (TB   => $Test::Builder::Test->{Todo})      : (),
+        $meta                ? (META => $meta->{Test::Stream::Meta::TODO}) : (),
+        $pkg                 ? (PKG  => ${"$pkg\::TODO"})                  : (),
     };
 }
 
@@ -435,7 +437,7 @@ sub hide_todo {
     my $found = inspect_todo($pkg);
 
     @TODO = ();
-    $Test::Builder::Test->{Todo} = undef if $INC{'Test/Builder.pm'};
+    $Test::Builder::Test->{Todo} = undef if $Test::Builder::Test;
     $meta->{Test::Stream::Meta::TODO} = undef;
     {
         no strict 'refs';
@@ -454,7 +456,7 @@ sub restore_todo {
     my $meta = is_tester($pkg);
 
     @TODO = @{$found->{TODO}};
-    $Test::Builder::Test->{Todo} = $found->{TB} if $INC{'Test/Builder.pm'};
+    $Test::Builder::Test->{Todo} = $found->{TB} if $Test::Builder::Test;
     $meta->{Test::Stream::Meta::TODO} = $found->{META};
     {
         no strict 'refs';

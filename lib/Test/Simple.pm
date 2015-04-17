@@ -11,7 +11,7 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 use Test::Stream 1.301001_103 ();
 use Test::Stream::Toolset;
 
-use Test::Builder::Loader;
+use Test::Builder;
 use Test::Stream::Exporter;
 default_exports qw/ok/;
 Test::Stream::Exporter->cleanup;
