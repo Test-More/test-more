@@ -330,15 +330,11 @@ monkeypatching is no longer needed.
 
 sub _set_monkeypatch_args {
     my $self = shift;
-    confess "monkeypatch args already set!"
-        if $self->{monkeypatch_args};
     ($self->{monkeypatch_args}) = @_;
 }
 
 sub _set_monkeypatch_event {
     my $self = shift;
-    confess "monkeypatch event already set!"
-        if $self->{monkeypatch_event};
     ($self->{monkeypatch_event}) = @_;
 }
 
