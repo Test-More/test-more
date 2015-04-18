@@ -41,7 +41,6 @@ lib/Test/Stream/HashBase.pm
 lib/Test/Stream/HashBase/Meta.pm
 lib/Test/Stream/Hub.pm
 lib/Test/Stream/IOSets.pm
-lib/Test/Stream/KnownIssues.pod
 lib/Test/Stream/Meta.pm
 lib/Test/Stream/PackageUtil.pm
 lib/Test/Stream/State.pm
