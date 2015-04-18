@@ -1,5 +1,7 @@
 Next:
     * Update list of known broken downstream modules
+    * Fix untriggered Srream/Exporter bug
+    * Faster OK-TAP generation
 
 1.301001_104:
     * Fix manual fork warning
