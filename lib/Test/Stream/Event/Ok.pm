@@ -70,32 +70,31 @@ sub to_tap {
     my $skip    = $context->skip;
     my $todo    = $context->todo;
 
-    my @out;
-    push @out => "not" unless $self->{+PASS};
-    push @out => "ok";
-    push @out => $num if defined $num;
+    my $out = "";
+    $out .= "not " unless $self->{+PASS};
+    $out .= "ok";
+    $out .= " $num" if defined $num;
 
     unoverload_str \$name if defined $name;
 
     if ($name) {
         $name =~ s|#|\\#|g; # # in a name can confuse Test::Harness.
-        push @out => ("-", $name);
+        $out .= " - $name";
     }
 
     if (defined $skip && defined $todo) {
-        push @out => "# TODO & SKIP";
-        push @out => $todo if length $todo;
+        $out .= " # TODO & SKIP";
+        $out .= " $todo" if length $todo;
     }
     elsif ($context->in_todo) {
-        push @out => "# TODO";
-        push @out => $todo if length $todo;
+        $out .= " # TODO";
+        $out .= " $todo" if length $todo;
     }
     elsif (defined $skip) {
-        push @out => "# skip";
-        push @out => $skip if length $skip;
+        $out .= " # skip";
+        $out .= " $skip" if length $skip;
     }
 
-    my $out = join " " => @out;
     $out =~ s/\n/\n# /g;
 
     return [OUT_STD, "$out\n"] unless $self->{+DIAG};
