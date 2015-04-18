@@ -6,7 +6,7 @@ use Scalar::Util qw/blessed/;
 use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::HashBase(
-    accessors => [qw/context created in_subtest/],
+    accessors => [qw/context created in_subtest stash/],
     no_import => 1,
 );
 
@@ -36,6 +36,19 @@ sub import {
 
 sub init {
     confess("No context provided!") unless $_[0]->{+CONTEXT};
+}
+
+my $HOOKS_ENABLED = 0;
+sub enable_init_hooks {
+    return if $HOOKS_ENABLED++;
+    no warnings 'redefine';
+    *init = sub {
+        my $self = shift;
+        my $ctx = $self->{+CONTEXT} || confess("No context provided!");
+        $self->{+STASH} ||= {};
+        my $hooks = $ctx->hub->event_init_hooks || return;
+        $_->($self) for @$hooks;
+    };
 }
 
 sub encoding { $_[0]->{+CONTEXT}->encoding }
@@ -70,6 +83,8 @@ sub summary {
         todo     => $ctx->todo     || '',
         pid      => $ctx->pid      || 0,
         skip     => $ctx->skip     || '',
+
+        stash => $self->stash || {},
     );
 }
 

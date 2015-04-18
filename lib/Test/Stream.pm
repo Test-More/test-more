@@ -113,7 +113,7 @@ BEGIN {
 use Test::Stream::Exporter;
 default_exports qw/context/;
 exports qw{
-    listen munge follow_up
+    listen munge follow_up hook_event_init
     enable_forking cull
     peek_todo push_todo pop_todo set_todo inspect_todo
     is_tester init_tester
@@ -190,20 +190,21 @@ sub before_import {
     return;
 }
 
-sub cull            { shared()->fork_cull()        }
-sub listen(&)       { shared()->listen($_[0])      }
-sub munge(&)        { shared()->munge($_[0])       }
-sub follow_up(&)    { shared()->follow_up($_[0])   }
-sub enable_forking  { shared()->use_fork()         }
-sub disable_tap     { shared()->set_use_tap(0)     }
-sub enable_tap      { shared()->set_use_tap(1)     }
-sub enable_numbers  { shared()->set_use_numbers(1) }
-sub disable_numbers { shared()->set_use_numbers(0) }
-sub state_count     { shared()->count()            }
-sub state_failed    { shared()->failed()           }
-sub state_plan      { shared()->plan()             }
-sub state_ended     { shared()->ended()            }
-sub is_passing      { shared()->is_passing         }
+sub cull               { shared()->fork_cull()            }
+sub listen(&)          { shared()->listen($_[0])          }
+sub munge(&)           { shared()->munge($_[0])           }
+sub hook_event_init(&) { shared()->hook_event_init($_[0]) }
+sub follow_up(&)       { shared()->follow_up($_[0])       }
+sub enable_forking     { shared()->use_fork()             }
+sub disable_tap        { shared()->set_use_tap(0)         }
+sub enable_tap         { shared()->set_use_tap(1)         }
+sub enable_numbers     { shared()->set_use_numbers(1)     }
+sub disable_numbers    { shared()->set_use_numbers(0)     }
+sub state_count        { shared()->count()                }
+sub state_failed       { shared()->failed()               }
+sub state_plan         { shared()->plan()                 }
+sub state_ended        { shared()->ended()                }
+sub is_passing         { shared()->is_passing             }
 
 sub tap_encoding {
     my ($encoding) = @_;

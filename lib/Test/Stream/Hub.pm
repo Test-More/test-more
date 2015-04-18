@@ -19,6 +19,7 @@ use Test::Stream::HashBase(
         subtest_tap_delayed
         mungers
         listeners
+        event_init_hooks
         follow_ups
         bailed_out
         exit_on_disruption
@@ -102,6 +103,27 @@ sub unmunge {
     my $self = shift;
     my %subs = map {$_ => $_} @_;
     ${$self->{+MUNGERS}} = grep { !$subs{$_} == $_ } @{$self->{+MUNGERS}};
+}
+
+sub hook_event_init {
+    my $self = shift;
+
+    Test::Stream::Event->enable_init_hooks();
+
+    for my $sub (@_) {
+        next unless $sub;
+
+        croak "hook_event_init only takes coderefs for arguments, got '$sub'"
+            unless ref $sub && ref $sub eq 'CODE';
+
+        push @{$self->{+EVENT_INIT_HOOKS}} => $sub;
+    }
+}
+
+sub unhook_event_init {
+    my $self = shift;
+    my %subs = map {$_ => $_} @_;
+    ${$self->{+EVENT_INIT_HOOKS}} = grep { !$subs{$_} == $_ } @{$self->{+EVENT_INIT_HOOKS}};
 }
 
 sub follow_up {
