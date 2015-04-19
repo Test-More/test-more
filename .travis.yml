@@ -17,3 +17,6 @@ before_install:
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
   - source ~/travis-perl-helpers/init --auto
   - '[ "$AUTHOR_TESTING" != 0 ] && cpan-install SQL::Abstract::Test || true'
+env:
+  global:
+      - TRAVIS_TESTING=1
