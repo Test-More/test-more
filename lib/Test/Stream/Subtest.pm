@@ -18,14 +18,21 @@ sub subtest {
 
     my $ctx = context();
 
-    $ctx->throw("subtest()'s second argument must be a code ref")
-        unless $code && 'CODE' eq reftype($code);
-
-    my $block = Test::Stream::Block->new(
-        name    => $name,
-        coderef => $code,
-        caller  => [caller(0)],
-    );
+    my $block;
+    if (blessed($code) && $code->isa('Test::Stream::Block')) {
+        $block = $code;
+    }
+    elsif (ref $code && 'CODE' eq reftype($code)) {
+        $block = Test::Stream::Block->new(
+            name    => $name,
+            coderef => $code,
+            caller  => [caller(0)],
+        );
+    }
+    else {
+        $ctx->throw("subtest()'s second argument must be a code ref")
+            unless $code && 'CODE' eq reftype($code);
+    }
 
     $ctx->note("Subtest: $name")
         if $ctx->hub->subtest_tap_instant;
