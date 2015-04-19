@@ -131,7 +131,10 @@ sub end_line {
     my $match = $call->[PACKAGE] eq $dedu->[PACKAGE];
     $match &&= $call->[FILE] eq $dedu->[FILE];
     $match &&= $call->[LINE] >= $dedu->[LINE];
-    $match &&= !_check_interrupt($dedu->[FILE], $dedu->[LINE], $call->[LINE]);
+
+    if ($dedu->[SUBNAME] ne '__ANON__') {
+        $match &&= !_check_interrupt($dedu->[FILE], $dedu->[LINE], $call->[LINE]);
+    }
 
     if ($match) {
         $self->{+_END_LINE} = $call->[LINE];
