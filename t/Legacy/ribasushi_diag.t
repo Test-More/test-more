@@ -4,6 +4,8 @@ use warnings;
 use Test::More;
 
 BEGIN {
+    plan skip_all => "Skipping on travis" if $ENV{TRAVIS_TESTING};
+
     my $has_module = eval { require SQL::Abstract::Test; 1 };
     my $required = $ENV{AUTHOR_TESTING};
 
