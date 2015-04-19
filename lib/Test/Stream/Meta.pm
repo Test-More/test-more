@@ -6,7 +6,7 @@ use Scalar::Util();
 use Test::Stream::Util qw/protect/;
 
 use Test::Stream::HashBase(
-    accessors => [qw/package encoding modern todo hub/],
+    accessors => [qw/package encoding modern todo hub stash/],
 );
 
 use Test::Stream::PackageUtil;
@@ -36,6 +36,7 @@ sub init_tester {
         ENCODING() => 'legacy',
         MODERN()   => 0,
         TODO()     => undef,
+        STASH()    => {},
     }, __PACKAGE__;
 
     return $META{$pkg};
@@ -109,6 +110,22 @@ original does.
 =item $val = $meta->hub
 
 These are various attributes stored on the meta object.
+
+=item $stash = $meta->stash
+
+The stash is a hashref where modules can put any test-class-specific metadata
+they need. Ideally each testing tool will use their package name as their stash
+key, and put anything they need under that.
+
+    package My::Test::Tool;
+
+    sub my_thing {
+        my $tester = caller;
+        my $meta = is_tester($tester);
+        my $stash = $meta->stash->{__PACKAGE__};
+        $stash->{thing} = shift if @_;
+        return $stash->{thing};
+    }
 
 =back
 
