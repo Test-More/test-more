@@ -11,7 +11,7 @@ use Test::Stream::Util qw/try translate_filename/;
 use Test::Stream::Meta qw/init_tester is_tester/;
 
 use Test::Stream::HashBase(
-    accessors => [qw/frame hub encoding in_todo todo modern pid skip diag_todo provider/],
+    accessors => [qw/frame hub encoding in_todo todo modern pid skip diag_todo provider detail/],
 );
 
 use Test::Stream::Exporter qw/import export_to default_exports exports/;
@@ -258,6 +258,13 @@ sub package { $_[0]->{+FRAME}->[0] }
 sub file    { $_[0]->{+FRAME}->[1] }
 sub line    { $_[0]->{+FRAME}->[2] }
 sub subname { $_[0]->{+FRAME}->[3] }
+
+sub trace {
+    my $self = shift;
+    return $self->{+DETAIL} if $self->{+DETAIL};
+    my ($pkg, $file, $line) = $self->call;
+    return "at $file line $line.";
+}
 
 sub snapshot {
     return bless {%{$_[0]}}, blessed($_[0]);

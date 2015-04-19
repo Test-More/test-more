@@ -43,13 +43,13 @@ sub init {
         my $msg = $todo ? "Failed (TODO)" : "Failed";
         my $prefix = $ENV{HARNESS_ACTIVE} ? "\n" : "";
 
-        my ($pkg, $file, $line) = $ctx->call;
+        my $postfix = $ctx->trace;
 
         if (defined $name) {
-            $msg = qq[$prefix  $msg test '$name'\n  at $file line $line.];
+            $msg = qq[$prefix  $msg test '$name'\n  $postfix]
         }
         else {
-            $msg = qq[$prefix  $msg test at $file line $line.];
+            $msg = qq[$prefix  $msg test $postfix];
         }
 
         $self->add_diag($msg);
