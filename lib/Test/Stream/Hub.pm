@@ -30,6 +30,8 @@ use Test::Stream::HashBase(
     }],
 );
 
+my $SEND_LITE = 1;
+
 sub init {
     my $self = shift;
 
@@ -78,6 +80,12 @@ sub listen {
 
         push @{$self->{+LISTENERS}} => $sub;
     }
+
+    if ($SEND_LITE) {
+        no warnings 'redefine';
+        *send = \&_send_heavy;
+        $SEND_LITE = 0;
+    }
 }
 
 sub unlisten {
@@ -95,6 +103,12 @@ sub munge {
             unless ref $sub && ref $sub eq 'CODE';
 
         push @{$self->{+MUNGERS}} => $sub;
+    }
+
+    if ($SEND_LITE) {
+        no warnings 'redefine';
+        *send = \&_send_heavy;
+        $SEND_LITE = 0;
     }
 }
 
@@ -128,6 +142,13 @@ sub use_fork {
         require VMS::Filespec;
         $_[0]->{+_USE_FORK} = VMS::Filespec::unixify($_[0]->{+_USE_FORK});
     }
+
+    if ($SEND_LITE) {
+        no warnings 'redefine';
+        *send = \&_send_heavy;
+        $SEND_LITE = 0;
+    }
+
     return 1;
 }
 
@@ -252,6 +273,12 @@ sub subtest_start {
     my $self = shift;
     my ($name, %params) = @_;
 
+    if ($SEND_LITE) {
+        no warnings 'redefine';
+        *send = \&_send_heavy;
+        $SEND_LITE = 0;
+    }
+
     my $state = Test::Stream::State->new;
 
     $params{parent_todo} ||= context()->in_todo;
@@ -305,14 +332,40 @@ sub subtest_stop {
 
 sub subtest { @{$_[0]->{+SUBTESTS}} ? $_[0]->{+SUBTESTS}->[-1] : () }
 
-sub send {
+{
+    no warnings 'once';
+    *send = \&_send_lite;
+}
+sub _send_lite {
+    my ($self, $e) = @_;
+    my $cache = $self->_preprocess_event($self->{+STATES}->[-1], $e);
+    $self->_render_tap($cache) unless $cache->{no_out};
+
+    if ($cache->{is_plan}) {
+        $cache->{state}->set_plan($e);
+        if ($e->directive && $e->directive eq 'SKIP') {
+            die $e unless $self->{+EXIT_ON_DISRUPTION};
+            exit 0;
+        }
+    }
+    elsif (!$cache->{do_tap} && $e->isa('Test::Stream::Event::Bail')) {
+        $self->{+BAILED_OUT} = $e;
+        $self->{+NO_ENDING}  = 1;
+        die $e unless $self->{+EXIT_ON_DISRUPTION};
+        exit 255;
+    }
+
+    return $e;
+}
+
+sub _send_heavy {
     my ($self, $e) = @_;
 
     my $cache = $self->_preprocess_event($self->{+STATES}->[-1], $e);
 
     # Subtests get dibbs on events
     my $num;
-    if($num = $e->in_subtest()) {
+    if($num = $e->{in_subtest}) {
         my $sid = $e->in_subtest_id();
         $num -= 1;
         my $st = $self->{+SUBTESTS}->[$num];
@@ -426,11 +479,8 @@ sub _postprocess_event {
         return unless $e->directive;
         return unless $e->directive eq 'SKIP';
 
-        my $subtest = @{$self->{+SUBTESTS}};
-
-        $self->{+SUBTESTS}->[-1]->{early_return} = $e if $subtest;
-
-        if ($subtest) {
+        if (my $subtest = @{$self->{+SUBTESTS}}) {
+            $self->{+SUBTESTS}->[-1]->{early_return} = $e;
             my $begin = _scan_for_begin('Test::Stream::Subtest::subtest');
 
             if ($begin) {
@@ -457,11 +507,8 @@ sub _postprocess_event {
         $self->{+BAILED_OUT} = $e;
         $self->{+NO_ENDING}  = 1;
 
-        my $subtest = @{$self->{+SUBTESTS}};
-
-        $self->{+SUBTESTS}->[-1]->{early_return} = $e if $subtest;
-
-        if ($subtest) {
+        if (my $subtest = @{$self->{+SUBTESTS}}) {
+            $self->{+SUBTESTS}->[-1]->{early_return} = $e;
             my $begin = _scan_for_begin('Test::Stream::Subtest::subtest');
 
             if ($begin) {
