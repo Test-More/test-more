@@ -117,6 +117,7 @@ sub follow_up {
 }
 
 sub use_fork {
+    return 1 if $_[0]->{+_USE_FORK};
     require File::Temp;
     require Storable;
 
@@ -136,14 +137,22 @@ sub fork_out {
     my $tempdir = $self->{+_USE_FORK};
     confess "Fork support has not been turned on!" unless $tempdir;
 
-    my $tid = get_tid();
+    my $orig = "$$-" . get_tid();
+    my $dest;
+    if (my $subtest = $self->{+SUBTESTS}->[-1]) {
+        $dest = $subtest->{pid} . '-' . $subtest->{tid};
+    }
+    else {
+        $dest = $self->{+PID} . '-' . $self->{+TID};
+    }
+    my $route = "$dest-$orig";
 
     for my $event (@_) {
         next unless $event;
         next if $event->isa('Test::Stream::Event::Finish');
 
         # First write the file, then rename it so that it is not read before it is ready.
-        my $name =  $tempdir . "/$$-$tid-" . ($self->{+EVENT_ID}++);
+        my $name =  $tempdir . "/$route-" . ($self->{+EVENT_ID}++);
         my ($ret, $err) = try { Storable::store($event, $name) };
         # Temporary to debug an error on one cpan-testers box
         unless ($ret) {
@@ -157,21 +166,16 @@ sub fork_out {
 sub fork_cull {
     my $self = shift;
 
-    confess "fork_cull() can only be called from the parent process!"
-        if $$ != $self->{+PID};
-
-    confess "fork_cull() can only be called from the parent thread!"
-        if get_tid() != $self->{+TID};
-
-    my $tempdir = $self->{+_USE_FORK};
-    confess "Fork support has not been turned on!" unless $tempdir;
+    my $tempdir = $self->{+_USE_FORK} || return;
 
     opendir(my $dh, $tempdir) || croak "could not open temp dir ($tempdir)!";
+
+    my $get = "$$-" . get_tid();
 
     my @files = sort readdir($dh);
     for my $file (@files) {
         next if $file =~ m/^\.+$/;
-        next unless $file =~ m/\.ready$/;
+        next unless $file =~ m/^\Q$get\E-\d+-\d+-\d+\.ready$/;
 
         # Untaint the path.
         my $full = "$tempdir/$file";
@@ -188,10 +192,7 @@ sub fork_cull {
             unlink($full) || die "Could not unlink file: $file";
         }
 
-        # Things from other threads/procs always go to the root state
-        my $cache = $self->_preprocess_event($self->{+STATES}->[0], $obj);
-        $self->_process_event($obj, $cache);
-        $self->_postprocess_event($obj, $cache);
+        $self->send($obj);
     }
 
     closedir($dh);
@@ -246,6 +247,7 @@ sub done_testing {
     }
 }
 
+my $SUBTEST_ID = 1;
 sub subtest_start {
     my $self = shift;
     my ($name, %params) = @_;
@@ -258,6 +260,8 @@ sub subtest_start {
         $params{parent_todo} ||= $self->{+SUBTESTS}->[-1]->{parent_todo};
     }
 
+    my $tid = get_tid();
+
     push @{$self->{+STATES}}    => $state;
     push @{$self->{+SUBTESTS}} => {
         instant => $self->{+SUBTEST_TAP_INSTANT},
@@ -268,6 +272,9 @@ sub subtest_start {
         state  => $state,
         events => [],
         name   => $name,
+        pid    => $$,
+        tid    => $tid,
+        id     => "$$-$tid-" . $SUBTEST_ID++,
     };
 
     return $self->{+SUBTESTS}->[-1];
@@ -286,6 +293,13 @@ sub subtest_stop {
     my $st = pop @{$self->{+SUBTESTS}};
     pop @{$self->{+STATES}};
 
+    unless ($st->{pid} == $$ && $st->{tid} == get_tid()) {
+        cluck "Subtest '$st->{name}' ended in a different process or thread from when it started.\n"
+            . "You must exit any child processes or threads created in a subtest BEFORE it ends.";
+
+        exit 255;
+    }
+
     return $st;
 }
 
@@ -297,27 +311,36 @@ sub send {
     my $cache = $self->_preprocess_event($self->{+STATES}->[-1], $e);
 
     # Subtests get dibbs on events
-    if (my $num = @{$self->{+SUBTESTS}}) {
+    my $num;
+    if($num = $e->in_subtest()) {
+        my $sid = $e->in_subtest_id();
+        $num -= 1;
+        my $st = $self->{+SUBTESTS}->[$num];
+
+        confess "Attempt to send event ($e) to ended subtest ($sid)"
+            unless $st && $st->{id} eq "$sid";
+
+        $e->context->set_diag_todo(1) if $st->{parent_todo};
+        push @{$st->{events}} => $e;
+        $self->_render_tap($cache) if $st->{instant} && !$cache->{no_out};
+    }
+    elsif ($num = @{$self->{+SUBTESTS}}) {
         my $st = $self->{+SUBTESTS}->[-1];
 
         $e->set_in_subtest($num);
-        $e->context->set_diag_todo(1) if $st->{parent_todo};
+        $e->set_in_subtest_id($st->{id});
 
-        push @{$st->{events}} => $e;
-
-        $self->_render_tap($cache) if $st->{instant} && !$cache->{no_out};
-    }
-    elsif($$ != $self->{+PID} || get_tid() != $self->{+TID}) {
-        if ($self->{+_USE_FORK}) {
+        if ($self->{+_USE_FORK} && ($$ != $st->{pid} || get_tid() != $st->{tid})) {
             $self->fork_out($e);
         }
         else {
-            # In the future this warning will be turned on. For now it is too
-            # noisy with legacy code.
-            # warn "Forked process or new thread detected, but concurrency support is not on!"
-            #    unless $WARNED++ || ($self->{+NO_ENDING} && !$self->{+USE_NUMBERS});
-            $self->_process_event($e, $cache);
+            $e->context->set_diag_todo(1) if $st->{parent_todo};
+            push @{$st->{events}} => $e;
+            $self->_render_tap($cache) if $st->{instant} && !$cache->{no_out};
         }
+    }
+    elsif ($self->{+_USE_FORK} && ($$ != $self->{+PID} || get_tid() != $self->{+TID})) {
+        $self->fork_out($e);
     }
     else {
         $self->_process_event($e, $cache);

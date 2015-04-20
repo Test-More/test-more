@@ -1,5 +1,6 @@
 NEXT:
     * Allow subtests to take a pre-constructed block object
+    * Replace suprising fork in subtest behavior with unsuprising one
 
 1.301001_105:
     * Update list of known broken downstream modules

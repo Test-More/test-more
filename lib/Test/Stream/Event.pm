@@ -6,7 +6,7 @@ use Scalar::Util qw/blessed/;
 use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::HashBase(
-    accessors => [qw/context created in_subtest/],
+    accessors => [qw/context created in_subtest in_subtest_id/],
     no_import => 1,
 );
 

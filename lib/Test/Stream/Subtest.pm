@@ -49,8 +49,10 @@ sub subtest {
 
         return if $st->{early_return};
 
-        $ctx->set;
         my $hub = $ctx->hub;
+        $hub->fork_cull();
+
+        $ctx->set;
         $ctx->done_testing unless $hub->plan || $hub->ended;
 
         require Test::Stream::ExitMagic;
