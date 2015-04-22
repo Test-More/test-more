@@ -1,3 +1,6 @@
+NEXT:
+    * Allow alternative concurrency models/drivers
+
 1.301001_107:
     * Fix broken threading/forking on win32 introduced in _106
     * Make sure ALL tests run for older perls

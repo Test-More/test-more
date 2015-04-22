@@ -161,6 +161,10 @@ sub before_import {
             $hub->io_sets->init_encoding($encoding);
             $meta->{+ENCODING} = $encoding;
         }
+        elsif ($item eq 'concurrency') {
+            my $model = $list->[$idx++];
+            $hub->use_fork(ref $model ? @$model : $model);
+        }
         elsif ($item eq 'enable_fork') {
             $hub->use_fork;
         }
@@ -178,7 +182,7 @@ sub cull            { shared()->fork_cull()        }
 sub listen(&)       { shared()->listen($_[0])      }
 sub munge(&)        { shared()->munge($_[0])       }
 sub follow_up(&)    { shared()->follow_up($_[0])   }
-sub enable_forking  { shared()->use_fork()         }
+sub enable_forking  { shared()->use_fork(@_)       }
 sub disable_tap     { shared()->set_use_tap(0)     }
 sub enable_tap      { shared()->set_use_tap(1)     }
 sub enable_numbers  { shared()->set_use_numbers(1) }
@@ -374,7 +378,24 @@ The 'block' spec forces buffering, it wraps results in a block:
         1..2
     # }
 
+=item concurrency => []
+
+=item concurrency => 'Test::Stream::Concurrency::MODEL'
+
+=item concurrency => ['Test::Stream::Concurrency::MODEL1', 'FALLBACK', ...]
+
+Enable concurrency, and specify the model. If no model is provided (empty
+array) L<Test::Stream::Concurrency::Files> is assumed. All specified models are
+tried in order until one is found that works on the current platform. If none
+work the fallback of L<Test::Stream::Concurrency::Files> is used.
+
 =item 'enable_fork'
+
+Currently this is the same as
+C<< use Test::Stream concurrency => 'Test::Stream::Concurrency::Files' >>.
+However we reserve the right to alter the default concurrency models at any
+time, if it matters to you then you should specify one using the C<concurrency>
+argument.
 
 Turns on support for code that forks. This is not activated by default because
 it adds ~30ms to the Test::More compile-time, which can really add up in large

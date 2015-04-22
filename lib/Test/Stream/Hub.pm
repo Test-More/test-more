@@ -25,7 +25,6 @@ use Test::Stream::HashBase(
         use_tap use_legacy _use_fork
         use_numbers
         io_sets
-        event_id
         in_subthread
     }],
 );
@@ -38,7 +37,6 @@ sub init {
 
     $self->{+USE_TAP}     = 1;
     $self->{+USE_NUMBERS} = 1;
-    $self->{+EVENT_ID}    = 1;
     $self->{+NO_ENDING}   = 1;
 
     $self->{+STATES}  = [Test::Stream::State->new];
@@ -140,85 +138,50 @@ sub follow_up {
 }
 
 sub use_fork {
-    return 1 if $_[0]->{+_USE_FORK};
-    require File::Temp;
-    require Storable;
+    my $self = shift;
+    return $self->{+_USE_FORK} if $self->{+_USE_FORK};
 
-    $_[0]->{+_USE_FORK} ||= File::Temp::tempdir(CLEANUP => 0);
+    require Test::Stream::Concurrency;
+    my $sync = Test::Stream::Concurrency->spawn(
+        @_,
+        'Test::Stream::Concurrency::Files'
+    );
 
-    confess "Could not get a temp dir" unless $_[0]->{+_USE_FORK};
-    if ($^O eq 'VMS') {
-        require VMS::Filespec;
-        $_[0]->{+_USE_FORK} = VMS::Filespec::unixify($_[0]->{+_USE_FORK});
-    }
-    return 1;
+    confess "Could not load any concurrency plugin!"
+        unless $sync;
+
+    $self->{+_USE_FORK} = $sync;
 }
 
 sub fork_out {
     my $self = shift;
+    my (@events) = @_;
 
-    my $tempdir = $self->{+_USE_FORK};
-    confess "Fork support has not been turned on!" unless $tempdir;
+    my $sync = $self->{+_USE_FORK};
+    confess "Fork support has not been turned on!" unless $sync;
 
-    my $orig = "$$-" . get_tid();
     my $dest;
     if (my $subtest = $self->{+SUBTESTS}->[-1]) {
-        $dest = $subtest->{pid} . '-' . $subtest->{tid};
+        $dest = [$subtest->{pid}, $subtest->{tid}];
     }
     else {
-        $dest = $self->{+PID} . '-' . $self->{+TID};
+        $dest = [$self->{+PID}, $self->{+TID}];
     }
-    my $route = "$dest-$orig";
 
-    for my $event (@_) {
-        next unless $event;
-        next if $event->isa('Test::Stream::Event::Finish');
-
-        # First write the file, then rename it so that it is not read before it is ready.
-        my $name =  $tempdir . "/$route-" . ($self->{+EVENT_ID}++);
-        my ($ret, $err) = try { Storable::store($event, $name) };
-        # Temporary to debug an error on one cpan-testers box
-        unless ($ret) {
-            require Data::Dumper;
-            confess(Data::Dumper::Dumper({ error => $err, event => $event}));
-        }
-        rename($name, "$name.ready") || confess "Could not rename file '$name' -> '$name.ready'";
-    }
+    $sync->send(
+        orig   => [$$, get_tid()],
+        dest   => $dest,
+        events => \@events,
+    );
 }
 
 sub fork_cull {
     my $self = shift;
+    my $sync = $self->{+_USE_FORK} || return;
 
-    my $tempdir = $self->{+_USE_FORK} || return;
+    my @events = $sync->cull($$, get_tid());
 
-    opendir(my $dh, $tempdir) || croak "could not open temp dir ($tempdir)!";
-
-    my $get = "$$-" . get_tid();
-
-    my @files = sort readdir($dh);
-    for my $file (@files) {
-        next if $file =~ m/^\.+$/;
-        next unless $file =~ m/^\Q$get\E-.*\.ready$/;
-
-        # Untaint the path.
-        my $full = "$tempdir/$file";
-        ($full) = ($full =~ m/^(.*)$/gs);
-
-        my $obj = Storable::retrieve($full);
-        confess "Empty event object found '$full'" unless $obj;
-
-        if ($ENV{TEST_KEEP_TMP_DIR}) {
-            rename($full, "$full.complete")
-                || confess "Could not rename file '$full', '$full.complete'";
-        }
-        else {
-            unlink($full) || die "Could not unlink file: $file";
-        }
-
-        $self->send($obj);
-    }
-
-    closedir($dh);
+    $self->send($_) for @events;
 }
 
 sub done_testing {
@@ -354,7 +317,7 @@ sub send {
         $e->set_in_subtest_id($st->{id});
 
         if ($self->{+_USE_FORK} && ($$ != $st->{pid} || get_tid() != $st->{tid})) {
-            $self->fork_out($e);
+            $self->fork_out($e) unless $e->isa('Test::Stream::Event::Finish');
         }
         else {
             $e->context->set_diag_todo(1) if $st->{parent_todo};
@@ -363,7 +326,7 @@ sub send {
         }
     }
     elsif ($self->{+_USE_FORK} && ($$ != $self->{+PID} || get_tid() != $self->{+TID})) {
-        $self->fork_out($e);
+        $self->fork_out($e) unless $e->isa('Test::Stream::Event::Finish');
     }
     else {
         $self->_process_event($e, $cache);
@@ -567,7 +530,7 @@ sub DESTROY {
 
     return if $self->in_subthread;
 
-    my $dir = $self->{+_USE_FORK} || return;
+    my $sync = $self->{+_USE_FORK} || return;
 
     return unless defined $self->pid;
     return unless defined $self->tid;
@@ -575,20 +538,7 @@ sub DESTROY {
     return unless $$        == $self->pid;
     return unless get_tid() == $self->tid;
 
-    if ($ENV{TEST_KEEP_TMP_DIR}) {
-        print STDERR "# Not removing temp dir: $dir\n";
-        return;
-    }
-
-    opendir(my $dh, $dir) || confess "Could not open temp dir! ($dir)";
-    while(my $file = readdir($dh)) {
-        next if $file =~ m/^\.+$/;
-        die "Unculled event! You ran tests in a child process, but never pulled them in!\n"
-            if $file !~ m/\.complete$/;
-        unlink("$dir/$file") || confess "Could not unlink file: '$dir/$file'";
-    }
-    closedir($dh);
-    rmdir($dir) || warn "Could not remove temp dir ($dir)";
+    $sync->cleanup($self->pid, $self->tid);
 }
 
 sub STORABLE_freeze {

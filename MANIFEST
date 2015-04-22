@@ -21,6 +21,8 @@ lib/Test/Stream.pm
 lib/Test/Stream/Architecture.pod
 lib/Test/Stream/Block.pm
 lib/Test/Stream/Carp.pm
+lib/Test/Stream/Concurrency.pm
+lib/Test/Stream/Concurrency/Files.pm
 lib/Test/Stream/Context.pm
 lib/Test/Stream/Design.pod
 lib/Test/Stream/Event.pm
