@@ -7,7 +7,7 @@ use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::Event(
     base       => 'Test::Stream::Event::Ok',
-    accessors  => [qw/state events exception early_return delayed instant/],
+    accessors  => [qw/state events exception early_return buffer spec/],
 );
 
 sub init {
@@ -57,9 +57,10 @@ sub to_tap {
     my $self = shift;
     my ($num) = @_;
 
-    my $delayed = $self->{+DELAYED};
+    my $buffer = $self->{+BUFFER};
+    my $spec   = $self->{+SPEC};
 
-    unless($delayed) {
+    unless ($buffer) {
         return if $self->{+EXCEPTION}
                && $self->{+EXCEPTION}->isa('Test::Stream::Event::Bail');
 
@@ -67,13 +68,19 @@ sub to_tap {
     }
 
     # Subtest final result first
-    $self->{+NAME} =~ s/$/ {/mg;
+    my $is_block = $spec eq 'block';
+    $self->{+NAME} =~ s/$/ {/mg if $is_block;
     my @out = (
         $self->SUPER::to_tap($num),
         $self->_render_events($num),
-        [OUT_STD, "}\n"],
     );
-    $self->{+NAME} =~ s/ \{$//mg;
+    if ($is_block) {
+        push @out => [OUT_STD, "}\n"];
+        $self->{+NAME} =~ s/ \{$//mg;
+    }
+    else {
+        push @out => [OUT_STD, "# End Subtest: $num - $self->{+NAME}\n"];
+    }
     return @out;
 }
 
@@ -81,14 +88,14 @@ sub _render_events {
     my $self = shift;
     my ($num) = @_;
 
-    my $delayed = $self->{+DELAYED};
+    my $buffered = $self->{+BUFFER};
 
     my $idx = 0;
     my @out;
     for my $e (@{$self->events}) {
         next unless $e->can('to_tap');
         $idx++ if $e->isa('Test::Stream::Event::Ok');
-        push @out => $e->to_tap($idx, $delayed);
+        push @out => $e->to_tap($idx, $buffered);
     }
 
     for my $set (@out) {

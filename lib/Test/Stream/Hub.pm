@@ -15,8 +15,8 @@ use Test::Stream::HashBase(
         pid tid
         states
         subtests
-        subtest_tap_instant
-        subtest_tap_delayed
+        _subtest_buffering
+        _subtest_spec
         mungers
         listeners
         follow_ups
@@ -46,8 +46,8 @@ sub init {
 
     $self->{+SUBTESTS} = [];
 
-    $self->{+SUBTEST_TAP_INSTANT} = 1;
-    $self->{+SUBTEST_TAP_DELAYED} = 0;
+    $self->{+_SUBTEST_BUFFERING} = 0;
+    $self->{+_SUBTEST_SPEC} = 'legacy';
 
     $self->use_fork if USE_THREADS;
 
@@ -61,6 +61,29 @@ sub count  { $_[0]->{+STATES}->[-1]->{+COUNT}  }
 sub failed { $_[0]->{+STATES}->[-1]->{+FAILED} }
 sub ended  { $_[0]->{+STATES}->[-1]->{+ENDED}  }
 sub legacy { $_[0]->{+STATES}->[-1]->{+LEGACY} }
+
+sub subtest_buffering {
+    my $self = shift;
+    if (@_) {
+        my ($bool) = @_;
+        $self->{+_SUBTEST_BUFFERING} = $bool;
+        $self->{+_SUBTEST_BUFFERING} = 1 if $self->{+_SUBTEST_SPEC} eq 'block';
+    }
+    return $self->{+_SUBTEST_BUFFERING};
+}
+
+my %SUBTEST_SPECS = ( legacy => 1, block => 1 );
+sub subtest_spec {
+    my $self = shift;
+    if (@_) {
+        my ($spec) = @_;
+        confess "'$spec' is not a valid subtest specification"
+            unless $SUBTEST_SPECS{$spec};
+        $self->{+_SUBTEST_SPEC} = $spec;
+        $self->{+_SUBTEST_BUFFERING} = 1 if $spec eq 'block';
+    }
+    return $self->{+_SUBTEST_SPEC};
+}
 
 sub is_passing {
     my $self = shift;
@@ -264,8 +287,8 @@ sub subtest_start {
 
     push @{$self->{+STATES}}    => $state;
     push @{$self->{+SUBTESTS}} => {
-        instant => $self->{+SUBTEST_TAP_INSTANT},
-        delayed => $self->{+SUBTEST_TAP_DELAYED},
+        buffer => $self->{+_SUBTEST_BUFFERING},
+        spec   => $self->{+_SUBTEST_SPEC},
 
         %params,
 
@@ -322,7 +345,7 @@ sub send {
 
         $e->context->set_diag_todo(1) if $st->{parent_todo};
         push @{$st->{events}} => $e;
-        $self->_render_tap($cache) if $st->{instant} && !$cache->{no_out};
+        $self->_render_tap($cache) unless $st->{buffer} || $cache->{no_out};
     }
     elsif ($num = @{$self->{+SUBTESTS}}) {
         my $st = $self->{+SUBTESTS}->[-1];
@@ -336,7 +359,7 @@ sub send {
         else {
             $e->context->set_diag_todo(1) if $st->{parent_todo};
             push @{$st->{events}} => $e;
-            $self->_render_tap($cache) if $st->{instant} && !$cache->{no_out};
+            $self->_render_tap($cache) unless $st->{buffer} || $cache->{no_out};
         }
     }
     elsif ($self->{+_USE_FORK} && ($$ != $self->{+PID} || get_tid() != $self->{+TID})) {
@@ -613,17 +636,36 @@ or
 
 Turn on forking support (it cannot be turned off).
 
-=item $hub->set_subtest_tap_instant($bool)
+=item $hub->subtest_buffering($bool)
 
-=item $bool = $hub->subtest_tap_instant
+=item $bool = $hub->subtest_buffering()
 
-Render subtest events as they happen.
+When true, subtest results are buffered until the subtest is complete, then all
+subtest results are rendered at once.
 
-=item $hub->set_subtest_tap_delayed($bool)
+=item $hub->subtest_spec($spec)
 
-=item $bool = $hub->subtest_tap_delayed
+=item $spec = $hub->subtest_spec()
 
-Render subtest events when printing the result of the subtest
+Can be set to C<legacy>, C<block>.
+
+The 'legacy' spec is the default, it uses indentation for subtest results:
+
+    ok 1 - a result
+    # Starting subtest X
+        ok 1 - subtest X result 1
+        ok 2 - subtest X result 2
+        1..2
+    ok 2 - subtest X final result
+
+The 'block' spec forces buffering, it wraps results in a block:
+
+    ok 1 - a result
+    ok 2 - subtest X final result {
+        ok 1 - subtest X result 1
+        ok 2 - subtest X result 2
+        1..2
+    # }
 
 =item $hub->set_exit_on_disruption($bool)
 
