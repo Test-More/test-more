@@ -198,7 +198,7 @@ sub fork_cull {
     my @files = sort readdir($dh);
     for my $file (@files) {
         next if $file =~ m/^\.+$/;
-        next unless $file =~ m/^\Q$get\E-\d+-\d+-\d+\.ready$/;
+        next unless $file =~ m/^\Q$get\E-.*\.ready$/;
 
         # Untaint the path.
         my $full = "$tempdir/$file";
