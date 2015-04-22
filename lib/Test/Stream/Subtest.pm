@@ -35,7 +35,7 @@ sub subtest {
     }
 
     $ctx->note("Subtest: $name")
-        if $ctx->hub->subtest_tap_instant;
+        unless $ctx->hub->subtest_buffering;
 
     my $st = $ctx->subtest_start($name);
 
@@ -97,8 +97,8 @@ This is almost certainly not what you wanted. Did you fork and forget to exit?
         events       => $st->{events},
         exception    => $st->{exception},
         early_return => $st->{early_return},
-        delayed      => $st->{delayed},
-        instant      => $st->{instant},
+        buffer       => $st->{buffer},
+        spec         => $st->{spec},
     );
 
     die $err unless $succ;

@@ -11,7 +11,7 @@ use Test::Stream qw{
     state_count state_failed state_plan state_ended is_passing
     current_hub
 
-    disable_tap enable_tap subtest_tap_instant subtest_tap_delayed tap_encoding
+    disable_tap enable_tap subtest_buffering subtest_spec tap_encoding
     enable_numbers disable_numbers set_tap_outputs get_tap_outputs
 };
 
@@ -32,7 +32,7 @@ can_ok(__PACKAGE__, qw{
     state_count state_failed state_plan state_ended is_passing
     current_hub
 
-    disable_tap enable_tap subtest_tap_instant subtest_tap_delayed tap_encoding
+    disable_tap enable_tap subtest_buffering subtest_spec tap_encoding
     enable_numbers disable_numbers set_tap_outputs get_tap_outputs
 });
 
@@ -286,10 +286,14 @@ intercept {
     enable_numbers();
     ok(1, "pass");
 
-    subtest_tap_instant();
+    subtest_spec('legacy');
     subtest foo => sub { ok(1, 'pass') };
 
-    subtest_tap_delayed();
+    subtest_spec('block');
+    subtest foo => sub { ok(1, 'pass') };
+
+    subtest_spec('legacy');
+    subtest_buffering(1);
     subtest foo => sub { ok(1, 'pass') };
 };
 
@@ -311,6 +315,10 @@ ok 7 - foo {
     ok 1 - pass
     1..1
 }
+ok 8 - foo
+    ok 1 - pass
+    1..1
+# End Subtest: 8 - foo
 EOT
 
 is( $utf8, <<EOT, "got utf8 TAP output");

@@ -122,7 +122,7 @@ exports qw{
     state_count state_failed state_plan state_ended is_passing
     current_hub
 
-    disable_tap enable_tap subtest_tap_instant subtest_tap_delayed tap_encoding
+    disable_tap enable_tap subtest_buffering subtest_spec tap_encoding
     enable_numbers disable_numbers set_tap_outputs get_tap_outputs
 };
 Test::Stream::Exporter->cleanup();
@@ -142,27 +142,11 @@ sub before_import {
         my $item = $list->[$idx++];
         next unless $item;
 
-        if ($item eq 'subtest_tap') {
-            my $val = $list->[$idx++];
-            if (!$val || $val eq 'none') {
-                $hub->set_subtest_tap_instant(0);
-                $hub->set_subtest_tap_delayed(0);
-            }
-            elsif ($val eq 'instant') {
-                $hub->set_subtest_tap_instant(1);
-                $hub->set_subtest_tap_delayed(0);
-            }
-            elsif ($val eq 'delayed') {
-                $hub->set_subtest_tap_instant(0);
-                $hub->set_subtest_tap_delayed(1);
-            }
-            elsif ($val eq 'both') {
-                $hub->set_subtest_tap_instant(1);
-                $hub->set_subtest_tap_delayed(1);
-            }
-            else {
-                croak "'$val' is not a valid option for '$item'";
-            }
+        if ($item eq 'use_subtest_buffering') {
+            $hub->subtest_buffering($list->[$idx++]);
+        }
+        elsif ($item eq 'use_subtest_spec') {
+            $hub->subtest_spec($list->[$idx++]);
         }
         elsif ($item eq 'utf8') {
             $hub->io_sets->init_encoding('utf8');
@@ -220,16 +204,16 @@ sub tap_encoding {
     $meta->{+ENCODING} = $encoding;
 }
 
-sub subtest_tap_instant {
+sub subtest_buffering {
     my $hub = shared();
-    $hub->set_subtest_tap_instant(1);
-    $hub->set_subtest_tap_delayed(0);
+    $hub->subtest_buffering(@_) if @_;
+    $hub->subtest_buffering();
 }
 
-sub subtest_tap_delayed {
+sub subtest_spec {
     my $hub = shared();
-    $hub->set_subtest_tap_instant(0);
-    $hub->set_subtest_tap_delayed(1);
+    $hub->subtest_spec(@_) if @_;
+    $hub->subtest_spec();
 }
 
 sub is_modern {
@@ -358,22 +342,37 @@ valid export an exception will be thrown.
 
 =over 4
 
-=item subtest_tap => 'none'
+=item use_subtest_buffering => $BOOL
 
-Do not show events within subtests, just the subtest result itself.
+Enable or disable buffering of subtest results. Buffering the results causes
+the subtest 'ok' to be displayed before the results inside the subtest. This is
+primarily useful when using threads or fork.
 
-=item subtest_tap => 'instant'
+=item use_subtest_spec => 'legacy'
 
-Show events as they happen (this is how legacy Test::More worked). This is the
-default.
+=item use_subtest_spec => 'block'
 
-=item subtest_tap => 'delayed'
+This is used to set the specification used to render subtests. Currenly there
+is no TAP standard way to render subtests, all current methods are hacks that
+take advantage of various TAP parsing loopholes.
 
-Show events within subtest AFTER the subtest event itself is complete.
+The 'legacy' spec is the default, it uses indentation for subtest results:
 
-=item subtest_tap => 'both'
+    ok 1 - a result
+    # Starting subtest X
+        ok 1 - subtest X result 1
+        ok 2 - subtest X result 2
+        1..2
+    ok 2 - subtest X final result
 
-Show events as they happen, then also display them after.
+The 'block' spec forces buffering, it wraps results in a block:
+
+    ok 1 - a result
+    ok 2 - subtest X final result {
+        ok 1 - subtest X result 1
+        ok 2 - subtest X result 2
+        1..2
+    # }
 
 =item 'enable_fork'
 
@@ -680,28 +679,33 @@ Show test numbers when rendering TAP.
 
 Do not show test numbers when rendering TAP.
 
-=item subtest_tap_instant()
+=item subtest_buffering($BOOL)
 
-This is the default way to render subtests:
+Turn subtest buffering on/off.
 
-    # Subtest: a_subtest
-        ok 1 - pass
-        1..1
-    ok 1 - a_subtest
+=item subtest_spec($NAME)
 
-Using this will automatically turn off C<subtest_tap_delayed>
+Set the subtest specification to use.
 
-=item subtest_tap_delayed()
+Available options: C<'legacy'>, C<'block'>
 
-This is an alternative way to render subtests, this method waits until the
-subtest is complete then renders it in a structured way:
+The 'legacy' spec is the default, it uses indentation for subtest results:
 
-    ok 1 - a_subtest {
-        ok 1 - pass
-        1..1
-    }
+    ok 1 - a result
+    # Starting subtest X
+        ok 1 - subtest X result 1
+        ok 2 - subtest X result 2
+        1..2
+    ok 2 - subtest X final result
 
-Using this will automatically turn off C<subtest_tap_instant>
+The 'block' spec forces buffering, it wraps results in a block:
+
+    ok 1 - a result
+    ok 2 - subtest X final result {
+        ok 1 - subtest X result 1
+        ok 2 - subtest X result 2
+        1..2
+    # }
 
 =item tap_encoding($ENCODING)
 
