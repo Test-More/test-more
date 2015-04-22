@@ -1,6 +1,8 @@
-NEXT:
-    * Allow subtests to take a pre-constructed block object
-    * Replace suprising fork in subtest behavior with unsuprising one
+1.301001_106:
+    * Allow subtests to take a pre-constructed block object  (API Shortcut)
+    * Replace suprising fork in subtest behavior with unsuprising one  (Better behavior before new stuff is official)
+    * Add a stash to the test meta-data (Helper for current tools that will convert)
+    * Split the subtest_tap option into buffering and spec options (Polish API before official release)
 
 1.301001_105:
     * Update list of known broken downstream modules
