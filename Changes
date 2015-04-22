@@ -1,5 +1,5 @@
 1.301001_107:
-    * Fix broken threadinf/forking on win32 introduced in _106
+    * Fix broken threading/forking on win32 introduced in _106
 
 1.301001_106:
     * Allow subtests to take a pre-constructed block object  (API Shortcut)
