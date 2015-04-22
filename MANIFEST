@@ -21,6 +21,8 @@ lib/Test/Stream.pm
 lib/Test/Stream/Architecture.pod
 lib/Test/Stream/Block.pm
 lib/Test/Stream/Carp.pm
+lib/Test/Stream/Concurrency.pm
+lib/Test/Stream/Concurrency/Files.pm
 lib/Test/Stream/Context.pm
 lib/Test/Stream/Design.pod
 lib/Test/Stream/Event.pm
@@ -95,6 +97,8 @@ t/Behavior/skip_all_in_subtest.t
 t/Behavior/skip_all_in_subtest1.load
 t/Behavior/skip_all_in_subtest2.load
 t/Behavior/subtest_die.t
+t/Behavior/subtest_forking.t
+t/Behavior/subtest_threading.t
 t/Behavior/Tester2_subtest.t
 t/Behavior/threads_with_taint_mode.t
 t/Behavior/todo.t
@@ -262,6 +266,11 @@ t/Test-MostlyLike.t
 t/Test-Simple.t
 t/Test-Stream-Block.t
 t/Test-Stream-Carp.t
+t/Test-Stream-Concurrency-Files.t
+t/Test-Stream-Concurrency/configure.t
+t/Test-Stream-Concurrency/join.t
+t/Test-Stream-Concurrency/legacy.t
+t/Test-Stream-Concurrency/wait.t
 t/Test-Stream-Context.t
 t/Test-Stream-Event-Bail.t
 t/Test-Stream-Event-Diag.t

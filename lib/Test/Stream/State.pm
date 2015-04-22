@@ -57,6 +57,12 @@ sub bump {
     $self->{+_PASSING} = 0;
 }
 
+sub bump_fail {
+    my $self = shift;
+    $self->{+FAILED}++;
+    $self->{+_PASSING} = 0;
+}
+
 sub push_legacy {
     my $self = shift;
     $self->{+LEGACY} ||= [];
