@@ -3,8 +3,6 @@ Test::Wrapper
 Test::FileReferenced
 Test::Bomb
 Test::DBIx::Class::Schema
-Test::FITesque
-Test::Flatten
 Test::More::Prefix
 Test::ParallelSubtest
 Test::Pretty

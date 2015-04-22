@@ -5,6 +5,7 @@ Test::Differences
 Test::Warn
 Test::Warnings
 Test::Effects
+Test::FITesque
 App::Dest
 Business::ISBN
 Carp::Assert
