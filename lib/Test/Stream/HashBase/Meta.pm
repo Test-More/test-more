@@ -81,22 +81,21 @@ sub add_accessors {
         $self->{fields}->{$name} = 1;
         push @{$self->{order}} => $name;
 
-        my $const = uc $name;
+        my $cname = uc $name;
         my $gname = lc $name;
         my $sname = "set_$gname";
 
-        my $cname = $name;
-        my $csub = sub() { $cname };
+        my $pkg = $self->{package};
+        eval <<"        EOT" || die $@;
+            package $pkg;
+            sub $cname() { "$name" };
+            sub $gname   { \$_[0]->{+$cname} };
+            sub $sname   { \$_[0]->{+$cname} = \$_[1] };
+            1;
+        EOT
 
-        {
-            no strict 'refs';
-            *{"$self->{package}\::$const"} = $csub;
-            *{"$self->{package}\::$gname"} = sub { $_[0]->{$name} };
-            *{"$self->{package}\::$sname"} = sub { $_[0]->{$name} = $_[1] };
-        }
-
-        $ex_meta->{exports}->{$const} = $csub;
-        push @{$ex_meta->{polist}} => $const;
+        $ex_meta->{exports}->{$cname} = $pkg->can($cname);
+        push @{$ex_meta->{polist}} => $cname;
     }
 }
 
