@@ -81,22 +81,38 @@ sub add_accessors {
         $self->{fields}->{$name} = 1;
         push @{$self->{order}} => $name;
 
-        my $const = uc $name;
+        my $cname = uc $name;
         my $gname = lc $name;
         my $sname = "set_$gname";
 
-        my $cname = $name;
-        my $csub = sub() { $cname };
-
-        {
+        my $csub = __PACKAGE__->can($cname);
+        unless ($csub) {
             no strict 'refs';
-            *{"$self->{package}\::$const"} = $csub;
-            *{"$self->{package}\::$gname"} = sub { $_[0]->{$name} };
-            *{"$self->{package}\::$sname"} = sub { $_[0]->{$name} = $_[1] };
+            my $n = "$name";
+            $csub = sub() { $n };
+            *{$cname} = $csub;
         }
 
-        $ex_meta->{exports}->{$const} = $csub;
-        push @{$ex_meta->{polist}} => $const;
+        my $gsub = do {
+            my $n = "$name";
+            sub { $_[0]->{$n} }
+        };
+
+        my $ssub = do {
+            my $n = "$name";
+            sub { $_[0]->{$n} = $_[1] }
+        };
+
+        {
+            my $pkg = $self->{package};
+            no strict 'refs';
+            *{"$pkg\::$cname"} = $csub;
+            *{"$pkg\::$gname"} = $gsub;
+            *{"$pkg\::$sname"} = $ssub;
+        }
+
+        $ex_meta->{exports}->{$cname} = $csub;
+        push @{$ex_meta->{polist}} => $cname;
     }
 }
 
