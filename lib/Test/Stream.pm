@@ -41,7 +41,7 @@ sub shared {
 }
 
 sub clear {
-    $root->no_ending(1);
+    $root->set_no_ending(1);
     $root  = undef;
     $magic = undef;
     @stack = ();
