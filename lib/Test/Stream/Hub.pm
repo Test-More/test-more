@@ -352,6 +352,7 @@ sub send {
         $e->context->set_diag_todo(1) if $st->{parent_todo};
         push @{$st->{events}} => $e;
         $self->_render_tap($cache) unless $st->{buffer} || $cache->{no_out};
+        $st->{state}->is_passing(0) if $e->isa('Test::Stream::Event::Exception');
     }
     elsif ($num = @{$self->{+_SUBTESTS}}) {
         my $st = $self->{+_SUBTESTS}->[-1];
@@ -384,6 +385,10 @@ sub _preprocess_event {
     my ($self, $state, $e) = @_;
     my $cache = {tap_event => $e, state => $state};
 
+    if ($e->isa('Test::Stream::Event::Exception')) {
+        $state->is_passing(0);
+        $cache->{do_tap} = 1;
+    }
     if ($e->isa('Test::Stream::Event::Ok')) {
         $state->bump($e->effective_pass);
         $cache->{do_tap} = 1;

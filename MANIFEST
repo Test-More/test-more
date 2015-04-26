@@ -26,6 +26,7 @@ lib/Test/Stream/Design.pod
 lib/Test/Stream/Event.pm
 lib/Test/Stream/Event/Bail.pm
 lib/Test/Stream/Event/Diag.pm
+lib/Test/Stream/Event/Exception.pm
 lib/Test/Stream/Event/Finish.pm
 lib/Test/Stream/Event/Note.pm
 lib/Test/Stream/Event/Ok.pm
