@@ -18,8 +18,8 @@ sub to_tap {
 sub extra_details {
     my $self = shift;
     return (
-        $self->reason || '',
-        $self->quiet  || 0,
+        reason => $self->reason || '',
+        quiet  => $self->quiet  || 0,
     );
 }
 
