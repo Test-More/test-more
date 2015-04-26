@@ -595,7 +595,7 @@ sub _account_for_subtest {
     my( $self, $check ) = @_;
 
     my $ctx = Test::Stream::Context::context();
-    my $depth = @{$ctx->hub->subtests};
+    my $depth = @{$ctx->hub->_subtests};
     # Since we ship with Test::Builder, calling a private method is safe...ish.
     return ref($check) ? $check : ($depth ? '    ' x $depth : '') . $check;
 }

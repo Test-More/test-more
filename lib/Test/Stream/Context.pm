@@ -268,7 +268,9 @@ sub send {
     $self->{+HUB}->send(@_);
 }
 
-sub subtest_start {
+# Do not use this in external libraries, this WILL change or go away in the
+# future.
+sub _subtest_start {
     my $self = shift;
     my ($name, %params) = @_;
 
@@ -277,15 +279,17 @@ sub subtest_start {
     $self->clear;
     my $todo = $self->hide_todo;
 
-    my $st = $self->hub->subtest_start($name, todo_stash => $todo, %params);
+    my $st = $self->hub->_subtest_start($name, todo_stash => $todo, %params);
     return $st;
 }
 
-sub subtest_stop {
+# Do not use this in external libraries, this WILL change or go away in the
+# future.
+sub _subtest_stop {
     my $self = shift;
     my ($name) = @_;
 
-    my $st = $self->hub->subtest_stop($name);
+    my $st = $self->hub->_subtest_stop($name);
 
     $self->set;
     $self->restore_todo($st->{todo_stash});
@@ -661,20 +665,6 @@ Unset the current context.
 
 These are used to temporarily hide the TODO value in ALL places where it might
 be found. The returned C<$stash> must be used to restore it later.
-
-=item $stash = $ctx->subtest_start($name, %params)
-
-=item $stash = $ctx->subtest_stop($name)
-
-Used to start and stop subtests in the test hub. The stash can be used to
-configure and manipulate the subtest information. C<subtest_start> will hide
-the current TODO settings, and unset the current context. C<subtest_stop> will
-restore the TODO and reset the context back to what it was.
-
-B<It is your job> to take the results in the stash and produce a
-L<Test::Stream::Event::Subtest> event from them.
-
-B<Using this directly is not recommended>.
 
 =back
 

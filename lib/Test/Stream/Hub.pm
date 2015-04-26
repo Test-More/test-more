@@ -14,7 +14,7 @@ use Test::Stream::HashBase(
         no_ending no_diag no_header
         pid tid
         states
-        subtests
+        _subtests
         _subtest_buffering
         _subtest_spec
         mungers
@@ -44,7 +44,7 @@ sub init {
     $self->{+STATES}  = [Test::Stream::State->new];
     $self->{+IO_SETS} = Test::Stream::IOSets->new;
 
-    $self->{+SUBTESTS} = [];
+    $self->{+_SUBTESTS} = [];
 
     $self->{+_SUBTEST_BUFFERING} = 0;
     $self->{+_SUBTEST_SPEC} = 'legacy';
@@ -162,7 +162,7 @@ sub fork_out {
 
     my $orig = "$$-" . get_tid();
     my $dest;
-    if (my $subtest = $self->{+SUBTESTS}->[-1]) {
+    if (my $subtest = $self->{+_SUBTESTS}->[-1]) {
         $dest = $subtest->{pid} . '-' . $subtest->{tid};
     }
     else {
@@ -233,7 +233,7 @@ sub done_testing {
     }
 
     # Do not run followups in subtest!
-    if ($self->{+FOLLOW_UPS} && !@{$self->{+SUBTESTS}}) {
+    if ($self->{+FOLLOW_UPS} && !@{$self->{+_SUBTESTS}}) {
         $_->($ctx) for @{$self->{+FOLLOW_UPS}};
     }
 
@@ -270,8 +270,10 @@ sub done_testing {
     }
 }
 
+# Do not use this in external libraries, this WILL change or go away in the
+# future.
 my $SUBTEST_ID = 1;
-sub subtest_start {
+sub _subtest_start {
     my $self = shift;
     my ($name, %params) = @_;
 
@@ -279,14 +281,14 @@ sub subtest_start {
 
     $params{parent_todo} ||= context()->in_todo;
 
-    if(@{$self->{+SUBTESTS}}) {
-        $params{parent_todo} ||= $self->{+SUBTESTS}->[-1]->{parent_todo};
+    if(@{$self->{+_SUBTESTS}}) {
+        $params{parent_todo} ||= $self->{+_SUBTESTS}->[-1]->{parent_todo};
     }
 
     my $tid = get_tid();
 
     push @{$self->{+STATES}}    => $state;
-    push @{$self->{+SUBTESTS}} => {
+    push @{$self->{+_SUBTESTS}} => {
         buffer => $self->{+_SUBTEST_BUFFERING},
         spec   => $self->{+_SUBTEST_SPEC},
 
@@ -300,20 +302,22 @@ sub subtest_start {
         id     => "$$-$tid-" . $SUBTEST_ID++,
     };
 
-    return $self->{+SUBTESTS}->[-1];
+    return $self->{+_SUBTESTS}->[-1];
 }
 
-sub subtest_stop {
+# Do not use this in external libraries, this WILL change or go away in the
+# future.
+sub _subtest_stop {
     my $self = shift;
     my ($name) = @_;
 
     confess "No subtest to stop!"
-        unless @{$self->{+SUBTESTS}};
+        unless @{$self->{+_SUBTESTS}};
 
     confess "Subtest name mismatch!"
-        unless $self->{+SUBTESTS}->[-1]->{name} eq $name;
+        unless $self->{+_SUBTESTS}->[-1]->{name} eq $name;
 
-    my $st = pop @{$self->{+SUBTESTS}};
+    my $st = pop @{$self->{+_SUBTESTS}};
     pop @{$self->{+STATES}};
 
     unless ($st->{pid} == $$ && $st->{tid} == get_tid()) {
@@ -326,7 +330,9 @@ sub subtest_stop {
     return $st;
 }
 
-sub subtest { @{$_[0]->{+SUBTESTS}} ? $_[0]->{+SUBTESTS}->[-1] : () }
+# Do not use this in external libraries, this WILL change or go away in the
+# future.
+sub _subtest { @{$_[0]->{+_SUBTESTS}} ? $_[0]->{+_SUBTESTS}->[-1] : () }
 
 sub send {
     my ($self, $e) = @_;
@@ -338,7 +344,7 @@ sub send {
     if($num = $e->in_subtest()) {
         my $sid = $e->in_subtest_id();
         $num -= 1;
-        my $st = $self->{+SUBTESTS}->[$num];
+        my $st = $self->{+_SUBTESTS}->[$num];
 
         confess "Attempt to send event ($e) to ended subtest ($sid)"
             unless $st && $st->{id} eq "$sid";
@@ -347,8 +353,8 @@ sub send {
         push @{$st->{events}} => $e;
         $self->_render_tap($cache) unless $st->{buffer} || $cache->{no_out};
     }
-    elsif ($num = @{$self->{+SUBTESTS}}) {
-        my $st = $self->{+SUBTESTS}->[-1];
+    elsif ($num = @{$self->{+_SUBTESTS}}) {
+        my $st = $self->{+_SUBTESTS}->[-1];
 
         $e->set_in_subtest($num);
         $e->set_in_subtest_id($st->{id});
@@ -449,9 +455,9 @@ sub _postprocess_event {
         return unless $e->directive;
         return unless $e->directive eq 'SKIP';
 
-        my $subtest = @{$self->{+SUBTESTS}};
+        my $subtest = @{$self->{+_SUBTESTS}};
 
-        $self->{+SUBTESTS}->[-1]->{early_return} = $e if $subtest;
+        $self->{+_SUBTESTS}->[-1]->{early_return} = $e if $subtest;
 
         if ($subtest) {
             my $begin = _scan_for_begin('Test::Stream::Subtest::subtest');
@@ -480,9 +486,9 @@ sub _postprocess_event {
         $self->{+BAILED_OUT} = $e;
         $self->{+NO_ENDING}  = 1;
 
-        my $subtest = @{$self->{+SUBTESTS}};
+        my $subtest = @{$self->{+_SUBTESTS}};
 
-        $self->{+SUBTESTS}->[-1]->{early_return} = $e if $subtest;
+        $self->{+_SUBTESTS}->[-1]->{early_return} = $e if $subtest;
 
         if ($subtest) {
             my $begin = _scan_for_begin('Test::Stream::Subtest::subtest');
@@ -691,15 +697,6 @@ Turn legacy result storing on and off.
 =item $bool = $hub->use_numbers
 
 Turn test numbers on and off.
-
-=item $stash = $hub->subtest_start($name, %params)
-
-=item $stash = $hub->subtest_stop($name)
-
-These will push/pop new states and subtest stashes.
-
-B<Using these directly is not recommended.> Also see the wrapper methods in
-L<Test::Stream::Context>.
 
 =back
 

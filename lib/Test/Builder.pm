@@ -118,7 +118,7 @@ sub child {
 
     $name ||= "Child of " . $self->{Name};
     my $hub = $self->{hub} || Test::Stream->shared;
-    $ctx->subtest_start($name, parent_todo => $ctx->in_todo);
+    $ctx->_subtest_start($name, parent_todo => $ctx->in_todo);
 
     my $child = bless {
         %$self,
@@ -159,7 +159,7 @@ sub finalize {
 
     $? = $self->{'?'};
 
-    my $st = $ctx->subtest_stop($name);
+    my $st = $ctx->_subtest_stop($name);
 
     $parent->ctx->send_event(
         'Subtest',
@@ -176,7 +176,7 @@ sub finalize {
 sub in_subtest {
     my $self = shift;
     my $ctx = $self->ctx;
-    return scalar @{$ctx->hub->subtests};
+    return scalar @{$ctx->hub->_subtests};
 }
 
 sub parent { $_[0]->{parent} }

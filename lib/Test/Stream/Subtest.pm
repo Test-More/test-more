@@ -37,7 +37,7 @@ sub subtest {
     $ctx->note("Subtest: $name")
         unless $ctx->hub->subtest_buffering;
 
-    my $st = $ctx->subtest_start($name);
+    my $st = $ctx->_subtest_start($name);
 
     my $pid = $$;
     my ($succ, $err) = try {
@@ -85,7 +85,7 @@ This is almost certainly not what you wanted. Did you fork and forget to exit?
         die $err unless $succ;
     }
 
-    my $st_check = $ctx->subtest_stop($name);
+    my $st_check = $ctx->_subtest_stop($name);
     confess "Subtest mismatch!" unless $st == $st_check;
 
     $ctx->bail($st->{early_return}->reason) if $er && $er->isa('Test::Stream::Event::Bail');
