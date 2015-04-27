@@ -4,8 +4,8 @@ use warnings;
 
 use Test::Stream::Context;
 
-use Test::Stream::Exporter qw/import default_exports/;
-default_exports qw/tmt/;
+use Test::Stream::Exporter qw/import/;
+Test::Stream::Exporter::default_exports qw/tmt/;
 Test::Stream::Exporter->cleanup;
 
 use Test::Stream::Util qw/try protect is_regex unoverload_str unoverload_num/;

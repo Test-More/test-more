@@ -109,9 +109,9 @@ BEGIN {
     *peek_todo     = \&Test::Stream::Context::peek_todo;
 }
 
-use Test::Stream::Exporter qw/default_exports exports import/;
-default_exports qw/context/;
-exports qw{
+use Test::Stream::Exporter qw/import/;
+Test::Stream::Exporter::default_exports qw/context/;
+Test::Stream::Exporter::exports qw{
     listen munge follow_up
     enable_forking cull
     peek_todo push_todo pop_todo set_todo inspect_todo

@@ -2,8 +2,8 @@ package Test::Stream::Subtest;
 use strict;
 use warnings;
 
-use Test::Stream::Exporter qw/default_exports import/;
-default_exports qw/subtest/;
+use Test::Stream::Exporter qw/import/;
+Test::Stream::Exporter::default_exports qw/subtest/;
 Test::Stream::Exporter->cleanup;
 
 use Test::Stream::Context qw/context/;

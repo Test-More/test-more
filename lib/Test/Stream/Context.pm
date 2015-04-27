@@ -14,9 +14,9 @@ use Test::Stream::HashBase(
     accessors => [qw/frame hub encoding in_todo todo modern pid skip diag_todo provider/],
 );
 
-use Test::Stream::Exporter qw/import default_exports exports/;
-default_exports qw/context/;
-exports qw/inspect_todo/;
+use Test::Stream::Exporter qw/import/;
+Test::Stream::Exporter::default_exports qw/context/;
+Test::Stream::Exporter::exports qw/inspect_todo/;
 Test::Stream::Exporter->cleanup();
 
 {

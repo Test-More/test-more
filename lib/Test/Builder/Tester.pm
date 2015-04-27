@@ -67,8 +67,8 @@ output.
 ###
 
 use Test::Stream::Toolset qw/init_tester/;
-use Test::Stream::Exporter qw/import default_exports/;
-default_exports qw/test_out test_err test_fail test_diag test_test line_num/;
+use Test::Stream::Exporter qw/import/;
+Test::Stream::Exporter::default_exports qw/test_out test_err test_fail test_diag test_test line_num/;
 Test::Stream::Exporter->cleanup;
 
 sub before_import {

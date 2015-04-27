@@ -16,15 +16,15 @@ use Test::Stream::Tester::Events ();
 use Test::Stream::Tester::Events::Event ();
 
 use Test::Stream::Toolset qw/context/;
-use Test::Stream::Exporter qw/default_exports default_export import/;
-default_exports qw{
+use Test::Stream::Exporter qw/import/;
+Test::Stream::Exporter::default_exports qw{
     intercept grab
 
     events_are
     check event directive
 };
 
-default_export dir => \&directive;
+Test::Stream::Exporter::default_export dir => \&directive;
 Test::Stream::Exporter->cleanup;
 
 sub grab {

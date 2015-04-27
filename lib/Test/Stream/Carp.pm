@@ -2,12 +2,12 @@ package Test::Stream::Carp;
 use strict;
 use warnings;
 
-use Test::Stream::Exporter qw/export import/;
+use Test::Stream::Exporter qw/import/;
 
-export croak   => sub { require Carp; goto &Carp::croak };
-export confess => sub { require Carp; goto &Carp::confess };
-export cluck   => sub { require Carp; goto &Carp::cluck };
-export carp    => sub { require Carp; goto &Carp::carp };
+Test::Stream::Exporter::export croak   => sub { require Carp; goto &Carp::croak };
+Test::Stream::Exporter::export confess => sub { require Carp; goto &Carp::confess };
+Test::Stream::Exporter::export cluck   => sub { require Carp; goto &Carp::cluck };
+Test::Stream::Exporter::export carp    => sub { require Carp; goto &Carp::carp };
 
 Test::Stream::Exporter->cleanup;
 

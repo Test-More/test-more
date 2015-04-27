@@ -20,8 +20,8 @@ BEGIN {
     }
 }
 
-use Test::Stream::Exporter qw/default_exports import/;
-default_exports qw/get_tid USE_THREADS/;
+use Test::Stream::Exporter qw/import/;
+Test::Stream::Exporter::default_exports qw/get_tid USE_THREADS/;
 Test::Stream::Exporter->cleanup;
 
 1;

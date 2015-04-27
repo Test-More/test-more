@@ -4,8 +4,8 @@ use warnings;
 
 use Test::Stream::Util qw/protect/;
 
-use Test::Stream::Exporter qw/exports import/;
-exports qw/
+use Test::Stream::Exporter qw/import/;
+Test::Stream::Exporter::exports qw/
     OUT_STD OUT_ERR OUT_TODO
 /;
 Test::Stream::Exporter->cleanup;

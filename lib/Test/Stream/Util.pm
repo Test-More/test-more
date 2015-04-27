@@ -3,10 +3,10 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/reftype blessed/;
-use Test::Stream::Exporter qw/import exports/;
+use Test::Stream::Exporter qw/import/;
 use Test::Stream::Carp qw/croak/;
 
-exports qw{
+Test::Stream::Exporter::exports qw{
     try protect spoof is_regex is_dualvar
     unoverload unoverload_str unoverload_num
     translate_filename

@@ -15,10 +15,10 @@ use Test::Stream::Event::Ok ();
 use Test::Stream::Event::Plan ();
 use Test::Stream::Event::Subtest ();
 
-use Test::Stream::Exporter qw/import default_exports export/;
-default_exports qw/is_tester init_tester context/;
+use Test::Stream::Exporter qw/import/;
+Test::Stream::Exporter::default_exports qw/is_tester init_tester context/;
 
-export before_import => sub {
+Test::Stream::Exporter::export before_import => sub {
     my $class = shift;
     my ($importer, $list) = @_;
 

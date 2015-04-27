@@ -12,8 +12,8 @@ use Test::Stream 1.301001_107 ();
 use Test::Stream::Toolset qw/init_tester context/;
 
 use Test::Builder ();
-use Test::Stream::Exporter qw/import default_exports/;
-default_exports qw/ok/;
+use Test::Stream::Exporter qw/import/;
+Test::Stream::Exporter::default_exports qw/ok/;
 Test::Stream::Exporter->cleanup;
 
 sub before_import {

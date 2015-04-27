@@ -8,8 +8,8 @@ use Test::Stream::HashBase(
 
 use Test::Stream::PackageUtil;
 
-use Test::Stream::Exporter qw/import default_exports/;
-default_exports qw{ is_tester init_tester };
+use Test::Stream::Exporter qw/import/;
+Test::Stream::Exporter::default_exports qw{ is_tester init_tester };
 Test::Stream::Exporter->cleanup();
 
 my %META;

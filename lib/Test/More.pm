@@ -19,13 +19,11 @@ use Test::More::DeepCheck::Strict ();
 
 use Test::Builder ();
 
-use Test::Stream::Exporter qw/
-    default_export default_exports export_to
-/;
+use Test::Stream::Exporter qw/export_to/;
 
 our $TODO;
-default_export '$TODO' => \$TODO;
-default_exports qw{
+Test::Stream::Exporter::default_export '$TODO' => \$TODO;
+Test::Stream::Exporter::default_exports qw{
     plan done_testing
 
     ok

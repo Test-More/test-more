@@ -3,8 +3,8 @@ use strict;
 use warnings;
 
 use Test::Stream::Toolset qw/context/;
-use Test::Stream::Exporter qw/import default_exports/;
-default_exports qw/mostly_like/;
+use Test::Stream::Exporter qw/import/;
+Test::Stream::Exporter::default_exports qw/mostly_like/;
 Test::Stream::Exporter->cleanup;
 
 use Test::More::DeepCheck::Tolerant ();
