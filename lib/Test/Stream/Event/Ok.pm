@@ -6,7 +6,7 @@ use Scalar::Util qw/blessed/;
 use Test::Stream::Util qw/unoverload_str/;
 use Test::Stream::Carp qw/confess/;
 
-use Test::Stream::Event::Diag;
+use Test::Stream::Event::Diag ();
 
 use Test::Stream::Event(
     accessors => [qw/pass name diag effective_pass level/],

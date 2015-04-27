@@ -5,7 +5,7 @@ our $VERSION = '1.301001_107';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Stream 1.301001 ();
-use Test::Builder 1.301001;
+use Test::Builder 1.301001 ();
 use Symbol;
 use Test::Stream::Carp qw/croak/;
 use Test::Stream::Context qw/context/;
@@ -66,8 +66,8 @@ output.
 # make us an exporter
 ###
 
-use Test::Stream::Toolset;
-use Test::Stream::Exporter;
+use Test::Stream::Toolset qw/init_tester/;
+use Test::Stream::Exporter qw/import default_exports/;
 default_exports qw/test_out test_err test_fail test_diag test_test line_num/;
 Test::Stream::Exporter->cleanup;
 

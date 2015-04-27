@@ -4,12 +4,12 @@ use warnings;
 
 use Test::Stream::Context;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import default_exports/;
 default_exports qw/tmt/;
 Test::Stream::Exporter->cleanup;
 
 use Test::Stream::Util qw/try protect is_regex unoverload_str unoverload_num/;
-use Scalar::Util qw/blessed reftype/;
+use Scalar::Util qw/blessed/;
 
 sub tmt() { __PACKAGE__ }
 

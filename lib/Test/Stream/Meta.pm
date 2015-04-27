@@ -2,16 +2,13 @@ package Test::Stream::Meta;
 use strict;
 use warnings;
 
-use Scalar::Util();
-use Test::Stream::Util qw/protect/;
-
 use Test::Stream::HashBase(
     accessors => [qw/package encoding modern todo hub stash/],
 );
 
 use Test::Stream::PackageUtil;
 
-use Test::Stream::Exporter qw/import export_to default_exports/;
+use Test::Stream::Exporter qw/import default_exports/;
 default_exports qw{ is_tester init_tester };
 Test::Stream::Exporter->cleanup();
 

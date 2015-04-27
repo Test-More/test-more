@@ -10,13 +10,13 @@ use B;
 use Scalar::Util qw/blessed reftype/;
 use Test::Stream::Carp qw/croak carp/;
 
-use Test::Stream::Tester::Checks;
-use Test::Stream::Tester::Checks::Event;
-use Test::Stream::Tester::Events;
-use Test::Stream::Tester::Events::Event;
+use Test::Stream::Tester::Checks ();
+use Test::Stream::Tester::Checks::Event ();
+use Test::Stream::Tester::Events ();
+use Test::Stream::Tester::Events::Event ();
 
-use Test::Stream::Toolset;
-use Test::Stream::Exporter;
+use Test::Stream::Toolset qw/context/;
+use Test::Stream::Exporter qw/default_exports default_export import/;
 default_exports qw{
     intercept grab
 

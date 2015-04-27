@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Test::Stream::PackageUtil;
-use Test::Stream::Exporter::Meta;
+use Test::Stream::Exporter::Meta ();
 
 sub export;
 sub exports;

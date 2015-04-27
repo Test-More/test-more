@@ -2,7 +2,7 @@ package Test::Stream::Tester::Checks;
 use strict;
 use warnings;
 
-use Test::Stream::Carp qw/croak confess/;
+use Test::Stream::Carp qw/confess/;
 use Test::Stream::Util qw/is_regex/;
 
 use Scalar::Util qw/blessed reftype/;

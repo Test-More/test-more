@@ -6,8 +6,6 @@ use Test::Stream::Event(
     accessors  => [qw/message/],
 );
 
-use Test::Stream::Carp qw/confess/;
-
 sub init {
     $_[0]->SUPER::init();
     if (defined $_[0]->{+MESSAGE}) {

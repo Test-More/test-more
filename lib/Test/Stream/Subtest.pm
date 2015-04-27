@@ -2,7 +2,7 @@ package Test::Stream::Subtest;
 use strict;
 use warnings;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/default_exports import/;
 default_exports qw/subtest/;
 Test::Stream::Exporter->cleanup;
 
@@ -11,7 +11,7 @@ use Scalar::Util qw/reftype blessed/;
 use Test::Stream::Util qw/try/;
 use Test::Stream::Carp qw/confess/;
 
-use Test::Stream::Block;
+use Test::Stream::Block ();
 
 sub subtest {
     my ($name, $code, @args) = @_;

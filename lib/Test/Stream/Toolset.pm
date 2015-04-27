@@ -7,15 +7,15 @@ use Test::Stream::Meta    qw/is_tester init_tester/;
 use Test::Stream::Carp    qw/carp/;
 
 # Preload these so the autoload is not necessary
-use Test::Stream::Event::Bail;
-use Test::Stream::Event::Diag;
-use Test::Stream::Event::Finish;
-use Test::Stream::Event::Note;
-use Test::Stream::Event::Ok;
-use Test::Stream::Event::Plan;
-use Test::Stream::Event::Subtest;
+use Test::Stream::Event::Bail ();
+use Test::Stream::Event::Diag ();
+use Test::Stream::Event::Finish ();
+use Test::Stream::Event::Note ();
+use Test::Stream::Event::Ok ();
+use Test::Stream::Event::Plan ();
+use Test::Stream::Event::Subtest ();
 
-use Test::Stream::Exporter qw/import export_to default_exports export/;
+use Test::Stream::Exporter qw/import default_exports export/;
 default_exports qw/is_tester init_tester context/;
 
 export before_import => sub {

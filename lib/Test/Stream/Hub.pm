@@ -4,9 +4,9 @@ use warnings;
 
 use Test::Stream::Context qw/context/;
 use Test::Stream::Threads;
-use Test::Stream::IOSets;
+use Test::Stream::IOSets ();
 use Test::Stream::Util qw/try/;
-use Test::Stream::Carp qw/croak confess carp cluck/;
+use Test::Stream::Carp qw/croak confess cluck/;
 use Test::Stream::State qw/PLAN COUNT FAILED ENDED LEGACY/;
 
 use Test::Stream::HashBase(

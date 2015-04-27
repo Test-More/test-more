@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/blessed reftype/;
-use Test::Stream::Carp qw/confess carp/;
+use Test::Stream::Carp qw/confess/;
 
 use Test::Stream::HashBase(
     accessors => [qw/name coderef params caller deduced _start_line _end_line/],

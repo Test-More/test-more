@@ -4,7 +4,7 @@ use warnings;
 
 use Scalar::Util qw/blessed/;
 
-use Test::Stream::Tester::Events::Event;
+use Test::Stream::Tester::Events::Event ();
 
 sub new {
     my $class = shift;

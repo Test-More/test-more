@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/reftype blessed/;
-use Test::Stream::Exporter qw/import export_to exports/;
+use Test::Stream::Exporter qw/import exports/;
 use Test::Stream::Carp qw/croak/;
 
 exports qw{

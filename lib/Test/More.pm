@@ -8,20 +8,19 @@ our $VERSION = '1.301001_107';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Stream 1.301001 ();
-use Test::Stream::Util qw/protect try spoof/;
-use Test::Stream::Toolset qw/is_tester init_tester context before_import/;
+use Test::Stream::Util qw/spoof/;
+use Test::Stream::Toolset qw/context before_import/;
 use Test::Stream::Subtest qw/subtest/;
 
-use Test::Stream::Carp qw/croak carp/;
-use Scalar::Util qw/blessed/;
+use Test::Stream::Carp qw/croak/;
 
 use Test::More::Tools;
-use Test::More::DeepCheck::Strict;
+use Test::More::DeepCheck::Strict ();
 
-use Test::Builder;
+use Test::Builder ();
 
 use Test::Stream::Exporter qw/
-    default_export default_exports export_to export_to_level
+    default_export default_exports export_to
 /;
 
 our $TODO;

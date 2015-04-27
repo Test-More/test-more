@@ -6,10 +6,10 @@ package Test::Tester;
 #warn "Test::Tester is deprecated, see Test::Stream::Tester\n";
 
 use Test::Stream 1.301001 ();
-use Test::Builder 1.301001;
-use Test::Stream::Toolset;
-use Test::More::Tools;
-use Test::Tester::Capture;
+use Test::Builder 1.301001 ();
+use Test::Stream::Toolset qw/context/;
+use Test::More::Tools ();
+use Test::Tester::Capture ();
 
 require Exporter;
 

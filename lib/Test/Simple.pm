@@ -9,10 +9,10 @@ our $VERSION = '1.301001_107';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Stream 1.301001_107 ();
-use Test::Stream::Toolset;
+use Test::Stream::Toolset qw/init_tester context/;
 
-use Test::Builder;
-use Test::Stream::Exporter;
+use Test::Builder ();
+use Test::Stream::Exporter qw/import default_exports/;
 default_exports qw/ok/;
 Test::Stream::Exporter->cleanup;
 

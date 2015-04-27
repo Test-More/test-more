@@ -9,14 +9,12 @@ $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval
 
 
 use Test::Stream 1.301001 ();
-use Test::Stream::Hub;
-use Test::Stream::Toolset;
-use Test::Stream::Context;
-use Test::Stream::Carp qw/confess/;
+use Test::Stream::Hub ();
+use Test::Stream::Toolset ();
+use Test::Stream::Context ();
 use Test::Stream::Meta qw/MODERN/;
 
-use Test::Stream::Util qw/try protect unoverload_str is_regex/;
-use Scalar::Util qw/blessed reftype/;
+use Test::Stream::Util qw/protect unoverload_str is_regex/;
 
 use Test::More::Tools;
 

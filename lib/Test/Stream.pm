@@ -5,18 +5,18 @@ use warnings;
 our $VERSION = '1.301001_107';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Stream::Carp qw/croak confess carp/;
+use Test::Stream::Carp qw/croak/;
 use Test::Stream::Util qw/try/;
-use Test::Stream::Threads;
+use Test::Stream::Threads qw/get_tid/;
 
 ############################
 # {{{ Hub stack management #
 ############################
 
-use Test::Stream::Hub;
-use Test::Stream::Event::Finish;
-use Test::Stream::ExitMagic;
-use Test::Stream::ExitMagic::Context;
+use Test::Stream::Hub ();
+use Test::Stream::Event::Finish ();
+use Test::Stream::ExitMagic ();
+use Test::Stream::ExitMagic::Context ();
 
 # Do not repeat Test::Builders singleton error, these are lexical vars, not package vars.
 my ($root, @stack, $magic);
@@ -99,7 +99,6 @@ sub intercept {
 use Test::Stream::Context qw/context inspect_todo/;
 use Test::Stream::IOSets  qw/OUT_STD OUT_ERR OUT_TODO/;
 use Test::Stream::Meta    qw/MODERN ENCODING init_tester is_tester/;
-use Test::Stream::State   qw/PLAN COUNT FAILED ENDED LEGACY/;
 
 BEGIN {
     *peek_context  = \&Test::Stream::Context::peek;
@@ -110,7 +109,7 @@ BEGIN {
     *peek_todo     = \&Test::Stream::Context::peek_todo;
 }
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/default_exports exports import/;
 default_exports qw/context/;
 exports qw{
     listen munge follow_up

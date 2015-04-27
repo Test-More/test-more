@@ -6,7 +6,6 @@ use Test::Stream::Event(
     accessors => [qw/message linked/],
 );
 
-use Test::Stream::Util qw/try/;
 use Scalar::Util qw/weaken/;
 use Test::Stream::Carp qw/confess/;
 

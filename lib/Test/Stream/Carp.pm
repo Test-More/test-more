@@ -2,7 +2,7 @@ package Test::Stream::Carp;
 use strict;
 use warnings;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/export import/;
 
 export croak   => sub { require Carp; goto &Carp::croak };
 export confess => sub { require Carp; goto &Carp::confess };

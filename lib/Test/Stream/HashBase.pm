@@ -2,9 +2,8 @@ package Test::Stream::HashBase;
 use strict;
 use warnings;
 
-use Test::Stream::HashBase::Meta;
-use Test::Stream::Carp qw/confess croak/;
-use Scalar::Util qw/blessed reftype/;
+use Test::Stream::HashBase::Meta ();
+use Test::Stream::Carp qw/croak/;
 
 use Test::Stream::Exporter();
 

@@ -2,12 +2,12 @@ package Test::MostlyLike;
 use strict;
 use warnings;
 
-use Test::Stream::Toolset;
-use Test::Stream::Exporter;
+use Test::Stream::Toolset qw/context/;
+use Test::Stream::Exporter qw/import default_exports/;
 default_exports qw/mostly_like/;
 Test::Stream::Exporter->cleanup;
 
-use Test::More::DeepCheck::Tolerant;
+use Test::More::DeepCheck::Tolerant ();
 
 sub mostly_like {
     my ($got, $want, $name) = @_;

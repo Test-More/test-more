@@ -5,7 +5,7 @@ use warnings;
 use Scalar::Util qw/reftype/;
 use Test::More::Tools;
 use Test::Stream::Carp qw/cluck confess/;
-use Test::Stream::Util qw/try unoverload_str is_regex/;
+use Test::Stream::Util qw/unoverload_str is_regex/;
 
 use Test::Stream::HashBase(
     base => 'Test::More::DeepCheck',

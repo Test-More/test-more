@@ -2,9 +2,6 @@ package Test::Stream::Event::Subtest;
 use strict;
 use warnings;
 
-use Scalar::Util qw/blessed/;
-use Test::Stream::Carp qw/confess/;
-
 use Test::Stream::Event(
     base       => 'Test::Stream::Event::Ok',
     accessors  => [qw/state events exception early_return buffer spec/],

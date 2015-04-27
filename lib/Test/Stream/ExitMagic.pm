@@ -2,7 +2,7 @@ package Test::Stream::ExitMagic;
 use strict;
 use warnings;
 
-use Test::Stream::ExitMagic::Context;
+use Test::Stream::ExitMagic::Context ();
 
 use Test::Stream::HashBase(
     accessors => [qw/pid done/],

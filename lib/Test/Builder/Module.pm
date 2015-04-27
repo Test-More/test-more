@@ -3,7 +3,7 @@ package Test::Builder::Module;
 use strict;
 
 use Test::Stream 1.301001 ();
-use Test::Builder 0.99;
+use Test::Builder 0.99 ();
 
 require Exporter;
 our @ISA = qw(Exporter);
