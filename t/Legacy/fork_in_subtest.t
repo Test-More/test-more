@@ -3,7 +3,7 @@ use warnings;
 
 use Test::CanFork;
 
-use Test::Stream 'enable_fork';
+use Test::Stream 'concurrency';
 use Test::More;
 
 ok(1, "fine $$");

@@ -47,8 +47,6 @@ subtest do_it => sub {
         is_deeply(
             \@output,
             [
-                "Subtest finished with a new PID ($pid vs $$) while forking support was turned off!",
-                'This is almost certainly not what you wanted. Did you fork and forget to exit?',
                 "This process did something wrong! at $file line $line.",
             ],
             "Got warning and exception, nothing else"

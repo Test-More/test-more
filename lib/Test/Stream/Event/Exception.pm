@@ -1,73 +1,25 @@
-package Test::Stream::State;
+package Test::Stream::Event::Exception;
 use strict;
 use warnings;
 
-use Test::Stream::HashBase(
-    accessors => [qw{count failed _passing plan ended legacy}],
+use Test::Stream::Event(
+    accessors => [qw/error/],
 );
 
-Test::Stream::Exporter->cleanup;
-
-sub init {
+sub to_tap {
     my $self = shift;
-
-    $self->{+COUNT}    = 0 unless defined $self->{+COUNT};
-    $self->{+FAILED}   = 0 unless defined $self->{+FAILED};
-    $self->{+ENDED}    = 0 unless defined $self->{+ENDED};
-    $self->{+_PASSING} = 1 unless defined $self->{+_PASSING};
+    return [
+        OUT_ERR, $self->{+ERROR}
+    ];
 }
 
-sub reset {
+sub extra_details {
     my $self = shift;
-
-    delete $self->{+PLAN};
-    delete $self->{+LEGACY};
-
-    $self->{+COUNT}   = 0;
-    $self->{+FAILED}  = 0;
-    $self->{+ENDED}   = 0;
-    $self->{+_PASSING} = 1;
+    return (
+        error => $self->{+ERROR} || '',
+    );
 }
 
-sub is_passing {
-    my $self = shift;
-
-    ($self->{+_PASSING}) = @_ if @_;
-
-    my $pass = $self->{+_PASSING};
-    my $plan = $self->{+PLAN};
-
-    return $pass if $self->{+ENDED};
-    return $pass unless $plan;
-    return $pass unless $plan->max;
-    return $pass if $plan->directive && $plan->directive eq 'NO PLAN';
-    return $pass unless $self->{+COUNT} > $plan->max;
-
-    return $self->{+_PASSING} = 0;
-}
-
-sub bump {
-    my $self = shift;
-    my ($pass) = @_;
-
-    $self->{+COUNT}++;
-    return if $pass;
-
-    $self->{+FAILED}++;
-    $self->{+_PASSING} = 0;
-}
-
-sub bump_fail {
-    my $self = shift;
-    $self->{+FAILED}++;
-    $self->{+_PASSING} = 0;
-}
-
-sub push_legacy {
-    my $self = shift;
-    $self->{+LEGACY} ||= [];
-    push @{$self->{+LEGACY}} => @_;
-}
 
 1;
 
@@ -79,7 +31,48 @@ __END__
 
 =head1 NAME
 
-Test::Stream::State - Representation of the state of the testing
+Test::Stream::Event::Exception - Exception event
+
+=head1 DESCRIPTION
+
+An exception event will display to STDERR, and will prevent the overall test
+file from passing.
+
+=head1 SYNOPSIS
+
+    use Test::Stream::Context qw/context/;
+    use Test::Stream::Event::Exception;
+
+    my $ctx = context();
+    my $event = $ctx->send_event('Exception', error => 'Stuff is broken');
+
+=head1 METHODS
+
+Inherits from L<Test::Stream::Event>. Also defines:
+
+=over 4
+
+=item $reason = $e->exception
+
+The reason for the exception.
+
+=back
+
+=head1 SUMMARY FIELDS
+
+These are the fields that will be present when calling
+C<< my %sum = $e->summary >>. Please note that the fields are returned as an
+order key+pair list, they can be directly assigned to a hash if desired, or
+they can be assigned to an array to preserver the order. The order is as it
+appears below, B<NOT> alphabetical.
+
+=over 4
+
+=item error
+
+Reason for the exception
+
+=back
 
 =head1 SOURCE
 

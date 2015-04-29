@@ -14,6 +14,7 @@ use Test::Stream::Event::Note;
 use Test::Stream::Event::Ok;
 use Test::Stream::Event::Plan;
 use Test::Stream::Event::Subtest;
+use Test::Stream::Event::Exception;
 
 use Test::Stream::Exporter qw/import export_to default_exports export/;
 default_exports qw/is_tester init_tester context/;

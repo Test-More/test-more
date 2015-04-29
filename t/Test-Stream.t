@@ -3,7 +3,7 @@ use warnings;
 
 use Test::Stream qw{
     listen munge follow_up
-    enable_forking cull
+    enable_concurrency cull
     peek_todo push_todo pop_todo set_todo inspect_todo
     is_tester init_tester
     is_modern set_modern
@@ -24,7 +24,7 @@ require Test::CanFork;
 
 can_ok(__PACKAGE__, qw{
     listen munge follow_up
-    enable_forking cull
+    enable_concurrency cull
     peek_todo push_todo pop_todo set_todo inspect_todo
     is_tester init_tester
     is_modern set_modern
@@ -97,7 +97,7 @@ isa_ok($follow[0], 'Test::Stream::Context');
 my $events = intercept {
     Test::CanFork->import;
 
-    enable_forking;
+    enable_concurrency;
 
     my $pid = fork();
     if ($pid) { # Parent

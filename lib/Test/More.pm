@@ -560,7 +560,7 @@ of some legacy support shims, saving you memory and improving performance.
 
 You can also use it to make forking work:
 
-    use Test::Stream 'enable_fork';
+    use Test::Stream 'concurrency';
 
 =head2 TAP Encoding
 
@@ -952,95 +952,9 @@ just a single object which isa C<$class>.
 
     subtest $name => \&code;
 
-C<subtest()> runs the &code as its own little test with its own plan and
-its own result.  The main test counts this as a single test using the
-result of the whole subtest to determine if its ok or not ok.
-
-For example...
-
-  use Test::More tests => 3;
-
-  pass("First test");
-
-  subtest 'An example subtest' => sub {
-      plan tests => 2;
-
-      pass("This is a subtest");
-      pass("So is this");
-  };
-
-  pass("Third test");
-
-This would produce.
-
-  1..3
-  ok 1 - First test
-      # Subtest: An example subtest
-      1..2
-      ok 1 - This is a subtest
-      ok 2 - So is this
-  ok 2 - An example subtest
-  ok 3 - Third test
-
-A subtest may call C<skip_all>.  No tests will be run, but the subtest is
-considered a skip.
-
-  subtest 'skippy' => sub {
-      plan skip_all => 'cuz I said so';
-      pass('this test will never be run');
-  };
-
-Returns true if the subtest passed, false otherwise.
-
-Due to how subtests work, you may omit a plan if you desire.  This adds an
-implicit C<done_testing()> to the end of your subtest.  The following two
-subtests are equivalent:
-
-  subtest 'subtest with implicit done_testing()', sub {
-      ok 1, 'subtests with an implicit done testing should work';
-      ok 1, '... and support more than one test';
-      ok 1, '... no matter how many tests are run';
-  };
-
-  subtest 'subtest with explicit done_testing()', sub {
-      ok 1, 'subtests with an explicit done testing should work';
-      ok 1, '... and support more than one test';
-      ok 1, '... no matter how many tests are run';
-      done_testing();
-  };
-
-B<NOTE on using skip_all in a BEGIN inside a subtest.>
-
-Sometimes you want to run a file as a subtest:
-
-    subtest foo => sub { do 'foo.pl' };
-
-where foo.pl;
-
-    use Test::More skip_all => "won't work";
-
-This will work fine, but will issue a warning. The issue is that the normal
-flow control method will now work inside a BEGIN block. The C<use Test::More>
-statement is run in a BEGIN block. As a result an exception is thrown instead
-of the normal flow control. In most cases this works fine.
-
-A case like this however will have issues:
-
-    subtest foo => sub {
-        do 'foo.pl'; # Will issue a skip_all
-
-        # You would expect the subtest to stop, but the 'do' captures the
-        # exception, as a result the following statement does execute.
-
-        ok(0, "blah");
-    };
-
-You can work around this by cheking the return from C<do>, along with C<$@>, or you can alter foo.pl so that it does this:
-
-    use Test::More;
-    plan skip_all => 'broken';
-
-When the plan is issues outside of the BEGIN block it works just fine.
+Please see L<Test::Stream::Subtest> for more information. There are enough
+gotchas and edge cases in subtests that their documentation will not be
+duplicated here.
 
 =item B<pass>
 
@@ -1659,25 +1573,23 @@ suggest L<Test::Deep> which contains more flexible testing functions for
 complex data structures.
 
 
-=item Threads
+=item Threads and forking
 
-B<NOTE:> The underlying mechanism to support threads has changed as of version
-1.301001. Instead of sharing several variables and locking them, threads now
-use the same mechanism as forking support. The new system writes events to temp
-files which are culled by the main process.
+See L<Test::Stream::Concurrency> for details on modern threading+forking with
+Test::Stream.
 
-Test::More will only be aware of threads if C<use threads> has been done
-I<before> Test::More is loaded.  This is ok:
+In Legacy code you would enable thread support by loading threads before
+loading Test::More.
 
     use threads;
     use Test::More;
 
-This may cause problems:
+This still works, and it works in a backwords compatible way. However backwords
+compatible means it does not enable some features you would get if you loaded
+L<Test::Stream::Concurrency> itself. You can load L<Test::Stream::Concurrency>
+after loading threads and Test::More to gain the useful features.
 
-    use Test::More
-    use threads;
-
-5.8.1 and above are supported.  Anything below that has too many bugs.
+This is also true of code that uses L<Test::SharedFork> for fork support.
 
 =back
 

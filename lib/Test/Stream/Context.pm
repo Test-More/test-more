@@ -130,8 +130,8 @@ sub context {
     }
 
     $hub ||= $meta->{Test::Stream::Meta::HUB} || Test::Stream->shared || confess "No Stream!?";
-    if ((USE_THREADS || $hub->_use_fork) && ($hub->pid == $$ && $hub->tid == get_tid())) {
-        $hub->fork_cull();
+    if ((USE_THREADS || $hub->concurrency_driver) && ($hub->pid == $$ && $hub->tid == get_tid())) {
+        $hub->ipc_cull();
     }
 
     my $encoding = $meta->{Test::Stream::Meta::ENCODING} || 'legacy';

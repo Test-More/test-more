@@ -1,3 +1,6 @@
+NEXT:
+    * Allow alternative concurrency models/drivers
+
 1.301001_108:
     * Rename some subtest implementation details to private subs
     * No logic or functionality changes, just hiding some methods before release

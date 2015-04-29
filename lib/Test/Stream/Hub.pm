@@ -22,11 +22,9 @@ use Test::Stream::HashBase(
         follow_ups
         bailed_out
         exit_on_disruption
-        use_tap use_legacy _use_fork
+        use_tap use_legacy concurrency_driver
         use_numbers
         io_sets
-        event_id
-        in_subthread
     }],
 );
 
@@ -38,7 +36,6 @@ sub init {
 
     $self->{+USE_TAP}     = 1;
     $self->{+USE_NUMBERS} = 1;
-    $self->{+EVENT_ID}    = 1;
     $self->{+NO_ENDING}   = 1;
 
     $self->{+STATES}  = [Test::Stream::State->new];
@@ -49,7 +46,8 @@ sub init {
     $self->{+_SUBTEST_BUFFERING} = 0;
     $self->{+_SUBTEST_SPEC} = 'legacy';
 
-    $self->use_fork if USE_THREADS;
+    $self->enable_concurrency(wait => undef, join => undef)
+        if USE_THREADS;
 
     $self->{+EXIT_ON_DISRUPTION} = 1;
 }
@@ -139,91 +137,88 @@ sub follow_up {
     }
 }
 
-sub use_fork {
-    return 1 if $_[0]->{+_USE_FORK};
-    require File::Temp;
-    require Storable;
-
-    $_[0]->{+_USE_FORK} ||= File::Temp::tempdir(CLEANUP => 0);
-
-    confess "Could not get a temp dir" unless $_[0]->{+_USE_FORK};
-    if ($^O eq 'VMS') {
-        require VMS::Filespec;
-        $_[0]->{+_USE_FORK} = VMS::Filespec::unixify($_[0]->{+_USE_FORK});
+sub enable_concurrency {
+    my $self = shift;
+    if ($self->{+CONCURRENCY_DRIVER}) {
+        $self->{+CONCURRENCY_DRIVER}->configure(@_);
+        return $self->{+CONCURRENCY_DRIVER};
     }
-    return 1;
+
+    require Test::Stream::Concurrency;
+    my $sync = Test::Stream::Concurrency->spawn(@_);
+
+    confess "Could not load any concurrency plugin!"
+        unless $sync;
+
+    $self->{+CONCURRENCY_DRIVER} = $sync;
 }
 
-sub fork_out {
+sub ipc_send {
     my $self = shift;
+    my (@events) = @_;
 
-    my $tempdir = $self->{+_USE_FORK};
-    confess "Fork support has not been turned on!" unless $tempdir;
+    my $sync = $self->{+CONCURRENCY_DRIVER};
+    confess "Fork support has not been turned on!" unless $sync;
 
-    my $orig = "$$-" . get_tid();
     my $dest;
     if (my $subtest = $self->{+_SUBTESTS}->[-1]) {
-        $dest = $subtest->{pid} . '-' . $subtest->{tid};
+        $dest = [$subtest->{pid}, $subtest->{tid}];
     }
     else {
-        $dest = $self->{+PID} . '-' . $self->{+TID};
+        $dest = [$self->{+PID}, $self->{+TID}];
     }
-    my $route = "$dest-$orig";
 
-    for my $event (@_) {
-        next unless $event;
-        next if $event->isa('Test::Stream::Event::Finish');
-
-        # First write the file, then rename it so that it is not read before it is ready.
-        my $name =  $tempdir . "/$route-" . ($self->{+EVENT_ID}++);
-        my ($ret, $err) = try { Storable::store($event, $name) };
-        # Temporary to debug an error on one cpan-testers box
-        unless ($ret) {
-            require Data::Dumper;
-            confess(Data::Dumper::Dumper({ error => $err, event => $event}));
-        }
-        rename($name, "$name.ready") || confess "Could not rename file '$name' -> '$name.ready'";
-    }
+    $sync->send(
+        orig   => [$$, get_tid()],
+        dest   => $dest,
+        events => \@events,
+    );
 }
 
-sub fork_cull {
+sub ipc_cull {
     my $self = shift;
+    my $sync = $self->{+CONCURRENCY_DRIVER} || return;
 
-    my $tempdir = $self->{+_USE_FORK} || return;
+    for my $e ($sync->cull($$, get_tid())) {
+        if (my $num = $e->in_subtest) {
+            my $sid = $e->in_subtest_id();
+            my $st = $self->{+_SUBTESTS}->[$num - 1];
 
-    opendir(my $dh, $tempdir) || croak "could not open temp dir ($tempdir)!";
+            unless ($st && $st->{id} eq "$sid") {
+                my @tap = $e->to_tap();
+                my $details = join "\n" => map {"  # $_"} map {split /\n/, $_->[1]} @tap;
+                warn <<"                EOT";
+Attempted to send an event to subtest that has already completed.  This usually
+means you started a new process or thread inside a subtest, but let the subtest
+end before the child process or thread completed.
+Event: $e
+$details
 
-    my $get = "$$-" . get_tid();
+                EOT
+                $self->{+STATES}->[0]->bump_fail;
+                next;
+            }
 
-    my @files = sort readdir($dh);
-    for my $file (@files) {
-        next if $file =~ m/^\.+$/;
-        next unless $file =~ m/^\Q$get\E-.*\.ready$/;
+            my $cache = $self->_preprocess_event($self->{+STATES}->[-1], $e);
 
-        # Untaint the path.
-        my $full = "$tempdir/$file";
-        ($full) = ($full =~ m/^(.*)$/gs);
+            $e->context->set_diag_todo(1) if $st->{parent_todo};
+            push @{$st->{events}} => $e;
+            $self->_render_tap($cache) unless $st->{buffer} || $cache->{no_out};
+            $st->{state}->bump_fail if $e->isa('Test::Stream::Event::Exception');
 
-        my $obj = Storable::retrieve($full);
-        confess "Empty event object found '$full'" unless $obj;
+            $self->_postprocess_event($e, $cache);
 
-        if ($ENV{TEST_KEEP_TMP_DIR}) {
-            rename($full, "$full.complete")
-                || confess "Could not rename file '$full', '$full.complete'";
+            next;
         }
-        else {
-            unlink($full) || die "Could not unlink file: $file";
-        }
 
-        $self->send($obj);
+        $self->send($e);
     }
-
-    closedir($dh);
 }
 
 sub done_testing {
     my $self = shift;
     my ($ctx, $num) = @_;
+
     my $state = $self->{+STATES}->[-1];
 
     if (my $old = $state->ended) {
@@ -233,8 +228,17 @@ sub done_testing {
     }
 
     # Do not run followups in subtest!
-    if ($self->{+FOLLOW_UPS} && !@{$self->{+_SUBTESTS}}) {
-        $_->($ctx) for @{$self->{+FOLLOW_UPS}};
+    unless (@{$self->{+_SUBTESTS}}) {
+        my $driver = $self->concurrency_driver;
+        if ($driver && $$ == $self->pid) {
+            local $?;
+            $driver->finalize;
+            $self->ipc_cull;
+        }
+
+        if ($self->{+FOLLOW_UPS}) {
+            $_->($ctx) for @{$self->{+FOLLOW_UPS}};
+        }
     }
 
     $state->set_ended($ctx->snapshot);
@@ -340,27 +344,14 @@ sub send {
     my $cache = $self->_preprocess_event($self->{+STATES}->[-1], $e);
 
     # Subtests get dibbs on events
-    my $num;
-    if($num = $e->in_subtest()) {
-        my $sid = $e->in_subtest_id();
-        $num -= 1;
-        my $st = $self->{+_SUBTESTS}->[$num];
-
-        confess "Attempt to send event ($e) to ended subtest ($sid)"
-            unless $st && $st->{id} eq "$sid";
-
-        $e->context->set_diag_todo(1) if $st->{parent_todo};
-        push @{$st->{events}} => $e;
-        $self->_render_tap($cache) unless $st->{buffer} || $cache->{no_out};
-    }
-    elsif ($num = @{$self->{+_SUBTESTS}}) {
+    if (my $num = @{$self->{+_SUBTESTS}}) {
         my $st = $self->{+_SUBTESTS}->[-1];
 
         $e->set_in_subtest($num);
         $e->set_in_subtest_id($st->{id});
 
-        if ($self->{+_USE_FORK} && ($$ != $st->{pid} || get_tid() != $st->{tid})) {
-            $self->fork_out($e);
+        if ($self->{+CONCURRENCY_DRIVER} && ($$ != $st->{pid} || get_tid() != $st->{tid})) {
+            $self->ipc_send($e) unless $e->isa('Test::Stream::Event::Finish');
         }
         else {
             $e->context->set_diag_todo(1) if $st->{parent_todo};
@@ -368,8 +359,8 @@ sub send {
             $self->_render_tap($cache) unless $st->{buffer} || $cache->{no_out};
         }
     }
-    elsif ($self->{+_USE_FORK} && ($$ != $self->{+PID} || get_tid() != $self->{+TID})) {
-        $self->fork_out($e);
+    elsif ($self->{+CONCURRENCY_DRIVER} && ($$ != $self->{+PID} || get_tid() != $self->{+TID})) {
+        $self->ipc_send($e) unless $e->isa('Test::Stream::Event::Finish');
     }
     else {
         $self->_process_event($e, $cache);
@@ -384,6 +375,10 @@ sub _preprocess_event {
     my ($self, $state, $e) = @_;
     my $cache = {tap_event => $e, state => $state};
 
+    if ($e->isa('Test::Stream::Event::Exception')) {
+        $state->is_passing(0);
+        $cache->{do_tap} = 1;
+    }
     if ($e->isa('Test::Stream::Event::Ok')) {
         $state->bump($e->effective_pass);
         $cache->{do_tap} = 1;
@@ -562,39 +557,11 @@ sub _reset {
 
     $self->{+PID} = $$;
     $self->{+TID} = get_tid();
-    if (USE_THREADS || $self->{+_USE_FORK}) {
-        $self->{+_USE_FORK} = undef;
-        $self->use_fork;
+    if (USE_THREADS || $self->{+CONCURRENCY_DRIVER}) {
+        my @args = $self->{+CONCURRENCY_DRIVER}->configure;
+        $self->{+CONCURRENCY_DRIVER} = undef;
+        $self->enable_concurrency(@args);
     }
-}
-
-sub DESTROY {
-    my $self = shift;
-
-    return if $self->in_subthread;
-
-    my $dir = $self->{+_USE_FORK} || return;
-
-    return unless defined $self->pid;
-    return unless defined $self->tid;
-
-    return unless $$        == $self->pid;
-    return unless get_tid() == $self->tid;
-
-    if ($ENV{TEST_KEEP_TMP_DIR}) {
-        print STDERR "# Not removing temp dir: $dir\n";
-        return;
-    }
-
-    opendir(my $dh, $dir) || confess "Could not open temp dir! ($dir)";
-    while(my $file = readdir($dh)) {
-        next if $file =~ m/^\.+$/;
-        die "Unculled event! You ran tests in a child process, but never pulled them in!\n"
-            if $file !~ m/\.complete$/;
-        unlink("$dir/$file") || confess "Could not unlink file: '$dir/$file'";
-    }
-    closedir($dh);
-    rmdir($dir) || warn "Could not remove temp dir ($dir)";
 }
 
 sub STORABLE_freeze {
@@ -638,9 +605,30 @@ or
 
 =over 4
 
-=item $hub->use_fork
+=item $hub->enable_concurrency()
 
-Turn on forking support (it cannot be turned off).
+=item $hub->enable_concurrency(wait => $bool, join => $bool, driver => $driver, fallback => $driver)
+
+Turns forking support on. This turns on a synchronization method that *just
+works* when you fork inside a test. This must be turned on prior to any
+forking.
+
+Normally Test::Stream will wait on all child processes and join all remaining
+threads before ending the parent process/thread. You can disable these
+behaviors by setting C<wait> and/or c<join> to false. The default for these is
+true.
+
+If you wish to use a specific concurrency driver module you may specify it with
+the c<driver> key. You may also specify 1 or more fallback drivers using the
+C<fallback> key, which may be specified multiple times.
+
+If no driver is specified the default is L<Test::Stream::Concurrency::Files>,
+but this can change at any time in the future, so if you care you should
+specify one.
+
+If no fallback is specified the default is L<Test::Stream::Concurrency::Files>,
+but this can change at any time in the future, so if you care you should
+specify one.
 
 =item $hub->subtest_buffering($bool)
 
@@ -801,9 +789,19 @@ Used internally to store events for legacy support.
 
 Check if the test is passing its plan.
 
-=item $hub->fork_cull
+=back
+
+=head2 OTHER METHODS
+
+=over 4
+
+=item $hub->ipc_cull
 
 Gather events from other threads/processes.
+
+=item $d = $sub->concurrency_driver()
+
+Get the instance of the concurrency driver, if concurrency is enabled.
 
 =back
 

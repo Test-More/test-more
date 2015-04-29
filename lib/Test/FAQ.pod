@@ -302,11 +302,7 @@ say C<use lib 't/lib'>.
 
 =head2 How do I deal with threads and forking?
 
-    use Test::More qw/enable_forking/;
-
-or
-
-    use Test::More qw/modern/;
+    use Test::More qw/concurrency/;
 
 =head2 Why do I need more than ok?
 

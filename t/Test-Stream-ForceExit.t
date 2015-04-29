@@ -4,7 +4,7 @@ use warnings;
 
 use Test::CanFork;
 
-use Test::Stream qw/enable_fork/;
+use Test::Stream qw/concurrency/;
 use Test::More;
 use Test::Stream::ForceExit;
 

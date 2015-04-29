@@ -22,7 +22,13 @@ use Test::Stream::ExitMagic::Context;
 my ($root, @stack, $magic);
 
 END {
-    $root->fork_cull if $root && $root->_use_fork && $$ == $root->pid;
+    my $driver = $root->concurrency_driver;
+    if ($driver && $$ == $root->pid) {
+        local $?;
+        $driver->finalize;
+        $root->ipc_cull;
+    }
+
     $magic->do_magic($root) if $magic && $root && !$root->no_ending
 }
 
@@ -114,7 +120,7 @@ use Test::Stream::Exporter;
 default_exports qw/context/;
 exports qw{
     listen munge follow_up
-    enable_forking cull
+    enable_concurrency cull
     peek_todo push_todo pop_todo set_todo inspect_todo
     is_tester init_tester
     is_modern set_modern
@@ -161,8 +167,8 @@ sub before_import {
             $hub->io_sets->init_encoding($encoding);
             $meta->{+ENCODING} = $encoding;
         }
-        elsif ($item eq 'enable_fork') {
-            $hub->use_fork;
+        elsif ($item eq 'concurrency') {
+            $hub->enable_concurrency;
         }
         else {
             push @$other => $item;
@@ -174,20 +180,20 @@ sub before_import {
     return;
 }
 
-sub cull            { shared()->fork_cull()        }
-sub listen(&)       { shared()->listen($_[0])      }
-sub munge(&)        { shared()->munge($_[0])       }
-sub follow_up(&)    { shared()->follow_up($_[0])   }
-sub enable_forking  { shared()->use_fork()         }
-sub disable_tap     { shared()->set_use_tap(0)     }
-sub enable_tap      { shared()->set_use_tap(1)     }
-sub enable_numbers  { shared()->set_use_numbers(1) }
-sub disable_numbers { shared()->set_use_numbers(0) }
-sub state_count     { shared()->count()            }
-sub state_failed    { shared()->failed()           }
-sub state_plan      { shared()->plan()             }
-sub state_ended     { shared()->ended()            }
-sub is_passing      { shared()->is_passing         }
+sub cull               { shared()->ipc_cull()             }
+sub listen(&)          { shared()->listen($_[0])          }
+sub munge(&)           { shared()->munge($_[0])           }
+sub follow_up(&)       { shared()->follow_up($_[0])       }
+sub enable_concurrency { shared()->enable_concurrency(@_) }
+sub disable_tap        { shared()->set_use_tap(0)         }
+sub enable_tap         { shared()->set_use_tap(1)         }
+sub enable_numbers     { shared()->set_use_numbers(1)     }
+sub disable_numbers    { shared()->set_use_numbers(0)     }
+sub state_count        { shared()->count()                }
+sub state_failed       { shared()->failed()               }
+sub state_plan         { shared()->plan()                 }
+sub state_ended        { shared()->ended()                }
+sub is_passing         { shared()->is_passing             }
 
 sub tap_encoding {
     my ($encoding) = @_;
@@ -272,17 +278,12 @@ sub get_tap_outputs {
 # Exported Tools and shortcuts }}} #
 ####################################
 
-# This is here to satisfy the Test::SharedFork patch until it is repatched
-sub use_fork { croak "do not use this" }
-
 sub CLONE {
     for my $hub (Test::Stream->_stack()) {
         next unless defined $hub->pid;
         next unless defined $hub->tid;
 
         next if $$ == $hub->pid && get_tid() == $hub->tid;
-
-        $hub->set_in_subthread(1);
     }
 }
 
@@ -374,11 +375,16 @@ The 'block' spec forces buffering, it wraps results in a block:
         1..2
     # }
 
-=item 'enable_fork'
+=item 'concurrency'
 
-Turns on support for code that forks. This is not activated by default because
-it adds ~30ms to the Test::More compile-time, which can really add up in large
-test suites. Turn it on only when needed.
+Turns on support for code that forks or uses threads. This is not activated by
+default because it adds ~30ms to the Test::More compile-time, which can really
+add up in large test suites. Turn it on only when needed.
+
+If you want more control over the concurrency driver you should load
+L<Test::Stream::Concurrency> directly with whatever arguments you need.
+Alternatively you can use the C<enable_concurrency()> function exported by this
+module.
 
 =item 'utf8'
 
@@ -434,9 +440,11 @@ Set the TAP encoding.
         }
     };
 
-=head2 ENABLING FORKING SUPPORT
+=head2 ENABLING FORKING AND THREADING SUPPORT
 
-    use Test::Stream 'enable_fork';
+For more details about concurrency support see L<Test::Stream::Concurrency>.
+
+    use Test::Stream 'concurrency';
     use Test::More;
 
     # This all just works!
@@ -453,10 +461,27 @@ Set the TAP encoding.
 
 or:
 
-    use Test::Stream qw/ enable_forking /;
+    use Test::Stream qw/enable_concurrency/;
     use Test::More;
 
-    enable_forking();
+    enable_concurrency();
+
+    # This all just works now!
+    my $pid = fork();
+    if ($pid) { # Parent
+        ok(1, "From Parent");
+    }
+    else { # child
+        ok(1, "From Child");
+        exit 0;
+    }
+
+    done_testing;
+
+or:
+
+    use Test::Stream::Concurrency;
+    use Test::More;
 
     # This all just works now!
     my $pid = fork();
@@ -644,11 +669,30 @@ test.
 
 =over 4
 
-=item enable_forking()
+=item enable_concurrency()
+
+=item enable_concurrency(wait => $bool, join => $bool, driver => $driver, fallback => $driver)
 
 Turns forking support on. This turns on a synchronization method that *just
 works* when you fork inside a test. This must be turned on prior to any
 forking.
+
+Normally Test::Stream will wait on all child processes and join all remaining
+threads before ending the parent process/thread. You can disable these
+behaviors by setting C<wait> and/or c<join> to false. The default for these is
+true.
+
+If you wish to use a specific concurrency driver module you may specify it with
+the c<driver> key. You may also specify 1 or more fallback drivers using the
+C<fallback> key, which may be specified multiple times.
+
+If no driver is specified the default is L<Test::Stream::Concurrency::Files>,
+but this can change at any time in the future, so if you care you should
+specify one.
+
+If no fallback is specified the default is L<Test::Stream::Concurrency::Files>,
+but this can change at any time in the future, so if you care you should
+specify one.
 
 =item cull()
 
