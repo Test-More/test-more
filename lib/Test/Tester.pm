@@ -15,7 +15,7 @@ require Exporter;
 
 use vars qw( @ISA @EXPORT $VERSION );
 
-our $VERSION = '1.301001_108';
+our $VERSION = '1.301001_109';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 @EXPORT  = qw( run_tests check_tests check_test cmp_results show_space );

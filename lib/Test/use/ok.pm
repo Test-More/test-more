@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use 5.005;
 
-our $VERSION = '1.301001_108';
+our $VERSION = '1.301001_109';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Stream 1.301001 ();

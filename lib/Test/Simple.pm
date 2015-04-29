@@ -5,10 +5,10 @@ use 5.008001;
 use strict;
 use warnings;
 
-our $VERSION = '1.301001_108';
+our $VERSION = '1.301001_109';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-use Test::Stream 1.301001_108 ();
+use Test::Stream 1.301001_109 ();
 use Test::Stream::Toolset;
 
 use Test::Builder;
