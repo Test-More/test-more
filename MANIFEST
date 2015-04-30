@@ -56,7 +56,6 @@ lib/Test/Stream/Event/Plan.pm
 lib/Test/Stream/Event/Subtest.pm
 lib/Test/Stream/ExitMagic.pm
 lib/Test/Stream/ExitMagic/Context.pm
-lib/Test/Stream/Explanation.pod
 lib/Test/Stream/Exporter.pm
 lib/Test/Stream/Exporter/Meta.pm
 lib/Test/Stream/ForceExit.pm

@@ -1,3 +1,6 @@
+1.301001_110    Wed Apr  29 20:31:14 PST 2014
+    * Documentation updates
+
 1.301001_109:
     * Allow alternative concurrency models/drivers
     * Define, document, and implement sane concurrency behavior
