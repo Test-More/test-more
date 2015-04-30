@@ -185,10 +185,6 @@ upper-case.
 C<Test::Stream::Event> is added to your @INC for you, unless you specify an
 alternative base class, which must itself subclass C<Test::Stream::Event>.
 
-Events B<CAN NOT> use multiple inheritance in most cases. This is mainly
-because events are arrayrefs and not hashrefs. Each subclass must add fields as
-new indexes after the last index of the parent class.
-
 =head1 METHODS
 
 =over 4

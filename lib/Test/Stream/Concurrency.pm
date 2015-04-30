@@ -211,7 +211,7 @@ threads before exiting. This behavior is helpful and prevents you from making
 common mistakes.
 
 Legacy thread support and Test::SharedFork did not provide either of these
-behaviors, so in purely backwords compatible mode they are not loaded. This
+behaviors, so in purely backwards compatible mode they are not loaded. This
 happens when concurrency is enabled automatically because C<threads> are
 loaded, or when you load Test::SharedFork. Loading L<Test::Stream::Concurrency>
 at any point will turn these features on unless you ask to turn them off.
@@ -262,49 +262,6 @@ under the __END__ section inside each script.
 
 =over
 
-=item $sync->send(dest => [$DPID, $DTID], orig => [$$, get_tid()], events => \@events);
-
-Used to send events from the current thread/proc to the destination
-thread/proc. The C<dest> argument will always be an arrayref with the proc-id
-and thread-id to which the events should be sent. The C<orig> argument will
-always have the proc-id and thread-id that the events are from, usually the
-current pid and tid. The c<events> argument will always be an arrayref of
-events to send.
-
-    sub send {
-        my $self = shift;
-        my %params = @_;
-
-        # arrayrefs with process-id and thread-id
-        my $dest = $params{dest}; # where to send the events
-        my $orig = $params{orig}; # usually current proc-id and thread-id
-
-        # arrayref of events to send
-        my $events = $param{events};
-
-        ... # Here is where you send the events to the other thread/proc
-    }
-
-=item @events = $sync->cull($pid, $tid)
-
-This is used to collect results sent by another process or thread. The argument
-are the proc-id and thread-id that should be used to identify what events
-belong to us, these correspond to the C<dest> argument of C<< $sync->send() >>.
-These will usually be the current proc-id and thread-id, but they may not be if
-someone is doing something clever.
-
-    sub cull {
-        my $self = shift;
-
-        # This tells us the pid and thread id we think we are, only cull
-        # results intended for this combination.
-        my ($pid, $tid) = @_; # proc-id and thread-id
-
-        my @events = ...; # Here is where you get the events
-
-        return @events;
-    }
-
 =item $bool = $sync->wait;
 
 This is true if Test::Stream should wait on all child processes before exiting.
@@ -321,11 +278,6 @@ This can be modified using the C<< $sync->configure >> method.
 
 Used to get/set the configuration. Currently the configuration contains 2 keys:
 C<join> and C<wait>.
-
-=item $sync->finalize
-
-Called by Test::Stream at the end of testing, it is used to wait on child
-processed and join child threads.
 
 =back
 
@@ -388,13 +340,48 @@ is not viable in the current environment it should return 0.
         return 0;
     }
 
-=item $sync = $class->new()
+=item $sync->send(dest => [$DPID, $DTID], orig => [$$, get_tid()], events => \@events);
 
-Create a new instance of the concurrency driver. This should not require any
-arguments.
+Used to send events from the current thread/proc to the destination
+thread/proc. The C<dest> argument will always be an arrayref with the proc-id
+and thread-id to which the events should be sent. The C<orig> argument will
+always have the proc-id and thread-id that the events are from, usually the
+current pid and tid. The c<events> argument will always be an arrayref of
+events to send.
 
-There is a C<new()> method in the base class, no need to roll your own unless
-you are doing something special.
+    sub send {
+        my $self = shift;
+        my %params = @_;
+
+        # arrayrefs with process-id and thread-id
+        my $dest = $params{dest}; # where to send the events
+        my $orig = $params{orig}; # usually current proc-id and thread-id
+
+        # arrayref of events to send
+        my $events = $param{events};
+
+        ... # Here is where you send the events to the other thread/proc
+    }
+
+=item @events = $sync->cull($pid, $tid)
+
+This is used to collect results sent by another process or thread. The argument
+are the proc-id and thread-id that should be used to identify what events
+belong to us, these correspond to the C<dest> argument of C<< $sync->send() >>.
+These will usually be the current proc-id and thread-id, but they may not be if
+someone is doing something clever.
+
+    sub cull {
+        my $self = shift;
+
+        # This tells us the pid and thread id we think we are, only cull
+        # results intended for this combination.
+        my ($pid, $tid) = @_; # proc-id and thread-id
+
+        my @events = ...; # Here is where you get the events
+
+        return @events;
+    }
 
 =back
 

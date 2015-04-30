@@ -1452,7 +1452,7 @@ Parent builder instance, if this is a child.
 
 Many legacy testing modules monkeypatch C<ok()>, C<plan()>, and others. The
 abillity to monkeypatch these to effect all events of the specified type is now
-considered discouraged. For backwords compatability monkeypatching continues to
+considered discouraged. For backwards compatability monkeypatching continues to
 work, however in the distant future it will be removed. L<Test::Stream> upon
 which Test::Builder is now built, provides hooks and API's for doing everything
 that previously required monkeypatching.

@@ -403,11 +403,6 @@ Test::More - The defacto standard in unit testing tools.
 
 =head1 SYNOPSIS
 
-    # Using Test::Stream BEFORE using Test::More removes expensive legacy
-    # support. This Also provides context(), cull(), and tap_encoding()
-    use Test::Stream;
-
-    # Load after Test::Stream to get the benefits of removed legacy
     use Test::More;
 
     use ok 'Some::Module';
@@ -451,6 +446,7 @@ Test::More - The defacto standard in unit testing tools.
         is( foo(42), 23, $test_name );
     };
 
+    use Test::Stream qw/context/;
     sub my_compare {
         my ($got, $want, $name) = @_;
         my $ctx = context(); # From Test::Stream
@@ -550,24 +546,12 @@ This is safer than and replaces the "no_plan" plan.
 
 =back
 
-=head2 Test::Stream
-
-If Test::Stream is loaded before Test::More then it will prevent the insertion
-of some legacy support shims, saving you memory and improving performance.
-
-    use Test::Stream;
-    use Test::More;
-
-You can also use it to make forking work:
-
-    use Test::Stream 'concurrency';
-
 =head2 TAP Encoding
 
 You can now control the encoding of your TAP output using Test::Stream.
 
-    use Test::Stream; # imports tap_encoding
     use Test::More;
+    use Test::Stream qw/tap_encoding/;
 
     tap_encoding 'utf8';
 
@@ -609,7 +593,7 @@ C<Encode::Locale> module.
 The following is an example of code.
 
   use utf8;
-  use Test::Stream;
+  use Test::Stream qw/tap_encoding/;
   use Test::More;
   use Encode::Locale;
 
@@ -1531,7 +1515,7 @@ Using C<< binmode STDOUT, ":utf8" >> will not fix it.
 Use the C<tap_encoding> function to configure the TAP hub encoding.
 
     use utf8;
-    use Test::Stream; # imports tap_encoding
+    use Test::Stream qw/tap_encoding/;
     use Test::More;
     tap_encoding 'utf8';
 
@@ -1584,7 +1568,7 @@ loading Test::More.
     use threads;
     use Test::More;
 
-This still works, and it works in a backwords compatible way. However backwords
+This still works, and it works in a backwards compatible way. However backwards
 compatible means it does not enable some features you would get if you loaded
 L<Test::Stream::Concurrency> itself. You can load L<Test::Stream::Concurrency>
 after loading threads and Test::More to gain the useful features.

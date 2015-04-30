@@ -92,7 +92,7 @@ specification.
 =head1 DESCRIPTION
 
 Used internally by L<Test::Stream::Tester>. Please do not use directly. No
-backwords compatability will be provided if the API for this module changes.
+backwards compatability will be provided if the API for this module changes.
 
 =head1 SOURCE
 

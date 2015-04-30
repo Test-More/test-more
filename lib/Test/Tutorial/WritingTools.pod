@@ -90,8 +90,7 @@ filled in by C<Test::Stream::Context>.
 
 To get a context object you call C<context()> which can be imported from
 L<Test::Stream::Context> itself, or from L<Test::Stream::Toolset>. Once you
-have a context object you can ask it to issue events for you. All event types
-C<Test::Stream::Event::*> get helper methods on the context object.
+have a context object you can ask it to issue events for you.
 
 =head2 IMPORTANT NOTE ON CONTEXTS
 
@@ -153,8 +152,8 @@ generating extra events.
 =head1 Available Events
 
 Anyone can add an event by shoving it in the C<Test::Stream::Event::*>
-namespace. It will autoload if C<< $context->event_name >> is called. But here
-is the list of events that come with L<Test::Stream>.
+namespace. C<< $context->send_event( 'Type', ... ) >> will automatically load
+C<Test::Stream::Event::Type> if it exists.
 
 =over 4
 
@@ -189,6 +188,13 @@ Stop the entire test file, something is very wrong!
     $ctx->plan(0, $directive, $reason);
 
 Set the plan.
+
+=item All event types
+
+    $ctx->send_Event( 'Type', ... );
+
+This will send an event of C<Test::Stream::Event::Type>, loading the module if
+necessary. The arguments are attributes of the event type as key/value pairs.
 
 =back
 
@@ -244,7 +250,7 @@ here are all the original copyrights together:
 
 =item Test::Stream::Tester
 
-Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

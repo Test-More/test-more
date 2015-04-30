@@ -40,12 +40,18 @@ a L<Test::More>-compatible test library. It still works and should be fully
 functional and backwards compatible. It is, however, discouraged as it is
 mostly a compatibility wrapper.
 
-=item Test::Stream
+=item Test::Stream::Hub
 
 This is the B<new> heart and soul of the Test::* architecture. It is not the
 primary interface that a unit-test author will use. This module is responsible
 for collecting all events from all threads and processes and then forwarding
 them to TAP and any other added listeners.
+
+=item Test::Stream
+
+This is the central API for everything related to L<Test::Stream>. This module
+exports helper functions for nearly every aspect of Test::Stream functionality.
+This is also the place where the shared instances live.
 
 =item Test::Stream::IOSets
 
@@ -108,7 +114,7 @@ This module can validate testing tools and their events.
 
 =over 4
 
-=item L<Test::Stream>
+=item L<Test::Stream::Hub>
 
 =back
 
@@ -272,16 +278,10 @@ on to a context you need to call C<$context-E<gt>snapshot>, and store the
 cloned object it returns. In general you should not need to do this. Event
 objects all store the context but do so using a snapshot.
 
-B<Note> I am open to changing this to remove the weak-reference magic and
-instead require someone to call C<$context-E<gt>release> or similar when they
-are done with a context but that seems more likely to result in rogue
-contexts. This method would also require its own form of reference counting.
-This decision will need to be made before we go stable.
-
 =head2 GENERATING EVENTS
 
 All event subclasses should use L<Test::Stream::Event> to set them up as
-proper event objects. IT is best to use the C<send_event()> method provided by
+proper event objects. It is best to use the C<send_event()> method provided by
 the context object:
 
     my $ctx = context;
@@ -331,11 +331,7 @@ file and line number where errors should be reported. They also have details
 on where and how they were generated. All other details are event-specific.
 
 The subclass event should never be generated on its own. In fact, just use the
-subtest helpers provided by L<Test::More>, or L<Test::Stream::Context>. Under
-the hood, a L<Child> event is started which adds a subtest to a stack in
-Test::Stream, and then all events get intercepted by that subtest. When the
-subtest is done, issue another Child event to close it out. Once closed, a
-Subtest event will be generated for you and sent to the hub.
+subtest helpers provided by L<Test::More>, or L<Test::Stream::Subtest>.
 
 =head1 SOURCE
 
@@ -380,7 +376,7 @@ here are all the original copyrights together:
 
 =item Test::Stream::Tester
 
-Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

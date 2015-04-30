@@ -124,7 +124,7 @@ L<Test::More::Tools>.
 
 =head2 LEGACY
 
-    use Test::Mote;
+    use Test::More;
 
     sub exclusive_ok {
         my ($bool1, $bool2, $name) = @_;
@@ -147,7 +147,7 @@ forgets to set C<$Level> then errors will be reported to the wrong place.
 
 =head2 STREAM
 
-    use Test::Mote;
+    use Test::More;
 
     sub exclusive_ok {
         my ($bool1, $bool2, $name) = @_;

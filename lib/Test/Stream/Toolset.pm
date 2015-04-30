@@ -184,12 +184,7 @@ B<NOTE:> This will only work if you use Test::Stream::Exporter for your
 
 =head1 GENERATING EVENTS
 
-Events are always generated via a context object. Whenever you load an
-L<Test::Stream::Event> class it will add a method to L<Test::Stream::Context>
-which can be used to fire off that type of event.
-
-The following event types are all loaded automatically by
-L<Test::Stream::Toolset>
+Events are always generated via a context object.
 
 =over 4
 

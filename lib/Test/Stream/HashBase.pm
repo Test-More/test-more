@@ -132,7 +132,7 @@ Subclass it
     use strict;
     use warnings;
     use Test::Stream::HashBase base => 'My::Class',    # subclass
-        accessors                   => ['bat'];
+                          accessors => ['bat'];
 
     sub init {
         my $self = shift;
@@ -170,12 +170,12 @@ use it:
 
 =head1 DESCRIPTION
 
-This package is used to generate classes based on hashrefs instead of
-arrayrefs.  Using this class will give you a C<new()> method, as well as
-generating accessors you request.  Generated accessors will be getters,
-C<set_ACCESSOR> setters will also be generated for you. You also get constants
-for each accessor (all caps) which return the key into the hash for that
-accessor. Single inheritence is also supported.
+This package is used to generate classes based on hashrefs. Using this class
+will give you a C<new()> method, as well as generating accessors you request.
+Generated accessors will be getters, C<set_ACCESSOR> setters will also be
+generated for you. You also get constants for each accessor (all caps) which
+return the key into the hash for that accessor. Single inheritence is also
+supported.
 
 =head1 METHODS
 
@@ -242,7 +242,7 @@ You can subclass an existing HashBase class.
 
     use Test::Stream::HashBase
         base      => 'Another::HashBase::Class',
-        accessors => [qw/foo bar baz/],
+        accessors => [qw/foo bar baz/];
 
 Once a HashBase class is used as a subclass it is locked and no new fields can
 be added. All constants from base classes are added to subclasses

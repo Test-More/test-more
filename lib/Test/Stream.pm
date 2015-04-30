@@ -328,11 +328,11 @@ Test::Stream - A modern infrastructure for writing test tools.
 
 Test::Stream is a testing framework designed to replace Test::Builder. To be
 precise the project forked L<Test::Builder> and refactored it into its current
-design. The framework focuses on backwords compatability with L<Test::Builder>,
+design. The framework focuses on backwards compatability with L<Test::Builder>,
 and ease of use for testing tool authors.
 
 Most tools written with L<Test::Builder> will work fine and play nicely with
-Test::Stream based tools. Test::More gives you everything L<Test::Builder>
+Test::Stream based tools. Test::Stream gives you everything L<Test::Builder>
 does, and a whole lot more. If you are looking to write a new testing tool, or
 update an old one, this is the framework for you!
 
@@ -480,8 +480,8 @@ or:
 
 or:
 
-    use Test::Stream::Concurrency;
     use Test::More;
+    use Test::Stream::Concurrency;
 
     # This all just works now!
     my $pid = fork();
@@ -508,6 +508,32 @@ Or:
     ok 1 - From Parent
     ok 2 - From Child
 
+=head3 WHY SO MANY WAYS?
+
+=over 4
+
+=item use Test::Stream 'concurrency'
+
+This just quickly turns on concurrency. You cannot configure it, you just
+accept the defaults.
+
+=item use Test::Stream::Concurrency
+
+This allows you to configure concurrency with import arguments. This is useful
+if you want to specify a driver, or configure waiting/joining.
+
+=item use Test::Stream qw/enable_concurrency/
+
+    enable_concurrency(...);
+
+This lets you enable concurrency on the CURRENT hub, which might not be the
+same hub as compile-time. This is useful for testing your testing tools in
+Test::Tester with concurrency. It is also a way to turn on concurrency at a
+later stage to give other things a chance to prepare. Or to turn on concurrency
+in a conditional when and if you need it.
+
+=back
+
 =head2 REDIRECTING TAP OUTPUT
 
 You may omit any arguments to leave a specific handle unchanged. It is not
@@ -529,16 +555,13 @@ B<Note:> Each encoding has independant filehandles.
 =head2 EASY WAY
 
 The best way to generate an event is through a L<Test::Stream::Context>
-object. All events have a method associated with them on the context object.
-The method will be the last part of the evene package name lowercased, for
-example L<Test::Stream::Event::Ok> can be issued via C<< $context->ok(...) >>.
+object. Core events have shortcut methods on the context object, for example
+L<Test::Stream::Event::Ok> can be issued via C<< $context->ok(...) >>. Other
+events should use C<send_event()>.
 
     use Test::Stream qw/ context /;
     my $context = context();
     $context->send_event('EVENT_TYPE', ...);
-
-The 5 primary event types each have a shortcut method on
-L<Test::Stream::Context>:
 
 =over 4
 
@@ -587,7 +610,7 @@ methods do for you.
     # Make the event
     my $ok = Test::Stream::Event::Ok->new(
         # Should reflect where the event was produced, NOT WHERE ERRORS ARE REPORTED
-        created => [__PACKAGE__, __FILE__,              __LINE__],
+        created => [__PACKAGE__, __FILE__, __LINE__],
         context => $context,     # A context is required
         in_subtest => 0,
 

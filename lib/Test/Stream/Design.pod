@@ -9,39 +9,7 @@ Test::Stream::Design - Design documentation
 This document covers some of the important design decisions that were made in
 Test::Stream. Each sections covers a concept that needed to be addressed, or a
 problem that needed to be solved. Along with the description of the issue, and
-requirements, is a high level overview of the design adopted. In some cases
-alternative possible implementations are listed.
-
-=head2 Document Format
-
-Each section follows this format as closely as it can.
-
-    =head1 Short Title
-
-    Problem Statement
-
-    =head2 Specification
-
-    =head2 Implementation Proposals
-
-    =head3 Selected proposal
-
-    details
-
-    Pros: ...
-    Cons: ...
-
-    =head 3 Alternate Proposal
-
-    details
-
-    Pros: ...
-    Cons: ...
-
-Please also try to limit implementation proposal code to be just enough to
-convey the idea. The code should be flexible and adaptable to backcompat needs
-and reality.
-
+requirements, is a high level overview of the design adopted.
 
 
 
@@ -83,11 +51,9 @@ than read/write accessors would be overkill.
 
 =back
 
-=head2 Implementation Proposals
+=head2 Implementation
 
 =head3 HashBase
-
-B<Note> This is the one used by Test::Stream
 
     use HashBase(
         accessors => [qw/foo bar baz/],
@@ -145,8 +111,6 @@ L<Test::Stream::HashBase::Meta>.
 
 =head1 Diagnostics Information
 
-(This needs a better title)
-
 When an assertion such as C<ok(1)> is written in a test file, there is state
 and context information that is important for diagnostics.
 
@@ -194,7 +158,7 @@ State that may be useful to capture and convey:
 
 =back
 
-=head2 Implementation Proposals
+=head2 Implementation
 
 =head3 Context Object
 
@@ -209,10 +173,6 @@ that does not require any parameters (Though it can have optional parameters).
 When a context already exists it should be returned. When none exists a new one
 will be generated and returned. To establish the context, the entry sub for any
 tool should obtain the context first thing.
-
-=head4 Context Object: Weak reference
-
-B<Note:> This is the implementation Test::Stream currently uses.
 
 Psuedo-perl:
 
@@ -270,134 +230,6 @@ context perminently.
 
 The current implementation can be seen in L<Test::Stream::Context>.
 
-=head4 Context Object: Manual release
-
-Psuedo-perl:
-
-    sub snapshot {
-        my $self = shift;
-        return ...shallow copy of context...
-    }
-
-    my $CONTEXT;
-
-    sub release {
-        my $self = shift;
-        $CONTEXT = undef if $CONTEXT == $self;
-    }
-
-    sub context {
-        return $CONTEXT->snapshot if $CONTEXT;
-        my $ctx = ...generate...
-        $CONTEXT = $ctx;
-        return $ctx;
-    }
-
-Consumer:
-
-    sub my_ok {
-        my $ctx = context();
-        my ($x, $y) = @_;
-        ok($x, 'x is good');
-        ok($y, 'y is good');
-        $ctx->release;
-    }
-
-In this implementation, the first tool to request a context generates it, and
-gets the original. Any future consumers get a copy of the snapshot. Each tool
-calls 'release' on the context it has when it is done with it. For snapshots
-the release method is a no-op. For the original context the release method will
-actually release it.
-
-Pros:
-
-=over 4
-
-=item No weak ref magic
-
-=back
-
-Cons:
-
-=over 4
-
-=item Must remember to release the context, which may be hard in complex tools
-
-=item Lots of extra method calls
-
-=item Can leak easily
-
-=back
-
-=head4 Context Object: Scoped
-
-Psuedo-perl:
-
-    my $CONTEXT;
-    sub context(&) {
-        my $code = shift;
-        my $unset = 0;
-        unless($CONTEXT) {
-            $unset = 1;
-            $CONTEXT = ...Generate...;
-        }
-        local $@;
-        my $lives = eval {
-            $code->($CONTEXT);
-            1;
-        };
-        my $error = $@;
-        $CONTEXT = undef if $unset;
-        die $error unless $lives;
-    }
-
-Consumer:
-
-    sub my_ok {
-        my ($x, $y) = @_;
-        context {
-            my $ctx = shift; # if you want it
-            ok($x, 'x is good');
-            ok($y, 'y is good');
-        };
-    }
-
-Pros:
-
-=over 4
-
-=item Easy to understand
-
-=item No magic
-
-=item No way to leak
-
-=item Doesn't matter what people do with their refs, or how long they keep them
-
-=back
-
-Cons:
-
-=over 4
-
-=item Annoying to keep wrapping everything
-
-=item Cluttered stack traces
-
-=item Many extra sub calls (slow)
-
-=back
-
-=head4 Stack traces with marked frames (Rejected)
-
-This was the first solution used in the initial refactors. This system required
-all test tools to be marked as test tools through some form of metadata. Any
-time some context info such as C<$TODO> or the place to report errors was
-needed a full stack trace would be used. This slowed down test suites by 300%.
-There was an XS implementation that made it reasonably fast, but it was clearly
-the wrong way to go.
-
-
 
 
 =head1 Events and Event Processing
@@ -450,7 +282,7 @@ many tests have run, so it is safe to send additional events in this hook.
 
 =back
 
-=head2 Implementation Proposals
+=head2 Implementation
 
 =head3 Hub and Stack
 
@@ -520,13 +352,9 @@ Assuming the use of the context model, the context object can be what we need.
 The context object is necessary for all events anyway, so it can have
 "shortcut" methods that mirror the event methods Test::Builder had.
 
-=head2 Implementation Proposals
+=head2 Implementation
 
 =head3 Context object shortcuts
-
-B<Note> Test::Stream uses this design.
-
-This proposal assumes the use of the context model mentioned above.
 
     my $tx = context();
     $ctx->ok(1, "an example");
@@ -552,7 +380,7 @@ scope.
 Simple way for Test::Stream, and other test tools, to store and retrieve
 file(package) specific metadata.
 
-=head2 Implementation Proposals
+=head2 Implementation
 
 =head3 Meta-Object
 
@@ -592,7 +420,7 @@ as needed.
 
 =back
 
-=head2 Implementation Proposals
+=head2 Implementation
 
 =head3 IO Manager, scoped metadata
 
@@ -636,7 +464,7 @@ confusing and fragile hack. This should not be hard, and it should not be a hack
 
 =back
 
-=head2 Implementation Proposals
+=head2 Implementation
 
 =head3 State objects, and state stack
 
@@ -682,7 +510,7 @@ The main complications with concurrency are:
 
 =back
 
-=head2 Implementation Proposals
+=head2 Implementation
 
 =head3 Children send events to parent for processing
 
@@ -695,17 +523,6 @@ events in the parent process are handled as normal. All events recieved in a
 child process are forwarded to the parent. To forward events, the child writes
 them to files in the temporary directory. The parent will frequently cull
 results from the temp directory and process them as it would any other event.
-
-Subtests are special. When you start a subtest in a child process, all events
-are handled by the subtest in the child. Once the subtest is complete the final
-subtest event itself is sent to the parent. This works fine as subtest output
-is not actually parsed in any way, only the final subtest event itself matters.
-
-The final consideration is what to do when forking occurs inside a subtest. In
-Test::Stream the subtest itself is forked, so both processes end up sending a
-final subtest event.
-
-All the logic for this is encapsulated in the L<Test::Stream:Hub> object.
 
 
 
@@ -730,7 +547,7 @@ that make it easy to confirm the events are what you expect. You should not be
 limited to string comparisons. In fact validation of TAP output should not be
 the test-tools job in the first place.
 
-=head2 Implementation Proposals
+=head2 Implementation
 
 =head3 Intercept function that takes a sub, and returns all generated events
 
@@ -774,7 +591,7 @@ If no plan was output, or done_testing was not called, it will warn you.
 
 =back
 
-=head2 Implementation Proposals
+=head2 Implementation
 
 =head3 ExitMagic object
 

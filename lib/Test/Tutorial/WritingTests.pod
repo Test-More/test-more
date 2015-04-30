@@ -11,7 +11,7 @@ Test::Tutorial::WritingTests - A Complete Introduction to writing tests
 Tests are code that verifies other code produces the expected output for a
 given input. An example may help:
 
-    # This code will die if math doesbn't work.
+    # This code will die if math doesn't work.
     die "Math is broken" unless 1 + 1 == 2;
 
 However it is better to use a framework intended for testing:
@@ -142,7 +142,7 @@ here are all the original copyrights together:
 
 =item Test::Stream::Tester
 
-Copyright 2014 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
