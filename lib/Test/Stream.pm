@@ -5,6 +5,8 @@ use warnings;
 our $VERSION = '1.301001_110';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
+use Test::Stream::Shim;
+
 use Test::Stream::Carp qw/croak confess carp/;
 use Test::Stream::Util qw/try/;
 use Test::Stream::Threads;
