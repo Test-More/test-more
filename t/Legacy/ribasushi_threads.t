@@ -1,3 +1,4 @@
+use Test::Stream::Shim;
 use Test::CanThread qw/AUTHOR_TESTING/;
 use Test::More;
 

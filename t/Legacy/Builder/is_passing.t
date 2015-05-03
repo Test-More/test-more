@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 use strict;
 use lib 't/Legacy/lib', 't/lib';

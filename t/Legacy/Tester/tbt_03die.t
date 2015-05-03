@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+use Test::Stream::Shim;
 
 use Test::Builder::Tester tests => 1;
 use Test::More;
@@ -9,4 +10,3 @@ eval {
 like($@,
      "/Not testing\.  You must declare output with a test function first\./",
      "dies correctly on error");
-

@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 # Test Test::More::subtest(), focusing on correct line numbers in
 # failed test diagnostics.

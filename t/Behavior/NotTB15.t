@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+use Test::Stream::Shim;
 use strict;
 use warnings;
 
@@ -45,4 +46,3 @@ Can't locate object method "$method" via package "Test::Builder" at $file line $
 }
 
 done_testing;
-

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-
+use Test::Stream::Shim;
 use Test::Builder::Tester tests => 10;
 use Test::More;
 
@@ -56,4 +56,3 @@ TODO: {
     fail("name");
 }
 test_test("testing failing with todo");
-

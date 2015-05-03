@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {
@@ -6,7 +7,6 @@ BEGIN {
         @INC = '../lib';
     }
 }
-
 
 use Test::More tests => 12;
 use Test::Builder;

@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 # test for rt.cpan.org 20768
 #

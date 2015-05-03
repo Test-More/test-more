@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 # plan() used to export functions by mistake [rt.cpan.org 8385]
 

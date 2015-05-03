@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 # Test that setting $? doesn't affect subtest success
 

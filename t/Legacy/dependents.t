@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+use Test::Stream::Shim;
 
 # Test important dependant modules so we don't accidentally half of CPAN.
 

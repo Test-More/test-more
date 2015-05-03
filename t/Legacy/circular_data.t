@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 # Test is_deeply and friends with circular data structures [rt.cpan.org 7289]
 

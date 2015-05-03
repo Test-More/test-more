@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-
+use Test::Stream::Shim;
 use Test::Builder::Tester tests => 5;
 use Test::More;
 

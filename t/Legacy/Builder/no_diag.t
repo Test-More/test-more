@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 use Test::More 'no_diag', tests => 2;
 

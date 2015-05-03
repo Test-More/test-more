@@ -1,3 +1,4 @@
+use Test::Stream::Shim;
 use Test::More;
 require PerlIO;
 

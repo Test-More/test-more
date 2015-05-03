@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 # Fixed a problem with BEGIN { use_ok or require_ok } silently failing when there's no
 # plan set.  [rt.cpan.org 28345]  Thanks Adriano Ferreira and Yitzchak.

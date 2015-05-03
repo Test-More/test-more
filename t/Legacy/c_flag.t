@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 # Test::More should not print anything when Perl is only doing
 # a compile as with the -c flag or B::Deparse or perlcc.

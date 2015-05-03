@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 # Testing to make sure Test::Builder doesn't accidentally store objects
 # passed in as test arguments.
@@ -26,4 +27,3 @@ for (1..3) {
     ok(my $foo = Foo->new, 'created Foo object');
 }
 is $destroyed, 3, "DESTROY called 3 times";
-

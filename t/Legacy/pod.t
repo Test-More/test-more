@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 use Test::More;
 plan skip_all => "POD tests skipped unless AUTHOR_TESTING is set" unless $ENV{AUTHOR_TESTING};

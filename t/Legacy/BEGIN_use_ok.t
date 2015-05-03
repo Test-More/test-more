@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 # [rt.cpan.org 28345]
 #
@@ -23,4 +24,3 @@ BEGIN {
 
 ok( $result, "use_ok() ran" );
 done_testing(2);
-

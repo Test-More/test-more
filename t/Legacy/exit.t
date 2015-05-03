@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 # Can't use Test.pm, that's a 5.005 thing.
 package My::Test;

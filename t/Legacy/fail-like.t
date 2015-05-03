@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {
@@ -14,7 +15,6 @@ BEGIN {
 # This tests against that.
 
 use strict;
-
 
 # Can't use Test.pm, that's a 5.005 thing.
 package My::Test;

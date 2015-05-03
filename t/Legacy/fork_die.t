@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use Test::Stream::Shim;
 
 use Test::CanFork;
 

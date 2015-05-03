@@ -1,4 +1,5 @@
 use strict;
+use Test::Stream::Shim;
 
 use Test::Tester;
 

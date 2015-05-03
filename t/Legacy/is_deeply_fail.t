@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {
@@ -18,7 +19,6 @@ my($out, $err) = Test::Simple::Catch::caught();
 Test::Builder->new->no_header(1);
 Test::Builder->new->no_ending(1);
 local $ENV{HARNESS_ACTIVE} = 0;
-
 
 # Can't use Test.pm, that's a 5.005 thing.
 package main;

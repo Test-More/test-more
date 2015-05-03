@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {

@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 # Test what happens when no plan is declared and done_testing() is not seen
 

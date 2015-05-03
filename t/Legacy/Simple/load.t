@@ -1,4 +1,5 @@
 #!/usr/bin/perl
+use Test::Stream::Shim;
 
 # Because I broke "use Test::Simple", here's a test
 

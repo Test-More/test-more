@@ -1,3 +1,4 @@
+use Test::Stream::Shim;
 require Test::Simple;
 
 use lib 't/lib';

@@ -1,4 +1,5 @@
 #!perl -w
+use Test::Stream::Shim;
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {
@@ -31,4 +32,3 @@ TODO: {
 
     ok( eq_set( [\1, \2, \3], [\2, \3, \1] ) );
 }
-

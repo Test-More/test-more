@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+use Test::Stream::Shim;
 
 # On some threaded systems this test cannot be run.
 BEGIN {

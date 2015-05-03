@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 # Test the use of subtest() to define new test predicates that combine
 # multiple existing predicates.

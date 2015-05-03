@@ -1,3 +1,4 @@
+use Test::Stream::Shim;
 use Test::Builder;
 
 BEGIN {

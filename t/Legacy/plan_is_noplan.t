@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {
@@ -29,4 +30,3 @@ ok 1 - foo
 1..1
 OUT
 }
-

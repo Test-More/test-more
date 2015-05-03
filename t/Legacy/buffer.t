@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-
+use Test::Stream::Shim;
 BEGIN {
     if( $ENV{PERL_CORE} ) {
         chdir 't';

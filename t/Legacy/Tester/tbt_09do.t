@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-
+use Test::Stream::Shim;
 use strict;
 use warnings;
 

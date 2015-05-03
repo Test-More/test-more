@@ -1,3 +1,4 @@
+use Test::Stream::Shim;
 use Test::More;
 use strict;
 use warnings;

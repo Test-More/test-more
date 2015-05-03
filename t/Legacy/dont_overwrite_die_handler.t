@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 use Config; # To prevent conflict with some strawberry-portable versions
 
 BEGIN {

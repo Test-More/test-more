@@ -1,4 +1,5 @@
 #!perl -w
+use Test::Stream::Shim;
 
 # Simple test of what failure output looks like
 

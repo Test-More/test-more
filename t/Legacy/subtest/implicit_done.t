@@ -1,4 +1,5 @@
 #!/usr/bin/perl -w
+use Test::Stream::Shim;
 
 # A subtest without a plan implicitly calls "done_testing"
 
