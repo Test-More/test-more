@@ -24,14 +24,16 @@ use Test::Stream::ExitMagic::Context;
 my ($root, @stack, $magic);
 
 END {
-    my $driver = $root->concurrency_driver;
-    if ($driver && $$ == $root->pid) {
-        local $?;
-        $driver->finalize;
-        $root->ipc_cull;
-    }
+    if ($root) {
+        my $driver = $root->concurrency_driver;
+        if ($driver && $$ == $root->pid) {
+            local $?;
+            $driver->finalize;
+            $root->ipc_cull;
+        }
 
-    $magic->do_magic($root) if $magic && $root && !$root->no_ending
+        $magic->do_magic($root) if $magic && !$root->no_ending
+    }
 }
 
 sub _stack { @stack }
