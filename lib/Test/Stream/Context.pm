@@ -104,7 +104,7 @@ sub context {
     # Uh-Oh! someone has replaced the singleton, that means they probably want
     # everything to go through them... We can't do a whole lot about that, but
     # we will use the singletons hub which should catch most use-cases.
-    if ($Test::Builder::_ORIG_Test != $Test::Builder::Test) {
+    if ($INC{'Test/Builder.pm'} && $Test::Builder::_ORIG_Test != $Test::Builder::Test) {
         $hub ||= $Test::Builder::Test->{hub};
 
         my $warn = $meta->{Test::Stream::Meta::MODERN}
