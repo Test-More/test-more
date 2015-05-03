@@ -1,4 +1,5 @@
-package Test::Builder::Module;
+package
+    Test::Builder::Module;
 
 use strict;
 

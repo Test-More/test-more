@@ -1,4 +1,5 @@
-package Test::Simple;
+package
+    Test::Simple;
 
 use 5.008001;
 

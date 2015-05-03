@@ -1,4 +1,5 @@
-package Test::use::ok;
+package
+    Test::use::ok;
 use strict;
 use warnings;
 use 5.005;

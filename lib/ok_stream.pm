@@ -1,4 +1,5 @@
-package ok;
+package
+    ok;
 use strict;
 use warnings;
 

@@ -1,6 +1,7 @@
 use strict;
 use warnings;
-package Test::Tester::Delegate;
+package
+    Test::Tester::Delegate;
 
 warn "Test::Tester::Delegate is deprecated";
 

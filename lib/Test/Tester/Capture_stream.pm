@@ -1,4 +1,5 @@
-package Test::Tester::Capture;
+package
+    Test::Tester::Capture;
 use strict;
 use warnings;
 

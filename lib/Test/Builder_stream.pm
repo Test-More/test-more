@@ -1,4 +1,5 @@
-package Test::Builder;
+package
+    Test::Builder;
 
 use 5.008001;
 use strict;

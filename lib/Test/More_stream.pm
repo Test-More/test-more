@@ -1,4 +1,5 @@
-package Test::More;
+package
+    Test::More;
 
 use 5.008001;
 use strict;

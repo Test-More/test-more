@@ -1,6 +1,7 @@
 use strict;
 use warnings;
-package Test::Tester::CaptureRunner;
+package
+    Test::Tester::CaptureRunner;
 
 warn "Test::Tester::CaptureRunner is deprecated";
 

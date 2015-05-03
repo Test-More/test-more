@@ -1,6 +1,7 @@
 use strict;
 
-package Test::Tester;
+package
+    Test::Tester;
 
 # Turn this back on later
 #warn "Test::Tester is deprecated, see Test::Stream::Tester\n";
