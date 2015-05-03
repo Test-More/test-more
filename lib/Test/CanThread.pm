@@ -9,24 +9,28 @@ $works &&= $] >= 5.008001;
 $works &&= $Config{'useithreads'};
 $works &&= eval { require threads; 'threads'->import; 1 };
 
+require Test::Stream;
+
 sub import {
     my $class = shift;
 
     unless ($works) {
-        require Test::More;
-        Test::More::plan(skip_all => "Skip no working threads");
+        my $ctx = Test::Stream::Context::context();
+        $ctx->plan(0, skip_all => "Skip no working threads");
+        exit 0;
     }
 
     if ($INC{'Devel/Cover.pm'}) {
-        require Test::More;
-        Test::More::plan(skip_all => "Devel::Cover does not work with threads yet");
+        my $ctx = Test::Stream::Context::context();
+        $ctx->plan(0, skip_all => "Devel::Cover does not work with threads yet");
+        exit 0;
     }
 
     while(my $var = shift(@_)) {
         next if $ENV{$var};
-
-        require Test::More;
-        Test::More::plan(skip_all => "This threaded test will only run when the '$var' environment variable is set.");
+        my $ctx = Test::Stream::Context::context();
+        $ctx->plan(0, skip_all => "This threaded test will only run when the '$var' environment variable is set.");
+        exit 0;
     }
 
     if ($] == 5.010000) {
@@ -48,8 +52,9 @@ sub import {
         my $exit = system(qq{"$perl" "$fn"});
 
         if ($exit) {
-            require Test::More;
-            Test::More::plan(skip_all => "Threads segfault on this perl");
+            my $ctx = Test::Stream::Context::context();
+            $ctx->plan(0, skip_all => "Threads segfault on this perl");
+            exit 0;
         }
     }
 

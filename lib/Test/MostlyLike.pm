@@ -2,6 +2,7 @@ package Test::MostlyLike;
 use strict;
 use warnings;
 
+use Test::Stream;
 use Test::Stream::Toolset;
 use Test::Stream::Exporter;
 default_exports qw/mostly_like/;

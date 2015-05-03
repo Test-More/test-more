@@ -3,6 +3,7 @@ use strict;
 use warnings;
 
 use Config;
+use Test::Stream qw/context/;
 
 my $Can_Fork = $Config{d_fork}
     || (($^O eq 'MSWin32' || $^O eq 'NetWare')
@@ -13,20 +14,22 @@ sub import {
     my $class = shift;
 
     if (!$Can_Fork) {
-        require Test::More;
-        Test::More::plan(skip_all => "This system cannot fork");
+        my $ctx = context();
+        $ctx->plan(0, skip_all => "This system cannot fork");
+        exit 0;
     }
 
     if ($^O eq 'MSWin32' && $] == 5.010000) {
-        require Test::More;
-        Test::More::plan('skip_all' => "5.10 has fork/threading issues that break fork on win32");
+        my $ctx = context();
+        $ctx->plan(0, skip_all => "5.10 has fork/threading issues that break fork on win32");
+        exit 0;
     }
 
     for my $var (@_) {
         next if $ENV{$var};
-
-        require Test::More;
-        Test::More::plan(skip_all => "This forking test will only run when the '$var' environment variable is set.");
+        my $ctx = context();
+        $ctx->plan(0, skip_all => "This forking test will only run when the '$var' environment variable is set.");
+        exit 0;
     }
 }
 
