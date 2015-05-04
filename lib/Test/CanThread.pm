@@ -70,6 +70,33 @@ __END__
 
 Test::CanThread - Only run tests when threading is supported, optionally conditioned on ENV vars.
 
+=head1 EXPERIMENTAL CODE WARNING
+
+B<This is an experimental release!> Test-Stream, and all its components are
+still in an experimental phase. This dist has been released to cpan in order to
+allow testers and early adopters the chance to write experimental new tools
+with it, or to add experimental support for it into old tools.
+
+B<PLEASE DO NOT COMPLETELY CONVERT OLD TOOLS YET>. This experimental release is
+very likely to see a lot of code churn. API's may break at any time.
+Test-Stream should NOT be depended on by any toolchain level tools until the
+experimental phase is over.
+
+=head2 BACKWARDS COMPATABILITY SHIM
+
+By default, loading Test-Stream will block Test::Builder and related namespaces
+from loading at all. You can work around this by loading the compatability shim
+which will populate the Test::Builder and related namespaces with a
+compatability implementation on demand.
+
+    use Test::Stream::Shim;
+    use Test::Builder;
+    use Test::More;
+
+B<Note:> Modules that are experimenting with Test::Stream should NOT load the
+shim in their module files. The shim should only ever be loaded in a test file.
+
+
 =head1 DESCRIPTION
 
 Use this first thing in a test that should be skipped when threading is not
