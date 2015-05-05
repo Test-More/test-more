@@ -1,0 +1,12 @@
+*.bak
+*~
+*.old
+*.tar.gz
+Makefile
+blib/
+pm_to_blib
+Build
+_build
+cover_db/
+MYMETA.*
+
