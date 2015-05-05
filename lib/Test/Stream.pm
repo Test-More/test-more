@@ -1,6 +1,8 @@
 package Test::Stream;
+use strict;
+use warnings;
 
-our $VERSION = "0.000001";
+$Test::Stream::VERSION = '0.000001';
 
 1;
 
