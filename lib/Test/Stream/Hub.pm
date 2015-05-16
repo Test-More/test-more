@@ -3,21 +3,33 @@ use strict;
 use warnings;
 
 use Test::Stream::State;
+use Test::Stream::Threads;
 
 use Test::Stream::HashBase(
     accessors => [qw{
+        pid tid hid ipc
         state
+        no_ending
         _formatter
     }],
 );
 
+my $ID_POSTFIX = 1;
 sub init {
     my $self = shift;
+
+    $self->{+PID} = $$;
+    $self->{+TID} = get_tid();
+    $self->{+HID} = join '-', $self->{+PID}, $self->{+TID}, $ID_POSTFIX++;
 
     $self->{+STATE} ||= Test::Stream::State->new;
 
     if (my $formatter = delete $self->{formatter}) {
         $self->format($formatter);
+    }
+
+    if (my $ipc = $self->{+IPC}) {
+        $ipc->add_hub($self->{+HID});
     }
 }
 
@@ -31,6 +43,23 @@ sub format {
 }
 
 sub send {
+    my $self = shift;
+    my ($e) = @_;
+
+    my $ipc = $self->{+IPC} || return $self->process($e);
+
+    if($e->global) {
+        $ipc->send('GLOBAL', $e);
+        return $self->process($e);
+    }
+
+    return $ipc->send($self->{+HID}, $e)
+        if $$ != $self->{+PID} || get_tid() != $self->{+TID};
+
+    $self->process($e);
+}
+
+sub process {
     my $self = shift;
     my ($e) = @_;
 
@@ -50,6 +79,25 @@ sub terminate {
     my $self = shift;
     my ($code) = @_;
     CORE::exit($code);
+}
+
+sub cull {
+    my $self = shift;
+
+    my $ipc = $self->{+IPC} || return;
+    return if $self->{+PID} != $$ || $self->{+TID} != get_tid();
+
+    # No need to do IPC checks on culled events
+    $self->process($_) for $ipc->cull($self->{+HID});
+}
+
+sub DESTROY {
+    my $self = shift;
+    my $ipc = $self->{+IPC} || return;
+    return unless $$ == $self->{+PID};
+    return unless get_tid() == $self->{+TID};
+
+    $ipc->drop_hub($self->{+HID});
 }
 
 1;
@@ -116,10 +164,43 @@ was already set. Only 1 formatter is allowed at a time.
 
 This is where all events enter the hub for processing.
 
+=item $hub->process($event)
+
+This is called by send after it does any IPC handling. You can use this to
+bypass the IPC process, but in general you should avoid using this.
+
 =item $old = $hub->format($formatter)
 
 Replace the existing formatter instance with a new one. Formatters must be
 objects that implement a C<< $formatter->write($event) >> method.
+
+=item $hub->cull()
+
+Cull any IPC events (and process them).
+
+=item $pid = $hub->pid()
+
+Get the process id under which the hub was created.
+
+=item $tid = $hub->tid()
+
+Get the thread id under which the hub was created.
+
+=item $hud = $hub->hid()
+
+Get the identifier string of the hub.
+
+=item $ipc = $hub->ipc()
+
+Get the IPC object used by the hub.
+
+=item $hub->set_no_ending($bool)
+
+=item $bool = $hub->no_ending
+
+This can be used to disable auto-ending behavior for a hub. The auto-ending
+behavior is triggered by an end block and is used to cull IPC events, and
+output the final plan if the plan was 'no_plan'.
 
 =back
 
