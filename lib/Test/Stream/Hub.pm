@@ -2,14 +2,18 @@ package Test::Stream::Hub;
 use strict;
 use warnings;
 
+use Test::Stream::Carp qw/carp/;
 use Test::Stream::State;
 use Test::Stream::Threads;
+
+use Scalar::Util qw/weaken/;
 
 use Test::Stream::HashBase(
     accessors => [qw{
         pid tid hid ipc
         state
         no_ending
+        _todo
         _formatter
     }],
 );
@@ -22,6 +26,8 @@ sub init {
     $self->{+TID} = get_tid();
     $self->{+HID} = join '-', $self->{+PID}, $self->{+TID}, $ID_POSTFIX++;
 
+    $self->{+_TODO} = [];
+
     $self->{+STATE} ||= Test::Stream::State->new;
 
     if (my $formatter = delete $self->{formatter}) {
@@ -31,6 +37,34 @@ sub init {
     if (my $ipc = $self->{+IPC}) {
         $ipc->add_hub($self->{+HID});
     }
+}
+
+sub set_todo {
+    my $self = shift;
+    my ($reason) = @_;
+
+    unless (defined wantarray) {
+        carp "set_todo(...) called in void context, todo not set!";
+        return;
+    }
+
+    unless(defined $reason) {
+        carp "set_todo() called with undefined argument, todo not set!";
+        return;
+    }
+
+    my $ref = \$reason;
+    push @{$self->{+_TODO}} => $ref;
+    weaken($self->{+_TODO}->[-1]);
+    return $ref;
+}
+
+sub get_todo {
+    my $self = shift;
+    my $array = $self->{+_TODO};
+    pop @$array while @$array && !defined($array->[-1]);
+    return undef unless @$array;
+    return ${$array->[-1]};
 }
 
 sub format {
@@ -210,6 +244,62 @@ This is where all events enter the hub for processing.
 
 This is called by send after it does any IPC handling. You can use this to
 bypass the IPC process, but in general you should avoid using this.
+
+=item $string = $hub->get_todo()
+
+Get the current TODO reason. This will be undef if there is no active todo.
+Please note that 0 and C<''> (empty string) count as active todo.
+
+=item $ref = $hub->set_todo($reason)
+
+This will set the todo message. The todo will remain in effect until you let go
+of the reference returned by this method.
+
+    {
+        my $todo = $hub->set_todo("Broken");
+
+        # These ok events will be TODO
+        ok($foo->doit, "do it!");
+        ok($foo->doit, "do it again!");
+
+        # The todo setting goes away at the end of this scope.
+    }
+
+    # This result will not be TODO.
+    ok(1, "pass");
+
+You can also do it without the indentation:
+
+    my $todo = $hub->set_todo("Broken");
+
+    # These ok events will be TODO
+    ok($foo->doit, "do it!");
+    ok($foo->doit, "do it again!");
+
+    # Unset the todo
+    $todo = undef;
+
+    # This result will not be TODO.
+    ok(1, "pass");
+
+This method can be called while TODO is already in effect and it will work in a
+sane way:
+
+    {
+        my $first_todo = $hub->set_todo("Will fix soon");
+
+        ok(0, "Not fixed"); # TODO: Will fix soon
+
+        {
+            my $second_todo = $hub->set_todo("Will fix eventually");
+            ok(0, "Not fixed"); # TODO: Will fix eventually
+        }
+
+        ok(0, "Not fixed"); # TODO: Will fix soon
+    }
+
+This also works if you free todo's out of order. The most recently set todo
+that is still active will always be used as the todo.
 
 =item $old = $hub->format($formatter)
 

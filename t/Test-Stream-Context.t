@@ -3,7 +3,7 @@ use warnings;
 
 use Test::More;
 
-use Test::Stream::Context qw/context/;
+use Test::Stream::Context qw/context TOP_HUB/;
 
 can_ok(__PACKAGE__, qw/context/);
 
@@ -124,8 +124,17 @@ is(@$events, 1, "1 event");
 is_deeply($events, [$e], "Hub saw the event");
 pop @$events;
 
+Test::Stream::Context->clear;
+my $todo = TOP_HUB->set_todo("Here be dragons");
+my $dbg1 = tool()->debug;
+$todo = undef;
+my $dbg2 = tool()->debug;
+
+is($dbg1->todo, 'Here be dragons', "Got todo in context created with todo in place");
+is($dbg2->todo, undef, "no todo in context created after todo was removed");
+
 done_testing;
 
 # This is necessary cause we have a root hub that will set the exit code to 255
 # since no tests were run for it :-)
-Test::Stream::Context->TOP_HUB->set_no_ending(1);
+TOP_HUB->set_no_ending(1);

@@ -186,6 +186,7 @@ sub context(;$) {
 
     my $dbg = Test::Stream::DebugInfo->new(
         frame => [$pkg, $file, $line, $sub],
+        todo  => $hub->get_todo,
     );
 
     $current = bless(
