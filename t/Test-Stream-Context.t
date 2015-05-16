@@ -54,6 +54,76 @@ my $ctx;
 }
 is_deeply( $ctx->debug->frame, $frame, 'context is ok in an end block');
 
+{
+    package My::Formatter;
+
+    sub write {
+        my $self = shift;
+        my ($e) = @_;
+        push @$self => $e;
+    }
+}
+my $events = bless [], 'My::Formatter';
+my $hub = Test::Stream::Hub->new(
+    formatter => $events,
+);
+my $dbg = Test::Stream::DebugInfo->new(
+    frame => [ 'Foo::Bar', 'foo_bar.t', 42, 'Foo::Bar::baz' ],
+);
+$ctx = Test::Stream::Context->new(
+    debug => $dbg,
+    hub   => $hub,
+);
+
+my $e = $ctx->build_event('Ok', pass => 1, name => 'foo');
+isa_ok($e, 'Test::Stream::Event::Ok');
+is($e->pass, 1, "Pass");
+is($e->name, 'foo', "got name");
+is_deeply($e->debug, $dbg, "Got the debug info");
+ok(!@$events, "No events yet");
+
+$e = $ctx->send_event('Ok', pass => 1, name => 'foo');
+isa_ok($e, 'Test::Stream::Event::Ok');
+is($e->pass, 1, "Pass");
+is($e->name, 'foo', "got name");
+is_deeply($e->debug, $dbg, "Got the debug info");
+is(@$events, 1, "1 event");
+is_deeply($events, [$e], "Hub saw the event");
+pop @$events;
+
+$e = $ctx->ok(1, 'foo');
+isa_ok($e, 'Test::Stream::Event::Ok');
+is($e->pass, 1, "Pass");
+is($e->name, 'foo', "got name");
+is_deeply($e->debug, $dbg, "Got the debug info");
+is(@$events, 1, "1 event");
+is_deeply($events, [$e], "Hub saw the event");
+pop @$events;
+
+$e = $ctx->note('foo');
+isa_ok($e, 'Test::Stream::Event::Note');
+is($e->message, 'foo', "got message");
+is_deeply($e->debug, $dbg, "Got the debug info");
+is(@$events, 1, "1 event");
+is_deeply($events, [$e], "Hub saw the event");
+pop @$events;
+
+$e = $ctx->diag('foo');
+isa_ok($e, 'Test::Stream::Event::Diag');
+is($e->message, 'foo', "got message");
+is_deeply($e->debug, $dbg, "Got the debug info");
+is(@$events, 1, "1 event");
+is_deeply($events, [$e], "Hub saw the event");
+pop @$events;
+
+$e = $ctx->plan(100);
+isa_ok($e, 'Test::Stream::Event::Plan');
+is($e->max, 100, "got max");
+is_deeply($e->debug, $dbg, "Got the debug info");
+is(@$events, 1, "1 event");
+is_deeply($events, [$e], "Hub saw the event");
+pop @$events;
+
 done_testing;
 
 # This is necessary cause we have a root hub that will set the exit code to 255

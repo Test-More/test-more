@@ -222,6 +222,78 @@ sub clear {
     delete $CONTEXTS{$hub->hid};
 }
 
+sub send_event {
+    my $self  = shift;
+    my $event = shift;
+    my %args  = @_;
+    my $e = $self->build_event($event, %args);
+    $self->hub->send($e);
+}
+
+sub build_event {
+    my $self  = shift;
+    my $event = shift;
+    my %args  = @_;
+
+    my $pkg = $LOADED{$event} || $self->_parse_event($event);
+
+    $pkg->new(
+        debug => $self->debug->snapshot,
+        %args,
+    );
+}
+
+sub ok {
+    my $self = shift;
+    my ($pass, $name, $diag) = @_;
+    $self->send_event('Ok', pass => $pass, name => $name, diag => $diag);
+}
+
+sub note {
+    my $self = shift;
+    my ($message) = @_;
+    $self->send_event('Note', message => $message);
+}
+
+sub diag {
+    my $self = shift;
+    my ($message) = @_;
+    $self->send_event('Diag', message => $message);
+}
+
+sub plan {
+    my $self = shift;
+    my ($max, $directive, $reason) = @_;
+    $self->send_event('Plan', max => $max, directive => $directive, reason => $reason);
+}
+
+sub bail {
+    my $self = shift;
+    my ($reason, $quiet) = @_;
+    $self->send_event('Bail', reason => $reason, quiet => $quiet);
+}
+
+sub _parse_event {
+    my $self = shift;
+    my $event = shift;
+
+    my $pkg;
+    if ($event =~ m/::/) {
+        $pkg = $event;
+    }
+    else {
+        $pkg = "Test::Stream::Event::$event";
+    }
+
+    confess "'$pkg' is not a subclass of 'Test::Stream::Event', did you forget to load it?"
+        unless $pkg->isa('Test::Stream::Event');
+
+    $LOADED{$pkg}   = $pkg;
+    $LOADED{$event} = $pkg;
+
+    return $pkg;
+}
+
 1;
 
 __END__
@@ -438,6 +510,48 @@ will return undef if there is no current hub.
 =item $class->clear
 
 Remove the one true context for the current hub.
+
+=back
+
+=head2 EVENT PRODUCTION METHODS
+
+=over 4
+
+=item $e = $ctx->send_event($Type, %args)
+
+Build and send an event of C<$Type> with the current context. C<$Type> may be a
+full event package name, or the last part of C<Test::Stream::Event::*>. All
+C<%args> are passed to the event constructor.
+
+=item $e = $ctx->build_event($Type, %args)
+
+Build an event of C<$Type> with the current context. C<$Type> may be a full
+event package name, or the last part of C<Test::Stream::Event::*>. All C<%args>
+are passed to the event constructor.
+
+=item $e = $ctx->ok($pass, $name, \@diag)
+
+Shortcut for sending 'Ok' events.
+
+=item $e = $ctx->note($message)
+
+Shortcut for sendingg 'Note' events.
+
+=item $e = $ctx->diag($message)
+
+Shortcut for sending 'Diag' events.
+
+=item $e = $ctx->plan($max)
+
+=item $e = $ctx->plan(0, 'no_plan')
+
+=item $e = $ctx->plan(0, 'skip_all' => $reason)
+
+Shortcut for sending 'Plan' events.
+
+=item $e = $ctx->bail($reason, $quiet)
+
+Shortcut for sending 'bail' events.
 
 =back
 
