@@ -2,7 +2,7 @@ package Test::Stream::Hub;
 use strict;
 use warnings;
 
-use Test::Stream::Carp qw/carp/;
+use Test::Stream::Carp qw/carp croak/;
 use Test::Stream::State;
 use Test::Stream::Threads;
 
@@ -13,7 +13,7 @@ use Test::Stream::HashBase(
         pid tid hid ipc
         state
         no_ending
-        _todo
+        _todo _meta
         _formatter
     }],
 );
@@ -27,6 +27,7 @@ sub init {
     $self->{+HID} = join '-', $self->{+PID}, $self->{+TID}, $ID_POSTFIX++;
 
     $self->{+_TODO} = [];
+    $self->{+_META} = {};
 
     $self->{+STATE} ||= Test::Stream::State->new;
 
@@ -37,6 +38,31 @@ sub init {
     if (my $ipc = $self->{+IPC}) {
         $ipc->add_hub($self->{+HID});
     }
+}
+
+sub meta {
+    my $self = shift;
+    my ($key, $default) = @_;
+
+    croak "Invalid key '" . (defined($key) ? $key : '(UNDEF)') . "'"
+        unless $key;
+
+    my $exists = $self->{+_META}->{$key};
+    return undef unless $default || $exists;
+
+    $self->{+_META}->{$key} = $default unless $exists;
+
+    return $self->{+_META}->{$key};
+}
+
+sub delete_meta {
+    my $self = shift;
+    my ($key) = @_;
+
+    croak "Invalid key '" . (defined($key) ? $key : '(UNDEF)') . "'"
+        unless $key;
+
+    delete $self->{+_META}->{$key};
 }
 
 sub set_todo {
@@ -244,6 +270,33 @@ This is where all events enter the hub for processing.
 
 This is called by send after it does any IPC handling. You can use this to
 bypass the IPC process, but in general you should avoid using this.
+
+=item $val = $hub->meta($key)
+
+=item $val = $hub->meta($key, $default)
+
+This method is made available to allow third party plugins to associate
+meta-data with a hub. It is recommended that all third party plugins use their
+module namespace as their meta-data key.
+
+This method always returns the value for the key. If there is no value it will
+be initialized to C<$default>, in which case C<$default> is also returned.
+
+Recommended usage:
+
+    my $meta = $hub->meta(__PACKAGE__, {});
+    unless ($meta->{foo}) {
+        $meta->{foo} = 1;
+        $meta->{bar} = 2;
+    }
+
+=item $val = $hub->delete_meta($key)
+
+This will delete all data in the specified metadata key.
+
+=item $val = $hub->get_meta($key)
+
+This method will retrieve the value of any meta-data key specified.
 
 =item $string = $hub->get_todo()
 
