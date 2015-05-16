@@ -91,6 +91,24 @@ sub cull {
     $self->process($_) for $ipc->cull($self->{+HID});
 }
 
+sub finalize {
+    my $self = shift;
+    my ($dbg, $require_plan) = @_;
+
+    $self->cull();
+    my $state = $self->{+STATE};
+
+    unless ($state->ended) {
+        # TODO: Check for 'no_plan' plan, ensure a new plan event is sent.
+        # Send the final plan BEFORE finishing.
+    }
+
+    $state->finish($dbg->frame);
+
+    return 0 if $state->is_passing;
+    return $state->failed || 255;
+}
+
 sub DESTROY {
     my $self = shift;
     my $ipc = $self->{+IPC} || return;
