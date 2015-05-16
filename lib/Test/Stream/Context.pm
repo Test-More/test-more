@@ -12,6 +12,15 @@ use Test::Stream::TAP;
 use Test::Stream::Threads;
 use Test::Stream::DebugInfo;
 
+# Preload some key event types
+my %LOADED = (
+    map {
+        require "Test/Stream/Event/$_.pm";
+        my $pkg = "Test::Stream::Event::$_";
+        ( $pkg => $pkg, $_ => $pkg )
+    } qw/Ok Diag Note Plan Bail Exception Waiting/
+);
+
 my @HUB_STACK;
 my %CONTEXTS;
 my $NO_WAIT;

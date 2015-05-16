@@ -99,8 +99,32 @@ sub finalize {
     my $state = $self->{+STATE};
 
     unless ($state->ended) {
-        # TODO: Check for 'no_plan' plan, ensure a new plan event is sent.
-        # Send the final plan BEFORE finishing.
+        my $plan = $state->plan;
+        my $count = $state->count;
+
+        if (!$count && (!$plan || $plan !~ m/^SKIP$/)) {
+            $state->bump_fail;
+            my $e = Test::Stream::Event::Diag->new(
+                debug => $dbg,
+                message => 'No tests run!',
+            );
+            $self->send($e);
+        }
+        elsif ($require_plan && !$plan) {
+            $state->bump_fail;
+            my $e = Test::Stream::Event::Diag->new(
+                debug => $dbg,
+                message => 'Tests were run but no plan was declared and done_testing() was not seen.',
+            );
+            $self->send($e);
+        }
+        elsif (!$plan || $plan eq 'NO PLAN') {
+            my $e = Test::Stream::Event::Plan->new(
+                debug => $dbg,
+                max => $count,
+            );
+            $self->send($e);
+        }
     }
 
     $state->finish($dbg->frame);

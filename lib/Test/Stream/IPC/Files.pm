@@ -196,7 +196,12 @@ sub cull {
 
 sub waiting {
     my $self = shift;
-    # TODO: This should send a global 'waiting' event.
+    require Test::Stream::Event::Waiting;
+    $self->send(
+        GLOBAL => Test::Stream::Event::Waiting->new(
+            debug => Test::Stream::DebugInfo->new(frame => [caller()]),
+        )
+    );
     return;
 }
 
