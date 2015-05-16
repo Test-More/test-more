@@ -14,6 +14,9 @@ use Test::Stream::HashBase(
         state
         no_ending
         _todo _meta
+        _mungers
+        _listeners
+        _follow_ups
         _formatter
     }],
 );
@@ -102,6 +105,67 @@ sub format {
     return $old;
 }
 
+sub listen {
+    my $self = shift;
+    my ($sub) = @_;
+
+    carp "Useless addition of a listener in a child process or thread!"
+        if $$ != $self->{+PID} || get_tid() != $self->{+TID};
+
+    croak "listen only takes coderefs for arguments, got '$sub'"
+        unless ref $sub && ref $sub eq 'CODE';
+
+    push @{$self->{+_LISTENERS}} => $sub;
+
+    $sub; # Intentional return.
+}
+
+sub unlisten {
+    my $self = shift;
+
+    carp "Useless removal of a listener in a child process or thread!"
+        if $$ != $self->{+PID} || get_tid() != $self->{+TID};
+
+    my %subs = map {$_ => $_} @_;
+    @{$self->{+_LISTENERS}} = grep { !$subs{$_} == $_ } @{$self->{+_LISTENERS}};
+}
+
+sub munge {
+    my $self = shift;
+    my ($sub) = @_;
+
+    carp "Useless addition of a munger in a child process or thread!"
+        if $$ != $self->{+PID} || get_tid() != $self->{+TID};
+
+    croak "munge only takes coderefs for arguments, got '$sub'"
+        unless ref $sub && ref $sub eq 'CODE';
+
+    push @{$self->{+_MUNGERS}} => $sub;
+
+    $sub; # Intentional Return
+}
+
+sub unmunge {
+    my $self = shift;
+    carp "Useless removal of a munger in a child process or thread!"
+        if $$ != $self->{+PID} || get_tid() != $self->{+TID};
+    my %subs = map {$_ => $_} @_;
+    @{$self->{+_MUNGERS}} = grep { !$subs{$_} == $_ } @{$self->{+_MUNGERS}};
+}
+
+sub follow_up {
+    my $self = shift;
+    my ($sub) = @_;
+
+    carp "Useless addition of a follow-up in a child process or thread!"
+        if $$ != $self->{+PID} || get_tid() != $self->{+TID};
+
+    croak "follow_up only takes coderefs for arguments, got '$sub'"
+        unless ref $sub && ref $sub eq 'CODE';
+
+    push @{$self->{+_FOLLOW_UPS}} => $sub;
+}
+
 sub send {
     my $self = shift;
     my ($e) = @_;
@@ -123,11 +187,20 @@ sub process {
     my $self = shift;
     my ($e) = @_;
 
+    if ($self->{+_MUNGERS}) {
+        $_->($self, $e) for @{$self->{+_MUNGERS}};
+        return unless $e;
+    }
+
     my $state = $self->{+STATE};
     $e->update_state($state);
     my $count = $state->count;
 
     $self->{+_FORMATTER}->write($e, $count) if $self->{+_FORMATTER};
+
+    if ($self->{+_LISTENERS}) {
+        $_->($self, $e, $count) for @{$self->{+_LISTENERS}};
+    }
 
     my $code = $e->terminate;
     $self->terminate($code, $e) if defined $code;
@@ -159,6 +232,10 @@ sub finalize {
     my $state = $self->{+STATE};
 
     unless ($state->ended) {
+        if ($self->{+_FOLLOW_UPS}) {
+            $_->($dbg, $self) for @{$self->{+_FOLLOW_UPS}};
+        }
+
         my $plan = $state->plan;
         my $count = $state->count;
 
@@ -247,6 +324,53 @@ event pipeline.
 
 The C<send()> method is used to issue an event to the hub. This method will
 handle thread/fork sych, mungers, listeners, TAP output, etc.
+
+=head2 ALTERING EVENTS
+
+    $hub->munge(sub {
+        my ($hub, $event) = @_;
+
+        ... Modify the event object ...
+
+        # return is ignored.
+    });
+
+=head3 DESTROYING OR REPLACING AN EVENT
+
+C<@_> elements are aliased to the arguments passed into the munger from the
+caller. Because of this you can destroy the event so that nothing ever sees it.
+This will be supported so long as perl supports this behavior. There is a check
+in C<send()> to return if a munger destroys the event.
+
+    $hub->munge(sub {
+        my ($hub, $event) = @_;
+        return unless ...;
+
+        $_[1] = undef;
+    });
+
+=head2 LISTENING FOR EVENTS
+
+    $hub->listen(sub {
+        my ($hub, $event, $number) = @_;
+
+        ... do whatever you want with the event ...
+
+        # return is ignored
+    });
+
+=head2 POST-TEST BEHAVIORS
+
+    $hub->follow_up(sub {
+        my ($dbg, $hub) = @_;
+
+        ... do whatever you need to ...
+
+        # Return is ignored
+    });
+
+follow_up subs are called only once, ether when done_testing is called, or in
+an END block.
 
 =head2 SETTING THE FORMATTER
 
@@ -358,6 +482,70 @@ that is still active will always be used as the todo.
 
 Replace the existing formatter instance with a new one. Formatters must be
 objects that implement a C<< $formatter->write($event) >> method.
+
+=item $sub = $hub->munge(sub { ... })
+
+This adds your codeblock as a callback. Every event that hits this hub will be
+given to your munger BEFORE it is sent to the formatter. You can make any
+modifications you want to the event object.
+
+    $hub->munge(sub {
+        my ($hub, $event) = @_;
+
+        ... Modify the event object ...
+
+        # return is ignored.
+    });
+
+You can also completely remove the event from the stream:
+
+    $hub->munge(sub {
+        my ($hub, $event) = @_;
+        return unless ...;
+
+        $_[1] = undef;
+    });
+
+=item $hub->unmunge($sub)
+
+You can use this to remove a munge callback. You must pass in the coderef
+returned by the C<munge()> method.
+
+=item $sub = $hub->listen(sub { ... })
+
+You can use this to record all events AFTER they have been sent to the
+formatter. No changes made here will be meaningful, except possibly to other
+listeners.
+
+    $hub->listen(sub {
+        my ($hub, $event, $number) = @_;
+
+        ... do whatever you want with the event ...
+
+        # return is ignored
+    });
+
+=item $hub->unlisten($sub)
+
+You can use this to remove a listen callback. You must pass in the coderef
+returned by the C<listen()> method.
+
+=item $hub->follow_op(sub { ... })
+
+Use this to add behaviors that are called just before the
+L<Test::Stream::State> for the hub is finalized. The only argument to your
+codeblock will be a L<Test::Stream::DebugInfo> instance.
+
+    $hub->follow_up(sub {
+        my ($dbg, $hub) = @_;
+
+        ... do whatever you need to ...
+
+        # Return is ignored
+    });
+
+follow_up subs are called only once, ether when done_testing is called, or in
+an END block.
 
 =item $hub->cull()
 
