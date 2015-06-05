@@ -276,6 +276,7 @@ sub DESTROY {
     return unless $$ == $self->{+PID};
     return unless get_tid() == $self->{+TID};
 
+    local $?;
     $ipc->drop_hub($self->{+HID});
 }
 

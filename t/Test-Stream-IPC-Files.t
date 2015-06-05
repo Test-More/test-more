@@ -18,8 +18,8 @@ is($ipc->tid, get_tid(), "stored the tid");
 my $hid = '12345';
 
 $ipc->add_hub($hid);
-ok(-f $ipc->tempdir . '/' . $hid, "wrote hub file");
-if(ok(open(my $fh, '<', $ipc->tempdir . '/' . $hid), "opened hub file")) {
+ok(-f $ipc->tempdir . '/HUB-' . $hid, "wrote hub file");
+if(ok(open(my $fh, '<', $ipc->tempdir . '/HUB-' . $hid), "opened hub file")) {
     my @lines = <$fh>;
     close($fh);
     is_deeply(
@@ -38,7 +38,7 @@ $ipc->send($hid, bless({ foo => 1 }, 'Foo'));
 $ipc->send($hid, bless({ bar => 1 }, 'Foo'));
 
 opendir(my $dh, $ipc->tempdir) || die "Could not open tempdir: !?";
-my @files = grep { $_ !~ m/^\.+$/ && $_ ne $hid } readdir($dh);
+my @files = grep { $_ !~ m/^\.+$/ && $_ ne "HUB-$hid" } readdir($dh);
 closedir($dh);
 is(@files, 2, "2 files added to the IPC directory");
 
@@ -50,7 +50,7 @@ is_deeply(
 );
 
 opendir($dh, $ipc->tempdir) || die "Could not open tempdir: !?";
-@files = grep { $_ !~ m/^\.+$/ && $_ ne $hid } readdir($dh);
+@files = grep { $_ !~ m/^\.+$/ && $_ ne "HUB-$hid" } readdir($dh);
 closedir($dh);
 is(@files, 0, "All files collected");
 

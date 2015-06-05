@@ -51,7 +51,7 @@ sub add_hub {
     my ($hid) = @_;
 
     my $tdir = $self->{+TEMPDIR};
-    my $hfile = "$tdir/$hid";
+    my $hfile = "$tdir/HUB-$hid";
 
     $hfile = VMS::Filespec::unixify($hfile) if $IS_VMS;
 
@@ -68,7 +68,7 @@ sub drop_hub {
     my ($hid) = @_;
 
     my $tdir = $self->{+TEMPDIR};
-    my $hfile = "$tdir/$hid";
+    my $hfile = "$tdir/HUB-$hid";
 
     $hfile = VMS::Filespec::unixify($hfile) if $IS_VMS;
 
@@ -111,7 +111,7 @@ sub send {
     my $global = $hid eq 'GLOBAL';
 
     $self->abort("hub '$hid' is not available! Failed to send event!\n")
-        unless $global || -f "$tempdir/$hid";
+        unless $global || -f "$tempdir/HUB-$hid";
 
     my $name = join('-', $hid, $$, get_tid(), $self->{+EVENT_ID}++, blessed($e));
     my $file = "$tempdir/$name";
@@ -222,7 +222,9 @@ sub DESTROY {
     while(my $file = readdir($dh)) {
         next if $file =~ m/^\.+$/;
         next if $file =~ m/\.complete$/;
-        if ($file =~ m/^GLOBAL/) {
+        if ($file =~ m/^(GLOBAL|HUB-)/) {
+            $file =~ m/^(.*)$/;
+            $file = $1; # Untaint it
             next if $ENV{TS_KEEP_TEMPDIR};
             unlink("$tempdir/$file") || warn "Could not unlink IPC file: $file";
             next;
