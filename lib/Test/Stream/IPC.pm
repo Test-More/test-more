@@ -19,16 +19,24 @@ sub drivers {
 
 sub import {
     my $class = shift;
-    return if $class eq __PACKAGE__;
+
+    if ($class eq __PACKAGE__) {
+        Test::Stream::Context::TOP_HUB() if $INC{'Test/Stream/Context.pm'};
+        return;
+    }
 
     return unless $class->is_viable;
 
     push @DRIVERS => $class;
 
     return unless $INC{'Test/Stream/Context.pm'};
-    return unless Test::Stream::Context->PEEK_HUB;
 
-    carp "IPC Driver '$class' was loaded too late to be used by the root hub";
+    if (Test::Stream::Context->PEEK_HUB) {
+        carp "IPC Driver '$class' was loaded too late to be used by the root hub";
+    }
+    else {
+        Test::Stream::Context::TOP_HUB() if $INC{'Test/Stream/Context.pm'};
+    }
 }
 
 for my $meth (qw/send cull add_hub drop_hub waiting is_viable/) {

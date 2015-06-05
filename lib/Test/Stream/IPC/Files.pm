@@ -231,7 +231,7 @@ sub DESTROY {
             next;
         }
 
-        $self->abort("Leftover files in the directory!\n");
+        $self->abort("Leftover files in the directory ($tempdir/$file)!\n");
     }
     closedir($dh);
 
