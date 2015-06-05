@@ -1649,6 +1649,43 @@ END {
     $Test->_ending if defined $Test;
 }
 
+####################
+# {{{ TB1.5 stuff  #
+####################
+
+# This is just a list of method Test::Builder current does not have that Test::Builder 1.5 does.
+my %TB15_METHODS = map { $_ => 1 } qw{
+    _file_and_line _join_message _make_default _my_exit _reset_todo_state
+    _result_to_hash _results _todo_state formatter history in_test
+    no_change_exit_code post_event post_result set_formatter set_plan test_end
+    test_exit_code test_start test_state
+};
+
+sub AUTOLOAD {
+    $Test::Builder::AUTOLOAD =~ m/^(.*)::([^:]+)$/;
+    my ($package, $sub) = ($1, $2);
+
+    my @caller = CORE::caller();
+    my $msg    = qq{Can't locate object method "$sub" via package "$package" at $caller[1] line $caller[2].\n};
+
+    $msg .= <<"    EOT" if $TB15_METHODS{$sub};
+
+*************************************************************************
+'$sub' is a Test::Builder 1.5 method. Test::Builder 1.5 is a dead branch.
+You need to update your code so that it no longer treats Test::Builders
+over a specific version number as anything special.
+
+See: http://blogs.perl.org/users/chad_exodist_granum/2014/03/testmore---new-maintainer-also-stop-version-checking.html
+*************************************************************************
+    EOT
+
+    die $msg;
+}
+
+####################
+# }}} TB1.5 stuff  #
+####################
+
 1;
 
 __END__
