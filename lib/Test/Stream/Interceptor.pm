@@ -8,8 +8,12 @@ use Carp qw/croak/;
 use Test::Stream::Util qw/try protect/;
 use Test::Stream::Context qw/context/;
 
+use Test::Stream::Interceptor::Hub;
+use Test::Stream::Interceptor::Terminator;
+use Test::Stream::Interceptor::Grab;
+
 use Test::Stream::Exporter;
-exports qw/lives dies warning warns no_warnings/;
+exports qw/intercept lives dies warning warns no_warnings grab/;
 no Test::Stream::Exporter;
 
 sub lives(&) {
@@ -51,6 +55,51 @@ sub warns(&) {
     return \@warnings;
 }
 
+sub grab { Test::Stream::Interceptor::Grab->new }
+
+sub intercept(&) {
+    my $code = shift;
+
+    my $ctx = context();
+
+    my $ipc;
+    if ($INC{'Test/Stream/IPC.pm'}) {
+        my ($driver) = Test::Stream::IPC->drivers;
+        $ipc = $driver->new;
+    }
+
+    my $hub = Test::Stream::Interceptor::Hub->new(
+        ipc => $ipc,
+        no_ending => 1,
+    );
+
+    my @events;
+    $hub->listen(sub { push @events => $_[1] });
+
+    $ctx->stack->top; # Make sure there is a top hub before we begin.
+    $ctx->stack->push($hub);
+    my ($ok, $err) = try {
+        $code->(
+            hub => $hub,
+            context => $ctx->snapshot,
+        );
+    };
+    $ctx->stack->pop($hub);
+
+    my $dbg = $ctx->debug;
+    $ctx->release;
+
+    die $err unless $ok
+        || (blessed($err) && $err->isa('Test::Stream::Interceptor::Terminator'));
+
+    $hub->finalize($dbg)
+        if $ok
+        && !$hub->no_ending
+        && !$hub->state->ended;
+
+    return \@events;
+}
+
 1;
 
 __END__
@@ -78,8 +127,21 @@ experimental phase is over.
 =head1 SYNOPSIS
 
     use Test::Stream::Interceptor qw{
-        lives dies warning warns no_warnings
+        intercept grab lives dies warning warns no_warnings
     };
+
+    my $events = intercept {
+        ok(1, 'foo');
+        ok(0, 'bar');
+    };
+    is(@$events, 2, "intercepted 2 events.");
+
+    my $grab = grab();
+        ok(1, 'foo');
+        ok(0, 'bar');
+    # $grab is magically undef after this.
+    my $events = $grab->finish;
+    is(@$events, 2, "grabbed 2 events.");
 
     ok(lives { ... }, "codeblock did not die");
     like(dies { die 'xxx' }, qr/xxx/, "codeblock threw expected exception");
@@ -105,6 +167,80 @@ experimental phase is over.
 =head1 EXPORTS
 
 =over 4
+
+=item $events = intercept { ... }
+
+This lets you intercept all events inside the codeblock. All the events will be
+returned in an arrayref.
+
+    my $events = intercept {
+        ok(1, 'foo');
+        ok(0, 'bar');
+    };
+    is(@$events, 2, "intercepted 2 events.");
+
+There are also 2 named parameters passed in, C<context> and C<hub>. The
+C<context> passed in is a snapshot of the context for the C<intercept()> tool
+itself, referencing the parent hub. The C<hub> parameter is the new hub created
+for the C<intercept> run.
+
+    my $events = intercept {
+        my %params = @_;
+
+        my $outer_ctx = $params{context};
+        my $our_hub   = $params{hub};
+
+        ...
+    };
+
+By default the hub used has C<no_ending> set to true. This will prevent the hub
+from enforcing that you issued a plan and ran at least 1 test. You can turn
+enforcement back one like this:
+
+    my %params = @_;
+    $params{hub}->set_no_ending(0);
+
+With C<no_ending> turned off, C<$hub->finalize()> will run the post-test checks
+to enforce the plan and that tests were run. In many cases this will result in
+additional events in your events array.
+
+=item $grab = grab()
+
+This lets you intercept all events for a section of code without adding
+anything to your call stack. This is useful for things that are sensitive to
+changes in the stack depth.
+
+    my $grab = grab();
+        ok(1, 'foo');
+        ok(0, 'bar');
+
+    # $grab is magically undef after this.
+    my $events = $grab->finish;
+
+    is(@$events, 2, "grabbed 2 events.");
+
+When you call C<finish()> the C<$grab> object will automagically undef itself,
+but only for the reference used in the method call. If you have other
+references to the C<$grab> object they will not be undef'd.
+
+If the C<$grab> object is destroyed without calling C<finish()>, it will
+automatically clean up after itself and restore the parent hub.
+
+    {
+        my $grab = grab();
+        # Things are grabbed
+    }
+    # Things are back to normal
+
+By default the hub used has C<no_ending> set to true. This will prevent the hub
+from enforcing that you issued a plan and ran at least 1 test. You can turn
+enforcement back one like this:
+
+    $grab->hub->set_no_ending(0);
+
+With C<no_ending> turned off, C<finish> will run the post-test checks to
+enforce the plan and that tests were run. In many cases this will result in
+additional events in your events array.
 
 =item $bool = lives { ... }
 
