@@ -28,6 +28,8 @@ sub init {
     confess("No debug info provided!") unless $_[0]->{+DEBUG};
 }
 
+sub to_tap { }
+
 sub update_state { }
 
 sub terminate { undef }

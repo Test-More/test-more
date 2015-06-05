@@ -16,6 +16,9 @@ use Test::Stream::Exporter;
 exports qw/OUT_STD OUT_ERR OUT_TODO/;
 no Test::Stream::Exporter;
 
+_autoflush(\*STDOUT);
+_autoflush(\*STDERR);
+
 sub init {
     my $self = shift;
 
@@ -45,16 +48,19 @@ sub write {
     return if $self->{+NO_DIAG}   && $e->isa('Test::Stream::Event::Diag');
     return if $self->{+NO_HEADER} && $e->isa('Test::Stream::Event::Plan');
 
-    return unless $e->can('to_tap');
-
     $num = undef if $self->{+NO_NUMBERS};
+    my @tap = $e->to_tap($num);
+    return unless @tap;
 
     my $handles = $self->{+HANDLES};
     my $nesting = $e->nested || 0;
     my $indent = '    ' x $nesting;
 
+    return if $nesting && $e->isa('Test::Stream::Event::Bail');
+
     local($\, $", $,) = (undef, ' ', '');
-    for my $set ($e->to_tap($num)) {
+    for my $set (@tap) {
+        no warnings 'uninitialized';
         my ($hid, $msg) = @$set;
         next unless $msg;
         my $io = $handles->[$hid] || next;
@@ -62,7 +68,6 @@ sub write {
         $msg =~ s/^/$indent/mg if $nesting;
         print $io $msg;
     }
-
 }
 
 sub _open_handles {
