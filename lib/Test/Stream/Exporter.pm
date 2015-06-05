@@ -103,6 +103,7 @@ sub default_export {
     my $meta = Test::Stream::Exporter::Meta::get($caller) ||
         confess "$caller is not an exporter!?";
 
+    # Only the first 2 args are used.
     $meta->add(1, @_);
 }
 

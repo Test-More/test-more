@@ -8,8 +8,6 @@ use Test::Stream::HashBase(
     accessors => [qw{count failed ended _passing _plan}],
 );
 
-no Test::Stream::Exporter;
-
 sub init {
     my $self = shift;
 
