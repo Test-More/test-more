@@ -1,8 +1,8 @@
 use strict;
 use warnings;
 
-use Test::More;
-use ok 'Test::Stream::Hub';
+use Test::Stream;
+use Test::Stream::Hub;
 
 {
     package My::Formatter;

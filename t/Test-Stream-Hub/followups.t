@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::Stream;
 
 use Test::Stream::Hub;
 use Test::Stream::DebugInfo;
@@ -39,6 +39,3 @@ eval { $hub->finalize($dbg) };
 is($ran, 1, "ran once");
 
 done_testing;
-
-
-__END__

@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use Test::Stream::IPC;
-use Test::More;
+use Test::Stream;
 
 is_deeply(
     [Test::Stream::IPC->drivers],

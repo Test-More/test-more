@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::Stream;
 
 use Test::Stream::DeepCheck::Check;
 my $CLASS = 'Test::Stream::DeepCheck::Check';

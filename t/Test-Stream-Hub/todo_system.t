@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More;
+use Test::Stream;
 
 use Test::Stream::Hub;
 my $hub = Test::Stream::Hub->new();

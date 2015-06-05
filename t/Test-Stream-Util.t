@@ -1,9 +1,9 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::Stream;
 
-use ok 'Test::Stream::Util', qw{
+use Test::Stream::Util qw{
     try protect
 };
 

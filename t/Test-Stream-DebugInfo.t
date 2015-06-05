@@ -1,12 +1,15 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::Stream;
+use Test::Stream::Interceptor qw/warns dies/;
+use Test::Stream::DebugInfo;
 
-use ok 'Test::Stream::DebugInfo';
-
-ok(!eval { 'Test::Stream::DebugInfo'->new(); 1 }, "DebugInfo requires a frame");
-like($@, qr/Frame is required/, "got error");
+like(
+    dies { 'Test::Stream::DebugInfo'->new() },
+    qr/Frame is required/,
+    "got error"
+);
 
 my $one = 'Test::Stream::DebugInfo'->new(frame => ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo']);
 isa_ok($one, 'Test::Stream::DebugInfo');
@@ -31,7 +34,10 @@ my @warnings;
     $one->alert('I cried');
 }
 
-is(@warnings, 1, "1 warning");
-like($warnings[0], qr/I cried at foo\.t line 5/, "Correct warning");
+mostly_like(
+    warns { $one->alert('I cried') },
+    [ qr/I cried at foo\.t line 5/ ],
+    "alter() warns"
+);
 
 done_testing;

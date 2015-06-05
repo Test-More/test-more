@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::Stream;
 
 use Test::Stream::DeepCheck::Util qw/yada render_var/;
 

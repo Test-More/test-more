@@ -1,9 +1,9 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::Stream;
 
-use ok 'Test::Stream::State';
+use Test::Stream::State;
 
 my $state = 'Test::Stream::State'->new;
 

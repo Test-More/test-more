@@ -1,4 +1,4 @@
-use Test::More;
+use Test::Stream;
 use strict;
 use warnings;
 
@@ -36,7 +36,7 @@ $diag->set_message("foo\nbar\nbaz");
 is_deeply(
     [$diag->to_tap(1)],
     [[OUT_TODO, "# foo\n# bar\n# baz\n"]],
-    "All lines have '#'"
+    "All lines have proper prefix"
 );
 
 done_testing;

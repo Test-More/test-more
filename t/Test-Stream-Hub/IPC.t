@@ -3,9 +3,8 @@ use warnings;
 
 use Test::Stream::IPC;
 use Test::Stream::Capabilities qw/CAN_FORK CAN_THREAD/;
-use Test::More;
-
-use ok 'Test::Stream::Hub';
+use Test::Stream;
+use Test::Stream::Hub;
 
 {
     package My::Formatter;

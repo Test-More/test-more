@@ -1,4 +1,4 @@
-use Test::More;
+use Test::Stream;
 use strict;
 use warnings;
 
@@ -29,7 +29,7 @@ $note->set_message("foo\nbar\nbaz");
 is_deeply(
     [$note->to_tap(1)],
     [[OUT_STD, "# foo\n# bar\n# baz\n"]],
-    "All lines have '#'"
+    "All lines have proper prefix"
 );
 
 done_testing;

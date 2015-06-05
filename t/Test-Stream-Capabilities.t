@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use Test::Stream::Capabilities qw/CAN_FORK CAN_THREAD/;
-use Test::More;
+use Test::Stream;
 
 can_ok(__PACKAGE__, qw/CAN_FORK CAN_THREAD/);
 

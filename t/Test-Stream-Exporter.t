@@ -1,12 +1,12 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::Stream;
 
 {
     package My::Exporter;
     use Test::Stream::Exporter;
-    use Test::More;
+    use Test::Stream;
     use Carp qw/croak/;
 
     export         a => sub { 'a' };

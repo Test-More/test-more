@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::Stream;
 use Test::Stream::Util qw/get_tid USE_THREADS/;
 
 require Test::Stream::IPC::Files;

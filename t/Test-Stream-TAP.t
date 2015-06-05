@@ -1,10 +1,10 @@
 use strict;
 use warnings;
 
-use Test::More;
+use Test::Stream;
 use PerlIO;
 
-use ok 'Test::Stream::TAP';
+use Test::Stream::TAP;
 
 ok(my $one = Test::Stream::TAP->new, "Created a new instance");
 isa_ok($one, 'Test::Stream::TAP');
