@@ -4,7 +4,7 @@ use warnings;
 
 use Test::Stream::Threads;
 
-use Test::Stream::Carp qw/confess/;
+use Carp qw/confess/;
 
 use Test::Stream::HashBase(
     accessors => [qw/frame todo skip detail pid tid/],

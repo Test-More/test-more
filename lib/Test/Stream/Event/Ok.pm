@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/blessed/;
-use Test::Stream::Carp qw/confess/;
+use Carp qw/confess/;
 
 use Test::Stream::TAP qw/OUT_STD/;
 

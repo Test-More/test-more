@@ -4,7 +4,7 @@ use warnings;
 
 use Scalar::Util qw/reftype blessed/;
 use Test::Stream::Exporter qw/import export_to exports/;
-use Test::Stream::Carp qw/croak/;
+use Carp qw/croak/;
 
 exports qw{ try protect spoof };
 

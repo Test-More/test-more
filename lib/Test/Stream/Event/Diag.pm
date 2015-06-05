@@ -6,9 +6,10 @@ use Test::Stream::Event(
     accessors => [qw/message linked/],
 );
 
+use Carp qw/confess/;
 use Scalar::Util qw/weaken/;
+
 use Test::Stream::TAP qw/OUT_TODO OUT_ERR/;
-use Test::Stream::Carp qw/confess/;
 
 sub init {
     $_[0]->SUPER::init();

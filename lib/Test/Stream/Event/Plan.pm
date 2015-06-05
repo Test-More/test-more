@@ -7,7 +7,7 @@ use Test::Stream::Event(
 );
 
 use Test::Stream::TAP qw/OUT_STD/;
-use Test::Stream::Carp qw/confess/;
+use Carp qw/confess/;
 
 my %ALLOWED = (
     'SKIP'    => 1,

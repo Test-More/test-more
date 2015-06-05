@@ -2,7 +2,7 @@ package Test::Stream::State;
 use strict;
 use warnings;
 
-use Test::Stream::Carp qw/confess/;
+use Carp qw/confess/;
 
 use Test::Stream::HashBase(
     accessors => [qw{count failed ended _passing _plan}],

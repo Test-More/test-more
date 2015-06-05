@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Config;
-use Test::Stream::Carp qw/confess carp/;
+use Carp qw/confess carp longmess/;
 
 my @DRIVERS;
 
@@ -55,8 +55,7 @@ sub abort_trace {
     my $class = shift;
     chomp(my ($msg) = @_);
     print STDERR "IPC Fatal Error: $msg\n";
-    require Carp;
-    $class->abort(Carp::longmess($msg));
+    $class->abort(longmess($msg));
 }
 
 

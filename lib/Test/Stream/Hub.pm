@@ -2,7 +2,7 @@ package Test::Stream::Hub;
 use strict;
 use warnings;
 
-use Test::Stream::Carp qw/carp croak/;
+use Carp qw/carp croak/;
 use Test::Stream::State;
 use Test::Stream::Threads;
 

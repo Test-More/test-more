@@ -4,7 +4,8 @@ use warnings;
 
 use Scalar::Util qw/weaken/;
 
-use Test::Stream::Carp qw/confess croak/;
+use Carp qw/confess croak/;
+
 use Test::Stream::Capabilities qw/CAN_FORK/;
 
 use Test::Stream::Hub;

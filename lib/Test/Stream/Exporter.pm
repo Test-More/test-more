@@ -4,9 +4,7 @@ use warnings;
 
 use Test::Stream::Exporter::Meta;
 
-# Test::Stream::Carp uses this module.
-sub croak   { require Carp; goto &Carp::croak }
-sub confess { require Carp; goto &Carp::confess }
+use Carp qw/croak confess/;
 
 BEGIN { Test::Stream::Exporter::Meta->new(__PACKAGE__) };
 
