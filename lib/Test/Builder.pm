@@ -47,16 +47,17 @@ sub _add_ts_hooks {
     my $hub = $self->{Stack}->top;
     $hub->add_context_init(sub {
         my $ctx = shift;
-        return if defined $ctx->debug->todo;
+        return if defined $ctx->{debug}->{todo};
 
-        my @pkgs = ($self->{Exported_To}, $ctx->debug->package);
-        my %seen;
-        for my $pkg (@pkgs) {
-            next unless $pkg;
-            next if $seen{$pkg}++;
-            my $todo = $self->find_TODO($pkg) || next;
-            return $ctx->debug->set_todo($todo);
-        }
+        my $epkg = $self->{Exported_To};
+        my $cpkg = $ctx->{debug}->{frame}->[0];
+
+        no strict 'refs';
+        no warnings 'once';
+        my $todo;
+        $todo = ${"$cpkg\::TODO"};
+        $todo = ${"$epkg\::TODO"} if $epkg && !$todo;
+        $ctx->{debug}->{todo} = $todo if $todo;
     });
 }
 
@@ -93,16 +94,14 @@ sub create {
 
 sub ctx {
     my $self = shift;
-    return $self->{CTX} if $self->{CTX};
     # 1 - call to this sub
     # Default $Level = 1 - call to $Test->...
     # $Level Additional levels to go back
     # Adjust level if necessary, Test::Stream is strict about the level passed in, but Test::Builder has always been forgiving.
-    local $Level = $Level;
-    $Level-- until caller($Level + 1);
+    my $level = $Level + 1;
+    $level-- until caller($level);
 
-    my $ctx = context(level => $Level + 1, stack => $self->{Stack}, hub => $self->{Hub}, wrapped => 1, @_);
-    return $ctx;
+    context(level => $level, stack => $self->{Stack}, hub => $self->{Hub}, wrapped => 1, @_);
 }
 
 sub parent {
@@ -537,58 +536,56 @@ sub ok {
     $test = $test ? 1 : 0;
 
     # In case $name is a string overloaded object, force it to stringify.
-    $self->_unoverload_str( \$name );
+    no  warnings qw/uninitialized numeric/;
+    $name = "$name" if defined $name;
 
-    $ctx->diag(<<"    ERR") if defined $name and $name =~ /^[\d\s]+$/;
+    # Profiling showed that the regex here was a huge time waster, doing the
+    # numeric addition first cuts our profile time from ~300ms to ~50ms
+    $self->diag(<<"    ERR") if 0 + $name && $name =~ /^[\d\s]+$/;
     You named your test '$name'.  You shouldn't use numbers for your test names.
     Very confusing.
     ERR
+    use warnings qw/uninitialized numeric/;
 
-    my $no_fail = $ctx->debug->no_fail;
-
-    my $result = {};
-
-    unless($test) {
-        @$result{ 'ok', 'actual_ok' } = ( ( $no_fail ? 1 : 0 ), 0 );
-    }
-    else {
-        @$result{ 'ok', 'actual_ok' } = ( 1, $test );
-    }
+    my $dbg = $ctx->{debug};
 
     my $orig_name = $name;
-    if( defined $name ) {
-        $name =~ s|#|\\#|g;    # # in a name can confuse Test::Harness.
-        $name =~ s{\n}{\n# }sg;
-        $result->{name} = $name;
-    }
-    else {
-        $result->{name} = '';
-    }
 
-    if( $no_fail ) {
-        $result->{reason} = $ctx->debug->todo;
-        $result->{type}   = 'todo';
-    }
-    else {
-        $result->{reason} = '';
-        $result->{type}   = '';
-    }
+    # The regex form is ~250ms, the index form is ~50ms
+    #$name && $name =~ m/(?:#|\n)/ && ($name =~ s|#|\\#|g, $name =~ s{\n}{\n# }sg);
+    $name && (
+        (index($name, "#" ) >= 0 && $name =~ s|#|\\#|g),
+        (index($name, "\n") >= 0 && $name =~ s{\n}{\n# }sg)
+    );
 
-    $ctx->hub->meta(__PACKAGE__, {})->{Test_Results}[ $ctx->hub->state->count ] = $result;
+    my $result = {
+        ok => 1,
+        actual_ok => $test,
+        (name => defined($name) ? $name : ''),
+        $dbg->{todo} ? ( reason => $dbg->{todo}, type => 'todo' )
+                     : ( reason => '',           type => '' ),
+    };
 
-    $ctx->send_event(
-        'Ok',
-        pass => $test,
-        name => $name,
+    @$result{ 'ok', 'actual_ok' } = ( ( $dbg->no_fail ? 1 : 0 ), 0 ) unless $test;
 
-        # Legacy allows '#' and newlines, we make them safe above. Test::Stream
-        # however is less permissive and forbids these things. This lets us get
-        # past the check.
-        allow_bad_name => 1,
+    $ctx->{hub}->{_meta}->{+__PACKAGE__}->{Test_Results}[ $ctx->{hub}->{state}->{count} ] = $result;
+
+    $ctx->{hub}->send(
+        Test::Stream::Event::Ok->new(
+            pass => $test,
+            name => $name,
+
+            # Legacy allows '#' and newlines, we make them safe above.
+            # Test::Stream however is less permissive and forbids these things.
+            # This lets us get past the check.
+            allow_bad_name => 1,
+
+            debug => $dbg->snapshot,
+        )
     );
 
     unless($test) {
-        my $is_todo = defined $ctx->debug->todo;
+        my $is_todo = defined $dbg->{todo};
         my $msg = $is_todo ? "Failed (TODO)" : "Failed";
         $self->diag("\n") if $ENV{HARNESS_ACTIVE};
 
@@ -607,27 +604,24 @@ sub ok {
 
 
 sub _unoverload {
-    my $self = shift;
-    my $type = shift;
+    my ($self, $type, $thing) = @_;
 
-    for my $thing (@_) {
-        next unless ref $$thing;
-        next unless blessed($$thing) || scalar $self->try(sub{ $$thing->isa('UNIVERSAL') });
-        my $string_meth = overload::Method( $$thing, $type ) || next;
-        $$thing = $$thing->$string_meth();
-    }
+    return unless ref $$thing;
+    return unless blessed($$thing) || scalar $self->try(sub{ $$thing->isa('UNIVERSAL') });
+    my $string_meth = overload::Method( $$thing, $type ) || return;
+    $$thing = $$thing->$string_meth();
 }
 
 sub _unoverload_str {
     my $self = shift;
 
-    $self->_unoverload( q[""], @_ );
+    $self->_unoverload( q[""], $_ ) for @_;
 }
 
 sub _unoverload_num {
     my $self = shift;
 
-    $self->_unoverload( '0+', @_ );
+    $self->_unoverload( '0+', $_ ) for @_;
 
     for my $val (@_) {
         next unless $self->_is_dualvar($$val);
