@@ -140,7 +140,7 @@ is $is_todo, 'Nesting TODO',
 eval {
     $builder->todo_end;
 };
-is $@, sprintf "todo_end() called without todo_start() at %s line %d.\n", $0, __LINE__ - 2;
+is $@, sprintf "todo_end() called without todo_start() at %s line %d.\n", $0, __LINE__ - 3;
 
 
 {

@@ -1,5 +1,4 @@
 #!/usr/bin/perl -w
-
 # Test todo subtests.
 #
 # A subtest in a todo context should have all of its diagnostic output
@@ -51,8 +50,8 @@ sub test_subtest_in_todo {
     foreach my $combo (@test_combos) {
         my ($set_via, $todo_reason, $level) = @$combo;
 
-        test_out(
-            "    # Subtest: xxx",
+        test_out( map { my $x = $_; $x =~ s/\s+$//g; $x } 
+            "# Subtest: xxx",
             @outlines,
             "not ok 1 - $xxx # TODO $todo_reason",
             "#   Failed (TODO) test '$xxx'",

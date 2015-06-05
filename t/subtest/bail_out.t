@@ -12,11 +12,12 @@ BEGIN {
 
 my $Exit_Code;
 BEGIN {
-    *CORE::GLOBAL::exit = sub { $Exit_Code = shift; };
+    *CORE::GLOBAL::exit = sub { $Exit_Code = shift; goto XXX};
 }
 
 use Test::Builder;
 use Test::More;
+use Test::Stream::Subtest qw/subtest_streamed/;
 
 my $output;
 my $TB = Test::More->builder;
@@ -30,10 +31,10 @@ $Test->plan(tests => 2);
 plan tests => 4;
 
 ok 'foo';
-subtest 'bar' => sub {
+subtest_streamed 'bar' => sub {
     plan tests => 3;
     ok 'sub_foo';
-    subtest 'sub_bar' => sub {
+    subtest_streamed 'sub_bar' => sub {
         plan tests => 3;
         ok 'sub_sub_foo';
         ok 'sub_sub_bar';
@@ -43,13 +44,15 @@ subtest 'bar' => sub {
     ok 'sub_baz';
 };
 
+XXX:
+
 $Test->is_eq( $output, <<'OUT' );
 1..4
 ok 1
-    # Subtest: bar
+# Subtest: bar
     1..3
     ok 1
-        # Subtest: sub_bar
+    # Subtest: sub_bar
         1..3
         ok 1
         ok 2
@@ -57,3 +60,5 @@ Bail out!  ROCKS FALL! EVERYONE DIES!
 OUT
 
 $Test->is_eq( $Exit_Code, 255 );
+
+Test::Stream::Sync->stack->top->set_no_ending(1);
