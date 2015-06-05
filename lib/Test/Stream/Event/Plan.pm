@@ -58,6 +58,7 @@ sub update_state {
     my ($state) = @_;
 
     $state->plan($self->{+DIRECTIVE} || $self->{+MAX});
+    $state->set_skip_reason($self->{+REASON});
 }
 
 sub terminate {

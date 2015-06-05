@@ -5,7 +5,7 @@ use warnings;
 use Carp qw/confess/;
 
 use Test::Stream::HashBase(
-    accessors => [qw{count failed ended bailed_out _passing _plan}],
+    accessors => [qw{count failed ended bailed_out _passing _plan skip_reason}],
 );
 
 sub init {
