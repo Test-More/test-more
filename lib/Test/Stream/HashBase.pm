@@ -142,6 +142,33 @@ generated for you. You also get constants for each accessor (all caps) which
 return the key into the hash for that accessor. Single inheritence is also
 supported.
 
+=head1 IMPORT ARGUMENTS
+
+=over 4
+
+=item accessors => [...]
+
+This is how you define your accessors. See the ACCESSORS section below.
+
+=item base => $class
+
+This is how you subclass a Test::Stream::Hashbase class. This will give you all
+the constants of the parent(s).
+
+=item into => $class
+
+This is a way to apply HashBase to another class.
+
+    package My::Thing;
+
+    sub import {
+        my $caller = caller;
+        Test::Stream::HashBase->import(@_, into => $class);
+        ...
+    }
+
+=back
+
 =head1 METHODS
 
 =head2 PROVIDED BY HASH BASE
@@ -185,10 +212,12 @@ Setter, used to set the value of the C<foo> field.
 
 =item FOO()
 
-Constant, returs the field C<foo>'s key into the class hashref. This function
-is also exported, but only when requested. Subclasses will also get this
-function as a constant, not simply a method, that means it is copied into the
-subclass namespace.
+Constant, returs the field C<foo>'s key into the class hashref. Subclasses will
+also get this function as a constant, not simply a method, that means it is
+copied into the subclass namespace.
+
+The main reason for using these constants is to help avoid spelling mistakes
+and similar typos. It will not help you if you forget to prefix the '+' though.
 
 =back
 
