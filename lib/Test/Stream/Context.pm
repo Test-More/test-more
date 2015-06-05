@@ -3,14 +3,10 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/weaken/;
+use Carp qw/confess croak longmess/;
+use Test::Stream::Util qw/get_tid/;
 
-use Carp qw/confess croak/;
-
-use Test::Stream::Capabilities qw/CAN_FORK/;
-
-use Test::Stream::Hub;
-use Test::Stream::TAP;
-use Test::Stream::Util qw/get_tid USE_THREADS/;
+use Test::Stream::Sync;
 use Test::Stream::DebugInfo;
 
 # Preload some key event types
@@ -22,146 +18,43 @@ my %LOADED = (
     } qw/Ok Diag Note Plan Bail Exception Waiting/
 );
 
-my @HUB_STACK;
-my %CONTEXTS;
-my $NO_WAIT;
+# Stack is ok to cache.
+my $STACK = Test::Stream::Sync->stack;
 
-use Test::Stream::Exporter qw/import export_to exports/;
-exports qw/TOP_HUB PUSH_HUB POP_HUB NEW_HUB CULL context/;
+my @ON_INIT;
+my @ON_RELEASE;
+
+sub ON_INIT    { shift; push @ON_INIT => @_ }
+sub ON_RELEASE { shift; push @ON_INIT => @_ }
+
+my %CONTEXTS;
+# Be kind 'rewind'
+sub END {
+    my $real = $?;
+    my $new  = $real;
+
+    my @unreleased = grep { $_ } values %CONTEXTS;
+    if (@unreleased) {
+        $new = 255;
+
+        $_->debug->alert("context object was never released! This means a testing tool is behaving very badly")
+            for @unreleased;
+    }
+
+    $? = $new;
+}
+
+use Test::Stream::Exporter qw/import export_to exports export/;
+exports qw/context/;
+export release => sub($;@) {
+    $_[0]->release;
+    shift; # Remove undef that used to be our $self reference.
+    return @_ > 1 ? @_ : $_[0];
+};
 no Test::Stream::Exporter;
 
-# Set the exit status
-my ($PID, $TID) = ($$, get_tid());
-END {
-    my $exit = $?;
-
-    if ($PID != $$ || $TID != get_tid()) {
-        $? = $exit;
-        return;
-    }
-
-    if ($INC{'Test/Stream/IPC.pm'} && !$NO_WAIT) {
-        my %seen;
-        for my $hub (reverse @HUB_STACK) {
-            my $ipc = $hub->ipc || next;
-            next if $seen{$ipc}++;
-            $ipc->waiting();
-        }
-
-        my $ipc_exit = IPC_WAIT();
-        $exit ||= $ipc_exit;
-    }
-
-    my $dbg = Test::Stream::DebugInfo->new(
-        frame => [ __PACKAGE__, __FILE__, __LINE__ + 4, 'END' ],
-        detail => 'Test::Stream::Context END Block finalization',
-    );
-    my $hub_exit = 0;
-    for my $hub (reverse @HUB_STACK) {
-        next if $hub->no_ending;
-        next if $hub->state->ended;
-        $hub_exit += $hub->finalize($dbg, 1);
-    }
-    $exit ||= $hub_exit;
-
-    if(my @unreleased = grep { $_ } values %CONTEXTS) {
-        $exit ||= 255;
-        for my $ctx (@unreleased) {
-            $ctx->debug->alert("context object was never released! This means a testing tool is behaving very badly");
-        }
-    }
-
-    @HUB_STACK = ();
-
-    $exit = 255 if $exit > 255;
-
-    $? = $exit;
-}
-
-# If IPC is already loaded we should create the TOP HUB now before forking or
-# threading occur.
-TOP_HUB() if $INC{'Test/Stream/IPC.pm'};
-
-sub NO_WAIT { ($NO_WAIT) = @_ if @_; $NO_WAIT }
-
-sub IPC_WAIT {
-    my $fail = 0;
-
-    while (CAN_FORK()) {
-        my $pid = CORE::wait();
-        my $err = $?;
-        last if $pid == -1;
-        next unless $err;
-        $fail++;
-        $err = $err >> 8;
-        warn "Process $pid did not exit cleanly (status: $err)\n";
-    }
-
-    if (USE_THREADS) {
-        for my $t (threads->list()) {
-            $t->join;
-            my $err = $t->error;
-            my $tid = $t->tid();
-            $fail++;
-            chomp($err);
-            warn "Thread $tid did not end cleanly\n";
-        }
-    }
-
-    return 0 unless $fail;
-    return 255;
-}
-
-sub NEW_HUB {
-    shift @_ if $_[0] && $_[0] eq __PACKAGE__;
-
-    my ($ipc, $formatter);
-    if (@HUB_STACK) {
-        $ipc = $HUB_STACK[-1]->ipc;
-        $formatter = $HUB_STACK[-1]->format;
-    }
-    else {
-        $formatter = Test::Stream::TAP->new;
-        if ($INC{'Test/Stream/IPC.pm'}) {
-            my ($driver) = Test::Stream::IPC->drivers;
-            $ipc = $driver->new;
-        }
-    }
-
-    my $hub = Test::Stream::Hub->new(
-        formatter => $formatter,
-        ipc       => $ipc,
-        @_,
-    );
-
-    return $hub;
-}
-
-sub TOP_HUB {
-    push @HUB_STACK => NEW_HUB() unless @HUB_STACK;
-    $HUB_STACK[-1];
-}
-
-sub PEEK_HUB { @HUB_STACK ? $HUB_STACK[-1] : undef }
-
-sub PUSH_HUB {
-    my $hub = pop;
-    push @HUB_STACK => $hub;
-}
-
-sub POP_HUB {
-    my $hub = pop;
-    confess "You cannot pop the root hub"
-        if 1 == @HUB_STACK;
-    confess "Hub stack mismatch, attempted to pop incorrect hub"
-        unless $HUB_STACK[-1] == $hub;
-    pop @HUB_STACK;
-}
-
-sub CULL { $_->cull for reverse @HUB_STACK }
-
 use Test::Stream::HashBase(
-    accessors => [qw/hub debug/],
+    accessors => [qw/stack hub debug _on_release _depth _err _no_destroy_warning _no_destroy/],
 );
 
 sub init {
@@ -174,68 +67,193 @@ sub init {
 
 sub snapshot { bless {%{$_[0]}}, __PACKAGE__ }
 
-sub context(;$) {
+sub release {
+    my ($self) = @_;
+    my $cbk  = $self->{+_ON_RELEASE};
+    my $dbg  = $self->{+DEBUG};
+    my $hub  = $self->{+HUB};
+    my $hid  = $hub->hid;
+    my $hcbk = $hub->{_context_release};
+
+    my $snap = $cbk || $hcbk ? $self->snapshot : undef;
+
+    weaken($self);
+    $self->{+_NO_DESTROY} = 1;
+    $_[0] = undef; # Kill this reference
+    delete $self->{+_NO_DESTROY} if $self;
+
+    # Removing this reference did not remove the context, so we do not run our
+    # release hooks yet.
+    return if $CONTEXTS{$hid};
+
+    # Remove the key itself to avoid a slow memory leak
+    delete $CONTEXTS{$hid};
+    if ($cbk) {
+        $_->($snap) for reverse @$cbk;
+    }
+    if ($hcbk) {
+        $_->($snap) for reverse @$hcbk;
+    }
+    $_->($snap) for reverse @ON_RELEASE;
+    return;
+}
+
+sub DESTROY {
+    my ($self) = @_;
+    return if $self->{+_NO_DESTROY};
+
+    my $hid = $self->{+HUB}->hid;
+
+    return unless $CONTEXTS{$hid} && $CONTEXTS{$hid} == $self;
+    return unless "$@" eq "" . $self->{+_ERR};
+
+    my $debug = $self->{+DEBUG};
+    my $frame = $debug->frame;
+
+    my $mess = longmess;
+
+    warn <<"    EOT" unless $self->{+_NO_DESTROY_WARNING} || $self->{+DEBUG}->pid != $$;
+Context was not released! Releasing at destruction.
+Context creation details:
+  Package: $frame->[0]
+     File: $frame->[1]
+     Line: $frame->[2]
+     Tool: $frame->[3]
+
+Trace: $mess
+    EOT
+
+    # Remove the key itself to avoid a slow memory leak
+    delete $CONTEXTS{$hid};
+    if(my $cbk = $self->{+_ON_RELEASE}) {
+        $_->($self) for reverse @$cbk;
+    }
+    if (my $hcbk = $self->{+HUB}->{_context_release}) {
+        $_->($self) for reverse @$hcbk;
+    }
+    $_->($self) for reverse @ON_RELEASE;
+    return;
+}
+
+sub context {
+    my %params = (level => 0, wrapped => 0, @_);
+
     croak "context() called, but return value is ignored"
         unless defined wantarray;
 
-    my $hub = TOP_HUB();
-    my $current = $CONTEXTS{$hub->hid};
-    return $current if $current;
+    my $stack = $params{stack} || $STACK;
+    my $hub = $params{hub} || $stack->top;
+    my $hid = $hub->{hid};
+    my $current = $CONTEXTS{$hid};
 
-    # This is a good spot to poll for pending IPC results. This actually has
-    # nothing to do with getting a context.
-    $hub->cull;
+    my $level = 1 + $params{level};
+    my $depth = $level;
+    $depth++ while caller($depth + 1) && (!$current || $depth <= $current->{+_DEPTH} + $params{wrapped});
+    $depth -= $params{wrapped};
 
-    my $level = 1 + ($_[0] || 0);
+    if ($current && $params{on_release} && $current->{+_DEPTH} < $depth) {
+        $current->{+_ON_RELEASE} ||= [];
+        push @{$current->{+_ON_RELEASE}} => $params{on_release};
+    }
+
+    return $current if $current && $current->{+_DEPTH} < $depth;
+
     my ($pkg, $file, $line, $sub) = caller($level);
     confess "Could not find context at depth $level"
         unless $pkg;
 
-    my $dbg = Test::Stream::DebugInfo->new(
-        frame => [$pkg, $file, $line, $sub],
-        todo  => $hub->get_todo,
+    # Handle error condition of bad level
+    if ($current) {
+        my $oldframe = $current->{+DEBUG}->frame;
+        my $olddepth = $current->{+_DEPTH};
+
+        my $mess = longmess();
+
+        warn <<"        EOT";
+context() was called to retrieve an existing context, however the existing
+context was created in a stack frame at the same, or deeper level. This usually
+means that a tool failed to release the context when it was finished.
+
+Old context details:
+   File: $oldframe->[1]
+   Line: $oldframe->[2]
+   Tool: $oldframe->[3]
+  Depth: $olddepth
+
+New context details:
+   File: $file
+   Line: $line
+   Tool: $sub
+  Depth: $depth
+
+Trace: $mess
+
+Removing the old context and creating a new one...
+        EOT
+
+        delete $CONTEXTS{$hid};
+        $current->release;
+    }
+
+    my $dbg = bless(
+        {
+            frame => [$pkg, $file, $line, $sub],
+            pid   => $$,
+            tid   => get_tid(),
+            $hub->debug_todo,
+        },
+        'Test::Stream::DebugInfo'
     );
 
     $current = bless(
         {
+            STACK() => $stack,
             HUB()   => $hub,
             DEBUG() => $dbg,
+            _DEPTH() => $depth,
+            _ERR()  => $@,
+            $params{on_release} ? (_ON_RELEASE() => [ $params{on_release} ]) : (),
         },
         __PACKAGE__
     );
 
-    weaken($CONTEXTS{$hub->hid} = $current);
+    weaken($CONTEXTS{$hid} = $current);
+
+    $_->($current) for @ON_INIT;
+
+    $params{on_init}->($current) if $params{on_init};
+
+    if (my $hcbk = $hub->{_context_init}) {
+        $_->($current) for @$hcbk;
+    }
+
     return $current;
 }
 
-sub set {
-    my $self = shift;
-    my $hub = TOP_HUB();
-    weaken($CONTEXTS{$hub->hid} = $self);
+sub throw {
+    my ($self, $msg) = @_;
+    $_[0]->release; # We have to act on $_[0] because it is aliased
+    $self->debug->throw($msg);
 }
 
-sub unset {
-    my $self = shift;
-    my $hub = TOP_HUB();
-    delete $CONTEXTS{$hub->hid} if $CONTEXTS{$hub->hid} == $self;
-}
-
-sub peek {
-    my $hub = TOP_HUB();
-    $CONTEXTS{$hub->hid}
-}
-
-sub clear {
-    my $hub = TOP_HUB();
-    delete $CONTEXTS{$hub->hid};
+sub alert {
+    my ($self, $msg) = @_;
+    $self->debug->alert($msg);
 }
 
 sub send_event {
     my $self  = shift;
     my $event = shift;
     my %args  = @_;
-    my $e = $self->build_event($event, %args);
-    $self->hub->send($e);
+
+    my $pkg = $LOADED{$event} || $self->_parse_event($event);
+
+    $self->{+HUB}->send(
+        $pkg->new(
+            debug => $self->{+DEBUG}->snapshot,
+            %args,
+        )
+    );
 }
 
 sub build_event {
@@ -246,7 +264,7 @@ sub build_event {
     my $pkg = $LOADED{$event} || $self->_parse_event($event);
 
     $pkg->new(
-        debug => $self->debug->snapshot,
+        debug => $self->{+DEBUG}->snapshot,
         %args,
     );
 }
@@ -255,10 +273,10 @@ sub ok {
     my $self = shift;
     my ($pass, $name, $diag) = @_;
 
-    my $e = $self->build_event(
-        'Ok',
-        pass => $pass,
-        name => $name,
+    my $e = Test::Stream::Event::Ok->new(
+        debug => $self->{+DEBUG}->snapshot,
+        pass  => $pass,
+        name  => $name,
     );
 
     return $self->hub->send($e) if $pass;
@@ -284,15 +302,22 @@ sub diag {
 }
 
 sub plan {
-    my $self = shift;
-    my ($max, $directive, $reason) = @_;
+    my ($self, $max, $directive, $reason) = @_;
+    if ($directive && $directive =~ m/skip/i) {
+        $self->{+_NO_DESTROY_WARNING} = 1;
+        $self = $self->snapshot;
+        $_[0]->release;
+    }
+
     $self->send_event('Plan', max => $max, directive => $directive, reason => $reason);
 }
 
 sub bail {
-    my $self = shift;
-    my ($reason, $quiet) = @_;
-    $self->send_event('Bail', reason => $reason, quiet => $quiet);
+    my ($self, $reason) = @_;
+    $self->{+_NO_DESTROY_WARNING} = 1;
+    $self = $self->snapshot;
+    $_[0]->release;
+    $self->send_event('Bail', reason => $reason);
 }
 
 sub _parse_event {
@@ -340,198 +365,331 @@ very likely to see a lot of code churn. API's may break at any time.
 Test-Stream should NOT be depended on by any toolchain level tools until the
 experimental phase is over.
 
-=head1 KEY CONCEPTS AND RESPONSIBILITIES
+=head1 DESCRIPTION
 
-This class manages the singleton, and singleton-like object instances used by
-all Test-Stream tools.
+The context object is the primary interface for authors of testing tools
+written with L<Test::Stream>. The context object represents the context in
+which a test takes place (File and Line Number), and provides a quick way to
+generate events from that context. The context object also takes care of
+sending events to the correct L<Test::Stream::Hub> instance.
 
-=head2 CONTEXT OBJECTS
+=head1 SYNOPSIS
 
-Context objects are instances of L<Test::Stream::Context>. These are the
-primary point of interaction into the Test-Stream framework.
+    use Test::Stream::Context qw/context release/;
 
-A Context object is a semi-singleton in that they are not arbitrarily created
-or creatable. At any given time there will be exactly 0 or 1 instances of a
-context object per hub in the hub stack. If there is only 1 hub in the hub
-stack, there will only be 1 context object, if any.
+    sub my_ok {
+        my ($bool, $name) = @_;
+        my $ctx = context();
+        $ctx->ok($bool, $name);
+        $ctx->release; # You MUST do this!
+        return $bool;
+    }
 
-The 1 context object for any given hub will be destroyed automatically if there
-are no external references to it. If there is an instance of the context object
-for a given hub it will be returned any time you call C<context()>. If there
-are no existing instances, a new one will be generated.
+Context objects make it easy to wrap other tools that also use context. Once
+you grab a context, any tool you call before releasing your context will
+inherit it:
 
-The context returned by C<context()> will always be the instance for whatever
-hub is at the top of the stack.
+    sub wrapper {
+        my ($bool, $name) = @_;
+        my $ctx = context();
+        $ctx->diag("wrapping my_ok");
 
-=head2 THE HUB STACK
+        my $out = my_ok($bool, $name);
+        $ctx->release; # You MUST do this!
+        return $out;
+    }
 
-The L<Test::Stream::Hub> objects are responsbile for routing events and
-maintaining state. In many cases you only ever need 1 hub object. However there
-are times where it is useful to temporarily use a new hub. Some example use
-cases of temporarily replacing the hub are subtests, and intercepting results
-to test testing tools.
+Notice above that we are grabbing a return value, then releasing our context,
+then returning the value. We can combine these last 3 statements into a single
+statement using the C<release> function:
 
-=head3 IPC
+    sub wrapper {
+        my ($bool, $name) = @_;
+        my $ctx = context();
+        $ctx->diag("wrapping my_ok");
 
-If you load L<Test::Stream::IPC> or an IPC driver BEFORE the root hub is
-generated, then IPC will be used. IPC will not be loaded for you automatically.
-When you request a new hub using C<NEW_HUB> it will inherit the IPC instance
-from the current hub.
+        # You must always release the context.
+        release $ctx, my_ok($bool, $name);
+    }
 
-=head3 FORMATTER
+=head1 CRITICAL DETAILS
 
-The root hub will use L<Test::Stream::TAP> as its formatter by default. If you
-want to change this you must get the hub either by using C<< $context->hub >>
-or C<TOP_HUB()> and set/unset the formatter using the C<format()> method.
+=over 4
 
-The formatter is inherited, that is if you use C<NEW_HUB> to create a new hub,
-it will reference the current hubs formatter.
+=item You MUST always release the context when done with it
+
+Releasing the context tells the system you are done with it. This gives it a
+chance to run any necessary callbacks or cleanup tasks. If you forget to
+release the context it will be released for you using a destructor, and it will
+give you a warning.
+
+In general the destructor is not preferred because it does not allow callbacks
+to run some types of code, for example you cannot throw an exception from a
+destructor.
+
+=item You MUST NOT pass context objects around
+
+When you obtain a context object it is made specifically for your tool and any
+tools nested within. If you pass a context around you run the risk of polluting
+other tools with incorrect context information.
+
+If you are certain that you want a different tool to use the same context you
+may pass it a snapshot. C<< $ctx->snapshot >> will give you a shallow clone of
+the context that is safe to pass around or store.
+
+=item You MUST NOT store or cache a context for later
+
+As long as a context exists for a given hub, all tools that try to get a
+context will get the existing instance. If you try to store the context you
+will pollute other tools with incorrect context information.
+
+If you are certain that you want to save the context for later, you can use a
+snapshot. C<< $ctx->snapshot >> will give you a shallow clone of the context
+that is safe to pass around or store.
+
+C<context() has some mechanisms to protect you if you do cause a context to
+persist beyond the scope in which it was obtained. In practice you should not
+rely on these protections, and they are fairly noisy with warnings.
+
+=item You SHOULD obtain your context as soon as possible in a given tool
+
+You never know what tools you call from within your own tool will need a
+context. Obtaining the context early ensures that nested tools can find the
+context you want them to find.
+
+=back
 
 =head1 EXPORTS
 
-B<Note:> Nothing is exported by default, you must choose what you want to
-import.
+=head2 context()
 
-Many of these also work fine as class methods on the Test::Stream::Context
-class, when that is the case an example is provided.
+Usage:
 
 =over 4
 
 =item $ctx = context()
 
-=item $ctx = context($level)
-
-This is used to generate a context. Anything else that tries to get a context
-will get this very same instance, until you remove all references to it.
-As such it is important that you never save or return a context object.
-
-This will demonstrate:
-
-    my $ctx1 = context();
-    my $ctx2 = context();    # Returns $ctx1 again
-    ok($ctx1 == $ctx2, "Same Instance");
-    my $addr = "$ctx1";      # Take the address of the object
-
-    $ctx1 = undef;
-    $ctx2 = indef;
-
-    my $ctx3 = context();    # Returns a new instance, old one was destroyed.
-    ok("$ctx3" ne $addr, "Got a completely new instance");
-
-B<In other words never do this>:
-
-    my $ctx = context();
-
-    sub foo {
-        $ctx->...;
-    }
-
-    sub bar {
-        $ctx->...;
-    }
-
-Doing this would prevent anything else from ever getting the correct context,
-everything will always get this context until the end of time.
-
-If you I<REALLY> need to keep the context, use the C<snapshot()> method to
-clone it safely.
-
-The C<$level> argument is how far down the stack to look for the context frame.
-If you do not specify the C<$level> then 0 is assumed. This means it will use
-the call directly above the current scope. IF you are calling context at the
-package level, instead of inside a sub, you need to set C<$level> to C<-1>.
-
-=item $hub = TOP_HUB()
-
-=item $hub = $class->TOP_HUB()
-
-This will return the hub at the top of the stack. If there are no hubs on the
-stack it will generate a root one for you.
-
-=item $hub = NEW_HUB(%ARGS)
-
-=item $hub = $class->NEW_HUB(%ARGS)
-
-This will generate a new hub, any arguments are passed to the
-L<Test::Stream::Hub> constructor. Unless you override them, this will set the
-formatter and ipc instance to those of the current hub.
-
-B<Note:> This does not add the hub to the hub stack.
-
-=item PUSH_HUB($hub)
-
-=item $class->PUSH_HUB($hub)
-
-This is used to push a new hub onto the stack. This hub will be the hub used by
-any new contexts until either a new hub is pushed above it, or it is popped.
-
-=item POP_HUB($hub)
-
-=item $class->POP_HUB($hub)
-
-This is used to pop a hub off the stack. You B<Must> pass in the hub you think
-you are popping. An exception will be thrown if you do not specify the hub to
-expect, or the hub you expect is not on the top of the stack.
-
-=item CULL()
-
-=item $class->CULL()
-
-This will cause all hubs in the current proc/thread to cull any IPC results
-they have not yet collected.
-
-=item NO_WAIT($bool)
-
-=item $bool = NO_WAIT()
-
-=item $class->NO_WAIT($bool)
-
-=item $bool = $class->NO_WAIT()
-
-Normally Test::Stream::Context will wait on all child processes and join all
-non-detached threads before letting the parent process end. Setting this to
-true will prevent this behavior.
+=item $ctx = context(%params)
 
 =back
 
-=head1 METHODS
+The C<context()> function will always return the current context to you. If
+there is already a context active it will be returned. If there is not an
+active context one will be generated. When a context is generated it will
+default to using the file and line number where the currently running sub was
+called from.
+
+Please see the L</"CRITICAL DETAILS"> section for important rools about what
+you can and acannot do with a context once it is obtained.
+
+B<Note> This function will throw an exception if you ignore the context object
+it returns.
+
+=head3 OPTIONAL PARAMETERS
+
+All parameters to C<context> are optional.
 
 =over 4
 
+=item level => $int
+
+If you must obtain a context in a sub deper than your entry point you can use
+this to tell it how many EXTRA stack frames to look back. If this option is not
+provided the default of C<0> is used.
+
+    sub third_party_tool {
+        my $sub = shift;
+        ... # Does not obtain a context
+        $sub->();
+        ...
+    }
+
+    third_party_tool(sub {
+        my $ctx = context(level => 1);
+        ...
+        $ctx->release;
+    });
+
+=item wrapped => $int
+
+Use this if you need to write your own tool that wraps a call to C<context()>
+with the intent that it should return a context object.
+
+    sub my_context {
+        my %params = ( wrapped => 0, @_ );
+        $params{wrapped}++;
+        my $ctx = context(%params);
+        ...
+        return $ctx;
+    }
+
+    sub my_tool {
+        my $ctx = my_context();
+        ...
+        $ctx->release;
+    }
+
+If you do not do this than tools you call that also check for a context will
+notice that the context they grabbed was created at the same stack depth, which
+will trigger protective measures that warn you and destroy the existing
+context.
+
+=item stack => $stack
+
+Normally C<context()> looks at the global hub stack initialized in
+L<Test::Stream::Sync>. If you are maintaining your own L<Test::Stream::Stack>
+instance you may pass it in to be used instead of the global one.
+
+=item hub => $hub
+
+Use this parameter if you want to onbtain the context for a specific hub
+instead of whatever one happens to be at the top of the stack.
+
+=item on_init => sub { ... }
+
+This lets you provide a callback sub that will be called B<ONLY> if your call
+to c<context()> generated a new context. The callback B<WILL NOT> be called if
+C<context()> is returning an existing context. The only argument passed into
+the callback will be the context object itself.
+
+    sub foo {
+        my $ctx = context(on_init => sub { 'will run' });
+
+        my $inner = sub {
+            # This callback is not run since we are getting the existing
+            # context from our parent sub.
+            my $ctx = context(on_init => sub { 'will NOT run' });
+            $ctx->release;
+        }
+        $inner->();
+
+        $ctx->release;
+    }
+
+=item on_release => sub { ... }
+
+This lets you provide a callback sub that will be called when the context
+instance is released. This callback will be added to the returned context even
+if an existing context is returned. If multiple calls to context add callbacks
+then all will be called in reverse order when the context is finally released.
+
+    sub foo {
+        my $ctx = context(on_release => sub { 'will run second' });
+
+        my $inner = sub {
+            my $ctx = context(on_release => sub { 'will run first' });
+
+            # Neither callback runs on this release
+            $ctx->release;
+        }
+        $inner->();
+
+        # Both callbacks run here.
+        $ctx->release;
+    }
+
+=back
+
+=head2 release()
+
+Usage:
+
+=over 4
+
+=item release $ctx;
+
+=item release $ctx, ...;
+
+=back
+
+This is intended as a shortcut that lets you release your context and return a
+value in one statement. This function will get your context, and any other
+arguments provided. It will release your context, then return everything else.
+If you only provide one argument it will return that one argument as a scalar.
+If you provide multiple arguments it will return them all as a list.
+
+    sub scalar_tool {
+        my $ctx = context();
+        ...
+
+        return release $ctx, 1;
+    }
+
+    sub list_tool {
+        my $ctx = context();
+        ...
+
+        return release $ctx, qw/a b c/;
+    }
+
+This tool is most useful when you want to return the value you get from calling
+a function that needs to see the current context:
+
+    my $ctx = context();
+    my $out = some_tool(...);
+    $ctx->release;
+    return $out;
+
+We can combine the last 3 lines of the above like so:
+
+    my $ctx = context();
+    release $ctx, some_tool(...);
+
+=head1 METHODS
+
+=head2 CLASS METHODS
+
+=over 4
+
+=item Test::Stream::Context->ON_INIT(sub { ... }, ...)
+
+=item Test::Stream::Context->ON_RELEASE(sub { ... }, ...)
+
+These are B<GLOBAL> hooks into the context tools. Every sub added via ON_INIT
+will be called every single time a new context is initialized. Every sub added
+via ON_RELEASE will be called every single time a context is released.
+
+Subs will recieve exactly 1 argument, that is the context itself. You should
+not call C<release> on the context within your callback.
+
+=back
+
+=head2 INSTANCE METHODS
+
+=over 4
+
+=item $clone = $ctx->snapshot()
+
+This will return a shallow clone of the context. The shallow clone is safe to
+store for later.
+
+=item $ctx->release()
+
+This will release the context. It will also set the C<$ctx> variable to
+C<undef> (it works regardless of what you name the variable).
+
+=item $ctx->throw($message)
+
+This will throw an exception reporting to the file and line number of the
+context. This will also release the context for you.
+
+=item $ctx->alert($message)
+
+This will issue a warning from the file and line number of the context.
+
+=item $stack = $ctx->stack()
+
+This will return the L<Test::Stream::Stack> instance the context used to find
+the current hub.
+
 =item $hub = $ctx->hub()
 
-This retrieves the L<Test::Stream::Hub> object associated with the current
-context.
+This will return the L<Test::Stream::Hub> instance the context recognises as
+the current one to which all events should be sent.
 
 =item $dbg = $ctx->debug()
 
-This retrieves the L<Test::Stream::DebugInfo> object associated with the
-current context.
-
-=item $copy = $ctx->snapshot;
-
-This will make a B<SHALLOW> copy of the context object. This copy will have the
-same hub, and the same instance of L<Test::Stream::DebugInfo>. However this
-shallow copy can be saved without locking the context forever.
-
-=item $ctx->set
-
-This can be used to set the context object to be the one true context for the
-current hub.
-
-=item $ctx->unset
-
-This can be used to forcfully drop a context object so that it is no longer the
-one true context for the current hub.
-
-=item $ctx = $class->peek
-
-This can be used to see if there is already a context for the current hub. This
-will return undef if there is no current hub.
-
-=item $class->clear
-
-Remove the one true context for the current hub.
+This will return the L<Test::Stream::DebugInfo> instance used by the context.
 
 =back
 
@@ -539,45 +697,127 @@ Remove the one true context for the current hub.
 
 =over 4
 
-=item $e = $ctx->send_event($Type, %args)
+=item $event = $ctx->ok($bool, $name)
 
-Build and send an event of C<$Type> with the current context. C<$Type> may be a
-full event package name, or the last part of C<Test::Stream::Event::*>. All
-C<%args> are passed to the event constructor.
+=item $event = $ctx->ok($bool, $name, \@diag)
 
-=item $e = $ctx->build_event($Type, %args)
+This will create an L<Test::Stream::Event::Ok> object for you. The diagnostics
+array will be used on the object in the event of a failure, if the test passes
+the diagnostics will be ignored.
 
-Build an event of C<$Type> with the current context. C<$Type> may be a full
-event package name, or the last part of C<Test::Stream::Event::*>. All C<%args>
-are passed to the event constructor.
+=item $event = $ctx->note($message)
 
-=item $e = $ctx->ok($pass, $name, \@diag)
+Send an L<Test::Stream::Event::Note>. This event prints a message to STDOUT.
 
-Shortcut for sending 'Ok' events. This shortcut will add your diagnostics ONLY
-in the event of a failure. This shortcut will also take care of adding the
-default failure diagnostics for you.
+=item $event = $ctx->diag($message)
 
-=item $e = $ctx->note($message)
+Send an L<Test::Stream::Event::Diag>. This event prints a message to STDERR.
 
-Shortcut for sendingg 'Note' events.
+=item $event = $ctx->plan($max)
 
-=item $e = $ctx->diag($message)
+=item $event = $ctx->plan(0, 'SKIP', $reason)
 
-Shortcut for sending 'Diag' events.
+This can be used to send an L<Test::Stream::Event::Plan> event. This event
+usually takes either a number of tests you expect to run. Optionally you can
+set the expected count to 0 and give the 'SKIP' directive with a reason to
+cause all tests to be skipped.
 
-=item $e = $ctx->plan($max)
+=item $event = $ctx->bail($reason)
 
-=item $e = $ctx->plan(0, 'no_plan')
+This sends an L<Test::Stream::Event::Bail> event. This event will completely
+terminate all testing.
 
-=item $e = $ctx->plan(0, 'skip_all' => $reason)
+=item $event = $ctx->send_event($Type, %parameters)
 
-Shortcut for sending 'Plan' events.
+This lets you build and send an event of any type. The C<$Type> argument should
+be the event package name with C<Test::Stream::Event::> left off, or a fully
+qualified package name. The event is returned after it is sent.
 
-=item $e = $ctx->bail($reason, $quiet)
+=item $event = $ctx->build_event($Type, %parameters)
 
-Shortcut for sending 'bail' events.
+This is the same as C<send_event()>, except it builds and returns the event
+without sending it.
 
 =back
+
+=head1 HOOKS
+
+There are 2 types of hooks, init hooks, and release hooks. As the names
+suggest, these hooks are triggered when contexts are created or released.
+
+=head2 INIT HOOKS
+
+These are called whenever a context is initialized. That means when a new
+instance is created. These hooks are B<NOT> called every time something
+requests a context, just when a new one is created.
+
+=head3 GLOBAL
+
+This is how you add a global init callback. Global callbacks happen for every
+context for any hub or stack.
+
+    Test::Stream::Context->ON_INIT(sub {
+        my $ctx = shift;
+        ...
+    });
+
+=head3 PER HUB
+
+This is how you add an init callback for all contexts created for a given hub.
+These callbacks will not run for other hubs.
+
+    $hub->add_context_init(sub {
+        my $ctx = shift;
+        ...
+    });
+
+=head3 PER CONTEXT
+
+This is how you specify an init hook that will only run if your call to
+C<context()> generates a new context. The callback will be ignored if
+C<context()> is returning an existing context.
+
+    my $ctx = context(on_init => sub {
+        my $ctx = shift;
+        ...
+    });
+
+=head2 RELEASE HOOKS
+
+These are called whenever a context is released. That means when the last
+reference to the instance is about to be destroyed. These hooks are B<NOT>
+called every time C<< $ctx->release >> is called.
+
+=head3 GLOBAL
+
+This is how you add a global release callback. Global callbacks happen for every
+context for any hub or stack.
+
+    Test::Stream::Context->ON_RELEASE(sub {
+        my $ctx = shift;
+        ...
+    });
+
+=head3 PER HUB
+
+This is how you add a release callback for all contexts created for a given
+hub. These callbacks will not run for other hubs.
+
+    $hub->add_context_release(sub {
+        my $ctx = shift;
+        ...
+    });
+
+=head3 PER CONTEXT
+
+This is how you add release callbacks directly to a context. The callback will
+B<ALWAYS> be added to the context that gets returned, it does not matter if a
+new one is generated, or if an existing one is returned.
+
+    my $ctx = context(on_release => sub {
+        my $ctx = shift;
+        ...
+    });
 
 =head1 SOURCE
 

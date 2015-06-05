@@ -17,25 +17,36 @@ sub drivers {
     return @DRIVERS;
 }
 
+my $NO_FATAL = 0;
+my $POLLING = 0;
 sub import {
     my $class = shift;
+    my %params = map {$_ => 1} @_;
 
-    if ($class eq __PACKAGE__) {
-        Test::Stream::Context::TOP_HUB() if $INC{'Test/Stream/Context.pm'};
-        return;
+    push @DRIVERS => $class
+        if $class ne __PACKAGE__
+        && $class->is_viable;
+
+    $NO_FATAL++ if delete $params{no_fatal};
+
+    if (delete $params{poll} && !$POLLING++) {
+        require Test::Stream::Context;
+        Test::Stream::Context->ON_INIT(sub { $_[0]->hub->cull });
     }
 
-    return unless $class->is_viable;
-
-    push @DRIVERS => $class;
-
-    return unless $INC{'Test/Stream/Context.pm'};
-
-    if (Test::Stream::Context->PEEK_HUB) {
-        carp "IPC Driver '$class' was loaded too late to be used by the root hub";
+    if (delete $params{cull}) {
+        require Test::Stream::Context;
+        my $caller = caller;
+        no strict 'refs';
+        *{"$caller\::cull"} = sub {
+            my $ctx = Test::Stream::Context::context();
+            $ctx->hub->cull;
+            $ctx->release;
+        };
     }
-    else {
-        Test::Stream::Context::TOP_HUB() if $INC{'Test/Stream/Context.pm'};
+
+    if (my @bad = keys %params) {
+        carp "Invalid parameters: " . join ', ', map { "'$_'" } @bad;
     }
 }
 
@@ -56,7 +67,7 @@ sub abort {
     my $class = shift;
     chomp(my ($msg) = @_);
     print STDERR "IPC Fatal Error: $msg\n";
-    CORE::exit(255);
+    CORE::exit(255) unless $NO_FATAL;
 }
 
 sub abort_trace {
@@ -93,7 +104,13 @@ experimental phase is over.
 
 =head1 SYNOPSIS
 
-    use Test::Stream::IPC
+    use Test::Stream::IPC qw/poll cull/;
+
+    ...
+
+    cull();
+
+    ...
 
 =head1 CLASS METHODS
 
@@ -101,8 +118,28 @@ experimental phase is over.
 
 =item $class->import
 
-This is a no-op when called on Test::Stream::IPC itself. For subclasses it will
-set the subclass as the driver.
+=item $subclass->import
+
+=item $class_or_subclass->import('cull', 'poll', 'no_fatal')
+
+This is called whenever you load this module, or any IPC driver. If called on
+an IPC driver it will add that driver to the list of available drivers.
+
+All arguments are optional. All arguments should work just fine when provided
+to drivers instead of Test::Stream::IPC itself.
+
+The C<'cull'> argument will cause the C<cull()> function to be exported to your
+namespace. This function will find the current hub and cull all IPC events that
+are waiting.
+
+The C<'poll'> argument will add a global init hook for L<Test::Stream::Context>
+objects that will cull all events for a hub when a context is obtained. Use
+this if you want events to come in frequently without calling C<cull()>
+yourself all over the place.
+
+The C<'no_fatal'> argument will cause fatal IPC errors to be warnings instead
+of forcing an exit. This argument exists solely for some legacy Test::Builder
+based tools that do naughty things.
 
 =item @drivers = $class->drivers
 

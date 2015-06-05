@@ -13,11 +13,13 @@ use Test::Stream::HashBase(
         pid tid hid ipc
         state
         no_ending
-        _todo _meta
+        _todo _meta parent_todo
         _mungers
         _listeners
         _follow_ups
         _formatter
+        _context_init
+        _context_release
     }],
 );
 
@@ -41,6 +43,16 @@ sub init {
     if (my $ipc = $self->{+IPC}) {
         $ipc->add_hub($self->{+HID});
     }
+}
+
+sub debug_todo {
+    my ($self) = @_;
+    my $array = $self->{+_TODO};
+    pop @$array while @$array && !defined $array->[-1];
+    return (
+        parent_todo => $self->{+PARENT_TODO},
+        todo        => @$array ? ${$array->[-1]} : undef,
+    )
 }
 
 sub meta {
@@ -166,6 +178,42 @@ sub follow_up {
     push @{$self->{+_FOLLOW_UPS}} => $sub;
 }
 
+sub add_context_init {
+    my $self = shift;
+    my ($sub) = @_;
+
+    croak "add_context_init only takes coderefs for arguments, got '$sub'"
+        unless ref $sub && ref $sub eq 'CODE';
+
+    push @{$self->{+_CONTEXT_INIT}} => $sub;
+
+    $sub; # Intentional return.
+}
+
+sub remove_context_init {
+    my $self = shift;
+    my %subs = map {$_ => $_} @_;
+    @{$self->{+_CONTEXT_INIT}} = grep { !$subs{$_} == $_ } @{$self->{+_CONTEXT_INIT}};
+}
+
+sub add_context_release {
+    my $self = shift;
+    my ($sub) = @_;
+
+    croak "add_context_release only takes coderefs for arguments, got '$sub'"
+        unless ref $sub && ref $sub eq 'CODE';
+
+    push @{$self->{+_CONTEXT_RELEASE}} => $sub;
+
+    $sub; # Intentional return.
+}
+
+sub remove_context_release {
+    my $self = shift;
+    my %subs = map {$_ => $_} @_;
+    @{$self->{+_CONTEXT_RELEASE}} = grep { !$subs{$_} == $_ } @{$self->{+_CONTEXT_RELEASE}};
+}
+
 sub send {
     my $self = shift;
     my ($e) = @_;
@@ -188,8 +236,10 @@ sub process {
     my ($e) = @_;
 
     if ($self->{+_MUNGERS}) {
-        $_->($self, $e) for @{$self->{+_MUNGERS}};
-        return unless $e;
+        for (@{$self->{+_MUNGERS}}) {
+            $_->($self, $e);
+            return unless $e;
+        }
     }
 
     my $state = $self->{+STATE};
@@ -211,7 +261,7 @@ sub process {
 sub terminate {
     my $self = shift;
     my ($code) = @_;
-    CORE::exit($code);
+    exit($code);
 }
 
 sub cull {
@@ -226,48 +276,35 @@ sub cull {
 
 sub finalize {
     my $self = shift;
-    my ($dbg, $require_plan) = @_;
+    my ($dbg, $do_plan) = @_;
 
     $self->cull();
     my $state = $self->{+STATE};
 
+    my $plan   = $state->plan;
+    my $count  = $state->count;
+    my $failed = $state->failed;
+
+    # return if NOTHING was done.
+    return unless $do_plan || defined($plan) || $count || $failed;
+
     unless ($state->ended) {
         if ($self->{+_FOLLOW_UPS}) {
-            $_->($dbg, $self) for @{$self->{+_FOLLOW_UPS}};
+            $_->($dbg, $self) for reverse @{$self->{+_FOLLOW_UPS}};
         }
 
-        my $plan = $state->plan;
-        my $count = $state->count;
-
-        if (!$count && (!$plan || $plan !~ m/^SKIP$/)) {
-            $state->bump_fail;
-            my $e = Test::Stream::Event::Diag->new(
-                debug => $dbg,
-                message => 'No tests run!',
+        if (($plan && $plan eq 'NO PLAN') || ($do_plan && !$plan)) {
+            $self->send(
+                Test::Stream::Event::Plan->new(
+                    debug => $dbg,
+                    max => $count,
+                )
             );
-            $self->send($e);
-        }
-        elsif ($require_plan && !$plan) {
-            $state->bump_fail;
-            my $e = Test::Stream::Event::Diag->new(
-                debug => $dbg,
-                message => 'Tests were run but no plan was declared and done_testing() was not seen.',
-            );
-            $self->send($e);
-        }
-        elsif (!$plan || $plan eq 'NO PLAN') {
-            my $e = Test::Stream::Event::Plan->new(
-                debug => $dbg,
-                max => $count,
-            );
-            $self->send($e);
+            $plan = $state->plan;
         }
     }
 
     $state->finish($dbg->frame);
-
-    return 0 if $state->is_passing;
-    return $state->failed || 255;
 }
 
 sub DESTROY {
@@ -548,6 +585,35 @@ codeblock will be a L<Test::Stream::DebugInfo> instance.
 follow_up subs are called only once, ether when done_testing is called, or in
 an END block.
 
+=item $sub = $hub->add_context_init(sub { ... });
+
+This allows you to add callbacks that will trigger every time a new context is
+created for the hub. The only argument to the sub will be the
+L<Test::Stream::Context> instance that was created.
+
+B<Note> Using this hook could have a huge performance impact.
+
+The coderef you provide is returned and can be used to remove the hook later.
+
+=item $hub->remove_context_init($sub);
+
+This can be used to remove a context init hook.
+
+=item $sub = $hub->add_context_release(sub { ... });
+
+This allows you to add callbacks that will trigger every time a context for
+this hub is released. The only argument to the sub will be the
+L<Test::Stream::Context> instance that was released. These will run in reverse
+order.
+
+B<Note> Using this hook could have a huge performance impact.
+
+The coderef you provide is returned and can be used to remove the hook later.
+
+=item $hub->remove_context_release($sub);
+
+This can be used to remove a context release hook.
+
 =item $hub->cull()
 
 Cull any IPC events (and process them).
@@ -575,6 +641,10 @@ Get the IPC object used by the hub.
 This can be used to disable auto-ending behavior for a hub. The auto-ending
 behavior is triggered by an end block and is used to cull IPC events, and
 output the final plan if the plan was 'no_plan'.
+
+=item $bool = $hub->parent_todo
+
+This will be true if this hub is a child hub who's parent had todo set.
 
 =back
 

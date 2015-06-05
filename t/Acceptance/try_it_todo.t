@@ -1,25 +1,28 @@
 use strict;
 use warnings;
 
-use Test::Stream::Context qw/context TOP_HUB/;
+use Test::Stream::Sync;
+use Test::Stream::Context qw/context/;
 
 sub done_testing {
     my $ctx = context();
     my $state = $ctx->hub->state;
 
     die "Test Already ended!" if $state->ended;
-    $ctx->hub->finalize($ctx->debug);
+    $ctx->hub->finalize($ctx->debug, 1);
+    $ctx->release;
 }
 
 sub ok($;$) {
     my ($bool, $name) = @_;
     my $ctx = context();
     $ctx->ok($bool, $name);
+    $ctx->release;
 }
 
 ok(1, "First");
 
-my $todo = TOP_HUB->set_todo('here be dragons');
+my $todo = Test::Stream::Sync->stack->top->set_todo('here be dragons');
 ok(0, "Second");
 $todo = undef;
 

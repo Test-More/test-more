@@ -8,13 +8,15 @@ sub done_testing {
     my $state = $ctx->hub->state;
 
     die "Test Already ended!" if $state->ended;
-    $ctx->hub->finalize($ctx->debug);
+    $ctx->hub->finalize($ctx->debug, 1);
+    $ctx->release;
 }
 
 sub ok($;$) {
     my ($bool, $name) = @_;
     my $ctx = context();
     $ctx->ok($bool, $name);
+    $ctx->release;
 }
 
 ok(1, "First");
