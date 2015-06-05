@@ -69,6 +69,7 @@ BEGIN {
 }
 
 our $Test = Test::Builder->new;
+our $Level;
 
 sub new {
     my($class) = shift;
@@ -264,8 +265,6 @@ FAIL
     }
 }
 
-
-our $Level;
 
 
 sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
