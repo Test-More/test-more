@@ -41,7 +41,6 @@ is_deeply(
 ok($ctx != $ictx, "Different context inside intercept");
 
 is(@$events, 3, "got 3 events");
-ok(!$ictx->hub->ipc, "No IPC was used");
 
 $ictx->release;
 
@@ -58,7 +57,6 @@ $ictx->release;
     ok($ctx != $ictx, "Different context inside intercept");
 
     is(@$events, 2, "got 2 events");
-    ok(!$ictx->hub->ipc, "No IPC was used");
 }
 
 $ctx->release;
@@ -114,13 +112,9 @@ $events = intercept {
 is(@$events, 1, "got 1 event");
 isa_ok($events->[0], 'Test::Stream::Event::Bail');
 
-require Test::Stream::IPC;
-
 $events = intercept {
     $ictx = tool();
 };
-
-ok($ictx->hub->ipc, "intercept has IPC if IP is loaded");
 
 $ictx->release;
 
@@ -131,7 +125,6 @@ $ictx->release;
 
     $grab->finish;
     ok(!$grab, "grab was destroyed");
-    ok($ictx->hub->ipc, "IPC was used");
 }
 
 $ictx->release;
