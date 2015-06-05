@@ -55,7 +55,7 @@ sub _manual_try(&) {
         $SIG{__DIE__} = $die;
     }
 
-    return wantarray ? ($ok, $error) : $ok;
+    return ($ok, $error);
 }
 
 sub _local_try(&) {
@@ -71,7 +71,7 @@ sub _local_try(&) {
         }
     }
 
-    return wantarray ? ($ok, $error) : $ok;
+    return ($ok, $error);
 }
 
 # Older versions of perl have a nasty bug on win32 when localizing a variable
@@ -147,13 +147,11 @@ Collection of tools used by L<Test::Stream> and friends.
 
 =over 4
 
-=item $success = try { ... }
-
 =item ($success, $error) = try { ... }
 
-Eval the codeblock, return success or failure, and optionally the error
-message. This code protects $@ and $!, they will be restored by the end of the
-run. This code also temporarily blocks $SIG{DIE} handlers.
+Eval the codeblock, return success or failure, and the error message. This code
+protects $@ and $!, they will be restored by the end of the run. This code also
+temporarily blocks $SIG{DIE} handlers.
 
 =item protect { ... }
 
