@@ -248,7 +248,21 @@ sub build_event {
 sub ok {
     my $self = shift;
     my ($pass, $name, $diag) = @_;
-    $self->send_event('Ok', pass => $pass, name => $name, diag => $diag);
+
+    my $e = $self->build_event(
+        'Ok',
+        pass => $pass,
+        name => $name,
+    );
+
+    return $self->hub->send($e) if $pass;
+
+    $diag ||= [];
+    unshift @$diag => $e->default_diag;
+
+    $e->set_diag($diag);
+
+    $self->hub->send($e);
 }
 
 sub note {
@@ -533,7 +547,9 @@ are passed to the event constructor.
 
 =item $e = $ctx->ok($pass, $name, \@diag)
 
-Shortcut for sending 'Ok' events.
+Shortcut for sending 'Ok' events. This shortcut will add your diagnostics ONLY
+in the event of a failure. This shortcut will also take care of adding the
+default failure diagnostics for you.
 
 =item $e = $ctx->note($message)
 

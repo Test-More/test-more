@@ -34,8 +34,6 @@ sub terminate { undef }
 
 sub global { 0 }
 
-sub subevents { }
-
 1;
 
 __END__
@@ -143,11 +141,6 @@ inside a tools package. This is typically used for debugging.
 
 If this event is nested inside of other events, this should be the depth of
 nesting. (This is mainly for subtests)
-
-=item @events = $e->subevents
-
-If the event type can encapsulate other events, thisis how you retrieve them.
-This will return an empty list for other events.
 
 =item $e->update_state($state)
 

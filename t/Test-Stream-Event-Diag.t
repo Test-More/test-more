@@ -39,22 +39,4 @@ is_deeply(
     "All lines have '#'"
 );
 
-my $link = {};
-$diag = Test::Stream::Event::Diag->new(
-    debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
-    message => 'foo',
-    linked => $link,
-);
-$link->{link} = $diag;
-
-is($diag->linked, $link, "got link");
-$link = 0;
-ok(!$diag->linked, "link is weak ref (avoid cycles)");
-
-$link = {link => $diag};
-$diag->link($link);
-is($diag->linked, $link, "got link");
-$link = 0;
-ok(!$diag->linked, "link is weak ref (avoid cycles)");
-
 done_testing;

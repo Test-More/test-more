@@ -5,7 +5,7 @@ use warnings;
 use Scalar::Util qw/blessed/;
 use Carp qw/confess/;
 
-use Test::Stream::TAP qw/OUT_STD/;
+use Test::Stream::TAP qw/OUT_STD OUT_TODO OUT_ERR/;
 
 use Test::Stream::Event::Diag;
 
@@ -18,41 +18,10 @@ sub init {
 
     $self->SUPER::init();
 
-    # Do not store objects here, only true/false/undef
-    if ($self->{+PASS}) {
-        $self->{+PASS} = 1;
-    }
-    elsif(defined $self->{+PASS}) {
-        $self->{+PASS} = 0;
-    }
+    # Do not store objects here, only true or false
+    $self->{+PASS} = $self->{+PASS} ? 1 : 0;
 
-    my $name  = $self->{+NAME};
-    my $dbg   = $self->{+DEBUG};
-    my $pass  = $self->{+PASS};
-    my $todo  = defined $dbg->todo;
-    my $skip  = defined $dbg->skip;
-    my $epass = $pass || $todo || $skip || 0;
-    my $diag  = delete $self->{+DIAG};
-
-    $self->{+EFFECTIVE_PASS} = $epass ? 1 : 0;
-
-    unless ($pass || ($todo && $skip)) {
-        my $msg = $todo ? "Failed (TODO)" : "Failed";
-        my $prefix = $ENV{HARNESS_ACTIVE} ? "\n" : "";
-
-        my $trace = $dbg->trace;
-
-        if (defined $name) {
-            $msg = qq[$prefix  $msg test '$name'\n  $trace.];
-        }
-        else {
-            $msg = qq[$prefix  $msg test $trace.];
-        }
-
-        $self->add_diag($msg);
-    }
-
-    $self->add_diag(@$diag) if $diag && @$diag && !$pass;
+    $self->{+EFFECTIVE_PASS} = $self->{+PASS} || $self->{+DEBUG}->no_fail || 0;
 }
 
 sub to_tap {
@@ -89,42 +58,49 @@ sub to_tap {
 
     $out =~ s/\n/\n# /g;
 
-    return [OUT_STD, "$out\n"] unless $self->{+DIAG};
+    my @out = [OUT_STD, "$out\n"];
 
-    return (
-        [OUT_STD, "$out\n"],
-        map {$_->to_tap($num)} @{$self->{+DIAG}},
-    );
+    if ($self->{+DIAG} && @{$self->{+DIAG}}) {
+        my $diag_handle = $debug->no_fail ? OUT_TODO : OUT_ERR;
+
+        for my $diag (@{$self->{+DIAG}}) {
+            chomp(my $msg = $diag);
+
+            $msg = "# $msg" unless $msg =~ m/^\n/;
+            $msg =~ s/\n/\n# /g;
+            push @out => [$diag_handle, "$msg\n"];
+        }
+    }
+
+    return @out;
 }
 
-sub add_diag {
+sub default_diag {
     my $self = shift;
 
-    for my $item (@_) {
-        next unless $item;
+    return if $self->{+PASS};
 
-        if (ref $item) {
-            confess("Only diag objects can be linked to events.")
-                unless blessed($item) && $item->isa('Test::Stream::Event::Diag');
+    my $name  = $self->{+NAME};
+    my $dbg   = $self->{+DEBUG};
+    my $pass  = $self->{+PASS};
+    my $todo  = defined $dbg->todo;
 
-            $item->link($self);
-        }
-        else {
-            $item = Test::Stream::Event::Diag->new(
-                debug   => $self->{+DEBUG},
-                nested  => $self->{+NESTED},
-                message => $item,
-                linked  => $self,
-            );
-        }
+    my $msg = $todo ? "Failed (TODO)" : "Failed";
+    my $prefix = $ENV{HARNESS_ACTIVE} && !$ENV{HARNESS_IS_VERBOSE} ? "\n" : "";
 
-        push @{$self->{+DIAG}} => $item;
+    my $trace = $dbg->trace;
+
+    if (defined $name) {
+        $msg = qq[$prefix$msg test '$name'\n$trace.];
     }
+    else {
+        $msg = qq[$prefix$msg test $trace.];
+    }
+
+    return $msg;
 }
 
 sub update_state { $_[1]->bump($_[0]->effective_pass); undef }
-
-sub subevents { @{$_[0]->{+DIAG} || []} }
 
 1;
 
@@ -188,9 +164,11 @@ Name of the test.
 
 =item $diag = $e->diag
 
-An arrayref with all the L<Test::Stream::Event::Diag> events reduced down to
-just the messages. Some coaxing has beeen done to combine all the messages into
-a single string.
+An arrayref full of diagnostics strings to print in the event of a failure.
+
+B<Note:> This does not have anything by default, the C<default_diag()> method
+can be used to generate the basic diagnostics message which you may push into
+this arrayref.
 
 =item $b = $e->effective_pass
 
@@ -203,9 +181,12 @@ modifiers are taken into account.
 
 =over 4
 
-=item $e->add_diag($diag_event, "diag message" ...)
+=item $string = $e->default_diag()
 
-Add a diag to the event. The diag may be a diag event, or a simple string.
+This generates the default diagnostics string:
+
+    # Failed test 'Some Test'
+    # at t/foo.t line 42.
 
 =item @sets = $e->to_tap()
 
