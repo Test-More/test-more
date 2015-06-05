@@ -23,7 +23,7 @@ is($one->trace, "yo momma", "got detail for trace");
 $one->set_detail(undef);
 
 ok(!eval { $one->throw('I died'); 1 }, "threw exception");
-is($@, "I died at foo.t line 5\n", "got exception");
+is($@, "I died at foo.t line 5.\n", "got exception");
 
 my @warnings;
 {

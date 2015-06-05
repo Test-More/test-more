@@ -30,13 +30,13 @@ sub trace {
 sub alert {
     my $self = shift;
     my ($msg) = @_;
-    warn $msg . ' ' . $self->trace . "\n";
+    warn $msg . ' ' . $self->trace . ".\n";
 }
 
 sub throw {
     my $self = shift;
     my ($msg) = @_;
-    die $msg . ' ' . $self->trace . "\n";
+    die $msg . ' ' . $self->trace . ".\n";
 }
 
 sub call { @{$_[0]->{+FRAME}} }
