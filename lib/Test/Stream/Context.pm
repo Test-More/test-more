@@ -10,7 +10,7 @@ use Test::Stream::Capabilities qw/CAN_FORK/;
 
 use Test::Stream::Hub;
 use Test::Stream::TAP;
-use Test::Stream::Threads;
+use Test::Stream::Util qw/get_tid USE_THREADS/;
 use Test::Stream::DebugInfo;
 
 # Preload some key event types

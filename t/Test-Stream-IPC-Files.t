@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Stream::Threads;
+use Test::Stream::Util qw/get_tid USE_THREADS/;
 
 require Test::Stream::IPC::Files;
 ok(my $ipc = Test::Stream::IPC::Files->new, "Created an IPC instance");

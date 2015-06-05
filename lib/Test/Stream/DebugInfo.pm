@@ -2,7 +2,7 @@ package Test::Stream::DebugInfo;
 use strict;
 use warnings;
 
-use Test::Stream::Threads;
+use Test::Stream::Util qw/get_tid USE_THREADS/;
 
 use Carp qw/confess/;
 

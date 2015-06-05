@@ -2,7 +2,6 @@ package Test::Stream::IPC::Files;
 use strict;
 use warnings;
 
-use Test::Stream::Threads;
 use Scalar::Util qw/blessed/;
 
 my $IS_VMS;
@@ -20,9 +19,7 @@ use Test::Stream::HashBase(
 use File::Temp;
 use Storable;
 
-use Scalar::Util qw/blessed/;
-
-use Test::Stream::Util qw/try/;
+use Test::Stream::Util qw/try get_tid USE_THREADS/;
 
 sub is_viable { 1 }
 

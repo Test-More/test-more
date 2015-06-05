@@ -2,11 +2,12 @@ package Test::Stream::Util;
 use strict;
 use warnings;
 
+use Test::Stream::Capabilities qw/CAN_THREAD/;
 use Scalar::Util qw/reftype blessed/;
 use Test::Stream::Exporter qw/import export_to exports/;
 use Carp qw/croak/;
 
-exports qw{ try protect };
+exports qw{ try protect get_tid USE_THREADS };
 
 no Test::Stream::Exporter;
 
@@ -88,6 +89,29 @@ BEGIN {
     }
 }
 
+BEGIN {
+    if(CAN_THREAD) {
+        # Threads are possible, so we need it to be dynamic.
+
+        if ($INC{'threads.pm'}) {
+            # Threads are already loaded, so we do not need to check if they
+            # are loaded each time
+            *USE_THREADS = sub() { 1 };
+            *get_tid = sub { threads->tid() };
+        }
+        else {
+            # :-( Need to check each time to see if they have been loaded.
+            *USE_THREADS = sub { $INC{'threads.pm'} ? 1 : 0 };
+            *get_tid = sub { $INC{'threads.pm'} ? threads->tid() : 0 };
+        }
+    }
+    else {
+        # No threads, not now, not ever!
+        *USE_THREADS = sub() { 0 };
+        *get_tid     = sub() { 0 };
+    }
+}
+
 1;
 
 __END__
@@ -132,6 +156,15 @@ Similar to try, except that it does not catch exceptions. The idea here is to
 protect $@ and $! from changes. $@ and $! will be restored to whatever they
 were before the run so long as it is successful. If the run fails $! will still
 be restored, but $@ will contain the exception being thrown.
+
+=item USE_THREADS
+
+Returns true if threads are enabled, false if they are not.
+
+=item get_tid
+
+This will return the id of the current thread when threads are enabled,
+otherwise it returns 0.
 
 =back
 
