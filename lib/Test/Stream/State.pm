@@ -5,7 +5,7 @@ use warnings;
 use Carp qw/confess/;
 
 use Test::Stream::HashBase(
-    accessors => [qw{count failed ended _passing _plan}],
+    accessors => [qw{count failed ended bailed_out _passing _plan}],
 );
 
 sub init {
@@ -50,6 +50,9 @@ sub bump {
     my $self = shift;
     my ($pass) = @_;
 
+    confess "Cannot change test count after test has ended"
+        if $self->{+ENDED};
+
     $self->{+COUNT}++;
     return if $pass;
 
@@ -71,7 +74,7 @@ sub plan {
     my ($plan) = @_;
 
     confess "You cannot unset the plan"
-        unless $plan;
+        unless defined $plan;
 
     confess "You cannot change the plan"
         if $self->{+_PLAN} && $self->{+_PLAN} !~ m/^NO PLAN$/;

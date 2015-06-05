@@ -17,13 +17,6 @@ is_deeply(
     "Got tap"
 );
 
-$bail->set_quiet(1);
-is_deeply(
-    [$bail->to_tap(1)],
-    [],
-    "quiet tap = no tap"
-);
-
 is($bail->terminate, 255, "Bail will cause the test to exit.");
 is($bail->global, 1, "Bail is global, everything should bail");
 

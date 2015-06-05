@@ -5,12 +5,11 @@ use warnings;
 use Test::Stream::TAP qw/OUT_STD/;
 
 use Test::Stream::Event(
-    accessors => [qw/reason quiet/],
+    accessors => [qw/reason/],
 );
 
 sub to_tap {
     my $self = shift;
-    return if $self->{+QUIET};
     return [
         OUT_STD,
         "Bail out!  " . $self->reason . "\n",
@@ -21,6 +20,7 @@ sub update_state {
     my $self = shift;
     my ($state) = @_;
 
+    $state->set_bailed_out($self);
     $state->bump_fail;
 }
 
