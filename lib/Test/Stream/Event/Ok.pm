@@ -10,7 +10,7 @@ use Test::Stream::TAP qw/OUT_STD OUT_TODO OUT_ERR/;
 use Test::Stream::Event::Diag;
 
 use Test::Stream::Event(
-    accessors => [qw/pass effective_pass name diag/],
+    accessors => [qw/pass effective_pass name diag allow_bad_name/],
 );
 
 sub init {
@@ -22,6 +22,12 @@ sub init {
     $self->{+PASS} = $self->{+PASS} ? 1 : 0;
 
     $self->{+EFFECTIVE_PASS} = $self->{+PASS} || $self->{+DEBUG}->no_fail || 0;
+
+    return unless $self->{+NAME};
+    return if $self->{+ALLOW_BAD_NAME};
+    return unless $self->{+NAME} =~ m/(?:#|\n)/;
+    my $name = $self->{+NAME};
+    $self->debug->throw("'$name' is not a valid name, names must not contain '#' or newlines.")
 }
 
 sub to_tap {
@@ -37,11 +43,7 @@ sub to_tap {
     $out .= "not " unless $self->{+PASS};
     $out .= "ok";
     $out .= " $num" if defined $num;
-
-    if ($name) {
-        $name =~ s|#|\\#|g; # '#' in a name can confuse Test::Harness.
-        $out .= " - $name";
-    }
+    $out .= " - $name" if $name;
 
     if (defined $skip && defined $todo) {
         $out .= " # TODO & SKIP";
@@ -55,8 +57,6 @@ sub to_tap {
         $out .= " # skip";
         $out .= " $skip" if length $skip;
     }
-
-    $out =~ s/\n/\n# /g;
 
     my @out = [OUT_STD, "$out\n"];
 
