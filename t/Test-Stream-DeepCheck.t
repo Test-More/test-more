@@ -1,7 +1,6 @@
 use Test::Stream;
 
 use Test::Stream::Tester;
-
 use Test::Stream::DebugInfo;
 use Test::Stream::DeepCheck qw{
     strict_compare relaxed_compare
@@ -69,6 +68,7 @@ relaxed_compare(
     "Match relaxed"
 );
 
+my $FILE = __FILE__;
 events_are(
     intercept {
         strict_compare(
@@ -92,9 +92,9 @@ events_are(
             event_call pass => 0;
             event_call diag => [
                 qr/Failed test 'Missed one'/,
-                q|Path: $_->{'baz'}->{'bad', 'bad2'}
+                qq|Path: \$_->{'baz'}->{'bad', 'bad2'}
 Failed Check: Expected no more fields, got 'bad', 'bad2'
-t/Test-Stream-DeepCheck.t
+$FILE
 76 {
 81   'baz': {
 --     'bad', 'bad2'|,

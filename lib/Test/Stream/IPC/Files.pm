@@ -2,22 +2,16 @@ package Test::Stream::IPC::Files;
 use strict;
 use warnings;
 
-use Scalar::Util qw/blessed/;
-
-my $IS_VMS;
-BEGIN {
-    $IS_VMS = 1 if $^O eq 'VMS';
-    require VMS::Filespec if $IS_VMS;
-}
-
 use base 'Test::Stream::IPC';
 
 use Test::Stream::HashBase(
     accessors => [qw/tempdir event_id tid pid globals/],
 );
 
+use Scalar::Util qw/blessed/;
 use File::Temp;
 use Storable;
+use File::Spec;
 
 use Test::Stream::Util qw/try get_tid USE_THREADS/;
 
@@ -29,9 +23,7 @@ sub init {
     my $tmpdir = File::Temp::tempdir(CLEANUP => 0);
     $self->abort_trace("Could not get a temp dir") unless $tmpdir;
 
-    $tmpdir = VMS::Filespec::unixify($tmpdir) if $IS_VMS;
-
-    $self->{+TEMPDIR}  = $tmpdir;
+    $self->{+TEMPDIR} = File::Spec->canonpath($tmpdir);
 
     print STDERR "\nIPC Temp Dir: $tmpdir\n\n"
         if $ENV{TS_KEEP_TEMPDIR};
@@ -51,9 +43,7 @@ sub add_hub {
     my ($hid) = @_;
 
     my $tdir = $self->{+TEMPDIR};
-    my $hfile = "$tdir/HUB-$hid";
-
-    $hfile = VMS::Filespec::unixify($hfile) if $IS_VMS;
+    my $hfile = File::Spec->canonpath("$tdir/HUB-$hid");
 
     $self->abort_trace("File for hub '$hid' already exists")
         if -e $hfile;
@@ -68,9 +58,7 @@ sub drop_hub {
     my ($hid) = @_;
 
     my $tdir = $self->{+TEMPDIR};
-    my $hfile = "$tdir/HUB-$hid";
-
-    $hfile = VMS::Filespec::unixify($hfile) if $IS_VMS;
+    my $hfile = File::Spec->canonpath("$tdir/HUB-$hid");
 
     $self->abort_trace("File for hub '$hid' does not exist")
         unless -e $hfile;
@@ -86,7 +74,7 @@ sub drop_hub {
         unless get_tid() == $tid;
 
     if ($ENV{TS_KEEP_TEMPDIR}) {
-        rename($hfile, "$hfile.complete") || $self->abort_trace("Could not rename file '$hfile' -> '$hfile.complete'");
+        rename($hfile, File::Spec->canonpath("$hfile.complete")) || $self->abort_trace("Could not rename file '$hfile' -> '$hfile.complete'");
     }
     else {
         unlink($hfile) || $self->abort_trace("Could not remove file for hub '$hid'");
@@ -110,26 +98,30 @@ sub send {
 
     my $global = $hid eq 'GLOBAL';
 
-    $self->abort("hub '$hid' is not available! Failed to send event!\n")
-        unless $global || -f "$tempdir/HUB-$hid";
+    my $hfile = File::Spec->canonpath("$tempdir/HUB-$hid");
 
-    my $name = join('-', $hid, $$, get_tid(), $self->{+EVENT_ID}++, blessed($e));
-    my $file = "$tempdir/$name";
+    $self->abort("hub '$hid' is not available! Failed to send event!\n")
+        unless $global || -f $hfile;
+
+    my @type = split '::', blessed($e);
+    my $name = join('-', $hid, $$, get_tid(), $self->{+EVENT_ID}++, @type);
+    my $file = File::Spec->canonpath("$tempdir/$name");
+
+    my $ready = File::Spec->canonpath("$file.ready");
 
     $self->globals->{"$name.ready"}++ if $global;
 
     my ($ok, $err) = try {
         Storable::store($e, $file);
-        rename($file, "$file.ready") || die "Could not rename file '$file' -> '$file.ready'\n";
+        rename($file, $ready) || die "Could not rename file '$file' -> '$ready'\n";
     };
     if (!$ok) {
-        my $file = __FILE__;
-        $err =~ s{ at \Q$file\E.*$}{};
+        my $src_file = __FILE__;
+        $err =~ s{ at \Q$src_file\E.*$}{};
         chomp($err);
         my $tid = get_tid();
-        my $ehid = $e->context->hid;
         my $type = blessed($e);
-        my $trace = $e->context->trace;
+        my $trace = $e->debug->trace;
 
         $self->abort(<<"        EOT");
 
@@ -138,9 +130,10 @@ There was an error writing an event:
 Destination: $hid
 Origin PID:  $$
 Origin TID:  $tid
-Origin HID:  $ehid
 Event Type:  $type
 Event Trace: $trace
+File Name:   $file
+Ready Name:  $ready
 Error: $err
 *******************************************************************************
 
@@ -165,7 +158,7 @@ sub cull {
         next if $global && $self->globals->{$file}++;
 
         # Untaint the path.
-        my $full = "$tempdir/$file";
+        my $full = File::Spec->canonpath("$tempdir/$file");
         ($full) = ($full =~ m/^(.*)$/gs);
 
         my $obj = Storable::retrieve($full);
@@ -175,9 +168,10 @@ sub cull {
 
         # Do not remove global events
         unless ($global) {
+            my $complete = File::Spec->canonpath("$full.complete");
             if ($ENV{TS_KEEP_TEMPDIR}) {
-                rename($full, "$full.complete")
-                    || warn "Could not rename IPC file '$full', '$full.complete'\n";
+                rename($full, $complete)
+                    || warn "Could not rename IPC file '$full', '$complete'\n";
             }
             else {
                 unlink($full) || warn "Could not unlink IPC file: $file\n";
@@ -222,15 +216,17 @@ sub DESTROY {
     while(my $file = readdir($dh)) {
         next if $file =~ m/^\.+$/;
         next if $file =~ m/\.complete$/;
+        my $full = File::Spec->canonpath("$tempdir/$file");
+
         if ($file =~ m/^(GLOBAL|HUB-)/) {
             $file =~ m/^(.*)$/;
             $file = $1; # Untaint it
             next if $ENV{TS_KEEP_TEMPDIR};
-            unlink("$tempdir/$file") || warn "Could not unlink IPC file: $file";
+            unlink($full) || warn "Could not unlink IPC file: $full";
             next;
         }
 
-        $self->abort("Leftover files in the directory ($tempdir/$file)!\n");
+        $self->abort("Leftover files in the directory ($full)!\n");
     }
     closedir($dh);
 

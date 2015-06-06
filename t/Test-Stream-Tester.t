@@ -2,7 +2,6 @@ use strict;
 use warnings;
 
 use Test::Stream;
-
 use Test::Stream::Tester;
 
 can_ok(__PACKAGE__, qw{
@@ -104,6 +103,7 @@ events_are(
     "Todo and Skip"
 );
 
+my $FILE = __FILE__;
 events_are(
     intercept {
         events_are(
@@ -120,9 +120,9 @@ events_are(
             event_call pass => 0;
             event_call diag => [
                 qr/Failed test 'Inner check'/,
-                q|Path: $_->[1]->{'pass'}
+                qq|Path: \$_->[1]->{'pass'}
 Failed Check: 0 == 1
-t/Test-Stream-Tester.t
+$FILE
 111 [
 113   1: {
 ---     'pass': 0 == 1|,
