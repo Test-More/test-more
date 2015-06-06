@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use vars qw/$VERSION/;
 
-$Test::Stream::VERSION = '1.302001';
+$Test::Stream::VERSION = '1.302002';
 $VERSION = eval $VERSION;
 
 use Scalar::Util qw/reftype/;
