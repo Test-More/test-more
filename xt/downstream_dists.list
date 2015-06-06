@@ -40,7 +40,6 @@ Crypt::Rijndael
 Cwd
 DBIx::Query
 Dancer
-Dancer2::Plugin::DBIC
 Data::Rx
 Devel::Confess
 Devel::Cover
@@ -58,8 +57,6 @@ ExtUtils::Install
 ExtUtils::MakeMaker
 ExtUtils::Manifest
 ExtUtils::ParseXS
-Fennec
-Fennec::Declare
 File::Map
 File::Spec
 Filter::CommaEquals
@@ -94,3 +91,8 @@ URI::Find
 YAML
 YAML::Syck
 version
+Fennec
+Fennec::Declare
+Dancer2::Plugin::DBIC
+App::Ack
+Minilla
