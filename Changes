@@ -1,3 +1,8 @@
+1.302003_001 Sat Jan 06 21:52:00:00 PST 2015
+    * Convert internals to use Test-Stream
+    * Optimizations for performance
+    * Note this is a completely new branch off of legacy/master, not taken from the old stream branches
+
 1.001014     Tue Dec 28 08:31:00:00 PST 2014
     * Write a test to ensure this changes file gets updated
     * Update changes file for 1.001013
