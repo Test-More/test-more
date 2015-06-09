@@ -16,7 +16,7 @@ use Test::Stream::Event(
 sub init {
     my $self = shift;
 
-    $self->SUPER::init();
+    confess("No debug info provided!") unless $self->{+DEBUG};
 
     # Do not store objects here, only true or false
     $self->{+PASS} = $self->{+PASS} ? 1 : 0;
