@@ -41,16 +41,18 @@ sub encoding {
     return $self->{+_ENCODING};
 }
 
+if ($^C) {
+    no warnings 'redefine';
+    *write = sub {};
+}
 sub write {
     my ($self, $e, $num) = @_;
 
-    return if $^C;
     return if $self->{+NO_DIAG}   && $e->isa('Test::Stream::Event::Diag');
     return if $self->{+NO_HEADER} && $e->isa('Test::Stream::Event::Plan');
 
     $num = undef if $self->{+NO_NUMBERS};
     my @tap = $e->to_tap($num);
-    return unless @tap;
 
     my $handles = $self->{+HANDLES};
     my $nesting = $e->nested || 0;

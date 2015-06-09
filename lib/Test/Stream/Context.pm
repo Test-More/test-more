@@ -273,20 +273,21 @@ sub ok {
     my $self = shift;
     my ($pass, $name, $diag) = @_;
 
-    my $e = Test::Stream::Event::Ok->new(
-        debug => $self->{+DEBUG}->snapshot,
+    my $e = bless {
+        debug => bless( {%{$self->{+DEBUG}}}, 'Test::Stream::DebugInfo'),
         pass  => $pass,
         name  => $name,
-    );
+    }, 'Test::Stream::Event::Ok';
+    $e->init;
 
-    return $self->hub->send($e) if $pass;
+    return $self->{+HUB}->send($e) if $pass;
 
     $diag ||= [];
     unshift @$diag => $e->default_diag;
 
     $e->set_diag($diag);
 
-    $self->hub->send($e);
+    $self->{+HUB}->send($e);
 }
 
 sub note {

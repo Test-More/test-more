@@ -23,10 +23,9 @@ sub init {
 
     $self->{+EFFECTIVE_PASS} = $self->{+PASS} || $self->{+DEBUG}->no_fail || 0;
 
-    return unless $self->{+NAME};
     return if $self->{+ALLOW_BAD_NAME};
-    return unless $self->{+NAME} =~ m/(?:#|\n)/;
-    my $name = $self->{+NAME};
+    my $name = $self->{+NAME} || return;
+    return unless index($name, '#') != -1 || index($name, "\n") != -1;
     $self->debug->throw("'$name' is not a valid name, names must not contain '#' or newlines.")
 }
 
@@ -36,8 +35,8 @@ sub to_tap {
 
     my $name  = $self->{+NAME};
     my $debug = $self->{+DEBUG};
-    my $skip  = $debug->skip;
-    my $todo  = $debug->todo;
+    my $skip  = $debug->{skip};
+    my $todo  = $debug->{todo};
 
     my $out = "";
     $out .= "not " unless $self->{+PASS};
@@ -100,7 +99,7 @@ sub default_diag {
     return $msg;
 }
 
-sub update_state { $_[1]->bump($_[0]->effective_pass); undef }
+sub update_state { $_[1]->bump($_[0]->{+EFFECTIVE_PASS}) }
 
 1;
 
