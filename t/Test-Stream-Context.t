@@ -221,8 +221,8 @@ is_deeply(
     \@hooks,
     [qw{
         start
-        ctx_init
         hub_init
+        ctx_init
         deep
         release_deep
         release_parent
@@ -231,8 +231,8 @@ is_deeply(
         hub_release
         released_all
         new
-        ctx_init2
         hub_init
+        ctx_init2
         release_new
         ctx_release2
         hub_release

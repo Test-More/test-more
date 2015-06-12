@@ -75,7 +75,7 @@ sub release {
     my $hid  = $hub->hid;
     my $hcbk = $hub->{_context_release};
 
-    my $snap = $cbk || $hcbk ? $self->snapshot : undef;
+    my $snap = $cbk || $hcbk || @ON_RELEASE ? $self->snapshot : undef;
 
     weaken($self);
     $self->{+_NO_DESTROY} = 1;
@@ -221,11 +221,11 @@ Removing the old context and creating a new one...
 
     $_->($current) for @ON_INIT;
 
-    $params{on_init}->($current) if $params{on_init};
-
     if (my $hcbk = $hub->{_context_init}) {
         $_->($current) for @$hcbk;
     }
+
+    $params{on_init}->($current) if $params{on_init};
 
     return $current;
 }
