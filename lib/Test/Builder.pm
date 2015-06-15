@@ -97,11 +97,16 @@ sub ctx {
     # 1 - call to this sub
     # Default $Level = 1 - call to $Test->...
     # $Level Additional levels to go back
-    # Adjust level if necessary, Test::Stream is strict about the level passed in, but Test::Builder has always been forgiving.
     my $level = $Level + 1;
-    $level-- until caller($level);
 
-    context(level => $level, stack => $self->{Stack}, hub => $self->{Hub}, wrapped => 1, @_);
+    context(
+        level   => $level,
+        fudge   => 1,
+        stack   => $self->{Stack},
+        hub     => $self->{Hub},
+        wrapped => 1,
+        @_
+    );
 }
 
 sub parent {

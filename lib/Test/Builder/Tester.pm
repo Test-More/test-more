@@ -575,8 +575,8 @@ sub complaint {
     $wanted = "";
 
     while (@got || @wanted) {
-        my $g = shift @got;
-        my $w = shift @wanted;
+        my $g = shift @got    || "";
+        my $w = shift @wanted || "";
         if ($g ne $w) {
             if($g =~ s/(\s+)$/    |> /g) {
                 $g .= ($_ eq ' ' ? '_' : '\t') for split '', $1;

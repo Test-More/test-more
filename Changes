@@ -1,3 +1,6 @@
+NEXT
+    * Update for newer Test-Stream with XS support
+
 1.302003_001 Sat Jan 06 21:52:00:00 PST 2015
     * Convert internals to use Test-Stream
     * Optimizations for performance
