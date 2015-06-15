@@ -7,7 +7,7 @@ use Scalar::Util qw/reftype blessed/;
 use Test::Stream::Exporter qw/import export_to exports/;
 use Carp qw/croak/;
 
-exports qw{ try protect get_tid USE_THREADS };
+exports qw{ try protect get_tid USE_THREADS USE_XS };
 
 no Test::Stream::Exporter;
 
@@ -75,6 +75,24 @@ sub _local_try(&) {
     return ($ok, $error);
 }
 
+BEGIN {
+    if (!$ENV{TS_NO_XS} && eval {require Test::Stream::XS; 1}) {
+        *USE_XS = sub {
+            my ($version, $sub) = @_;
+            croak "You must specify a minimum XS version."
+                unless defined $version;
+
+            return 0 unless eval { Test::Stream::XS->VERSION($version); 1 };
+
+            return $Test::Stream::XS::VERSION unless $sub;
+            return Test::Stream::XS->can($sub) || croak "'$sub' is not a valid xsub.";
+        };
+    }
+    else {
+        *USE_XS = sub { undef };
+    }
+}
+
 # Older versions of perl have a nasty bug on win32 when localizing a variable
 # before forking or starting a new thread. So for those systems we use the
 # non-local form. When possible though we use the faster 'local' form.
@@ -92,17 +110,18 @@ BEGIN {
 BEGIN {
     if(CAN_THREAD) {
         # Threads are possible, so we need it to be dynamic.
+        my $xs = USE_XS('1.302004', 'get_tid_xs');
 
         if ($INC{'threads.pm'}) {
             # Threads are already loaded, so we do not need to check if they
             # are loaded each time
             *USE_THREADS = sub() { 1 };
-            *get_tid = sub { threads->tid() };
+            *get_tid = $xs || sub { threads->tid() };
         }
         else {
             # :-( Need to check each time to see if they have been loaded.
             *USE_THREADS = sub { $INC{'threads.pm'} ? 1 : 0 };
-            *get_tid = sub { $INC{'threads.pm'} ? threads->tid() : 0 };
+            *get_tid = $xs || sub { $INC{'threads.pm'} ? threads->tid() : 0 };
         }
     }
     else {

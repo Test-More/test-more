@@ -30,6 +30,7 @@ wrap {
     my $ctx = shift;
     ok($ctx->hub, "got hub");
     isa_ok($ctx->hub, 'Test::Stream::Hub');
+    delete $ctx->debug->frame->[4];
     is_deeply($ctx->debug->frame, $frame, "Found place to report errors");
 };
 
@@ -38,6 +39,7 @@ wrap {
     isnt("$ctx", $ref, "Got a new context");
     my $new = context();
     ok($ctx == $new, "Additional call to context gets same instance");
+    delete $ctx->debug->frame->[4];
     is_deeply($ctx->debug->frame, $frame, "Found place to report errors");
     $new->release;
 };
@@ -56,6 +58,7 @@ my $end_ctx;
     $end_ctx = $ctx->snapshot;
     $ctx->release;
 }
+delete $end_ctx->debug->frame->[4];
 is_deeply( $end_ctx->debug->frame, $frame, 'context is ok in an end block');
 
 sub release_test_single {

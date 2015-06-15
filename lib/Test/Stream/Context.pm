@@ -4,7 +4,7 @@ use warnings;
 
 use Scalar::Util qw/weaken/;
 use Carp qw/confess croak longmess/;
-use Test::Stream::Util qw/get_tid/;
+use Test::Stream::Util qw/get_tid USE_XS/;
 use Devel::Peek qw/SvREFCNT/;
 
 use Test::Stream::Sync;
@@ -20,16 +20,14 @@ my %LOADED = (
 );
 
 # Stack is ok to cache.
-my $STACK = Test::Stream::Sync->stack;
-
-my @ON_INIT;
-my @ON_RELEASE;
+our $STACK = Test::Stream::Sync->stack;
+our @ON_INIT;
+our @ON_RELEASE;
+our %CONTEXTS;
 
 sub ON_INIT    { shift; push @ON_INIT => @_ }
 sub ON_RELEASE { shift; push @ON_INIT => @_ }
 
-my %CONTEXTS;
-# Be kind 'rewind'
 sub END {
     my $real = $?;
     my $new  = $real;
@@ -46,7 +44,7 @@ sub END {
 }
 
 use Test::Stream::Exporter qw/import export_to exports export/;
-exports qw/context/;
+export context => USE_XS('1.302004', 'context_xs') || \&context_pp;
 export release => sub($;@) {
     $_[0]->release;
     shift; # Remove undef that used to be our $self reference.
@@ -68,7 +66,13 @@ sub init {
 
 sub snapshot { bless {%{$_[0]}}, __PACKAGE__ }
 
-sub release {
+{
+    no warnings 'once';
+    *release = USE_XS('1.302004', 'release_xs') || \&release_pp;
+    *context = USE_XS('1.302004', 'context_xs') || \&context_pp;
+}
+
+sub release_pp {
     return $_[0] = undef if SvREFCNT(%{$_[0]}) != 1;
     my ($self) = @_;
 
@@ -132,18 +136,24 @@ Trace: $mess
     return;
 }
 
-sub context {
+sub context_pp {
     my %params = (level => 0, wrapped => 0, @_);
 
     croak "context() called, but return value is ignored"
         unless defined wantarray;
 
     my $stack = $params{stack} || $STACK;
-    my $hub = $params{hub} || $stack->top;
+    my $hub = $params{hub} || @$stack ? $stack->[-1] : $stack->top;
     my $hid = $hub->{hid};
     my $current = $CONTEXTS{$hid};
 
     my $level = 1 + $params{level};
+    my ($pkg, $file, $line, $sub) = caller($level);
+    unless ($pkg) {
+        confess "Could not find context at depth $level" unless $params{fudge};
+        ($pkg, $file, $line, $sub) = caller(--$level) while ($level >= 0 && !$pkg);
+    }
+
     my $depth = $level;
     $depth++ while caller($depth + 1) && (!$current || $depth <= $current->{+_DEPTH} + $params{wrapped});
     $depth -= $params{wrapped};
@@ -155,48 +165,15 @@ sub context {
 
     return $current if $current && $current->{+_DEPTH} < $depth;
 
-    my ($pkg, $file, $line, $sub) = caller($level);
-    confess "Could not find context at depth $level"
-        unless $pkg;
-
     # Handle error condition of bad level
-    if ($current) {
-        my $oldframe = $current->{+DEBUG}->frame;
-        my $olddepth = $current->{+_DEPTH};
-
-        my $mess = longmess();
-
-        warn <<"        EOT";
-context() was called to retrieve an existing context, however the existing
-context was created in a stack frame at the same, or deeper level. This usually
-means that a tool failed to release the context when it was finished.
-
-Old context details:
-   File: $oldframe->[1]
-   Line: $oldframe->[2]
-   Tool: $oldframe->[3]
-  Depth: $olddepth
-
-New context details:
-   File: $file
-   Line: $line
-   Tool: $sub
-  Depth: $depth
-
-Trace: $mess
-
-Removing the old context and creating a new one...
-        EOT
-
-        delete $CONTEXTS{$hid};
-        $current->release;
-    }
+    $current->_depth_error([$pkg, $file, $line, $sub, $depth])
+        if $current;
 
     my $dbg = bless(
         {
             frame => [$pkg, $file, $line, $sub],
             pid   => $$,
-            tid   => get_tid(),
+            tid   => $INC{'threads.pm'} ? threads->tid() : 0,
             $hub->debug_todo,
         },
         'Test::Stream::DebugInfo'
@@ -225,6 +202,43 @@ Removing the old context and creating a new one...
     $params{on_init}->($current) if $params{on_init};
 
     return $current;
+}
+
+sub _depth_error {
+    my $self = shift;
+    my ($details) = @_;
+    my ($pkg, $file, $line, $sub, $depth) = @$details;
+
+    my $oldframe = $self->{+DEBUG}->frame;
+    my $olddepth = $self->{+_DEPTH};
+
+    my $mess = longmess();
+
+    warn <<"    EOT";
+context() was called to retrieve an existing context, however the existing
+context was created in a stack frame at the same, or deeper level. This usually
+means that a tool failed to release the context when it was finished.
+
+Old context details:
+   File: $oldframe->[1]
+   Line: $oldframe->[2]
+   Tool: $oldframe->[3]
+  Depth: $olddepth
+
+New context details:
+   File: $file
+   Line: $line
+   Tool: $sub
+  Depth: $depth
+
+Trace: $mess
+
+Removing the old context and creating a new one...
+    EOT
+
+    my $hid = $self->{+HUB}->hid;
+    delete $CONTEXTS{$hid};
+    $self->release;
 }
 
 sub throw {

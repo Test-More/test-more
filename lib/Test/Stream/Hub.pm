@@ -4,7 +4,7 @@ use warnings;
 
 use Carp qw/carp croak/;
 use Test::Stream::State;
-use Test::Stream::Util qw/get_tid USE_THREADS/;
+use Test::Stream::Util qw/get_tid USE_THREADS USE_XS/;
 
 use Scalar::Util qw/weaken/;
 
@@ -22,6 +22,15 @@ use Test::Stream::HashBase(
         _context_release
     }],
 );
+
+{
+    no warnings 'once';
+    *hid_pp = \&hid;
+
+    *get_todo = USE_XS('1.302004', 'get_todo_xs') || \&get_todo_pp;
+    no warnings 'redefine';
+    *hid = USE_XS('1.302004', 'hid_xs') || \&hid_pp;
+}
 
 my $ID_POSTFIX = 1;
 sub init {
@@ -100,7 +109,7 @@ sub set_todo {
     return $ref;
 }
 
-sub get_todo {
+sub get_todo_pp {
     my $self = shift;
     my $array = $self->{+_TODO};
     pop @$array while @$array && !defined($array->[-1]);
