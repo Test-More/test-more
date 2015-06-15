@@ -5,6 +5,7 @@ use warnings;
 use Scalar::Util qw/weaken/;
 use Carp qw/confess croak longmess/;
 use Test::Stream::Util qw/get_tid/;
+use Devel::Peek qw/SvREFCNT/;
 
 use Test::Stream::Sync;
 use Test::Stream::DebugInfo;
@@ -54,7 +55,7 @@ export release => sub($;@) {
 no Test::Stream::Exporter;
 
 use Test::Stream::HashBase(
-    accessors => [qw/stack hub debug _on_release _depth _err _no_destroy_warning _no_destroy/],
+    accessors => [qw/stack hub debug _on_release _depth _err _no_destroy_warning/],
 );
 
 sub init {
@@ -68,39 +69,35 @@ sub init {
 sub snapshot { bless {%{$_[0]}}, __PACKAGE__ }
 
 sub release {
+    return $_[0] = undef if SvREFCNT(%{$_[0]}) != 1;
     my ($self) = @_;
-    my $cbk  = $self->{+_ON_RELEASE};
-    my $dbg  = $self->{+DEBUG};
-    my $hub  = $self->{+HUB};
-    my $hid  = $hub->hid;
-    my $hcbk = $hub->{_context_release};
 
-    my $snap = $cbk || $hcbk || @ON_RELEASE ? $self->snapshot : undef;
+    my $hub = $self->{+HUB};
+    my $hid = $hub->{hid};
 
-    weaken($self);
-    $self->{+_NO_DESTROY} = 1;
-    $_[0] = undef; # Kill this reference
-    delete $self->{+_NO_DESTROY} if $self;
+    if ($self != $CONTEXTS{$hid}) {
+        $_[0] = undef;
+        croak "release() should not be called on a non-canonical context.";
+    }
 
-    # Removing this reference did not remove the context, so we do not run our
-    # release hooks yet.
-    return if $CONTEXTS{$hid};
-
+    # Remove the weak reference, this will also prevent the destructor from
+    # having an issue.
     # Remove the key itself to avoid a slow memory leak
     delete $CONTEXTS{$hid};
-    if ($cbk) {
-        $_->($snap) for reverse @$cbk;
+
+    if (my $cbk = $self->{+_ON_RELEASE}) {
+        $_->($self) for reverse @$cbk;
     }
-    if ($hcbk) {
-        $_->($snap) for reverse @$hcbk;
+    if (my $hcbk = $hub->{_context_release}) {
+        $_->($self) for reverse @$hcbk;
     }
-    $_->($snap) for reverse @ON_RELEASE;
+    $_->($self) for reverse @ON_RELEASE;
+
     return;
 }
 
 sub DESTROY {
     my ($self) = @_;
-    return if $self->{+_NO_DESTROY};
 
     my $hid = $self->{+HUB}->hid;
 
