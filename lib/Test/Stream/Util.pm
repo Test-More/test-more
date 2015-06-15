@@ -75,24 +75,6 @@ sub _local_try(&) {
     return ($ok, $error);
 }
 
-BEGIN {
-    if (!$ENV{TS_NO_XS} && eval {require Test::Stream::XS; 1}) {
-        *USE_XS = sub {
-            my ($version, $sub) = @_;
-            croak "You must specify a minimum XS version."
-                unless defined $version;
-
-            return 0 unless eval { Test::Stream::XS->VERSION($version); 1 };
-
-            return $Test::Stream::XS::VERSION unless $sub;
-            return Test::Stream::XS->can($sub) || croak "'$sub' is not a valid xsub.";
-        };
-    }
-    else {
-        *USE_XS = sub { undef };
-    }
-}
-
 # Older versions of perl have a nasty bug on win32 when localizing a variable
 # before forking or starting a new thread. So for those systems we use the
 # non-local form. When possible though we use the faster 'local' form.
@@ -104,6 +86,27 @@ BEGIN {
     else {
         *protect = \&_local_protect;
         *try     = \&_local_try;
+    }
+}
+
+BEGIN {
+    my $ok = !$ENV{TS_NO_XS};
+    ($ok) = try { require Test::Stream::XS } if $ok;
+    if ($ok) {
+        *USE_XS = sub {
+            my ($version, $sub) = @_;
+            croak "You must specify a minimum XS version."
+                unless defined $version;
+
+            my ($ok) = try { Test::Stream::XS->VERSION($version) };
+            return 0 unless $ok;
+
+            return $Test::Stream::XS::VERSION unless $sub;
+            return Test::Stream::XS->can($sub) || croak "'$sub' is not a valid xsub.";
+        };
+    }
+    else {
+        *USE_XS = sub { undef };
     }
 }
 
@@ -184,6 +187,20 @@ Returns true if threads are enabled, false if they are not.
 
 This will return the id of the current thread when threads are enabled,
 otherwise it returns 0.
+
+=item $XSUB = USE_XS($VERSION, $XSUB_NAME);
+
+This function takes 2 arguments, a minimum version, and the name of an xsub
+provided by L<Test::Stream::XS>. If L<Test::Stream::XS> is installed, and at or
+above the specified version, the requested xsub will be returned. If the
+version is too low, or L<Test::Stream::XS> is not installed, C<undef> is
+returned.
+
+This is useful for decided between a pure-perl sub and an xs sub:
+
+    use Test::Stream::Util qw/USE_XS/;
+
+    *some_sub = USE_XS('1.111111', 'some_sub_xs') || \&some_sub_pp;
 
 =back
 

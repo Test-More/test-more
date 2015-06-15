@@ -72,8 +72,8 @@ sub snapshot { bless {%{$_[0]}}, __PACKAGE__ }
 }
 
 sub release_pp {
-    return $_[0] = undef if Internals::SvREFCNT(%{$_[0]}) != 1;
     my ($self) = @_;
+    return $_[0] = undef if Internals::SvREFCNT(%$self) != 2;
 
     my $hub = $self->{+HUB};
     my $hid = $hub->{hid};

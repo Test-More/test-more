@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Add Support for XS
+    - Improve release_pp with refcount from internals
+
 1.302003  2015-06-06 21:44:42-07:00 America/Los_Angeles
 
     - Documentation added
