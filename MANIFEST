@@ -179,4 +179,3 @@ TODO
 xt/downstream.t
 xt/downstream_dists.list
 xt/downstream_dists.list.known_broken
-xt/pod-syntax.t
