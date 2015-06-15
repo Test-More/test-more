@@ -5,7 +5,6 @@ use warnings;
 use Scalar::Util qw/weaken/;
 use Carp qw/confess croak longmess/;
 use Test::Stream::Util qw/get_tid USE_XS/;
-use Devel::Peek qw/SvREFCNT/;
 
 use Test::Stream::Sync;
 use Test::Stream::DebugInfo;
@@ -73,7 +72,7 @@ sub snapshot { bless {%{$_[0]}}, __PACKAGE__ }
 }
 
 sub release_pp {
-    return $_[0] = undef if SvREFCNT(%{$_[0]}) != 1;
+    return $_[0] = undef if Internals::SvREFCNT(%{$_[0]}) != 1;
     my ($self) = @_;
 
     my $hub = $self->{+HUB};
