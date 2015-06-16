@@ -1,5 +1,8 @@
-NEXT
+NEXT:
     * Update for newer Test-Stream with XS support
+    * Use 'fudge' in Test::Stream instead of doing level adjustments here
+    * Fix minor POD encoding issue #593
+    * Some performance enhancements in T::B->ok
 
 1.302003_001 Sat Jan 06 21:52:00:00 PST 2015
     * Convert internals to use Test-Stream
