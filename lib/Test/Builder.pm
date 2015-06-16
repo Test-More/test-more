@@ -575,38 +575,38 @@ sub ok {
 
     $ctx->{hub}->{_meta}->{+__PACKAGE__}->{Test_Results}[ $ctx->{hub}->{state}->{count} ] = $result;
 
-    $ctx->{hub}->send(
-        Test::Stream::Event::Ok->new(
-            pass => $test,
-            name => $name,
+    my $e = bless {
+        debug => bless( {%$dbg}, 'Test::Stream::DebugInfo'),
+        pass  => $test,
+        name  => $name,
+        allow_bad_name => 1,
+    }, 'Test::Stream::Event::Ok';
+    $e->init;
 
-            # Legacy allows '#' and newlines, we make them safe above.
-            # Test::Stream however is less permissive and forbids these things.
-            # This lets us get past the check.
-            allow_bad_name => 1,
+    $ctx->{hub}->send($e);
 
-            debug => $dbg->snapshot,
-        )
-    );
+    $self->_ok_debug($dbg, $orig_name) unless($test);
 
-    unless($test) {
-        my $is_todo = defined $dbg->{todo};
-        my $msg = $is_todo ? "Failed (TODO)" : "Failed";
-        $self->diag("\n") if $ENV{HARNESS_ACTIVE};
-
-        my( undef, $file, $line ) = $ctx->debug->call;
-        if( defined $orig_name ) {
-            $self->diag(qq[  $msg test '$orig_name'\n]);
-            $self->diag(qq[  at $file line $line.\n]);
-        }
-        else {
-            $self->diag(qq[  $msg test at $file line $line.\n]);
-        }
-    }
-
-    release $ctx, $test;
+    $ctx->release;
+    return $test;
 }
 
+sub _ok_debug {
+    my $self = shift;
+    my ($dbg, $orig_name) = @_;
+    my $is_todo = defined $dbg->{todo};
+    my $msg = $is_todo ? "Failed (TODO)" : "Failed";
+    $self->diag("\n") if $ENV{HARNESS_ACTIVE};
+
+    my (undef, $file, $line) = $dbg->call;
+    if (defined $orig_name) {
+        $self->diag(qq[  $msg test '$orig_name'\n]);
+        $self->diag(qq[  at $file line $line.\n]);
+    }
+    else {
+        $self->diag(qq[  $msg test at $file line $line.\n]);
+    }
+}
 
 sub _unoverload {
     my ($self, $type, $thing) = @_;
