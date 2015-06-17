@@ -47,25 +47,7 @@ sub CAN_THREAD {
 
     # Change to a version check if this ever changes
     return 0 if $INC{'Devel/Cover.pm'};
-
-    return 1 unless $] == 5.010000;
-
-    require File::Temp;
-    require File::Spec;
-
-    my $perl = File::Spec->rel2abs($^X);
-    my ($fh, $fn) = File::Temp::tempfile();
-    print $fh <<'    EOT';
-        BEGIN { print STDERR "# Checking for thread segfaults\n# " }
-        use threads;
-        my $t = threads->create(sub { 1 });
-        $t->join;
-        print STDERR "Threads appear to work\n";
-        exit 0;
-    EOT
-    close($fh);
-
-    return !system(qq{"$perl" "$fn"});
+    return 1;
 }
 
 1;
