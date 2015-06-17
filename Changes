@@ -1,4 +1,4 @@
-NEXT:
+1.302004_001 Wed Jun 17 08:33:00:00 PST 2015
     * Update for newer Test-Stream with XS support
     * Use 'fudge' in Test::Stream instead of doing level adjustments here
     * Fix minor POD encoding issue #593
