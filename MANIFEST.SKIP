@@ -1,5 +1,4 @@
 
-#!start included /Users/schwern/perl5/perlbrew/perls/perl-v5.12.2/lib/5.12.2/ExtUtils/MANIFEST.SKIP
 # Avoid version control files.
 \bRCS\b
 \bCVS\b
@@ -86,3 +85,6 @@
 dist.ini
 
 MANIFEST.SKIP
+
+# I never want this to go out.
+test.pl
