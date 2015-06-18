@@ -88,3 +88,5 @@ MANIFEST.SKIP
 
 # I never want this to go out.
 test.pl
+
+Test-Stream-*

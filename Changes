@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+1.302006  2015-06-18 09:53:04-07:00 America/Los_Angeles
+
+    - MANIFEST.SKIP fix
+    - Remove files accidentally included in the last dist
+
 1.302005  2015-06-18 09:37:38-07:00 America/Los_Angeles
 
     - Remove broken test script
