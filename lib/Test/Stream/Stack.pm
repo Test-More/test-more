@@ -4,13 +4,6 @@ use warnings;
 
 use Test::Stream::Hub;
 use Test::Stream::TAP;
-use Test::Stream::Util qw/USE_XS/;
-
-{
-    no warnings 'once';
-    *top  = USE_XS('1.302004', 'top_xs')  || \&top_pp;
-    *peek = USE_XS('1.302004', 'peek_xs') || \&peek_pp;
-}
 
 use Carp qw/confess/;
 
@@ -41,13 +34,13 @@ sub new_hub {
     $hub;
 }
 
-sub top_pp {
+sub top {
     my $self = shift;
     return $self->new_hub unless @$self;
     return $self->[-1];
 }
 
-sub peek_pp {
+sub peek {
     my $self = shift;
     return @$self ? $self->[-1] : undef;
 }

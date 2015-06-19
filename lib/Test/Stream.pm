@@ -384,12 +384,6 @@ in existing test files, you may have to update some function calls.
     # The preferred way to plan
     done_testing;
 
-=head1 PERFORMANCE NOTE
-
-B<There is an XS module available that provides a notable performance boost.>
-L<Test::Stream::XS>, when installed, will be used to replace several key subs
-with xs implementations. The XS module is completely optional.
-
 =head1 IPC NOTE
 
 L<Test::Stream::IPC> is loaded by default, as such forking and threading should

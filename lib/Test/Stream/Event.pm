@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use Carp qw/confess/;
-use Test::Stream::Util qw/USE_XS/;
 
 use Test::Stream::HashBase(
     accessors => [qw/debug nested/],
@@ -29,10 +28,10 @@ sub init {
     confess("No debug info provided!") unless $_[0]->{+DEBUG};
 }
 
-*to_tap       = USE_XS('1.302004', 'noop') || sub { };
-*update_state = USE_XS('1.302004', 'noop') || sub { };
-*terminate    = USE_XS('1.302004', 'noop') || sub { };
-*global       = USE_XS('1.302004', 'noop') || sub { };
+sub to_tap       { };
+sub update_state { };
+sub terminate    { };
+sub global       { };
 
 1;
 

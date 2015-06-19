@@ -4,7 +4,7 @@ use warnings;
 
 use Scalar::Util qw/weaken/;
 use Carp qw/confess croak longmess/;
-use Test::Stream::Util qw/get_tid USE_XS/;
+use Test::Stream::Util qw/get_tid/;
 
 use Test::Stream::Sync;
 use Test::Stream::DebugInfo;
@@ -42,8 +42,8 @@ sub END {
     $? = $new;
 }
 
-use Test::Stream::Exporter qw/import export_to exports export/;
-export context => USE_XS('1.302004', 'context_xs') || \&context_pp;
+use Test::Stream::Exporter qw/import exports export/;
+exports qw/context/;
 export release => sub($;@) {
     $_[0]->release;
     shift; # Remove undef that used to be our $self reference.
@@ -65,13 +65,7 @@ sub init {
 
 sub snapshot { bless {%{$_[0]}}, __PACKAGE__ }
 
-{
-    no warnings 'once';
-    *release = USE_XS('1.302004', 'release_xs') || \&release_pp;
-    *context = USE_XS('1.302004', 'context_xs') || \&context_pp;
-}
-
-sub release_pp {
+sub release {
     my ($self) = @_;
     return $_[0] = undef if Internals::SvREFCNT(%$self) != 2;
 
@@ -135,7 +129,7 @@ Trace: $mess
     return;
 }
 
-sub context_pp {
+sub context {
     my %params = (level => 0, wrapped => 0, @_);
 
     croak "context() called, but return value is ignored"

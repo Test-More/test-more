@@ -7,7 +7,7 @@ use Scalar::Util qw/reftype blessed/;
 use Test::Stream::Exporter qw/import export_to exports/;
 use Carp qw/croak/;
 
-exports qw{ try protect get_tid USE_THREADS USE_XS };
+exports qw{ try protect get_tid USE_THREADS };
 
 no Test::Stream::Exporter;
 
@@ -90,41 +90,17 @@ BEGIN {
 }
 
 BEGIN {
-    my $ok = !$ENV{TS_NO_XS};
-    ($ok) = try { require Test::Stream::XS } if $ok;
-    if ($ok) {
-        *USE_XS = sub {
-            my ($version, $sub) = @_;
-            croak "You must specify a minimum XS version."
-                unless defined $version;
-
-            my ($ok) = try { Test::Stream::XS->VERSION($version) };
-            return 0 unless $ok;
-
-            return $Test::Stream::XS::VERSION unless $sub;
-            return Test::Stream::XS->can($sub) || croak "'$sub' is not a valid xsub.";
-        };
-    }
-    else {
-        *USE_XS = sub { undef };
-    }
-}
-
-BEGIN {
     if(CAN_THREAD) {
-        # Threads are possible, so we need it to be dynamic.
-        my $xs = USE_XS('1.302004', 'get_tid_xs');
-
         if ($INC{'threads.pm'}) {
             # Threads are already loaded, so we do not need to check if they
             # are loaded each time
             *USE_THREADS = sub() { 1 };
-            *get_tid = $xs || sub { threads->tid() };
+            *get_tid = sub { threads->tid() };
         }
         else {
             # :-( Need to check each time to see if they have been loaded.
             *USE_THREADS = sub { $INC{'threads.pm'} ? 1 : 0 };
-            *get_tid = $xs || sub { $INC{'threads.pm'} ? threads->tid() : 0 };
+            *get_tid = sub { $INC{'threads.pm'} ? threads->tid() : 0 };
         }
     }
     else {
@@ -187,20 +163,6 @@ Returns true if threads are enabled, false if they are not.
 
 This will return the id of the current thread when threads are enabled,
 otherwise it returns 0.
-
-=item $XSUB = USE_XS($VERSION, $XSUB_NAME);
-
-This function takes 2 arguments, a minimum version, and the name of an xsub
-provided by L<Test::Stream::XS>. If L<Test::Stream::XS> is installed, and at or
-above the specified version, the requested xsub will be returned. If the
-version is too low, or L<Test::Stream::XS> is not installed, C<undef> is
-returned.
-
-This is useful for decided between a pure-perl sub and an xs sub:
-
-    use Test::Stream::Util qw/USE_XS/;
-
-    *some_sub = USE_XS('1.111111', 'some_sub_xs') || \&some_sub_pp;
 
 =back
 
