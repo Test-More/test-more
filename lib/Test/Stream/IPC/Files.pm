@@ -40,7 +40,6 @@ sub init {
 
 sub add_hub {
     my $self = shift;
-    local $?;
     my ($hid) = @_;
 
     my $tdir = $self->{+TEMPDIR};
@@ -56,7 +55,6 @@ sub add_hub {
 
 sub drop_hub {
     my $self = shift;
-    local $?;
     my ($hid) = @_;
 
     my $tdir = $self->{+TEMPDIR};
@@ -94,7 +92,6 @@ sub drop_hub {
 
 sub send {
     my $self = shift;
-    local $?;
     my ($hid, $e) = @_;
 
     my $tempdir = $self->{+TEMPDIR};
@@ -142,11 +139,12 @@ Error: $err
 
         EOT
     }
+
+    return $name;
 }
 
 sub cull {
     my $self = shift;
-    local $?;
     my ($hid) = @_;
 
     my $tempdir = $self->{+TEMPDIR};
@@ -191,7 +189,6 @@ sub cull {
 
 sub waiting {
     my $self = shift;
-    local $?;
     require Test::Stream::Event::Waiting;
     $self->send(
         GLOBAL => Test::Stream::Event::Waiting->new(
@@ -203,7 +200,6 @@ sub waiting {
 
 sub DESTROY {
     my $self = shift;
-    local $?;
 
     return unless defined $self->pid;
     return unless defined $self->tid;

@@ -98,6 +98,7 @@ END {
     my @hubs = $STACK->all;
 
     if (@hubs && $IPC && !$NO_WAIT) {
+        local $?;
         my %seen;
         for my $hub (reverse @hubs) {
             my $ipc = $hub->ipc || next;
@@ -126,6 +127,7 @@ END {
         }
 
         unless ($root->no_ending) {
+            local $?;
             $root->finalize($dbg) unless $root->state->ended;
             $_->($ctx, $exit, \$new_exit) for @HOOKS;
             $new_exit ||= $root->state->failed;
