@@ -1,5 +1,18 @@
 {{$NEXT}}
 
+1.302007  2015-06-24 08:03:38-07:00 America/Los_Angeles
+
+    - Add CanThread and CanFork libraries
+    - Remove prefix when subtests are buffered
+    - Fix bug where Exporter might remove other tools exports
+    - Fix bug in unmunge and unlisten
+    - Add helper for specifying a context in which to run
+    - Add causes_fail method for events
+    - Fix rendering bug in subtest diags
+    - Fix bug where IPC abort would fail to set exit code
+    - Remove XS support code
+    - Fix bug when threads are auto-joined
+
 1.302006  2015-06-18 09:53:04-07:00 America/Los_Angeles
 
     - MANIFEST.SKIP fix
