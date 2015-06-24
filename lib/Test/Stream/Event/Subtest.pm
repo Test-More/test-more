@@ -35,7 +35,7 @@ sub to_tap {
     my $count = 0;
     my @subs = map {
         $count++ if $_->isa('Test::Stream::Event::Ok');
-        map { $_->[1] =~ s/^/    /; $_ } $_->to_tap($count);
+        map { $_->[1] =~ s/^/    /mg; $_ } $_->to_tap($count);
     } @{$self->{+SUBEVENTS}};
 
     return (
