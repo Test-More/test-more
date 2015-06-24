@@ -4,7 +4,7 @@ use warnings;
 
 use Carp qw/carp croak/;
 use Test::Stream::State;
-use Test::Stream::Util qw/get_tid USE_THREADS/;
+use Test::Stream::Util qw/get_tid/;
 
 use Scalar::Util qw/weaken/;
 

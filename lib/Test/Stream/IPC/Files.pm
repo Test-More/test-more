@@ -13,7 +13,7 @@ use File::Temp;
 use Storable;
 use File::Spec;
 
-use Test::Stream::Util qw/try get_tid USE_THREADS/;
+use Test::Stream::Util qw/try get_tid/;
 
 sub is_viable { 1 }
 
