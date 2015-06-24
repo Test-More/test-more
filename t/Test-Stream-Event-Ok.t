@@ -19,6 +19,7 @@ my $dbg = Test::Stream::DebugInfo->new(
         pass  => 1,
         name  => 'the_test',
     );
+    ok(!$ok->causes_fail, "Passing 'OK' event does not cause failure");
     isa_ok($ok, 'Test::Stream::Event');
     is($ok->pass, 1, "got pass");
     is($ok->name, 'the_test', "got name");
@@ -45,6 +46,7 @@ my $dbg = Test::Stream::DebugInfo->new(
         pass  => 0,
         name  => 'the_test',
     );
+    ok($ok->causes_fail, "A failing test causes failures");
     isa_ok($ok, 'Test::Stream::Event');
     is($ok->pass, 0, "got pass");
     is($ok->name, 'the_test', "got name");

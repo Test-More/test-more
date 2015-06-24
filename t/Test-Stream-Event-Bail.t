@@ -11,6 +11,8 @@ my $bail = Test::Stream::Event::Bail->new(
     reason => 'evil',
 );
 
+ok($bail->causes_fail, "balout always causes fail.");
+
 is_deeply(
     [$bail->to_tap(1)],
     [[OUT_STD, "Bail out!  evil\n" ]],

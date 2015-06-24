@@ -24,4 +24,6 @@ isa_ok('My::MockEvent', 'Test::Stream::Event');
 
 my $one = My::MockEvent->new(debug => 'fake');
 
+ok(!$one->causes_fail, "Events do not cause failures by default");
+
 done_testing;

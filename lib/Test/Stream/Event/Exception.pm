@@ -23,6 +23,8 @@ sub update_state {
     return undef;
 }
 
+sub causes_fail { 1 }
+
 1;
 
 __END__

@@ -29,6 +29,8 @@ sub terminate { 255 };
 
 sub global { 1 };
 
+sub causes_fail { 1 }
+
 1;
 
 __END__
