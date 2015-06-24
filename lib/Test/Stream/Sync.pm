@@ -74,10 +74,11 @@ sub _ipc_wait {
         for my $t (threads->list()) {
             $t->join;
             my $err = $t->error;
+            next unless $err;
             my $tid = $t->tid();
             $fail++;
             chomp($err);
-            warn "Thread $tid did not end cleanly\n";
+            warn "Thread $tid did not end cleanly: $err\n";
         }
     }
 
