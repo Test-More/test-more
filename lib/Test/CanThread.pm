@@ -2,13 +2,16 @@ package Test::CanThread;
 use strict;
 use warnings;
 
-use Test::Stream::Context qw/context/;
 use Test::Stream::Capabilities qw/CAN_THREAD/;
 
 sub import {
-    return unless CAN_THREAD;
-    my $ctx = context();
+    return if CAN_THREAD;
+
+    require Test::Stream::Context;
+    my $ctx = Test::Stream::Context::context();
     $ctx->plan(0, "SKIP", "This test requires a perl capable of threading.");
+    $ctx->release;
+    exit 0;
 }
 
 1;
