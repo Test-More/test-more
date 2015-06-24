@@ -1,3 +1,7 @@
+1.302007_001 Wed Jun 24 08:06:00:00 PST 2015
+    * Tests no longer copy thread/fork checks
+    * Bump minimum Test::Stream version
+
 1.302004_001 Wed Jun 17 08:33:00:00 PST 2015
     * Update for newer Test-Stream with XS support
     * Use 'fudge' in Test::Stream instead of doing level adjustments here
