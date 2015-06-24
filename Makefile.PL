@@ -66,7 +66,7 @@ WriteMakefile(
     ($mm_ver >= 6.31 ? (LICENSE => 'perl') : ()),
 
     PREREQ_PM       => { 
-        'Test::Stream'          => '1.302004',
+        'Test::Stream'          => '1.302007',
         'Test::Harness'         => 2.03,
         'Scalar::Util'          => 1.13,
         %Prereqs

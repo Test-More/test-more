@@ -1,23 +1,13 @@
 #!/usr/bin/perl -w
 use strict;
 use warnings;
-use Config;
+use Test::CanFork;
+
 use IO::Pipe;
 use Test::Builder;
 use Test::More;
 
-my $Can_Fork = $Config{d_fork} ||
-               (($^O eq 'MSWin32' || $^O eq 'NetWare') and
-                $Config{useithreads} and
-                $Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/
-               );
-
-if( !$Can_Fork ) {
-    plan 'skip_all' => "This system cannot fork";
-}
-else {
-    plan 'tests' => 1;
-}
+plan 'tests' => 1;
 
 subtest 'fork within subtest' => sub {
     plan tests => 2;
@@ -43,7 +33,7 @@ subtest 'fork within subtest' => sub {
         $tb->output($pipe);
         $tb->failure_output($pipe);
         $tb->todo_output($pipe);
-        
+
         diag 'Child Done';
         exit 0;
     }

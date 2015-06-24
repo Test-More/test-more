@@ -1,19 +1,13 @@
 #!/usr/bin/perl -w
+use strict;
+use warnings;
+use Test::CanThread;
+use threads;
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {
         chdir 't';
         @INC = '../lib';
-    }
-}
-
-use Config;
-BEGIN {
-    unless ( $] >= 5.008001 && $Config{'useithreads'} && 
-             eval { require threads; 'threads'->import; 1; }) 
-    {
-        print "1..0 # Skip: no working threads\n";
-        exit 0;
     }
 }
 
