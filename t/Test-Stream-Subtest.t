@@ -54,7 +54,7 @@ events_are(
             event_field subevents => events {
                 event Subtest => sub {
                     event_field pass => 1;
-                    event_field name => 'Subtest: bar';
+                    event_field name => 'bar';
                     event_field subevents => events {
                         event Ok => sub {
                             event_field name => 'pass';
@@ -246,7 +246,7 @@ events_are(
             event_file __FILE__;
             event_line $lines[0];
             event_field pass => 1;
-            event_field name => 'Subtest: foo';
+            event_field name => 'foo';
             event_field subevents => events {
                 event Ok => sub {
                     event_file __FILE__;
@@ -274,7 +274,7 @@ events_are(
             event_file __FILE__;
             event_line $lines[0];
             event_field pass => 0;
-            event_field name => 'Subtest: foo';
+            event_field name => 'foo';
             event_field subevents => events {
                 event Ok => sub {
                     event_file __FILE__;
@@ -303,7 +303,7 @@ events_are(
             event_file __FILE__;
             event_line $lines[0];
             event_field pass => 1;
-            event_field name => 'Subtest: foo';
+            event_field name => 'foo';
             event_field subevents => events {
                 event Ok => sub {
                     event_file __FILE__;
@@ -334,7 +334,7 @@ events_are(
             event_file __FILE__;
             event_line $lines[0];
             event_field pass => 1;
-            event_field name => 'Subtest: foo';
+            event_field name => 'foo';
             event_field subevents => events {
                 event Plan => { max => 1 };
                 event Ok => sub {
@@ -365,7 +365,7 @@ events_are(
             event_file __FILE__;
             event_line $lines[0];
             event_field pass => 1;
-            event_field name => 'Subtest: foo';
+            event_field name => 'foo';
             event_field subevents => events {
                 event Plan => { directive => 'SKIP', reason => 'bleh' };
                 end_events;

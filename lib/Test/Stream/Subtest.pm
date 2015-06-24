@@ -16,7 +16,7 @@ no Test::Stream::Exporter;
 sub subtest_streamed {
     my ($name, $code, @args) = @_;
     my $ctx = context();
-    my $pass = _subtest($name, $code, 0, @args);
+    my $pass = _subtest("Subtest: $name", $code, 0, @args);
     $ctx->release;
     return $pass;
 }
@@ -34,7 +34,7 @@ sub _subtest {
 
     my $ctx = context();
 
-    $ctx->note("Subtest: $name") unless $buffered;
+    $ctx->note($name) unless $buffered;
 
     my $parent = $ctx->hub;
 
@@ -84,7 +84,7 @@ sub _subtest {
     my $e = $ctx->build_event(
         'Subtest',
         pass => $pass,
-        name => "Subtest: $name",
+        name => $name,
         buffered  => $buffered,
         subevents => \@events,
     );
