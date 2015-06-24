@@ -38,8 +38,9 @@ sub _local_protect(&) {
     return $ok;
 }
 
-sub _manual_try(&) {
+sub _manual_try(&;@) {
     my $code = shift;
+    my $args = \@_;
     my $error;
     my $ok;
 
@@ -47,7 +48,7 @@ sub _manual_try(&) {
         my ($msg, $no) = ($@, $!);
         my $die = delete $SIG{__DIE__};
 
-        $ok = eval { $code->(); 1 } || 0;
+        $ok = eval { $code->(@$args); 1 } || 0;
         unless($ok) {
             $error = $@ || "Error was squashed!\n";
         }
@@ -59,14 +60,15 @@ sub _manual_try(&) {
     return ($ok, $error);
 }
 
-sub _local_try(&) {
+sub _local_try(&;@) {
     my $code = shift;
+    my $args = \@_;
     my $error;
     my $ok;
 
     {
         local ($@, $!, $SIG{__DIE__});
-        $ok = eval { $code->(); 1 } || 0;
+        $ok = eval { $code->(@$args); 1 } || 0;
         unless($ok) {
             $error = $@ || "Error was squashed!\n";
         }

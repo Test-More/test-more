@@ -244,4 +244,30 @@ is_deeply(
     "Got all hook in correct order"
 );
 
+{
+    my $ctx = context(level => -1);
+
+    local $@ = 'testing error';
+    my $one = Test::Stream::Context->new(
+        debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
+        hub => Test::Stream::Sync->stack->top,
+    );
+    is($one->_err, 'testing error', "Copied \$@");
+    is($one->_depth, 0, "default depth");
+
+    my $ran = 0;
+    my $doit = sub {
+        is_deeply(\@_, [qw/foo bar/], "got args");
+        is(context(), $one, "The one context is our context");
+        $ran++;
+        die "Make sure old context is restored";
+    };
+
+    eval { $one->do_in_context($doit, 'foo', 'bar') };
+    is(context(level => -1, wrapped => -2), $ctx, "Old context restored");
+    $ctx->release;
+}
+
+
+
 done_testing;

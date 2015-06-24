@@ -4,7 +4,7 @@ use warnings;
 
 use Scalar::Util qw/weaken/;
 use Carp qw/confess croak longmess/;
-use Test::Stream::Util qw/get_tid/;
+use Test::Stream::Util qw/get_tid try/;
 
 use Test::Stream::Sync;
 use Test::Stream::DebugInfo;
@@ -27,7 +27,7 @@ our %CONTEXTS;
 sub ON_INIT    { shift; push @ON_INIT => @_ }
 sub ON_RELEASE { shift; push @ON_INIT => @_ }
 
-sub END {
+END {
     my $real = $?;
     my $new  = $real;
 
@@ -61,6 +61,10 @@ sub init {
 
     confess "hub is required"
         unless $_[0]->{+HUB};
+
+    $_[0]->{+_DEPTH} = 0 unless defined $_[0]->{+_DEPTH};
+
+    $_[0]->{+_ERR} = $@;
 }
 
 sub snapshot { bless {%{$_[0]}}, __PACKAGE__ }
@@ -72,7 +76,7 @@ sub release {
     my $hub = $self->{+HUB};
     my $hid = $hub->{hid};
 
-    if ($self != $CONTEXTS{$hid}) {
+    if (!$CONTEXTS{$hid} || $self != $CONTEXTS{$hid}) {
         $_[0] = undef;
         croak "release() should not be called on a non-canonical context.";
     }
@@ -127,6 +131,27 @@ Trace: $mess
     }
     $_->($self) for reverse @ON_RELEASE;
     return;
+}
+
+sub do_in_context {
+    my $self = shift;
+    my ($sub, @args) = @_;
+
+    my $hub = $self->{+HUB};
+    my $hid = $hub->hid;
+
+    my $old = $CONTEXTS{$hid};
+
+    weaken($CONTEXTS{$hid} = $self);
+    my ($ok, $err) = &try($sub, @args);
+    if ($old) {
+        weaken($CONTEXTS{$hid} = $old);
+        $old = undef;
+    }
+    else {
+        delete $CONTEXTS{$hid};
+    }
+    die $err unless $ok;
 }
 
 sub context {
@@ -695,6 +720,22 @@ the current one to which all events should be sent.
 =item $dbg = $ctx->debug()
 
 This will return the L<Test::Stream::DebugInfo> instance used by the context.
+
+=item $ctx->do_in_context(\&code, @args);
+
+Sometimes you have a context that is not current, and you want things to use it
+as the current one. In these cases you can call
+L<< $ctx->do_in_context(sub { ... }) >>. The codeblock will be run, and
+anything inside of it that looks for a context will find the one on which the
+method was called.
+
+This B<DOES NOT> effect context on other hubs, only the hub used by the context
+will be effected.
+
+    my $ctx = ...;
+    $ctx->do_in_context(sub {
+        my $ctx = context(); # returns the $ctx the sub is called on
+    });
 
 =back
 
