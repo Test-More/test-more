@@ -18,6 +18,9 @@ my $it = $hub->listen(sub {
     push @counts => $count;
 });
 
+my $second;
+my $it2 = $hub->listen(sub { $second++ });
+
 my $ok1 = Test::Stream::Event::Ok->new(
     pass => 1,
     name => 'foo',
@@ -51,5 +54,6 @@ $hub->send($ok3);
 
 is_deeply(\@counts, [1, 2], "Got counts");
 is_deeply(\@events, [$ok1, $ok2], "got events");
+is($second, 3, "got all events in listener that was not removed");
 
 done_testing;

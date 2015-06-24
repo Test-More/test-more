@@ -139,7 +139,8 @@ sub unlisten {
         if $$ != $self->{+PID} || get_tid() != $self->{+TID};
 
     my %subs = map {$_ => $_} @_;
-    @{$self->{+_LISTENERS}} = grep { !$subs{$_} == $_ } @{$self->{+_LISTENERS}};
+
+    @{$self->{+_LISTENERS}} = grep { !$subs{$_} } @{$self->{+_LISTENERS}};
 }
 
 sub munge {
@@ -162,7 +163,7 @@ sub unmunge {
     carp "Useless removal of a munger in a child process or thread!"
         if $$ != $self->{+PID} || get_tid() != $self->{+TID};
     my %subs = map {$_ => $_} @_;
-    @{$self->{+_MUNGERS}} = grep { !$subs{$_} == $_ } @{$self->{+_MUNGERS}};
+    @{$self->{+_MUNGERS}} = grep { !$subs{$_} } @{$self->{+_MUNGERS}};
 }
 
 sub follow_up {
@@ -292,6 +293,11 @@ sub finalize {
         if ($self->{+_FOLLOW_UPS}) {
             $_->($dbg, $self) for reverse @{$self->{+_FOLLOW_UPS}};
         }
+
+        # These need to be refreshed now
+        $plan   = $state->plan;
+        $count  = $state->count;
+        $failed = $state->failed;
 
         if (($plan && $plan eq 'NO PLAN') || ($do_plan && !$plan)) {
             $self->send(

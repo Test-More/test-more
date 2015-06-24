@@ -16,6 +16,9 @@ my $it = $hub->munge(sub {
     push @events => $e;
 });
 
+my $count;
+my $it2 = $hub->munge(sub { $count++ });
+
 my $ok1 = Test::Stream::Event::Ok->new(
     pass => 1,
     name => 'foo',
@@ -48,6 +51,7 @@ $hub->unmunge($it);
 $hub->send($ok3);
 
 is_deeply(\@events, [$ok1, $ok2], "got events");
+is($count, 3, "got all events, even after other munger was removed");
 
 $hub = Test::Stream::Hub->new();
 @events = ();
