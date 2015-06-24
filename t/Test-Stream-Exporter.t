@@ -12,6 +12,10 @@ use Test::Stream;
     export         a => sub { 'a' };
     default_export b => sub { 'b' };
 
+    our $default_export = 100;
+
+    sub export_from { 1 };
+
     export 'c';
     sub c { 'c' }
 
@@ -24,6 +28,8 @@ use Test::Stream;
     }
 
     ok(!__PACKAGE__->can($_), "removed $_\()") for qw/default_export exports default_exports/;
+    ok(__PACKAGE__->can('export_from'), "Did not remove a custom sub with a conflicting name");
+    is($My::Exporter::default_export, 100, "Did not remove other glob items");
 }
 
 My::Exporter->import;

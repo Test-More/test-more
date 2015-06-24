@@ -23,7 +23,9 @@ sub unimport {
     @list = qw/export exports default_export default_exports export_from/ unless @list;
 
     for my $name (@list) {
+        my $ref = $pkg->can($name) || next;
         no strict 'refs';
+        next unless $ref == \&{$name};
         local *GLOBCLONE = *{"$pkg\::$name"};
         my $stash = \%{"${pkg}\::"};
         delete $stash->{$name};
