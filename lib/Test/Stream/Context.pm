@@ -191,7 +191,7 @@ sub context {
         {
             frame => [$pkg, $file, $line, $sub],
             pid   => $$,
-            tid   => $INC{'threads.pm'} ? threads->tid() : 0,
+            tid   => get_tid(),
             $hub->debug_todo,
         },
         'Test::Stream::DebugInfo'

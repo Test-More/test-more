@@ -73,7 +73,9 @@ sub _ipc_wait {
     if (USE_THREADS) {
         for my $t (threads->list()) {
             $t->join;
-            my $err = $t->error;
+            # In older threads we cannot check if a thread had an error unless
+            # we control it and its return.
+            my $err = $t->can('error') ? $t->error : undef;
             next unless $err;
             my $tid = $t->tid();
             $fail++;
