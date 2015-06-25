@@ -60,7 +60,7 @@ sub to_tap {
     my @out = [OUT_STD, "$out\n"];
 
     if ($self->{+DIAG} && @{$self->{+DIAG}}) {
-        my $diag_handle = $debug->no_fail ? OUT_TODO : OUT_ERR;
+        my $diag_handle = $debug->no_diag ? OUT_TODO : OUT_ERR;
 
         for my $diag (@{$self->{+DIAG}}) {
             chomp(my $msg = $diag);
