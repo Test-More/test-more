@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+1.302008  2015-06-27 15:21:55-07:00 America/Los_Angeles
+
+    - Fix 2 bugs with threading on 5.8.x
+    - Fix a diag rendering bug with subtests
+
 1.302007  2015-06-24 08:03:38-07:00 America/Los_Angeles
 
     - Add CanThread and CanFork libraries
