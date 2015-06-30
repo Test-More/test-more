@@ -412,6 +412,26 @@ L<Test::Stream::IPC> to manually cull results where you want them:
     cull()
     ...
 
+=head1 OTHER COMMON TOOLS
+
+Unlike L<Test::More> which bundled most if not all of its functionality into a
+single import, L<Test::Stream> breaks out the non-trivial tools into other
+modules that you can load as needed. The main motivation here is the fact that
+things change, and what works now might not always be best. By breaking some
+tools out into their own modules, it is easier to replace and/or deprecate them
+if they are found to be insufficient.
+
+=head2 SUBTESTS
+
+=over 4
+
+=item Test::Stream::Subtest
+
+L<Test::Stream::Subtest> provides fuctions for running subtests, you can pick
+the ones that work best for you.
+
+=back
+
 =head1 EXPORTS
 
 All subs are exported by default B<except> C<context()>. You can use '-all' to
