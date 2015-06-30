@@ -491,6 +491,11 @@ context you want them to find.
 
 =head1 EXPORTS
 
+All exports are optional, you must specify subs to import. If you want to
+import all subs use '-all'.
+
+    use Test::Stream::Context '-all';
+
 =head2 context()
 
 Usage:

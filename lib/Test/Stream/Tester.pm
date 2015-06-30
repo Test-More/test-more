@@ -385,6 +385,9 @@ you should use to test it.
 
 =head1 EXPORTS
 
+All subs are exported by default. If you provide a list then only the listed
+subs will be imported.
+
 =head2 ASSERTIONS
 
 =over 4

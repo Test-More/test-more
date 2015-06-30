@@ -166,6 +166,11 @@ experimental phase is over.
 
 =head1 EXPORTS
 
+All exports are optional, you must specify which ones you want to import. You
+can specify '-all' to import them all.
+
+    use Test::Stream::Interceptor '-all';
+
 =over 4
 
 =item $events = intercept { ... }

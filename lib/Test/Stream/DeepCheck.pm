@@ -460,6 +460,66 @@ we are able to find the correct line number by inspecting the coderef.
 
 =head1 EXPORTS
 
+Not all tools are exported by default. Use '-all' to import everything. If you
+want the defaults and just a couple others use '-default' and a list of extras.
+
+    use Test::Stream::DeepCheck '-all';
+
+or
+
+    use Test::Stream::DeepCheck '-default', qw/filter end/;
+
+You can also rename some subs on import:
+
+    use Test::Stream::DeepCheck filter => {-as => 'baleen'};
+
+The following are exported by default (See next sections for usage details):
+
+=over 4
+
+=item strict_compare
+
+=item relaxed_compare
+
+=item array
+
+=item hash
+
+=item check
+
+=item field
+
+=item elem
+
+=back
+
+The following are not exported by default (See next sections for usage
+details):
+
+=over 4
+
+=item filter
+
+=item end
+
+=item meta
+
+=item call
+
+=item object
+
+=item hash_object
+
+=item array_object
+
+=item STRUCT
+
+=item build_object
+
+=item convert
+
+=back
+
 =head2 ASSERTIONS
 
 =over 4

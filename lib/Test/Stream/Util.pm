@@ -4,11 +4,10 @@ use warnings;
 
 use Test::Stream::Capabilities qw/CAN_THREAD/;
 use Scalar::Util qw/reftype blessed/;
-use Test::Stream::Exporter qw/import export_to exports/;
 use Carp qw/croak/;
 
+use Test::Stream::Exporter qw/import export_to exports/;
 exports qw{ try protect get_tid USE_THREADS };
-
 no Test::Stream::Exporter;
 
 sub _manual_protect(&) {
@@ -141,6 +140,11 @@ experimental phase is over.
 Collection of tools used by L<Test::Stream> and friends.
 
 =head1 EXPORTS
+
+All exports are optional, you must specify subs to import. If you want to
+import everything use '-all'.
+
+    use Test::Stream::Util '-all';
 
 =over 4
 

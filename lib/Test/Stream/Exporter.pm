@@ -4,7 +4,9 @@ use warnings;
 
 use Test::Stream::Exporter::Meta;
 
-use Carp qw/croak confess/;
+use Scalar::Util qw/reftype/;
+
+use Carp qw/croak confess carp/;
 
 BEGIN { Test::Stream::Exporter::Meta->new(__PACKAGE__) };
 
@@ -49,51 +51,56 @@ default_export( import => sub {
 });
 
 sub export_to {
-    my ($from, $dest, $imports) = @_;
+    my ($from, $dest, $args) = @_;
 
     my $meta = Test::Stream::Exporter::Meta->new($from);
     my $exports = $meta->exports;
 
     my @imports;
-    if ($imports && @$imports) {
+    if ($args && @$args) {
         my %seen;
         my $all = 0;
-        for my $item (@$imports) {
+        my $def = 0;
+        for my $item (@$args) {
             # Keep track of what we have seen so that things do not get
             # re-added by '-all'. We do not want to skip things already seen
             # here though as people may alias a single sub to multiple names.
             $seen{$item}++;
-            if ($item && !ref($item) && $item eq '-all') {
-                $all++;
+            if ($item && !ref($item) && $item =~ m/^-(all|default)$/) {
+                my $tag = $1;
+                $all++ if $tag eq 'all';
+                $def++ if $tag eq 'default';
             }
             else {
                 push @imports => $item;
             }
         }
-        push @imports => grep { !$seen{$_} } keys %$exports if $all;
+        push @imports => grep { !$seen{$_}++ } @{$meta->default} if $def;
+        push @imports => grep { !$seen{$_}++ } keys %$exports    if $all;
     }
     else {
         @imports = @{$meta->default};
     }
 
-    my $blank = {};
-    while (my $arg = shift @imports) {
-        my ($next) = @imports;
-
-        if ($next && ref $next) {
-            shift @imports;
-        }
-        else {
-            $next = $blank;
-        }
-
-        my $export = $arg;
-        my $name   = $next->{'-as'} || $arg;
-        $name = $next->{'-prefix'} . $name if $next->{'-prefix'};
-        $name .= $next->{'-postfix'} if $next->{'-postfix'};
-
+    while (my $export = shift @imports) {
         my $ref = $exports->{$export}
             || croak qq{"$export" is not exported by the $from module};
+
+        my $name = $export;
+        if (@imports && ref $imports[0]) {
+            my $options = shift @imports;
+            croak "import options must be specified as a hashref, got '$options'"
+                unless reftype($options) eq 'HASH';
+
+            my $prefix  = delete $options->{'-prefix'}  || "";
+            my $postfix = delete $options->{'-postfix'} || "";
+            my $infix   = delete $options->{'-as'}      || $export;
+
+            carp "'$_' is not a valid export option for export '$export'"
+                for keys %$options;
+
+            $name = join '' => $prefix, $infix, $postfix;
+        }
 
         no strict 'refs';
         *{"$dest\::$name"} = $ref;
@@ -198,7 +205,9 @@ across L<Test::Stream> and friends.
 
     ...;
 
-=head1 IMPORTING SUBS WITH ALTERNATE NAMES
+=head1 CONTROLLING IMPORTS
+
+=head2 IMPORTING SUBS WITH ALTERNATE NAMES
 
 B<Note:> If you import L<Test::Stream::Exporter> functions under alternative
 names, C<no Test::Stream::Exporter;> will not find and remove them like it
@@ -216,11 +225,33 @@ You can also prefix and/or postfix to the names:
     # Now use it:
     my_an_export_tool(...);
 
-=head1 IMPORTING ALL SUBS
+=head2 IMPORTING ALL SUBS
 
 You can use C<-all> to import ALL subs exported by a module.
 
     use Some::Exporter '-all';
+
+This can be combined with aliasing:
+
+    use Some::Exporter '-all', foo => { -as => 'my_foo' };
+
+In this example C<foo> will be imported as 'my_foo', all other subs will be
+imported with their original names. Order is not important here.
+
+=head2 IMPORTING DEFAULTS PLUS
+
+You can use C<-default> to import all default subs, then list others you want
+to import as well.
+
+    use Some::Exporter '-default', qw/and_this and_that/;
+
+If you want to import all the defaults AND rename one or more:
+
+    use Some::Exporter '-default', foo => { -as => 'my_foo' };
+
+In this example C<foo()> will be imported as C<my_foo()>. All other defaults
+will also be imported, but with their original names. Order is not important
+here.
 
 =head1 CUSTOMIZING AN IMPORT METHOD
 

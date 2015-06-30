@@ -414,6 +414,19 @@ L<Test::Stream::IPC> to manually cull results where you want them:
 
 =head1 EXPORTS
 
+All subs are exported by default B<except> C<context()>. You can use '-all' to
+import all subs, or you can use '-default' and specify 'context'.
+
+    use Test::Stream '-all';
+
+or
+
+    use Test::Stream '-default', 'context';
+
+You can also rename any sub on import:
+
+    use Test::Stream '-default', is_deeply => {-as => 'deep_compare'};
+
 =head2 ASSERTIONS
 
 =over 4
