@@ -52,14 +52,45 @@ sub export_to {
     my ($from, $dest, $imports) = @_;
 
     my $meta = Test::Stream::Exporter::Meta->new($from);
-
-    $imports = $meta->default unless $imports && @$imports;
-
     my $exports = $meta->exports;
-    for my $arg (@$imports) {
-        my ($export, $name) = ($arg =~ m/^(\S+)\s*=\s*(\S+)$/);
-        $export ||= $arg;
-        $name   ||= $arg;
+
+    my @imports;
+    if ($imports && @$imports) {
+        my %seen;
+        my $all = 0;
+        for my $item (@$imports) {
+            # Keep track of what we have seen so that things do not get
+            # re-added by '-all'. We do not want to skip things already seen
+            # here though as people may alias a single sub to multiple names.
+            $seen{$item}++;
+            if ($item && !ref($item) && $item eq '-all') {
+                $all++;
+            }
+            else {
+                push @imports => $item;
+            }
+        }
+        push @imports => grep { !$seen{$_} } keys %$exports if $all;
+    }
+    else {
+        @imports = @{$meta->default};
+    }
+
+    my $blank = {};
+    while (my $arg = shift @imports) {
+        my ($next) = @imports;
+
+        if ($next && ref $next) {
+            shift @imports;
+        }
+        else {
+            $next = $blank;
+        }
+
+        my $export = $arg;
+        my $name   = $next->{'-as'} || $arg;
+        $name = $next->{'-prefix'} . $name if $next->{'-prefix'};
+        $name .= $next->{'-postfix'} if $next->{'-postfix'};
 
         my $ref = $exports->{$export}
             || croak qq{"$export" is not exported by the $from module};
@@ -167,22 +198,29 @@ across L<Test::Stream> and friends.
 
     ...;
 
-=head1 IMPORTING METHODS WITH ALTERNATE NAMES
+=head1 IMPORTING SUBS WITH ALTERNATE NAMES
 
 B<Note:> If you import L<Test::Stream::Exporter> functions under alternative
 names, C<no Test::Stream::Exporter;> will not find and remove them like it
 normally would.
 
-When you specify a sub to import you may postfix an equal sign and a name under
-which it should be imported. In a C<qw> quote you cannot use spaces as that
-would split it into 3 distinct strings. However with individual quoting spaces
-are allowed.
+The rename syntax is borrowed from L<Exporter::Declare>, which borrowed it from
+L<Sub::Exporter>.
 
-    use Some::Exporter qw/an_export=new_name other_export=other_name/;
+    use Some::Exporter an_export => {-as => 'new_name'}, other_export => {-as => 'other_name'};
 
-or
+You can also prefix and/or postfix to the names:
 
-    use Some::Exporter 'an_export = new_name', 'other_export = other_name';
+    use Some::Exporter an_export => {-preifx => 'my_', postfix '_tool'};
+
+    # Now use it:
+    my_an_export_tool(...);
+
+=head1 IMPORTING ALL SUBS
+
+You can use C<-all> to import ALL subs exported by a module.
+
+    use Some::Exporter '-all';
 
 =head1 CUSTOMIZING AN IMPORT METHOD
 

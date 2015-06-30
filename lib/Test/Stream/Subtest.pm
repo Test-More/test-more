@@ -145,7 +145,7 @@ The exported subnames are very verbose, if you are only going to use one it can
 be helpful to alias it to a shorter name.
 
     use Test::Stream;
-    use Test::Stream::Subtest 'subtest_streamed=subtest';
+    use Test::Stream::Subtest subtest_streamed => {-as => 'subtest'};
 
     subtest my_test => sub {
         ok(1, "subtest event A");
@@ -166,7 +166,7 @@ The exported subnames are very verbose, if you are only going to use one it can
 be helpful to alias it to a shorter name.
 
     use Test::Stream;
-    use Test::Stream::Subtest 'subtest_buffered=subtest';
+    use Test::Stream::Subtest subtest_buffered => {-as => 'subtest'};
 
     subtest my_test => sub {
         ok(1, "subtest event A");

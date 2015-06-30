@@ -7,17 +7,16 @@ use Carp qw/croak/;
 
 use Test::Stream::DeepCheck::Util qw/yada render_var/;
 use Test::Stream::Interceptor qw/grab intercept/;
-use Test::Stream::DeepCheck qw{
-    STRUCT
-    build_object
-    call=event_call
-    field=event_field
-    relaxed_compare=events_are
-    array=events
-    end=end_events
-    convert
-    filter=filter_events
-};
+
+use Test::Stream::DeepCheck(
+    qw{ STRUCT build_object convert },
+    call            => {-as => 'event_call'},
+    field           => {-as => 'event_field'},
+    relaxed_compare => {-as => 'events_are'},
+    array           => {-as => 'events'},
+    end             => {-as => 'end_events'},
+    filter          => {-as => 'filter_events'},
+);
 
 use Test::Stream::Exporter;
 default_exports qw{

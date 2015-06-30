@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Change import aliasing syntax to match prior art
+
 1.302008  2015-06-27 15:21:55-07:00 America/Los_Angeles
 
     - Fix 2 bugs with threading on 5.8.x

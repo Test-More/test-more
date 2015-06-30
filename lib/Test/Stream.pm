@@ -14,8 +14,13 @@ use Test::Stream::IPC;
 use Test::Stream::Sync;
 
 use Test::Stream::Context qw/context/;
-use Test::Stream::DeepCheck qw/strict_compare=is_deeply relaxed_compare=mostly_like check/;
 use Test::Stream::Util qw/try/;
+
+use Test::Stream::DeepCheck(
+    qw/check/,
+    strict_compare  => { -as => 'is_deeply'   },
+    relaxed_compare => { -as => 'mostly_like' },
+);
 
 use Test::Stream::Exporter qw/default_exports exports export_to/;
 exports qw/context/;

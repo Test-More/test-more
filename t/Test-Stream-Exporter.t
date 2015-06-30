@@ -71,8 +71,21 @@ my ($error, $return);
 ok( !$return, 'Custom fatal export sub died as expected');
 like( $error, qr/This is a custom sub/, 'Custom fatal export sub died as expected with the right message');
 
-My::Exporter->import(qw/a=aaa/, 'a = xxx');
+My::Exporter->import(a => { -as => 'aaa' }, a => { -as => 'xxx' });
 is(aaa(), 'a', "imported under an alternative name 1");
 is(xxx(), 'a', "imported under an alternative name 2");
+
+{
+    package Temp1;
+    use Test::Stream;
+    My::Exporter->import('-all');
+    can_ok(__PACKAGE__, qw/a b c x/);
+
+    package Temp2;
+    use Test::Stream;
+    My::Exporter->import('-all', c => {-as => 'cc'});
+    can_ok(__PACKAGE__, qw/a b cc x/);
+    ok(!__PACKAGE__->can('c'), "did not import under old name");
+}
 
 done_testing;
