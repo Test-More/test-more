@@ -246,7 +246,7 @@ sub skip {
 }
 
 BEGIN {
-    for my $op (qw/isa can does/) {
+    for my $op (qw/isa can DOES/) {
         my $sub = sub($;@) {
             my ($thing, @items) = @_;
             my $ctx = context();
@@ -279,7 +279,7 @@ BEGIN {
             return !@bad;
         };
         no strict 'refs';
-        *{"${op}_ok"} = $sub;
+        *{lc($op) . "_ok"} = $sub;
     }
 }
 

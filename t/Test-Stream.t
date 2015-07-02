@@ -401,7 +401,7 @@ events_are(
         return 1 if $thing =~ m/x/;
     }
 
-    sub does {
+    sub DOES {
         my $thing = pop;
         return 1 if $thing =~ m/x/;
     }
@@ -420,7 +420,7 @@ events_are(
     events {
         event Ok => { pass => 1, name => 'X->isa(...)' };
         event Ok => { pass => 1, name => 'X->can(...)' };
-        event Ok => { pass => 1, name => 'X->does(...)' };
+        event Ok => { pass => 1, name => 'X->DOES(...)' };
 
         event Ok => sub {
             event_call pass => 0;
@@ -442,8 +442,8 @@ events_are(
             event_call pass => 0;
             event_call diag => [
                 qr/Failed/,
-                "Failed: X->does('foo')",
-                "Failed: X->does('bar')",
+                "Failed: X->DOES('foo')",
+                "Failed: X->DOES('bar')",
             ];
         };
         end_events;
