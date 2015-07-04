@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302009  2015-07-03 21:16:08-07:00 America/Los_Angeles
+
     - Fix MANIFEST.SKIP so tests are not skipped
     - Change import aliasing syntax to match prior art
     - Fix bug in does_ok
