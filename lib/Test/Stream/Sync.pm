@@ -19,6 +19,8 @@ my $IPC     = undef;
 my $STACK   = undef;
 my @HOOKS   = ();
 
+sub hooks { scalar @HOOKS }
+
 sub init_done { $INIT ? 1 : 0 }
 
 sub _init {

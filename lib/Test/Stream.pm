@@ -7,7 +7,7 @@ $Test::Stream::VERSION = '1.302009';
 $VERSION = eval $VERSION;
 
 use Scalar::Util qw/reftype/;
-use Carp qw/croak/;
+use Carp qw/croak confess/;
 
 use Test::Stream::IPC;
 
@@ -45,8 +45,29 @@ sub import {
     my $class  = shift;
     my $caller = caller;
 
-    strict->import();
-    warnings->import();
+    my $meta = Test::Stream::Exporter::Meta->get($class);
+    my %options;
+    my %load;
+    my $last;
+    my @args;
+    while (my $arg = shift @_) {
+        if (ref $arg) {
+            push @{$load{$last}} => @$arg;
+        }
+        elsif ($arg =~ m/^-(.*)/) {
+            $options{$1}++;
+        }
+        elsif ($meta->exports->{$arg}) {
+            push @args => $arg;
+        }
+        else {
+            $last = $arg;
+            $load{$last} ||= [];
+        }
+    }
+
+    strict->import()   unless delete $options{strict};
+    warnings->import() unless delete $options{warnings};
 
     Test::Stream::Sync->add_hook(
         sub {
@@ -67,9 +88,19 @@ sub import {
             $ctx->diag("Did not follow plan: expected $plan, ran $count.")
                 if $plan && $plan =~ m/^\d+$/ && defined $count && $count != $plan;
         }
-    ) unless $ADDED_HOOK++;
+    ) unless delete($options{hook}) || $ADDED_HOOK++;
 
-    $class->export_to($caller, \@_);
+    push @args => keys %options; # Anything left is a tag
+    $class->export_to($caller, \@args);
+
+    for my $postfix (keys %load) {
+        my $module = __PACKAGE__ . "::$postfix";
+        my $file = $module;
+        $file =~ s{::}{/}g;
+        $file .= '.pm';
+        eval { require $file; 1 } || confess $@;
+        Test::Stream::Exporter::export_from($module, $caller, $load{$postfix});
+    }
 }
 
 sub pass {
