@@ -100,6 +100,7 @@ sub release {
 sub DESTROY {
     my ($self) = @_;
 
+    return unless $self->{+HUB};
     my $hid = $self->{+HUB}->hid;
 
     return unless $CONTEXTS{$hid} && $CONTEXTS{$hid} == $self;
