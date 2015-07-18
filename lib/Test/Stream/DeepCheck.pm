@@ -104,10 +104,10 @@ sub convert {
     if ($reft eq 'HASH') {
         return $seen->{$want} if $seen->{$want};
         my $hash = Test::Stream::DeepCheck::Hash->new(debug => $debug);
+        $seen->{$want} = $hash;
         $hash->add_field(
             $_, convert($want->{$_}, $debug, $strict, $seen),
         ) for sort keys %$want;
-        $seen->{$want} = $hash;
         return $hash;
     }
 
