@@ -139,6 +139,7 @@ t/Simple/load.t
 t/skip.t
 t/skipall.t
 t/SmallTest.pm
+t/Stream/Subtest.t
 t/subtest/args.t
 t/subtest/bail_out.t
 t/subtest/basic.t

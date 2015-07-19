@@ -142,9 +142,13 @@ sub child {
     # Clear $TODO for the child.
     my $orig_TODO = $self->find_TODO(undef, 1, undef);
 
+    my $subevents = [];
+
     my $hub = $ctx->stack->new_hub(
         class => 'Test::Stream::Subtest::Hub',
     );
+
+    $hub->listen(sub { push @$subevents => $_[1] });
 
     $hub->set_nested( $parent->isa('Test::Stream::Subtest::Hub') ? $parent->nested + 1 : 1 );
 
@@ -156,6 +160,7 @@ sub child {
     $meta->{TODO_PKG} = $ctx->debug->package;
     $meta->{parent} = $parent;
     $meta->{Test_Results} = [];
+    $meta->{subevents} = $subevents;
 
     $self->_add_ts_hooks;
 
@@ -227,6 +232,7 @@ FAIL
             $parent->ok( 0, sprintf q[No tests run for subtest "%s"], $meta->{Name} );
         }
         else {
+            $parent->{subevents} = $meta->{subevents};
             $parent->ok( $state->is_passing, $meta->{Name} );
         }
     }
@@ -575,12 +581,21 @@ sub ok {
 
     $ctx->{hub}->{_meta}->{+__PACKAGE__}->{Test_Results}[ $ctx->{hub}->{state}->{count} ] = $result;
 
+    my @attrs;
+    my $subevents = delete $self->{subevents};
+    my $epkg = 'Test::Stream::Event::Ok';
+    if ($subevents) {
+        $epkg = 'Test::Stream::Event::Subtest';
+        push @attrs => (subevents => $subevents);
+    }
+
     my $e = bless {
         debug => bless( {%$dbg}, 'Test::Stream::DebugInfo'),
         pass  => $test,
         name  => $name,
         allow_bad_name => 1,
-    }, 'Test::Stream::Event::Ok';
+        @attrs,
+    }, $epkg;
     $e->init;
 
     $ctx->{hub}->send($e);
