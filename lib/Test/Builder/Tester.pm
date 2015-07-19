@@ -1,7 +1,7 @@
 package Test::Builder::Tester;
 
 use strict;
-our $VERSION = "1.302007_001";
+our $VERSION = "1.302007_002";
 
 use Test::Builder 0.99;
 use Symbol;
