@@ -43,7 +43,7 @@ my $ADDED_HOOK = 0;
 
 sub import {
     my $class  = shift;
-    my $caller = caller;
+    my @caller = caller;
 
     my $meta = Test::Stream::Exporter::Meta->get($class);
     my %options;
@@ -52,6 +52,9 @@ sub import {
     my @args;
     while (my $arg = shift @_) {
         if (ref $arg) {
+            croak "Argument to module '$last' must be an arrayref, got: $arg"
+                unless reftype($arg) eq 'ARRAY';
+
             push @{$load{$last}} => @$arg;
         }
         elsif ($arg =~ m/^-(.*)/) {
@@ -62,7 +65,7 @@ sub import {
         }
         else {
             $last = $arg;
-            $load{$last} ||= [];
+            $load{$last} = undef unless exists $load{$last};
         }
     }
 
@@ -91,15 +94,22 @@ sub import {
     ) unless delete($options{hook}) || $ADDED_HOOK++;
 
     push @args => keys %options; # Anything left is a tag
-    $class->export_to($caller, \@args);
+    $class->export_to($caller[0], \@args);
 
     for my $postfix (keys %load) {
         my $module = __PACKAGE__ . "::$postfix";
-        my $file = $module;
-        $file =~ s{::}{/}g;
-        $file .= '.pm';
-        eval { require $file; 1 } || confess $@;
-        Test::Stream::Exporter::export_from($module, $caller, $load{$postfix});
+        my $args = $load{$postfix} ? '@{$load{$postfix}}' : '';
+
+        my $line = __LINE__ + 2;
+        my $run = <<"        EOT";
+#line $caller[2] "$caller[1]"
+package $caller[0];
+require $module;
+$module\->import($args) if $module\->can('import') || \$args;
+1;
+        EOT
+
+        eval $run || confess $@;
     }
 }
 

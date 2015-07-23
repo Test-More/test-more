@@ -5,6 +5,8 @@ use warnings;
 use Carp qw/confess croak/;
 use Scalar::Util qw/blessed reftype/;
 
+$Carp::Internal{(__PACKAGE__)}++;
+
 my (%META);
 
 sub import {
@@ -35,6 +37,8 @@ sub set_$_   { \$_[0]->{'$_'} = \$_[1] }
 
     eval "${eval}1;" || die $@;
 
+    return if $args{no_new};
+
     no strict 'refs';
     *{"$into\::new"} = \&_new;
 }
@@ -44,6 +48,28 @@ sub _new {
     my $self = bless \%params, $class;
     $self->init if $self->can('init');
     $self;
+}
+
+sub gen_accessor {
+    my $class = shift;
+    my ($field) = @_;
+    sub {
+        my $self = shift;
+        ($self->{$field}) = @_ if @_;
+        $self->{$field};
+    };
+}
+
+sub gen_getter {
+    my $class = shift;
+    my ($field) = @_;
+    sub { $_[0]->{$field} };
+}
+
+sub gen_setter {
+    my $class = shift;
+    my ($field) = @_;
+    sub { $_[0]->{$field} = $_[1] };
 }
 
 1;
@@ -231,6 +257,39 @@ You can subclass an existing HashBase class.
 
 The base class is added to C<@ISA> for you, and all constants from base classes
 are added to subclasses automatically.
+
+=head1 UTILITIES
+
+hashbase has a handful of class methods that can be used to generate accessors.
+These methods B<ARE NOT> exported, and are not attached to objects created with
+hashbase.
+
+=over 4
+
+=item $sub = Test::Stream::HashBase->gen_accessor($field)
+
+This generates a coderef that acts as an accessor for the specified field.
+
+=item $sub = Test::Stream::HashBase->gen_getter($field)
+
+This generates a coderef that acts as a getter for the specified field.
+
+=item $sub = Test::Stream::HashBase->get_setter($field)
+
+This generates a coderef that acts as a setter for the specified field.
+
+=back
+
+These all work in the same way, except that getters only get, setters always
+set, and accessors can get and/or set.
+
+    my $sub = Test::Stream::HashBase->gen_accessor('foo');
+    my $foo = $obj->$sub();
+    $obj->$sub('value');
+
+You can also add the sub to your class as a named method:
+
+    *foo = Test::Stream::HashBase->gen_accessor('foo');
 
 =head1 SOURCE
 
