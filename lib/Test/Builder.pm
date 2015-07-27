@@ -45,11 +45,17 @@ Test::Stream::Sync->add_hook(sub {
 sub _add_ts_hooks {
     my $self = shift;
     my $hub = $self->{Stack}->top;
+
+    # Take a reference to the hash key, we do this to avoid closing over $self
+    # which is the singleton. We use a reference because the value could change
+    # in rare cases.
+    my $epkgr = \$self->{Exported_To};
+
     $hub->add_context_init(sub {
         my $ctx = shift;
         return if defined $ctx->{debug}->{todo};
 
-        my $epkg = $self->{Exported_To};
+        my $epkg = $$epkgr;
         my $cpkg = $ctx->{debug}->{frame}->[0];
 
         no strict 'refs';
