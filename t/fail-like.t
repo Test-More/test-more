@@ -73,5 +73,5 @@ OUT
 
 END {
     # Test::More thinks it failed.  Override that.
-    exit(scalar grep { !$_ } $TB->summary);
+    $? = scalar grep { !$_ } $TB->summary;
 }
