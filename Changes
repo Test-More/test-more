@@ -1,3 +1,11 @@
+NEXT
+
+1.302007_003 Mon Jul 24 08:34:46:00 PST 2015
+    * Remove singleton from closure
+
+1.302007_002 Sat Jul 18 17:38:26:00 PST 2015
+    * Fix subtest + Test::Stream::Tester
+
 1.302007_001 Wed Jun 24 08:06:00:00 PST 2015
     * Tests no longer copy thread/fork checks
     * Bump minimum Test::Stream version
