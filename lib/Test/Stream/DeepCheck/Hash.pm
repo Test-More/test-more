@@ -2,323 +2,156 @@ package Test::Stream::DeepCheck::Hash;
 use strict;
 use warnings;
 
-use Scalar::Util qw/reftype/;
-
-use Carp qw/confess/;
-
-use Test::Stream::DeepCheck::Util qw/render_var/;
-use Test::Stream::Util qw/try/;
-
-use Test::Stream::Block;
-
-use Test::Stream::DeepCheck::Meta;
+use Test::Stream::DeepCheck::Result;
+use Test::Stream::DeepCheck::Check;
 use Test::Stream::HashBase(
-    base => 'Test::Stream::DeepCheck::Meta',
-    accessors => [qw/fields ended/],
+    base      => 'Test::Stream::DeepCheck::Check',
+    accessors => [qw/fields order/],
 );
 
+use Test::Stream::DeepCheck qw/stringify convert fail_table/;
+use Scalar::Util qw/reftype/;
+use List::Util qw/max/;
+use Carp qw/croak/;
+
+sub deep { 1 };
+
+sub as_string { "A 'HASH' reference" }
+
 sub init {
-    $_[0]->SUPER::init();
-    $_[0]->{+FIELDS} = [];
+    my $self = shift;
+
+    $self->{+FIELDS} ||= {};
+
+    croak "'fields' must be a hashref"
+        unless reftype($self->{+FIELDS}) eq 'HASH';
+
+    $self->{+ORDER} ||= [sort keys %{$self->{+FIELDS}}];
 }
 
 sub add_field {
     my $self = shift;
-    my ($key, $check) = @_;
+    my ($name, $check) = @_;
 
-    confess "End of fields already set, cannot add more fields"
-        if $self->{+ENDED};
+    croak "field '$name' is already defined"
+        if $self->{+FIELDS}->{$name};
 
-    confess "key is required" unless $key;
-    confess "check is required" unless $check;
+    croak "second argument to add_field must be a hashref of convert() args"
+        unless $check && ref $check && reftype($check) eq 'HASH';
 
-    confess "Check must either be a 'Test::Stream::DeepCheck::Check' or 'Test::Stream::DeepCheck::Meta' object"
-        unless $check->isa('Test::Stream::DeepCheck::Check')
-            || $check->isa('Test::Stream::DeepCheck::Meta');
-
-    push @{$self->{+FIELDS}} => [$key, $check];
-
-    return unless $self->{+_BUILDER} && $check->_builder;
-    return if @{$self->{+FIELDS}} > 1;
-
-    $self->{+DEBUG}->frame->[2] = $check->debug->line - 1
-        if $check->debug->line < $self->{+DEBUG}->line;
+    push @{$self->{+ORDER}} => $name;
+    $self->{+FIELDS}->{$name} = $check;
 }
 
-sub end {
+sub run {
     my $self = shift;
-    my $call = shift || [caller];
+    my ($got, $path, $state) = @_;
 
-    push @{$self->{+FIELDS}} => [$call];
-    $self->{+ENDED} = $call;
+    my @diag;
+    my @summary = (stringify($got), "A 'HASH' reference");
+    my $res = Test::Stream::DeepCheck::Result->new(
+        checks  => [$self],
+        diag    => \@diag,
+        summary => \@summary,
+    );
 
-    return unless $self->{+_BUILDER};
-    return if @{$self->{+FIELDS}} > 1;
+    # Make sure we are looking at a hash
+    my $type = reftype($got) || "";
+    unless ($type eq 'HASH') {
+        @diag = (
+            "     \$got$path: $summary[0]",
+            "\$expected$path: $summary[1]",
+        );
+        return $res->fail;
+    }
 
-    $self->{+DEBUG}->frame->[2] = $call->[2] - 1
-        if $call->[2] < $self->{+DEBUG}->line;
+    my $fail = $self->failures(@_);
+
+    return $res->pass unless @$fail;
+
+    my $msg = "Hash check failure";
+    $msg = "\$var${path}: $msg" if $path;
+    push @diag => $msg;
+
+    # Build our failure diag
+    push @diag => fail_table(
+        id => 'KEY',
+        res => $fail,
+    );
+
+    for my $r (@$fail) {
+        next unless $r->deep;
+        push @diag => "", @{$r->diag};
+    }
+
+    return $res->fail;
 }
 
-sub filter {
+sub failures {
     my $self = shift;
-    my ($code, $call) = @_;
-    $call ||= [caller];
+    my ($got, $path, $state) = @_;
 
-    push @{$self->{+FIELDS}} => [$code];
-
-    return unless $self->{+_BUILDER};
-    return if @{$self->{+FIELDS}} > 1;
-
-    my $block = Test::Stream::Block->new(caller => $call, coderef => $code);
-    my $file = $block->file;
-    return if $file ne $self->{+DEBUG}->frame->[1];
-
-    my $line = $block->start_line;
-    $self->{+DEBUG}->frame->[2] = $line - 1
-        if $line < $self->{+DEBUG}->line;
-}
-
-sub path {
-    my $self = shift;
-    my ($parent_path, $child) = @_;
-
-    $child = render_var($child) unless $child =~ m/, /;
-
-    return "$parent_path\->{$child}";
-}
-
-sub update_diag {
-    my $self = shift;
-    my %params = @_;
-
-    my $state = $params{state};
-    my $check = $params{check};
-    my $key   = $params{key};
-    my $val   = $params{val};
-    my $err   = $params{error};
-
-    my $mdbg = $self->{+DEBUG};
-    my $ourline = [ $mdbg->file, $mdbg->line, '{' ];
-    my $rkey = render_var($key);
-
-    if (!$check || reftype($check) eq 'ARRAY') {
-        my $msg = "Expected no more fields, got $val";
-        my @frame = $check ? ($check->[1], $check->[2]) : ($mdbg->file, $mdbg->line);
-        push @{$state->diag} => [ @frame, $val ];
-        $state->set_check_diag($msg);
-    }
-    elsif ($check->isa('Test::Stream::DeepCheck::Check')) {
-        my $cdiag = $check->diag($val);
-        $state->set_check_diag($cdiag);
-        my $cdbg = $check->debug;
-        push @{$state->diag} => [ $cdbg->file, $cdbg->line, "$rkey: $cdiag" ];
-    }
-    elsif ($check->isa('Test::Stream::DeepCheck::Meta') && !$err) {
-        # Modify the diag it already inserted
-        $state->diag->[-1]->[2] = "$rkey: " . $state->diag->[-1]->[2];
-    }
-
-    push @{$state->diag} => $ourline;
-}
-
-sub verify_hash {
-    my $self = shift;
-    my ($got, $state) = @_;
-
-    if (!$got) {
-        my $mdbg = $self->{+DEBUG};
-        $state->set_check_diag("reftype(undef) eq 'HASH'");
-        push @{$state->diag} => [ $mdbg->file, $mdbg->line, "Expected a 'HASH' reference, but got undef." ];
-        return 0;
-    }
-
-    my $type = reftype($got) || 'NOT A REFERENCE';
-    if ($type ne 'HASH') {
-        my $mdbg = $self->{+DEBUG};
-        $state->set_check_diag("reftype(" . render_var($got) . ") eq 'HASH'");
-        push @{$state->diag} => [ $mdbg->file, $mdbg->line, "Expected a 'HASH' reference, but got '$type'." ];
-        return 0;
-    }
-
+    my $order  = $self->{+ORDER};
     my $fields = $self->{+FIELDS};
 
-    $got = {%$got}; # Clone the hash so we can modify it.
+    my $nest = $path || '->';
 
-    my $end = undef;
-    for my $field (@$fields) {
-        my ($key, $check) = @$field;
+    my %seen;
+    my @keys = grep { !$seen{$_}++ } @$order, sort keys %$got;
 
-        if (ref $key) {
-            if (reftype($key) eq 'ARRAY') {
-                next unless keys %$got;
-                $end = $key;
-                last;
-            }
+    my @fail;
+    for my $key (@keys) {
+        my $exp_e = exists $fields->{$key};
+        my $val_e = exists $got->{$key};
+        my $val = $val_e ? $got->{$key} : undef;
 
-            if (reftype($key) eq 'CODE') {
-                $got = {$key->(%$got)};
-                next;
-            }
+        my $res;
+
+        if ($exp_e && $val_e) {
+            my $exp = convert(%{$fields->{$key}}, state => $state);
+            $res = $exp->check($val, "$nest\{$key}", $state);
+            $res->set_deep(1) if $exp->deep;
+        }
+        elsif($exp_e) { # No value
+            my $check = convert(%{$fields->{$key}}, state => $state);
+            my @summary = ("Does Not Exist", stringify($check));
+            my @diag = (
+                "     \$got$nest\{$key}: $summary[0]",
+                "\$expected$nest\{$key}: $summary[1]",
+            );
+
+            $res = Test::Stream::DeepCheck::Result->new(
+                checks  => [$check],
+                bool    => 0,
+                diag    => \@diag,
+                summary => \@summary,
+            );
+        }
+        else { # Nothing expected
+            next unless $state->strict;
+
+            my @summary = (stringify($val), "Does Not Exist");
+            my @diag = (
+                "     \$got$nest\{$key}: $summary[0]",
+                "\$expected$nest\{$key}: $summary[1]",
+            );
+
+            $res = Test::Stream::DeepCheck::Result->new(
+                checks  => [$self],
+                bool    => 0,
+                diag    => \@diag,
+                summary => \@summary,
+            );
         }
 
-        my $val = delete $got->{$key};
+        next if $res->bool;
 
-        push @{$state->path} => $key;
-
-        my $bool;
-        my ($ok, $err) = try { $bool = $check->verify($val, $state) };
-
-        if ($bool && $ok) {
-            pop @{$state->path};
-            next;
-        }
-
-        $state->set_error($err) unless $ok;
-        $self->update_diag(state => $state, check => $check, key => $key, val => $val, error => $err);
-        return 0;
+        $res->set_id($key);
+        push @fail => $res;
+        $res->push_check($self);
     }
 
-    if (keys(%$got) && ($end || $state->strict)) {
-        my @bad = sort keys %$got;
-        if (@bad > 1) {
-            my $keys = join ", ", map { render_var($_, 1) } sort keys %$got;
-            push @{$state->path} => $keys;
-            $self->update_diag(state => $state, val => $keys);
-        }
-        else {
-            push @{$state->path} => $bad[0];
-            $self->update_diag(state => $state, val => render_var($bad[0], 1));
-        }
-        return 0;
-    }
-
-    return 1;
-}
-
-sub verify {
-    my $self = shift;
-    my ($got, $state) = @_;
-
-    # if it already failed we would not be here
-    # if it already passed returning 1 is fine
-    # if it is recursive then it has been true so far, return true, other
-    # checks will catch any failures. 
-    return 1 if $state->seen->{$self}->{$got}++;
-
-    $self->verify_meta(@_) || return 0;
-
-    push @{$state->path} => $self;
-    $self->verify_hash(@_) || return 0;
-    pop @{$state->path};
-
-    return 1;
+    return \@fail;
 }
 
 1;
-
-__END__
-
-=pod
-
-=encoding UTF-8
-
-=head1 NAME
-
-Test::Stream::DeepCheck::Hash - Class for doing deep hash checks
-
-=head1 EXPERIMENTAL CODE WARNING
-
-B<This is an experimental release!> Test-Stream, and all its components are
-still in an experimental phase. This dist has been released to cpan in order to
-allow testers and early adopters the chance to write experimental new tools
-with it, or to add experimental support for it into old tools.
-
-B<PLEASE DO NOT COMPLETELY CONVERT OLD TOOLS YET>. This experimental release is
-very likely to see a lot of code churn. API's may break at any time.
-Test-Stream should NOT be depended on by any toolchain level tools until the
-experimental phase is over.
-
-=head1 DESCRIPTION
-
-This package represents a deep check of an hash datastructure.
-
-=head1 SUBCLASSES
-
-This class subclasses L<Test::Stream::DeepCheck::Meta>.
-
-=head1 METHODS
-
-=over 4
-
-=item $hash->add_field($key, $check)
-
-Add an element to the hash check. The check should be an instance of
-L<Test::Stream::DeepCheck::Check>.
-
-=item $hash->end
-
-=item $hash->end(\@call)
-
-Mark the end of the hash, no elements should exist beyond this point.
-
-=item $hash->filter(sub { ... })
-
-=item $hash->filter(sub { ... }, \@call)
-
-Add a filter sub that will be used to modify the list of elements left to
-check.
-
-=item $hash->verify_hash($got, $state)
-
-Used to verify an hash against the checks.
-
-=item $hash->verify($got, $state)
-
-Used to verify an hash against the checks and meta-checks.
-
-=item $dbg = $hash->debug
-
-File+Line info for the state. This will be an L<Test::Stream::DebugInfo>
-object.
-
-=item $hash->path($parent, $child)
-
-Used internally, not intended for outside use.
-
-=item $hash->update_diag
-
-Used internally, not intended for outside use.
-
-=back
-
-=head1 SOURCE
-
-The source code repository for Test::Stream can be found at
-F<http://github.com/Test-More/Test-Stream/>.
-
-=head1 MAINTAINERS
-
-=over 4
-
-=item Chad Granum E<lt>exodist@cpan.orgE<gt>
-
-=back
-
-=head1 AUTHORS
-
-=over 4
-
-=item Chad Granum E<lt>exodist@cpan.orgE<gt>
-
-=back
-
-=head1 COPYRIGHT
-
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
-
-This program is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
-
-See F<http://www.perl.com/perl/misc/Artistic.html>
-
-=cut

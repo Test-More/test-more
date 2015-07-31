@@ -3,17 +3,14 @@ use warnings;
 
 use Test::Stream qw/-Tester/;
 
-
-can_ok(__PACKAGE__, qw{
+imported qw{
     grab intercept
     event
-    event_call event_field
-    event_line event_file event_package event_sub event_trace
-    event_todo event_skip
+    ecall efield eprop
     events_are events
     end_events
     filter_events
-});
+};
 
 my $base = __LINE__ + 2;
 my $events = intercept {
@@ -28,14 +25,14 @@ events_are(
     $events,
     events {
         event Ok => sub {
-            event_call pass => 1;
-            event_field effective_pass => 1;
-            event_line $base;
+            ecall pass => 1;
+            efield effective_pass => 1;
+            eprop line => $base;
         };
         event Ok => sub {
-            event_call pass => 0;
-            event_field effective_pass => 0;
-            event_line $base + 1;
+            ecall pass => 0;
+            efield effective_pass => 0;
+            eprop line => $base + 1;
         };
         event Diag => { message => 'foo' };
         event Note => { message => 'bar' };
@@ -50,14 +47,14 @@ events_are(
     events {
         filter_events { grep { $_->isa('Test::Stream::Event::Ok') } @_ };
         event Ok => sub {
-            event_call pass => 1;
-            event_field effective_pass => 1;
-            event_line $base;
+            ecall pass => 1;
+            efield effective_pass => 1;
+            eprop line => $base;
         };
         event Ok => sub {
-            event_call pass => 0;
-            event_field effective_pass => 0;
-            event_line $base + 1;
+            ecall pass => 0;
+            efield effective_pass => 0;
+            eprop line => $base + 1;
         };
         end_events;
     },
@@ -68,15 +65,15 @@ events_are(
     $events,
     events {
         event Ok => sub {
-            event_call pass => 1;
-            event_field effective_pass => 1;
-            event_line $base;
-            event_file __FILE__;
-            event_package __PACKAGE__;
-            event_sub 'Test::Stream::Plugin::More::ok';
-            event_trace 'at ' . __FILE__ . ' line ' . $base;
-            event_skip undef;
-            event_todo undef;
+            ecall pass => 1;
+            efield effective_pass => 1;
+            eprop line => $base;
+            eprop file => __FILE__;
+            eprop package => __PACKAGE__;
+            eprop subname => 'Test::Stream::Plugin::More::ok';
+            eprop trace => 'at ' . __FILE__ . ' line ' . $base;
+            eprop skip => undef;
+            eprop todo => undef;
         };
     },
     "METADATA"
@@ -89,14 +86,14 @@ events_are(
     },
     events {
         event Ok => sub {
-            event_field effective_pass => 1;
-            event_todo 'foo';
-            event_skip undef;
+            efield effective_pass => 1;
+            eprop todo => 'foo';
+            eprop skip => undef;
         };
         event Ok => sub {
-            event_field effective_pass => 1;
-            event_skip 'blah';
-            event_todo undef;
+            efield effective_pass => 1;
+            eprop skip => 'blah';
+            eprop todo => undef;
         };
         end_events;
     },
@@ -117,15 +114,9 @@ events_are(
     },
     events {
         event Ok => sub {
-            event_call pass => 0;
-            event_call diag => [
+            ecall pass => 0;
+            ecall diag => [
                 qr/Failed test 'Inner check'/,
-                qq|Path: \$_->[1]->{'pass'}
-Failed Check: 0 == 1
-$FILE
-111 [
-113   1: {
----     'pass': 0 == 1|,
             ];
         };
         end_events;

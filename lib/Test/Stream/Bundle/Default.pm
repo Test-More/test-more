@@ -8,12 +8,7 @@ sub plugins {
     return (
         sub { strict->import(); warnings->import() },
 
-        qw/IPC TAP ExitSummary More Context Subtest Exception Warnings/,
-
-        DeepCheck => [
-            strict_compare  => {-as => 'is_deeply'},
-            relaxed_compare => {-as => 'mostly_like'},
-        ],
+        qw/IPC TAP ExitSummary More Context Subtest Exception Warnings DeepCheck/,
     );
 }
 

@@ -2,278 +2,204 @@ package Test::Stream::DeepCheck::Object;
 use strict;
 use warnings;
 
-use Scalar::Util qw/blessed/;
-use Carp qw/confess/;
-
-use Test::Stream::DeepCheck::Util qw/render_var/;
-use Test::Stream::Util qw/try/;
-
+use Test::Stream::DeepCheck::Result;
+use Test::Stream::DeepCheck::Check;
 use Test::Stream::DeepCheck::Meta;
+use Test::Stream::DeepCheck::Hash;
+use Test::Stream::DeepCheck::Array;
+
 use Test::Stream::HashBase(
-    base => 'Test::Stream::DeepCheck::Meta',
-    accessors => [qw/methods/],
+    base      => 'Test::Stream::DeepCheck::Check',
+    accessors => [qw/meta refcheck calls/],
 );
 
+use Test::Stream::DeepCheck qw/stringify convert fail_table/;
+use Test::Stream::Util qw/try/;
+use Scalar::Util qw/reftype blessed/;
+use List::Util qw/max/;
+use Carp qw/croak/;
+
+sub deep        { 1 }
+sub error_type  { 'Object' }
+sub as_string   { "An object" }
+sub meta_class  { 'Test::Stream::DeepCheck::Meta' }
+sub object_base { 'UNIVERSAL' }
+
 sub init {
-    $_[0]->SUPER::init();
-    $_[0]->{+METHODS} = [];
+    my $self = shift;
+
+    $self->{+CALLS} ||= [];
+
+    croak "'calls' must be an array reference (got: " . $self->{+CALLS} . ")"
+        unless reftype($self->{+CALLS}) eq 'ARRAY';
 }
 
-sub add_method {
+sub add_item {
     my $self = shift;
-    my %params = @_;
 
-    my $meth  = $params{method};
-    my $check = $params{check};
-    my $args  = $params{args};
-    my $wrap  = $params{wrap};
+    $self->{+REFCHECK} ||= Test::Stream::DeepCheck::Array->new;
 
-    confess "method is required" unless $meth;
-    confess "check is required" unless $check;
+    my $refcheck = $self->{+REFCHECK};
+    croak "Can only add items to objects that are blessed array references"
+        unless $refcheck && $refcheck->isa('Test::Stream::DeepCheck::Array');
 
-    confess "Wrap must be set to '{' or '[', not '$wrap'"
-        if $wrap && $wrap !~ m/^(\[|\{)$/;
-
-    confess "Check must either be a 'Test::Stream::DeepCheck::Check' or 'Test::Stream::DeepCheck::Meta' object"
-        unless $check->isa('Test::Stream::DeepCheck::Check')
-            || $check->isa('Test::Stream::DeepCheck::Meta');
-
-    push @{$self->{+METHODS}} => \%params;
-
-    return unless $self->{+_BUILDER} && $check->_builder;
-    return if @{$self->{+METHODS}} > 1;
-
-    $self->{+DEBUG}->frame->[2] = $check->debug->line - 1
-        if $check->debug->line < $self->{+DEBUG}->line;
+    $refcheck->add_item(@_);
 }
 
-sub path {
+sub add_field {
     my $self = shift;
-    my ($parent_path, $child) = @_;
 
-    my $meth  = $child->{method};
-    my $args  = $child->{args};
-    my $wrap  = $child->{wrap};
+    $self->{+REFCHECK} ||= Test::Stream::DeepCheck::Hash->new(
+        file       => $self->{+FILE},
+        start_line => $self->{+START_LINE},
+        end_line   => $self->{+END_LINE},
+    );
 
-    return render_method($meth, $args, $wrap, $parent_path);
+    my $refcheck = $self->{+REFCHECK};
+    croak "Can only add fields to objects that are blessed hash references"
+        unless $refcheck && $refcheck->isa('Test::Stream::DeepCheck::Hash');
+
+    $refcheck->add_field(@_);
 }
 
-sub verify_object {
+sub add_call {
     my $self = shift;
-    my ($got, $state) = @_;
+    my ($meth, $check, $name) = @_;
 
-    if (!$got) {
-        my $mdbg = $self->{+DEBUG};
-        $state->set_check_diag("blessed(undef)");
-        push @{$state->diag} => [ $mdbg->file, $mdbg->line, "Expected a blessed reference, but got undef." ];
-        return 0;
+    croak "second argument to add_call must be a hashref of convert() args"
+        unless $check && ref $check && reftype($check) eq 'HASH';
+
+    push @{$self->{+CALLS}} => [$meth, $check, $name];
+}
+
+sub add_prop {
+    my $self = shift;
+    $self->{+META} ||= $self->meta_class->new(
+        file       => $self->{+FILE},
+        start_line => $self->{+START_LINE},
+        end_line   => $self->{+END_LINE},
+    );
+    $self->{+META}->add_prop(@_);
+}
+
+sub run {
+    my $self = shift;
+    my ($got, $path, $state) = @_;
+
+    my @diag;
+    my @summary = (stringify($got), $self->as_string);
+    my $res = Test::Stream::DeepCheck::Result->new(
+        checks  => [$self],
+        diag    => \@diag,
+        summary => \@summary,
+    );
+
+    # Make sure we are looking at an object
+    unless (blessed($got) && $got->isa($self->object_base)) {
+        @diag = (
+            "     \$got$path: $summary[0]",
+            "\$expected$path: $summary[1]",
+        );
+        return $res->fail;
     }
 
-    if (!blessed($got)) {
-        my $mdbg = $self->{+DEBUG};
-        $state->set_check_diag("blessed(" . render_var($got) . ")");
-        push @{$state->diag} => [ $mdbg->file, $mdbg->line, "Expected a blessed reference, but got '$got'." ];
-        return 0;
+    my $refcheck = $self->{+REFCHECK};
+    my $meta     = $self->{+META};
+
+    my $ofail = $self->failures(@_);
+    my $rfail = $refcheck ? $refcheck->failures(@_) : [];
+    my $mfail = $meta     ? $meta->failures(@_)     : [];
+
+    if ($refcheck) {
+        my $wrap = $refcheck->isa('Test::Stream::DeepCheck::Hash') ? ['{', '}'] : ['[', ']'];
+        for my $r (@$rfail) {
+            my $id = $r->id;
+            $r->set_id(join "", $wrap->[0], $id, $wrap->[1]);
+        }
+    }
+    if ($meta) {
+        for my $m (@$mfail) {
+            my $id = $m->id;
+            $m->set_id(join "", '<', $id, '>');
+        }
     }
 
-    my $methods = $self->{+METHODS};
+    my $fail = [ @$mfail, @$ofail, @$rfail ];
 
-    for my $set (@$methods) {
-        my $meth  = $set->{method};
-        my $check = $set->{check};
-        my $args  = $set->{args};
-        my $wrap  = $set->{wrap};
+    return $res->pass unless @$fail;
 
-        my $val;
-        if ($wrap) {
-            $val = $wrap eq '{'
-                ? { $got->$meth($args ? @$args : ()) }
-                : [ $got->$meth($args ? @$args : ()) ];
-        }
-        else {
-            $val = $got->$meth($args ? @$args : ());
-        }
+    my $msg = $self->error_type . " check failure";
+    $msg = "\$var${path}: $msg" if $path;
+    push @diag => $msg;
 
-        push @{$state->path} => $set;
+    # Build our failure diag
+    push @diag => fail_table(
+        id => 'check',
+        res => $fail,
+    );
 
-        my $bool;
-        my ($ok, $err) = try { $bool = $check->verify($val, $state) };
-
-        if ($bool && $ok) {
-            pop @{$state->path};
-            next;
-        }
-
-        $state->set_error($err) unless $ok;
-
-        my $mdbg = $self->{+DEBUG};
-        my $ourline = [ $mdbg->file, $mdbg->line, 'bless(' ];
-
-        my $rmeth = render_method($meth, $args, $wrap, '$_');
-
-        if ($check->isa('Test::Stream::DeepCheck::Check')) {
-            my $cdiag = $check->diag($val);
-            $state->set_check_diag($cdiag);
-            my $cdbg = $check->debug;
-            push @{$state->diag} => [ $cdbg->file, $cdbg->line, "$rmeth: $cdiag" ];
-        }
-        elsif ($check->isa('Test::Stream::DeepCheck::Meta')) {
-            # Modify the diag it already inserted
-            $state->diag->[-1]->[2] = "$rmeth: " . $state->diag->[-1]->[2];
-        }
-
-        push @{$state->diag} => $ourline;
-
-        return 0;
+    for my $r (@$fail) {
+        next unless $r->deep;
+        push @diag => "", @{$r->diag};
     }
 
-    return 1;
+    return $res->fail;
 }
 
-sub render_method {
-    my ($meth, $args, $wrap, $inst) = @_;
+sub failures {
+    my $self = shift;
+    my ($got, $path, $state) = @_;
 
-    my $sname;
-    if (ref $meth) {
-        my ($ok) = try { require B };
-        if ($ok) {
-            my $cobj    = B::svref_2object($meth);
-            my $line    = $cobj->START->line;
-            my $subname = $cobj->GV->NAME;
-            my $pkg     = $cobj->GV->STASH->NAME;
-            $subname =~ s/__ANON__$/ANON_SUB_LINE_$line/;
-            $sname = "$pkg\::$subname";
-        }
-        else {
-            $sname = '__ANON__'
-        }
+    my $calls = $self->{+CALLS};
+
+    my ($nest, $point);
+    if ($path) {
+        $nest = '';
+        $point = '->';
     }
     else {
-        $sname = $meth;
+        $nest = '->';
+        $point = '';
     }
 
-    my $rargs = $args ? join(', ', map {render_var($_)} @$args) : '';
-    my $rmeth = (length($rargs) > 40) ? "$sname(...)" : "$sname($rargs)";
+    my @fail;
+    for my $set (@$calls) {
+        my ($meth, $check, $name) = @$set;
+        $name ||= $meth;
 
-    return "$inst\->$rmeth" unless $wrap;
+        my $exp = convert(%$check, state => $state);
+        my $val;
+        my ($ok, $e) = try { $val = $got->$meth };
 
-    my $pair = $wrap eq '{' ? '}' : ']';
-    return "$wrap $inst\->$rmeth $pair";
+        my $res;
+        if (!$ok) {
+            chomp($e);
+            my @summary = (stringify("<EXCEPTION> $e"), stringify($exp));
+            my @diag = (
+                "     \$got$nest$point$name(): $summary[0]",
+                "\$expected$nest$point$name(): $summary[1]",
+            );
+
+            $res = Test::Stream::DeepCheck::Result->new(
+                checks  => [$exp],
+                bool    => 0,
+                diag    => \@diag,
+                summary => \@summary,
+            );
+        }
+        else {
+            $res = $exp->check($val, "$nest$point$name()", $state);
+            $res->set_deep(1) if $exp->deep;
+        }
+
+        next if $res->bool;
+
+        $res->set_id("$name()");
+        push @fail => $res;
+        $res->push_check($self);
+    }
+
+    return \@fail;
 }
-
-sub verify {
-    my $self = shift;
-    my ($got, $state) = @_;
-
-    # if it already failed we would not be here
-    # if it already passed returning 1 is fine
-    # if it is recursive then it has been true so far, return true, other
-    # checks will catch any failures. 
-    return 1 if $state->seen->{$self}->{$got}++;
-
-    $self->verify_meta(@_) || return 0;
-
-    push @{$state->path} => $self;
-    $self->verify_object(@_) || return 0;
-    pop @{$state->path};
-
-    return 1;
-}
-
 
 1;
-
-__END__
-
-=pod
-
-=encoding UTF-8
-
-=head1 NAME
-
-Test::Stream::DeepCheck::Object - Class for doing deep object checks
-
-=head1 EXPERIMENTAL CODE WARNING
-
-B<This is an experimental release!> Test-Stream, and all its components are
-still in an experimental phase. This dist has been released to cpan in order to
-allow testers and early adopters the chance to write experimental new tools
-with it, or to add experimental support for it into old tools.
-
-B<PLEASE DO NOT COMPLETELY CONVERT OLD TOOLS YET>. This experimental release is
-very likely to see a lot of code churn. API's may break at any time.
-Test-Stream should NOT be depended on by any toolchain level tools until the
-experimental phase is over.
-
-=head1 DESCRIPTION
-
-This package represents a deep check of an object datastructure.
-
-=head1 SUBCLASSES
-
-This class subclasses L<Test::Stream::DeepCheck::Meta>.
-
-=head1 METHODS
-
-=over 4
-
-=item $object->add_method(meth => $meth, check => $check, args => \@args, wrap => '[')
-
-=item $object->add_method(meth => $meth, check => $check, args => \@args, wrap => '{')
-
-Add a method check to the object checks.
-
-=item $object->verify_object($got, $state)
-
-Used to verify an object against the checks.
-
-=item $object->verify($got, $state)
-
-Used to verify an object against the checks and meta-checks.
-
-=item $dbg = $object->debug
-
-File+Line info for the state. This will be an L<Test::Stream::DebugInfo>
-object.
-
-=item $object->path($parent, $child)
-
-Used internally, not intended for outside use.
-
-=item $object->render_method
-
-Used internally, not intended for outside use.
-
-=back
-
-=head1 SOURCE
-
-The source code repository for Test::Stream can be found at
-F<http://github.com/Test-More/Test-Stream/>.
-
-=head1 MAINTAINERS
-
-=over 4
-
-=item Chad Granum E<lt>exodist@cpan.orgE<gt>
-
-=back
-
-=head1 AUTHORS
-
-=over 4
-
-=item Chad Granum E<lt>exodist@cpan.orgE<gt>
-
-=back
-
-=head1 COPYRIGHT
-
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
-
-This program is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
-
-See F<http://www.perl.com/perl/misc/Artistic.html>
-
-=cut

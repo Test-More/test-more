@@ -36,6 +36,7 @@ sub intercept(&) {
     $ctx->stack->top; # Make sure there is a top hub before we begin.
     $ctx->stack->push($hub);
     my ($ok, $err) = try {
+        local $ENV{TS_TERM_SIZE} = 80;
         $code->(
             hub => $hub,
             context => $ctx->snapshot,

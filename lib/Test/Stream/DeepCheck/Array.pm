@@ -2,310 +2,185 @@ package Test::Stream::DeepCheck::Array;
 use strict;
 use warnings;
 
-use Scalar::Util qw/reftype/;
-use Carp qw/confess/;
-
-use Test::Stream::DeepCheck::Util qw/render_var/;
-use Test::Stream::Util qw/try/;
-
-use Test::Stream::Block;
-
-use Test::Stream::DeepCheck::Meta;
+use Test::Stream::DeepCheck::Result;
+use Test::Stream::DeepCheck::Check;
 use Test::Stream::HashBase(
-    base => 'Test::Stream::DeepCheck::Meta',
-    accessors => [qw/elements ended/],
+    base      => 'Test::Stream::DeepCheck::Check',
+    accessors => [qw/items strict_end filters/],
 );
 
+use Test::Stream::DeepCheck qw/stringify convert fail_table/;
+use Scalar::Util qw/reftype/;
+use List::Util qw/max/;
+use Carp qw/croak confess/;
+
+sub as_string { "An 'ARRAY' reference" }
+
+sub deep { 1 };
+
 sub init {
-    $_[0]->SUPER::init();
-    $_[0]->{+ELEMENTS} = [];
-}
-
-sub add_element {
     my $self = shift;
-    my ($item) = @_;
 
-    confess "End of array already set, cannot add more elements"
-        if $self->{+ENDED};
+    $self->{+ITEMS} ||= {};
 
-    confess "item is required, and must be a reference"
-        unless $item && ref $item;
-
-    confess "$item is not a supported item"
-        unless $item->isa('Test::Stream::DeepCheck::Check')
-            || $item->isa('Test::Stream::DeepCheck::Meta');
-
-    push @{$self->{+ELEMENTS}} => $item;
-
-    return unless $self->{+_BUILDER} && $item->_builder;
-    return if @{$self->{+ELEMENTS}} > 1;
-
-    $self->{+DEBUG}->frame->[2] = $item->debug->line - 1
-        if  $item->debug->line < $self->{+DEBUG}->line;
+    croak "'items' must be a hashref with integers for keys"
+        unless reftype($self->{+ITEMS}) eq 'HASH';
 }
 
-sub end {
+sub add_filter {
     my $self = shift;
-    my $call = shift || [caller];
+    my ($filter) = @_;
 
-    push @{$self->{+ELEMENTS}} => $call;
-    $self->{+ENDED} = $call;
+    croak "Filters must be code references"
+        unless $filter && ref $filter && reftype $filter eq 'CODE';
 
-    return unless $self->{+_BUILDER};
-    return if @{$self->{+ELEMENTS}} > 1;
+    $self->{+FILTERS} ||= [];
 
-    $self->{+DEBUG}->frame->[2] = $call->[2] - 1
-        if $call->[2] < $self->{+DEBUG}->line;
+    push @{$self->{+FILTERS}} => $filter;
 }
 
-sub filter {
+sub add_item {
     my $self = shift;
-    my ($code, $call) = @_;
-    $call ||= [caller];
 
-    push @{$self->{+ELEMENTS}} => $code;
+    my $items = $self->{+ITEMS};
 
-    return unless $self->{+_BUILDER};
-    return if @{$self->{+ELEMENTS}} > 1;
-
-    my $block = Test::Stream::Block->new(caller => $call, coderef => $code);
-    my $file = $block->file;
-    return if $file ne $self->{+DEBUG}->frame->[1];
-
-    my $line = $block->start_line;
-    $self->{+DEBUG}->frame->[2] = $line - 1
-        if $line < $self->{+DEBUG}->line;
-}
-
-sub path {
-    my $self = shift;
-    my ($parent_path, $child) = @_;
-
-    $child = render_var($child);
-
-    return "$parent_path\->[$child]";
-}
-
-sub update_diag {
-    my $self   = shift;
-    my %params = @_;
-
-    my $state = $params{state};
-    my $idx   = $params{index};
-    my $check = $params{check};
-    my $val   = $params{val};
-    my $err   = $params{error};
-
-    my $mdbg = $self->{+DEBUG};
-    my $ourline = [ $mdbg->file, $mdbg->line, '[' ];
-
-    if (!$check || reftype($check) eq 'ARRAY') {
-        my $msg = "Expected end of array, got " . render_var($val);
-        my @frame = $check ? ($check->[1], $check->[2]) : ($mdbg->file, $mdbg->line);
-        push @{$state->diag} => [ @frame, "$idx: $msg" ];
-        $state->set_check_diag($msg);
+    my ($idx, $check);
+    if (@_ == 1) {
+        $idx = keys %$items ? max(keys %$items) + 1 : 0;
+        ($check) = @_;
     }
-    elsif ($check->isa('Test::Stream::DeepCheck::Check')) {
-        my $cdiag = $check->diag($val);
-        $state->set_check_diag($cdiag);
-        my $cdbg = $check->debug;
-        push @{$state->diag} => [ $cdbg->file, $cdbg->line, "$idx: $cdiag" ];
-    }
-    elsif ($check->isa('Test::Stream::DeepCheck::Meta') && !$err) {
-        # Modify the diag it already inserted
-        $state->diag->[-1]->[2] = "$idx: " . $state->diag->[-1]->[2];
+    else {
+        ($idx, $check) = @_;
     }
 
-    push @{$state->diag} => $ourline;
+    croak "index '$idx' is already defined"
+        if $items->{$idx};
+
+    croak "last/only argument to add_field must be a hashref of convert() args"
+        unless $check && ref $check && reftype($check) eq 'HASH';
+
+    $items->{$idx} = $check;
 }
 
-sub verify_array {
+sub run {
     my $self = shift;
-    my ($got, $state) = @_;
+    my ($got, $path, $state) = @_;
 
-    if (!$got) {
-        my $mdbg = $self->{+DEBUG};
-        $state->set_check_diag("reftype(undef) eq 'ARRAY'");
-        push @{$state->diag} => [ $mdbg->file, $mdbg->line, "Expected an 'ARRAY' reference, but got undef." ];
-        return 0;
+    my @diag;
+    my @summary = (stringify($got), "An 'ARRAY' reference");
+    my $res = Test::Stream::DeepCheck::Result->new(
+        checks  => [$self],
+        diag    => \@diag,
+        summary => \@summary,
+    );
+
+    # Make sure we are looking at an array
+    my $type = reftype($got) || "";
+    unless ($type eq 'ARRAY') {
+        @diag = (
+            "     \$got$path: $summary[0]",
+            "\$expected$path: $summary[1]",
+        );
+        return $res->fail;
     }
 
-    my $type = reftype($got) || 'NOT A REFERENCE';
-    if ($type ne 'ARRAY') {
-        my $mdbg = $self->{+DEBUG};
-        $state->set_check_diag("reftype(" . render_var($got) . ") eq 'ARRAY'");
-        push @{$state->diag} => [ $mdbg->file, $mdbg->line, "Expected an 'ARRAY' reference, but got '$type'." ];
-        return 0;
+    my $fail = $self->failures(@_);
+
+    return $res->pass unless @$fail;
+
+    my $msg = "Array check failure";
+    $msg = "\$var${path}: " if $path;
+    push @diag => $msg;
+
+    # Build our failure diag
+    push @diag => fail_table(
+        id => 'IDX',
+        res => $fail,
+    );
+
+    for my $r (@$fail) {
+        next unless $r->deep;
+        push @diag => "", @{$r->diag};
     }
 
-    my $elements = $self->{+ELEMENTS};
+    return $res->fail;
+}
 
-    $got = [@$got]; # Clone the array so we can modify it.
+sub failures {
+    my $self = shift;
+    my ($got, $path, $state) = @_;
+    my $strict = $state->strict;
 
+    my $strict_end = $self->{+STRICT_END};
 
-    my $idx = -1;
-    my $end = undef;
-    for my $check (@$elements) {
-        if (reftype($check) eq 'ARRAY') {
-            next unless @$got;
-            $end = $check;
-            last;
+    my $nest = $path || '->';
+    my $filters = $self->{+FILTERS};
+    my $items   = $self->{+ITEMS};
+    my $top     = keys %$items;
+
+    my @filtered = @$got;
+    if ($filters) {
+        for my $filter (@$filters) {
+            @filtered = $filter->(@filtered);
+        }
+    }
+
+    my $count = ($strict || $strict_end) ? max($top, scalar @filtered) : $top;
+
+    my @fail;
+    for my $idx (0 .. ($count - 1)) {
+        my $exp_e = exists $items->{$idx};
+        my $val_e = exists $filtered[$idx];
+
+        next unless $strict || $exp_e || $idx >= $top;
+
+        my $res;
+        if ($exp_e && $val_e) {
+            my $exp = convert(%{$items->{$idx}}, state => $state);
+            $res = $exp->check($filtered[$idx], "$nest\[$idx]", $state);
+            $res->set_deep(1) if $exp->deep;
+        }
+        elsif ($val_e) {
+            my @summary = (stringify($filtered[$idx]), "Does Not Exist");
+            my @diag = (
+                "     \$got$nest\[$idx]: $summary[0]",
+                "\$expected$nest\[$idx]: $summary[1]",
+            );
+
+            $res = Test::Stream::DeepCheck::Result->new(
+                checks  => [$self],
+                bool    => 0,
+                diag    => \@diag,
+                summary => \@summary,
+            );
+        }
+        elsif($exp_e) {
+            my $check = convert(%{$items->{$idx}}, state => $state);
+            my @summary = ("Does Not Exist", stringify($check));
+            my @diag = (
+                "     \$got$nest\[$idx]: $summary[0]",
+                "\$expected$nest\[$idx]: $summary[1]",
+            );
+
+            $res = Test::Stream::DeepCheck::Result->new(
+                checks  => [$check],
+                bool    => 0,
+                diag    => \@diag,
+                summary => \@summary,
+            );
+        }
+        else {
+            confess "This should not happen! Please report this as a bug, include the full stack trace.";
         }
 
-        if (reftype($check) eq 'CODE') {
-            $got = [$check->(@$got)];
-            next;
-        }
+        next if $res->bool;
 
-        my $val = shift @$got;
-        push @{$state->path} => ++$idx;
-
-        my $bool;
-        my ($ok, $err) = try { $bool = $check->verify($val, $state) };
-
-        if ($bool && $ok) {
-            pop @{$state->path};
-            next;
-        }
-
-        $state->set_error($err) unless $ok;
-        $self->update_diag(state => $state, index => $idx, check => $check, val => $val, error => $err);
-        return 0;
+        $res->set_id($idx);
+        push @fail => $res;
+        $res->push_check($self);
     }
 
-    if (@$got && ($end || $state->strict)) {
-        push @{$state->path} => ($idx + 1);
-        $self->update_diag(state => $state, index => $idx, check => $end, val => $got->[0]);
-        return 0;
-    }
-
-    return 1;
-}
-
-sub verify {
-    my $self = shift;
-    my ($got, $state) = @_;
-
-    # if it already failed we would not be here
-    # if it already passed returning 1 is fine
-    # if it is recursive then it has been true so far, return true, other
-    # checks will catch any failures.
-    return 1 if $state->seen->{$self}->{$got}++;
-
-    $self->verify_meta(@_) || return 0;
-
-    push @{$state->path} => $self;
-    $self->verify_array(@_) || return 0;
-    pop @{$state->path};
-
-    return 1;
+    return \@fail;
 }
 
 1;
-
-__END__
-
-=pod
-
-=encoding UTF-8
-
-=head1 NAME
-
-Test::Stream::DeepCheck::Array - Class for doing deep array checks
-
-=head1 EXPERIMENTAL CODE WARNING
-
-B<This is an experimental release!> Test-Stream, and all its components are
-still in an experimental phase. This dist has been released to cpan in order to
-allow testers and early adopters the chance to write experimental new tools
-with it, or to add experimental support for it into old tools.
-
-B<PLEASE DO NOT COMPLETELY CONVERT OLD TOOLS YET>. This experimental release is
-very likely to see a lot of code churn. API's may break at any time.
-Test-Stream should NOT be depended on by any toolchain level tools until the
-experimental phase is over.
-
-=head1 DESCRIPTION
-
-This package represents a deep check of an array datastructure.
-
-=head1 SUBCLASSES
-
-This class subclasses L<Test::Stream::DeepCheck::Meta>.
-
-=head1 METHODS
-
-=over 4
-
-=item $array->add_element($check)
-
-Add an element to the array check. The check should be an instance of
-L<Test::Stream::DeepCheck::Check>.
-
-=item $array->end
-
-=item $array->end(\@call)
-
-Mark the end of the array, no elements should exist beyond this point.
-
-=item $array->filter(sub { ... })
-
-=item $array->filter(sub { ... }, \@call)
-
-Add a filter sub that will be used to modify the list of elements left to
-check.
-
-=item $array->verify_array($got, $state)
-
-Used to verify an array against the checks.
-
-=item $array->verify($got, $state)
-
-Used to verify an array against the checks and meta-checks.
-
-=item $dbg = $array->debug
-
-File+Line info for the state. This will be an L<Test::Stream::DebugInfo>
-object.
-
-=item $array->path($parent, $child)
-
-Used internally, not intended for outside use.
-
-=item $array->update_diag
-
-Used internally, not intended for outside use.
-
-=back
-
-=head1 SOURCE
-
-The source code repository for Test::Stream can be found at
-F<http://github.com/Test-More/Test-Stream/>.
-
-=head1 MAINTAINERS
-
-=over 4
-
-=item Chad Granum E<lt>exodist@cpan.orgE<gt>
-
-=back
-
-=head1 AUTHORS
-
-=over 4
-
-=item Chad Granum E<lt>exodist@cpan.orgE<gt>
-
-=back
-
-=head1 COPYRIGHT
-
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
-
-This program is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
-
-See F<http://www.perl.com/perl/misc/Artistic.html>
-
-=cut

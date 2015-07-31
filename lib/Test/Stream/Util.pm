@@ -18,6 +18,8 @@ exports qw{
 
         sig_to_slot slot_to_sig
         parse_symbol
+
+        term_size
 };
 no Test::Stream::Exporter;
 
@@ -157,6 +159,18 @@ sub parse_symbol {
     my $slot = $SIG_TABLE{$sig} || croak "'$sig' is not a supported sigil";
 
     return ($name, $slot);
+}
+
+BEGIN {
+    my $ok = eval 'require Term::ReadKey' && Term::ReadKey->can('GetTerminalSize');
+    *USE_TERM_READKEY = $ok ? sub() { 1 } : sub() { 0 };
+};
+
+sub term_size {
+    return $ENV{TS_TERM_SIZE} if $ENV{TS_TERM_SIZE};
+    return 80 unless USE_TERM_READKEY;
+    my ($total) = Term::ReadKey::GetTerminalSize(*STDOUT);
+    return $total || 80; # It will work most places
 }
 
 1;

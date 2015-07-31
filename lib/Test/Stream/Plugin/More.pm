@@ -14,14 +14,11 @@ use Test::Stream::Util qw{
     parse_symbol
 };
 
-use Test::Stream::DeepCheck qw/check/;
-
 use Test::Stream::Exporter;
 default_exports qw{
     ok pass fail
     is isnt
     like unlike
-    cmp_ok
     diag note
     plan skip_all done_testing
     BAIL_OUT
@@ -30,6 +27,16 @@ default_exports qw{
     imported not_imported
 };
 no Test::Stream::Exporter;
+
+sub stringify {
+    my $val = shift;
+    return 'undef'    unless defined $val;
+    return "'$val'"   unless $val =~ m/"/;
+    return qq{"$val"} unless $val =~ m/'/;
+
+    $val =~ s/'/\\'/g;
+    return "'$val'";
+}
 
 sub pass {
     my ($name) = @_;
@@ -59,11 +66,18 @@ sub is($$;$@) {
     my ($got, $want, $name, @diag) = @_;
     my $ctx = context();
 
-    my $check = check('eq', $want);
-    my $bool = $check->verify($got);
+    my $bool = 0;
+    if (!defined($got) && !defined($want)) {
+        $bool = 1;
+    }
+    elsif(defined($got) && defined($want)) {
+        $bool = $got eq $want;
+    }
 
-    unshift @diag => "Failed check: " . $check->diag($got)
-        unless $bool;
+    unshift @diag => (
+        "     got: " . stringify($got),
+        "expected: " . stringify($want),
+    ) unless $bool;
 
     $ctx->ok($bool, $name, \@diag);
     $ctx->release;
@@ -75,11 +89,21 @@ sub isnt($$;$@) {
     my ($got, $want, $name, @diag) = @_;
     my $ctx = context();
 
-    my $check = check('ne', $want);
-    my $bool = $check->verify($got);
+    my $bool = 0;
+    if (defined($got) xor defined($want)) {
+        $bool = 1;
+    }
+    elsif (defined($got) && defined($want)) {
+        $bool = $got ne $want;
+    }
+    else { # Neither is defined
+        $bool = 0;
+    }
 
-    unshift @diag => "Failed check: " . $check->diag($got)
-        unless $bool;
+    unshift @diag => (
+        "     got: " . stringify($got),
+        "expected: anything else",
+    ) unless $bool;
 
     $ctx->ok($bool, $name, \@diag);
     $ctx->release;
@@ -103,11 +127,23 @@ sub like($$;$@) {
     my ($got, $pattern, $name, @diag) = @_;
     my $ctx = context();
 
-    my $check = check('=~', $pattern);
-    my $bool = $check->verify($got);
+    my $bool;
+    if (!defined($got)) {
+        $bool = 0;
+        unshift @diag => "Got an undefined value.";
+    }
+    if (!defined($pattern)) {
+        $bool = 0;
+        unshift @diag => "Got an undefined pattern.";
+    }
 
-    unshift @diag => "Failed check: " . $check->diag($got)
-        unless $bool;
+    if (!defined $bool) {
+        $bool = $got =~ $pattern;
+        unshift @diag => (
+            "              " . stringify($got),
+            "doesn't match '$pattern'",
+        ) unless $bool;
+    }
 
     $ctx->ok($bool, $name, \@diag);
     $ctx->release;
@@ -119,27 +155,23 @@ sub unlike($$;$@) {
     my ($got, $pattern, $name, @diag) = @_;
     my $ctx = context();
 
-    my $check = check('!~', $pattern);
-    my $bool = $check->verify($got);
+    my $bool;
+    if (!defined($got)) {
+        $bool = 0;
+        unshift @diag => "Got an undefined value.";
+    }
+    if (!defined($pattern)) {
+        $bool = 0;
+        unshift @diag => "Got an undefined pattern.";
+    }
 
-    unshift @diag => "Failed check: " . $check->diag($got)
-        unless $bool;
-
-    $ctx->ok($bool, $name, \@diag);
-    $ctx->release;
-
-    return $bool ? 1 : 0;
-}
-
-sub cmp_ok($$$;$@) {
-    my ($got, $cmp, $want, $name, @diag) = @_;
-    my $ctx = context();
-
-    my $check = check($cmp, $want);
-    my $bool = $check->verify($got);
-
-    unshift @diag => "Failed check: " . $check->diag($got)
-        unless $bool;
+    if (!defined $bool) {
+        $bool = $got !~ $pattern;
+        unshift @diag => (
+            "        " . stringify($got),
+            "matches '$pattern'",
+        ) unless $bool;
+    }
 
     $ctx->ok($bool, $name, \@diag);
     $ctx->release;
@@ -307,7 +339,7 @@ sub not_imported {
 
     my @found = grep { !$missing{$_} } @_;
 
-    $ctx->ok(!@found, "Did not imported symbols", [map { "'$_' was imported." } @found]);
+    $ctx->ok(!@found, "Did not import symbols", [map { "'$_' was imported." } @found]);
 
     $ctx->release;
 
@@ -376,8 +408,6 @@ in existing test files, you may have to update some function calls.
     like($x, qr/xxx/, "Check that $x matches the regex");
 
     unlike($x, qr/xxx/, "Check that $x does not match the regex");
-
-    cmp_ok($a, '==', $b, "Comparison of the specified type");
 
     # Check that the class or object has the specified methods defined.
     can_ok($class_or_obj, @methods);
@@ -480,15 +510,6 @@ Name and diag are optional. Diag is only used if the test fails.
 
 Same as C<like()> except that the check is that the string does not match the
 pattern. The C<!~> operator is used instead of the C<=~> operator.
-
-=item cmp_ok($a, $op, $b)
-
-=item cmp_ok($a, $op, $b, $name)
-
-=item cmp_ok($a, $op, $b, $name, @diag)
-
-Compare 2 variables using the specified comparison operator. Name and diag are
-optional, diag is only used if the check fails.
 
 =item can_ok($thing, @methods)
 
@@ -725,6 +746,27 @@ This method was copied in an API-incompatible way from L<Test::Most>. This
 created an incompatability issue between the 2 libraries and made a real mess
 of things. There is value in a tool like this, but if it is added it will be
 added with a new name to avoid conflicts.
+
+=item API Removed: cmp_ok
+
+It is easy to write:
+
+    ok($got == $want, "$got == $want");
+
+cmp_eq did not buy very much more. There were added diagnostics, and they were
+indeed valuable. The issue is that the implementation for a cmp_ok that accepts
+arbitrary comparison operators is VERY complex. Further there are a great many
+edge cases to account for. Warnings that have to do with uninitialize dor
+improper arguments to the operators also report to internals if not handled
+properly.
+
+All these issues are solvable, but they lead to very complex, slow, and easily
+broken code. I have fixed bugs in the old cmp_ok implementation, and can tell
+you it is a mess. I have also written no less than 3 replacements for cmp_ok,
+all of which proved complex enough that I do not feel it is worth maintaining
+in Test::Stream core.
+
+If you want cmp_ok badly enough you can write a plugin for it.
 
 =back
 

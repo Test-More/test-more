@@ -13,7 +13,7 @@ no Test::Stream::Exporter;
 my $STACK = Test::Stream::Sync->stack;
 
 use Test::Stream::HashBase(
-    accessors => [qw/hub finished _events/],
+    accessors => [qw/hub finished _events term_size/],
 );
 
 sub init {
@@ -37,6 +37,9 @@ sub init {
 
     $STACK->top(); # Make sure there is a top hub before we begin.
     $STACK->push($self->{+HUB});
+
+    $self->{+TERM_SIZE} = $ENV{TS_TERM_SIZE};
+    $ENV{TS_TERM_SIZE} = 80;
 }
 
 sub flush {
@@ -55,6 +58,13 @@ sub events {
 sub finish {
     my ($self) = @_; # Do not shift;
     $_[0] = undef;
+
+    if (defined $self->{+TERM_SIZE}) {
+        $ENV{TS_TERM_SIZE} = $self->{+TERM_SIZE};
+    }
+    else {
+        delete $ENV{TS_TERM_SIZE};
+    }
 
     my $hub = $self->{+HUB};
 

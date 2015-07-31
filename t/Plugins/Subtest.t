@@ -26,9 +26,9 @@ if ($] > 5.020000) {
         events {
             event Note => { message => 'Subtest: foo' };
             event Subtest => sub {
-                event_field pass => 1;
-                event_field name => 'Subtest: foo';
-                event_field subevents => events {
+                efield pass => 1;
+                efield name => 'Subtest: foo';
+                efield subevents => events {
                     event Plan => { directive => 'SKIP', reason => 'because' };
                     end_events;
                 };
@@ -49,16 +49,16 @@ events_are(
     events {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
-            event_field pass => 1;
-            event_field name => 'Subtest: foo';
-            event_field subevents => events {
+            efield pass => 1;
+            efield name => 'Subtest: foo';
+            efield subevents => events {
                 event Subtest => sub {
-                    event_field pass => 1;
-                    event_field name => 'bar';
-                    event_field subevents => events {
+                    efield pass => 1;
+                    efield name => 'bar';
+                    efield subevents => events {
                         event Ok => sub {
-                            event_field name => 'pass';
-                            event_field pass => 1;
+                            efield name => 'pass';
+                            efield pass => 1;
                         };
                     };
                 };
@@ -80,16 +80,16 @@ events_are(
     events {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
-            event_file __FILE__;
-            event_line $lines[0];
-            event_field pass => 1;
-            event_field name => 'Subtest: foo';
-            event_field subevents => events {
+            eprop file => __FILE__;
+            eprop line => $lines[0];
+            efield pass => 1;
+            efield name => 'Subtest: foo';
+            efield subevents => events {
                 event Ok => sub {
-                    event_file __FILE__;
-                    event_line $lines[1];
-                    event_field name => 'pass';
-                    event_field pass => 1;
+                    eprop file => __FILE__;
+                    eprop line => $lines[1];
+                    efield name => 'pass';
+                    efield pass => 1;
                 };
             };
         };
@@ -109,16 +109,16 @@ events_are(
     events {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
-            event_file __FILE__;
-            event_line $lines[0];
-            event_field pass => 0;
-            event_field name => 'Subtest: foo';
-            event_field subevents => events {
+            eprop file => __FILE__;
+            eprop line => $lines[0];
+            efield pass => 0;
+            efield name => 'Subtest: foo';
+            efield subevents => events {
                 event Ok => sub {
-                    event_file __FILE__;
-                    event_line $lines[1];
-                    event_field name => 'fail';
-                    event_field pass => 0;
+                    eprop file => __FILE__;
+                    eprop line => $lines[1];
+                    efield name => 'fail';
+                    efield pass => 0;
                 };
             };
         };
@@ -139,16 +139,16 @@ events_are(
     events {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
-            event_file __FILE__;
-            event_line $lines[0];
-            event_field pass => 1;
-            event_field name => 'Subtest: foo';
-            event_field subevents => events {
+            eprop file => __FILE__;
+            eprop line => $lines[0];
+            efield pass => 1;
+            efield name => 'Subtest: foo';
+            efield subevents => events {
                 event Ok => sub {
-                    event_file __FILE__;
-                    event_line $lines[1];
-                    event_field name => 'pass';
-                    event_field pass => 1;
+                    eprop file => __FILE__;
+                    eprop line => $lines[1];
+                    efield name => 'pass';
+                    efield pass => 1;
                 };
                 event Plan => { max => 1 };
                 end_events;
@@ -171,17 +171,17 @@ events_are(
     events {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
-            event_file __FILE__;
-            event_line $lines[0];
-            event_field pass => 1;
-            event_field name => 'Subtest: foo';
-            event_field subevents => events {
+            eprop file => __FILE__;
+            eprop line => $lines[0];
+            efield pass => 1;
+            efield name => 'Subtest: foo';
+            efield subevents => events {
                 event Plan => { max => 1 };
                 event Ok => sub {
-                    event_file __FILE__;
-                    event_line $lines[1];
-                    event_field name => 'pass';
-                    event_field pass => 1;
+                    eprop file => __FILE__;
+                    eprop line => $lines[1];
+                    efield name => 'pass';
+                    efield pass => 1;
                 };
                 end_events;
             };
@@ -203,11 +203,11 @@ events_are(
     events {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
-            event_file __FILE__;
-            event_line $lines[0];
-            event_field pass => 1;
-            event_field name => 'Subtest: foo';
-            event_field subevents => events {
+            eprop file => __FILE__;
+            eprop line => $lines[0];
+            efield pass => 1;
+            efield name => 'Subtest: foo';
+            efield subevents => events {
                 event Plan => { directive => 'SKIP', reason => 'bleh' };
                 end_events;
             };
@@ -243,16 +243,16 @@ events_are(
     },
     events {
         event Subtest => sub {
-            event_file __FILE__;
-            event_line $lines[0];
-            event_field pass => 1;
-            event_field name => 'foo';
-            event_field subevents => events {
+            eprop file => __FILE__;
+            eprop line => $lines[0];
+            efield pass => 1;
+            efield name => 'foo';
+            efield subevents => events {
                 event Ok => sub {
-                    event_file __FILE__;
-                    event_line $lines[1];
-                    event_field name => 'pass';
-                    event_field pass => 1;
+                    eprop file => __FILE__;
+                    eprop line => $lines[1];
+                    efield name => 'pass';
+                    efield pass => 1;
                 };
             };
         };
@@ -271,16 +271,16 @@ events_are(
     },
     events {
         event Subtest => sub {
-            event_file __FILE__;
-            event_line $lines[0];
-            event_field pass => 0;
-            event_field name => 'foo';
-            event_field subevents => events {
+            eprop file => __FILE__;
+            eprop line => $lines[0];
+            efield pass => 0;
+            efield name => 'foo';
+            efield subevents => events {
                 event Ok => sub {
-                    event_file __FILE__;
-                    event_line $lines[1];
-                    event_field name => 'fail';
-                    event_field pass => 0;
+                    eprop file => __FILE__;
+                    eprop line => $lines[1];
+                    efield name => 'fail';
+                    efield pass => 0;
                 };
             };
         };
@@ -300,16 +300,16 @@ events_are(
     },
     events {
         event Subtest => sub {
-            event_file __FILE__;
-            event_line $lines[0];
-            event_field pass => 1;
-            event_field name => 'foo';
-            event_field subevents => events {
+            eprop file => __FILE__;
+            eprop line => $lines[0];
+            efield pass => 1;
+            efield name => 'foo';
+            efield subevents => events {
                 event Ok => sub {
-                    event_file __FILE__;
-                    event_line $lines[1];
-                    event_field name => 'pass';
-                    event_field pass => 1;
+                    eprop file => __FILE__;
+                    eprop line => $lines[1];
+                    efield name => 'pass';
+                    efield pass => 1;
                 };
                 event Plan => { max => 1 };
                 end_events;
@@ -331,17 +331,17 @@ events_are(
     },
     events {
         event Subtest => sub {
-            event_file __FILE__;
-            event_line $lines[0];
-            event_field pass => 1;
-            event_field name => 'foo';
-            event_field subevents => events {
+            eprop file => __FILE__;
+            eprop line => $lines[0];
+            efield pass => 1;
+            efield name => 'foo';
+            efield subevents => events {
                 event Plan => { max => 1 };
                 event Ok => sub {
-                    event_file __FILE__;
-                    event_line $lines[1];
-                    event_field name => 'pass';
-                    event_field pass => 1;
+                    eprop file => __FILE__;
+                    eprop line => $lines[1];
+                    efield name => 'pass';
+                    efield pass => 1;
                 };
                 end_events;
             };
@@ -362,11 +362,11 @@ events_are(
     },
     events {
         event Subtest => sub {
-            event_file __FILE__;
-            event_line $lines[0];
-            event_field pass => 1;
-            event_field name => 'foo';
-            event_field subevents => events {
+            eprop file => __FILE__;
+            eprop line => $lines[0];
+            efield pass => 1;
+            efield name => 'foo';
+            efield subevents => events {
                 event Plan => { directive => 'SKIP', reason => 'bleh' };
                 end_events;
             };
