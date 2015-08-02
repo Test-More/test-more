@@ -6,7 +6,6 @@ use Test::Stream;
 use Test::Stream::DeepCheck::Check;
 my $CLASS = 'Test::Stream::DeepCheck::Check';
 
-use Test::Stream::Interceptor qw/dies no_warnings/;
 use Test::Stream::DebugInfo;
 
 my $dbg = Test::Stream::DebugInfo->new(frame => []);

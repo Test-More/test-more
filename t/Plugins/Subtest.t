@@ -1,6 +1,6 @@
-use Test::Stream;
-use Test::Stream::Subtest qw/subtest_streamed subtest_buffered/;
-use Test::Stream::Tester;
+use Test::Stream -Tester => (
+    Subtest => [qw/subtest_streamed subtest_buffered/],
+);
 
 use File::Temp qw/tempfile/;
 

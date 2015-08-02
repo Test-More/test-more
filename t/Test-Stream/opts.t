@@ -1,18 +1,4 @@
-use Test::Stream qw/-warnings -strict -hook/;
-use Test::Stream::Interceptor qw/warns dies lives/;
-
-ok( 
-    lives { no warnings; eval "\$x = 'foo'" || die $@ }, 
-    "Strict is not enabled"
-);
-
-ok( !warns { my $x; $x =~ m/foo/ }, "Warnings are not enabled");
-
-BEGIN {
-    ok( !Test::Stream::Sync->hooks, "hook not added");
-}
-
-use Test::Stream;
+use Test::Stream qw/-Default Intercept/;
 like(
     dies {no warnings; eval "\$x = 'foo'" || die $@ },
     qr/"\$x" requires explicit package name/,

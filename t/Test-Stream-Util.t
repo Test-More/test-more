@@ -4,11 +4,11 @@ use warnings;
 use Test::Stream;
 
 use Test::Stream::Util qw{
-    try protect
+    try protect pkg_to_file
 };
 
 can_ok(__PACKAGE__, qw{
-    try protect
+    try protect pkg_to_file
 });
 
 $! = 100;
@@ -25,5 +25,7 @@ ok(!$ok, "cought exception");
 like( $err, qr/xxx/, "expected exception");
 is($@, 'foo', '$@ is saved');
 ok($! == 100, "\$! did not change");
+
+is(pkg_to_file('A::Package::Name'), 'A/Package/Name.pm', "Converted package to file");
 
 done_testing;

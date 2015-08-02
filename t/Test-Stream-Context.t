@@ -1,8 +1,7 @@
 use strict;
 use warnings;
 
-use Test::Stream;
-use Test::Stream::Interceptor qw/dies warns/;
+use Test::Stream '-Tester';
 
 use Test::Stream::Context qw/context release/;
 

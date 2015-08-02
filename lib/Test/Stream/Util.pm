@@ -7,7 +7,18 @@ use Scalar::Util qw/reftype blessed/;
 use Carp qw/croak/;
 
 use Test::Stream::Exporter qw/import export_to exports/;
-exports qw{ try protect get_tid USE_THREADS };
+exports qw{
+        try protect
+
+        get_tid USE_THREADS
+
+        pkg_to_file
+
+        get_stash
+
+        sig_to_slot slot_to_sig
+        parse_symbol
+};
 no Test::Stream::Exporter;
 
 sub _manual_protect(&) {
@@ -111,6 +122,43 @@ BEGIN {
     }
 }
 
+sub pkg_to_file {
+    my $pkg = shift;
+    my $file = $pkg;
+    $file =~ s{::}{/}g;
+    $file .= '.pm';
+    return $file;
+}
+
+sub get_stash {
+    my $pkg = shift;
+    no strict 'refs';
+    return \%{"$pkg\::"};
+}
+
+my %SIG_TABLE = (
+    '&' => 'CODE',
+    '%' => 'HASH',
+    '@' => 'ARRAY',
+    '$' => 'SCALAR',
+    '*' => 'GLOB',
+);
+my %SLOT_TABLE = reverse %SIG_TABLE;
+
+sub sig_to_slot { $SIG_TABLE{$_[0]}  }
+sub slot_to_sig { $SLOT_TABLE{$_[0]} }
+
+sub parse_symbol {
+    my ($sym) = @_;
+
+    return ($sym, 'CODE') unless $sym =~ m/^(\W)(.+)$/;
+    my ($sig, $name) = ($1, $2);
+
+    my $slot = $SIG_TABLE{$sig} || croak "'$sig' is not a supported sigil";
+
+    return ($name, $slot);
+}
+
 1;
 
 __END__
@@ -169,6 +217,33 @@ Returns true if threads are enabled, false if they are not.
 
 This will return the id of the current thread when threads are enabled,
 otherwise it returns 0.
+
+=item my $file = pkg_to_file($package)
+
+Convert a package name to a filename.
+
+=item $stash = get_stash($package)
+
+Returns the stash reference for the given package. The stash reference can be
+treated like a hashref, you can get keys and values from it.
+
+=item $slot = sig_to_slot($sigil)
+
+Given a sigil such as C<$>, C<@>, C<%>, C<&>, C<*>, this will return the GLOB
+slot for that sigil such as C<SCALAR>, C<ARRAY>, C<HASH>, C<CODE>, C<GLOB>.
+
+=item $sigil = slot_to_sig($slot)
+
+Given a a glob slot such as C<SCALAR>, C<ARRAY>, C<HASH>, C<CODE>, C<GLOB>,
+this will return the typical sigil for that slot such as C<$>, C<@>, C<%>,
+C<&>, C<*>.
+
+=item ($name, $type) = parse_symbol($symbol)
+
+When given a symbol name such as C<$foo> or C<@bar> this will return the symbol
+name, and the type name. If no sigil is present in the variable name it will
+assume it is a subroutine and return the C<CODE> type. C<$symbol> should be a
+string containing the name of the symbol with optional sigil.
 
 =back
 

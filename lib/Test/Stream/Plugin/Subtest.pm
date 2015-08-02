@@ -1,17 +1,35 @@
-package Test::Stream::Subtest;
+package Test::Stream::Plugin::Subtest;
 use strict;
 use warnings;
 
-use Test::Stream::Subtest::Hub;
 use Test::Stream::Context qw/context/;
-
-use Test::Stream::Event::Subtest;
-
 use Test::Stream::Util qw/try/;
 
-use Test::Stream::Exporter;
-exports qw/subtest_streamed subtest_buffered/;
-no Test::Stream::Exporter;
+use Test::Stream::Event::Subtest;
+use Test::Stream::Hub::Subtest;
+use Test::Stream::Plugin;
+
+sub load_ts_plugin {
+    my $class = shift;
+    my $caller = shift;
+
+    if (!@_ || (@_ == 1 && $_[0] =~ m/^(streamed|buffered)$/)) {
+        my $name = $1 || $_[0] || 'buffered';
+        no strict 'refs';
+        *{"$caller->[0]\::subtest"} = $class->can("subtest_$name");
+        return;
+    }
+
+    for my $arg (@_) {
+        my $ok = $arg =~ m/^subtest_(streamed|buffered)$/;
+        my $sub = $ok ? $class->can($arg) : undef;
+        die "$class does not export '$arg' at $caller->[1] line $caller->[2].\n"
+            unless $sub;
+
+        no strict 'refs';
+        *{"$caller->[0]\::$arg"} = $sub;
+    }
+}
 
 sub subtest_streamed {
     my ($name, $code, @args) = @_;
@@ -39,11 +57,11 @@ sub _subtest {
     my $parent = $ctx->hub;
 
     my $hub = $ctx->stack->new_hub(
-        class => 'Test::Stream::Subtest::Hub',
+        class => 'Test::Stream::Hub::Subtest',
     );
 
     my @events;
-    $hub->set_nested( $parent->isa('Test::Stream::Subtest::Hub') ? $parent->nested + 1 : 1 );
+    $hub->set_nested( $parent->isa('Test::Stream::Hub::Subtest') ? $parent->nested + 1 : 1 );
     $hub->listen(sub { push @events => $_[1] });
     $hub->format(undef) if $buffered;
 
@@ -110,7 +128,7 @@ __END__
 
 =head1 NAME
 
-Test::Stream::Subtest - Tools for writing subtests
+Test::Stream::Plugin::Subtest - Tools for writing subtests
 
 =head1 EXPERIMENTAL CODE WARNING
 
@@ -128,8 +146,6 @@ experimental phase is over.
 
 This package exports subs that let you write subtests.
 
-=head1 SYNOPSIS
-
 There are 2 types of subtests, buffered and streamed. Streamed subtests mimick
 subtest from L<Test::More> in that they render all events as soon as they are
 produced. Buffered subtests wait until the subtest completes before rendering
@@ -139,13 +155,22 @@ The main difference is that streamed subtests are unreadable when combined with
 concurrency. Buffered subtests look fine with any number of concurrent threads
 and processes.
 
+=head1 SYNOPSIS
+
+    use Test::Stream qw/Subtest/;
+
+    subtest foo => sub {
+        ...
+    };
+
 =head2 STREAMED
 
-The exported subnames are very verbose, if you are only going to use one it can
-be helpful to alias it to a shorter name.
+The default option is 'buffered', use this if you want stramed, the way
+L<Test::Builder> does it.
 
-    use Test::Stream;
-    use Test::Stream::Subtest subtest_streamed => {-as => 'subtest'};
+    # You can use either of the next 2 lines, they are both equivilent
+    use Test::Stream Subtest => ['streamed'];
+    use Test::Stream::Plugin::Subtest qw/subtest/;
 
     subtest my_test => sub {
         ok(1, "subtest event A");
@@ -162,11 +187,9 @@ This will produce output like this:
 
 =head2 BUFFERED
 
-The exported subnames are very verbose, if you are only going to use one it can
-be helpful to alias it to a shorter name.
-
-    use Test::Stream;
-    use Test::Stream::Subtest subtest_buffered => {-as => 'subtest'};
+    # You can use either of the next 2 lines, they are both equivilent
+    use Test::Stream Subtest => ['buffered'];
+    use Test::Stream::Plugin::Subtest qw/buffered/;
 
     subtest my_test => sub {
         ok(1, "subtest event A");
@@ -183,8 +206,7 @@ This will produce output like this:
 
 =head2 BOTH
 
-    use Test::Stream;
-    use Test::Stream::Subtest qw/subtest_streamed subtest_buffered/;
+    use Test::Stream::Plugin::Subtest qw/subtest_streamed subtest_buffered/;
 
     subtest_streamed my_streamed_test => sub {
         ok(1, "subtest event A");

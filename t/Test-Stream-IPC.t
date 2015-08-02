@@ -2,10 +2,14 @@ use strict;
 use warnings;
 
 use Test::Stream::IPC;
+
+my @drivers;
+BEGIN { @drivers = Test::Stream::IPC->drivers };
+
 use Test::Stream;
 
 is_deeply(
-    [Test::Stream::IPC->drivers],
+    \@drivers,
     ['Test::Stream::IPC::Files'],
     "Got default driver"
 );

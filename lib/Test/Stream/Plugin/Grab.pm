@@ -1,10 +1,14 @@
-package Test::Stream::Interceptor::Grab;
+package Test::Stream::Plugin::Grab;
 use strict;
 use warnings;
 
 use Test::Stream::Sync;
 use Test::Stream::DebugInfo;
-use Test::Stream::Interceptor::Hub;
+use Test::Stream::Hub::Interceptor;
+
+use Test::Stream::Exporter;
+default_export grab => sub { __PACKAGE__->new };
+no Test::Stream::Exporter;
 
 my $STACK = Test::Stream::Sync->stack;
 
@@ -21,7 +25,7 @@ sub init {
         $ipc = $driver->new;
     }
 
-    $self->{+HUB} = Test::Stream::Interceptor::Hub->new(
+    $self->{+HUB} = Test::Stream::Hub::Interceptor->new(
         ipc => $ipc,
         no_ending => 1,
     );
@@ -83,8 +87,7 @@ __END__
 
 =head1 NAME
 
-Test::Stream::Interceptor::Grab - Object used to temporarily intercept all
-events.
+Test::Stream::Plugin::Grab - Object used to temporarily intercept all events.
 
 =head1 EXPERIMENTAL CODE WARNING
 
@@ -106,10 +109,9 @@ again be sent to the shared hub.
 
 =head1 SYNOPSIS
 
-    use Test::Stream;
-    use Test::Stream::Tester::Grab;
+    use Test::Stream qw/-Default Grab/;
 
-    my $grab = Test::Stream::Tester::Grab->new();
+    my $grab = grab();
 
     # Generate some events, they are intercepted.
     ok(1, "pass");
@@ -127,6 +129,46 @@ again be sent to the shared hub.
 After calling C<finish()> the grab object is destroyed and C<$grab> is set to
 undef. C<$events_a> is an arrayref with the first 2 events. C<$events_b> is an
 arrayref with the second 2 events.
+
+=head1 EXPORTS
+
+=item $grab = grab()
+
+This lets you intercept all events for a section of code without adding
+anything to your call stack. This is useful for things that are sensitive to
+changes in the stack depth.
+
+    my $grab = grab();
+        ok(1, 'foo');
+        ok(0, 'bar');
+
+    # $grab is magically undef after this.
+    my $events = $grab->finish;
+
+    is(@$events, 2, "grabbed 2 events.");
+
+When you call C<finish()> the C<$grab> object will automagically undef itself,
+but only for the reference used in the method call. If you have other
+references to the C<$grab> object they will not be undef'd.
+
+If the C<$grab> object is destroyed without calling C<finish()>, it will
+automatically clean up after itself and restore the parent hub.
+
+    {
+        my $grab = grab();
+        # Things are grabbed
+    }
+    # Things are back to normal
+
+By default the hub used has C<no_ending> set to true. This will prevent the hub
+from enforcing that you issued a plan and ran at least 1 test. You can turn
+enforcement back one like this:
+
+    $grab->hub->set_no_ending(0);
+
+With C<no_ending> turned off, C<finish> will run the post-test checks to
+enforce the plan and that tests were run. In many cases this will result in
+additional events in your events array.
 
 =head1 METHODS
 
@@ -166,6 +208,11 @@ enforcement back one like this:
 With C<no_ending> turned off, C<finish> will run the post-test checks to
 enforce the plan and that tests were run. In many cases this will result in
 additional events in your events array.
+
+=head1 SEE ALSO
+
+L<Test::Stream::Plugin::Intercept> - Accomplish the same thing, but using
+blocks instead.
 
 =head1 SOURCE
 

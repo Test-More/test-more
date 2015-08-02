@@ -1,4 +1,4 @@
-package Test::Stream::Tester;
+package Test::Stream::Plugin::Tester;
 use strict;
 use warnings;
 
@@ -6,7 +6,6 @@ use Scalar::Util qw/reftype/;
 use Carp qw/croak/;
 
 use Test::Stream::DeepCheck::Util qw/yada render_var/;
-use Test::Stream::Interceptor qw/grab intercept/;
 
 use Test::Stream::DeepCheck(
     qw{ STRUCT build_object convert },
@@ -20,7 +19,6 @@ use Test::Stream::DeepCheck(
 
 use Test::Stream::Exporter;
 default_exports qw{
-    grab intercept
     event
     event_call event_field
     event_line event_file event_package event_sub event_trace
@@ -330,7 +328,7 @@ __END__
 
 =head1 NAME
 
-Test::Stream::Tester - Tools for validating testing tools.
+Test::Stream::Plugin::Tester - Tools for validating testing tools.
 
 =head1 EXPERIMENTAL CODE WARNING
 
@@ -352,8 +350,9 @@ you should use to test it.
 
 =head1 SYNOPSIS
 
-    use Test::Stream;
-    use Test::Stream::Tester;
+    # Load the Tester plugin, also loads Intercept and More since we need them
+    # as well.
+    use Test::Stream qw/Tester Intercept More/;
 
     events_are(
         intercept {
@@ -383,6 +382,11 @@ you should use to test it.
         "Basic check of events"
     );
 
+=head1 CAPTURING EVENTS
+
+See the L<Test::Stream::Plugin::Intercept> and L<Test::Stream::Plugin::Grab>
+plugins for tools that let you intercept events.
+
 =head1 EXPORTS
 
 All subs are exported by default. If you provide a list then only the listed
@@ -401,88 +405,6 @@ C<events_are()> compares the events provided in the first argument against the
 event checks in the second argument. The second argument may be a an arrayref
 with hashrefs to define the events, or it can use a check constructed to
 provide extra debugging details.
-
-=back
-
-=head2 CAPTURING EVENTS
-
-Both of these are re-exported from L<Test::Stream::Interceptor>.
-
-=over 4
-
-=item $events = intercept { ... }
-
-This lets you intercept all events inside the codeblock. All the events will be
-returned in an arrayref.
-
-    my $events = intercept {
-        ok(1, 'foo');
-        ok(0, 'bar');
-    };
-    is(@$events, 2, "intercepted 2 events.");
-
-There are also 2 named parameters passed in, C<context> and C<hub>. The
-C<context> passed in is a snapshot of the context for the C<intercept()> tool
-itself, referencing the parent hub. The C<hub> parameter is the new hub created
-for the C<intercept> run.
-
-    my $events = intercept {
-        my %params = @_;
-
-        my $outer_ctx = $params{context};
-        my $our_hub   = $params{hub};
-
-        ...
-    };
-
-By default the hub used has C<no_ending> set to true. This will prevent the hub
-from enforcing that you issued a plan and ran at least 1 test. You can turn
-enforcement back one like this:
-
-    my %params = @_;
-    $params{hub}->set_no_ending(0);
-
-With C<no_ending> turned off, C<$hub->finalize()> will run the post-test checks
-to enforce the plan and that tests were run. In many cases this will result in
-additional events in your events array.
-
-=item $grab = grab()
-
-This lets you intercept all events for a section of code without adding
-anything to your call stack. This is useful for things that are sensitive to
-changes in the stack depth.
-
-    my $grab = grab();
-        ok(1, 'foo');
-        ok(0, 'bar');
-
-    # $grab is magically undef after this.
-    my $events = $grab->finish;
-
-    is(@$events, 2, "grabbed 2 events.");
-
-When you call C<finish()> the C<$grab> object will automagically undef itself,
-but only for the reference used in the method call. If you have other
-references to the C<$grab> object they will not be undef'd.
-
-If the C<$grab> object is destroyed without calling C<finish()>, it will
-automatically clean up after itself and restore the parent hub.
-
-    {
-        my $grab = grab();
-        # Things are grabbed
-    }
-    # Things are back to normal
-
-By default the hub used has C<no_ending> set to true. This will prevent the hub
-from enforcing that you issued a plan and ran at least 1 test. You can turn
-enforcement back one like this:
-
-    $grab->hub->set_no_ending(0);
-
-With C<no_ending> turned off, C<finish> will run the post-test checks to
-enforce the plan and that tests were run. In many cases this will result in
-additional events in your events array.
 
 =back
 

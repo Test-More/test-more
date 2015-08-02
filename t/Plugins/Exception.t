@@ -1,11 +1,7 @@
 use strict;
 use warnings;
 
-use Test::Stream;
-use Test::Stream::Context qw/context/;
-use Test::Stream::Interceptor qw{
-    intercept dies warning warns lives no_warnings grab
-};
+use Test::Stream '-Tester';
 
 can_ok(
     __PACKAGE__,

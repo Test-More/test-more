@@ -1,6 +1,5 @@
 use Test::Stream;
 use Test::Stream::Stack;
-use Test::Stream::Interceptor qw/lives dies/;
 
 ok(my $stack = Test::Stream::Stack->new, "Create a stack");
 isa_ok($stack, 'Test::Stream::Stack');

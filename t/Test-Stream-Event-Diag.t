@@ -1,6 +1,4 @@
 use Test::Stream;
-use strict;
-use warnings;
 
 use Test::Stream::Event::Diag;
 use Test::Stream::DebugInfo;

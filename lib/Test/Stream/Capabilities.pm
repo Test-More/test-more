@@ -3,13 +3,14 @@ use strict;
 use warnings;
 
 use Config;
+use Carp qw/croak/;
 
 sub import {
     my $class = shift;
     my $caller = caller;
 
     for my $check (@_) {
-        die "'$check' is not a known capability"
+        croak "'$check' is not a known capability"
             unless $check =~ m/^CAN_/ && $class->can("$check");
 
         my $const = get_const($check);

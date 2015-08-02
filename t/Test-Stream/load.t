@@ -1,11 +1,5 @@
-use Test::Stream(
-    'Subtest' => [subtest_buffered => {-as => 'subtest'}],
-    'Interceptor' => [qw/dies/],
-    'Tester',
-);
+use Test::Stream '-Tester';
 
-# Make sure we imported some defaults from Tester, and also our renamed subtest
-# sub.
 can_ok(__PACKAGE__, qw/subtest grab intercept/);
 
 like(

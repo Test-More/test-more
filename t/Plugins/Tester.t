@@ -1,8 +1,8 @@
 use strict;
 use warnings;
 
-use Test::Stream;
-use Test::Stream::Tester;
+use Test::Stream qw/-Tester/;
+
 
 can_ok(__PACKAGE__, qw{
     grab intercept
@@ -73,7 +73,7 @@ events_are(
             event_line $base;
             event_file __FILE__;
             event_package __PACKAGE__;
-            event_sub 'Test::Stream::ok';
+            event_sub 'Test::Stream::Plugin::More::ok';
             event_trace 'at ' . __FILE__ . ' line ' . $base;
             event_skip undef;
             event_todo undef;

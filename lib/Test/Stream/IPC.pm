@@ -5,7 +5,23 @@ use warnings;
 use Config;
 use Carp qw/confess carp longmess/;
 
+use Test::Stream::HashBase(
+    accessors => [qw/no_fatal/],
+);
+
+sub import {
+    my $class = shift;
+    return if $class eq __PACKAGE__;
+    $class->register_drivers($class);
+}
+
 my @DRIVERS;
+*register_driver = \&register_drivers;
+sub register_drivers {
+    my $class = shift;
+    my %seen = map {($_ => 1)} @DRIVERS;
+    push @DRIVERS => grep { !$seen{$_} } @_;
+}
 
 sub drivers {
     unless(@DRIVERS) {
@@ -17,37 +33,24 @@ sub drivers {
     return @DRIVERS;
 }
 
-my $NO_FATAL = 0;
-my $POLLING = 0;
-sub import {
+sub init {
     my $class = shift;
-    my %params = map {$_ => 1} @_;
 
-    push @DRIVERS => $class
-        if $class ne __PACKAGE__
-        && $class->is_viable;
-
-    $NO_FATAL++ if delete $params{no_fatal};
-
-    if (delete $params{poll} && !$POLLING++) {
-        require Test::Stream::Context;
-        Test::Stream::Context->ON_INIT(sub { $_[0]->hub->cull });
+    for my $driver ($class->drivers) {
+        next unless $driver->is_viable;
+        my $ipc = $driver->new || next;
+        return $ipc;
     }
 
-    if (delete $params{cull}) {
-        require Test::Stream::Context;
-        my $caller = caller;
-        no strict 'refs';
-        *{"$caller\::cull"} = sub {
-            my $ctx = Test::Stream::Context::context();
-            $ctx->hub->cull;
-            $ctx->release;
-        };
-    }
+    die "Could not find a viable IPC driver! Aborting...\n";
+}
 
-    if (my @bad = keys %params) {
-        carp "Invalid parameters: " . join ', ', map { "'$_'" } @bad;
-    }
+my $POLLING = 0;
+sub polling_enabled { $POLLING }
+sub enable_polling {
+    return if $POLLING++;
+    require Test::Stream::Context;
+    Test::Stream::Context->ON_INIT(sub { $_[0]->hub->cull });
 }
 
 for my $meth (qw/send cull add_hub drop_hub waiting is_viable/) {
@@ -64,17 +67,17 @@ for my $meth (qw/send cull add_hub drop_hub waiting is_viable/) {
 # to inform the parent may be to exit false.
 
 sub abort {
-    my $class = shift;
+    my $self = shift;
     chomp(my ($msg) = @_);
     print STDERR "IPC Fatal Error: $msg\n";
-    CORE::exit(255) unless $NO_FATAL;
+    CORE::exit(255) unless $self->no_fatal;
 }
 
 sub abort_trace {
-    my $class = shift;
+    my $self = shift;
     chomp(my ($msg) = @_);
     print STDERR "IPC Fatal Error: $msg\n";
-    $class->abort(longmess($msg));
+    $self->abort(longmess($msg));
 }
 
 
@@ -88,7 +91,7 @@ __END__
 
 =head1 NAME
 
-Test::Stream::IPC - Enable concurrency in Test::Stream.
+Test::Stream::IPC - Base class for Test::Stream IPC drivers.
 
 =head1 EXPERIMENTAL CODE WARNING
 
@@ -104,11 +107,9 @@ experimental phase is over.
 
 =head1 SYNOPSIS
 
-    use Test::Stream::IPC qw/poll cull/;
+    package Test::Stream::IPC::MyDriver;
 
-    ...
-
-    cull();
+    use base 'Test::Stream::IPC';
 
     ...
 
@@ -116,38 +117,32 @@ experimental phase is over.
 
 =over 4
 
-=item $class->import
-
-=item $subclass->import
-
-=item $class_or_subclass->import('cull', 'poll', 'no_fatal')
-
-This is called whenever you load this module, or any IPC driver. If called on
-an IPC driver it will add that driver to the list of available drivers.
-
-All arguments are optional. All arguments should work just fine when provided
-to drivers instead of Test::Stream::IPC itself.
-
-The C<'cull'> argument will cause the C<cull()> function to be exported to your
-namespace. This function will find the current hub and cull all IPC events that
-are waiting.
-
-The C<'poll'> argument will add a global init hook for L<Test::Stream::Context>
-objects that will cull all events for a hub when a context is obtained. Use
-this if you want events to come in frequently without calling C<cull()>
-yourself all over the place.
-
-The C<'no_fatal'> argument will cause fatal IPC errors to be warnings instead
-of forcing an exit. This argument exists solely for some legacy Test::Builder
-based tools that do naughty things.
-
 =item @drivers = $class->drivers
 
-Obtain the list of drivers that have been loaded, in the order they were
-loaded. If no driver has been loaded this will load and return
+Obtain the list of drivers that have been registered, in the order they were
+registered. If no driver has been loaded this will load, register, and return
 L<Test::Stream::IPC::Files>.
 
-=item $class->abort($msg)
+=item $class->register_driver($DRIVER)
+
+This is an alias to C<register_driver>
+
+=item $class->register_drivers($DRIVER1, $DRIVER2)
+
+Use this to register an IPC driver. The driver shoudl already be loaded.
+
+=item $class->enable_polling
+
+This turns on IPC polling. Essentially this adds a global callback on context
+initialization. Every time a context is obtained from L<Test::Stream::Context>
+the IPC driver will have a chance to poll for pending events.
+
+This can only be turned on once, and it can not be turned off. The effects are
+global.
+
+=head1 INSTANCE METHODS
+
+=item $self->abort($msg)
 
 If an IPC encounters a fatal error it should use this. This will print the
 message to STDERR with C<'IPC Fatal Error: '> prefixed to it, then it will
@@ -155,7 +150,7 @@ forcefully exit 255. IPC errors may occur in threads or processes other than
 the main one, this method provides the best chance of the harness noticing the
 error.
 
-=item $class->abort_trace($msg)
+=item $self->abort_trace($msg)
 
 This is the same as C<< $ipc->abort($msg) >> except that it uses
 C<Carp::longmess> to add a stack trace to the message.
@@ -176,7 +171,7 @@ load it too late for it to be effective.
 
 =head1 WRITING DRIVERS
 
-    package My::IPC::Driver;
+    package Test::Stream::IPC::MyDriver;
     use strict;
     use warnings;
 
@@ -233,7 +228,7 @@ load it too late for it to be effective.
 =item $ipc->is_viable
 
 This should return true if the driver works in the current environment. This
-should return false if it does not.
+should return false if it does not. This is a CLASS method.
 
 =item $ipc->add_hub($hid)
 

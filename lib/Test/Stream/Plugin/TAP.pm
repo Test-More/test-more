@@ -1,15 +1,14 @@
-package Test::Stream::Interceptor::Hub;
+package Test::Stream::Plugin::TAP;
 use strict;
 use warnings;
 
-use Test::Stream::Interceptor::Terminator;
+use Test::Stream::Sync;
+use Test::Stream::TAP;
+use Test::Stream::Plugin;
 
-use base 'Test::Stream::Hub';
-
-sub terminate {
-    my $self = shift;
-    my ($code) = @_;
-    die bless(\$code, 'Test::Stream::Interceptor::Terminator');
+sub load_ts_plugin {
+    return if Test::Stream::Sync->init_done;
+    Test::Stream::Sync->set_formatter('Test::Stream::TAP');
 }
 
 1;
@@ -22,7 +21,7 @@ __END__
 
 =head1 NAME
 
-Test::Stream::Interceptor::Hub - Hub used by interceptor to grab results.
+Test::Stream::Plugin::TAP - Plugin to set TAP as the default output formatter.
 
 =head1 EXPERIMENTAL CODE WARNING
 
@@ -35,6 +34,18 @@ B<PLEASE DO NOT COMPLETELY CONVERT OLD TOOLS YET>. This experimental release is
 very likely to see a lot of code churn. API's may break at any time.
 Test-Stream should NOT be depended on by any toolchain level tools until the
 experimental phase is over.
+
+=head1 DESCRIPTION
+
+L<Test::Stream> does not force you to use TAP output the way L<Test::Builder>
+based tools do. However TAP is what most people do want. This plugin makes it
+easy to provide TAP output.
+
+=head1 SYNOPSIS
+
+    use Test::Stream qw/Tap/;
+
+    ...
 
 =head1 SOURCE
 

@@ -1,6 +1,4 @@
-use Test::Stream;
-use Test::Stream::Tester;
-use Test::Stream::Interceptor qw/warns dies/;
+use Test::Stream qw/-Tester/;
 
 can_ok( __PACKAGE__, qw{
     ok pass fail
@@ -13,12 +11,8 @@ can_ok( __PACKAGE__, qw{
     plan skip_all done_testing
     BAIL_OUT
     todo skip
-    can_ok isa_ok does_ok ref_ok
+    can_ok isa_ok DOES_ok ref_ok
 });
-
-ok(!__PACKAGE__->can('context'), "context not exported by default");
-Test::Stream->import('context');
-can_ok(__PACKAGE__, qw/context/);
 
 like(
     dies {eval "\$x = 'foo'" || die $@ },
@@ -49,7 +43,7 @@ events_are(
             event_file    __FILE__;
             event_package __PACKAGE__;
             event_line    $lines[0];
-            event_sub     'Test::Stream::pass';
+            event_sub     'Test::Stream::Plugin::More::pass';
         };
         event Ok => sub {
             event_call pass => 0;
@@ -59,7 +53,7 @@ events_are(
             event_file    __FILE__;
             event_package __PACKAGE__;
             event_line    $lines[1];
-            event_sub     'Test::Stream::fail';
+            event_sub     'Test::Stream::Plugin::More::fail';
         };
         event Ok => sub {
             event_call pass => 0;
@@ -69,7 +63,7 @@ events_are(
             event_file    __FILE__;
             event_package __PACKAGE__;
             event_line    $lines[2];
-            event_sub     'Test::Stream::fail';
+            event_sub     'Test::Stream::Plugin::More::fail';
         };
         end_events;
     },
@@ -411,11 +405,11 @@ events_are(
     intercept {
         isa_ok('X', qw/axe box fox/);
         can_ok('X', qw/axe box fox/);
-        does_ok('X', qw/axe box fox/);
+        DOES_ok('X', qw/axe box fox/);
 
         isa_ok('X',  qw/foo bar axe box/);
         can_ok('X',  qw/foo bar axe box/);
-        does_ok('X', qw/foo bar axe box/);
+        DOES_ok('X', qw/foo bar axe box/);
     },
     events {
         event Ok => { pass => 1, name => 'X->isa(...)' };
@@ -448,7 +442,7 @@ events_are(
         };
         end_events;
     },
-    "'can/isa/does_ok' events"
+    "'can/isa/DOES_ok' events"
 );
 
 events_are(

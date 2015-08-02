@@ -1,15 +1,16 @@
-package Test::CanThread;
+package Test::Stream::Plugin::CanFork;
 use strict;
 use warnings;
 
-use Test::Stream::Capabilities qw/CAN_THREAD/;
+use Test::Stream::Capabilities qw/CAN_FORK/;
 
-sub import {
-    return if CAN_THREAD;
+use Test::Stream::Plugin;
 
+sub load_ts_plugin {
+    return if CAN_FORK;
     require Test::Stream::Context;
     my $ctx = Test::Stream::Context::context();
-    $ctx->plan(0, "SKIP", "This test requires a perl capable of threading.");
+    $ctx->plan(0, "SKIP", "This test requires a perl capable of forking.");
     $ctx->release;
     exit 0;
 }
@@ -24,7 +25,8 @@ __END__
 
 =head1 NAME
 
-Test::CanThread - Skip a test file unless the system supports threading
+Test::Stream::Plugin::CanFork - Skip a test file unless the system supports
+forking
 
 =head1 EXPERIMENTAL CODE WARNING
 
@@ -40,25 +42,30 @@ experimental phase is over.
 
 =head1 DESCRIPTION
 
-It is fairly common to write tests that need to use threads. Not all systems
-support threads. This library does the hard work of checking if threading is
-supported on the current system. If threading is not supported then this will
-skip all tests and exit true.
+It is fairly common to write tests that need to fork. Not all systems support
+forking. This library does the hard work of checking if forking is supported on
+the current system. If forking is not supported then this will skip all tests
+and exit true.
 
 =head1 SYNOPSIS
 
-    use Test::CanThread;
+    use Test::Stream::Plugin::CanFork;
 
-    ... Code that uses threads ...
+    ... Code that forks ...
 
 =head1 EXPLANATION
 
-Checking if the current system supports threading is not simple, here is an
+Checking if the current system supports forking is not simple, here is an
 example of how to do it:
 
     use Config;
 
-    sub CAN_THREAD {
+    sub CAN_FORK {
+        return 1 if $Config{d_fork};
+        return 0 unless $^O eq 'MSWin32' || $^O eq 'NetWare';
+        return 0 unless $Config{useithreads};
+        return 0 unless $Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/;
+
         # Threads are not reliable before 5.008001
         return 0 unless $] >= 5.008001;
         return 0 unless $Config{'useithreads'};
@@ -68,21 +75,21 @@ example of how to do it:
         return 1;
     }
 
-Duplicating this non-trivial code in all tests that need to use threafs is
-dumb. It is easy to forget bits, or get it wrong. On top of these checks you
-also need to tell the harness that no tests should run and why.
+Duplicating this non-trivial code in all tests that need to fork is dumb. It is
+easy to forget bits, or get it wrong. On top of these checks you also need to
+tell the harness that no tests should run and why.
 
 =head1 SEE ALSO
 
 =over 4
 
-=item L<Test::CanFork>
+=item L<Test::Stream::Plugin::CanThread>
 
-Skip the test file if the system does not support forking.
+Skip the test file if the system does not support threads.
 
 =item L<Test::Stream>
 
-Test::CanThread uses L<Test::Stream> under the hood.
+Test::Stream::Plugin::CanFork uses L<Test::Stream> under the hood.
 
 =back
 

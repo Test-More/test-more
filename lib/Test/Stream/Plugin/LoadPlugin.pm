@@ -1,27 +1,14 @@
-package Test::Stream::Subtest::Hub;
+package Test::Stream::Plugin::LoadPlugin;
 use strict;
 use warnings;
 
-use Test::Stream::Hub;
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Hub',
-    accessors => [qw/nested bailed_out exit_code/],
-);
+use Test::Stream::Exporter;
+default_exports qw/load_plugin/;
+no Test::Stream::Exporter;
 
-sub process {
-    my $self = shift;
-    my ($e) = @_;
-    $e->set_nested($self->nested);
-    $self->set_bailed_out($e) if $e->isa('Test::Stream::Event::Bail');
-    $self->SUPER::process($e);
-}
-
-sub terminate {
-    my $self = shift;
-    my ($code) = @_;
-    $self->set_exit_code($code);
-    no warnings 'exiting';
-    last TS_SUBTEST_WRAPPER;
+sub load_plugin {
+    my @caller = caller;
+    Test::Stream->load(\@caller, @_);
 }
 
 1;
@@ -34,7 +21,8 @@ __END__
 
 =head1 NAME
 
-Test::Stream::Subtest::Hub - Hub used by subtests
+Test::Stream::Plugin::LoadPlugin - Load a plugin with full Test::Stream
+semantics, but at runtime.
 
 =head1 EXPERIMENTAL CODE WARNING
 
@@ -50,7 +38,20 @@ experimental phase is over.
 
 =head1 DESCRIPTION
 
-Subtests make use of this hub to route events.
+When testing plugins it can be useful to load them multiple times with
+different arguments. Doing this with C<use Test::Stream ...> isn't helpful as
+the C<use> statement makes it happen at BEGIN time. This module provides a
+run-time function you can use to load a plugin. The syntax is identical to the
+use statements, this is because it uses the same mechanism under the hood.
+
+=head1 SYNOPSIS
+
+    use Test::Stream 'LoadPlugin';
+
+    # The following 2 are identical, except that the use statement happens at
+    # begin time, the load_plugin statement happens at run-time.
+    load_plugin Plugin => [qw/foo bar/];
+    use Test::Stream Plugin => [qw/foo bar/];
 
 =head1 SOURCE
 

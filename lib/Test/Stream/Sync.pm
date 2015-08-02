@@ -17,6 +17,7 @@ my $NO_WAIT = 0;
 my $INIT    = undef;
 my $IPC     = undef;
 my $STACK   = undef;
+my $FORMAT  = undef;
 my @HOOKS   = ();
 
 sub hooks { scalar @HOOKS }
@@ -27,9 +28,13 @@ sub _init {
     $INIT  = [caller(1)];
     $STACK = Test::Stream::Stack->new;
 
+    unless ($FORMAT) {
+        require Test::Stream::TAP;
+        $FORMAT = 'Test::Stream::TAP';
+    }
+
     return unless $INC{'Test/Stream/IPC.pm'};
-    my ($driver) = Test::Stream::IPC->drivers;
-    $IPC = $driver->new;
+    $IPC = Test::Stream::IPC->init;
 }
 
 sub add_hook {
@@ -51,6 +56,18 @@ sub ipc {
     return $IPC if $INIT;
     _init();
     $IPC;
+}
+
+sub set_formatter {
+    my $self = shift;
+    croak "Global Formatter already set" if $FORMAT;
+    $FORMAT = pop || croak "No formatter specified";
+}
+
+sub formatter {
+    return $FORMAT if $INIT;
+    _init();
+    $FORMAT;
 }
 
 sub no_wait {
@@ -183,6 +200,9 @@ possible things should not be global.
     my $stack = Test::Stream::Sync->stack;
     my $ipc   = Test::Stream::Sync->ipc;
 
+    Test::Stream::Sync->set_formatter($FORMATTER)
+    my $formatter = Test::Stream::Sync->formatter;
+
 =head1 CLASS METHODS
 
 This class stores global instances of things. This package is NOT an object,
@@ -204,6 +224,14 @@ yet been initialized it will be initialized now.
 
 This will return the global L<Test::Stream::IPC> instance. If this has not yet
 been initialized it will be initialized now.
+
+=item $formatter = Test::Stream::Sync->formatter
+
+This will return the global formatter class. This is not an instance.
+
+=item Test::Stream::Sync->set_formatter($class)
+
+Set the global formatter class. This can only be set once.
 
 =item $bool = Test::Stream::Sync->no_wait
 

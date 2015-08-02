@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use Test::Stream::Hub;
-use Test::Stream::TAP;
 
 use Carp qw/confess/;
 
@@ -23,7 +22,7 @@ sub new_hub {
         $params{ipc}       = $self->[-1]->ipc    unless exists $params{ipc};
     }
     else {
-        $params{formatter} = Test::Stream::TAP->new  unless exists $params{formatter};
+        $params{formatter} = Test::Stream::Sync->formatter->new  unless exists $params{formatter};
         $params{ipc}       = Test::Stream::Sync->ipc unless exists $params{ipc};
     }
 
@@ -147,8 +146,8 @@ formatter and ipc instance will be inherited from the current top hub. You can
 set the parameters to C<undef> to avoid having a formatter or ipc instance.
 
 If there is no top hub, and you do not ask to leave ipc and formatter undef,
-then a new L<Test::Stream::TAP> formatter will be used, and the IPC instance
-from L<Test::Stream::Sync> will be used.
+then a new formatter will be created, and the IPC instance from
+L<Test::Stream::Sync> will be used.
 
 =item $hub = $stack->top()
 

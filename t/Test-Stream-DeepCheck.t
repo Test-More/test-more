@@ -1,6 +1,6 @@
-use Test::Stream;
+use Test::Stream '-Tester';
 
-use Test::Stream::Tester;
+
 use Test::Stream::DebugInfo;
 use Test::Stream::DeepCheck qw{
     strict_compare relaxed_compare
