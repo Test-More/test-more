@@ -25,7 +25,7 @@ our @ON_RELEASE;
 our %CONTEXTS;
 
 sub ON_INIT    { shift; push @ON_INIT => @_ }
-sub ON_RELEASE { shift; push @ON_INIT => @_ }
+sub ON_RELEASE { shift; push @ON_RELEASE => @_ }
 
 END {
     my $real = $?;
