@@ -42,7 +42,8 @@ sub _deduce {
     my $cobj    = B::svref_2object($code);
     my $pkg     = $cobj->GV->STASH->NAME;
     my $file    = $cobj->FILE;
-    my $line    = $cobj->START->line;
+    my $start   = $cobj->START;
+    my $line    = $start->can('line') ? $start->line : -1;
     my $subname = $cobj->GV->NAME;
 
     $SUB_MAPS{$file}->{$line} = $self->{+NAME};
@@ -62,10 +63,9 @@ sub run {
     $self->{+CODEREF}->(@args);
 }
 
-sub detail {
+sub call_detail {
     my $self = shift;
 
-    my $name = $self->{+NAME};
     my $file = $self->file;
 
     my $start = $self->start_line;
@@ -83,12 +83,21 @@ sub detail {
         $lines = "line $start (declared in $dfile line $dline)";
     }
 
+    return "$file $lines";
+}
+
+sub detail {
+    my $self = shift;
+
+    my $name  = $self->{+NAME};
+    my $lines = $self->call_detail;
+
     my $known = "";
     if ($self->{+DEDUCED}->[SUBNAME] ne '__ANON__') {
         $known = " (" . $self->{+DEDUCED}->[SUBNAME] . ")";
     }
 
-    return "${name}${known} in ${file} ${lines}";
+    return "${name}${known} in $lines";
 }
 
 sub start_line {

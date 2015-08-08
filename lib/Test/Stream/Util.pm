@@ -170,7 +170,8 @@ sub term_size {
     return $ENV{TS_TERM_SIZE} if $ENV{TS_TERM_SIZE};
     return 80 unless USE_TERM_READKEY;
     my ($total) = Term::ReadKey::GetTerminalSize(*STDOUT);
-    return $total || 80; # It will work most places
+    return 80 if !$total || $total < 80;
+    return $total;
 }
 
 1;
