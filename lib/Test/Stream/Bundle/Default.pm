@@ -16,7 +16,7 @@ sub plugins {
             Subtest
             Exception
             Warnings
-            DeepCheck
+            Compare
             Mock
         },
     );

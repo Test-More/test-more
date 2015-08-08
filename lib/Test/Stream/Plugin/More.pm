@@ -684,7 +684,7 @@ Look at L<Test::Stream::Plugin::Subtest> if you want to use subtests.
 
 =item API Change: is_deeply is in a different library
 
-Look at L<Test::Stream::Plugin::DeepCheck> for C<is_deeply> and similar tools.
+Look at L<Test::Stream::Plugin::Compare> for C<is_deeply> and similar tools.
 
 =item API Change: no $TODO variable
 
