@@ -43,7 +43,7 @@ is intended to replace the L<Test::Builder> practice of writing modules that
 implement new functionality while also pulling in other modules. Using bundles
 is a better system since it prevents an author from forcing their assumptions
 on others. Plugins and Bundles should be kept seperate so that test authors can
-picka nd choose functionality without worrying about what else it might pick
+pick and choose functionality without worrying about what else it might pick
 for them.
 
 =head2 EVENTS

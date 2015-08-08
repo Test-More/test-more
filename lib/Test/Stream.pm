@@ -51,6 +51,24 @@ sub load {
             next;
         }
 
+        if ($arg =~ m/^:(.*)$/) {
+            my $pkg = "Test::Stream::Bundle::$1";
+            my $file = pkg_to_file($pkg);
+
+            eval {
+                local @INC = (
+                    ($ENV{TS_LB_PATH} ? split(':', $ENV{TS_LB_PATH}) : ()),
+                    't/lib',
+                    'lib',
+                );
+                require $file;
+                1;
+            } || croak "Could not load LOCAL PROJECT bundle '$pkg' (Do you need to set TS_LB_PATH?): $@";
+
+            unshift @_ => $pkg->plugins;
+            next;
+        }
+
         my $val = (@_ && ref $_[0]) ? shift @_ : [];
 
         if ($arg =~ m/^\+(.*)$/) {
