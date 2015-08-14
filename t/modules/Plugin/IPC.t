@@ -10,7 +10,7 @@ BEGIN { @drivers = Test::Stream::IPC->drivers };
 
 use Test::Stream '-Tester';
 
-is_deeply(
+is(
     \@drivers,
     ['Test::Stream::IPC::Files'],
     "Got default driver"
@@ -52,7 +52,7 @@ ok( $results{'FakeDriver'}, "Did not die with a bad driver" );
 ok( $results{'RealDriver'}, "Did not die with a good driver" );
 ok( $results{'Other::FakeDriver'}, "Did not die with a fully qualified driver" );
 
-is_deeply(
+is(
     \@LOAD,
     [
         'Test/Stream/IPC/FakeDriver.pm',
@@ -62,7 +62,7 @@ is_deeply(
     "Tried to load the correct drivers, in order"
 );
 
-is_deeply(
+is(
     [ Test::Stream::IPC->drivers ],
     [
         'Test::Stream::IPC::Files',

@@ -13,7 +13,7 @@ my $bail = Test::Stream::Event::Bail->new(
 
 ok($bail->causes_fail, "balout always causes fail.");
 
-is_deeply(
+is(
     [$bail->to_tap(1)],
     [[OUT_STD, "Bail out!  evil\n" ]],
     "Got tap"

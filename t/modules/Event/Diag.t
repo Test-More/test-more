@@ -10,28 +10,28 @@ my $diag = Test::Stream::Event::Diag->new(
     message => 'foo',
 );
 
-is_deeply(
+is(
     [$diag->to_tap(1)],
     [[OUT_ERR, "# foo\n"]],
     "Got tap"
 );
 
 $diag->set_message("foo\n");
-is_deeply(
+is(
     [$diag->to_tap(1)],
     [[OUT_ERR, "# foo\n"]],
     "Only 1 newline"
 );
 
 $diag->debug->set_todo('todo');
-is_deeply(
+is(
     [$diag->to_tap(1)],
     [[OUT_TODO, "# foo\n"]],
     "Got tap in todo"
 );
 
 $diag->set_message("foo\nbar\nbaz");
-is_deeply(
+is(
     [$diag->to_tap(1)],
     [[OUT_TODO, "# foo\n# bar\n# baz\n"]],
     "All lines have proper prefix"

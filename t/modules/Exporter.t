@@ -51,13 +51,13 @@ is(__PACKAGE__->$_(), $_, "$_() eq '$_', Function is as expected") for qw/a b c 
 
 my $meta = Test::Stream::Exporter::Meta::get('My::Exporter');
 isa_ok($meta, 'Test::Stream::Exporter::Meta');
-is_deeply(
+is(
     [sort @{$meta->default}],
     [sort qw/b x/],
     "Got default list"
 );
 
-is_deeply(
+is(
     $meta->exports,
     {
         a => __PACKAGE__->can('a'),

@@ -42,7 +42,7 @@ ok(my $e3 = send_event('baz'), "Created event");
 my $old = $hub->format(My::Formatter->new);
 
 isa_ok($old, 'My::Formatter');
-is_deeply(
+is(
     $old,
     [$e1, $e2, $e3],
     "Formatter got all events"

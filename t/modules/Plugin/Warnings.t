@@ -25,7 +25,7 @@ my $events = intercept {
     $ictx->hub->finalize($dbg, 1);
 };
 
-is_deeply(
+is(
     \%params,
     {
         context => $ctx,
@@ -79,7 +79,7 @@ ok($no_warn, "no warning on live");
 $warning = warning { ok(!lives { die 'xxx' }, "lived") };
 like($warning, qr/^xxx at/, "warning with exception");
 
-is_deeply(
+is(
     warns { warn "foo\n"; warn "bar\n" },
     [
         "foo\n",

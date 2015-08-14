@@ -26,7 +26,7 @@ my $dbg = Test::Stream::DebugInfo->new(
     is($ok->effective_pass, 1, "effective pass");
     is($ok->diag, undef, "no diag");
 
-    is_deeply(
+    is(
         [$ok->to_tap(4)],
         [[OUT_STD, "ok 4 - the_test\n"]],
         "Got tap for basic ok"
@@ -52,7 +52,7 @@ my $dbg = Test::Stream::DebugInfo->new(
     is($ok->name, 'the_test', "got name");
     is($ok->effective_pass, 0, "effective pass");
 
-    is_deeply(
+    is(
         [$ok->to_tap(4)],
         [
             [OUT_STD, "not ok 4 - the_test\n"],
@@ -67,7 +67,7 @@ my $dbg = Test::Stream::DebugInfo->new(
     );
 
     $ok->set_diag([ $ok->default_diag ]);
-    is_deeply(
+    is(
         [$ok->to_tap(4)],
         [
             [OUT_STD, "not ok 4 - the_test\n"],
@@ -78,7 +78,7 @@ my $dbg = Test::Stream::DebugInfo->new(
 
     $ENV{HARNESS_IS_VERBOSE} = 0;
     $ok->set_diag([ $ok->default_diag ]);
-    is_deeply(
+    is(
         [$ok->to_tap(4)],
         [
             [OUT_STD, "not ok 4 - the_test\n"],
@@ -89,7 +89,7 @@ my $dbg = Test::Stream::DebugInfo->new(
 
     $ENV{HARNESS_ACTIVE} = 0;
     $ok->set_diag([ $ok->default_diag ]);
-    is_deeply(
+    is(
         [$ok->to_tap(4)],
         [
             [OUT_STD, "not ok 4 - the_test\n"],
@@ -119,13 +119,13 @@ my $dbg = Test::Stream::DebugInfo->new(
     is($ok->name, 'the_test', "got name");
     is($ok->effective_pass, 0, "effective pass");
 
-    is_deeply(
+    is(
         $ok->diag,
         [ "xxx" ],
         "Got diag"
     );
 
-    is_deeply(
+    is(
         [$ok->to_tap(4)],
         [
             [OUT_STD, "not ok 4 - the_test\n"],
@@ -156,13 +156,13 @@ my $dbg = Test::Stream::DebugInfo->new(
     is($ok->effective_pass, 1, "effective pass is true from todo");
 
     $ok->set_diag([ $ok->default_diag ]);
-    is_deeply(
+    is(
         $ok->diag,
         [ "Failed (TODO) test 'the_test'\nat foo.t line 42." ],
         "Got diag"
     );
 
-    is_deeply(
+    is(
         [$ok->to_tap(4)],
         [
             [OUT_STD, "not ok 4 - the_test # TODO A Todo\n"],
@@ -194,7 +194,7 @@ my $dbg = Test::Stream::DebugInfo->new(
     is($ok->effective_pass, 1, "effective pass");
     is($ok->diag, undef, "no diag");
 
-    is_deeply(
+    is(
         [$ok->to_tap(4)],
         [
             [OUT_STD, "ok 4 - the_test # skip A Skip\n"],

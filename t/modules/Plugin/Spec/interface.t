@@ -48,7 +48,7 @@ my $unit = describe blah => sub {
 
     is($unit, workflow_current(), "Can look at the current build");
 
-    mostly_like(
+    like(
         $unit->primary,
         [
             { name => 'foo', meta => { x => 1 }, primary => $fake, buildup => undef, teardown => undef, modify => undef },
@@ -57,7 +57,7 @@ my $unit = describe blah => sub {
         "Got tests"
     );
 
-    mostly_like(
+    like(
         $unit->modify,
         [
             { name => 'a', primary => $fake, buildup => undef, teardown => undef, modify => undef },
@@ -66,7 +66,7 @@ my $unit = describe blah => sub {
         "Got cases"
     );
 
-    mostly_like(
+    like(
         $unit->buildup,
         [
             { name => 'ba', primary => $fake, wrap => 0, buildup => undef, teardown => undef, modify => undef },
@@ -75,7 +75,7 @@ my $unit = describe blah => sub {
         "Got before and around all"
     );
 
-    mostly_like(
+    like(
         $unit->teardown,
         [
             { name => 'aa', primary => $fake, wrap => 0, buildup => undef, teardown => undef, modify => undef },
@@ -89,7 +89,7 @@ my $unit = describe blah => sub {
 
 is($unit->post, undef, "post ran when we popped");
 
-mostly_like(
+like(
     $unit->primary,
     [
         {
@@ -118,7 +118,7 @@ mostly_like(
     "Tests got the before/after each"
 );
 
-mostly_like(
+like(
     $unit->modify,
     [
         {
@@ -151,7 +151,7 @@ mostly_like(
 tests 'for root' => $fake;
 describe 'root describe' => sub { tests 'xxx' => $fake };
 
-mostly_like(
+like(
     workflow_meta->unit->primary,
     [
         { name => 'for root', primary => $fake },

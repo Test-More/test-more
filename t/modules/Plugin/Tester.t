@@ -70,7 +70,7 @@ events_are(
             eprop line => $base;
             eprop file => __FILE__;
             eprop package => __PACKAGE__;
-            eprop subname => 'Test::Stream::Plugin::More::ok';
+            eprop subname => 'Test::Stream::Plugin::Core::ok';
             eprop trace => 'at ' . __FILE__ . ' line ' . $base;
             eprop skip => undef;
             eprop todo => undef;

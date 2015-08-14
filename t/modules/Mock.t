@@ -31,7 +31,7 @@ tests construction => sub {
     );
     isa_ok($one, 'Test::Stream::Mock');
 
-    is_deeply(
+    is(
         \%calls,
         { foo => 1 },
         "Only called foo, did not call class, parent or child"
@@ -50,7 +50,7 @@ tests construction => sub {
     );
     isa_ok($one, 'Test::Stream::Mock');
 
-    is_deeply(
+    is(
         \@args,
         [
             [$one, 'string'],
@@ -119,7 +119,7 @@ tests stash => sub {
     my $stash = $one->stash;
 
     ok($stash, "got a stash");
-    is_deeply($stash, {}, "stash is empty right now");
+    is($stash, {}, "stash is empty right now");
 
     {
         # need to hide the glob assignment from the parser.
@@ -189,14 +189,14 @@ tests constructors => sub {
 
     my $i = Fake->new(foo => 'bar');
     isa_ok($i, 'Fake');
-    is_deeply($i, { foo => 'bar' }, "Has params");
+    is($i, { foo => 'bar' }, "Has params");
 
     $one->override_constructor(new => 'ref');
 
     my $ref = { 'foo' => 'baz' };
     $i = Fake->new($ref);
     isa_ok($i, 'Fake');
-    is_deeply($i, { foo => 'baz' }, "Has params");
+    is($i, { foo => 'baz' }, "Has params");
     is($i, $ref, "same reference");
     ok(blessed($ref), "blessed original ref");
 
@@ -204,7 +204,7 @@ tests constructors => sub {
     $ref = { 'foo' => 'bat' };
     $i = Fake->new($ref);
     isa_ok($i, 'Fake');
-    is_deeply($i, { foo => 'bat' }, "Has params");
+    is($i, { foo => 'bat' }, "Has params");
     ok($i != $ref, "same reference");
     ok(!blessed($ref), "original ref is not blessed");
 
@@ -346,7 +346,7 @@ tests before => sub {
     is($ran, 1, "ran the before");
     ok(defined($want) && !$want, "scalar context");
 
-    is_deeply([Fake->foo], [qw/f o o/], "got expected return (list)");
+    is([Fake->foo], [qw/f o o/], "got expected return (list)");
     is($ran, 2, "ran the before");
     is($want, 1, "list context");
 
@@ -375,7 +375,7 @@ tests around => sub {
 
     Fake->foo(qw/a b c/);
 
-    is_deeply(
+    is(
         \@things,
         [
             ['pre'  => [qw/Fake a b c/]],
@@ -466,19 +466,19 @@ tests 'add and current' => sub {
     ok(eval <<'    EOT', "Ran glob checks") || diag "Error: $@";
         is($Fake::UHG, 'UHG', "Set package scalar (UHG)");
         is($Fake::DATA, 'data', "Set package scalar (DATA)");
-        is_deeply(\%Fake::DATA, { my => 'data' }, "Set package hash");
-        is_deeply(\@Fake::DATA, [ my => 'data' ], "Set package array");
+        is(\%Fake::DATA, { my => 'data' }, "Set package hash");
+        is(\@Fake::DATA, [ my => 'data' ], "Set package array");
         1;
     EOT
 
-    is_deeply($one->current($_), $i->can($_), "current works for sub $_")
+    is($one->current($_), $i->can($_), "current works for sub $_")
         for qw/new foo bar baz DATA reader writer rsub nsub/;
 
     is(${$one->current('$UHG')}, 'UHG', 'got current $UHG');
     is(${$one->current('$DATA')}, 'data', 'got current $DATA');
     is($one->current('&DATA'), $i->can('DATA'), 'got current &DATA');
-    is_deeply($one->current('@DATA'), [qw/my data/], 'got current @DATA');
-    is_deeply($one->current('%DATA'), {my => 'data'}, 'got current %DATA');
+    is($one->current('@DATA'), [qw/my data/], 'got current @DATA');
+    is($one->current('%DATA'), {my => 'data'}, 'got current %DATA');
 
     $one = undef;
 
@@ -521,8 +521,8 @@ tests 'override and orig' => sub {
         ok(eval <<'        EOT', "Ran glob checks") || diag "Error: $@";
             is($Fake::UHG,  'old',  'old package scalar (UHG)');
             is($Fake::DATA, 'old', "Old package scalar (DATA)");
-            is_deeply(\%Fake::DATA, {old => 'old'}, "Old package hash");
-            is_deeply(\@Fake::DATA, ['old'], "Old package array");
+            is(\%Fake::DATA, {old => 'old'}, "Old package hash");
+            is(\@Fake::DATA, ['old'], "Old package array");
             1;
         EOT
     };
@@ -606,26 +606,26 @@ tests 'override and orig' => sub {
     ok(eval <<'    EOT', "Ran glob checks") || diag "Error: $@";
         is($Fake::UHG, 'UHG', "Set package scalar (UHG)");
         is($Fake::DATA, 'data', "Set package scalar (DATA)");
-        is_deeply(\%Fake::DATA, { my => 'data' }, "Set package hash");
-        is_deeply(\@Fake::DATA, [ my => 'data' ], "Set package array");
+        is(\%Fake::DATA, { my => 'data' }, "Set package hash");
+        is(\@Fake::DATA, [ my => 'data' ], "Set package array");
         1;
     EOT
 
-    is_deeply($one->current($_), $i->can($_), "current works for sub $_")
+    is($one->current($_), $i->can($_), "current works for sub $_")
         for qw/new foo bar baz DATA reader writer rsub nsub/;
 
     is(${$one->current('$UHG')}, 'UHG', 'got current $UHG');
     is(${$one->current('$DATA')}, 'data', 'got current $DATA');
     is($one->current('&DATA'), $i->can('DATA'), 'got current &DATA');
-    is_deeply($one->current('@DATA'), [qw/my data/], 'got current @DATA');
-    is_deeply($one->current('%DATA'), {my => 'data'}, 'got current %DATA');
+    is($one->current('@DATA'), [qw/my data/], 'got current @DATA');
+    is($one->current('%DATA'), {my => 'data'}, 'got current %DATA');
 
     is($one->orig($_)->(), 'old', "got original $_") for qw/new foo bar baz DATA reader writer rsub nsub/;
 
     is(${$one->orig('$UHG')},  'old',  'old package scalar (UHG)');
     is(${$one->orig('$DATA')}, 'old', "Old package scalar (DATA)");
-    is_deeply($one->orig('%DATA'), {old => 'old'}, "Old package hash");
-    is_deeply($one->orig('@DATA'), ['old'], "Old package array");
+    is($one->orig('%DATA'), {old => 'old'}, "Old package hash");
+    is($one->orig('@DATA'), ['old'], "Old package array");
 
     like(
         dies { $one->orig('not_mocked') },
@@ -649,12 +649,12 @@ tests 'override and orig' => sub {
 tests parse_sym => sub {
     my $p = Test::Stream::Mock->can('_parse_sym');
 
-    is_deeply([$p->('foo')],  [foo  => 'CODE'],   "parsed no sigil");
-    is_deeply([$p->('_foo')], [_foo => 'CODE'],   "parsed underscore");
-    is_deeply([$p->('&foo')], [foo  => 'CODE'],   "parsed code sigil");
-    is_deeply([$p->('$foo')], [foo  => 'SCALAR'], "parsed scalar sigil");
-    is_deeply([$p->('@foo')], [foo  => 'ARRAY'],  "parsed array sigil");
-    is_deeply([$p->('%foo')], [foo  => 'HASH'],   "parsed hash sigil");
+    is([$p->('foo')],  [foo  => 'CODE'],   "parsed no sigil");
+    is([$p->('_foo')], [_foo => 'CODE'],   "parsed underscore");
+    is([$p->('&foo')], [foo  => 'CODE'],   "parsed code sigil");
+    is([$p->('$foo')], [foo  => 'SCALAR'], "parsed scalar sigil");
+    is([$p->('@foo')], [foo  => 'ARRAY'],  "parsed array sigil");
+    is([$p->('%foo')], [foo  => 'HASH'],   "parsed hash sigil");
 
     like(
         dies { $p->('*foo') },
@@ -677,22 +677,22 @@ tests restore_reset => sub {
 
     is(Fake->foo, 'e', "latest override");
     is(eval '$Fake::foo', 'a', "scalar override remains");
-    is_deeply(eval '\@Fake::foo', ['a'], "array override remains");
+    is(eval '\@Fake::foo', ['a'], "array override remains");
 
     $one->restore('foo');
     is(Fake->foo, 'd', "second latest override");
     is(eval '$Fake::foo', 'a', "scalar override remains");
-    is_deeply(eval '\@Fake::foo', ['a'], "array override remains");
+    is(eval '\@Fake::foo', ['a'], "array override remains");
 
     $one->restore('foo');
     is(Fake->foo, 'c', "second latest override");
     is(eval '$Fake::foo', 'a', "scalar override remains");
-    is_deeply(eval '\@Fake::foo', ['a'], "array override remains");
+    is(eval '\@Fake::foo', ['a'], "array override remains");
 
     $one->reset('foo');
     ok(!Fake->can('foo'), "no more override");
     is(eval '$Fake::foo', 'a', "scalar override remains");
-    is_deeply(eval '\@Fake::foo', ['a'], "array override remains");
+    is(eval '\@Fake::foo', ['a'], "array override remains");
 
     $one->add(foo => sub { 'a' });
     is(Fake->foo, 'a', "override");

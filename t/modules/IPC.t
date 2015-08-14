@@ -8,7 +8,7 @@ BEGIN { @drivers = Test::Stream::IPC->drivers };
 
 use Test::Stream;
 
-is_deeply(
+is(
     \@drivers,
     ['Test::Stream::IPC::Files'],
     "Got default driver"

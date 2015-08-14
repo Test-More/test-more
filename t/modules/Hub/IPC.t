@@ -56,7 +56,7 @@ sub do_check {
     my $old = $hub->format(My::Formatter->new);
 
     isa_ok($old, 'My::Formatter');
-    is_deeply(
+    is(
         $old,
         [$e1, $e2, $e3],
         "Formatter got all events ($name)"

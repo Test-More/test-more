@@ -52,8 +52,8 @@ $hub->unlisten($it);
 
 $hub->send($ok3);
 
-is_deeply(\@counts, [1, 2], "Got counts");
-is_deeply(\@events, [$ok1, $ok2], "got events");
+is(\@counts, [1, 2], "Got counts");
+is(\@events, [$ok1, $ok2], "got events");
 is($second, 3, "got all events in listener that was not removed");
 
 done_testing;

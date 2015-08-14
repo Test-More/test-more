@@ -30,7 +30,7 @@ wrap {
     ok($ctx->hub, "got hub");
     isa_ok($ctx->hub, 'Test::Stream::Hub');
     delete $ctx->debug->frame->[4];
-    is_deeply($ctx->debug->frame, $frame, "Found place to report errors");
+    is($ctx->debug->frame, $frame, "Found place to report errors");
 };
 
 wrap {
@@ -39,14 +39,14 @@ wrap {
     my $new = context();
     ok($ctx == $new, "Additional call to context gets same instance");
     delete $ctx->debug->frame->[4];
-    is_deeply($ctx->debug->frame, $frame, "Found place to report errors");
+    is($ctx->debug->frame, $frame, "Found place to report errors");
     $new->release;
 };
 
 wrap {
     my $ctx = shift;
     my $snap = $ctx->snapshot;
-    is_deeply($ctx, $snap, "snapshot is identical");
+    is($ctx, $snap, "snapshot is identical");
     ok($ctx != $snap, "snapshot is a new instance");
 };
 
@@ -58,7 +58,7 @@ my $end_ctx;
     $ctx->release;
 }
 delete $end_ctx->debug->frame->[4];
-is_deeply( $end_ctx->debug->frame, $frame, 'context is ok in an end block');
+is( $end_ctx->debug->frame, $frame, 'context is ok in an end block');
 
 sub release_test_single {
     my $ctx = context();
@@ -89,19 +89,19 @@ is(
     "Got scalar value"
 );
 
-is_deeply(
+is(
     [release_test_list()],
     [42, 42],
     "Got list"
 );
 
-is_deeply(
+is(
     [release_test_array()],
     [42, 42],
     "Got array values"
 );
 
-is_deeply(
+is(
     [release_test_call()],
     ['stuff', 'more stuff'],
     "Got return from called sub"
@@ -133,49 +133,49 @@ my $e = $ctx->build_event('Ok', pass => 1, name => 'foo');
 isa_ok($e, 'Test::Stream::Event::Ok');
 is($e->pass, 1, "Pass");
 is($e->name, 'foo', "got name");
-is_deeply($e->debug, $dbg, "Got the debug info");
+is($e->debug, $dbg, "Got the debug info");
 ok(!@$events, "No events yet");
 
 $e = $ctx->send_event('Ok', pass => 1, name => 'foo');
 isa_ok($e, 'Test::Stream::Event::Ok');
 is($e->pass, 1, "Pass");
 is($e->name, 'foo', "got name");
-is_deeply($e->debug, $dbg, "Got the debug info");
+is($e->debug, $dbg, "Got the debug info");
 is(@$events, 1, "1 event");
-is_deeply($events, [$e], "Hub saw the event");
+is($events, [$e], "Hub saw the event");
 pop @$events;
 
 $e = $ctx->ok(1, 'foo');
 isa_ok($e, 'Test::Stream::Event::Ok');
 is($e->pass, 1, "Pass");
 is($e->name, 'foo', "got name");
-is_deeply($e->debug, $dbg, "Got the debug info");
+is($e->debug, $dbg, "Got the debug info");
 is(@$events, 1, "1 event");
-is_deeply($events, [$e], "Hub saw the event");
+is($events, [$e], "Hub saw the event");
 pop @$events;
 
 $e = $ctx->note('foo');
 isa_ok($e, 'Test::Stream::Event::Note');
 is($e->message, 'foo', "got message");
-is_deeply($e->debug, $dbg, "Got the debug info");
+is($e->debug, $dbg, "Got the debug info");
 is(@$events, 1, "1 event");
-is_deeply($events, [$e], "Hub saw the event");
+is($events, [$e], "Hub saw the event");
 pop @$events;
 
 $e = $ctx->diag('foo');
 isa_ok($e, 'Test::Stream::Event::Diag');
 is($e->message, 'foo', "got message");
-is_deeply($e->debug, $dbg, "Got the debug info");
+is($e->debug, $dbg, "Got the debug info");
 is(@$events, 1, "1 event");
-is_deeply($events, [$e], "Hub saw the event");
+is($events, [$e], "Hub saw the event");
 pop @$events;
 
 $e = $ctx->plan(100);
 isa_ok($e, 'Test::Stream::Event::Plan');
 is($e->max, 100, "got max");
-is_deeply($e->debug, $dbg, "Got the debug info");
+is($e->debug, $dbg, "Got the debug info");
 is(@$events, 1, "1 event");
-is_deeply($events, [$e], "Hub saw the event");
+is($events, [$e], "Hub saw the event");
 pop @$events;
 
 # Test todo
@@ -219,7 +219,7 @@ sub {
 $hub->remove_context_init($ref1);
 $hub->remove_context_release($ref2);
 
-is_deeply(
+is(
     \@hooks,
     [qw{
         start
@@ -256,7 +256,7 @@ is_deeply(
 
     my $ran = 0;
     my $doit = sub {
-        is_deeply(\@_, [qw/foo bar/], "got args");
+        is(\@_, [qw/foo bar/], "got args");
         is(context(), $one, "The one context is our context");
         $ran++;
         die "Make sure old context is restored";

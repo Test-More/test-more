@@ -22,7 +22,7 @@ ok(-f $ipc->tempdir . '/HUB-' . $hid, "wrote hub file");
 if(ok(open(my $fh, '<', $ipc->tempdir . '/HUB-' . $hid), "opened hub file")) {
     my @lines = <$fh>;
     close($fh);
-    is_deeply(
+    is(
         \@lines,
         [ "$$\n", get_tid() . "\n" ],
         "Wrote pid and tid to hub file"
@@ -43,7 +43,7 @@ closedir($dh);
 is(@files, 2, "2 files added to the IPC directory");
 
 my @events = $ipc->cull($hid);
-is_deeply(
+is(
     \@events,
     [{ foo => 1 }, { bar => 1 }],
     "Culled both events"

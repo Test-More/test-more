@@ -20,19 +20,19 @@ tests generators => sub {
     # correct type of subs.
 
     my %accessors = mock_accessors qw/foo bar baz/;
-    is_deeply([sort keys %accessors], [sort qw/foo bar baz/], "All 3 keys set");
+    is([sort keys %accessors], [sort qw/foo bar baz/], "All 3 keys set");
     is(reftype($accessors{$_}), 'CODE', "sub as value for $_") for qw/foo bar baz/;
 
     is(reftype(mock_accessor('xxx')), 'CODE', "Generated an accessor");
 
     my %getters = mock_getters 'get_' => qw/foo bar baz/;
-    is_deeply([sort keys %getters], [sort qw/get_foo get_bar get_baz/], "All 3 keys set");
+    is([sort keys %getters], [sort qw/get_foo get_bar get_baz/], "All 3 keys set");
     is(reftype($getters{"get_$_"}), 'CODE', "sub as value for get_$_") for qw/foo bar baz/;
 
     is(reftype(mock_getter('xxx')), 'CODE', "Generated a getter");
 
     my %setters = mock_setters 'set_' => qw/foo bar baz/;
-    is_deeply([sort keys %setters], [sort qw/set_foo set_bar set_baz/], "All 3 keys set");
+    is([sort keys %setters], [sort qw/set_foo set_bar set_baz/], "All 3 keys set");
     is(reftype($setters{"set_$_"}), 'CODE', "sub as value for set_$_") for qw/foo bar baz/;
 
     is(reftype(mock_setter('xxx')), 'CODE', "Generated a setter");
@@ -64,12 +64,12 @@ describe mocks => sub {
     tests mocked => sub {
         ok(!mocked('main'), "main class is not mocked");
         is(mocked($inst), 1, "Only 1 control object for this instance");
-        is_deeply([mocked($inst)], [$control], "got correct control when checking if an object was mocked");
+        is([mocked($inst)], [$control], "got correct control when checking if an object was mocked");
 
         my $control2 = mock_class($control->class);
 
         is(mocked($inst), 2, "now 2 control objects for this instance");
-        is_deeply([mocked($inst)], [$control, $control2], "got correct control when checking if an object was mocked");
+        is([mocked($inst)], [$control, $control2], "got correct control when checking if an object was mocked");
     };
 
     tests build_and_do => sub {
@@ -161,7 +161,7 @@ tests mock_class_basic => sub {
     isa_ok($c, 'Test::Stream::Mock');
     is($c->class, 'Fake', "Control for 'Fake'");
 
-    is_deeply([mocked($i)], [$c], "is mocked");
+    is([mocked($i)], [$c], "is mocked");
 };
 
 describe mock_class_spec => sub {

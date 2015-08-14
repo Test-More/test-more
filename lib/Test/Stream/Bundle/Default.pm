@@ -11,7 +11,7 @@ sub plugins {
             IPC
             TAP
             ExitSummary
-            More
+            Core
             Context
             Subtest
             Exception

@@ -12,8 +12,8 @@ like(
 
 my $one = 'Test::Stream::DebugInfo'->new(frame => ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo']);
 isa_ok($one, 'Test::Stream::DebugInfo');
-is_deeply($one->frame,  ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo'], "Got frame");
-is_deeply([$one->call], ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo'], "Got call");
+is($one->frame,  ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo'], "Got frame");
+is([$one->call], ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo'], "Got call");
 is($one->package, 'Foo::Bar',      "Got package");
 is($one->file,    'foo.t',         "Got file");
 is($one->line,    5,               "Got line");
@@ -33,7 +33,7 @@ my @warnings;
     $one->alert('I cried');
 }
 
-mostly_like(
+like(
     warns { $one->alert('I cried') },
     [ qr/I cried at foo\.t line 5/ ],
     "alter() warns"

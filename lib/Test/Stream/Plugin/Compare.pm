@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Test::Stream::Exporter;
-default_exports qw/is_deeply mostly_like/;
+default_exports qw/is like/;
 exports qw{
     match mismatch check
     hash array object meta
@@ -33,9 +33,7 @@ use Test::Stream::Compare::Pattern;
 use Test::Stream::Compare::Value;
 use Test::Stream::Compare::Wildcard;
 
-use Data::Dumper;
-
-sub is_deeply($$;$@) {
+sub is($$;$@) {
     my ($got, $exp, $name, @diag) = @_;
     my $ctx = context();
 
@@ -54,7 +52,7 @@ sub is_deeply($$;$@) {
     return !$delta;
 }
 
-sub mostly_like($$;$@) {
+sub like($$;$@) {
     my ($got, $exp, $name, @diag) = @_;
     my $ctx = context();
 

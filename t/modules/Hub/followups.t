@@ -28,7 +28,7 @@ $hub->finalize($dbg);
 
 is($ran, 1, "ran once");
 
-is_deeply(
+is(
     $hub->state->ended,
     $dbg->frame,
     "Ended at the expected place."

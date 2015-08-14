@@ -50,7 +50,7 @@ $hub->unmunge($it);
 
 $hub->send($ok3);
 
-is_deeply(\@events, [$ok1, $ok2], "got events");
+is(\@events, [$ok1, $ok2], "got events");
 is($count, 3, "got all events, even after other munger was removed");
 
 $hub = Test::Stream::Hub->new();

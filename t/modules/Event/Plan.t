@@ -13,7 +13,7 @@ my $plan = Test::Stream::Event::Plan->new(
     max => 100,
 );
 
-is_deeply(
+is(
     [$plan->to_tap(1)],
     [[OUT_STD, "1..100\n"]],
     "Got tap"
@@ -27,7 +27,7 @@ is($plan->terminate, undef, "No terminate for normal plan");
 $plan->set_max(0);
 $plan->set_directive('SKIP');
 $plan->set_reason('foo');
-is_deeply(
+is(
     [$plan->to_tap(1)],
     [[OUT_STD, "1..0 # SKIP foo\n"]],
     "Got tap for skip_all"

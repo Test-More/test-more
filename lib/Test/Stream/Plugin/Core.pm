@@ -1,4 +1,4 @@
-package Test::Stream::Plugin::More;
+package Test::Stream::Plugin::Core;
 use strict;
 use warnings;
 
@@ -17,14 +17,13 @@ use Test::Stream::Util qw{
 use Test::Stream::Exporter;
 default_exports qw{
     ok pass fail
-    is isnt
-    like unlike
     diag note
     plan skip_all done_testing
     BAIL_OUT
     todo skip
     can_ok isa_ok DOES_ok ref_ok
     imported not_imported
+    same_ref diff_ref
 };
 no Test::Stream::Exporter;
 
@@ -62,52 +61,49 @@ sub ok($;$@) {
     return $bool ? 1 : 0;
 }
 
-sub is($$;$@) {
-    my ($got, $want, $name, @diag) = @_;
+sub same_ref($$;$@) {
+    my ($got, $exp, $name, @diag) = @_;
     my $ctx = context();
 
+    $got = '<undef>' unless defined $got;
+    $exp = '<undef>' unless defined $exp;
+
     my $bool = 0;
-    if (!defined($got) && !defined($want)) {
-        $bool = 1;
+    if (!ref($got)) {
+        $ctx->ok(0, $name, ["First argument '$got' is not a reference", @diag]);
     }
-    elsif(defined($got) && defined($want)) {
-        $bool = $got eq $want;
+    elsif(!ref($exp)) {
+        $ctx->ok(0, $name, ["Second argument '$exp' is not a reference", @diag]);
+    }
+    else {
+        $bool = $got == $exp;
+        $ctx->ok($bool, $name, ["'$got' is not the same reference as '$exp'", @diag]);
     }
 
-    unshift @diag => (
-        "     got: " . stringify($got),
-        "expected: " . stringify($want),
-    ) unless $bool;
-
-    $ctx->ok($bool, $name, \@diag);
     $ctx->release;
-
     return $bool ? 1 : 0;
 }
 
-sub isnt($$;$@) {
-    my ($got, $want, $name, @diag) = @_;
+sub diff_ref($$;$) {
+    my ($got, $exp, $name, @diag) = @_;
     my $ctx = context();
 
+    $got = '<undef>' unless defined $got;
+    $exp = '<undef>' unless defined $exp;
+
     my $bool = 0;
-    if (defined($got) xor defined($want)) {
-        $bool = 1;
+    if (!ref($got)) {
+        $ctx->ok(0, $name, ["First argument '$got' is not a reference", @diag]);
     }
-    elsif (defined($got) && defined($want)) {
-        $bool = $got ne $want;
+    elsif(!ref($exp)) {
+        $ctx->ok(0, $name, ["Second argument '$exp' is not a reference", @diag]);
     }
-    else { # Neither is defined
-        $bool = 0;
+    else {
+        $bool = $got != $exp;
+        $ctx->ok($bool, $name, ["'$got' is the same reference as '$exp'", @diag]);
     }
 
-    unshift @diag => (
-        "     got: " . stringify($got),
-        "expected: anything else",
-    ) unless $bool;
-
-    $ctx->ok($bool, $name, \@diag);
     $ctx->release;
-
     return $bool ? 1 : 0;
 }
 
@@ -121,62 +117,6 @@ sub note {
     my $ctx = context();
     $ctx->note( join '', @_ );
     $ctx->release;
-}
-
-sub like($$;$@) {
-    my ($got, $pattern, $name, @diag) = @_;
-    my $ctx = context();
-
-    my $bool;
-    if (!defined($got)) {
-        $bool = 0;
-        unshift @diag => "Got an undefined value.";
-    }
-    if (!defined($pattern)) {
-        $bool = 0;
-        unshift @diag => "Got an undefined pattern.";
-    }
-
-    if (!defined $bool) {
-        $bool = $got =~ $pattern;
-        unshift @diag => (
-            "              " . stringify($got),
-            "doesn't match '$pattern'",
-        ) unless $bool;
-    }
-
-    $ctx->ok($bool, $name, \@diag);
-    $ctx->release;
-
-    return $bool ? 1 : 0;
-}
-
-sub unlike($$;$@) {
-    my ($got, $pattern, $name, @diag) = @_;
-    my $ctx = context();
-
-    my $bool;
-    if (!defined($got)) {
-        $bool = 0;
-        unshift @diag => "Got an undefined value.";
-    }
-    if (!defined($pattern)) {
-        $bool = 0;
-        unshift @diag => "Got an undefined pattern.";
-    }
-
-    if (!defined $bool) {
-        $bool = $got !~ $pattern;
-        unshift @diag => (
-            "        " . stringify($got),
-            "matches '$pattern'",
-        ) unless $bool;
-    }
-
-    $ctx->ok($bool, $name, \@diag);
-    $ctx->release;
-
-    return $bool ? 1 : 0;
 }
 
 sub BAIL_OUT {
@@ -356,8 +296,8 @@ __END__
 
 =head1 NAME
 
-Test::Stream::Plugin::More - Test::Stream implementation of the most used
-Test::More tools.
+Test::Stream::Plugin::Core - Test::Stream implementation of the core Test::More
+tools.
 
 =head1 EXPERIMENTAL CODE WARNING
 
@@ -385,7 +325,7 @@ in existing test files, you may have to update some function calls.
 
 =head1 SYNOPSIS
 
-    use Test::Stream qw/More/;
+    use Test::Stream qw/Core/;
 
     plan($num); # Optional, set a plan
 
@@ -429,19 +369,19 @@ in existing test files, you may have to update some function calls.
 All subs are exported by default B<except> C<context()>. You can use '-all' to
 import all subs, or you can use '-default' and specify 'context'.
 
-    use Test::Stream::Plugin::More '-all';
+    use Test::Stream::Plugin::Core '-all';
 
 or
 
-    use Test::Stream::Plugin::More '-default', 'context';
+    use Test::Stream::Plugin::Core '-default', 'context';
 
 You can also rename any sub on import:
 
-    use Test::Stream::Plugin::More '-default', is => {-as => 'compare'};
+    use Test::Stream::Plugin::Core '-default', is => {-as => 'compare'};
 
 You can also load it when loading Test::Stream:
 
-    use Test::Stream qw/More/;
+    use Test::Stream qw/Core/;
 
 =head2 ASSERTIONS
 

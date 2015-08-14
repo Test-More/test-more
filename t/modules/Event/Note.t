@@ -12,21 +12,21 @@ my $note = Test::Stream::Event::Note->new(
     message => 'foo',
 );
 
-is_deeply(
+is(
     [$note->to_tap(1)],
     [[OUT_STD, "# foo\n"]],
     "Got tap"
 );
 
 $note->set_message("foo\n");
-is_deeply(
+is(
     [$note->to_tap(1)],
     [[OUT_STD, "# foo\n"]],
     "Only 1 newline"
 );
 
 $note->set_message("foo\nbar\nbaz");
-is_deeply(
+is(
     [$note->to_tap(1)],
     [[OUT_STD, "# foo\n# bar\n# baz\n"]],
     "All lines have proper prefix"

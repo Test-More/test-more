@@ -57,7 +57,7 @@ $one->set_foo('x');
 is($one->foo, 'x', "Accessor set");
 $one->set_foo(undef);
 
-is_deeply(
+is(
     $one,
     {
         foo => undef,
@@ -73,26 +73,26 @@ my $accessor = Test::Stream::HashBase->gen_accessor('foo');
 my $getter   = Test::Stream::HashBase->gen_getter('foo');
 my $setter   = Test::Stream::HashBase->gen_setter('foo');
 
-is_deeply($obj, {}, "nothing set");
+is($obj, {}, "nothing set");
 
 is($obj->$accessor(), undef, "nothing set");
 is($obj->$accessor('foo'), 'foo', "set value");
 is($obj->$accessor(), 'foo', "was set");
 
-is_deeply($obj, {foo => 'foo'}, "set");
+is($obj, {foo => 'foo'}, "set");
 
 is($obj->$getter(), 'foo', "got the value");
 is($obj->$getter(), 'foo', "got the value again");
 
-is_deeply($obj, {foo => 'foo'}, "no change");
+is($obj, {foo => 'foo'}, "no change");
 
 is( $obj->$setter, undef, "set to nothing" );
-is_deeply($obj, {foo => undef}, "nothing");
+is($obj, {foo => undef}, "nothing");
 is( $obj->$setter('foo'), 'foo', "set it again" );
-is_deeply($obj, {foo => 'foo'}, "is set");
+is($obj, {foo => 'foo'}, "is set");
 is($obj->$getter(), 'foo', "got the value");
 is($obj->$accessor('foo'), 'foo', "get via accessor");
 
-is_deeply($obj, {foo => 'foo'}, "no change");
+is($obj, {foo => 'foo'}, "no change");
 
 done_testing;

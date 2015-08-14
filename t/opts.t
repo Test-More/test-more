@@ -5,7 +5,7 @@ like(
     "strict appears to be enabled"
 );
 
-mostly_like(
+like(
     warns { my $x; $x =~ m/foo/ },
     [ qr/uninitialized value.*in pattern match/ ],
     "warnings appear to be enabled"

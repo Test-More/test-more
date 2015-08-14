@@ -26,7 +26,7 @@ for my $it (qw/post modify buildup primary teardown/) {
     is($one->$it, undef, "not set yet ($it)");
     $one->$add($fake);
     $one->$add($fake);
-    is_deeply($one->$it, [$fake, $fake], "added a hash and pushed to it twice ($it)");
+    is($one->$it, [$fake, $fake], "added a hash and pushed to it twice ($it)");
 }
 
 $one = Test::Stream::Workflow::Unit->new(
@@ -41,7 +41,7 @@ my @stuff;
 $one->add_post(sub { push @stuff => $_[0], 'post!' });
 ok(!@stuff, "no post yet");
 $one->do_post;
-is_deeply(\@stuff, [$one, 'post!'], "Post ran");
+is(\@stuff, [$one, 'post!'], "Post ran");
 
 my $unit = Test::Stream::Workflow::Unit->new(
     name       => 'my unit',

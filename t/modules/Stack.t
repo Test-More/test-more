@@ -33,7 +33,7 @@ like(
     "Must specify correct hub to pop"
 );
 
-is_deeply(
+is(
     [ $stack->all ],
     [ $hub, $hub ],
     "Got all hubs"
@@ -41,7 +41,7 @@ is_deeply(
 
 ok(lives { $stack->pop($hub) }, "Popped the correct hub");
 
-is_deeply(
+is(
     [ $stack->all ],
     [ $hub ],
     "Got all hubs"
@@ -52,7 +52,7 @@ is($stack->top, $hub, "got the hub");
 
 $stack->clear;
 
-is_deeply(
+is(
     [ $stack->all ],
     [ ],
     "no hubs"
