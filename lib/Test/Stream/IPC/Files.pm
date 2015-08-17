@@ -221,8 +221,8 @@ sub DESTROY {
         my $full = File::Spec->canonpath("$tempdir/$file");
 
         if ($file =~ m/^(GLOBAL|HUB-)/) {
-            $file =~ m/^(.*)$/;
-            $file = $1; # Untaint it
+            $full =~ m/^(.*)$/;
+            $full = $1; # Untaint it
             next if $ENV{TS_KEEP_TEMPDIR};
             unlink($full) || warn "Could not unlink IPC file: $full";
             next;

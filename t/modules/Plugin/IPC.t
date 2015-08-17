@@ -32,20 +32,25 @@ like(
     "Die with invalid arguments"
 );
 
-use Data::Dumper;
-
 my @LOAD;
-local @INC = (sub {
-    my ($sub, $file) = @_;
-    push @LOAD => $file;
+my %results;
+{
+    local @INC = (sub {
+        my ($sub, $file) = @_;
+        push @LOAD => $file;
+        return;
+    }, 't/lib', 'lib');
 
-    return \"1;" if $file =~ m/Real/;
-    return;
-});
+    %results = (
+        'FakeDriver'        => lives { load_plugin IPC => ['FakeDriver'] },
+        'RealDriver'        => lives { load_plugin IPC => ['RealDriver'] },
+        'Other::FakeDriver' => lives { load_plugin IPC => ['+Other::FakeDriver'] },
+    );
+}
 
-ok( lives { load_plugin IPC => ['FakeDriver'] }, "Did not die with a bad driver" );
-ok( lives { load_plugin IPC => ['RealDriver'] }, "Did not die with a good driver" );
-ok( lives { load_plugin IPC => ['+Other::FakeDriver'] }, "Did not die with a fully qualified driver" );
+ok( $results{'FakeDriver'}, "Did not die with a bad driver" );
+ok( $results{'RealDriver'}, "Did not die with a good driver" );
+ok( $results{'Other::FakeDriver'}, "Did not die with a fully qualified driver" );
 
 is_deeply(
     \@LOAD,

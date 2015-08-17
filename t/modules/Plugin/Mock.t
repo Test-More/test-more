@@ -198,10 +198,10 @@ describe mock_class_spec => sub {
 };
 
 tests post => sub {
-    ok(!$_->can('check'), "mock $_ did not leak") for 1 .. 5;
+    ok(!"Fake$_"->can('check'), "mock $_ did not leak") for 1 .. 5;
 };
 
-ok(!$_->can('check'), "mock $_ did not leak") for 1 .. 5;
+ok(!"Fake$_"->can('check'), "mock $_ did not leak") for 1 .. 5;
 
 tests just_mock => sub {
     like(
