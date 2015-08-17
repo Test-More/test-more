@@ -1,5 +1,7 @@
 use Test::Stream qw/-Tester/;
 
+use File::Temp qw/tempfile/;
+
 imported qw{
     ok pass fail
     diag note
@@ -9,6 +11,7 @@ imported qw{
     can_ok isa_ok DOES_ok ref_ok
     imported not_imported
     same_ref diff_ref
+    set_encoding
 };
 
 pass('Testing Pass');
@@ -395,7 +398,28 @@ like(
         };
 
         end;
-    }
+    },
+    "Ref checks"
 );
+
+my $warnings;
+intercept {
+    $warnings = warns {
+        use utf8;
+
+        my ($fh, $name) = tempfile();
+
+        Test::Stream::Sync->stack->top->format(
+            Test::Stream::TAP->new(
+                handles => [$fh, $fh, $fh],
+            ),
+        );
+
+        set_encoding('utf8');
+        ok(1, '†');
+    };
+};
+
+ok(!$warnings, "set_encoding worked");
 
 done_testing;

@@ -24,8 +24,21 @@ default_exports qw{
     can_ok isa_ok DOES_ok ref_ok
     imported not_imported
     same_ref diff_ref
+    set_encoding
 };
 no Test::Stream::Exporter;
+
+sub set_encoding {
+    my $enc = shift;
+    my $format = Test::Stream::Sync->stack->top->format;
+
+    unless ($format && eval { $format->can('encoding') }) {
+        $format = '<undef>' unless defined $format;
+        croak "Unable to set encoding on formatter '$format'";
+    }
+
+    $format->encoding($enc);
+}
 
 sub stringify {
     my $val = shift;
@@ -341,14 +354,6 @@ in existing test files, you may have to update some function calls.
 
     ok($x, "simple test");
 
-    is($a, $b, "'eq' test");
-
-    isnt($a, $b, "'ne' test");
-
-    like($x, qr/xxx/, "Check that $x matches the regex");
-
-    unlike($x, qr/xxx/, "Check that $x does not match the regex");
-
     # Check that the class or object has the specified methods defined.
     can_ok($class_or_obj, @methods);
 
@@ -411,45 +416,6 @@ Fire off a passing test (a single Ok event). The name is optional
 =item fail($name, @diag)
 
 Fire off a failing test (a single Ok event). The name and diagnostics are optional.
-
-=item is($a, $b)
-
-=item is($a, $b, $name)
-
-=item is($a, $b, $name, @diag)
-
-This does a comparison of C<$a> and C<$b> using the C<eq> operator. This is
-usually what you want, but can be the wrong choice when comparing numbers that
-may be equal, but represented differently, ie C<'1.0' eq '1'> will fail.
-
-Name and diag are optional. Diag is only used if the test fails.
-
-=item isnt($a, $b)
-
-=item isnt($a, $b, $name)
-
-=item isnt($a, $b, $name, @diag)
-
-Same as C<is()> except the C<ne> operator is used.
-
-=item like($string, $pattern)
-
-=item like($string, $pattern, $name)
-
-=item like($string, $pattern, $name, @diag)
-
-Check that C<$string> matches C<$pattern> using the C<=~> operator.
-
-Name and diag are optional. Diag is only used if the test fails.
-
-=item unlike($string, $pattern)
-
-=item unlike($string, $pattern, $name)
-
-=item unlike($string, $pattern, $name, @diag)
-
-Same as C<like()> except that the check is that the string does not match the
-pattern. The C<!~> operator is used instead of the C<=~> operator.
 
 =item can_ok($thing, @methods)
 
@@ -587,128 +553,6 @@ many results.
 
 =back
 
-=head1 NOTABLE DIFFERENCES FROM Test::More
-
-=over 4
-
-=item API Change: Cannot set plan at import
-
-C<done_testing> is the preferred way to plan. However if you really want a plan
-you can use the C<plan()> or C<skip_all> functions. Setting the plan at compile
-time resulted in bugs in the past (primarily with subtests that loaded external
-files), moving away from that API shortcut helps to make things cleaner.
-
-=item API Change: isa_ok($thing, @classes)
-
-C<isa_ok> used to take a thing, a class, and an alternate name for thing. It
-tried to be overly clever and broke from expectations set by C<can_ok>.
-
-Also changed such that you cannot use this to check the reftype of C<$thing>.
-See C<ref_ok()> for checking item reftypes.
-
-=item API Change: done_testing() does not take args
-
-Most people were unaware, but C<done_testing()> in L<Test::More> could take the
-number of expected tests as an argument. This feature was rarely used, and
-suprisingly complicated to implement.
-
-=item API Change: plan() arguments
-
-C<plan()> now only takes the expected number of tests. If you want to skip all
-the tests use C<skip_all()>. There is no way to set C<'no plan'>, use
-C<done_testing()> instead.
-
-=item API Change: subtest is in a different library
-
-Look at L<Test::Stream::Plugin::Subtest> if you want to use subtests.
-
-=item API Change: is_deeply is in a different library
-
-Look at L<Test::Stream::Plugin::Compare> for C<is_deeply> and similar tools.
-
-=item API Change: no $TODO variable
-
-=item API Added: $todo = todo($reason)
-
-C<$TODO> is not imported, and will be ignored. Instead use
-C<my $todo = todo($reason)>. This will work similarly to the old api where
-C<$TODO> was localized in that the todo goes away when $todo is unset or
-destroyed.
-
-    {
-        my $todo = todo('foo');
-        ok(0, "this is todo");
-    }
-    ok(1, "this is not todo");
-
-Or:
-
-    my $todo = todo('foo');
-    ok(0, "this is todo");
-    $todo = undef; # Unset todo.
-    ok(1, "this is not todo");
-
-=item API Added: DOES_ok($class, @roles)
-
-Same as C<isa_ok> and C<can_ok> except that it calls C<< $thing->does(...) >>
-instead of C<< $thing->can(...) >> or C<< $thing->isa(...) >>.
-
-=item API Added: skip_all
-
-There is now a C<skip_all()> function that can be used to skip all tests.
-
-=item API Removed: use_ok($class, @args)
-
-=item API Removed: require_ok($class, $version)
-
-Errors loading modules cause the test to die anyway, so just load them, if they
-do not work the test will fail. Making a seperate API for this is a wasted
-effort. Also doing this requires the functions to guess if you provided a
-module name, or filename, and then munging the input to figure out what
-actually needs to be loaded.
-
-=item API Removed: new_ok($class, \@args, $name)
-
-This is easy enough:
-
-    ok(my $one = $class->new(@args), "NAME");
-
-The utility of c<new_ok()> is questionable at best.
-
-=item API Removed: eq_array eq_hash eq_set
-
-L<Test::More> itself discourages you from using these, so we are not carrying
-them forward.
-
-=item API Removed: explain
-
-This method was copied in an API-incompatible way from L<Test::Most>. This
-created an incompatability issue between the 2 libraries and made a real mess
-of things. There is value in a tool like this, but if it is added it will be
-added with a new name to avoid conflicts.
-
-=item API Removed: cmp_ok
-
-It is easy to write:
-
-    ok($got == $want, "$got == $want");
-
-cmp_eq did not buy very much more. There were added diagnostics, and they were
-indeed valuable. The issue is that the implementation for a cmp_ok that accepts
-arbitrary comparison operators is VERY complex. Further there are a great many
-edge cases to account for. Warnings that have to do with uninitialize dor
-improper arguments to the operators also report to internals if not handled
-properly.
-
-All these issues are solvable, but they lead to very complex, slow, and easily
-broken code. I have fixed bugs in the old cmp_ok implementation, and can tell
-you it is a mess. I have also written no less than 3 replacements for cmp_ok,
-all of which proved complex enough that I do not feel it is worth maintaining
-in Test::Stream core.
-
-If you want cmp_ok badly enough you can write a plugin for it.
-
-=back
 
 =head1 SEE ALSO
 
