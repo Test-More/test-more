@@ -1,7 +1,7 @@
 use Test::Stream qw/-Tester DieOnFail/;
 
 my $error;
-events_are(
+like(
     intercept {
         ok(1, "pass");
         $error = dies {
@@ -9,10 +9,10 @@ events_are(
             ok(1, "Should not see");
         };
     },
-    events {
+    array {
         event Ok => { name => "pass", pass => 1 };
         event Ok => { name => "fail", pass => 0 };
-        end_events;
+        end;
     },
     "Died after the failure"
 );
@@ -33,7 +33,7 @@ sub mok {
 }
 
 $error = undef;
-events_are(
+like(
     intercept {
         ok(1, "pass");
         $error = dies {
@@ -41,11 +41,11 @@ events_are(
             ok(1, "Should not see");
         };
     },
-    events {
+    array {
         event Ok => { name => "pass", pass => 1 };
         event Ok => { name => "fail", pass => 0 };
         event Diag => { message => "Should see this after failure" };
-        end_events;
+        end;
     },
     "Tool had time to output the diag"
 );

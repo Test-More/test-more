@@ -307,7 +307,7 @@ sub build_it {
     };
 
     item object {
-        prop blessed => sub { shift->isa('Test::Stream::Workflow::Unit') };
+        prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') } 'isa';
         call name       => 'more_stuff';
         call start_line => 1028;
         call end_line   => 1033;

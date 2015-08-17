@@ -9,9 +9,10 @@ load_plugin 'ExitSummary';
 
 my $post_count = Test::Stream::Sync->hooks;
 
-load_plugin 'More';
+load_plugin 'Compare';
 
 is($initial_count, 0, "no hooks initially");
 is($post_count, 1, "Added the hook, but only once");
 
+load_plugin 'Core';
 done_testing();

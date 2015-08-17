@@ -1,9 +1,6 @@
-use Test::Stream;
-use Test::Stream::Spec;
-use Test::Stream::Interceptor qw/dies warns lives/;
+use Test::Stream qw/-Default Spec Intercept Mock Exception Warnings/;
 
 use Test::Stream::Mock;
-use Test::Stream::Mock::Control;
 
 use Scalar::Util qw/blessed/;
 
@@ -17,7 +14,7 @@ around_each local_fake => sub {
 
 tests construction => sub {
     my %calls;
-    my $c = mock 'Test::Stream::Mock::Control' => (
+    my $c = mock 'Test::Stream::Mock' => (
         before => [ class => sub { $calls{class}++ } ],
         override => [
             parent => sub { $calls{parent}++ },
@@ -28,13 +25,13 @@ tests construction => sub {
         ],
     );
 
-    my $one = Test::Stream::Mock::Control->new(
+    my $one = Test::Stream::Mock->new(
         class  => 'Fake',
         parent => 'Fake',
         child  => 'Fake',
         foo    => 'Fake',
     );
-    isa_ok($one, 'Test::Stream::Mock::Control');
+    isa_ok($one, 'Test::Stream::Mock');
 
     is(
         \%calls,
@@ -47,13 +44,13 @@ tests construction => sub {
     my @args;
     $c->add(foo => sub { push @args => \@_ });
 
-    $one = Test::Stream::Mock::Control->new(
+    $one = Test::Stream::Mock->new(
         class => 'Fake',
         foo   => 'string',
         foo   => [qw/a list/],
         foo   => {a => 'hash'},
     );
-    isa_ok($one, 'Test::Stream::Mock::Control');
+    isa_ok($one, 'Test::Stream::Mock');
 
     is(
         \@args,
@@ -66,20 +63,20 @@ tests construction => sub {
     );
 
     like(
-        dies { Test::Stream::Mock::Control->new },
+        dies { Test::Stream::Mock->new },
         qr/The 'class' field is required/,
         "Must specify a class"
     );
 
     like(
-        dies { Test::Stream::Mock::Control->new(class => 'Fake', foo => sub { 1 }) },
+        dies { Test::Stream::Mock->new(class => 'Fake', foo => sub { 1 }) },
         qr/'CODE\(.*\)' is not a valid argument for 'foo'/,
         "Val must be sane"
     );
 };
 
 tests check => sub {
-    my $one = Test::Stream::Mock::Control->new(class => 'Fake');
+    my $one = Test::Stream::Mock->new(class => 'Fake');
 
     ok(lives { $one->_check }, "did not die");
 
@@ -93,7 +90,7 @@ tests check => sub {
 };
 
 tests purge_on_destroy => sub {
-    my $one = Test::Stream::Mock::Control->new(class => 'Fake');
+    my $one = Test::Stream::Mock->new(class => 'Fake');
 
     ok(!$one->purge_on_destroy, "Not set by default");
     $one->purge_on_destroy(1);
@@ -111,7 +108,7 @@ tests purge_on_destroy => sub {
     $one = undef;
     can_ok('Fake', 'foo'); # Not purged
 
-    $one = Test::Stream::Mock::Control->new(class => 'Fake');
+    $one = Test::Stream::Mock->new(class => 'Fake');
     $one->purge_on_destroy(1);
     $one = undef;
     my $stash = do { no strict 'refs'; \%{"Fake::"}; };
@@ -120,7 +117,7 @@ tests purge_on_destroy => sub {
 };
 
 tests stash => sub {
-    my $one = Test::Stream::Mock::Control->new(class => 'Fake');
+    my $one = Test::Stream::Mock->new(class => 'Fake');
     my $stash = $one->stash;
 
     ok($stash, "got a stash");
@@ -137,8 +134,8 @@ tests stash => sub {
 };
 
 tests file => sub {
-    my $fake = Test::Stream::Mock::Control->new(class => 'Fake');
-    my $complex = Test::Stream::Mock::Control->new(class => "A::Fake'Module::With'Separators");
+    my $fake = Test::Stream::Mock->new(class => 'Fake');
+    my $complex = Test::Stream::Mock->new(class => "A::Fake'Module::With'Separators");
 
     is($fake->file, "Fake.pm", "Got simple filename");
 
@@ -159,11 +156,11 @@ describe block_load => sub {
     };
 
     case 'construction' => sub {
-        $one = Test::Stream::Mock::Control->new(class => 'Fake', block_load => 1);
+        $one = Test::Stream::Mock->new(class => 'Fake', block_load => 1);
     };
 
     case 'post construction' => sub {
-        $one = Test::Stream::Mock::Control->new(class => 'Fake');
+        $one = Test::Stream::Mock->new(class => 'Fake');
         $one->block_load;
     };
 
@@ -175,7 +172,7 @@ describe block_load => sub {
 tests block_load_fail => sub {
     $INC{'Fake.pm'} = 'path/to/Fake.pm';
 
-    my $one = Test::Stream::Mock::Control->new(class => 'Fake');
+    my $one = Test::Stream::Mock->new(class => 'Fake');
 
     like(
         dies { $one->block_load },
@@ -185,7 +182,7 @@ tests block_load_fail => sub {
 };
 
 tests constructors => sub {
-    my $one = Test::Stream::Mock::Control->new(
+    my $one = Test::Stream::Mock->new(
         class => 'Fake',
         add_constructor => [new => 'hash'],
     );
@@ -227,7 +224,7 @@ tests constructors => sub {
 };
 
 tests autoload => sub {
-    my $one = Test::Stream::Mock::Control->new(
+    my $one = Test::Stream::Mock->new(
         class => 'Fake',
         add_constructor => [new => 'hash'],
     );
@@ -273,7 +270,7 @@ tests autoload => sub {
 };
 
 tests autoload_failures => sub {
-    my $one = Test::Stream::Mock::Control->new(class => 'fake');
+    my $one = Test::Stream::Mock->new(class => 'fake');
 
     $one->add('AUTOLOAD' => sub { 1 });
 
@@ -285,7 +282,7 @@ tests autoload_failures => sub {
 
     $one = undef;
 
-    $one = Test::Stream::Mock::Control->new(class => 'bad package');
+    $one = Test::Stream::Mock->new(class => 'bad package');
     like(
         dies { $one->autoload },
         qr/syntax error/,
@@ -298,7 +295,7 @@ tests ISA => sub {
     no warnings 'once';
     local *My::Parent::foo = sub { 'foo' };
 
-    my $one = Test::Stream::Mock::Control->new(
+    my $one = Test::Stream::Mock->new(
         class => 'Fake',
         add_constructor => [new => 'hash'],
         add => [
@@ -319,7 +316,7 @@ tests before => sub {
 
     my $thing;
 
-    my $one = Test::Stream::Mock::Control->new(class => 'Fake');
+    my $one = Test::Stream::Mock->new(class => 'Fake');
     $one->before('foo' => sub { $thing = 'ran before foo' });
 
     ok(!$thing, "nothing ran yet");
@@ -342,7 +339,7 @@ tests before => sub {
 
     my $ran = 0;
 
-    my $one = Test::Stream::Mock::Control->new(class => 'Fake');
+    my $one = Test::Stream::Mock->new(class => 'Fake');
     $one->after('foo' => sub { $ran++ });
 
     is($ran, 0, "nothing ran yet");
@@ -370,7 +367,7 @@ tests around => sub {
         };
     }
 
-    my $one = Test::Stream::Mock::Control->new(class => 'Fake');
+    my $one = Test::Stream::Mock->new(class => 'Fake');
     $one->around(foo => sub {
         my ($orig, @args) = @_;
         push @things => ['pre', \@args];
@@ -392,7 +389,7 @@ tests around => sub {
 };
 
 tests 'add and current' => sub {
-    my $one = Test::Stream::Mock::Control->new(
+    my $one = Test::Stream::Mock->new(
         class => 'Fake',
         add_constructor => [new => 'hash'],
         add => [
@@ -489,7 +486,7 @@ tests 'add and current' => sub {
 
     ok(!Fake->can($_), "Removed sub $_") for qw/new foo bar baz DATA reader writer rsub nsub/;
 
-    $one = Test::Stream::Mock::Control->new(class => 'Fake');
+    $one = Test::Stream::Mock->new(class => 'Fake');
 
     # Scalars are tricky, skip em for now.
     is($one->current('&DATA'), undef, 'no current &DATA');
@@ -534,7 +531,7 @@ tests 'override and orig' => sub {
 
     $check_initial->();
 
-    my $one = Test::Stream::Mock::Control->new(
+    my $one = Test::Stream::Mock->new(
         class => 'Fake',
         override_constructor => [new => 'hash'],
         override => [
@@ -639,7 +636,7 @@ tests 'override and orig' => sub {
     );
 
     like(
-        dies { Test::Stream::Mock::Control->new(class => 'Fake2')->orig('no_mocks') },
+        dies { Test::Stream::Mock->new(class => 'Fake2')->orig('no_mocks') },
         qr/No symbols have been mocked yet/,
         "Cannot get original when nothing is mocked"
     );
@@ -648,11 +645,11 @@ tests 'override and orig' => sub {
 
     $check_initial->();
 
-    $one = Test::Stream::Mock::Control->new(class => 'Fake');
+    $one = Test::Stream::Mock->new(class => 'Fake');
 };
 
 tests parse_sym => sub {
-    my $p = Test::Stream::Mock::Control->can('_parse_sym');
+    my $p = Test::Stream::Mock->can('_parse_sym');
 
     is([$p->('foo')],  [foo  => 'CODE'],   "parsed no sigil");
     is([$p->('_foo')], [_foo => 'CODE'],   "parsed underscore");
@@ -669,7 +666,7 @@ tests parse_sym => sub {
 };
 
 tests restore_reset => sub {
-    my $one = Test::Stream::Mock::Control->new( class => 'Fake' );
+    my $one = Test::Stream::Mock->new( class => 'Fake' );
 
     $one->add(foo => sub { 'a' });
     $one->add(-foo => \'a');

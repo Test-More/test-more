@@ -9,9 +9,9 @@ my $events = $grab->finish;
 
 is(@$events, 2, "Captured 2 events");
 
-events_are(
+like(
     $events,
-    events {
+    array {
         event Ok => { pass => 1 };
         event Ok => { pass => 0 };
     },

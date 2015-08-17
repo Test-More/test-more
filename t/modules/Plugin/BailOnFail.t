@@ -1,16 +1,16 @@
 use Test::Stream qw/-Tester BailOnFail/;
 
-events_are(
+like(
     intercept {
         ok(1, "pass");
         ok(0, "fail");
         ok(1, "Should not see");
     },
-    events {
+    array {
         event Ok => { name => "pass", pass => 1 };
         event Ok => { name => "fail", pass => 0 };
         event Bail => { reason => "(Bail On Fail)" };
-        end_events;
+        end;
     },
     "Bailed after the failure"
 );
@@ -24,18 +24,18 @@ sub mok {
     return $ok;
 }
 
-events_are(
+like(
     intercept {
         ok(1, "pass");
         mok(0, "fail");
         ok(1, "Should not see");
     },
-    events {
+    array {
         event Ok => { name => "pass", pass => 1 };
         event Ok => { name => "fail", pass => 0 };
         event Diag => { message => "Should see this after failure" };
         event Bail => { reason => "(Bail On Fail)" };
-        end_events;
+        end;
     },
     "Tool had time to output the diag"
 );

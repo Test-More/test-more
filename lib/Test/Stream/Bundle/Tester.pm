@@ -5,7 +5,10 @@ use warnings;
 use Test::Stream::Bundle;
 
 sub plugins {
-    return (qw/-Default Tester Intercept Grab LoadPlugin Context/);
+    return (
+        qw/-Default Intercept Grab LoadPlugin Context/,
+        Compare => ['-all'],
+    );
 }
 
 1;

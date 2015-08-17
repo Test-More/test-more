@@ -1,8 +1,11 @@
-use Test::Stream;
-use Test::Stream::Spec qw{
-    it tests case before_all after_all around_all before_each after_each
-    around_each before_case after_case around_case describe cases
-};
+use Test::Stream(
+    '-Default',
+    'Compare' => ['-all'],
+    Spec => [qw{
+        it tests case before_all after_all around_all before_each after_each
+        around_each before_case after_case around_case describe cases
+    }],
+);
 
 use Test::Stream::Workflow qw{
     workflow_build
@@ -10,7 +13,7 @@ use Test::Stream::Workflow qw{
     workflow_meta
 };
 
-no Test::Stream::Spec;
+no Test::Stream::Plugin::Spec;
 
 ok(!workflow_build, "no current build");
 
@@ -51,8 +54,8 @@ my $unit = describe blah => sub {
     like(
         $unit->primary,
         [
-            { name => 'foo', meta => { x => 1 }, primary => $fake, buildup => undef, teardown => undef, modify => undef },
-            { name => 'bar', meta => { y => 1 }, primary => $fake, buildup => undef, teardown => undef, modify => undef },
+            { name => 'foo', meta => { x => 1 }, primary => $fake, buildup => DNE(), teardown => DNE(), modify => DNE() },
+            { name => 'bar', meta => { y => 1 }, primary => $fake, buildup => DNE(), teardown => DNE(), modify => DNE() },
         ],
         "Got tests"
     );
@@ -60,8 +63,8 @@ my $unit = describe blah => sub {
     like(
         $unit->modify,
         [
-            { name => 'a', primary => $fake, buildup => undef, teardown => undef, modify => undef },
-            { name => 'b', primary => $fake, buildup => undef, teardown => undef, modify => undef },
+            { name => 'a', primary => $fake, buildup => DNE(), teardown => DNE(), modify => DNE() },
+            { name => 'b', primary => $fake, buildup => DNE(), teardown => DNE(), modify => DNE() },
         ],
         "Got cases"
     );
@@ -69,8 +72,8 @@ my $unit = describe blah => sub {
     like(
         $unit->buildup,
         [
-            { name => 'ba', primary => $fake, wrap => 0, buildup => undef, teardown => undef, modify => undef },
-            { name => 'wa', primary => $fake, wrap => 1, buildup => undef, teardown => undef, modify => undef },
+            { name => 'ba', primary => $fake, wrap => 0, buildup => DNE(), teardown => DNE(), modify => DNE() },
+            { name => 'wa', primary => $fake, wrap => 1, buildup => DNE(), teardown => DNE(), modify => DNE() },
         ],
         "Got before and around all"
     );
@@ -78,8 +81,8 @@ my $unit = describe blah => sub {
     like(
         $unit->teardown,
         [
-            { name => 'aa', primary => $fake, wrap => 0, buildup => undef, teardown => undef, modify => undef },
-            { name => 'wa', primary => $fake, wrap => 1, buildup => undef, teardown => undef, modify => undef },
+            { name => 'aa', primary => $fake, wrap => 0, buildup => DNE(), teardown => DNE(), modify => DNE() },
+            { name => 'wa', primary => $fake, wrap => 1, buildup => DNE(), teardown => DNE(), modify => DNE() },
         ],
         "Got after and around all"
     );
@@ -93,7 +96,7 @@ like(
     $unit->primary,
     [
         {
-            name => 'foo', meta => { x => 1 }, modify => undef, primary => $fake,
+            name => 'foo', meta => { x => 1 }, modify => DNE(), primary => $fake,
             buildup => [
                 { name => 'be', primary => $fake, wrap => 0 },
                 { name => 'we', primary => $fake, wrap => 1 },
@@ -104,7 +107,7 @@ like(
             ],
         },
         {
-            name => 'bar', meta => { y => 1 }, modify => undef, primary => $fake,
+            name => 'bar', meta => { y => 1 }, modify => DNE(), primary => $fake,
             buildup => [
                 { name => 'be', primary => $fake, wrap => 0 },
                 { name => 'we', primary => $fake, wrap => 1 },
@@ -122,7 +125,7 @@ like(
     $unit->modify,
     [
         {
-            name => 'a', primary => $fake, modify => undef,
+            name => 'a', primary => $fake, modify => DNE(),
             buildup => [
                 { name => 'bc', primary => $fake, wrap => 0 },
                 { name => 'wc', primary => $fake, wrap => 1 },
@@ -133,7 +136,7 @@ like(
             ],
         },
         {
-            name => 'b', primary => $fake, modify => undef,
+            name => 'b', primary => $fake, modify => DNE(),
             buildup => [
                 { name => 'bc', primary => $fake, wrap => 0 },
                 { name => 'wc', primary => $fake, wrap => 1 },

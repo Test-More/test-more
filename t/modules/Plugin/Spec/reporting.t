@@ -1,8 +1,9 @@
-use Test::Stream;
-use Test::Stream::Tester;
+use Test::Stream(
+    qw/-Tester Spec/,
+);
+no Test::Stream::Plugin::Spec;
+
 use Test::Stream::Workflow qw/workflow_run/;
-use Test::Stream::Spec;
-no Test::Stream::Spec;
 
 use Carp qw/croak confess/;
 
@@ -70,20 +71,20 @@ describe outer => sub {
 
 my $events = intercept { workflow_run };
 
-events_are(
+like(
     $events,
-    events {
+    array {
         event Subtest => { pass => 1 }; # Nothing special
 
         # Failure in the inner block
         event Subtest => sub {
-            event_call pass => 0;
-            event_call diag => [ qr{Failed test 'outer'} ];
-            event_call subevents => events {
+            call pass => 0;
+            call diag => [ qr{Failed test 'outer'} ];
+            call subevents => array {
                 event Subtest => sub {
-                    event_call pass => 0;
-                    event_call diag => [ qr{Failed test 'inner'} ];
-                    event_call subevents => events {
+                    call pass => 0;
+                    call diag => [ qr{Failed test 'inner'} ];
+                    call subevents => array {
                         event Ok => { pass => 0 };
                     };
                 };
@@ -92,13 +93,13 @@ events_are(
         };
 
         event Subtest => sub {
-            event_call pass => 0;
-            event_call diag => [ qr{Failed test 'outer'}s ];
-            event_call subevents => events {
+            call pass => 0;
+            call diag => [ qr{Failed test 'outer'}s ];
+            call subevents => array {
                 event Subtest => sub {
-                    event_call pass => 0;
-                    event_call diag => [ qr{Failed test 'inner'} ];
-                    event_call subevents => events {
+                    call pass => 0;
+                    call diag => [ qr{Failed test 'inner'} ];
+                    call subevents => array {
                         event Exception => { error => qr{xxx} };
                     };
                 };
@@ -107,13 +108,13 @@ events_are(
         };
 
         event Subtest => sub {
-            event_call pass => 0;
-            event_call diag => [ qr{Failed test 'outer'}s ];
-            event_call subevents => events {
+            call pass => 0;
+            call diag => [ qr{Failed test 'outer'}s ];
+            call subevents => array {
                 event Subtest => sub {
-                    event_call pass => 0;
-                    event_call diag => [ qr{Failed test 'inner'} ];
-                    event_call subevents => events {
+                    call pass => 0;
+                    call diag => [ qr{Failed test 'inner'} ];
+                    call subevents => array {
                         event Ok => { name => 'a', pass => 0 };
                         event Ok => { name => 'b', pass => 0 };
                         event Ok => {
@@ -122,22 +123,22 @@ events_are(
                             diag => [ qr{Failed test \'wrapper\'} ],
                         };
                         event Plan => {};
-                        end_events;
+                        end;
                     };
                 };
                 event Plan => { max => 1 };
-                end_events;
+                end;
             };
         };
 
         event Subtest => sub {
-            event_call pass => 0;
-            event_call diag => [ qr{Failed test 'outer'}s ];
-            event_call subevents => events {
+            call pass => 0;
+            call diag => [ qr{Failed test 'outer'}s ];
+            call subevents => array {
                 event Subtest => sub {
-                    event_call pass => 0;
-                    event_call diag => [ qr{Failed test 'inner'} ];
-                    event_call subevents => events {
+                    call pass => 0;
+                    call diag => [ qr{Failed test 'inner'} ];
+                    call subevents => array {
                         event Exception => { error => qr{xxx} };
                         event Ok => { name => 'b', pass => 0 };
                         event Ok => {
@@ -146,35 +147,35 @@ events_are(
                             diag => [ qr{Failed test \'wrapper\'} ],
                         };
                         event Plan => {};
-                        end_events;
+                        end;
                     };
                 };
                 event Plan => { max => 1 };
-                end_events;
+                end;
             };
         };
 
         event Subtest => sub {
-            event_call pass => 0;
-            event_call diag => [ qr{Failed test 'outer'}s ];
-            event_call subevents => events {
+            call pass => 0;
+            call diag => [ qr{Failed test 'outer'}s ];
+            call subevents => array {
                 event Subtest => sub {
-                    event_call pass => 0;
-                    event_call diag => [ qr{Failed test 'inner'} ];
-                    event_call subevents => events {
+                    call pass => 0;
+                    call diag => [ qr{Failed test 'inner'} ];
+                    call subevents => array {
                         event Exception => { error => qr{Inner sub was never called} };
                         event Plan => {};
-                        end_events;
+                        end;
                     };
                 };
                 event Plan => { max => 1 };
-                end_events;
+                end;
             };
         };
 
         # The final ok for the package
         event Ok => { pass => 0, name => 'main' };
-        end_events;
+        end;
     },
     "Got expected events"
 );

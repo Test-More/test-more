@@ -5,7 +5,7 @@ use warnings;
 use Test::Stream::Bundle;
 
 sub plugins {
-    return (qw/-Tester Spec/);
+    return (qw/-Default -Spec -Tester/);
 }
 
 1;

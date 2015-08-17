@@ -53,13 +53,13 @@ my $unit = Test::Stream::Workflow::Unit->new(
 );
 
 my $is_canon;
-events_are(
+like(
     intercept {
         local $unit->meta->{todo} = "this is todo";
         my $ctx = $unit->context;
         $ctx->ok(0, "You Fail!");
     },
-    events {
+    array {
         event Ok => {
             pass           => 0,
             effective_pass => 1,

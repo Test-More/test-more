@@ -35,7 +35,7 @@ wrap {
 
 wrap {
     my $ctx = shift;
-    isnt("$ctx", $ref, "Got a new context");
+    ok("$ctx" ne "$ref", "Got a new context");
     my $new = context();
     ok($ctx == $new, "Additional call to context gets same instance");
     delete $ctx->debug->frame->[4];

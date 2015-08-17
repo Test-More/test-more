@@ -11,7 +11,7 @@ my $error = $@;
 require Test::Stream;
 Test::Stream->load(
     [__PACKAGE__, __FILE__, __LINE__],
-    'More'
+    'Core', 'Compare'
 );
 
 ok(!$init, "Sync was not yet initialized");

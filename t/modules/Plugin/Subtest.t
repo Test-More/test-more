@@ -8,7 +8,7 @@ use File::Temp qw/tempfile/;
 # done if this test is run.
 # "Size magic not implemented."
 if ($] > 5.020000) {
-    events_are(
+    like(
         intercept {
             subtest_streamed 'foo' => sub {
                 my ($fh, $name) = tempfile;
@@ -23,14 +23,14 @@ if ($] > 5.020000) {
                 die "Ooops";
             };
         },
-        events {
+        array {
             event Note => { message => 'Subtest: foo' };
             event Subtest => sub {
-                efield pass => 1;
-                efield name => 'Subtest: foo';
-                efield subevents => events {
+                field pass => 1;
+                field name => 'Subtest: foo';
+                field subevents => array {
                     event Plan => { directive => 'SKIP', reason => 'because' };
-                    end_events;
+                    end;
                 };
             }
         },
@@ -38,7 +38,7 @@ if ($] > 5.020000) {
     );
 }
 
-events_are(
+like(
     intercept {
         subtest_streamed 'foo' => sub {
             subtest_buffered 'bar' => sub {
@@ -46,19 +46,19 @@ events_are(
             };
         };
     },
-    events {
+    array {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
-            efield pass => 1;
-            efield name => 'Subtest: foo';
-            efield subevents => events {
+            field pass => 1;
+            field name => 'Subtest: foo';
+            field subevents => array {
                 event Subtest => sub {
-                    efield pass => 1;
-                    efield name => 'bar';
-                    efield subevents => events {
+                    field pass => 1;
+                    field name => 'bar';
+                    field subevents => array {
                         event Ok => sub {
-                            efield name => 'pass';
-                            efield pass => 1;
+                            field name => 'pass';
+                            field pass => 1;
                         };
                     };
                 };
@@ -69,7 +69,7 @@ events_are(
 );
 
 my @lines = ();
-events_are(
+like(
     intercept {
         push @lines => __LINE__ + 4;
         subtest_streamed 'foo' => sub {
@@ -77,19 +77,19 @@ events_are(
             ok(1, "pass");
         };
     },
-    events {
+    array {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
-            eprop file => __FILE__;
-            eprop line => $lines[0];
-            efield pass => 1;
-            efield name => 'Subtest: foo';
-            efield subevents => events {
+            prop file => __FILE__;
+            prop line => $lines[0];
+            field pass => 1;
+            field name => 'Subtest: foo';
+            field subevents => array {
                 event Ok => sub {
-                    eprop file => __FILE__;
-                    eprop line => $lines[1];
-                    efield name => 'pass';
-                    efield pass => 1;
+                    prop file => __FILE__;
+                    prop line => $lines[1];
+                    field name => 'pass';
+                    field pass => 1;
                 };
             };
         };
@@ -98,7 +98,7 @@ events_are(
 );
 
 @lines = ();
-events_are(
+like(
     intercept {
         push @lines => __LINE__ + 4;
         subtest_streamed 'foo' => sub {
@@ -106,19 +106,19 @@ events_are(
             ok(0, "fail");
         };
     },
-    events {
+    array {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
-            eprop file => __FILE__;
-            eprop line => $lines[0];
-            efield pass => 0;
-            efield name => 'Subtest: foo';
-            efield subevents => events {
+            prop file => __FILE__;
+            prop line => $lines[0];
+            field pass => 0;
+            field name => 'Subtest: foo';
+            field subevents => array {
                 event Ok => sub {
-                    eprop file => __FILE__;
-                    eprop line => $lines[1];
-                    efield name => 'fail';
-                    efield pass => 0;
+                    prop file => __FILE__;
+                    prop line => $lines[1];
+                    field name => 'fail';
+                    field pass => 0;
                 };
             };
         };
@@ -127,7 +127,7 @@ events_are(
 );
 
 @lines = ();
-events_are(
+like(
     intercept {
         push @lines => __LINE__ + 5;
         subtest_streamed 'foo' => sub {
@@ -136,22 +136,22 @@ events_are(
             done_testing;
         };
     },
-    events {
+    array {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
-            eprop file => __FILE__;
-            eprop line => $lines[0];
-            efield pass => 1;
-            efield name => 'Subtest: foo';
-            efield subevents => events {
+            prop file => __FILE__;
+            prop line => $lines[0];
+            field pass => 1;
+            field name => 'Subtest: foo';
+            field subevents => array {
                 event Ok => sub {
-                    eprop file => __FILE__;
-                    eprop line => $lines[1];
-                    efield name => 'pass';
-                    efield pass => 1;
+                    prop file => __FILE__;
+                    prop line => $lines[1];
+                    field name => 'pass';
+                    field pass => 1;
                 };
                 event Plan => { max => 1 };
-                end_events;
+                end;
             };
         };
     },
@@ -159,7 +159,7 @@ events_are(
 );
 
 @lines = ();
-events_are(
+like(
     intercept {
         push @lines => __LINE__ + 5;
         subtest_streamed 'foo' => sub {
@@ -168,22 +168,22 @@ events_are(
             ok(1, "pass");
         };
     },
-    events {
+    array {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
-            eprop file => __FILE__;
-            eprop line => $lines[0];
-            efield pass => 1;
-            efield name => 'Subtest: foo';
-            efield subevents => events {
+            prop file => __FILE__;
+            prop line => $lines[0];
+            field pass => 1;
+            field name => 'Subtest: foo';
+            field subevents => array {
                 event Plan => { max => 1 };
                 event Ok => sub {
-                    eprop file => __FILE__;
-                    eprop line => $lines[1];
-                    efield name => 'pass';
-                    efield pass => 1;
+                    prop file => __FILE__;
+                    prop line => $lines[1];
+                    field name => 'pass';
+                    field pass => 1;
                 };
-                end_events;
+                end;
             };
         };
     },
@@ -191,7 +191,7 @@ events_are(
 );
 
 @lines = ();
-events_are(
+like(
     intercept {
         push @lines => __LINE__ + 5;
         subtest_streamed 'foo' => sub {
@@ -200,16 +200,16 @@ events_are(
             ok(1, "pass");
         };
     },
-    events {
+    array {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
-            eprop file => __FILE__;
-            eprop line => $lines[0];
-            efield pass => 1;
-            efield name => 'Subtest: foo';
-            efield subevents => events {
+            prop file => __FILE__;
+            prop line => $lines[0];
+            field pass => 1;
+            field name => 'Subtest: foo';
+            field subevents => array {
                 event Plan => { directive => 'SKIP', reason => 'bleh' };
-                end_events;
+                end;
             };
         };
     },
@@ -217,23 +217,23 @@ events_are(
 );
 
 @lines = ();
-events_are(
+like(
     intercept {
         subtest_streamed 'foo' => sub {
             BAIL_OUT 'cause';
             ok(1, "should not see this");
         };
     },
-    events {
+    array {
         event Note => { message => 'Subtest: foo' };
         event Bail => { reason => 'cause' };
-        end_events;
+        end;
     },
     "Can bail out"
 );
 
 @lines = ();
-events_are(
+like(
     intercept {
         push @lines => __LINE__ + 4;
         subtest_buffered 'foo' => sub {
@@ -241,18 +241,18 @@ events_are(
             ok(1, "pass");
         };
     },
-    events {
+    array {
         event Subtest => sub {
-            eprop file => __FILE__;
-            eprop line => $lines[0];
-            efield pass => 1;
-            efield name => 'foo';
-            efield subevents => events {
+            prop file => __FILE__;
+            prop line => $lines[0];
+            field pass => 1;
+            field name => 'foo';
+            field subevents => array {
                 event Ok => sub {
-                    eprop file => __FILE__;
-                    eprop line => $lines[1];
-                    efield name => 'pass';
-                    efield pass => 1;
+                    prop file => __FILE__;
+                    prop line => $lines[1];
+                    field name => 'pass';
+                    field pass => 1;
                 };
             };
         };
@@ -261,7 +261,7 @@ events_are(
 );
 
 @lines = ();
-events_are(
+like(
     intercept {
         push @lines => __LINE__ + 4;
         subtest_buffered 'foo' => sub {
@@ -269,18 +269,18 @@ events_are(
             ok(0, "fail");
         };
     },
-    events {
+    array {
         event Subtest => sub {
-            eprop file => __FILE__;
-            eprop line => $lines[0];
-            efield pass => 0;
-            efield name => 'foo';
-            efield subevents => events {
+            prop file => __FILE__;
+            prop line => $lines[0];
+            field pass => 0;
+            field name => 'foo';
+            field subevents => array {
                 event Ok => sub {
-                    eprop file => __FILE__;
-                    eprop line => $lines[1];
-                    efield name => 'fail';
-                    efield pass => 0;
+                    prop file => __FILE__;
+                    prop line => $lines[1];
+                    field name => 'fail';
+                    field pass => 0;
                 };
             };
         };
@@ -289,7 +289,7 @@ events_are(
 );
 
 @lines = ();
-events_are(
+like(
     intercept {
         push @lines => __LINE__ + 5;
         subtest_buffered 'foo' => sub {
@@ -298,21 +298,21 @@ events_are(
             done_testing;
         };
     },
-    events {
+    array {
         event Subtest => sub {
-            eprop file => __FILE__;
-            eprop line => $lines[0];
-            efield pass => 1;
-            efield name => 'foo';
-            efield subevents => events {
+            prop file => __FILE__;
+            prop line => $lines[0];
+            field pass => 1;
+            field name => 'foo';
+            field subevents => array {
                 event Ok => sub {
-                    eprop file => __FILE__;
-                    eprop line => $lines[1];
-                    efield name => 'pass';
-                    efield pass => 1;
+                    prop file => __FILE__;
+                    prop line => $lines[1];
+                    field name => 'pass';
+                    field pass => 1;
                 };
                 event Plan => { max => 1 };
-                end_events;
+                end;
             };
         };
     },
@@ -320,7 +320,7 @@ events_are(
 );
 
 @lines = ();
-events_are(
+like(
     intercept {
         push @lines => __LINE__ + 5;
         subtest_buffered 'foo' => sub {
@@ -329,21 +329,21 @@ events_are(
             ok(1, "pass");
         };
     },
-    events {
+    array {
         event Subtest => sub {
-            eprop file => __FILE__;
-            eprop line => $lines[0];
-            efield pass => 1;
-            efield name => 'foo';
-            efield subevents => events {
+            prop file => __FILE__;
+            prop line => $lines[0];
+            field pass => 1;
+            field name => 'foo';
+            field subevents => array {
                 event Plan => { max => 1 };
                 event Ok => sub {
-                    eprop file => __FILE__;
-                    eprop line => $lines[1];
-                    efield name => 'pass';
-                    efield pass => 1;
+                    prop file => __FILE__;
+                    prop line => $lines[1];
+                    field name => 'pass';
+                    field pass => 1;
                 };
-                end_events;
+                end;
             };
         };
     },
@@ -351,7 +351,7 @@ events_are(
 );
 
 @lines = ();
-events_are(
+like(
     intercept {
         push @lines => __LINE__ + 5;
         subtest_buffered 'foo' => sub {
@@ -360,15 +360,15 @@ events_are(
             ok(1, "pass");
         };
     },
-    events {
+    array {
         event Subtest => sub {
-            eprop file => __FILE__;
-            eprop line => $lines[0];
-            efield pass => 1;
-            efield name => 'foo';
-            efield subevents => events {
+            prop file => __FILE__;
+            prop line => $lines[0];
+            field pass => 1;
+            field name => 'foo';
+            field subevents => array {
                 event Plan => { directive => 'SKIP', reason => 'bleh' };
-                end_events;
+                end;
             };
         };
     },
@@ -376,16 +376,16 @@ events_are(
 );
 
 @lines = ();
-events_are(
+like(
     intercept {
         subtest_buffered 'foo' => sub {
             BAIL_OUT 'cause';
             ok(1, "should not see this");
         };
     },
-    events {
+    array {
         event Bail => { reason => 'cause' };
-        end_events;
+        end;
     },
     "Can bail out"
 );
