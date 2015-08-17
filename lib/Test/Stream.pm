@@ -134,45 +134,145 @@ experimental phase is over.
 
 =head1 ***READ THIS FIRST***
 
-If you are not already familiar with testing you should check out
-L<Test::Stream::Manual::BeginnerTutorial>. If you know your way around testing
-and want to know what Test::Stream can provide you should see
-L<Test::Stream::Manual>. Finally, if you want to write new testing
-tools using L<Test::Stream> you should take a look at
-L<Test::Stream::Manual::Tooling>.
-
-=head1 DESCRIPTION
-
 B<This is not a drop-in replacement for Test::More>.
 
-L<Test::Stream> is a framework designed to replace L<Test::Builder> as the new
-base upon which testing tools should be built. This module is intended to be
-the primary interface for people writing tests.
-
-Loading L<Test::Stream> without arguments will load the
-L<Test::Stream::Bundle::Default> plugin bundle. The default bundle will provide
-you with functionality very close, and in I<most> cases identical to what
-L<Test::More> provides. Some functionality has been moved, removed, added,
-renamed, this decision was made since adopting Test::Stream is not mandatory
-and already requires effort.
-
-=head1 SYNOPSIS
-
-    use Test::Stream;
-
-    ok(1, "1 is true");
-    is('xxx', 'xxx', "compare 2 string");
-    is_deeply($thing1, $thing2, "these structures are the same");
-    ...
-
-    done_testing;
-
-See L<Test::Stream::Bundle::Default> for a list of everything loaded by default.
+Adoption of L<Test::Stream> instead of continuing to use L<Test::More> is a
+choice. Liberty has been taken to make significant API changes. Replacing C<use
+Test::More;> with C<use Test::Stream;> will not work for more than the most
+trivial of test files.
 
 =head1 MANUAL
 
-L<Test::Stream::Manual> is a good place to start when searching for
-documentation.
+TODO: Manual
+
+See L<Test::Stream::Manual::FromTestBuilder> if you are coming from
+L<Test::More> or L<Test::Simple> and want a quick translation.
+
+=head1 DESCRIPTION
+
+=head1 SYNOPSIS
+
+When used without arguments, the default bundle is used. You can find out more
+about the default bundle in the L<Test::Stream::Bundle::Default> module.
+
+    use Test::Stream;
+
+    ok(1, "This is a pass");
+    ok(0, "This is a fail");
+
+    is("x", "x", "These strings are the same");
+    is($A, $B, "These 2 structures match exactly");
+
+    like('x', qr/x/, "This string matches this pattern");
+    like($A, $B, "These structures match where it counts");
+
+    done_testing;
+
+=head1 PLUGINS AND BUNDLES
+
+L<Test::Stream> tools should be created as plugins. This is not enforced,
+nothing prevents you from writing L<Test::Stream> tools that are not plugins.
+However writing your tool as a plugin will help your module to play well with
+other tools. Writing a plugin also makes it easier for you to create private or
+public bundles that reduce your boilerplate.
+
+Bundles are very simple. At its core a bundle is simply a list of other
+bundles, plugins, and arguments to those plugins. Much like hash declaration a
+'last wins' approach is used; if you load 2 bundles that share a plugin with
+different arguments, the last set of arguments wins.
+
+Plugins and bundles can be distinguished easily:
+
+    use Test::Stream(
+        '-Default',                     # Default bundle ('-')
+        ':Project',                     # Preject specific bundle (':')
+        'MyPlugin',                     # Plugin name (no prefix)
+        '+Fully::Qualified::Plugin',    #(Plugin in unusual path)
+        'SomePlugin' => ['arg1', ...],  #(Plugin with args)
+    );
+
+Explanation:
+
+=over 4
+
+=item '-Bundle'
+
+=item '-Default',
+
+The C<-> prefix indicates that the specified item is a bundle. Bundles live in
+the C<Test::Stream::Bundle::> namespace. Each bundle is an independant module.
+You can specify any number of bundles, or none at all. If no arguments are used
+then the '-Default' bundle (L<Test::Stream::Bundle::Default>) is used.
+
+=item ':Project'
+
+The ':' prefix indicates we are loading a project specific bundle, which means
+the module must be located in C<t/lib/>, C<lib/>, or the paths provided in the
+C<TS_LB_PATH> environment variable. In the case of ':Project' it will look for
+C<Test/Stream/Bundle/Project.pm> in C<TS_LB_PATH>, C<t/lib/>, then C<lib/>.
+
+This is a good way to create bundles useful to your project, but not really
+worth putting on CPAN.
+
+=item 'MyPlugin'
+
+Arguments without a prefix are considered to be plugin names. Plugins are
+assumed to be in C<Test::Stream::Plugin::>, which is prefixed automatically for
+you.
+
+=item '+Fully::Qualified::Plugin'
+
+If you write a plugin, but put it in a non-standard namespace, you can use the
+fully qualified plugin namespace prefixed by '+'. Apart from the namespace
+treatment there is no difference in how the plugin is loaded or used.
+
+=item 'SomePlugin' => \@ARGS
+
+Most plugins provide a fairly sane set of defaults when loaded. However some
+provide extras you need to request. When loading a plugin directly these would
+be the import arguments. If you plugin is followed by an arrayref the ref
+contents will be used as load arguments.
+
+Bundles may also specify arguments for plugins. You can override the bundles
+arguments by specifying your own. In these cases last wins, arguments are never
+merged. If multiple bundles are loaded, and several specify arguments to the
+same plugin, the same rules apply.
+
+    use Test::Stream(
+        '-BundleFoo',         # Arguments to 'Foo' get squashed by the next bundle
+        '-BundleAlsoWithFoo', # Arguments to 'Foo' get squashed by the next line
+        'Foo' => [...],       # These args win
+    );
+
+=head2 SEE ALSO
+
+For more about plugins and bundles see the following docs:
+
+=over 4
+
+=item plugins
+
+L<Test::Stream::Plugin> - Provides tools to help write plugins.
+
+=item bundles
+
+L<Test::Stream::Bundle> - Provides tools to help write bundles.
+
+=back
+
+=head2 EXPLANATION AND HISTORY
+
+L<Test::Stream> has learned from L<Test::Builder>. For a time it was common for
+people to write C<Test::*> tools that bundled other C<Test::*> tools with them
+when loaded. For a short time this seemed like a good idea. This was quickly
+seen to be a problem when people wanted to use features of multiple testing
+tools that both made incompatible assumptions about other modules you might
+want to load.
+
+L<Test::Stream> does not recreate this wild west approach to testing tools and
+bundles. L<Test::Stream> recognises the benefits of bundles, but provides a
+much more sane approach. Bundles and Tools are kept seperate, this way you can
+always use tools without being forced to adopt the authors ideal bundle.
 
 =head1 SOURCE
 
