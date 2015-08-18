@@ -200,12 +200,12 @@ sub context {
 
     $current = bless(
         {
-            STACK() => $stack,
-            HUB()   => $hub,
-            DEBUG() => $dbg,
+            STACK()  => $stack,
+            HUB()    => $hub,
+            DEBUG()  => $dbg,
             _DEPTH() => $depth,
-            _ERR()  => $@,
-            $params{on_release} ? (_ON_RELEASE() => [ $params{on_release} ]) : (),
+            _ERR()   => $@,
+            $params{on_release} ? (_ON_RELEASE() => [$params{on_release}]) : (),
         },
         __PACKAGE__
     );
