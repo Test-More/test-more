@@ -43,40 +43,43 @@ sub load {
             next;
         }
 
+        # Strip off the '+', which may be combined with ':' or '-' at the
+        # start.
+        my $full = ($arg =~ s/^([:-]?)\+/$1/) ? 1 : 0;
+
         if ($arg =~ m/^-(.*)$/) {
-            my $pkg = "Test::Stream::Bundle::$1";
+            my $pkg = $full ? $1 : "Test::Stream::Bundle::$1";
             my $file = pkg_to_file($pkg);
-            eval { require $file; 1 } || croak "Could not load Test::Stream bundle '$pkg': $@";
+            require $file;
             unshift @_ => $pkg->plugins;
             next;
         }
 
         if ($arg =~ m/^:(.*)$/) {
-            my $pkg = "Test::Stream::Bundle::$1";
+            my $pkg = $full ? $1 : "Test::Stream::Bundle::$1";
             my $file = pkg_to_file($pkg);
 
-            eval {
-                local @INC = (
-                    ($ENV{TS_LB_PATH} ? split(':', $ENV{TS_LB_PATH}) : ()),
-                    't/lib',
-                    'lib',
-                );
-                require $file;
-                1;
-            } || croak "Could not load LOCAL PROJECT bundle '$pkg' (Do you need to set TS_LB_PATH?): $@";
+            local @INC = (
+                ($ENV{TS_LB_PATH} ? split(':', $ENV{TS_LB_PATH}) : ()),
+                't/lib',
+                'lib',
+                sub {
+                    my ($me, $fname) = @_;
+                    return unless $fname eq $file;
+                    die "Could not load LOCAL PROJECT bundle '$pkg' (Do you need to set TS_LB_PATH?)\n";
+                },
+                @INC,
+            );
 
+            require $file;
             unshift @_ => $pkg->plugins;
             next;
         }
 
         my $val = (@_ && ref $_[0]) ? shift @_ : [];
 
-        if ($arg =~ m/^\+(.*)$/) {
-            $arg = $1;
-        }
-        else {
-            $arg = __PACKAGE__ . '::Plugin::' . $arg;
-        }
+        $arg = 'Test::Stream::Plugin::' . $arg unless $full;
+
         # Make sure we only list it in @order once.
         push @order => $arg unless $args{$arg};
 
@@ -141,12 +144,12 @@ choice. Liberty has been taken to make significant API changes. Replacing C<use
 Test::More;> with C<use Test::Stream;> will not work for more than the most
 trivial of test files.
 
+See L<Test::Stream::Manual::FromTestBuilder> if you are coming from
+L<Test::More> or L<Test::Simple> and want a quick translation.
+
 =head1 MANUAL
 
 TODO: Manual
-
-See L<Test::Stream::Manual::FromTestBuilder> if you are coming from
-L<Test::More> or L<Test::Simple> and want a quick translation.
 
 =head1 DESCRIPTION
 
