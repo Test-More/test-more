@@ -77,22 +77,6 @@ in L<Test::More> so it is unlikely to effect many people.
 
 Defined in L<Test::Stream::Plugin::Core>.
 
-=item subtest
-
-The default output has been changed:
-
-    ok 1 - Subtest Name {
-        ok 1 - subtest result
-        ok 2 - another result
-        1..2
-    # }
-
-The old output format can be used if requested:
-
-    use Test::Stream '-Default', 'Subtest' => ['streamed'];
-
-Defined in L<Test::Stream::Plugin::Subtest>.
-
 =item BAIL_OUT
 
 No differences
@@ -244,6 +228,26 @@ C<can_ok> and similar tools.
     isa_ok($thing, 'My::Class', 'My::Subclass', ...);
 
 B<Defined in> L<Test::Stream::Plugin::Core>.
+
+=item subtest
+
+Not loaded by default, you must ask for it:
+
+    use Test::Stream qw/-Default Subtest/;    
+
+The default output has been changed:
+
+    ok 1 - Subtest Name {
+        ok 1 - subtest result
+        ok 2 - another result
+        1..2
+    # }
+
+The old output format can be used if requested:
+
+    use Test::Stream '-Default', 'Subtest' => ['streamed'];
+
+Defined in L<Test::Stream::Plugin::Subtest>.
 
 =back
 

@@ -13,7 +13,6 @@ sub plugins {
             ExitSummary
             Core
             Context
-            Subtest
             Exception
             Warnings
             Compare
