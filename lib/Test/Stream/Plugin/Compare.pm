@@ -30,6 +30,8 @@ use Test::Stream::Compare::Hash;
 use Test::Stream::Compare::Meta;
 use Test::Stream::Compare::Object;
 use Test::Stream::Compare::Pattern;
+use Test::Stream::Compare::Ref;
+use Test::Stream::Compare::Scalar;
 use Test::Stream::Compare::Value;
 use Test::Stream::Compare::Wildcard;
 
@@ -110,13 +112,18 @@ sub mismatch($) {
     );
 }
 
-sub check(&;$) {
+sub check {
+    my $code = pop;
+    my $cname = pop;
+    my $op = pop;
+
     my @caller = caller;
     return Test::Stream::Compare::Custom->new(
-        file  => $caller[1],
-        lines => [$caller[2]],
-        code  => $_[0],
-        name  => $_[1],
+        file     => $caller[1],
+        lines    => [$caller[2]],
+        code     => $code,
+        name     => $cname,
+        operator => $op,
     );
 }
 
@@ -324,6 +331,14 @@ sub strict_convert {
     return Test::Stream::Compare::Hash->new(inref => $thing, ending => 1)
         if $type eq 'HASH';
 
+    if ($type eq 'SCALAR') {
+        my $nested = strict_convert($$thing);
+        return Test::Stream::Compare::Scalar->new(item => $nested)
+    }
+
+    return Test::Stream::Compare::Ref->new(input => $thing)
+        if $type;
+
     return Test::Stream::Compare::Value->new(input => $thing);
 }
 
@@ -351,6 +366,14 @@ sub relaxed_convert {
 
     return Test::Stream::Compare::Custom->new(code => $thing)
         if $type eq 'CODE';
+
+    if ($type eq 'SCALAR') {
+        my $nested = relaxed_convert($$thing);
+        return Test::Stream::Compare::Scalar->new(item => $nested)
+    }
+
+    return Test::Stream::Compare::Ref->new(input => $thing)
+        if $type;
 
     return Test::Stream::Compare::Value->new(input => $thing);
 }

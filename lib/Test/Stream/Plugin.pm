@@ -39,7 +39,8 @@ experimental phase is over.
 This module provides an import method that wraps around a typical
 Test::Stream::Plugin so that it can be used directly.
 
-B<Note>: This plugin is not necessary if your plugin uses L<Test::Stream::Exporter> and does nto have a custom C<import> method.
+B<Note>: This plugin is not necessary if your plugin uses
+L<Test::Stream::Exporter> and does not have a custom C<import> method.
 
 =head1 SYNOPSIS
 

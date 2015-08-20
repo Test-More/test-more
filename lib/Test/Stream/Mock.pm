@@ -7,6 +7,8 @@ use Scalar::Util qw/weaken reftype blessed/;
 use Carp qw/croak confess/;
 our @CARP_NOT = (__PACKAGE__, 'Test::Stream::Mock', 'Test::Stream::Workflow');
 
+use Test::Stream::Util qw/parse_symbol slot_to_sig pkg_to_file/;
+
 use Test::Stream::HashBase(
     accessors => [qw/class parent child _purge_on_destroy _blocked_load _symbols/],
     no_new    => 1,
@@ -39,7 +41,7 @@ sub new {
         my ($meth, $val) = @$set;
         my $type = reftype($val);
 
-        confess "'$meth' is not a valid method name"
+        confess "'$meth' is not a valid constructor argument for $class"
             unless $self->can($meth);
 
         if (!$type) {
@@ -81,9 +83,7 @@ sub stash {
 sub file {
     my $self = shift;
     my $file = $self->class;
-    $file =~ s{(::|')}{/}g;
-    $file .= ".pm";
-    return $file;
+    return pkg_to_file($self->class);
 }
 
 sub block_load {
@@ -105,13 +105,25 @@ my %NEW = (
         my ($class, %params) = @_;
         return bless \%params, $class;
     },
+    array => sub {
+        my ($class, @params) = @_;
+        return bless \@params, $class;
+    },
     ref => sub {
         my ($class, $params) = @_;
         return bless $params, $class;
     },
     ref_copy => sub {
         my ($class, $params) = @_;
-        return bless {%$params}, $class;
+        my $type = reftype($params);
+
+        return bless {%$params}, $class
+            if $type eq 'HASH';
+
+        return bless [@$params], $class
+            if $type eq 'ARRAY';
+
+        croak "Not sure how to construct an '$class' from '$params'";
     },
 );
 
@@ -227,40 +239,12 @@ sub override {
     $self->_inject(0, @_);
 }
 
-my %SIG_MAP = (
-    '&' => 'CODE',
-    '%' => 'HASH',
-    '@' => 'ARRAY',
-    '$' => 'SCALAR',
-);
-%SIG_MAP = (
-    %SIG_MAP,
-    reverse %SIG_MAP,
-);
-
-sub _parse_sym {
-    my ($sym) = @_;
-
-    my ($name, $type);
-    if ($sym =~ m/^(\W)(.+)$/) {
-        $name = $2;
-        $type = $SIG_MAP{$1}
-            || croak "'$1' is not a supported sigil";
-    }
-    else {
-        $name = $sym;
-        $type = 'CODE';
-    }
-
-    return ($name, $type);
-}
-
 sub current {
     my $self = shift;
     my ($sym) = @_;
 
     my $class = $self->{+CLASS};
-    my ($name, $type) = _parse_sym($sym);
+    my ($name, $type) = parse_symbol($sym);
 
     my $stash = $self->stash;
     return unless $stash->{$name};
@@ -276,11 +260,10 @@ sub orig {
     $sym = "&$sym" unless $sym =~ m/^[&\$\%\@]/;
 
     my $syms = $self->{+_SYMBOLS}
-        || croak "No symbols have been mocked yet";
+        or croak "No symbols have been mocked yet";
 
     my $ref = $syms->{$sym};
 
-    use Data::Dumper;
     croak "Symbol '$sym' is not mocked"
         unless $ref && @$ref;
 
@@ -295,14 +278,13 @@ sub _parse_inject {
 
     if ($param =~ m/^-(.*)$/) {
         my $sym = $1;
-        my $sig = $SIG_MAP{reftype($arg)};
+        my $sig = slot_to_sig(reftype($arg));
         my $ref = $arg;
         return ($sig, $sym, $ref);
     }
 
     return ('&', $param, $arg)
-
-    if ref($arg) && reftype($arg) eq 'CODE';
+        if ref($arg) && reftype($arg) eq 'CODE';
 
     my ($is, $field, $val);
 
@@ -382,7 +364,7 @@ sub _set_or_unset {
     my ($sym, $set) = @_;
 
     my $class = $self->{+CLASS};
-    my ($name, $type) = _parse_sym($sym);
+    my ($name, $type) = parse_symbol($sym);
 
     if (defined $set) {
         no strict 'refs';
@@ -413,7 +395,7 @@ sub restore {
     $sym = "&$sym" unless $sym =~ m/^[&\$\%\@]/;
 
     my $syms = $self->{+_SYMBOLS}
-        || croak "No symbols are mocked";
+        or croak "No symbols are mocked";
 
     my $ref = $syms->{$sym};
 
@@ -434,7 +416,7 @@ sub reset {
     $sym = "&$sym" unless $sym =~ m/^[&\$\%\@]/;
 
     my $syms = $self->{+_SYMBOLS}
-        || croak "No symbols are mocked";
+        or croak "No symbols are mocked";
 
     my $ref = delete $syms->{$sym};
 
@@ -474,3 +456,329 @@ sub DESTROY {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Test::Stream::Mock - Module for managing mocked classes and instances.
+
+=head1 EXPERIMENTAL CODE WARNING
+
+B<This is an experimental release!> Test-Stream, and all its components are
+still in an experimental phase. This dist has been released to cpan in order to
+allow testers and early adopters the chance to write experimental new tools
+with it, or to add experimental support for it into old tools.
+
+B<PLEASE DO NOT COMPLETELY CONVERT OLD TOOLS YET>. This experimental release is
+very likely to see a lot of code churn. API's may break at any time.
+Test-Stream should NOT be depended on by any toolchain level tools until the
+experimental phase is over.
+
+=head1 DESCRIPTION
+
+This module lets you add and override methods for any package temporarily. When
+the instance is destroyed it will restore the package to its original state.
+
+=head1 SYNOPSIS
+
+    use Test::Stream::Mock;
+    use MyClass;
+
+    my $mock = Test::Stream::Mock->new(
+        class => 'MyClass',
+        override => [
+            name => sub { 'fred' },
+            ...
+        ],
+        add => [
+            is_mocked => sub { 1 }
+            ...
+        ],
+        ...
+    );
+
+    # Unmock the 'name' sub
+    $mock->restore('name');
+
+    ...
+
+    $mock = undef; # Will remove all the mocking
+
+=head1 CONSTRUCTION
+
+=head1 METHODS
+
+=over 4
+
+=item $mock = $class->new(class => $CLASS, ...)
+
+This will create a new instance of L<Test::Stream::Mock> that manages mocking
+for the specified C<$CLASS>.
+
+Any C<Test::Stream::Mock> method can be used as a constructor argument, each
+should be followed by an arrayref of arguments to be used with the method. For
+instance the 'add' method:
+
+    my $mock = Test::Stream::Mock->new(
+        class => 'AClass',
+        add => [foo => sub { 'foo' }],
+    );
+
+is identical to this:
+
+    my $mock = Test::Stream::Mock->new(
+        class => 'AClass',
+    );
+    $mock->add(foo => sub { 'foo' });
+
+=item $mock->add('symbol' => ..., 'synbol2' => ...)
+
+=item $mock->override('symbol1' => ..., 'symbol2' => ...)
+
+C<add()> and C<override()> are the primary ways to add/modify methods for a
+class. Both accept the exact same type of arguments. The difference is that
+C<override> will fail unless the symbol you are overriding already exists,
+C<add> on the other hand will fail if the symbol does already exist.
+
+B<Note:> Think of override as a push operation. If you call override on the
+same symbol multiple times it will track that. You can use C<restore()> as a
+pop operation to go back to the previous mock. C<reset> can be used to remove
+all the mocking for a symbol.
+
+Arguments must be a symbol name, with optional sigil, followed by a new
+specification of the symbol. If no sigil is specified then '&' (sub) is
+assumed. A simple example of overriding a sub:
+
+    $mock->override(foo => sub { 'overridden foo' });
+    my $val = $class->foo; # Runs our override
+    # $val is now set to 'overridden foo'
+
+You can also simply provide a value and it will be wrapped in a sub for you:
+
+    $mock->override( foo => 'foo' );
+
+The example above will generate a sub that always returns the string 'foo'.
+
+There are 3 *special* values that can be used to generate accessors:
+
+    $mock->add(
+        name => 'rw',   # Generates a read/write accessor
+        age  => 'ro',   # Generates a read only accessor
+        size => 'wo',   # Generates a write only accessor
+    );
+
+If you want to have a sub that actually returns on of the 3 special strings, or
+that returns a coderef, you can use a hashref as the spec:
+
+    my $ref = sub { 'my sub' };
+    $mock->add(
+        rw_string => { val => 'rw' },
+        ro_string => { val => 'ro' },
+        wo_string => { val => 'wo' },
+        coderef   => { val => $ref }, # the coderef method returns $ref each time
+    );
+
+You can also override/add other symbol types, such as hash:
+
+    package Foo;
+    ...
+
+    $mock->add('%foo' => {a => 1});
+
+    print $Foo::foo{a}; # prints '1'
+
+You can also tell mock to deduce the symbol type for the add/override from the
+reference, rules are similar to glob assignments:
+
+    $mock->add(
+        -foo => sub { 'foo' },     # Adds the &foo sub to the package
+        -foo => { foo => 1 },      # Adds the %foo hash to the package
+        -foo => [ 'f', 'o', 'o' ], # Adds the @foo array to the package
+        -foo => \"foo",            # Adds the $foo scalar to the package
+    );
+
+=item $mock->restore($SYMBOL)
+
+Restore the symbol to what it was before the last override. If the symbol was
+recently added this will remove it. If the symbol has been overriden multiple
+times this will ONLY restore it to the previous state. Think of override as a
+push operation, this is the pop operation.
+
+=item $mock->reset($SYMBOL)
+
+Remove all mocking of the symbol, restore the original symbol. If the symbol
+was initially added then it will be completely removed.
+
+=item $mock->orig($SYMBOL)
+
+This will return the original symbol, before any mocking. For symbols that were
+added this will return undef.
+
+=item $mock->current($SYMBOL)
+
+This will return the current symbol.
+
+=item $mock->reset_all
+
+Remove all added symbols, and restore all overriden symbols to their originals.
+
+=item $mock->add_constructor($NAME => $TYPE)
+
+=item $mock->override_constructor($NAME => $TYPE)
+
+This can be used to inject constructors. The first argument should be the name
+of the constructor. The second argument specifies the constructor type.
+
+The C<hash> type is the most common, all arguments are used to create a new
+hash that is blessed.
+
+    hash => sub  {
+        my ($class, %params) = @_;
+        return bless \%params, $class;
+    };
+
+The C<array> type is similar to the hash type, but accepts a list instead of
+key/value pairs:
+
+    array => sub {
+        my ($class, @params) = @_;
+        return bless \@params, $class;
+    };
+
+The C<ref> type takes a reference and blesses it. This will modify your
+original input argument.
+
+    ref => sub {
+        my ($class, $params) = @_;
+        return bless $params, $class;
+    };
+
+The C<ref_copy> type will copy your reference and bless the copy:
+
+    ref_copy => sub {
+        my ($class, $params) = @_;
+        my $type = reftype($params);
+
+        return bless {%$params}, $class
+            if $type eq 'HASH';
+
+        return bless [@$params], $class
+            if $type eq 'ARRAY';
+
+        croak "Not sure how to construct an '$class' from '$params'";
+    };
+
+=item $mock->before($NAME, sub { ... })
+
+This will replace the orignal sub C<$NAME> with a new sub that calls your
+custom code just before calling the original method. The return from your
+custom sub is ignored. Your sub and the original both get the unmodified
+arguments.
+
+=item $mock->after($NAME, sub { ... })
+
+This is similar to before, except your callback runs after the original code.
+The return from your callback is ignored. 
+
+=item $mock->around($NAME, sub { ... })
+
+This gives you the chance to wrap the original sub:
+
+    $mock->around(foo => sub {
+        my $orig = shift;
+        my $self = shift;
+        my (@args) = @_;
+
+        ...
+        $orig->(@args);
+        ...
+
+        return ...;
+    });
+
+The original sub is passed in as the first argument, even before C<$self>. You
+are responsible for making sure your wrapper sub returns the correct thing.
+
+=item $mock->autoload
+
+This will inject an C<AUTOLOAD> sub into the class. This autoload will
+automatically generate read-write accessors for any sub called that does not
+already exist.
+
+=item $mock->block_load
+
+This will prevent the real class from loading until the mock is destroyed. This
+will fail if the class is already loaded. This will let you mock a class
+completely without loading the original module.
+
+=item $pm_file = $mock->file
+
+This returns the relative path to the file for the module. This corresponds to
+the C<%INC> entry.
+
+=item $bool = $mock->purge_on_destroy($bool)
+
+When true, this will cause the package stash to be completely obliterated when
+the mock object falls out of scope or is otherwise destroyed. You do not
+normally want this.
+
+=item $stash = $mock->stash
+
+This returns the stash for the class being mocked. This is the equivelent of:
+
+    my $stash = \%{"${class}\::"};
+
+This saves you from needing to turn off strict.
+
+=item $class = $mock->class
+
+The class being mocked by this instance.
+
+=item $p = $mock->parent
+
+If you mock a class twice the first instance is the parent, the second is the
+child. This prevents the parent from being destroyed before the child, which
+would lead to a very unpleasant situation.
+
+=item $c = $mock->child
+
+Returns the child mock, if any.
+
+=back
+
+=head1 SOURCE
+
+The source code repository for Test::Stream can be found at
+F<http://github.com/Test-More/Test-Stream/>.
+
+=head1 MAINTAINERS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 AUTHORS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 COPYRIGHT
+
+Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http://www.perl.com/perl/misc/Artistic.html>
+
+=cut

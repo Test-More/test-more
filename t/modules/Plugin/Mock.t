@@ -1,4 +1,4 @@
-use Test::Stream '-Spec', Mock => ['-all'];
+use Test::Stream '-Spec', Mock => '*';
 
 use Scalar::Util qw/reftype blessed/;
 
@@ -169,6 +169,8 @@ describe mock_class_spec => sub {
 
     before_all  ba => sub { mock_class Fake2 => ( add => [ check => sub { 2 } ])};
     before_each be => sub { mock_class Fake3 => ( add => [ check => sub { 3 } ])};
+
+    is( Fake1->check, 1, "mock applies to describe block");
 
     around_each ae => sub {
         my $inner = shift;

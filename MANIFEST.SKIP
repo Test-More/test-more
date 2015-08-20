@@ -89,4 +89,6 @@ MANIFEST.SKIP
 # I never want this to go out.
 test.pl
 
+POD_TEMPLATE.pod
+
 ^Test-Stream-*

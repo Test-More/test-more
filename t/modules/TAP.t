@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::Stream;
+use Test::Stream qw/Core Compare/;
 use PerlIO;
 
 use Test::Stream::TAP;
@@ -16,6 +16,7 @@ my $layers = { map {$_ => 1} PerlIO::get_layers($handles->[0]) };
 ok(!$layers->{utf8}, "Not utf8");
 
 $one->encoding('utf8');
+is($one->encoding, 'utf8', "Got encoding");
 $handles = $one->handles;
 is(@$handles, 3, "Got 3 handles");
 $layers = { map {$_ => 1} PerlIO::get_layers($handles->[0]) };
@@ -89,5 +90,32 @@ is($err, <<EOT, "Got expected TAP output to err");
 # foo diag
     # bar diag
 EOT
+
+$it = undef;
+close($stdh);
+close($errh);
+
+($std, $err) = ("", "");
+open( $stdh, '>', \$std ) || die "Ooops";
+open( $errh, '>', \$err ) || die "Ooops";
+
+$it = Test::Stream::TAP->new(
+    handles    => [$stdh, $errh, $stdh],
+    no_diag    => 1,
+    no_header  => 1,
+    no_numbers => 1,
+);
+
+my $dbg = Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
+my $ok = Test::Stream::Event::Ok->new(pass => 1, name => 'xxx', debug => $dbg);
+my $diag = Test::Stream::Event::Diag->new(msg => 'foo', debug => $dbg);
+my $plan = Test::Stream::Event::Plan->new(max => 5,     debug => $dbg);
+my $bail = Test::Stream::Event::Bail->new(reason => 'foo', nested => 1, debug => $dbg);
+
+$it->write($_, 1) for $ok, $diag, $plan, $bail;
+
+# This checks that the plan, the diag, and the bail are not rendered
+is($std, "ok - xxx\n", "Only got the 'ok'");
+is($err, "", "no diag");
 
 done_testing;

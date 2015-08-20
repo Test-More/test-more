@@ -1,0 +1,302 @@
+package Test::Stream::Manual::Files;
+use strict;
+use warnings;
+
+1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Test::Stream::Manual::Files - Manual page about all the files in the
+Test-Stream distribution.
+
+=head1 DESCRIPTION
+
+This document lists all the module files in the Test-Stream distribution, along
+with a brief description.
+
+=head1 FRAMEWORK FILES
+
+These modules are the key components of L<Test::Stream>. Each of these works
+with the others to produce a working framework. If all files outside of this
+list were removed you would still have a useful framework, though you would
+have to write a lot of stuff yourself to use it.
+
+=head2 LOADER
+
+=head3 Test::Stream
+
+=head3 Test::Stream::Bundle
+
+=head3 Test::Stream::Plugin
+
+These modules work together as the 'loader' system. These make it possible to
+write and load plugins to pick and choose the functionality you need.
+
+=head2 CONTEXT
+
+=head3 Test::Stream::Context
+
+=head3 Test::Stream::DebugInfo
+
+These modules are responsible for maintaining test-specific contexts. All
+events need a context, and the context object is used to generate most events.
+This is how a failed test known what file+line the error should report from.
+
+=head2 EVENT SYSTEM
+
+=head2 Test::Stream::Hub
+
+=head2 Test::Stream::Event
+
+=head2 Test::Stream::IPC
+
+=head2 Test::Stream::State
+
+These modules compose the eent system. The event system is responsbile for
+making sure events get where they need to go, and effect the state correctly.
+
+=head2 STATE MANAGEMENT
+
+=head3 Test::Stream::Stack
+
+=head3 Test::Stream::Sync
+
+These modules manage state. This ensures that all tests effect the same state.
+This allows different testing tools to all work together and play nicely.
+
+=head2 OTHER
+
+=head3 Test::Stream::Capabilities
+
+=head3 Test::Stream::Exporter
+
+=head3 Test::Stream::Exporter::Meta
+
+=head3 Test::Stream::HashBase
+
+=head3 Test::Stream::Util
+
+These modules are supporting modules that make it possible for the other
+modules to do their thing.
+
+=head1 ESSENTIALS
+
+These modules are not strictly part of the framework, but the framework would
+be fairly useless without them.
+
+=head2 Test::Stream::IPC::Files
+
+This is the primary IPC driver, it is necessary for forking/threading to work.
+
+=head2 Test::Stream::TAP
+
+This is the TAP output formatter. Without this there woudl be no TAP, and no
+default output format.
+
+=head2 Test::Stream::Event::Bail
+
+=head2 Test::Stream::Event::Diag
+
+=head2 Test::Stream::Event::Exception
+
+=head2 Test::Stream::Event::Note
+
+=head2 Test::Stream::Event::Ok
+
+=head2 Test::Stream::Event::Plan
+
+=head2 Test::Stream::Event::Waiting
+
+These are the primary bultin event types.
+
+=head1 FRAMEWORK EXTENTIONS
+
+These are extentions to the framework. They are not key components, but they
+are necessary for some of the core plugins.
+
+=head2 Test::Stream::Block
+
+Tools for examining codebocks
+
+=head2 Test::Stream::Compare
+
+=head2 Test::Stream::Compare::*
+
+=head2 Test::Stream::Delta
+
+These modules are used to compare deep datastructures, and return the
+differences to be used in diagnostics.
+
+=head2 Test::Stream::Mock
+
+This library provides tools for mocking packages and object.
+
+=head2 Test::Stream::Table
+
+=head2 Test::Stream::Table::LineBreak
+
+These libraries are used to generate tables of data for diagnostics.
+
+=head2 Test::Stream::Workflow
+
+=head2 Test::Stream::Workflow::*
+
+These libraries contain tools for building test workflows, that is test
+funcions with buildups and teardowns.
+
+=head1 CORE BUNDLES
+
+=head2 Test::Stream::Bundle::Default
+
+The default bundle.
+
+=head2 Test::Stream::Bundle::Spec
+
+Default + the Spec plugin.
+
+=head2 Test::Stream::Bundle::Tester
+
+Default + interceptor and other test testing plugins
+
+=head2 Test::Stream::Bundle::SpecTester
+
+Default + Tester + Spec
+
+=head1 CORE PLUGINS
+
+=head2 Test::Stream::Plugin::AuthorTest
+
+This plugin can be used to make a test only run with the AUTHOR_TESTING
+environment variable set.
+
+=head2 Test::Stream::Plugin::BailOnFail
+
+A Bail-out event will be generated upon test failure.
+
+=head2 Test::Stream::Plugin::CanFork
+
+Test requires a forking perl.
+
+=head2 Test::Stream::Plugin::CanThread
+
+Test requires a thread-capable perl.
+
+=head2 Test::Stream::Plugin::Capabilities
+
+Capabilities checks.
+
+=head2 Test::Stream::Plugin::Compare
+
+Deep structure comparison tools.
+
+=head2 Test::Stream::Plugin::Context
+
+Get a context as needed.
+
+=head2 Test::Stream::Plugin::Core
+
+Core tools such as 'ok'.
+
+=head2 Test::Stream::Plugin::DieOnFail
+
+Throw an exception upon test failure.
+
+=head2 Test::Stream::Plugin::Exception
+
+Check/validate exceptions.
+
+=head2 Test::Stream::Plugin::ExitSummary
+
+Extra diagnostics at the end of a failing test.
+
+=head2 Test::Stream::Plugin::IPC
+
+Configure concurrency support.
+
+=head2 Test::Stream::Plugin::LoadPlugin
+
+Load plugins dynamically at run-time.
+
+=head2 Test::Stream::Plugin::Mock
+
+Interface for mocking classes and objects.
+
+=head2 Test::Stream::Plugin::SkipWithout
+
+Skip a test unless requirements are installed.
+
+=head2 Test::Stream::Plugin::Spec
+
+provide SPEC testing tools, similar to rspec.
+
+=head2 Test::Stream::Plugin::TAP
+
+Use the TAP output formatter.
+
+=head2 Test::Stream::Plugin::Tester
+
+Tools for testing test tools.
+
+=head2 Test::Stream::Plugin::UTF8
+
+Set output handles to UTF8.
+
+=head2 Test::Stream::Plugin::Warnings
+
+Tools for intercepting and validating warnings.
+
+=head2 Test::Stream::Plugin::Subtest
+
+=head2 Test::Stream::Hub::Subtest
+
+=head2 Test::Stream::Event::Subtest
+
+Implementation of subtests.
+
+=head2 Test::Stream::Plugin::Grab
+
+=head2 Test::Stream::Plugin::Intercept
+
+=head2 Test::Stream::Hub::Interceptor
+
+=head2 Test::Stream::Hub::Interceptor::Terminator
+
+Tools to intercept test events.
+
+=head1 SOURCE
+
+The source code repository for Test/Stream can be found at
+F<http//:github.com/Test-More/Test-Stream/>.
+
+=head1 MAINTAINERS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 AUTHORS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 COPYRIGHT
+
+Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http//:www.perl.com/perl/misc/Artistic.html>
+
+=cut

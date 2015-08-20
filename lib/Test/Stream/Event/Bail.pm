@@ -78,10 +78,6 @@ Inherits from L<Test::Stream::Event>. Also defines:
 
 The reason for the bailout.
 
-=item $bool = quiet
-
-Should the bailout be quiet?
-
 =back
 
 =head1 SOURCE

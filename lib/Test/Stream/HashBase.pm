@@ -15,7 +15,12 @@ sub import {
     my $into = $args{into} || caller;
     my $meta = $META{$into} = $args{accessors} || [];
 
-    my $eval = "package $into;\n";
+    # Use the comment to change the filename slightly so that Devel::Cover does
+    # not try to cover the contents of the string eval.
+    my $file = __FILE__;
+    $file =~ s/(\.*)$/.eval$1/;
+    my $eval = "# line 1 \"$file\"\npackage $into;\n";
+
     if(my $base = $args{base}) {
         my $bmeta = $META{$base} || croak "Base class '$base' is not a HashBase class";
 
@@ -26,14 +31,17 @@ sub import {
             unless $into->isa($base);
     }
 
-    $eval .= join '' => map {
-        my $const = uc($_);
-        <<"        EOT"
+    {
+        $eval .= join '' => map {
+            my $const = uc($_);
+            <<"            EOT"
 sub $const() { '$_' }
 sub $_       { \$_[0]->{'$_'} }
 sub set_$_   { \$_[0]->{'$_'} = \$_[1] }
-        EOT
-    } @$meta;
+sub clear_$_ { delete \$_[0]->{'$_'} }
+            EOT
+        } @$meta;
+    }
 
     eval "${eval}1;" || die $@;
 
@@ -156,6 +164,10 @@ use it:
     $one->set_bar('A Bar');
     $one->set_baz('A Baz');
 
+    # Clear!
+    $one->clear_foo;
+    $one->clear_bar;
+    $one->clear_baz;
 
     $one->{+FOO} = 'xxx';
 
@@ -235,6 +247,10 @@ Getter, used to get the value of the C<foo> field.
 =item set_foo()
 
 Setter, used to set the value of the C<foo> field.
+
+=item clear_foo()
+
+Clearer, used to completely remove the 'foo' key from the object hash.
 
 =item FOO()
 

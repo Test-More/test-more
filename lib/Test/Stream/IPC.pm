@@ -70,13 +70,14 @@ sub abort {
     my $self = shift;
     chomp(my ($msg) = @_);
     print STDERR "IPC Fatal Error: $msg\n";
+    print STDOUT "not ok - IPC Fatal Error\n";
+
     CORE::exit(255) unless $self->no_fatal;
 }
 
 sub abort_trace {
     my $self = shift;
-    chomp(my ($msg) = @_);
-    print STDERR "IPC Fatal Error: $msg\n";
+    my ($msg) = @_;
     $self->abort(longmess($msg));
 }
 

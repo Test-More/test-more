@@ -30,10 +30,10 @@ sub init {
 
 sub causes_fail  { 0 }
 
-sub to_tap       { };
-sub update_state { };
-sub terminate    { };
-sub global       { };
+sub to_tap       {()};
+sub update_state {()};
+sub terminate    {()};
+sub global       {()};
 
 1;
 
@@ -133,6 +133,11 @@ alternative base class, which must itself subclass C<Test::Stream::Event>.
 
 Get a snapshot of the debug info as it was when this event was generated
 
+=item $bool = $e->causes_fail
+
+Returns true if this event should result in a test failure. In general this
+should be false.
+
 =item $call = $e->created
 
 Get the C<caller()> details from when the event was generated. This is usually
@@ -172,6 +177,39 @@ to exit with a failure.
 
 This is called after the event has been sent to the formatter in order to
 ensure the event is seen and understood.
+
+=item @output = $e->to_tap($num)
+
+This is where you get the chance to produce TAP output. The input argument
+C<$num> will either be the most recent test number, or undefined. The output
+should be a list of arrayrefs, each arrayref should have exactly 2 values:
+C<$HID, $TEXT>. The HID tells the formatter which output handle to use (see the
+constants provided by L<Test::Stream::TAP>), C<$TEXT> should be the text that
+is output to the specified handle.
+
+Example:
+
+    package Test::Stream::Event::MyEvent;
+    use Test::Stream::Event;
+    use Test::Stream::TAP qw/OUT_STD OUT_TODO OUT_ERR/;
+
+    sub to_tap {
+        my $self = shift;
+        my ($num) = @_;
+
+        # Using test numbers
+        if (defined $num) {
+            return (
+                [OUT_STD, "# Got MyEvent!"],
+                [OUT_ERR, "# The last test was $num"],
+            );
+        }
+
+        # Not using test numbers.
+        return (
+            [OUT_STD, "# Got MyEvent!"],
+        );
+    }
 
 =back
 

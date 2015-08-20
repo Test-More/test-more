@@ -1,4 +1,5 @@
-package Test::Stream::Bundle::ProjectBundle;
+package
+    Test::Stream::Bundle::ProjectBundle;
 use strict;
 use warnings;
 

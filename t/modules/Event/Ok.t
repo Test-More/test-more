@@ -1,7 +1,4 @@
-use strict;
-use warnings;
-
-use Test::Stream;
+use Test::Stream -SpecTester;
 
 use Test::Stream::State;
 use Test::Stream::DebugInfo;
@@ -9,11 +6,15 @@ use Test::Stream::Event::Ok;
 use Test::Stream::Event::Diag;
 use Test::Stream::TAP qw/OUT_STD OUT_ERR OUT_TODO/;
 
-my $dbg = Test::Stream::DebugInfo->new(
-    frame => ['main_foo', 'foo.t', 42, 'main_foo::flubnarb'],
-);
+# Make sure there is a fresh debug object for each group
+my $dbg;
+before_each dbg => sub {
+    $dbg = Test::Stream::DebugInfo->new(
+        frame => ['main_foo', 'foo.t', 42, 'main_foo::flubnarb'],
+    );
+};
 
-{ # Passing
+tests Passing => sub {
     my $ok = Test::Stream::Event::Ok->new(
         debug => $dbg,
         pass  => 1,
@@ -36,9 +37,9 @@ my $dbg = Test::Stream::DebugInfo->new(
     $ok->update_state($state);
     is($state->count, 1, "Added to the count");
     is($state->is_passing, 1, "still passing");
-}
+};
 
-{ # Failing
+tests Failing => sub {
     local $ENV{HARNESS_ACTIVE} = 1;
     local $ENV{HARNESS_IS_VERBOSE} = 1;
     my $ok = Test::Stream::Event::Ok->new(
@@ -103,9 +104,9 @@ my $dbg = Test::Stream::DebugInfo->new(
     is($state->count, 1, "Added to the count");
     is($state->failed, 1, "Added to failed count");
     is($state->is_passing, 0, "not passing");
-}
+};
 
-{ # Failing w/ extra diag
+tests fail_with_diag => sub {
     local $ENV{HARNESS_ACTIVE} = 1;
     local $ENV{HARNESS_IS_VERBOSE} = 1;
     my $ok = Test::Stream::Event::Ok->new(
@@ -139,9 +140,9 @@ my $dbg = Test::Stream::DebugInfo->new(
     is($state->count, 1, "Added to the count");
     is($state->failed, 1, "Added to failed count");
     is($state->is_passing, 0, "not passing");
-}
+};
 
-{ # Failing TODO
+tests "Failing TODO" => sub {
     local $ENV{HARNESS_ACTIVE} = 1;
     local $ENV{HARNESS_IS_VERBOSE} = 1;
     $dbg->set_todo('A Todo');
@@ -178,9 +179,9 @@ my $dbg = Test::Stream::DebugInfo->new(
     is($state->is_passing, 1, "still passing");
 
     $dbg->set_todo(undef);
-}
+};
 
-{ # Skip
+tests skip => sub {
     local $ENV{HARNESS_ACTIVE} = 1;
     $dbg->set_skip('A Skip');
     my $ok = Test::Stream::Event::Ok->new(
@@ -209,7 +210,192 @@ my $dbg = Test::Stream::DebugInfo->new(
     is($state->is_passing, 1, "still passing");
 
     $dbg->set_todo(undef);
-}
+};
+
+tests init => sub {
+    like(
+        dies { Test::Stream::Event::Ok->new() },
+        qr/No debug info provided!/,
+        "Need to provide debug info"
+    );
+
+    like(
+        dies { Test::Stream::Event::Ok->new(debug => $dbg, pass => 1, name => "foo#foo") },
+        qr/'foo#foo' is not a valid name, names must not contain '#' or newlines/,
+        "Some characters do not belong in a name"
+    );
+
+    like(
+        dies { Test::Stream::Event::Ok->new(debug => $dbg, pass => 1, name => "foo\nfoo") },
+        qr/'foo\nfoo' is not a valid name, names must not contain '#' or newlines/,
+        "Some characters do not belong in a name"
+    );
+
+    my $ok = Test::Stream::Event::Ok->new(
+        debug => $dbg,
+        pass  => 1,
+    );
+    is($ok->effective_pass, 1, "set effective pass");
+
+    $ok = Test::Stream::Event::Ok->new(
+        debug => $dbg,
+        pass  => 1,
+        name => 'foo#foo',
+        allow_bad_name => 1,
+    );
+    ok($ok, "allowed the bad name");
+};
+
+tests default_diag => sub {
+    my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => 1);
+    is([$ok->default_diag], [], "no diag for a pass");
+
+    $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => 0);
+    like([$ok->default_diag], [qr/Failed test at foo\.t line 42/], "got diag w/o name");
+
+    $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => 0, name => 'foo');
+    like([$ok->default_diag], [qr/Failed test 'foo'\nat foo\.t line 42/], "got diag w/name");
+};
+
+describe to_tap => sub {
+    my $pass;
+    case pass => sub { $pass = 1 };
+    case fail => sub { $pass = 0 };
+
+    tests name_and_number => sub {
+        my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass, name => 'foo');
+        my @tap = $ok->to_tap(7);
+        is(
+            \@tap,
+            [
+                [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7 - foo\n"],
+            ],
+            "Got expected output"
+        );
+    };
+
+    tests no_number => sub {
+        my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass, name => 'foo');
+        my @tap = $ok->to_tap();
+        is(
+            \@tap,
+            [
+                [OUT_STD, ($pass ? 'ok' : 'not ok') . " - foo\n"],
+            ],
+            "Got expected output"
+        );
+    };
+
+    tests no_name => sub {
+        my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass);
+        my @tap = $ok->to_tap(7);
+        is(
+            \@tap,
+            [
+                [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7\n"],
+            ],
+            "Got expected output"
+        );
+    };
+
+    tests skip_and_todo => sub {
+        $dbg->set_todo('a');
+        $dbg->set_skip('b');
+
+        my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass);
+        my @tap = $ok->to_tap(7);
+        is(
+            \@tap,
+            [
+                [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7 # TODO & SKIP a\n"],
+            ],
+            "Got expected output"
+        );
+
+        $dbg->set_todo("");
+
+        @tap = $ok->to_tap(7);
+        is(
+            \@tap,
+            [
+                [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7 # TODO & SKIP\n"],
+            ],
+            "Got expected output"
+        );
+    };
+
+    tests skip => sub {
+        $dbg->set_skip('b');
+
+        my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass);
+        my @tap = $ok->to_tap(7);
+        is(
+            \@tap,
+            [
+                [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7 # skip b\n"],
+            ],
+            "Got expected output"
+        );
+
+        $dbg->set_skip("");
+
+        @tap = $ok->to_tap(7);
+        is(
+            \@tap,
+            [
+                [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7 # skip\n"],
+            ],
+            "Got expected output"
+        );
+    };
+
+    tests todo => sub {
+        $dbg->set_todo('b');
+
+        my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass);
+        my @tap = $ok->to_tap(7);
+        is(
+            \@tap,
+            [
+                [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7 # TODO b\n"],
+            ],
+            "Got expected output"
+        );
+
+        $dbg->set_todo("");
+
+        @tap = $ok->to_tap(7);
+        is(
+            \@tap,
+            [
+                [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7 # TODO\n"],
+            ],
+            "Got expected output"
+        );
+    };
+
+    tests empty_diag_array => sub {
+        my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass, diag => []);
+        my @tap = $ok->to_tap(7);
+        is(
+            \@tap,
+            [
+                [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7\n"],
+            ],
+            "Got expected output (No diag)"
+        );
+
+        $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass);
+        @tap = $ok->to_tap(7);
+        is(
+            \@tap,
+            [
+                [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7\n"],
+            ],
+            "Got expected output (No diag)"
+        );
+    };
+};
 
 done_testing;
 

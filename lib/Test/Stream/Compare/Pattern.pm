@@ -13,7 +13,7 @@ use Carp qw/croak/;
 sub init {
     my $self = shift;
 
-    croak "'pattern' is required" unless $self->{+PATTERN};
+    croak "'pattern' is a required attribute" unless $self->{+PATTERN};
 }
 
 sub name { shift->{+PATTERN} }
@@ -23,6 +23,8 @@ sub operator { shift->{+NEGATE} ? '!~' : '=~' }
 sub verify {
     my $self = shift;
     my ($got) = @_;
+
+    return 0 if ref $got;
 
     if ($self->{+NEGATE}) {
         return 1 unless defined($got);

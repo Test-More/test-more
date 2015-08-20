@@ -4,7 +4,7 @@ use warnings;
 
 use Scalar::Util qw/weaken/;
 use Carp qw/confess croak longmess/;
-use Test::Stream::Util qw/get_tid try/;
+use Test::Stream::Util qw/get_tid try pkg_to_file/;
 
 use Test::Stream::Sync;
 use Test::Stream::DebugInfo;
@@ -27,11 +27,13 @@ our %CONTEXTS;
 sub ON_INIT    { shift; push @ON_INIT => @_ }
 sub ON_RELEASE { shift; push @ON_RELEASE => @_ }
 
-END {
+END { _do_end() }
+
+sub _do_end {
     my $real = $?;
     my $new  = $real;
 
-    my @unreleased = grep { $_ } values %CONTEXTS;
+    my @unreleased = grep { $_ && $_->debug->pid == $$ } values %CONTEXTS;
     if (@unreleased) {
         $new = 255;
 
@@ -56,10 +58,10 @@ use Test::Stream::HashBase(
 );
 
 sub init {
-    confess "debug is required"
+    confess "The 'debug' attribute is required"
         unless $_[0]->{+DEBUG};
 
-    confess "hub is required"
+    confess "The 'hub' attribute is required"
         unless $_[0]->{+HUB};
 
     $_[0]->{+_DEPTH} = 0 unless defined $_[0]->{+_DEPTH};
@@ -106,12 +108,12 @@ sub DESTROY {
     return unless $CONTEXTS{$hid} && $CONTEXTS{$hid} == $self;
     return unless "$@" eq "" . $self->{+_ERR};
 
-    my $debug = $self->{+DEBUG};
+    my $debug = $self->{+DEBUG} || return;
     my $frame = $debug->frame;
 
     my $mess = longmess;
 
-    warn <<"    EOT" unless $self->{+_NO_DESTROY_WARNING} || $self->{+DEBUG}->pid != $$;
+    warn <<"    EOT" unless $self->{+_NO_DESTROY_WARNING} || $self->{+DEBUG}->pid != $$ || $self->{+DEBUG}->tid != get_tid;
 Context was not released! Releasing at destruction.
 Context creation details:
   Package: $frame->[0]
@@ -356,17 +358,25 @@ sub _parse_event {
     my $event = shift;
 
     my $pkg;
-    if ($event =~ m/::/) {
-        $pkg = $event;
+    if ($event =~ m/^\+(.*)/) {
+        $pkg = $1;
     }
     else {
         $pkg = "Test::Stream::Event::$event";
     }
 
-    confess "'$pkg' is not a subclass of 'Test::Stream::Event', did you forget to load it?"
+    unless ($LOADED{$pkg}) {
+        my $file = pkg_to_file($pkg);
+        my ($ok, $err) = try { require $file };
+        $self->throw("Could not load event module '$pkg': $err")
+            unless $ok;
+    
+        $LOADED{$pkg} = $pkg;
+    }
+
+    confess "'$pkg' is not a subclass of 'Test::Stream::Event'"
         unless $pkg->isa('Test::Stream::Event');
 
-    $LOADED{$pkg}   = $pkg;
     $LOADED{$event} = $pkg;
 
     return $pkg;
@@ -783,7 +793,14 @@ terminate all testing.
 
 This lets you build and send an event of any type. The C<$Type> argument should
 be the event package name with C<Test::Stream::Event::> left off, or a fully
-qualified package name. The event is returned after it is sent.
+qualified package name prefixed with a '+'. The event is returned after it is
+sent.
+
+    my $event = $ctx->send_event('Ok', ...);
+
+or
+
+    my $event = $ctx->send_event('+Test::Stream::Event::Ok', ...);
 
 =item $event = $ctx->build_event($Type, %parameters)
 

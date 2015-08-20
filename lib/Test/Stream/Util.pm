@@ -66,7 +66,12 @@ sub _manual_try(&;@) {
         }
 
         ($@, $!) = ($msg, $no);
-        $SIG{__DIE__} = $die;
+        if ($die) {
+            $SIG{__DIE__} = $die;
+        }
+        else {
+            delete $SIG{__DIE__};
+        }
     }
 
     return ($ok, $error);
@@ -127,7 +132,7 @@ BEGIN {
 sub pkg_to_file {
     my $pkg = shift;
     my $file = $pkg;
-    $file =~ s{::}{/}g;
+    $file =~ s{(::|')}{/}g;
     $file .= '.pm';
     return $file;
 }
@@ -153,10 +158,11 @@ sub slot_to_sig { $SLOT_TABLE{$_[0]} }
 sub parse_symbol {
     my ($sym) = @_;
 
-    return ($sym, 'CODE') unless $sym =~ m/^(\W)(.+)$/;
-    my ($sig, $name) = ($1, $2);
+    my $sig = substr($sym, 0, 1);
+    return ($sym, 'CODE') unless $SIG_TABLE{$sig};
+    my $name = substr($sym, 1);
 
-    my $slot = $SIG_TABLE{$sig} || croak "'$sig' is not a supported sigil";
+    my $slot = $SIG_TABLE{$sig} or croak "'$sig' is not a supported sigil";
 
     return ($name, $slot);
 }
@@ -170,7 +176,8 @@ sub term_size {
     return $ENV{TS_TERM_SIZE} if $ENV{TS_TERM_SIZE};
     return 80 unless USE_TERM_READKEY;
     my ($total) = Term::ReadKey::GetTerminalSize(*STDOUT);
-    return 80 if !$total || $total < 80;
+    return 80 if !$total;
+    return 80 if $total < 80;
     return $total;
 }
 
@@ -259,6 +266,12 @@ When given a symbol name such as C<$foo> or C<@bar> this will return the symbol
 name, and the type name. If no sigil is present in the variable name it will
 assume it is a subroutine and return the C<CODE> type. C<$symbol> should be a
 string containing the name of the symbol with optional sigil.
+
+=item my $cols = term_size()
+
+Attempts to find the width in columns (characters) of the current terminal.
+Returns 80 as a safe bet if it cannot find it another way. This is most
+accurate if L<Term::ReadKey> is installed.
 
 =back
 

@@ -34,6 +34,7 @@ sub load {
 
     my @order;
     my %args;
+    my %skip;
 
     while (my $arg = shift @_) {
         my $type = reftype($arg) || "";
@@ -45,7 +46,13 @@ sub load {
 
         # Strip off the '+', which may be combined with ':' or '-' at the
         # start.
-        my $full = ($arg =~ s/^([:-]?)\+/$1/) ? 1 : 0;
+        my $full = ($arg =~ s/^([!:-]?)\+/$1/) ? 1 : 0;
+
+        if ($arg =~ m/^!(.*)$/) {
+            my $pkg = $full ? $1 : "Test::Stream::Plugin::$1";
+            $skip{$pkg}++;
+            next;
+        }
 
         if ($arg =~ m/^-(.*)$/) {
             my $pkg = $full ? $1 : "Test::Stream::Bundle::$1";
@@ -76,7 +83,13 @@ sub load {
             next;
         }
 
-        my $val = (@_ && ref $_[0]) ? shift @_ : [];
+        my $val = @_
+            ? (ref($_[0]) || $_[0] eq '*')
+                ? shift @_
+                : []
+            : [];
+
+        $val = ['-all'] unless ref($val) || $val ne '*';
 
         $arg = 'Test::Stream::Plugin::' . $arg unless $full;
 
@@ -93,6 +106,8 @@ sub load {
             $arg->($caller);
             next;
         }
+
+        next if $skip{$arg};
 
         my $import = $args{$arg};
         my $mod  = $arg;
@@ -153,6 +168,11 @@ TODO: Manual
 
 =head1 DESCRIPTION
 
+This is the primary interface for loading L<Test::Stream> based tools. This
+module is responsible for loading bundles and plugins for the tools you want.
+If you do not provide a custom list of bundles or plugins then
+L<Test::Stream::Bundle::Default> is used.
+
 =head1 SYNOPSIS
 
 When used without arguments, the default bundle is used. You can find out more
@@ -190,8 +210,10 @@ Plugins and bundles can be distinguished easily:
         '-Default',                     # Default bundle ('-')
         ':Project',                     # Preject specific bundle (':')
         'MyPlugin',                     # Plugin name (no prefix)
-        '+Fully::Qualified::Plugin',    #(Plugin in unusual path)
-        'SomePlugin' => ['arg1', ...],  #(Plugin with args)
+        '+Fully::Qualified::Plugin',    # (Plugin in unusual path)
+        'SomePlugin' => ['arg1', ...],  # (Plugin with args)
+        '!UnwantedPlugin',              # Do not load this plugin
+        'WantEverything' => '*',        # Load the plugin with all options
     );
 
 Explanation:
@@ -246,6 +268,19 @@ same plugin, the same rules apply.
         '-BundleAlsoWithFoo', # Arguments to 'Foo' get squashed by the next line
         'Foo' => [...],       # These args win
     );
+
+=item '!UnwantedPlugin'
+
+This will blacklist the plugin so that it will not be used. The blacklist will
+block the plugin regardless of where it is listed. The blacklist only effects
+the statement in which it appears; if you load Test::Stream twice, the
+blacklist will only apply to the load in which it appears. You cannot override
+the blacklist items.
+
+=item 'WantEverything' => '*'
+
+This will load the plugin with all options. The '*' gets turned into
+C<['-all']> for you.
 
 =head2 SEE ALSO
 

@@ -56,13 +56,6 @@ sub package { $_[0]->{+DEDUCED}->[PACKAGE] }
 sub file    { $_[0]->{+DEDUCED}->[FILE]    }
 sub subname { $_[0]->{+DEDUCED}->[SUBNAME] }
 
-sub run {
-    my $self = shift;
-    my @args = @_;
-
-    $self->{+CODEREF}->(@args);
-}
-
 sub call_detail {
     my $self = shift;
 
@@ -231,7 +224,7 @@ experimental phase is over.
 =head1 DESCRIPTION
 
 This module is used to find line numbers, files, and other data about
-codeblocks. When used properly you can get botht he start and end lines of
+codeblocks. When used properly you can get both the start and end lines of
 codeblocks.
 
 =head1 SYNOPSIS

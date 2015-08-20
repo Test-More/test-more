@@ -21,7 +21,7 @@ sub load_ts_plugin {
         if ($arg =~ m/^-(.*)$/) {
             $params{$1}++;
         }
-        elsif ($arg =~ m/^\+(.*)$/) {
+        elsif ($arg =~ m/^\+(.+)$/) {
             push @drivers => $1;
         }
         else {

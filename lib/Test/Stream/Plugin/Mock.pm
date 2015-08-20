@@ -202,7 +202,7 @@ sub mock_class {
     my $meta   = Test::Stream::Workflow::Meta->get($caller->[0]);
 
     croak "mock_class should not be called in a void context except in a workflow"
-        unless $void || $vars || $build || $meta;
+        unless $vars || $build || $meta || !$void;
 
     my $builder = sub {
         my ($parent) = reverse mocked($class);
@@ -288,3 +288,273 @@ sub mock_setter {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Test::Stream::Plugin::Mock - Class/Instance mocking for Test::Stream.
+
+=head1 EXPERIMENTAL CODE WARNING
+
+B<This is an experimental release!> Test-Stream, and all its components are
+still in an experimental phase. This dist has been released to cpan in order to
+allow testers and early adopters the chance to write experimental new tools
+with it, or to add experimental support for it into old tools.
+
+B<PLEASE DO NOT COMPLETELY CONVERT OLD TOOLS YET>. This experimental release is
+very likely to see a lot of code churn. API's may break at any time.
+Test-Stream should NOT be depended on by any toolchain level tools until the
+experimental phase is over.
+
+=head1 DESCRIPTION
+
+Mocking is often an essential part of testing. This library covers some of the
+most common mocking needs. This plugin is heavily influenced by L<Mock::Quick>,
+but with an improved API. This plugin is also intended to play well with other
+plugins in ways L<Mock::Quick> would be unable to.
+
+=head1 SYNOPSIS
+
+    my $mock = mock 'Some::Class' => (
+        add => [
+            new_method => sub { ... },
+        ],
+        override => [
+            replace_method => sub { ... },
+        ],
+    );
+
+    Some::Class->new_method();        # Calls the newly injected method
+    Some::Class->replace_method();    # Calls our replacement method.
+
+    $mock->override(...) # Override some more
+
+    $mock = undef; # Undoes all the mocking, restoring all original methods.
+
+
+=head1 MOCKING + SPEC TESTING
+
+This plugin plays nicely with L<Test::Stream::Plugin::Spec>. Mocks are treated
+as a C<before_each> if you use the mock functions without saving the returned
+object. The mock will also apply to any describe block in which they are
+defined.
+
+    describe stuff => sub {
+        # The mock specification
+        mock 'My::Class' => (...);
+
+        # Mock applies here, inside the describe block
+
+        tests foo => sub {
+            # Mock applies here inside any nested blocks, even though they run
+            # later
+        };
+    };
+
+    # Mock does not apply out here
+
+=head1 EXPORTS
+
+=head2 DEFAULT
+
+=over 4
+
+=item mock
+
+This is a 1-stop shop function that delgates to one of the other methods
+depending on how it is used. If you are not comfortable with a function that
+has a lot of potential behaviors, you can use one of the other functions
+directly.
+
+=item $mock = mocked($object)
+
+=item $mock = mocked($class)
+
+Check if an object or class is mocked. If it is mocked the C<$mock> object
+(L<Test::Stream::Mock>) will be returned.
+
+=item $mock = mock $class => ( ... );
+
+=item $mock = mock $instance => ( ... )
+
+=item $mock = mock 'class', $class => ( ... )
+
+These forms delegate to C<mock_class()> to mock a package. The third form is to
+be explicit about what type of mocking you want.
+
+=item $obj = mock()
+
+=item $obj = mock { ... }
+
+=item $obj = mock 'obj', ...;
+
+These forms delegate to C<mock_obj()> to create instances of anonymous packages
+where methods are vivified into existance as needed.
+
+=item mock $mock => sub { ... }
+
+=item mock $method => ( ... )
+
+These forms go together, the first form will set C<$mock> as the current mock
+build, then run the sub. Within the sub you can declare mock specifications
+using the second form. The first form delgates to C<mock_build()>.
+
+The second form calls the specified method on the current build. This second
+form delgates to C<mock_do()>.
+
+=back
+
+=head2 BY REQUEST
+
+=head3 DEFINING MOCKS
+
+=over 4
+
+=item $obj = mock_obj( ... )
+
+=item $obj = mock_obj { ... } => ( ... )
+
+=item $obj = mock_obj sub { ... }
+
+=item $obj = mock_obj { ... } => sub { ... }
+
+This method lets you quickly generate a blessed object. The object will be an
+instance of a randomly generated package name. Methods will vivify as
+read/write accessors as needed.
+
+Arguments can be any method available to L<Test::Stream::Mock> followed by an
+argument. If the very first argument is a hashref then it will be blessed as
+your new object.
+
+If you provide a coderef instead of key/value pairs, the coderef will be run to
+build the mock. (See the L</"BUILDING MOCKS"> section).
+
+=item $mock = mock_class $class => ( ... )
+
+=item $mock = mock_class $instance => ( ... )
+
+=item $mock = mock_class ... => sub { ... }
+
+This will create a new instance of L<Test::Stream::Mock> to control the package
+specified. If you give it a blessed reference it will use the class of the
+instance.
+
+Arguments can be any method available to L<Test::Stream::Mock> followed by an
+argument. If the very first argument is a hashref then it will be blessed as
+your new object.
+
+If you provide a coderef instead of key/value pairs, the coderef will be run to
+build the mock. (See the L</"BUILDING MOCKS"> section).
+
+=back
+
+=head3 BUILDING MOCKS
+
+=over 4
+
+=item mock_build $mock => sub { ... }
+
+Set C<$mock> as the current build, then run the specified code. C<$mock> will
+no longer be the current build when the sub is complete.
+
+=item $mock = mock_building()
+
+Get the current building C<$mock> object.
+
+=item mock_do $method => $args
+
+Run the specified method on the currently building object.
+
+=back
+
+=head3 METHOD GENERATORS
+
+=over 4
+
+=item $sub = mock_accessor $field
+
+Generate a read/write accessor for the specified field. This will generate a sub like the following:
+
+    $sub = sub {
+        my $self = shift;
+        ($self->{$field}) = @_ if @_;
+        return $self->{$field};
+    };
+
+=item $sub = mock_getter $field
+
+Generate a read obly accessor for the specified field. This will generate a sub like the following:
+
+    $sub = sub {
+        my $self = shift;
+        return $self->{$field};
+    };
+
+=item $sub = mock_setter $field
+
+Generate a write accessor for the specified field. This will generate a sub like the following:
+
+    $sub = sub {
+        my $self = shift;
+        ($self->{$field}) = @_;
+    };
+
+=item %pairs = mock_accessors(qw/name1 name2 name3/)
+
+Generates several read/write accessors at once, returns key/value pairs where
+the key is the field name, and the value is the coderef.
+
+=item %pairs = mock_getters(qw/name1 name2 name3/)
+
+Generates several read only accessors at once, returns key/value pairs where
+the key is the field name, and the value is the coderef.
+
+=item %pairs = mock_setters(qw/name1 name2 name3/)
+
+Generates several write accessors at once, returns key/value pairs where the
+key is the field name, and the value is the coderef.
+
+=back
+
+=head1 MOCK CONTROL OBJECTS
+
+    my $mock = mock(...);
+
+Mock objects are instances of L<Test::Stream::Mock>, see it for their methods.
+
+=head1 SOURCE
+
+The source code repository for Test::Stream can be found at
+F<http://github.com/Test-More/Test-Stream/>.
+
+=head1 MAINTAINERS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 AUTHORS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 COPYRIGHT
+
+Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http://www.perl.com/perl/misc/Artistic.html>
+
+=cut

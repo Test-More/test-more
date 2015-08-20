@@ -205,7 +205,14 @@ tests constructors => sub {
     $i = Fake->new($ref);
     isa_ok($i, 'Fake');
     is($i, { foo => 'bat' }, "Has params");
-    ok($i != $ref, "same reference");
+    ok($i != $ref, "different reference");
+    ok(!blessed($ref), "original ref is not blessed");
+
+    $ref = [ 'foo', 'bar' ];
+    $i = Fake->new($ref);
+    isa_ok($i, 'Fake');
+    is($i, [ 'foo', 'bar' ], "has the items");
+    ok($i != $ref, "different reference");
     ok(!blessed($ref), "original ref is not blessed");
 
     like(
@@ -219,6 +226,11 @@ tests constructors => sub {
         qr/'bad' is not a known constructor type/,
         "Bad constructor type (add)"
     );
+
+    $one->override_constructor(new => 'array');
+    $one = Fake->new('a', 'b');
+    is($one, ['a', 'b'], "is an array");
+    isa_ok($one, 'Fake');
 };
 
 tests autoload => sub {
@@ -646,23 +658,6 @@ tests 'override and orig' => sub {
     $one = Test::Stream::Mock->new(class => 'Fake');
 };
 
-tests parse_sym => sub {
-    my $p = Test::Stream::Mock->can('_parse_sym');
-
-    is([$p->('foo')],  [foo  => 'CODE'],   "parsed no sigil");
-    is([$p->('_foo')], [_foo => 'CODE'],   "parsed underscore");
-    is([$p->('&foo')], [foo  => 'CODE'],   "parsed code sigil");
-    is([$p->('$foo')], [foo  => 'SCALAR'], "parsed scalar sigil");
-    is([$p->('@foo')], [foo  => 'ARRAY'],  "parsed array sigil");
-    is([$p->('%foo')], [foo  => 'HASH'],   "parsed hash sigil");
-
-    like(
-        dies { $p->('*foo') },
-        qr/'\*' is not a supported sigil/,
-        "Cannot parse globs"
-    );
-};
-
 tests restore_reset => sub {
     my $one = Test::Stream::Mock->new( class => 'Fake' );
 
@@ -703,6 +698,68 @@ tests restore_reset => sub {
 
     no strict 'refs';
     ok(!*{'Fake::foo'}{ARRAY}, "array override removed");
+};
+
+tests exceptions => sub {
+    my $one = Test::Stream::Mock->new( class => 'Fake' );
+    like(
+        dies { $one->new(class => 'Fake2') },
+        qr/Called new\(\) on a blessed instance, did you mean to call \$control->class->new\(\)\?/,
+        "Cannot call new on a blessed instance"
+    );
+
+    like(
+        dies { Test::Stream::Mock->new(class => 'Fake2', foo => 1) },
+        qr/'foo' is not a valid constructor argument for Test::Stream::Mock/,
+        "Validate constructor args"
+    );
+
+    like(
+        dies { Test::Stream::Mock->new(class => 'Fake2', override_constructor => ['xxx', 'xxx']) },
+        qr/'xxx' is not a known constructor type/,
+        "Invalid constructor type"
+    );
+
+    like(
+        dies { Test::Stream::Mock->new(class => 'Fake2', add_constructor => ['xxx', 'xxx']) },
+        qr/'xxx' is not a known constructor type/,
+        "Invalid constructor type"
+    );
+
+    like(
+        dies { $one->orig('foo') },
+        qr/No symbols have been mocked yet/,
+        "No symbols are mocked yet"
+    );
+
+    like(
+        dies { $one->restore('foo') },
+        qr/No symbols are mocked/,
+        "No symbols yet!"
+    );
+
+    like(
+        dies { $one->reset('foo') },
+        qr/No symbols are mocked/,
+        "No symbols yet!"
+    );
+
+    $one->add(xxx => sub { 1 });
+    like(
+        dies { $one->orig('foo') },
+        qr/Symbol '&foo' is not mocked/,
+        "did not mock foo"
+    );
+    like(
+        dies { $one->restore('foo') },
+        qr/Symbol '&foo' is not mocked/,
+        "did not mock foo"
+    );
+    like(
+        dies { $one->reset('foo') },
+        qr/Symbol '&foo' is not mocked/,
+        "did not mock foo"
+    );
 };
 
 done_testing;

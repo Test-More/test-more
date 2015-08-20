@@ -4,6 +4,11 @@ use Test::Stream(
     'LoadPlugin',        # Test loading a plugin
     'IPC' => ['-cull'],  # Test plugin args
 
+    # Blacklist
+    'Spec',
+    '!Spec', # Should override the listings above and below
+    'Spec',
+
     # Test fully qualified plugin path
     '+Test::Stream::Plugin::Grab',
 
@@ -26,7 +31,7 @@ like(
 );
 
 # Test that the last one wins
-not_imported(qw/xxx yyy zzz/);
+not_imported(qw/xxx yyy zzz tests describe/);
 load_plugin(
     Intercept => [ 'intercept' => { -as => 'xxx' }],
     Intercept => [ 'intercept' => { -as => 'yyy' }],

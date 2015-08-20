@@ -22,6 +22,7 @@ sub to_tap {
     my $self = shift;
 
     chomp(my $msg = $self->{+MESSAGE});
+    return unless $msg;
     $msg = "# $msg" unless $msg =~ m/^\n/;
     $msg =~ s/\n/\n# /g;
 

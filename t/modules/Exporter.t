@@ -92,6 +92,63 @@ is(xxx(), 'a', "imported under an alternative name 2");
     My::Exporter->import('-all', c => {-as => 'cc'});
     can_ok(__PACKAGE__, qw/a b cc x/);
     ok(!__PACKAGE__->can('c'), "did not import under old name");
+
+    package Temp3;
+    use Test::Stream;
+    My::Exporter->import('-default');
+    can_ok(__PACKAGE__, qw/b x/);
+    ok(!__PACKAGE__->can('a'), "did not import a");
+    ok(!__PACKAGE__->can('c'), "did not import c");
+
+    package Temp4;
+    use Test::Stream;
+    for my $f (qw/export exports default_export default_exports/) {
+        my $fc = Test::Stream::Exporter->can($f);
+        like(
+            dies { $fc->('x') },
+            qr/Temp4 is not an exporter!\?/,
+            "Cannot call $f from non-exporter"
+        );
+    }
+}
+
+Test::Stream::Exporter::export_from('My::Exporter', 'Temp5', []);
+can_ok('Temp5', qw/b x/);
+
+Test::Stream::Exporter::export_from('My::Exporter', 'Temp6');
+can_ok('Temp6', qw/b x/);
+
+like(
+    dies { Test::Stream::Exporter::export_from('My::Exporter', 'Temp7', ['fake']) },
+    qr/"fake" is not exported by the My::Exporter module/,
+    "Bad export name"
+);
+
+like(
+    dies { Test::Stream::Exporter::export_from('My::Exporter', 'Temp7', ['a' => []]) },
+    qr/import options must be specified as a hashref, got 'ARRAY/,
+    "Bad export options type"
+);
+
+like(
+    dies { Test::Stream::Exporter::export_from('My::Exporter', 'Temp7', ['a' => {-foo => 1}]) },
+    qr/'-foo' is not a valid export option for export 'a'/,
+    "Bad export options type"
+);
+
+Test::Stream::Exporter::export_from('My::Exporter', 'Temp7', ['a' => {-as => 'A', -prefix => 'pre_', -postfix => '_post'}]);
+can_ok('Temp7', 'pre_A_post');
+
+Test::Stream::Exporter::export_from('My::Exporter', 'Temp7', ['x' => {}]);
+can_ok('Temp7', 'x');
+
+{
+    package Temp8;
+    use Test::Stream;
+    use Test::Stream::Exporter;
+    BEGIN { imported('export') };
+    no Test::Stream::Exporter qw/export/;
+    BEGIN { not_imported('export') };
 }
 
 done_testing;

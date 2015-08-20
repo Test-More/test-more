@@ -24,7 +24,7 @@ isa_ok($unit, 'Test::Stream::Workflow::Unit');
 is(
     $unit,
     object {
-        prop blessed    => check { shift->isa('Test::Stream::Workflow::Unit') };
+        prop blessed    => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
         call name       => 'main';                              # package name
         call start_line => 1000;
         call end_line   => 'EOF';
@@ -50,7 +50,7 @@ sub build_it {
     return undef unless $count--;
 
     item object {
-        prop blessed    => check { shift->isa('Test::Stream::Workflow::Unit') };
+        prop blessed    => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
         call name       => 'stuff';
         call start_line => 1005;
         call end_line   => 1026;
@@ -61,13 +61,13 @@ sub build_it {
         call meta       => {};
         call buildup => array {
             item object {
-                prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                 call sub { $_[0]->primary->() } => 'first';
                 call start_line => 1014;
                 call end_line   => 1014;
             };
             item object {
-                prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                 call sub { $_[0]->primary->() } => 'second';
                 call start_line => 1015;
                 call end_line   => 1015;
@@ -76,7 +76,7 @@ sub build_it {
         };
         call teardown => array {
             item object {
-                prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                 call sub { $_[0]->primary->() } => 'pre_last';
                 call type       => 'single';
                 call buildup    => undef;
@@ -88,7 +88,7 @@ sub build_it {
                 call end_line   => 1016;
             };
             item object {
-                prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                 call sub { $_[0]->primary->() } => 'last';
                 call type       => 'single';
                 call buildup    => undef;
@@ -103,7 +103,7 @@ sub build_it {
         };
         call primary => array {
             item object {
-                prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                 call sub { $_[0]->primary->() } => 'vanilla';
                 call name       => 'vanilla';
                 call type       => 'single';
@@ -115,7 +115,7 @@ sub build_it {
                 call buildup => array {
                     for (1 .. ($depth - $count)) {
                         item object {
-                            prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                            prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                             call sub { $_[0]->primary->() } => 'prefix1';
                             call name       => 'prefix1';
                             call type       => 'single';
@@ -128,7 +128,7 @@ sub build_it {
                             call end_line   => 1019;
                         };
                         item object {
-                            prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                            prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                             call sub { $_[0]->primary->() } => 'prefix2';
                             call name       => 'prefix2';
                             call type       => 'single';
@@ -146,7 +146,7 @@ sub build_it {
                 call teardown => array {
                     for (1 .. ($depth - $count)) {
                         item object {
-                            prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                            prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                             call sub { $_[0]->primary->() } => 'postfix1';
                             call name     => 'postfix1';
                             call type     => 'single';
@@ -157,7 +157,7 @@ sub build_it {
                             call meta     => {};
                         };
                         item object {
-                            prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                            prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                             call sub { $_[0]->primary->() } => 'postfix2';
                             call name     => 'postfix2';
                             call type     => 'single';
@@ -172,7 +172,7 @@ sub build_it {
                 };
             };
             item object {
-                prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                 call sub { $_[0]->primary->() } => 'skip';
                 call name       => 'skip';
                 call type       => 'single';
@@ -184,7 +184,7 @@ sub build_it {
                 call buildup => array {
                     for (1 .. ($depth - $count)) {
                         item object {
-                            prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                            prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                             call sub { $_[0]->primary->() } => 'prefix1';
                             call name     => 'prefix1';
                             call type     => 'single';
@@ -195,7 +195,7 @@ sub build_it {
                             call meta     => {};
                         };
                         item object {
-                            prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                            prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                             call sub { $_[0]->primary->() } => 'prefix2';
                             call name     => 'prefix2';
                             call type     => 'single';
@@ -211,7 +211,7 @@ sub build_it {
                 call teardown => array {
                     for (1 .. ($depth - $count)) {
                         item object {
-                            prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                            prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                             call sub { $_[0]->primary->() } => 'postfix1';
                             call name     => 'postfix1';
                             call type     => 'single';
@@ -222,7 +222,7 @@ sub build_it {
                             call meta     => {};
                         };
                         item object {
-                            prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                            prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                             call sub { $_[0]->primary->() } => 'postfix2';
                             call name     => 'postfix2';
                             call type     => 'single';
@@ -237,7 +237,7 @@ sub build_it {
                 };
             };
             item object {
-                prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                 call name => 'todo';
                 call type => 'single';
                 call sub { $_[0]->primary->() } => 'todo';
@@ -247,7 +247,7 @@ sub build_it {
                 call buildup => array {
                     for (1 .. ($depth - $count)) {
                         item object {
-                            prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                            prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                             call sub { $_[0]->primary->() } => 'prefix1';
                             call name     => 'prefix1';
                             call type     => 'single';
@@ -258,7 +258,7 @@ sub build_it {
                             call meta     => {};
                         };
                         item object {
-                            prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                            prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                             call sub { $_[0]->primary->() } => 'prefix2';
                             call name     => 'prefix2';
                             call type     => 'single';
@@ -274,7 +274,7 @@ sub build_it {
                 call teardown => array {
                     for (1 .. ($depth - $count)) {
                         item object {
-                            prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                            prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                             call sub { $_[0]->primary->() } => 'postfix1';
                             call name     => 'postfix1';
                             call type     => 'single';
@@ -285,7 +285,7 @@ sub build_it {
                             call meta     => {};
                         };
                         item object {
-                            prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                            prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                             call sub { $_[0]->primary->() } => 'postfix2';
                             call name     => 'postfix2';
                             call type     => 'single';
@@ -307,7 +307,7 @@ sub build_it {
     };
 
     item object {
-        prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') } 'isa';
+        prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
         call name       => 'more_stuff';
         call start_line => 1028;
         call end_line   => 1033;
@@ -329,7 +329,7 @@ sub build_it {
         };
         call primary => array {
             item object {
-                prop blessed => check { shift->isa('Test::Stream::Workflow::Unit') };
+                prop blessed => check('isa' => 'Test::Stream::Workflow::Unit', sub { $_[0]->isa($_[2]) });
                 call sub { $_[0]->primary->() } => 'the tests';
                 call name   => 'the_tests';
                 call post   => undef;

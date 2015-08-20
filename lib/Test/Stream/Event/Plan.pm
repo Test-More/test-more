@@ -110,7 +110,12 @@ or a subtext completes.
     use Test::Stream::Event::Plan;
 
     my $ctx = context();
-    my $event = $ctx->plan($max, $directive, $reason);
+
+    # Plan for 10 tests to run
+    my $event = $ctx->plan(10);
+
+    # Plan to skip all tests (will exit 0)
+    $ctx->plan(0, skip_all => "These tests need to be skipped");
 
 =head1 ACCESSORS
 

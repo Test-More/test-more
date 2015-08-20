@@ -124,9 +124,10 @@ not aware of them.
 
 C<is> and C<is_deeply> have been combined. You can now use C<is> for simple
 scalars, or nested data structures. This also means you can no longer use C<is>
-to check that 2 reference are the same exact reference, though you can check
-that they have the exact same data. If you actually want to check if 2 refs are
-the same or different you can use C<same_ref()> or C<diff_ref()>.
+to check that hash/array reference are the same exact reference, though you can
+check that they have the exact same data. If you actually want to check if 2
+hash/array refs are the same or different you can use C<same_ref()> or
+C<diff_ref()>.
 
 The signature has also been changed to add a slurpy '@' to the end for
 specifying extra diagnostics that only show up if the test fails.

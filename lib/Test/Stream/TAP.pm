@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use Test::Stream::Util qw/protect/;
-
 use Test::Stream::HashBase(
     accessors => [qw/no_numbers no_header no_diag handles _encoding/],
 );
@@ -34,7 +33,16 @@ sub encoding {
     if (@_) {
         my ($enc) = @_;
         my $handles = $self->{+HANDLES};
-        binmode($_, ":encoding($enc)") for @$handles;
+
+        # https://rt.perl.org/Public/Bug/Display.html?id=31923
+        # If utf8 is requested we use ':utf8' instead of ':encoding(utf8)' in
+        # order to avoid the thread segfault.
+        if ($enc =~ m/^utf-?8$/i) {
+            binmode($_, ":utf8") for @$handles;
+        }
+        else {
+            binmode($_, ":encoding($enc)") for @$handles;
+        }
         $self->{+_ENCODING} = $enc;
     }
 
@@ -65,7 +73,7 @@ sub write {
         no warnings 'uninitialized';
         my ($hid, $msg) = @$set;
         next unless $msg;
-        my $io = $handles->[$hid] || next;
+        my $io = $handles->[$hid] or next;
 
         $msg =~ s/^/$indent/mg if $nesting;
         print $io $msg;
@@ -81,24 +89,7 @@ sub _open_handles {
     _autoflush($out);
     _autoflush($err);
 
-    if (my $encoding = $self->{+_ENCODING}) {
-        binmode($out, ":encoding($encoding)");
-        binmode($err, ":encoding($encoding)");
-    }
-
     return [$out, $err, $out];
-}
-
-sub _copy_io_layers {
-    my($src, $dst) = @_;
-
-    protect {
-        require PerlIO;
-        my @src_layers = PerlIO::get_layers($src);
-        _apply_layers($dst, @src_layers) if @src_layers;
-    };
-
-    return;
 }
 
 sub _autoflush {

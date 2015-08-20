@@ -13,7 +13,7 @@ use File::Temp;
 use Storable;
 use File::Spec;
 
-use Test::Stream::Util qw/try get_tid/;
+use Test::Stream::Util qw/try get_tid pkg_to_file/;
 
 sub is_viable { 1 }
 
@@ -21,6 +21,7 @@ sub init {
     my $self = shift;
 
     my $tmpdir = File::Temp::tempdir(CLEANUP => 0);
+
     $self->abort_trace("Could not get a temp dir") unless $tmpdir;
 
     $self->{+TEMPDIR} = File::Spec->canonpath($tmpdir);
@@ -38,17 +39,39 @@ sub init {
     return $self;
 }
 
+sub hub_file {
+    my $self = shift;
+    my ($hid) = @_;
+    my $tdir = $self->{+TEMPDIR};
+    return File::Spec->canonpath("$tdir/HUB-$hid");
+}
+
+sub event_file {
+    my $self = shift;
+    my ($hid, $e) = @_;
+
+    my $tempdir = $self->{+TEMPDIR};
+    my $type = blessed($e) or $self->abort("'$e' is not a blessed object!");
+
+    $self->abort("'$e' is not an event object!")
+        unless $type->isa('Test::Stream::Event');
+
+    my @type = split '::', $type;
+    my $name = join('-', $hid, $$, get_tid(), $self->{+EVENT_ID}++, @type);
+
+    return File::Spec->canonpath("$tempdir/$name");
+}
+
 sub add_hub {
     my $self = shift;
     my ($hid) = @_;
 
-    my $tdir = $self->{+TEMPDIR};
-    my $hfile = File::Spec->canonpath("$tdir/HUB-$hid");
+    my $hfile = $self->hub_file($hid);
 
     $self->abort_trace("File for hub '$hid' already exists")
         if -e $hfile;
 
-    open(my $fh, '>', $hfile) || $self->abort_trace("Could not create hub file '$hid': $!");
+    open(my $fh, '>', $hfile) or $self->abort_trace("Could not create hub file '$hid': $!");
     print $fh "$$\n" . get_tid() . "\n";
     close($fh);
 }
@@ -58,12 +81,12 @@ sub drop_hub {
     my ($hid) = @_;
 
     my $tdir = $self->{+TEMPDIR};
-    my $hfile = File::Spec->canonpath("$tdir/HUB-$hid");
+    my $hfile = $self->hub_file($hid);
 
     $self->abort_trace("File for hub '$hid' does not exist")
         unless -e $hfile;
 
-    open(my $fh, '<', $hfile) || $self->abort_trace("Could not open hub file '$hid': $!");
+    open(my $fh, '<', $hfile) or $self->abort_trace("Could not open hub file '$hid': $!");
     my ($pid, $tid) = <$fh>;
     close($fh);
 
@@ -74,18 +97,17 @@ sub drop_hub {
         unless get_tid() == $tid;
 
     if ($ENV{TS_KEEP_TEMPDIR}) {
-        rename($hfile, File::Spec->canonpath("$hfile.complete")) || $self->abort_trace("Could not rename file '$hfile' -> '$hfile.complete'");
+        rename($hfile, File::Spec->canonpath("$hfile.complete")) or $self->abort_trace("Could not rename file '$hfile' -> '$hfile.complete'");
     }
     else {
-        unlink($hfile) || $self->abort_trace("Could not remove file for hub '$hid'");
+        unlink($hfile) or $self->abort_trace("Could not remove file for hub '$hid'");
     }
 
-    opendir(my $dh, $tdir) || $self->abort_trace("Could not open temp dir!");
+    opendir(my $dh, $tdir) or $self->abort_trace("Could not open temp dir!");
     for my $file (readdir($dh)) {
         next if $file =~ m{\.complete$};
         next unless $file =~ m{^$hid};
         $self->abort_trace("Not all files from hub '$hid' have been collected!");
-        last;
     }
     closedir($dh);
 }
@@ -95,33 +117,32 @@ sub send {
     my ($hid, $e) = @_;
 
     my $tempdir = $self->{+TEMPDIR};
-
     my $global = $hid eq 'GLOBAL';
-
-    my $hfile = File::Spec->canonpath("$tempdir/HUB-$hid");
+    my $hfile = $self->hub_file($hid);
 
     $self->abort("hub '$hid' is not available! Failed to send event!\n")
         unless $global || -f $hfile;
 
-    my @type = split '::', blessed($e);
-    my $name = join('-', $hid, $$, get_tid(), $self->{+EVENT_ID}++, @type);
-    my $file = File::Spec->canonpath("$tempdir/$name");
-
+    my $file = $self->event_file($hid, $e);
     my $ready = File::Spec->canonpath("$file.ready");
 
-    $self->globals->{"$name.ready"}++ if $global;
+    if ($global) {
+        my $name = $ready;
+        $name =~ s{^.*/}{};
+        $self->globals->{$name}++;
+    }
 
     my ($ok, $err) = try {
         Storable::store($e, $file);
-        rename($file, $ready) || die "Could not rename file '$file' -> '$ready'\n";
+        rename($file, $ready) or $self->abort("Could not rename file '$file' -> '$ready'");
     };
     if (!$ok) {
         my $src_file = __FILE__;
         $err =~ s{ at \Q$src_file\E.*$}{};
         chomp($err);
         my $tid = get_tid();
-        my $type = blessed($e);
         my $trace = $e->debug->trace;
+        my $type = blessed($e);
 
         $self->abort(<<"        EOT");
 
@@ -140,7 +161,7 @@ Error: $err
         EOT
     }
 
-    return $name;
+    return 1;
 }
 
 sub cull {
@@ -149,7 +170,7 @@ sub cull {
 
     my $tempdir = $self->{+TEMPDIR};
 
-    opendir(my $dh, $tempdir) || $self->abort("could not open IPC temp dir ($tempdir)!");
+    opendir(my $dh, $tempdir) or $self->abort("could not open IPC temp dir ($tempdir)!");
 
     my @out;
     my @files = sort readdir($dh);
@@ -163,20 +184,16 @@ sub cull {
         my $full = File::Spec->canonpath("$tempdir/$file");
         ($full) = ($full =~ m/^(.*)$/gs);
 
-        my $obj = Storable::retrieve($full);
-        $self->abort("Empty event object recieved") unless $obj;
-        $self->abort("Event '$obj' has unknown type! Did you forget to load the event package in the parent process?")
-            unless $obj->isa('Test::Stream::Event');
+        my $obj = $self->read_event_file($full);
 
         # Do not remove global events
         unless ($global) {
             my $complete = File::Spec->canonpath("$full.complete");
             if ($ENV{TS_KEEP_TEMPDIR}) {
-                rename($full, $complete)
-                    || warn "Could not rename IPC file '$full', '$complete'\n";
+                rename($full, $complete) or $self->abort("Could not rename IPC file '$full', '$complete'");
             }
             else {
-                unlink($full) || warn "Could not unlink IPC file: $file\n";
+                unlink($full) or $self->abort("Could not unlink IPC file: $file");
             }
         }
 
@@ -185,6 +202,29 @@ sub cull {
 
     closedir($dh);
     return @out;
+}
+
+sub read_event_file {
+    my $self = shift;
+    my ($file) = @_;
+
+    my $obj = Storable::retrieve($file);
+    $self->abort("Got an unblessed object: '$obj'")
+        unless blessed($obj);
+
+    unless ($obj->isa('Test::Stream::Event')) {
+        my $pkg  = blessed($obj);
+        my $mod_file = pkg_to_file($pkg);
+        my ($ok, $err) = try { require $mod_file };
+
+        $self->abort("Event has unknown type ($pkg), tried to load '$mod_file' but failed: $err")
+            unless $ok;
+
+        $self->abort("'$obj' is not a 'Test::Stream::Event' object")
+            unless $obj->isa('Test::Stream::Event');
+    }
+
+    return $obj;
 }
 
 sub waiting {
@@ -209,12 +249,7 @@ sub DESTROY {
 
     my $tempdir = $self->{+TEMPDIR};
 
-    if ($ENV{TS_KEEP_TEMPDIR}) {
-        print STDERR "# Not removing temp dir: $tempdir\n";
-        return;
-    }
-
-    opendir(my $dh, $tempdir) || $self->abort("Could not open temp dir! ($tempdir)");
+    opendir(my $dh, $tempdir) or $self->abort("Could not open temp dir! ($tempdir)");
     while(my $file = readdir($dh)) {
         next if $file =~ m/^\.+$/;
         next if $file =~ m/\.complete$/;
@@ -224,7 +259,7 @@ sub DESTROY {
             $full =~ m/^(.*)$/;
             $full = $1; # Untaint it
             next if $ENV{TS_KEEP_TEMPDIR};
-            unlink($full) || warn "Could not unlink IPC file: $full";
+            unlink($full) or $self->abort("Could not unlink IPC file: $full");
             next;
         }
 
@@ -232,9 +267,12 @@ sub DESTROY {
     }
     closedir($dh);
 
-    return if $ENV{TS_KEEP_TEMPDIR};
+    if ($ENV{TS_KEEP_TEMPDIR}) {
+        print STDERR "# Not removing temp dir: $tempdir\n";
+        return;
+    }
 
-    rmdir($tempdir) || warn "Could not remove IPC temp dir ($tempdir)";
+    rmdir($tempdir) or warn "Could not remove IPC temp dir ($tempdir)";
 }
 
 1;
@@ -270,6 +308,19 @@ temporary directory. This is not particularily fast, but it works everywhere.
 =head1 SYNOPSIS
 
     use Test::Stream::IPC::Files;
+    use Test::Stream;
+
+or
+
+    use Test::Stream '-Defaults', 'IPC' => ['Files'];
+
+or
+
+    use Test::Stream '-Defaults', 'IPC' => ['+Test::Stream::IPC::Files'];
+
+=head1 SEE ALSO
+
+See L<Test::Stream::IPC> for methods.
 
 =head1 SOURCE
 

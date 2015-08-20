@@ -11,6 +11,12 @@ use Test::Stream::Util qw/get_tid USE_THREADS/;
 use Test::Stream::DebugInfo;
 use Test::Stream::Stack;
 
+# This package is NOT an object. It is global in nature and I don't want people
+# fscking with it. It is small, with only the following variables. These are
+# lexicals on purpose to prevent anyone from touching them directly.
+# I know this may seem awful, but thats why this package is so small, this is
+# the only place I need to lock down. This is to prevent people from doing some
+# of the awful things they did with Test::Builder.
 my $PID     = $$;
 my $TID     = get_tid();
 my $NO_WAIT = 0;
@@ -19,6 +25,46 @@ my $IPC     = undef;
 my $STACK   = undef;
 my $FORMAT  = undef;
 my @HOOKS   = ();
+
+# The only valid reason to touch these internals is to test them. As such the
+# internals can be exposed if the package is loaded from itself, and even then
+# it warns in-case someone tries to do it for the wrong reasons.
+# This must ONLY be used in the unit tests for this package.
+{
+    my $caller = caller || '';
+    if ($caller eq __PACKAGE__) {
+        warn "Enabling Test::Stream::Sync debug features, this is normally not desired!";
+
+        *GUTS = sub {
+            return {
+                PID     => \$PID,
+                TID     => \$TID,
+                NO_WAIT => \$NO_WAIT,
+                INIT    => \$INIT,
+                IPC     => \$IPC,
+                STACK   => \$STACK,
+                FORMAT  => \$FORMAT,
+                HOOKS   => \@HOOKS,
+            };
+        };
+    
+        *GUTS_SNAPSHOT = sub {
+             return {
+                PID     => $PID,
+                TID     => $TID,
+                NO_WAIT => $NO_WAIT,
+                INIT    => $INIT,
+                IPC     => $IPC,
+                STACK   => $STACK,
+                FORMAT  => $FORMAT,
+                HOOKS   => [@HOOKS],
+            };
+        };
+    }
+}
+
+sub pid { $PID }
+sub tid { $TID }
 
 sub hooks { scalar @HOOKS }
 
@@ -61,7 +107,7 @@ sub ipc {
 sub set_formatter {
     my $self = shift;
     croak "Global Formatter already set" if $FORMAT;
-    $FORMAT = pop || croak "No formatter specified";
+    $FORMAT = pop or croak "No formatter specified";
 }
 
 sub formatter {
@@ -108,22 +154,23 @@ sub _ipc_wait {
 }
 
 # Set the exit status
-END {
+END { _set_exit() }
+sub _set_exit {
     my $exit     = $?;
     my $new_exit = $exit;
 
-    if ($PID != $$ || $TID != get_tid()) {
+    if ($PID != $$ or $TID != get_tid()) {
         $? = $exit;
         return;
     }
 
-    my @hubs = $STACK->all;
+    my @hubs = $STACK ? $STACK->all : ();
 
-    if (@hubs && $IPC && !$NO_WAIT) {
+    if (@hubs and $IPC and !$NO_WAIT) {
         local $?;
         my %seen;
         for my $hub (reverse @hubs) {
-            my $ipc = $hub->ipc || next;
+            my $ipc = $hub->ipc or next;
             next if $seen{$ipc}++;
             $ipc->waiting();
         }

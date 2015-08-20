@@ -39,4 +39,25 @@ like(
     "alter() warns"
 );
 
+my $snap = $one->snapshot;
+is($snap, $one, "identical");
+ok($snap != $one, "Not the same instance");
+
+ok(!$one->no_diag, "yes diag");
+ok(!$one->no_fail, "yes fail");
+
+$one->set_parent_todo(1);
+ok($one->no_diag, "no diag");
+ok(!$one->no_fail, "yes fail");
+
+$one->set_parent_todo(0);
+$one->set_todo(1);
+ok($one->no_diag, "no diag");
+ok($one->no_fail, "no fail");
+
+$one->set_todo(undef);
+$one->set_skip(1);
+ok($one->no_diag, "no diag");
+ok($one->no_fail, "no fail");
+
 done_testing;

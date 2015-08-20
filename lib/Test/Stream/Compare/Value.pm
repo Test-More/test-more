@@ -35,10 +35,13 @@ sub verify {
     my $self = shift;
     my ($got) = @_;
 
+    return 0 if ref $got;
+
     my $op = $self->operator($got);
 
     return !defined($got) unless defined($self->{+INPUT});
     return 0 unless defined($got);
+
 
     my $input = $self->{+INPUT};
 

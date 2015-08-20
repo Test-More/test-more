@@ -195,6 +195,8 @@ my @hooks;
 $hub =  Test::Stream::Sync->stack->top;
 my $ref1 = $hub->add_context_init(sub { push @hooks => 'hub_init' });
 my $ref2 = $hub->add_context_release(sub { push @hooks => 'hub_release' });
+Test::Stream::Context->ON_INIT(sub { push @hooks => 'global_init' });
+Test::Stream::Context->ON_RELEASE(sub { push @hooks => 'global_release' });
 
 sub {
     push @hooks => 'start';
@@ -218,11 +220,14 @@ sub {
 
 $hub->remove_context_init($ref1);
 $hub->remove_context_release($ref2);
+@Test::Stream::Context::ON_INIT = ();
+@Test::Stream::Context::ON_RELEASE = ();
 
 is(
     \@hooks,
     [qw{
         start
+        global_init
         hub_init
         ctx_init
         deep
@@ -231,13 +236,16 @@ is(
         ctx_release_deep
         ctx_release
         hub_release
+        global_release
         released_all
         new
+        global_init
         hub_init
         ctx_init2
         release_new
         ctx_release2
         hub_release
+        global_release
         done
     }],
     "Got all hook in correct order"
@@ -265,8 +273,177 @@ is(
     eval { $one->do_in_context($doit, 'foo', 'bar') };
     is(context(level => -1, wrapped => -2), $ctx, "Old context restored");
     $ctx->release;
+
+    ok(lives { $one->do_in_context(sub {1}) }, "do_in_context works without an original")
 }
 
+{
+    my $warnings;
+    my $exit;
+    sub {
+        my $ctx = context();
+    
+        local $? = 0;
+        $warnings = warns { Test::Stream::Context::_do_end() };
+        $exit = $?;
+    
+        $ctx->release;
+    }->();
 
+    {
+        my $line = __LINE__ - 3;
+        my $file = __FILE__;
+        is(
+            $warnings,
+            [
+                "context object was never released! This means a testing tool is behaving very badly at $file line $line.\n"
+            ],
+            "Warned about unfreed context"
+        );
+
+        is($exit, 255, "set exit code to 255");
+    }
+}
+
+{
+    like(dies { Test::Stream::Context->new() }, qr/The 'debug' attribute is required/, "need to have debug");
+    
+    my $debug = Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
+    like(dies { Test::Stream::Context->new(debug => $debug) }, qr/The 'hub' attribute is required/, "need to have hub");
+    
+    my $hub = Test::Stream::Sync->stack->top;
+    my $ctx = Test::Stream::Context->new(debug => $debug, hub => $hub);
+    is($ctx->{_depth}, 0, "depth set to 0 when not defined.");
+
+    $ctx = Test::Stream::Context->new(debug => $debug, hub => $hub, _depth => 1);
+    is($ctx->{_depth}, 1, "Do not reset depth");
+
+    like(
+        dies { $ctx->release },
+        qr/release\(\) should not be called on a non-canonical context/,
+        "Non canonical context, do not release"
+    );
+    ok(!$ctx, "ctx still destroyed from bad release");
+}
+
+sub {
+    my $caller = [caller(0)];
+    my $ctx = context();
+
+    my $warnings = warns { $ctx = undef };
+    my @parts = split /^\n/m, $warnings->[0];
+    is(
+        \@parts,
+        [
+            <<"            EOT",
+Context was not released! Releasing at destruction\.
+Context creation details:
+  Package: main
+     File: $caller->[1]
+     Line: $caller->[2]
+     Tool: $caller->[3]
+            EOT
+            match qr/Trace: .*/,
+        ],
+        "Got warning about unreleased context"
+    );
+
+    ok(@$warnings == 1, "Only 1 warning");
+}->();
+
+sub {
+    like(
+        dies { my $ctx = context(level => 20) },
+        qr/Could not find context at depth 21/,
+        "Level sanity"
+    );
+
+    ok(
+        lives {
+            my $ctx = context(level => 20, fudge => 1);
+            $ctx->release;
+        },
+        "Was able to get context when fudging level"
+    );
+}->();
+
+{
+    my $warnings;
+    sub {
+        my ($ctx1, $ctx2);
+        sub { $ctx1 = context() }->();
+    
+        my @warnings;
+        {
+            local $SIG{__WARN__} = sub { push @warnings => @_ };
+            $ctx2 = context();
+            $ctx1 = undef;
+        }
+
+        $ctx2->release;
+
+        is(
+            \@warnings,
+            [
+                match qr/^context\(\) was called to retrieve an existing context, however the existing/,
+            ],
+            "Got expected warning"
+        );
+    }->();
+}
+
+sub {
+    my $ctx = context();
+    my $e = dies { $ctx->throw('xxx') };
+    ok(!$ctx, "context was destroyed");
+    like($e, qr/xxx/, "got exception");
+
+    $ctx = context();
+    like(warning { $ctx->alert('xxx') }, qr/xxx/, "got warning");
+    $ctx->release;
+}->();
+
+sub {
+    my $ctx = context;
+    my $clone = $ctx;
+    $ctx = $clone->snapshot;
+    $clone->release;
+
+    is($ctx->_parse_event('Ok'), 'Test::Stream::Event::Ok', "Got the Ok event class");
+    is($ctx->_parse_event('+Test::Stream::Event::Ok'), 'Test::Stream::Event::Ok', "Got the +Ok event class");
+    
+    like(
+        dies { $ctx->_parse_event('+DFASGFSDFGSDGSD') },
+        qr/Could not load event module 'DFASGFSDFGSDGSD': Can't locate DFASGFSDFGSDGSD\.pm/,
+        "Bad event type"
+    );
+}->();
+
+{
+    my ($e1, $e2);
+    intercept {
+        my $ctx = context();
+        $e1 = $ctx->ok(0, 'foo', ['xxx']);
+        $e2 = $ctx->ok(0, 'foo');
+        $ctx->release;
+    };
+
+    like(
+        $e1->diag,
+        [
+            qr/Failed test 'foo'/,
+            'xxx',
+        ],
+        "Chekc diag"
+    );
+
+    like(
+        $e2->diag,
+        [
+            qr/Failed test 'foo'/,
+        ],
+        "Chekc diag"
+    );
+}
 
 done_testing;

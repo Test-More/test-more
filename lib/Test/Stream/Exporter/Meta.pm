@@ -12,6 +12,7 @@ sub DEFAULT() { 'default' }
 
 sub exports { $_[0]->{+EXPORTS} }
 sub default { $_[0]->{+DEFAULT} }
+sub package { $_[0]->{+PACKAGE} }
 
 sub get { $EXPORT_META{$_[-1]} }
 
@@ -127,27 +128,27 @@ argument is the only one that is used.
 Constructs a C<metaobject> for C<$PACKAGE> and returns it. If one already
 exists, it is returned.
 
-=item metaobject->add( $DEFAULT, $SUBNAME )
+=item $meta->add( $DEFAULT, $SUBNAME )
 
-=item metaobject->add( $DEFAULT, $SUBNAME => $SUBREF )
+=item $meta->add( $DEFAULT, $SUBNAME => $SUBREF )
 
 Add an export named C<$SUBNAME>. If a ref is provided it will be used,
 otherwise it will grab the sub from the package using C<$SUBNAME>. The fist
 argument is a toggle, true means the sub is exported by default, false means it
 is not exported by default.
 
-=item metaobject->add_bulk( $DEFAULT, $SUBNAME, $SUBNAME, ... )
+=item $meta->add_bulk( $DEFAULT, $SUBNAME, $SUBNAME, ... )
 
 Add all the subnames given as arguments to the list of exports. The subs of the
 given names are taken as the references. The first argument is a toggle, true
 means the susb should be exported by default, false means they should not be.
 
-=item $default_ref = metaobject->default()
+=item $default_ref = $meta->default()
 
 Get the arrayref of default exports. This is not a copy of the arrayref,
 modifying this would modify the internal list of defaults.
 
-=item $exports_ref = metaobject->exports()
+=item $exports_ref = $meta->exports()
 
 Returns a C<HASHREF> of C<< $SUBNAME => $CODEREF >> values of all avialable
 exports.

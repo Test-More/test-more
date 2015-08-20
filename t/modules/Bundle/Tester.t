@@ -1,0 +1,38 @@
+use Test::Stream '-Tester';
+
+is(
+    [Test::Stream::Bundle::Tester->plugins],
+    [
+        qw/-Default Intercept Grab LoadPlugin Context/,
+        Compare => ['-all'],
+    ],
+    "All plugins listed"
+);
+
+imported qw/
+    ok done_testing
+    intercept grab
+    load_plugin
+    context
+    is like
+    match mismatch check
+    hash array object meta
+    item field call prop
+    end filter_items
+    T F D DNE
+    event
+/;
+
+is(
+    intercept { ok(1, "pass") },
+    array {
+        event Ok => sub {
+            call pass => T;
+            call name => 'pass';
+        };
+        end;
+    },
+    "Intercepted an event"
+);
+
+done_testing;

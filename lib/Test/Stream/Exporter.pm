@@ -6,7 +6,7 @@ use Test::Stream::Exporter::Meta;
 
 use Scalar::Util qw/reftype/;
 
-use Carp qw/croak confess carp/;
+use Carp qw/croak confess/;
 
 BEGIN { Test::Stream::Exporter::Meta->new(__PACKAGE__) };
 
@@ -66,7 +66,7 @@ sub export_to {
             # re-added by '-all'. We do not want to skip things already seen
             # here though as people may alias a single sub to multiple names.
             $seen{$item}++;
-            if ($item && !ref($item) && $item =~ m/^-(all|default)$/) {
+            if (!ref($item) && $item =~ m/^-(all|default)$/) {
                 my $tag = $1;
                 $all++ if $tag eq 'all';
                 $def++ if $tag eq 'default';
@@ -84,7 +84,7 @@ sub export_to {
 
     while (my $export = shift @imports) {
         my $ref = $exports->{$export}
-            || croak qq{"$export" is not exported by the $from module};
+            or croak qq{"$export" is not exported by the $from module};
 
         my $name = $export;
         if (@imports && ref $imports[0]) {
@@ -96,7 +96,7 @@ sub export_to {
             my $postfix = delete $options->{'-postfix'} || "";
             my $infix   = delete $options->{'-as'}      || $export;
 
-            carp "'$_' is not a valid export option for export '$export'"
+            croak "'$_' is not a valid export option for export '$export'"
                 for keys %$options;
 
             $name = join '' => $prefix, $infix, $postfix;
@@ -121,8 +121,8 @@ BEGIN { *export_from = \&export_to }
 sub export {
     my $caller = caller;
 
-    my $meta = Test::Stream::Exporter::Meta::get($caller) ||
-        confess "$caller is not an exporter!?";
+    my $meta = Test::Stream::Exporter::Meta::get($caller)
+        or confess "$caller is not an exporter!?";
 
     # Only the first 2 args are used.
     $meta->add(0, @_);
@@ -131,8 +131,8 @@ sub export {
 sub exports {
     my $caller = caller;
 
-    my $meta = Test::Stream::Exporter::Meta::get($caller) ||
-        confess "$caller is not an exporter!?";
+    my $meta = Test::Stream::Exporter::Meta::get($caller)
+        or confess "$caller is not an exporter!?";
 
     $meta->add_bulk(0, @_);
 }
@@ -140,8 +140,8 @@ sub exports {
 sub default_export {
     my $caller = caller;
 
-    my $meta = Test::Stream::Exporter::Meta::get($caller) ||
-        confess "$caller is not an exporter!?";
+    my $meta = Test::Stream::Exporter::Meta::get($caller)
+        or confess "$caller is not an exporter!?";
 
     # Only the first 2 args are used.
     $meta->add(1, @_);
@@ -150,8 +150,8 @@ sub default_export {
 sub default_exports {
     my $caller = caller;
 
-    my $meta = Test::Stream::Exporter::Meta::get($caller) ||
-        confess "$caller is not an exporter!?";
+    my $meta = Test::Stream::Exporter::Meta::get($caller)
+        or confess "$caller is not an exporter!?";
 
     $meta->add_bulk(1, @_);
 }
@@ -184,7 +184,7 @@ experimental phase is over.
 
 Test::Stream::Exporter is an internal implementation of some key features from
 L<Exporter::Declare>. This is a much more powerful exporting tool than
-L<Exporter>. This package is used to easily manage complicated EXPORT logic
+L<Exporter>. This package is used to easily manage complicated export logic
 across L<Test::Stream> and friends.
 
 =head1 SYNOPSIS

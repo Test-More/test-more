@@ -1,4 +1,4 @@
-use Test::Stream;
+use Test::Stream -Default, Compare => ['-all'];
 
 use Test::Stream::Event::Diag;
 use Test::Stream::DebugInfo;
@@ -36,5 +36,25 @@ is(
     [[OUT_TODO, "# foo\n# bar\n# baz\n"]],
     "All lines have proper prefix"
 );
+
+$diag = Test::Stream::Event::Diag->new(
+    debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    message => undef,
+);
+
+is($diag->message, 'undef', "set undef message to undef");
+
+$diag = Test::Stream::Event::Diag->new(
+    debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    message => {},
+);
+
+like($diag->message, qr/^HASH\(.*\)$/, "stringified the input value");
+
+$diag->set_message("");
+is([$diag->to_tap], [], "no tap with an empty message");
+
+$diag->set_message("\n");
+is([$diag->to_tap], [[OUT_ERR, "\n"]], "newline on its own is unchanged");
 
 done_testing;

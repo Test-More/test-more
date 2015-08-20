@@ -32,6 +32,7 @@ else {
     my $ignore = <$read>;
     close($read);
     close(STDERR);
+    close(STDOUT);
     open(STDERR, '>', my $x);
     my $ctx = context(hub => $hub, level => -1);
     my $clone = $ctx->snapshot;

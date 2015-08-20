@@ -67,6 +67,17 @@ is(
     'hash'
 );
 
+$one->clear_foo;
+is(
+    $one,
+    {
+        bar => 'b',
+        baz => 'c',
+    },
+    'hash'
+);
+
+
 my $obj = bless {}, 'FAKE';
 
 my $accessor = Test::Stream::HashBase->gen_accessor('foo');

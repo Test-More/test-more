@@ -1,2 +1,3 @@
-package Test::Stream::IPC::RealDriver;
+package
+    Test::Stream::IPC::RealDriver;
 1;
