@@ -61,11 +61,11 @@ use utf8, and update the Test::Stream output formatter to use utf8.
 
 =head1 SYNOPSIS
 
-    use Test::Stream qw/-Default UTF8/;
+    use Test::Stream qw/-V1 UTF8/;
 
 This is the same as
 
-    use Test::Stream '-Default';
+    use Test::Stream '-V1';
     use utf8;
     BEGIN {
         set_encoding('utf8');

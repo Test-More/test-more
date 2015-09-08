@@ -1,4 +1,4 @@
-use Test::Stream -SpecTester, UTF8;
+use Test::Stream -V1, -SpecTester, UTF8;
 use Test::Stream::Table qw/table/;
 
 imported 'table';

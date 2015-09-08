@@ -1,4 +1,4 @@
-use Test::Stream qw/-Tester BailOnFail/;
+use Test::Stream qw/-V1 -Tester BailOnFail/;
 
 like(
     intercept {

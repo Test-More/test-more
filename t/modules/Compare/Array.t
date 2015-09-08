@@ -1,4 +1,4 @@
-use Test::Stream -Spec, Class => ['Test::Stream::Compare::Array'], Compare => '*';
+use Test::Stream -V1, Spec, Class => ['Test::Stream::Compare::Array'], Compare => '*';
 
 isa_ok($CLASS, 'Test::Stream::Compare');
 is($CLASS->name, '<ARRAY>', "got name");

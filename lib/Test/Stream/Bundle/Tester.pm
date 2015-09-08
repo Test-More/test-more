@@ -6,7 +6,7 @@ use Test::Stream::Bundle;
 
 sub plugins {
     return (
-        qw/-Default Intercept Grab LoadPlugin Context/,
+        qw/Intercept Grab LoadPlugin Context/,
         Compare => ['-all'],
     );
 }
@@ -44,7 +44,7 @@ Compare plugin.
 
 =head1 SYNOPSIS
 
-    use Test::Stream '-Tester';
+    use Test::Stream -V1, -Tester;
 
     is(
         intercept { ok(1, "pass") },
@@ -61,10 +61,6 @@ Compare plugin.
     done_testing;
 
 =head1 INCLUDED PLUGINS AND BUNDLES
-
-=head2 Test::Stream::Bundle::Default
-
-Everything from the default bundle is included.
 
 =head2 Test::Stream::Plugin::Compare
 

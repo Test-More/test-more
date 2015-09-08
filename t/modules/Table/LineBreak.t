@@ -1,4 +1,4 @@
-use Test::Stream '-SpecTester';
+use Test::Stream -V1, -SpecTester;
 use utf8;
 
 set_encoding 'utf8';

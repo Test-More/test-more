@@ -23,7 +23,7 @@ approaches the situation as though you are converting an old test, or writing a
 new one. Instead of loading L<Test::More> you will be loading L<Test::Stream>
 without any extra arguments, plugins, or bundles.
 
-    use Test::Stream;
+    use Test::Stream -V1;
 
     ...
 
@@ -234,7 +234,7 @@ B<Defined in> L<Test::Stream::Plugin::Core>.
 
 Not loaded by default, you must ask for it:
 
-    use Test::Stream qw/-Default Subtest/;    
+    use Test::Stream qw/-V1 Subtest/;    
 
 The default output has been changed:
 
@@ -246,7 +246,7 @@ The default output has been changed:
 
 The old output format can be used if requested:
 
-    use Test::Stream '-Default', 'Subtest' => ['streamed'];
+    use Test::Stream '-V1', 'Subtest' => ['streamed'];
 
 Defined in L<Test::Stream::Plugin::Subtest>.
 
@@ -423,7 +423,7 @@ B<Defined in> L<Test::Stream::Plugin::Core>.
 
 Can be used to set the encoding of TAP, and possibly other formatters.
 
-    use Test::Stream;
+    use Test::Stream -V1;
     use utf8;
 
     set_encoding 'utf8';

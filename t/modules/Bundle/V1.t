@@ -1,6 +1,6 @@
 my (%BEFORE_INC, %AFTER_INC);
 BEGIN { %BEFORE_INC = %INC };
-use Test::Stream qw/-Default/;
+use Test::Stream qw/-V1/;
 BEGIN { %AFTER_INC = %INC };
 
 use Test::Stream qw/Spec LoadPlugin/;
@@ -10,7 +10,7 @@ ok( Test::Stream::Sync->hooks, "hook added");
 tests strictures => sub {
     local $^H;
     my $hbefore = $^H;
-    load_plugin('-Default');
+    load_plugin('-V1');
     my $hafter = $^H;
 
     my $strict = do { local $^H; strict->import(); $^H };
@@ -23,7 +23,7 @@ tests strictures => sub {
 tests warnings => sub {
     local ${^WARNING_BITS};
     my $wbefore = ${^WARNING_BITS} || '';
-    load_plugin('-Default');
+    load_plugin('-V1');
     my $wafter = ${^WARNING_BITS} || '';
 
     my $warnings = do { local ${^WARNING_BITS}; warnings->import(); ${^WARNING_BITS} || '' };

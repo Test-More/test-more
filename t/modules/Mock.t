@@ -1,4 +1,4 @@
-use Test::Stream '-SpecTester';
+use Test::Stream qw/-V1 -SpecTester/;
 
 use Scalar::Util qw/blessed/;
 

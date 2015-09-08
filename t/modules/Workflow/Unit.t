@@ -1,4 +1,4 @@
-use Test::Stream '-Tester';
+use Test::Stream -V1, -Tester;
 use Test::Stream::Workflow::Unit;
 
 my $one = Test::Stream::Workflow::Unit->new(

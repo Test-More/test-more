@@ -1,4 +1,4 @@
-use Test::Stream qw/-SpecTester/;
+use Test::Stream qw/-V1 -SpecTester/;
 use Test::Stream::Context qw/context/;
 use Test::Stream::Workflow qw/workflow_var/;
 

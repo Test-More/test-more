@@ -1,7 +1,4 @@
-use strict;
-use warnings;
-
-use Test::Stream;
+use Test::Stream -V1;
 
 BEGIN {
     $INC{'My/HBase.pm'} = __FILE__;
@@ -11,7 +8,7 @@ BEGIN {
         accessors => [qw/foo bar baz/],
     );
 
-    use Test::Stream;
+    use Test::Stream -V1;
     is(FOO, 'foo', "FOO CONSTANT");
     is(BAR, 'bar', "BAR CONSTANT");
     is(BAZ, 'baz', "BAZ CONSTANT");
@@ -24,7 +21,7 @@ BEGIN {
         base      => 'My::HBase',
     );
 
-    use Test::Stream;
+    use Test::Stream -V1;
     is(FOO,   'foo',   "FOO CONSTANT");
     is(BAR,   'bar',   "BAR CONSTANT");
     is(BAZ,   'baz',   "BAZ CONSTANT");
@@ -39,7 +36,7 @@ BEGIN {
 
 {
     package Consumer;
-    use Test::Stream;
+    use Test::Stream -V1;
 
     my $bad = eval { Test::Stream::HashBase->import( base => 'Fake::Thing' ); 1 };
     my $error = $@;

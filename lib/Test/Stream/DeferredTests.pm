@@ -99,7 +99,7 @@ are defined.
         ...
     }
 
-    use Test::Stream;
+    use Test::Stream '-V1';
 
     do_def(); # Run the tests
 

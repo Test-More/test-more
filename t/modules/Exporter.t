@@ -1,12 +1,9 @@
-use strict;
-use warnings;
-
-use Test::Stream;
+use Test::Stream -V1;
 
 {
     package My::Exporter;
     use Test::Stream::Exporter;
-    use Test::Stream;
+    use Test::Stream -V1;
     use Carp qw/croak/;
 
     export         a => sub { 'a' };
@@ -83,25 +80,25 @@ is(xxx(), 'a', "imported under an alternative name 2");
 
 {
     package Temp1;
-    use Test::Stream;
+    use Test::Stream -V1;
     My::Exporter->import('-all');
     can_ok(__PACKAGE__, qw/a b c x/);
 
     package Temp2;
-    use Test::Stream;
+    use Test::Stream -V1;
     My::Exporter->import('-all', c => {-as => 'cc'});
     can_ok(__PACKAGE__, qw/a b cc x/);
     ok(!__PACKAGE__->can('c'), "did not import under old name");
 
     package Temp3;
-    use Test::Stream;
+    use Test::Stream -V1;
     My::Exporter->import('-default');
     can_ok(__PACKAGE__, qw/b x/);
     ok(!__PACKAGE__->can('a'), "did not import a");
     ok(!__PACKAGE__->can('c'), "did not import c");
 
     package Temp4;
-    use Test::Stream;
+    use Test::Stream -V1;
     for my $f (qw/export exports default_export default_exports/) {
         my $fc = Test::Stream::Exporter->can($f);
         like(
@@ -144,7 +141,7 @@ can_ok('Temp7', 'x');
 
 {
     package Temp8;
-    use Test::Stream;
+    use Test::Stream -V1;
     use Test::Stream::Exporter;
     BEGIN { imported('export') };
     no Test::Stream::Exporter qw/export/;

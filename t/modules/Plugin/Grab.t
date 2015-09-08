@@ -1,4 +1,4 @@
-use Test::Stream qw/-Tester Grab/;
+use Test::Stream qw/-V1 -Tester Grab/;
 
 imported qw/grab/;
 

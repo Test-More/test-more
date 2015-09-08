@@ -1,4 +1,4 @@
-use Test::Stream qw/-Tester DieOnFail/;
+use Test::Stream qw/-V1 -Tester DieOnFail/;
 
 my $error;
 like(

@@ -1,4 +1,4 @@
-use Test::Stream;
+use Test::Stream -V1;
 use Test::Stream::Exporter::Meta;
 
 my $META = 'Test::Stream::Exporter::Meta';

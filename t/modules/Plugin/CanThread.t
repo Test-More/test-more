@@ -1,4 +1,4 @@
-use Test::Stream qw/-Default CanThread/;
+use Test::Stream qw/-V1 CanThread/;
 
 plan 3;
 

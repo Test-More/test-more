@@ -1,4 +1,4 @@
-use Test::Stream;
+use Test::Stream -V1;
 use strict;
 use warnings;
 

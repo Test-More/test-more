@@ -1,4 +1,4 @@
-use Test::Stream '-Spec', Mock => '*';
+use Test::Stream -V1, Spec, Mock => '*';
 
 use Scalar::Util qw/reftype blessed/;
 

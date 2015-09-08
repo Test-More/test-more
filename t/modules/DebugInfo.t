@@ -1,7 +1,4 @@
-use strict;
-use warnings;
-
-use Test::Stream '-Tester';
+use Test::Stream -V1, -Tester;
 use Test::Stream::DebugInfo;
 
 like(

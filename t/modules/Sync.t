@@ -187,7 +187,7 @@ BEGIN {
 }
 
 
-use Test::Stream '-Tester';
+use Test::Stream qw/-V1 -Tester/;
 BEGIN { def ok => (Test::Stream::Sync->init_done, "Test::Stream initialized sync") }
 
 do_def;

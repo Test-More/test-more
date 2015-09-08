@@ -8,7 +8,7 @@ use Test::Stream qw/IPC/;
 my @drivers;
 BEGIN { @drivers = Test::Stream::IPC->drivers };
 
-use Test::Stream '-Tester';
+use Test::Stream qw/-V1 -Tester/;
 
 is(
     \@drivers,

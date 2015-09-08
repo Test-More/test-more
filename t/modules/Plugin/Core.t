@@ -1,4 +1,4 @@
-use Test::Stream qw/-Tester/;
+use Test::Stream qw/-V1 -Tester/;
 
 use File::Temp qw/tempfile/;
 

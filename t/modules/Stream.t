@@ -1,5 +1,5 @@
 use Test::Stream(
-    '-Default',          # Test loading a bundle
+    '-V1',          # Test loading a bundle
     ':ProjectBundle',    # Test project specific bundle
     'LoadPlugin',        # Test loading a plugin
     'IPC' => ['-cull'],  # Test plugin args

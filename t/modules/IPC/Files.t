@@ -1,4 +1,4 @@
-use Test::Stream -Default, Capture;
+use Test::Stream -V1, Capture;
 use Test::Stream::Util qw/get_tid USE_THREADS/;
 
 use File::Temp qw/tempfile/;

@@ -1,4 +1,4 @@
-use Test::Stream -Spec, Class => ['Test::Stream::Delta'], 'Defer';
+use Test::Stream -V1, Spec, Class => ['Test::Stream::Delta'], 'Defer';
 
 can_ok($CLASS, qw/check/);
 is(

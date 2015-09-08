@@ -308,15 +308,15 @@ temporary directory. This is not particularily fast, but it works everywhere.
 =head1 SYNOPSIS
 
     use Test::Stream::IPC::Files;
-    use Test::Stream;
+    use Test::Stream -Core;
 
 or
 
-    use Test::Stream '-Defaults', 'IPC' => ['Files'];
+    use Test::Stream '-V1s', 'IPC' => ['Files'];
 
 or
 
-    use Test::Stream '-Defaults', 'IPC' => ['+Test::Stream::IPC::Files'];
+    use Test::Stream '-V1s', 'IPC' => ['+Test::Stream::IPC::Files'];
 
 =head1 SEE ALSO
 

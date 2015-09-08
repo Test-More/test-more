@@ -1,5 +1,5 @@
 use Test::Stream(
-    '-Default',
+    '-V1',
     'Compare' => ['-all'],
     Spec => [qw{
         it tests case before_all after_all around_all before_each after_each

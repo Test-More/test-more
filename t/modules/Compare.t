@@ -1,4 +1,4 @@
-use Test::Stream -Spec, Class => ['Test::Stream::Compare'];
+use Test::Stream -V1, Spec, Class => ['Test::Stream::Compare'];
 
 tests exporter => sub {
     Test::Stream::Compare->import(qw/compare get_build push_build pop_build build/);

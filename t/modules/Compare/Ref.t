@@ -1,4 +1,4 @@
-use Test::Stream -Core1, Class => [''];
+use Test::Stream -V1, Class => [''];
 
 
 done_testing;

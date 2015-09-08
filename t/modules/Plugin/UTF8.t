@@ -1,4 +1,4 @@
-use Test::Stream qw/-Tester UTF8/;
+use Test::Stream qw/-V1 -Tester UTF8/;
 use PerlIO;
 
 ok(utf8::is_utf8("癸"), "utf8 pragma is on");

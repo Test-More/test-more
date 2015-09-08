@@ -1,4 +1,4 @@
-use Test::Stream '-Tester';
+use Test::Stream -V1, -Tester;
 
 {
     $INC{'Foo.pm'} = 1;

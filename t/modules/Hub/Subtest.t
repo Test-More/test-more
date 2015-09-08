@@ -1,4 +1,4 @@
-use Test::Stream -Tester, 'Defer';
+use Test::Stream -V1, -Tester, 'Defer';
 
 use Test::Stream::Hub::Subtest;
 

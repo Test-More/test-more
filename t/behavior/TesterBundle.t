@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::Stream qw/-Tester/;
+use Test::Stream qw/-V1 -Tester/;
 
 imported qw{
     grab intercept

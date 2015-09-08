@@ -1,4 +1,4 @@
-use Test::Stream;
+use Test::Stream -V1;
 use Test::Stream::Stack;
 
 ok(my $stack = Test::Stream::Stack->new, "Create a stack");

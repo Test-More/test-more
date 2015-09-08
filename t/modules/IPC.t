@@ -6,7 +6,7 @@ use Test::Stream::IPC;
 my @drivers;
 BEGIN { @drivers = Test::Stream::IPC->drivers };
 
-use Test::Stream '-SpecTester';
+use Test::Stream qw/-V1 -SpecTester/;
 
 is(
     \@drivers,

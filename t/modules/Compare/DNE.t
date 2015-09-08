@@ -1,4 +1,4 @@
-use Test::Stream -Core1, Class => ['Test::Stream::Compare::DNE'];
+use Test::Stream -V1, Class => ['Test::Stream::Compare::DNE'];
 
 my $one = $CLASS->new;
 isa_ok($one, $CLASS, 'Test::Stream::Compare');

@@ -1,4 +1,4 @@
-use Test::Stream;
+use Test::Stream Core;
 
 my $count = 100000;
 plan($count);

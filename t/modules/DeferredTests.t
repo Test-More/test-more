@@ -14,7 +14,7 @@ BEGIN {
     def is => ({}, [], "a hash is not an array");
 }
 
-use Test::Stream '-Tester', 'Capture';
+use Test::Stream qw/-V1 -Tester Capture/;
 
 is(
     intercept { do_def },

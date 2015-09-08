@@ -1,4 +1,4 @@
-use Test::Stream;
+use Test::Stream -V1;
 use Test::Stream::Context qw/context/;
 use Test::Stream::Capabilities qw/CAN_FORK/;
 

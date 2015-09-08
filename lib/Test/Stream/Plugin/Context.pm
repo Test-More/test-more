@@ -41,7 +41,7 @@ generating test events.
 
 =head1 SYNOPSIS
 
-    use Test::Stream qw/-Default Context/;
+    use Test::Stream qw/-V1 Context/;
 
     sub my_tool {
         my $ctx = context();

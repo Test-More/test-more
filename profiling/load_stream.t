@@ -7,7 +7,7 @@ use Carp;
 use Scalar::Util;
 use List::Util;
 
-use Test::Stream;
+use Test::Stream 'Core';
 
 ok(1, "an ok");
 

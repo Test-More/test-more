@@ -47,7 +47,7 @@ trivial) work of creating such a test.
 
 =head1 SYNOPSIS
 
-    use Test::Stream qw/-Default AuthorTest/;
+    use Test::Stream qw/-V1 AuthorTest/;
 
     ...
 
@@ -59,7 +59,7 @@ Or directly:
 
 You can also specify a variable name to use instead of AUTHOR_TESTING
 
-    use Test::Stream '-Default', AuthorTest => ['THE_VAR'];
+    use Test::Stream '-V1', AuthorTest => ['THE_VAR'];
 
 or
 

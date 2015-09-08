@@ -53,7 +53,7 @@ diagnostics they may need.
 
 =head1 SYNOPSIS
 
-    use Test::Stream qw/-Default BailOnFail/;
+    use Test::Stream qw/-V1 BailOnFail/;
 
     ok(1, "pass");
     ok(0, "fail");

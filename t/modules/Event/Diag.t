@@ -1,4 +1,4 @@
-use Test::Stream -Default, Compare => ['-all'];
+use Test::Stream -V1, Compare => ['-all'];
 
 use Test::Stream::Event::Diag;
 use Test::Stream::DebugInfo;

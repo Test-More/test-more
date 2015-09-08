@@ -1,6 +1,4 @@
-use Test::Stream -Tester => (
-    Subtest => [qw/subtest_streamed subtest_buffered/],
-);
+use Test::Stream -V1, -Tester, Subtest => [qw/subtest_streamed subtest_buffered/];
 
 use File::Temp qw/tempfile/;
 
@@ -13,7 +11,7 @@ if ($] > 5.020000) {
             subtest_streamed 'foo' => sub {
                 my ($fh, $name) = tempfile;
                 print $fh <<"                EOT";
-                    use Test::Stream;
+                    use Test::Stream -V1;
                     BEGIN { skip_all 'because' }
                     1;
                 EOT

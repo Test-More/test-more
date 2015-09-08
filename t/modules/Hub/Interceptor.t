@@ -1,4 +1,4 @@
-use Test::Stream -Default, Compare => '*';
+use Test::Stream -V1, Compare => '*';
 
 use Test::Stream::Hub::Interceptor;
 

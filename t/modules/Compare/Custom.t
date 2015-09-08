@@ -1,4 +1,4 @@
-use Test::Stream -Core1, Class => ['Test::Stream::Compare::Custom'];
+use Test::Stream -V1, Class => ['Test::Stream::Compare::Custom'];
 
 my $pass = $CLASS->new(code => sub { 1 });
 my $fail = $CLASS->new(code => sub { 0 });

@@ -1,4 +1,4 @@
-use Test::Stream -Default => qw/Capabilities/;
+use Test::Stream -V1 => qw/Capabilities/;
 
 can_ok(__PACKAGE__, qw/CAN_FORK CAN_THREAD/);
 

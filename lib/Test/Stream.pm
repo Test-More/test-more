@@ -15,7 +15,9 @@ use Test::Stream::Util qw/try pkg_to_file/;
 
 our $LOAD_INTO;
 
-sub default { '-Default' }
+sub default {
+    croak "No plugins or bundles specified, did you forget to add '-V1'?"
+}
 
 sub import {
     my $class = shift;
@@ -48,12 +50,14 @@ sub load {
         # start.
         my $full = ($arg =~ s/^([!:-]?)\+/$1/) ? 1 : 0;
 
+        # Disallowed plugin
         if ($arg =~ m/^!(.*)$/) {
             my $pkg = $full ? $1 : "Test::Stream::Plugin::$1";
             $skip{$pkg}++;
             next;
         }
 
+        # Bundle
         if ($arg =~ m/^-(.*)$/) {
             my $pkg = $full ? $1 : "Test::Stream::Bundle::$1";
             my $file = pkg_to_file($pkg);
@@ -62,6 +66,7 @@ sub load {
             next;
         }
 
+        # Local Bundle
         if ($arg =~ m/^:(.*)$/) {
             my $pkg = $full ? $1 : "Test::Stream::Bundle::$1";
             my $file = pkg_to_file($pkg);
@@ -83,15 +88,29 @@ sub load {
             next;
         }
 
-        my $val = @_
-            ? (ref($_[0]) || $_[0] eq '*')
-                ? shift @_
-                : []
-            : [];
-
-        $val = ['-all'] unless ref($val) || $val ne '*';
-
+        # Load the plugin
         $arg = 'Test::Stream::Plugin::' . $arg unless $full;
+        my $file = pkg_to_file($arg);
+        unless (eval { require $file; 1 }) {
+            my $error = $@ || 'unknown error';
+            my $file = __FILE__;
+            my $line = __LINE__ - 3;
+            $error =~ s/ at \Q$file\E line $line.*//;
+            croak "Could not load Test::Stream plugin '$arg': $error";
+        }
+
+        # Get the value
+        my $val;
+
+        # Arg is specified
+        $val = shift @_ if @_ && (ref($_[0]) || ($_[0] && $_[0] eq '*'));
+
+        # Fallback to no args
+        $val = [] unless defined $val;
+
+        # Special Cases
+        $val = $val eq '*' ? ['-all'] : [$val]
+            unless ref $val;
 
         # Make sure we only list it in @order once.
         push @order => $arg unless $args{$arg};
@@ -111,8 +130,6 @@ sub load {
 
         my $import = $args{$arg};
         my $mod  = $arg;
-        my $file = pkg_to_file($mod);
-        eval { require $file; 1 } || croak "Could not load Test::Stream plugin '$arg' ($mod): $@";
 
         if ($mod->can('load_ts_plugin')) {
             $mod->load_ts_plugin($caller, @$import);
@@ -170,15 +187,12 @@ TODO: Manual
 
 This is the primary interface for loading L<Test::Stream> based tools. This
 module is responsible for loading bundles and plugins for the tools you want.
-If you do not provide a custom list of bundles or plugins then
-L<Test::Stream::Bundle::Default> is used.
+L<Test::Stream::Bundle::V1> is the suggested bundle for those just starting
+out.
 
 =head1 SYNOPSIS
 
-When used without arguments, the default bundle is used. You can find out more
-about the default bundle in the L<Test::Stream::Bundle::Default> module.
-
-    use Test::Stream;
+    use Test::Stream -V1;
 
     ok(1, "This is a pass");
     ok(0, "This is a fail");
@@ -190,6 +204,32 @@ about the default bundle in the L<Test::Stream::Bundle::Default> module.
     like($A, $B, "These structures match where it counts");
 
     done_testing;
+
+=head1 IMPORTANT NOTE
+
+C<use Test::Stream;> will fail. You B<MUST> specify at least 1 bundle or
+plugin. If you do not specify any then none would be imported and that is
+obviously not what you want. If you are new to Test::Stream then you should
+probably start with the '-V1' argument, which loads
+L<Test::Stream::Bundle::V1>. The V1 bundle provides the most commonly
+needed tools.
+
+=head2 WHY NOT MAKE A DEFAULT BUNDLE OR SET OF PLUGINS?
+
+Future Proofing. If we decide in the future that a specific plugin or tool is
+harmful we would like to be able to remove it. Making a tool part of the
+default set will effectively make it unremovable as doing so would break
+compatability. To solve this problem we have the 'Core#' bundle system.
+
+'V1' is the first bundle, and the recommended one for now. If the future tells
+us that parts of 'V1' are harmful, or that we need more than what is currently
+provided, we can release 'V2'. 'V1' will not be changed in a backwords
+incompatible way, so nothing breaks, but everyone else can move on and start
+using 'V2' in new code.
+
+The number following the 'V' prefix should correspond to a major version
+number. This means that 'V1' is provided with Test::Stream 1.X. V2
+will prompt a 2.X release and so on.
 
 =head1 PLUGINS AND BUNDLES
 
@@ -207,7 +247,7 @@ different arguments, the last set of arguments wins.
 Plugins and bundles can be distinguished easily:
 
     use Test::Stream(
-        '-Default',                     # Default bundle ('-')
+        '-V1',                       # Suggected bundle ('-')
         ':Project',                     # Preject specific bundle (':')
         'MyPlugin',                     # Plugin name (no prefix)
         '+Fully::Qualified::Plugin',    # (Plugin in unusual path)
@@ -220,14 +260,11 @@ Explanation:
 
 =over 4
 
-=item '-Bundle'
-
-=item '-Default',
+=item '-V1',
 
 The C<-> prefix indicates that the specified item is a bundle. Bundles live in
 the C<Test::Stream::Bundle::> namespace. Each bundle is an independant module.
-You can specify any number of bundles, or none at all. If no arguments are used
-then the '-Default' bundle (L<Test::Stream::Bundle::Default>) is used.
+You can specify any number of bundles, or none at all.
 
 =item ':Project'
 

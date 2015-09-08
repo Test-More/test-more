@@ -1,16 +1,15 @@
-use Test::Stream '-Tester';
+use Test::Stream -V1, -Tester;
 
 is(
     [Test::Stream::Bundle::Tester->plugins],
     [
-        qw/-Default Intercept Grab LoadPlugin Context/,
+        qw/Intercept Grab LoadPlugin Context/,
         Compare => ['-all'],
     ],
     "All plugins listed"
 );
 
 imported qw/
-    ok done_testing
     intercept grab
     load_plugin
     context

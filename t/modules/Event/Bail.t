@@ -1,6 +1,4 @@
-use Test::Stream;
-use strict;
-use warnings;
+use Test::Stream -V1;
 
 use Test::Stream::Event::Bail;
 

@@ -1,4 +1,4 @@
-use Test::Stream qw/-Default CanFork/;
+use Test::Stream qw/-V1 CanFork/;
 
 plan 2;
 

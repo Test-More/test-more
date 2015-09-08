@@ -41,7 +41,7 @@ This is the plugin form of L<Test::Stream::DeferredTests>.
     use strict;
     use warnings;
 
-    use Test::Stream '-Default', 'Defer';
+    use Test::Stream '-V1', 'Defer';
 
     # Declare some more tests to run later:
     def ok => (1, "another pass");

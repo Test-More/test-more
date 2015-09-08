@@ -1,5 +1,5 @@
 use Test::Stream(
-    qw/-Tester Spec/,
+    qw/-V1 -Tester Spec/,
 );
 no Test::Stream::Plugin::Spec;
 

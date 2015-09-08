@@ -1,7 +1,4 @@
-use strict;
-use warnings;
-
-use Test::Stream '-Tester';
+use Test::Stream qw/-V1 -Tester/;
 
 can_ok(
     __PACKAGE__,

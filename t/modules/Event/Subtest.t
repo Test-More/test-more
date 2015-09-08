@@ -1,4 +1,4 @@
-use Test::Stream;
+use Test::Stream -V1;
 
 use Test::Stream::TAP qw/OUT_STD OUT_ERR/;
 use Test::Stream::Event::Subtest;

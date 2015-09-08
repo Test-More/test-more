@@ -1,4 +1,4 @@
-package Test::Stream::Bundle::Default;
+package Test::Stream::Bundle::V1;
 use strict;
 use warnings;
 
@@ -32,7 +32,7 @@ __END__
 
 =head1 NAME
 
-Test::Stream::Bundle::Default - Default bundle, most important tools.
+Test::Stream::Bundle::V1 - Suggested bundle, most important tools.
 
 =head1 EXPERIMENTAL CODE WARNING
 
@@ -48,14 +48,14 @@ experimental phase is over.
 
 =head1 DESCRIPTION
 
-This is the default bundle of tools loaded by L<Test::Stream>.
+This is the recommended bundle for users of L<Test::Stream>.
 
 =head1 SYNOPSIS
 
 B<Note:> On ly the most critical functions are listed here. Please see
 individual plugins for their functions.
 
-    use Test::Stream '-Default';
+    use Test::Stream '-V1';
 
     ok(1, "This is a pass");
     ok(0, "This is a fail");
