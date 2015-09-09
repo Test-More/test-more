@@ -62,13 +62,14 @@ example of how to do it:
 
     sub CAN_FORK {
         return 1 if $Config{d_fork};
+
+        # Some platforms use ithreads to mimick forking
         return 0 unless $^O eq 'MSWin32' || $^O eq 'NetWare';
         return 0 unless $Config{useithreads};
         return 0 unless $Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/;
 
         # Threads are not reliable before 5.008001
         return 0 unless $] >= 5.008001;
-        return 0 unless $Config{'useithreads'};
 
         # Devel::Cover currently breaks with threads
         return 0 if $INC{'Devel/Cover.pm'};

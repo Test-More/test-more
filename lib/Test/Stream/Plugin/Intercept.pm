@@ -42,6 +42,7 @@ sub intercept(&) {
             context => $ctx->snapshot,
         );
     };
+    $hub->cull;
     $ctx->stack->pop($hub);
 
     my $dbg = $ctx->debug;
@@ -50,7 +51,7 @@ sub intercept(&) {
     die $err unless $ok
         || (blessed($err) && $err->isa('Test::Stream::Hub::Interceptor::Terminator'));
 
-    $hub->finalize($dbg)
+    $hub->finalize($dbg, 1)
         if $ok
         && !$hub->no_ending
         && !$hub->state->ended;
@@ -94,6 +95,9 @@ experimental phase is over.
 
     is(@$events, 2, "intercepted 2 events.");
 
+    isa_ok($events->[0], 'Test::Stream::Event::Ok');
+    ok($events->[0]->pass, "first event passed");
+
 =head1 EXPORTS
 
 =over 4
@@ -133,6 +137,12 @@ enforcement back one like this:
 With C<no_ending> turned off, C<$hub->finalize()> will run the post-test checks
 to enforce the plan and that tests were run. In many cases this will result in
 additional events in your events array.
+
+B<Note:> the C<$ENV{TS_TERM_SIZE}> environment variable is set to 80 inside the
+intercept block. This is done to ensure consistency for the block across
+machines and platforms. This is essential for predictable testing of
+diagnostics, which may render tables or use the terminal size to change
+behavior.
 
 =back
 

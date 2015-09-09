@@ -63,6 +63,28 @@ is($exception, undef, "no exception");
 my $warning = warning { warn "xxx" };
 like($warning, qr/^xxx at/, "Captured warning");
 
+like(
+    warns {
+        like(
+            dies { warning { warn "a"; warn "b" } },
+            qr/Got 2 warnings, expected exactly 1/,
+            "Dies if more than 1 warning is seen"
+        );
+    },
+    [
+        qr/a/,
+        qr/b/,
+        DNE,
+    ],
+    "Showed warnings"
+);
+
+like(
+    dies { warning { 1; } },
+    qr/Got 0 warnings, expected exactly 1/,
+    "Dies if less than 1 warning is seen"
+);
+
 my $warnings = warns { 1 };
 is($warnings, undef, "no warnings");
 $warnings = warns { warn "xxx"; warn "yyy" };
@@ -72,6 +94,12 @@ like($warnings->[1], qr/^yyy at/, "second warning");
 
 my $no_warn = no_warnings { ok(lives { 0 }, "lived") };
 ok($no_warn, "no warning on live");
+
+like(
+    warns { is(no_warnings { warn 'xxx' }, 0, "got unexpected warnings") },
+    [qr/xxx/],
+    "display warnings that were encountered"
+);
 
 $warning = warning { ok(!lives { die 'xxx' }, "lived") };
 like($warning, qr/^xxx at/, "warning with exception");

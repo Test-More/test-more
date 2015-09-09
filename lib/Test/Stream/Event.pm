@@ -184,14 +184,14 @@ This is where you get the chance to produce TAP output. The input argument
 C<$num> will either be the most recent test number, or undefined. The output
 should be a list of arrayrefs, each arrayref should have exactly 2 values:
 C<$HID, $TEXT>. The HID tells the formatter which output handle to use (see the
-constants provided by L<Test::Stream::TAP>), C<$TEXT> should be the text that
+constants provided by L<Test::Stream::Formatter::TAP>), C<$TEXT> should be the text that
 is output to the specified handle.
 
 Example:
 
     package Test::Stream::Event::MyEvent;
     use Test::Stream::Event;
-    use Test::Stream::TAP qw/OUT_STD OUT_TODO OUT_ERR/;
+    use Test::Stream::Formatter::TAP qw/OUT_STD OUT_TODO OUT_ERR/;
 
     sub to_tap {
         my $self = shift;

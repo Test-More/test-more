@@ -370,7 +370,7 @@ sub _parse_event {
         my ($ok, $err) = try { require $file };
         $self->throw("Could not load event module '$pkg': $err")
             unless $ok;
-    
+
         $LOADED{$pkg} = $pkg;
     }
 

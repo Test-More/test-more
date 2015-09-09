@@ -165,7 +165,7 @@ and processes.
 
 =head2 STREAMED
 
-The default option is 'buffered', use this if you want stramed, the way
+The default option is 'buffered', use this if you want streamed, the way
 L<Test::Builder> does it.
 
     # You can use either of the next 2 lines, they are both equivilent

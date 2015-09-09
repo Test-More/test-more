@@ -14,8 +14,16 @@ export compare => sub {
 
     $check = $convert->($check);
 
-    return $check->run(undef, $got, $convert, {});
+    return $check->run(
+        id      => undef,
+        got     => $got,
+        exists  => 1,
+        convert => $convert,
+        seen    => {},
+    );
 };
+
+sub MAX_CYCLES() { 75 }
 
 my @BUILD;
 
@@ -76,17 +84,29 @@ sub render {
 
 sub run {
     my $self = shift;
-    my ($id, $got, $convert, $seen) = @_;
+    my %params = @_;
 
-    if ($got) {
-        return if $seen->{$got};
+    my $id      = $params{id};
+    my $convert = $params{convert} or confess "no convert sub provided";
+    my $seen    = $params{seen} ||= {};
+
+    $params{exists} = exists $params{got} ? 1 : 0
+        unless exists $params{exists};
+
+    my $exists = $params{exists};
+    my $got = $exists ? $params{got} : undef;
+
+    # Prevent infinite cycles
+    if ($got && ref $got) {
+        die "Cycle detected in comparison, aborting"
+            if $seen->{$got} && $seen->{$got} >= MAX_CYCLES;
         $seen->{$got}++;
     }
 
-    my $ok = $self->verify($got);
-    my @deltas = $ok ? $self->deltas($got, $convert, $seen) : ();
+    my $ok = $self->verify(%params);
+    my @deltas = $ok ? $self->deltas(%params) : ();
 
-    $seen->{$got}-- if $got;
+    $seen->{$got}-- if $got && ref $got;
 
     return if $ok && !@deltas;
 
@@ -96,6 +116,7 @@ sub run {
         got      => $got,
         check    => $self,
         children => \@deltas,
+        $exists ? () : (dne => 'got'),
     );
 }
 
@@ -152,7 +173,15 @@ for several comparison classes that allow for deep structure comparisons.
 
     sub verify {
         my $self = shift;
-        my ($got) = @_;
+        my $params = @_;
+
+        # Always check if $got even exists, this will be false if no value at
+        # all was recieved. (as opposed to a $got of 'undef' or '0' which are
+        # valid meaning this field will be true).
+        return 0 unless $params{exists};
+
+        my $got = $params{got};
+
         return $got eq $self->stuff;
     }
 
@@ -230,7 +259,7 @@ Some of these must be overriden, others can be.
 Returns the delta subclass that should be used. By default
 L<Test::Stream::Delta> is used.
 
-=item @deltas = $check->deltas($got, \@convert, \%seen)
+=item @deltas = $check->deltas(id => $id, exists => $bool, got => $got, convert => \&convert, seen => \%seen)
 
 Should return child deltas.
 
@@ -248,7 +277,7 @@ in C<$got>. If there was no value for got then there will be no arguments,
 undef will only be an argument if undef was seen in C<$got>, this is how you
 can tell the difference between a missing value and an undefined one.
 
-=item $bool = $check->verify($got)
+=item $bool = $check->verify(id => $id, exists => $bool, got => $got, convert => \&convert, seen => \%seen)
 
 Return true if there is a shallow match, that is both items are arrayrefs, both
 items are the same string or same number, etc. This should not look deep, deep
@@ -262,7 +291,7 @@ Get the name of the check.
 
 What should be displayed in a table for this check, usually the name or value.
 
-=item $delta = $check->run($id, $got, \&convert, \%seen)
+=item $delta = $check->run(id => $id, exists => $bool, got => $got, convert => \&convert, seen => \%seen)
 
 This is where the checking is done, first a shallow check using
 C<< $check->verify >>, then checking C<< $check->deltas() >>. C<\%seen> is used

@@ -47,6 +47,8 @@ sub build {
             return unless $METAS{$pkg};
             return unless $METAS{$pkg}->autorun;
             $METAS{$pkg}->run;
+            # Make sure the build cannot be found after done_testing
+            delete $METAS{$pkg}->{+UNIT};
         }
     );
 }

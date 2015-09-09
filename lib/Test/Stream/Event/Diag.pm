@@ -8,7 +8,7 @@ use Test::Stream::Event(
 
 use Carp qw/confess/;
 
-use Test::Stream::TAP qw/OUT_TODO OUT_ERR/;
+use Test::Stream::Formatter::TAP qw/OUT_TODO OUT_ERR/;
 
 sub init {
     $_[0]->SUPER::init();

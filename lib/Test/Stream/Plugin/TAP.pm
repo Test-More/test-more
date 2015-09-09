@@ -3,12 +3,12 @@ use strict;
 use warnings;
 
 use Test::Stream::Sync;
-use Test::Stream::TAP;
+use Test::Stream::Formatter::TAP;
 use Test::Stream::Plugin;
 
 sub load_ts_plugin {
     return if Test::Stream::Sync->init_done;
-    Test::Stream::Sync->set_formatter('Test::Stream::TAP');
+    Test::Stream::Sync->set_formatter('Test::Stream::Formatter::TAP');
 }
 
 1;

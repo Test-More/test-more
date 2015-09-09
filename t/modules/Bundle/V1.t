@@ -50,17 +50,16 @@ tests loaded_plugins => sub {
     ok(!$BEFORE_INC{$_}, "$_ is not preloaded") for @files;
     ok($AFTER_INC{$_},   "$_ is loaded") for @files;
 
-    imported qw{
+    imported_ok qw{
         BAIL_OUT
         DOES_ok
         can_ok
         context
         diag
         dies
-        diff_ref
         done_testing
         fail
-        imported
+        imported_ok
         is
         isa_ok
         like
@@ -68,13 +67,14 @@ tests loaded_plugins => sub {
         mock
         mocked
         no_warnings
-        not_imported
+        not_imported_ok
         note
         ok
         pass
         plan
+        ref_is
+        ref_is_not
         ref_ok
-        same_ref
         set_encoding
         skip
         skip_all

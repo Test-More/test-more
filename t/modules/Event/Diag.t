@@ -3,7 +3,7 @@ use Test::Stream -V1, Compare => ['-all'];
 use Test::Stream::Event::Diag;
 use Test::Stream::DebugInfo;
 
-use Test::Stream::TAP qw/OUT_TODO OUT_ERR/;
+use Test::Stream::Formatter::TAP qw/OUT_TODO OUT_ERR/;
 
 my $diag = Test::Stream::Event::Diag->new(
     debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),

@@ -2,17 +2,31 @@ use Test::Stream qw/-V1 -Tester/;
 
 use File::Temp qw/tempfile/;
 
-imported qw{
+imported_ok qw{
     ok pass fail
     diag note
     plan skip_all done_testing
     BAIL_OUT
     todo skip
     can_ok isa_ok DOES_ok ref_ok
-    imported not_imported
-    same_ref diff_ref
+    imported_ok not_imported_ok
+    ref_is ref_is_not
     set_encoding
 };
+
+not_imported_ok(qw/x y z/);
+
+is(
+    intercept { imported_ok('x') },
+    array { event Ok => { pass => 0 }; end },
+    "Failed, x is not imported"
+);
+
+is(
+    intercept { not_imported_ok('ok') },
+    array { event Ok => { pass => 0 }; end },
+    "Failed, 'ok' is imported"
+);
 
 pass('Testing Pass');
 
@@ -181,6 +195,8 @@ like(
         ref_ok({}, 'HASH', 'pass');
         ref_ok([], 'ARRAY', 'pass');
         ref_ok({}, 'ARRAY', 'fail');
+        ref_ok('xxx');
+        ref_ok('xxx', 'xxx');
     },
     array {
         event Ok => { pass => 1 };
@@ -192,6 +208,8 @@ like(
                 qr/'HASH\(.*\)' is not a 'ARRAY' reference/
             ],
         };
+        event Ok => { pass => 0, diag => [T(), qr/'xxx' is not a reference/] };
+        event Ok => { pass => 0, diag => [T(), qr/'xxx' is not a reference/] };
         end;
     },
     "ref_ok tests"
@@ -215,6 +233,22 @@ like(
         return 1 if $thing =~ m/x/;
     }
 }
+
+{
+    package XYZ;
+    use Carp qw/croak/;
+    sub isa { croak 'oops' };
+    sub can { croak 'oops' };
+    sub DOES { croak 'oops' };
+}
+
+my $file = __FILE__;
+my $line = __LINE__ + 2;
+like(
+    dies { isa_ok('XYZ', 'foo') },
+    qr/oops at \Q$file\E line $line/,
+    "Exception reports correctly"
+);
 
 like(
     intercept {
@@ -330,23 +364,23 @@ my $y = [];
 like(
     intercept {
 
-        same_ref($x, $x, 'same x');
-        same_ref($x, $y, 'not same');
+        ref_is($x, $x, 'same x');
+        ref_is($x, $y, 'not same');
 
-        diff_ref($x, $y, 'not same');
-        diff_ref($y, $y, 'same y');
+        ref_is_not($x, $y, 'not same');
+        ref_is_not($y, $y, 'same y');
 
-        same_ref('x', $x, 'no ref');
-        same_ref($x, 'x', 'no ref');
+        ref_is('x', $x, 'no ref');
+        ref_is($x, 'x', 'no ref');
 
-        diff_ref('x', $x, 'no ref');
-        diff_ref($x, 'x', 'no ref');
+        ref_is_not('x', $x, 'no ref');
+        ref_is_not($x, 'x', 'no ref');
 
-        same_ref(undef, $x, 'undef');
-        same_ref($x, undef, 'undef');
+        ref_is(undef, $x, 'undef');
+        ref_is($x, undef, 'undef');
 
-        diff_ref(undef, $x, 'undef');
-        diff_ref($x, undef, 'undef');
+        ref_is_not(undef, $x, 'undef');
+        ref_is_not($x, undef, 'undef');
     },
     array {
         event Ok => sub { call pass => 1 };
@@ -410,7 +444,7 @@ intercept {
         my ($fh, $name) = tempfile();
 
         Test::Stream::Sync->stack->top->format(
-            Test::Stream::TAP->new(
+            Test::Stream::Formatter::TAP->new(
                 handles => [$fh, $fh, $fh],
             ),
         );
@@ -421,5 +455,18 @@ intercept {
 };
 
 ok(!$warnings, "set_encoding worked");
+
+my $exception;
+intercept {
+    $exception = dies {
+        set_encoding('utf8');
+    };
+};
+
+like(
+    $exception,
+    qr/Unable to set encoding on formatter '<undef>'/,
+    "Cannot set encoding without a formatter"
+);
 
 done_testing;

@@ -9,7 +9,8 @@ use Test::Stream::HashBase(
 use Test::Stream::Table();
 use Test::Stream::Context();
 
-use Scalar::Util qw/reftype blessed/;
+use Test::Stream::Util qw/render_ref/;
+use Scalar::Util qw/reftype blessed refaddr/;
 
 use Carp qw/croak/;
 
@@ -19,6 +20,60 @@ BEGIN {
     no warnings 'once';
     *check = \&chk;
     *set_check = \&set_chk;
+}
+
+my @COLUMN_ORDER = qw/PATH GLNs GOT OP CHECK CLNs/;
+my %COLUMNS = (
+    GOT   => {name => 'GOT',   value => sub { $_[0]->render_got },   no_collapse => 1},
+    CHECK => {name => 'CHECK', value => sub { $_[0]->render_check }, no_collapse => 1},
+    OP    => {name => 'OP',    value => sub { $_[0]->table_op }                      },
+    PATH  => {name => 'PATH',  value => sub { $_[1] }                                },
+
+    'GLNs' => {name => 'GLNs', alias => 'LNs', value => sub { $_[0]->table_got_lines }  },
+    'CLNs' => {name => 'CLNs', alias => 'LNs', value => sub { $_[0]->table_check_lines }},
+);
+
+sub remove_column {
+    my $class = shift;
+    my $header = shift;
+    @COLUMN_ORDER = grep { $_ ne $header } @COLUMN_ORDER;
+    delete $COLUMNS{$header} ? 1 : 0;
+}
+
+sub add_column {
+    my $class = shift;
+    my $name = shift;
+
+    croak "Column name is required"
+        unless $name;
+
+    croak "Column '$name' is already defined"
+        if $COLUMNS{$name};
+
+    my %params;
+    if (@_ == 1) {
+        %params = (value => @_, name => $name);
+    }
+    else {
+        %params = (@_, name => $name);
+    }
+
+    my $value = $params{value};
+
+    croak "You must specify a 'value' callback"
+        unless $value;
+
+    croak "'value' callback must be a CODE reference"
+        unless ref($value) && reftype($value) eq 'CODE';
+
+    if ($params{prefix}) {
+        unshift @COLUMN_ORDER => $name;
+    }
+    else {
+        push @COLUMN_ORDER => $name;
+    }
+
+    $COLUMNS{$name} = \%params;
 }
 
 sub init {
@@ -47,6 +102,11 @@ sub render_got {
 
     my $got = $self->{+GOT};
     return '<UNDEF>' unless defined $got;
+
+    my $check = $self->{+CHK};
+    my $rx = $check && $check->isa('Test::Stream::Compare::Regex');
+
+    return render_ref($got) if ref $got && !$rx;
 
     return "$got";
 }
@@ -141,7 +201,7 @@ sub filter_visible {
     return \@deltas;
 }
 
-sub table_header {[ qw/PATH LNs GOT OP CHECK LNs/ ]}
+sub table_header { [map {$COLUMNS{$_}->{alias} || $_} @COLUMN_ORDER] };
 
 sub table_op {
     my $self = shift;
@@ -186,13 +246,15 @@ sub table_rows {
     for my $set (@$deltas) {
         my ($id, $d) = @$set;
 
-        my $rc   = $d->render_check;
-        my $rg   = $d->render_got;
-        my $op   = $d->table_op;
-        my $dlns = $d->table_check_lines;
-        my $glns = $d->table_got_lines;
+        my @row;
+        for my $col (@COLUMN_ORDER) {
+            my $spec = $COLUMNS{$col};
+            my $val = $spec->{value}->($d, $id);
+            $val = '' unless defined $val;
+            push @row => $val;
+        }
 
-        push @rows => [$id, $glns, $rg, $op, $rc, $dlns];
+        push @rows => \@row;
     }
 
     return \@rows;
@@ -218,13 +280,14 @@ sub table {
         );
     }
 
+    my @no_collapse = map { $COLUMNS{$COLUMN_ORDER[$_]}->{no_collapse} ? ($_) : () } 0 .. $#COLUMN_ORDER;
     unshift @out => Test::Stream::Table::table(
-        header    => $header,
-        rows      => $rows,
-        collapse  => 1,
-        sanitize  => 1,
-        mark_tail => 1,
-        no_collapse => [2, 4],
+        header      => $header,
+        rows        => $rows,
+        collapse    => 1,
+        sanitize    => 1,
+        mark_tail   => 1,
+        no_collapse => \@no_collapse,
     );
 
     return @out;
@@ -262,6 +325,48 @@ delta will be returned. Deltas are a tree datastructure that represent all the
 differences between 2 other data structures.
 
 =head1 METHODS
+
+=head2 CLASS METHODS
+
+=over 4
+
+=item $class->add_column($NAME => sub { ... })
+
+=item $class->add_column($NAME, %PARAMS)
+
+This can be used to add columns to the table that it produced when a comparison
+fails. The first argument should always be the column name, which must be
+unique.
+
+The first form simply takes a coderef that produces the value that should be
+displayed in the column for any given delta. The arguments passed into the sub
+are the delta, and the row id.
+
+    Test::Stream::Delta->add_column(
+        Foo => sub {
+            my ($delta, $id) = @_;
+            return $delta->... ? 'foo' : 'bar'
+        },
+    );
+
+The second form allows you some extra options. The C<'value'> key is required,
+and must be a coderef. All other keys are optional.
+
+    Test::Stream::Delta->add_column(
+        'Foo',    # column name
+        value => sub { ... },    # how to get the cell value
+        alias       => 'FOO',    # Display name (used in table header)
+        no_collapse => $bool,    # Show column even if it has no values?
+    );
+
+=item $bool = $class->remove_column($NAME)
+
+This will remove the specified column. This will return true if the column
+existed and was removed. This will return false if the column did not exist. No
+exceptions are thrown, if a missing column is a problem then you need to check
+the return yourself.
+
+=back
 
 =head2 ATTRIBUTES
 

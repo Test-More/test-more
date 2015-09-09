@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Test::Stream::Capabilities qw/CAN_THREAD/;
-use Scalar::Util qw/reftype blessed/;
+use Scalar::Util qw/reftype blessed refaddr/;
 use Carp qw/croak/;
 
 use Test::Stream::Exporter qw/import export_to exports/;
@@ -20,6 +20,8 @@ exports qw{
         parse_symbol
 
         term_size
+
+        rtype render_ref
 };
 no Test::Stream::Exporter;
 
@@ -179,6 +181,34 @@ sub term_size {
     return 80 if !$total;
     return 80 if $total < 80;
     return $total;
+}
+
+sub rtype {
+    my ($thing) = @_;
+    return '' unless defined $thing;
+
+    my $rf = ref $thing;
+    my $rt = reftype $thing;
+
+    return '' unless $rf || $rt;
+    return 'REGEXP' if $rf =~ m/Regex/i;
+    return 'REGEXP' if $rt =~ m/Regex/i;
+    return $rt || '';
+}
+
+sub render_ref {
+    my ($in) = @_;
+
+    my $type = rtype($in);
+    return "$in" unless $type;
+
+    # Look past overloading
+    my $class = blessed($in) || '';
+    my $it = sprintf('0x%x', refaddr($in));
+    my $ref = "$type($it)";
+
+    return $ref unless $class;
+    return "$class=$ref";
 }
 
 1;

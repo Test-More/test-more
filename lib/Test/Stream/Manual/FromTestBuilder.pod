@@ -21,7 +21,7 @@ This document covers things that are meaningful to someone switching from
 L<Test::More>, L<Test::Simple>, and other L<Test::Builder> based tools. It
 approaches the situation as though you are converting an old test, or writing a
 new one. Instead of loading L<Test::More> you will be loading L<Test::Stream>
-without any extra arguments, plugins, or bundles.
+with the recommended bundle:
 
     use Test::Stream -V1;
 
@@ -126,8 +126,9 @@ C<is> and C<is_deeply> have been combined. You can now use C<is> for simple
 scalars, or nested data structures. This also means you can no longer use C<is>
 to check that hash/array reference are the same exact reference, though you can
 check that they have the exact same data. If you actually want to check if 2
-hash/array refs are the same or different you can use C<same_ref()> or
-C<diff_ref()>.
+hash/array refs are the same or different you can use C<ref_is()> or
+C<ref_is_not()>, both of which are much safer for that purpose than C<is()>
+ever was.
 
 The signature has also been changed to add a slurpy '@' to the end for
 specifying extra diagnostics that only show up if the test fails.
@@ -172,9 +173,7 @@ The table is smart about your screen size and formatting values displayed
 within. All whitespace apart from the ASCII single space is replaced with
 either its escape sequence, or its unicode number. If there is trailing
 whitespace the final whitespace character will also be replaced to make it
-clear to you it is there. For really long strings (long enough to wrap) it will
-also give you a character count to help with your limited human ability to spot
-differences.
+clear to you it is there.
 
 B<Defined in> L<Test::Stream::Plugin::Compare>.
 
@@ -191,7 +190,7 @@ comparisons:
         { a => 'aaa', b => 'bbb', c => ['a' .. 'z'], d => 'ddd' },
         {
             a => qr/a/,                  # regex is used to check the value
-            b => sub { $_[0] eq 'bbb' }, # Code is run to check result
+            b => sub { $_ eq 'bbb' },    # Code is run to check result
             c => [ 'a', 'b', 'c' ],      # Only the first 3 items are checked
             # hash key 'd' is ignored since we did not specify it
         },
@@ -234,7 +233,7 @@ B<Defined in> L<Test::Stream::Plugin::Core>.
 
 Not loaded by default, you must ask for it:
 
-    use Test::Stream qw/-V1 Subtest/;    
+    use Test::Stream qw/-V1 Subtest/;
 
 The default output has been changed:
 
@@ -373,7 +372,7 @@ This is some new stuff you get for free!
 =item DOES_ok
 
 Just like C<isa_ok> and C<can_ok> except it checks C<DOES> instead of C<can> or
-C<isa>. All caps is used to reflect the UNIVERSAL property used, it also helsp
+C<isa>. All caps is used to reflect the UNIVERSAL property used, it also helps
 avoid conflicts with L<Moose> related stuff.
 
 B<Defined in> L<Test::Stream::Plugin::Core>.
@@ -385,7 +384,7 @@ ref.
 
 B<Defined in> L<Test::Stream::Plugin::Core>.
 
-=item imported
+=item imported_ok
 
 Check that the current namespace has the specified functions. This will not
 find inherited methods, only subs actually defined in the current namespace. It
@@ -395,7 +394,7 @@ This is a better alternative to C<can_ok> when testing imports.
 
 B<Defined in> L<Test::Stream::Plugin::Core>.
 
-=item not_imported
+=item not_imported_ok
 
 This checks that the specified functions are not available in the current
 namespace. It will ignore inherited methods, is only looks for subs in the
@@ -403,7 +402,7 @@ current namespace.
 
 B<Defined in> L<Test::Stream::Plugin::Core>.
 
-=item same_ref
+=item ref_is
 
 Check that 2 references are the same references, not a deep check, compares
 addresses of the 2 provided refs. Will fail if either argument is not a
@@ -411,7 +410,7 @@ reference, or is undef.
 
 B<Defined in> L<Test::Stream::Plugin::Core>.
 
-=item diff_ref
+=item ref_is_not
 
 Check that 2 references are not the same references, not a deep check, compares
 addresses of the 2 provided refs. Will fail if either argument is not a
@@ -463,7 +462,7 @@ B<Defined in> L<Test::Stream::Plugin::Warnings>.
 
 =item warns { ... }
 
-Returns an arrayref of all the warnings from within the codelbock, undef if
+Returns an arrayref of all the warnings from within the codeblock, undef if
 there are no warnings.
 
     ok(!warns { ... }, "no warnings");
@@ -515,19 +514,10 @@ B<Defined in> L<Test::Stream::Plugin::Exception>.
 
 =over 4
 
-=item strict
-
-Loading L<Test::Stream> with no arguments (Default bundle) will turn on
-strictures for you.
-
-=item warnings
-
-Loading L<Test::Stream> with no arguments (Default bundle) will turn on
-warnings for you.
-
 =item Forking/Threading support
 
-Forking and threading in your tests will just work.
+Forking and threading in your tests will just work (so long as you use the
+'IPC' plugin, which is included in the 'V1' bundle).
 
 =back
 

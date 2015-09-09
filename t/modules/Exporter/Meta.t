@@ -16,7 +16,7 @@ like(
 is( $META->get('Temp1'), undef, "No meta for Temp1" );
 my $one = $META->new('Temp1');
 isa_ok($one, $META);
-same_ref($one, $META->get('Temp1'), 'get returns the meta for Temp1');
+ref_is($one, $META->get('Temp1'), 'get returns the meta for Temp1');
 is(
     $one,
     {

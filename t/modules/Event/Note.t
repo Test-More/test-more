@@ -5,7 +5,7 @@ use warnings;
 use Test::Stream::Event::Note;
 use Test::Stream::DebugInfo;
 
-use Test::Stream::TAP qw/OUT_STD/;
+use Test::Stream::Formatter::TAP qw/OUT_STD/;
 
 my $note = Test::Stream::Event::Note->new(
     debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),

@@ -2,7 +2,7 @@ package Test::Stream::Event::Note;
 use strict;
 use warnings;
 
-use Test::Stream::TAP qw/OUT_STD/;
+use Test::Stream::Formatter::TAP qw/OUT_STD/;
 
 use Test::Stream::Event(
     accessors  => [qw/message/],

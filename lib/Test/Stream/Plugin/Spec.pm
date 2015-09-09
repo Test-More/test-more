@@ -60,3 +60,254 @@ BEGIN {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Test::Stream::Plugin::Spec - SPEC testing tools
+
+=head1 EXPERIMENTAL CODE WARNING
+
+B<This is an experimental release!> Test-Stream, and all its components are
+still in an experimental phase. This dist has been released to cpan in order to
+allow testers and early adopters the chance to write experimental new tools
+with it, or to add experimental support for it into old tools.
+
+B<PLEASE DO NOT COMPLETELY CONVERT OLD TOOLS YET>. This experimental release is
+very likely to see a lot of code churn. API's may break at any time.
+Test-Stream should NOT be depended on by any toolchain level tools until the
+experimental phase is over.
+
+=head1 DESCRIPTION
+
+=head1 SYNOPSIS
+
+    use Test::Stream qw/-V1 Spec/
+
+    describe fruit_shipment => sub {
+        my $crates;
+        before_all unload_crates => sub { $crates = get_crates() };
+        after_all deliver_crates => sub { deliver($crates) };
+
+        my $fruit;
+        for my $f ($crates->types) { # 'pear' and 'apple'
+            case $f => sub { $fruit = $f };
+        }
+
+        my $crate;
+        before_each open_crate => sub { $crate = $crates->open_first($fruit) };
+        after_each close_crate => sub { $crates->store($crate) };
+
+        tests squishability => sub {
+            my $sample = $crate->grab();
+            ok($sample->squishability > 5, "squish rating is greater than 5");
+            ok($sample->squishability < 10, "squish rating is less than 10");
+        };
+
+        tests flavor => sub {
+            my $sample = $crate->grab();
+            ok($sample->is_tasty, "sample is tasty");
+            ok(!$sample->is_sour, "sample is not sour");
+        };
+
+        tests ripeness => sub {
+            my $sample1 = $crate->grab();
+            my $sample2 = $crate->grab();
+
+            my $overripe  = grep { $_->is_overripe }  $sample1, $sample2;
+            my $underripe = grep { $_->is_underripe } $sample1, $sample2;
+
+            ok($overripe  < 2, "at least 1 sample is not overripe");
+            ok($underripe < 2, "at least 1 sample is not underripe");
+        };
+    };
+
+    done_testing;
+
+In this sample we are describing a fruit shipment. Before anything else we
+unload the crates. Next we handle 2 types of fruit, a crate of pears and a
+crate of apples. For each create we need to run tests on squishability, flavor,
+and ripeness. In order to run these tests the creates need to be opened, when
+the tests are done the crates need to be closed again.
+
+We use the before_all and after_all to specify the first and last tasks to be
+run, each one will run exactly once. The 3 sets of tests will be run once per
+fruit type, we have cases for pears and apples, so in total there will be 6
+sets of tests run, 3 per fruit type. Opening and closing the crate is something
+we need to do for each test block, so we use before_each and after_each.
+
+Each test block needs unique samples, so the sample is aquired within the test.
+We do not use a before_each as some tests require different numbers of samples.
+
+=head1 EXPORTS
+
+All exports have the exact same syntax, there are 2 forms:
+
+    FUNCTION($NAME, \&CODE);
+    FUNCTION($NAME, \%PARAMS, \&CODE);
+
+Both can also be used in a style that is more pleasingto the eye:
+
+    FUNCTION $NAME => sub { ... };
+    FUNCTION $NAME => {...}, sub { ... }
+
+The name and codeblock are required. Optionally you can provide a hashref
+of parameters between the name and coderef with parameters. Valid parameters
+depends on what runner is used, but the parameters supported by default are:
+
+B<Note:> The default runner is L<Test::Stream::Workflow::Runner>.
+
+=over 4
+
+=item todo => 'reason'
+
+This will mark the entire block as todo with the given reason. This parameter
+is inherited by nested blocks.
+
+=item skip => 'reason'
+
+This will skip the entire block, it will generate a single 'Ok' event with the
+skip reason set.
+
+=item fork => $bool
+
+This tells the runner to fork before running the block. This allows you to
+isolate blocks that may modify state in ways that should not be seen by later
+tests. The default runner will wait for the forked block to exit before
+starting the next one.
+
+=back
+
+B<Note:> The tests you declare are deferred, that is they run after everything
+else is done, typically when you call C<done_testing>.
+
+=head2 TEST DECLARATIONS
+
+Test declarations are used to declare blocks of tests. You can put pretty much
+anything you want inside a test block, the only exceptions to this is that
+other test blocks, groups, modifiers, etc, cannot be specified inside the test
+block.
+
+If a test block does not produce any events then it will be considered an
+error. Test blocks are run as subtests.
+
+=over 4
+
+=item tests $name => sub { ... }
+
+=item it $name => sub { ... }
+
+=item tests $name => \%params, sub { ... }
+
+=item it $name => \%params, sub { ... }
+
+C<tests()> and C<it()> are both aliases to the same function. The name
+C<tests()> is present as the authors preference. C<it()> is present to reflect
+the name used in RSPEC for the Ruby programming language.
+
+=back
+
+=head2 TEST SETUP AND TEARDOWN
+
+These blocks attach themselves to test blocks. The setup/teardown will run once
+for each test block. These are all inherited by test blocks declared in nested
+groups.
+
+=over 4
+
+=item before_each $name => sub { ... }
+
+Declare a setup that will run before each test block is run. B<Note:> This will
+run before any modifier.
+
+=item after_each $name => sub { ... }
+
+Declare a teardown that will run after each test block.
+
+=item around_each $name => sub { ... }
+
+Declare a setup+teardown that is wrapped around the test block. This is useful
+if you want to localize a variable, or something similar.
+
+    a
+
+=back
+
+=head2 TEST MODIFIERS
+
+=over 4
+
+=item case $name => sub { ... }
+
+=back
+
+=head3 TEST MODIFIER SETUP AND TEARDOWN
+
+=over 4
+
+=item before_case $name => sub { ... }
+
+=item after_case $name => sub { ... }
+
+=item around_case $name => sub { ... }
+
+=back
+
+=head2 TEST GROUPERS
+
+=over 4
+
+=item describe $name => sub { ... }
+
+=item cases $name => sub { ... }
+
+=back
+
+=head2 GROUP MODIFIERS
+
+=over 4
+
+=item before_all $name => sub { ... }
+
+=item after_all $name => sub { ... }
+
+=item around_all $name => sub { ... }
+
+=back
+
+=head1 SOURCE
+
+The source code repository for Test::Stream can be found at
+F<http://github.com/Test-More/Test-Stream/>.
+
+=head1 MAINTAINERS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 AUTHORS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 COPYRIGHT
+
+Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http://www.perl.com/perl/misc/Artistic.html>
+
+=cut

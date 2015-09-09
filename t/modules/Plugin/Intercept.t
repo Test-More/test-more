@@ -1,9 +1,6 @@
-use Test::Stream -V1, -Tester;
+use Test::Stream -V1, Intercept, Compare => '*';
 
-can_ok(
-    __PACKAGE__,
-    qw{intercept dies warning warns lives no_warnings grab}
-);
+imported_ok('intercept');
 
 sub tool { context() };
 
@@ -35,55 +32,8 @@ ok($ctx != $ictx, "Different context inside intercept");
 
 is(@$events, 3, "got 3 events");
 
-$ictx->release;
-
-{
-    my $grab = grab();
-
-        $ictx = tool();
-        $ictx->ok(1, 'pass');
-        $ictx->ok(0, 'fail');
-
-    my $events = $grab->finish;
-    ok(!$grab, "grab was destroyed");
-
-    ok($ctx != $ictx, "Different context inside intercept");
-
-    is(@$events, 2, "got 2 events");
-}
-
 $ctx->release;
 $ictx->release;
-
-my $exception = dies { die "xxx" };
-like($exception, qr/^xxx at/, "Captured exception");
-$exception = dies { 1 };
-is($exception, undef, "no exception");
-
-my $warning = warning { warn "xxx" };
-like($warning, qr/^xxx at/, "Captured warning");
-
-my $warnings = warns { 1 };
-is($warnings, undef, "no warnings");
-$warnings = warns { warn "xxx"; warn "yyy" };
-is(@$warnings, 2, "2 warnings");
-like($warnings->[0], qr/^xxx at/, "first warning");
-like($warnings->[1], qr/^yyy at/, "second warning");
-
-my $no_warn = no_warnings { ok(lives { 0 }, "lived") };
-ok($no_warn, "no warning on live");
-
-$warning = warning { ok(!lives { die 'xxx' }, "lived") };
-like($warning, qr/^xxx at/, "warning with exception");
-
-is(
-    warns { warn "foo\n"; warn "bar\n" },
-    [
-        "foo\n",
-        "bar\n",
-    ],
-    "Got expected warnings"
-);
 
 # Test that a skip_all in an intercept does not exit.
 $events = intercept {
@@ -111,15 +61,29 @@ $events = intercept {
 
 $ictx->release;
 
-{
-    my $grab = grab();
+like(
+    dies { intercept { die 'foo' } },
+    qr/foo/,
+    "Exception was propogated"
+);
 
-        $ictx = tool();
+is(
+    intercept {
+        Test::Stream::Sync->stack->top->set_no_ending(0);
+        ok(1);
+    },
+    array { event Ok => {}; event Plan => {max => 1} },
+    "finalize was called"
+);
 
-    $grab->finish;
-    ok(!$grab, "grab was destroyed");
-}
-
-$ictx->release;
+is(
+    intercept {
+        Test::Stream::Sync->stack->top->set_no_ending(0);
+        ok(1);
+        done_testing;
+    },
+    array { event Ok => {}; event Plan => {max => 1}; end },
+    "finalize was called, but only one plan"
+);
 
 done_testing;

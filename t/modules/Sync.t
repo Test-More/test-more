@@ -19,6 +19,7 @@ use Test::Stream::Capabilities qw/CAN_FORK CAN_THREAD/;
 use Scalar::Util qw/reftype/;
 
 BEGIN {
+    local $ENV{TS_FORMATTER} = undef;
     my $sync = 'Test::Stream::Sync';
     def ok => (!$sync->init_done, "Not initialized right at load");
 
@@ -28,27 +29,31 @@ BEGIN {
     def is => (
         $snapshot,
         {
-            PID     => $$,
-            TID     => get_tid(),
-            NO_WAIT => 0,
-            INIT    => undef,
-            IPC     => undef,
-            STACK   => undef,
-            FORMAT  => undef,
-            HOOKS   => [],
+            PID       => $$,
+            TID       => get_tid(),
+            NO_WAIT   => 0,
+            INIT      => undef,
+            IPC       => undef,
+            STACK     => undef,
+            FORMAT    => undef,
+            HOOKS     => [],
+            LOADED    => 0,
+            POST_LOAD => [],
         },
         "got guts"
     );
 
     my $reset = sub {
-        ${$guts->{PID}}     = $$;
-        ${$guts->{TID}}     = get_tid();
-        ${$guts->{NO_WAIT}} = 0;
-        ${$guts->{INIT}}    = undef;
-        ${$guts->{IPC}}     = undef;
-        ${$guts->{STACK}}   = undef;
-        ${$guts->{FORMAT}}  = undef;
-        @{$guts->{HOOKS}}   = ();
+        ${$guts->{PID}}       = $$;
+        ${$guts->{TID}}       = get_tid();
+        ${$guts->{NO_WAIT}}   = 0;
+        ${$guts->{INIT}}      = undef;
+        ${$guts->{IPC}}       = undef;
+        ${$guts->{STACK}}     = undef;
+        ${$guts->{FORMAT}}    = undef;
+        @{$guts->{HOOKS}}     = ();
+        ${$guts->{LOADED}}    = 0;
+        @{$guts->{POST_LOAD}} = ();
     };
 
     #####################
@@ -57,7 +62,7 @@ BEGIN {
     def ok => (${$guts->{INIT}}, "init done");
     def ok => ($sync->init_done, "init done now");
     def isa_ok => (${$guts->{STACK}}, 'Test::Stream::Stack');
-    def is => (${$guts->{FORMAT}}, 'Test::Stream::TAP', "formatter set to TAP");
+    def is => (${$guts->{FORMAT}}, 'Test::Stream::Formatter::TAP', "formatter set to TAP");
     def ok => (!${$guts->{IPC}}, "No IPC yet");
     def ok => (! scalar @{$guts->{HOOKS}}, "no hooks yet");
     $reset->();
@@ -69,7 +74,7 @@ BEGIN {
     def ok => ($sync->init_done, "init done now");
     def ok => (${$guts->{INIT}}, "init done");
     def isa_ok => (${$guts->{STACK}}, 'Test::Stream::Stack');
-    def is => (${$guts->{FORMAT}}, 'Test::Stream::TAP', "formatter set to TAP");
+    def is => (${$guts->{FORMAT}}, 'Test::Stream::Formatter::TAP', "formatter set to TAP");
     def isa_ok => (${$guts->{IPC}}, 'Test::Stream::IPC');
 
     my @errs;
@@ -105,8 +110,8 @@ BEGIN {
 
     $reset->();
     def ok => (!$sync->init_done, "Not initialized yet");
-    def is => ($sync->formatter(), 'Test::Stream::TAP', "TAP formatter");
-    def is => ($sync->formatter(), 'Test::Stream::TAP', "TAP formatter");
+    def is => ($sync->formatter(), 'Test::Stream::Formatter::TAP', "TAP formatter");
+    def is => ($sync->formatter(), 'Test::Stream::Formatter::TAP', "TAP formatter");
     def ok => ($sync->init_done, "init done now");
 
     $reset->();
@@ -121,6 +126,31 @@ BEGIN {
     $reset->();
     eval { $sync->set_formatter() };
     def like => ($@, qr/No formatter specified/, "must specifty formatter");
+
+    $reset->();
+    {
+        local $ENV{TS_FORMATTER} = 'Fake';
+        eval { $sync->formatter };
+        def like => (
+            $@,
+            qr/COULD NOT LOAD FORMATTER 'Fake' \(set by the 'TS_FORMATTER' environment variable\)/,
+            "Bad formatter"
+        );
+    }
+
+    $reset->();
+    {
+        local $ENV{TS_FORMATTER} = '+Foo';
+        local $INC{'Foo.pm'} = __FILE__;
+        def is => ($sync->formatter, 'Foo', "Used env var formatter (full)");
+    }
+
+    $reset->();
+    {
+        local $ENV{TS_FORMATTER} = 'Foo';
+        local $INC{'Test/Stream/Formatter/Foo.pm'} = __FILE__;
+        def is => ($sync->formatter, 'Test::Stream::Formatter::Foo', "Used env var formatter (short)");
+    }
 
     $reset->();
     def is => ($sync->no_wait, 0, "no_wait is off");
@@ -180,6 +210,36 @@ BEGIN {
     local $? = 0;
     $sync->_set_exit;
     def is => ($?, 0, "no errors on exit");
+
+    $reset->();
+    def is => (Test::Stream::Sync->loaded, 0, "not loaded");
+    def is => (Test::Stream::Sync->loaded, 0, "not modified by checking");
+
+    my ($ranA, $ranB) = (0, 0);
+    Test::Stream::Sync->post_load(sub { $ranA++ });
+    Test::Stream::Sync->post_load(sub { $ranB++ });
+    def is => (Test::Stream::Sync->loaded, 0, "not loaded");
+    def is => ($ranA, 0, "Did not run");
+    def is => ($ranB, 0, "Did not run");
+    def is => (Test::Stream::Sync->post_loads, 2, "2 loads");
+
+    Test::Stream::Sync->loaded(0); # False value
+    def is => (Test::Stream::Sync->loaded, 0, "not loaded");
+    def is => ($ranA, 0, "Did not run");
+    def is => ($ranB, 0, "Did not run");
+
+    Test::Stream::Sync->loaded('true');
+    def is => ($ranA, 1, "ran once");
+    def is => ($ranB, 1, "ran once");
+    def is => (Test::Stream::Sync->loaded, 1, "loaded");
+
+    Test::Stream::Sync->loaded(1);
+    def is => ($ranA, 1, "Only ran once");
+    def is => ($ranB, 1, "Only ran once");
+    def is => (Test::Stream::Sync->loaded, 1, "loaded");
+
+    Test::Stream::Sync->post_load(sub { $ranA++ });
+    def is => ($ranA, 2, "Ran right away");
 
     #####################
     # Reset everything
@@ -319,14 +379,16 @@ is(
 
 
     # Restore things
-    ${$guts->{PID}}     = $snapshot->{PID};
-    ${$guts->{TID}}     = $snapshot->{TID};
-    ${$guts->{NO_WAIT}} = $snapshot->{NO_WAIT};
-    ${$guts->{INIT}}    = $snapshot->{INIT}; 
-    ${$guts->{IPC}}     = $snapshot->{IPC};
-    ${$guts->{STACK}}   = $snapshot->{STACK};
-    ${$guts->{FORMAT}}  = $snapshot->{FORMAT};
-    @{$guts->{HOOKS}}   = @{$snapshot->{HOOKS}};
+    ${$guts->{PID}}       = $snapshot->{PID};
+    ${$guts->{TID}}       = $snapshot->{TID};
+    ${$guts->{NO_WAIT}}   = $snapshot->{NO_WAIT};
+    ${$guts->{INIT}}      = $snapshot->{INIT};
+    ${$guts->{IPC}}       = $snapshot->{IPC};
+    ${$guts->{STACK}}     = $snapshot->{STACK};
+    ${$guts->{FORMAT}}    = $snapshot->{FORMAT};
+    @{$guts->{HOOKS}}     = @{$snapshot->{HOOKS}};
+    ${$guts->{LOADED}}    = $snapshot->{LOADED};
+    @{$guts->{POST_LOAD}} = @{$snapshot->{POST_LOAD}};
 }
 
 do_def;
@@ -348,92 +410,3 @@ Test::Stream::Sync->add_hook(sub {
 });
 
 done_testing;
-
-__END__
-
-
-sub _ipc_wait {
-    my $fail = 0;
-
-    while (CAN_FORK) {
-        my $pid = CORE::wait();
-        my $err = $?;
-        last if $pid == -1;
-        next unless $err;
-        $fail++;
-        $err = $err >> 8;
-        warn "Process $pid did not exit cleanly (status: $err)\n";
-    }
-
-    if (USE_THREADS) {
-        for my $t (threads->list()) {
-            $t->join;
-            # In older threads we cannot check if a thread had an error unless
-            # we control it and its return.
-            my $err = $t->can('error') ? $t->error : undef;
-            next unless $err;
-            my $tid = $t->tid();
-            $fail++;
-            chomp($err);
-            warn "Thread $tid did not end cleanly: $err\n";
-        }
-    }
-
-    return 0 unless $fail;
-    return 255;
-}
-
-# Set the exit status
-END { _set_exit() }
-sub _set_exit {
-    my $exit     = $?;
-    my $new_exit = $exit;
-
-    if ($PID != $$ || $TID != get_tid()) {
-        $? = $exit;
-        return;
-    }
-
-    my @hubs = $STACK ? $STACK->all : ();
-
-    if (@hubs && $IPC && !$NO_WAIT) {
-        local $?;
-        my %seen;
-        for my $hub (reverse @hubs) {
-            my $ipc = $hub->ipc || next;
-            next if $seen{$ipc}++;
-            $ipc->waiting();
-        }
-
-        my $ipc_exit = _ipc_wait();
-        $new_exit ||= $ipc_exit;
-    }
-
-    # None of this is necessary if we never got a root hub
-    if(my $root = shift @hubs) {
-        my $dbg = Test::Stream::DebugInfo->new(
-            frame  => [__PACKAGE__, __FILE__, 0, 'Test::Stream::Context::END'],
-            detail => 'Test::Stream::Context END Block finalization',
-        );
-        my $ctx = Test::Stream::Context->new(
-            debug => $dbg,
-            hub   => $root,
-        );
-
-        if (@hubs) {
-            $ctx->diag("Test ended with extra hubs on the stack!");
-            $new_exit  = 255;
-        }
-
-        unless ($root->no_ending) {
-            local $?;
-            $root->finalize($dbg) unless $root->state->ended;
-            $_->($ctx, $exit, \$new_exit) for @HOOKS;
-            $new_exit ||= $root->state->failed;
-        }
-    }
-
-    $new_exit = 255 if $new_exit > 255;
-
-    $? = $new_exit;
-}

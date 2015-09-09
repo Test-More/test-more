@@ -37,10 +37,9 @@ experimental phase is over.
 
 =head1 DESCRIPTION
 
-This bundle includes everything from the default bundle, as well as some extras
-that are useful when testing test tools and plugins. This includes tools for
-intercepting and validating events, as well as all the exports provided by the
-Compare plugin.
+Plugins that are useful when testing test tools and plugins. This includes
+tools for intercepting and validating events, as well as all the exports
+provided by the Compare plugin.
 
 =head1 SYNOPSIS
 

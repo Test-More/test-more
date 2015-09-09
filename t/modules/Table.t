@@ -1,7 +1,7 @@
 use Test::Stream -V1, -SpecTester, UTF8;
 use Test::Stream::Table qw/table/;
 
-imported 'table';
+imported_ok 'table';
 
 my $unsanitary = <<EOT;
 This string
@@ -87,7 +87,7 @@ tests width => sub {
         ],
     );
 
-    is(length($table[0]), check('<=', '40', sub { $_[0] <= $_[2] }), "width of table");
+    is(length($table[0]), validator('<=', '40', sub { my %p = @_; $p{got} <= $p{name} }), "width of table");
 
     is(
         \@table,
@@ -122,7 +122,7 @@ tests width => sub {
         ],
     );
 
-    is(length($table[0]), check('<=', '60', sub { $_[0] <= $_[2] }), "width of table");
+    is(length($table[0]), validator('<=', '60', sub { my %p = @_; $p{got} <= $p{name} }), "width of table");
 
     is(
         \@table,
@@ -151,7 +151,7 @@ tests width => sub {
         ],
     );
 
-    is(length($table[0]), check('<=', '60', sub { $_[0] <= $_[2] }), "width of table");
+    is(length($table[0]), validator('<=', '60', sub { my %p = @_; $p{got} <= $p{name} }), "width of table");
 
     is(
         \@table,

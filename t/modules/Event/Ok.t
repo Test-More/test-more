@@ -4,7 +4,7 @@ use Test::Stream::State;
 use Test::Stream::DebugInfo;
 use Test::Stream::Event::Ok;
 use Test::Stream::Event::Diag;
-use Test::Stream::TAP qw/OUT_STD OUT_ERR OUT_TODO/;
+use Test::Stream::Formatter::TAP qw/OUT_STD OUT_ERR OUT_TODO/;
 
 # Make sure there is a fresh debug object for each group
 my $dbg;

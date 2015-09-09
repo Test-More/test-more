@@ -21,12 +21,18 @@ sub init {
 
 sub verify {
     my $self = shift;
-    my ($got) = @_;
+    my %params = @_;
+    my ($got, $exists) = @params{qw/got exists/};
 
     my $code = $self->{+CODE};
 
     local $_ = $got;
-    my $ok = $code->($got, $self->{+OPERATOR}, $self->{+NAME});
+    my $ok = $code->(
+        got      => $got,
+        exists   => $exists,
+        operator => $self->{+OPERATOR},
+        name     => $self->{+NAME}
+    );
 
     return $ok;
 }
@@ -68,7 +74,7 @@ provides a way for you to write custom checks for fields in deep comparisons.
         name => 'IsRef',
         operator => 'ref(...)',
         code => sub {
-            my ($got, $operator, $name) = @_;
+            my ($got, $exists, $operator, $name) = @_;
             return ref($got) ? 1 : 0;
         },
     );
@@ -89,10 +95,10 @@ provides a way for you to write custom checks for fields in deep comparisons.
 
 =head1 ARGUMENTS
 
-Your custom sub will get 3 arguments:
+Your custom sub will get 4 arguments:
 
     code => sub {
-        my ($got, $operator, $name) = @_;
+        my ($got, $exists, $operator, $name) = @_;
         return ref($got) ? 1 : 0;
     },
 
@@ -106,6 +112,12 @@ regexes.
 =item $_
 
 This is the value to be checked.
+
+=item $exists
+
+This will be a boolean. This will be true if C<$got> exists at all. If
+C<$exists> is false then it means C<$got> is not simply undef, but doesn't
+exist at all (think checking the value of a hash key that does not exist).
 
 =item $operator
 
@@ -133,7 +145,7 @@ Get the name provided at construction.
 
 Get the operator provided at construction
 
-=item $bool = $cus->verify($got)
+=item $bool = $cus->verify(got => $got, exists => $bool)
 
 =back
 

@@ -1,44 +1,37 @@
-use Test::Stream -V1, Class => [''];
+use Test::Stream -V1, Class => ['Test::Stream::Compare::Ref'];
 
+my $ref = sub { 1 };
+my $one = $CLASS->new(input => $ref);
+isa_ok($one, $CLASS, 'Test::Stream::Compare');
 
-done_testing;
+like($one->name, qr/CODE\(.*\)/, "Got Name");
+is($one->operator, '==', "got operator");
 
-__END__
-package Test::Stream::Compare::Ref;
-use strict;
-use warnings;
+ok($one->verify(exists => 1, got => $ref), "verified ref");
+ok(!$one->verify(exists => 1, got => sub { 1 }), "different ref");
+ok(!$one->verify(exists => 0, got => $ref), "value must exist");
 
-use Test::Stream::Compare;
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Compare',
-    accessors => [qw/input/],
+is(
+    [ 'a', $ref ],
+    [ 'a', $one ],
+    "Did a ref check"
 );
 
-use Scalar::Util qw/reftype/;
-use Carp qw/croak/;
+ok(!$one->verify(exists => 1, got => 'a'), "not a ref");
 
-sub init {
-    my $self = shift;
+$one->set_input('a');
+ok(!$one->verify(exists => 1, got => $ref), "input not a ref");
 
-    croak "'input' is a required attribute"
-        unless $self->{+INPUT};
+like(
+    dies { $CLASS->new() },
+    qr/'input' is a required attribute/,
+    "Need input"
+);
 
-    croak "'input' must be a reference, got '" . $self->{+INPUT} . "'"
-        unless ref $self->{+INPUT};
-}
+like(
+    dies { $CLASS->new(input => 'a') },
+    qr/'input' must be a reference, got 'a'/,
+    "Input must be a ref"
+);
 
-sub name { $_[0]->{+INPUT} . "" }
-sub operator { '==' }
-
-sub verify {
-    my $self = shift;
-    my ($got) = @_;
-
-    my $in = $self->{+INPUT};
-    return 0 unless ref $in;
-    return 0 unless ref $got;
-
-    return $in == $got;
-}
-
-1;
+done_testing;

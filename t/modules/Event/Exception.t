@@ -2,7 +2,7 @@ use Test::Stream -V1;
 
 use Test::Stream::Event::Exception;
 
-use Test::Stream::TAP qw/OUT_ERR/;
+use Test::Stream::Formatter::TAP qw/OUT_ERR/;
 
 my $exception = Test::Stream::Event::Exception->new(
     debug => 'fake',

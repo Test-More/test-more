@@ -6,7 +6,7 @@ use Test::Stream::Event::Plan;
 use Test::Stream::DebugInfo;
 use Test::Stream::State;
 
-use Test::Stream::TAP qw/OUT_STD/;
+use Test::Stream::Formatter::TAP qw/OUT_STD/;
 
 my $plan = Test::Stream::Event::Plan->new(
     debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
@@ -108,6 +108,17 @@ like(
     },
     qr/No number of tests specified/,
     "Nothing to do"
+);
+
+like(
+    dies {
+        $plan = Test::Stream::Event::Plan->new(
+            debug  => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+            max => 'skip',
+        );
+    },
+    qr/Plan test count 'skip' does not appear to be a valid positive integer/,
+    "Max must be an integer"
 );
 
 done_testing;

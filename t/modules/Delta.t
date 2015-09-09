@@ -1,4 +1,5 @@
-use Test::Stream -V1, Spec, Class => ['Test::Stream::Delta'], 'Defer';
+use Test::Stream -V1, Spec, Class => ['Test::Stream::Delta'], 'Defer', Compare => '*';
+use Test::Stream::Compare qw/compare/;
 
 can_ok($CLASS, qw/check/);
 is(
@@ -14,12 +15,12 @@ my $check1 = Test::Stream::Compare::Value->new(input => 'x');
 my $check2 = Test::Stream::Compare::Value->new(input => 'y');
 
 $one = $CLASS->new(check => $check1);
-same_ref($one->chk, $check1, "Got our check");
-same_ref($one->check, $check1, "Got our check aliased");
+ref_is($one->chk, $check1, "Got our check");
+ref_is($one->check, $check1, "Got our check aliased");
 
 $one = $CLASS->new(chk => $check2);
-same_ref($one->chk, $check2, "Got our check");
-same_ref($one->check, $check2, "Got our check aliased");
+ref_is($one->chk, $check2, "Got our check");
+ref_is($one->check, $check2, "Got our check aliased");
 
 like(
     dies { $CLASS->new(check => $check1, chk => $check2) },
@@ -360,6 +361,192 @@ tests table => sub {
     delete $ENV{TS_MAX_DELTA};
 
     do_def();
+};
+
+tests custom_columns => sub {
+    my $conv = Test::Stream::Plugin::Compare->can('strict_convert');
+
+    my $cmp = sub {
+        my $ctx =context();
+        my $delta = compare(@_, $conv);
+        my $table = [$delta->table];
+        $ctx->release;
+        return $table;        
+    };
+
+    $CLASS->add_column('V' => sub {
+        my ($d) = @_;
+        return $d->verified ? '*' : '';
+    });
+
+    my $table = $cmp->(
+        { foo => ['x', 'y'] },
+        hash {
+            field foo => array {
+                item 'a';
+                item 'b';
+            };
+        },
+    );
+
+    like(
+        $table,
+        [
+            qr/\Q+---+\E$/,
+            qr/\Q| V |\E$/,
+            qr/\Q+---+\E$/,
+            qr/\Q| * |\E$/,
+            qr/\Q| * |\E$/,
+            qr/\Q|   |\E$/,
+            qr/\Q|   |\E$/,
+            qr/\Q+---+\E$/,
+            DNE()
+        ],
+        "Got new column, it is last"
+    );
+
+    $table = $cmp->(
+        ['x', 'y'],
+        ['a', 'b'],
+    );
+
+    is($table->[1], mismatch qr/\Q| V |\E/, "Column not shown, it is empty");
+
+    is($CLASS->remove_column('V'), 1, "Removed the column");
+    is($CLASS->remove_column('V'), 0, "No column to remove");
+
+    $CLASS->add_column(
+        'V',
+        value => sub {
+            my ($d) = @_;
+            return $d->verified ? '*' : '';
+        },
+        alias => '?',
+        no_collapse => 1,
+        prefix => 1,
+    );
+
+    $table = $cmp->(
+        { foo => ['x', 'y'] },
+        hash {
+            field foo => array {
+                item 'a';
+                item 'b';
+            };
+        },
+    );
+
+    like(
+        $table,
+        [
+            qr/^\Q+---+\E/,
+            qr/^\Q| ? |\E/,
+            qr/^\Q+---+\E/,
+            qr/^\Q| * |\E/,
+            qr/^\Q| * |\E/,
+            qr/^\Q|   |\E/,
+            qr/^\Q|   |\E/,
+            qr/^\Q+---+\E/,
+            DNE()
+        ],
+        "Got new column, it is first"
+    );
+
+    $table = $cmp->(
+        ['x', 'y'],
+        ['a', 'b'],
+    );
+
+    like(
+        $table,
+        [
+            qr/^\Q+---+\E/,
+            qr/^\Q| ? |\E/,
+            qr/^\Q+---+\E/,
+            qr/^\Q|   |\E/,
+            qr/^\Q|   |\E/,
+            qr/^\Q+---+\E/,
+            DNE()
+        ],
+        "Did not collapse"
+    );
+
+    is($CLASS->remove_column('V'), 1, "Removed the column");
+    is($CLASS->remove_column('V'), 0, "No column to remove");
+
+    like(
+        dies { $CLASS->add_column },
+        qr/Column name is required/,
+        "Column name is required"
+    );
+
+    like(
+        dies { $CLASS->add_column('FOO') },
+        qr/You must specify a 'value' callback/,
+        "Need value callback"
+    );
+
+    like(
+        dies { $CLASS->add_column('FOO', 'foo') },
+        qr/'value' callback must be a CODE reference/,
+        "Need value callback"
+    );
+
+    $CLASS->add_column('FOO' => sub { '' });
+    like(
+        dies { $CLASS->add_column('FOO' => sub { '' }) },
+        qr/Column 'FOO' is already defined/,
+        "No duplicates"
+    );
+
+    is($CLASS->remove_column('FOO'), 1, "Removed the column");
+};
+
+tests overload => sub {
+    no warnings 'once';
+    {
+        package Overload::Foo;
+        use overload
+            '""' => sub { 'FOO' },
+            '0+' => sub { 42 };
+
+        package Overload::Bar;
+        use overload
+            '""' => sub { 'BAR' },
+            '0+' => sub { 99 };
+    }
+
+    my $foo = bless \*FOO, 'Overload::Foo';
+    my $bar = bless \*BAR, 'Overload::Bar';
+
+    is("$foo", "FOO", "overloaded string form FOO");
+    is("$bar", "BAR", "overloaded string form BAR");
+    is(int($foo), 42, "overloaded number form FOO");
+    is(int($bar), 99, "overloaded number form BAR");
+
+    my $conv = Test::Stream::Plugin::Compare->can('strict_convert');
+    my $cmp = sub {
+        my $ctx =context();
+        my $delta = compare(@_, $conv);
+        my @table = $delta->table;
+        $ctx->release;
+        return \@table;
+    };
+
+    my $table = $cmp->($foo, $bar);
+
+    like(
+        $table,
+        [
+            T(), # Border
+            T(), # Header
+            T(), # Border
+            qr/^\| Overload::Foo=GLOB\(.+\)\s+\| ==\s+\| Overload::Bar=GLOB\(.+\)\s+\|$/,
+            T(), # Border
+            DNE(), # END
+        ],
+        "Showed type+mem address, despire overloading"
+    );
 };
 
 done_testing;

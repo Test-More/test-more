@@ -40,9 +40,10 @@ sub name { '<ARRAY>' }
 
 sub verify {
     my $self = shift;
-    my ($got) = @_;
+    my %params = @_;
 
-    return 0 unless $got;
+    return 0 unless $params{exists};
+    my $got = $params{got} || return 0;
     return 0 unless ref($got);
     return 0 unless reftype($got) eq 'ARRAY';
     return 1;
@@ -89,12 +90,8 @@ sub add_filter {
 
 sub deltas {
     my $self = shift;
-    my ($got, $convert, $seen) = @_;
-
-    # Short-cut if $got and $ref are the same reference
-    if (my $ref = $self->{+INREF}) {
-        return if $ref == $got;
-    }
+    my %params = @_;
+    my ($got, $convert, $seen) = @params{qw/got convert seen/};
 
     my @deltas;
     my $state = 0;
@@ -129,18 +126,13 @@ sub deltas {
 
         my $check = $convert->($items->{$idx});
 
-        if ($overflow) {
-            push @deltas => $self->delta_class->new(
-                dne      => 'got',
-                verified => undef,
-                id       => [ARRAY => $idx],
-                got      => undef,
-                check    => $check,
-            );
-        }
-        else {
-            push @deltas => $check->run([ARRAY => $idx], $val, $convert, $seen);
-        }
+        push @deltas => $check->run(
+            id      => [ARRAY => $idx],
+            convert => $convert,
+            seen    => $seen,
+            exists  => !$overflow,
+            $overflow ? () : (got => $val),
+        );
     }
 
     # if items are left over, and ending is true, we have a problem!
@@ -230,7 +222,7 @@ use the C<add_item> interface.
 
 Always returns the string C<< "<ARRAY>" >>.
 
-=item $bool = $arr->verify($got)
+=item $bool = $arr->verify(got => $got, exists => $bool)
 
 Check if C<$got> is an array reference or not.
 
@@ -252,7 +244,7 @@ Add a filter sub. The filter recieves all remaining values of the array being
 checked, and should return the values that should still be checked. The filter
 will be run between the last item added and the next item added.
 
-=item @detlas = $arr->deltas($got, \&convert, \%seen)
+=item @deltas = $arr->deltas(got => $got, convert => \&convert, seen => \%seen)
 
 Find the differences between the expected array values and those in the C<$got>
 arrayref.

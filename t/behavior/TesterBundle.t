@@ -3,7 +3,7 @@ use warnings;
 
 use Test::Stream qw/-V1 -Tester/;
 
-imported qw{
+imported_ok qw{
     grab intercept
     event
     call field prop

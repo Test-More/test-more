@@ -6,7 +6,7 @@ use Carp qw/confess croak/;
 use Scalar::Util qw/reftype blessed/;
 
 use Test::Stream::Capabilities qw/CAN_FORK/;
-use Test::Stream::Util qw/get_tid USE_THREADS/;
+use Test::Stream::Util qw/get_tid USE_THREADS pkg_to_file/;
 
 use Test::Stream::DebugInfo;
 use Test::Stream::Stack;
@@ -17,14 +17,16 @@ use Test::Stream::Stack;
 # I know this may seem awful, but thats why this package is so small, this is
 # the only place I need to lock down. This is to prevent people from doing some
 # of the awful things they did with Test::Builder.
-my $PID     = $$;
-my $TID     = get_tid();
-my $NO_WAIT = 0;
-my $INIT    = undef;
-my $IPC     = undef;
-my $STACK   = undef;
-my $FORMAT  = undef;
-my @HOOKS   = ();
+my $PID       = $$;
+my $TID       = get_tid();
+my $NO_WAIT   = 0;
+my $INIT      = undef;
+my $IPC       = undef;
+my $STACK     = undef;
+my $FORMAT    = undef;
+my @HOOKS     = ();
+my $LOADED    = 0;
+my @POST_LOAD = ();
 
 # The only valid reason to touch these internals is to test them. As such the
 # internals can be exposed if the package is loaded from itself, and even then
@@ -37,27 +39,31 @@ my @HOOKS   = ();
 
         *GUTS = sub {
             return {
-                PID     => \$PID,
-                TID     => \$TID,
-                NO_WAIT => \$NO_WAIT,
-                INIT    => \$INIT,
-                IPC     => \$IPC,
-                STACK   => \$STACK,
-                FORMAT  => \$FORMAT,
-                HOOKS   => \@HOOKS,
+                PID       => \$PID,
+                TID       => \$TID,
+                NO_WAIT   => \$NO_WAIT,
+                INIT      => \$INIT,
+                IPC       => \$IPC,
+                STACK     => \$STACK,
+                FORMAT    => \$FORMAT,
+                HOOKS     => \@HOOKS,
+                LOADED    => \$LOADED,
+                POST_LOAD => \@POST_LOAD,
             };
         };
-    
+
         *GUTS_SNAPSHOT = sub {
-             return {
-                PID     => $PID,
-                TID     => $TID,
-                NO_WAIT => $NO_WAIT,
-                INIT    => $INIT,
-                IPC     => $IPC,
-                STACK   => $STACK,
-                FORMAT  => $FORMAT,
-                HOOKS   => [@HOOKS],
+            return {
+                PID       => $PID,
+                TID       => $TID,
+                NO_WAIT   => $NO_WAIT,
+                INIT      => $INIT,
+                IPC       => $IPC,
+                STACK     => $STACK,
+                FORMAT    => $FORMAT,
+                HOOKS     => [@HOOKS],
+                LOADED    => $LOADED,
+                POST_LOAD => [@POST_LOAD],
             };
         };
     }
@@ -66,17 +72,59 @@ my @HOOKS   = ();
 sub pid { $PID }
 sub tid { $TID }
 
-sub hooks { scalar @HOOKS }
+sub hooks      { scalar @HOOKS }
+sub post_loads { scalar @POST_LOAD }
 
 sub init_done { $INIT ? 1 : 0 }
+
+sub post_load {
+    my $class = shift;
+    my ($code) = @_;
+    return $code->() if $LOADED;
+    push @POST_LOAD => $code;
+}
+
+sub loaded {
+    my $class = shift;
+
+    return $LOADED if $LOADED || !@_;
+
+    if ($_[0]) {
+        $LOADED = 1;
+        $_->() for @POST_LOAD;
+    }
+
+    return $LOADED
+}
 
 sub _init {
     $INIT  = [caller(1)];
     $STACK = Test::Stream::Stack->new;
 
     unless ($FORMAT) {
-        require Test::Stream::TAP;
-        $FORMAT = 'Test::Stream::TAP';
+        my ($name, $source);
+        if ($ENV{TS_FORMATTER}) {
+            $name = $ENV{TS_FORMATTER};
+            $source = "set by the 'TS_FORMATTER' environment variable";
+        }
+        else {
+            $name = 'TAP';
+            $source = 'default formatter';
+        }
+
+        my $mod = $name;
+        $mod = "Test::Stream::Formatter::$mod"
+            unless $mod =~ s/^\+//;
+
+        my $file = pkg_to_file($mod);
+        unless (eval { require $file; 1 }) {
+            my $err = $@;
+            my $line = "* COULD NOT LOAD FORMATTER '$name' ($source) *";
+            my $border = '*' x length($line);
+            die "\n\n  $border\n  $line\n  $border\n\n$err";
+        }
+
+        $FORMAT = $mod;
     }
 
     return unless $INC{'Test/Stream/IPC.pm'};
@@ -274,11 +322,25 @@ been initialized it will be initialized now.
 
 =item $formatter = Test::Stream::Sync->formatter
 
-This will return the global formatter class. This is not an instance.
+This will return the global formatter class. This is not an instance. By
+default the formatter is set to L<Test::Stream::Formatter::TAP>.
+
+You can override this default using the C<TS_FORMATTER> environment variable.
+
+Normally 'Test::Stream::Formatter::' is prefixed to the value in the
+environment variable:
+
+    $ TS_FORMATTER='TAP' perl test.t     # Use the Test::Stream::Formatter::TAP formatter
+    $ TS_FORMATTER='Foo' perl test.t     # Use the Test::Stream::Formatter::Foo formatter
+
+If you want to specify a full module name you use the '+' prefix:
+
+    $ TS_FORMATTER='+Foo::Bar' perl test.t     # Use the Foo::Bar formatter
 
 =item Test::Stream::Sync->set_formatter($class)
 
-Set the global formatter class. This can only be set once.
+Set the global formatter class. This can only be set once. B<Note:> This will
+override anything specified in the 'TS_FORMATTER' environment variable.
 
 =item $bool = Test::Stream::Sync->no_wait
 
@@ -307,6 +369,23 @@ C<$exit> argument will be the original exit code before anything modified it.
 C<$$new_exit> is a reference to the new exit code. You may modify this to
 change the exit code. Please note that C<$$new_exit> may already be different
 from C<$exit>
+
+=item Test::Stream::Sync->post_load(sub { ... })
+
+Add a callback that will be called when Test::Stream is finished loading. This
+means the callback will be run when Test::Stream is done loading all the
+plugins in your use statement. If Test::Stream has already finished loading
+then the callback will be run immedietly.
+
+=item $bool = Test::Stream::Sync->loaded
+
+=item Test::Stream::Sync->loaded($true)
+
+Without arguments this will simply return the boolean value of the loaded flag.
+If Test::Stream has finished loading this will be true, otherwise false. If a
+true value is provided as an argument then this will set the flag to true, and
+run all C<post_load> callbacks. The second form should B<ONLY> ever be used in
+L<Test::Stream> or alternative loader modules.
 
 =back
 

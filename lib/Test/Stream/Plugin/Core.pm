@@ -2,14 +2,14 @@ package Test::Stream::Plugin::Core;
 use strict;
 use warnings;
 
-use Scalar::Util qw/reftype/;
+use Scalar::Util qw/reftype refaddr/;
 use Carp qw/croak confess/;
 
 use Test::Stream::Sync;
 
 use Test::Stream::Context qw/context/;
 use Test::Stream::Util qw{
-    try
+    protect
     get_stash
     parse_symbol
 };
@@ -22,8 +22,8 @@ default_exports qw{
     BAIL_OUT
     todo skip
     can_ok isa_ok DOES_ok ref_ok
-    imported not_imported
-    same_ref diff_ref
+    imported_ok not_imported_ok
+    ref_is ref_is_not
     set_encoding
 };
 no Test::Stream::Exporter;
@@ -38,16 +38,6 @@ sub set_encoding {
     }
 
     $format->encoding($enc);
-}
-
-sub stringify {
-    my $val = shift;
-    return 'undef'    unless defined $val;
-    return "'$val'"   unless $val =~ m/"/;
-    return qq{"$val"} unless $val =~ m/'/;
-
-    $val =~ s/'/\\'/g;
-    return "'$val'";
 }
 
 sub pass {
@@ -74,7 +64,7 @@ sub ok($;$@) {
     return $bool ? 1 : 0;
 }
 
-sub same_ref($$;$@) {
+sub ref_is($$;$@) {
     my ($got, $exp, $name, @diag) = @_;
     my $ctx = context();
 
@@ -89,7 +79,8 @@ sub same_ref($$;$@) {
         $ctx->ok(0, $name, ["Second argument '$exp' is not a reference", @diag]);
     }
     else {
-        $bool = $got == $exp;
+        # Don't let overloading mess with us.
+        $bool = refaddr($got) == refaddr($exp);
         $ctx->ok($bool, $name, ["'$got' is not the same reference as '$exp'", @diag]);
     }
 
@@ -97,7 +88,7 @@ sub same_ref($$;$@) {
     return $bool ? 1 : 0;
 }
 
-sub diff_ref($$;$) {
+sub ref_is_not($$;$) {
     my ($got, $exp, $name, @diag) = @_;
     my $ctx = context();
 
@@ -112,7 +103,8 @@ sub diff_ref($$;$) {
         $ctx->ok(0, $name, ["Second argument '$exp' is not a reference", @diag]);
     }
     else {
-        $bool = $got != $exp;
+        # Don't let overloading mess with us.
+        $bool = refaddr($got) != refaddr($exp);
         $ctx->ok($bool, $name, ["'$got' is the same reference as '$exp'", @diag]);
     }
 
@@ -195,19 +187,14 @@ BEGIN {
             my ($thing, @items) = @_;
             my $ctx = context();
 
+            my $file = $ctx->debug->file;
+            my $line = $ctx->debug->line;
+
             my @bad;
             for my $item (@items) {
                 my $bool;
-                my $line = __LINE__ + 1;
-                my ($ok, $err) = try { $bool = $thing->$op($item) };
+                protect { eval qq/#line $line "$file"\n\$bool = \$thing->$op(\$item); 1/ || die $@ };
                 next if $bool;
-
-                if ($err) {
-                    my $file = __FILE__;
-                    chomp($err);
-                    $err =~ s/ at \Q$file\E line $line.*$//;
-                    $ctx->debug->throw($err);
-                }
 
                 push @bad => $item;
             }
@@ -269,7 +256,7 @@ sub _imported {
     return @missing;
 }
 
-sub imported {
+sub imported_ok {
     my $caller = caller;
 
     my $ctx = context();
@@ -283,7 +270,7 @@ sub imported {
     return !@missing;
 }
 
-sub not_imported {
+sub not_imported_ok {
     my $caller = caller;
 
     my $ctx = context();
@@ -340,7 +327,13 @@ in existing test files, you may have to update some function calls.
 
     use Test::Stream qw/Core/;
 
+    set_encoding('utf8');
+
     plan($num); # Optional, set a plan
+
+    use Data::Dumper;
+    imported_ok qw/Dumper/;
+    not_imported_ok qw/dumper/;
 
     # skip all tests in some condition
     skip_all("do not run") if $cond;
@@ -371,22 +364,7 @@ in existing test files, you may have to update some function calls.
 
 =head1 EXPORTS
 
-All subs are exported by default B<except> C<context()>. You can use '-all' to
-import all subs, or you can use '-default' and specify 'context'.
-
-    use Test::Stream::Plugin::Core '-all';
-
-or
-
-    use Test::Stream::Plugin::Core '-default', 'context';
-
-You can also rename any sub on import:
-
-    use Test::Stream::Plugin::Core '-default', is => {-as => 'compare'};
-
-You can also load it when loading Test::Stream:
-
-    use Test::Stream qw/Core/;
+All subs are exported by default.
 
 =head2 ASSERTIONS
 
@@ -417,6 +395,16 @@ Fire off a passing test (a single Ok event). The name is optional
 
 Fire off a failing test (a single Ok event). The name and diagnostics are optional.
 
+=item imported_ok(@SUB_NAMES)
+
+Check that the specified subs have been defined in the current namespace. This
+will NOT find inherited subs, the subs must be in the current namespace.
+
+=item not_imported_ok(@SUB_NAMES)
+
+Check that the specified subs have NOT been defined in the current namespace.
+This will NOT find inherited subs, the subs must be in the current namespace.
+
 =item can_ok($thing, @methods)
 
 This checks that C<$thing> (either a class name, or a blessed instance) has the
@@ -440,6 +428,14 @@ the specified roles.
 
 This checks that C<$thing> is a reference. If C<$type> is specified then it
 will check that C<$thing> is that type of reference.
+
+=item ref_is($ref1, $ref2, $name)
+
+Verify that 2 references are the exact same reference.
+
+=item ref_is_not($ref1, $ref2, $name)
+
+Verify that 2 references are not the exact same reference.
 
 =back
 
@@ -551,8 +547,12 @@ many results.
         ok(!system('sudo rm -rf /'), "Wipe drive");
     }
 
-=back
+=item set_encoding($encoding)
 
+This will set the encoding to whatever you specify. This will only effect the
+output of the current formatter, which is usually your TAP output formatter.
+
+=back
 
 =head1 SEE ALSO
 

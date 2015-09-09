@@ -1,4 +1,4 @@
-package Test::Stream::TAP;
+package Test::Stream::Formatter::TAP;
 use strict;
 use warnings;
 
@@ -109,7 +109,7 @@ __END__
 
 =head1 NAME
 
-Test::Stream::TAP - Standard TAP formatter
+Test::Stream::Formatter::TAP - Standard TAP formatter
 
 =head1 EXPERIMENTAL CODE WARNING
 
@@ -129,8 +129,8 @@ This is what takes events and turns them into TAP.
 
 =head1 SYNOPSIS
 
-    use Test::Stream::TAP;
-    my $tap = Test::Stream::TAP->new();
+    use Test::Stream::Formatter::TAP;
+    my $tap = Test::Stream::Formatter::TAP->new();
 
     # Switch to utf8
     $tap->encoding('utf8');

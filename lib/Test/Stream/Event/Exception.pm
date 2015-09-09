@@ -2,7 +2,7 @@ package Test::Stream::Event::Exception;
 use strict;
 use warnings;
 
-use Test::Stream::TAP qw/OUT_ERR/;
+use Test::Stream::Formatter::TAP qw/OUT_ERR/;
 
 use Test::Stream::Event(
     accessors => [qw/error/],

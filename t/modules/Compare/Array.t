@@ -48,13 +48,13 @@ tests construction => sub {
 tests verify => sub {
     my $one = $CLASS->new;
 
-    is($one->verify(), 0, "did not get an array");
-    is($one->verify(undef), 0, "undef is not an array");
-    is($one->verify(0), 0, "0 is not an array");
-    is($one->verify(1), 0, "1 is not an array");
-    is($one->verify('string'), 0, "'string' is not an array");
-    is($one->verify({}), 0, "a hash is not an array");
-    is($one->verify([]), 1, "an array is an array");
+    is($one->verify(exists => 0), 0, "did not get anything");
+    is($one->verify(exists => 1, got => undef), 0, "undef is not an array");
+    is($one->verify(exists => 1, got => 0), 0, "0 is not an array");
+    is($one->verify(exists => 1, got => 1), 0, "1 is not an array");
+    is($one->verify(exists => 1, got => 'string'), 0, "'string' is not an array");
+    is($one->verify(exists => 1, got => {}), 0, "a hash is not an array");
+    is($one->verify(exists => 1, got => []), 1, "an array is an array");
 };
 
 tests top_index => sub {
@@ -139,23 +139,19 @@ tests add_filter => sub {
 tests deltas => sub {
     my $conv = Test::Stream::Plugin::Compare->can('strict_convert');
 
+    my %params = (exists => 1, convert => $conv, seen => {});
+
     my $inref = ['a', 'b'];
     my $one = $CLASS->new(inref => $inref);
 
-    is(
-        [$one->deltas($inref, sub { die "xxx" }, 'seen')],
-        [],
-        "Same ref as inref"
-    );
-
     like(
-        [$one->deltas(['a', 'b'], $conv, {})],
+        [$one->deltas(%params, got => ['a', 'b'])],
         [],
         "No delta, no diff"
     );
 
     like(
-        [$one->deltas(['a'], $conv, {})],
+        [$one->deltas(%params, got => ['a'])],
         [
             {
                 dne => 'got',
@@ -167,7 +163,7 @@ tests deltas => sub {
     );
 
     like(
-        [$one->deltas(['a', 'a'], $conv, {})],
+        [$one->deltas(%params, got => ['a', 'a'])],
         [
             {
                 dne => DNE,
@@ -180,14 +176,14 @@ tests deltas => sub {
     );
 
     like(
-        [$one->deltas(['a', 'b', 'a', 'a'], $conv, {})],
+        [$one->deltas(%params, got => ['a', 'b', 'a', 'a'])],
         [],
         "No delta, not checking ending"
     );
 
     $one->set_ending(1);
     like(
-        [$one->deltas(['a', 'b', 'a', 'x'], $conv, {})],
+        [$one->deltas(%params, got => ['a', 'b', 'a', 'x'])],
         array {
             item 0 => {
                 dne   => 'check',
@@ -216,13 +212,13 @@ tests deltas => sub {
     $one->add_item('b');
 
     is(
-        [$one->deltas(['a', 1, 2, 'b'], $conv, {})],
+        [$one->deltas(%params, got => ['a', 1, 2, 'b'])],
         [],
         "Filter worked"
     );
 
     like(
-        [$one->deltas(['a', 1, 2, 'a'], $conv, {})],
+        [$one->deltas(%params, got => ['a', 1, 2, 'a'])],
         [
             {
                 dne => DNE,

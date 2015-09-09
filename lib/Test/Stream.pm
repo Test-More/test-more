@@ -90,14 +90,6 @@ sub load {
 
         # Load the plugin
         $arg = 'Test::Stream::Plugin::' . $arg unless $full;
-        my $file = pkg_to_file($arg);
-        unless (eval { require $file; 1 }) {
-            my $error = $@ || 'unknown error';
-            my $file = __FILE__;
-            my $line = __LINE__ - 3;
-            $error =~ s/ at \Q$file\E line $line.*//;
-            croak "Could not load Test::Stream plugin '$arg': $error";
-        }
 
         # Get the value
         my $val;
@@ -131,6 +123,15 @@ sub load {
         my $import = $args{$arg};
         my $mod  = $arg;
 
+        my $file = pkg_to_file($mod);
+        unless (eval { require $file; 1 }) {
+            my $error = $@ || 'unknown error';
+            my $file = __FILE__;
+            my $line = __LINE__ - 3;
+            $error =~ s/ at \Q$file\E line $line.*//;
+            croak "Could not load Test::Stream plugin '$arg': $error";
+        }
+
         if ($mod->can('load_ts_plugin')) {
             $mod->load_ts_plugin($caller, @$import);
         }
@@ -141,6 +142,8 @@ sub load {
             croak "Module '$mod' does it implement 'load_ts_plugin()', nor does it export using Test::Stream::Exporter."
         }
     }
+
+    Test::Stream::Sync->loaded(1);
 }
 
 1;
@@ -319,6 +322,8 @@ the blacklist items.
 This will load the plugin with all options. The '*' gets turned into
 C<['-all']> for you.
 
+=back
+
 =head2 SEE ALSO
 
 For more about plugins and bundles see the following docs:
@@ -348,6 +353,74 @@ L<Test::Stream> does not recreate this wild west approach to testing tools and
 bundles. L<Test::Stream> recognises the benefits of bundles, but provides a
 much more sane approach. Bundles and Tools are kept seperate, this way you can
 always use tools without being forced to adopt the authors ideal bundle.
+
+=head1 ENVIRONMENT VARIABLES
+
+This is a list of environment variables Test::Stream looks at:
+
+=over 4
+
+=item TS_FORMATTER="Foo"
+
+=item TS_FORMATTER="+Foo::Bar"
+
+This can be used to set the output formatter. By default
+L<Test::Stream::Formatter::TAP> is used.
+
+Normally 'Test::Stream::Formatter::' is prefixed to the value in the
+environment variable:
+
+    $ TS_FORMATTER='TAP' perl test.t     # Use the Test::Stream::Formatter::TAP formatter
+    $ TS_FORMATTER='Foo' perl test.t     # Use the Test::Stream::Formatter::Foo formatter
+
+If you want to specify a full module name you use the '+' prefix:
+
+    $ TS_FORMATTER='+Foo::Bar' perl test.t     # Use the Foo::Bar formatter
+
+=item TS_KEEP_TEMPDIR=1
+
+Some IPC drivers make use of temporary directories, this variable will tell
+Test::Stream to keep the directory when the tests are complete.
+
+=item TS_LB_PATH="./:./lib/:..."
+
+This allows you to provide paths where Test::Stream will search for project
+specific bundles. These paths are NOT added to C<@INC>.
+
+=item TS_MAX_DELTA=25
+
+This is used by the L<Test::Stream::Plugin::Compare> plugin. This specifies the
+max number of differences to show when data structures do not match.
+
+=item TS_TERM_SIZE=80
+
+This is used to set the width of the terminal. This is used when building
+tables of diagnostics. The default is 80, unless L<Term::ReadKey> is installed
+in which case the value is determined dynamically.
+
+=item TS_WORKFLOW=42
+
+=item TS_WORKFLOW="foo"
+
+This is used by the L<Test::Stream::Plugin::Spec> plugin to specify which test
+block should be run, only the specified block will be run.
+
+=item TS_RAND_SEED=44523
+
+This only works when used with the L<Test::Stream::Plugin::SRand> plugin. This
+lets you specify the random seed to use.
+
+=item HARNESS_ACTIVE
+
+This is typically set by L<TAP::Harness> and other harnesses. You should not
+need to set this yourself.
+
+=item HARNESS_IS_VERBOSE
+
+This is typically set by L<TAP::Harness> and other harnesses. You should not
+need to set this yourself.
+
+=back
 
 =head1 SOURCE
 

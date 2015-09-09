@@ -2,7 +2,7 @@ use Test::Stream -V1;
 
 use Test::Stream::Event::Bail;
 
-use Test::Stream::TAP qw/OUT_STD/;
+use Test::Stream::Formatter::TAP qw/OUT_STD/;
 
 my $bail = Test::Stream::Event::Bail->new(
     debug => 'fake',

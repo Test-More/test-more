@@ -418,7 +418,7 @@ an END block.
 
 =head2 SETTING THE FORMATTER
 
-By default an instance of L<Test::Stream::TAP> is created and used.
+By default an instance of L<Test::Stream::Formatter::TAP> is created and used.
 
     my $old = $hub->format(My::Formatter->new);
 

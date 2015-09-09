@@ -16,9 +16,9 @@ is(
     "Got default driver"
 );
 
-not_imported('cull');
+not_imported_ok('cull');
 load_plugin IPC => [qw/-cull/];
-imported('cull');
+imported_ok('cull');
 
 ok(!Test::Stream::IPC->polling_enabled, "polling not enabled");
 load_plugin IPC => [qw/-poll/];

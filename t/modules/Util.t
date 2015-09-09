@@ -5,7 +5,7 @@ use Test::Stream -V1;
 
 use Test::Stream::Util '-all';
 
-imported qw{
+imported_ok qw{
     try protect pkg_to_file
 
     get_tid USE_THREADS

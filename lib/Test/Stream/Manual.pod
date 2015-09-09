@@ -14,8 +14,6 @@ Test::Stream::Manual - Manual for Test::Stream
 
 This is a big TODO right now
 
-=back
-
 =head1 SOURCE
 
 The source code repository for Test::Stream can be found at

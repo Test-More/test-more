@@ -143,9 +143,9 @@ can_ok('Temp7', 'x');
     package Temp8;
     use Test::Stream -V1;
     use Test::Stream::Exporter;
-    BEGIN { imported('export') };
+    BEGIN { imported_ok('export') };
     no Test::Stream::Exporter qw/export/;
-    BEGIN { not_imported('export') };
+    BEGIN { not_imported_ok('export') };
 }
 
 done_testing;

@@ -5,7 +5,7 @@ use warnings;
 use Scalar::Util qw/blessed/;
 use Carp qw/confess/;
 
-use Test::Stream::TAP qw/OUT_STD OUT_TODO OUT_ERR/;
+use Test::Stream::Formatter::TAP qw/OUT_STD OUT_TODO OUT_ERR/;
 
 use Test::Stream::Event::Diag;
 
@@ -201,7 +201,7 @@ This generates the default diagnostics string:
 Generate the tap stream for this object. C<@sets> containes 1 or more arrayrefs
 that identify the IO handle to use, and the string that should be sent to it.
 
-IO Handle identifiers are set to the value of the L<Test::Stream::TAP> C<OUT_*>
+IO Handle identifiers are set to the value of the L<Test::Stream::Formatter::TAP> C<OUT_*>
 constants.
 
 Example:

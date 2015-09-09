@@ -11,5 +11,3 @@ unless ($pid) {
 }
 
 ok(1, "Inside parent process ($$)");
-
-# Test auto-wait behavior

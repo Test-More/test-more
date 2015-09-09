@@ -1,6 +1,6 @@
 use Test::Stream -V1;
 
-use Test::Stream::TAP qw/OUT_STD OUT_ERR/;
+use Test::Stream::Formatter::TAP qw/OUT_STD OUT_ERR/;
 use Test::Stream::Event::Subtest;
 my $st = 'Test::Stream::Event::Subtest';
 

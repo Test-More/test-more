@@ -9,12 +9,12 @@ is(
     "All plugins listed"
 );
 
-imported qw/
+imported_ok qw/
     intercept grab
     load_plugin
     context
     is like
-    match mismatch check
+    match mismatch validator
     hash array object meta
     item field call prop
     end filter_items

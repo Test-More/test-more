@@ -2,11 +2,11 @@ use Test::Stream -V1, Spec, Class => ['Test::Stream::Compare'];
 
 tests exporter => sub {
     Test::Stream::Compare->import(qw/compare get_build push_build pop_build build/);
-    imported(qw/compare get_build push_build pop_build build/);
+    imported_ok(qw/compare get_build push_build pop_build build/);
 
     my $check = mock {} => (
         add => [
-            run => sub { return [@_] },
+            run => sub { my $self = shift; return {@_, self => $self} },
         ],
     );
 
@@ -15,13 +15,13 @@ tests exporter => sub {
 
     like(
         $got,
-        [
-            { ran => 1 },
-            undef,
-            'foo',
-            sub { $_[0] == $convert },
-            {},
-        ],
+        {
+            self    => {ran => 1},
+            id      => undef,
+            got     => 'foo',
+            convert => sub  { $_ == $convert },
+            seen    => {},
+        },
         "check got expected args"
     );
 
@@ -59,7 +59,7 @@ tests exporter => sub {
     is($build->lines, [__LINE__ - 3, __LINE__ - 1], "got lines");
     is($build->file, __FILE__, "got file");
 
-    same_ref($inner, $build, "Build was set inside block");
+    ref_is($inner, $build, "Build was set inside block");
 
     like(
         dies { my $x = build('Test::Stream::Compare::Array', sub { die 'xxx' }) },
@@ -89,23 +89,23 @@ tests object_base => sub {
     like(dies { $one->verify }, qr/unimplemented/, "unimplemented");
     like(dies { $one->name },   qr/unimplemented/, "unimplemented");
 
-    my $mock = mock $CLASS => (
+    mock $CLASS => (
         override => [
             name => sub { 'bob' },
-            verify => sub { $_[-1] eq 'xxx' },
+            verify => sub { shift; my %p = @_; $p{got} eq 'xxx' },
         ],
     );
 
     is($one->render, 'bob', "got name");
 
     is(
-        [$one->run('xxx', 'xxx', sub { $_[-1] }, {})],
+        [$one->run(id => 'xxx', got => 'xxx', convert => sub { $_[-1] }, seen => {})],
         [],
         "Valid"
     );
 
     is(
-        [$one->run([META => 'xxx'], 'xxy', sub { $_[-1] }, {})],
+        [$one->run(id => [META => 'xxx'], got => 'xxy', convert => sub { $_[-1] }, seen => {})],
         [
             {
                 verified => '',
@@ -116,12 +116,6 @@ tests object_base => sub {
             }
         ],
         "invalid"
-    );
-
-    is(
-        [$one->run('xxx', 'xxy', sub { $_[-1] }, {xxy => 1})],
-        [],
-        "Break cycles"
     );
 };
 

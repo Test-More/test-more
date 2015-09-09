@@ -4,10 +4,10 @@ use warnings;
 use Test::Stream qw/Core Compare/;
 use PerlIO;
 
-use Test::Stream::TAP;
+use Test::Stream::Formatter::TAP;
 
-ok(my $one = Test::Stream::TAP->new, "Created a new instance");
-isa_ok($one, 'Test::Stream::TAP');
+ok(my $one = Test::Stream::Formatter::TAP->new, "Created a new instance");
+isa_ok($one, 'Test::Stream::Formatter::TAP');
 my $handles = $one->handles;
 is(@$handles, 3, "Got 3 handles");
 is($handles->[0], $handles->[2], "First and last handles are the same");
@@ -22,7 +22,7 @@ is(@$handles, 3, "Got 3 handles");
 $layers = { map {$_ => 1} PerlIO::get_layers($handles->[0]) };
 ok($layers->{utf8}, "Now utf8");
 
-my $two = Test::Stream::TAP->new(encoding => 'utf8');
+my $two = Test::Stream::Formatter::TAP->new(encoding => 'utf8');
 $handles = $two->handles;
 is(@$handles, 3, "Got 3 handles");
 $layers = { map {$_ => 1} PerlIO::get_layers($handles->[0]) };
@@ -31,7 +31,7 @@ ok($layers->{utf8}, "Now utf8");
 
 {
     package My::Event;
-    use Test::Stream::TAP qw/OUT_STD OUT_ERR/;
+    use Test::Stream::Formatter::TAP qw/OUT_STD OUT_ERR/;
 
     use Test::Stream::Event(
         accessors => [qw/pass name diag note/],
@@ -52,7 +52,7 @@ my ($std, $err);
 open( my $stdh, '>', \$std ) || die "Ooops";
 open( my $errh, '>', \$err ) || die "Ooops";
 
-my $it = Test::Stream::TAP->new(
+my $it = Test::Stream::Formatter::TAP->new(
     handles => [$stdh, $errh, $stdh],
 );
 
@@ -99,7 +99,7 @@ close($errh);
 open( $stdh, '>', \$std ) || die "Ooops";
 open( $errh, '>', \$err ) || die "Ooops";
 
-$it = Test::Stream::TAP->new(
+$it = Test::Stream::Formatter::TAP->new(
     handles    => [$stdh, $errh, $stdh],
     no_diag    => 1,
     no_header  => 1,

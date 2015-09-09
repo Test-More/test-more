@@ -11,8 +11,10 @@ no Test::Stream::Exporter;
 
 sub warning(&) {
     my $warnings = &warns(@_) || [];
-    croak "Got " . scalar(@$warnings) . " warnings, expected exactly 1"
-        if @$warnings != 1;
+    if (@$warnings != 1) {
+        warn $_ for @$warnings;
+        croak "Got " . scalar(@$warnings) . " warnings, expected exactly 1"
+    }
     return $warnings->[0];
 }
 

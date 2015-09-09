@@ -64,12 +64,15 @@ describe mocks => sub {
     tests mocked => sub {
         ok(!mocked('main'), "main class is not mocked");
         is(mocked($inst), 1, "Only 1 control object for this instance");
-        is([mocked($inst)], [$control], "got correct control when checking if an object was mocked");
+        my ($c) = mocked($inst);
+        ref_is($c, $control, "got correct control when checking if an object was mocked");
 
         my $control2 = mock_class($control->class);
 
         is(mocked($inst), 2, "now 2 control objects for this instance");
-        is([mocked($inst)], [$control, $control2], "got correct control when checking if an object was mocked");
+        my ($c1, $c2) = mocked($inst);
+        ref_is($c1, $control, "got first control");
+        ref_is($c2, $control2, "got second control");
     };
 
     tests build_and_do => sub {

@@ -1,18 +1,44 @@
-package Test::Stream::Compare::DNE;
+package Test::Stream::Compare::Regex;
 use strict;
 use warnings;
 
 use Test::Stream::Compare;
 use Test::Stream::HashBase(
     base => 'Test::Stream::Compare',
+    accessors => [qw/input/],
 );
 
-sub name { "<DOES NOT EXIST>" }
-sub operator { '!exists' }
+use Test::Stream::Util qw/render_ref rtype/;
+use Scalar::Util qw/reftype refaddr/;
+use Carp qw/croak/;
+
+sub init {
+    my $self = shift;
+
+    croak "'input' is a required attribute"
+        unless $self->{+INPUT};
+
+    croak "'input' must be a regex , got '" . $self->{+INPUT} . "'"
+        unless rtype($self->{+INPUT}) eq 'REGEXP';
+}
+
+sub operator { 'eq' }
+
+sub name { "" . $_[0]->{+INPUT} };
 
 sub verify {
-    my $ctx = Test::Stream::Context::context;
-    $ctx->throw("DNE->verify() should never be called, was DNE used in a non-hash?");
+    my $self = shift;
+    my %params = @_;
+    my ($got, $exists) = @params{qw/got exists/};
+
+    return 0 unless $exists;
+
+    my $in = $self->{+INPUT};
+    my $got_type = rtype($got) or return 0;
+
+    return 0 unless $got_type eq 'REGEXP';
+
+    return "$in" eq "$got";
 }
 
 1;
@@ -25,7 +51,7 @@ __END__
 
 =head1 NAME
 
-Test::Stream::Compare::DNE - Check that a hash field does not exist.
+Test::Stream::Compare::Regex - Regex direct comparison
 
 =head1 EXPERIMENTAL CODE WARNING
 
@@ -41,19 +67,7 @@ experimental phase is over.
 
 =head1 DESCRIPTION
 
-This is a special case check for deep comparisons. This special case can be
-used to confirm a hash field does not even exist in a hash. This check will
-throw an exception if it is used for anything other than a hash field check.
-
-=head1 SYNOPSIS
-
-    my $dne = Test::Stream::Compare::DNE->new()
-
-    like(
-        { a => 1, b => 2,            d => 4 },
-        { a => 1, b => 2, c => $dne, d => 4 },
-        "Got expected hash, 'c' field does not exist"
-    );
+Used to compare 2 regexes. This compares the stringified form of each regex.
 
 =head1 SOURCE
 

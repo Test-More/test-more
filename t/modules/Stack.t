@@ -60,7 +60,7 @@ is(
 
 ok(my $top = $stack->top, "Generated a top hub");
 is($top->ipc, Test::Stream::Sync->ipc, "Used sync's ipc");
-isa_ok($top->format, 'Test::Stream::TAP');
+isa_ok($top->format, 'Test::Stream::Formatter::TAP');
 
 is($stack->top, $stack->top, "do not generate a new top if there is already a top");
 

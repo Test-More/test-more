@@ -11,7 +11,7 @@ is(
     object {
         prop 'blessed' => 'Test::Stream::Hub::Interceptor::Terminator';
         prop 'reftype' => 'SCALAR';
-        prop 'this' => '55';
+        prop 'this' => \'55';
     },
     "terminate throws an exception"
 );

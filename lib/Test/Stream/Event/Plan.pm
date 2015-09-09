@@ -6,7 +6,7 @@ use Test::Stream::Event(
     accessors  => [qw/max directive reason/],
 );
 
-use Test::Stream::TAP qw/OUT_STD/;
+use Test::Stream::Formatter::TAP qw/OUT_STD/;
 use Carp qw/confess/;
 
 my %ALLOWED = (
@@ -30,6 +30,9 @@ sub init {
 
         confess "No number of tests specified"
             unless defined $_[0]->{+MAX};
+
+        confess "Plan test count '" . $_[0]->{+MAX}  . "' does not appear to be a valid positive integer"
+            unless $_[0]->{+MAX} =~ m/^\d+$/;
 
         $_[0]->{+DIRECTIVE} = '';
     }

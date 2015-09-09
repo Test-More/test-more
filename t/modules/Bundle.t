@@ -9,7 +9,7 @@ BEGIN {
     our @CALLERS;
 
     sub plugins {
-        'Core' => ['ok', 'imported', 'not_imported'],
+        'Core' => ['ok', 'imported_ok', 'not_imported_ok'],
         sub { push @CALLERS => shift }
     };
 }
@@ -21,16 +21,16 @@ my @LINES;
     push @LINES => __LINE__ + 1;
     use Test::Stream '-FakeTestBundle';
 
-    imported('ok');
-    not_imported('done_testing');
+    imported_ok('ok');
+    not_imported_ok('done_testing');
 }
 
 {
     package Bar;
     push @LINES => __LINE__ + 1;
     use Test::Stream::Bundle::FakeTestBundle;
-    imported('ok');
-    not_imported('done_testing');
+    imported_ok('ok');
+    not_imported_ok('done_testing');
 }
 
 is(

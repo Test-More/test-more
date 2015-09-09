@@ -36,7 +36,7 @@ sub check_installed {
     return if eval { require $file; 1 };
     my $error = $@;
     return skip("Module '$mod' is not installed")
-        if $error =~ m/Can't locate/;
+        if $error =~ m/Can't locate \Q$file\E in \@INC/;
 
     # Some other error, rethrow it.
     die $error;

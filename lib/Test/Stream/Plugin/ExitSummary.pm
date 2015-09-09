@@ -7,26 +7,26 @@ use Test::Stream::Plugin;
 my $ADDED_HOOK = 0;
 sub load_ts_plugin {
     require Test::Stream::Sync;
-    Test::Stream::Sync->add_hook(
-        sub {
-            my ($ctx, $real, $new) = @_;
+    Test::Stream::Sync->add_hook(\&summary) unless $ADDED_HOOK++;
+}
 
-            my $state  = $ctx->hub->state;
-            my $plan   = $state->plan;
-            my $count  = $state->count;
-            my $failed = $state->failed;
+sub summary {
+    my ($ctx, $real, $new) = @_;
 
-            $ctx->diag('No tests run!') if !$count && (!$plan || $plan ne 'SKIP');
-            $ctx->diag('Tests were run but no plan was declared and done_testing() was not seen.')
-                if $count && !$plan;
+    my $state  = $ctx->hub->state;
+    my $plan   = $state->plan;
+    my $count  = $state->count;
+    my $failed = $state->failed;
 
-            $ctx->diag("Looks like your test exited with $real after test #$count.")
-                if $real;
+    $ctx->diag('No tests run!') if !$count && (!$plan || $plan ne 'SKIP');
+    $ctx->diag('Tests were run but no plan was declared and done_testing() was not seen.')
+        if $count && !$plan;
 
-            $ctx->diag("Did not follow plan: expected $plan, ran $count.")
-                if $plan && $plan =~ m/^\d+$/ && defined $count && $count != $plan;
-        }
-    ) unless $ADDED_HOOK++;
+    $ctx->diag("Looks like your test exited with $real after test #$count.")
+        if $real;
+
+    $ctx->diag("Did not follow plan: expected $plan, ran $count.")
+        if $plan && $plan =~ m/^\d+$/ && defined $count && $count != $plan;
 }
 
 1;

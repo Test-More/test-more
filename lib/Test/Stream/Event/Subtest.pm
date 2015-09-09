@@ -5,7 +5,7 @@ use warnings;
 use Scalar::Util qw/blessed/;
 use Carp qw/confess/;
 
-use Test::Stream::TAP qw/OUT_STD/;
+use Test::Stream::Formatter::TAP qw/OUT_STD/;
 
 use Test::Stream::Event::Ok;
 use Test::Stream::Event(
