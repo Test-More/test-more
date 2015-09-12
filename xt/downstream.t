@@ -4,7 +4,7 @@ use warnings;
 
 BEGIN {
     unless ( $ENV{DOWNSTREAM_TESTS} ) {
-        print "1..0 # Skip many perls have broken threads.  Enable with AUTHOR_TESTING.\n";
+        print "1..0 # Skip many perls have broken threads.  Enable with DOWNSTREAM_TESTS.\n";
         exit 0;
     }
 }
