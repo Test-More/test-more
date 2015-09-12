@@ -20,6 +20,10 @@ sub import {
 
 __END__
 
+=pod
+
+=encoding utf8
+
 =head1 NAME
 
 ok - Alternative to Test::More::use_ok
