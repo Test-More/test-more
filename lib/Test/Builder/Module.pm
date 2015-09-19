@@ -22,7 +22,7 @@ Test::Builder::Module - Base class for test modules
 
   my $CLASS = __PACKAGE__;
 
-  use base 'Test::Builder::Module';
+  use parent 'Test::Builder::Module';
   @EXPORT = qw(ok);
 
   sub ok ($;$) {
