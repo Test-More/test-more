@@ -2,278 +2,289 @@ package Test::Stream::Workflow::Runner;
 use strict;
 use warnings;
 
-use Carp qw/confess cluck/;
-
-use Scalar::Util qw/reftype/;
-
-use Test::Stream::Plugin::Subtest qw/buffered/;
-
 use Test::Stream::Capabilities qw/CAN_FORK/;
 use Test::Stream::Util qw/try/;
 
-use Test::Stream::Workflow::Unit;
-use Test::Stream::HashBase;
-use Test::Stream::Context qw/context/;
+use Test::Stream::Workflow::Task;
+use Test::Stream::Sync;
+
+sub subtests { 1 }
+
+sub instance { shift }
 
 sub import {
     my $class  = shift;
     my $caller = caller;
 
     require Test::Stream::Workflow::Meta;
-    my $meta = Test::Stream::Workflow::Meta->get($class) || return;
-    $meta->set_runner($class->new(@_));
+    my $meta = Test::Stream::Workflow::Meta->get($caller) or return;
+    $meta->set_runner($class->instance(@_));
 }
 
 my %SUPPORTED = map {$_ => 1} qw/todo skip fork/;
 sub verify_meta {
     my $class = shift;
-    my ($ctx, $meta) = @_;
-    return unless $meta;
+    my ($unit) = @_;
+    my $meta = $unit->meta or return;
+    my $ctx = $unit->context;
     for my $k (keys %$meta) {
         next if $SUPPORTED{$k};
         $ctx->alert("'$k' is not a recognised meta-key");
     }
 }
 
-sub VARS { }
-
 sub run {
-    my $self = shift;
+    my $class = shift;
     my %params = @_;
-    my $unit = $params{unit};
-    my $clutch_ref = $params{clutch};
+    my $unit     = $params{unit};
+    my $args     = $params{args};
     my $no_final = $params{no_final};
 
-    my $ctx = $params{context} = $unit->context;
+    $class->verify_meta($unit);
 
-    # Skip?
-    if ($ctx->debug->skip) {
-        $ctx->ok(1, $unit->name);
-        return;
+    my $task = Test::Stream::Workflow::Task->new(
+        unit       => $unit,
+        args       => $args,
+        runner     => $class,
+        no_final   => $no_final,
+        no_subtest => !$class->subtests($unit),
+    );
+
+    my ($ok, $err) = try { $class->run_task($task) };
+    Test::Stream::Sync->stack->top->cull();
+
+    # Report exceptions
+    unless($ok) {
+        my $ctx = $unit->context;
+        $ctx->ok(0, $unit->name, ["Caught Exception: $err"]);
     }
 
-    if (my $only = $ENV{TS_WORKFLOW}) {
-        return unless $no_final || $unit->contains($only);
-    }
-
-    # Make sure we have something to do!
-    my $primary = $unit->primary;
-    return $ctx->ok(
-        0,
-        $unit->name,
-        ['No primary actions defined!']
-    ) unless $primary;
-
-    my $events = 0;
-    my $fail   = 0;
-
-    my $task = $self->build_task(%params);
-
-    my $l = $ctx->hub->listen(sub {
-        my ($hub, $e) = @_;
-        $events++;
-        return if $clutch_ref && $$clutch_ref;
-        $fail ||= $e->causes_fail;
-    });
-
-    my ($e, $err, $ok, @diag);
-    my $run = sub {
-        ($e, $err) = try {
-            ($ok, @diag) = $self->run_task(
-                context => $ctx,
-                task    => $task,
-                meta    => $unit->meta,
-                name    => $unit->name,
-                runner  => $self,
-            );
-        };
-    };
-
-    if ($unit->type eq 'group' || !$no_final) {
-        my $inner = $run;
-        $run = sub {
-            my $vars = {};
-            my $oldsub = __PACKAGE__->can('VARS');
-            no warnings 'redefine';
-            *VARS = sub { $vars };
-
-            $inner->();
-
-            no warnings 'redefine';
-            *VARS = $oldsub;
-            # In case something is holding a reference to vars itself.
-            %$vars = ();
-            $vars = undef;
-        };
-    }
-
-    $run->();
-
-    cull();
-
-    $ctx->hub->unlisten($l);
-
-    my $subtest = !($no_final || $params{no_subtest});
-
-    unless($events || $no_final) {
-        $fail ||= 1;
-        unshift @diag => "No events were run";
-    }
-
-    if (!$e) {
-        $ok = 0;
-        $params{context}->send_event('Exception', error => $err);
-    }
-
-    return if $subtest && $e; # Subtests handle their own ok's, unless there is an exception.
-    $ctx->ok($ok && !$fail, $unit->name, \@diag) if ($fail || !$ok) || !$no_final;
-}
-
-sub build_task {
-    my $self = shift;
-    my %params = @_;
-
-    my $unit = $params{unit};
-    my $args = $params{args};
-    my $subtest = !($params{no_final} || $params{no_subtest});
-
-    my $primary  = $unit->primary;
-    my $modify   = $unit->modify;
-    my $buildup  = $unit->buildup;
-    my $teardown = $unit->teardown;
-
-    my $stage = 0;
-    my $bidx  = 0;
-    my $tidx  = 0;
-    my $out   = 1;
-
-    my $task = sub {
-        my $recurse = shift;
-
-        my $ran = 0;
-        my $clutch = 0;
-        my $real_recurse = sub {
-            $ran++;
-            $clutch++;
-            my ($ok, $err) = &try($recurse);
-            $unit->context->send_event('Exception', error => $err) unless $ok;
-            $clutch--;
-        };
-
-        # Run buildups
-        while ($stage == 0 && $buildup && $bidx < @$buildup) {
-            my $bunit = $buildup->[$bidx++];
-            if ($bunit->wrap) {
-                $self->run(unit => $bunit, no_final => 1, clutch => \$clutch, args => [$real_recurse]);
-                unless ($ran) {
-                    $stage = 3;
-                    $out = 0;
-                    my $ctx = $bunit->context;
-                    $bunit->context->send_event(
-                        'Exception',
-                        error => "Inner sub was never called " . $ctx->debug->detail . "\n",
-                    );
-                    return $out;
-                }
-            }
-            else {
-                $self->run(unit => $bunit, no_final => 1, args => $args);
-            }
-        }
-
-        $stage = 1 if $stage == 0;
-
-        # run primaries (for each modifier)
-        if ($stage == 1) {
-            $stage = 2;
-
-            if ($modify) {
-                for my $mod (@$modify) {
-                    my $temp = Test::Stream::Workflow::Unit->new(
-                        %$mod,
-                        primary => sub {
-                            $mod->primary->(@$args);
-                            $self->run(unit => $_, args => $args) for @$primary;
-                        },
-                    );
-                    $self->run(unit => $temp, args => $args);
-                }
-            }
-            elsif(reftype($primary) eq 'ARRAY') {
-                $self->run(unit => $_, args => $args) for @$primary
-            }
-            else {
-                $primary->(@$args);
-            }
-        }
-
-        # Run teardowns
-        while($stage == 2 && $teardown && $tidx < @$teardown) {
-            my $tunit = $teardown->[$tidx++];
-            if ($tunit->wrap) {
-                # Popping a wrap
-                return $out;
-            }
-            $self->run(unit => $tunit, no_final => 1, args => $args);
-        }
-
-        $stage = 3;
-
-        return $out;
-    };
-
-    if ($subtest) {
-        my $ctx = $params{context};
-        my $inner = $task;
-        $task = sub { $ctx->do_in_context(\&subtest, $unit->name, $inner, $inner) };
-    }
-
-    return $task;
+    return;
 }
 
 sub run_task {
-    my $self = shift;
-    my %params = @_;
+    my $class = shift;
+    my ($task) = @_;
 
-    $self->verify_meta($params{context}, $params{meta});
-
-    return $self->fork_task(%params) if $params{meta}->{fork};
-    $params{task}->($params{task});
+    return $class->fork_task($task) if $task->unit->meta->{fork};
+    $task->run();
 }
 
 sub fork_task {
-    my $self = shift;
-    my %params = @_;
+    my $class = shift;
+    my ($task) = @_;
 
-    $params{context}->throw("Cannot fork for '$params{name}', system does not support forking")
+    my $unit = $task->unit;
+    my $name = $unit->name;
+    my $ctx  = $unit->context;
+
+    $ctx->throw("Cannot fork for '$name', system does not support forking")
         unless CAN_FORK;
 
     my $pid = fork;
-    $params{context}->throw("Fork failed for '$params{name}'")
+    $ctx->throw("Fork failed for '$name'")
         unless defined $pid;
 
     if ($pid) {
         waitpid($pid, 0);
         my $ecode = $? >> 8;
         return (0, "Child process ($pid) exited $ecode") if $ecode;
+        Test::Stream::Sync->stack->top->cull();
         return (1);
     }
 
     my ($ok, $err) = try {
-        $params{task}->($params{task});
-        cull();
+        $task->run();
+        Test::Stream::Sync->stack->top->cull();
         exit 0;
     };
 
-    cull();
-    $params{context}->send_event('Exception', error => $err);
+    Test::Stream::Sync->stack->top->cull();
+    $ctx->send_event('Exception', error => $err);
     exit 255;
 }
 
-sub cull {
-    my $ctx = context();
-    $ctx->hub->cull;
-    $ctx->release;
-}
-
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Test::Stream::Workflow::Runner - Simple runner for workflows.
+
+=head1 EXPERIMENTAL CODE WARNING
+
+B<This is an experimental release!> Test-Stream, and all its components are
+still in an experimental phase. This dist has been released to cpan in order to
+allow testers and early adopters the chance to write experimental new tools
+with it, or to add experimental support for it into old tools.
+
+B<PLEASE DO NOT COMPLETELY CONVERT OLD TOOLS YET>. This experimental release is
+very likely to see a lot of code churn. API's may break at any time.
+Test-Stream should NOT be depended on by any toolchain level tools until the
+experimental phase is over.
+
+=head1 DESCRIPTION
+
+This is a basic class for running workflows. This class is intended to be
+subclasses for more fancy/feature rich workflows.
+
+=head1 SYNOPSIS
+
+=head2 SUBCLASS
+
+    package My::Runner;
+    use strict;
+    use warnings;
+
+    use parent 'Test::Stream::Workflow::Runner';
+
+    sub instance {
+        my $class = shift;
+        return $class->new(@_);
+    }
+
+    sub subtest {
+        my $self = shift;
+        my ($unit) = @_;
+        ...
+        return $bool
+    }
+
+    sub verify_meta {
+        my $self = shift;
+        my ($unit) = @_;
+        my $meta = $unit->meta || return;
+        warn "the 'foo' meta attribute is not supported" if $meta->{foo};
+        ...
+    }
+
+    sub run_task {
+        my $self = shift;
+        my ($task) = @_;
+        ...
+        $task->run();
+        ...
+    }
+
+=head2 USE SUBCLASS
+
+    use Test::Stream qw/-V1 Spec/;
+
+    use My::Runner; # Sets the runner for the Spec plugin.
+
+    ...
+
+=head1 METHODS
+
+=head2 CLASS METHODS
+
+=over 4
+
+=item $class->import()
+
+=item $class->import(@instance_args)
+
+The import method checks the calling class to see if it has an
+L<Test::Stream::Workflow::Meta> instance, if it does then it sets the runner.
+The runner that is set is the result of calling
+C<< $class->instance(@instance_args) >>. The instance_args are optional.
+
+If there is no meta instance for the calling class then import is a no-op.
+
+=item $bool = $class->subtests($unit)
+
+This determines if the units should be run as subtest or flat. The base class
+always returns true for this. This is a hook that allows you to override the
+default behavior.
+
+=item $runner = $class->instance()
+
+=item $runner = $class->instance(@args)
+
+This is a hook allowing you to construct an instance of your runner. The base
+class simply returns the class name as it does not need to be instansiated. If
+your runner needs to maintain state then this can return a blessed instance.
+
+=back
+
+=head2 CLASS AND/OR OBJECT METHODS
+
+These are made to work on the class itself, but should also work just fine on a
+blessed instance if your subclass needs to be instantiated.
+
+=over 4
+
+=item $runner->verify_meta($unit)
+
+This method reads the C<< $unit->meta >> hash and warns about any unrecognised
+keys. Your subclass should override this if it wants to add support for any
+meta-keys.
+
+=item $runner->run(unit => $unit, args => $arg)
+
+=item $runner->run(unit => $unit, args => $arg, no_final => $bool)
+
+Tell the runner to run a unit with the specified args. The args are optional.
+The C<no_final> arg is optional, it should be used on support units that should
+not produce final results (or be a subtest of their own).
+
+=item $runner->run_task($task)
+
+The C<run()> method composes a unit into a C<Test::Stream::Workflow::Task>
+object. This object is then handed off to C<run_task()> to be run. At its
+simplest this method should run C<< $task->run() >>. The base class will simply
+run the task, unless the 'fork' meta attribute is set to true, in which case it
+delegates to C<fork_task()>.
+
+=item $runner->fork_task($task)
+
+This method will attempt to fork. In the parent process it will wait for the
+child to complete, then return. In the child process the task will be run, then
+the process will exit.
+
+This is a way to run a task in isolation ensuring that no global state is
+modified for future tests. This implementation does not support any parallelism
+as the parent waits for the child to complete before it continues.
+
+This method will throw an exception if the current system does not support
+forking. It will throw a different exceptino if it attempts to fork and cannot
+for any reason.
+
+=back
+
+=head1 SOURCE
+
+The source code repository for Test::Stream can be found at
+F<http://github.com/Test-More/Test-Stream/>.
+
+=head1 MAINTAINERS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 AUTHORS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 COPYRIGHT
+
+Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http://www.perl.com/perl/misc/Artistic.html>
+
+=cut

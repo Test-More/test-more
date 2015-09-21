@@ -1,7 +1,6 @@
-use Test::Stream -V1, -Tester;
-use Test::Stream::Workflow::Unit;
+use Test::Stream -V1, -Tester, Class => ['Test::Stream::Workflow::Unit'];
 
-my $one = Test::Stream::Workflow::Unit->new(
+my $one = CLASS->new(
     name       => 'foo',
     package    => __PACKAGE__,
     file       => __FILE__,
@@ -9,7 +8,7 @@ my $one = Test::Stream::Workflow::Unit->new(
     end_line   => __LINE__,
     type       => 'group',
 );
-isa_ok($one, 'Test::Stream::Workflow::Unit');
+isa_ok($one, CLASS);
 
 can_ok($one, qw{
     do_post
@@ -29,7 +28,7 @@ for my $it (qw/post modify buildup primary teardown/) {
     is($one->$it, [$fake, $fake], "added a hash and pushed to it twice ($it)");
 }
 
-$one = Test::Stream::Workflow::Unit->new(
+$one = CLASS->new(
     name       => 'foo',
     package    => __PACKAGE__,
     file       => __FILE__,
@@ -43,7 +42,7 @@ ok(!@stuff, "no post yet");
 $one->do_post;
 is(\@stuff, [$one, 'post!'], "Post ran");
 
-my $unit = Test::Stream::Workflow::Unit->new(
+my $unit = CLASS->new(
     name       => 'my unit',
     package    => 'Some::Package',
     file       => 'Some/Package.t',
@@ -74,5 +73,64 @@ like(
     my $ctx = $unit->context;
     is($ctx->debug->skip, 'this is a skip', "skip is set");
 }
+
+like(
+    dies { CLASS->new() },
+    qr/name is a required attribute/,
+    "Need to specify some attrs"
+);
+
+$one = CLASS->new(
+    name       => 'foo',
+    package    => 'XXX',
+    file       => 'XXX.pm',
+    start_line => 20,
+    end_line   => 'EOF',
+    type       => 'group',
+);
+
+ok(!$one->contains(19), "does not have line 19");
+ok($one->contains(10000), "EOF");
+ok($one->contains(20), "does have line 20");
+ok($one->contains(40), "does have line 40");
+ok($one->contains(30), "does have line 30");
+
+ok($one->contains("XXX.pm 30"), "has line 30 of the file");
+ok(!$one->contains("XXY.pm 30"), "no line 30 of the file");
+
+ok($one->contains("foo"), "has the name");
+ok(!$one->contains("fob"), "does not have the name");
+ok(!$one->contains("bar"), "does not have the name");
+
+my $two = CLASS->new(
+    name       => 'bar',
+    package    => 'XXX',
+    file       => 'XXX.pm',
+    start_line => 20,
+    end_line   => 30,
+    type       => 'group',
+);
+ok(!$two->contains(41), "does not have line 41");
+ok($two->contains("bar"), "has the name");
+
+$one->add_primary($two);
+ok($one->contains("foo"), "has the name");
+ok($one->contains("bar"), "found child");
+
+
+$one->set_end_line(25);
+is($one->start_line, 20, "start line is 20");
+is($one->end_line, 25, "start line is 20");
+
+$two->set_start_line(5);
+$two->set_end_line(30);
+
+$one->adjust_lines;
+is($one->start_line, 4, "start line adjusted to be 1 before childs");
+is($one->end_line, 31, "end line adjusted to be 1 after childs");
+
+$two->set_end_line('EOF');
+$one->adjust_lines;
+is($one->end_line, 'EOF', "EOF works");
 
 done_testing;

@@ -210,6 +210,8 @@ C<tests()> and C<it()> are both aliases to the same function. The name
 C<tests()> is present as the authors preference. C<it()> is present to reflect
 the name used in RSPEC for the Ruby programming language.
 
+B<Note:> The subs get no arguments, and their return is ignored.
+
 =back
 
 =head2 TEST SETUP AND TEARDOWN
@@ -225,16 +227,29 @@ groups.
 Declare a setup that will run before each test block is run. B<Note:> This will
 run before any modifier.
 
+B<Note:> The subs get no arguments, and their return is ignored.
+
 =item after_each $name => sub { ... }
 
 Declare a teardown that will run after each test block.
+
+B<Note:> The subs get no arguments, and their return is ignored.
 
 =item around_each $name => sub { ... }
 
 Declare a setup+teardown that is wrapped around the test block. This is useful
 if you want to localize a variable, or something similar.
 
-    a
+    around_each foo => sub {
+        my $inner = shift;
+
+        local %ENV;
+
+        # You need to call the 'inner' sub.
+        $inner->();
+    };
+
+B<Note:> The subs get no arguments, and their return is ignored.
 
 =back
 
@@ -244,6 +259,11 @@ if you want to localize a variable, or something similar.
 
 =item case $name => sub { ... }
 
+You can specify any number of cases that should be used. All test blocks are
+run once per case. Cases are inherited by nested groups.
+
+B<Note:> The subs get no arguments, and their return is ignored.
+
 =back
 
 =head3 TEST MODIFIER SETUP AND TEARDOWN
@@ -252,19 +272,51 @@ if you want to localize a variable, or something similar.
 
 =item before_case $name => sub { ... }
 
+Code to be run just before a case is run.
+
+B<Note:> The subs get no arguments, and their return is ignored.
+
 =item after_case $name => sub { ... }
+
+Code to be run just after a case is run (but before the test block).
+
+B<Note:> The subs get no arguments, and their return is ignored.
 
 =item around_case $name => sub { ... }
 
+Code that wraps around the case.
+
+    around_case foo => sub {
+        my $inner = shift;
+
+        local %ENV;
+
+        # You need to call the 'inner' sub.
+        $inner->();
+    };
+
+B<Note:> The subs get no arguments, and their return is ignored.
+
 =back
 
-=head2 TEST GROUPERS
+=head2 TEST GROUPS
 
 =over 4
 
 =item describe $name => sub { ... }
 
 =item cases $name => sub { ... }
+
+C<describe()> and C<cases()> are both aliases to the same thing.
+
+These can be used to create groups of test block along with setup/teardown
+subs. The cases, setups, and teardowns will not effect test blocks outside the
+group. All cases, setups, and teardown will be inherited by any nested group.
+
+B<Note:> Group subs are run as they are encountered, unlike test blocks which
+are run at the very end of the test script.
+
+B<Note:> The subs get no arguments, and their return is ignored.
 
 =back
 
@@ -274,9 +326,70 @@ if you want to localize a variable, or something similar.
 
 =item before_all $name => sub { ... }
 
+Specify a setup that gets run once at the start of the test group.
+
+B<Note:> The subs get no arguments, and their return is ignored.
+
 =item after_all $name => sub { ... }
 
+Specify a teardown that gets run once at the end of the test group.
+
+B<Note:> The subs get no arguments, and their return is ignored.
+
 =item around_all $name => sub { ... }
+
+Specify a teardown that gets run once, around the test group.
+
+    around_all foo => sub {
+        my $inner = shift;
+
+        local %ENV;
+
+        # You need to call the 'inner' sub.
+        $inner->();
+    };
+
+B<Note:> The subs get no arguments, and their return is ignored.
+
+=back
+
+=head1 NOTE ON RUN ORDER
+
+Within a test group (the main package counts as a group) things run in this order:
+
+=over 4
+
+=item group blocks (describe, cases)
+
+=item END OF SCRIPT (done_testing called)
+
+=item before_all + around_all starts
+
+=over 4
+
+=item before_each + around_each starts
+
+=over 4
+
+=item before_case + around_case starts
+
+=over 4
+
+=item case
+
+=back
+
+=item after_case + around_case stops
+
+=item tests/it
+
+=back
+
+=item after_each + around_each stops
+
+=back
+
+=item after_all + around_all stops
 
 =back
 

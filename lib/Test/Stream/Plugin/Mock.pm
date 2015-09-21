@@ -5,7 +5,7 @@ use warnings;
 use Carp qw/croak/;
 use Scalar::Util qw/blessed reftype weaken/;
 use Test::Stream::Util qw/try/;
-use Test::Stream::Workflow qw/workflow_build/;
+use Test::Stream::Workflow qw/workflow_build workflow_var has_workflow_vars/;
 
 use Test::Stream::Mock;
 use Test::Stream::Workflow::Runner;
@@ -197,12 +197,11 @@ sub mock_class {
 
     my $caller = [caller(0)];
     my $void   = !defined(wantarray);
-    my $vars   = Test::Stream::Workflow::Runner->VARS;
     my $build  = workflow_build();
     my $meta   = Test::Stream::Workflow::Meta->get($caller->[0]);
 
     croak "mock_class should not be called in a void context except in a workflow"
-        unless $vars || $build || $meta || !$void;
+        unless has_workflow_vars || $build || $meta || !$void;
 
     my $builder = sub {
         my ($parent) = reverse mocked($class);
@@ -231,12 +230,10 @@ sub mock_class {
     return $builder->() unless $void;
 
     my $set_vars = sub {
-        $vars ||= Test::Stream::Workflow::Runner->VARS;
-        $vars->{(__PACKAGE__)} ||= {};
-        $vars->{(__PACKAGE__)}->{$class} = $builder->();
+        workflow_var(__PACKAGE__, sub { {} })->{$class} = $builder->();
     };
 
-    return $set_vars->() if $vars;
+    return $set_vars->() if has_workflow_vars;
 
     $build ||= $meta->unit;
 

@@ -44,7 +44,7 @@ sub check_installed {
 
 sub check_perl_version {
     my ($caller, $ver) = @_;
-    return if eval "require $ver; 1";
+    return if eval "no warnings 'portable'; require $ver; 1";
     my $error = $@;
     if ($error =~ m/^(Perl \S* required)/i) {
         return skip($1);

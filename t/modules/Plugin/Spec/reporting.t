@@ -163,7 +163,12 @@ like(
                     call pass => 0;
                     call diag => [ qr{Failed test 'inner'} ];
                     call subevents => array {
-                        event Exception => { error => qr{Inner sub was never called} };
+                        event Ok => {
+                            pass => 0,
+                            name => 'wrapper',
+                            diag => [qr/Failed/, qr/Inner sub was never called in block 'wrapper'/],
+                        };
+                        event Ok => { pass => 1 };
                         event Plan => {};
                         end;
                     };

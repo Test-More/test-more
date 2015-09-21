@@ -19,7 +19,7 @@ use Test::Stream::Capabilities qw/CAN_FORK CAN_THREAD/;
 use Scalar::Util qw/reftype/;
 
 BEGIN {
-    local $ENV{TS_FORMATTER} = undef;
+    local $ENV{TS_FORMATTER};
     my $sync = 'Test::Stream::Sync';
     def ok => (!$sync->init_done, "Not initialized right at load");
 

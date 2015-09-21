@@ -8,26 +8,32 @@ use Test::Stream::Plugin;
 sub load_ts_plugin {
     my $class = shift;
     my ($caller) = @_;
-    my $stack = Test::Stream::Sync->stack;
-    $stack->top; # Make sure we have at least 1 hub
 
-    my $warned = 0;
-    for my $hub ($stack->all) {
-        my $format = $hub->format || next;
+    # Load and import UTF8 into the caller.
+    require utf8;
+    utf8->import;
 
-        unless ($format->can('encoding')) {
-            warn "Could not apply UTF8 to unknown formatter ($format) at $caller->[1] line $caller->[2].\n" unless $warned++;
-            next;
-        }
-
-        $format->encoding('utf8');
-    }
-
+    # Set STDERR and STDOUT
     binmode(STDERR, ':utf8');
     binmode(STDOUT, ':utf8');
 
-    require utf8;
-    utf8->import;
+    # Set the output formatters to use utf8
+    Test::Stream::Sync->post_load(sub {
+        my $stack = Test::Stream::Sync->stack;
+        $stack->top; # Make sure we have at least 1 hub
+
+        my $warned = 0;
+        for my $hub ($stack->all) {
+            my $format = $hub->format || next;
+
+            unless ($format->can('encoding')) {
+                warn "Could not apply UTF8 to unknown formatter ($format) at $caller->[1] line $caller->[2].\n" unless $warned++;
+                next;
+            }
+
+            $format->encoding('utf8');
+        }
+    });
 }
 
 1;
