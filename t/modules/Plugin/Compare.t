@@ -119,9 +119,9 @@ tests like => sub {
                 call diag => [
                     qr/Failed test 'simple fail'/,
                     qr/\+-+\+-+\+-+\+/,
-                    qr/| GOT | OP | CHECK\s+|/,
+                    qr/\| GOT \| OP \| CHECK\s+\|/,
                     qr/\+-+\+-+\+-+\+/,
-                    qr/| b   | =~ | $rx\s+|/,
+                    qr/\| b\s+\| =~\s+\| \Q$rx\E\s+\|/,
                     qr/\+-+\+-+\+-+\+/,
                     'diag',
                 ];
@@ -305,11 +305,11 @@ tests exact_ref => sub {
                 pass => 0,
                 diag => [
                     qr/Failed test/,
-                    '+-----------------+----+-----------------+-----+',
-                    '| GOT             | OP | CHECK           | LNs |',
-                    '+-----------------+----+-----------------+-----+',
-                    qr/| HASH\(.*\) | == | HASH\(.*\) | $line |/,
-                    '+-----------------+----+-----------------+-----+'
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| GOT\s+\| OP\s+\| CHECK\s+\| LNs\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| HASH\(.*\) \| == \| HASH\(.*\) \| $line \|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
                 ],
             };
             end;
@@ -337,9 +337,9 @@ tests match => sub {
                 diag => [
                     qr/Failed test/,
                     qr/\+-+\+-+\+-+\+-+\+/,
-                    qr/| GOT\s+| OP | CHECK\s+| LNs\s+|/,
+                    qr/\| GOT\s+\| OP \| CHECK\s+\| LNs\s+\|/,
                     qr/\+-+\+-+\+-+\+-+\+/,
-                    qr/| abcde\s+| =~ | $rx\s+| $line\s+|/,
+                    qr/\| abcde\s+\| =~ \| \Q$rx\E\s+\| $line\s+\|/,
                     qr/\+-+\+-+\+-+\+-+\+/,
                 ],
             };
@@ -368,9 +368,9 @@ tests mismatch => sub {
                 diag => [
                     qr/Failed test/,
                     qr/\+-+\+-+\+-+\+-+\+/,
-                    qr/| GOT\s+| OP | CHECK\s+| LNs\s+|/,
+                    qr/\| GOT\s+\| OP \| CHECK\s+\| LNs\s+\|/,
                     qr/\+-+\+-+\+-+\+-+\+/,
-                    qr/| axyzb\s+| !~ | $rx\s+| $line\s+|/,
+                    qr/\| axyzb\s+\| !~ \| \Q$rx\E\s+\| $line\s+\|/,
                     qr/\+-+\+-+\+-+\+-+\+/,
                 ],
             };
@@ -411,20 +411,9 @@ tests check => sub {
                 diag => [
                     qr/Failed test/,
                     qr/\+-+\+-+\+-+\+-+\+/,
-                    qr/| GOT\s+| OP\s+| CHECK\s+| LNs\s+|/,
+                    qr/\| GOT\s+\| OP\s+\| CHECK\s+\| LNs\s+\|/,
                     qr/\+-+\+-+\+-+\+-+\+/,
-                    qr/| 0\s+| CODE\(\.\.\.\)\s+| <Custom Code>\s+| $lines[0]s+|/,
-                    qr/\+-+\+-+\+-+\+-+\+/,
-                ],
-            };
-            event Ok => {
-                pass => 0,
-                diag => [
-                    qr/Failed test/,
-                    qr/\+-+\+-+\+-+\+-+\+/,
-                    qr/| GOT\s+| OP\s+| CHECK\s+| LNs\s+|/,
-                    qr/\+-+\+-+\+-+\+-+\+/,
-                    qr/| 0\s+| CODE\(\.\.\.\)\s+| <Custom Code>\s+| $lines[1]s+|/,
+                    qr/\| 0\s+\| CODE\(\.\.\.\)\s+\| <Custom Code>\s+\| $lines[0]\s+\|/,
                     qr/\+-+\+-+\+-+\+-+\+/,
                 ],
             };
@@ -433,9 +422,20 @@ tests check => sub {
                 diag => [
                     qr/Failed test/,
                     qr/\+-+\+-+\+-+\+-+\+/,
-                    qr/| GOT\s+| OP\s+| CHECK\s+| LNs\s+|/,
+                    qr/\| GOT\s+\| OP\s+\| CHECK\s+\| LNs\s+\|/,
                     qr/\+-+\+-+\+-+\+-+\+/,
-                    qr/| 0\s+| t\s+| thr\s+| $lines[2]s+|/,
+                    qr/\| 0\s+\| CODE\(\.\.\.\)\s+\| two\s+\| $lines[1]\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                ],
+            };
+            event Ok => {
+                pass => 0,
+                diag => [
+                    qr/Failed test/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| GOT\s+\| OP\s+\| CHECK\s+\| LNs\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| 0\s+\| t\s+\| thr\s+\| $lines[2]\s+\|/,
                     qr/\+-+\+-+\+-+\+-+\+/,
                 ],
             };
@@ -606,14 +606,14 @@ tests meta => sub {
                 call pass => 0;
                 call diag => [
                     qr/Failed test/,
-                    '+-----------+------------------+----+---------------+----------+',
-                    '| PATH      | GOT              | OP | CHECK         | LNs      |',
-                    '+-----------+------------------+----+---------------+----------+',
-                    qr/|           | ARRAY\(.*\) |    | <META CHECKS> | $lines[0], $lines[4] /,
-                    "| <blessed> | <UNDEF>          |    | Foo           | $lines[1]      |",
-                    "| <reftype> | ARRAY            | eq | HASH          | $lines[2]      |",
-                    qr/| <this>    | ARRAY\(.*\) | eq | HASH          | $lines[3]      |/,
-                    '+-----------+------------------+----+---------------+----------+'
+                    qr/\+-+\+-+\+-+\+-+\+-+\+/,
+                    qr/\| PATH\s+\| GOT\s+\| OP\s+\| CHECK\s+\| LNs\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+-+\+/,
+                    qr/\|\s+\| ARRAY\(.*\)\s+\|\s+\| <META CHECKS>\s+\| $lines[0], $lines[4]\s+\|/,
+                    qr/\| <blessed>\s+\| <UNDEF>\s+\|\s+\| Foo\s+\| $lines[1]\s+\|/,
+                    qr/\| <reftype>\s+\| ARRAY\s+\| eq\s+\| HASH\s+\| $lines[2]\s+\|/,
+                    qr/\| <this>\s+\| ARRAY\(.*\)\s+\| \s+\| <HASH>\s+\| $lines[3]\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+-+\+/,
                 ];
             };
         },
