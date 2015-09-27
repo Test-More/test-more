@@ -56,7 +56,8 @@ sub _subtest {
 
     my $parent = $ctx->hub;
 
-    my $hub = $ctx->stack->new_hub(
+    my $stack = $ctx->stack || Test::Stream::Sync->stack;
+    my $hub = $stack->new_hub(
         class => 'Test::Stream::Hub::Subtest',
     );
 
@@ -80,7 +81,7 @@ sub _subtest {
             $finished = 1;
         }
     }
-    $ctx->stack->pop($hub);
+    $stack->pop($hub);
 
     my $dbg = $ctx->debug;
 
