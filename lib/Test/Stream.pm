@@ -88,6 +88,16 @@ sub load {
             next;
         }
 
+        if ($arg =~ m/^[a-z]/) {
+            my $method = "_opt_$arg";
+
+            die "'$arg' is not a valid option for '$class' (Did you intend to ise the '" . ucfirst($arg) . "' plugin?) at $caller->[1] line $caller->[2].\n"
+                unless $class->can($method);
+
+            $class->$method(\@_);
+            next;
+        }
+
         # Load the plugin
         $arg = 'Test::Stream::Plugin::' . $arg unless $full;
 
@@ -250,13 +260,14 @@ different arguments, the last set of arguments wins.
 Plugins and bundles can be distinguished easily:
 
     use Test::Stream(
-        '-V1',                       # Suggected bundle ('-')
+        '-V1',                          # Suggected bundle ('-')
         ':Project',                     # Preject specific bundle (':')
         'MyPlugin',                     # Plugin name (no prefix)
         '+Fully::Qualified::Plugin',    # (Plugin in unusual path)
         'SomePlugin' => ['arg1', ...],  # (Plugin with args)
         '!UnwantedPlugin',              # Do not load this plugin
         'WantEverything' => '*',        # Load the plugin with all options
+        'option' => ...,                # Option to the loader (Test::Stream)
     );
 
 Explanation:
@@ -321,6 +332,28 @@ the blacklist items.
 
 This will load the plugin with all options. The '*' gets turned into
 C<['-all']> for you.
+
+=item 'option' => ...
+
+Uncapitalized options without a C<+>, C<->, or C<:> prefix are reserved for use
+by the loader. Currently there are no valid options, so any uncapitalized
+option will currently result in an exception. Test::Stream may in the future
+add any options it wants. As well loaders that subclass Test::Stream can add
+options of their own.
+
+To define an option in your subclass simply add a C<_opt_name()> method. The
+method will recieve 1 argument, a reference to the arguments array, it should
+shift off any arguments it expects.
+
+    sub _opt_foo {
+        my $self = shift;
+        my ($args) = @_;
+
+        my $arg = shift @$args; # Shift so that the loader does not treat it as
+                                # a plugin or bundle.
+
+        ...
+    }
 
 =back
 

@@ -87,5 +87,22 @@ like(
     "Did not report into Test::Stream itself"
 );
 
+like(
+    dies { load_plugin('foo') },
+    qr/'foo' is not a valid option for 'Test::Stream' \(Did you intend to ise the 'Foo' plugin\?\)/,
+    "Invalid option"
+);
+
+my $ran;
+my $mock = mock 'Test::Stream' => (
+    add => [ '_opt_foo' => sub {
+        my $class = shift;
+        my $args = shift;
+        $ran = shift @$args;
+    }],
+);
+
+load_plugin('foo' => 'xyz');
+is($ran, 'xyz', "got args");
 
 done_testing;
