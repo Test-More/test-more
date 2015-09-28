@@ -1,4 +1,4 @@
-use Test::Stream -V1, LoadPlugin;
+use Test::Stream -V1, LoadPlugin, UTF8;
 
 like(
     dies { load_plugin 'Class' },
@@ -13,11 +13,14 @@ like(
 );
 
 {
-    local @INC = ('fake');
+    # On some versions this is not always loaded before load_plugin is called,
+    # and sometimes it is needed. It cannot be loaded inside the test due to
+    # the @INC override.
+    eval { require 'utf8_heavy.pl' };
     my $file = __FILE__;
     my $line = __LINE__ + 2;
     like(
-        dies { load_plugin Class => ['Fake'] },
+        dies { local @INC = ('fake'); load_plugin Class => ['Fake'] },
         qr/Can't locate Fake\.pm in \@INC .* at \Q$file\E line \Q$line\E/,
         "Propogate error from module, use proper file and line number"
     );
