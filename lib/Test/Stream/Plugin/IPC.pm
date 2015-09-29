@@ -101,7 +101,7 @@ of testing.
 You can also import the C<cull()> function that can be used to pull results in
 on demand.
 
-    use Test::Stream IPC => [qw/-cull/];    
+    use Test::Stream IPC => [qw/-cull/];
 
     cull();
 
