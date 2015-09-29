@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use vars qw/$VERSION/;
 
-$Test::Stream::VERSION = '1.302009';
+$Test::Stream::VERSION = '1.302010';
 $VERSION = eval $VERSION;
 
 use Carp qw/croak/;

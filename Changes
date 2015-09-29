@@ -1,5 +1,34 @@
 {{$NEXT}}
 
+    - Add spec plugin (with basic workflows modules)
+    - Switch to plugin architecture, Test::Stream is just a loader
+    - Add plugins (many of these were non-plugins before)
+        AuthorTest          BailOnFail          Capabilities
+        Capture             Class               Compare
+        Context             Core                Defer
+        DieOnFail           Exception           ExitSummary
+        Grab                IPC                 Intercept
+        LoadPlugin          Mock                SRand
+        SkipWithout         Spec                Subtest
+        TAP                 UTF8                Warnings
+    - CanFork is now a plugin
+    - CanThread is now a plugin
+    - Subtest stack fallback fix
+    - Better Compare library
+    - Documentation is fleshed out and mostly complete
+    - Unit testing coverage is now satisfactory
+    - Better detection of broken threads on 5.10.0
+    - Ability to set/change encoding
+    - is_deeply() is now combined into is()
+    - mostly_like() and like() are combined
+    - DeepCheck library removed in favor of Compare library
+    - deep checks now render a table
+    - Test directory restructuring
+    - Mocking library
+    - Workflow library
+    - Fix typos
+    - Fix a GC destruction issue (b3a96db)
+
 1.302009  2015-07-03 21:16:08-07:00 America/Los_Angeles
 
     - Fix MANIFEST.SKIP so tests are not skipped
