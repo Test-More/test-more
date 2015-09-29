@@ -170,7 +170,8 @@ sub parse_symbol {
 }
 
 BEGIN {
-    my $ok = eval 'require Term::ReadKey' && Term::ReadKey->can('GetTerminalSize');
+    my ($ok, $err) = try { require Term::ReadKey };
+    $ok &&= Term::ReadKey->can('GetTerminalSize');
     *USE_TERM_READKEY = $ok ? sub() { 1 } : sub() { 0 };
 };
 
