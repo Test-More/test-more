@@ -1,3 +1,8 @@
+1.302010_001
+    * Support for Test::Stream 1.302010
+    * Some upstream package names changed
+    * Test::Stream's interface changed, tests needed to change too.
+
 1.302007_004 Mon Jul 27 21:13:39:00 PST 2015
     * Work around perlbug 125702
 
