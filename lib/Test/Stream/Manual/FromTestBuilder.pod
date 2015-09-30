@@ -275,7 +275,7 @@ This is easy enough:
 
     ok(my $one = $class->new(@args), "NAME");
 
-The utility of c<new_ok()> is questionable at best.
+The utility of C<new_ok()> is questionable at best.
 
 =item eq_array
 
