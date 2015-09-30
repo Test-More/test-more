@@ -492,7 +492,7 @@ sub _account_for_subtest {
     my( $self, $check ) = @_;
 
     my $hub = $t->{Stack}->top;
-    my $nesting = $hub->isa('Test::Stream::Subtest::Hub') ? $hub->nested : 0;
+    my $nesting = $hub->isa('Test::Stream::Hub::Subtest') ? $hub->nested : 0;
     return ref($check) ? $check : ('    ' x $nesting) . $check;
 }
 

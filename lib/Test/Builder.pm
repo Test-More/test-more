@@ -18,21 +18,24 @@ use Data::Dumper();
 
 use Scalar::Util qw/blessed reftype weaken/;
 
+use Test::Stream::Sync;
+
 use Test::Stream::Util qw/USE_THREADS try/;
 # Make Test::Builder thread-safe for ithreads.
 BEGIN {
     if (USE_THREADS) {
         require Test::Stream::IPC;
-        Test::Stream::IPC->import('poll', 'no_fatal');
+        require Test::Stream::IPC::Files;
+        Test::Stream::IPC::Files->import;
+        Test::Stream::IPC->enable_polling;
     }
 }
 
-use Test::Stream::Sync;
 use Test::Stream::Context qw/context release/;
-use Test::Stream::Subtest qw/subtest_streamed/;
+use Test::Stream::Plugin::Subtest qw/subtest_streamed/;
 use Test::Stream::Event::Subtest;
-use Test::Stream::TAP qw/OUT_STD OUT_ERR OUT_TODO/;
-use Test::Stream::Subtest::Hub;
+use Test::Stream::Formatter::TAP qw/OUT_STD OUT_ERR OUT_TODO/;
+use Test::Stream::Hub::Subtest;
 
 our $Test = Test::Builder->new;
 our $Level;
@@ -41,6 +44,8 @@ Test::Stream::Sync->add_hook(sub {
     my ($ctx, $real, $new) = @_;
     $Test->_ending($ctx, $real, $new);
 });
+
+Test::Stream::Sync->ipc->set_no_fatal(1) if USE_THREADS;
 
 sub _add_ts_hooks {
     my $self = shift;
@@ -88,7 +93,7 @@ sub create {
     else {
         $self->{Stack} = Test::Stream::Stack->new;
         $self->{Stack}->new_hub(
-            formatter => Test::Stream::TAP->new,
+            formatter => Test::Stream::Formatter::TAP->new,
             ipc       => Test::Stream::Sync->ipc,
         );
     }
@@ -151,12 +156,12 @@ sub child {
     my $subevents = [];
 
     my $hub = $ctx->stack->new_hub(
-        class => 'Test::Stream::Subtest::Hub',
+        class => 'Test::Stream::Hub::Subtest',
     );
 
     $hub->listen(sub { push @$subevents => $_[1] });
 
-    $hub->set_nested( $parent->isa('Test::Stream::Subtest::Hub') ? $parent->nested + 1 : 1 );
+    $hub->set_nested( $parent->isa('Test::Stream::Hub::Subtest') ? $parent->nested + 1 : 1 );
 
     $hub->set_parent_todo(1) if $ctx->debug->no_diag;
 
@@ -345,10 +350,10 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Orig_Handles} ||= do {
         my $format = $ctx->hub->format;
         my $out;
-        if ($format && $format->isa('Test::Stream::TAP')) {
+        if ($format && $format->isa('Test::Stream::Formatter::TAP')) {
             $out = $format->handles;
         }
-        [@$out];
+        $out ? [@$out] : [];
     };
 
     $self->use_numbers(1);
@@ -1077,7 +1082,7 @@ sub use_numbers {
 
     my $ctx = $self->ctx;
     my $format = $ctx->hub->format;
-    return unless $format && $format->isa('Test::Stream::TAP');
+    return unless $format && $format->isa('Test::Stream::Formatter::TAP');
 
     $format->set_no_numbers(!$use_nums) if defined $use_nums;
 
@@ -1092,7 +1097,7 @@ BEGIN {
 
             my $ctx = $self->ctx;
             my $format = $ctx->hub->format;
-            return unless $format && $format->isa('Test::Stream::TAP');
+            return unless $format && $format->isa('Test::Stream::Formatter::TAP');
 
             $format->$set($no) if defined $no;
 
@@ -1154,7 +1159,7 @@ sub output {
     my $ctx = $self->ctx;
     my $format = $ctx->hub->format;
     $ctx->release;
-    return unless $format && $format->isa('Test::Stream::TAP');
+    return unless $format && $format->isa('Test::Stream::Formatter::TAP');
 
     $format->handles->[OUT_STD()] = $self->_new_fh($fh)
         if defined $fh;
@@ -1168,7 +1173,7 @@ sub failure_output {
     my $ctx = $self->ctx;
     my $format = $ctx->hub->format;
     $ctx->release;
-    return unless $format && $format->isa('Test::Stream::TAP');
+    return unless $format && $format->isa('Test::Stream::Formatter::TAP');
 
     $format->handles->[OUT_ERR()] = $self->_new_fh($fh)
         if defined $fh;
@@ -1182,7 +1187,7 @@ sub todo_output {
     my $ctx = $self->ctx;
     my $format = $ctx->hub->format;
     $ctx->release;
-    return unless $format && $format->isa('Test::Stream::TAP');
+    return unless $format && $format->isa('Test::Stream::Formatter::TAP');
 
     $format->handles->[OUT_TODO()] = $self->_new_fh($fh)
         if defined $fh;
@@ -1235,7 +1240,7 @@ sub reset_outputs {
     my $ctx = $self->ctx;
     my $format = $ctx->hub->format;
     $ctx->release;
-    return unless $format && $format->isa('Test::Stream::TAP');
+    return unless $format && $format->isa('Test::Stream::Formatter::TAP');
     $format->set_handles([@{$self->{Orig_Handles}}]) if $self->{Orig_Handles};
 
     return;

@@ -13,7 +13,7 @@ BEGIN {
 }
 
 use strict;
-use Test::CanThread;
+use Test::Stream 'CanThread';
 use threads;
 
 BEGIN {

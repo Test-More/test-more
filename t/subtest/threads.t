@@ -2,7 +2,7 @@
 
 use strict;
 use warnings;
-use Test::CanThread;
+use Test::Stream::Plugin::CanThread;
 
 use Test::More;
 

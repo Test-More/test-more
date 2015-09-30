@@ -2,9 +2,7 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test::Stream::Tester;
-
-use Data::Dumper;
+use Test::Stream 'Intercept', Compare => ['-all', like => {-as => 'ts_like'}, is => {-as => 'ts_is'}];
 
 my $res = intercept {
     subtest foo => sub {
@@ -12,16 +10,16 @@ my $res = intercept {
     };
 };
 
-events_are(
+ts_like(
     $res,
-    events {
+    array {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
-            event_call subevents => events {
+            call subevents => array {
                 event Ok => { pass => 1, name => 'check' };
                 event Plan => { max => 1 };
             };
-            event_call pass => 1;
+            call pass => 1;
         };
     },
     "Got subtest events"

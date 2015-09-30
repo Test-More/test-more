@@ -4,7 +4,7 @@ use warnings;
 use Test::More;
 BEGIN { plan skip_all => "Only tested when releasing" unless $ENV{AUTHOR_TESTING} };
 BEGIN { eval { require Test::Fatal; 1 } || plan skip_all => ($@ =~ m/^(.*) in \@INC/g)}
-use Test::Stream::Tester;
+use Test::Stream 'Intercept', 'Compare' => [qw/event/, array => {-as => 'events'}, like => {-as => 'events_are'}, end => {-as => 'end_events'}, 'filter_items'];
 use ok 'Test::Fatal';
 
 events_are(

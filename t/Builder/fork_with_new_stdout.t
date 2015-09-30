@@ -1,7 +1,7 @@
 #!perl -w
 use strict;
 use warnings;
-use Test::CanFork;
+use Test::Stream::Plugin::CanFork;
 use IO::Pipe;
 use Test::Builder;
 use Config;

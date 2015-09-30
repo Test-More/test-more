@@ -17,7 +17,7 @@ BEGIN {
 
 use Test::Builder;
 use Test::More;
-use Test::Stream::Subtest qw/subtest_streamed/;
+use Test::Stream::Plugin::Subtest qw/subtest_streamed/;
 
 my $output;
 my $TB = Test::More->builder;
