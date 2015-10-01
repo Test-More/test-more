@@ -1,4 +1,7 @@
-1.302010_001
+1.302012_001 Thu Oct 01 15:47:39:00 PST 2015
+    * Support for Test::Stream 1.302012
+
+1.302010_001 Tue Sep 29 21:18:38:00 PST 2015
     * Support for Test::Stream 1.302010
     * Some upstream package names changed
     * Test::Stream's interface changed, tests needed to change too.
