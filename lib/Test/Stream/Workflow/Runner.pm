@@ -144,9 +144,13 @@ sub thread_task {
         unless CAN_THREAD;
 
     my $t = threads->create(sub {
-        $task->run();
+        my ($ok, $err) = try { $task->run() };
         Test::Stream::Sync->stack->top->cull();
+        return 'good' if $ok;
+
+        $ctx->send_event('Exception', error => $err)
     });
+
     $t->join;
     $ctx->send_event('Exception', error => $t->error)
         if threads->can('error') && $t->error;
