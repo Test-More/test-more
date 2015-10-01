@@ -1,5 +1,14 @@
 {{$NEXT}}
 
+    - Documentation updates, typo fixes
+    - Be safer, and less verbose, when detecting term size
+    - Fix isolation in the spec plugin in windows
+    - Skip sync test on windows (temporary measure)
+    - Skip the hub.t fork check on windows (temporary measure)
+    - Add some debugging to CanThread
+    - Fix global event handling on platforms that do not use '/' for path
+    - Fix Delta.t on systems with large memory addresses
+
 1.302010  2015-09-29 22:23:28-07:00 America/Los_Angeles
 
     - Add spec plugin (with basic workflows modules)
