@@ -37,10 +37,10 @@ ok(lives { $CLASS->verify_meta($unit) }, "lack of meta is fine");
 $unit->set_meta({});
 ok(lives { $CLASS->verify_meta($unit) }, "empty meta is fine");
 
-$unit->set_meta({todo => 'foo', skip => 'foo', fork => 1});
+$unit->set_meta({todo => 'foo', skip => 'foo', iso => 1});
 ok(lives { $CLASS->verify_meta($unit) }, "All valid keys");
 
-$unit->set_meta({todo => 'foo', skip => 'foo', fork => 1, foo => 'bar'});
+$unit->set_meta({todo => 'foo', skip => 'foo', iso => 1, foo => 'bar'});
 like(
     warning { $CLASS->verify_meta($unit) },
     qr/'foo' is not a recognised meta-key/,
@@ -113,9 +113,9 @@ $unit->set_meta({});
 $CLASS->run_task($task);
 is($ran, 1, "ran task");
 
-if (CAN_FORK) {
+if ($CLASS->isolate && $CLASS->isolate eq 'fork_task') {
     $ran = 0;
-    $unit->set_meta({fork => 1});
+    $unit->set_meta({iso => 1});
     $task->{'~~MOCK~CONTROL~~'}->override(run => sub {
         ok(1, "Event");
         $ran++;

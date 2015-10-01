@@ -174,12 +174,15 @@ is inherited by nested blocks.
 This will skip the entire block, it will generate a single 'Ok' event with the
 skip reason set.
 
-=item fork => $bool
+=item iso => $bool
 
-This tells the runner to fork before running the block. This allows you to
-isolate blocks that may modify state in ways that should not be seen by later
-tests. The default runner will wait for the forked block to exit before
-starting the next one.
+=item isolate => $bool
+
+This tells the runner to isolate the task before running the block. This allows
+you to isolate blocks that may modify state in ways that should not be seen by
+later tests. Isolation is achieved either by forking, or by spawning a child
+thread, depending on the platform. If no isolation method is available the
+block will simply be skipped.
 
 =back
 

@@ -117,6 +117,12 @@ sub format {
     return $old;
 }
 
+sub is_local {
+    my $self = shift;
+    return $$ == $self->{+PID}
+        && get_tid() == $self->{+TID};
+}
+
 sub listen {
     my $self = shift;
     my ($sub) = @_;
@@ -367,7 +373,7 @@ event pipeline.
     $hub->send($event)
 
 The C<send()> method is used to issue an event to the hub. This method will
-handle thread/fork sych, mungers, listeners, TAP output, etc.
+handle thread/fork sync, mungers, listeners, TAP output, etc.
 
 =head2 ALTERING EVENTS
 

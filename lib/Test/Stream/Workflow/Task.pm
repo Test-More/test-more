@@ -244,7 +244,7 @@ sub _run_primaries {
 
     my $run_primary = sub {
         my $hub = Test::Stream::Sync->stack->top;
-        my $l = $hub->listen($self->_listener);
+        my $l = $hub->listen($self->_listener) if $hub->is_local;
 
         if(reftype($primary) eq 'ARRAY') {
             $self->runner->run(unit => $_, args => $self->{+ARGS}) for @$primary
@@ -253,7 +253,7 @@ sub _run_primaries {
             $primary->(@{$self->{+ARGS}});
         }
 
-        $hub->unlisten($l);
+        $hub->unlisten($l) if $l;
     };
 
     if ($modifiers) {

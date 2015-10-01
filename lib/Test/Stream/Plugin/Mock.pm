@@ -8,7 +8,6 @@ use Test::Stream::Util qw/try/;
 use Test::Stream::Workflow qw/workflow_build workflow_var has_workflow_vars/;
 
 use Test::Stream::Mock;
-use Test::Stream::Workflow::Runner;
 use Test::Stream::Workflow::Meta;
 
 require Test::Stream::HashBase;

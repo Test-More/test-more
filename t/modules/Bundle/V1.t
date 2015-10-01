@@ -40,7 +40,6 @@ tests loaded_plugins => sub {
         Test/Stream/Plugin/ExitSummary.pm
         Test/Stream/Plugin/Core.pm
         Test/Stream/Plugin/Context.pm
-        Test/Stream/Plugin/Subtest.pm
         Test/Stream/Plugin/Exception.pm
         Test/Stream/Plugin/Warnings.pm
         Test/Stream/Plugin/Compare.pm

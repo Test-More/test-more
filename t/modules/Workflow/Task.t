@@ -1,4 +1,5 @@
 use Test::Stream -V1, Intercept, Compare => '*', Class => ['Test::Stream::Workflow::Task'];
+use Test::Stream::Workflow::Runner;
 
 use Test::Stream::Workflow qw/has_workflow_vars/;
 
