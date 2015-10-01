@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302011  2015-09-30 21:05:57-07:00 America/Los_Angeles
+
     - Documentation updates, typo fixes
     - Be safer, and less verbose, when detecting term size
     - Fix isolation in the spec plugin in windows
