@@ -124,8 +124,8 @@ tests IPC => sub {
         );
     };
 
-    # Theoretically this should work with Devel::Cover, but it does not.
-    if (CAN_FORK && !$INC{'Devel/Cover.pm'}) {
+    # The 'exit 0' here causes a segv in windows...
+    if (CAN_FORK && $^O ne 'MSWin32') {
         my $pid = fork();
         die "Could not fork!" unless defined $pid;
 
