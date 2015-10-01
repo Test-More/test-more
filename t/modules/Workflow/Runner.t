@@ -135,20 +135,18 @@ if ($CLASS->isolate) {
     );
     is($ran, 0, "ran was not altered locally due to isolation mechanism");
 
-    if ($CLASS->isolate eq 'fork_task' || threads->can('error')) {
-        $task->{'~~MOCK~CONTROL~~'}->override(run => sub {
-            $ran++;
-            die "XXX $$";
-        });
-        $events = intercept { $CLASS->run_task($task) };
-        like(
-            $events,
-            array {
-                event Exception => { error => qr/XXX/ };
-            },
-            "got exception event"
-        );
-    }
+    $task->{'~~MOCK~CONTROL~~'}->override(run => sub {
+        $ran++;
+        die "XXX $$";
+    });
+    $events = intercept { $CLASS->run_task($task) };
+    like(
+        $events,
+        array {
+            event Exception => { error => qr/XXX/ };
+        },
+        "got exception event"
+    );
 }
 
 {

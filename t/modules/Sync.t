@@ -1,13 +1,6 @@
 use strict;
 use warnings;
 
-BEGIN {
-    if ($^O eq 'MSWin32') {
-        require Test::Stream::Plugin::Core;
-        Test::Stream::Plugin::Core::skip_all("This test breaks on windows");
-    }
-}
-
 # Never do this anywhere else.
 BEGIN {
     package Test::Stream::Sync;
@@ -21,7 +14,7 @@ BEGIN {
 
 use Test::Stream::DeferredTests;
 use Test::Stream::Util qw/get_tid/;
-use Test::Stream::Capabilities qw/CAN_FORK CAN_THREAD/;
+use Test::Stream::Capabilities qw/CAN_THREAD CAN_REALLY_FORK/;
 
 use Scalar::Util qw/reftype/;
 
@@ -172,7 +165,7 @@ BEGIN {
     $sync->no_wait(0);
     def is => ($sync->no_wait, 0, "no_wait is off again");
 
-    if (CAN_FORK) {
+    if (CAN_REALLY_FORK) {
         $reset->();
         my $pid = fork;
         die "Failed to fork!" unless defined $pid;
@@ -361,7 +354,7 @@ is(
         def like => (\@events, [{ message => qr/Test ended with extra hubs on the stack!/ }], "got diag");
     }
 
-    if (CAN_FORK) {
+    if (CAN_REALLY_FORK) {
         local $SIG{__WARN__} = sub { };
         $reset->();
         my $pid = fork;

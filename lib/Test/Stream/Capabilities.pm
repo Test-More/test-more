@@ -31,6 +31,11 @@ sub get_const {
     return $LOOKUP{$check};
 }
 
+sub CAN_REALLY_FORK {
+    return 1 if $Config{d_fork};
+    return 0;
+}
+
 sub CAN_FORK {
     return 1 if $Config{d_fork};
     return 0 unless $^O eq 'MSWin32' || $^O eq 'NetWare';
@@ -84,9 +89,14 @@ experimental phase is over.
 
 =head1 SYNOPSIS
 
-    use Test::Stream::Capabilities qw/CAN_FORK CAN_THREAD/;
+    use Test::Stream::Capabilities qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
 
     if (CAN_FORK) {
+        my $pid = fork();
+        ...
+    }
+
+    if (CAN_REALLY_FORK) {
         my $pid = fork();
         ...
     }
@@ -107,6 +117,11 @@ or false.
 =item CAN_FORK
 
 True if this system is capable of true or psuedo-fork.
+
+=item CAN_REALLY_FORK
+
+True if the system can really fork. This will be false for systems where fork
+is emulated.
 
 =item CAN_THREAD
 

@@ -2,12 +2,21 @@ package Test::Stream::Plugin::CanFork;
 use strict;
 use warnings;
 
-use Test::Stream::Capabilities qw/CAN_FORK/;
+use Test::Stream::Capabilities qw/CAN_FORK CAN_REALLY_FORK/;
 
 use Test::Stream::Plugin;
 
 sub load_ts_plugin {
-    return if CAN_FORK;
+    my $class = shift;
+    my ($caller, %params) = @_;
+
+    if ($params{real}) {
+        return if CAN_REALLY_FORK;
+    }
+    else {
+        return if CAN_FORK;
+    }
+
     require Test::Stream::Context;
     my $ctx = Test::Stream::Context::context();
     $ctx->plan(0, "SKIP", "This test requires a perl capable of forking.");
@@ -52,6 +61,13 @@ and exit true.
     use Test::Stream::Plugin::CanFork;
 
     ... Code that forks ...
+
+or
+
+    use Test::Stream::Plugin::CanFork real => 1;
+
+    ... Code that requires true fork support (not emulated) ...
+
 
 =head1 EXPLANATION
 

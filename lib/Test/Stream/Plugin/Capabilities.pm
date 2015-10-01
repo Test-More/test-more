@@ -66,6 +66,10 @@ constants for some common capability checks.
         ... Code that forks ...
     }
 
+    if (CAN_REALLY_FORK) {
+        ... Code that requires true forking, but breaks with pseudo-fork ...
+    }
+
 =head1 CHECKS
 
 See L<Test::Stream::Capabilities> for a list of checks, this plugin is a simple

@@ -1,5 +1,5 @@
 use Test::Stream -V1, -SpecTester;
-use Test::Stream::Capabilities qw/CAN_FORK CAN_THREAD/;
+use Test::Stream::Capabilities qw/CAN_FORK CAN_THREAD CAN_REALLY_FORK/;
 
 {
     package My::Formatter;
@@ -124,8 +124,7 @@ tests IPC => sub {
         );
     };
 
-    # The 'exit 0' here causes a segv in windows...
-    if (CAN_FORK && $^O ne 'MSWin32') {
+    if (CAN_REALLY_FORK) {
         my $pid = fork();
         die "Could not fork!" unless defined $pid;
 
