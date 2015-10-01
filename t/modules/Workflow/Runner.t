@@ -1,5 +1,6 @@
 use Test::Stream -V1, Capabilities, Intercept, Compare => '*', Class => ['Test::Stream::Workflow::Runner'];
 require Test::Stream::Workflow::Meta;
+use Test::Stream::Util qw/get_tid/;
 
 is($CLASS->subtests, 1, "subtests enabled by default");
 
@@ -113,7 +114,7 @@ $unit->set_meta({});
 $CLASS->run_task($task);
 is($ran, 1, "ran task");
 
-if ($CLASS->isolate && $CLASS->isolate eq 'fork_task') {
+if ($CLASS->isolate) {
     $ran = 0;
     $unit->set_meta({iso => 1});
     $task->{'~~MOCK~CONTROL~~'}->override(run => sub {
@@ -128,25 +129,57 @@ if ($CLASS->isolate && $CLASS->isolate eq 'fork_task') {
             event Ok => sub {
                 call pass => 1;
                 call name => 'Event';
-                prop pid  => not_in_set($$);
             };
         },
-        "got event from a different process"
+        "got event"
     );
-    is($ran, 0, "ran was not altered locally due to fork");
+    is($ran, 0, "ran was not altered locally due to isolation mechanism");
 
+    if ($CLASS->isolate eq 'fork_task' || threads->can('error')) {
+        $task->{'~~MOCK~CONTROL~~'}->override(run => sub {
+            $ran++;
+            die "XXX $$";
+        });
+        $events = intercept { $CLASS->run_task($task) };
+        like(
+            $events,
+            array {
+                event Exception => { error => qr/XXX/ };
+            },
+            "got exception event"
+        );
+    }
+}
+
+{
+    $ran = 0;
+    $unit->set_meta({iso => 1});
     $task->{'~~MOCK~CONTROL~~'}->override(run => sub {
-        die "XXX $$";
+        ok(1, "Event");
         $ran++;
     });
-    $events = intercept { $CLASS->run_task($task) };
-    like(
+
+    my $mock = mock $CLASS => (
+        override => {
+            isolate => sub { undef },
+        },
+    );
+
+    my $events = intercept { $CLASS->run_task($task) };
+    is(
         $events,
         array {
-            event Exception => { error => qr/XXX/ };
+            event Ok => sub {
+                call pass => 1;
+                call name => $unit->name;
+                prop skip => 'No way to isolate task!';
+            };
         },
-        "got exception event"
+        "Skipped"
     );
+    is($ran, 0, "ran was not altered locally due to isolation mechanism");
 }
+
+
 
 done_testing;

@@ -143,10 +143,14 @@ sub thread_task {
     $ctx->throw("Cannot thread for '$name', system does not support threads")
         unless CAN_THREAD;
 
-    threads->create(sub {
+    my $t = threads->create(sub {
         $task->run();
         Test::Stream::Sync->stack->top->cull();
-    })->join;
+    });
+    $t->join;
+    $ctx->send_event('Exception', error => $t->error)
+        if threads->can('error') && $t->error;
+
     Test::Stream::Sync->stack->top->cull();
 }
 
