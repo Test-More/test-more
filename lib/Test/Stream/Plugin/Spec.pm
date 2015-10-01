@@ -184,6 +184,10 @@ later tests. Isolation is achieved either by forking, or by spawning a child
 thread, depending on the platform. If no isolation method is available the
 block will simply be skipped.
 
+B<CAVEAT:> Since the isolation may be threads (specially if you are on windows)
+it may fail to isolate shared variables. If you use variables that are shared
+between threads you cannot rely on this isolation mechanism.
+
 =back
 
 B<Note:> The tests you declare are deferred, that is they run after everything
