@@ -57,7 +57,7 @@ is(pkg_to_file('A::Package::Name'), 'A/Package/Name.pm', "Converted package to f
 }
 
 if ($INC{'Term/ReadKey.pm'}) {
-    local $ENV{'TS_TERM_SIZE'} = undef;
+    local $ENV{'TS_TERM_SIZE'};
     my $size;
     {
         local $SIG{__WARN__} = sub { 1 };

@@ -179,13 +179,13 @@ sub term_size {
     return $ENV{TS_TERM_SIZE} if $ENV{TS_TERM_SIZE};
     return 80 unless USE_TERM_READKEY;
     my $total;
-    {
+    try {
         my @warnings;
         local $SIG{__WARN__} = sub { push @warnings => @_ };
         ($total) = Term::ReadKey::GetTerminalSize(*STDOUT);
         @warnings = grep { $_ !~ m/Unable to get Terminal Size/ } @warnings;
         warn @warnings;
-    }
+    };
     return 80 if !$total;
     return 80 if $total < 80;
     return $total;
