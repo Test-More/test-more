@@ -260,8 +260,8 @@ different arguments, the last set of arguments wins.
 Plugins and bundles can be distinguished easily:
 
     use Test::Stream(
-        '-V1',                          # Suggected bundle ('-')
-        ':Project',                     # Preject specific bundle (':')
+        '-V1',                          # Bundle ('-')
+        ':Project',                     # Project specific bundle (':')
         'MyPlugin',                     # Plugin name (no prefix)
         '+Fully::Qualified::Plugin',    # (Plugin in unusual path)
         'SomePlugin' => ['arg1', ...],  # (Plugin with args)
