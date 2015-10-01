@@ -128,7 +128,7 @@ sub send {
 
     if ($global) {
         my $name = $ready;
-        $name =~ s{^.*/}{};
+        $name =~ s{^.*(GLOBAL)}{GLOBAL};
         $self->globals->{$name}++;
     }
 
