@@ -135,14 +135,9 @@ True if this system is capable of using threads.
 
 =item 5.10.0
 
-On perl 5.10.0 there is an extra check that launches a new perl interpreter to
-ensure that threads do not cause segfaults. This is here because some 5.10.0
-installations on newer systems have a segfault in threads bug.
-
-On windows and other systems that use fork emulation via threads this check is
-also run for CHECK_FORK.
-
-The main issue with this is that it is slow.
+Perl 5.10.0 has a bug when compiled with newer gcc versions. This bug causes a
+segfault whenever a new thread is launched. Test::Stream will attempt to detect
+this, and note that the system is not capable of forking when it is detected.
 
 =item Devel::Cover
 
