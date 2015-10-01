@@ -36,6 +36,19 @@ if ($] > 5.020000) {
     );
 }
 
+subtest_streamed 'hub tests' => sub {
+    my $hub = Test::Stream::Sync->stack->top;
+    isa_ok($hub, 'Test::Stream::Hub', 'Test::Stream::Hub::Subtest');
+    ok(!defined($hub->parent_todo), "parent todo not defined outside todo");
+
+    my $todo = todo "testing parent_todo";
+    subtest_streamed 'inner hub tests' => sub {
+        my $ihub = Test::Stream::Sync->stack->top;
+        isa_ok($ihub, 'Test::Stream::Hub', 'Test::Stream::Hub::Subtest');
+        ok(defined($ihub->parent_todo), "parent todo defined inside todo");
+    };
+};
+
 like(
     intercept {
         subtest_streamed 'foo' => sub {

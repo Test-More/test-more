@@ -30,6 +30,10 @@ sub to_tap {
         @diag
     ) unless $self->{+BUFFERED};
 
+    if ($ENV{HARNESS_IS_VERBOSE}) {
+        $_->[1] =~ s/^/    /mg for @diag;
+    }
+
     $ok->[1] =~ s/\n/ {\n/;
 
     my $count = 0;
@@ -40,9 +44,9 @@ sub to_tap {
 
     return (
         $ok,
+        @diag,
         @subs,
         [OUT_STD(), "}\n"],
-        @diag
     );
 }
 

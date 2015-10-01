@@ -66,7 +66,8 @@ sub _subtest {
     $hub->listen(sub { push @events => $_[1] });
     $hub->format(undef) if $buffered;
 
-    $hub->set_parent_todo($ctx->debug->no_diag);
+    my $no_diag = $ctx->debug->no_diag;
+    $hub->set_parent_todo($no_diag) if $no_diag;
 
     my ($ok, $err, $finished);
     TS_SUBTEST_WRAPPER: {
