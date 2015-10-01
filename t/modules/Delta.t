@@ -526,7 +526,7 @@ tests overload => sub {
 
     my $conv = Test::Stream::Plugin::Compare->can('strict_convert');
     my $cmp = sub {
-        my $ctx =context();
+        my $ctx = context();
         my $delta = compare(@_, $conv);
         my @table = $delta->table;
         $ctx->release;
@@ -535,13 +535,27 @@ tests overload => sub {
 
     my $table = $cmp->($foo, $bar);
 
+    # On some systems the memory address is long enough to cause this to wrap.
+    my @checks;
+    if (@$table == 5) {
+        @checks = (
+            qr/^\| Overload::Foo=GLOB\(.+\)\s+\| ==\s+\| Overload::Bar=GLOB\(.+\)\s+\|$/,
+        );
+    }
+    else {
+        @checks = (
+            qr/^\| Overload::Foo=GLOB\(.+\s+\| ==\s+\| Overload::Bar=GLOB\(.+\s+\|$/,
+            qr/^\| .+\)\s+\| \s+\| .+\)\s+\|$/,
+        );
+    }
+
     like(
         $table,
         [
             T(), # Border
             T(), # Header
             T(), # Border
-            qr/^\| Overload::Foo=GLOB\(.+\)\s+\| ==\s+\| Overload::Bar=GLOB\(.+\)\s+\|$/,
+            @checks,
             T(), # Border
             DNE(), # END
         ],
