@@ -2,6 +2,11 @@
 
     - Remove reservations file
     - Documentation updates (add missing docs)
+    - Fix output handle in subtest diagnostics
+    - Better subtest diagnostics
+    - Whitespace fixes
+    - Better error handling in threads in the workflows
+    - Better support real fork vs pseudo fork
 
 1.302011  2015-09-30 21:05:57-07:00 America/Los_Angeles
 
