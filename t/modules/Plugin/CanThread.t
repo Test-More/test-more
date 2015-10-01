@@ -1,4 +1,18 @@
+use strict;
+use warnings;
+use Carp q/cluck/;
+my $inc;
+BEGIN {
+    $inc = sub {
+        my ($us, $got) = @_;
+        cluck "loadng $got!" if $got =~ m/threads/i
+    };
+    unshift @INC => $inc;
+}
 use Test::Stream qw/-V1 CanThread/;
+BEGIN {
+    @INC = grep { !(ref($_) && $_ == $inc) } @INC;
+}
 
 plan 3;
 
