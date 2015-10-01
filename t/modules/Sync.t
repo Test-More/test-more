@@ -1,6 +1,13 @@
 use strict;
 use warnings;
 
+BEGIN {
+    if ($^O eq 'MSWin32') {
+        require Test::Stream::Plugin::Core;
+        Test::Stream::Plugin::Core::skip_all("This test breaks on windows");
+    }
+}
+
 # Never do this anywhere else.
 BEGIN {
     package Test::Stream::Sync;
