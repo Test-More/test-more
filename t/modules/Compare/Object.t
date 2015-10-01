@@ -25,7 +25,7 @@ tests verify => sub {
     ok($one->verify(exists => 1, got => bless({}, 'Foo')), "Blessed");
 
     no warnings 'once';
-    local *Foo::isa = sub { 0 }; 
+    local *Foo::isa = sub { 0 };
     ok(!$one->verify(exists => 1, got => bless({}, 'Foo')), "not a 'UNIVERSAL' (pretend)");
 };
 

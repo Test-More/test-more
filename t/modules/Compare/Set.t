@@ -124,7 +124,7 @@ describe deltas => sub {
             "No checks defined for set (Set defined in $file line $line1)\n",
             "Need checks list, have file+line"
         );
-       
+
         $one->set_checks([]);
         push @{$one->lines} => __LINE__; my $line2 = __LINE__;
         is(

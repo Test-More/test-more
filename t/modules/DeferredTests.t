@@ -144,7 +144,3 @@ like(
 }
 
 done_testing;
-
-__END__
-
-        

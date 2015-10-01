@@ -279,11 +279,11 @@ is(
     my $exit;
     sub {
         my $ctx = context();
-    
+
         local $? = 0;
         $warnings = warns { Test::Stream::Context::_do_end() };
         $exit = $?;
-    
+
         $ctx->release;
     }->();
 
@@ -304,10 +304,10 @@ is(
 
 {
     like(dies { Test::Stream::Context->new() }, qr/The 'debug' attribute is required/, "need to have debug");
-    
+
     my $debug = Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
     like(dies { Test::Stream::Context->new(debug => $debug) }, qr/The 'hub' attribute is required/, "need to have hub");
-    
+
     my $hub = Test::Stream::Sync->stack->top;
     my $ctx = Test::Stream::Context->new(debug => $debug, hub => $hub);
     is($ctx->{_depth}, 0, "depth set to 0 when not defined.");
@@ -369,7 +369,7 @@ sub {
     sub {
         my ($ctx1, $ctx2);
         sub { $ctx1 = context() }->();
-    
+
         my @warnings;
         {
             local $SIG{__WARN__} = sub { push @warnings => @_ };
@@ -408,7 +408,7 @@ sub {
 
     is($ctx->_parse_event('Ok'), 'Test::Stream::Event::Ok', "Got the Ok event class");
     is($ctx->_parse_event('+Test::Stream::Event::Ok'), 'Test::Stream::Event::Ok', "Got the +Ok event class");
-    
+
     like(
         dies { $ctx->_parse_event('+DFASGFSDFGSDGSD') },
         qr/Could not load event module 'DFASGFSDFGSDGSD': Can't locate DFASGFSDFGSDGSD\.pm/,

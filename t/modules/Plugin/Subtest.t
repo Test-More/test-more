@@ -2,7 +2,7 @@ use Test::Stream -V1, -Tester, Subtest => [qw/subtest_streamed subtest_buffered/
 
 use File::Temp qw/tempfile/;
 
-# A bug in older perls causes a straneg error AFTER the program appears to be
+# A bug in older perls causes a strange error AFTER the program appears to be
 # done if this test is run.
 # "Size magic not implemented."
 if ($] > 5.020000) {

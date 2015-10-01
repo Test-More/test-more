@@ -683,7 +683,7 @@ arguments.
 =item $mock->after($NAME, sub { ... })
 
 This is similar to before, except your callback runs after the original code.
-The return from your callback is ignored. 
+The return from your callback is ignored.
 
 =item $mock->around($NAME, sub { ... })
 

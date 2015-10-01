@@ -136,7 +136,7 @@ This will create a new empty stack instance. All arguments are ignored.
 
 This will generate a new hub and push it to the top of the stack. Optionally
 you can provide arguments that will be passed into the constructor for the
-L<Test::Stream::Hub> object. 
+L<Test::Stream::Hub> object.
 
 If you specify the C<< 'class' => $class >> argument, the new hub will be an
 instance of the specified class.
@@ -152,7 +152,7 @@ L<Test::Stream::Sync> will be used.
 =item $hub = $stack->top()
 
 This will return the top hub from the stack. If there is no top hub yet this
-will create it. 
+will create it.
 
 =item $hub = $stack->peek()
 

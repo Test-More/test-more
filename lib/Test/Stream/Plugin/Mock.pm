@@ -166,7 +166,7 @@ sub mock_obj {
     my $new = bless($proto, $control->class);
 
     # We need to ensure there is a reference to the control object, and we want
-    # it to go away with the object. 
+    # it to go away with the object.
     $new->{'~~MOCK~CONTROL~~'} = $control;
     return $new;
 }

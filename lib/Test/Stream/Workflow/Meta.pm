@@ -59,7 +59,7 @@ sub build {
 sub purge {
     my $it = shift;
     my $pkg = $_[0];
-    
+
     $pkg ||= $it->{+UNIT}->package if blessed($it) && $it->{+UNIT};
 
     croak "You must specify a package to purge"

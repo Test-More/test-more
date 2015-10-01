@@ -371,7 +371,7 @@ tests custom_columns => sub {
         my $delta = compare(@_, $conv);
         my $table = [$delta->table];
         $ctx->release;
-        return $table;        
+        return $table;
     };
 
     $CLASS->add_column('V' => sub {
