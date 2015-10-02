@@ -6,6 +6,17 @@ use Test::Stream::Hub::Interceptor::Terminator;
 
 use base 'Test::Stream::Hub';
 
+sub inherit {
+    my $self = shift;
+    my ($from, %params) = @_;
+
+    if ($from->{+IPC} && !$self->{+IPC} && !exists($params{ipc})) {
+        my $ipc = $from->{+IPC};
+        $self->{+IPC} = $ipc;
+        $ipc->add_hub($self->{+HID});
+    }
+}
+
 sub terminate {
     my $self = shift;
     my ($code) = @_;

@@ -45,6 +45,28 @@ sub init {
     }
 }
 
+sub inherit {
+    my $self = shift;
+    my ($from, %params) = @_;
+
+    $self->{+_FORMATTER} = $from->{+_FORMATTER}
+        unless $self->{+_FORMATTER} || exists($params{formatter});
+
+    if ($from->{+IPC} && !$self->{+IPC} && !exists($params{ipc})) {
+        my $ipc = $from->{+IPC};
+        $self->{+IPC} = $ipc;
+        $ipc->add_hub($self->{+HID});
+    }
+
+    if (my $ls = $from->{+_LISTENERS}) {
+        push @{$self->{+_LISTENERS}} => grep { $_->{inherit} } @$ls;
+    }
+
+    if (my $ms = $from->{+_MUNGERS}) {
+        push @{$self->{+_MUNGERS}} => grep { $_->{inherit} } @$ms;
+    }
+}
+
 sub debug_todo {
     my ($self) = @_;
     my $array = $self->{+_TODO};
@@ -125,7 +147,7 @@ sub is_local {
 
 sub listen {
     my $self = shift;
-    my ($sub) = @_;
+    my ($sub, %params) = @_;
 
     carp "Useless addition of a listener in a child process or thread!"
         if $$ != $self->{+PID} || get_tid() != $self->{+TID};
@@ -133,7 +155,7 @@ sub listen {
     croak "listen only takes coderefs for arguments, got '$sub'"
         unless ref $sub && ref $sub eq 'CODE';
 
-    push @{$self->{+_LISTENERS}} => $sub;
+    push @{$self->{+_LISTENERS}} => { %params, code => $sub };
 
     $sub; # Intentional return.
 }
@@ -146,12 +168,12 @@ sub unlisten {
 
     my %subs = map {$_ => $_} @_;
 
-    @{$self->{+_LISTENERS}} = grep { !$subs{$_} } @{$self->{+_LISTENERS}};
+    @{$self->{+_LISTENERS}} = grep { !$subs{$_->{code}} } @{$self->{+_LISTENERS}};
 }
 
 sub munge {
     my $self = shift;
-    my ($sub) = @_;
+    my ($sub, %params) = @_;
 
     carp "Useless addition of a munger in a child process or thread!"
         if $$ != $self->{+PID} || get_tid() != $self->{+TID};
@@ -159,7 +181,7 @@ sub munge {
     croak "munge only takes coderefs for arguments, got '$sub'"
         unless ref $sub && ref $sub eq 'CODE';
 
-    push @{$self->{+_MUNGERS}} => $sub;
+    push @{$self->{+_MUNGERS}} => { %params, code => $sub };
 
     $sub; # Intentional Return
 }
@@ -169,7 +191,7 @@ sub unmunge {
     carp "Useless removal of a munger in a child process or thread!"
         if $$ != $self->{+PID} || get_tid() != $self->{+TID};
     my %subs = map {$_ => $_} @_;
-    @{$self->{+_MUNGERS}} = grep { !$subs{$_} } @{$self->{+_MUNGERS}};
+    @{$self->{+_MUNGERS}} = grep { !$subs{$_->{code}} } @{$self->{+_MUNGERS}};
 }
 
 sub follow_up {
@@ -244,7 +266,7 @@ sub process {
 
     if ($self->{+_MUNGERS}) {
         for (@{$self->{+_MUNGERS}}) {
-            $_->($self, $e);
+            $_->{code}->($self, $e);
             return unless $e;
         }
     }
@@ -256,7 +278,7 @@ sub process {
     $self->{+_FORMATTER}->write($e, $count) if $self->{+_FORMATTER};
 
     if ($self->{+_LISTENERS}) {
-        $_->($self, $e, $count) for @{$self->{+_LISTENERS}};
+        $_->{code}->($self, $e, $count) for @{$self->{+_LISTENERS}};
     }
 
     my $code = $e->terminate;
@@ -385,6 +407,12 @@ handle thread/fork sync, mungers, listeners, TAP output, etc.
         # return is ignored.
     });
 
+By default mungers are not inherited by child hubs, that means if you start a
+subtest, the subtest will not inherit the munger. You can change this behavior
+with the C<inherit> parameter:
+
+    $hub->munge(sub { ... }, inherit => 1);
+
 =head3 DESTROYING OR REPLACING AN EVENT
 
 C<@_> elements are aliased to the arguments passed into the munger from the
@@ -408,6 +436,13 @@ in C<send()> to return if a munger destroys the event.
 
         # return is ignored
     });
+
+By default listeners are not inherited by child hubs, that means if you start a
+subtest, the subtest will not inherit the listener. You can change this behavior
+with the C<inherit> parameter:
+
+    $hub->listen(sub { ... }, inherit => 1);
+
 
 =head2 POST-TEST BEHAVIORS
 
@@ -535,6 +570,8 @@ objects that implement a C<< $formatter->write($event) >> method.
 
 =item $sub = $hub->munge(sub { ... })
 
+=item $sub = $hub->munge(sub { ... }, inherit => 1)
+
 This adds your codeblock as a callback. Every event that hits this hub will be
 given to your munger BEFORE it is sent to the formatter. You can make any
 modifications you want to the event object.
@@ -556,6 +593,9 @@ You can also completely remove the event from the stream:
         $_[1] = undef;
     });
 
+Normally mungers are not inherited by child hubs such as subtests. You can add
+the C<< inherit => 1 >> parameter to allow a munger to be inherited.
+
 =item $hub->unmunge($sub)
 
 You can use this to remove a munge callback. You must pass in the coderef
@@ -574,6 +614,9 @@ listeners.
 
         # return is ignored
     });
+
+Normally listeners are not inherited by child hubs such as subtests. You can
+add the C<< inherit => 1 >> parameter to allow a listener to be inherited.
 
 =item $hub->unlisten($sub)
 

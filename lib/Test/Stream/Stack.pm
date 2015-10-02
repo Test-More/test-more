@@ -17,16 +17,21 @@ sub new_hub {
 
     my $class = delete $params{class} || 'Test::Stream::Hub';
 
+    my $hub = $class->new(%params);
+
     if (@$self) {
-        $params{formatter} = $self->[-1]->format unless exists $params{formatter};
-        $params{ipc}       = $self->[-1]->ipc    unless exists $params{ipc};
+        $hub->inherit($self->[-1], %params);
     }
     else {
-        $params{formatter} = Test::Stream::Sync->formatter->new  unless exists $params{formatter};
-        $params{ipc}       = Test::Stream::Sync->ipc unless exists $params{ipc};
-    }
+        $hub->format(Test::Stream::Sync->formatter->new)
+            unless $hub->format || exists($params{formatter});
 
-    my $hub = $class->new(%params);
+        my $ipc = Test::Stream::Sync->ipc;
+        if ($ipc && !$hub->ipc && !exists($params{ipc})) {
+            $hub->set_ipc($ipc);
+            $ipc->add_hub($hub->hid);
+        }
+    }
 
     push @$self => $hub;
 
@@ -68,6 +73,7 @@ sub clear {
     *push = sub {
         my $self = shift;
         my ($hub) = @_;
+        $hub->inherit($self->[-1]) if @$self;
         push @$self => $hub;
     };
 
