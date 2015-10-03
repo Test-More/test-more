@@ -59,15 +59,16 @@ is(pkg_to_file('A::Package::Name'), 'A/Package/Name.pm', "Converted package to f
 if ($INC{'Term/ReadKey.pm'}) {
     local $ENV{'TS_TERM_SIZE'};
     my $size;
-    {
+    my $ok = eval {
         local $SIG{__WARN__} = sub { 1 };
         ($size) = Term::ReadKey::GetTerminalSize(*STDOUT);
-    }
-    is(term_size(), $size, "Got size from Term::ReadKey") if $size;
+        1;
+    };
+    is(term_size(), $size, "Got size from Term::ReadKey") if $ok && $size;
 
     no warnings 'redefine';
     local *Term::ReadKey::GetTerminalSize = sub { 0 };
-    is(term_size(), 80, "use default of 80 if Term::ReadKey fails") if $size;
+    is(term_size(), 80, "use default of 80 if Term::ReadKey fails");
 }
 else {
     local %ENV = %ENV;
