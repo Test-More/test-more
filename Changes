@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix Util.t for some Term::ReadKey versions
+
 1.302012  2015-10-01 15:42:27-07:00 America/Los_Angeles
 
     - Remove reservations file
