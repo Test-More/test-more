@@ -1,3 +1,6 @@
+1.302012_002 Fri Oct 02 21:57:19:00 PST 2015
+    * Add version eval to several modules (#605)
+
 1.302012_001 Thu Oct 01 15:47:39:00 PST 2015
     * Support for Test::Stream 1.302012
 
