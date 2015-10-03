@@ -1,7 +1,8 @@
 package Test::Builder::Tester;
 
 use strict;
-our $VERSION = "1.302012_001";
+our $VERSION = '1.302012_001';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Builder 0.99;
 use Symbol;
