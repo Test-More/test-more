@@ -2,21 +2,6 @@ package Test::Stream::Workflow::Runner;
 use strict;
 use warnings;
 
-use Test::Stream::Capabilities qw/CAN_FORK CAN_THREAD/;
-
-BEGIN {
-    if (CAN_FORK && $^O ne 'MSWin32') {
-        *isolate = sub { 'fork_task' };
-    }
-    elsif (CAN_THREAD) {
-        require threads;
-        *isolate = sub { 'thread_task' };
-    }
-    else {
-        *isolate = sub { undef };
-    }
-}
-
 use Test::Stream::Util qw/try/;
 
 use Test::Stream::Workflow::Task;
@@ -35,7 +20,7 @@ sub import {
     $meta->set_runner($class->instance(@_));
 }
 
-my %SUPPORTED = map {$_ => 1} qw/todo skip iso isolate/;
+my %SUPPORTED = map {$_ => 1} qw/todo skip/;
 sub verify_meta {
     my $class = shift;
     my ($unit) = @_;
@@ -80,84 +65,8 @@ sub run_task {
     my $class = shift;
     my ($task) = @_;
 
-    my $meta = $task->unit->meta;
-    if($meta->{iso} || $meta->{isolate}) {
-        my $meth = $class->isolate;
-
-        if (!$meth) {
-            my $unit = $task->unit;
-            my $ctx = $unit->context;
-            $ctx->debug->set_skip('No way to isolate task!');
-            $ctx->ok(1, $unit->name);
-            return;
-        }
-
-        return $class->$meth($task);
-    }
-
     return $task->run();
 }
-
-sub fork_task {
-    my $class = shift;
-    my ($task) = @_;
-
-    my $unit = $task->unit;
-    my $name = $unit->name;
-    my $ctx  = $unit->context;
-
-    $ctx->throw("Cannot fork for '$name', system does not support forking")
-        unless CAN_FORK;
-
-    my $pid = fork;
-    $ctx->throw("Fork failed for '$name'")
-        unless defined $pid;
-
-    if ($pid) {
-        waitpid($pid, 0);
-        my $ecode = $? >> 8;
-        return (0, "Child process ($pid) exited $ecode") if $ecode;
-        Test::Stream::Sync->stack->top->cull();
-        return (1);
-    }
-
-    my ($ok, $err) = try {
-        $task->run();
-        Test::Stream::Sync->stack->top->cull();
-        exit 0;
-    };
-
-    Test::Stream::Sync->stack->top->cull();
-    $ctx->send_event('Exception', error => $err);
-    exit 255;
-}
-
-sub thread_task {
-    my $class = shift;
-    my ($task) = @_;
-
-    my $unit = $task->unit;
-    my $name = $unit->name;
-    my $ctx  = $unit->context;
-
-    $ctx->throw("Cannot thread for '$name', system does not support threads")
-        unless CAN_THREAD;
-
-    my $t = threads->create(sub {
-        my ($ok, $err) = try { $task->run() };
-        Test::Stream::Sync->stack->top->cull();
-        return 'good' if $ok;
-
-        $ctx->send_event('Exception', error => $err)
-    });
-
-    $t->join;
-    $ctx->send_event('Exception', error => $t->error)
-        if threads->can('error') && $t->error;
-
-    Test::Stream::Sync->stack->top->cull();
-}
-
 
 1;
 
@@ -290,40 +199,8 @@ not produce final results (or be a subtest of their own).
 
 =item $runner->run_task($task)
 
-The C<run()> method composes a unit into a C<Test::Stream::Workflow::Task>
-object. This object is then handed off to C<run_task()> to be run. At its
-simplest this method should run C<< $task->run() >>. The base class will simply
-run the task, unless the 'iso' (or 'isolate') meta attribute is set to true, in
-which case it delegates to C<fork_task()> or C<thread_task> depending on whats
-available. IF no method of isolatin the task is available it will skip the
-task.
-
-=item $runner->fork_task($task)
-
-This method will attempt to fork. In the parent process it will wait for the
-child to complete, then return. In the child process the task will be run, then
-the process will exit.
-
-This is a way to run a task in isolation ensuring that no global state is
-modified for future tests. This implementation does not support any parallelism
-as the parent waits for the child to complete before it continues.
-
-This method will throw an exception if the current system does not support
-forking. It will throw a different exception if it attempts to fork and cannot
-for any reason.
-
-=item $runner->thread_task($task)
-
-This method will attempt to spawn a thread. In the parent thread it will wait
-for the child to complete, then return. In the child thread the task will be
-run, then the thread will exit.
-
-This is a way to run a task in isolation ensuring that no global state is
-modified for future tests. This implementation does not support any parallelism
-as the parent waits for the child to complete before it continues.
-
-This method will throw an exception if the current system does not support
-threading.
+This simply calls C<< $task->run() >>. It is mainly here for subclasses to
+override.
 
 =back
 

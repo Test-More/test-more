@@ -22,7 +22,7 @@ case x => sub { ok(1, 'inside x') };
 case y => sub { ok(1, 'inside y') };
 
 describe "xxx" => sub {
-    tests foo => {iso => 1}, sub {
+    tests foo => sub {
         ok(1, "Boooya! $$");
         is(workflow_var('foo'), 'bar', "Got variable");
     };

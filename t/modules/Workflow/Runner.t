@@ -38,10 +38,10 @@ ok(lives { $CLASS->verify_meta($unit) }, "lack of meta is fine");
 $unit->set_meta({});
 ok(lives { $CLASS->verify_meta($unit) }, "empty meta is fine");
 
-$unit->set_meta({todo => 'foo', skip => 'foo', iso => 1});
+$unit->set_meta({todo => 'foo', skip => 'foo'});
 ok(lives { $CLASS->verify_meta($unit) }, "All valid keys");
 
-$unit->set_meta({todo => 'foo', skip => 'foo', iso => 1, foo => 'bar'});
+$unit->set_meta({todo => 'foo', skip => 'foo', foo => 'bar'});
 like(
     warning { $CLASS->verify_meta($unit) },
     qr/'foo' is not a recognised meta-key/,
@@ -113,71 +113,5 @@ $task->{'~~MOCK~CONTROL~~'}->add(run => sub { $ran++ });
 $unit->set_meta({});
 $CLASS->run_task($task);
 is($ran, 1, "ran task");
-
-if ($CLASS->isolate) {
-    $ran = 0;
-    $unit->set_meta({iso => 1});
-    $task->{'~~MOCK~CONTROL~~'}->override(run => sub {
-        ok(1, "Event");
-        $ran++;
-    });
-
-    my $events = intercept { $CLASS->run_task($task) };
-    is(
-        $events,
-        array {
-            event Ok => sub {
-                call pass => 1;
-                call name => 'Event';
-            };
-        },
-        "got event"
-    );
-    is($ran, 0, "ran was not altered locally due to isolation mechanism");
-
-    $task->{'~~MOCK~CONTROL~~'}->override(run => sub {
-        $ran++;
-        die "XXX $$";
-    });
-    $events = intercept { $CLASS->run_task($task) };
-    like(
-        $events,
-        array {
-            event Exception => { error => qr/XXX/ };
-        },
-        "got exception event"
-    );
-}
-
-{
-    $ran = 0;
-    $unit->set_meta({iso => 1});
-    $task->{'~~MOCK~CONTROL~~'}->override(run => sub {
-        ok(1, "Event");
-        $ran++;
-    });
-
-    my $mock = mock $CLASS => (
-        override => {
-            isolate => sub { undef },
-        },
-    );
-
-    my $events = intercept { $CLASS->run_task($task) };
-    is(
-        $events,
-        array {
-            event Ok => sub {
-                call pass => 1;
-                call name => $unit->name;
-                prop skip => 'No way to isolate task!';
-            };
-        },
-        "Skipped"
-    );
-    is($ran, 0, "ran was not altered locally due to isolation mechanism");
-}
-
-
 
 done_testing;
