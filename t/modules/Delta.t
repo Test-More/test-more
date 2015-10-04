@@ -545,7 +545,7 @@ tests overload => sub {
     else {
         @checks = (
             qr/^\| Overload::Foo=GLOB\(.+\s+\| ==\s+\| Overload::Bar=GLOB\(.+\s+\|$/,
-            qr/^\| .+\)\s+\| \s+\| .+\)\s+\|$/,
+            qr/^\| .*\)\s+\| \s+\| .*\)\s+\|$/,
         );
     }
 
