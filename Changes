@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302015  2015-10-04 13:46:56-07:00 America/Los_Angeles
+
     - Remove spec isolation logic, this can be an external plugin
 
 1.302014  2015-10-03 20:30:14-07:00 America/Los_Angeles
