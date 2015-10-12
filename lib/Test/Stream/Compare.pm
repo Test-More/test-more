@@ -42,14 +42,10 @@ export build => sub {
 
     my @caller = caller(1);
 
-    my $info = sub_info($code, $caller[2]);
-    my $build = $class->new(
-        file  => $info->{file},
-        lines => $info->{lines},
-    );
-
-    die "'$caller[3]\()' should not be called in void context in $info->{file} (approx) lines $info->{start_line} -> $info->{end_line}\n"
+    die "'$caller[3]\()' should not be called in void context in $caller[1] line $caller[2]\n"
         unless defined(wantarray);
+
+    my $build = $class->new(builder => $code, called => \@caller);
 
     push @BUILD => $build;
     my ($ok, $err) = try { $code->($build); 1 };
@@ -61,8 +57,46 @@ export build => sub {
 no Test::Stream::Exporter;
 
 use Test::Stream::HashBase(
-    accessors => [qw/file lines/]
+    accessors => [qw/builder _file _lines _info called/]
 );
+
+*set_lines = \&set__lines;
+*set_file  = \&set__file;
+
+sub init {
+    my $self = shift;
+    $self->{_lines} = delete $self->{lines} if exists $self->{lines};
+    $self->{_file}  = delete $self->{file}  if exists $self->{file};
+}
+
+sub file {
+    my $self = shift;
+    return $self->{+_FILE} if $self->{+_FILE};
+
+    if ($self->{+BUILDER}) {
+        $self->{+_INFO} ||= sub_info($self->{+BUILDER});
+        return $self->{+_INFO}->{file};
+    }
+    elsif ($self->{+CALLED}) {
+        return $self->{+CALLED}->[1];
+    }
+
+    return undef;
+}
+
+sub lines {
+    my $self = shift;
+    return $self->{+_LINES} if $self->{+_LINES};
+
+    if ($self->{+BUILDER}) {
+        $self->{+_INFO} ||= sub_info($self->{+BUILDER});
+        return $self->{+_INFO}->{lines} if @{$self->{+_INFO}->{lines}};
+    }
+    if ($self->{+CALLED}) {
+        return $self->{+CALLED}->[2];
+    }
+    return [];
+}
 
 use Test::Stream::Delta;
 sub delta_class { 'Test::Stream::Delta' }

@@ -16,6 +16,7 @@ use Scalar::Util qw/reftype blessed/;
 sub init {
     my $self = shift;
     $self->{+ITEMS} ||= [];
+    $self->SUPER::init();
 }
 
 sub name { '<META CHECKS>' }

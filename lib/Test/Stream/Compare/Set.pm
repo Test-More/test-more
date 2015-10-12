@@ -21,6 +21,8 @@ sub init {
     $self->{+CHECKS} ||= [];
 
     $self->set_reduction($reduction);
+
+    $self->SUPER::init();
 }
 
 sub name      { '<CHECK-SET>' }
@@ -58,8 +60,8 @@ sub deltas {
     my $convert   = $params{convert};
 
     unless ($checks && @$checks) {
-        my $file = $self->{+FILE};
-        my $lines = $self->{+LINES};
+        my $file = $self->file;
+        my $lines = $self->lines;
 
         my $extra = "";
         if ($file and $lines and @$lines) {

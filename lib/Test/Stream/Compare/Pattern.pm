@@ -14,6 +14,8 @@ sub init {
     my $self = shift;
 
     croak "'pattern' is a required attribute" unless $self->{+PATTERN};
+
+    $self->SUPER::init();
 }
 
 sub name { shift->{+PATTERN} . "" }

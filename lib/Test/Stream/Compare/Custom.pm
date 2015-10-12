@@ -17,6 +17,8 @@ sub init {
 
     $self->{+OPERATOR} ||= 'CODE(...)';
     $self->{+NAME}     ||= '<Custom Code>';
+
+    $self->SUPER::init();
 }
 
 sub verify {

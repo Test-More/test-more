@@ -14,6 +14,8 @@ sub init {
     my $self = shift;
     croak "'expect' is a require attribute"
         unless exists $self->{+EXPECT};
+
+    $self->SUPER::init();
 }
 
 1;

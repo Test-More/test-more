@@ -20,6 +20,8 @@ sub init {
 
     croak "'input' must be a reference, got '" . $self->{+INPUT} . "'"
         unless ref $self->{+INPUT};
+
+    $self->SUPER::init();
 }
 
 sub operator { '==' }

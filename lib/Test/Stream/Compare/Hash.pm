@@ -34,6 +34,8 @@ sub init {
             $self->{+ORDER} = [sort keys %{$self->{+ITEMS}}];
         }
     }
+
+    $self->SUPER::init();
 }
 
 sub name { '<HASH>' }

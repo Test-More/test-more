@@ -20,6 +20,8 @@ sub init {
 
     croak "'input' must be a regex , got '" . $self->{+INPUT} . "'"
         unless rtype($self->{+INPUT}) eq 'REGEXP';
+
+    $self->SUPER::init();
 }
 
 sub operator { 'eq' }

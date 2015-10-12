@@ -15,6 +15,8 @@ sub init {
     my $self = shift;
     croak "'item' is a required attribute"
         unless $self->{+ITEM};
+
+    $self->SUPER::init();
 }
 
 sub name     { '<SCALAR>' }

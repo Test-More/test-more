@@ -34,6 +34,8 @@ sub init {
         croak "All indexes listed in the 'order' arrayref must be numeric"
             if grep { !(looks_like_number($_) || (ref($_) && reftype($_) eq 'CODE')) } @{$self->{+ORDER}};
     }
+
+    $self->SUPER::init();
 }
 
 sub name { '<ARRAY>' }

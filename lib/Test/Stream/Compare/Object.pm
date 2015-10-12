@@ -17,6 +17,7 @@ use Scalar::Util qw/reftype blessed/;
 sub init {
     my $self = shift;
     $self->{+CALLS} ||= [];
+    $self->SUPER::init();
 }
 
 sub name { '<OBJECT>' }
