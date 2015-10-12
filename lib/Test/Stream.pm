@@ -89,12 +89,12 @@ sub load {
         }
 
         if ($arg =~ m/^[a-z]/) {
-            my $method = "_opt_$arg";
+            my $method = "opt_$arg";
 
-            die "'$arg' is not a valid option for '$class' (Did you intend to ise the '" . ucfirst($arg) . "' plugin?) at $caller->[1] line $caller->[2].\n"
+            die "'$arg' is not a valid option for '$class' (Did you intend to use the '" . ucfirst($arg) . "' plugin?) at $caller->[1] line $caller->[2].\n"
                 unless $class->can($method);
 
-            $class->$method(\@_);
+            $class->$method(list => \@_, order => \@order, args => \%args, skip => \%skip);
             next;
         }
 
@@ -107,18 +107,15 @@ sub load {
         # Arg is specified
         $val = shift @_ if @_ && (ref($_[0]) || ($_[0] && $_[0] eq '*'));
 
-        # Fallback to no args
-        $val = [] unless defined $val;
-
         # Special Cases
         $val = $val eq '*' ? ['-all'] : [$val]
-            unless ref $val;
+            if defined($val) && !ref($val);
 
         # Make sure we only list it in @order once.
         push @order => $arg unless $args{$arg};
 
         # Override any existing value, last wins.
-        $args{$arg} = $val;
+        $args{$arg} = $val if defined $val;
     }
 
     for my $arg (@order) {
@@ -154,6 +151,52 @@ sub load {
     }
 
     Test::Stream::Sync->loaded(1);
+}
+
+sub opt_class {
+    shift;
+    my %params = @_;
+    my $list = $params{list};
+    my $args = $params{args};
+    my $order = $params{order};
+
+    my $class = shift @$list;
+
+    push @{$params{order}} => 'Test::Stream::Plugin::Class'
+        unless $args->{'Test::Stream::Plugin::Class'};
+
+    $args->{'Test::Stream::Plugin::Class'} = [$class];
+}
+
+sub opt_skip_without {
+    shift;
+    my %params = @_;
+    my $list = $params{list};
+    my $args = $params{args};
+    my $order = $params{order};
+
+    my $class = shift @$list;
+
+    push @{$params{order}} => 'Test::Stream::Plugin::SkipWithout'
+        unless $args->{'Test::Stream::Plugin::SkipWithout'};
+
+    $args->{'Test::Stream::Plugin::SkipWithout'} ||= [];
+    push @{$args->{'Test::Stream::Plugin::SkipWithout'}} => $class;
+}
+
+sub opt_srand {
+    shift;
+    my %params = @_;
+    my $list = $params{list};
+    my $args = $params{args};
+    my $order = $params{order};
+
+    my $seed = shift @$list;
+
+    push @{$params{order}} => 'Test::Stream::Plugin::SRand'
+        unless $args->{'Test::Stream::Plugin::SRand'};
+
+    $args->{'Test::Stream::Plugin::SRand'} = [$seed];
 }
 
 1;
@@ -244,7 +287,7 @@ The number following the 'V' prefix should correspond to a major version
 number. This means that 'V1' is provided with Test::Stream 1.X. V2
 will prompt a 2.X release and so on.
 
-=head1 PLUGINS AND BUNDLES
+=head1 PLUGINS, BUNDLES, AND OPTIONS
 
 L<Test::Stream> tools should be created as plugins. This is not enforced,
 nothing prevents you from writing L<Test::Stream> tools that are not plugins.
@@ -336,24 +379,59 @@ C<['-all']> for you.
 =item 'option' => ...
 
 Uncapitalized options without a C<+>, C<->, or C<:> prefix are reserved for use
-by the loader. Currently there are no valid options, so any uncapitalized
-option will currently result in an exception. Test::Stream may in the future
-add any options it wants. As well loaders that subclass Test::Stream can add
-options of their own.
+by the loader. Loaders that subclass Test::Stream can add options of their own.
 
-To define an option in your subclass simply add a C<_opt_name()> method. The
-method will recieve 1 argument, a reference to the arguments array, it should
-shift off any arguments it expects.
+To define an option in your subclass simply add a C<sub opt_NAME()> method. The
+method will recieve several arguments:
 
-    sub _opt_foo {
-        my $self = shift;
-        my ($args) = @_;
+    sub opt_foo {
+        my $class = shift;
+        my %params = @_;
 
-        my $arg = shift @$args; # Shift so that the loader does not treat it as
-                                # a plugin or bundle.
+        my $list  = $params{list};  # List of remaining plugins/args
+        my $args  = $params{args};  # Hashref of {plugin => \@args}
+        my $order = $params{order}; # Plugins to load, in order
+        my $skip  = $params{skip};  # Hashref of plugins to skip {plugin => $bool}
 
-        ...
+        # Pull our arguments off the list given at load time
+        my $foos_arg = shift @$list;
+
+        # Add the 'Foo' plugin to the list of plugins to load, unless it is
+        # present in the $args hash in which case it is already in order.
+        push @$order => 'Foo' unless $args{'Foo'};
+
+        # Set the args for the plugin
+        $args->{Foo} = [$foos_arg];
+
+        $skip{Fox} = 1; # Make sure the Fox plugin never loads.
     }
+
+=back
+
+=head2 AVAILABLE OPTIONS
+
+=over 4
+
+=item class => $CLASS
+
+Shortcut for the L<Test::Stream::Plugin::Class> plugin.
+
+=item skip_without => $MODULE
+
+=item skip_without => 'v5.008'
+
+=item skip_without => [$MODULE => $VERSION]
+
+Shortcup for the L<Test::Stream::Plugin::SkipWithout> plugin. Unlike normal
+specification of a plugin, this APPENDS arguments. This one can be called
+several time and the arguments will be appended.
+
+B<Note:> specifying 'SkipWithout' the normal way after a call to 'skip_without'
+will wipe out the argument that have accumulated so far.
+
+=item srand => $SEED
+
+Shortcut to set the random seed.
 
 =back
 

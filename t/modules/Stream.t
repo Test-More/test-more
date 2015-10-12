@@ -24,6 +24,10 @@ use Test::Stream(
 
     Compare => '*',
 
+    # Options
+    skip_without => 'Carp',
+    class => 'Test::Stream',
+
     # Other stuff we need:
     'Exception',
 );
@@ -89,20 +93,67 @@ like(
 
 like(
     dies { load_plugin('foo') },
-    qr/'foo' is not a valid option for 'Test::Stream' \(Did you intend to ise the 'Foo' plugin\?\)/,
+    qr/'foo' is not a valid option for 'Test::Stream' \(Did you intend to use the 'Foo' plugin\?\)/,
     "Invalid option"
 );
 
 my $ran;
 my $mock = mock 'Test::Stream' => (
-    add => [ '_opt_foo' => sub {
-        my $class = shift;
-        my $args = shift;
-        $ran = shift @$args;
+    add => [ 'opt_foo' => sub {
+        my ($class, %params) = @_;
+        my $next = shift @{$params{list}};
+        $ran = [@_, $next];
     }],
 );
 
 load_plugin('foo' => 'xyz');
-is($ran, 'xyz', "got args");
+is(
+    $ran,
+    [
+        'Test::Stream',
+        list => [],
+        order => [],
+        args => {},
+        skip => {},
+        'xyz'
+    ],
+    "got args"
+);
+
+my $list = [qw/foo bar baz/];
+my $args = {};
+my $order = [];
+Test::Stream->opt_class(list => $list, args => $args, order => $order);
+is($list, [qw/bar baz/], "shifted argument from list");
+is($order, ['Test::Stream::Plugin::Class'], "Added Class to the load order");
+is($args, {'Test::Stream::Plugin::Class' => ['foo']}, "added arg for class");
+Test::Stream->opt_class(list => $list, args => $args, order => $order);
+is($list, [qw/baz/], "shifted next argument from list");
+is($order, ['Test::Stream::Plugin::Class'], "Added Class to the load order only once");
+is($args, {'Test::Stream::Plugin::Class' => ['bar']}, "Changed arg for class");
+
+$list = [qw/foo bar baz/];
+$args = {};
+$order = [];
+Test::Stream->opt_skip_without(list => $list, args => $args, order => $order);
+is($list, [qw/bar baz/], "shifted argument from list");
+is($order, ['Test::Stream::Plugin::SkipWithout'], "Added SkipWithout to the load order");
+is($args, {'Test::Stream::Plugin::SkipWithout' => ['foo']}, "added arg for skip_without");
+Test::Stream->opt_skip_without(list => $list, args => $args, order => $order);
+is($list, [qw/baz/], "shifted next argument from list");
+is($order, ['Test::Stream::Plugin::SkipWithout'], "Added SkipWithout to the load order only once");
+is($args, {'Test::Stream::Plugin::SkipWithout' => ['foo', 'bar']}, "added second arg for skip_without");
+
+$list = [qw/foo bar baz/];
+$args = {};
+$order = [];
+Test::Stream->opt_srand(list => $list, args => $args, order => $order);
+is($list, [qw/bar baz/], "shifted argument from list");
+is($order, ['Test::Stream::Plugin::SRand'], "Added SRand to the load order");
+is($args, {'Test::Stream::Plugin::SRand' => ['foo']}, "added arg for SRand");
+Test::Stream->opt_srand(list => $list, args => $args, order => $order);
+is($list, [qw/baz/], "shifted next argument from list");
+is($order, ['Test::Stream::Plugin::SRand'], "Added SRand to the load order only once");
+is($args, {'Test::Stream::Plugin::SRand' => ['bar']}, "Changed arg for class");
 
 done_testing;
