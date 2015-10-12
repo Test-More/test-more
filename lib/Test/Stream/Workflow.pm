@@ -5,14 +5,13 @@ use warnings;
 use Scalar::Util qw/reftype blessed/;
 use Carp qw/confess croak/;
 
-use Test::Stream::Block;
 use Test::Stream::Sync;
 
 use Test::Stream::Workflow::Meta;
 use Test::Stream::Workflow::Unit;
 
 use Test::Stream::Context qw/context/;
-use Test::Stream::Util qw/try/;
+use Test::Stream::Util qw/try set_sub_name CAN_SET_SUB_NAME sub_info/;
 
 use Test::Stream::Exporter;
 exports qw{
@@ -62,7 +61,7 @@ my %ALLOWED_STASHES = map {$_ => 1} qw{
 my @BUILD;
 my @VARS;
 
-sub workflow_current     { _current(caller)            }
+sub workflow_current     { _current(caller) }
 sub workflow_meta        { Test::Stream::Workflow::Meta->get(scalar caller) }
 sub workflow_run         { Test::Stream::Workflow::Meta->get(scalar caller)->run(@_) }
 sub workflow_runner      { Test::Stream::Workflow::Meta->get(scalar caller)->set_runner(@_) }
@@ -135,59 +134,79 @@ sub new_proto_unit {
     $params{level} = 1 unless defined $params{level};
     my $caller = $params{caller} || [caller($params{level})];
     my $args = $params{args};
+    my $subname = $params{subname};
 
-    my $subname = $caller->[3];
-    $subname =~ s/^.*:://g;
+    unless ($subname) {
+        $subname = $caller->[3];
+        $subname =~ s/^.*:://g;
+    }
 
-    die_at_caller $caller => "Too many arguments for $subname"
-        if @$args > 3;
+    my ($name, $code, $meta, @lines);
+    for my $item (@$args) {
+        if (my $type = reftype($item)) {
+            if ($type eq 'CODE') {
+                die_at_caller $caller => "$subname() only accepts 1 coderef argument per call"
+                    if $code;
 
-    my $name = shift @$args;
-    my $code = pop @$args;
-    my $meta = shift @$args;
+                $code = $item;
+            }
+            elsif ($type eq 'HASH') {
+                die_at_caller $caller => "$subname() only accepts 1 meta-hash argument per call"
+                    if $meta;
 
-    die_at_caller $caller => "The first argument to $subname (name) is required"
+                $meta = $item;
+            }
+            else {
+                die_at_caller $caller => "Unknown argument to $subname: $item";
+            }
+        }
+        elsif ($item =~ m/^\d+$/) {
+            die_at_caller $caller => "$subname() only accepts 2 line number arguments per call (got: " . join(', ', @lines, $item) . ")"
+                if @lines >= 2;
+
+            push @lines => $item;
+        }
+        else {
+            die_at_caller $caller => "$subname() only accepts 1 name argument per call (got: '$name', '$item')"
+                if $name;
+
+            $name = $item;
+        }
+    }
+
+    die_at_caller $caller => "$subname() requires a name argument (non-numeric string)"
         unless $name;
-    die_at_caller $caller => "The first argument to $subname (name) may not be a reference"
-        if ref $name;
-    die_at_caller $caller => "The final argument to $subname (code) is required"
+    die_at_caller $caller => "$subname() requires a code reference"
         unless $code;
-    die_at_caller $caller => "The final argument to $subname (code) must be a sub reference"
-        unless ref($code) && reftype($code) eq 'CODE';
-    die_at_caller $caller => "The middle argument to $subname (meta) must be a hash reference when present"
-        if $meta && (!ref($meta) || reftype($meta) ne 'HASH');
 
-    my $block = Test::Stream::Block->new(
-        name    => $name,
-        coderef => $code,
-        caller  => $caller,
-    );
+    my $info = sub_info($code);
+    set_sub_name("$caller->[0]\::$name", $code) if CAN_SET_SUB_NAME && $info->{name} =~ m/__ANON__$/;
 
     my $unit = Test::Stream::Workflow::Unit->new(
         name       => $name,
         meta       => $meta,
-        start_line => $block->start_line,
-        end_line   => $block->end_line,
-        file       => $block->file,
         package    => $caller->[0],
+        file       => $info->{file},
+        start_line => $info->{start_line} || $caller->[2],
+        end_line   => $info->{end_line}   || $caller->[2],
 
         $params{set_primary} ? (primary => $code) : (),
 
         $params{unit} ? (%{$params{unit}}) : (),
     );
 
-    return ($unit, $block, $caller);
+    return ($unit, $code, $caller);
 }
 
 sub group_builder {
-    my ($unit, $block, $caller) = new_proto_unit(
+    my ($unit, $code, $caller) = new_proto_unit(
         args => \@_,
         unit => { type => 'group' },
     );
 
     push_workflow_build($unit);
     my ($ok, $err) = try {
-        $block->coderef->($unit);
+        $code->($unit);
         1; # To force the previous statement to be in void context
     };
     pop_workflow_build($unit);
@@ -262,34 +281,42 @@ sub _unit_builder_callback_primaries {
 }
 
 sub gen_unit_builder {
-    my ($callback, @stashes) = @_;
-    croak "Not enough arguments to gen_unit_builder()"
-        unless @stashes;
+    my %params = @_;
+    my $name = $params{name};
+    my $callback = $params{callback} || croak "'callback' is a required argument";
+    my $stashes = $params{stashes} || croak "'stashes' is a required argument";
 
     my $reftype = reftype($callback) || "";
     my $cb_sub = $reftype eq 'CODE' ? $callback : $PKG->can("_unit_builder_callback_$callback");
     croak "'$callback' is not a valid callback"
         unless $cb_sub;
 
-    my $wrap = @stashes > 1 ? 1 : 0;
-    my $check = join '+', sort @stashes;
+    $reftype = reftype($stashes) || "";
+    croak "'stashes' must be an array reference (got: $stashes)"
+        unless $reftype eq 'ARRAY';
+
+    my $wrap = @$stashes > 1 ? 1 : 0;
+    my $check = join '+', sort @$stashes;
     croak "'$check' is not a valid stash"
         unless $ALLOWED_STASHES{$check};
 
     return sub {
-        my ($unit, $block, $caller) = new_proto_unit(
+        my ($unit, $code, $caller) = new_proto_unit(
             set_primary => 1,
-            args        => \@_,
+            args        => [@_],
             unit        => {type => 'single', wrap => $wrap},
+            name        => $name,
         );
 
-        confess "$caller->[3] must only be called in a void context"
+        my $subname = $name || $caller->[3];
+
+        confess "$subname must only be called in a void context"
             if defined wantarray;
 
         my $current = _current($caller->[0])
             or confess "Could not find the current build!";
 
-        $cb_sub->($current, $unit, @stashes);
+        $cb_sub->($current, $unit, @$stashes);
     }
 }
 
@@ -547,7 +574,7 @@ Something to run after the primary actions.
 
 =back
 
-=item ($unit, $block, $caller) = new_proto_unit(\%params)
+=item ($unit, $code, $caller) = new_proto_unit(\%params)
 
 =over 4
 
@@ -565,8 +592,8 @@ Something to run after the primary actions.
 
 This is used under the hood by C<gen_unit_builder()>. This will parse the 2 or
 3 typical input arguments, verify them, and return a new
-L<Test::Stream::Workflow::Unit>, an L<Test::Stream::Block> object representing
-the coderef that was passed in, and a caller arrayref.
+L<Test::Stream::Workflow::Unit>, the coderef that was passed in, and a caller
+arrayref.
 
 If you use this it is your job to put the unit where it should be. Normally
 C<gen_unit_builder> and C<group_builder> are all you should need.

@@ -16,7 +16,7 @@ use overload(
 
 use Test::Stream::Workflow qw/push_workflow_vars pop_workflow_vars/;
 use Test::Stream::Plugin::Subtest qw/subtest_buffered/;
-use Test::Stream::Util qw/try/;
+use Test::Stream::Util qw/try set_sub_name CAN_SET_SUB_NAME/;
 
 use Test::Stream::HashBase(
     accessors => [
@@ -65,13 +65,13 @@ sub subtest {
 sub reset {
     my $self = shift;
 
-    $self->{+STAGE}        = STAGE_BUILDUP();
+    $self->{+STAGE}         = STAGE_BUILDUP();
     $self->{+_BUILDUP_IDX}  = 0;
     $self->{+_TEARDOWN_IDX} = 0;
-    $self->{+FAILED}       = 0;
-    $self->{+EVENTS}       = 0;
-    $self->{+PENDING}      = 0;
-    $self->{+EXCEPTION}    = undef;
+    $self->{+FAILED}        = 0;
+    $self->{+EVENTS}        = 0;
+    $self->{+PENDING}       = 0;
+    $self->{+EXCEPTION}     = undef;
 }
 
 sub _have_primary {
@@ -233,43 +233,46 @@ sub _listener {
     };
 }
 
+sub _run_primary {
+    my $self = shift;
+    my $unit = $self->{+UNIT};
+    my $primary = $unit->primary;
+
+    my $hub = Test::Stream::Sync->stack->top;
+    my $l = $hub->listen($self->_listener) if $hub->is_local;
+
+    if(reftype($primary) eq 'ARRAY') {
+        $self->runner->run(unit => $_, args => $self->{+ARGS}) for @$primary
+    }
+    else {
+        $primary->(@{$self->{+ARGS}});
+    }
+
+    $hub->unlisten($l) if $l;
+}
+
 sub _run_primaries {
     my $self = shift;
 
     # Make sure this does not run again
     $self->{+STAGE} = STAGE_TEARDOWN() if $self->{+STAGE} < STAGE_TEARDOWN();
 
-    my $modifiers = $self->{+UNIT}->modify;
-    my $primary   = $self->{+UNIT}->primary;
+    my $modifiers = $self->{+UNIT}->modify || return $self->_run_primary();
 
-    my $run_primary = sub {
-        my $hub = Test::Stream::Sync->stack->top;
-        my $l = $hub->listen($self->_listener) if $hub->is_local;
+    for my $mod (@$modifiers) {
+        my $primary = sub {
+            $mod->primary->(@{$self->{+ARGS}});
+            $self->_run_primary();
+        };
 
-        if(reftype($primary) eq 'ARRAY') {
-            $self->runner->run(unit => $_, args => $self->{+ARGS}) for @$primary
-        }
-        else {
-            $primary->(@{$self->{+ARGS}});
-        }
+        my $name = $mod->name;
+        set_sub_name($name, $primary) if CAN_SET_SUB_NAME;
 
-        $hub->unlisten($l) if $l;
-    };
-
-    if ($modifiers) {
-        for my $mod (@$modifiers) {
-            my $temp = Test::Stream::Workflow::Unit->new(
-                %$mod,
-                primary => sub {
-                    $mod->primary->(@{$self->{+ARGS}});
-                    $run_primary->();
-                },
-            );
-            $self->runner->run(unit => $temp, args => $self->{+ARGS});
-        }
-    }
-    else {
-        $run_primary->();
+        my $temp = Test::Stream::Workflow::Unit->new(
+            %$mod,
+            primary => $primary,
+        );
+        $self->runner->run(unit => $temp, args => $self->{+ARGS});
     }
 }
 

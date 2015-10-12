@@ -54,9 +54,10 @@ tests exporter => sub {
 
     my $inner;
     my $build = sub { build('Test::Stream::Compare::Array', sub {
+        local $_ = 1;
         $inner = get_build();
     }) }->();
-    is($build->lines, [__LINE__ - 3, __LINE__ - 1], "got lines");
+    is($build->lines, [__LINE__ - 4, __LINE__ - 1], "got lines");
     is($build->file, __FILE__, "got file");
 
     ref_is($inner, $build, "Build was set inside block");
@@ -72,7 +73,6 @@ tests exporter => sub {
         qr/should not be called in void context/,
         "You need to retain the return from build"
     );
-
 };
 
 tests object_base => sub {

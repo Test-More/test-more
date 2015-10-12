@@ -45,18 +45,18 @@ default_exports qw{
 no Test::Stream::Exporter;
 
 BEGIN {
-    *tests       = gen_unit_builder('simple'    => 'primary');
-    *it          = gen_unit_builder('simple'    => 'primary');
-    *case        = gen_unit_builder('simple'    => 'modify');
-    *before_all  = gen_unit_builder('simple'    => 'buildup');
-    *after_all   = gen_unit_builder('simple'    => 'teardown');
-    *around_all  = gen_unit_builder('simple'    => 'buildup', 'teardown');
-    *before_case = gen_unit_builder('modifiers' => 'buildup');
-    *after_case  = gen_unit_builder('modifiers' => 'teardown');
-    *around_case = gen_unit_builder('modifiers' => 'buildup', 'teardown');
-    *before_each = gen_unit_builder('primaries' => 'buildup');
-    *after_each  = gen_unit_builder('primaries' => 'teardown');
-    *around_each = gen_unit_builder('primaries' => 'buildup', 'teardown');
+    *tests       = gen_unit_builder(name => 'tests',       callback => 'simple',    stashes => ['primary']);
+    *it          = gen_unit_builder(name => 'it',          callback => 'simple',    stashes => ['primary']);
+    *case        = gen_unit_builder(name => 'case',        callback => 'simple',    stashes => ['modify']);
+    *before_all  = gen_unit_builder(name => 'before_all',  callback => 'simple',    stashes => ['buildup']);
+    *after_all   = gen_unit_builder(name => 'after_all',   callback => 'simple',    stashes => ['teardown']);
+    *around_all  = gen_unit_builder(name => 'around_all',  callback => 'simple',    stashes => ['buildup', 'teardown']);
+    *before_case = gen_unit_builder(name => 'before_case', callback => 'modifiers', stashes => ['buildup']);
+    *after_case  = gen_unit_builder(name => 'after_case',  callback => 'modifiers', stashes => ['teardown']);
+    *around_case = gen_unit_builder(name => 'around_case', callback => 'modifiers', stashes => ['buildup', 'teardown']);
+    *before_each = gen_unit_builder(name => 'before_each', callback => 'primaries', stashes => ['buildup']);
+    *after_each  = gen_unit_builder(name => 'after_each',  callback => 'primaries', stashes => ['teardown']);
+    *around_each = gen_unit_builder(name => 'around_each', callback => 'primaries', stashes => ['buildup', 'teardown']);
 }
 
 1;

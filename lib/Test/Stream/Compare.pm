@@ -2,7 +2,7 @@ package Test::Stream::Compare;
 use strict;
 use warnings;
 
-use Test::Stream::Util qw/try/;
+use Test::Stream::Util qw/try sub_info/;
 use Test::Stream::Delta;
 
 use Carp qw/confess croak/;
@@ -42,16 +42,13 @@ export build => sub {
 
     my @caller = caller(1);
 
-    my $block = Test::Stream::Block->new(
-        coderef => $code,
-        caller  => \@caller,
-    );
+    my $info = sub_info($code, $caller[2]);
     my $build = $class->new(
-        file  => $block->file,
-        lines => [$block->start_line, $block->end_line],
+        file  => $info->{file},
+        lines => $info->{lines},
     );
 
-    die "'$caller[3]\()' should not be called in void context in " . $block->call_detail . "\n"
+    die "'$caller[3]\()' should not be called in void context in $info->{file} (approx) lines $info->{start_line} -> $info->{end_line}\n"
         unless defined(wantarray);
 
     push @BUILD => $build;

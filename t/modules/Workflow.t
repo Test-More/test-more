@@ -151,59 +151,58 @@ is(
 sub wrap_proto_unit { new_proto_unit(@_) }
 
 like(
-    dies { wrap_proto_unit(args => [1, 2, 3, 4]) },
-    qr/Too many arguments for wrap_proto_unit/,
-    "Argument count check"
+    dies { wrap_proto_unit(args => [1, 2, 3]) },
+    qr/wrap_proto_unit\(\) only accepts 2 line number arguments per call \(got: 1, 2, 3\)/,
+    "Line number limit"
 );
+
 like(
-    dies { wrap_proto_unit(args => []) },
-    qr/The first argument to wrap_proto_unit \(name\) is required/,
-    "Name is required"
+    dies { wrap_proto_unit(args => [qw/foo bar/]) },
+    qr/wrap_proto_unit\(\) only accepts 1 name argument per call \(got: 'foo', 'bar'\)/,
+    "Only 1 name"
 );
+
 like(
-    dies { wrap_proto_unit(args => [{}]) },
-    qr/The first argument to wrap_proto_unit \(name\) may not be a reference/,
-    "name type check"
+    dies { wrap_proto_unit(args => [[]]) },
+    qr/Unknown argument to wrap_proto_unit: ARRAY/,
+    "Invalid arg ref"
 );
+
+like(
+    dies { wrap_proto_unit(args => [{}, {}]) },
+    qr/wrap_proto_unit\(\) only accepts 1 meta-hash argument per call/,
+    "Only 1 meta hash"
+);
+
+like(
+    dies { wrap_proto_unit(args => [sub { 1 }, sub { 2 }]) },
+    qr/wrap_proto_unit\(\) only accepts 1 coderef argument per call/,
+    "Only 1 coderef"
+);
+
+like(
+    dies { wrap_proto_unit(args => [sub { 1 }]) },
+    qr/wrap_proto_unit\(\) requires a name argument \(non-numeric string\)/,
+    "Must have a name"
+);
+
 like(
     dies { wrap_proto_unit(args => ['foo']) },
-    qr/The final argument to wrap_proto_unit \(code\) is required/,
-    "Code is required"
-);
-like(
-    dies { wrap_proto_unit(args => ['foo', {}]) },
-    qr/The final argument to wrap_proto_unit \(code\) must be a sub reference/,
-    "Code must be coderef"
-);
-like(
-    dies { wrap_proto_unit(args => ['foo', {}, 'bar']) },
-    qr/The final argument to wrap_proto_unit \(code\) must be a sub reference/,
-    "Code must be coderef"
-);
-like(
-    dies { wrap_proto_unit(args => ['foo', [], sub {}]) },
-    qr/The middle argument to wrap_proto_unit \(meta\) must be a hash reference when present/,
-    "Middle arg must be hashref"
-);
-like(
-    dies { wrap_proto_unit(args => ['foo', 'meta', sub {}]) },
-    qr/The middle argument to wrap_proto_unit \(meta\) must be a hash reference when present/,
-    "Middle arg must be hashref"
+    qr/wrap_proto_unit\(\) requires a code reference/,
+    "Must have a coderef"
 );
 
 my $sub = sub { 1 };
 my ($unit, $block, $caller) = wrap_proto_unit(args => ['foo', {foo => 1}, $sub]);
 isa_ok($unit, 'Test::Stream::Workflow::Unit');
-isa_ok($block, 'Test::Stream::Block');
-like($caller, [__PACKAGE__, __FILE__, __LINE__ - 3, qr/wrap_proto_unit$/], "Got caller");
+like($caller, [__PACKAGE__, __FILE__, __LINE__ - 2, qr/wrap_proto_unit$/], "Got caller");
 is($unit->meta, { foo => 1 }, "set meta");
 is($unit->name, 'foo', "set name");
 ok(!$unit->primary, "sub is not primary");
 
 ($unit, $block, $caller) = new_proto_unit(args => ['foo', $sub], level => 0, unit => {type => 'group'}, set_primary => 1);
 isa_ok($unit, 'Test::Stream::Workflow::Unit');
-isa_ok($block, 'Test::Stream::Block');
-like($caller, [__PACKAGE__, __FILE__, __LINE__ - 3, qr/new_proto_unit$/], "Got caller with specified level");
+like($caller, [__PACKAGE__, __FILE__, __LINE__ - 2, qr/new_proto_unit$/], "Got caller with specified level");
 is($unit->meta, {}, "no meta");
 is($unit->type, 'group', "set unit params");
 is($unit->primary, $sub, "sub is primary");
@@ -350,33 +349,38 @@ like(
 is($current->stash, {}, "stash restored");
 
 like(
-    dies { gen_unit_builder('foo') },
-    qr/Not enough arguments to gen_unit_builder()/,
-    "Need at least 1 stash"
+    dies { gen_unit_builder() },
+    qr/'callback' is a required argument/,
+    "Must have callback"
+);
+like(
+    dies { gen_unit_builder(callback => 'foo') },
+    qr/'stashes' is a required argument/,
+    "Invalid callback (string)"
 );
 
 like(
-    dies { gen_unit_builder('foo', 'foo') },
+    dies { gen_unit_builder(callback => 'foo', stashes => []) },
     qr/'foo' is not a valid callback/,
     "Invalid callback (string)"
 );
 like(
-    dies { gen_unit_builder({}, 'foo') },
+    dies { gen_unit_builder(callback => {}, stashes => []) },
     qr/'HASH.*' is not a valid callback/,
     "Invalid callback (hash)"
 );
 like(
-    dies { gen_unit_builder(sub {}, 'foo') },
-    qr/'foo' is not a valid stash/,
+    dies { gen_unit_builder(callback => sub {}, stashes => 'foo') },
+    qr/'stashes' must be an array reference \(got: foo\)/,
     "bad stash"
 );
 like(
-    dies { gen_unit_builder('simple', 'foo', 'bar') },
+    dies { gen_unit_builder(callback => 'simple', stashes => ['foo', 'bar']) },
     qr/'bar\+foo' is not a valid stash/,
     "bad stash"
 );
 
-my $gen = gen_unit_builder(sub { @args = @_; }, 'primary');
+my $gen = gen_unit_builder(callback => sub { @args = @_; }, stashes => ['primary']);
 ref_ok($gen, 'CODE', "got a code ref");
 
 like(
@@ -409,7 +413,7 @@ like(
     "Got expected args"
 );
 
-$gen = gen_unit_builder(sub { @args = @_; }, 'buildup', 'teardown');
+$gen = gen_unit_builder(callback => sub { @args = @_; }, stashes => ['buildup', 'teardown']);
 $current = push_workflow_build({});
 $gen->('foo', {apple => 1}, sub { 1 });
 pop_workflow_build($current);

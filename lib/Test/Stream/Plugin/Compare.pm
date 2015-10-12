@@ -19,11 +19,9 @@ no Test::Stream::Exporter;
 use Carp qw/croak/;
 use Scalar::Util qw/reftype blessed/;
 
-use Test::Stream::Block;
-
 use Test::Stream::Compare qw/-all/;
 use Test::Stream::Context qw/context/;
-use Test::Stream::Util qw/rtype/;
+use Test::Stream::Util qw/rtype sub_info/;
 
 use Test::Stream::Compare::Array;
 use Test::Stream::Compare::Custom;
@@ -283,10 +281,9 @@ sub _build_set {
     my $set;
     if ($btype eq 'CODE') {
         $set = build('Test::Stream::Compare::Set', $builder);
-        my @caller = caller(1);
-        my $block = Test::Stream::Block->new(coderef => $builder, caller => \@caller);
-        $set->set_file($block->file);
-        $set->set_lines([$block->start_line, $block->end_line]);
+        my $info = sub_info($builder);
+        $set->set_file($info->{file});
+        $set->set_lines($info->{lines});
     }
     else {
         $set = Test::Stream::Compare::Set->new(checks => [@_]);
@@ -324,10 +321,11 @@ sub event($;$) {
     }
     elsif (reftype($spec) eq 'CODE') {
         $event = build('Test::Stream::Compare::Event', $spec);
-        my $block = Test::Stream::Block->new(coderef => $spec, caller => \@caller);
-        $event->set_file($block->file);
-        $event->set_lines([$block->start_line, $block->end_line]);
         $event->set_etype($intype),
+
+        my $info = sub_info($spec);
+        $event->set_file($info->{file});
+        $event->set_lines($info->{lines});
     }
     else {
         my $refcheck = Test::Stream::Compare::Hash->new(

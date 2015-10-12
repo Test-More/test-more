@@ -111,7 +111,7 @@ sub build_it {
                 call meta       => {};
                 call modify     => undef;
                 call start_line => 1006;
-                call end_line   => 1008;
+                call end_line   => 1009;
                 call buildup => array {
                     for (1 .. ($depth - $count)) {
                         item object {
@@ -350,9 +350,9 @@ sub do_it {                                                     #line 1001
 
     describe stuff => sub {                                     #line 1005
         tests vanilla => sub {                                  #line 1006
-            'vanilla'                                           #line 1007
-        };                                                      #line 1008
-
+            local $_ = 1;                                       #line 1007
+            'vanilla'                                           #line 1008
+        };                                                      #line 1009
         tests skip => {skip => 'will fail'}, sub { 'skip' };    #line 1010
 
         tests todo => {todo => 'testing todo'}, sub { 'todo' }; #line 1012
