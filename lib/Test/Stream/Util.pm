@@ -311,6 +311,26 @@ Attempts to find the width in columns (characters) of the current terminal.
 Returns 80 as a safe bet if it cannot find it another way. This is most
 accurate if L<Term::ReadKey> is installed.
 
+=item $type = rtype($ref)
+
+A normalization between C<Scalar::Util::reftype()> and C<ref()>.
+
+Always returns a string.
+
+Returns C<'REGEXP'> for regex types
+
+Returns C<''> for non-refs
+
+Otherwise returns what C<Scalar::Util::reftype()> returns.
+
+=item $addr_str = render_ref($ref)
+
+Always returns a string. For unblessed references this returns something like
+C<"SCALAR(0x...)">. For blessed references it returns
+C<"My::Thing=SCALAR(0x...)">. The only difference between this and C<$add_str =
+"$thing"> is that it ignores any overloading to ensure it is always the ref
+address.
+
 =back
 
 =head1 SOURCE

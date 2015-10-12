@@ -16,6 +16,9 @@ imported_ok qw{
     parse_symbol
 
     term_size
+
+    render_ref
+    rtype
 };
 
 $! = 100;
@@ -94,5 +97,21 @@ is([parse_symbol('%Foo')], ['Foo', 'HASH'],   "Parsed HASH");
 is([parse_symbol('@Foo')], ['Foo', 'ARRAY'],  "Parsed ARRAY");
 is([parse_symbol('$Foo')], ['Foo', 'SCALAR'], "Parsed SCALAR");
 is([parse_symbol('*Foo')], ['Foo', 'GLOB'],   "Parsed GLOB");
+
+{
+    package Test::A;
+    package Test::B;
+    use overload '""' => sub { 'A Bee!' };
+}
+my $ref = {a => 1};
+is(render_ref($ref), "$ref", "Matches normal stringification (not blessed)");
+like(render_ref($ref), qr/HASH\(0x[0-9A-F]+\)/i, "got address");
+
+bless($ref, 'Test::A');
+is(render_ref($ref), "$ref", "Matches normal stringification (blessed)");
+like(render_ref($ref), qr/Test::A=HASH\(0x[0-9A-F]+\)/i, "got address and package (no overload)");
+
+bless($ref, 'Test::B');
+like(render_ref($ref), qr/Test::B=HASH\(0x[0-9A-F]+\)/i, "got address and package (with overload)");
 
 done_testing;
