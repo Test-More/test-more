@@ -5,6 +5,7 @@ use warnings;
 use Test::Stream::Capabilities qw/CAN_THREAD/;
 use Scalar::Util qw/reftype blessed refaddr/;
 use Carp qw/croak/;
+use B;
 
 use Test::Stream::Exporter qw/import export_to exports/;
 exports qw{
@@ -22,6 +23,11 @@ exports qw{
         term_size
 
         rtype render_ref
+
+        set_sub_name
+        CAN_SET_SUB_NAME
+        sub_info
+        sub_name
 };
 no Test::Stream::Exporter;
 
@@ -219,6 +225,80 @@ sub render_ref {
     return "$class=$ref";
 }
 
+BEGIN {
+    my ($have_sub_util) = try { require Sub::Util };
+    my ($have_sub_name) = try { require Sub::Name };
+
+    my $set_subname = $have_sub_util ? Sub::Util->can('set_subname') : undef;
+    my $subname     = $have_sub_name ? Sub::Name->can('subname')     : undef;
+
+    *set_sub_name = $set_subname || $subname || sub { croak "Cannot set sub name" };
+
+    if($set_subname || $subname) {
+        *CAN_SET_SUB_NAME = sub() { 1 };
+    }
+    else {
+        *CAN_SET_SUB_NAME = sub() { 0 };
+    }
+}
+
+sub sub_name {
+    my ($sub) = @_;
+
+    croak "sub_name requires a coderef as its only argument"
+        unless $sub && ref($sub) && reftype($sub) eq 'CODE';
+
+    my $cobj = B::svref_2object($sub);
+    my $name = $cobj->GV->NAME;
+    return $name;
+}
+
+sub sub_info {
+    my ($sub, @all_lines) = @_;
+    my %in = map {$_ => 1} @all_lines;
+
+    croak "sub_info requires a coderef as its first argument"
+        unless $sub && ref($sub) && reftype($sub) eq 'CODE';
+
+    my $cobj    = B::svref_2object($sub);
+    my $name    = $cobj->GV->NAME;
+    my $file    = $cobj->FILE;
+    my $package = $cobj->GV->STASH->NAME;
+
+    my $op = $cobj->START;
+    while ($op) {
+        push @all_lines => $op->line if $op->can('line');
+        last unless $op->can('next');
+        $op = $op->next;
+    }
+
+    my ($start, $end, @lines);
+    if (@all_lines) {
+        @all_lines = sort { $a <=> $b } @all_lines;
+        ($start, $end) = ($all_lines[0], $all_lines[-1]);
+
+        # Adjust start and end for the most common case of a multi-line block with
+        # parens on the lines before and after.
+        if ($start < $end) {
+            $start-- unless $start <= 1 || $in{$start};
+            $end++   unless $in{$end};
+        }
+        @lines = ($start, $end);
+    }
+
+    return {
+        ref        => $sub,
+        cobj       => $cobj,
+        name       => $name,
+        file       => $file,
+        package    => $package,
+        start_line => $start,
+        end_line   => $end,
+        all_lines  => \@all_lines,
+        lines      => \@lines,
+    };
+}
+
 1;
 
 __END__
@@ -330,6 +410,89 @@ C<"SCALAR(0x...)">. For blessed references it returns
 C<"My::Thing=SCALAR(0x...)">. The only difference between this and C<$add_str =
 "$thing"> is that it ignores any overloading to ensure it is always the ref
 address.
+
+=item $bool = CAN_SET_SUB_NAME()
+
+A constant, it returns true if either L<Sub::Name> or L<Sub::Util> are
+installed and have the code necessary to set a sub name.
+
+=item set_sub_name($name, $coderef)
+
+When L<Sub::Name> or L<Sub::Util> are installed, this will be an alias to the
+sub name setting function from one or the other. If neither are installed then
+this will be a sub that throws an exception.
+
+If setting the sub name is something nice, but not strictly necessary, you can
+use this conditionally with C<CAN_SET_SUB_NAME()>.
+
+    use Test::Stream::Util qw/CAN_SET_SUB_NAME set_sub_name/;
+    set_sub_name('foo', \&sub) if CAN_SET_SUB_NAME();
+
+=item my $hr = sub_info(\&code)
+
+This returns a hashref with information about the sub:
+
+    {
+        ref        => \&code,
+        cobj       => $cobj,
+        name       => "Some::Mod::code",
+        file       => "Some/Mod.pm",
+        package    => "Some::Mod",
+
+        # Note: These have been adjusted based on guesswork.
+        start_line => 22,
+        end_line   => 42,
+        lines      => [22, 42],
+
+        # Not a bug, these lines are different!
+        all_lines  => [23, 25, ..., 39, 41],
+    };
+
+=over 4
+
+=item $info->{ref} => \&code
+
+This is the original sub passed to C<sub_info()>.
+
+=item $info->{cobj} => $cobj
+
+This is the c-object representation of the coderef.
+
+=item $info->{name} => "Some::Mod::code"
+
+This is the name of the coderef, for anonymous coderefs this may end with
+C<'__ANON__'>. Also note that the package 'main' is special, and 'main::' may
+be omitted.
+
+=item $info->{file} => "Some/Mod.pm"
+
+The file in which the sub was defined.
+
+=item $info->{package} => "Some::Mod"
+
+The package in which the sub was defined.
+
+=item $info->{start_line} => 22
+
+=item $info->{end_line} => 42
+
+=item $info->{lines} => [22, 42]
+
+These 3 fields are the I<adjusted> start line, end line, and array with both.
+It is important to note that these lines have been adjusted and may not be
+accurate.
+
+The lines are obtained by walking the ops, as such the first line is the line
+of the first statement, and the last line is the line of the last statement.
+This means that in multi-line subs the lines are usually off by 1.  The lines
+in these keys will be adjusted for you if it detects a multi-line sub.
+
+=item $info->{all_lines} => [23, 25, ..., 39, 41]
+
+This is an array with the lines of every statement in the sub. unlike the other
+line fields, these have not been adjusted for you.
+
+=back
 
 =back
 
