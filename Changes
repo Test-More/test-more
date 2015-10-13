@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Typo fixes in Test::Stream docs
+
 1.302016  2015-10-12 18:49:35-07:00 America/Los_Angeles
 
     - Workflows/Spec: Argument tolerence, custom line numbers

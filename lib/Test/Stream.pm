@@ -349,7 +349,7 @@ treatment there is no difference in how the plugin is loaded or used.
 
 Most plugins provide a fairly sane set of defaults when loaded. However some
 provide extras you need to request. When loading a plugin directly these would
-be the import arguments. If you plugin is followed by an arrayref the ref
+be the import arguments. If your plugin is followed by an arrayref the ref
 contents will be used as load arguments.
 
 Bundles may also specify arguments for plugins. You can override the bundles
@@ -422,7 +422,7 @@ Shortcut for the L<Test::Stream::Plugin::Class> plugin.
 
 =item skip_without => [$MODULE => $VERSION]
 
-Shortcup for the L<Test::Stream::Plugin::SkipWithout> plugin. Unlike normal
+Shortcut for the L<Test::Stream::Plugin::SkipWithout> plugin. Unlike normal
 specification of a plugin, this APPENDS arguments. This one can be called
 several time and the arguments will be appended.
 
