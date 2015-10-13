@@ -13,8 +13,6 @@ use Test::Stream::Sync;
 
 use Test::Stream::Util qw/try pkg_to_file/;
 
-our $LOAD_INTO;
-
 sub default {
     croak "No plugins or bundles specified, did you forget to add '-V1'?"
 }
