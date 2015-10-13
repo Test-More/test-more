@@ -179,7 +179,7 @@ sub new_proto_unit {
     die_at_caller $caller => "$subname() requires a code reference"
         unless $code;
 
-    my $info = sub_info($code);
+    my $info = sub_info($code, @lines);
     set_sub_name("$caller->[0]\::$name", $code) if CAN_SET_SUB_NAME && $info->{name} =~ m/__ANON__$/;
 
     my $unit = Test::Stream::Workflow::Unit->new(
