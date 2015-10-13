@@ -1,5 +1,14 @@
 {{$NEXT}}
 
+    - Workflows/Spec: Argument tolerence, custom line numbers
+    - Remove Block.pm
+    - Add sub_info and sub_name to Util.pm
+    - Workflows: Set sub name if possible (better debugging)
+    - Add "Test" that prints deps and versions
+    - Add 'class', 'skip_without', and 'srand' to Test::Stream as options
+    - Even Core deps now listed in dist.ini
+    - Add some missing docs and tests to Util.pm
+
 1.302015  2015-10-04 13:46:56-07:00 America/Los_Angeles
 
     - Remove spec isolation logic, this can be an external plugin
