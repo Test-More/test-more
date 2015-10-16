@@ -93,7 +93,7 @@ sub lines {
         return $self->{+_INFO}->{lines} if @{$self->{+_INFO}->{lines}};
     }
     if ($self->{+CALLED}) {
-        return $self->{+CALLED}->[2];
+        return [$self->{+CALLED}->[2]];
     }
     return [];
 }
