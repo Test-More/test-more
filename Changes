@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - Change minimum module versions (they were wrong)
     - Typo fixes in Test::Stream docs
     - Remove unused variable
 
