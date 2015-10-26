@@ -5,12 +5,16 @@ use warnings;
 use Carp qw/croak/;
 use Scalar::Util qw/reftype/;
 use Test::Stream::Sync;
+use Test::Stream::Util qw/CAN_SET_SUB_NAME set_sub_name/;
 
 use overload(
     'fallback' => 1,
     '&{}' => sub {
         my $self = shift;
-        return sub { $self->iterate(@_) };
+        my $out = sub { $self->iterate(@_) };
+        set_sub_name(__PACKAGE__ . '::iterator', $out)
+            if CAN_SET_SUB_NAME;
+        return $out;
     },
 );
 
@@ -118,6 +122,7 @@ sub run {
 
     # Make sure we have something to do!
     unless ($self->_have_primary) {
+        return if $self->{+UNIT}->is_root;
         $self->{+STAGE} = STAGE_COMPLETE();
         $ctx->ok(0, $self->{+UNIT}->name, ['No primary actions defined! Nothing to do!']);
         return;

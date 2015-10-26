@@ -18,6 +18,7 @@ use Test::Stream::HashBase(
         buildup
         primary
         teardown
+        is_root
     }],
 );
 

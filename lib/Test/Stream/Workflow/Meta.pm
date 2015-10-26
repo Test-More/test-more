@@ -32,7 +32,8 @@ sub build {
         file       => $file,
         start_line => $start_line,
         end_line   => $end_line,
-        type       => 'group'
+        type       => 'group',
+        is_root    => 1,
     );
 
     my $meta = $class->new(
