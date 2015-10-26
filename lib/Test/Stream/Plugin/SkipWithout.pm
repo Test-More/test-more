@@ -60,10 +60,11 @@ sub check_versions {
     die "'$ref' is not a valid import argument to " . __PACKAGE__ . " at $caller->[1] line $caller->[2].\n"
         unless $type eq 'HASH';
 
+    # Sort so that the order is always the same in output
     for my $mod (sort keys %$ref) {
         my $ver = $ref->{$mod};
         check_installed($caller, $mod);
-        return if eval { $mod->VERSION($ver); 1 };
+        next if eval { $mod->VERSION($ver); 1 };
         chomp(my $error = $@);
         $error =~ s/ at .*$//;
         skip($error);

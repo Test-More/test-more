@@ -61,4 +61,17 @@ like(
     "Did not meet minimum module version"
 );
 
+like(
+    intercept { load_plugin SkipWithout => [{Carp => 0, Foo => '2.00'}] },
+    array {
+        event Plan => {
+            max => 0,
+            directive => 'SKIP',
+            reason => qr/Foo version/,
+        };
+        end;
+    },
+    "Did not meet minimum module version of one module, after one that passed"
+);
+
 done_testing;
