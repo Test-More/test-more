@@ -488,7 +488,7 @@ If you are certain that you want to save the context for later, you can use a
 snapshot. C<< $ctx->snapshot >> will give you a shallow clone of the context
 that is safe to pass around or store.
 
-C<context() has some mechanisms to protect you if you do cause a context to
+C<context()> has some mechanisms to protect you if you do cause a context to
 persist beyond the scope in which it was obtained. In practice you should not
 rely on these protections, and they are fairly noisy with warnings.
 
