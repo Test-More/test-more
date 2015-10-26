@@ -7,7 +7,7 @@ diag(join "\n", table(rows => [[ 'perl', $] ]]));
 
 {
     my @depends = qw{
-        B Carp File::Spec File::Temp List::Util PerlIO Scalar::Util
+        B Carp File::Spec File::Temp List::Util PerlIO
         Scalar::Util Storable Test::Harness overload utf8
     };
 
