@@ -28,11 +28,56 @@ exports qw{
         CAN_SET_SUB_NAME
         sub_info
         sub_name
+        rename_anon_sub
 };
 no Test::Stream::Exporter;
 
+BEGIN {
+    local ($@, $!, $SIG{__DIE__});
+    my $have_sub_util = eval { require Sub::Util; 1 };
+    my $have_sub_name = eval { require Sub::Name; 1 };
+
+    my $set_subname = $have_sub_util ? Sub::Util->can('set_subname') : undef;
+    my $subname     = $have_sub_name ? Sub::Name->can('subname')     : undef;
+
+    *set_sub_name = $set_subname || $subname || sub { croak "Cannot set sub name" };
+
+    if($set_subname || $subname) {
+        *CAN_SET_SUB_NAME = sub() { 1 };
+    }
+    else {
+        *CAN_SET_SUB_NAME = sub() { 0 };
+    }
+}
+
+sub sub_name {
+    my ($sub) = @_;
+
+    croak "sub_name requires a coderef as its only argument"
+        unless $sub && ref($sub) && reftype($sub) eq 'CODE';
+
+    my $cobj = B::svref_2object($sub);
+    my $name = $cobj->GV->NAME;
+    return $name;
+}
+
+sub rename_anon_sub {
+    my ($name, $sub, $caller) = @_;
+    $caller ||= caller();
+
+    croak "sub_name requires a coderef as its second argument"
+        unless $sub && ref($sub) && reftype($sub) eq 'CODE';
+
+    my $cobj = B::svref_2object($sub);
+    my $orig = $cobj->GV->NAME;
+    return unless $orig =~ m/__ANON__$/;
+    set_sub_name("${caller}::${name}", $sub);
+}
+
 sub _manual_protect(&) {
     my $code = shift;
+
+    rename_anon_sub('protect', $code, caller) if CAN_SET_SUB_NAME;
 
     my ($ok, $error);
     {
@@ -47,6 +92,8 @@ sub _manual_protect(&) {
 
 sub _local_protect(&) {
     my $code = shift;
+
+    rename_anon_sub('protect', $code, caller) if CAN_SET_SUB_NAME;
 
     my ($ok, $error);
     {
@@ -63,6 +110,8 @@ sub _manual_try(&;@) {
     my $args = \@_;
     my $error;
     my $ok;
+
+    rename_anon_sub('try', $code, caller) if CAN_SET_SUB_NAME;
 
     {
         my ($msg, $no) = ($@, $!);
@@ -90,6 +139,8 @@ sub _local_try(&;@) {
     my $args = \@_;
     my $error;
     my $ok;
+
+    rename_anon_sub('try', $code, caller) if CAN_SET_SUB_NAME;
 
     {
         local ($@, $!, $SIG{__DIE__});
@@ -223,34 +274,6 @@ sub render_ref {
 
     return $ref unless $class;
     return "$class=$ref";
-}
-
-BEGIN {
-    my ($have_sub_util) = try { require Sub::Util };
-    my ($have_sub_name) = try { require Sub::Name };
-
-    my $set_subname = $have_sub_util ? Sub::Util->can('set_subname') : undef;
-    my $subname     = $have_sub_name ? Sub::Name->can('subname')     : undef;
-
-    *set_sub_name = $set_subname || $subname || sub { croak "Cannot set sub name" };
-
-    if($set_subname || $subname) {
-        *CAN_SET_SUB_NAME = sub() { 1 };
-    }
-    else {
-        *CAN_SET_SUB_NAME = sub() { 0 };
-    }
-}
-
-sub sub_name {
-    my ($sub) = @_;
-
-    croak "sub_name requires a coderef as its only argument"
-        unless $sub && ref($sub) && reftype($sub) eq 'CODE';
-
-    my $cobj = B::svref_2object($sub);
-    my $name = $cobj->GV->NAME;
-    return $name;
 }
 
 sub sub_info {
