@@ -12,6 +12,7 @@ use Test::Stream::Util qw{
     protect
     get_stash
     parse_symbol
+    update_mask
 };
 
 use Test::Stream::Exporter;
@@ -145,6 +146,7 @@ sub plan {
     $ctx->release;
 }
 
+update_mask('*', '*', __PACKAGE__ . '::done_testing', {restart => 1});
 sub done_testing {
     my $ctx = context();
     my $state = $ctx->hub->state;

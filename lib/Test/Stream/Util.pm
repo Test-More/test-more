@@ -29,6 +29,8 @@ exports qw{
         sub_info
         sub_name
         rename_anon_sub
+
+        update_mask
 };
 no Test::Stream::Exporter;
 
@@ -74,6 +76,25 @@ sub rename_anon_sub {
     set_sub_name("${caller}::${name}", $sub);
 }
 
+sub update_mask {
+    my ($file, $line, $name, $mask) = @_;
+
+    no warnings 'once';
+    my $masks = \%Trace::Mask::MASKS;
+    use warnings 'once';
+
+    # Get existing ref, if any
+    my $ref = $masks->{$file}->{$line}->{$name};
+
+    # No ref, easy!
+    return $masks->{$file}->{$line}->{$name} = {%$mask}
+        unless $ref;
+
+    # Merge new mask into old
+    %$ref = (%$ref, %$mask);
+    return;
+}
+
 sub _manual_protect(&) {
     my $code = shift;
 
@@ -82,7 +103,11 @@ sub _manual_protect(&) {
     my ($ok, $error);
     {
         my ($msg, $no) = ($@, $!);
-        $ok = eval { $code->(); 1 } || 0;
+        $ok = eval {
+            BEGIN { update_mask(__FILE__, __LINE__ + 1, '*', {hide => 3}) }
+            $code->();
+            1
+        } || 0;
         $error = $@ || "Error was squashed!\n";
         ($@, $!) = ($msg, $no);
     }
@@ -98,7 +123,11 @@ sub _local_protect(&) {
     my ($ok, $error);
     {
         local ($@, $!);
-        $ok = eval { $code->(); 1 } || 0;
+        $ok = eval {
+            BEGIN { update_mask(__FILE__, __LINE__ + 1, '*', {hide => 3}) }
+            $code->();
+            1
+        } || 0;
         $error = $@ || "Error was squashed!\n";
     }
     die $error unless $ok;
@@ -117,7 +146,11 @@ sub _manual_try(&;@) {
         my ($msg, $no) = ($@, $!);
         my $die = delete $SIG{__DIE__};
 
-        $ok = eval { $code->(@$args); 1 } || 0;
+        $ok = eval {
+            BEGIN { update_mask(__FILE__, __LINE__ + 1, '*', {hide => 3}) }
+            $code->(@$args);
+            1
+        } || 0;
         unless($ok) {
             $error = $@ || "Error was squashed!\n";
         }
@@ -144,7 +177,11 @@ sub _local_try(&;@) {
 
     {
         local ($@, $!, $SIG{__DIE__});
-        $ok = eval { $code->(@$args); 1 } || 0;
+        $ok = eval {
+            BEGIN { update_mask(__FILE__, __LINE__ + 1, '*', {hide => 3}) }
+            $code->(@$args);
+            1
+        } || 0;
         unless($ok) {
             $error = $@ || "Error was squashed!\n";
         }
@@ -516,6 +553,11 @@ This is an array with the lines of every statement in the sub. unlike the other
 line fields, these have not been adjusted for you.
 
 =back
+
+=item update_mask($file, $line, $sub, {...})
+
+This sets masking behavior in accordance with L<Trace::Mask>. This will have no
+effect on anything that does not honor L<Trace::Mask>.
 
 =back
 

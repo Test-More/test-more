@@ -11,7 +11,7 @@ use Test::Stream::Workflow::Meta;
 use Test::Stream::Workflow::Unit;
 
 use Test::Stream::Context qw/context/;
-use Test::Stream::Util qw/try set_sub_name CAN_SET_SUB_NAME sub_info/;
+use Test::Stream::Util qw/try set_sub_name CAN_SET_SUB_NAME sub_info update_mask/;
 
 use Test::Stream::Exporter;
 exports qw{
@@ -198,6 +198,8 @@ sub new_proto_unit {
     return ($unit, $code, $caller);
 }
 
+
+BEGIN { update_mask('*', '*', __PACKAGE__ . '::group_builder', {hide => 1}) }
 sub group_builder {
     my ($unit, $code, $caller) = new_proto_unit(
         args => \@_,
@@ -206,6 +208,7 @@ sub group_builder {
 
     push_workflow_build($unit);
     my ($ok, $err) = try {
+        BEGIN { update_mask(__FILE__, __LINE__ + 1, '*', {hide => 1}) }
         $code->($unit);
         1; # To force the previous statement to be in void context
     };

@@ -5,12 +5,14 @@ use warnings;
 use Carp qw/croak/;
 use Scalar::Util qw/reftype/;
 use Test::Stream::Sync;
-use Test::Stream::Util qw/CAN_SET_SUB_NAME set_sub_name/;
+use Test::Stream::Util qw/CAN_SET_SUB_NAME set_sub_name update_mask/;
 
 use overload(
     'fallback' => 1,
     '&{}' => sub {
         my $self = shift;
+        my @caller = caller(0);
+        update_mask($caller[1], $caller[2], '*', {restart => 1, stop => 1, 3 => 'CONTINUE'});
         my $out = sub { $self->iterate(@_) };
         set_sub_name(__PACKAGE__ . '::iterator', $out)
             if CAN_SET_SUB_NAME;
@@ -250,6 +252,7 @@ sub _run_primary {
         $self->runner->run(unit => $_, args => $self->{+ARGS}) for @$primary
     }
     else {
+        BEGIN { update_mask(__FILE__, __LINE__ + 1, '*', {stop => 1, hide => 1}) }
         $primary->(@{$self->{+ARGS}});
     }
 

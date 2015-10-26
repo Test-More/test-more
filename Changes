@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+    - Better stack traces in spec
+    - Remove duplicate module from the report
+    - Rename subs in try {} and protect {}
+    - Fix loop in SkipWithout
+    - Fix Typo in Context pod
+
 1.302017  2015-10-15 21:32:50-07:00 America/Los_Angeles
 
     - Change minimum module versions (they were wrong)

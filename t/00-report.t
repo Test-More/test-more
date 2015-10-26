@@ -28,6 +28,7 @@ diag(join "\n", table(rows => [[ 'perl', $] ]]));
 {
     my @options = qw{
         Sub::Name Sub::Util Term::ReadKey Unicode::GCString Unicode::LineBreak
+        Trace::Mask::Reference
     };
 
     my @rows;
