@@ -91,15 +91,6 @@ describe builder_1 => sub {
             ok(1);
             my $trace_test = trace(); my $trace_test_line = __LINE__;
 
-            use Data::Dumper;
-            print Dumper(
-                #['outer_around', $outer_around],
-                #['before', $trace_before],
-                #['inner_around', $trace_around],
-                #['other', $trace_other],
-                #['test', $trace_test],
-            );
-
             like(
                 $trace_1,
                 [ [ [__PACKAGE__, __FILE__, $trace_1_line, 'Trace::Mask::Reference::trace'] ], DNE() ],
