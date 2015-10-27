@@ -1,3 +1,6 @@
+1.302012_003 Tue Oct 27 00:02:44:00 PST 2015
+    * Fix typo that called wrong 'try'
+
 1.302012_002 Fri Oct 02 21:57:19:00 PST 2015
     * Add version eval to several modules (#605)
 

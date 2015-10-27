@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '1.302012_002';
+our $VERSION = '1.302012_003';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 BEGIN {
@@ -638,7 +638,7 @@ sub _unoverload {
     my ($self, $type, $thing) = @_;
 
     return unless ref $$thing;
-    return unless blessed($$thing) || scalar $self->try(sub{ $$thing->isa('UNIVERSAL') });
+    return unless blessed($$thing) || scalar $self->_try(sub{ $$thing->isa('UNIVERSAL') });
     my $string_meth = overload::Method( $$thing, $type ) || return;
     $$thing = $$thing->$string_meth();
 }
