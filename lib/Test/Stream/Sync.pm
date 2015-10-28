@@ -269,17 +269,11 @@ __END__
 Test::Stream::Sync - Primary Synchronization point, this is where global stuff
 lives.
 
-=head1 EXPERIMENTAL CODE WARNING
+=head1 ***INTERNALS NOTE***
 
-B<This is an experimental release!> Test-Stream, and all its components are
-still in an experimental phase. This dist has been released to cpan in order to
-allow testers and early adopters the chance to write experimental new tools
-with it, or to add experimental support for it into old tools.
-
-B<PLEASE DO NOT COMPLETELY CONVERT OLD TOOLS YET>. This experimental release is
-very likely to see a lot of code churn. API's may break at any time.
-Test-Stream should NOT be depended on by any toolchain level tools until the
-experimental phase is over.
+B<The internals of this package are subject to change at any time!> The public
+methods provided will not change in backwords incompatible ways, but the
+underlying implementation details might. B<Do not break encapsulation here!>
 
 =head1 DESCRIPTION
 

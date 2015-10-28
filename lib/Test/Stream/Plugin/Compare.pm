@@ -398,18 +398,6 @@ __END__
 
 Test::Stream::Plugin::Compare - Tools for comparing deep data structures.
 
-=head1 EXPERIMENTAL CODE WARNING
-
-B<This is an experimental release!> Test-Stream, and all its components are
-still in an experimental phase. This dist has been released to cpan in order to
-allow testers and early adopters the chance to write experimental new tools
-with it, or to add experimental support for it into old tools.
-
-B<PLEASE DO NOT COMPLETELY CONVERT OLD TOOLS YET>. This experimental release is
-very likely to see a lot of code churn. API's may break at any time.
-Test-Stream should NOT be depended on by any toolchain level tools until the
-experimental phase is over.
-
 =head1 DESCRIPTION
 
 Test::More had C<is_deeply()>. This library is the L<Test::Stream> version.
@@ -438,6 +426,27 @@ versions of the tools.
         $some_hash,
         {a => 1, b => qr/\d+/},
         "'a' is 1, 'b' is an integer, we don't care about 'c'."
+    );
+
+=head2 ADVANCED
+
+Declarative hash, array, and objects builders are available that allow you to
+generate specifications. These are more verbose than simply providing a hash,
+but have the advantage that every component you specify has a line number
+associated. This is helpful for debugging as the failure output will tell you
+not only which fields was incorrect, but also the line on which you declared
+the field.
+
+    use Test::Stream 'Compare' => '*';
+
+    is(
+        $some_hash,
+        hash {
+            field a => 1;
+            field b => 2;
+            field c => 3;
+        },
+        "Hash matches spec"
     );
 
 =head1 COMPARISON TOOLS

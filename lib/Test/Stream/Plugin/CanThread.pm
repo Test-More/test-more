@@ -29,18 +29,6 @@ __END__
 Test::Stream::Plugin::CanThread - Skip a test file unless the system supports
 threading
 
-=head1 EXPERIMENTAL CODE WARNING
-
-B<This is an experimental release!> Test-Stream, and all its components are
-still in an experimental phase. This dist has been released to cpan in order to
-allow testers and early adopters the chance to write experimental new tools
-with it, or to add experimental support for it into old tools.
-
-B<PLEASE DO NOT COMPLETELY CONVERT OLD TOOLS YET>. This experimental release is
-very likely to see a lot of code churn. API's may break at any time.
-Test-Stream should NOT be depended on by any toolchain level tools until the
-experimental phase is over.
-
 =head1 DESCRIPTION
 
 It is fairly common to write tests that need to use threads. Not all systems

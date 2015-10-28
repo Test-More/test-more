@@ -75,18 +75,6 @@ __END__
 Test::Stream::Capabilities - Check if the current system has various
 capabilities.
 
-=head1 EXPERIMENTAL CODE WARNING
-
-B<This is an experimental release!> Test-Stream, and all its components are
-still in an experimental phase. This dist has been released to cpan in order to
-allow testers and early adopters the chance to write experimental new tools
-with it, or to add experimental support for it into old tools.
-
-B<PLEASE DO NOT COMPLETELY CONVERT OLD TOOLS YET>. This experimental release is
-very likely to see a lot of code churn. API's may break at any time.
-Test-Stream should NOT be depended on by any toolchain level tools until the
-experimental phase is over.
-
 =head1 SYNOPSIS
 
     use Test::Stream::Capabilities qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
@@ -141,7 +129,7 @@ this, and note that the system is not capable of forking when it is detected.
 
 =item Devel::Cover
 
-Devel::Cover does not support threads. CHECK_THREADS will return false if
+Devel::Cover does not support threads. CAN_THREAD will return false if
 Devel::Cover is loaded before the check is first run.
 
 =back
