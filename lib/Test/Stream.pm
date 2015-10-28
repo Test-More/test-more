@@ -230,7 +230,19 @@ both frameworks.
 
 =head1 MANUAL
 
-TODO: Manual
+TODO: L<Test::Stream::Manual>
+
+=over 4
+
+=item Migrating from Test::More
+
+L<Test::Stream::Manual::FromTestBuilder>
+
+=item Overview of Test-Stream components
+
+L<Test::Stream::Manual::Components>
+
+=back
 
 =head1 DESCRIPTION
 
