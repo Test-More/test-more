@@ -1,5 +1,13 @@
 {{$NEXT}}
 
+    - Declare Test::Stream experimental phase complete
+    - Updated Readme
+    - Add tooling manual page
+    - Better Trace::Mask behavior
+    - Added Components manual page
+    - Remove or modify experimental notice
+    - Remove stray debugging statements
+
 1.302018  2015-10-26 16:47:45-07:00 America/Los_Angeles
 
     - Better stack traces in spec
