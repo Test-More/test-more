@@ -146,11 +146,9 @@ sub plan {
     $ctx->release;
 }
 
-update_mask('*', '*', __PACKAGE__ . '::done_testing', {restart => 1});
+update_mask('*', '*', __PACKAGE__ . '::done_testing', {lock => 1});
 sub done_testing {
     my $ctx = context();
-    my $state = $ctx->hub->state;
-
     $ctx->hub->finalize($ctx->debug, 1);
     $ctx->release;
 }
