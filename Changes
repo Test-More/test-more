@@ -7,6 +7,7 @@
     - Added Components manual page
     - Remove or modify experimental notice
     - Remove stray debugging statements
+    - Slight change in module list in t/00-report.t
 
 1.302018  2015-10-26 16:47:45-07:00 America/Los_Angeles
 
