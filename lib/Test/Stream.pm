@@ -230,13 +230,17 @@ both frameworks.
 
 =head1 MANUAL
 
-TODO: L<Test::Stream::Manual>
+The manual is still being written, but a couple pages are already available.
 
 =over 4
 
 =item Migrating from Test::More
 
 L<Test::Stream::Manual::FromTestBuilder>
+
+=item How to write tools for Test::Stream
+
+L<Test::Stream::Manual::Tooling>
 
 =item Overview of Test-Stream components
 

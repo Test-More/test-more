@@ -111,6 +111,8 @@ almost every component of Test::Stream.
 
 =head2 ESSENTIAL EVENT TYPES
 
+=over 4
+
 =item Test::Stream::Event::Bail
 
 L<Test::Stream::Event::Bail> is an event that is issued when there is a
@@ -148,10 +150,14 @@ L<Test::Stream::Event::Subtest> is used to run an isolated sub-group of tests.
 L<Test::Stream::Event::Waiting> is used by the IPC system to pass along a note
 that the primary process/thread is finished.
 
+=back
+
 =head1 PRIMARY INTERFACE
 
 These are the modules people workng with Test::Stream are most likely to
 interact with. This includes test authors, as well as tool authors.
+
+=over 4
 
 =item Test::Stream
 
@@ -166,9 +172,13 @@ L<Test::Stream::Bundle> is the base class for Test::Stream bundles.
 
 L<Test::Stream::Plugin> is the base class for Test::Stream plugins.
 
+=back
+
 =head1 BUNDLES
 
 These are collections of plugins and options.
+
+=over 4
 
 =item Test::Stream::Bundle::V1
 
@@ -182,7 +192,11 @@ L<Test::Stream::Bundle::SpecTester> is used a lot on internal self-testing.
 
 L<Test::Stream::Bundle::Tester> is useful when writing tests for testing tools.
 
+=back
+
 =head1 PLUGINS
+
+=over 4
 
 =item Test::Stream::Plugin::AuthorTest
 
@@ -376,6 +390,8 @@ L<Test::Stream::Plugin::UTF8> is used to turn on UTF8 globaly.
 
 L<Test::Stream::Plugin::Warnings> provides tools for intercepting and
 validating warnings.
+
+=back
 
 =head1 SOURCE
 
