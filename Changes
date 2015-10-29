@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302019  2015-10-28 22:32:06-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Declare Test::Stream experimental phase complete
     - Updated Readme
     - Add tooling manual page
