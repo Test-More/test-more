@@ -399,7 +399,12 @@ sub convert {
     return Test::Stream::Compare::Ref->new(input => $thing)
         if $type;
 
-    return Test::Stream::Compare::Value->new(input => $thing);
+    # Like() will guess between a number and a string
+    return Test::Stream::Compare::Value->new(input => $thing)
+        unless $strict;
+
+    # is() will assume string and use 'eq'
+    return Test::Stream::Compare::String->new(input => $thing);
 }
 
 1;
@@ -521,6 +526,9 @@ work as well, however there are problems if your reference contains a cyle and
 refers back to itself at some point, if this happens an exception will be
 thrown to break an otherwise infinite recursion.
 
+B<Note>: Non-reference values will be compared as strings using C<eq>, that
+means '2.0' and '2' will match.
+
 =item like($got, $expect)
 
 =item like($got, $expect, $name)
@@ -550,6 +558,9 @@ This works for both deep and shallow structures. For instance you can use this
 to compare 2 strings:
 
     like('foo bar', qr/^foo/, "string matches the pattern");
+
+B<Note>: C<like()> is essentially a relaxed form of C<is()>, it will guess if a
+non-ref value is a number or a string and compare accordingly.
 
 =back
 
