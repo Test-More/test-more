@@ -160,7 +160,7 @@ L<Test::Builder> does it.
 
     # You can use either of the next 2 lines, they are both equivilent
     use Test::Stream Subtest => ['streamed'];
-    use Test::Stream::Plugin::Subtest qw/subtest/;
+    use Test::Stream::Plugin::Subtest qw/streamed/;
 
     subtest my_test => sub {
         ok(1, "subtest event A");
