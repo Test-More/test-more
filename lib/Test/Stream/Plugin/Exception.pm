@@ -38,8 +38,8 @@ Test::Stream::Plugin::Exception - Simple tools to help test exceptions.
 
 =head1 SYNOPSIS
 
-    # Loads Exception, we also need 'More', so load that as well.
-    use Test::Stream qw/More Exception/;
+    # Loads Exception, we also need 'Core', so load that as well.
+    use Test::Stream qw/Core Exception/;
 
     ok(lives { ... }, "codeblock did not die");
 
