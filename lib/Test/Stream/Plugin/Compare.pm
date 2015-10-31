@@ -41,8 +41,6 @@ sub is($$;$@) {
     my ($got, $exp, $name, @diag) = @_;
     my $ctx = context();
 
-    my @caller = caller;
-
     my $delta = compare($got, $exp, \&strict_convert);
 
     if ($delta) {
@@ -59,8 +57,6 @@ sub is($$;$@) {
 sub like($$;$@) {
     my ($got, $exp, $name, @diag) = @_;
     my $ctx = context();
-
-    my @caller = caller;
 
     my $delta = compare($got, $exp, \&relaxed_convert);
 
@@ -376,7 +372,7 @@ sub convert {
         if $type eq 'REGEXP';
 
     if ($type eq 'SCALAR') {
-        my $nested = relaxed_convert($$thing);
+        my $nested = convert($$thing, $strict);
         return Test::Stream::Compare::Scalar->new(item => $nested)
     }
 

@@ -104,6 +104,8 @@ sub delta_class { 'Test::Stream::Delta' }
 sub deltas { () }
 sub got_lines { () }
 
+sub stringify_got { 0 }
+
 sub operator { '' }
 sub verify   { confess "unimplemented" }
 sub name     { confess "unimplemented" }

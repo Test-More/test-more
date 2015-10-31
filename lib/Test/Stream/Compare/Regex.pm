@@ -24,6 +24,8 @@ sub init {
     $self->SUPER::init();
 }
 
+sub stringify_got { 1 }
+
 sub operator { 'eq' }
 
 sub name { "" . $_[0]->{+INPUT} };

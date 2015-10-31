@@ -104,9 +104,9 @@ sub render_got {
     return '<UNDEF>' unless defined $got;
 
     my $check = $self->{+CHK};
-    my $rx = $check && $check->isa('Test::Stream::Compare::Regex');
+    my $stringify = $check && $check->stringify_got;
 
-    return render_ref($got) if ref $got && !$rx;
+    return render_ref($got) if ref $got && !$stringify;
 
     return "$got";
 }
