@@ -6,7 +6,7 @@ use Test::Stream::Exporter;
 default_exports qw/is like/;
 exports qw{
     match mismatch validator
-    hash array object meta
+    hash array object meta number string
     in_set not_in_set check_set
     item field call prop check
     end filter_items
@@ -28,12 +28,14 @@ use Test::Stream::Compare::Custom;
 use Test::Stream::Compare::Event;
 use Test::Stream::Compare::Hash;
 use Test::Stream::Compare::Meta;
+use Test::Stream::Compare::Number;
 use Test::Stream::Compare::Object;
 use Test::Stream::Compare::Pattern;
 use Test::Stream::Compare::Ref;
 use Test::Stream::Compare::Regex;
 use Test::Stream::Compare::Scalar;
 use Test::Stream::Compare::Set;
+use Test::Stream::Compare::String;
 use Test::Stream::Compare::Value;
 use Test::Stream::Compare::Wildcard;
 
@@ -131,6 +133,24 @@ sub validator {
         code     => $code,
         name     => $cname,
         operator => $op,
+    );
+}
+
+sub number($) {
+    my @caller = caller;
+    return Test::Stream::Compare::Number->new(
+        file  => $caller[1],
+        lines => [$caller[2]],
+        input => $_[0],
+    );
+}
+
+sub string($) {
+    my @caller = caller;
+    return Test::Stream::Compare::String->new(
+        file  => $caller[1],
+        lines => [$caller[2]],
+        input => $_[0],
     );
 }
 
@@ -639,6 +659,14 @@ or a non-existant value.
 B<Note: None of these are exported by default, you need to request them.>
 
 =over 4
+
+=item $check = string "..."
+
+Verify that the value matches the given string using the C<eq> operator.
+
+=item $check = number ...;
+
+Verify that the value matches the given number using the C<==> operator.
 
 =item $check = match qr/.../
 

@@ -4,7 +4,7 @@ use Data::Dumper;
 tests simple => sub {
     imported_ok qw{
         match mismatch validator
-        hash array object meta
+        hash array object meta number string
         in_set not_in_set check_set
         item field call prop
         end filter_items
@@ -309,6 +309,80 @@ tests exact_ref => sub {
                     qr/\| GOT\s+\| OP\s+\| CHECK\s+\| LNs\s+\|/,
                     qr/\+-+\+-+\+-+\+-+\+/,
                     qr/\| HASH\(.*\) \| == \| HASH\(.*\) \| $line \|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                ],
+            };
+            end;
+        },
+        "Got events"
+    );
+};
+
+tests string => sub {
+    my $check = string "foo"; my $line = __LINE__;
+    is($check->lines, [$line], "Got line number");
+
+    my $events = intercept {
+        is('foo', $check, "pass");
+        is('bar', $check, "fail");
+    };
+
+    like(
+        $events,
+        array {
+            event Ok => {pass => 1};
+            event Ok => {
+                pass => 0,
+                diag => [
+                    qr/Failed test/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| GOT\s+\| OP \| CHECK\s+\| LNs\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| bar\s+\| eq \| foo\s+\| $line\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                ],
+            };
+            end;
+        },
+        "Got events"
+    );
+};
+
+tests number => sub {
+    my $check = number "22.0"; my $line = __LINE__;
+    is($check->lines, [$line], "Got line number");
+
+    my $events = intercept {
+        is(22, $check, "pass");
+        is("22.0", $check, "pass");
+        is(12, $check, "fail");
+        is('xxx', $check, "fail");
+    };
+
+    like(
+        $events,
+        array {
+            event Ok => {pass => 1};
+            event Ok => {pass => 1};
+            event Ok => {
+                pass => 0,
+                diag => [
+                    qr/Failed test/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| GOT\s+\| OP \| CHECK\s+\| LNs\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| 12\s+\| == \| 22\.0\s+\| $line\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                ],
+            };
+            event Ok => {
+                pass => 0,
+                diag => [
+                    qr/Failed test/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| GOT\s+\| OP \| CHECK\s+\| LNs\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| xxx\s+\| == \| 22\.0\s+\| $line\s+\|/,
                     qr/\+-+\+-+\+-+\+-+\+/,
                 ],
             };
