@@ -546,19 +546,19 @@ output of the current formatter, which is usually your TAP output formatter.
 
 =over 4
 
-=item L<Test::Stream::Subtest>
+=item L<Test::Stream::Plugin::Subtest>
 
 Subtest support
 
-=item L<Test::Stream::Intercept>
+=item L<Test::Stream::Plugin::Intercept>
 
 Tools for intercepting events, exceptions, warnings, etc.
 
-=item L<Test::Stream::Tester>
+=item L<Test::Stream::Bundle::Tester>
 
 Tools for testing your test tools
 
-=item L<Test::Stream::IPC>
+=item L<Test::Stream::Plugin::IPC>
 
 Use this module directly for more control over concurrency.
 
