@@ -2,8 +2,22 @@ use Test::Stream -V1;
 
 use Test::Stream::Table qw/table/;
 
+use Test::Stream::Capabilities qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
+
 diag "\nDIAGNOSTICS INFO IN CASE OF FAILURE:\n";
 diag(join "\n", table(rows => [[ 'perl', $] ]]));
+
+diag(
+    join "\n",
+    table(
+        header => [qw/CAPABILITY SUPPORTED/],
+        rows   => [
+            ['CAN_FORK',        CAN_FORK        ? 'Yes' : 'No'],
+            ['CAN_REALLY_FORK', CAN_REALLY_FORK ? 'Yes' : 'No'],
+            ['CAN_THREAD',      CAN_THREAD      ? 'Yes' : 'No'],
+        ],
+    )
+);
 
 {
     my @depends = qw{
