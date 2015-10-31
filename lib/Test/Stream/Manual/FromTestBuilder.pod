@@ -330,7 +330,8 @@ Similar to old way:
     TODO: {
         # Note, this is a lexical variable, not a package variable. Do not use
         # local. The todo will end when the variable is destroyed (at the end
-        # of the scope, or when you assign it to undef.
+        # of the scope, or when you assign something else, such as undef, to
+        # the variable.
         my $todo = todo "These are not ready yet";
 
         ok(0, 'todo');
