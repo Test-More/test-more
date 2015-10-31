@@ -141,7 +141,7 @@ tests like => sub {
                     '+--------+-----+----+-------+',
                     '| PATH   | GOT | OP | CHECK |',
                     '+--------+-----+----+-------+',
-                    '| [0]{a} | 2   | == | 1     |',
+                    '| [0]{a} | 2   | eq | 1     |',
                     '+--------+-----+----+-------+',
                     'diag',
                 ];
@@ -246,11 +246,11 @@ tests convert => sub {
     *strict_convert = $CLASS->can('strict_convert');
     *relaxed_convert = $CLASS->can('relaxed_convert');
     my @sets = (
-        ['a',   'String', 'Value'],
-        [undef, 'String', 'Value'],
-        ['',    'String', 'Value'],
-        [1,     'String', 'Value'],
-        [0,     'String', 'Value'],
+        ['a',   'String', 'String'],
+        [undef, 'String', 'String'],
+        ['',    'String', 'String'],
+        [1,     'String', 'String'],
+        [0,     'String', 'String'],
         [[],    'Array', 'Array'],
         [{},    'Hash',  'Hash'],
         [qr/x/, 'Regex',   'Pattern'],
@@ -267,7 +267,7 @@ tests convert => sub {
         [
             bless({expect => 'a'}, 'Test::Stream::Compare::Wildcard'),
             'String',
-            'Value',
+            'String',
         ],
     );
 

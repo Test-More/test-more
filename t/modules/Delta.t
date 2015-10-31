@@ -11,8 +11,8 @@ is(
 my $one = $CLASS->new();
 isa_ok($one, $CLASS);
 
-my $check1 = Test::Stream::Compare::Value->new(input => 'x');
-my $check2 = Test::Stream::Compare::Value->new(input => 'y');
+my $check1 = Test::Stream::Compare::String->new(input => 'x');
+my $check2 = Test::Stream::Compare::String->new(input => 'y');
 
 $one = $CLASS->new(check => $check1);
 ref_is($one->chk, $check1, "Got our check");
@@ -53,7 +53,7 @@ tests render_got => sub {
 
 tests render_check => sub {
     my $one   = $CLASS->new;
-    my $check = Test::Stream::Compare::Value->new(input => 'xyz');
+    my $check = Test::Stream::Compare::String->new(input => 'xyz');
 
     is($one->render_check, '<UNDEF>', "check is undef");
 
@@ -158,7 +158,7 @@ tests should_show => sub {
     $one->set_verified(1);
     ok(!$one->should_show, "verified, do not show");
 
-    my $check = Test::Stream::Compare::Value->new(input => 'xyz');
+    my $check = Test::Stream::Compare::String->new(input => 'xyz');
     $one->set_chk($check);
     ok(!$one->should_show, "verified, check is uninteresting");
 
@@ -201,7 +201,7 @@ tests table_op => sub {
     my $one = $CLASS->new(verified => 0);
     is($one->table_op, '!exists', "no op if there is no check");
 
-    my $check = Test::Stream::Compare::Value->new(input => 'xyz');
+    my $check = Test::Stream::Compare::String->new(input => 'xyz');
     $one->set_chk($check);
     $one->set_got('foo');
     is($one->table_op, 'eq', "got op");
@@ -217,7 +217,7 @@ tests table_check_lines => sub {
     my $one = $CLASS->new(verified => 0);
     is($one->table_check_lines, '', 'no lines without a check');
 
-    my $check = Test::Stream::Compare::Value->new(input => 'xyz');
+    my $check = Test::Stream::Compare::String->new(input => 'xyz');
     $one->set_chk($check);
     is($one->table_check_lines, '', 'check has no lines');
 
@@ -232,7 +232,7 @@ tests table_got_lines => sub {
     my $one = $CLASS->new(verified => 0);
     is($one->table_got_lines, '', "no lines without a check");
 
-    my $check = Test::Stream::Compare::Value->new(input => 'xyz');
+    my $check = Test::Stream::Compare::String->new(input => 'xyz');
     $one->set_chk($check);
     $one->set_dne('got');
     is($one->table_got_lines, '', "no lines when 'got' is dne");

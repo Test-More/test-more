@@ -1,10 +1,20 @@
 use Test::Stream -V1, Spec, Class => ['Test::Stream::Compare::Value'];
 
-my $undef = $CLASS->new();
-my $number = $CLASS->new(input => '22.0');
-my $string = $CLASS->new(input => 'hello');
-my $untru1 = $CLASS->new(input => '');
-my $untru2 = $CLASS->new(input => 0);
+my ($undef, $number, $string, $untru1, $untru2);
+
+my $warnings = warns {
+    $undef = $CLASS->new();
+    $number = $CLASS->new(input => '22.0');
+    $string = $CLASS->new(input => 'hello');
+    $untru1 = $CLASS->new(input => '');
+    $untru2 = $CLASS->new(input => 0);
+};
+
+like(
+    $warnings->[0],
+    qr/Test::Stream::Compare::Value is considered deprecated and dangerous/,
+    "Got warning"
+);
 
 isa_ok($_, $CLASS, 'Test::Stream::Compare') for $undef, $number, $string, $untru1, $untru2;
 

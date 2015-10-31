@@ -4,11 +4,19 @@ use warnings;
 
 use Scalar::Util qw/looks_like_number/;
 
+use Carp qw/carp/;
+
 use Test::Stream::Compare;
 use Test::Stream::HashBase(
     base => 'Test::Stream::Compare',
     accessors => [qw/input/],
 );
+
+sub init {
+    my $self = shift;
+    carp "Test::Stream::Compare::Value is considered deprecated and dangerous";
+    $self->SUPER::init(@_);
+}
 
 sub name {
     my $self = shift;
@@ -60,6 +68,12 @@ __END__
 =head1 NAME
 
 Test::Stream::Compare::Value - Compare a value in deep comparisons.
+
+=head1 DEPRECATED
+
+This module would guess if a scalar was a string or number, this is dangerous.
+Please see L<Test::Stream::Compare::String> and
+L<Test::Stream::Compare::Number> instead.
 
 =head1 DESCRIPTION
 
