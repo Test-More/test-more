@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    * Remove all number vs string guessing
+    * Doc fixes (thanks Magnolia.K)
+    * Add details to test report
+
 1.302020  2015-10-29 08:02:25-07:00 America/Los_Angeles
 
     - No changes, just removing trial
