@@ -129,7 +129,11 @@ the IPC driver will have a chance to poll for pending events.
 This can only be turned on once, and it can not be turned off. The effects are
 global.
 
+=back
+
 =head1 INSTANCE METHODS
+
+=over 4
 
 =item $self->abort($msg)
 
