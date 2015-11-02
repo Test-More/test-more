@@ -280,7 +280,7 @@ sub table {
         );
     }
 
-    my @no_collapse = map { $COLUMNS{$COLUMN_ORDER[$_]}->{no_collapse} ? ($_) : () } 0 .. $#COLUMN_ORDER;
+    my @no_collapse = grep { $COLUMNS{$COLUMN_ORDER[$_]}->{no_collapse} } 0 .. $#COLUMN_ORDER;
     unshift @out => Test::Stream::Table::table(
         header      => $header,
         rows        => $rows,
