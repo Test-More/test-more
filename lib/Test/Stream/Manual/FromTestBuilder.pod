@@ -264,7 +264,7 @@ These are no longer around for you to use.
 =item require_ok
 
 Errors loading modules cause the test to die anyway, so just load them, if they
-do not work the test will fail. Making a seperate API for this is a wasted
+do not work the test will fail. Making a separate API for this is a wasted
 effort. Also doing this requires the functions to guess if you provided a
 module name, or filename, and then munging the input to figure out what
 actually needs to be loaded.

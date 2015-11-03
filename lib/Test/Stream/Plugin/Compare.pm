@@ -692,7 +692,7 @@ you can specify a name and operator that are used in diagnostics, they are also
 provided to the sub itself as named parameters.
 
 Check the value using this sub. The sub gets the value in C<$_>, as well it
-recieved the value and several other items as named parameters.
+received the value and several other items as named parameters.
 
     my $check = validator(sub {
         my %params = @_;

@@ -55,7 +55,7 @@ Test::Stream::Compare::Custom - Custom field check for comparisons.
 
 Sometimes you want to do something complicated or unusual when validating a
 field nested inside a deep data structure. You could pull it out of the
-structure and test it seperately, or you can use this to embed the check. This
+structure and test it separately, or you can use this to embed the check. This
 provides a way for you to write custom checks for fields in deep comparisons.
 
 =head1 SYNOPSIS

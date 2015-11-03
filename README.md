@@ -178,7 +178,7 @@ Explanation:
     by the loader. Loaders that subclass Test::Stream can add options of their own.
 
     To define an option in your subclass simply add a `sub opt_NAME()` method. The
-    method will recieve several arguments:
+    method will receive several arguments:
 
         sub opt_foo {
             my $class = shift;
@@ -246,7 +246,7 @@ want to load.
 
 [Test::Stream](https://metacpan.org/pod/Test::Stream) does not recreate this wild west approach to testing tools and
 bundles. [Test::Stream](https://metacpan.org/pod/Test::Stream) recognises the benefits of bundles, but provides a
-much more sane approach. Bundles and Tools are kept seperate, this way you can
+much more sane approach. Bundles and Tools are kept separate, this way you can
 always use tools without being forced to adopt the authors ideal bundle.
 
 # ENVIRONMENT VARIABLES

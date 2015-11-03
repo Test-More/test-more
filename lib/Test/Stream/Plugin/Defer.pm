@@ -46,7 +46,7 @@ This is the plugin form of L<Test::Stream::DeferredTests>.
 =item def function => @args;
 
 This will store the function name, and the arguments to be run later. Note that
-each package has a seperate store of tests to run.
+each package has a separate store of tests to run.
 
 =item do_def()
 

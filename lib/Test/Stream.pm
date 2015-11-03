@@ -391,7 +391,7 @@ Uncapitalized options without a C<+>, C<->, or C<:> prefix are reserved for use
 by the loader. Loaders that subclass Test::Stream can add options of their own.
 
 To define an option in your subclass simply add a C<sub opt_NAME()> method. The
-method will recieve several arguments:
+method will receive several arguments:
 
     sub opt_foo {
         my $class = shift;
@@ -471,7 +471,7 @@ want to load.
 
 L<Test::Stream> does not recreate this wild west approach to testing tools and
 bundles. L<Test::Stream> recognises the benefits of bundles, but provides a
-much more sane approach. Bundles and Tools are kept seperate, this way you can
+much more sane approach. Bundles and Tools are kept separate, this way you can
 always use tools without being forced to adopt the authors ideal bundle.
 
 =head1 ENVIRONMENT VARIABLES
