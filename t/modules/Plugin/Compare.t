@@ -1,6 +1,11 @@
 use Test::Stream -V1, -SpecTester, Defer, Compare => '*', Class => ['Test::Stream::Plugin::Compare'];
 use Data::Dumper;
 
+{
+    package My::Boolean;
+    use overload bool => sub { ${$_[0]} };
+}
+
 tests simple => sub {
     imported_ok qw{
         match mismatch validator
@@ -23,6 +28,11 @@ tests is => sub {
 
         def ok => (is([{'a' => 1}], [{'a' => 1}], "complex pass", 'diag'), 'complex pass');
         def ok => (!is([{'a' => 2, 'b' => 3}], [{'a' => 1}], "complex fail", 'diag'), 'complex fail');
+
+        my $true  = do { bless \(my $dummy = 1), "My::Boolean" };
+        my $false = do { bless \(my $dummy = 0), "My::Boolean" };
+        def ok => (is($true,  $true,  "true scalar ref is itself"),  "true scalar ref is itself");
+        def ok => (is($false, $false, "false scalar ref is itself"), "false scalar ref is itself");
     };
 
     do_def;
@@ -77,6 +87,17 @@ tests is => sub {
                 ];
             };
 
+            event Ok => sub {
+                call pass => T();
+                call name => "true scalar ref is itself";
+                call diag => undef;
+            };
+
+            event Ok => sub {
+                call pass => T();
+                call name => "false scalar ref is itself";
+                call diag => undef;
+            };
             end;
         },
         "Got expected events"
@@ -243,6 +264,9 @@ tests shortcuts => sub {
 };
 
 tests convert => sub {
+    my $true  = do { bless \(my $dummy = 1), "My::Boolean" };
+    my $false = do { bless \(my $dummy = 0), "My::Boolean" };
+
     *strict_convert = $CLASS->can('strict_convert');
     *relaxed_convert = $CLASS->can('relaxed_convert');
     my @sets = (
@@ -251,12 +275,14 @@ tests convert => sub {
         ['',    'String', 'String'],
         [1,     'String', 'String'],
         [0,     'String', 'String'],
-        [[],    'Array', 'Array'],
-        [{},    'Hash',  'Hash'],
-        [qr/x/, 'Regex',   'Pattern'],
+        [[],    'Array',  'Array'],
+        [{},    'Hash',   'Hash'],
+        [qr/x/, 'Regex',  'Pattern'],
         [sub { 1 }, 'Ref', 'Custom'],
         [\*STDERR, 'Ref',    'Ref'],
         [\'foo',   'Scalar', 'Scalar'],
+        [$true,    'Scalar', 'Scalar'],
+        [$false,   'Scalar', 'Scalar'],
 
         [
             bless({}, 'Test::Stream::Compare'),
