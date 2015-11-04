@@ -1,15 +1,20 @@
 {{$NEXT}}
 
+    - String and Number comparisons no longer allow undef (backwords incompatible change, sorry)
+    - Doc spelling fixes (Evan Zacks)
+    - Add Undef type in deep check
+    - Fix docs for buffered subtests (Noticed by Magnolia.K)
+
 1.302022  2015-11-03 09:43:39-08:00 America/Los_Angeles
 
-    * Change Delta.pm to use a grep instead of a map (minor change)
-    * Fix scalar-ref comparison for overloaded scalar refs (#50)
+    - Change Delta.pm to use a grep instead of a map (minor change)
+    - Fix scalar-ref comparison for overloaded scalar refs (#50)
 
 1.302021  2015-10-31 08:15:22-07:00 America/Los_Angeles
 
-    * Remove all number vs string guessing
-    * Doc fixes (thanks Magnolia.K)
-    * Add details to test report
+    - Remove all number vs string guessing
+    - Doc fixes (thanks Magnolia.K)
+    - Add details to test report
 
 1.302020  2015-10-29 08:02:25-07:00 America/Los_Angeles
 
