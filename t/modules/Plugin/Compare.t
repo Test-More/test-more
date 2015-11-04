@@ -29,6 +29,9 @@ tests is => sub {
         def ok => (is([{'a' => 1}], [{'a' => 1}], "complex pass", 'diag'), 'complex pass');
         def ok => (!is([{'a' => 2, 'b' => 3}], [{'a' => 1}], "complex fail", 'diag'), 'complex fail');
 
+        def ok => (is(undef, undef), 'undef pass');
+        def ok => (!is(0, undef), 'undef fail');
+
         my $true  = do { bless \(my $dummy = 1), "My::Boolean" };
         my $false = do { bless \(my $dummy = 0), "My::Boolean" };
         def ok => (is($true,  $true,  "true scalar ref is itself"),  "true scalar ref is itself");
@@ -84,6 +87,22 @@ tests is => sub {
                     '| [0]{b} | 3   | !exists | <DOES NOT EXIST> |',
                     '+--------+-----+---------+------------------+',
                     'diag',
+                ];
+            };
+
+            event Ok => sub {
+                call pass => T();
+                call diag => undef;
+            };
+            event Ok => sub {
+                call pass => F();
+                call diag => [
+                    qr/Failed test/,
+                    '+-----+----+---------+',
+                    '| GOT | OP | CHECK   |',
+                    '+-----+----+---------+',
+                    '| 0   | IS | <UNDEF> |',
+                    '+-----+----+---------+',
                 ];
             };
 
@@ -271,7 +290,7 @@ tests convert => sub {
     *relaxed_convert = $CLASS->can('relaxed_convert');
     my @sets = (
         ['a',   'String', 'String'],
-        [undef, 'String', 'String'],
+        [undef, 'Undef', 'Undef'],
         ['',    'String', 'String'],
         [1,     'String', 'String'],
         [0,     'String', 'String'],

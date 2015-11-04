@@ -36,6 +36,7 @@ use Test::Stream::Compare::Regex;
 use Test::Stream::Compare::Scalar;
 use Test::Stream::Compare::Set;
 use Test::Stream::Compare::String;
+use Test::Stream::Compare::Undef;
 use Test::Stream::Compare::Value;
 use Test::Stream::Compare::Wildcard;
 
@@ -362,6 +363,9 @@ sub event($;$) {
 
 sub convert {
     my ($thing, $strict) = @_;
+
+    return Test::Stream::Compare::Undef->new()
+        unless defined $thing;
 
     if ($thing && blessed($thing) && $thing->isa('Test::Stream::Compare')) {
         return $thing unless $thing->isa('Test::Stream::Compare::Wildcard');
