@@ -188,7 +188,7 @@ This will produce output like this:
 
 This will produce output like this:
 
-    ok 1 - Subtest: my_test {
+    ok 1 - my_test {
         ok 1 - subtest event A
         ok 2 - subtest event B
         1..2
@@ -216,7 +216,7 @@ This will produce the following output:
         1..2
     ok 1 - Subtest: my_test
 
-    ok 2 - Subtest: my_test {
+    ok 2 - my_test {
         ok 1 - subtest event A
         ok 2 - subtest event B
         1..2
