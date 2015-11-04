@@ -1,15 +1,13 @@
 use Test::Stream -V1, Spec, Class => ['Test::Stream::Compare::String'];
 
-my $undef = $CLASS->new();
 my $number = $CLASS->new(input => '22.0');
 my $string = $CLASS->new(input => 'hello');
 my $untru1 = $CLASS->new(input => '');
 my $untru2 = $CLASS->new(input => 0);
 
-isa_ok($_, $CLASS, 'Test::Stream::Compare') for $undef, $number, $string, $untru1, $untru2;
+isa_ok($_, $CLASS, 'Test::Stream::Compare') for $number, $string, $untru1, $untru2;
 
 tests name => sub {
-    is($undef->name,  '<UNDEF>', "got expected name");
     is($number->name, '22.0',    "got expected name");
     is($string->name, 'hello',   "got expected name");
     is($untru1->name, '',        "got expected name");
@@ -17,11 +15,6 @@ tests name => sub {
 };
 
 tests operator => sub {
-    is($undef->operator(),      '',   "no operator for undef + nothing");
-    is($undef->operator(undef), '==', "== for 2 undefs");
-    is($undef->operator('x'),   '',   "no operator for undef + string");
-    is($undef->operator(1),     '',   "no operator for undef + number");
-
     is($number->operator(),      '',   "no operator for number + nothing");
     is($number->operator(undef), '',   "no operator for number + undef");
     is($number->operator('x'),   'eq', "eq operator for number + string");
@@ -44,12 +37,6 @@ tests operator => sub {
 };
 
 tests verify => sub {
-    ok(!$undef->verify(exists => 0, got => undef), 'does not verify against DNE');
-    ok(!$undef->verify(exists => 1, got => {}),    'Ref does not verify against undef');
-    ok($undef->verify(exists => 1, got => undef), 'undef verifies against undef');
-    ok(!$undef->verify(exists => 1, got => 'x'), 'string will not validate against undef');
-    ok(!$undef->verify(exists => 1, got => 1),   'number will not verify against undef');
-
     ok(!$number->verify(exists => 0, got => undef), 'does not verify against DNE');
     ok(!$number->verify(exists => 1, got => {}),    'ref will not verify');
     ok(!$number->verify(exists => 1, got => undef), 'looking for a number, not undef');
@@ -77,9 +64,15 @@ tests verify => sub {
     ok(!$untru2->verify(exists => 1, got => undef), 'undef is not 0 for this test');
     ok(!$untru2->verify(exists => 1, got => 'x'),   'x is not 0');
     ok(!$untru2->verify(exists => 1, got => 1),     '1 is not 0');
-    ok($untru2->verify(exists => 1, got => 0),      'got 0');
     ok(!$untru2->verify(exists => 1, got => '0.0'),  '0.0 ne 0');
     ok(!$untru2->verify(exists => 1, got => '-0.0'), '-0.0 ne 0');
+    ok($untru2->verify(exists => 1, got => 0),      'got 0');
 };
+
+like(
+    dies { $CLASS->new() },
+    qr/input must be defined for 'String' check/,
+    "Cannot use undef as a string"
+);
 
 done_testing;

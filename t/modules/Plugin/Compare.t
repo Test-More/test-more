@@ -391,6 +391,35 @@ tests string => sub {
         },
         "Got events"
     );
+
+    $check = string "foo", negate => 1; $line = __LINE__;
+    is($check->lines, [$line], "Got line number");
+
+    $events = intercept {
+        is('bar', $check, "pass");
+        is('foo', $check, "fail");
+    };
+
+    like(
+        $events,
+        array {
+            event Ok => {pass => 1};
+            event Ok => {
+                pass => 0,
+                diag => [
+                    qr/Failed test/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| GOT\s+\| OP \| CHECK\s+\| LNs\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| foo\s+\| ne \| foo\s+\| $line\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                ],
+            };
+            end;
+        },
+        "Got events"
+    );
+
 };
 
 tests number => sub {
@@ -435,6 +464,59 @@ tests number => sub {
         },
         "Got events"
     );
+
+    $check = number "22.0", negate => 1; $line = __LINE__;
+    is($check->lines, [$line], "Got line number");
+
+    $events = intercept {
+        is(12, $check, "pass");
+        is(22, $check, "fail");
+        is("22.0", $check, "fail");
+        is('xxx', $check, "fail");
+    };
+
+    like(
+        $events,
+        array {
+            event Ok => {pass => 1};
+            event Ok => {
+                pass => 0,
+                diag => [
+                    qr/Failed test/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| GOT\s+\| OP \| CHECK\s+\| LNs\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| 22\s+\| != \| 22\.0\s+\| $line\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                ],
+            };
+            event Ok => {
+                pass => 0,
+                diag => [
+                    qr/Failed test/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| GOT\s+\| OP \| CHECK\s+\| LNs\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| 22\.0\s+\| != \| 22\.0\s+\| $line\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                ],
+            };
+            event Ok => {
+                pass => 0,
+                diag => [
+                    qr/Failed test/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| GOT\s+\| OP \| CHECK\s+\| LNs\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                    qr/\| xxx\s+\| != \| 22\.0\s+\| $line\s+\|/,
+                    qr/\+-+\+-+\+-+\+-+\+/,
+                ],
+            };
+            end;
+        },
+        "Got events"
+    );
+
 };
 
 tests match => sub {

@@ -2,18 +2,27 @@ package Test::Stream::Compare::String;
 use strict;
 use warnings;
 
+use Carp qw/confess/;
+
 use Test::Stream::Compare;
 use Test::Stream::HashBase(
     base => 'Test::Stream::Compare',
-    accessors => [qw/input/],
+    accessors => [qw/input negate/],
 );
 
 sub stringify_got { 1 }
 
+sub init {
+    my $self = shift;
+    confess "input must be defined for 'String' check"
+        unless defined $self->{+INPUT};
+
+    $self->SUPER::init(@_);
+}
+
 sub name {
     my $self = shift;
     my $in = $self->{+INPUT};
-    return '<UNDEF>' unless defined $in;
     return "$in";
 }
 
@@ -23,8 +32,9 @@ sub operator {
     return '' unless @_;
     my ($got) = @_;
 
-    return '' if defined($self->{+INPUT}) xor defined($got);
-    return '==' unless defined($got);
+    return '' unless defined($got);
+
+    return 'ne' if $self->{+NEGATE};
     return 'eq';
 }
 
@@ -34,11 +44,12 @@ sub verify {
     my ($got, $exists) = @params{qw/got exists/};
 
     return 0 unless $exists;
+    return 0 unless defined $got;
 
-    my $input = $self->{+INPUT};
-    return !defined($got) unless defined $input;
-    return 0 unless defined($got);
+    my $input  = $self->{+INPUT};
+    my $negate = $self->{+NEGATE};
 
+    return "$input" ne "$got" if $negate;
     return "$input" eq "$got";
 }
 
@@ -56,8 +67,10 @@ Test::Stream::Compare::String - Compare 2 values as strings
 
 =head1 DESCRIPTION
 
-This is used to compare 2 items after they are stringified. This makes an
-exception for undef, if both sides are undef it will pass.
+This is used to compare 2 items after they are stringified. You can also check
+that 2 strings are not equal.
+
+B<Note>: This will fail if the recieved value is undefined, it must be defined.
 
 =head1 SOURCE
 

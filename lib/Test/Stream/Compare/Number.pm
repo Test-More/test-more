@@ -2,26 +2,43 @@ package Test::Stream::Compare::Number;
 use strict;
 use warnings;
 
+use Carp qw/confess/;
+
 use Test::Stream::Compare;
 use Test::Stream::HashBase(
     base => 'Test::Stream::Compare',
-    accessors => [qw/input/],
+    accessors => [qw/input negate/],
 );
+
+sub init {
+    my $self = shift;
+    my $input = $self->{+INPUT};
+
+    confess "input must be defined for 'Number' check"
+        unless defined $input;
+
+    # Check for ''
+    confess "input must be a number for 'Number' check"
+        unless length($input) && $input =~ m/\S/;
+
+    $self->SUPER::init(@_);
+}
 
 sub name {
     my $self = shift;
     my $in = $self->{+INPUT};
-    return '<UNDEF>' unless defined $in;
     return $in;
 }
 
 sub operator {
     my $self = shift;
-
     return '' unless @_;
     my ($got) = @_;
 
-    return '' if defined($self->{+INPUT}) xor defined($got);
+    return '' unless defined($got);
+    return '' unless length($got) && $got =~ m/\S/;
+
+    return '!=' if $self->{+NEGATE};
     return '==';
 }
 
@@ -31,16 +48,18 @@ sub verify {
     my ($got, $exists) = @params{qw/got exists/};
 
     return 0 unless $exists;
+    return 0 unless defined $got;
+    return 0 if ref $got;
+    return 0 unless length($got) && $got =~ m/\S/;
 
-    my $input = $self->{+INPUT};
-    return !defined($got) unless defined $input;
-    return 0 unless defined($got);
+    my $input  = $self->{+INPUT};
+    my $negate = $self->{+NEGATE};
 
     my @warnings;
     my $out;
     {
         local $SIG{__WARN__} = sub { push @warnings => @_ };
-        $out = $input == $got;
+        $out = $negate ? ($input != $got) : ($input == $got);
     }
 
     for my $warn (@warnings) {
@@ -68,8 +87,15 @@ Test::Stream::Compare::Number - Compare 2 values as numbers
 
 =head1 DESCRIPTION
 
-This is used to compare 2 numbers. This makes an exception for undef, if both
-sides are undef it will pass.
+This is used to compare 2 numbers. You can also check that 2 numbers are not
+the same.
+
+B<Note>: This will fail if the recieved value is undefined, it must be a number.
+
+B<Note>: This will fail if the comparison generates a non-numeric value warning
+(which will not be shown), this is because it must get a number. The warning is
+not shown as it will report to a useless line and filename, however the test
+diagnotics show both values.
 
 =head1 SOURCE
 

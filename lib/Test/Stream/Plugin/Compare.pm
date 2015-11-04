@@ -137,21 +137,25 @@ sub validator {
     );
 }
 
-sub number($) {
+sub number($;@) {
+    my ($num, @args) = @_;
     my @caller = caller;
     return Test::Stream::Compare::Number->new(
         file  => $caller[1],
         lines => [$caller[2]],
-        input => $_[0],
+        input => $num,
+        @args,
     );
 }
 
-sub string($) {
+sub string($;@) {
+    my ($str, @args) = @_;
     my @caller = caller;
     return Test::Stream::Compare::String->new(
         file  => $caller[1],
         lines => [$caller[2]],
-        input => $_[0],
+        input => $str,
+        @args,
     );
 }
 
