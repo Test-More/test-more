@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Add missing undef compare test
+
 1.302023  2015-11-04 00:12:49-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - String and Number comparisons no longer allow undef (backwords incompatible change, sorry)
