@@ -63,13 +63,13 @@ IMPORTANT NOTE
     Future Proofing. If we decide in the future that a specific plugin or
     tool is harmful we would like to be able to remove it. Making a tool
     part of the default set will effectively make it unremovable as doing so
-    would break compatability. To solve this problem we have the 'Core#'
+    would break compatibility. To solve this problem we have the 'Core#'
     bundle system.
 
     'V1' is the first bundle, and the recommended one for now. If the future
     tells us that parts of 'V1' are harmful, or that we need more than what
     is currently provided, we can release 'V2'. 'V1' will not be changed in
-    a backwords incompatible way, so nothing breaks, but everyone else can
+    a backwards incompatible way, so nothing breaks, but everyone else can
     move on and start using 'V2' in new code.
 
     The number following the 'V' prefix should correspond to a major version
@@ -106,7 +106,7 @@ PLUGINS, BUNDLES, AND OPTIONS
     '-V1',
         The "-" prefix indicates that the specified item is a bundle.
         Bundles live in the "Test::Stream::Bundle::" namespace. Each bundle
-        is an independant module. You can specify any number of bundles, or
+        is an independent module. You can specify any number of bundles, or
         none at all.
 
     ':Project'
@@ -165,7 +165,7 @@ PLUGINS, BUNDLES, AND OPTIONS
         options of their own.
 
         To define an option in your subclass simply add a "sub opt_NAME()"
-        method. The method will recieve several arguments:
+        method. The method will receive several arguments:
 
             sub opt_foo {
                 my $class = shift;
@@ -226,7 +226,7 @@ PLUGINS, BUNDLES, AND OPTIONS
 
     Test::Stream does not recreate this wild west approach to testing tools
     and bundles. Test::Stream recognises the benefits of bundles, but
-    provides a much more sane approach. Bundles and Tools are kept seperate,
+    provides a much more sane approach. Bundles and Tools are kept separate,
     this way you can always use tools without being forced to adopt the
     authors ideal bundle.
 

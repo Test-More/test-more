@@ -380,9 +380,9 @@ C<METHOD>.
 
 =item $delta->set_got($val)
 
-Deltas are produced by comparing a recieved data structure 'got' against a
+Deltas are produced by comparing a received data structure 'got' against a
 check data structure 'check'. The 'got' attribute contains the value that was
-recieved for comparison.
+received for comparison.
 
 =item $check = $delta->chk
 
@@ -392,7 +392,7 @@ recieved for comparison.
 
 =item $delta->set_check($check)
 
-Deltas are produced by comparing a recieved data structure 'got' against a
+Deltas are produced by comparing a received data structure 'got' against a
 check data structure 'check'. The 'check' attribute contains the value that was
 expected in the comparison.
 
@@ -428,7 +428,7 @@ an exception being thrown.
 
 =item $string = $delta->render_got
 
-Renders the string that should be used in a table to represent the recieved
+Renders the string that should be used in a table to represent the received
 value in a comparison.
 
 =item $string = $delta->render_check

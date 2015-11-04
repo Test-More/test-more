@@ -185,7 +185,7 @@ reference to that array.
 
 Set this to true if you would like to fail when the array being validated has
 more items than the check. That is if you check indexes 0-3, but the array
-recieved has values for indexes 0-4, it will fail and list that last item in
+received has values for indexes 0-4, it will fail and list that last item in
 the array as unexpected. If this is false then it is assumed you do not care
 about extra items.
 
@@ -230,7 +230,7 @@ index after the last is used.
 
 =item $arr->add_filter(sub { ... })
 
-Add a filter sub. The filter recieves all remaining values of the array being
+Add a filter sub. The filter receives all remaining values of the array being
 checked, and should return the values that should still be checked. The filter
 will be run between the last item added and the next item added.
 

@@ -683,7 +683,7 @@ These are B<GLOBAL> hooks into the context tools. Every sub added via ON_INIT
 will be called every single time a new context is initialized. Every sub added
 via ON_RELEASE will be called every single time a context is released.
 
-Subs will recieve exactly 1 argument, that is the context itself. You should
+Subs will receive exactly 1 argument, that is the context itself. You should
 not call C<release> on the context within your callback.
 
 =back

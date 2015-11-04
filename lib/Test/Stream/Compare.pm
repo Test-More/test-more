@@ -197,7 +197,7 @@ for several comparison classes that allow for deep structure comparisons.
         my $params = @_;
 
         # Always check if $got even exists, this will be false if no value at
-        # all was recieved. (as opposed to a $got of 'undef' or '0' which are
+        # all was received. (as opposed to a $got of 'undef' or '0' which are
         # valid meaning this field will be true).
         return 0 unless $params{exists};
 
@@ -293,7 +293,7 @@ structure.
 
 =item $op = $check->operator($got)
 
-Returns the operator that was used to compare the check with the recieved data
+Returns the operator that was used to compare the check with the received data
 in C<$got>. If there was no value for got then there will be no arguments,
 undef will only be an argument if undef was seen in C<$got>, this is how you
 can tell the difference between a missing value and an undefined one.
