@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - Add back cmp_ok in Core plugin
+    - Add Classic plugin for legacy is/like/is_deeply/etc
+    - Make docs recommend people moving from Test::More use -Classic
+
 1.302024  2015-11-04 11:15:14-08:00 America/Los_Angeles
 
     - Add missing undef compare test
