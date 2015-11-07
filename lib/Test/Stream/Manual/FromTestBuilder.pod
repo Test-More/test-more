@@ -249,6 +249,14 @@ The old output format can be used if requested:
 
 Defined in L<Test::Stream::Plugin::Subtest>.
 
+=item cmp_ok
+
+Usage is still the same. Internals have been heavily modified to enhance
+diagnostics. There is also now a list of supported operators, warnings are
+issued if you use an unsupported one.
+
+Defined in L<Test::Stream::Plugin::Core>.
+
 =back
 
 =head1 WHAT IS COMPLETELY GONE?
@@ -292,27 +300,6 @@ This method was copied in an API-incompatible way from L<Test::Most>. This
 created an incompatability issue between the 2 libraries and made a real mess
 of things. There is value in a tool like this, but if it is added it will be
 added with a new name to avoid conflicts.
-
-=item cmp_ok
-
-It is easy to write:
-
-    ok($got == $want, "$got == $want");
-
-cmp_eq did not buy very much more. There were added diagnostics, and they were
-indeed valuable. The issue is that the implementation for a cmp_ok that accepts
-arbitrary comparison operators is VERY complex. Further there are a great many
-edge cases to account for. Warnings that have to do with uninitialized or
-improper arguments to the operators also report to internals if not handled
-properly.
-
-All these issues are solvable, but they lead to very complex, slow, and easily
-broken code. I have fixed bugs in the old cmp_ok implementation, and can tell
-you it is a mess. I have also written no less than 3 replacements for cmp_ok,
-all of which proved complex enough that I do not feel it is worth maintaining
-in Test::Stream core.
-
-If you want cmp_ok badly enough you can write a plugin for it.
 
 =back
 

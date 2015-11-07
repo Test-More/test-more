@@ -12,6 +12,7 @@ imported_ok qw{
     imported_ok not_imported_ok
     ref_is ref_is_not
     set_encoding
+    cmp_ok
 };
 
 not_imported_ok(qw/x y z/);
@@ -467,6 +468,191 @@ like(
     $exception,
     qr/Unable to set encoding on formatter '<undef>'/,
     "Cannot set encoding without a formatter"
+);
+
+cmp_ok('x', 'eq', 'x', 'string pass');
+cmp_ok(5, '==', 5, 'number pass');
+cmp_ok(5, '==', 5.0, 'float pass');
+
+$line = __LINE__ + 2;
+like(
+    warns { cmp_ok(undef, '==', undef, 'undef pass') },
+    [
+        qr/uninitialized value.*at \(eval in cmp_ok\) \Q$file\E line $line/,
+    ],
+    "got expected warnings (number)"
+);
+
+$line = __LINE__ + 2;
+like(
+    warns { cmp_ok(undef, 'eq', undef, 'undef pass') },
+    [
+        qr/uninitialized value.*at \(eval in cmp_ok\) \Q$file\E line $line/,
+    ],
+    "got expected warnings (string)"
+);
+
+like(
+    intercept { cmp_ok('x', 'ne', 'x', 'string fail', 'extra diag') },
+    array {
+        event Ok => sub {
+            call pass => 0;
+            call name => 'string fail';
+            call diag => [
+                qr/Failed test/,
+                '+-----+----+-------+',
+                '| got | op | check |',
+                '+-----+----+-------+',
+                '| x   | ne | x     |',
+                '+-----+----+-------+',
+                'extra diag',
+            ];
+        };
+        end;
+    },
+    "Got 1 string fail event"
+);
+
+like(
+    intercept { cmp_ok(5, '==', 42, 'number fail', 'extra diag') },
+    array {
+        event Ok => sub {
+            call pass => 0;
+            call name => 'number fail';
+            call diag => [
+                qr/Failed test/,
+                '+-----+----+-------+',
+                '| got | op | check |',
+                '+-----+----+-------+',
+                '| 5   | == | 42    |',
+                '+-----+----+-------+',
+                'extra diag',
+            ];
+        };
+        end;
+    },
+    "Got 1 number fail event"
+);
+
+my $warning;
+$line = __LINE__ + 2;
+like(
+    intercept { $warning = warning { cmp_ok(5, '&& die', 42, 'number fail', 'extra diag') } },
+    array {
+        event Exception => { error => qr/42 at \(eval in cmp_ok\) \Q$file\E line $line/ };
+        event Ok => sub {
+            call pass => 0;
+            call name => 'number fail';
+            call diag => [
+                qr/Failed test/,
+                '+-----+--------+-------------+',
+                '| got | op     | check       |',
+                '+-----+--------+-------------+',
+                '| 5   | && die | <EXCEPTION> |',
+                '+-----+--------+-------------+',
+                'extra diag',
+            ];
+        };
+        end;
+    },
+    "Got exception in test"
+);
+like(
+    $warning,
+    qr/operator '&& die' is not supported \(you can add it to %Test::Stream::Plugin::Core::OPS\)/,
+    "Got warning about unsupported operator"
+);
+
+{
+    package Overloaded::Foo42;
+    use overload
+        'fallback' => 1,
+        '0+' => sub { 42    },
+        '""' => sub { 'foo' };
+}
+
+my $foo = bless {}, 'Overloaded::Foo42';
+
+cmp_ok($foo, '==', 42, "numeric compare with overloading");
+cmp_ok($foo, 'eq', 'foo', "string compare with overloading");
+
+like(
+    intercept {
+        local $ENV{TS_TERM_SIZE} = 10000;
+        cmp_ok($foo, 'ne', $foo, 'string fail', 'extra diag')
+    },
+    array {
+        event Ok => sub {
+            call pass => 0;
+            call name => 'string fail';
+            call diag => [
+                qr/Failed test/,
+                T(),
+                qr/type.*got.*op.*check/,
+                T(),
+                qr/str.*foo.*ne.*foo/,
+                qr/orig.*Overloaded::Foo42=HASH.*\|    \| Overloaded::Foo42=HASH/,
+                T(),
+                'extra diag',
+            ];
+        };
+        end;
+    },
+    "Failed string compare, overload"
+);
+
+like(
+    intercept {
+        local $ENV{TS_TERM_SIZE} = 10000;
+        cmp_ok($foo, '!=', $foo, 'number fail', 'extra diag')
+    },
+    array {
+        event Ok => sub {
+            call pass => 0;
+            call name => 'number fail';
+            call diag => [
+                qr/Failed test/,
+                T(),
+                qr/type.*got.*op.*check/,
+                T(),
+                qr/num.*42.*!=.*42/,
+                qr/orig.*Overloaded::Foo42=HASH.*\|    \| Overloaded::Foo42=HASH/,
+                T(),
+                'extra diag',
+            ];
+        };
+        end;
+    },
+    "Failed number compare, overload"
+);
+
+$line = __LINE__ + 2;
+like(
+    intercept {
+        local $ENV{TS_TERM_SIZE} = 10000;
+        warning {
+            cmp_ok($foo, '&& die', $foo, 'overload exception', 'extra diag')
+        }
+    },
+    array {
+        event Exception => { error => T() };
+        event Ok => sub {
+            call pass => 0;
+            call name => 'overload exception';
+            call diag => [
+                qr/Failed test/,
+                T(),
+                qr/type.*got.*op.*check/,
+                T(),
+                qr/unsupported.*foo.*&& die.*<EXCEPTION>/,
+                qr/orig.*Overloaded::Foo42=HASH.*\|\s+\| Overloaded::Foo42=HASH/,
+                T(),
+                'extra diag',
+            ];
+        };
+        end;
+    },
+    "Got exception in test"
 );
 
 done_testing;

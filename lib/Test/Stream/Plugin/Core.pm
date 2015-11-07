@@ -3,9 +3,11 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/reftype refaddr/;
-use Carp qw/croak confess/;
+use Carp qw/croak confess carp/;
 
 use Test::Stream::Sync;
+
+use Test::Stream::Table qw/table/;
 
 use Test::Stream::Context qw/context/;
 use Test::Stream::Util qw{
@@ -13,6 +15,7 @@ use Test::Stream::Util qw{
     get_stash
     parse_symbol
     update_mask
+    render_ref
 };
 
 use Test::Stream::Exporter;
@@ -26,6 +29,7 @@ default_exports qw{
     imported_ok not_imported_ok
     ref_is ref_is_not
     set_encoding
+    cmp_ok
 };
 no Test::Stream::Exporter;
 
@@ -286,6 +290,119 @@ sub not_imported_ok {
     return !@found;
 }
 
+our %OPS = (
+    '=='  => 'num',
+    '!='  => 'num',
+    '>='  => 'num',
+    '<='  => 'num',
+    '>'   => 'num',
+    '<'   => 'num',
+    '<=>' => 'num',
+
+    'eq'  => 'str',
+    'ne'  => 'str',
+    'gt'  => 'str',
+    'lt'  => 'str',
+    'ge'  => 'str',
+    'le'  => 'str',
+    'cmp' => 'str',
+    '!~'  => 'str',
+    '=~'  => 'str',
+
+    '&&'  => 'logic',
+    '||'  => 'logic',
+    'xor' => 'logic',
+    'or'  => 'logic',
+    'and' => 'logic',
+    '//'  => 'logic',
+
+    '&' => 'bitwise',
+    '|' => 'bitwise',
+
+    '~~' => 'match',
+);
+sub cmp_ok($$$;$@) {
+    my ($got, $op, $exp, $name, @diag) = @_;
+
+    my $ctx = context();
+
+    # warnings and syntax errors should report to the cmp_ok call, not the test
+    # context, they may not be the same.
+    my ($pkg, $file, $line) = caller;
+
+    my $type = $OPS{$op};
+    if (!$type) {
+        carp "operator '$op' is not supported (you can add it to %Test::Stream::Plugin::Core::OPS)";
+        $type = 'unsupported';
+    }
+
+    local ($@, $!, $SIG{__DIE__});
+
+    my $test;
+    my $lived = eval <<"    EOT";
+#line $line "(eval in cmp_ok) $file"
+\$test = (\$got $op \$exp);
+1;
+    EOT
+    my $error = $@;
+    $ctx->send_event('Exception', error => $error) unless $lived;
+
+    if ($test && $lived) {
+        $ctx->ok(1, $name);
+        $ctx->release;
+        return 1;
+    }
+
+    # Uhg, it failed, do roughly the same thing Test::More did to try and show
+    # diagnostics, but make it better by showing both the overloaded and
+    # unoverloaded form if overloading is in play. Also unoverload numbers,
+    # Test::More only unoverloaded strings.
+
+    my ($display_got, $display_exp);
+    if($type eq 'str') {
+        $display_got = defined($got) ? "$got" : undef;
+        $display_exp = defined($exp) ? "$exp" : undef;
+    }
+    elsif($type eq 'num') {
+        $display_got = defined($got) ? sprintf("%D", $got) : undef;
+        $display_exp = defined($exp) ? sprintf("%D", $exp) : undef;
+    }
+    else { # Well, we did what we could.
+        $display_got = $got;
+        $display_exp = $exp;
+    }
+
+    my $got_ref = ref($got) ? render_ref($got) : $got;
+    my $exp_ref = ref($exp) ? render_ref($exp) : $exp;
+
+    my @table;
+    my $show_both = (
+        (defined($got) && $got_ref ne "$display_got")
+        ||
+        (defined($exp) && $exp_ref ne "$display_exp")
+    );
+
+    if ($show_both) {
+        @table = table(
+            header => ['type', 'got', 'op', 'check'],
+            rows   => [
+                [$type, $display_got, $op, $lived ? $display_exp : '<EXCEPTION>'],
+                ['orig', $got_ref, '', $exp_ref],
+            ],
+        );
+    }
+    else {
+        @table = table(
+            header => ['got', 'op', 'check'],
+            rows   => [[$display_got, $op, $lived ? $display_exp : '<EXCEPTION>']],
+        );
+    }
+
+    $ctx->ok(0, $name, [@table, @diag]);
+    $ctx->release;
+    return 0;
+}
+
 1;
 
 __END__
@@ -424,6 +541,87 @@ Verify that 2 references are the exact same reference.
 =item ref_is_not($ref1, $ref2, $name)
 
 Verify that 2 references are not the exact same reference.
+
+=item cmp_ok($got, $op, $expect)
+
+=item cmp_ok($got, $op, $expect, $name)
+
+=item cmp_ok($got, $op, $expect, $name, @diag)
+
+Compare C<$got> to C<$expect> using the operator specified in C<$op>. This is
+effectively a C<eval "\$got $op \$expect"> with some other stuff to make it
+more sane. This is useful for comparing numbers, overloaded objects, etc.
+
+B<Overloading Note:> Your input is passed as-is to the comparison. In the event
+that the comparison fails between 2 overloaded objects, the diagnostics will
+try to show you the overload form that was used in comparisons. It is possible
+that the diagnostics will be wrong, though attempts have been made to improve
+them since L<Test::More>.
+
+B<Exceptions:> If the comparison results in an exception then the test will
+fail and the exception will be shown.
+
+cmp_ok has an internal list of operators it supports. If you provide an
+unsupported operator it will issue a warning. You can add operators to the
+C<%Test::Stream::Plugin::Core::OPS> hash, the key should be the operator, and
+the value should either be 'str' for string comparison operators, 'num' for
+numeric operators, or any other true value for other operators.
+
+Supported operators:
+
+=over 4
+
+=item ==  (num)
+
+=item !=  (num)
+
+=item >=  (num)
+
+=item <=  (num)
+
+=item >   (num)
+
+=item <   (num)
+
+=item <=> (num)
+
+=item eq  (str)
+
+=item ne  (str)
+
+=item gt  (str)
+
+=item lt  (str)
+
+=item ge  (str)
+
+=item le  (str)
+
+=item cmp (str)
+
+=item !~  (str)
+
+=item =~  (str)
+
+=item &&
+
+=item ||
+
+=item xor
+
+=item or
+
+=item and
+
+=item //
+
+=item &
+
+=item |
+
+=item ~~
+
+=back
 
 =back
 
