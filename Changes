@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302025  2015-11-06 16:33:06-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Add back cmp_ok in Core plugin
     - Add Classic plugin for legacy is/like/is_deeply/etc
     - Make docs recommend people moving from Test::More use -Classic
