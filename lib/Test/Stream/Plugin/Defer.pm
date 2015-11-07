@@ -29,7 +29,7 @@ This is the plugin form of L<Test::Stream::DeferredTests>.
     use strict;
     use warnings;
 
-    use Test::Stream '-V1', 'Defer';
+    use Test::Stream qw/Core Defer/;
 
     # Declare some more tests to run later:
     def ok => (1, "another pass");

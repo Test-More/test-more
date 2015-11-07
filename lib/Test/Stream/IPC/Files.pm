@@ -296,15 +296,15 @@ temporary directory. This is not particularily fast, but it works everywhere.
 =head1 SYNOPSIS
 
     use Test::Stream::IPC::Files;
-    use Test::Stream -Core;
+    use Test::Stream ...;
 
 or
 
-    use Test::Stream '-V1s', 'IPC' => ['Files'];
+    use Test::Stream ..., 'IPC' => ['Files'];
 
 or
 
-    use Test::Stream '-V1s', 'IPC' => ['+Test::Stream::IPC::Files'];
+    use Test::Stream ..., 'IPC' => ['+Test::Stream::IPC::Files'];
 
 =head1 SEE ALSO
 

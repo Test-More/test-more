@@ -31,7 +31,7 @@ provided by the Compare plugin.
 
 =head1 SYNOPSIS
 
-    use Test::Stream -V1, -Tester;
+    use Test::Stream Core, -Tester;
 
     is(
         intercept { ok(1, "pass") },

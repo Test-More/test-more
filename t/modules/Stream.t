@@ -63,7 +63,7 @@ imported_ok('zzz');
 
 like(
     dies { Test::Stream->import },
-    qr/No plugins or bundles specified, did you forget to add '-V1'/,
+    qr/No plugins or bundles specified \(Maybe try '-Classic'\?\)/,
     "Must specify something to load"
 );
 

@@ -21,11 +21,16 @@ This document covers things that are meaningful to someone switching from
 L<Test::More>, L<Test::Simple>, and other L<Test::Builder> based tools. It
 approaches the situation as though you are converting an old test, or writing a
 new one. Instead of loading L<Test::More> you will be loading L<Test::Stream>
-with the recommended bundle:
+with the 'Classic' bundle:
 
-    use Test::Stream -V1;
+    use Test::Stream -Classic;
 
     ...
+
+B<Note:> The 'Classic' bundle is a bundle intended for people who are familiar
+with Test::More and do not want to change how they do things. You could also
+take a look at the 'V1' bundle, L<Test::Stream::Bundle::V1> and see if it is
+more to your liking.
 
 =head1 WHAT IS (MOSTLY) THE SAME?
 
@@ -44,6 +49,37 @@ the test fails. This allows you to attach custom diagnostics directly to a
 failing test.
 
 Defined in L<Test::Stream::Plugin::Core>.
+
+=item is
+
+Very little has changed as far as how this is used, but there are a lot of
+changes under the hood, as well the signature has been changed much like
+C<ok()>'s in that you can add diagnostics at the end to display in case of
+failure.
+
+This function will stringify the first 2 arguments and run a stgring
+comparison. If both arguments are endefined that will also be considered a
+pass.
+
+=item is_deeply
+
+Very little has changed as far as how this is used, but there are a lot of
+changes under the hood, as well the signature has been changed much like
+C<ok()>'s in that you can add diagnostics at the end to display in case of
+failure.
+
+This function will do a deep comparison recursing into hashrefs, arrayrefs, and
+scalar refs. Any other values will be compared using string comparisons.
+
+Diagnostics have been improved as well, you will get a table with all the
+differences betwene the structures. Normally this will stop at 25 differences,
+but the number can be tweaked using the C<$ENV{TS_MAX_DELTA}> environment
+variable.
+
+B<Note:> under the hood this uses the L<Test::Stream::Compare> library, as such
+it will gladly accept any advanced check objects you produce with that library.
+In practice this has no effect at all on you unless you use the Compare library
+tools directly.
 
 =item diag
 
@@ -118,73 +154,13 @@ not aware of them.
 
 =over 4
 
-=item is
-
-=item is_deeply
-
-C<is> and C<is_deeply> have been combined. You can now use C<is> for simple
-scalars, or nested data structures. This also means you can no longer use C<is>
-to check that hash/array reference are the same exact reference, though you can
-check that they have the exact same data. If you actually want to check if 2
-hash/array refs are the same or different you can use C<ref_is()> or
-C<ref_is_not()>, both of which are much safer for that purpose than C<is()>
-ever was.
-
-The signature has also been changed to add a slurpy '@' to the end for
-specifying extra diagnostics that only show up if the test fails.
-
-The diagnostics have also been improved so that a table is shown with all the
-differences (default cap of 25 differences, this can be altered with the
-TS_MAX_DELTA environment variable).
-
-Here is an example of a failing test:
-
-    is(
-        { a => 1, b => 2, c => [ 'a', 'b', 'c' ]},
-        { a => 2, b => 3, c => [ 'x', 'y', 'z' ]},
-        "These are clearly different"
-    );
-
-It produces:
-
-    not ok 1 - These are clearly different
-    # Failed test 'These are clearly different'
-    # at test.pl line 3.
-    # +--------+-----+----+-------+
-    # | PATH   | GOT | OP | CHECK |
-    # +--------+-----+----+-------+
-    # | {a}    | 1   | == | 2     |
-    # | {b}    | 2   | == | 3     |
-    # | {c}[0] | a   | eq | x     |
-    # | {c}[1] | b   | eq | y     |
-    # | {c}[2] | c   | eq | z     |
-    # +--------+-----+----+-------+
-
-Notice that it gives you all the differences. It tells you the path of each
-difference within the structure, what it got, and what it was checking against.
-It also tells you what operator it used for the comparison, that way you will
-know if the problem is the comparison used rather than the values checked.
-
-The final column is called 'CHECK' because there are extra tools provided by
-L<Test::Stream::Plugin::Compare> that give you more control over how to compare
-values and structures, 'EXPECTED' does not work as a heading.
-
-The table is smart about your screen size and formatting values displayed
-within. All whitespace apart from the ASCII single space is replaced with
-either its escape sequence, or its unicode number. If there is trailing
-whitespace the final whitespace character will also be replaced to make it
-clear to you it is there.
-
-B<Defined in> L<Test::Stream::Plugin::Compare>.
-
 =item like
 
 C<like> still works like it did before, C<like($var, qr/.../)> will not need to
-be changed. However it has been changed much like C<is()> in that it can be
-used to check deep data structures. However C<like> is not as strict as C<is>,
-and only checks for things you specify. In addition regexes and coderefs
-appearing in the second structure are used as checks rather than exact
-comparisons:
+be changed. However it has been changed in that it can be used to check deep
+data structures. However C<like> is not as strict as C<is_deeply>, and only
+checks for things you specify. In addition regexes and coderefs appearing in
+the second structure are used as checks rather than exact comparisons:
 
     like(
         { a => 'aaa', b => 'bbb', c => ['a' .. 'z'], d => 'ddd' },
@@ -231,10 +207,6 @@ B<Defined in> L<Test::Stream::Plugin::Core>.
 
 =item subtest
 
-Not loaded by default, you must ask for it:
-
-    use Test::Stream qw/-V1 Subtest/;
-
 The default output has been changed:
 
     ok 1 - Subtest Name {
@@ -245,7 +217,7 @@ The default output has been changed:
 
 The old output format can be used if requested:
 
-    use Test::Stream '-V1', 'Subtest' => ['streamed'];
+    use Test::Stream '-Classic', 'Subtest' => ['streamed'];
 
 Defined in L<Test::Stream::Plugin::Subtest>.
 
@@ -410,7 +382,7 @@ B<Defined in> L<Test::Stream::Plugin::Core>.
 
 Can be used to set the encoding of TAP, and possibly other formatters.
 
-    use Test::Stream -V1;
+    use Test::Stream -Classic;
     use utf8;
 
     set_encoding 'utf8';
@@ -418,83 +390,6 @@ Can be used to set the encoding of TAP, and possibly other formatters.
     ok(1, '†');
 
 B<Defined in> L<Test::Stream::Plugin::Core>.
-
-=item context
-
-This is the alternative to C<$Test::Builder::Level>. See
-L<Test::Stream::Context> for more info.
-
-B<Defined in> L<Test::Stream::Plugin::Context>.
-
-=item mock
-
-This is a 1-stop shop for all your mocking needs. Mock classes, instances, etc.
-This is the next generation of mocking after L<Mock::Quick> and borrows the
-good ideas from it. See the Mock plugin for more details, or for access to the
-capabilities using multiple functions instead of a single monolithic one.
-
-B<Defined in> L<Test::Stream::Plugin::Mock>.
-
-=item mocked
-
-Used to check if something has been mocked using the Mock plugin.
-
-B<Defined in> L<Test::Stream::Plugin::Mock>.
-
-=item warning { ... }
-
-Run the code and return the warning it is expected to produce. Dies if it gets
-too many warnings, or too few.
-
-B<Defined in> L<Test::Stream::Plugin::Warnings>.
-
-=item warns { ... }
-
-Returns an arrayref of all the warnings from within the codeblock, undef if
-there are no warnings.
-
-    ok(!warns { ... }, "no warnings");
-
-    like(
-        warns { ... },
-        [
-            qr/xxx/,
-            qr/yyy/,
-        ],
-        "Got both expected warnings",
-    );
-
-B<Defined in> L<Test::Stream::Plugin::Warnings>.
-
-=item no_warnings { ... }
-
-Returns false if the block produces warnings, true if there are none. This will
-also display the warnings if any occur.
-
-    ok(no_warnings { ... }, "got no warnings");
-
-B<Defined in> L<Test::Stream::Plugin::Warnings>.
-
-=item lives { ... }
-
-Returns true if the block does not throw any exceptions. Returns false and
-displays the exception as a warning if the block does die.
-
-    ok(lives { ... }, "did not die");
-
-B<Defined in> L<Test::Stream::Plugin::Exception>.
-
-=item dies { ... }
-
-Returns the exception produced by the block, or undef if it did not die.
-
-    like(
-        dies { ... },
-        qr/xxx/,
-        "Got excpetion"
-    );
-
-B<Defined in> L<Test::Stream::Plugin::Exception>.
 
 =back
 
@@ -505,7 +400,7 @@ B<Defined in> L<Test::Stream::Plugin::Exception>.
 =item Forking/Threading support
 
 Forking and threading in your tests will just work (so long as you use the
-'IPC' plugin, which is included in the 'V1' bundle).
+'IPC' plugin, which is included in the 'Classic' bundle).
 
 =back
 

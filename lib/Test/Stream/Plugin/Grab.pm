@@ -107,7 +107,7 @@ again be sent to the shared hub.
 
 =head1 SYNOPSIS
 
-    use Test::Stream qw/-V1 Grab/;
+    use Test::Stream qw/Core Grab/;
 
     my $grab = grab();
 

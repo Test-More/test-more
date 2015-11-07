@@ -44,7 +44,7 @@ constants for some common capability checks.
 
 =head1 SYNOPSIS
 
-    use Test::Stream qw/-V1 Capabilities/;
+    use Test::Stream qw/... Capabilities/;
 
     if (CAN_THREAD) {
         ... Code that uses threads ...

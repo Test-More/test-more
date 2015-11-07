@@ -133,7 +133,7 @@ subclasses for more fancy/feature rich workflows.
 
 =head2 USE SUBCLASS
 
-    use Test::Stream qw/-V1 Spec/;
+    use Test::Stream qw/... Spec/;
 
     use My::Runner; # Sets the runner for the Spec plugin.
 

@@ -180,9 +180,15 @@ These are collections of plugins and options.
 
 =over 4
 
+=item Test::Stream::Bundle::Classic
+
+L<Test::Stream::Bundle::Classic> is a bundle that closely resembles
+L<Test::More>.
+
 =item Test::Stream::Bundle::V1
 
-L<Test::Stream::Bundle::V1> is the recommended bundle.
+L<Test::Stream::Bundle::V1> is the bundle used by the Test::Stream author in
+Test::Stream's test suite..
 
 =item Test::Stream::Bundle::SpecTester
 

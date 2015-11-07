@@ -35,7 +35,7 @@ L<Test::Stream::Plugin::Spec> plugin.
 
 =head1 SYNOPSIS
 
-    use Test::Stream -V1, -SpecTester;
+    use Test::Stream Core, -SpecTester;
 
     tests stuff => sub {
         is(

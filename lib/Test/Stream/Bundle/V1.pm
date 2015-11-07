@@ -32,11 +32,12 @@ __END__
 
 =head1 NAME
 
-Test::Stream::Bundle::V1 - Suggested bundle, most important tools.
+Test::Stream::Bundle::V1 - Preferred bundle used by Test::Stream author.
 
 =head1 DESCRIPTION
 
-This is the recommended bundle for users of L<Test::Stream>.
+This bundle is the one used most in Test::Stream's own test suite. This bundle
+ties together the most commonly used tools.
 
 =head1 SYNOPSIS
 

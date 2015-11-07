@@ -47,7 +47,7 @@ This gives the tools the ability to output any extra diagnostics they may need.
 
 =head1 SYNOPSIS
 
-    use Test::Stream qw/-V1 DieOnFail/;
+    use Test::Stream qw/Core DieOnFail/;
 
     ok(1, "pass");
     ok(0, "fail");

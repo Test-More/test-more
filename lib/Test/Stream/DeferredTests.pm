@@ -87,7 +87,7 @@ are defined.
         ...
     }
 
-    use Test::Stream '-V1';
+    use Test::Stream qw/Core/;
 
     do_def(); # Run the tests
 

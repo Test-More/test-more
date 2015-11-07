@@ -29,7 +29,7 @@ generating test events.
 
 =head1 SYNOPSIS
 
-    use Test::Stream qw/-V1 Context/;
+    use Test::Stream qw/... Context/;
 
     sub my_tool {
         my $ctx = context();

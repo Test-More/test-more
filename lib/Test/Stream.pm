@@ -14,7 +14,7 @@ use Test::Stream::Sync;
 use Test::Stream::Util qw/try pkg_to_file/;
 
 sub default {
-    croak "No plugins or bundles specified, did you forget to add '-V1'?"
+    croak "No plugins or bundles specified (Maybe try '-Classic'?)"
 }
 
 sub import {
@@ -252,49 +252,69 @@ L<Test::Stream::Manual::Components>
 
 This is the primary interface for loading L<Test::Stream> based tools. This
 module is responsible for loading bundles and plugins for the tools you want.
-L<Test::Stream::Bundle::V1> is the suggested bundle for those just starting
-out.
+By default you are required to specify at least 1 plugin or bundle to load. You
+can subclass Test::Stream to have your own default plugins or bundles.
 
 =head1 SYNOPSIS
 
-    use Test::Stream -V1;
+    use Test::Stream -Classic;
 
     ok(1, "This is a pass");
     ok(0, "This is a fail");
 
-    is("x", "x", "These strings are the same");
-    is($A, $B, "These 2 structures match exactly");
-
-    like('x', qr/x/, "This string matches this pattern");
-    like($A, $B, "These structures match where it counts");
-
     done_testing;
+
+=head2 SUBCLASS
+
+    package My::Loader;
+    use strict;
+    use warnings;
+
+    use parent 'Test::Stream';
+
+    sub default {
+        return qw{
+            -Bundle1
+            Plugin1
+            ...
+        };
+    }
+
+    1;
 
 =head1 IMPORTANT NOTE
 
-C<use Test::Stream;> will fail. You B<MUST> specify at least 1 bundle or
+C<use Test::Stream;> will fail. You B<MUST> specify at least one bundle or
 plugin. If you do not specify any then none would be imported and that is
 obviously not what you want. If you are new to Test::Stream then you should
-probably start with the '-V1' argument, which loads
-L<Test::Stream::Bundle::V1>. The V1 bundle provides the most commonly
-needed tools.
+probably start with one of the pre-made bundles:
+
+=over 4
+
+=item '-Classic' - The 'Classic' bundle.
+
+This one is probably your best bet when just starting out. This plugin closely
+resembles the functionality of L<Test::More>.
+
+See L<Test::Stream::Bundle::Classic>.
+
+=item '-V1' - The bundle used in Test::Streams tests.
+
+This one provides a lot more than the 'Classic' bundle, but is probably not
+suited to begginers. There are several notable differences from L<Test::More>
+that can trip you up if you do not pay attention.
+
+See L<Test::Stream::Bundle::V1>.
+
+=back
 
 =head2 WHY NOT MAKE A DEFAULT BUNDLE OR SET OF PLUGINS?
 
 Future Proofing. If we decide in the future that a specific plugin or tool is
 harmful we would like to be able to remove it. Making a tool part of the
 default set will effectively make it unremovable as doing so would break
-compatability. To solve this problem we have the 'Core#' bundle system.
-
-'V1' is the first bundle, and the recommended one for now. If the future tells
-us that parts of 'V1' are harmful, or that we need more than what is currently
-provided, we can release 'V2'. 'V1' will not be changed in a backwords
-incompatible way, so nothing breaks, but everyone else can move on and start
-using 'V2' in new code.
-
-The number following the 'V' prefix should correspond to a major version
-number. This means that 'V1' is provided with Test::Stream 1.X. V2
-will prompt a 2.X release and so on.
+compatability. Instead we have the bundle system, and a set of starter bundles,
+if a bundle proves ot be harmful we can change the recommendation of the docs.
 
 =head1 PLUGINS, BUNDLES, AND OPTIONS
 
@@ -312,7 +332,7 @@ different arguments, the last set of arguments wins.
 Plugins and bundles can be distinguished easily:
 
     use Test::Stream(
-        '-V1',                          # Bundle ('-')
+        '-Bundle',                      # Bundle ('-')
         ':Project',                     # Project specific bundle (':')
         'MyPlugin',                     # Plugin name (no prefix)
         '+Fully::Qualified::Plugin',    # (Plugin in unusual path)
@@ -326,7 +346,7 @@ Explanation:
 
 =over 4
 
-=item '-V1',
+=item '-Bundle',
 
 The C<-> prefix indicates that the specified item is a bundle. Bundles live in
 the C<Test::Stream::Bundle::> namespace. Each bundle is an independant module.
