@@ -73,8 +73,8 @@ Test::Stream::Plugin::Intercept - Tool for intercepting test events.
 
 =head1 SYNOPSIS
 
-    # Load the Intercept plugin, and More since we need that one as well.
-    use Test::Stream qw/Intercept More/;
+    # Load the Intercept plugin, and others we need
+    use Test::Stream qw/Intercept Core Compare/;
 
     my $events = intercept {
         ok(1, 'foo');

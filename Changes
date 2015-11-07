@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Doc fix (fixes #52)
+
 1.302025  2015-11-06 16:33:06-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Add back cmp_ok in Core plugin
