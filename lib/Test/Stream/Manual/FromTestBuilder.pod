@@ -61,6 +61,10 @@ This function will stringify the first 2 arguments and run a stgring
 comparison. If both arguments are endefined that will also be considered a
 pass.
 
+=item isnt
+
+Very little has changed, same changes as C<is()>.
+
 =item is_deeply
 
 Very little has changed as far as how this is used, but there are a lot of
@@ -80,6 +84,14 @@ B<Note:> under the hood this uses the L<Test::Stream::Compare> library, as such
 it will gladly accept any advanced check objects you produce with that library.
 In practice this has no effect at all on you unless you use the Compare library
 tools directly.
+
+=item like
+
+Not much has changed, added @ to signature for diagnostics.
+
+=item unlike
+
+Not much has changed, added @ to signature for diagnostics.
 
 =item diag
 
@@ -153,27 +165,6 @@ not aware of them.
 =head2 FUNCTIONS
 
 =over 4
-
-=item like
-
-C<like> still works like it did before, C<like($var, qr/.../)> will not need to
-be changed. However it has been changed in that it can be used to check deep
-data structures. However C<like> is not as strict as C<is_deeply>, and only
-checks for things you specify. In addition regexes and coderefs appearing in
-the second structure are used as checks rather than exact comparisons:
-
-    like(
-        { a => 'aaa', b => 'bbb', c => ['a' .. 'z'], d => 'ddd' },
-        {
-            a => qr/a/,                  # regex is used to check the value
-            b => sub { $_ eq 'bbb' },    # Code is run to check result
-            c => [ 'a', 'b', 'c' ],      # Only the first 3 items are checked
-            # hash key 'd' is ignored since we did not specify it
-        },
-        "Parts of the structure we care about match"
-    );
-
-B<Defined in> L<Test::Stream::Plugin::Compare>.
 
 =item plan
 
