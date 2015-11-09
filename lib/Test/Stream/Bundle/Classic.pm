@@ -27,15 +27,15 @@ __END__
 
 =head1 NAME
 
-Test::Stream::Bundle::Classic - Bundle that emulates most of L<Test::More>. 
+Test::Stream::Bundle::Classic - Bundle that emulates most of L<Test::More>.
 
 =head1 DESCRIPTION
 
 
 =head1 SYNOPSIS
 
-B<Note:> On ly the most critical functions are listed here. Please see
-individual plugins for their functions.
+B<Note:> Only the most common functions are listed here. Please see individual
+plugins for their functions.
 
     use Test::Stream '-Classic';
 
