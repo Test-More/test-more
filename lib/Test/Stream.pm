@@ -207,16 +207,16 @@ __END__
 
 =head1 NAME
 
-Test::Stream - Experimental successor to Test::More and Test::Builder.
+Test::Stream - Successor to Test::More and Test::Builder.
 
 =head1 ***READ THIS FIRST***
 
 B<This is not a drop-in replacement for Test::More>.
 
 Adoption of L<Test::Stream> instead of continuing to use L<Test::More> is a
-choice. Liberty has been taken to make significant API changes. Replacing C<use
-Test::More;> with C<use Test::Stream;> will not work for more than the most
-trivial of test files.
+choice. Liberty has been taken to make significant API changes. Replacing
+C<use Test::More;> with C<use Test::Stream;> will not work for more than the
+most trivial of test files.
 
 See L<Test::Stream::Manual::FromTestBuilder> if you are coming from
 L<Test::More> or L<Test::Simple> and want a quick translation.
