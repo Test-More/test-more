@@ -475,10 +475,8 @@ sub done_testing {
     my $count = $ctx->hub->state->count;
 
     # If done_testing() specified the number of tests, shut off no_plan
-    if( $plan && defined $num_tests ) {
-        if ($plan eq 'NO PLAN') {
-            $ctx->plan($num_tests);
-        }
+    if( defined $num_tests ) {
+        $ctx->plan($num_tests) if !$plan || $plan eq 'NO PLAN';
     }
     elsif ($count && defined $num_tests && $count != $num_tests) {
         $self->ok(0, "planned to run @{[ $self->expected_tests ]} but done_testing() expects $num_tests");
@@ -1082,7 +1080,9 @@ sub use_numbers {
 
     my $ctx = $self->ctx;
     my $format = $ctx->hub->format;
-    return unless $format && $format->isa('Test::Stream::Formatter::TAP');
+    unless ($format && $format->isa('Test::Stream::Formatter::TAP')) {
+        return release $ctx, 0;
+    }
 
     $format->set_no_numbers(!$use_nums) if defined $use_nums;
 
