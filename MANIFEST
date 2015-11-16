@@ -34,6 +34,7 @@ t/bail_out.t
 t/BEGIN_require_ok.t
 t/BEGIN_use_ok.t
 t/buffer.t
+t/Bugs/600.t
 t/Builder/Builder.t
 t/Builder/carp.t
 t/Builder/create.t

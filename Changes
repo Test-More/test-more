@@ -1,3 +1,6 @@
+1.302012_004 Mon Nov 16 07:45:11:00 PST 2015
+    * Fix #600 - done_testing($count)
+
 1.302012_003 Tue Oct 27 00:02:44:00 PST 2015
     * Fix typo that called wrong 'try'
 
