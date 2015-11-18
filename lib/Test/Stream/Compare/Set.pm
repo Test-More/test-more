@@ -2,13 +2,13 @@ package Test::Stream::Compare::Set;
 use strict;
 use warnings;
 
-use Test::Stream::Compare;
+use Test::Stream::Compare();
 use Test::Stream::HashBase(
     base => 'Test::Stream::Compare',
     accessors => [qw/checks _reduction/],
 );
 
-use Test::Stream::Delta;
+use Test::Stream::Delta();
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/reftype/;

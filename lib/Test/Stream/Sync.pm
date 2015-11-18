@@ -8,8 +8,8 @@ use Scalar::Util qw/reftype blessed/;
 use Test::Stream::Capabilities qw/CAN_FORK/;
 use Test::Stream::Util qw/get_tid USE_THREADS pkg_to_file/;
 
-use Test::Stream::DebugInfo;
-use Test::Stream::Stack;
+use Test::Stream::DebugInfo();
+use Test::Stream::Stack();
 
 # This package is NOT an object. It is global in nature and I don't want people
 # fscking with it. It is small, with only the following variables. These are

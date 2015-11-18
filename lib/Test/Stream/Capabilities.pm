@@ -2,7 +2,7 @@ package Test::Stream::Capabilities;
 use strict;
 use warnings;
 
-use Config;
+use Config qw/%Config/;
 use Carp qw/croak/;
 
 sub import {

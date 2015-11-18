@@ -4,7 +4,7 @@ use warnings;
 
 use Test::Stream::Capabilities qw/CAN_FORK CAN_REALLY_FORK/;
 
-use Test::Stream::Plugin;
+use Test::Stream::Plugin qw/import/;
 
 sub load_ts_plugin {
     my $class = shift;

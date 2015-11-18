@@ -5,7 +5,7 @@ use warnings;
 use Test::Stream::Capabilities qw/CAN_THREAD/;
 use Scalar::Util qw/reftype blessed refaddr/;
 use Carp qw/croak/;
-use B;
+use B();
 
 use Test::Stream::Exporter qw/import export_to exports/;
 exports qw{

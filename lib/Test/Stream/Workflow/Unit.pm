@@ -2,9 +2,9 @@ package Test::Stream::Workflow::Unit;
 use strict;
 use warnings;
 
-use Test::Stream::Sync;
+use Test::Stream::Sync();
 use Test::Stream::Context();
-use Test::Stream::DebugInfo;
+use Test::Stream::DebugInfo();
 
 use Carp qw/confess/;
 use Scalar::Util qw/reftype/;

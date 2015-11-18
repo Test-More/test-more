@@ -2,8 +2,8 @@ package Test::Stream::Plugin::UTF8;
 use strict;
 use warnings;
 
-use Test::Stream::Sync;
-use Test::Stream::Plugin;
+use Test::Stream::Sync();
+use Test::Stream::Plugin qw/import/;
 
 sub load_ts_plugin {
     my $class = shift;

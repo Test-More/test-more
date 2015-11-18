@@ -2,7 +2,7 @@ package Test::Stream::Bundle::SpecTester;
 use strict;
 use warnings;
 
-use Test::Stream::Bundle;
+use Test::Stream::Bundle qw/import/;
 
 sub plugins {
     return (qw/-Tester Spec/);

@@ -2,9 +2,9 @@ package Test::Stream::Plugin::Defer;
 use strict;
 use warnings;
 
-use Test::Stream::DeferredTests;
+use Test::Stream::DeferredTests qw/def do_def/;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import default_exports/;
 default_exports qw/def do_def/;
 no Test::Stream::Exporter;
 

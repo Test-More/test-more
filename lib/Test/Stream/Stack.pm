@@ -2,7 +2,7 @@ package Test::Stream::Stack;
 use strict;
 use warnings;
 
-use Test::Stream::Hub;
+use Test::Stream::Hub();
 
 use Carp qw/confess/;
 

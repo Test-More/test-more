@@ -2,7 +2,7 @@ package Test::Stream::IPC;
 use strict;
 use warnings;
 
-use Config;
+use Config qw/%Config/;
 use Carp qw/confess carp longmess/;
 
 use Test::Stream::HashBase(

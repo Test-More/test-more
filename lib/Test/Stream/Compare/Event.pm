@@ -4,8 +4,8 @@ use warnings;
 
 use Scalar::Util qw/blessed/;
 
-use Test::Stream::Compare::Object;
-use Test::Stream::Compare::EventMeta;
+use Test::Stream::Compare::Object();
+use Test::Stream::Compare::EventMeta();
 use Test::Stream::HashBase(
     base => 'Test::Stream::Compare::Object',
     accessors => [qw/etype/],

@@ -2,7 +2,7 @@ package Test::Stream::Hub::Interceptor;
 use strict;
 use warnings;
 
-use Test::Stream::Hub::Interceptor::Terminator;
+use Test::Stream::Hub::Interceptor::Terminator();
 
 require Test::Stream::Hub;
 use Test::Stream::HashBase(

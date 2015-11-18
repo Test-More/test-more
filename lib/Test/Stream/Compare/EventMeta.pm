@@ -2,7 +2,7 @@ package Test::Stream::Compare::EventMeta;
 use strict;
 use warnings;
 
-use Test::Stream::Compare::Meta;
+use Test::Stream::Compare::Meta();
 use Test::Stream::HashBase(
     base => 'Test::Stream::Compare::Meta',
 );

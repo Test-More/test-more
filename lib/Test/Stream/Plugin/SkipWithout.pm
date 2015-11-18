@@ -6,7 +6,7 @@ use Test::Stream::Context qw/context/;
 use Test::Stream::Util qw/pkg_to_file/;
 use Scalar::Util qw/reftype/;
 
-use Test::Stream::Plugin;
+use Test::Stream::Plugin qw/import/;
 
 sub load_ts_plugin {
     my $class = shift;

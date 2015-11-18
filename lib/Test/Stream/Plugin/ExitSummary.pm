@@ -2,7 +2,7 @@ package Test::Stream::Plugin::ExitSummary;
 use strict;
 use warnings;
 
-use Test::Stream::Plugin;
+use Test::Stream::Plugin qw/import/;
 
 my $ADDED_HOOK = 0;
 sub load_ts_plugin {

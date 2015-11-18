@@ -6,7 +6,7 @@ use Scalar::Util qw/looks_like_number/;
 
 use Carp qw/carp/;
 
-use Test::Stream::Compare;
+use Test::Stream::Compare();
 use Test::Stream::HashBase(
     base => 'Test::Stream::Compare',
     accessors => [qw/input/],

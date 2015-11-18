@@ -9,9 +9,9 @@ use Test::Stream::HashBase(
 );
 
 use Scalar::Util qw/blessed/;
-use File::Temp;
-use Storable;
-use File::Spec;
+use File::Temp();
+use Storable();
+use File::Spec();
 
 use Test::Stream::Util qw/try get_tid pkg_to_file/;
 

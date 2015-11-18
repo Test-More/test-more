@@ -9,7 +9,7 @@ $VERSION = eval $VERSION;
 use Carp qw/croak/;
 use Scalar::Util qw/reftype/;
 
-use Test::Stream::Sync;
+use Test::Stream::Sync();
 
 use Test::Stream::Util qw/try pkg_to_file/;
 

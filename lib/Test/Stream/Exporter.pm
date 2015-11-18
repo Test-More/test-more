@@ -2,7 +2,7 @@ package Test::Stream::Exporter;
 use strict;
 use warnings;
 
-use Test::Stream::Exporter::Meta;
+use Test::Stream::Exporter::Meta();
 
 use Scalar::Util qw/reftype/;
 

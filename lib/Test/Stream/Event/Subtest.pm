@@ -7,7 +7,7 @@ use Carp qw/confess/;
 
 use Test::Stream::Formatter::TAP qw/OUT_STD/;
 
-use Test::Stream::Event::Ok;
+use Test::Stream::Event::Ok();
 use Test::Stream::Event(
     base       => 'Test::Stream::Event::Ok',
     accessors  => [qw/subevents buffered/],

@@ -5,7 +5,7 @@ use warnings;
 use Carp qw/confess croak/;
 use Scalar::Util qw/weaken/;
 
-use Test::Stream::Plugin;
+use Test::Stream::Plugin qw/import/;
 
 use Test::Stream::Workflow(
     qw{

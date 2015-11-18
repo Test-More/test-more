@@ -4,7 +4,7 @@ use warnings;
 
 use Carp qw/croak/;
 use Scalar::Util qw/reftype/;
-use Test::Stream::Sync;
+use Test::Stream::Sync();
 use Test::Stream::Util qw/CAN_SET_SUB_NAME set_sub_name update_mask/;
 
 use overload(

@@ -2,7 +2,7 @@ package Test::Stream::Plugin::LoadPlugin;
 use strict;
 use warnings;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import default_exports/;
 default_exports qw/load_plugin/;
 no Test::Stream::Exporter;
 

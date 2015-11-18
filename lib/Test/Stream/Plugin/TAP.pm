@@ -2,9 +2,9 @@ package Test::Stream::Plugin::TAP;
 use strict;
 use warnings;
 
-use Test::Stream::Sync;
-use Test::Stream::Formatter::TAP;
-use Test::Stream::Plugin;
+use Test::Stream::Sync();
+use Test::Stream::Formatter::TAP();
+use Test::Stream::Plugin qw/import/;
 
 sub load_ts_plugin {
     return if Test::Stream::Sync->init_done;

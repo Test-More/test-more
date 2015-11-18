@@ -2,7 +2,8 @@ package Test::Stream::Plugin;
 use strict;
 use warnings;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import default_export/;
+# Here we are exporting a sub called 'import' that is not our 'import' method.
 default_export import => sub {
     my $class = shift;
     my @caller = caller;
@@ -37,7 +38,7 @@ L<Test::Stream::Exporter> and does not have a custom C<import> method.
     use warnings;
 
     # Provides an 'import' method for us that delegates to load_ts_plugin()
-    use Test::Stream::Plugin;
+    use Test::Stream::Plugin qw/import/;
 
     sub load_ts_plugin {
         my $class = shift;
