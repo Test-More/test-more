@@ -1,15 +1,15 @@
 # NAME
 
-Test::Stream - Experimental successor to Test::More and Test::Builder.
+Test::Stream - Successor to Test::More and Test::Builder.
 
 # \*\*\*READ THIS FIRST\*\*\*
 
 **This is not a drop-in replacement for Test::More**.
 
 Adoption of [Test::Stream](https://metacpan.org/pod/Test::Stream) instead of continuing to use [Test::More](https://metacpan.org/pod/Test::More) is a
-choice. Liberty has been taken to make significant API changes. Replacing `use
-Test::More;` with `use Test::Stream;` will not work for more than the most
-trivial of test files.
+choice. Liberty has been taken to make significant API changes. Replacing
+`use Test::More;` with `use Test::Stream;` will not work for more than the
+most trivial of test files.
 
 See [Test::Stream::Manual::FromTestBuilder](https://metacpan.org/pod/Test::Stream::Manual::FromTestBuilder) if you are coming from
 [Test::More](https://metacpan.org/pod/Test::More) or [Test::Simple](https://metacpan.org/pod/Test::Simple) and want a quick translation.
@@ -44,9 +44,21 @@ module is responsible for loading bundles and plugins for the tools you want.
 By default you are required to specify at least 1 plugin or bundle to load. You
 can subclass Test::Stream to have your own default plugins or bundles.
 
+**Bundles and plugins can be used directly**, it is not necessary to use
+[Test::Stream](https://metacpan.org/pod/Test::Stream) to load them.
+
 # SYNOPSIS
 
     use Test::Stream -Classic;
+
+    ok(1, "This is a pass");
+    ok(0, "This is a fail");
+
+    done_testing;
+
+The '-' above means load the specified bundle, this is the same as:
+
+    use Test::Stream::Bundle::Classic;
 
     ok(1, "This is a pass");
     ok(0, "This is a fail");
@@ -61,6 +73,8 @@ can subclass Test::Stream to have your own default plugins or bundles.
 
     use parent 'Test::Stream';
 
+    # The 'default' sub just returns a list of import arguments to use byu
+    # default.
     sub default {
         return qw{
             -Bundle1

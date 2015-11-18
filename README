@@ -1,5 +1,5 @@
 NAME
-    Test::Stream - Experimental successor to Test::More and Test::Builder.
+    Test::Stream - Successor to Test::More and Test::Builder.
 
 ***READ THIS FIRST***
     This is not a drop-in replacement for Test::More.
@@ -38,8 +38,20 @@ DESCRIPTION
     to load. You can subclass Test::Stream to have your own default plugins
     or bundles.
 
+    Bundles and plugins can be used directly, it is not necessary to use
+    Test::Stream to load them.
+
 SYNOPSIS
         use Test::Stream -Classic;
+
+        ok(1, "This is a pass");
+        ok(0, "This is a fail");
+
+        done_testing;
+
+    The '-' above means load the specified bundle, this is the same as:
+
+        use Test::Stream::Bundle::Classic;
 
         ok(1, "This is a pass");
         ok(0, "This is a fail");
@@ -53,6 +65,8 @@ SYNOPSIS
 
         use parent 'Test::Stream';
 
+        # The 'default' sub just returns a list of import arguments to use byu
+        # default.
         sub default {
             return qw{
                 -Bundle1
