@@ -32,7 +32,7 @@ sub do_def {
 # Note: The '&' below is to bypass the prototype, which is important here.
         eval <<"        EOT" or die $@;
 package $pkg;
-# line $line "$file"
+# line $line "(eval in DeferredTests) $file"
 \&$func(\@\$args);
 1;
         EOT

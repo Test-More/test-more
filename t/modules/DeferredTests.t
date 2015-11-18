@@ -22,7 +22,7 @@ is(
         event Ok => sub {
             call pass => 1;
             call name => 'truth';
-            prop file => __FILE__;
+            prop file => "(eval in DeferredTests) " . __FILE__;
             prop line => $START_LINE + 1;
             prop package => __PACKAGE__;
         };
@@ -30,7 +30,7 @@ is(
         event Ok => sub {
             call pass => 1;
             call name => '1 is 1';
-            prop file => __FILE__;
+            prop file => "(eval in DeferredTests) " . __FILE__;
             prop line => $START_LINE + 2;
             prop package => __PACKAGE__;
         };
@@ -38,7 +38,7 @@ is(
         event Ok => sub {
             call pass => 1;
             call name => 'hash is hash';
-            prop file => __FILE__;
+            prop file => "(eval in DeferredTests) " . __FILE__;
             prop line => $START_LINE + 3;
             prop package => __PACKAGE__;
         };
@@ -46,7 +46,7 @@ is(
         event Ok => sub {
             call pass => 0;
             call name => 'lies';
-            prop file => __FILE__;
+            prop file => "(eval in DeferredTests) " . __FILE__;
             prop line => $START_LINE + 5;
             prop package => __PACKAGE__;
         };
@@ -54,7 +54,7 @@ is(
         event Ok => sub {
             call pass => 0;
             call name => '1 is not 0';
-            prop file => __FILE__;
+            prop file => "(eval in DeferredTests) " . __FILE__;
             prop line => $START_LINE + 6;
             prop package => __PACKAGE__;
         };
@@ -62,7 +62,7 @@ is(
         event Ok => sub {
             call pass => 0;
             call name => 'a hash is not an array';
-            prop file => __FILE__;
+            prop file => "(eval in DeferredTests) " . __FILE__;
             prop line => $START_LINE + 7;
             prop package => __PACKAGE__;
         };
