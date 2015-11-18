@@ -255,9 +255,21 @@ module is responsible for loading bundles and plugins for the tools you want.
 By default you are required to specify at least 1 plugin or bundle to load. You
 can subclass Test::Stream to have your own default plugins or bundles.
 
+B<Bundles and plugins can be used directly>, it is not necessary to use
+L<Test::Stream> to load them.
+
 =head1 SYNOPSIS
 
     use Test::Stream -Classic;
+
+    ok(1, "This is a pass");
+    ok(0, "This is a fail");
+
+    done_testing;
+
+The '-' above means load the specified bundle, this is the same as:
+
+    use Test::Stream::Bundle::Classic;
 
     ok(1, "This is a pass");
     ok(0, "This is a fail");
@@ -272,6 +284,8 @@ can subclass Test::Stream to have your own default plugins or bundles.
 
     use parent 'Test::Stream';
 
+    # The 'default' sub just returns a list of import arguments to use byu
+    # default.
     sub default {
         return qw{
             -Bundle1
