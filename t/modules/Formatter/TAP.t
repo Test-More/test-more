@@ -13,7 +13,13 @@ is(@$handles, 3, "Got 3 handles");
 is($handles->[0], $handles->[2], "First and last handles are the same");
 ok($handles->[0] != $handles->[1], "First and second handles are not the same");
 my $layers = { map {$_ => 1} PerlIO::get_layers($handles->[0]) };
-ok(!$layers->{utf8}, "Not utf8");
+
+if (${^UNICODE} & 2) { # 2 means STDIN
+    ok($layers->{utf8}, "'S' is set in PERL_UNICODE, or in -C, honor it, utf8 should be on")
+}
+else {
+    ok(!$layers->{utf8}, "Not utf8 by default")
+}
 
 $one->encoding('utf8');
 is($one->encoding, 'utf8', "Got encoding");
