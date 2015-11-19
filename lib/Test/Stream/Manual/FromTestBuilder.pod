@@ -27,10 +27,17 @@ with the 'Classic' bundle:
 
     ...
 
-B<Note:> The 'Classic' bundle is a bundle intended for people who are familiar
-with Test::More and do not want to change how they do things. You could also
-take a look at the 'V1' bundle, L<Test::Stream::Bundle::V1> and see if it is
-more to your liking.
+If you do not like the idea of using L<Test::Stream> as a loader you can load
+the classic bundle directly:
+
+    use Test::Stream::Bundle::Classic;
+
+    ...
+
+The 'Classic' bundle is a bundle intended for people who are familiar with
+Test::More and do not want to change how they do things. You could also take a
+look at the 'V1' bundle, L<Test::Stream::Bundle::V1> and see if it is more to
+your liking.
 
 =head1 WHAT IS (MOSTLY) THE SAME?
 
