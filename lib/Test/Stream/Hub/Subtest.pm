@@ -2,7 +2,7 @@ package Test::Stream::Hub::Subtest;
 use strict;
 use warnings;
 
-use Test::Stream::Hub;
+use Test::Stream::Hub();
 use Test::Stream::HashBase(
     base => 'Test::Stream::Hub',
     accessors => [qw/nested bailed_out exit_code/],

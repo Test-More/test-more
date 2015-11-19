@@ -2,7 +2,7 @@ package Test::Stream::Compare::Array;
 use strict;
 use warnings;
 
-use Test::Stream::Compare;
+use Test::Stream::Compare();
 use Test::Stream::HashBase(
     base => 'Test::Stream::Compare',
     accessors => [qw/inref ending items order/],

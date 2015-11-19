@@ -4,7 +4,7 @@ use warnings;
 
 use Test::Stream::Context qw/context release/;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import exports default_exports/;
 exports qw/release/;
 default_exports qw/context/;
 no Test::Stream::Exporter;

@@ -2,7 +2,7 @@ package Test::Stream::Plugin::Compare;
 use strict;
 use warnings;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import default_exports exports/;
 default_exports qw/is like/;
 exports qw{
     match mismatch validator
@@ -19,26 +19,26 @@ no Test::Stream::Exporter;
 use Carp qw/croak/;
 use Scalar::Util qw/reftype blessed/;
 
-use Test::Stream::Compare qw/-all/;
+use Test::Stream::Compare qw/compare get_build push_build pop_build build/;
 use Test::Stream::Context qw/context/;
 use Test::Stream::Util qw/rtype/;
 
-use Test::Stream::Compare::Array;
-use Test::Stream::Compare::Custom;
-use Test::Stream::Compare::Event;
-use Test::Stream::Compare::Hash;
-use Test::Stream::Compare::Meta;
-use Test::Stream::Compare::Number;
-use Test::Stream::Compare::Object;
-use Test::Stream::Compare::Pattern;
-use Test::Stream::Compare::Ref;
-use Test::Stream::Compare::Regex;
-use Test::Stream::Compare::Scalar;
-use Test::Stream::Compare::Set;
-use Test::Stream::Compare::String;
-use Test::Stream::Compare::Undef;
-use Test::Stream::Compare::Value;
-use Test::Stream::Compare::Wildcard;
+use Test::Stream::Compare::Array();
+use Test::Stream::Compare::Custom();
+use Test::Stream::Compare::Event();
+use Test::Stream::Compare::Hash();
+use Test::Stream::Compare::Meta();
+use Test::Stream::Compare::Number();
+use Test::Stream::Compare::Object();
+use Test::Stream::Compare::Pattern();
+use Test::Stream::Compare::Ref();
+use Test::Stream::Compare::Regex();
+use Test::Stream::Compare::Scalar();
+use Test::Stream::Compare::Set();
+use Test::Stream::Compare::String();
+use Test::Stream::Compare::Undef();
+use Test::Stream::Compare::Value();
+use Test::Stream::Compare::Wildcard();
 
 sub is($$;$@) {
     my ($got, $exp, $name, @diag) = @_;

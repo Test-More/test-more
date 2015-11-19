@@ -5,15 +5,15 @@ use warnings;
 use Scalar::Util qw/reftype blessed/;
 use Carp qw/confess croak/;
 
-use Test::Stream::Sync;
+use Test::Stream::Sync();
 
-use Test::Stream::Workflow::Meta;
-use Test::Stream::Workflow::Unit;
+use Test::Stream::Workflow::Meta();
+use Test::Stream::Workflow::Unit();
 
 use Test::Stream::Context qw/context/;
 use Test::Stream::Util qw/try set_sub_name CAN_SET_SUB_NAME sub_info update_mask/;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/exports export import/;
 exports qw{
     workflow_build
     workflow_current

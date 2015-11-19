@@ -6,8 +6,8 @@ use Scalar::Util qw/weaken/;
 use Carp qw/confess croak longmess/;
 use Test::Stream::Util qw/get_tid try pkg_to_file/;
 
-use Test::Stream::Sync;
-use Test::Stream::DebugInfo;
+use Test::Stream::Sync();
+use Test::Stream::DebugInfo();
 
 # Preload some key event types
 my %LOADED = (

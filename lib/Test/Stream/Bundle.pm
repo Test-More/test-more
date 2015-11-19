@@ -4,8 +4,9 @@ use warnings;
 
 use Carp qw/croak/;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import default_export/;
 
+# Here we are exporting a sub called 'import' that is not our 'import' method.
 default_export import => sub {
     my $class = shift;
     my @caller = caller;
@@ -44,7 +45,7 @@ bundle is a set of plugins that get loaded all at once to your specifications.
 
     # Gives us an 'import' method that allows this module to be used directly
     # if desired.
-    use Test::Stream::Bundle;
+    use Test::Stream::Bundle qw/import/;
 
     sub plugins {
         return (

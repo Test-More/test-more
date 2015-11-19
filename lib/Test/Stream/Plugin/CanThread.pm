@@ -4,7 +4,7 @@ use warnings;
 
 use Test::Stream::Capabilities qw/CAN_THREAD/;
 
-use Test::Stream::Plugin;
+use Test::Stream::Plugin qw/import/;
 
 sub load_ts_plugin {
     return if CAN_THREAD;

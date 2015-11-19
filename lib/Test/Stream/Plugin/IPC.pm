@@ -2,13 +2,13 @@ package Test::Stream::Plugin::IPC;
 use strict;
 use warnings;
 
-use Test::Stream::IPC;
+use Test::Stream::IPC();
 
 use Test::Stream::Context qw/context/;
 use Test::Stream::Util qw/pkg_to_file/;
 use Carp qw/croak confess/;
 
-use Test::Stream::Plugin;
+use Test::Stream::Plugin qw/import/;
 
 sub load_ts_plugin {
     my $class = shift;

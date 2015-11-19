@@ -5,7 +5,7 @@ use warnings;
 use Scalar::Util qw/reftype refaddr/;
 use Carp qw/croak confess carp/;
 
-use Test::Stream::Sync;
+use Test::Stream::Sync();
 
 use Test::Stream::Table qw/table/;
 
@@ -18,7 +18,7 @@ use Test::Stream::Util qw{
     render_ref
 };
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import default_exports/;
 default_exports qw{
     ok pass fail
     diag note

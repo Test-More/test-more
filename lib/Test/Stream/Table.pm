@@ -2,14 +2,14 @@ package Test::Stream::Table;
 use strict;
 use warnings;
 
-use Test::Stream::Table::LineBreak;
+use Test::Stream::Table::LineBreak();
 
 use List::Util qw/min max sum/;
 use Scalar::Util qw/blessed/;
 
 use Test::Stream::Util qw/term_size/;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import exports/;
 exports qw/table/;
 no Test::Stream::Exporter;
 

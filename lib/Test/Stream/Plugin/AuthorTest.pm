@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Test::Stream::Context qw/context/;
-use Test::Stream::Plugin;
+use Test::Stream::Plugin qw/import/;
 
 sub load_ts_plugin {
     my $class = shift;

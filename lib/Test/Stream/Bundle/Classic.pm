@@ -2,7 +2,7 @@ package Test::Stream::Bundle::Classic;
 use strict;
 use warnings;
 
-use Test::Stream::Bundle;
+use Test::Stream::Bundle qw/import/;
 
 sub plugins {
     return (

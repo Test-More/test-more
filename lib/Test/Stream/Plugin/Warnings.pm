@@ -5,7 +5,7 @@ use warnings;
 use Carp qw/croak/;
 use Test::Stream::Util qw/protect/;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import default_exports/;
 default_exports qw/warning warns no_warnings/;
 no Test::Stream::Exporter;
 

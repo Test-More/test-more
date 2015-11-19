@@ -2,11 +2,11 @@ package Test::Stream::Plugin::Grab;
 use strict;
 use warnings;
 
-use Test::Stream::Sync;
-use Test::Stream::DebugInfo;
-use Test::Stream::Hub::Interceptor;
+use Test::Stream::Sync();
+use Test::Stream::DebugInfo();
+use Test::Stream::Hub::Interceptor();
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import default_export/;
 default_export grab => sub { __PACKAGE__->new };
 no Test::Stream::Exporter;
 

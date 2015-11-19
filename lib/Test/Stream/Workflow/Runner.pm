@@ -4,8 +4,8 @@ use warnings;
 
 use Test::Stream::Util qw/try/;
 
-use Test::Stream::Workflow::Task;
-use Test::Stream::Sync;
+use Test::Stream::Workflow::Task();
+use Test::Stream::Sync();
 
 sub subtests { 1 }
 

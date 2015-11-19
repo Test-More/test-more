@@ -2,8 +2,8 @@ package Test::Stream::Plugin::Capabilities;
 use strict;
 use warnings;
 
-use Test::Stream::Capabilities;
-use Test::Stream::Plugin;
+use Test::Stream::Capabilities();
+use Test::Stream::Plugin qw/import/;
 
 use Carp qw/croak/;
 

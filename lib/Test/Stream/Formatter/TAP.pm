@@ -11,7 +11,7 @@ sub OUT_STD()  { 0 }
 sub OUT_ERR()  { 1 }
 sub OUT_TODO() { 2 }
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import exports/;
 exports qw/OUT_STD OUT_ERR OUT_TODO/;
 no Test::Stream::Exporter;
 

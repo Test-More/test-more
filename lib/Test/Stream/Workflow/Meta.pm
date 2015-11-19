@@ -5,7 +5,7 @@ use warnings;
 use Carp qw/confess croak/;
 use Scalar::Util qw/blessed/;
 
-use Test::Stream::Workflow::Unit;
+use Test::Stream::Workflow::Unit();
 
 use Test::Stream::HashBase(
     accessors => [qw/unit runner runner_args autorun/],

@@ -5,7 +5,7 @@ use warnings;
 use Carp qw/croak/;
 use Test::Stream::Util qw/get_tid/;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import default_exports/;
 default_exports qw/def do_def/;
 no Test::Stream::Exporter;
 

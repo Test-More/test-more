@@ -2,8 +2,8 @@ package Test::Stream::Plugin::DieOnFail;
 use strict;
 use warnings;
 
-use Test::Stream::Plugin;
-use Test::Stream::Context;
+use Test::Stream::Plugin qw/import/;
+use Test::Stream::Context();
 
 my $LOADED = 0;
 sub load_ts_plugin {

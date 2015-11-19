@@ -7,10 +7,10 @@ use Scalar::Util qw/blessed/;
 use Test::Stream::Util qw/try/;
 use Test::Stream::Context qw/context/;
 
-use Test::Stream::Hub::Interceptor;
-use Test::Stream::Hub::Interceptor::Terminator;
+use Test::Stream::Hub::Interceptor();
+use Test::Stream::Hub::Interceptor::Terminator();
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import default_exports/;
 default_exports qw/intercept/;
 no Test::Stream::Exporter;
 

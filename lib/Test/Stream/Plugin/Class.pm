@@ -2,7 +2,7 @@ package Test::Stream::Plugin::Class;
 use strict;
 use warnings;
 
-use Test::Stream::Plugin;
+use Test::Stream::Plugin qw/import/;
 
 use Test::Stream::Util qw/pkg_to_file/;
 

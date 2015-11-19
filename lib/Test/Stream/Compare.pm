@@ -3,12 +3,12 @@ use strict;
 use warnings;
 
 use Test::Stream::Util qw/try sub_info/;
-use Test::Stream::Delta;
+use Test::Stream::Delta();
 
 use Carp qw/confess croak/;
 use Scalar::Util qw/blessed/;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import export/;
 export compare => sub {
     my ($got, $check, $convert) = @_;
 
@@ -98,7 +98,6 @@ sub lines {
     return [];
 }
 
-use Test::Stream::Delta;
 sub delta_class { 'Test::Stream::Delta' }
 
 sub deltas { () }

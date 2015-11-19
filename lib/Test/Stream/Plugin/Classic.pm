@@ -2,7 +2,7 @@ package Test::Stream::Plugin::Classic;
 use strict;
 use warnings;
 
-use Test::Stream::Exporter;
+use Test::Stream::Exporter qw/import default_exports/;
 default_exports qw/is is_deeply isnt like unlike/;
 no Test::Stream::Exporter;
 
@@ -12,8 +12,8 @@ use Test::Stream::Compare qw/-all/;
 use Test::Stream::Context qw/context/;
 use Test::Stream::Util qw/rtype/;
 
-use Test::Stream::Compare::String;
-use Test::Stream::Compare::Pattern;
+use Test::Stream::Compare::String();
+use Test::Stream::Compare::Pattern();
 
 use Test::Stream::Plugin::Compare();
 

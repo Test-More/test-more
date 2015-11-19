@@ -5,9 +5,9 @@ use warnings;
 use Test::Stream::Context qw/context/;
 use Test::Stream::Util qw/try/;
 
-use Test::Stream::Event::Subtest;
-use Test::Stream::Hub::Subtest;
-use Test::Stream::Plugin;
+use Test::Stream::Event::Subtest();
+use Test::Stream::Hub::Subtest();
+use Test::Stream::Plugin qw/import/;
 
 sub load_ts_plugin {
     my $class = shift;

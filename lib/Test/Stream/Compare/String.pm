@@ -4,7 +4,7 @@ use warnings;
 
 use Carp qw/confess/;
 
-use Test::Stream::Compare;
+use Test::Stream::Compare();
 use Test::Stream::HashBase(
     base => 'Test::Stream::Compare',
     accessors => [qw/input negate/],
