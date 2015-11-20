@@ -1,4 +1,4 @@
-use Test::Stream -V1, -SpecTester;
+use Test::Stream -V1, -SpecTester, Compare => [qw/is like match/];
 use Test::Stream::Capabilities qw/CAN_FORK CAN_THREAD CAN_REALLY_FORK/;
 
 {
@@ -251,6 +251,8 @@ tests metadata => sub {
 };
 
 tests munge => sub {
+    my @warnings;
+    local $SIG{__WARN__} = sub { push @warnings => @_ };
     my $hub = Test::Stream::Hub->new();
 
     my @events;
@@ -316,6 +318,88 @@ tests munge => sub {
         dies { $hub->munge('xxx') },
         qr/munge only takes coderefs for arguments, got 'xxx'/,
         "munge takes a coderef"
+    );
+
+    delete $SIG{__WARN__};
+    is(
+        \@warnings,
+        [
+            match qr/use of mungers is deprecated, look at filters instead\. mungers will be removed in the near future\./,
+            match qr/use of mungers is deprecated, look at filters instead\. mungers will be removed in the near future\./,
+            match qr/use of mungers is deprecated, look at filters instead\. mungers will be removed in the near future\./,
+            match qr/use of mungers is deprecated, look at filters instead\. mungers will be removed in the near future\./,
+        ],
+        "Got the warnings"
+    );
+};
+
+tests filter => sub {
+    my $hub = Test::Stream::Hub->new();
+
+    my @events;
+    my $it = $hub->filter(sub {
+        my ($h, $e) = @_;
+        is($h, $hub, "got hub");
+        push @events => $e;
+        return $e;
+    });
+
+    my $count;
+    my $it2 = $hub->filter(sub { $count++; $_[1] });
+
+    my $ok1 = Test::Stream::Event::Ok->new(
+        pass => 1,
+        name => 'foo',
+        debug => Test::Stream::DebugInfo->new(
+            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+        ),
+    );
+
+    my $ok2 = Test::Stream::Event::Ok->new(
+        pass => 0,
+        name => 'bar',
+        debug => Test::Stream::DebugInfo->new(
+            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+        ),
+    );
+
+    my $ok3 = Test::Stream::Event::Ok->new(
+        pass => 1,
+        name => 'baz',
+        debug => Test::Stream::DebugInfo->new(
+            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+        ),
+    );
+
+    $hub->send($ok1);
+    $hub->send($ok2);
+
+    $hub->unfilter($it);
+
+    $hub->send($ok3);
+
+    is(\@events, [$ok1, $ok2], "got events");
+    is($count, 3, "got all events, even after other filter was removed");
+
+    $hub = Test::Stream::Hub->new();
+    @events = ();
+
+    $hub->filter(sub { undef });
+    $hub->listen(sub {
+        my ($hub, $e) = @_;
+        push @events => $e;
+    });
+
+    $hub->send($ok1);
+    $hub->send($ok2);
+    $hub->send($ok3);
+
+    ok(!@events, "Blocked events");
+
+    like(
+        dies { $hub->filter('xxx') },
+        qr/filter only takes coderefs for arguments, got 'xxx'/,
+        "filter takes a coderef"
     );
 };
 
