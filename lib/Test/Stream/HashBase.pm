@@ -2,7 +2,7 @@ package Test::Stream::HashBase;
 use strict;
 use warnings;
 
-use Carp qw/confess croak/;
+use Carp qw/confess croak carp/;
 use Scalar::Util qw/blessed reftype/;
 
 $Carp::Internal{(__PACKAGE__)}++;
@@ -21,14 +21,20 @@ sub import {
     $file =~ s/(\.*)$/.eval$1/;
     my $eval = "# line 1 \"$file\"\npackage $into;\n";
 
+    my $isa = do { no strict 'refs'; \@{"$into\::ISA"} };
+
+    if(my @bmetas = map { $META{$_} or () } @$isa) {
+        $eval .= "sub " . uc($_) . "() { '$_' };\n" for map { @{$_} } @bmetas;
+    }
+
     if(my $base = $args{base}) {
+        carp "'base' argument to HashBase is deprecated.";
         my $bmeta = $META{$base} || croak "Base class '$base' is not a HashBase class";
 
-        $eval .= "sub " . uc($_) . "() { '$_' };\n" for @$bmeta;
-
-        no strict 'refs';
-        push @{"$into\::ISA"} => $base
-            unless $into->isa($base);
+        unless ($into->isa($base)) {
+            $eval .= "sub " . uc($_) . "() { '$_' };\n" for @$bmeta;
+            push @$isa => $base;
+        }
     }
 
     {
@@ -120,8 +126,10 @@ Subclass it
     package My::Subclass;
     use strict;
     use warnings;
-    use Test::Stream::HashBase base => 'My::Class',    # subclass
-                          accessors => ['bat'];
+
+    # Note, you should subclass before loading HashBase.
+    use base 'My::Class';
+    use Test::Stream::HashBase accessors => ['bat'];
 
     sub init {
         my $self = shift;
@@ -177,6 +185,9 @@ supported.
 This is how you define your accessors. See the ACCESSORS section below.
 
 =item base => $class
+
+B<*** DEPRECATED ***> Just C<use base 'Parent::Class';> before loading
+HashBase.
 
 This is how you subclass a Test::Stream::Hashbase class. This will give you all
 the constants of the parent(s).

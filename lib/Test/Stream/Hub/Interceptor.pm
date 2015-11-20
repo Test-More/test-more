@@ -4,10 +4,8 @@ use warnings;
 
 use Test::Stream::Hub::Interceptor::Terminator();
 
-require Test::Stream::Hub;
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Hub',
-);
+use base 'Test::Stream::Hub';
+use Test::Stream::HashBase;
 
 sub inherit {
     my $self = shift;

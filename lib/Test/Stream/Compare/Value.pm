@@ -6,11 +6,8 @@ use Scalar::Util qw/looks_like_number/;
 
 use Carp qw/carp/;
 
-use Test::Stream::Compare();
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Compare',
-    accessors => [qw/input/],
-);
+use base 'Test::Stream::Compare';
+use Test::Stream::HashBase accessors => [qw/input/];
 
 sub init {
     my $self = shift;

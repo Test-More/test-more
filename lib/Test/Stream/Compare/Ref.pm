@@ -2,11 +2,8 @@ package Test::Stream::Compare::Ref;
 use strict;
 use warnings;
 
-use Test::Stream::Compare();
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Compare',
-    accessors => [qw/input/],
-);
+use base 'Test::Stream::Compare';
+use Test::Stream::HashBase accessors => [qw/input/];
 
 use Test::Stream::Util qw/render_ref rtype/;
 use Scalar::Util qw/reftype refaddr/;

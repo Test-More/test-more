@@ -2,11 +2,8 @@ package Test::Stream::Compare::Pattern;
 use strict;
 use warnings;
 
-use Test::Stream::Compare();
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Compare',
-    accessors => [qw/pattern negate/],
-);
+use base 'Test::Stream::Compare';
+use Test::Stream::HashBase accessors => [qw/pattern negate/];
 
 use Carp qw/croak/;
 

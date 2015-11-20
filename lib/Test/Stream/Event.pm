@@ -2,7 +2,7 @@ package Test::Stream::Event;
 use strict;
 use warnings;
 
-use Carp qw/confess/;
+use Carp qw/confess carp/;
 
 use Test::Stream::HashBase(
     accessors => [qw/debug nested/],
@@ -14,6 +14,8 @@ sub import {
     # Import should only when event is imported, subclasses do not use this
     # import.
     return if $class ne __PACKAGE__;
+
+    carp "The magical 'import' method on $class is deprecated and will be removed in the near future.";
 
     my $caller = caller;
     my (%args) = @_;
@@ -58,11 +60,11 @@ L<Test::Stream>.
     use strict;
     use warnings;
 
-    # This will make our class an event subclass, add the specified accessors,
-    # add constants for all our fields, and fields we inherit.
-    use Test::Stream::Event(
-        accessors  => [qw/foo bar baz/],
-    );
+    # This will make our class an event subclass (required)
+    use base 'Test::Stream::Event';
+
+    # Add some accessors
+    use Test::Stream::HashBase accessors => [qw/foo bar baz/];
 
     # Chance to initialize some defaults
     sub init {
@@ -81,37 +83,6 @@ L<Test::Stream>.
     }
 
     1;
-
-=head1 IMPORTING
-
-=head2 ARGUMENTS
-
-In addition to the arguments listed here, you may pass in any arguments
-accepted by L<Test::Stream::HashBase>.
-
-=over 4
-
-=item base => $BASE_CLASS
-
-This lets you specify an event class to subclass. B<THIS MUST BE AN EVENT
-CLASS>. If you do not specify anything here then C<Test::Stream::Event> will be
-used.
-
-=item accessors => \@FIELDS
-
-This lets you define any fields you wish to be present in your class. This is
-the only way to define storage for your event. Each field specified will get a
-read-only accessor with the same name as the field, as well as a setter
-C<set_FIELD()>. You will also get a constant that returns the index of the
-field in the classes arrayref. The constant is the name of the field in all
-upper-case.
-
-=back
-
-=head2 SUBCLASSING
-
-C<Test::Stream::Event> is added to your @INC for you, unless you specify an
-alternative base class, which must itself subclass C<Test::Stream::Event>.
 
 =head1 METHODS
 
@@ -178,7 +149,7 @@ is output to the specified handle.
 Example:
 
     package Test::Stream::Event::MyEvent;
-    use Test::Stream::Event;
+    use base 'Test::Stream::Event';
     use Test::Stream::Formatter::TAP qw/OUT_STD OUT_TODO OUT_ERR/;
 
     sub to_tap {

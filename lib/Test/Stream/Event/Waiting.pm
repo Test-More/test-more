@@ -2,7 +2,7 @@ package Test::Stream::Event::Waiting;
 use strict;
 use warnings;
 
-use Test::Stream::Event;
+use base 'Test::Stream::Event';
 
 sub global { 1 };
 

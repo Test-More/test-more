@@ -4,9 +4,8 @@ use warnings;
 
 use Test::Stream::Formatter::TAP qw/OUT_STD/;
 
-use Test::Stream::Event(
-    accessors => [qw/reason/],
-);
+use base 'Test::Stream::Event';
+use Test::Stream::HashBase accessors => [qw/reason/];
 
 sub to_tap {
     my $self = shift;

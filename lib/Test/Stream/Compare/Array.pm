@@ -2,11 +2,8 @@ package Test::Stream::Compare::Array;
 use strict;
 use warnings;
 
-use Test::Stream::Compare();
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Compare',
-    accessors => [qw/inref ending items order/],
-);
+use base 'Test::Stream::Compare';
+use Test::Stream::HashBase accessors => [qw/inref ending items order/];
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/reftype looks_like_number/;

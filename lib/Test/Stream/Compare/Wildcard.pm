@@ -2,11 +2,8 @@ package Test::Stream::Compare::Wildcard;
 use strict;
 use warnings;
 
-use Test::Stream::Compare();
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Compare',
-    accessors => [qw/expect/],
-);
+use base 'Test::Stream::Compare';
+use Test::Stream::HashBase accessors => [qw/expect/];
 
 use Carp qw/croak/;
 

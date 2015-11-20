@@ -1,6 +1,6 @@
 use Test::Stream -V1;
 
-use Test::Stream::Event;
+use Test::Stream::Event();
 
 can_ok('Test::Stream::Event', qw/debug nested/);
 
@@ -11,9 +11,9 @@ like($err, qr/No debug info provided/, "Need debug info");
 
 {
     package My::MockEvent;
-    use Test::Stream::Event(
-        accessors => [qw/foo bar baz/],
-    );
+
+    use base 'Test::Stream::Event';
+    use Test::Stream::HashBase accessors => [qw/foo bar baz/];
 }
 
 can_ok('My::MockEvent', qw/foo bar baz/);

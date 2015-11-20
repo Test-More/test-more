@@ -4,12 +4,10 @@ use warnings;
 
 use Test::Stream::Util qw/try/;
 
-use Test::Stream::Compare();
 use Test::Stream::Compare::Meta();
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Compare',
-    accessors => [qw/calls meta refcheck ending/],
-);
+
+use base 'Test::Stream::Compare';
+use Test::Stream::HashBase accessors => [qw/calls meta refcheck ending/];
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/reftype blessed/;

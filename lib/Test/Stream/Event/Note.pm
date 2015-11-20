@@ -4,9 +4,8 @@ use warnings;
 
 use Test::Stream::Formatter::TAP qw/OUT_STD/;
 
-use Test::Stream::Event(
-    accessors  => [qw/message/],
-);
+use base 'Test::Stream::Event';
+use Test::Stream::HashBase accessors => [qw/message/];
 
 sub init {
     $_[0]->SUPER::init();

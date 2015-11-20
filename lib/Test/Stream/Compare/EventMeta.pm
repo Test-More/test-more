@@ -2,10 +2,8 @@ package Test::Stream::Compare::EventMeta;
 use strict;
 use warnings;
 
-use Test::Stream::Compare::Meta();
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Compare::Meta',
-);
+use base 'Test::Stream::Compare::Meta';
+use Test::Stream::HashBase;
 
 sub get_prop_file    { $_[1]->debug->file }
 sub get_prop_line    { $_[1]->debug->line }

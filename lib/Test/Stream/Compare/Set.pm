@@ -2,11 +2,8 @@ package Test::Stream::Compare::Set;
 use strict;
 use warnings;
 
-use Test::Stream::Compare();
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Compare',
-    accessors => [qw/checks _reduction/],
-);
+use base 'Test::Stream::Compare';
+use Test::Stream::HashBase accessors => [qw/checks _reduction/];
 
 use Test::Stream::Delta();
 

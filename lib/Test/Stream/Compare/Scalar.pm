@@ -2,11 +2,8 @@ package Test::Stream::Compare::Scalar;
 use strict;
 use warnings;
 
-use Test::Stream::Compare();
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Compare',
-    accessors => [qw/item/],
-);
+use base 'Test::Stream::Compare';
+use Test::Stream::HashBase accessors => [qw/item/];
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/reftype blessed/;

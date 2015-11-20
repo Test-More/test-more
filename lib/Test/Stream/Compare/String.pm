@@ -4,11 +4,8 @@ use warnings;
 
 use Carp qw/confess/;
 
-use Test::Stream::Compare();
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Compare',
-    accessors => [qw/input negate/],
-);
+use base 'Test::Stream::Compare';
+use Test::Stream::HashBase accessors => [qw/input negate/];
 
 sub stringify_got { 1 }
 
