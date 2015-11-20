@@ -39,9 +39,8 @@ ok($layers->{utf8}, "Now utf8");
     package My::Event;
     use Test::Stream::Formatter::TAP qw/OUT_STD OUT_ERR/;
 
-    use Test::Stream::Event(
-        accessors => [qw/pass name diag note/],
-    );
+    use base 'Test::Stream::Event';
+    use Test::Stream::HashBase accessors => [qw/pass name diag note/];
 
     sub to_tap {
         my $self = shift;

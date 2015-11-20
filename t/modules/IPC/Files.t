@@ -30,7 +30,7 @@ if(ok(open(my $fh, '<', $ipc->tempdir . '/HUB-' . $hid), "opened hub file")) {
 
 {
     package Foo;
-    use Test::Stream::Event;
+    use base 'Test::Stream::Event';
 }
 
 $ipc->send($hid, bless({ foo => 1 }, 'Foo'));

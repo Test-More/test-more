@@ -17,9 +17,8 @@ use Test::Stream::Capabilities qw/CAN_FORK CAN_THREAD CAN_REALLY_FORK/;
 {
     package My::Event;
 
-    use Test::Stream::Event(
-        accessors => [qw/msg/],
-    );
+    use base 'Test::Stream::Event';
+    use Test::Stream::HashBase accessors => [qw/msg/];
 }
 
 tests basic => sub {

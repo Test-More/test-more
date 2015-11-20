@@ -4,11 +4,8 @@ use warnings;
 
 use Test::Stream::Delta();
 
-use Test::Stream::Compare();
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Compare',
-    accessors => [qw/items/],
-);
+use base 'Test::Stream::Compare';
+use Test::Stream::HashBase accessors => [qw/items/];
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/reftype blessed/;

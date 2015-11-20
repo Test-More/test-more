@@ -177,11 +177,8 @@ for several comparison classes that allow for deep structure comparisons.
     use strict;
     use warnings;
 
-    use Test::Stream::Compare;
-    use Test::Stream::HashBase(
-        base => 'Test::Stream::Compare',
-        accessors => [qw/stuff/],
-    );
+    use base 'Test::Stream::Compare';
+    use Test::Stream::HashBase accessors => [qw/stuff/];
 
     sub name { 'STUFF' }
 

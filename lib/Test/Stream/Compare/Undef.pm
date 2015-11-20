@@ -4,11 +4,8 @@ use warnings;
 
 use Carp qw/confess/;
 
-use Test::Stream::Compare();
-use Test::Stream::HashBase(
-    base => 'Test::Stream::Compare',
-    accessors => [qw/negate/],
-);
+use base 'Test::Stream::Compare';
+use Test::Stream::HashBase accessors => [qw/negate/];
 
 sub name { '<UNDEF>' }
 

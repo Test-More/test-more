@@ -16,10 +16,8 @@ BEGIN {
 
 BEGIN {
     package My::HBaseSub;
-    use Test::Stream::HashBase(
-        accessors => [qw/apple pear/],
-        base      => 'My::HBase',
-    );
+    use base 'My::HBase';
+    use Test::Stream::HashBase accessors => [qw/apple pear/];
 
     use Test::Stream -V1;
     is(FOO,   'foo',   "FOO CONSTANT");
@@ -28,6 +26,33 @@ BEGIN {
     is(APPLE, 'apple', "APPLE CONSTANT");
     is(PEAR,  'pear',  "PEAR CONSTANT");
 
+    local $SIG{__WARN__} = sub { 1 };
+    my $bad = eval { Test::Stream::HashBase->import( base => 'foobarbaz' ); 1 };
+    my $error = $@;
+    ok(!$bad, "Threw exception");
+    like($error, qr/Base class 'foobarbaz' is not a HashBase class/, "Expected error");
+}
+
+BEGIN {
+    package My::HBaseSubDep;
+    BEGIN {
+        my $warning;
+        local $SIG{__WARN__} = sub { $warning = shift };
+        Test::Stream::HashBase->import(
+            accessors => [qw/apple pear/],
+            base      => 'My::HBase',
+        );
+        main::like($warning, qr/'base' argument to HashBase is deprecated\./, "got import deprecation warning");
+    }
+
+    use Test::Stream -V1;
+    is(FOO,   'foo',   "FOO CONSTANT");
+    is(BAR,   'bar',   "BAR CONSTANT");
+    is(BAZ,   'baz',   "BAZ CONSTANT");
+    is(APPLE, 'apple', "APPLE CONSTANT");
+    is(PEAR,  'pear',  "PEAR CONSTANT");
+
+    local $SIG{__WARN__} = sub { 1 };
     my $bad = eval { Test::Stream::HashBase->import( base => 'foobarbaz' ); 1 };
     my $error = $@;
     ok(!$bad, "Threw exception");
@@ -38,6 +63,7 @@ BEGIN {
     package Consumer;
     use Test::Stream -V1;
 
+    local $SIG{__WARN__} = sub { 1 };
     my $bad = eval { Test::Stream::HashBase->import( base => 'Fake::Thing' ); 1 };
     my $error = $@;
     ok(!$bad, "Threw exception");
