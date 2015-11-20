@@ -329,7 +329,7 @@ is(
         delete $INC{'Test/Stream/IPC.pm'};
         $reset->();
         my @events;
-        $sync->stack->top->munge(sub { push @events => $_[1]; $_[1] = undef });
+        $sync->stack->top->filter(sub { push @events => $_[1]; undef });
         $sync->stack->new_hub;
         local $? = 0;
         $sync->_set_exit;
@@ -340,7 +340,7 @@ is(
     {
         $reset->();
         my @events;
-        $sync->stack->top->munge(sub { push @events => $_[1]; $_[1] = undef });
+        $sync->stack->top->filter(sub { push @events => $_[1]; undef });
         $sync->stack->new_hub;
         def ok => ($sync->stack->top->ipc, "Have IPC");
         $sync->stack->new_hub;

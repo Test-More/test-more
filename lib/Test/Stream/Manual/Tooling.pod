@@ -127,9 +127,8 @@ tracking state. Hubs have an instance of an L<Test::Stream::State> object. When
 an event is processed by a hub the state will be updated accordingly.
 
 The second job of a hub is to make sure events get to the right place.
-Typically this means processing the event through any hooks or filters called
-'mungers', then handing them off to the formatter, then finally running them
-through and 'listeners'.
+Typically this means processing the event through any 'filters', then handing
+them off to the formatter, then finally running them through 'listeners'.
 
 When IPC is active the hub will use the IPC driver (See L<Test::Stream::IPC>)
 to send events to the correct process or thread. 
