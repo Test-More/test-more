@@ -1903,8 +1903,6 @@ comes from.
 
 =head2 BUNDLES
 
-L<Bundle::Test> installs a whole bunch of useful test modules.
-
 L<Test::Most> Most commonly needed test functions and features.
 
 =head1 AUTHORS
