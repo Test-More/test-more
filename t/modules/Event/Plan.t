@@ -13,11 +13,13 @@ my $plan = Test::Stream::Event::Plan->new(
     max => 100,
 );
 
-is(
-    [$plan->to_tap(1)],
-    [[OUT_STD, "1..100\n"]],
-    "Got tap"
-);
+warns {
+    is(
+        [$plan->to_tap(1)],
+        [[OUT_STD, "1..100\n"]],
+        "Got tap"
+    );
+};
 ok(!$plan->global, "regular plan is not a global event");
 my $state = Test::Stream::State->new;
 $plan->update_state($state);
@@ -27,11 +29,13 @@ is($plan->terminate, undef, "No terminate for normal plan");
 $plan->set_max(0);
 $plan->set_directive('SKIP');
 $plan->set_reason('foo');
-is(
-    [$plan->to_tap(1)],
-    [[OUT_STD, "1..0 # SKIP foo\n"]],
-    "Got tap for skip_all"
-);
+warns {
+    is(
+        [$plan->to_tap(1)],
+        [[OUT_STD, "1..0 # SKIP foo\n"]],
+        "Got tap for skip_all"
+    );
+};
 ok($plan->global, "plan is global on skip all");
 $state = Test::Stream::State->new;
 $plan->update_state($state);
@@ -57,11 +61,13 @@ $plan = Test::Stream::Event::Plan->new(
     directive => 'skip_all',
 );
 is($plan->directive, 'SKIP', "Change skip_all to SKIP");
-is(
-    [$plan->to_tap],
-    [[OUT_STD, "1..0 # SKIP\n"]],
-    "SKIP without reason"
-);
+warns {
+    is(
+        [$plan->to_tap],
+        [[OUT_STD, "1..0 # SKIP\n"]],
+        "SKIP without reason"
+    );
+};
 
 $plan = Test::Stream::Event::Plan->new(
     debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
@@ -70,11 +76,13 @@ $plan = Test::Stream::Event::Plan->new(
 );
 is($plan->directive, 'NO PLAN', "Change no_plan to 'NO PLAN'");
 ok(!$plan->global, "NO PLAN is not global");
-is(
-    [$plan->to_tap],
-    [],
-    "NO PLAN"
-);
+warns {
+    is(
+        [$plan->to_tap],
+        [],
+        "NO PLAN"
+    );
+};
 
 like(
     dies {

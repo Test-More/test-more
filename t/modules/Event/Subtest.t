@@ -15,23 +15,27 @@ my $one = $st->new(
 isa_ok($one, $st, 'Test::Stream::Event::Ok');
 is($one->subevents, [], "subevents is an arrayref");
 
-is(
-    [$one->to_tap(5)],
-    [
-        [OUT_STD, "ok 5 - foo {\n"],
-        [OUT_STD, "}\n"],
-    ],
-    "Got Buffered TAP output"
-);
+warns {
+    is(
+        [$one->to_tap(5)],
+        [
+            [OUT_STD, "ok 5 - foo {\n"],
+            [OUT_STD, "}\n"],
+        ],
+        "Got Buffered TAP output"
+    );
+};
 
 $one->set_buffered(0);
-is(
-    [$one->to_tap(5)],
-    [
-        [OUT_STD, "ok 5 - foo\n"],
-    ],
-    "Got Unbuffered TAP output"
-);
+warns {
+    is(
+        [$one->to_tap(5)],
+        [
+            [OUT_STD, "ok 5 - foo\n"],
+        ],
+        "Got Unbuffered TAP output"
+    );
+};
 
 $dbg = Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']);
 $one = $st->new(
@@ -51,7 +55,7 @@ $one = $st->new(
     ],
 );
 
-{
+warns {
     local $ENV{HARNESS_IS_VERBOSE};
     is(
         [$one->to_tap(5)],
@@ -68,9 +72,9 @@ $one = $st->new(
         ],
         "Got Buffered TAP output (non-verbose)"
     );
-}
+};
 
-{
+warns {
     local $ENV{HARNESS_IS_VERBOSE} = 1;
     is(
         [$one->to_tap(5)],
@@ -87,9 +91,9 @@ $one = $st->new(
         ],
         "Got Buffered TAP output (verbose)"
     );
-}
+};
 
-{
+warns {
     local $ENV{HARNESS_IS_VERBOSE};
     $one->set_buffered(0);
     is(
@@ -101,9 +105,9 @@ $one = $st->new(
         ],
         "Got Unbuffered TAP output (non-verbose)"
     );
-}
+};
 
-{
+warns {
     local $ENV{HARNESS_IS_VERBOSE} = 1;
     $one->set_buffered(0);
     is(
@@ -115,7 +119,6 @@ $one = $st->new(
         ],
         "Got Unbuffered TAP output (verbose)"
     );
-}
-
+};
 
 done_testing;

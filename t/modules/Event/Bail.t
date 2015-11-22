@@ -11,11 +11,13 @@ my $bail = Test::Stream::Event::Bail->new(
 
 ok($bail->causes_fail, "balout always causes fail.");
 
-is(
-    [$bail->to_tap(1)],
-    [[OUT_STD, "Bail out!  evil\n" ]],
-    "Got tap"
-);
+warns {
+    is(
+        [$bail->to_tap(1)],
+        [[OUT_STD, "Bail out!  evil\n" ]],
+        "Got tap"
+    );
+};
 
 is($bail->terminate, 255, "Bail will cause the test to exit.");
 is($bail->global, 1, "Bail is global, everything should bail");

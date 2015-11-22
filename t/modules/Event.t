@@ -25,6 +25,8 @@ ok(!$one->causes_fail, "Events do not cause failures by default");
 
 ok(!$one->$_, "$_ is false by default") for qw/update_state terminate global/;
 
-is([$one->to_tap()], [], "to_tap is an empty list by default");
+warns {
+    is([$one->to_tap()], [], "to_tap is an empty list by default");
+};
 
 done_testing;

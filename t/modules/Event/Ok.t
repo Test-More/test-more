@@ -27,11 +27,13 @@ tests Passing => sub {
     is($ok->effective_pass, 1, "effective pass");
     is($ok->diag, undef, "no diag");
 
-    is(
-        [$ok->to_tap(4)],
-        [[OUT_STD, "ok 4 - the_test\n"]],
-        "Got tap for basic ok"
-    );
+    warns {
+        is(
+            [$ok->to_tap(4)],
+            [[OUT_STD, "ok 4 - the_test\n"]],
+            "Got tap for basic ok"
+        );
+    };
 
     my $state = Test::Stream::State->new;
     $ok->update_state($state);
@@ -53,13 +55,15 @@ tests Failing => sub {
     is($ok->name, 'the_test', "got name");
     is($ok->effective_pass, 0, "effective pass");
 
-    is(
-        [$ok->to_tap(4)],
-        [
-            [OUT_STD, "not ok 4 - the_test\n"],
-        ],
-        "Got tap for failing ok"
-    );
+    warns {
+        is(
+            [$ok->to_tap(4)],
+            [
+                [OUT_STD, "not ok 4 - the_test\n"],
+            ],
+            "Got tap for failing ok"
+        );
+    };
 
     is(
         $ok->default_diag,
@@ -67,37 +71,39 @@ tests Failing => sub {
         "default diag"
     );
 
-    $ok->set_diag([ $ok->default_diag ]);
-    is(
-        [$ok->to_tap(4)],
-        [
-            [OUT_STD, "not ok 4 - the_test\n"],
-            [OUT_ERR, "# Failed test 'the_test'\n# at foo.t line 42.\n"],
-        ],
-        "Got tap for failing ok with diag"
-    );
+    warns {
+        $ok->set_diag([ $ok->default_diag ]);
+        is(
+            [$ok->to_tap(4)],
+            [
+                [OUT_STD, "not ok 4 - the_test\n"],
+                [OUT_ERR, "# Failed test 'the_test'\n# at foo.t line 42.\n"],
+            ],
+            "Got tap for failing ok with diag"
+        );
 
-    $ENV{HARNESS_IS_VERBOSE} = 0;
-    $ok->set_diag([ $ok->default_diag ]);
-    is(
-        [$ok->to_tap(4)],
-        [
-            [OUT_STD, "not ok 4 - the_test\n"],
-            [OUT_ERR, "\n# Failed test 'the_test'\n# at foo.t line 42.\n"],
-        ],
-        "Got tap for failing ok with diag non verbose harness"
-    );
-
-    $ENV{HARNESS_ACTIVE} = 0;
-    $ok->set_diag([ $ok->default_diag ]);
-    is(
-        [$ok->to_tap(4)],
-        [
-            [OUT_STD, "not ok 4 - the_test\n"],
-            [OUT_ERR, "# Failed test 'the_test'\n# at foo.t line 42.\n"],
-        ],
-        "Got tap for failing ok with diag no harness"
-    );
+        $ENV{HARNESS_IS_VERBOSE} = 0;
+        $ok->set_diag([ $ok->default_diag ]);
+        is(
+            [$ok->to_tap(4)],
+            [
+                [OUT_STD, "not ok 4 - the_test\n"],
+                [OUT_ERR, "\n# Failed test 'the_test'\n# at foo.t line 42.\n"],
+            ],
+            "Got tap for failing ok with diag non verbose harness"
+        );
+    
+        $ENV{HARNESS_ACTIVE} = 0;
+        $ok->set_diag([ $ok->default_diag ]);
+        is(
+            [$ok->to_tap(4)],
+            [
+                [OUT_STD, "not ok 4 - the_test\n"],
+                [OUT_ERR, "# Failed test 'the_test'\n# at foo.t line 42.\n"],
+            ],
+            "Got tap for failing ok with diag no harness"
+        );
+    };
 
     my $state = Test::Stream::State->new;
     $ok->update_state($state);
@@ -126,14 +132,16 @@ tests fail_with_diag => sub {
         "Got diag"
     );
 
-    is(
-        [$ok->to_tap(4)],
-        [
-            [OUT_STD, "not ok 4 - the_test\n"],
-            [OUT_ERR, "# xxx\n"],
-        ],
-        "Got tap for failing ok"
-    );
+    warns {
+        is(
+            [$ok->to_tap(4)],
+            [
+                [OUT_STD, "not ok 4 - the_test\n"],
+                [OUT_ERR, "# xxx\n"],
+            ],
+            "Got tap for failing ok"
+        );
+    };
 
     my $state = Test::Stream::State->new;
     $ok->update_state($state);
@@ -163,14 +171,16 @@ tests "Failing TODO" => sub {
         "Got diag"
     );
 
-    is(
-        [$ok->to_tap(4)],
-        [
-            [OUT_STD, "not ok 4 - the_test # TODO A Todo\n"],
-            [OUT_TODO, "# Failed (TODO) test 'the_test'\n# at foo.t line 42.\n"],
-        ],
-        "Got tap for failing ok"
-    );
+    warns {
+        is(
+            [$ok->to_tap(4)],
+            [
+                [OUT_STD, "not ok 4 - the_test # TODO A Todo\n"],
+                [OUT_TODO, "# Failed (TODO) test 'the_test'\n# at foo.t line 42.\n"],
+            ],
+            "Got tap for failing ok"
+        );
+    };
 
     my $state = Test::Stream::State->new;
     $ok->update_state($state);
@@ -195,13 +205,15 @@ tests skip => sub {
     is($ok->effective_pass, 1, "effective pass");
     is($ok->diag, undef, "no diag");
 
-    is(
-        [$ok->to_tap(4)],
-        [
-            [OUT_STD, "ok 4 - the_test # skip A Skip\n"],
-        ],
-        "Got tap for skip"
-    );
+    warns {
+        is(
+            [$ok->to_tap(4)],
+            [
+                [OUT_STD, "ok 4 - the_test # skip A Skip\n"],
+            ],
+            "Got tap for skip"
+        );
+    };
 
     my $state = Test::Stream::State->new;
     $ok->update_state($state);
@@ -261,6 +273,11 @@ describe to_tap => sub {
     my $pass;
     case pass => sub { $pass = 1 };
     case fail => sub { $pass = 0 };
+
+    around_all hide_warnings => sub {
+        local $SIG{__WARN__} = sub { 1 };
+        $_[0]->();
+    };
 
     tests name_and_number => sub {
         my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass, name => 'foo');
