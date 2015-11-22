@@ -7,7 +7,6 @@ use Test::Stream::HashBase accessors => [qw/message/];
 
 use Carp qw/confess/;
 
-use Test::Stream::Formatter::TAP qw/OUT_TODO OUT_ERR/;
 
 sub init {
     $_[0]->SUPER::init();
@@ -17,23 +16,6 @@ sub init {
     else {
         $_[0]->{+MESSAGE} = 'undef';
     }
-}
-
-sub to_tap {
-    my $self = shift;
-
-    my $msg = $self->{+MESSAGE};
-    return unless $msg;
-
-    $msg = "# $msg" unless $msg eq "\n";
-
-    chomp($msg);
-    $msg =~ s/\n/\n# /g;
-
-    return [
-        ($self->{+DEBUG}->no_diag ? OUT_TODO : OUT_ERR),
-        "$msg\n",
-    ];
 }
 
 1;

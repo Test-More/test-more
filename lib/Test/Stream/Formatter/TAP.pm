@@ -11,9 +11,21 @@ sub OUT_STD()  { 0 }
 sub OUT_ERR()  { 1 }
 sub OUT_TODO() { 2 }
 
+use Scalar::Util qw/blessed/;
+
 use Test::Stream::Exporter qw/import exports/;
 exports qw/OUT_STD OUT_ERR OUT_TODO/;
 no Test::Stream::Exporter;
+
+my %CONVERTERS = (
+    'Test::Stream::Event::Ok'        => \&_ok_event,
+    'Test::Stream::Event::Note'      => \&_note_event,
+    'Test::Stream::Event::Diag'      => \&_diag_event,
+    'Test::Stream::Event::Bail'      => \&_bail_event,
+    'Test::Stream::Event::Exception' => \&_exception_event,
+    'Test::Stream::Event::Subtest'   => \&_subtest_event,
+    'Test::Stream::Event::Plan'      => \&_plan_event,
+);
 
 _autoflush(\*STDOUT);
 _autoflush(\*STDERR);
@@ -56,17 +68,11 @@ if ($^C) {
 sub write {
     my ($self, $e, $num) = @_;
 
-    return if $self->{+NO_DIAG}   && $e->isa('Test::Stream::Event::Diag');
-    return if $self->{+NO_HEADER} && $e->isa('Test::Stream::Event::Plan');
-
-    $num = undef if $self->{+NO_NUMBERS};
-    my @tap = $e->to_tap($num);
+    my @tap = $self->event_tap($e, $num) or return;
 
     my $handles = $self->{+HANDLES};
     my $nesting = $e->nested || 0;
     my $indent = '    ' x $nesting;
-
-    return if $nesting && $e->isa('Test::Stream::Event::Bail');
 
     local($\, $", $,) = (undef, ' ', '');
     for my $set (@tap) {
@@ -98,6 +104,176 @@ sub _autoflush {
     $| = 1;
     select $old_fh;
 }
+
+sub event_tap {
+    my $self = shift;
+    my ($e, $num) = @_;
+
+    # Optimization for the most common case of an 'ok' event
+    my $is_ok = index("$e", 'Test::Stream::Event::Ok=' ) == 0;
+    my $converter = $is_ok ? \&_ok_event : $CONVERTERS{blessed($e)};
+
+    $num = undef if $self->{+NO_NUMBERS};
+
+    # Legacy Support for $e->to_tap
+    unless ($converter) {
+        my $legacy = $e->can('to_tap') or return;
+        return if $legacy == \&Test::Stream::Event::to_tap;
+        warn "'$e' implements 'to_tap'. to_tap methods on events are deprecated.\n";
+        return $e->to_tap($num);
+    }
+
+    return $self->$converter($e, $num);
+}
+
+sub _ok_event {
+    my $self = shift;
+    my ($e, $num) = @_;
+
+    # We use direct hash access for performance. OK events are so common we
+    # need this to be fast.
+    my $name  = $e->{name};
+    my $debug = $e->{debug};
+    my $skip  = $debug->{skip};
+    my $todo  = $debug->{todo};
+
+    my $out = "";
+    $out .= "not " unless $e->{pass};
+    $out .= "ok";
+    $out .= " $num" if defined $num;
+    $out .= " - $name" if $name;
+
+    if (defined $skip && defined $todo) {
+        $out .= " # TODO & SKIP";
+        $out .= " $todo" if length $todo;
+    }
+    elsif (defined $todo) {
+        $out .= " # TODO";
+        $out .= " $todo" if length $todo;
+    }
+    elsif (defined $skip) {
+        $out .= " # skip";
+        $out .= " $skip" if length $skip;
+    }
+
+    my @out = [OUT_STD, "$out\n"];
+
+    if ($e->{diag} && @{$e->{diag}}) {
+        my $diag_handle = $debug->no_diag ? OUT_TODO : OUT_ERR;
+
+        for my $diag (@{$e->{diag}}) {
+            chomp(my $msg = $diag);
+
+            $msg = "# $msg" unless $msg =~ m/^\n/;
+            $msg =~ s/\n/\n# /g;
+            push @out => [$diag_handle, "$msg\n"];
+        }
+    }
+
+    return @out;
+}
+
+sub _note_event {
+    my $self = shift;
+    my ($e, $num) = @_;
+
+    chomp(my $msg = $e->message);
+    return unless $msg;
+    $msg = "# $msg" unless $msg =~ m/^\n/;
+    $msg =~ s/\n/\n# /g;
+
+    return [OUT_STD, "$msg\n"];
+}
+
+sub _diag_event {
+    my $self = shift;
+    my ($e, $num) = @_;
+    return if $self->{+NO_DIAG};
+
+    my $msg = $e->message or return;
+
+    $msg = "# $msg" unless $msg eq "\n";
+
+    chomp($msg);
+    $msg =~ s/\n/\n# /g;
+
+    return [
+        ($e->debug->no_diag ? OUT_TODO : OUT_ERR),
+        "$msg\n",
+    ];
+}
+
+sub _bail_event {
+    my $self = shift;
+    my ($e, $num) = @_;
+
+    return if $e->nested;
+
+    return [
+        OUT_STD,
+        "Bail out!  " . $e->reason . "\n",
+    ];
+}
+
+sub _exception_event {
+    my $self = shift;
+    my ($e, $num) = @_;
+    return [ OUT_ERR, $e->error ];
+}
+
+sub _subtest_event {
+    my $self = shift;
+    my ($e, $num) = @_;
+
+    my ($ok, @diag) = $self->_ok_event($e, $num);
+
+    return (
+        $ok,
+        @diag
+    ) unless $e->buffered;
+
+    if ($ENV{HARNESS_IS_VERBOSE}) {
+        $_->[1] =~ s/^/    /mg for @diag;
+    }
+
+    $ok->[1] =~ s/\n/ {\n/;
+
+    my $count = 0;
+    my @subs = map {
+        $count++ if $_->isa('Test::Stream::Event::Ok');
+        map { $_->[1] =~ s/^/    /mg; $_ } $self->event_tap($_, $count);
+    } @{$e->subevents};
+
+    return (
+        $ok,
+        @diag,
+        @subs,
+        [OUT_STD(), "}\n"],
+    );
+}
+
+sub _plan_event {
+    my $self = shift;
+    my ($e, $num) = @_;
+
+    return if $self->{+NO_HEADER};
+
+    my $max       = $e->max;
+    my $directive = $e->directive;
+    my $reason    = $e->reason;
+
+    return if $directive && $directive eq 'NO PLAN';
+
+    my $plan = "1..$max";
+    if ($directive) {
+        $plan .= " # $directive";
+        $plan .= " $reason" if defined $reason;
+    }
+
+    return [OUT_STD, "$plan\n"];
+}
+
+
 
 1;
 
@@ -181,6 +357,33 @@ This directly modifies the stored filehandles, it does not create new ones.
 =item $tap->write($e, $num)
 
 Write an event to the console.
+
+=item Test::Stream::Formatter::TAP->register_event($pkg, sub { ... });
+
+In general custom events are not supported. There are however occasions where
+you might want to write a custom event type that results in TAP output. In
+order to do this you use the C<register_event()> class method.
+
+    package My::Event;
+    use Test::Stream::Formatter::TAP qw/OUT_STD OUT_ERR/;
+
+    use base 'Test::Stream::Event';
+    use Test::Stream::HashBase accessors => [qw/pass name diag note/];
+
+    Test::Stream::Formatter::TAP->register_event(
+        __PACKAGE__,
+        sub {
+            my $self = shift;
+            my ($e, $num) = @_;
+            return (
+                [OUT_STD, "ok $num - " . $e->name . "\n"],
+                [OUT_ERR, "# " . $e->name . " " . $e->diag . "\n"],
+                [OUT_STD, "# " . $e->name . " " . $e->note . "\n"],
+            );
+        }
+    );
+
+    1;
 
 =back
 

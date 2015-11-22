@@ -2,18 +2,8 @@ package Test::Stream::Event::Bail;
 use strict;
 use warnings;
 
-use Test::Stream::Formatter::TAP qw/OUT_STD/;
-
 use base 'Test::Stream::Event';
 use Test::Stream::HashBase accessors => [qw/reason/];
-
-sub to_tap {
-    my $self = shift;
-    return [
-        OUT_STD,
-        "Bail out!  " . $self->reason . "\n",
-    ];
-}
 
 sub update_state {
     my $self = shift;

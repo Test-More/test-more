@@ -5,8 +5,6 @@ use warnings;
 use Scalar::Util qw/blessed/;
 use Carp qw/confess/;
 
-use Test::Stream::Formatter::TAP qw/OUT_STD/;
-
 use base 'Test::Stream::Event::Ok';
 use Test::Stream::HashBase accessors => [qw/subevents buffered/];
 
@@ -14,37 +12,6 @@ sub init {
     my $self = shift;
     $self->SUPER::init();
     $self->{+SUBEVENTS} ||= [];
-}
-
-sub to_tap {
-    my $self = shift;
-    my ($num) = @_;
-
-    my ($ok, @diag) = $self->SUPER::to_tap($num);
-
-    return (
-        $ok,
-        @diag
-    ) unless $self->{+BUFFERED};
-
-    if ($ENV{HARNESS_IS_VERBOSE}) {
-        $_->[1] =~ s/^/    /mg for @diag;
-    }
-
-    $ok->[1] =~ s/\n/ {\n/;
-
-    my $count = 0;
-    my @subs = map {
-        $count++ if $_->isa('Test::Stream::Event::Ok');
-        map { $_->[1] =~ s/^/    /mg; $_ } $_->to_tap($count);
-    } @{$self->{+SUBEVENTS}};
-
-    return (
-        $ok,
-        @diag,
-        @subs,
-        [OUT_STD(), "}\n"],
-    );
 }
 
 1;

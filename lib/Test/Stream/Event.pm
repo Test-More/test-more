@@ -32,10 +32,20 @@ sub init {
 
 sub causes_fail  { 0 }
 
-sub to_tap       {()};
 sub update_state {()};
 sub terminate    {()};
 sub global       {()};
+
+sub to_tap {
+    my $self = shift;
+    my ($num) = @_;
+
+    carp 'Use of $event->to_tap is deprecated';
+
+    require Test::Stream::Formatter::TAP;
+    my $formatter = Test::Stream::Formatter::TAP->new;
+    $formatter->event_tap($self, $num);
+}
 
 1;
 
@@ -138,6 +148,9 @@ This is called after the event has been sent to the formatter in order to
 ensure the event is seen and understood.
 
 =item @output = $e->to_tap($num)
+
+B<***DEPRECATED***> This will be removed in the near future. See
+L<Test::Stream::Formatter::TAP> for TAP production.
 
 This is where you get the chance to produce TAP output. The input argument
 C<$num> will either be the most recent test number, or undefined. The output

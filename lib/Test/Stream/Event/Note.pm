@@ -2,8 +2,6 @@ package Test::Stream::Event::Note;
 use strict;
 use warnings;
 
-use Test::Stream::Formatter::TAP qw/OUT_STD/;
-
 use base 'Test::Stream::Event';
 use Test::Stream::HashBase accessors => [qw/message/];
 
@@ -15,17 +13,6 @@ sub init {
     else {
         $_[0]->{+MESSAGE} = 'undef';
     }
-}
-
-sub to_tap {
-    my $self = shift;
-
-    chomp(my $msg = $self->{+MESSAGE});
-    return unless $msg;
-    $msg = "# $msg" unless $msg =~ m/^\n/;
-    $msg =~ s/\n/\n# /g;
-
-    return [OUT_STD, "$msg\n"];
 }
 
 1;

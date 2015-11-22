@@ -5,7 +5,6 @@ use warnings;
 use base 'Test::Stream::Event';
 use Test::Stream::HashBase accessors => [qw/max directive reason/];
 
-use Test::Stream::Formatter::TAP qw/OUT_STD/;
 use Carp qw/confess/;
 
 my %ALLOWED = (
@@ -35,24 +34,6 @@ sub init {
 
         $_[0]->{+DIRECTIVE} = '';
     }
-}
-
-sub to_tap {
-    my $self = shift;
-
-    my $max       = $self->{+MAX};
-    my $directive = $self->{+DIRECTIVE};
-    my $reason    = $self->{+REASON};
-
-    return if $directive && $directive eq 'NO PLAN';
-
-    my $plan = "1..$max";
-    if ($directive) {
-        $plan .= " # $directive";
-        $plan .= " $reason" if defined $reason;
-    }
-
-    return [OUT_STD, "$plan\n"];
 }
 
 sub update_state {

@@ -28,51 +28,6 @@ sub init {
     $self->debug->throw("'$name' is not a valid name, names must not contain '#' or newlines.")
 }
 
-sub to_tap {
-    my $self = shift;
-    my ($num) = @_;
-
-    my $name  = $self->{+NAME};
-    my $debug = $self->{+DEBUG};
-    my $skip  = $debug->{skip};
-    my $todo  = $debug->{todo};
-
-    my $out = "";
-    $out .= "not " unless $self->{+PASS};
-    $out .= "ok";
-    $out .= " $num" if defined $num;
-    $out .= " - $name" if $name;
-
-    if (defined $skip && defined $todo) {
-        $out .= " # TODO & SKIP";
-        $out .= " $todo" if length $todo;
-    }
-    elsif (defined $todo) {
-        $out .= " # TODO";
-        $out .= " $todo" if length $todo;
-    }
-    elsif (defined $skip) {
-        $out .= " # skip";
-        $out .= " $skip" if length $skip;
-    }
-
-    my @out = [OUT_STD, "$out\n"];
-
-    if ($self->{+DIAG} && @{$self->{+DIAG}}) {
-        my $diag_handle = $debug->no_diag ? OUT_TODO : OUT_ERR;
-
-        for my $diag (@{$self->{+DIAG}}) {
-            chomp(my $msg = $diag);
-
-            $msg = "# $msg" unless $msg =~ m/^\n/;
-            $msg =~ s/\n/\n# /g;
-            push @out => [$diag_handle, "$msg\n"];
-        }
-    }
-
-    return @out;
-}
-
 sub default_diag {
     my $self = shift;
 
@@ -184,6 +139,9 @@ This generates the default diagnostics string:
 =item @sets = $e->to_tap()
 
 =item @sets = $e->to_tap($num)
+
+B<***DEPRECATED***> This will be removed in the near future. See
+L<Test::Stream::Formatter::TAP> for TAP production.
 
 Generate the tap stream for this object. C<@sets> containes 1 or more arrayrefs
 that identify the IO handle to use, and the string that should be sent to it.
