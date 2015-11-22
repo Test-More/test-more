@@ -42,15 +42,18 @@ ok($layers->{utf8}, "Now utf8");
     use base 'Test::Stream::Event';
     use Test::Stream::HashBase accessors => [qw/pass name diag note/];
 
-    sub to_tap {
-        my $self = shift;
-        my ($num) = @_;
-        return (
-            [OUT_STD, "ok $num - " . $self->name . "\n"],
-            [OUT_ERR, "# " . $self->name . " " . $self->diag . "\n"],
-            [OUT_STD, "# " . $self->name . " " . $self->note . "\n"],
-        );
-    }
+    Test::Stream::Formatter::TAP->register_event(
+        __PACKAGE__,
+        sub {
+            my $self = shift;
+            my ($e, $num) = @_;
+            return (
+                [OUT_STD, "ok $num - " . $e->name . "\n"],
+                [OUT_ERR, "# " . $e->name . " " . $e->diag . "\n"],
+                [OUT_STD, "# " . $e->name . " " . $e->note . "\n"],
+            );
+        }
+    );
 }
 
 my ($std, $err);

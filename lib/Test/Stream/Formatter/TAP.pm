@@ -12,6 +12,7 @@ sub OUT_ERR()  { 1 }
 sub OUT_TODO() { 2 }
 
 use Scalar::Util qw/blessed/;
+use Carp qw/croak/;
 
 use Test::Stream::Exporter qw/import exports/;
 exports qw/OUT_STD OUT_ERR OUT_TODO/;
@@ -26,6 +27,16 @@ my %CONVERTERS = (
     'Test::Stream::Event::Subtest'   => \&_subtest_event,
     'Test::Stream::Event::Plan'      => \&_plan_event,
 );
+
+sub register_event {
+    my $class = shift;
+    my ($type, $convert) = @_;
+    croak "Event type is a required argument" unless $type;
+    croak "Event type '$type' already registered" if $CONVERTERS{$type};
+    croak "The second argument to register_event() must be a code reference"
+        unless $convert && ref($convert) eq 'CODE';
+    $CONVERTERS{$type} = $convert;
+}
 
 _autoflush(\*STDOUT);
 _autoflush(\*STDERR);
