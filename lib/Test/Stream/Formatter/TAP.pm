@@ -11,7 +11,6 @@ sub OUT_STD()  { 0 }
 sub OUT_ERR()  { 1 }
 sub OUT_TODO() { 2 }
 
-use Scalar::Util qw/blessed/;
 use Carp qw/croak/;
 
 use Test::Stream::Exporter qw/import exports/;
@@ -120,9 +119,7 @@ sub event_tap {
     my $self = shift;
     my ($e, $num) = @_;
 
-    # Optimization for the most common case of an 'ok' event
-    my $is_ok = index("$e", 'Test::Stream::Event::Ok=' ) == 0;
-    my $converter = $is_ok ? \&_ok_event : $CONVERTERS{blessed($e)};
+    my $converter = $CONVERTERS{ref($e)};
 
     $num = undef if $self->{+NO_NUMBERS};
 
