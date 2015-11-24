@@ -276,9 +276,10 @@ describe events => sub {
             );
         };
 
+        # Deprecated
         tests skip_and_todo => sub {
             $dbg->set_todo('a');
-            $dbg->set_skip('b');
+            warns { $dbg->set_skip('b') };
 
             my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass);
             my @tap = $fmt->event_tap($ok, 7);
@@ -302,8 +303,9 @@ describe events => sub {
             );
         };
 
+        # Deprecated
         tests skip => sub {
-            $dbg->set_skip('b');
+            warns { $dbg->set_skip('b') };
 
             my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass);
             my @tap = $fmt->event_tap($ok, 7);
@@ -315,7 +317,7 @@ describe events => sub {
                 "Got expected output"
             );
 
-            $dbg->set_skip("");
+            warns { $dbg->set_skip("") };
 
             @tap = $fmt->event_tap($ok, 7);
             is(

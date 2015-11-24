@@ -53,7 +53,11 @@ ok($one->no_diag, "no diag");
 ok($one->no_fail, "no fail");
 
 $one->set_todo(undef);
-$one->set_skip(1);
+like(
+    warning { $one->set_skip(1) },
+    qr/Use of 'skip' attribute for DebugInfo is deprecated/,
+    "Got expected warning for deprecated 'skip' attribute"
+);
 ok($one->no_diag, "no diag");
 ok($one->no_fail, "no fail");
 

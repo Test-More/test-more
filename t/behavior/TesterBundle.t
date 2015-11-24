@@ -72,7 +72,6 @@ like(
             prop package => __PACKAGE__;
             prop subname => 'Test::Stream::Plugin::Core::ok';
             prop trace => 'at ' . __FILE__ . ' line ' . $base;
-            prop skip => undef;
             prop todo => undef;
         };
     },
@@ -88,11 +87,9 @@ like(
         event Ok => sub {
             field effective_pass => 1;
             prop todo => 'foo';
-            prop skip => undef;
         };
-        event Ok => sub {
-            field effective_pass => 1;
-            prop skip => 'blah';
+        event Skip => sub {
+            field reason => 'blah';
             prop todo => undef;
         };
         end;

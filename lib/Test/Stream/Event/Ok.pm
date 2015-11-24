@@ -2,12 +2,7 @@ package Test::Stream::Event::Ok;
 use strict;
 use warnings;
 
-use Scalar::Util qw/blessed/;
 use Carp qw/confess/;
-
-use Test::Stream::Formatter::TAP qw/OUT_STD OUT_TODO OUT_ERR/;
-
-use Test::Stream::Event::Diag();
 
 use base 'Test::Stream::Event';
 use Test::Stream::HashBase accessors => [qw/pass effective_pass name diag allow_bad_name/];

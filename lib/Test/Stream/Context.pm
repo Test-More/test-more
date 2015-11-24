@@ -15,7 +15,7 @@ my %LOADED = (
         require "Test/Stream/Event/$_.pm";
         my $pkg = "Test::Stream::Event::$_";
         ( $pkg => $pkg, $_ => $pkg )
-    } qw/Ok Diag Note Plan Bail Exception Waiting/
+    } qw/Ok Diag Note Plan Bail Exception Waiting Skip/
 );
 
 # Stack is ok to cache.
@@ -320,6 +320,12 @@ sub ok {
     $e->set_diag($diag);
 
     $self->{+HUB}->send($e);
+}
+
+sub skip {
+    my $self = shift;
+    my ($name, $reason) = @_;
+    $self->send_event('Skip', name => $name, reason => $reason);
 }
 
 sub note {
@@ -771,6 +777,10 @@ This can be used to send an L<Test::Stream::Event::Plan> event. This event
 usually takes either a number of tests you expect to run. Optionally you can
 set the expected count to 0 and give the 'SKIP' directive with a reason to
 cause all tests to be skipped.
+
+=item $event = $ctx->skip($name, $reason);
+
+Send an L<Test::Stream::Event::Skip> event.
 
 =item $event = $ctx->bail($reason)
 

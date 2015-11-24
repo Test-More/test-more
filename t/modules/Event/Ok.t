@@ -191,9 +191,10 @@ tests "Failing TODO" => sub {
     $dbg->set_todo(undef);
 };
 
+# This is deprecated
 tests skip => sub {
     local $ENV{HARNESS_ACTIVE} = 1;
-    $dbg->set_skip('A Skip');
+    warns { $dbg->set_skip('A Skip') };
     my $ok = Test::Stream::Event::Ok->new(
         debug => $dbg,
         pass  => 1,

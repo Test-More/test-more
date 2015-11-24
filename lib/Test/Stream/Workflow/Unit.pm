@@ -148,7 +148,6 @@ sub debug {
 
     return Test::Stream::DebugInfo->new(
         frame       => [@$self{qw/package file start_line name/}],
-        skip        => $self->meta->{skip},
         detail => "in block '$self->{+NAME}' defined in $self->{+FILE} (Approx) lines $self->{+START_LINE} -> $self->{+END_LINE}",
         $hub->debug_todo,
     );

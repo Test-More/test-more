@@ -405,11 +405,9 @@ like(
     array {
         event Ok => sub {
             call pass => 1;
-            prop skip => undef;
         };
-        event Ok => sub {
-            call pass => 1;
-            prop skip => 'oops';
+        event Skip => sub {
+            call reason => 'oops';
         } for 1 .. 5;
         end;
     },

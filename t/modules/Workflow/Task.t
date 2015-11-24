@@ -115,15 +115,14 @@ $unit->{'~~MOCK~CONTROL~~'}->add( context => $new_ctx );
 
 $one->reset;
 $unit->name('bob');
-$debug->set_skip('foo');
+warns { $debug->set_skip('foo') };
 
 is(
     intercept { $one->run },
     array {
-        event Ok => sub {
-            call name => 'bob';
-            call pass => 1;
-            prop skip => 'foo';
+        event Skip => sub {
+            call name   => 'bob';
+            call reason => 'foo';
         };
         end;
     },
@@ -132,7 +131,7 @@ is(
 is($one->stage, $one->STAGE_COMPLETE, "stage set to complete after skip");
 
 $one->reset;
-$debug->set_skip(undef);
+warns { $debug->set_skip(undef) };
 
 $unit->primary(undef);
 is(

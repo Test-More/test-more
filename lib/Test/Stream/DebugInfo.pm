@@ -4,11 +4,32 @@ use warnings;
 
 use Test::Stream::Util qw/get_tid/;
 
-use Carp qw/confess/;
+use Carp qw/confess carp/;
 
 use Test::Stream::HashBase(
-    accessors => [qw/frame todo skip detail pid tid parent_todo/],
+    accessors => [qw/frame detail pid tid skip todo parent_todo/],
 );
+
+BEGIN {
+    my $set = \&set_skip;
+    my $get = \&skip;
+
+    my $new_set = sub {
+        carp "Use of 'skip' attribute for DebugInfo is deprecated";
+        $set->(@_);
+    };
+
+    my $new_get = sub {
+        carp "Use of 'skip' attribute for DebugInfo is deprecated";
+        $get->(@_);
+    };
+
+    no strict 'refs';
+    no warnings 'redefine';
+    *set_skip = $new_set;
+    *skip     = $new_get;
+    *_skip    = $get;
+}
 
 sub init {
     confess "Frame is required"
@@ -16,6 +37,9 @@ sub init {
 
     $_[0]->{+PID} ||= $$;
     $_[0]->{+TID} ||= get_tid();
+
+    $_[0]->alert("Use of 'skip' attribute for DebugInfo is deprecated")
+        if defined $_[0]->{+SKIP};
 }
 
 sub snapshot { bless {%{$_[0]}}, __PACKAGE__ };

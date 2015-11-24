@@ -177,9 +177,7 @@ sub skip {
     my ($why, $num) = @_;
     $num ||= 1;
     my $ctx = context();
-    $ctx->debug->set_skip($why);
-    $ctx->ok(1, "skipped test") for 1 .. $num;
-    $ctx->debug->set_skip(undef);
+    $ctx->skip("skipped test", $why) for 1 .. $num;
     $ctx->release;
     no warnings 'exiting';
     last SKIP;

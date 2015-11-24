@@ -19,6 +19,7 @@ no Test::Stream::Exporter;
 
 my %CONVERTERS = (
     'Test::Stream::Event::Ok'        => \&_ok_event,
+    'Test::Stream::Event::Skip'      => \&_skip_event,
     'Test::Stream::Event::Note'      => \&_note_event,
     'Test::Stream::Event::Diag'      => \&_diag_event,
     'Test::Stream::Event::Bail'      => \&_bail_event,
@@ -142,8 +143,8 @@ sub _ok_event {
     # need this to be fast.
     my $name  = $e->{name};
     my $debug = $e->{debug};
-    my $skip  = $debug->{skip};
     my $todo  = $debug->{todo};
+    my $skip  = $debug->{skip}; # Deprecated
 
     my $out = "";
     $out .= "not " unless $e->{pass};
@@ -179,6 +180,24 @@ sub _ok_event {
     }
 
     return @out;
+}
+
+sub _skip_event {
+    my $self = shift;
+    my ($e, $num) = @_;
+
+    my $name  = $e->name;
+    my $debug = $e->debug;
+    my $skip  = $e->reason;
+    my $todo  = $debug->todo;
+
+    my $out = "ok";
+    $out .= " $num" if defined $num;
+    $out .= " - $name" if $name;
+    $out .= " # skip";
+    $out .= " $skip" if length $skip;
+
+    return([OUT_STD, "$out\n"]);
 }
 
 sub _note_event {

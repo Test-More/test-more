@@ -68,12 +68,6 @@ like(
     "got a todo event"
 );
 
-{
-    local $unit->meta->{skip} = "this is a skip";
-    my $ctx = $unit->context;
-    is($ctx->debug->skip, 'this is a skip', "skip is set");
-}
-
 like(
     dies { CLASS->new() },
     qr/name is a required attribute/,
