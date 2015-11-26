@@ -3,14 +3,14 @@ use strict;
 use warnings;
 
 use Test::Stream::Exporter qw/import default_exports/;
-default_exports qw/is is_deeply isnt like unlike/;
+default_exports qw/is is_deeply isnt like unlike isa_ok/;
 no Test::Stream::Exporter;
 
-use Scalar::Util qw/blessed/;
+use Scalar::Util qw/blessed reftype/;
 
 use Test::Stream::Compare qw/-all/;
 use Test::Stream::Context qw/context/;
-use Test::Stream::Util qw/rtype/;
+use Test::Stream::Util qw/rtype render_ref protect/;
 
 use Test::Stream::Compare::String();
 use Test::Stream::Compare::Pattern();
@@ -139,6 +139,38 @@ sub is_deeply($$;$@) {
     return !$delta;
 }
 
+sub isa_ok($;@) {
+    my ($thing, @items) = @_;
+    my $ctx = context();
+
+    my $file = $ctx->debug->file;
+    my $line = $ctx->debug->line;
+
+    my $name = render_ref($thing);
+    my $type = reftype($thing) || "";
+
+    my @bad;
+
+    for my $item (@items) {
+        next if $item eq $type;
+        my $bool;
+        protect { eval qq/#line $line "$file"\n\$bool = \$thing->isa(\$item); 1/ };
+        next if $bool;
+    
+        push @bad => $item;
+    }
+
+    $ctx->ok(
+        !@bad,
+        @items == 1 ? "$name\->isa('$items[0]')" : "$name\->isa(...)",
+        [map { "Failed: $name\->isa('$_')" } @bad],
+    );
+
+    $ctx->release;
+
+    return !@bad;
+}
+
 1;
 
 __END__
@@ -237,6 +269,11 @@ note that this tool considers C<"1"> and C<"1.0"> to not be equal as it uses a
 string comparison.
 
 This is the same as C<Test::Stream::Plugin::Compare::is()>.
+
+=item $bool = isa_ok($thing, @types)
+
+Check if C<< $thing->isa($type) >> for each type. You can also check if a
+reference is a specific ref type.
 
 =back
 

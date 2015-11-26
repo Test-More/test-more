@@ -301,6 +301,8 @@ sub rtype {
 sub render_ref {
     my ($in) = @_;
 
+    return 'undef' unless defined($in);
+
     my $type = rtype($in);
     return "$in" unless $type;
 

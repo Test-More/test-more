@@ -243,14 +243,6 @@ like(
     sub DOES { croak 'oops' };
 }
 
-my $file = __FILE__;
-my $line = __LINE__ + 2;
-like(
-    dies { isa_ok('XYZ', 'foo') },
-    qr/oops at \Q$file\E line $line/,
-    "Exception reports correctly"
-);
-
 {
     package My::String;
     use overload '""' => sub { "xxx\nyyy" };
@@ -263,6 +255,7 @@ like(
         isa_ok('X', qw/axe box fox/);
         can_ok('X', qw/axe box fox/);
         DOES_ok('X', qw/axe box fox/);
+        isa_ok($str, 'My::String');
 
         isa_ok('X',  qw/foo bar axe box/);
         can_ok('X',  qw/foo bar axe box/);
@@ -271,11 +264,16 @@ like(
         isa_ok($str, 'X');
         can_ok($str, 'X');
         DOES_ok($str, 'X') if Object->can('DOES');
+
+        isa_ok(undef, 'X');
+        isa_ok('', 'X');
+        isa_ok({}, 'X');
     },
     array {
         event Ok => { pass => 1, name => 'X->isa(...)' };
         event Ok => { pass => 1, name => 'X->can(...)' };
         event Ok => { pass => 1, name => 'X->DOES(...)' };
+        event Ok => { pass => 1, name => qr/My::String=.*->isa\('My::String'\)/ };
 
         event Ok => sub {
             call pass => 0;
@@ -323,6 +321,30 @@ like(
                 qr/Failed: My::String=HASH\(.*\)->DOES\('X'\)/,
             ];
         } if Object->can('DOES');
+
+        event Ok => sub {
+            call pass => 0;
+            call diag => [
+                qr/Failed/,
+                qr/Failed: undef->isa\('X'\)/,
+            ];
+        };
+
+        event Ok => sub {
+            call pass => 0;
+            call diag => [
+                qr/Failed/,
+                qr/Failed: ->isa\('X'\)/,
+            ];
+        };
+
+        event Ok => sub {
+            call pass => 0;
+            call diag => [
+                qr/Failed/,
+                qr/Failed: HASH\(.*\)->isa\('X'\)/,
+            ];
+        };
 
         end;
     },
@@ -508,7 +530,8 @@ cmp_ok('x', 'eq', 'x', 'string pass');
 cmp_ok(5, '==', 5, 'number pass');
 cmp_ok(5, '==', 5.0, 'float pass');
 
-$line = __LINE__ + 2;
+my $file = __FILE__;
+my $line = __LINE__ + 2;
 like(
     warns { cmp_ok(undef, '==', undef, 'undef pass') },
     [

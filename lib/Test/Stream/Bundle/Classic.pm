@@ -10,10 +10,10 @@ sub plugins {
             IPC
             TAP
             ExitSummary
-            Core
             Subtest
         },
-        Classic => [qw/is is_deeply like unlike isnt/],
+        Core => ['-all', '!isa_ok'],
+        Classic => [qw/is is_deeply like unlike isnt isa_ok/],
     );
 }
 

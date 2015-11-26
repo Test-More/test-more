@@ -71,4 +71,24 @@ is_deeply(
 my $foo = bless({}, 'Foo');
 like($foo, qr/xxx/, "overload");
 
+my $thing = bless {}, 'Foo::Bar';
+isa_ok($thing, 'Foo::Bar', 'HASH');
+
+is_deeply(
+    intercept {
+        isa_ok($thing, 'Foo::Baz', 'ARRAY');
+    },
+    array {
+        event Ok => {
+            pass => 0,
+            diag => [
+                match qr/Failed test/,
+                match qr/->isa\('Foo::Baz'\)/,
+                match qr/->isa\('ARRAY'\)/,
+            ],
+        };
+    },
+    "Got failures"
+);
+
 done_testing;

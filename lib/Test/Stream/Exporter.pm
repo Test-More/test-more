@@ -57,6 +57,7 @@ sub export_to {
     my $exports = $meta->exports;
 
     my @imports;
+    my %exclude;
     if ($args && @$args) {
         my %seen;
         my $all = 0;
@@ -70,6 +71,9 @@ sub export_to {
                 my $tag = $1;
                 $all++ if $tag eq 'all';
                 $def++ if $tag eq 'default';
+            }
+            elsif ($item =~ m/^!(.*)$/) {
+                $exclude{$1}++;
             }
             else {
                 push @imports => $item;
@@ -101,6 +105,8 @@ sub export_to {
 
             $name = join '' => $prefix, $infix, $postfix;
         }
+
+        next if $exclude{$export};
 
         no strict 'refs';
         *{"$dest\::$name"} = $ref;

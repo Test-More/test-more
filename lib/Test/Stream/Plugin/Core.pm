@@ -185,6 +185,10 @@ sub skip {
     last SKIP;
 }
 
+# For easier grepping
+# sub isa_ok  is defined here
+# sub can_ok  is defined here
+# sub DOES_ok is defined here
 BEGIN {
     for my $op (qw/isa can DOES/) {
         my $sub = sub($;@) {
@@ -197,7 +201,7 @@ BEGIN {
             my @bad;
             for my $item (@items) {
                 my $bool;
-                protect { eval qq/#line $line "$file"\n\$bool = \$thing->$op(\$item); 1/ || die $@ };
+                protect { eval qq/#line $line "$file"\n\$bool = \$thing->$op(\$item); 1/ };
                 next if $bool;
 
                 push @bad => $item;
@@ -224,16 +228,17 @@ sub ref_ok($;$$) {
     my ($thing, $wanttype, $name) = @_;
     my $ctx = context();
 
+    my $gotname = render_ref($thing);
     my $gottype = reftype($thing);
 
     if (!$gottype) {
-        $ctx->ok(0, $name, ["'$thing' is not a reference"]);
+        $ctx->ok(0, $name, ["'$gotname' is not a reference"]);
         $ctx->release;
         return 0;
     }
 
     if ($wanttype && $gottype ne $wanttype) {
-        $ctx->ok(0, $name, ["'$thing' is not a '$wanttype' reference"]);
+        $ctx->ok(0, $name, ["'$gotname' is not a '$wanttype' reference"]);
         $ctx->release;
         return 0;
     }
