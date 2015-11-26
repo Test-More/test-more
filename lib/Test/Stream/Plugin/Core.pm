@@ -203,10 +203,12 @@ BEGIN {
                 push @bad => $item;
             }
 
+            my $name = render_ref($thing);
+
             $ctx->ok(
                 !@bad,
-                @items == 1 ? "$thing\->$op('$items[0]')" : "$thing\->$op(...)",
-                [map { "Failed: $thing\->$op('$_')" } @bad],
+                @items == 1 ? "$name\->$op('$items[0]')" : "$name\->$op(...)",
+                [map { "Failed: $name\->$op('$_')" } @bad],
             );
 
             $ctx->release;

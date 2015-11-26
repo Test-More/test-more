@@ -251,8 +251,15 @@ like(
     "Exception reports correctly"
 );
 
+{
+    package My::String;
+    use overload '""' => sub { "xxx\nyyy" };
+}
+
 like(
     intercept {
+        my $str = bless {}, 'My::String';
+
         isa_ok('X', qw/axe box fox/);
         can_ok('X', qw/axe box fox/);
         DOES_ok('X', qw/axe box fox/);
@@ -260,6 +267,10 @@ like(
         isa_ok('X',  qw/foo bar axe box/);
         can_ok('X',  qw/foo bar axe box/);
         DOES_ok('X', qw/foo bar axe box/);
+
+        isa_ok($str, 'X');
+        can_ok($str, 'X');
+        DOES_ok($str, 'X');
     },
     array {
         event Ok => { pass => 1, name => 'X->isa(...)' };
@@ -290,6 +301,29 @@ like(
                 "Failed: X->DOES('bar')",
             ];
         };
+
+        event Ok => sub {
+            call pass => 0;
+            call diag => [
+                qr/Failed/,
+                qr/Failed: My::String=HASH\(.*\)->isa\('X'\)/,
+            ];
+        };
+        event Ok => sub {
+            call pass => 0;
+            call diag => [
+                qr/Failed/,
+                qr/Failed: My::String=HASH\(.*\)->can\('X'\)/,
+            ];
+        };
+        event Ok => sub {
+            call pass => 0;
+            call diag => [
+                qr/Failed/,
+                qr/Failed: My::String=HASH\(.*\)->DOES\('X'\)/,
+            ];
+        };
+
         end;
     },
     "'can/isa/DOES_ok' events"
