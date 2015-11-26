@@ -389,8 +389,10 @@ sub convert {
         if $type eq 'HASH';
 
     unless ($strict) {
-        return Test::Stream::Compare::Pattern->new(pattern => $thing)
-            if $type eq 'REGEXP';
+        return Test::Stream::Compare::Pattern->new(
+            pattern       => $thing,
+            stringify_got => 1,
+        ) if $type eq 'REGEXP';
 
         return Test::Stream::Compare::Custom->new(code => $thing)
             if $type eq 'CODE';
@@ -551,6 +553,7 @@ sub references will be used as validators. If you provide a regex using
 C<qr/.../>, the regex itself will be used to validate the corresponding value
 in the C<$got> structure. The same is true for coderefs, the value is passed in
 as the first argument (and in C<$_>) and the sub should return a boolean value.
+In this tool regexes will stringify the thing they are checking.
 
     like(
         $some_hash,
@@ -682,11 +685,13 @@ Verify that the value matches the given number using the C<==> operator.
 
 =item $check = match qr/.../
 
-Verify that the value matches the regex pattern.
+Verify that the value matches the regex pattern. This form of pattern check
+will B<NOT> stringify references being checked.
 
 =item $check = mismatch qr/.../
 
-Verify that the value does not match the regex pattern.
+Verify that the value does not match the regex pattern. This form of pattern
+check will B<NOT> stringify references being checked.
 
 =item $check = validator(sub{ ... })
 

@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use base 'Test::Stream::Compare';
-use Test::Stream::HashBase accessors => [qw/pattern negate/];
+use Test::Stream::HashBase accessors => [qw/pattern negate stringify_got/];
 
 use Carp qw/croak/;
 
@@ -11,6 +11,8 @@ sub init {
     my $self = shift;
 
     croak "'pattern' is a required attribute" unless $self->{+PATTERN};
+
+    $self->{+STRINGIFY_GOT} ||= 0;
 
     $self->SUPER::init();
 }
@@ -24,8 +26,8 @@ sub verify {
     my ($got, $exists) = @params{qw/got exists/};
 
     return 0 unless $exists;
-    return 0 if ref $got;
     return 0 unless defined($got);
+    return 0 if ref $got && !$self->stringify_got;
 
     return $got !~ $self->{+PATTERN}
         if $self->{+NEGATE};

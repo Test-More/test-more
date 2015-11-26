@@ -10,7 +10,7 @@ use Test::Stream(
     ]
 );
 
-imported_ok(qw/is is_deeply/);
+imported_ok(qw/is is_deeply like/);
 
 my $ref = {};
 
@@ -63,5 +63,12 @@ is_deeply(
     {foo => 1, bar => 'baz'},
     "Deep compare"
 );
+
+{
+    package Foo;
+    use overload '""' => sub { 'xxx' };
+}
+my $foo = bless({}, 'Foo');
+like($foo, qr/xxx/, "overload");
 
 done_testing;

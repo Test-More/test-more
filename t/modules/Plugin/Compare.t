@@ -6,6 +6,11 @@ use Data::Dumper;
     use overload bool => sub { ${$_[0]} };
 }
 
+{
+    package My::String;
+    use overload '""' => sub { "xxx" };
+}
+
 tests simple => sub {
     imported_ok qw{
         match mismatch validator
@@ -132,6 +137,11 @@ tests like => sub {
 
         def ok => (like([{'a' => 1, 'b' => 2}, 'a'], [{'a' => 1}], "complex pass", 'diag'), 'complex pass');
         def ok => (!like([{'a' => 2, 'b' => 2}, 'a'], [{'a' => 1}], "complex fail", 'diag'), 'complex fail');
+
+        my $str = bless {}, 'My::String';
+        def ok => (like($str, qr/xxx/, 'overload pass'), "overload pass");
+        def ok => (!like($str, qr/yyy/, 'overload fail'), "overload fail");
+
     };
 
     do_def;
@@ -184,6 +194,26 @@ tests like => sub {
                     '| [0]{a} | 2   | eq | 1     |',
                     '+--------+-----+----+-------+',
                     'diag',
+                ];
+            };
+
+            event Ok => sub {
+                call pass => T();
+                call name => 'overload pass';
+                call diag => undef;
+            };
+
+            $rx = qr/yyy/;
+            event Ok => sub {
+                call pass => F();
+                call name => 'overload fail';
+                call diag => [
+                    qr/Failed test 'overload fail'/,
+                    '+-----+----+----------+',
+                    '| GOT | OP | CHECK    |',
+                    '+-----+----+----------+',
+                    "| xxx | =~ | $rx |",
+                    '+-----+----+----------+'
                 ];
             };
 

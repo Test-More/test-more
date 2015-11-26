@@ -106,15 +106,17 @@ sub unlike($$;$@) {
 sub like_convert {
     my ($thing) = @_;
     return Test::Stream::Compare::Pattern->new(
-        pattern => $thing,
+        pattern       => $thing,
+        stringify_got => 1,
     );
 }
 
 sub unlike_convert {
     my ($thing) = @_;
     return Test::Stream::Compare::Pattern->new(
-        negate  => 1,
-        pattern => $thing,
+        negate        => 1,
+        stringify_got => 1,
+        pattern       => $thing,
     );
 }
 
