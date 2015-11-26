@@ -270,7 +270,7 @@ like(
 
         isa_ok($str, 'X');
         can_ok($str, 'X');
-        DOES_ok($str, 'X');
+        DOES_ok($str, 'X') if Object->can('DOES');
     },
     array {
         event Ok => { pass => 1, name => 'X->isa(...)' };
@@ -322,7 +322,7 @@ like(
                 qr/Failed/,
                 qr/Failed: My::String=HASH\(.*\)->DOES\('X'\)/,
             ];
-        };
+        } if Object->can('DOES');
 
         end;
     },

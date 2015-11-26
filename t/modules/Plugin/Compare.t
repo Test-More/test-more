@@ -209,11 +209,11 @@ tests like => sub {
                 call name => 'overload fail';
                 call diag => [
                     qr/Failed test 'overload fail'/,
-                    '+-----+----+----------+',
-                    '| GOT | OP | CHECK    |',
-                    '+-----+----+----------+',
+                    T(),
+                    qr/\| GOT \| OP \| CHECK \s+\|/,
+                    T(),
                     "| xxx | =~ | $rx |",
-                    '+-----+----+----------+'
+                    T(),
                 ];
             };
 
