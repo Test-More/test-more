@@ -368,4 +368,4 @@ Copyright 2015 Chad Granum &lt;exodist7@gmail.com>.
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See `http://www.perl.com/perl/misc/Artistic.html`
+See `http://dev.perl.org/licenses/`
