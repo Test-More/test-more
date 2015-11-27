@@ -50,8 +50,8 @@ generate warnings.
 
 =head1 SYNOPSIS
 
-    # Load the Warnings plugin, and More cause we need that as well.
-    use Test::Stream qw/More Warnings/;
+    # Load the Warnings plugin, and Core cause we need that as well.
+    use Test::Stream qw/Core Warnings/;
 
     # Returns undef if there are no warnings.
     ok(!warns { ... }, "Codeblock did not warn");
