@@ -66,7 +66,7 @@ sub _subtest {
     $hub->listen(sub { push @events => $_[1] });
     $hub->format(undef) if $buffered;
 
-    my $no_diag = $ctx->debug->no_diag;
+    my $no_diag = $parent->get_todo || $parent->parent_todo || $ctx->debug->_no_diag;
     $hub->set_parent_todo($no_diag) if $no_diag;
 
     my ($ok, $err, $finished);
@@ -107,6 +107,7 @@ sub _subtest {
         name => $name,
         buffered  => $buffered,
         subevents => \@events,
+        $parent->_fast_todo,
     );
 
     $e->set_diag([

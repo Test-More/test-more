@@ -11,10 +11,22 @@ sub get_prop_file    { $_[1]->debug->file }
 sub get_prop_line    { $_[1]->debug->line }
 sub get_prop_package { $_[1]->debug->package }
 sub get_prop_subname { $_[1]->debug->subname }
-sub get_prop_todo    { $_[1]->debug->todo }
 sub get_prop_trace   { $_[1]->debug->trace }
 sub get_prop_tid     { $_[1]->debug->tid }
 sub get_prop_pid     { $_[1]->debug->pid }
+
+sub get_prop_todo {
+    my $self = shift;
+    my ($thing) = @_;
+
+    unless ($thing->can('todo')) {
+        my $type = ref($thing);
+        carp "Use of 'todo' property is deprecated for '$type'";
+        return $thing->debug->_todo;    # deprecated
+    }
+
+    return $thing->todo || $thing->debug->_todo;
+}
 
 sub get_prop_skip {
     carp "Use of 'skip' property is deprecated";

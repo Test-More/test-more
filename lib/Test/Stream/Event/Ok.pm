@@ -5,7 +5,9 @@ use warnings;
 use Carp qw/confess/;
 
 use base 'Test::Stream::Event';
-use Test::Stream::HashBase accessors => [qw/pass effective_pass name diag allow_bad_name/];
+use Test::Stream::HashBase accessors => [
+    qw/pass effective_pass name diag allow_bad_name todo diag_todo/
+];
 
 sub init {
     my $self = shift;
@@ -15,7 +17,7 @@ sub init {
     # Do not store objects here, only true or false
     $self->{+PASS} = $self->{+PASS} ? 1 : 0;
 
-    $self->{+EFFECTIVE_PASS} = $self->{+PASS} || $self->{+DEBUG}->no_fail || 0;
+    $self->{+EFFECTIVE_PASS} = ($self->{+PASS} || $self->{+TODO} || $self->{+DEBUG}->_no_fail) ? 1 : 0;
 
     return if $self->{+ALLOW_BAD_NAME};
     my $name = $self->{+NAME} || return;
@@ -31,7 +33,7 @@ sub default_diag {
     my $name  = $self->{+NAME};
     my $dbg   = $self->{+DEBUG};
     my $pass  = $self->{+PASS};
-    my $todo  = defined $dbg->todo;
+    my $todo  = defined($self->{+TODO} || $dbg->_todo);
 
     my $msg = $todo ? "Failed (TODO)" : "Failed";
     my $prefix = $ENV{HARNESS_ACTIVE} && !$ENV{HARNESS_IS_VERBOSE} ? "\n" : "";

@@ -3,10 +3,7 @@ use strict;
 use warnings;
 
 use base 'Test::Stream::Event';
-use Test::Stream::HashBase accessors => [qw/message/];
-
-use Carp qw/confess/;
-
+use Test::Stream::HashBase accessors => [qw/message todo/];
 
 sub init {
     $_[0]->SUPER::init();

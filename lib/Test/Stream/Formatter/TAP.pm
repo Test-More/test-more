@@ -143,7 +143,8 @@ sub _ok_event {
     # need this to be fast.
     my $name  = $e->{name};
     my $debug = $e->{debug};
-    my $todo  = $debug->{todo};
+    my $todo  = $e->{todo};
+    $todo = $debug->{todo} unless defined $todo; # $debug->todo is deprecated
     my $skip  = $debug->{skip}; # Deprecated
 
     my $out = "";
@@ -168,7 +169,7 @@ sub _ok_event {
     my @out = [OUT_STD, "$out\n"];
 
     if ($e->{diag} && @{$e->{diag}}) {
-        my $diag_handle = $debug->no_diag ? OUT_TODO : OUT_ERR;
+        my $diag_handle = ($todo || $e->diag_todo || $debug->_no_diag) ? OUT_TODO : OUT_ERR;
 
         for my $diag (@{$e->{diag}}) {
             chomp(my $msg = $diag);
@@ -189,7 +190,7 @@ sub _skip_event {
     my $name  = $e->name;
     my $debug = $e->debug;
     my $skip  = $e->reason;
-    my $todo  = $debug->todo;
+    my $todo  = $e->todo || $debug->_todo;
 
     my $out = "ok";
     $out .= " $num" if defined $num;
@@ -225,7 +226,7 @@ sub _diag_event {
     $msg =~ s/\n/\n# /g;
 
     return [
-        ($e->debug->no_diag ? OUT_TODO : OUT_ERR),
+        (($e->todo || $e->debug->_no_diag) ? OUT_TODO : OUT_ERR),
         "$msg\n",
     ];
 }

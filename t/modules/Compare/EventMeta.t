@@ -21,12 +21,12 @@ like(
     "Got skip warning"
 );
 
-$Ok->debug->set_todo('a');
-is($one->get_prop_todo($Ok), 'a', "todo (set)");
-
 # Deprecated
 warns {
-    $Ok->debug->set_skip('b'); 
+    $Ok->debug->set_todo('a');
+    is($one->get_prop_todo($Ok), 'a', "todo (set)");
+
+    $Ok->debug->set_skip('b');
     is($one->get_prop_skip($Ok), 'b', "skip (set)");
 };
 
