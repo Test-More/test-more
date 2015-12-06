@@ -73,12 +73,28 @@ sub inherit {
 }
 
 sub debug_todo {
+    carp "The Hub->debug_todo method is deprecated";
+    $_[0]->_debug_todo;
+}
+
+sub _debug_todo {
     my ($self) = @_;
     my $array = $self->{+_TODO};
     pop @$array while @$array && !defined $array->[-1];
     return (
         parent_todo => $self->{+PARENT_TODO},
         todo        => @$array ? ${$array->[-1]} : undef,
+    )
+}
+
+sub _fast_todo {
+    my ($self) = @_;
+    my $array = $self->{+_TODO};
+    pop @$array while @$array && !defined $array->[-1];
+    my $todo = @$array ? ${$array->[-1]} : undef;
+    return (
+        diag_todo => $todo || $self->{+PARENT_TODO},
+        todo      => $todo,
     )
 }
 

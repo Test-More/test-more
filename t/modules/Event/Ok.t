@@ -92,7 +92,7 @@ tests Failing => sub {
             ],
             "Got tap for failing ok with diag non verbose harness"
         );
-    
+
         $ENV{HARNESS_ACTIVE} = 0;
         $ok->set_diag([ $ok->default_diag ]);
         is(
@@ -153,11 +153,11 @@ tests fail_with_diag => sub {
 tests "Failing TODO" => sub {
     local $ENV{HARNESS_ACTIVE} = 1;
     local $ENV{HARNESS_IS_VERBOSE} = 1;
-    $dbg->set_todo('A Todo');
     my $ok = Test::Stream::Event::Ok->new(
         debug => $dbg,
         pass  => 0,
         name  => 'the_test',
+        todo  => 'A Todo',
     );
     isa_ok($ok, 'Test::Stream::Event');
     is($ok->pass, 0, "got pass");
@@ -187,8 +187,6 @@ tests "Failing TODO" => sub {
     is($state->count, 1, "Added to the count");
     is($state->failed, 0, "failed count unchanged");
     is($state->is_passing, 1, "still passing");
-
-    $dbg->set_todo(undef);
 };
 
 # This is deprecated
@@ -221,8 +219,6 @@ tests skip => sub {
     is($state->count, 1, "Added to the count");
     is($state->failed, 0, "failed count unchanged");
     is($state->is_passing, 1, "still passing");
-
-    $dbg->set_todo(undef);
 };
 
 tests init => sub {

@@ -175,15 +175,15 @@ is(@$events, 1, "1 event");
 is($events, [$e], "Hub saw the event");
 pop @$events;
 
-# Test todo
+# Test todo (deprecated)
 my ($dbg1, $dbg2);
 my $todo = Test::Stream::Sync->stack->top->set_todo("Here be dragons");
 wrap { $dbg1 = shift->debug };
 $todo = undef;
 wrap { $dbg2 = shift->debug };
 
-is($dbg1->todo, 'Here be dragons', "Got todo in context created with todo in place");
-is($dbg2->todo, undef, "no todo in context created after todo was removed");
+is($dbg1->_todo, 'Here be dragons', "Got todo in context created with todo in place");
+is($dbg2->_todo, undef, "no todo in context created after todo was removed");
 
 
 # Test hooks

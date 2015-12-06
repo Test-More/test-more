@@ -195,7 +195,7 @@ sub context {
             frame => [$pkg, $file, $line, $sub],
             pid   => $$,
             tid   => get_tid(),
-            $hub->debug_todo,
+            $hub->_debug_todo,
         },
         'Test::Stream::DebugInfo'
     );
@@ -305,21 +305,23 @@ sub ok {
     my $self = shift;
     my ($pass, $name, $diag) = @_;
 
+    my $hub = $self->{+HUB};
+
     my $e = bless {
         debug => bless( {%{$self->{+DEBUG}}}, 'Test::Stream::DebugInfo'),
         pass  => $pass,
         name  => $name,
+        $hub->_fast_todo,
     }, 'Test::Stream::Event::Ok';
     $e->init;
 
-    return $self->{+HUB}->send($e) if $pass;
+    return $hub->send($e) if $pass;
 
     $diag ||= [];
     unshift @$diag => $e->default_diag;
-
     $e->set_diag($diag);
 
-    $self->{+HUB}->send($e);
+    $hub->send($e);
 }
 
 sub skip {
@@ -337,7 +339,12 @@ sub note {
 sub diag {
     my $self = shift;
     my ($message) = @_;
-    $self->send_event('Diag', message => $message);
+    my $hub = $self->{+HUB};
+    $self->send_event(
+        'Diag',
+        message => $message,
+        todo => $hub->get_todo || $hub->parent_todo,
+    );
 }
 
 sub plan {

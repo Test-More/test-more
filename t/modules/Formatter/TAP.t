@@ -132,6 +132,20 @@ describe events => sub {
         );
     };
 
+    my $set_todo;
+    case deprecated_todo => sub {
+        $set_todo = sub {
+            my ($e, $msg) = @_;
+            $e->debug->_set_todo($msg);
+        };
+    };
+    case new_todo => sub {
+        $set_todo = sub {
+            my ($e, $msg) = @_;
+            $e->set_todo($msg);
+        };
+    };
+
     tests bail => sub {
         my $bail = Test::Stream::Event::Bail->new(
             debug => $dbg,
@@ -164,7 +178,7 @@ describe events => sub {
             "Only 1 newline"
         );
 
-        $diag->debug->set_todo('todo');
+        $diag->$set_todo('todo');
         is(
             [$fmt->event_tap($diag, 1)],
             [[OUT_TODO, "# foo\n"]],
@@ -178,7 +192,7 @@ describe events => sub {
             "All lines have proper prefix"
         );
 
-        $diag->debug->set_todo(undef);
+        $diag->$set_todo(undef);
         $diag->set_message("");
         is([$fmt->event_tap($diag)], [], "no tap with an empty message");
 
@@ -278,10 +292,10 @@ describe events => sub {
 
         # Deprecated
         tests skip_and_todo => sub {
-            $dbg->set_todo('a');
             warns { $dbg->set_skip('b') };
 
             my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass);
+            $ok->$set_todo('a');
             my @tap = $fmt->event_tap($ok, 7);
             is(
                 \@tap,
@@ -291,7 +305,7 @@ describe events => sub {
                 "Got expected output"
             );
 
-            $dbg->set_todo("");
+            $ok->$set_todo("");
 
             @tap = $fmt->event_tap($ok, 7);
             is(
@@ -330,9 +344,8 @@ describe events => sub {
         };
 
         tests todo => sub {
-            $dbg->set_todo('b');
-
             my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass);
+            $ok->$set_todo('b');
             my @tap = $fmt->event_tap($ok, 7);
             is(
                 \@tap,
@@ -342,7 +355,7 @@ describe events => sub {
                 "Got expected output"
             );
 
-            $dbg->set_todo("");
+            $ok->$set_todo("");
 
             @tap = $fmt->event_tap($ok, 7);
             is(

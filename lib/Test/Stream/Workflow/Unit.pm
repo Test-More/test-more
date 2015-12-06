@@ -147,9 +147,8 @@ sub debug {
     my $hub   = $stack->top;
 
     return Test::Stream::DebugInfo->new(
-        frame       => [@$self{qw/package file start_line name/}],
+        frame  => [@$self{qw/package file start_line name/}],
         detail => "in block '$self->{+NAME}' defined in $self->{+FILE} (Approx) lines $self->{+START_LINE} -> $self->{+END_LINE}",
-        $hub->debug_todo,
     );
 }
 
