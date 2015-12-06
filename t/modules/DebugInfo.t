@@ -40,25 +40,26 @@ my $snap = $one->snapshot;
 is($snap, $one, "identical");
 ok($snap != $one, "Not the same instance");
 
-ok(!$one->no_diag, "yes diag");
-ok(!$one->no_fail, "yes fail");
 
-$one->set_parent_todo(1);
-ok($one->no_diag, "no diag");
-ok(!$one->no_fail, "yes fail");
+ok(!$one->_no_diag, "yes diag");
+ok(!$one->_no_fail, "yes fail");
 
-$one->set_parent_todo(0);
-$one->set_todo(1);
-ok($one->no_diag, "no diag");
-ok($one->no_fail, "no fail");
+$one->_set_parent_todo(1);
+ok($one->_no_diag, "no diag");
+ok(!$one->_no_fail, "yes fail");
 
-$one->set_todo(undef);
+$one->_set_parent_todo(0);
+$one->_set_todo(1);
+ok($one->_no_diag, "no diag");
+ok($one->_no_fail, "no fail");
+
+$one->_set_todo(undef);
 like(
     warning { $one->set_skip(1) },
     qr/Use of 'skip' attribute for DebugInfo is deprecated/,
     "Got expected warning for deprecated 'skip' attribute"
 );
-ok($one->no_diag, "no diag");
-ok($one->no_fail, "no fail");
+ok($one->_no_diag, "no diag");
+ok($one->_no_fail, "no fail");
 
 done_testing;

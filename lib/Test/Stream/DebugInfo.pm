@@ -11,24 +11,27 @@ use Test::Stream::HashBase(
 );
 
 BEGIN {
-    my $set = \&set_skip;
-    my $get = \&skip;
+    for my $attr (SKIP, TODO, PARENT_TODO) {
+        my $set = __PACKAGE__->can("set_$attr");
+        my $get = __PACKAGE__->can($attr);
 
-    my $new_set = sub {
-        carp "Use of 'skip' attribute for DebugInfo is deprecated";
-        $set->(@_);
-    };
+        my $new_set = sub {
+            carp "Use of '$attr' attribute for DebugInfo is deprecated";
+            $set->(@_);
+        };
 
-    my $new_get = sub {
-        carp "Use of 'skip' attribute for DebugInfo is deprecated";
-        $get->(@_);
-    };
+        my $new_get = sub {
+            carp "Use of '$attr' attribute for DebugInfo is deprecated";
+            $get->(@_);
+        };
 
-    no strict 'refs';
-    no warnings 'redefine';
-    *set_skip = $new_set;
-    *skip     = $new_get;
-    *_skip    = $get;
+        no strict 'refs';
+        no warnings 'redefine';
+        *{"set_$attr"}  = $new_set;
+        *{"$attr"}      = $new_get;
+        *{"_$attr"}     = $get;
+        *{"_set_$attr"} = $set;
+    }
 }
 
 sub init {
@@ -38,8 +41,10 @@ sub init {
     $_[0]->{+PID} ||= $$;
     $_[0]->{+TID} ||= get_tid();
 
-    $_[0]->alert("Use of 'skip' attribute for DebugInfo is deprecated")
-        if defined $_[0]->{+SKIP};
+    for my $attr (SKIP, TODO, PARENT_TODO) {
+        next unless defined $_[0]->{$attr};
+        $_[0]->alert("Use of '$attr' attribute for DebugInfo is deprecated")
+    }
 }
 
 sub snapshot { bless {%{$_[0]}}, __PACKAGE__ };
@@ -72,12 +77,24 @@ sub subname { $_[0]->{+FRAME}->[3] }
 
 sub no_diag {
     my $self = shift;
+    $self->alert("Use of the 'no_diag' method is deprecated");
+    $self->_no_diag(@_);
+}
+
+sub no_fail {
+    my $self = shift;
+    $self->alert("Use of the 'no_fail' method is deprecated");
+    $self->_no_fail(@_);
+}
+
+sub _no_diag {
+    my $self = shift;
     return defined($self->{+TODO})
         || defined($self->{+SKIP})
         || defined($self->{+PARENT_TODO});
 }
 
-sub no_fail {
+sub _no_fail {
     my $self = shift;
     return defined($self->{+TODO})
         || defined($self->{+SKIP});
