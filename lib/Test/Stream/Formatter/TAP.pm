@@ -127,7 +127,13 @@ sub event_tap {
     # Legacy Support for $e->to_tap
     unless ($converter) {
         my $legacy = $e->can('to_tap') or return;
+
+        # Prevent infinite recursion. If an event subclasses 'Event' it has a
+        # to_tap method that brings it back here. We only call to_tap if they
+        # actually provided a custom one. This mess will go away at the end of
+        # the deprecation cycle.
         return if $legacy == \&Test::Stream::Event::to_tap;
+
         warn "'$e' implements 'to_tap'. to_tap methods on events are deprecated.\n";
         return $e->to_tap($num);
     }
@@ -141,11 +147,9 @@ sub _ok_event {
 
     # We use direct hash access for performance. OK events are so common we
     # need this to be fast.
-    my $name  = $e->{name};
-    my $debug = $e->{debug};
-    my $todo  = $e->{todo};
-    $todo = $debug->{todo} unless defined $todo; # $debug->todo is deprecated
-    my $skip  = $debug->{skip}; # Deprecated
+    my ($name, $debug, $todo) = @{$e}{qw/name debug todo/};
+    $todo = $debug->{todo} unless defined $todo;    # $debug->todo is deprecated
+    my $skip = $debug->{skip};                      # Deprecated
 
     my $out = "";
     $out .= "not " unless $e->{pass};
@@ -187,16 +191,15 @@ sub _skip_event {
     my $self = shift;
     my ($e, $num) = @_;
 
-    my $name  = $e->name;
-    my $debug = $e->debug;
-    my $skip  = $e->reason;
-    my $todo  = $e->todo || $debug->_todo;
+    my $name   = $e->name;
+    my $reason = $e->reason;
+    my $todo   = $e->todo || $e->debug->_todo;
 
     my $out = "ok";
     $out .= " $num" if defined $num;
     $out .= " - $name" if $name;
     $out .= " # skip";
-    $out .= " $skip" if length $skip;
+    $out .= " $reason" if length $reason;
 
     return([OUT_STD, "$out\n"]);
 }
@@ -286,13 +289,12 @@ sub _plan_event {
 
     return if $self->{+NO_HEADER};
 
-    my $max       = $e->max;
     my $directive = $e->directive;
-    my $reason    = $e->reason;
-
     return if $directive && $directive eq 'NO PLAN';
 
-    my $plan = "1..$max";
+    my $reason = $e->reason;
+
+    my $plan = "1.." . $e->max;
     if ($directive) {
         $plan .= " # $directive";
         $plan .= " $reason" if defined $reason;
@@ -300,8 +302,6 @@ sub _plan_event {
 
     return [OUT_STD, "$plan\n"];
 }
-
-
 
 1;
 

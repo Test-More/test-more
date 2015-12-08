@@ -113,12 +113,12 @@ sub run {
     return unless $self->should_run;
 
     my $unit = $self->{+UNIT};
-    my $ctx = $unit->context;
+    my $ctx  = $unit->context;
     my $meta = $unit->meta;
+    my $skip = $meta ? $meta->{skip} : undef;
 
-    my $skip;
-    $skip = $meta->{skip} if $meta && defined $meta->{skip};
-    $skip ||= $ctx->debug->_skip; # Private accessor for deprecated thing, just until it goes away
+    # Private accessor for deprecated thing, just until it goes away
+    $skip ||= $ctx->debug->_skip;
 
     # Skip?
     if ($skip) {
