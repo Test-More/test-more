@@ -2,259 +2,55 @@ package Test::Stream::Sync;
 use strict;
 use warnings;
 
-use Carp qw/confess croak/;
-use Scalar::Util qw/reftype blessed/;
+use Carp qw/croak/;
 
-use Test::Stream::Capabilities qw/CAN_FORK/;
-use Test::Stream::Util qw/get_tid USE_THREADS pkg_to_file/;
+use Test::Stream::SyncObj;
 
-use Test::Stream::DebugInfo();
-use Test::Stream::Stack();
+my $INST = Test::Stream::SyncObj->new;
 
-# This package is NOT an object. It is global in nature and I don't want people
-# fscking with it. It is small, with only the following variables. These are
-# lexicals on purpose to prevent anyone from touching them directly.
-# I know this may seem awful, but thats why this package is so small, this is
-# the only place I need to lock down. This is to prevent people from doing some
-# of the awful things they did with Test::Builder.
-my $PID       = $$;
-my $TID       = get_tid();
-my $NO_WAIT   = 0;
-my $INIT      = undef;
-my $IPC       = undef;
-my $STACK     = undef;
-my $FORMAT    = undef;
-my @HOOKS     = ();
-my $LOADED    = 0;
-my @POST_LOAD = ();
+sub pid       { $INST->pid }
+sub tid       { $INST->tid }
+sub stack     { $INST->stack }
+sub ipc       { $INST->ipc }
+sub formatter { $INST->format }
+sub init_done { $INST->finalized }
 
-# The only valid reason to touch these internals is to test them. As such the
-# internals can be exposed if the package is loaded from itself, and even then
-# it warns in-case someone tries to do it for the wrong reasons.
-# This must ONLY be used in the unit tests for this package.
-{
-    my $caller = caller || '';
-    if ($caller eq __PACKAGE__) {
-        warn "Enabling Test::Stream::Sync debug features, this is normally not desired!";
-
-        *GUTS = sub {
-            return {
-                PID       => \$PID,
-                TID       => \$TID,
-                NO_WAIT   => \$NO_WAIT,
-                INIT      => \$INIT,
-                IPC       => \$IPC,
-                STACK     => \$STACK,
-                FORMAT    => \$FORMAT,
-                HOOKS     => \@HOOKS,
-                LOADED    => \$LOADED,
-                POST_LOAD => \@POST_LOAD,
-            };
-        };
-
-        *GUTS_SNAPSHOT = sub {
-            return {
-                PID       => $PID,
-                TID       => $TID,
-                NO_WAIT   => $NO_WAIT,
-                INIT      => $INIT,
-                IPC       => $IPC,
-                STACK     => $STACK,
-                FORMAT    => $FORMAT,
-                HOOKS     => [@HOOKS],
-                LOADED    => $LOADED,
-                POST_LOAD => [@POST_LOAD],
-            };
-        };
-    }
-}
-
-sub pid { $PID }
-sub tid { $TID }
-
-sub hooks      { scalar @HOOKS }
-sub post_loads { scalar @POST_LOAD }
-
-sub init_done { $INIT ? 1 : 0 }
+sub hooks      { scalar @{$INST->exit_hooks} }
+sub post_loads { scalar @{$INST->post_load_hooks} }
 
 sub post_load {
     my $class = shift;
-    my ($code) = @_;
-    return $code->() if $LOADED;
-    push @POST_LOAD => $code;
+    $INST->add_post_load_hook(@_);
 }
 
 sub loaded {
     my $class = shift;
-
-    return $LOADED if $LOADED || !@_;
-
-    if ($_[0]) {
-        $LOADED = 1;
-        $_->() for @POST_LOAD;
-    }
-
-    return $LOADED
-}
-
-sub _init {
-    $INIT  = [caller(1)];
-    $STACK = Test::Stream::Stack->new;
-
-    unless ($FORMAT) {
-        my ($name, $source);
-        if ($ENV{TS_FORMATTER}) {
-            $name = $ENV{TS_FORMATTER};
-            $source = "set by the 'TS_FORMATTER' environment variable";
-        }
-        else {
-            $name = 'TAP';
-            $source = 'default formatter';
-        }
-
-        my $mod = $name;
-        $mod = "Test::Stream::Formatter::$mod"
-            unless $mod =~ s/^\+//;
-
-        my $file = pkg_to_file($mod);
-        unless (eval { require $file; 1 }) {
-            my $err = $@;
-            my $line = "* COULD NOT LOAD FORMATTER '$name' ($source) *";
-            my $border = '*' x length($line);
-            die "\n\n  $border\n  $line\n  $border\n\n$err";
-        }
-
-        $FORMAT = $mod;
-    }
-
-    return unless $INC{'Test/Stream/IPC.pm'};
-    $IPC = Test::Stream::IPC->init;
+    my $loaded = $INST->loaded;
+    return $loaded if $loaded || !$_[0];
+    $INST->load;
 }
 
 sub add_hook {
     my $class = shift;
-    my ($code) = @_;
-    my $rtype = reftype($code) || "";
-    confess "End hooks must be coderefs"
-        unless $code && $rtype eq 'CODE';
-    push @HOOKS => $code;
-}
-
-sub stack {
-    return $STACK if $INIT;
-    _init();
-    $STACK;
-}
-
-sub ipc {
-    return $IPC if $INIT;
-    _init();
-    $IPC;
+    $INST->add_exit_hook(@_);
 }
 
 sub set_formatter {
-    my $self = shift;
-    croak "Global Formatter already set" if $FORMAT;
-    $FORMAT = pop or croak "No formatter specified";
-}
-
-sub formatter {
-    return $FORMAT if $INIT;
-    _init();
-    $FORMAT;
+    my $class = shift;
+    my ($format) = @_;
+    croak "No formatter specified" unless $format;
+    croak "Global Formatter already set" if $INST->format_set;
+    $INST->set_format($format);
 }
 
 sub no_wait {
     my $class = shift;
-    ($NO_WAIT) = @_ if @_;
-    $NO_WAIT;
-}
-
-sub _ipc_wait {
-    my $fail = 0;
-
-    while (CAN_FORK) {
-        my $pid = CORE::wait();
-        my $err = $?;
-        last if $pid == -1;
-        next unless $err;
-        $fail++;
-        $err = $err >> 8;
-        warn "Process $pid did not exit cleanly (status: $err)\n";
-    }
-
-    if (USE_THREADS) {
-        for my $t (threads->list()) {
-            $t->join;
-            # In older threads we cannot check if a thread had an error unless
-            # we control it and its return.
-            my $err = $t->can('error') ? $t->error : undef;
-            next unless $err;
-            my $tid = $t->tid();
-            $fail++;
-            chomp($err);
-            warn "Thread $tid did not end cleanly: $err\n";
-        }
-    }
-
-    return 0 unless $fail;
-    return 255;
+    $INST->set_no_wait(@_) if @_;
+    $INST->no_wait;
 }
 
 # Set the exit status
-END { _set_exit() }
-sub _set_exit {
-    my $exit     = $?;
-    my $new_exit = $exit;
-
-    if ($PID != $$ or $TID != get_tid()) {
-        $? = $exit;
-        return;
-    }
-
-    my @hubs = $STACK ? $STACK->all : ();
-
-    if (@hubs and $IPC and !$NO_WAIT) {
-        local $?;
-        my %seen;
-        for my $hub (reverse @hubs) {
-            my $ipc = $hub->ipc or next;
-            next if $seen{$ipc}++;
-            $ipc->waiting();
-        }
-
-        my $ipc_exit = _ipc_wait();
-        $new_exit ||= $ipc_exit;
-    }
-
-    # None of this is necessary if we never got a root hub
-    if(my $root = shift @hubs) {
-        my $dbg = Test::Stream::DebugInfo->new(
-            frame  => [__PACKAGE__, __FILE__, 0, 'Test::Stream::Context::END'],
-            detail => 'Test::Stream::Context END Block finalization',
-        );
-        my $ctx = Test::Stream::Context->new(
-            debug => $dbg,
-            hub   => $root,
-        );
-
-        if (@hubs) {
-            $ctx->diag("Test ended with extra hubs on the stack!");
-            $new_exit  = 255;
-        }
-
-        unless ($root->no_ending) {
-            local $?;
-            $root->finalize($dbg) unless $root->state->ended;
-            $_->($ctx, $exit, \$new_exit) for @HOOKS;
-            $new_exit ||= $root->state->failed;
-        }
-    }
-
-    $new_exit = 255 if $new_exit > 255;
-
-    $? = $new_exit;
-}
+END { $INST->set_exit() }
 
 1;
 
@@ -274,6 +70,19 @@ lives.
 B<The internals of this package are subject to change at any time!> The public
 methods provided will not change in backwords incompatible ways, but the
 underlying implementation details might. B<Do not break encapsulation here!>
+
+Currently the implementation is to create a single instance of the
+L<Test::Stream::SyncObj> Object. All class methods defer to the single
+instance. There is no public access to the singleton, and that is intentional.
+The class methods provided by this package provide the only functionality
+publicly exposed.
+
+This is done primarily to avoid the problems Test::Builder had by exposing its
+singleton. We do not want anyone to replace this singleton, rebless it, or
+directly muck with its internals. If you need to do something, and cannot
+because of the restrictions placed here then please report it as an issue. If
+possible we will create a way for you to implement your functionality without
+exposing things that should not be exposed.
 
 =head1 DESCRIPTION
 

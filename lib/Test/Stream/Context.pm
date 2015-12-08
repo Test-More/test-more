@@ -157,8 +157,16 @@ sub do_in_context {
     die $err unless $ok;
 }
 
+my $LOADED = 0;
 sub context {
     my %params = (level => 0, wrapped => 0, @_);
+
+    # If something is getting a context then the sync system needs to be
+    # considered loaded...
+    unless($LOADED) {
+        $LOADED++;
+        Test::Stream::Sync->loaded(1);
+    }
 
     croak "context() called, but return value is ignored"
         unless defined wantarray;
