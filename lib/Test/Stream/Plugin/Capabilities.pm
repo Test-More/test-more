@@ -2,26 +2,12 @@ package Test::Stream::Plugin::Capabilities;
 use strict;
 use warnings;
 
-use Test::Stream::Capabilities();
-use Test::Stream::Plugin qw/import/;
+use Test::Stream::Capabilities qw/CAN_THREAD CAN_FORK CAN_REALLY_FORK/;
 
-use Carp qw/croak/;
-
-sub load_ts_plugin {
-    my $class = shift;
-    my ($caller, @args) = @_;
-
-    @args = (qw/CAN_THREAD CAN_FORK/) unless @args;
-
-    for my $arg (@args) {
-        croak "$arg is not a valid capabilties check"
-            unless $arg =~ m/^CAN_/ && Test::Stream::Capabilities->can($arg);
-
-        my $const = Test::Stream::Capabilities::get_const($arg);
-        no strict 'refs';
-        *{"$caller->[0]\::$arg"} = $const;
-    }
-}
+use Test::Stream::Exporter qw/import default_exports exports/;
+default_exports qw/CAN_THREAD CAN_FORK/;
+exports qw/CAN_REALLY_FORK/;
+no Test::Stream::Exporter;
 
 1;
 

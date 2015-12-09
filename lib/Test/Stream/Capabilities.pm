@@ -5,38 +5,18 @@ use warnings;
 use Config qw/%Config/;
 use Carp qw/croak/;
 
-sub import {
-    my $class = shift;
-    my $caller = caller;
-
-    for my $check (@_) {
-        croak "'$check' is not a known capability"
-            unless $check =~ m/^CAN_/ && $class->can("$check");
-
-        my $const = get_const($check);
-        no strict 'refs';
-        *{"$caller\::$check"} = $const;
-    }
+{
+    no warnings 'once';
+    *CAN_REALLY_FORK = $Config{d_fork} ? sub() { 1 } : sub() { 0 };
+    *CAN_FORK        = _can_fork()     ? sub() { 1 } : sub() { 0 };
+    *CAN_THREAD      = _can_thread()   ? sub() { 1 } : sub() { 0 };
 }
 
-my %LOOKUP;
-sub get_const {
-    my $check = shift;
+use Test::Stream::Exporter qw/import exports/;
+exports qw/CAN_REALLY_FORK CAN_FORK CAN_THREAD/;
+no Test::Stream::Exporter;
 
-    unless ($LOOKUP{$check}) {
-        my $bool = __PACKAGE__->$check;
-        $LOOKUP{$check} = sub() { $bool };
-    }
-
-    return $LOOKUP{$check};
-}
-
-sub CAN_REALLY_FORK {
-    return 1 if $Config{d_fork};
-    return 0;
-}
-
-sub CAN_FORK {
+sub _can_fork {
     return 1 if $Config{d_fork};
     return 0 unless $^O eq 'MSWin32' || $^O eq 'NetWare';
     return 0 unless $Config{useithreads};
@@ -47,7 +27,7 @@ sub CAN_FORK {
     return $thread_const->();
 }
 
-sub CAN_THREAD {
+sub _can_thread {
     return 0 unless $] >= 5.008001;
     return 0 unless $Config{'useithreads'};
 
