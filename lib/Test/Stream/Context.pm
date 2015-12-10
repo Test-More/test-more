@@ -9,6 +9,9 @@ use Test::Stream::Util qw/get_tid try pkg_to_file/;
 use Test::Stream::Sync();
 use Test::Stream::DebugInfo();
 
+our @EXPORT_OK = qw/context/;
+use base 'Exporter';
+
 # Preload some key event types
 my %LOADED = (
     map {
@@ -43,15 +46,6 @@ sub _do_end {
 
     $? = $new;
 }
-
-use Test::Stream::Exporter qw/import exports export/;
-exports qw/context/;
-export release => sub($;@) {
-    $_[0]->release;
-    shift; # Remove undef that used to be our $self reference.
-    return @_ > 1 ? @_ : $_[0];
-};
-no Test::Stream::Exporter;
 
 use Test::Stream::HashBase(
     accessors => [qw/stack hub debug _on_release _depth _err _no_destroy_warning/],

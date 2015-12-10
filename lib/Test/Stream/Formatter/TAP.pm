@@ -13,9 +13,10 @@ sub OUT_TODO() { 2 }
 
 use Carp qw/croak/;
 
-use Test::Stream::Exporter qw/import exports/;
-exports qw/OUT_STD OUT_ERR OUT_TODO/;
-no Test::Stream::Exporter;
+use base 'Test::Stream::Formatter';
+
+our @EXPORT_OK = qw/OUT_STD OUT_ERR OUT_TODO/;
+use base 'Exporter';
 
 my %CONVERTERS = (
     'Test::Stream::Event::Ok'        => \&_ok_event,

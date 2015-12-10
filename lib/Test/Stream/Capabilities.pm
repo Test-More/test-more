@@ -12,9 +12,8 @@ use Carp qw/croak/;
     *CAN_THREAD      = _can_thread()   ? sub() { 1 } : sub() { 0 };
 }
 
-use Test::Stream::Exporter qw/import exports/;
-exports qw/CAN_REALLY_FORK CAN_FORK CAN_THREAD/;
-no Test::Stream::Exporter;
+our @EXPORT_OK = qw/CAN_REALLY_FORK CAN_FORK CAN_THREAD/;
+use base 'Exporter';
 
 sub _can_fork {
     return 1 if $Config{d_fork};
