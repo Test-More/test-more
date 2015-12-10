@@ -1,4 +1,7 @@
-use Test::Stream -V1;
+use strict;
+use warnings;
+use Test::Stream::IPC;
+use Test::Stream::Tester;
 use Test::Stream::Context qw/context/;
 use Test::Stream::Capabilities qw/CAN_FORK/;
 

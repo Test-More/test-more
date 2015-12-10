@@ -1,4 +1,4 @@
-use Test::Stream -V1;
+use Test::Stream::Tester;
 use strict;
 use warnings;
 
@@ -11,7 +11,6 @@ my $skip = Test::Stream::Event::Skip->new(
     reason => 'foo',
 );
 
-isa_ok($skip, 'Test::Stream::Event::Skip');
 is($skip->name, 'skip me', "set name");
 is($skip->reason, 'foo', "got skip reason");
 ok(!$skip->pass, "no default for pass");

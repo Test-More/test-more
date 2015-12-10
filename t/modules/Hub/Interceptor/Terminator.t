@@ -1,4 +1,6 @@
-use Test::Stream -V1;
+use strict;
+use warnings;
+use Test::Stream::Tester;
 
 use Test::Stream::Hub::Interceptor::Terminator;
 

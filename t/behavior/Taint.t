@@ -1,7 +1,5 @@
 #!/usr/bin/env perl -T
-use Test::Stream Core;
-
-plan(2);
+use Test::Stream::Tester;
 
 ok(1);
 ok(1);

@@ -6,9 +6,18 @@ use Test::Stream::IPC;
 my @drivers;
 BEGIN { @drivers = Test::Stream::IPC->drivers };
 
-use Test::Stream qw/-V1 -SpecTester/;
+use Test::Stream::Tester;
+use Test::Stream::Context qw/context/;
+sub tests {
+    my ($name, $code) = @_;
+    my $ok = eval { $code->(); 1 };
+    my $err = $@;
+    my $ctx = context();
+    $ctx->ok($ok, $name, [$err]);
+    $ctx->release;
+}
 
-is(
+is_deeply(
     \@drivers,
     ['Test::Stream::IPC::Files'],
     "Got default driver"
@@ -25,31 +34,30 @@ Test::Stream::IPC->register_drivers(
     'Test::Stream::IPC::Files',
 );
 
-is(
+is_deeply(
     [Test::Stream::IPC->drivers],
     ['Test::Stream::IPC::Files'],
     "Driver not added multiple times"
 );
 
 tests init_drivers => sub {
-    ok( lives { Test::Stream::IPC->new }, "Found working driver" );
+    ok( !exception { Test::Stream::IPC->new }, "Found working driver" );
 
-    my $mock = mock 'Test::Stream::IPC::Files' => (
-        override => [ is_viable => sub { 0 }],
-    );
+    no warnings 'redefine';
+    local *Test::Stream::IPC::Files::is_viable = sub { 0 };
+    use warnings;
 
     like(
-        dies { Test::Stream::IPC->new },
+        exception { Test::Stream::IPC->new },
         qr/Could not find a viable IPC driver! Aborting/,
         "No viable drivers"
     );
 
-    $mock->restore('is_viable');
-    $mock->override( new => sub { undef } );
-    ok(Test::Stream::IPC::Files->is_viable, "Sanity");
-
+    no warnings 'redefine';
+    local *Test::Stream::IPC::Files::is_viable = sub { undef };
+    use warnings;
     like(
-        dies { Test::Stream::IPC->new },
+        exception { Test::Stream::IPC->new },
         qr/Could not find a viable IPC driver! Aborting/,
         "No viable drivers"
     );
@@ -72,7 +80,7 @@ tests polling => sub {
 for my $meth (qw/send cull add_hub drop_hub waiting is_viable/) {
     my $one = Test::Stream::IPC->new;
     like(
-        dies { $one->$meth },
+        exception { $one->$meth },
         qr/'\Q$one\E' did not define the required method '$meth'/,
         "Require override of method $meth"
     );

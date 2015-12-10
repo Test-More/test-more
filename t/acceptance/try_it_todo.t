@@ -1,7 +1,6 @@
 use strict;
 use warnings;
 
-use Test::Stream::Sync;
 use Test::Stream::Context qw/context/;
 
 sub done_testing {

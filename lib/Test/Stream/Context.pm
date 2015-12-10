@@ -18,7 +18,7 @@ my %LOADED = (
         require "Test/Stream/Event/$_.pm";
         my $pkg = "Test::Stream::Event::$_";
         ( $pkg => $pkg, $_ => $pkg )
-    } qw/Ok Diag Note Plan Bail Exception Waiting Skip/
+    } qw/Ok Diag Note Plan Bail Exception Waiting Skip Subtest/
 );
 
 # Stack is ok to cache.

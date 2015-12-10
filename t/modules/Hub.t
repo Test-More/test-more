@@ -1,5 +1,19 @@
-use Test::Stream -V1, -SpecTester, Compare => [qw/is like match/];
+use strict;
+use warnings;
+
+use Test::Stream::IPC;
+use Test::Stream::Tester;
+use Test::Stream::Context qw/context/;
 use Test::Stream::Capabilities qw/CAN_FORK CAN_THREAD CAN_REALLY_FORK/;
+
+sub tests {
+    my ($name, $code) = @_;
+    my $ok = eval { $code->(); 1 };
+    my $err = $@;
+    my $ctx = context();
+    $ctx->ok($ok, $name, [$err]);
+    $ctx->release;
+}
 
 {
     package My::Formatter;
@@ -38,8 +52,8 @@ tests basic => sub {
 
     my $old = $hub->format(My::Formatter->new);
 
-    isa_ok($old, 'My::Formatter');
-    is(
+    ok($old->isa('My::Formatter'), "old formatter");
+    is_deeply(
         $old,
         [$e1, $e2, $e3],
         "Formatter got all events"
@@ -57,14 +71,14 @@ tests follow_ups => sub {
     my $ran = 0;
     $hub->follow_up(sub {
         my ($d, $h) = @_;
-        is($d, $dbg, "Got debug");
-        is($h, $hub, "Got hub");
+        is_deeply($d, $dbg, "Got debug");
+        is_deeply($h, $hub, "Got hub");
         ok(!$hub->state->ended, "Hub state has not ended yet");
         $ran++;
     });
 
     like(
-        dies { $hub->follow_up('xxx') },
+        exception { $hub->follow_up('xxx') },
         qr/follow_up only takes coderefs for arguments, got 'xxx'/,
         "follow_up takes a coderef"
     );
@@ -73,7 +87,7 @@ tests follow_ups => sub {
 
     is($ran, 1, "ran once");
 
-    is(
+    is_deeply(
         $hub->state->ended,
         $dbg->frame,
         "Ended at the expected place."
@@ -115,8 +129,8 @@ tests IPC => sub {
 
         my $old = $hub->format(My::Formatter->new);
 
-        isa_ok($old, 'My::Formatter');
-        is(
+        ok($old->isa('My::Formatter'), "old formatter");
+        is_deeply(
             $old,
             [$e1, $e2, $e3],
             "Formatter got all events ($name)"
@@ -159,7 +173,7 @@ tests listen => sub {
     my @counts;
     my $it = $hub->listen(sub {
         my ($h, $e, $count) = @_;
-        is($h, $hub, "got hub");
+        is_deeply($h, $hub, "got hub");
         push @events => $e;
         push @counts => $count;
     });
@@ -198,12 +212,12 @@ tests listen => sub {
 
     $hub->send($ok3);
 
-    is(\@counts, [1, 2], "Got counts");
-    is(\@events, [$ok1, $ok2], "got events");
+    is_deeply(\@counts, [1, 2], "Got counts");
+    is_deeply(\@events, [$ok1, $ok2], "got events");
     is($second, 3, "got all events in listener that was not removed");
 
     like(
-        dies { $hub->listen('xxx') },
+        exception { $hub->listen('xxx') },
         qr/listen only takes coderefs for arguments, got 'xxx'/,
         "listen takes a coderef"
     );
@@ -214,10 +228,10 @@ tests metadata => sub {
 
     my $default = { foo => 1 };
     my $meta = $hub->meta('Foo', $default);
-    is($meta, $default, "Set Meta");
+    is_deeply($meta, $default, "Set Meta");
 
     $meta = $hub->meta('Foo', {});
-    is($meta, $default, "Same Meta");
+    is_deeply($meta, $default, "Same Meta");
 
     $hub->delete_meta('Foo');
     is($hub->meta('Foo'), undef, "No Meta");
@@ -226,110 +240,27 @@ tests metadata => sub {
     is($hub->meta('Foo')->{xxx}, 1, "Vivified meta and set it");
 
     like(
-        dies { $hub->meta(undef) },
+        exception { $hub->meta(undef) },
         qr/Invalid key '\(UNDEF\)'/,
         "Cannot use undef as a meta key"
     );
 
     like(
-        dies { $hub->meta(0) },
+        exception { $hub->meta(0) },
         qr/Invalid key '0'/,
         "Cannot use 0 as a meta key"
     );
 
     like(
-        dies { $hub->delete_meta(undef) },
+        exception { $hub->delete_meta(undef) },
         qr/Invalid key '\(UNDEF\)'/,
         "Cannot use undef as a meta key"
     );
 
     like(
-        dies { $hub->delete_meta(0) },
+        exception { $hub->delete_meta(0) },
         qr/Invalid key '0'/,
         "Cannot use 0 as a meta key"
-    );
-};
-
-tests munge => sub {
-    my @warnings;
-    local $SIG{__WARN__} = sub { push @warnings => @_ };
-    my $hub = Test::Stream::Hub->new();
-
-    my @events;
-    my $it = $hub->munge(sub {
-        my ($h, $e) = @_;
-        is($h, $hub, "got hub");
-        push @events => $e;
-    });
-
-    my $count;
-    my $it2 = $hub->munge(sub { $count++ });
-
-    my $ok1 = Test::Stream::Event::Ok->new(
-        pass => 1,
-        name => 'foo',
-        debug => Test::Stream::DebugInfo->new(
-            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
-        ),
-    );
-
-    my $ok2 = Test::Stream::Event::Ok->new(
-        pass => 0,
-        name => 'bar',
-        debug => Test::Stream::DebugInfo->new(
-            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
-        ),
-    );
-
-    my $ok3 = Test::Stream::Event::Ok->new(
-        pass => 1,
-        name => 'baz',
-        debug => Test::Stream::DebugInfo->new(
-            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
-        ),
-    );
-
-    $hub->send($ok1);
-    $hub->send($ok2);
-
-    $hub->unmunge($it);
-
-    $hub->send($ok3);
-
-    is(\@events, [$ok1, $ok2], "got events");
-    is($count, 3, "got all events, even after other munger was removed");
-
-    $hub = Test::Stream::Hub->new();
-    @events = ();
-
-    $hub->munge(sub { $_[1] = undef });
-    $hub->listen(sub {
-        my ($hub, $e) = @_;
-        push @events => $e;
-    });
-
-    $hub->send($ok1);
-    $hub->send($ok2);
-    $hub->send($ok3);
-
-    ok(!@events, "Blocked events");
-
-    like(
-        dies { $hub->munge('xxx') },
-        qr/munge only takes coderefs for arguments, got 'xxx'/,
-        "munge takes a coderef"
-    );
-
-    delete $SIG{__WARN__};
-    is(
-        \@warnings,
-        [
-            match qr/use of mungers is deprecated, look at filters instead\. mungers will be removed in the near future\./,
-            match qr/use of mungers is deprecated, look at filters instead\. mungers will be removed in the near future\./,
-            match qr/use of mungers is deprecated, look at filters instead\. mungers will be removed in the near future\./,
-            match qr/use of mungers is deprecated, look at filters instead\. mungers will be removed in the near future\./,
-        ],
-        "Got the warnings"
     );
 };
 
@@ -378,7 +309,7 @@ tests filter => sub {
 
     $hub->send($ok3);
 
-    is(\@events, [$ok1, $ok2], "got events");
+    is_deeply(\@events, [$ok1, $ok2], "got events");
     is($count, 3, "got all events, even after other filter was removed");
 
     $hub = Test::Stream::Hub->new();
@@ -397,7 +328,7 @@ tests filter => sub {
     ok(!@events, "Blocked events");
 
     like(
-        dies { $hub->filter('xxx') },
+        exception { $hub->filter('xxx') },
         qr/filter only takes coderefs for arguments, got 'xxx'/,
         "filter takes a coderef"
     );
@@ -429,14 +360,16 @@ tests todo_system => sub {
     }
     is($hub->get_todo, undef, "Todo ended");
 
+    my $warnings = warnings { $hub->set_todo('xxx') };
     like(
-        warning { $hub->set_todo('xxx') },
+        $warnings->[0],
         qr/set_todo\Q(...)\E called in void context, todo not set!/,
         "Need to capture the todo!"
     );
 
+    $warnings = warnings { my $todo = $hub->set_todo() },
     like(
-        warning { my $todo = $hub->set_todo() },
+        $warnings->[0],
         qr/set_todo\(\) called with undefined argument, todo not set!/,
         "Todo cannot be undef"
     );

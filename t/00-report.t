@@ -1,3 +1,8 @@
+use Test::Stream::Tester;
+BEGIN {
+    skip_all "Still need to port this"
+}
+
 use Test::Stream -V1;
 
 use Test::Stream::Table qw/table/;

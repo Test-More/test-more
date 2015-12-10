@@ -1,18 +1,20 @@
-use Test::Stream -V1;
+use strict;
+use warnings;
+use Test::Stream::IPC;
+use Test::Stream::Tester;
 use Test::Stream::Stack;
 
 ok(my $stack = Test::Stream::Stack->new, "Create a stack");
-isa_ok($stack, 'Test::Stream::Stack');
 
 ok(!@$stack, "Empty stack");
 ok(!$stack->peek, "Nothing to peek at");
 
-ok(lives { $stack->cull },  "cull lives when stack is empty");
-ok(lives { $stack->all },   "all lives when stack is empty");
-ok(lives { $stack->clear }, "clear lives when stack is empty");
+ok(!exception { $stack->cull },  "cull lives when stack is empty");
+ok(!exception { $stack->all },   "all lives when stack is empty");
+ok(!exception { $stack->clear }, "clear lives when stack is empty");
 
 like(
-    dies { $stack->pop(Test::Stream::Hub->new) },
+    exception { $stack->pop(Test::Stream::Hub->new) },
     qr/No hubs on the stack/,
     "No hub to pop"
 );
@@ -21,27 +23,27 @@ my $hub = Test::Stream::Hub->new;
 ok($stack->push($hub), "pushed a hub");
 
 like(
-    dies { $stack->pop($hub) },
+    exception { $stack->pop($hub) },
     qr/You cannot pop the root hub/,
     "Root hub cannot be popped"
 );
 
 $stack->push($hub);
 like(
-    dies { $stack->pop(Test::Stream::Hub->new) },
+    exception { $stack->pop(Test::Stream::Hub->new) },
     qr/Hub stack mismatch, attempted to pop incorrect hub/,
     "Must specify correct hub to pop"
 );
 
-is(
+is_deeply(
     [ $stack->all ],
     [ $hub, $hub ],
     "Got all hubs"
 );
 
-ok(lives { $stack->pop($hub) }, "Popped the correct hub");
+ok(!exception { $stack->pop($hub) }, "Popped the correct hub");
 
-is(
+is_deeply(
     [ $stack->all ],
     [ $hub ],
     "Got all hubs"
@@ -52,7 +54,7 @@ is($stack->top, $hub, "got the hub");
 
 $stack->clear;
 
-is(
+is_deeply(
     [ $stack->all ],
     [ ],
     "no hubs"
@@ -60,7 +62,7 @@ is(
 
 ok(my $top = $stack->top, "Generated a top hub");
 is($top->ipc, Test::Stream::Sync->ipc, "Used sync's ipc");
-isa_ok($top->format, 'Test::Stream::Formatter::TAP');
+ok($top->format, 'Got formatter');
 
 is($stack->top, $stack->top, "do not generate a new top if there is already a top");
 

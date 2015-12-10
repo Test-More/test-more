@@ -1,14 +1,37 @@
-use Test::Stream -V1, Capture;
-use Test::Stream::Util qw/get_tid USE_THREADS/;
-
+use Test::Stream::Tester;
+use Test::Stream::Util qw/get_tid USE_THREADS try/;
 use File::Temp qw/tempfile/;
+
+sub capture(&) {
+    my $code = shift;
+
+    my ($err, $out) = ("", "");
+
+    my ($ok, $e);
+    {
+        local *STDOUT;
+        local *STDERR;
+
+        ($ok, $e) = try {
+            open(STDOUT, '>', \$out) or die "Failed to open a temporary STDOUT: $!";
+            open(STDERR, '>', \$err) or die "Failed to open a temporary STDERR: $!";
+
+            $code->();
+        };
+    }
+
+    die $e unless $ok;
+
+    return {
+        STDOUT => $out,
+        STDERR => $err,
+    };
+}
 
 require Test::Stream::IPC::Files;
 ok(my $ipc = Test::Stream::IPC::Files->new, "Created an IPC instance");
-isa_ok($ipc, 'Test::Stream::IPC::Files');
-isa_ok($ipc, 'Test::Stream::IPC');
-
-can_ok($ipc, qw/tempdir event_id tid pid/);
+ok($ipc->isa('Test::Stream::IPC::Files'), "Correct type");
+ok($ipc->isa('Test::Stream::IPC'), "inheritence");
 
 ok(-d $ipc->tempdir, "created temp dir");
 is($ipc->pid, $$, "stored pid");
@@ -21,7 +44,7 @@ ok(-f $ipc->tempdir . '/HUB-' . $hid, "wrote hub file");
 if(ok(open(my $fh, '<', $ipc->tempdir . '/HUB-' . $hid), "opened hub file")) {
     my @lines = <$fh>;
     close($fh);
-    is(
+    is_deeply(
         \@lines,
         [ "$$\n", get_tid() . "\n" ],
         "Wrote pid and tid to hub file"
@@ -42,7 +65,7 @@ closedir($dh);
 is(@files, 2, "2 files added to the IPC directory");
 
 my @events = $ipc->cull($hid);
-is(
+is_deeply(
     \@events,
     [{ foo => 1 }, { bar => 1 }],
     "Culled both events"
@@ -96,16 +119,12 @@ ok(!-d $tmpdir, "cleaned up temp dir");
 }
 
 {
-    my $mock = mock 'Test::Stream::IPC::Files' => (
-        add => {
-            abort => sub {
-                my $self = shift;
-                local $self->{no_fatal} = 1;
-                $self->Test::Stream::IPC::abort(@_);
-                die 255;
-            },
-        },
-    );
+    local *Test::Stream::IPC::Files::abort = sub {
+        my $self = shift;
+        local $self->{no_fatal} = 1;
+        $self->Test::Stream::IPC::abort(@_);
+        die 255;
+    };
 
     my $tmpdir;
     my @lines;
@@ -217,14 +236,14 @@ ok(!-d $tmpdir, "cleaned up temp dir");
         "Events must actually be events (not an event type)"
     );
 
-    Storable::store(bless({}, 'Test::Stream::Event::Foo'), $fn);
+    Storable::store(bless({}, 'Foo'), $fn);
     $out = capture {
         local @INC;
         push @INC => ('t/lib', 'lib');
         eval { $ipc->read_event_file($fn) };
     };
-    ok(!$out->{STDERR}, "no problem");
-    ok(!$out->{STDOUT}, "no problem");
+    ok(!$out->{STDERR}, "no problem", $out->{STDERR});
+    ok(!$out->{STDOUT}, "no problem", $out->{STDOUT});
 
     unlink($fn);
 }
@@ -235,7 +254,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
     $ipc->send('GLOBAL', bless({global => 1}, 'Foo'));
     $ipc->set_globals({});
     my @events = $ipc->cull($hid);
-    is(
+    is_deeply(
         \@events,
         [ {global => 1} ],
         "Got global event"
@@ -246,7 +265,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
 
     $ipc->set_globals({});
     @events = $ipc->cull($hid);
-    is(
+    is_deeply(
         \@events,
         [ {global => 1} ],
         "Still there"
