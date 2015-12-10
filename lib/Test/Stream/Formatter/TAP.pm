@@ -120,23 +120,9 @@ sub event_tap {
     my $self = shift;
     my ($e, $num) = @_;
 
-    my $converter = $CONVERTERS{ref($e)};
+    my $converter = $CONVERTERS{ref($e)} or return;
 
     $num = undef if $self->{+NO_NUMBERS};
-
-    # Legacy Support for $e->to_tap
-    unless ($converter) {
-        my $legacy = $e->can('to_tap') or return;
-
-        # Prevent infinite recursion. If an event subclasses 'Event' it has a
-        # to_tap method that brings it back here. We only call to_tap if they
-        # actually provided a custom one. This mess will go away at the end of
-        # the deprecation cycle.
-        return if $legacy == \&Test::Stream::Event::to_tap;
-
-        warn "'$e' implements 'to_tap'. to_tap methods on events are deprecated.\n";
-        return $e->to_tap($num);
-    }
 
     return $self->$converter($e, $num);
 }
@@ -148,8 +134,6 @@ sub _ok_event {
     # We use direct hash access for performance. OK events are so common we
     # need this to be fast.
     my ($name, $debug, $todo) = @{$e}{qw/name debug todo/};
-    $todo = $debug->{todo} unless defined $todo;    # $debug->todo is deprecated
-    my $skip = $debug->{skip};                      # Deprecated
 
     my $out = "";
     $out .= "not " unless $e->{pass};
@@ -157,23 +141,15 @@ sub _ok_event {
     $out .= " $num" if defined $num;
     $out .= " - $name" if $name;
 
-    if (defined $skip && defined $todo) {
-        $out .= " # TODO & SKIP";
-        $out .= " $todo" if length $todo;
-    }
-    elsif (defined $todo) {
+    if (defined $todo) {
         $out .= " # TODO";
         $out .= " $todo" if length $todo;
-    }
-    elsif (defined $skip) {
-        $out .= " # skip";
-        $out .= " $skip" if length $skip;
     }
 
     my @out = [OUT_STD, "$out\n"];
 
     if ($e->{diag} && @{$e->{diag}}) {
-        my $diag_handle = ($todo || $e->diag_todo || $debug->_no_diag) ? OUT_TODO : OUT_ERR;
+        my $diag_handle = ($todo || $e->diag_todo) ? OUT_TODO : OUT_ERR;
 
         for my $diag (@{$e->{diag}}) {
             chomp(my $msg = $diag);
@@ -193,7 +169,6 @@ sub _skip_event {
 
     my $name   = $e->name;
     my $reason = $e->reason;
-    my $todo   = $e->todo || $e->debug->_todo;
 
     my $out = "ok";
     $out .= " $num" if defined $num;
@@ -229,7 +204,7 @@ sub _diag_event {
     $msg =~ s/\n/\n# /g;
 
     return [
-        (($e->todo || $e->debug->_no_diag) ? OUT_TODO : OUT_ERR),
+        $e->todo ? OUT_TODO : OUT_ERR,
         "$msg\n",
     ];
 }

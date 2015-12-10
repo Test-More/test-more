@@ -17,7 +17,7 @@ sub init {
     # Do not store objects here, only true or false
     $self->{+PASS} = $self->{+PASS} ? 1 : 0;
 
-    $self->{+EFFECTIVE_PASS} = ($self->{+PASS} || $self->{+TODO} || $self->{+DEBUG}->_no_fail) ? 1 : 0;
+    $self->{+EFFECTIVE_PASS} = ($self->{+PASS} || $self->{+TODO}) ? 1 : 0;
 
     return if $self->{+ALLOW_BAD_NAME};
     my $name = $self->{+NAME} || return;
@@ -33,7 +33,7 @@ sub default_diag {
     my $name  = $self->{+NAME};
     my $dbg   = $self->{+DEBUG};
     my $pass  = $self->{+PASS};
-    my $todo  = defined($self->{+TODO} || $dbg->_todo);
+    my $todo  = defined($self->{+TODO});
 
     my $msg = $todo ? "Failed (TODO)" : "Failed";
     my $prefix = $ENV{HARNESS_ACTIVE} && !$ENV{HARNESS_IS_VERBOSE} ? "\n" : "";
@@ -132,27 +132,6 @@ This generates the default diagnostics string:
 
     # Failed test 'Some Test'
     # at t/foo.t line 42.
-
-=item @sets = $e->to_tap()
-
-=item @sets = $e->to_tap($num)
-
-B<***DEPRECATED***> This will be removed in the near future. See
-L<Test::Stream::Formatter::TAP> for TAP production.
-
-Generate the tap stream for this object. C<@sets> containes 1 or more arrayrefs
-that identify the IO handle to use, and the string that should be sent to it.
-
-IO Handle identifiers are set to the value of the L<Test::Stream::Formatter::TAP> C<OUT_*>
-constants.
-
-Example:
-
-    @sets = (
-        [OUT_STD() => 'not ok 1 - foo'],
-        [OUT_ERR() => '# Test 1 Failed ...' ],
-        ...
-    );
 
 =back
 

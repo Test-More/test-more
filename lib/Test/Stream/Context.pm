@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/weaken/;
-use Carp qw/confess croak longmess/;
+use Carp qw/confess croak longmess cluck/;
 use Test::Stream::Util qw/get_tid try pkg_to_file/;
 
 use Test::Stream::Sync();
@@ -195,7 +195,6 @@ sub context {
             frame => [$pkg, $file, $line, $sub],
             pid   => $$,
             tid   => get_tid(),
-            $hub->_debug_todo,
         },
         'Test::Stream::DebugInfo'
     );

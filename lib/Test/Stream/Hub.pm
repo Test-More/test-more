@@ -14,7 +14,6 @@ use Test::Stream::HashBase(
         state
         no_ending
         _todo _meta parent_todo
-        _mungers
         _filters
         _listeners
         _follow_ups
@@ -63,28 +62,9 @@ sub inherit {
         push @{$self->{+_LISTENERS}} => grep { $_->{inherit} } @$ls;
     }
 
-    if (my $ms = $from->{+_MUNGERS}) {
-        push @{$self->{+_MUNGERS}} => grep { $_->{inherit} } @$ms;
-    }
-
     if (my $fs = $from->{+_FILTERS}) {
         push @{$self->{+_FILTERS}} => grep { $_->{inherit} } @$fs;
     }
-}
-
-sub debug_todo {
-    carp "The Hub->debug_todo method is deprecated";
-    $_[0]->_debug_todo;
-}
-
-sub _debug_todo {
-    my ($self) = @_;
-    my $array = $self->{+_TODO};
-    pop @$array while @$array && !defined $array->[-1];
-    return (
-        parent_todo => $self->{+PARENT_TODO},
-        todo        => @$array ? ${$array->[-1]} : undef,
-    )
 }
 
 sub _fast_todo {
@@ -192,31 +172,6 @@ sub unlisten {
     @{$self->{+_LISTENERS}} = grep { !$subs{$_->{code}} } @{$self->{+_LISTENERS}};
 }
 
-sub munge {
-    my $self = shift;
-    my ($sub, %params) = @_;
-
-    carp "use of mungers is deprecated, look at filters instead. mungers will be removed in the near future.";
-
-    carp "Useless addition of a munger in a child process or thread!"
-        if $$ != $self->{+PID} || get_tid() != $self->{+TID};
-
-    croak "munge only takes coderefs for arguments, got '$sub'"
-        unless ref $sub && ref $sub eq 'CODE';
-
-    push @{$self->{+_MUNGERS}} => { %params, code => $sub };
-
-    $sub; # Intentional Return
-}
-
-sub unmunge {
-    my $self = shift;
-    carp "Useless removal of a munger in a child process or thread!"
-        if $$ != $self->{+PID} || get_tid() != $self->{+TID};
-    my %subs = map {$_ => $_} @_;
-    @{$self->{+_MUNGERS}} = grep { !$subs{$_->{code}} } @{$self->{+_MUNGERS}};
-}
-
 sub filter {
     my $self = shift;
     my ($sub, %params) = @_;
@@ -309,13 +264,6 @@ sub send {
 sub process {
     my $self = shift;
     my ($e) = @_;
-
-    if ($self->{+_MUNGERS}) {
-        for (@{$self->{+_MUNGERS}}) {
-            $_->{code}->($self, $e);
-            return unless $e;
-        }
-    }
 
     if ($self->{+_FILTERS}) {
         for (@{$self->{+_FILTERS}}) {
@@ -436,7 +384,7 @@ event pipeline.
     $hub->send($event)
 
 The C<send()> method is used to issue an event to the hub. This method will
-handle thread/fork sync, mungers, listeners, TAP output, etc.
+handle thread/fork sync, filters, listeners, TAP output, etc.
 
 =head2 ALTERING OR REMOVING EVENTS
 
@@ -606,43 +554,6 @@ that is still active will always be used as the todo.
 
 Replace the existing formatter instance with a new one. Formatters must be
 objects that implement a C<< $formatter->write($event) >> method.
-
-=item $sub = $hub->munge(sub { ... })
-
-=item $sub = $hub->munge(sub { ... }, inherit => 1)
-
-B<*** DEPRECATED ***> This will be removed in the near future.
-
-This adds your codeblock as a callback. Every event that hits this hub will be
-given to your munger BEFORE it is sent to the formatter. You can make any
-modifications you want to the event object.
-
-    $hub->munge(sub {
-        my ($hub, $event) = @_;
-
-        ... Modify the event object ...
-
-        # return is ignored.
-    });
-
-You can also completely remove the event from the stream:
-
-    $hub->munge(sub {
-        my ($hub, $event) = @_;
-        return unless ...;
-
-        $_[1] = undef;
-    });
-
-Normally mungers are not inherited by child hubs such as subtests. You can add
-the C<< inherit => 1 >> parameter to allow a munger to be inherited.
-
-=item $hub->unmunge($sub)
-
-B<*** DEPRECATED ***> This will be removed in the near future.
-
-You can use this to remove a munge callback. You must pass in the coderef
-returned by the C<munge()> method.
 
 =item $sub = $hub->listen(sub { ... })
 

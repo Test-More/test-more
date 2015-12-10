@@ -8,24 +8,6 @@ use Test::Stream::HashBase(
     accessors => [qw/debug nested/],
 );
 
-sub import {
-    my $class = shift;
-
-    # Import should only when event is imported, subclasses do not use this
-    # import.
-    return if $class ne __PACKAGE__;
-
-    carp "The magical 'import' method on $class is deprecated and will be removed in the near future.";
-
-    my $caller = caller;
-    my (%args) = @_;
-
-    my $accessors = $args{accessors} || [];
-
-    # %args may override base
-    Test::Stream::HashBase->import(into => $caller, base => $class, %args);
-}
-
 sub init {
     confess("No debug info provided!") unless $_[0]->{+DEBUG};
 }
@@ -35,17 +17,6 @@ sub causes_fail  { 0 }
 sub update_state {()};
 sub terminate    {()};
 sub global       {()};
-
-sub to_tap {
-    my $self = shift;
-    my ($num) = @_;
-
-    carp 'Use of $event->to_tap is deprecated';
-
-    require Test::Stream::Formatter::TAP;
-    my $formatter = Test::Stream::Formatter::TAP->new;
-    $formatter->event_tap($self, $num);
-}
 
 1;
 
@@ -146,44 +117,6 @@ to exit with a failure.
 
 This is called after the event has been sent to the formatter in order to
 ensure the event is seen and understood.
-
-=item @output = $e->to_tap($num)
-
-B<***DEPRECATED***> This will be removed in the near future. See
-L<Test::Stream::Formatter::TAP> for TAP production.
-
-This is where you get the chance to produce TAP output. The input argument
-C<$num> will either be the most recent test number, or undefined. The output
-should be a list of arrayrefs, each arrayref should have exactly 2 values:
-C<$HID, $TEXT>. The HID tells the formatter which output handle to use (see the
-constants provided by L<Test::Stream::Formatter::TAP>), C<$TEXT> should be the text that
-is output to the specified handle.
-
-Example:
-
-    package Test::Stream::Event::MyEvent;
-    use base 'Test::Stream::Event';
-    use Test::Stream::Formatter::TAP qw/OUT_STD OUT_TODO OUT_ERR/;
-
-    sub to_tap {
-        my $self = shift;
-        my ($num) = @_;
-
-        # Using test numbers
-        if (defined $num) {
-            return (
-                [OUT_STD, "# Got MyEvent!"],
-                [OUT_ERR, "# The last test was $num"],
-            );
-        }
-
-        # Not using test numbers.
-        return (
-            [OUT_STD, "# Got MyEvent!"],
-        );
-    }
-
-=back
 
 =head1 SOURCE
 

@@ -27,16 +27,6 @@ sub import {
         $eval .= "sub " . uc($_) . "() { '$_' };\n" for map { @{$_} } @bmetas;
     }
 
-    if(my $base = $args{base}) {
-        carp "'base' argument to HashBase is deprecated.";
-        my $bmeta = $META{$base} || croak "Base class '$base' is not a HashBase class";
-
-        unless ($into->isa($base)) {
-            $eval .= "sub " . uc($_) . "() { '$_' };\n" for @$bmeta;
-            push @$isa => $base;
-        }
-    }
-
     {
         $eval .= join '' => map {
             my $const = uc($_);
@@ -184,14 +174,6 @@ supported.
 
 This is how you define your accessors. See the ACCESSORS section below.
 
-=item base => $class
-
-B<*** DEPRECATED ***> Just C<use base 'Parent::Class';> before loading
-HashBase.
-
-This is how you subclass a Test::Stream::Hashbase class. This will give you all
-the constants of the parent(s).
-
 =item into => $class
 
 This is a way to apply HashBase to another class.
@@ -266,9 +248,8 @@ and similar typos. It will not help you if you forget to prefix the '+' though.
 
 You can subclass an existing HashBase class.
 
-    use Test::Stream::HashBase
-        base      => 'Another::HashBase::Class',
-        accessors => [qw/foo bar baz/];
+    use base 'Another::HashBase::Class';
+    use Test::Stream::HashBase accessors => [qw/foo bar baz/];
 
 The base class is added to C<@ISA> for you, and all constants from base classes
 are added to subclasses automatically.
