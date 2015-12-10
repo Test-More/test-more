@@ -1,19 +1,15 @@
-use Test::Stream -V1, class => 'Test::Stream::SyncObj';
+use strict;
+use warnings;
 
+use Test::Stream::IPC;
+use Test::Stream::Tester;
 use Test::Stream::Util qw/get_tid/;
 use Test::Stream::Capabilities qw/CAN_THREAD CAN_REALLY_FORK/;
 
-can_ok(
-    $CLASS,
-    qw{
-        pid tid no_wait finalized ipc stack format exit_hooks loaded
-        post_load_hooks reset format_set add_post_load_hook load add_exit_hook
-        set_exit
-    }
-);
+my $CLASS = 'Test::Stream::Tracker';
 
 my $one = $CLASS->new;
-is(
+is_deeply(
     $one,
     {
         pid => $$,
@@ -34,10 +30,10 @@ is(
 );
 
 %$one = ();
-is($one, {}, "wiped object");
+is_deeply($one, {}, "wiped object");
 
 $one->reset;
-is(
+is_deeply(
     $one,
     {
         pid => $$,
@@ -66,7 +62,7 @@ my $ran = 0;
 my $hook = sub { $ran++ };
 $one->add_post_load_hook($hook);
 ok(!$ran, "did not run yet");
-is($one->post_load_hooks, [$hook], "stored hook for later");
+is_deeply($one->post_load_hooks, [$hook], "stored hook for later");
 
 ok(!$one->loaded, "not loaded");
 $one->load;
@@ -78,20 +74,20 @@ is($ran, 1, "Did not run the hook again");
 
 $one->add_post_load_hook($hook);
 is($ran, 2, "ran the new hook");
-is($one->post_load_hooks, [$hook, $hook], "stored hook for the record");
+is_deeply($one->post_load_hooks, [$hook, $hook], "stored hook for the record");
 
 like(
-    dies { $one->add_post_load_hook({}) },
+    exception { $one->add_post_load_hook({}) },
     qr/Post-load hooks must be coderefs/,
     "Post-load hooks must be coderefs"
 );
 
 $one->reset;
-isa_ok($one->ipc, 'Test::Stream::IPC');
+ok($one->ipc, 'got ipc');
 ok($one->finalized, "calling ipc finalized the object");
 
 $one->reset;
-isa_ok($one->stack, 'Test::Stream::Stack');
+ok($one->stack, 'got stack');
 ok($one->finalized, "calling stack finalized the object");
 
 $one->reset;
@@ -125,7 +121,7 @@ ok($one->finalized, "calling format finalized the object");
     local $ENV{TS_FORMATTER} = '+Fake';
     $one->reset;
     like(
-        dies { $one->format },
+        exception { $one->format },
         qr/COULD NOT LOAD FORMATTER '\+Fake' \(set by the 'TS_FORMATTER' environment variable\)/,
         "Bad formatter"
     );
@@ -139,7 +135,7 @@ $one->add_exit_hook($hook);
 is(@{$one->exit_hooks}, 2, "added another exit hook");
 
 like(
-    dies { $one->add_exit_hook({}) },
+    exception { $one->add_exit_hook({}) },
     qr/End hooks must be coderefs/,
     "Exit hooks must be coderefs"
 );
@@ -160,7 +156,7 @@ if (CAN_REALLY_FORK) {
         local $SIG{__WARN__} = sub { push @warnings => @_ };
         is($one->_ipc_wait, 255, "Process exited badly");
     }
-    like(\@warnings, [qr/Process .* did not exit cleanly \(status: 255\)/], "Warn about exit");
+    like($warnings[0], qr/Process .* did not exit cleanly \(status: 255\)/, "Warn about exit");
 }
 
 if (CAN_THREAD && $] ge '5.010') {
@@ -181,7 +177,7 @@ if (CAN_THREAD && $] ge '5.010') {
             local $SIG{__WARN__} = sub { push @warnings => @_ };
             is($one->_ipc_wait, 255, "Thread exited badly");
         }
-        like(\@warnings, [qr/Thread .* did not end cleanly: xxx/], "Warn about exit");
+        like($warnings[0], qr/Thread .* did not end cleanly: xxx/, "Warn about exit");
     }
 }
 
@@ -243,7 +239,7 @@ if (CAN_THREAD && $] ge '5.010') {
     local $? = 0;
     $one->set_exit;
     is($?, 255, "errors on exit");
-    like(\@events, [{message => qr/Test ended with extra hubs on the stack!/}], "got diag");
+    like($events[0]->message, qr/Test ended with extra hubs on the stack!/, "got diag");
 }
 
 {
@@ -260,7 +256,7 @@ if (CAN_THREAD && $] ge '5.010') {
     local $? = 0;
     $one->set_exit;
     is($?, 255, "errors on exit");
-    like(\@events, [{message => qr/Test ended with extra hubs on the stack!/}], "got diag");
+    like($events[0]->message, qr/Test ended with extra hubs on the stack!/, "got diag");
 }
 
 if (CAN_REALLY_FORK) {

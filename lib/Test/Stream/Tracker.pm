@@ -1,4 +1,4 @@
-package Test::Stream::SyncObj;
+package Test::Stream::Tracker;
 use strict;
 use warnings;
 
@@ -218,13 +218,13 @@ __END__
 
 =head1 NAME
 
-Test::Stream::SyncObj - Object used by Sync under the hood
+Test::Stream::Tracker - Object used by Sync under the hood
 
 =head1 DESCRIPTION
 
 This object encapsulates the global shared state tracked by
-L<Test::Stream::Sync>. A single global instance of this package is stored (and
-obscured) by the L<Test::Stream::Sync> package.
+L<Test::Stream>. A single global instance of this package is stored (and
+obscured) by the L<Test::Stream> package.
 
 There is no reason to directly use this package. This package is documented for
 completeness. This package can change, or go away completely at any time.
@@ -233,9 +233,9 @@ shape or form.
 
 =head1 SYNOPSIS
 
-    use Test::Stream::SyncObj;
+    use Test::Stream::Tracker;
 
-    my $obj = Test::Stream::SyncObj->new;
+    my $obj = Test::Stream::Tracker->new;
 
 =head1 METHODS
 
@@ -300,7 +300,7 @@ Add an exit hook. This hook will be called by C<set_exit()>.
 Check if the object is finalized. Finalization happens when either C<ipc()>,
 C<stack()>, or C<format()> are called on the object. Once finalization happens
 these fields are considered unchangeable (not enforced here, enforced by
-L<Test::Stream::Sync>).
+L<Test::Stream>).
 
 =item $ipc = $obj->ipc
 

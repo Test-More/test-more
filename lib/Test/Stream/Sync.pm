@@ -4,9 +4,9 @@ use warnings;
 
 use Carp qw/croak/;
 
-use Test::Stream::SyncObj;
+use Test::Stream::Tracker;
 
-my $INST = Test::Stream::SyncObj->new;
+my $INST = Test::Stream::Tracker->new;
 
 sub pid       { $INST->pid }
 sub tid       { $INST->tid }
@@ -72,7 +72,7 @@ methods provided will not change in backwords incompatible ways, but the
 underlying implementation details might. B<Do not break encapsulation here!>
 
 Currently the implementation is to create a single instance of the
-L<Test::Stream::SyncObj> Object. All class methods defer to the single
+L<Test::Stream::Tracker> Object. All class methods defer to the single
 instance. There is no public access to the singleton, and that is intentional.
 The class methods provided by this package provide the only functionality
 publicly exposed.
