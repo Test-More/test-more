@@ -306,7 +306,7 @@ sub cull {
 
 sub finalize {
     my $self = shift;
-    my ($dbg, $do_plan) = @_;
+    my ($trace, $do_plan) = @_;
 
     $self->cull();
     my $state = $self->{+STATE};
@@ -320,7 +320,7 @@ sub finalize {
 
     unless ($state->ended) {
         if ($self->{+_FOLLOW_UPS}) {
-            $_->($dbg, $self) for reverse @{$self->{+_FOLLOW_UPS}};
+            $_->($trace, $self) for reverse @{$self->{+_FOLLOW_UPS}};
         }
 
         # These need to be refreshed now
@@ -331,7 +331,7 @@ sub finalize {
         if (($plan && $plan eq 'NO PLAN') || ($do_plan && !$plan)) {
             $self->send(
                 Test::Stream::Event::Plan->new(
-                    debug => $dbg,
+                    trace => $trace,
                     max => $count,
                 )
             );
@@ -339,7 +339,7 @@ sub finalize {
         }
     }
 
-    $state->finish($dbg->frame);
+    $state->finish($trace->frame);
 }
 
 sub DESTROY {
@@ -434,7 +434,7 @@ with the C<inherit> parameter:
 =head2 POST-TEST BEHAVIORS
 
     $hub->follow_up(sub {
-        my ($dbg, $hub) = @_;
+        my ($trace, $hub) = @_;
 
         ... do whatever you need to ...
 
@@ -581,10 +581,10 @@ returned by the C<listen()> method.
 
 Use this to add behaviors that are called just before the
 L<Test::Stream::State> for the hub is finalized. The only argument to your
-codeblock will be a L<Test::Stream::DebugInfo> instance.
+codeblock will be a L<Test::Stream::Trace> instance.
 
     $hub->follow_up(sub {
-        my ($dbg, $hub) = @_;
+        my ($trace, $hub) = @_;
 
         ... do whatever you need to ...
 

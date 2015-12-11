@@ -26,8 +26,8 @@ sub wrap(&) {
 wrap {
     my $ctx = shift;
     ok($ctx->hub, "got hub");
-    delete $ctx->debug->frame->[4];
-    is_deeply($ctx->debug->frame, $frame, "Found place to report errors");
+    delete $ctx->trace->frame->[4];
+    is_deeply($ctx->trace->frame, $frame, "Found place to report errors");
 };
 
 wrap {
@@ -35,8 +35,8 @@ wrap {
     ok("$ctx" ne "$ref", "Got a new context");
     my $new = context();
     ok($ctx == $new, "Additional call to context gets same instance");
-    delete $ctx->debug->frame->[4];
-    is_deeply($ctx->debug->frame, $frame, "Found place to report errors");
+    delete $ctx->trace->frame->[4];
+    is_deeply($ctx->trace->frame, $frame, "Found place to report errors");
     $new->release;
 };
 
@@ -54,8 +54,8 @@ my $end_ctx;
     $end_ctx = $ctx->snapshot;
     $ctx->release;
 }
-delete $end_ctx->debug->frame->[4];
-is_deeply( $end_ctx->debug->frame, $frame, 'context is ok in an end block');
+delete $end_ctx->trace->frame->[4];
+is_deeply( $end_ctx->trace->frame, $frame, 'context is ok in an end block');
 
 # Test event generation
 {
@@ -71,24 +71,24 @@ my $events = bless [], 'My::Formatter';
 my $hub = Test::Stream::Hub->new(
     formatter => $events,
 );
-my $dbg = Test::Stream::DebugInfo->new(
+my $trace = Test::Stream::Trace->new(
     frame => [ 'Foo::Bar', 'foo_bar.t', 42, 'Foo::Bar::baz' ],
 );
 my $ctx = Test::Stream::Context->new(
-    debug => $dbg,
+    trace => $trace,
     hub   => $hub,
 );
 
 my $e = $ctx->build_event('Ok', pass => 1, name => 'foo');
 is($e->pass, 1, "Pass");
 is($e->name, 'foo', "got name");
-is_deeply($e->debug, $dbg, "Got the debug info");
+is_deeply($e->trace, $trace, "Got the trace info");
 ok(!@$events, "No events yet");
 
 $e = $ctx->send_event('Ok', pass => 1, name => 'foo');
 is($e->pass, 1, "Pass");
 is($e->name, 'foo', "got name");
-is_deeply($e->debug, $dbg, "Got the debug info");
+is_deeply($e->trace, $trace, "Got the trace info");
 is(@$events, 1, "1 event");
 is_deeply($events, [$e], "Hub saw the event");
 pop @$events;
@@ -96,14 +96,14 @@ pop @$events;
 $e = $ctx->ok(1, 'foo');
 is($e->pass, 1, "Pass");
 is($e->name, 'foo', "got name");
-is_deeply($e->debug, $dbg, "Got the debug info");
+is_deeply($e->trace, $trace, "Got the trace info");
 is(@$events, 1, "1 event");
 is_deeply($events, [$e], "Hub saw the event");
 pop @$events;
 
 $e = $ctx->note('foo');
 is($e->message, 'foo', "got message");
-is_deeply($e->debug, $dbg, "Got the debug info");
+is_deeply($e->trace, $trace, "Got the trace info");
 is(@$events, 1, "1 event");
 is_deeply($events, [$e], "Hub saw the event");
 pop @$events;
@@ -111,7 +111,7 @@ pop @$events;
 $e = $ctx->diag('foo');
 ok(!$e->todo, "no todo");
 is($e->message, 'foo', "got message");
-is_deeply($e->debug, $dbg, "Got the debug info");
+is_deeply($e->trace, $trace, "Got the trace info");
 is(@$events, 1, "1 event");
 is_deeply($events, [$e], "Hub saw the event");
 pop @$events;
@@ -130,7 +130,7 @@ pop @$events;
 
 $e = $ctx->plan(100);
 is($e->max, 100, "got max");
-is_deeply($e->debug, $dbg, "Got the debug info");
+is_deeply($e->trace, $trace, "Got the trace info");
 is(@$events, 1, "1 event");
 is_deeply($events, [$e], "Hub saw the event");
 pop @$events;
@@ -139,7 +139,7 @@ $e = $ctx->skip('foo', 'because');
 is($e->name, 'foo', "got name");
 is($e->reason, 'because', "got reason");
 ok($e->pass, "skip events pass by default");
-is_deeply($e->debug, $dbg, "Got the debug info");
+is_deeply($e->trace, $trace, "Got the trace info");
 is(@$events, 1, "1 event");
 is_deeply($events, [$e], "Hub saw the event");
 pop @$events;
@@ -221,7 +221,7 @@ is_deeply(
 
     local $@ = 'testing error';
     my $one = Test::Stream::Context->new(
-        debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
+        trace => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
         hub => Test::Stream::Sync->stack->top,
     );
     is($one->_err, 'testing error', "Copied \$@");
@@ -271,16 +271,16 @@ is_deeply(
 }
 
 {
-    like(exception { Test::Stream::Context->new() }, qr/The 'debug' attribute is required/, "need to have debug");
+    like(exception { Test::Stream::Context->new() }, qr/The 'trace' attribute is required/, "need to have trace");
 
-    my $debug = Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
-    like(exception { Test::Stream::Context->new(debug => $debug) }, qr/The 'hub' attribute is required/, "need to have hub");
+    my $trace = Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
+    like(exception { Test::Stream::Context->new(trace => $trace) }, qr/The 'hub' attribute is required/, "need to have hub");
 
     my $hub = Test::Stream::Sync->stack->top;
-    my $ctx = Test::Stream::Context->new(debug => $debug, hub => $hub);
+    my $ctx = Test::Stream::Context->new(trace => $trace, hub => $hub);
     is($ctx->{_depth}, 0, "depth set to 0 when not defined.");
 
-    $ctx = Test::Stream::Context->new(debug => $debug, hub => $hub, _depth => 1);
+    $ctx = Test::Stream::Context->new(trace => $trace, hub => $hub, _depth => 1);
     is($ctx->{_depth}, 1, "Do not reset depth");
 
     like(

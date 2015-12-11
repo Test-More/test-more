@@ -5,7 +5,7 @@ use Test::Stream::Tester;
 use Test::Stream::Event::Waiting;
 
 my $waiting = Test::Stream::Event::Waiting->new(
-    debug => 'fake',
+    trace => 'fake',
 );
 
 ok($waiting, "Created event");

@@ -1,15 +1,15 @@
 use strict;
 use warnings;
 use Test::Stream::Tester;
-use Test::Stream::DebugInfo;
+use Test::Stream::Trace;
 
 like(
-    exception { 'Test::Stream::DebugInfo'->new() },
+    exception { 'Test::Stream::Trace'->new() },
     qr/Frame is required/,
     "got error"
 );
 
-my $one = 'Test::Stream::DebugInfo'->new(frame => ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo']);
+my $one = 'Test::Stream::Trace'->new(frame => ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo']);
 is_deeply($one->frame,  ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo'], "Got frame");
 is_deeply([$one->call], ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo'], "Got call");
 is($one->package, 'Foo::Bar',      "Got package");
@@ -17,9 +17,9 @@ is($one->file,    'foo.t',         "Got file");
 is($one->line,    5,               "Got line");
 is($one->subname, 'Foo::Bar::foo', "got subname");
 
-is($one->trace, "at foo.t line 5", "got trace");
+is($one->debug, "at foo.t line 5", "got trace");
 $one->set_detail("yo momma");
-is($one->trace, "yo momma", "got detail for trace");
+is($one->debug, "yo momma", "got detail for trace");
 $one->set_detail(undef);
 
 is(

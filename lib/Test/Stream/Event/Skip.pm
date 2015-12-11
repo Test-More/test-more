@@ -8,7 +8,6 @@ use Test::Stream::HashBase accessors => [qw/reason/];
 sub init {
     my $self = shift;
     $self->SUPER::init;
-
     $self->{+EFFECTIVE_PASS} = 1;
 }
 
@@ -43,7 +42,7 @@ they can never fail.
 
 or:
 
-    my $ctx   = debug();
+    my $ctx   = context();
     my $event = $ctx->send_event(
         'Skip',
         name   => $name,

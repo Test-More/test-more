@@ -5,12 +5,8 @@ use warnings;
 use Carp qw/confess carp/;
 
 use Test::Stream::HashBase(
-    accessors => [qw/debug nested/],
+    accessors => [qw/trace nested/],
 );
-
-sub init {
-    confess("No debug info provided!") unless $_[0]->{+DEBUG};
-}
 
 sub causes_fail  { 0 }
 
@@ -52,8 +48,6 @@ L<Test::Stream>.
         my $self = shift;
         # no other args in @_
 
-        $self->SUPER::init();
-
         $self->set_foo('xxx') unless defined $self->foo;
 
         # Events are arrayrefs, all accessors have a constant defined with
@@ -69,9 +63,10 @@ L<Test::Stream>.
 
 =over 4
 
-=item $dbg = $e->debug
+=item $trace = $e->trace
 
-Get a snapshot of the debug info as it was when this event was generated
+Get a snapshot of the L<Test::Stream::Trace> as it was when this event was
+generated
 
 =item $bool = $e->causes_fail
 

@@ -3,18 +3,18 @@ use warnings;
 
 use Test::Stream::Tester;
 use Test::Stream::State;
-use Test::Stream::DebugInfo;
+use Test::Stream::Trace;
 use Test::Stream::Event::Ok;
 use Test::Stream::Event::Diag;
 
 use Test::Stream::Context qw/context/;
 
-my $dbg;
+my $trace;
 sub tests {
     my ($name, $code) = @_;
 
-    # Make sure there is a fresh debug object for each group
-    $dbg = Test::Stream::DebugInfo->new(
+    # Make sure there is a fresh trace object for each group
+    $trace = Test::Stream::Trace->new(
         frame => ['main_foo', 'foo.t', 42, 'main_foo::flubnarb'],
     );
 
@@ -27,7 +27,7 @@ sub tests {
 
 tests Passing => sub {
     my $ok = Test::Stream::Event::Ok->new(
-        debug => $dbg,
+        trace => $trace,
         pass  => 1,
         name  => 'the_test',
     );
@@ -47,7 +47,7 @@ tests Failing => sub {
     local $ENV{HARNESS_ACTIVE} = 1;
     local $ENV{HARNESS_IS_VERBOSE} = 1;
     my $ok = Test::Stream::Event::Ok->new(
-        debug => $dbg,
+        trace => $trace,
         pass  => 0,
         name  => 'the_test',
     );
@@ -73,7 +73,7 @@ tests fail_with_diag => sub {
     local $ENV{HARNESS_ACTIVE} = 1;
     local $ENV{HARNESS_IS_VERBOSE} = 1;
     my $ok = Test::Stream::Event::Ok->new(
-        debug => $dbg,
+        trace => $trace,
         pass  => 0,
         name  => 'the_test',
         diag  => ['xxx'],
@@ -99,7 +99,7 @@ tests "Failing TODO" => sub {
     local $ENV{HARNESS_ACTIVE} = 1;
     local $ENV{HARNESS_IS_VERBOSE} = 1;
     my $ok = Test::Stream::Event::Ok->new(
-        debug => $dbg,
+        trace => $trace,
         pass  => 0,
         name  => 'the_test',
         todo  => 'A Todo',
@@ -121,8 +121,8 @@ tests "Failing TODO" => sub {
     is($state->failed, 0, "failed count unchanged");
     is($state->is_passing, 1, "still passing");
 
-    $ok = Test::Sync::Event::Ok->new(
-        debug => $dbg,
+    $ok = Test::Stream::Event::Ok->new(
+        trace => $trace,
         pass  => 0,
         name  => 'the_test2',
         todo  => '',
@@ -132,31 +132,25 @@ tests "Failing TODO" => sub {
 
 tests init => sub {
     like(
-        exception { Test::Stream::Event::Ok->new() },
-        qr/No debug info provided!/,
-        "Need to provide debug info"
-    );
-
-    like(
-        exception { Test::Stream::Event::Ok->new(debug => $dbg, pass => 1, name => "foo#foo") },
+        exception { Test::Stream::Event::Ok->new(trace => $trace, pass => 1, name => "foo#foo") },
         qr/'foo#foo' is not a valid name, names must not contain '#' or newlines/,
         "Some characters do not belong in a name"
     );
 
     like(
-        exception { Test::Stream::Event::Ok->new(debug => $dbg, pass => 1, name => "foo\nfoo") },
+        exception { Test::Stream::Event::Ok->new(trace => $trace, pass => 1, name => "foo\nfoo") },
         qr/'foo\nfoo' is not a valid name, names must not contain '#' or newlines/,
         "Some characters do not belong in a name"
     );
 
     my $ok = Test::Stream::Event::Ok->new(
-        debug => $dbg,
+        trace => $trace,
         pass  => 1,
     );
     is($ok->effective_pass, 1, "set effective pass");
 
     $ok = Test::Stream::Event::Ok->new(
-        debug => $dbg,
+        trace => $trace,
         pass  => 1,
         name => 'foo#foo',
         allow_bad_name => 1,
@@ -165,13 +159,13 @@ tests init => sub {
 };
 
 tests default_diag => sub {
-    my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => 1);
+    my $ok = Test::Stream::Event::Ok->new(trace => $trace, pass => 1);
     is_deeply([$ok->default_diag], [], "no diag for a pass");
 
-    $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => 0);
+    $ok = Test::Stream::Event::Ok->new(trace => $trace, pass => 0);
     like($ok->default_diag, qr/Failed test at foo\.t line 42/, "got diag w/o name");
 
-    $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => 0, name => 'foo');
+    $ok = Test::Stream::Event::Ok->new(trace => $trace, pass => 0, name => 'foo');
     like($ok->default_diag, qr/Failed test 'foo'\nat foo\.t line 42/, "got diag w/name");
 };
 

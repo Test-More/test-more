@@ -142,10 +142,10 @@ $events = intercept {
     $ictx = tool();
     $ictx->ok(1, 'pass');
     $ictx->ok(0, 'fail');
-    my $dbg = Test::Stream::DebugInfo->new(
+    my $trace = Test::Stream::Trace->new(
         frame => [ __PACKAGE__, __FILE__, __LINE__],
     );
-    $ictx->hub->finalize($dbg, 1);
+    $ictx->hub->finalize($trace, 1);
 };
 
 is_deeply(

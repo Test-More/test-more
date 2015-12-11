@@ -1,4 +1,4 @@
-package Test::Stream::DebugInfo;
+package Test::Stream::Trace;
 use strict;
 use warnings;
 
@@ -20,7 +20,7 @@ sub init {
 
 sub snapshot { bless {%{$_[0]}}, __PACKAGE__ };
 
-sub trace {
+sub debug {
     my $self = shift;
     return $self->{+DETAIL} if $self->{+DETAIL};
     my ($pkg, $file, $line) = $self->call;
@@ -30,13 +30,13 @@ sub trace {
 sub alert {
     my $self = shift;
     my ($msg) = @_;
-    warn $msg . ' ' . $self->trace . ".\n";
+    warn $msg . ' ' . $self->debug . ".\n";
 }
 
 sub throw {
     my $self = shift;
     my ($msg) = @_;
-    die $msg . ' ' . $self->trace . ".\n";
+    die $msg . ' ' . $self->debug . ".\n";
 }
 
 sub call { @{$_[0]->{+FRAME}} }
@@ -56,7 +56,7 @@ __END__
 
 =head1 NAME
 
-Test::Stream::DebugInfo - Debug information for events
+Test::Stream::Trace - Debug information for events
 
 =head1 DESCRIPTION
 
@@ -66,9 +66,9 @@ that information.
 
 =head1 SYNOPSIS
 
-    use Test::Stream::DebugInfo;
+    use Test::Stream::Trace;
 
-    my $dbg = Test::Stream::DebugInfo->new(
+    my $trace = Test::Stream::Trace->new(
         frame => [$package, $file, $line, $subname],
     );
 
@@ -76,50 +76,50 @@ that information.
 
 =over 4
 
-=item $dbg->set_detail($msg)
+=item $trace->set_detail($msg)
 
-=item $msg = $dbg->detail
+=item $msg = $trace->detail
 
 Used to get/set a custom trace message that will be used INSTEAD of
-C<< at <FILE> line <LINE> >> when calling C<< $dbg->trace >>.
+C<< at <FILE> line <LINE> >> when calling C<< $trace->debug >>.
 
-=item $dbg->trace
+=item $str = $trace->debug
 
 Typically returns the string C<< at <FILE> line <LINE> >>. If C<detail> is set
 then its value wil be returned instead.
 
-=item $dbg->alert($MESSAGE)
+=item $trace->alert($MESSAGE)
 
 This issues a warning at the frame (filename and line number where
 errors should be reported).
 
-=item $dbg->throw($MESSAGE)
+=item $trace->throw($MESSAGE)
 
 This throws an exception at the frame (filename and line number where
 errors should be reported).
 
-=item $frame = $dbg->frame()
+=item $frame = $trace->frame()
 
 Get the call frame arrayref.
 
-=item ($package, $file, $line, $subname) = $dbg->call()
+=item ($package, $file, $line, $subname) = $trace->call()
 
 Get the caller details for the debug-info. This is where errors should be
 reported.
 
-=item $pkg = $dbg->package
+=item $pkg = $trace->package
 
 Get the debug-info package.
 
-=item $file = $dbg->file
+=item $file = $trace->file
 
 Get the debug-info filename.
 
-=item $line = $dbg->line
+=item $line = $trace->line
 
 Get the debug-info line number.
 
-=item $subname = $dbg->subname
+=item $subname = $trace->subname
 
 Get the debug-info subroutine name.
 
@@ -128,7 +128,7 @@ Get the debug-info subroutine name.
 =head1 SOURCE
 
 The source code repository for Test::Stream can be found at
-F<http://github.com/Test-More/Test-Stream/>.
+F<http://github.com/Test-More/Test-Sync/>.
 
 =head1 MAINTAINERS
 

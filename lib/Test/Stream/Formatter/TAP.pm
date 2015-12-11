@@ -134,7 +134,7 @@ sub _ok_event {
 
     # We use direct hash access for performance. OK events are so common we
     # need this to be fast.
-    my ($name, $debug, $todo) = @{$e}{qw/name debug todo/};
+    my ($name, $todo) = @{$e}{qw/name todo/};
 
     my $out = "";
     $out .= "not " unless $e->{pass};

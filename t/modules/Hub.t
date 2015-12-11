@@ -42,7 +42,7 @@ tests basic => sub {
 
     my $send_event = sub {
         my ($msg) = @_;
-        my $e = My::Event->new(msg => $msg, debug => 'fake');
+        my $e = My::Event->new(msg => $msg, trace => 'fake');
         $hub->send($e);
     };
 
@@ -64,14 +64,14 @@ tests follow_ups => sub {
     my $hub = Test::Stream::Hub->new;
     $hub->state->set_count(1);
 
-    my $dbg = Test::Stream::DebugInfo->new(
+    my $trace = Test::Stream::Trace->new(
         frame => [__PACKAGE__, __FILE__, __LINE__],
     );
 
     my $ran = 0;
     $hub->follow_up(sub {
         my ($d, $h) = @_;
-        is_deeply($d, $dbg, "Got debug");
+        is_deeply($d, $trace, "Got trace");
         is_deeply($h, $hub, "Got hub");
         ok(!$hub->state->ended, "Hub state has not ended yet");
         $ran++;
@@ -83,17 +83,17 @@ tests follow_ups => sub {
         "follow_up takes a coderef"
     );
 
-    $hub->finalize($dbg);
+    $hub->finalize($trace);
 
     is($ran, 1, "ran once");
 
     is_deeply(
         $hub->state->ended,
-        $dbg->frame,
+        $trace->frame,
         "Ended at the expected place."
     );
 
-    eval { $hub->finalize($dbg) };
+    eval { $hub->finalize($trace) };
 
     is($ran, 1, "ran once");
 
@@ -111,7 +111,7 @@ tests IPC => sub {
 
     my $build_event = sub {
         my ($msg) = @_;
-        return My::Event->new(msg => $msg, debug => 'fake');
+        return My::Event->new(msg => $msg, trace => 'fake');
     };
 
     my $e1 = $build_event->('foo');
@@ -184,7 +184,7 @@ tests listen => sub {
     my $ok1 = Test::Stream::Event::Ok->new(
         pass => 1,
         name => 'foo',
-        debug => Test::Stream::DebugInfo->new(
+        trace => Test::Stream::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -192,7 +192,7 @@ tests listen => sub {
     my $ok2 = Test::Stream::Event::Ok->new(
         pass => 0,
         name => 'bar',
-        debug => Test::Stream::DebugInfo->new(
+        trace => Test::Stream::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -200,7 +200,7 @@ tests listen => sub {
     my $ok3 = Test::Stream::Event::Ok->new(
         pass => 1,
         name => 'baz',
-        debug => Test::Stream::DebugInfo->new(
+        trace => Test::Stream::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -281,7 +281,7 @@ tests filter => sub {
     my $ok1 = Test::Stream::Event::Ok->new(
         pass => 1,
         name => 'foo',
-        debug => Test::Stream::DebugInfo->new(
+        trace => Test::Stream::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -289,7 +289,7 @@ tests filter => sub {
     my $ok2 = Test::Stream::Event::Ok->new(
         pass => 0,
         name => 'bar',
-        debug => Test::Stream::DebugInfo->new(
+        trace => Test::Stream::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -297,7 +297,7 @@ tests filter => sub {
     my $ok3 = Test::Stream::Event::Ok->new(
         pass => 1,
         name => 'baz',
-        debug => Test::Stream::DebugInfo->new(
+        trace => Test::Stream::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );

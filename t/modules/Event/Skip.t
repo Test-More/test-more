@@ -3,10 +3,10 @@ use strict;
 use warnings;
 
 use Test::Stream::Event::Skip;
-use Test::Stream::DebugInfo;
+use Test::Stream::Trace;
 
 my $skip = Test::Stream::Event::Skip->new(
-    debug  => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace  => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     name   => 'skip me',
     reason => 'foo',
 );

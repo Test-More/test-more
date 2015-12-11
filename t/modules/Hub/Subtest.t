@@ -52,7 +52,7 @@ ok($one->isa('Test::Stream::Hub'), "inheritence");
     my $ok = Test::Stream::Event::Ok->new(
         pass => 1,
         name => 'blah',
-        debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']),
+        trace => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']),
     );
 
     def is => ($one->process($ok), 'P!', "processed");
@@ -66,7 +66,7 @@ ok($one->isa('Test::Stream::Hub'), "inheritence");
 
     my $bail = Test::Stream::Event::Bail->new(
         message => 'blah',
-        debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']),
+        trace => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']),
     );
 
     def is => ($one->process($bail), 'P!', "processed");

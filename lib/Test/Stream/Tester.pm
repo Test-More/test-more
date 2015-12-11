@@ -59,13 +59,13 @@ sub intercept(&) {
     $hub->cull;
     $ctx->stack->pop($hub);
 
-    my $dbg = $ctx->debug;
+    my $trace = $ctx->trace;
     $ctx->release;
 
     die $err unless $ok
         || (blessed($err) && $err->isa('Test::Stream::Hub::Interceptor::Terminator'));
 
-    $hub->finalize($dbg, 1)
+    $hub->finalize($trace, 1)
         if $ok
         && !$hub->no_ending
         && !$hub->state->ended;
@@ -235,7 +235,7 @@ sub plan {
 
 sub done_testing {
     my $ctx = context();
-    $ctx->hub->finalize($ctx->debug, 1);
+    $ctx->hub->finalize($ctx->trace, 1);
     $ctx->release;
 }
 

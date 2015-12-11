@@ -141,7 +141,7 @@ sub send {
         $err =~ s{ at \Q$src_file\E.*$}{};
         chomp($err);
         my $tid = get_tid();
-        my $trace = $e->debug->trace;
+        my $trace = $e->trace->debug;
         my $type = blessed($e);
 
         $self->abort(<<"        EOT");
@@ -232,7 +232,7 @@ sub waiting {
     require Test::Stream::Event::Waiting;
     $self->send(
         GLOBAL => Test::Stream::Event::Waiting->new(
-            debug => Test::Stream::DebugInfo->new(frame => [caller()]),
+            trace => Test::Stream::Trace->new(frame => [caller()]),
         )
     );
     return;

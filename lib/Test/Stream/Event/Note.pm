@@ -6,7 +6,6 @@ use base 'Test::Stream::Event';
 use Test::Stream::HashBase accessors => [qw/message/];
 
 sub init {
-    $_[0]->SUPER::init();
     if (defined $_[0]->{+MESSAGE}) {
         $_[0]->{+MESSAGE} .= "";
     }

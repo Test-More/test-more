@@ -160,8 +160,8 @@ ok(!-d $tmpdir, "cleaned up temp dir");
     $out = capture {
         my $ipc = Test::Stream::IPC::Files->new();
         $ipc->add_hub($hid);
-        my $dbg = Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
-        my $e = eval { $ipc->send($hid, bless({glob => \*ok, debug => $dbg}, 'Foo')); 1 };
+        my $trace = Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
+        my $e = eval { $ipc->send($hid, bless({glob => \*ok, trace => $trace}, 'Foo')); 1 };
         print STDERR $@ unless $e || $@ =~ m/^255/;
         $ipc->drop_hub($hid);
     };

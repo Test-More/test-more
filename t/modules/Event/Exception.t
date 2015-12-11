@@ -4,7 +4,7 @@ use Test::Stream::Tester;
 use Test::Stream::Event::Exception;
 
 my $exception = Test::Stream::Event::Exception->new(
-    debug => 'fake',
+    trace => 'fake',
     error => "evil at lake_of_fire.t line 6\n",
 );
 

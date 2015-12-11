@@ -12,8 +12,6 @@ use Test::Stream::HashBase accessors => [
 sub init {
     my $self = shift;
 
-    confess("No debug info provided!") unless $self->{+DEBUG};
-
     # Do not store objects here, only true or false
     $self->{+PASS} = $self->{+PASS} ? 1 : 0;
 
@@ -22,7 +20,7 @@ sub init {
     return if $self->{+ALLOW_BAD_NAME};
     my $name = $self->{+NAME} || return;
     return unless index($name, '#') != -1 || index($name, "\n") != -1;
-    $self->debug->throw("'$name' is not a valid name, names must not contain '#' or newlines.")
+    $self->trace->throw("'$name' is not a valid name, names must not contain '#' or newlines.")
 }
 
 sub default_diag {
@@ -31,20 +29,20 @@ sub default_diag {
     return if $self->{+PASS};
 
     my $name  = $self->{+NAME};
-    my $dbg   = $self->{+DEBUG};
+    my $trace = $self->{+TRACE};
     my $pass  = $self->{+PASS};
     my $todo  = defined($self->{+TODO});
 
     my $msg = $todo ? "Failed (TODO)" : "Failed";
     my $prefix = $ENV{HARNESS_ACTIVE} && !$ENV{HARNESS_IS_VERBOSE} ? "\n" : "";
 
-    my $trace = $dbg->trace;
+    my $debug = $trace ? $trace->debug : "[No trace info available]";
 
     if (defined $name) {
-        $msg = qq[$prefix$msg test '$name'\n$trace.];
+        $msg = qq[$prefix$msg test '$name'\n$debug.];
     }
     else {
-        $msg = qq[$prefix$msg test $trace.];
+        $msg = qq[$prefix$msg test $debug.];
     }
 
     return $msg;
@@ -81,7 +79,7 @@ Examples are C<ok()>, and C<is()>.
 
 or:
 
-    my $ctx   = debug();
+    my $ctx   = context();
     my $event = $ctx->send_event(
         'Ok',
         pass => $bool,

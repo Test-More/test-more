@@ -4,7 +4,7 @@ use Test::Stream::Tester;
 use Test::Stream::Event::Bail;
 
 my $bail = Test::Stream::Event::Bail->new(
-    debug => 'fake',
+    trace => 'fake',
     reason => 'evil',
 );
 

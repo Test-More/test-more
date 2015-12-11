@@ -3,11 +3,11 @@ use warnings;
 
 use Test::Stream::Tester;
 use Test::Stream::Event::Plan;
-use Test::Stream::DebugInfo;
+use Test::Stream::Trace;
 use Test::Stream::State;
 
 my $plan = Test::Stream::Event::Plan->new(
-    debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     max => 100,
 );
 
@@ -39,14 +39,14 @@ $plan->update_state($state);
 is($state->plan, '100', "Update plan in state if it is 'NO PLAN'");
 
 $plan = Test::Stream::Event::Plan->new(
-    debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     max => 0,
     directive => 'skip_all',
 );
 is($plan->directive, 'SKIP', "Change skip_all to SKIP");
 
 $plan = Test::Stream::Event::Plan->new(
-    debug => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     max => 0,
     directive => 'no_plan',
 );
@@ -56,7 +56,7 @@ ok(!$plan->global, "NO PLAN is not global");
 like(
     exception {
         $plan = Test::Stream::Event::Plan->new(
-            debug     => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+            trace     => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
             max       => 0,
             directive => 'foo',
         );
@@ -68,7 +68,7 @@ like(
 like(
     exception {
         $plan = Test::Stream::Event::Plan->new(
-            debug  => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+            trace  => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
             max    => 0,
             reason => 'foo',
         );
@@ -80,7 +80,7 @@ like(
 like(
     exception {
         $plan = Test::Stream::Event::Plan->new(
-            debug  => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+            trace  => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
         );
     },
     qr/No number of tests specified/,
@@ -90,7 +90,7 @@ like(
 like(
     exception {
         $plan = Test::Stream::Event::Plan->new(
-            debug  => Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+            trace  => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
             max => 'skip',
         );
     },

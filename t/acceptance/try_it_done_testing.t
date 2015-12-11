@@ -8,7 +8,7 @@ sub done_testing {
     my $state = $ctx->hub->state;
 
     die "Test Already ended!" if $state->ended;
-    $ctx->hub->finalize($ctx->debug, 1);
+    $ctx->hub->finalize($ctx->trace, 1);
     $ctx->release;
 }
 

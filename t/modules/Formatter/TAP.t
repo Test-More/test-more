@@ -69,7 +69,7 @@ $it->write(
         name => 'foo',
         diag => 'diag',
         note => 'note',
-        debug => 'fake',
+        trace => 'fake',
     ),
     55,
 );
@@ -80,7 +80,7 @@ $it->write(
         name => 'bar',
         diag => 'diag',
         note => 'note',
-        debug => 'fake',
+        trace => 'fake',
         nested => 1,
     ),
     1,
@@ -113,11 +113,11 @@ $it = Test::Stream::Formatter::TAP->new(
     no_numbers => 1,
 );
 
-my $dbg = Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
-my $ok = Test::Stream::Event::Ok->new(pass => 1, name => 'xxx', debug => $dbg);
-my $diag = Test::Stream::Event::Diag->new(msg => 'foo', debug => $dbg);
-my $plan = Test::Stream::Event::Plan->new(max => 5,     debug => $dbg);
-my $bail = Test::Stream::Event::Bail->new(reason => 'foo', nested => 1, debug => $dbg);
+my $trace = Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
+my $ok = Test::Stream::Event::Ok->new(pass => 1, name => 'xxx', trace => $trace);
+my $diag = Test::Stream::Event::Diag->new(msg    => 'foo', trace  => $trace);
+my $plan = Test::Stream::Event::Plan->new(max    => 5,     trace  => $trace);
+my $bail = Test::Stream::Event::Bail->new(reason => 'foo', nested => 1, trace => $trace);
 
 $it->write($_, 1) for $ok, $diag, $plan, $bail;
 
@@ -129,8 +129,8 @@ my $fmt = Test::Stream::Formatter::TAP->new;
 sub tests {
     my ($name, $code) = @_;
 
-    # Make sure there is a fresh debug object for each group
-    $dbg = Test::Stream::DebugInfo->new(
+    # Make sure there is a fresh trace object for each group
+    $trace = Test::Stream::Trace->new(
         frame => ['main_foo', 'foo.t', 42, 'main_foo::flubnarb'],
     );
 
@@ -143,7 +143,7 @@ sub tests {
 
 tests bail => sub {
     my $bail = Test::Stream::Event::Bail->new(
-        debug => $dbg,
+        trace => $trace,
         reason => 'evil',
     );
 
@@ -156,7 +156,7 @@ tests bail => sub {
 
 tests diag => sub {
     my $diag = Test::Stream::Event::Diag->new(
-        debug => $dbg,
+        trace => $trace,
         message => 'foo',
     );
 
@@ -197,7 +197,7 @@ tests diag => sub {
 
 tests exception => sub {
     my $exception = Test::Stream::Event::Exception->new(
-        debug => $dbg,
+        trace => $trace,
         error => "evil at lake_of_fire.t line 6\n",
     );
 
@@ -210,7 +210,7 @@ tests exception => sub {
 
 tests note => sub {
     my $note = Test::Stream::Event::Note->new(
-        debug => $dbg,
+        trace => $trace,
         message => 'foo',
     );
 
@@ -246,7 +246,7 @@ tests note => sub {
 
 for my $pass (1, 0) {
     tests name_and_number => sub {
-        my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass, name => 'foo');
+        my $ok = Test::Stream::Event::Ok->new(trace => $trace, pass => $pass, name => 'foo');
         my @tap = $fmt->event_tap($ok, 7);
         is_deeply(
             \@tap,
@@ -258,7 +258,7 @@ for my $pass (1, 0) {
     };
 
     tests no_number => sub {
-        my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass, name => 'foo');
+        my $ok = Test::Stream::Event::Ok->new(trace => $trace, pass => $pass, name => 'foo');
         my @tap = $fmt->event_tap($ok, );
         is_deeply(
             \@tap,
@@ -270,7 +270,7 @@ for my $pass (1, 0) {
     };
 
     tests no_name => sub {
-        my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass);
+        my $ok = Test::Stream::Event::Ok->new(trace => $trace, pass => $pass);
         my @tap = $fmt->event_tap($ok, 7);
         is_deeply(
             \@tap,
@@ -282,7 +282,7 @@ for my $pass (1, 0) {
     };
 
     tests todo => sub {
-        my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass);
+        my $ok = Test::Stream::Event::Ok->new(trace => $trace, pass => $pass);
         $ok->set_todo('b');
         my @tap = $fmt->event_tap($ok, 7);
         is_deeply(
@@ -306,7 +306,7 @@ for my $pass (1, 0) {
     };
 
     tests empty_diag_array => sub {
-        my $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass, diag => []);
+        my $ok = Test::Stream::Event::Ok->new(trace => $trace, pass => $pass, diag => []);
         my @tap = $fmt->event_tap($ok, 7);
         is_deeply(
             \@tap,
@@ -316,7 +316,7 @@ for my $pass (1, 0) {
             "Got expected output (No diag)"
         );
 
-        $ok = Test::Stream::Event::Ok->new(debug => $dbg, pass => $pass);
+        $ok = Test::Stream::Event::Ok->new(trace => $trace, pass => $pass);
         @tap = $fmt->event_tap($ok, 7);
         is_deeply(
             \@tap,
@@ -329,7 +329,7 @@ for my $pass (1, 0) {
 
     tests diag => sub {
         my $ok = Test::Stream::Event::Ok->new(
-            debug => $dbg,
+            trace => $trace,
             pass  => 0,
             name  => 'the_test',
             diag  => ['xxx'],
@@ -348,7 +348,7 @@ for my $pass (1, 0) {
 
 tests plan => sub {
     my $plan = Test::Stream::Event::Plan->new(
-        debug => $dbg,
+        trace => $trace,
         max => 100,
     );
 
@@ -368,7 +368,7 @@ tests plan => sub {
     );
 
     $plan = Test::Stream::Event::Plan->new(
-        debug => $dbg,
+        trace => $trace,
         max => 0,
         directive => 'skip_all',
     );
@@ -379,7 +379,7 @@ tests plan => sub {
     );
 
     $plan = Test::Stream::Event::Plan->new(
-        debug => $dbg,
+        trace => $trace,
         max => 0,
         directive => 'no_plan',
     );
@@ -394,7 +394,7 @@ tests subtest => sub {
     my $st = 'Test::Stream::Event::Subtest';
 
     my $one = $st->new(
-        debug     => $dbg,
+        trace     => $trace,
         pass      => 1,
         buffered  => 1,
         name      => 'foo',
@@ -419,19 +419,19 @@ tests subtest => sub {
     );
 
     $one = $st->new(
-        debug     => $dbg,
+        trace     => $trace,
         pass      => 0,
         buffered  => 1,
         name      => 'bar',
         diag      => [ 'bar failed' ],
         subevents => [
-            Test::Stream::Event::Ok->new(debug => $dbg, name => 'first',  pass => 1),
-            Test::Stream::Event::Ok->new(debug => $dbg, name => 'second', pass => 0, diag => ["second failed"]),
-            Test::Stream::Event::Ok->new(debug => $dbg, name => 'third',  pass => 1),
+            Test::Stream::Event::Ok->new(trace => $trace, name => 'first',  pass => 1),
+            Test::Stream::Event::Ok->new(trace => $trace, name => 'second', pass => 0, diag => ["second failed"]),
+            Test::Stream::Event::Ok->new(trace => $trace, name => 'third',  pass => 1),
 
-            Test::Stream::Event::Diag->new(debug => $dbg, message => 'blah blah'),
+            Test::Stream::Event::Diag->new(trace => $trace, message => 'blah blah'),
 
-            Test::Stream::Event::Plan->new(debug => $dbg, max => 3),
+            Test::Stream::Event::Plan->new(trace => $trace, max => 3),
         ],
     );
 
@@ -503,7 +503,7 @@ tests subtest => sub {
 };
 
 tests skip => sub {
-    my $skip = Test::Sync::Event::Skip->new(debug => $dbg, pass => 1, name => 'foo', reason => 'xxx');
+    my $skip = Test::Stream::Event::Skip->new(trace => $trace, pass => 1, name => 'foo', reason => 'xxx');
     my @tap = $fmt->event_tap($skip, 7);
     is_deeply(
         \@tap,

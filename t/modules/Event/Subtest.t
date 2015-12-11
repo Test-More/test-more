@@ -5,9 +5,9 @@ use Test::Stream::Tester;
 use Test::Stream::Event::Subtest;
 my $st = 'Test::Stream::Event::Subtest';
 
-my $dbg = Test::Stream::DebugInfo->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']);
+my $trace = Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']);
 my $one = $st->new(
-    debug     => $dbg,
+    trace     => $trace,
     pass      => 1,
     buffered  => 1,
     name      => 'foo',

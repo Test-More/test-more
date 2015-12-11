@@ -7,7 +7,7 @@ use Carp qw/confess croak longmess cluck/;
 use Test::Stream::Util qw/get_tid try pkg_to_file/;
 
 use Test::Stream::Sync();
-use Test::Stream::DebugInfo();
+use Test::Stream::Trace();
 
 our @EXPORT_OK = qw/context/;
 use base 'Exporter';
@@ -36,11 +36,11 @@ sub _do_end {
     my $real = $?;
     my $new  = $real;
 
-    my @unreleased = grep { $_ && $_->debug->pid == $$ } values %CONTEXTS;
+    my @unreleased = grep { $_ && $_->trace->pid == $$ } values %CONTEXTS;
     if (@unreleased) {
         $new = 255;
 
-        $_->debug->alert("context object was never released! This means a testing tool is behaving very badly")
+        $_->trace->alert("context object was never released! This means a testing tool is behaving very badly")
             for @unreleased;
     }
 
@@ -48,12 +48,12 @@ sub _do_end {
 }
 
 use Test::Stream::HashBase(
-    accessors => [qw/stack hub debug _on_release _depth _err _no_destroy_warning/],
+    accessors => [qw/stack hub trace _on_release _depth _err _no_destroy_warning/],
 );
 
 sub init {
-    confess "The 'debug' attribute is required"
-        unless $_[0]->{+DEBUG};
+    confess "The 'trace' attribute is required"
+        unless $_[0]->{+TRACE};
 
     confess "The 'hub' attribute is required"
         unless $_[0]->{+HUB};
@@ -102,12 +102,12 @@ sub DESTROY {
     return unless $CONTEXTS{$hid} && $CONTEXTS{$hid} == $self;
     return unless "$@" eq "" . $self->{+_ERR};
 
-    my $debug = $self->{+DEBUG} || return;
-    my $frame = $debug->frame;
+    my $trace = $self->{+TRACE} || return;
+    my $frame = $trace->frame;
 
     my $mess = longmess;
 
-    warn <<"    EOT" unless $self->{+_NO_DESTROY_WARNING} || $self->{+DEBUG}->pid != $$ || $self->{+DEBUG}->tid != get_tid;
+    warn <<"    EOT" unless $self->{+_NO_DESTROY_WARNING} || $self->{+TRACE}->pid != $$ || $self->{+TRACE}->tid != get_tid;
 Context was not released! Releasing at destruction.
 Context creation details:
   Package: $frame->[0]
@@ -198,14 +198,14 @@ sub context {
             pid   => $$,
             tid   => get_tid(),
         },
-        'Test::Stream::DebugInfo'
+        'Test::Stream::Trace'
     );
 
     $current = bless(
         {
             STACK()  => $stack,
             HUB()    => $hub,
-            DEBUG()  => $dbg,
+            TRACE()  => $dbg,
             _DEPTH() => $depth,
             _ERR()   => $@,
             $params{on_release} ? (_ON_RELEASE() => [$params{on_release}]) : (),
@@ -231,7 +231,7 @@ sub _depth_error {
     my ($details) = @_;
     my ($pkg, $file, $line, $sub, $depth) = @$details;
 
-    my $oldframe = $self->{+DEBUG}->frame;
+    my $oldframe = $self->{+TRACE}->frame;
     my $olddepth = $self->{+_DEPTH};
 
     my $mess = longmess();
@@ -266,12 +266,12 @@ Removing the old context and creating a new one...
 sub throw {
     my ($self, $msg) = @_;
     $_[0]->release; # We have to act on $_[0] because it is aliased
-    $self->debug->throw($msg);
+    $self->trace->throw($msg);
 }
 
 sub alert {
     my ($self, $msg) = @_;
-    $self->debug->alert($msg);
+    $self->trace->alert($msg);
 }
 
 sub send_event {
@@ -283,7 +283,7 @@ sub send_event {
 
     $self->{+HUB}->send(
         $pkg->new(
-            debug => $self->{+DEBUG}->snapshot,
+            trace => $self->{+TRACE}->snapshot,
             %args,
         )
     );
@@ -297,7 +297,7 @@ sub build_event {
     my $pkg = $LOADED{$event} || $self->_parse_event($event);
 
     $pkg->new(
-        debug => $self->{+DEBUG}->snapshot,
+        trace => $self->{+TRACE}->snapshot,
         %args,
     );
 }
@@ -309,7 +309,7 @@ sub ok {
     my $hub = $self->{+HUB};
 
     my $e = bless {
-        debug => bless( {%{$self->{+DEBUG}}}, 'Test::Stream::DebugInfo'),
+        trace => bless( {%{$self->{+TRACE}}}, 'Test::Stream::Trace'),
         pass  => $pass,
         name  => $name,
         $hub->_fast_todo,
@@ -742,9 +742,9 @@ the current hub.
 This will return the L<Test::Stream::Hub> instance the context recognises as
 the current one to which all events should be sent.
 
-=item $dbg = $ctx->debug()
+=item $dbg = $ctx->trace()
 
-This will return the L<Test::Stream::DebugInfo> instance used by the context.
+This will return the L<Test::Stream::Trace> instance used by the context.
 
 =item $ctx->do_in_context(\&code, @args);
 

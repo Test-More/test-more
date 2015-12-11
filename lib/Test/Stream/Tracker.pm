@@ -8,7 +8,7 @@ use Scalar::Util qw/reftype/;
 use Test::Stream::Capabilities qw/CAN_FORK/;
 use Test::Stream::Util qw/get_tid USE_THREADS pkg_to_file/;
 
-use Test::Stream::DebugInfo();
+use Test::Stream::Trace();
 use Test::Stream::Stack();
 
 use Test::Stream::HashBase(
@@ -181,12 +181,12 @@ sub set_exit {
 
     # None of this is necessary if we never got a root hub
     if(my $root = shift @hubs) {
-        my $dbg = Test::Stream::DebugInfo->new(
+        my $trace = Test::Stream::Trace->new(
             frame  => [__PACKAGE__, __FILE__, 0, __PACKAGE__ . '::END'],
             detail => __PACKAGE__ . ' END Block finalization',
         );
         my $ctx = Test::Stream::Context->new(
-            debug => $dbg,
+            trace => $trace,
             hub   => $root,
         );
 
@@ -197,7 +197,7 @@ sub set_exit {
 
         unless ($root->no_ending) {
             local $?;
-            $root->finalize($dbg) unless $root->state->ended;
+            $root->finalize($trace) unless $root->state->ended;
             $_->($ctx, $exit, \$new_exit) for @{$self->{+EXIT_HOOKS}};
             $new_exit ||= $root->state->failed;
         }
