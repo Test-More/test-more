@@ -160,11 +160,23 @@ is($events, [$e], "Hub saw the event");
 pop @$events;
 
 $e = $ctx->diag('foo');
-isa_ok($e, 'Test::Stream::Event::Diag');
+ok(!$e->todo, "no todo");
 is($e->message, 'foo', "got message");
 is($e->debug, $dbg, "Got the debug info");
 is(@$events, 1, "1 event");
 is($events, [$e], "Hub saw the event");
+pop @$events;
+
+$ctx->hub->set_parent_todo(1);
+$e = $ctx->diag('foo');
+$ctx->hub->set_parent_todo(0);
+ok($e->todo, "diag is todo");
+pop @$events;
+
+my $todo = $ctx->hub->set_todo("xxx");
+$e = $ctx->diag('foo');
+$todo = undef; # end todo
+ok($e->todo, "diag is todo");
 pop @$events;
 
 $e = $ctx->plan(100);
@@ -175,16 +187,24 @@ is(@$events, 1, "1 event");
 is($events, [$e], "Hub saw the event");
 pop @$events;
 
-# Test todo (deprecated)
-my ($dbg1, $dbg2);
-my $todo = Test::Stream::Sync->stack->top->set_todo("Here be dragons");
-wrap { $dbg1 = shift->debug };
+$e = $ctx->skip('foo', 'because');
+is($e->name, 'foo', "got name");
+is($e->reason, 'because', "got reason");
+ok($e->pass, "skip events pass by default");
+is_deeply($e->debug, $dbg, "Got the debug info");
+is(@$events, 1, "1 event");
+is_deeply($events, [$e], "Hub saw the event");
+pop @$events;
+
+$todo = $ctx->hub->set_todo("xxx");
+$e = $ctx->skip('foo', 'because');
 $todo = undef;
-wrap { $dbg2 = shift->debug };
+ok($e->todo, "event is todo");
+pop @$events;
 
-is($dbg1->_todo, 'Here be dragons', "Got todo in context created with todo in place");
-is($dbg2->_todo, undef, "no todo in context created after todo was removed");
-
+$e = $ctx->skip('foo', 'because', pass => 0);
+ok(!$e->pass, "can override skip params");
+pop @$events;
 
 # Test hooks
 

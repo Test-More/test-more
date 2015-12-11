@@ -219,6 +219,14 @@ tests skip => sub {
     is($state->count, 1, "Added to the count");
     is($state->failed, 0, "failed count unchanged");
     is($state->is_passing, 1, "still passing");
+
+    $ok = Test::Sync::Event::Ok->new(
+        debug => $dbg,
+        pass  => 0,
+        name  => 'the_test2',
+        todo  => '',
+    );
+    ok($ok->effective_pass, "empty string todo is still a todo");
 };
 
 tests init => sub {

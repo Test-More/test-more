@@ -9,7 +9,6 @@ sub init {
     my $self = shift;
     $self->SUPER::init;
 
-    $self->{+PASS} = 0;
     $self->{+EFFECTIVE_PASS} = 1;
 }
 

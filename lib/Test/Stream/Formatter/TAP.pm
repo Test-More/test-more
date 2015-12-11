@@ -169,11 +169,19 @@ sub _skip_event {
 
     my $name   = $e->name;
     my $reason = $e->reason;
+    my $todo   = $e->todo;
 
-    my $out = "ok";
+    my $out = "";
+    $out .= "not " unless $e->{pass};
+    $out .= "ok";
     $out .= " $num" if defined $num;
     $out .= " - $name" if $name;
-    $out .= " # skip";
+    if (defined($todo)) {
+        $out .= " # TODO & SKIP"
+    }
+    else {
+        $out .= " # skip";
+    }
     $out .= " $reason" if length $reason;
 
     return([OUT_STD, "$out\n"]);

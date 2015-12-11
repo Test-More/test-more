@@ -325,8 +325,15 @@ sub ok {
 
 sub skip {
     my $self = shift;
-    my ($name, $reason) = @_;
-    $self->send_event('Skip', name => $name, reason => $reason);
+    my ($name, $reason, @extra) = @_;
+    $self->send_event(
+        'Skip',
+        name => $name,
+        reason => $reason,
+        pass => 1,
+        $self->hub->_fast_todo,
+        @extra,
+    );
 }
 
 sub note {
@@ -342,7 +349,7 @@ sub diag {
     $self->send_event(
         'Diag',
         message => $message,
-        todo => $hub->get_todo || $hub->parent_todo,
+        todo => defined($hub->get_todo) || $hub->parent_todo,
     );
 }
 

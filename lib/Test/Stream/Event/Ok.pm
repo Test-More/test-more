@@ -17,7 +17,7 @@ sub init {
     # Do not store objects here, only true or false
     $self->{+PASS} = $self->{+PASS} ? 1 : 0;
 
-    $self->{+EFFECTIVE_PASS} = ($self->{+PASS} || $self->{+TODO}) ? 1 : 0;
+    $self->{+EFFECTIVE_PASS} = ($self->{+PASS} || defined($self->{+TODO})) ? 1 : 0;
 
     return if $self->{+ALLOW_BAD_NAME};
     my $name = $self->{+NAME} || return;

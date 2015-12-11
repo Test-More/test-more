@@ -14,5 +14,7 @@ my $skip = Test::Stream::Event::Skip->new(
 isa_ok($skip, 'Test::Stream::Event::Skip');
 is($skip->name, 'skip me', "set name");
 is($skip->reason, 'foo', "got skip reason");
+ok(!$skip->pass, "no default for pass");
+ok($skip->effective_pass, "TODO always effectively passes");
 
 done_testing;

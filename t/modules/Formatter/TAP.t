@@ -565,4 +565,36 @@ describe events => sub {
     };
 };
 
+tests skip => sub {
+    my $skip = Test::Sync::Event::Skip->new(debug => $dbg, pass => 1, name => 'foo', reason => 'xxx');
+    my @tap = $fmt->event_tap($skip, 7);
+    is_deeply(
+        \@tap,
+        [
+            [OUT_STD, "ok 7 - foo # skip xxx\n"],
+        ],
+        "Passing Skip"
+    );
+
+    $skip->set_pass(0);
+    @tap = $fmt->event_tap($skip, 7);
+    is_deeply(
+        \@tap,
+        [
+            [OUT_STD, "not ok 7 - foo # skip xxx\n"],
+        ],
+        "Failling Skip"
+    );
+
+    $skip->set_todo("xxx");
+    @tap = $fmt->event_tap($skip, 7);
+    is_deeply(
+        \@tap,
+        [
+            [OUT_STD, "not ok 7 - foo # TODO & SKIP xxx\n"],
+        ],
+        "Todo Skip"
+    );
+};
+
 done_testing;

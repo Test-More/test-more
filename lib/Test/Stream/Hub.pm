@@ -73,7 +73,7 @@ sub _fast_todo {
     pop @$array while @$array && !defined $array->[-1];
     my $todo = @$array ? ${$array->[-1]} : undef;
     return (
-        diag_todo => $todo || $self->{+PARENT_TODO},
+        diag_todo => defined($todo) || $self->{+PARENT_TODO},
         todo      => $todo,
     )
 }
