@@ -1,4 +1,4 @@
-use Test::More;
+use Test2::Tester;
 
 ok(1, "an ok");
 
