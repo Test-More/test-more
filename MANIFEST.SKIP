@@ -91,4 +91,6 @@ test.pl
 
 POD_TEMPLATE.pod
 
-^Test-Stream-*
+^Test2-*
+
+^profiling/
