@@ -1,15 +1,15 @@
 use strict;
 use warnings;
-use Test::Stream::Tester;
+use Test2::Tester;
 
-use Test::Stream::Hub::Interceptor;
+use Test2::Hub::Interceptor;
 
-my $one = Test::Stream::Hub::Interceptor->new();
+my $one = Test2::Hub::Interceptor->new();
 
-ok($one->isa('Test::Stream::Hub'), "inheritence");;
+ok($one->isa('Test2::Hub'), "inheritence");;
 
 my $e = exception { $one->terminate(55) };
-ok($e->isa('Test::Stream::Hub::Interceptor::Terminator'), "exception type");
+ok($e->isa('Test2::Hub::Interceptor::Terminator'), "exception type");
 is($$e, 55, "Scalar reference value");
 
 done_testing;

@@ -1,10 +1,10 @@
 use strict;
 use warnings;
 
-use Test::Stream::IPC;
-use Test::Stream::Tester;
-use Test::Stream::Context qw/context/;
-use Test::Stream::Capabilities qw/CAN_FORK CAN_THREAD CAN_REALLY_FORK/;
+use Test2::IPC;
+use Test2::Tester;
+use Test2::Context qw/context/;
+use Test2::Capabilities qw/CAN_FORK CAN_THREAD CAN_REALLY_FORK/;
 
 sub tests {
     my ($name, $code) = @_;
@@ -31,12 +31,12 @@ sub tests {
 {
     package My::Event;
 
-    use base 'Test::Stream::Event';
-    use Test::Stream::HashBase accessors => [qw/msg/];
+    use base 'Test2::Event';
+    use Test2::HashBase accessors => [qw/msg/];
 }
 
 tests basic => sub {
-    my $hub = Test::Stream::Hub->new(
+    my $hub = Test2::Hub->new(
         formatter => My::Formatter->new,
     );
 
@@ -61,10 +61,10 @@ tests basic => sub {
 };
 
 tests follow_ups => sub {
-    my $hub = Test::Stream::Hub->new;
+    my $hub = Test2::Hub->new;
     $hub->state->set_count(1);
 
-    my $trace = Test::Stream::Trace->new(
+    my $trace = Test2::Trace->new(
         frame => [__PACKAGE__, __FILE__, __LINE__],
     );
 
@@ -101,10 +101,10 @@ tests follow_ups => sub {
 };
 
 tests IPC => sub {
-    my ($driver) = Test::Stream::IPC->drivers;
-    is($driver, 'Test::Stream::IPC::Files', "Default Driver");
+    my ($driver) = Test2::IPC->drivers;
+    is($driver, 'Test2::IPC::Files', "Default Driver");
     my $ipc = $driver->new;
-    my $hub = Test::Stream::Hub->new(
+    my $hub = Test2::Hub->new(
         formatter => My::Formatter->new,
         ipc => $ipc,
     );
@@ -167,7 +167,7 @@ tests IPC => sub {
 };
 
 tests listen => sub {
-    my $hub = Test::Stream::Hub->new();
+    my $hub = Test2::Hub->new();
 
     my @events;
     my @counts;
@@ -181,26 +181,26 @@ tests listen => sub {
     my $second;
     my $it2 = $hub->listen(sub { $second++ });
 
-    my $ok1 = Test::Stream::Event::Ok->new(
+    my $ok1 = Test2::Event::Ok->new(
         pass => 1,
         name => 'foo',
-        trace => Test::Stream::Trace->new(
+        trace => Test2::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
 
-    my $ok2 = Test::Stream::Event::Ok->new(
+    my $ok2 = Test2::Event::Ok->new(
         pass => 0,
         name => 'bar',
-        trace => Test::Stream::Trace->new(
+        trace => Test2::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
 
-    my $ok3 = Test::Stream::Event::Ok->new(
+    my $ok3 = Test2::Event::Ok->new(
         pass => 1,
         name => 'baz',
-        trace => Test::Stream::Trace->new(
+        trace => Test2::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -224,7 +224,7 @@ tests listen => sub {
 };
 
 tests metadata => sub {
-    my $hub = Test::Stream::Hub->new();
+    my $hub = Test2::Hub->new();
 
     my $default = { foo => 1 };
     my $meta = $hub->meta('Foo', $default);
@@ -265,7 +265,7 @@ tests metadata => sub {
 };
 
 tests filter => sub {
-    my $hub = Test::Stream::Hub->new();
+    my $hub = Test2::Hub->new();
 
     my @events;
     my $it = $hub->filter(sub {
@@ -278,26 +278,26 @@ tests filter => sub {
     my $count;
     my $it2 = $hub->filter(sub { $count++; $_[1] });
 
-    my $ok1 = Test::Stream::Event::Ok->new(
+    my $ok1 = Test2::Event::Ok->new(
         pass => 1,
         name => 'foo',
-        trace => Test::Stream::Trace->new(
+        trace => Test2::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
 
-    my $ok2 = Test::Stream::Event::Ok->new(
+    my $ok2 = Test2::Event::Ok->new(
         pass => 0,
         name => 'bar',
-        trace => Test::Stream::Trace->new(
+        trace => Test2::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
 
-    my $ok3 = Test::Stream::Event::Ok->new(
+    my $ok3 = Test2::Event::Ok->new(
         pass => 1,
         name => 'baz',
-        trace => Test::Stream::Trace->new(
+        trace => Test2::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -312,7 +312,7 @@ tests filter => sub {
     is_deeply(\@events, [$ok1, $ok2], "got events");
     is($count, 3, "got all events, even after other filter was removed");
 
-    $hub = Test::Stream::Hub->new();
+    $hub = Test2::Hub->new();
     @events = ();
 
     $hub->filter(sub { undef });
@@ -335,7 +335,7 @@ tests filter => sub {
 };
 
 tests todo_system => sub {
-    my $hub = Test::Stream::Hub->new();
+    my $hub = Test2::Hub->new();
 
     {
         my $todo = $hub->set_todo('foo');

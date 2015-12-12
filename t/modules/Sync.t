@@ -1,20 +1,20 @@
 use strict;
 use warnings;
 
-use Test::Stream::Sync;
+use Test2::Sync;
 
 my ($LOADED, $INIT, $POST_LOAD);
 BEGIN {
-    $INIT   = Test::Stream::Sync->init_done;
-    $LOADED = Test::Stream::Sync->loaded;
-    Test::Stream::Sync->loaded(1);
-    $POST_LOAD = Test::Stream::Sync->loaded;
+    $INIT   = Test2::Sync->init_done;
+    $LOADED = Test2::Sync->loaded;
+    Test2::Sync->loaded(1);
+    $POST_LOAD = Test2::Sync->loaded;
 };
 
-use Test::Stream::IPC;
-use Test::Stream::Tester;
-use Test::Stream::Util qw/get_tid/;
-my $CLASS = 'Test::Stream::Sync';
+use Test2::IPC;
+use Test2::Tester;
+use Test2::Util qw/get_tid/;
+my $CLASS = 'Test2::Sync';
 
 ok(!$LOADED, "Was not loaded right away");
 ok(!$INIT, "Init was not done right away");
@@ -34,7 +34,7 @@ ok($POST_LOAD, "We loaded it");
     }
 
     our $kill1 = bless {fixed => 0, name => "Custom Hook"}, 'FOLLOW';
-    Test::Stream::Sync->add_hook(
+    Test2::Sync->add_hook(
         sub {
             print "# Running END hook\n";
             $kill1->{fixed} = 1;
@@ -42,9 +42,9 @@ ok($POST_LOAD, "We loaded it");
     );
 
     our $kill2 = bless {fixed => 0, name => "set exit"}, 'FOLLOW';
-    my $old = Test::Stream::Tracker->can('set_exit');
+    my $old = Test2::Tracker->can('set_exit');
     no warnings 'redefine';
-    *Test::Stream::Tracker::set_exit = sub {
+    *Test2::Tracker::set_exit = sub {
         $kill2->{fixed} = 1;
         print "# Running set_exit\n";
         $old->(@_);
@@ -52,7 +52,7 @@ ok($POST_LOAD, "We loaded it");
 }
 
 ok($CLASS->init_done, "init is done.");
-ok($CLASS->loaded, "Test::Stream is finished loading");
+ok($CLASS->loaded, "Test2 is finished loading");
 
 is($CLASS->pid, $$, "got pid");
 is($CLASS->tid, get_tid(), "got tid");

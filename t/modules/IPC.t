@@ -1,13 +1,13 @@
 use strict;
 use warnings;
 
-use Test::Stream::IPC;
+use Test2::IPC;
 
 my @drivers;
-BEGIN { @drivers = Test::Stream::IPC->drivers };
+BEGIN { @drivers = Test2::IPC->drivers };
 
-use Test::Stream::Tester;
-use Test::Stream::Context qw/context/;
+use Test2::Tester;
+use Test2::Context qw/context/;
 sub tests {
     my ($name, $code) = @_;
     my $ok = eval { $code->(); 1 };
@@ -19,66 +19,66 @@ sub tests {
 
 is_deeply(
     \@drivers,
-    ['Test::Stream::IPC::Files'],
+    ['Test2::IPC::Files'],
     "Got default driver"
 );
 
-require Test::Stream::IPC::Files;
-Test::Stream::IPC::Files->import();
-Test::Stream::IPC::Files->import();
-Test::Stream::IPC::Files->import();
+require Test2::IPC::Files;
+Test2::IPC::Files->import();
+Test2::IPC::Files->import();
+Test2::IPC::Files->import();
 
-Test::Stream::IPC->register_drivers(
-    'Test::Stream::IPC::Files',
-    'Test::Stream::IPC::Files',
-    'Test::Stream::IPC::Files',
+Test2::IPC->register_drivers(
+    'Test2::IPC::Files',
+    'Test2::IPC::Files',
+    'Test2::IPC::Files',
 );
 
 is_deeply(
-    [Test::Stream::IPC->drivers],
-    ['Test::Stream::IPC::Files'],
+    [Test2::IPC->drivers],
+    ['Test2::IPC::Files'],
     "Driver not added multiple times"
 );
 
 tests init_drivers => sub {
-    ok( !exception { Test::Stream::IPC->new }, "Found working driver" );
+    ok( !exception { Test2::IPC->new }, "Found working driver" );
 
     no warnings 'redefine';
-    local *Test::Stream::IPC::Files::is_viable = sub { 0 };
+    local *Test2::IPC::Files::is_viable = sub { 0 };
     use warnings;
 
     like(
-        exception { Test::Stream::IPC->new },
+        exception { Test2::IPC->new },
         qr/Could not find a viable IPC driver! Aborting/,
         "No viable drivers"
     );
 
     no warnings 'redefine';
-    local *Test::Stream::IPC::Files::is_viable = sub { undef };
+    local *Test2::IPC::Files::is_viable = sub { undef };
     use warnings;
     like(
-        exception { Test::Stream::IPC->new },
+        exception { Test2::IPC->new },
         qr/Could not find a viable IPC driver! Aborting/,
         "No viable drivers"
     );
 };
 
 tests polling => sub {
-    ok(!Test::Stream::IPC->polling_enabled, "no polling yet");
-    ok(!@Test::Stream::Context::ON_INIT, "no context init hooks yet");
+    ok(!Test2::IPC->polling_enabled, "no polling yet");
+    ok(!@Test2::Context::ON_INIT, "no context init hooks yet");
 
-    Test::Stream::IPC->enable_polling;
+    Test2::IPC->enable_polling;
 
-    ok(1 == @Test::Stream::Context::ON_INIT, "added 1 hook");
-    ok(Test::Stream::IPC->polling_enabled, "polling enabled");
+    ok(1 == @Test2::Context::ON_INIT, "added 1 hook");
+    ok(Test2::IPC->polling_enabled, "polling enabled");
 
-    Test::Stream::IPC->enable_polling;
+    Test2::IPC->enable_polling;
 
-    ok(1 == @Test::Stream::Context::ON_INIT, "Did not add hook twice");
+    ok(1 == @Test2::Context::ON_INIT, "Did not add hook twice");
 };
 
 for my $meth (qw/send cull add_hub drop_hub waiting is_viable/) {
-    my $one = Test::Stream::IPC->new;
+    my $one = Test2::IPC->new;
     like(
         exception { $one->$meth },
         qr/'\Q$one\E' did not define the required method '$meth'/,
@@ -87,7 +87,7 @@ for my $meth (qw/send cull add_hub drop_hub waiting is_viable/) {
 }
 
 tests abort => sub {
-    my $one = Test::Stream::IPC->new(no_fatal => 1);
+    my $one = Test2::IPC->new(no_fatal => 1);
     my ($err, $out) = ("", "");
 
     {

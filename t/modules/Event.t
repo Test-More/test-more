@@ -1,14 +1,14 @@
 use strict;
 use warnings;
-use Test::Stream::Tester;
+use Test2::Tester;
 
-use Test::Stream::Event();
+use Test2::Event();
 
 {
     package My::MockEvent;
 
-    use base 'Test::Stream::Event';
-    use Test::Stream::HashBase accessors => [qw/foo bar baz/];
+    use base 'Test2::Event';
+    use Test2::HashBase accessors => [qw/foo bar baz/];
 }
 
 ok(My::MockEvent->can($_), "Added $_ accessor") for qw/foo bar baz/;

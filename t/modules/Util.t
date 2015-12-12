@@ -1,8 +1,8 @@
 use strict;
 use warnings;
 
-use Test::Stream::Tester;
-use Test::Stream::Util qw/
+use Test2::Tester;
+use Test2::Util qw/
     try protect
 
     get_tid USE_THREADS
@@ -10,7 +10,7 @@ use Test::Stream::Util qw/
     pkg_to_file
 /;
 
-for my $protect (\&protect, Test::Stream::Util->can('_manual_protect'), Test::Stream::Util->can('_local_protect')) {
+for my $protect (\&protect, Test2::Util->can('_manual_protect'), Test2::Util->can('_local_protect')) {
     local $! = 100;
     my $ok = eval { $protect->(sub { die "xxx" }); 1 };
     ok($! == 100, "\$! did not change");
@@ -24,7 +24,7 @@ for my $protect (\&protect, Test::Stream::Util->can('_manual_protect'), Test::St
     like($@, qr/apple/, '$@ has not changed');
 }
 
-for my $try (\&try, Test::Stream::Util->can('_manual_try'), Test::Stream::Util->can('_local_try')) {
+for my $try (\&try, Test2::Util->can('_manual_try'), Test2::Util->can('_local_try')) {
     local $! = 100;
     local $@ = 'foo';
     my ($ok, $err) = $try->(sub { die "xxx" });

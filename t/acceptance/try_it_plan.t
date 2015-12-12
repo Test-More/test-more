@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::Stream::Context qw/context/;
+use Test2::Context qw/context/;
 
 sub plan {
     my $ctx = context();

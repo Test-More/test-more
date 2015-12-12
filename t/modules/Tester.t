@@ -1,10 +1,10 @@
 use strict;
 use warnings;
 
-use Test::Stream::IPC;
-use Test::Stream::Tester;
+use Test2::IPC;
+use Test2::Tester;
 
-use Test::Stream::Context qw/context/;
+use Test2::Context qw/context/;
 
 ok(__PACKAGE__->can($_), "imported '$_\()'") for qw{
     intercept
@@ -80,31 +80,31 @@ is(@$events, 9, "got 9 events");
 
 my ($plan, $ok, $is, $isnt, $like, $unlike, $diag, $note, $is_deeply) = @$events;
 
-ok($plan->isa('Test::Stream::Event::Plan'), "got plan");
+ok($plan->isa('Test2::Event::Plan'), "got plan");
 is($plan->max, 8, "planned for 8 oks");
 
-ok($ok->isa('Test::Stream::Event::Ok'), "got 'ok' result");
+ok($ok->isa('Test2::Event::Ok'), "got 'ok' result");
 is($ok->pass, 0, "'ok' test failed");
 
-ok($is->isa('Test::Stream::Event::Ok'), "got 'is' result");
+ok($is->isa('Test2::Event::Ok'), "got 'is' result");
 is($is->pass, 0, "'is' test failed");
 
-ok($isnt->isa('Test::Stream::Event::Ok'), "got 'isnt' result");
+ok($isnt->isa('Test2::Event::Ok'), "got 'isnt' result");
 is($isnt->pass, 0, "'isnt' test failed");
 
-ok($like->isa('Test::Stream::Event::Ok'), "got 'like' result");
+ok($like->isa('Test2::Event::Ok'), "got 'like' result");
 is($like->pass, 0, "'like' test failed");
 
-ok($unlike->isa('Test::Stream::Event::Ok'), "got 'unlike' result");
+ok($unlike->isa('Test2::Event::Ok'), "got 'unlike' result");
 is($unlike->pass, 0, "'unlike' test failed");
 
-ok($is_deeply->isa('Test::Stream::Event::Ok'), "got 'is_deeply' result");
+ok($is_deeply->isa('Test2::Event::Ok'), "got 'is_deeply' result");
 is($is_deeply->pass, 0, "'is_deeply' test failed");
 
-ok($diag->isa('Test::Stream::Event::Diag'), "got 'diag' result");
+ok($diag->isa('Test2::Event::Diag'), "got 'diag' result");
 is($diag->message, "Testing Diag", "got diag message");
 
-ok($note->isa('Test::Stream::Event::Note'), "got 'note' result");
+ok($note->isa('Test2::Event::Note'), "got 'note' result");
 is($note->message, "Testing Note", "got note message");
 
 $events = intercept {
@@ -114,7 +114,7 @@ $events = intercept {
 };
 
 is(@$events, 1, "1 event");
-ok($events->[0]->isa('Test::Stream::Event::Plan'), "got plan");
+ok($events->[0]->isa('Test2::Event::Plan'), "got plan");
 is($events->[0]->directive, 'SKIP', "plan is skip");
 is($events->[0]->reason, 'because', "skip reason");
 
@@ -142,7 +142,7 @@ $events = intercept {
     $ictx = tool();
     $ictx->ok(1, 'pass');
     $ictx->ok(0, 'fail');
-    my $trace = Test::Stream::Trace->new(
+    my $trace = Test2::Trace->new(
         frame => [ __PACKAGE__, __FILE__, __LINE__],
     );
     $ictx->hub->finalize($trace, 1);
@@ -172,7 +172,7 @@ $events = intercept {
 };
 
 is(@$events, 1, "got 1 event");
-ok($events->[0]->isa('Test::Stream::Event::Bail'), "got the bail");
+ok($events->[0]->isa('Test2::Event::Bail'), "got the bail");
 
 $events = intercept {
     $ictx = tool();
@@ -187,22 +187,22 @@ like(
 );
 
 $events = intercept {
-    Test::Stream::Sync->stack->top->set_no_ending(0);
+    Test2::Sync->stack->top->set_no_ending(0);
     ok(1);
 };
 
 is(@$events, 2, "2 events");
-ok($events->[0]->isa('Test::Stream::Event::Ok'), "got ok");
-ok($events->[1]->isa('Test::Stream::Event::Plan'), "finalize was called");
+ok($events->[0]->isa('Test2::Event::Ok'), "got ok");
+ok($events->[1]->isa('Test2::Event::Plan'), "finalize was called");
 
 $events = intercept {
-    Test::Stream::Sync->stack->top->set_no_ending(0);
+    Test2::Sync->stack->top->set_no_ending(0);
     ok(1);
     done_testing;
 };
 
 is(@$events, 2, "2 events");
-ok($events->[0]->isa('Test::Stream::Event::Ok'), "got ok");
-ok($events->[1]->isa('Test::Stream::Event::Plan'), "finalize was called (only 1 plan)");
+ok($events->[0]->isa('Test2::Event::Ok'), "got ok");
+ok($events->[1]->isa('Test2::Event::Plan'), "finalize was called (only 1 plan)");
 
 done_testing;

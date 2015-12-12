@@ -1,8 +1,8 @@
 use strict;
 use warnings;
-use Test::Stream::Tester;
+use Test2::Tester;
 
-use Test::Stream::Hub::Subtest;
+use Test2::Hub::Subtest;
 use Carp qw/croak/;
 
 my %TODO;
@@ -38,21 +38,21 @@ package $pkg;
 my $ran = 0;
 my $event;
 
-my $one = Test::Stream::Hub::Subtest->new(
+my $one = Test2::Hub::Subtest->new(
     nested => 3,
 );
 
-ok($one->isa('Test::Stream::Hub'), "inheritence");
+ok($one->isa('Test2::Hub'), "inheritence");
 
 {
     no warnings 'redefine';
-    local *Test::Stream::Hub::process = sub { $ran++; (undef, $event) = @_; 'P!' };
+    local *Test2::Hub::process = sub { $ran++; (undef, $event) = @_; 'P!' };
     use warnings;
 
-    my $ok = Test::Stream::Event::Ok->new(
+    my $ok = Test2::Event::Ok->new(
         pass => 1,
         name => 'blah',
-        trace => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']),
+        trace => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']),
     );
 
     def is => ($one->process($ok), 'P!', "processed");
@@ -64,9 +64,9 @@ ok($one->isa('Test::Stream::Hub'), "inheritence");
     $ran = 0;
     $event = undef;
 
-    my $bail = Test::Stream::Event::Bail->new(
+    my $bail = Test2::Event::Bail->new(
         message => 'blah',
-        trace => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']),
+        trace => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']),
     );
 
     def is => ($one->process($bail), 'P!', "processed");

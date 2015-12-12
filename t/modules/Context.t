@@ -1,9 +1,9 @@
 use strict;
 use warnings;
 
-use Test::Stream::Tester;
+use Test2::Tester;
 
-use Test::Stream::Context qw/context/;
+use Test2::Context qw/context/;
 
 my $error = exception { context(); 1 };
 my $exception = "context() called, but return value is ignored at " . __FILE__ . ' line ' . (__LINE__ - 1);
@@ -68,13 +68,13 @@ is_deeply( $end_ctx->trace->frame, $frame, 'context is ok in an end block');
     }
 }
 my $events = bless [], 'My::Formatter';
-my $hub = Test::Stream::Hub->new(
+my $hub = Test2::Hub->new(
     formatter => $events,
 );
-my $trace = Test::Stream::Trace->new(
+my $trace = Test2::Trace->new(
     frame => [ 'Foo::Bar', 'foo_bar.t', 42, 'Foo::Bar::baz' ],
 );
-my $ctx = Test::Stream::Context->new(
+my $ctx = Test2::Context->new(
     trace => $trace,
     hub   => $hub,
 );
@@ -157,11 +157,11 @@ pop @$events;
 # Test hooks
 
 my @hooks;
-$hub =  Test::Stream::Sync->stack->top;
+$hub =  Test2::Sync->stack->top;
 my $ref1 = $hub->add_context_init(sub { push @hooks => 'hub_init' });
 my $ref2 = $hub->add_context_release(sub { push @hooks => 'hub_release' });
-Test::Stream::Context->ON_INIT(sub { push @hooks => 'global_init' });
-Test::Stream::Context->ON_RELEASE(sub { push @hooks => 'global_release' });
+Test2::Context->ON_INIT(sub { push @hooks => 'global_init' });
+Test2::Context->ON_RELEASE(sub { push @hooks => 'global_release' });
 
 sub {
     push @hooks => 'start';
@@ -185,8 +185,8 @@ sub {
 
 $hub->remove_context_init($ref1);
 $hub->remove_context_release($ref2);
-@Test::Stream::Context::ON_INIT = ();
-@Test::Stream::Context::ON_RELEASE = ();
+@Test2::Context::ON_INIT = ();
+@Test2::Context::ON_RELEASE = ();
 
 is_deeply(
     \@hooks,
@@ -220,9 +220,9 @@ is_deeply(
     my $ctx = context(level => -1);
 
     local $@ = 'testing error';
-    my $one = Test::Stream::Context->new(
-        trace => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
-        hub => Test::Stream::Sync->stack->top,
+    my $one = Test2::Context->new(
+        trace => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
+        hub => Test2::Sync->stack->top,
     );
     is($one->_err, 'testing error', "Copied \$@");
     is($one->_depth, 0, "default depth");
@@ -249,7 +249,7 @@ is_deeply(
         my $ctx = context();
 
         local $? = 0;
-        $warnings = warnings { Test::Stream::Context::_do_end() };
+        $warnings = warnings { Test2::Context::_do_end() };
         $exit = $?;
 
         $ctx->release;
@@ -271,16 +271,16 @@ is_deeply(
 }
 
 {
-    like(exception { Test::Stream::Context->new() }, qr/The 'trace' attribute is required/, "need to have trace");
+    like(exception { Test2::Context->new() }, qr/The 'trace' attribute is required/, "need to have trace");
 
-    my $trace = Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
-    like(exception { Test::Stream::Context->new(trace => $trace) }, qr/The 'hub' attribute is required/, "need to have hub");
+    my $trace = Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
+    like(exception { Test2::Context->new(trace => $trace) }, qr/The 'hub' attribute is required/, "need to have hub");
 
-    my $hub = Test::Stream::Sync->stack->top;
-    my $ctx = Test::Stream::Context->new(trace => $trace, hub => $hub);
+    my $hub = Test2::Sync->stack->top;
+    my $ctx = Test2::Context->new(trace => $trace, hub => $hub);
     is($ctx->{_depth}, 0, "depth set to 0 when not defined.");
 
-    $ctx = Test::Stream::Context->new(trace => $trace, hub => $hub, _depth => 1);
+    $ctx = Test2::Context->new(trace => $trace, hub => $hub, _depth => 1);
     is($ctx->{_depth}, 1, "Do not reset depth");
 
     like(
@@ -366,8 +366,8 @@ sub {
     $ctx = $clone->snapshot;
     $clone->release;
 
-    is($ctx->_parse_event('Ok'), 'Test::Stream::Event::Ok', "Got the Ok event class");
-    is($ctx->_parse_event('+Test::Stream::Event::Ok'), 'Test::Stream::Event::Ok', "Got the +Ok event class");
+    is($ctx->_parse_event('Ok'), 'Test2::Event::Ok', "Got the Ok event class");
+    is($ctx->_parse_event('+Test2::Event::Ok'), 'Test2::Event::Ok', "Got the +Ok event class");
 
     like(
         exception { $ctx->_parse_event('+DFASGFSDFGSDGSD') },

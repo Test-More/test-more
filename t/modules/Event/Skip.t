@@ -1,12 +1,12 @@
-use Test::Stream::Tester;
+use Test2::Tester;
 use strict;
 use warnings;
 
-use Test::Stream::Event::Skip;
-use Test::Stream::Trace;
+use Test2::Event::Skip;
+use Test2::Trace;
 
-my $skip = Test::Stream::Event::Skip->new(
-    trace  => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+my $skip = Test2::Event::Skip->new(
+    trace  => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     name   => 'skip me',
     reason => 'foo',
 );

@@ -1,10 +1,10 @@
 use strict;
 use warnings;
-use Test::Stream::IPC;
-use Test::Stream::Tester;
-use Test::Stream::Stack;
+use Test2::IPC;
+use Test2::Tester;
+use Test2::Stack;
 
-ok(my $stack = Test::Stream::Stack->new, "Create a stack");
+ok(my $stack = Test2::Stack->new, "Create a stack");
 
 ok(!@$stack, "Empty stack");
 ok(!$stack->peek, "Nothing to peek at");
@@ -14,12 +14,12 @@ ok(!exception { $stack->all },   "all lives when stack is empty");
 ok(!exception { $stack->clear }, "clear lives when stack is empty");
 
 like(
-    exception { $stack->pop(Test::Stream::Hub->new) },
+    exception { $stack->pop(Test2::Hub->new) },
     qr/No hubs on the stack/,
     "No hub to pop"
 );
 
-my $hub = Test::Stream::Hub->new;
+my $hub = Test2::Hub->new;
 ok($stack->push($hub), "pushed a hub");
 
 like(
@@ -30,7 +30,7 @@ like(
 
 $stack->push($hub);
 like(
-    exception { $stack->pop(Test::Stream::Hub->new) },
+    exception { $stack->pop(Test2::Hub->new) },
     qr/Hub stack mismatch, attempted to pop incorrect hub/,
     "Must specify correct hub to pop"
 );
@@ -61,7 +61,7 @@ is_deeply(
 );
 
 ok(my $top = $stack->top, "Generated a top hub");
-is($top->ipc, Test::Stream::Sync->ipc, "Used sync's ipc");
+is($top->ipc, Test2::Sync->ipc, "Used sync's ipc");
 ok($top->format, 'Got formatter');
 
 is($stack->top, $stack->top, "do not generate a new top if there is already a top");

@@ -1,10 +1,10 @@
 use strict;
 use warnings;
 
-use Test::Stream::Tester;
-use Test::Stream::Event::Waiting;
+use Test2::Tester;
+use Test2::Event::Waiting;
 
-my $waiting = Test::Stream::Event::Waiting->new(
+my $waiting = Test2::Event::Waiting->new(
     trace => 'fake',
 );
 

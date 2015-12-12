@@ -1,23 +1,23 @@
 use strict;
 use warnings;
-use Test::Stream::Tester;
-use Test::Stream::Event::Diag;
-use Test::Stream::Trace;
+use Test2::Tester;
+use Test2::Event::Diag;
+use Test2::Trace;
 
-my $diag = Test::Stream::Event::Diag->new(
-    trace => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+my $diag = Test2::Event::Diag->new(
+    trace => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     message => 'foo',
 );
 
-$diag = Test::Stream::Event::Diag->new(
-    trace => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+$diag = Test2::Event::Diag->new(
+    trace => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     message => undef,
 );
 
 is($diag->message, 'undef', "set undef message to undef");
 
-$diag = Test::Stream::Event::Diag->new(
-    trace => Test::Stream::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+$diag = Test2::Event::Diag->new(
+    trace => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     message => {},
 );
 

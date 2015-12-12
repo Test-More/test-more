@@ -1,16 +1,16 @@
 use strict;
 use warnings;
-use Test::Stream::Tester;
+use Test2::Tester;
 
 BEGIN {
     $INC{'My/HBase.pm'} = __FILE__;
 
     package My::HBase;
-    use Test::Stream::HashBase(
+    use Test2::HashBase(
         accessors => [qw/foo bar baz/],
     );
 
-    use Test::Stream::Tester;
+    use Test2::Tester;
     is(FOO, 'foo', "FOO CONSTANT");
     is(BAR, 'bar', "BAR CONSTANT");
     is(BAZ, 'baz', "BAZ CONSTANT");
@@ -19,9 +19,9 @@ BEGIN {
 BEGIN {
     package My::HBaseSub;
     use base 'My::HBase';
-    use Test::Stream::HashBase accessors => [qw/apple pear/];
+    use Test2::HashBase accessors => [qw/apple pear/];
 
-    use Test::Stream::Tester;
+    use Test2::Tester;
     is(FOO,   'foo',   "FOO CONSTANT");
     is(BAR,   'bar',   "BAR CONSTANT");
     is(BAZ,   'baz',   "BAZ CONSTANT");
@@ -59,9 +59,9 @@ is_deeply(
 
 my $obj = bless {}, 'FAKE';
 
-my $accessor = Test::Stream::HashBase->gen_accessor('foo');
-my $getter   = Test::Stream::HashBase->gen_getter('foo');
-my $setter   = Test::Stream::HashBase->gen_setter('foo');
+my $accessor = Test2::HashBase->gen_accessor('foo');
+my $getter   = Test2::HashBase->gen_getter('foo');
+my $setter   = Test2::HashBase->gen_setter('foo');
 
 is_deeply($obj, {}, "nothing set");
 

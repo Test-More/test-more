@@ -1,12 +1,12 @@
 use strict;
 use warnings;
 
-use Test::Stream::IPC;
-use Test::Stream::Tester;
-use Test::Stream::Util qw/get_tid/;
-use Test::Stream::Capabilities qw/CAN_THREAD CAN_REALLY_FORK/;
+use Test2::IPC;
+use Test2::Tester;
+use Test2::Util qw/get_tid/;
+use Test2::Capabilities qw/CAN_THREAD CAN_REALLY_FORK/;
 
-my $CLASS = 'Test::Stream::Tracker';
+my $CLASS = 'Test2::Tracker';
 
 my $one = $CLASS->new;
 is_deeply(
@@ -97,7 +97,7 @@ ok($one->finalized, "calling format finalized the object");
 {
     $one->reset;
     local %INC = %INC;
-    delete $INC{'Test/Stream/IPC.pm'};
+    delete $INC{'Test2/IPC.pm'};
     ok(!$one->ipc, 'IPC not loaded, no IPC object');
     ok($one->finalized, "calling ipc finalized the object");
 }
@@ -110,12 +110,12 @@ ok($one->finalized, "calling format finalized the object");
 {
     local $ENV{TS_FORMATTER} = 'TAP';
     $one->reset;
-    is($one->format, 'Test::Stream::Formatter::TAP', "got specified formatter");
+    is($one->format, 'Test2::Formatter::TAP', "got specified formatter");
     ok($one->finalized, "calling format finalized the object");
 
-    local $ENV{TS_FORMATTER} = '+Test::Stream::Formatter::TAP';
+    local $ENV{TS_FORMATTER} = '+Test2::Formatter::TAP';
     $one->reset;
-    is($one->format, 'Test::Stream::Formatter::TAP', "got specified formatter");
+    is($one->format, 'Test2::Formatter::TAP', "got specified formatter");
     ok($one->finalized, "calling format finalized the object");
 
     local $ENV{TS_FORMATTER} = '+Fake';
@@ -231,7 +231,7 @@ if (CAN_THREAD && $] ge '5.010') {
 
 {
     local %INC = %INC;
-    delete $INC{'Test/Stream/IPC.pm'};
+    delete $INC{'Test2/IPC.pm'};
     $one->reset();
     my @events;
     $one->stack->top->filter(sub { push @events => $_[1]; undef});

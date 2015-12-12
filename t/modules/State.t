@@ -1,10 +1,10 @@
 use strict;
 use warnings;
 
-use Test::Stream::Tester;
-use Test::Stream::State;
+use Test2::Tester;
+use Test2::State;
 
-my $state = 'Test::Stream::State'->new;
+my $state = 'Test2::State'->new;
 
 is($state->count, 0, "count starts at 0");
 is($state->failed, 0, "failed starts at 0");
