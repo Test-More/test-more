@@ -71,7 +71,7 @@ my $events = bless [], 'My::Formatter';
 my $hub = Test2::Hub->new(
     formatter => $events,
 );
-my $trace = Test2::Trace->new(
+my $trace = Test2::Context::Trace->new(
     frame => [ 'Foo::Bar', 'foo_bar.t', 42, 'Foo::Bar::baz' ],
 );
 my $ctx = Test2::Context->new(
@@ -157,7 +157,7 @@ pop @$events;
 # Test hooks
 
 my @hooks;
-$hub =  Test2::Sync->stack->top;
+$hub =  Test2::Global->stack->top;
 my $ref1 = $hub->add_context_init(sub { push @hooks => 'hub_init' });
 my $ref2 = $hub->add_context_release(sub { push @hooks => 'hub_release' });
 Test2::Context->ON_INIT(sub { push @hooks => 'global_init' });
@@ -221,8 +221,8 @@ is_deeply(
 
     local $@ = 'testing error';
     my $one = Test2::Context->new(
-        trace => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
-        hub => Test2::Sync->stack->top,
+        trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
+        hub => Test2::Global->stack->top,
     );
     is($one->_err, 'testing error', "Copied \$@");
     is($one->_depth, 0, "default depth");
@@ -273,10 +273,10 @@ is_deeply(
 {
     like(exception { Test2::Context->new() }, qr/The 'trace' attribute is required/, "need to have trace");
 
-    my $trace = Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
+    my $trace = Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
     like(exception { Test2::Context->new(trace => $trace) }, qr/The 'hub' attribute is required/, "need to have hub");
 
-    my $hub = Test2::Sync->stack->top;
+    my $hub = Test2::Global->stack->top;
     my $ctx = Test2::Context->new(trace => $trace, hub => $hub);
     is($ctx->{_depth}, 0, "depth set to 0 when not defined.");
 

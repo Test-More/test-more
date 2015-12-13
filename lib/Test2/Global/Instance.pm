@@ -1,17 +1,16 @@
-package Test2::Tracker;
+package Test2::Global::Instance;
 use strict;
 use warnings;
 
 use Carp qw/confess/;
 use Scalar::Util qw/reftype/;
 
-use Test2::Capabilities qw/CAN_FORK/;
-use Test2::Util qw/get_tid USE_THREADS pkg_to_file/;
+use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file/;
 
-use Test2::Trace();
-use Test2::Stack();
+use Test2::Context::Trace();
+use Test2::Context::Stack();
 
-use Test2::HashBase(
+use Test2::Util::HashBase(
     accessors => [qw/pid tid no_wait finalized ipc stack format exit_hooks loaded post_load_hooks/],
 );
 
@@ -55,7 +54,7 @@ sub _finalize {
     $caller ||= [caller(1)];
 
     $self->{+FINALIZED} = $caller;
-    $self->{+STACK}     = Test2::Stack->new;
+    $self->{+STACK}     = Test2::Context::Stack->new;
 
     unless ($self->{+FORMAT}) {
         my ($name, $source);
@@ -181,7 +180,7 @@ sub set_exit {
 
     # None of this is necessary if we never got a root hub
     if(my $root = shift @hubs) {
-        my $trace = Test2::Trace->new(
+        my $trace = Test2::Context::Trace->new(
             frame  => [__PACKAGE__, __FILE__, 0, __PACKAGE__ . '::END'],
             detail => __PACKAGE__ . ' END Block finalization',
         );
@@ -218,7 +217,7 @@ __END__
 
 =head1 NAME
 
-Test2::Tracker - Object used by Sync under the hood
+Test2::Global::Instance - Object used by Sync under the hood
 
 =head1 DESCRIPTION
 
@@ -233,9 +232,9 @@ shape or form.
 
 =head1 SYNOPSIS
 
-    use Test2::Tracker;
+    use Test2::Global::Instance;
 
-    my $obj = Test2::Tracker->new;
+    my $obj = Test2::Global::Instance->new;
 
 =head1 METHODS
 

@@ -39,7 +39,7 @@ ok($layers->{utf8}, "Now utf8");
     use Test2::Formatter::TAP qw/OUT_STD OUT_ERR/;
 
     use base 'Test2::Event';
-    use Test2::HashBase accessors => [qw/pass name diag note/];
+    use Test2::Util::HashBase accessors => [qw/pass name diag note/];
 
     Test2::Formatter::TAP->register_event(
         __PACKAGE__,
@@ -113,7 +113,7 @@ $it = Test2::Formatter::TAP->new(
     no_numbers => 1,
 );
 
-my $trace = Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
+my $trace = Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
 my $ok = Test2::Event::Ok->new(pass => 1, name => 'xxx', trace => $trace);
 my $diag = Test2::Event::Diag->new(msg    => 'foo', trace  => $trace);
 my $plan = Test2::Event::Plan->new(max    => 5,     trace  => $trace);
@@ -130,7 +130,7 @@ sub tests {
     my ($name, $code) = @_;
 
     # Make sure there is a fresh trace object for each group
-    $trace = Test2::Trace->new(
+    $trace = Test2::Context::Trace->new(
         frame => ['main_foo', 'foo.t', 42, 'main_foo::flubnarb'],
     );
 

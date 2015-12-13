@@ -6,7 +6,7 @@ BEGIN {
     $INC{'My/HBase.pm'} = __FILE__;
 
     package My::HBase;
-    use Test2::HashBase(
+    use Test2::Util::HashBase(
         accessors => [qw/foo bar baz/],
     );
 
@@ -19,7 +19,7 @@ BEGIN {
 BEGIN {
     package My::HBaseSub;
     use base 'My::HBase';
-    use Test2::HashBase accessors => [qw/apple pear/];
+    use Test2::Util::HashBase accessors => [qw/apple pear/];
 
     use Test2::Tester;
     is(FOO,   'foo',   "FOO CONSTANT");
@@ -59,9 +59,9 @@ is_deeply(
 
 my $obj = bless {}, 'FAKE';
 
-my $accessor = Test2::HashBase->gen_accessor('foo');
-my $getter   = Test2::HashBase->gen_getter('foo');
-my $setter   = Test2::HashBase->gen_setter('foo');
+my $accessor = Test2::Util::HashBase->gen_accessor('foo');
+my $getter   = Test2::Util::HashBase->gen_getter('foo');
+my $setter   = Test2::Util::HashBase->gen_setter('foo');
 
 is_deeply($obj, {}, "nothing set");
 

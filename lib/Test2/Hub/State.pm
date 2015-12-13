@@ -1,10 +1,10 @@
-package Test2::State;
+package Test2::Hub::State;
 use strict;
 use warnings;
 
 use Carp qw/confess/;
 
-use Test2::HashBase(
+use Test2::Util::HashBase(
     accessors => [qw{count failed ended bailed_out _passing _plan skip_reason}],
 );
 
@@ -114,7 +114,7 @@ __END__
 
 =head1 NAME
 
-Test2::State - Representation of the state of the testing
+Test2::Hub::State - Representation of the state of the testing
 
 =head1 METHODS
 

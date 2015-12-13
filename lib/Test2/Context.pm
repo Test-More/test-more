@@ -6,8 +6,8 @@ use Scalar::Util qw/weaken/;
 use Carp qw/confess croak longmess cluck/;
 use Test2::Util qw/get_tid try pkg_to_file/;
 
-use Test2::Sync();
-use Test2::Trace();
+use Test2::Global();
+use Test2::Context::Trace();
 
 our @EXPORT_OK = qw/context/;
 use base 'Exporter';
@@ -22,7 +22,7 @@ my %LOADED = (
 );
 
 # Stack is ok to cache.
-our $STACK = Test2::Sync->stack;
+our $STACK = Test2::Global->stack;
 our @ON_INIT;
 our @ON_RELEASE;
 our %CONTEXTS;
@@ -47,7 +47,7 @@ sub _do_end {
     $? = $new;
 }
 
-use Test2::HashBase(
+use Test2::Util::HashBase(
     accessors => [qw/stack hub trace _on_release _depth _err _no_destroy_warning/],
 );
 
@@ -159,7 +159,7 @@ sub context {
     # considered loaded...
     unless($LOADED) {
         $LOADED++;
-        Test2::Sync->loaded(1);
+        Test2::Global->loaded(1);
     }
 
     croak "context() called, but return value is ignored"
@@ -198,7 +198,7 @@ sub context {
             pid   => $$,
             tid   => get_tid(),
         },
-        'Test2::Trace'
+        'Test2::Context::Trace'
     );
 
     $current = bless(
@@ -309,7 +309,7 @@ sub ok {
     my $hub = $self->{+HUB};
 
     my $e = bless {
-        trace => bless( {%{$self->{+TRACE}}}, 'Test2::Trace'),
+        trace => bless( {%{$self->{+TRACE}}}, 'Test2::Context::Trace'),
         pass  => $pass,
         name  => $name,
         $hub->_fast_todo,
@@ -592,7 +592,7 @@ context.
 =item stack => $stack
 
 Normally C<context()> looks at the global hub stack initialized in
-L<Test2::Sync>. If you are maintaining your own L<Test2::Stack>
+L<Test2::Global>. If you are maintaining your own L<Test2::Context::Stack>
 instance you may pass it in to be used instead of the global one.
 
 =item hub => $hub
@@ -734,7 +734,7 @@ This will issue a warning from the file and line number of the context.
 
 =item $stack = $ctx->stack()
 
-This will return the L<Test2::Stack> instance the context used to find
+This will return the L<Test2::Context::Stack> instance the context used to find
 the current hub.
 
 =item $hub = $ctx->hub()
@@ -744,7 +744,7 @@ the current one to which all events should be sent.
 
 =item $dbg = $ctx->trace()
 
-This will return the L<Test2::Trace> instance used by the context.
+This will return the L<Test2::Context::Trace> instance used by the context.
 
 =item $ctx->do_in_context(\&code, @args);
 

@@ -2,9 +2,9 @@ use strict;
 use warnings;
 
 use Test2::Tester;
-use Test2::State;
+use Test2::Hub::State;
 
-my $state = 'Test2::State'->new;
+my $state = 'Test2::Hub::State'->new;
 
 is($state->count, 0, "count starts at 0");
 is($state->failed, 0, "failed starts at 0");

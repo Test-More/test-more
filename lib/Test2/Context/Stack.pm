@@ -1,4 +1,4 @@
-package Test2::Stack;
+package Test2::Context::Stack;
 use strict;
 use warnings;
 
@@ -23,10 +23,10 @@ sub new_hub {
         $hub->inherit($self->[-1], %params);
     }
     else {
-        $hub->format(Test2::Sync->formatter->new)
+        $hub->format(Test2::Global->formatter->new)
             unless $hub->format || exists($params{formatter});
 
-        my $ipc = Test2::Sync->ipc;
+        my $ipc = Test2::Global->ipc;
         if ($ipc && !$hub->ipc && !exists($params{ipc})) {
             $hub->set_ipc($ipc);
             $ipc->add_hub($hub->hid);
@@ -100,7 +100,7 @@ __END__
 
 =head1 NAME
 
-Test2::Stack - Object to manage a stack of L<Test2::Hub>
+Test2::Context::Stack - Object to manage a stack of L<Test2::Hub>
 instances.
 
 =head1 ***INTERNALS NOTE***
@@ -117,14 +117,14 @@ that can intercept and handle events differently than the primary hub.
 
 =head1 SYNOPSIS
 
-    my $stack = Test2::Stack->new;
+    my $stack = Test2::Context::Stack->new;
     my $hub = $stack->top;
 
 =head1 METHODS
 
 =over 4
 
-=item $stack = Test2::Stack->new()
+=item $stack = Test2::Context::Stack->new()
 
 This will create a new empty stack instance. All arguments are ignored.
 
@@ -147,7 +147,7 @@ set the parameters to C<undef> to avoid having a formatter or ipc instance.
 
 If there is no top hub, and you do not ask to leave ipc and formatter undef,
 then a new formatter will be created, and the IPC instance from
-L<Test2::Sync> will be used.
+L<Test2::Global> will be used.
 
 =item $hub = $stack->top()
 

@@ -3,16 +3,16 @@ use warnings;
 
 use Test2::Tester;
 use Test2::Event::Plan;
-use Test2::Trace;
-use Test2::State;
+use Test2::Context::Trace;
+use Test2::Hub::State;
 
 my $plan = Test2::Event::Plan->new(
-    trace => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     max => 100,
 );
 
 ok(!$plan->global, "regular plan is not a global event");
-my $state = Test2::State->new;
+my $state = Test2::Hub::State->new;
 $plan->update_state($state);
 is($state->plan, 100, "set plan in state");
 is($plan->terminate, undef, "No terminate for normal plan");
@@ -21,7 +21,7 @@ $plan->set_max(0);
 $plan->set_directive('SKIP');
 $plan->set_reason('foo');
 ok($plan->global, "plan is global on skip all");
-$state = Test2::State->new;
+$state = Test2::Hub::State->new;
 $plan->update_state($state);
 is($state->plan, 'SKIP', "set plan in state");
 is($plan->terminate, 0, "Terminate 0 on skip_all");
@@ -29,7 +29,7 @@ is($plan->terminate, 0, "Terminate 0 on skip_all");
 $plan->set_max(0);
 $plan->set_directive('NO PLAN');
 $plan->set_reason(undef);
-$state = Test2::State->new;
+$state = Test2::Hub::State->new;
 $plan->update_state($state);
 is($state->plan, 'NO PLAN', "set plan in state");
 is($plan->terminate, undef, "No terminate for no_plan");
@@ -39,14 +39,14 @@ $plan->update_state($state);
 is($state->plan, '100', "Update plan in state if it is 'NO PLAN'");
 
 $plan = Test2::Event::Plan->new(
-    trace => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     max => 0,
     directive => 'skip_all',
 );
 is($plan->directive, 'SKIP', "Change skip_all to SKIP");
 
 $plan = Test2::Event::Plan->new(
-    trace => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     max => 0,
     directive => 'no_plan',
 );
@@ -56,7 +56,7 @@ ok(!$plan->global, "NO PLAN is not global");
 like(
     exception {
         $plan = Test2::Event::Plan->new(
-            trace     => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+            trace     => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
             max       => 0,
             directive => 'foo',
         );
@@ -68,7 +68,7 @@ like(
 like(
     exception {
         $plan = Test2::Event::Plan->new(
-            trace  => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+            trace  => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
             max    => 0,
             reason => 'foo',
         );
@@ -80,7 +80,7 @@ like(
 like(
     exception {
         $plan = Test2::Event::Plan->new(
-            trace  => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+            trace  => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
         );
     },
     qr/No number of tests specified/,
@@ -90,7 +90,7 @@ like(
 like(
     exception {
         $plan = Test2::Event::Plan->new(
-            trace  => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+            trace  => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
             max => 'skip',
         );
     },

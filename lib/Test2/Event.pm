@@ -4,7 +4,7 @@ use warnings;
 
 use Carp qw/confess carp/;
 
-use Test2::HashBase(
+use Test2::Util::HashBase(
     accessors => [qw/trace nested/],
 );
 
@@ -41,7 +41,7 @@ L<Test2>.
     use base 'Test2::Event';
 
     # Add some accessors
-    use Test2::HashBase accessors => [qw/foo bar baz/];
+    use Test2::Util::HashBase accessors => [qw/foo bar baz/];
 
     # Chance to initialize some defaults
     sub init {
@@ -65,7 +65,7 @@ L<Test2>.
 
 =item $trace = $e->trace
 
-Get a snapshot of the L<Test2::Trace> as it was when this event was
+Get a snapshot of the L<Test2::Context::Trace> as it was when this event was
 generated
 
 =item $bool = $e->causes_fail

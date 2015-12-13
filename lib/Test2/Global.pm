@@ -1,12 +1,12 @@
-package Test2::Sync;
+package Test2::Global;
 use strict;
 use warnings;
 
 use Carp qw/croak/;
 
-use Test2::Tracker;
+use Test2::Global::Instance;
 
-my $INST = Test2::Tracker->new;
+my $INST = Test2::Global::Instance->new;
 
 sub pid       { $INST->pid }
 sub tid       { $INST->tid }
@@ -62,7 +62,7 @@ __END__
 
 =head1 NAME
 
-Test2::Sync - Primary Synchronization point, this is where global stuff
+Test2::Global - Primary Synchronization point, this is where global stuff
 lives.
 
 =head1 ***INTERNALS NOTE***
@@ -72,7 +72,7 @@ methods provided will not change in backwords incompatible ways, but the
 underlying implementation details might. B<Do not break encapsulation here!>
 
 Currently the implementation is to create a single instance of the
-L<Test2::Tracker> Object. All class methods defer to the single
+L<Test2::Global::Instance> Object. All class methods defer to the single
 instance. There is no public access to the singleton, and that is intentional.
 The class methods provided by this package provide the only functionality
 publicly exposed.
@@ -92,14 +92,14 @@ possible things should not be global.
 
 =head1 SYNOPSIS
 
-    use Test2::Sync; # No Exports
+    use Test2::Global; # No Exports
 
-    my $init  = Test2::Sync->init_done;
-    my $stack = Test2::Sync->stack;
-    my $ipc   = Test2::Sync->ipc;
+    my $init  = Test2::Global->init_done;
+    my $stack = Test2::Global->stack;
+    my $ipc   = Test2::Global->ipc;
 
-    Test2::Sync->set_formatter($FORMATTER)
-    my $formatter = Test2::Sync->formatter;
+    Test2::Global->set_formatter($FORMATTER)
+    my $formatter = Test2::Global->formatter;
 
 =head1 CLASS METHODS
 
@@ -108,22 +108,22 @@ everything that uses it will get the same stuff.
 
 =over 4
 
-=item $bool = Test2::Sync->init_done
+=item $bool = Test2::Global->init_done
 
 This will return true if the stack and ipc instances have already been
 initialized. It will return false if they have not.
 
-=item $stack = Test2::Sync->stack
+=item $stack = Test2::Global->stack
 
-This will return the global L<Test2::Stack> instance. If this has not
+This will return the global L<Test2::Context::Stack> instance. If this has not
 yet been initialized it will be initialized now.
 
-=item $ipc = Test2::Sync->ipc
+=item $ipc = Test2::Global->ipc
 
 This will return the global L<Test2::IPC> instance. If this has not yet
 been initialized it will be initialized now.
 
-=item $formatter = Test2::Sync->formatter
+=item $formatter = Test2::Global->formatter
 
 This will return the global formatter class. This is not an instance. By
 default the formatter is set to L<Test2::Formatter::TAP>.
@@ -140,27 +140,27 @@ If you want to specify a full module name you use the '+' prefix:
 
     $ TS_FORMATTER='+Foo::Bar' perl test.t     # Use the Foo::Bar formatter
 
-=item Test2::Sync->set_formatter($class)
+=item Test2::Global->set_formatter($class)
 
 Set the global formatter class. This can only be set once. B<Note:> This will
 override anything specified in the 'TS_FORMATTER' environment variable.
 
-=item $bool = Test2::Sync->no_wait
+=item $bool = Test2::Global->no_wait
 
-=item Test2::Sync->no_wait($bool)
+=item Test2::Global->no_wait($bool)
 
 This can be used to get/set the no_wait status. Waiting is turned on by
 default. Waiting will cause the parent process/thread to wait until all child
 processes and threads are finished before exiting. You will almost never want
 to turn this off.
 
-=item Test2::Sync->add_hook(sub { ... })
+=item Test2::Global->add_hook(sub { ... })
 
 This can be used to add a hook that is called after all testing is done. This
 is too late to add additional results, the main use of this hook is to set the
 exit code.
 
-    Test2::Sync->add_hook(
+    Test2::Global->add_hook(
         sub {
             my ($context, $exit, \$new_exit) = @_;
             ...
@@ -173,16 +173,16 @@ C<$$new_exit> is a reference to the new exit code. You may modify this to
 change the exit code. Please note that C<$$new_exit> may already be different
 from C<$exit>
 
-=item Test2::Sync->post_load(sub { ... })
+=item Test2::Global->post_load(sub { ... })
 
 Add a callback that will be called when Test2 is finished loading. This
 means the callback will be run when Test2 is done loading all the
 plugins in your use statement. If Test2 has already finished loading
 then the callback will be run immedietly.
 
-=item $bool = Test2::Sync->loaded
+=item $bool = Test2::Global->loaded
 
-=item Test2::Sync->loaded($true)
+=item Test2::Global->loaded($true)
 
 Without arguments this will simply return the boolean value of the loaded flag.
 If Test2 has finished loading this will be true, otherwise false. If a

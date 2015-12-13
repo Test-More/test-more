@@ -160,7 +160,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
     $out = capture {
         my $ipc = Test2::IPC::Files->new();
         $ipc->add_hub($hid);
-        my $trace = Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
+        my $trace = Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
         my $e = eval { $ipc->send($hid, bless({glob => \*ok, trace => $trace}, 'Foo')); 1 };
         print STDERR $@ unless $e || $@ =~ m/^255/;
         $ipc->drop_hub($hid);
@@ -228,11 +228,11 @@ ok(!-d $tmpdir, "cleaned up temp dir");
         "Events must actually be events (not a real module)"
     );
 
-    Storable::store(bless({}, 'Test2::Sync'), $fn);
+    Storable::store(bless({}, 'Test2::Global'), $fn);
     $out = capture { eval { $ipc->read_event_file($fn) } };
     like(
         $out->{STDERR},
-        qr{'Test2::Sync=HASH\(.*\)' is not a 'Test2::Event' object},
+        qr{'Test2::Global=HASH\(.*\)' is not a 'Test2::Event' object},
         "Events must actually be events (not an event type)"
     );
 

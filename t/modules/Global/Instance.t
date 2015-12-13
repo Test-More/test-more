@@ -4,9 +4,9 @@ use warnings;
 use Test2::IPC;
 use Test2::Tester;
 use Test2::Util qw/get_tid/;
-use Test2::Capabilities qw/CAN_THREAD CAN_REALLY_FORK/;
+use Test2::Util qw/CAN_THREAD CAN_REALLY_FORK/;
 
-my $CLASS = 'Test2::Tracker';
+my $CLASS = 'Test2::Global::Instance';
 
 my $one = $CLASS->new;
 is_deeply(

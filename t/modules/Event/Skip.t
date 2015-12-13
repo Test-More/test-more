@@ -3,10 +3,10 @@ use strict;
 use warnings;
 
 use Test2::Event::Skip;
-use Test2::Trace;
+use Test2::Context::Trace;
 
 my $skip = Test2::Event::Skip->new(
-    trace  => Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace  => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     name   => 'skip me',
     reason => 'foo',
 );

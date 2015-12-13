@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use base 'Test2::Event';
-use Test2::HashBase accessors => [qw/message todo/];
+use Test2::Util::HashBase accessors => [qw/message todo/];
 
 sub init {
     if (defined $_[0]->{+MESSAGE}) {

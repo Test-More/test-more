@@ -1,15 +1,15 @@
 use strict;
 use warnings;
 use Test2::Tester;
-use Test2::Trace;
+use Test2::Context::Trace;
 
 like(
-    exception { 'Test2::Trace'->new() },
+    exception { 'Test2::Context::Trace'->new() },
     qr/Frame is required/,
     "got error"
 );
 
-my $one = 'Test2::Trace'->new(frame => ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo']);
+my $one = 'Test2::Context::Trace'->new(frame => ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo']);
 is_deeply($one->frame,  ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo'], "Got frame");
 is_deeply([$one->call], ['Foo::Bar', 'foo.t', 5, 'Foo::Bar::foo'], "Got call");
 is($one->package, 'Foo::Bar',      "Got package");

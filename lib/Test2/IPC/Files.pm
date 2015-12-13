@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Test2::IPC';
 
-use Test2::HashBase(
+use Test2::Util::HashBase(
     accessors => [qw/tempdir event_id tid pid globals/],
 );
 
@@ -232,7 +232,7 @@ sub waiting {
     require Test2::Event::Waiting;
     $self->send(
         GLOBAL => Test2::Event::Waiting->new(
-            trace => Test2::Trace->new(frame => [caller()]),
+            trace => Test2::Context::Trace->new(frame => [caller()]),
         )
     );
     return;

@@ -3,12 +3,12 @@ use strict;
 use warnings;
 
 use Carp qw/carp croak/;
-use Test2::State();
+use Test2::Hub::State();
 use Test2::Util qw/get_tid/;
 
 use Scalar::Util qw/weaken/;
 
-use Test2::HashBase(
+use Test2::Util::HashBase(
     accessors => [qw{
         pid tid hid ipc
         state
@@ -34,7 +34,7 @@ sub init {
     $self->{+_TODO} = [];
     $self->{+_META} = {};
 
-    $self->{+STATE} ||= Test2::State->new;
+    $self->{+STATE} ||= Test2::Hub::State->new;
 
     if (my $formatter = delete $self->{formatter}) {
         $self->format($formatter);
@@ -580,8 +580,8 @@ returned by the C<listen()> method.
 =item $hub->follow_op(sub { ... })
 
 Use this to add behaviors that are called just before the
-L<Test2::State> for the hub is finalized. The only argument to your
-codeblock will be a L<Test2::Trace> instance.
+L<Test2::Hub::State> for the hub is finalized. The only argument to your
+codeblock will be a L<Test2::Context::Trace> instance.
 
     $hub->follow_up(sub {
         my ($trace, $hub) = @_;

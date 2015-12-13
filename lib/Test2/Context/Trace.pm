@@ -1,4 +1,4 @@
-package Test2::Trace;
+package Test2::Context::Trace;
 use strict;
 use warnings;
 
@@ -6,7 +6,7 @@ use Test2::Util qw/get_tid/;
 
 use Carp qw/confess carp/;
 
-use Test2::HashBase(
+use Test2::Util::HashBase(
     accessors => [qw/frame detail pid tid/],
 );
 
@@ -56,7 +56,7 @@ __END__
 
 =head1 NAME
 
-Test2::Trace - Debug information for events
+Test2::Context::Trace - Debug information for events
 
 =head1 DESCRIPTION
 
@@ -66,9 +66,9 @@ that information.
 
 =head1 SYNOPSIS
 
-    use Test2::Trace;
+    use Test2::Context::Trace;
 
-    my $trace = Test2::Trace->new(
+    my $trace = Test2::Context::Trace->new(
         frame => [$package, $file, $line, $subname],
     );
 

@@ -10,8 +10,8 @@ my $exception = Test2::Event::Exception->new(
 
 ok($exception->causes_fail, "Exception events always cause failure");
 
-require Test2::State;
-my $state = Test2::State->new;
+require Test2::Hub::State;
+my $state = Test2::Hub::State->new;
 ok($state->is_passing, "passing");
 ok(!$state->failed, "no failures");
 

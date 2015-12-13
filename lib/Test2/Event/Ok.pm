@@ -5,7 +5,7 @@ use warnings;
 use Carp qw/confess/;
 
 use base 'Test2::Event';
-use Test2::HashBase accessors => [
+use Test2::Util::HashBase accessors => [
     qw/pass effective_pass name diag allow_bad_name todo diag_todo/
 ];
 

@@ -142,7 +142,7 @@ $events = intercept {
     $ictx = tool();
     $ictx->ok(1, 'pass');
     $ictx->ok(0, 'fail');
-    my $trace = Test2::Trace->new(
+    my $trace = Test2::Context::Trace->new(
         frame => [ __PACKAGE__, __FILE__, __LINE__],
     );
     $ictx->hub->finalize($trace, 1);
@@ -187,7 +187,7 @@ like(
 );
 
 $events = intercept {
-    Test2::Sync->stack->top->set_no_ending(0);
+    Test2::Global->stack->top->set_no_ending(0);
     ok(1);
 };
 
@@ -196,7 +196,7 @@ ok($events->[0]->isa('Test2::Event::Ok'), "got ok");
 ok($events->[1]->isa('Test2::Event::Plan'), "finalize was called");
 
 $events = intercept {
-    Test2::Sync->stack->top->set_no_ending(0);
+    Test2::Global->stack->top->set_no_ending(0);
     ok(1);
     done_testing;
 };

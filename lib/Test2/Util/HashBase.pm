@@ -1,4 +1,4 @@
-package Test2::HashBase;
+package Test2::Util::HashBase;
 use strict;
 use warnings;
 
@@ -86,7 +86,7 @@ __END__
 
 =head1 NAME
 
-Test2::HashBase - Base class for classes that use a hashref
+Test2::Util::HashBase - Base class for classes that use a hashref
 of a hash.
 
 =head1 SYNOPSIS
@@ -97,7 +97,7 @@ A class:
     use strict;
     use warnings;
 
-    use Test2::HashBase accessors => [qw/foo bar baz/];
+    use Test2::Util::HashBase accessors => [qw/foo bar baz/];
 
     # Chance to initialize defaults
     sub init {
@@ -119,7 +119,7 @@ Subclass it
 
     # Note, you should subclass before loading HashBase.
     use base 'My::Class';
-    use Test2::HashBase accessors => ['bat'];
+    use Test2::Util::HashBase accessors => ['bat'];
 
     sub init {
         my $self = shift;
@@ -182,7 +182,7 @@ This is a way to apply HashBase to another class.
 
     sub import {
         my $caller = caller;
-        Test2::HashBase->import(@_, into => $class);
+        Test2::Util::HashBase->import(@_, into => $class);
         ...
     }
 
@@ -215,7 +215,7 @@ argument is C<$self> with its indexes already set from the constructor.
 
 To generate accessors you list them when using the module:
 
-    use Test2::HashBase accessors => [qw/foo/];
+    use Test2::Util::HashBase accessors => [qw/foo/];
 
 This will generate the following subs in your namespace:
 
@@ -249,7 +249,7 @@ and similar typos. It will not help you if you forget to prefix the '+' though.
 You can subclass an existing HashBase class.
 
     use base 'Another::HashBase::Class';
-    use Test2::HashBase accessors => [qw/foo bar baz/];
+    use Test2::Util::HashBase accessors => [qw/foo bar baz/];
 
 The base class is added to C<@ISA> for you, and all constants from base classes
 are added to subclasses automatically.
@@ -262,15 +262,15 @@ hashbase.
 
 =over 4
 
-=item $sub = Test2::HashBase->gen_accessor($field)
+=item $sub = Test2::Util::HashBase->gen_accessor($field)
 
 This generates a coderef that acts as an accessor for the specified field.
 
-=item $sub = Test2::HashBase->gen_getter($field)
+=item $sub = Test2::Util::HashBase->gen_getter($field)
 
 This generates a coderef that acts as a getter for the specified field.
 
-=item $sub = Test2::HashBase->get_setter($field)
+=item $sub = Test2::Util::HashBase->get_setter($field)
 
 This generates a coderef that acts as a setter for the specified field.
 
@@ -279,13 +279,13 @@ This generates a coderef that acts as a setter for the specified field.
 These all work in the same way, except that getters only get, setters always
 set, and accessors can get and/or set.
 
-    my $sub = Test2::HashBase->gen_accessor('foo');
+    my $sub = Test2::Util::HashBase->gen_accessor('foo');
     my $foo = $obj->$sub();
     $obj->$sub('value');
 
 You can also add the sub to your class as a named method:
 
-    *foo = Test2::HashBase->gen_accessor('foo');
+    *foo = Test2::Util::HashBase->gen_accessor('foo');
 
 =head1 SOURCE
 

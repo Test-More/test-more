@@ -5,7 +5,7 @@ use warnings;
 use Config qw/%Config/;
 use Carp qw/confess carp longmess/;
 
-use Test2::HashBase(
+use Test2::Util::HashBase(
     accessors => [qw/no_fatal/],
 );
 

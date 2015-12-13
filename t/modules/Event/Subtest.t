@@ -5,7 +5,7 @@ use Test2::Tester;
 use Test2::Event::Subtest;
 my $st = 'Test2::Event::Subtest';
 
-my $trace = Test2::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']);
+my $trace = Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']);
 my $one = $st->new(
     trace     => $trace,
     pass      => 1,

@@ -5,7 +5,7 @@ use warnings;
 use Test2::Hub::Interceptor::Terminator();
 
 use base 'Test2::Hub';
-use Test2::HashBase;
+use Test2::Util::HashBase;
 
 sub inherit {
     my $self = shift;

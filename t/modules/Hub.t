@@ -4,7 +4,7 @@ use warnings;
 use Test2::IPC;
 use Test2::Tester;
 use Test2::Context qw/context/;
-use Test2::Capabilities qw/CAN_FORK CAN_THREAD CAN_REALLY_FORK/;
+use Test2::Util qw/CAN_FORK CAN_THREAD CAN_REALLY_FORK/;
 
 sub tests {
     my ($name, $code) = @_;
@@ -32,7 +32,7 @@ sub tests {
     package My::Event;
 
     use base 'Test2::Event';
-    use Test2::HashBase accessors => [qw/msg/];
+    use Test2::Util::HashBase accessors => [qw/msg/];
 }
 
 tests basic => sub {
@@ -64,7 +64,7 @@ tests follow_ups => sub {
     my $hub = Test2::Hub->new;
     $hub->state->set_count(1);
 
-    my $trace = Test2::Trace->new(
+    my $trace = Test2::Context::Trace->new(
         frame => [__PACKAGE__, __FILE__, __LINE__],
     );
 
@@ -184,7 +184,7 @@ tests listen => sub {
     my $ok1 = Test2::Event::Ok->new(
         pass => 1,
         name => 'foo',
-        trace => Test2::Trace->new(
+        trace => Test2::Context::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -192,7 +192,7 @@ tests listen => sub {
     my $ok2 = Test2::Event::Ok->new(
         pass => 0,
         name => 'bar',
-        trace => Test2::Trace->new(
+        trace => Test2::Context::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -200,7 +200,7 @@ tests listen => sub {
     my $ok3 = Test2::Event::Ok->new(
         pass => 1,
         name => 'baz',
-        trace => Test2::Trace->new(
+        trace => Test2::Context::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -281,7 +281,7 @@ tests filter => sub {
     my $ok1 = Test2::Event::Ok->new(
         pass => 1,
         name => 'foo',
-        trace => Test2::Trace->new(
+        trace => Test2::Context::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -289,7 +289,7 @@ tests filter => sub {
     my $ok2 = Test2::Event::Ok->new(
         pass => 0,
         name => 'bar',
-        trace => Test2::Trace->new(
+        trace => Test2::Context::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -297,7 +297,7 @@ tests filter => sub {
     my $ok3 = Test2::Event::Ok->new(
         pass => 1,
         name => 'baz',
-        trace => Test2::Trace->new(
+        trace => Test2::Context::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );

@@ -8,7 +8,7 @@ use Test2::Event();
     package My::MockEvent;
 
     use base 'Test2::Event';
-    use Test2::HashBase accessors => [qw/foo bar baz/];
+    use Test2::Util::HashBase accessors => [qw/foo bar baz/];
 }
 
 ok(My::MockEvent->can($_), "Added $_ accessor") for qw/foo bar baz/;

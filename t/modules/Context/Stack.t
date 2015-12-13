@@ -2,9 +2,9 @@ use strict;
 use warnings;
 use Test2::IPC;
 use Test2::Tester;
-use Test2::Stack;
+use Test2::Context::Stack;
 
-ok(my $stack = Test2::Stack->new, "Create a stack");
+ok(my $stack = Test2::Context::Stack->new, "Create a stack");
 
 ok(!@$stack, "Empty stack");
 ok(!$stack->peek, "Nothing to peek at");
@@ -61,7 +61,7 @@ is_deeply(
 );
 
 ok(my $top = $stack->top, "Generated a top hub");
-is($top->ipc, Test2::Sync->ipc, "Used sync's ipc");
+is($top->ipc, Test2::Global->ipc, "Used sync's ipc");
 ok($top->format, 'Got formatter');
 
 is($stack->top, $stack->top, "do not generate a new top if there is already a top");

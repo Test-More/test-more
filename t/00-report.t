@@ -7,7 +7,7 @@ use Test2 -V1;
 
 use Test2::Table qw/table/;
 
-use Test2::Capabilities qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
+use Test2::Util qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
 
 diag "\nDIAGNOSTICS INFO IN CASE OF FAILURE:\n";
 diag(join "\n", table(rows => [[ 'perl', $] ]]));

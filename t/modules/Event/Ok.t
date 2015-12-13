@@ -2,8 +2,8 @@ use strict;
 use warnings;
 
 use Test2::Tester;
-use Test2::State;
-use Test2::Trace;
+use Test2::Hub::State;
+use Test2::Context::Trace;
 use Test2::Event::Ok;
 use Test2::Event::Diag;
 
@@ -14,7 +14,7 @@ sub tests {
     my ($name, $code) = @_;
 
     # Make sure there is a fresh trace object for each group
-    $trace = Test2::Trace->new(
+    $trace = Test2::Context::Trace->new(
         frame => ['main_foo', 'foo.t', 42, 'main_foo::flubnarb'],
     );
 
@@ -37,7 +37,7 @@ tests Passing => sub {
     is($ok->effective_pass, 1, "effective pass");
     is($ok->diag, undef, "no diag");
 
-    my $state = Test2::State->new;
+    my $state = Test2::Hub::State->new;
     $ok->update_state($state);
     is($state->count, 1, "Added to the count");
     is($state->is_passing, 1, "still passing");
@@ -62,7 +62,7 @@ tests Failing => sub {
         "default diag"
     );
 
-    my $state = Test2::State->new;
+    my $state = Test2::Hub::State->new;
     $ok->update_state($state);
     is($state->count, 1, "Added to the count");
     is($state->failed, 1, "Added to failed count");
@@ -88,7 +88,7 @@ tests fail_with_diag => sub {
         "Got diag"
     );
 
-    my $state = Test2::State->new;
+    my $state = Test2::Hub::State->new;
     $ok->update_state($state);
     is($state->count, 1, "Added to the count");
     is($state->failed, 1, "Added to failed count");
@@ -115,7 +115,7 @@ tests "Failing TODO" => sub {
         "Got diag"
     );
 
-    my $state = Test2::State->new;
+    my $state = Test2::Hub::State->new;
     $ok->update_state($state);
     is($state->count, 1, "Added to the count");
     is($state->failed, 0, "failed count unchanged");

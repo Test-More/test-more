@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use base 'Test2::Event::Ok';
-use Test2::HashBase accessors => [qw/reason/];
+use Test2::Util::HashBase accessors => [qw/reason/];
 
 sub init {
     my $self = shift;
