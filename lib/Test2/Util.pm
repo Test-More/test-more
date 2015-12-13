@@ -2,16 +2,50 @@ package Test2::Util;
 use strict;
 use warnings;
 
-use Test2::Capabilities qw/CAN_THREAD/;
+use Config qw/%Config/;
 
 our @EXPORT_OK = qw{
     try protect
 
-    get_tid USE_THREADS
-
     pkg_to_file
+
+    get_tid USE_THREADS
+    CAN_THREAD
+    CAN_REALLY_FORK
+    CAN_FORK
 };
 use base 'Exporter';
+
+sub _can_thread {
+    return 0 unless $] >= 5.008001;
+    return 0 unless $Config{'useithreads'};
+
+    # Threads are broken on perl 5.10.0 built with gcc 4.8+
+    if ($] == 5.010000 && $Config{'ccname'} eq 'gcc' && $Config{'gccversion'}) {
+        my @parts = split /\./, $Config{'gccversion'};
+        return 0 if $parts[0] >= 4 && $parts[1] >= 8;
+    }
+
+    # Change to a version check if this ever changes
+    return 0 if $INC{'Devel/Cover.pm'};
+    return 1;
+}
+
+sub _can_fork {
+    return 1 if $Config{d_fork};
+    return 0 unless $^O eq 'MSWin32' || $^O eq 'NetWare';
+    return 0 unless $Config{useithreads};
+    return 0 unless $Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/;
+
+    return _can_thread();
+}
+
+BEGIN {
+    no warnings 'once';
+    *CAN_REALLY_FORK = $Config{d_fork} ? sub() { 1 } : sub() { 0 };
+    *CAN_THREAD      = _can_thread()   ? sub() { 1 } : sub() { 0 };
+    *CAN_FORK        = _can_fork()     ? sub() { 1 } : sub() { 0 };
+}
 
 sub _manual_protect(&) {
     my $code = shift;
@@ -174,6 +208,19 @@ protect $@ and $! from changes. $@ and $! will be restored to whatever they
 were before the run so long as it is successful. If the run fails $! will still
 be restored, but $@ will contain the exception being thrown.
 
+=item CAN_FORK
+
+True if this system is capable of true or psuedo-fork.
+
+=item CAN_REALLY_FORK
+
+True if the system can really fork. This will be false for systems where fork
+is emulated.
+
+=item CAN_THREAD
+
+True if this system is capable of using threads.
+
 =item USE_THREADS
 
 Returns true if threads are enabled, false if they are not.
@@ -186,6 +233,23 @@ otherwise it returns 0.
 =item my $file = pkg_to_file($package)
 
 Convert a package name to a filename.
+
+=back
+
+=head1 NOTES && CAVEATS
+
+=over 4
+
+=item 5.10.0
+
+Perl 5.10.0 has a bug when compiled with newer gcc versions. This bug causes a
+segfault whenever a new thread is launched. Test2 will attempt to detect
+this, and note that the system is not capable of forking when it is detected.
+
+=item Devel::Cover
+
+Devel::Cover does not support threads. CAN_THREAD will return false if
+Devel::Cover is loaded before the check is first run.
 
 =back
 

@@ -8,6 +8,10 @@ use Test2::Util qw/
     get_tid USE_THREADS
 
     pkg_to_file
+
+    CAN_FORK
+    CAN_THREAD
+    CAN_REALLY_FORK
 /;
 
 for my $protect (\&protect, Test2::Util->can('_manual_protect'), Test2::Util->can('_local_protect')) {
@@ -41,5 +45,11 @@ for my $try (\&try, Test2::Util->can('_manual_try'), Test2::Util->can('_local_tr
 }
 
 is(pkg_to_file('A::Package::Name'), 'A/Package/Name.pm', "Converted package to file");
+
+# Make sure running them does not die
+# We cannot really do much to test these.
+CAN_THREAD();
+CAN_FORK();
+CAN_REALLY_FORK();
 
 done_testing;
