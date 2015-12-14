@@ -1,8 +1,22 @@
 {{$NEXT}}
 
     - Pull out guts into Test2 namespace
+    - Restructure module paths
+    - Simplify HashBase
+    - Combine Util and Capabilities
+    - Update Profiling scripts
+    - Rename DebugInfo to Trace
+    - Rename SyncObj to Global/Instance
+    - Slim down Util.pm
+    - Stop using Test::Stream::Exporter
+    - Reduce complexity of Capabilities checker
+    - Use event todo instead of debuginfo todo
+    - Add 'todo' fields for Diag and Ok events
+    - Break out Skip into an event type
+    - Add event registration to TAP formatter
+    - Move to_tap logic into formatter
 
-1.302026  2015-11-09 14:34:30-08:00 America/Los_Angeles
+Test-Stream 1.302026  2015-11-09 14:34:30-08:00 America/Los_Angeles
 
     - No functional changes since the last trial
     - Doc fix (fixes #52)
@@ -10,39 +24,39 @@
     - Doc fix in Classic bundle
     - Doc fixes for FromTestBuilder
 
-1.302025  2015-11-06 16:33:06-08:00 America/Los_Angeles (TRIAL RELEASE)
+Test-Stream 1.302025  2015-11-06 16:33:06-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Add back cmp_ok in Core plugin
     - Add Classic plugin for legacy is/like/is_deeply/etc
     - Make docs recommend people moving from Test::More use -Classic
 
-1.302024  2015-11-04 11:15:14-08:00 America/Los_Angeles
+Test-Stream 1.302024  2015-11-04 11:15:14-08:00 America/Los_Angeles
 
     - Add missing undef compare test
 
-1.302023  2015-11-04 00:12:49-08:00 America/Los_Angeles (TRIAL RELEASE)
+Test-Stream 1.302023  2015-11-04 00:12:49-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - String and Number comparisons no longer allow undef (backwords incompatible change, sorry)
     - Doc spelling fixes (Evan Zacks)
     - Add Undef type in deep check
     - Fix docs for buffered subtests (Noticed by Magnolia.K)
 
-1.302022  2015-11-03 09:43:39-08:00 America/Los_Angeles
+Test-Stream 1.302022  2015-11-03 09:43:39-08:00 America/Los_Angeles
 
     - Change Delta.pm to use a grep instead of a map (minor change)
     - Fix scalar-ref comparison for overloaded scalar refs (#50)
 
-1.302021  2015-10-31 08:15:22-07:00 America/Los_Angeles
+Test-Stream 1.302021  2015-10-31 08:15:22-07:00 America/Los_Angeles
 
     - Remove all number vs string guessing
     - Doc fixes (thanks Magnolia.K)
     - Add details to test report
 
-1.302020  2015-10-29 08:02:25-07:00 America/Los_Angeles
+Test-Stream 1.302020  2015-10-29 08:02:25-07:00 America/Los_Angeles
 
     - No changes, just removing trial
 
-1.302019  2015-10-28 22:32:06-07:00 America/Los_Angeles (TRIAL RELEASE)
+Test-Stream 1.302019  2015-10-28 22:32:06-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Declare Test::Stream experimental phase complete
     - Updated Readme
@@ -53,7 +67,7 @@
     - Remove stray debugging statements
     - Slight change in module list in t/00-report.t
 
-1.302018  2015-10-26 16:47:45-07:00 America/Los_Angeles
+Test-Stream 1.302018  2015-10-26 16:47:45-07:00 America/Los_Angeles
 
     - Better stack traces in spec
     - Remove duplicate module from the report
@@ -61,14 +75,14 @@
     - Fix loop in SkipWithout
     - Fix Typo in Context pod
 
-1.302017  2015-10-15 21:32:50-07:00 America/Los_Angeles
+Test-Stream 1.302017  2015-10-15 21:32:50-07:00 America/Los_Angeles
 
     - Change minimum module versions (they were wrong)
     - Typo fixes in Test::Stream docs
     - Remove unused variable
     - Fix Compare line number bug
 
-1.302016  2015-10-12 18:49:35-07:00 America/Los_Angeles
+Test-Stream 1.302016  2015-10-12 18:49:35-07:00 America/Los_Angeles
 
     - Workflows/Spec: Argument tolerence, custom line numbers
     - Remove Block.pm
@@ -79,19 +93,19 @@
     - Even Core deps now listed in dist.ini
     - Add some missing docs and tests to Util.pm
 
-1.302015  2015-10-04 13:46:56-07:00 America/Los_Angeles
+Test-Stream 1.302015  2015-10-04 13:46:56-07:00 America/Los_Angeles
 
     - Remove spec isolation logic, this can be an external plugin
 
-1.302014  2015-10-03 20:30:14-07:00 America/Los_Angeles
+Test-Stream 1.302014  2015-10-03 20:30:14-07:00 America/Los_Angeles
 
     - Another Delta.t fix
 
-1.302013  2015-10-02 21:51:45-07:00 America/Los_Angeles
+Test-Stream 1.302013  2015-10-02 21:51:45-07:00 America/Los_Angeles
 
     - Fix Util.t for some Term::ReadKey versions
 
-1.302012  2015-10-01 15:42:27-07:00 America/Los_Angeles
+Test-Stream 1.302012  2015-10-01 15:42:27-07:00 America/Los_Angeles
 
     - Remove reservations file
     - Documentation updates (add missing docs)
@@ -101,7 +115,7 @@
     - Better error handling in threads in the workflows
     - Better support real fork vs pseudo fork
 
-1.302011  2015-09-30 21:05:57-07:00 America/Los_Angeles
+Test-Stream 1.302011  2015-09-30 21:05:57-07:00 America/Los_Angeles
 
     - Documentation updates, typo fixes
     - Be safer, and less verbose, when detecting term size
@@ -112,7 +126,7 @@
     - Fix global event handling on platforms that do not use '/' for path
     - Fix Delta.t on systems with large memory addresses
 
-1.302010  2015-09-29 22:23:28-07:00 America/Los_Angeles
+Test-Stream 1.302010  2015-09-29 22:23:28-07:00 America/Los_Angeles
 
     - Add spec plugin (with basic workflows modules)
     - Switch to plugin architecture, Test::Stream is just a loader
@@ -143,19 +157,19 @@
     - Fix typos
     - Fix a GC destruction issue (b3a96db)
 
-1.302009  2015-07-03 21:16:08-07:00 America/Los_Angeles
+Test-Stream 1.302009  2015-07-03 21:16:08-07:00 America/Los_Angeles
 
     - Fix MANIFEST.SKIP so tests are not skipped
     - Change import aliasing syntax to match prior art
     - Fix bug in does_ok
     - Documentation updates
 
-1.302008  2015-06-27 15:21:55-07:00 America/Los_Angeles
+Test-Stream 1.302008  2015-06-27 15:21:55-07:00 America/Los_Angeles
 
     - Fix 2 bugs with threading on 5.8.x
     - Fix a diag rendering bug with subtests
 
-1.302007  2015-06-24 08:03:38-07:00 America/Los_Angeles
+Test-Stream 1.302007  2015-06-24 08:03:38-07:00 America/Los_Angeles
 
     - Add CanThread and CanFork libraries
     - Remove prefix when subtests are buffered
@@ -168,29 +182,29 @@
     - Remove XS support code
     - Fix bug when threads are auto-joined
 
-1.302006  2015-06-18 09:53:04-07:00 America/Los_Angeles
+Test-Stream 1.302006  2015-06-18 09:53:04-07:00 America/Los_Angeles
 
     - MANIFEST.SKIP fix
     - Remove files accidentally included in the last dist
 
-1.302005  2015-06-18 09:37:38-07:00 America/Los_Angeles
+Test-Stream 1.302005  2015-06-18 09:37:38-07:00 America/Los_Angeles
 
     - Remove broken test script
 
-1.302004  2015-06-17 08:32:31-07:00 America/Los_Angeles
+Test-Stream 1.302004  2015-06-17 08:32:31-07:00 America/Los_Angeles
 
     - Add Support for XS
     - Improve release_pp with refcount from internals
 
-1.302003  2015-06-06 21:44:42-07:00 America/Los_Angeles
+Test-Stream 1.302003  2015-06-06 21:44:42-07:00 America/Los_Angeles
 
     - Documentation added
     - Make IPC::Files safe in cleanup
 
-1.302002  2015-06-06 14:06:57-07:00 America/Los_Angeles
+Test-Stream 1.302002  2015-06-06 14:06:57-07:00 America/Los_Angeles
 
     - Fix Win32 support
 
-1.302001  2015-06-05 22:40:57-07:00 America/Los_Angeles
+Test-Stream 1.302001  2015-06-05 22:40:57-07:00 America/Los_Angeles
 
     - Initial Version
