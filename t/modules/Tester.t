@@ -4,7 +4,7 @@ use warnings;
 use Test2::IPC;
 use Test2::Tester;
 
-use Test2::Context qw/context/;
+use Test2 qw/context/;
 
 ok(__PACKAGE__->can($_), "imported '$_\()'") for qw{
     intercept

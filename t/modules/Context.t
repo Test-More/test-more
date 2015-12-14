@@ -3,7 +3,7 @@ use warnings;
 
 use Test2::Tester;
 
-use Test2::Context qw/context/;
+use Test2 qw/context/;
 
 my $error = exception { context(); 1 };
 my $exception = "context() called, but return value is ignored at " . __FILE__ . ' line ' . (__LINE__ - 1);
@@ -160,8 +160,8 @@ my @hooks;
 $hub =  Test2::Global->stack->top;
 my $ref1 = $hub->add_context_init(sub { push @hooks => 'hub_init' });
 my $ref2 = $hub->add_context_release(sub { push @hooks => 'hub_release' });
-Test2::Context->ON_INIT(sub { push @hooks => 'global_init' });
-Test2::Context->ON_RELEASE(sub { push @hooks => 'global_release' });
+Test2::Global->add_context_init_callback(sub { push @hooks => 'global_init' });
+Test2::Global->add_context_release_callback(sub { push @hooks => 'global_release' });
 
 sub {
     push @hooks => 'start';
@@ -185,8 +185,9 @@ sub {
 
 $hub->remove_context_init($ref1);
 $hub->remove_context_release($ref2);
-@Test2::Context::ON_INIT = ();
-@Test2::Context::ON_RELEASE = ();
+my $inst = Test2::Global->_internal_use_only_private_instance;
+@{$inst->context_init_callbacks} = ();
+@{$inst->context_release_callbacks} = ();
 
 is_deeply(
     \@hooks,
@@ -240,34 +241,6 @@ is_deeply(
     $ctx->release;
 
     ok(!exception { $one->do_in_context(sub {1}) }, "do_in_context works without an original")
-}
-
-{
-    my $warnings;
-    my $exit;
-    sub {
-        my $ctx = context();
-
-        local $? = 0;
-        $warnings = warnings { Test2::Context::_do_end() };
-        $exit = $?;
-
-        $ctx->release;
-    }->();
-
-    {
-        my $line = __LINE__ - 3;
-        my $file = __FILE__;
-        is_deeply(
-            $warnings,
-            [
-                "context object was never released! This means a testing tool is behaving very badly at $file line $line.\n"
-            ],
-            "Warned about unfreed context"
-        );
-
-        is($exit, 255, "set exit code to 255");
-    }
 }
 
 {

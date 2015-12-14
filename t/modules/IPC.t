@@ -7,7 +7,7 @@ my @drivers;
 BEGIN { @drivers = Test2::IPC->drivers };
 
 use Test2::Tester;
-use Test2::Context qw/context/;
+use Test2 qw/context/;
 sub tests {
     my ($name, $code) = @_;
     my $ok = eval { $code->(); 1 };
@@ -64,17 +64,19 @@ tests init_drivers => sub {
 };
 
 tests polling => sub {
+    my $inst = Test2::Global->_internal_use_only_private_instance;
+
     ok(!Test2::IPC->polling_enabled, "no polling yet");
-    ok(!@Test2::Context::ON_INIT, "no context init hooks yet");
+    ok(!@{$inst->context_init_callbacks}, "no context init callbacks yet");
 
     Test2::IPC->enable_polling;
 
-    ok(1 == @Test2::Context::ON_INIT, "added 1 hook");
+    ok(1 == @{$inst->context_init_callbacks}, "added 1 callback");
     ok(Test2::IPC->polling_enabled, "polling enabled");
 
     Test2::IPC->enable_polling;
 
-    ok(1 == @Test2::Context::ON_INIT, "Did not add hook twice");
+    ok(1 == @{$inst->context_init_callbacks}, "Did not add callback twice");
 };
 
 for my $meth (qw/send cull add_hub drop_hub waiting is_viable/) {

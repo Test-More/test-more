@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test2::Context qw/context/;
+use Test2 qw/context/;
 
 sub done_testing {
     my $ctx = context();

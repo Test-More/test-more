@@ -5,7 +5,7 @@ use warnings;
 use Scalar::Util qw/blessed/;
 
 use Test2::Util qw/try/;
-use Test2::Context qw/context/;
+use Test2 qw/context/;
 
 use Test2::Hub::Interceptor();
 use Test2::Hub::Interceptor::Terminator();

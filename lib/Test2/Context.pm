@@ -3,14 +3,11 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/weaken/;
-use Carp qw/confess croak longmess cluck/;
+use Carp qw/confess croak longmess/;
 use Test2::Util qw/get_tid try pkg_to_file/;
 
 use Test2::Global();
 use Test2::Context::Trace();
-
-our @EXPORT_OK = qw/context/;
-use base 'Exporter';
 
 # Preload some key event types
 my %LOADED = (
@@ -21,35 +18,18 @@ my %LOADED = (
     } qw/Ok Diag Note Plan Bail Exception Waiting Skip Subtest/
 );
 
-# Stack is ok to cache.
-our $STACK = Test2::Global->stack;
-our @ON_INIT;
-our @ON_RELEASE;
-our %CONTEXTS;
-
-sub ON_INIT    { shift; push @ON_INIT => @_ }
-sub ON_RELEASE { shift; push @ON_RELEASE => @_ }
-
-END { _do_end() }
-
-sub _do_end {
-    my $real = $?;
-    my $new  = $real;
-
-    my @unreleased = grep { $_ && $_->trace->pid == $$ } values %CONTEXTS;
-    if (@unreleased) {
-        $new = 255;
-
-        $_->trace->alert("context object was never released! This means a testing tool is behaving very badly")
-            for @unreleased;
-    }
-
-    $? = $new;
-}
-
 use Test2::Util::HashBase(
     accessors => [qw/stack hub trace _on_release _depth _err _no_destroy_warning/],
 );
+
+# Private, not package vars
+# It is safe to cache these.
+my ($ON_RELEASE, $CONTEXTS);
+{
+    my $INST = Test2::Global->_internal_use_only_private_instance;
+    $ON_RELEASE  = $INST->context_release_callbacks;
+    $CONTEXTS    = $INST->contexts;
+}
 
 sub init {
     confess "The 'trace' attribute is required"
@@ -72,7 +52,7 @@ sub release {
     my $hub = $self->{+HUB};
     my $hid = $hub->{hid};
 
-    if (!$CONTEXTS{$hid} || $self != $CONTEXTS{$hid}) {
+    if (!$CONTEXTS->{$hid} || $self != $CONTEXTS->{$hid}) {
         $_[0] = undef;
         croak "release() should not be called on a non-canonical context.";
     }
@@ -80,7 +60,7 @@ sub release {
     # Remove the weak reference, this will also prevent the destructor from
     # having an issue.
     # Remove the key itself to avoid a slow memory leak
-    delete $CONTEXTS{$hid};
+    delete $CONTEXTS->{$hid};
 
     if (my $cbk = $self->{+_ON_RELEASE}) {
         $_->($self) for reverse @$cbk;
@@ -88,7 +68,7 @@ sub release {
     if (my $hcbk = $hub->{_context_release}) {
         $_->($self) for reverse @$hcbk;
     }
-    $_->($self) for reverse @ON_RELEASE;
+    $_->($self) for reverse @$ON_RELEASE;
 
     return;
 }
@@ -99,7 +79,7 @@ sub DESTROY {
     return unless $self->{+HUB};
     my $hid = $self->{+HUB}->hid;
 
-    return unless $CONTEXTS{$hid} && $CONTEXTS{$hid} == $self;
+    return unless $CONTEXTS->{$hid} && $CONTEXTS->{$hid} == $self;
     return unless "$@" eq "" . $self->{+_ERR};
 
     my $trace = $self->{+TRACE} || return;
@@ -119,14 +99,14 @@ Trace: $mess
     EOT
 
     # Remove the key itself to avoid a slow memory leak
-    delete $CONTEXTS{$hid};
+    delete $CONTEXTS->{$hid};
     if(my $cbk = $self->{+_ON_RELEASE}) {
         $_->($self) for reverse @$cbk;
     }
     if (my $hcbk = $self->{+HUB}->{_context_release}) {
         $_->($self) for reverse @$hcbk;
     }
-    $_->($self) for reverse @ON_RELEASE;
+    $_->($self) for reverse @$ON_RELEASE;
     return;
 }
 
@@ -137,130 +117,18 @@ sub do_in_context {
     my $hub = $self->{+HUB};
     my $hid = $hub->hid;
 
-    my $old = $CONTEXTS{$hid};
+    my $old = $CONTEXTS->{$hid};
 
-    weaken($CONTEXTS{$hid} = $self);
+    weaken($CONTEXTS->{$hid} = $self);
     my ($ok, $err) = &try($sub, @args);
     if ($old) {
-        weaken($CONTEXTS{$hid} = $old);
+        weaken($CONTEXTS->{$hid} = $old);
         $old = undef;
     }
     else {
-        delete $CONTEXTS{$hid};
+        delete $CONTEXTS->{$hid};
     }
     die $err unless $ok;
-}
-
-my $LOADED = 0;
-sub context {
-    my %params = (level => 0, wrapped => 0, @_);
-
-    # If something is getting a context then the sync system needs to be
-    # considered loaded...
-    unless($LOADED) {
-        $LOADED++;
-        Test2::Global->loaded(1);
-    }
-
-    croak "context() called, but return value is ignored"
-        unless defined wantarray;
-
-    my $stack = $params{stack} || $STACK;
-    my $hub = $params{hub} || @$stack ? $stack->[-1] : $stack->top;
-    my $hid = $hub->{hid};
-    my $current = $CONTEXTS{$hid};
-
-    my $level = 1 + $params{level};
-    my ($pkg, $file, $line, $sub) = caller($level);
-    unless ($pkg) {
-        confess "Could not find context at depth $level" unless $params{fudge};
-        ($pkg, $file, $line, $sub) = caller(--$level) while ($level >= 0 && !$pkg);
-    }
-
-    my $depth = $level;
-    $depth++ while caller($depth + 1) && (!$current || $depth <= $current->{+_DEPTH} + $params{wrapped});
-    $depth -= $params{wrapped};
-
-    if ($current && $params{on_release} && $current->{+_DEPTH} < $depth) {
-        $current->{+_ON_RELEASE} ||= [];
-        push @{$current->{+_ON_RELEASE}} => $params{on_release};
-    }
-
-    return $current if $current && $current->{+_DEPTH} < $depth;
-
-    # Handle error condition of bad level
-    $current->_depth_error([$pkg, $file, $line, $sub, $depth])
-        if $current;
-
-    my $dbg = bless(
-        {
-            frame => [$pkg, $file, $line, $sub],
-            pid   => $$,
-            tid   => get_tid(),
-        },
-        'Test2::Context::Trace'
-    );
-
-    $current = bless(
-        {
-            STACK()  => $stack,
-            HUB()    => $hub,
-            TRACE()  => $dbg,
-            _DEPTH() => $depth,
-            _ERR()   => $@,
-            $params{on_release} ? (_ON_RELEASE() => [$params{on_release}]) : (),
-        },
-        __PACKAGE__
-    );
-
-    weaken($CONTEXTS{$hid} = $current);
-
-    $_->($current) for @ON_INIT;
-
-    if (my $hcbk = $hub->{_context_init}) {
-        $_->($current) for @$hcbk;
-    }
-
-    $params{on_init}->($current) if $params{on_init};
-
-    return $current;
-}
-
-sub _depth_error {
-    my $self = shift;
-    my ($details) = @_;
-    my ($pkg, $file, $line, $sub, $depth) = @$details;
-
-    my $oldframe = $self->{+TRACE}->frame;
-    my $olddepth = $self->{+_DEPTH};
-
-    my $mess = longmess();
-
-    warn <<"    EOT";
-context() was called to retrieve an existing context, however the existing
-context was created in a stack frame at the same, or deeper level. This usually
-means that a tool failed to release the context when it was finished.
-
-Old context details:
-   File: $oldframe->[1]
-   Line: $oldframe->[2]
-   Tool: $oldframe->[3]
-  Depth: $olddepth
-
-New context details:
-   File: $file
-   Line: $line
-   Tool: $sub
-  Depth: $depth
-
-Trace: $mess
-
-Removing the old context and creating a new one...
-    EOT
-
-    my $hid = $self->{+HUB}->hid;
-    delete $CONTEXTS{$hid};
-    $self->release;
 }
 
 sub throw {
@@ -425,7 +293,10 @@ sending events to the correct L<Test2::Hub> instance.
 
 =head1 SYNOPSIS
 
-    use Test2::Context qw/context release/;
+In general you will not be creating contexts directly. To obtain a context you
+should always use C<context()> which is exported by the L<Test2> module.
+
+    use Test2 qw/context/;
 
     sub my_ok {
         my ($bool, $name) = @_;
@@ -449,22 +320,18 @@ inherit it:
         return $out;
     }
 
-Notice above that we are grabbing a return value, then releasing our context,
-then returning the value. We can combine these last 3 statements into a single
-statement using the C<release> function:
-
-    sub wrapper {
-        my ($bool, $name) = @_;
-        my $ctx = context();
-        $ctx->diag("wrapping my_ok");
-
-        # You must always release the context.
-        release $ctx, my_ok($bool, $name);
-    }
-
 =head1 CRITICAL DETAILS
 
 =over 4
+
+=item you MUST always use the context() sub from Test2
+
+Creating your own context via C<< Test2::Context->new() >> will almost never
+produce a desirable result. Use C<context()> which is exported by L<Test2>.
+
+There are a handful of cases where a tool author may want to create a new
+congtext by hand, which is why the C<new> method exists. Unless you really know
+what you are doing you should avoid this.
 
 =item You MUST always release the context when done with it
 
@@ -509,207 +376,7 @@ context you want them to find.
 
 =back
 
-=head1 EXPORTS
-
-All exports are optional, you must specify subs to import. If you want to
-import all subs use '-all'.
-
-    use Test2::Context '-all';
-
-=head2 context()
-
-Usage:
-
-=over 4
-
-=item $ctx = context()
-
-=item $ctx = context(%params)
-
-=back
-
-The C<context()> function will always return the current context to you. If
-there is already a context active it will be returned. If there is not an
-active context one will be generated. When a context is generated it will
-default to using the file and line number where the currently running sub was
-called from.
-
-Please see the L</"CRITICAL DETAILS"> section for important rools about what
-you can and acannot do with a context once it is obtained.
-
-B<Note> This function will throw an exception if you ignore the context object
-it returns.
-
-=head3 OPTIONAL PARAMETERS
-
-All parameters to C<context> are optional.
-
-=over 4
-
-=item level => $int
-
-If you must obtain a context in a sub deper than your entry point you can use
-this to tell it how many EXTRA stack frames to look back. If this option is not
-provided the default of C<0> is used.
-
-    sub third_party_tool {
-        my $sub = shift;
-        ... # Does not obtain a context
-        $sub->();
-        ...
-    }
-
-    third_party_tool(sub {
-        my $ctx = context(level => 1);
-        ...
-        $ctx->release;
-    });
-
-=item wrapped => $int
-
-Use this if you need to write your own tool that wraps a call to C<context()>
-with the intent that it should return a context object.
-
-    sub my_context {
-        my %params = ( wrapped => 0, @_ );
-        $params{wrapped}++;
-        my $ctx = context(%params);
-        ...
-        return $ctx;
-    }
-
-    sub my_tool {
-        my $ctx = my_context();
-        ...
-        $ctx->release;
-    }
-
-If you do not do this than tools you call that also check for a context will
-notice that the context they grabbed was created at the same stack depth, which
-will trigger protective measures that warn you and destroy the existing
-context.
-
-=item stack => $stack
-
-Normally C<context()> looks at the global hub stack initialized in
-L<Test2::Global>. If you are maintaining your own L<Test2::Context::Stack>
-instance you may pass it in to be used instead of the global one.
-
-=item hub => $hub
-
-Use this parameter if you want to onbtain the context for a specific hub
-instead of whatever one happens to be at the top of the stack.
-
-=item on_init => sub { ... }
-
-This lets you provide a callback sub that will be called B<ONLY> if your call
-to c<context()> generated a new context. The callback B<WILL NOT> be called if
-C<context()> is returning an existing context. The only argument passed into
-the callback will be the context object itself.
-
-    sub foo {
-        my $ctx = context(on_init => sub { 'will run' });
-
-        my $inner = sub {
-            # This callback is not run since we are getting the existing
-            # context from our parent sub.
-            my $ctx = context(on_init => sub { 'will NOT run' });
-            $ctx->release;
-        }
-        $inner->();
-
-        $ctx->release;
-    }
-
-=item on_release => sub { ... }
-
-This lets you provide a callback sub that will be called when the context
-instance is released. This callback will be added to the returned context even
-if an existing context is returned. If multiple calls to context add callbacks
-then all will be called in reverse order when the context is finally released.
-
-    sub foo {
-        my $ctx = context(on_release => sub { 'will run second' });
-
-        my $inner = sub {
-            my $ctx = context(on_release => sub { 'will run first' });
-
-            # Neither callback runs on this release
-            $ctx->release;
-        }
-        $inner->();
-
-        # Both callbacks run here.
-        $ctx->release;
-    }
-
-=back
-
-=head2 release()
-
-Usage:
-
-=over 4
-
-=item release $ctx;
-
-=item release $ctx, ...;
-
-=back
-
-This is intended as a shortcut that lets you release your context and return a
-value in one statement. This function will get your context, and any other
-arguments provided. It will release your context, then return everything else.
-If you only provide one argument it will return that one argument as a scalar.
-If you provide multiple arguments it will return them all as a list.
-
-    sub scalar_tool {
-        my $ctx = context();
-        ...
-
-        return release $ctx, 1;
-    }
-
-    sub list_tool {
-        my $ctx = context();
-        ...
-
-        return release $ctx, qw/a b c/;
-    }
-
-This tool is most useful when you want to return the value you get from calling
-a function that needs to see the current context:
-
-    my $ctx = context();
-    my $out = some_tool(...);
-    $ctx->release;
-    return $out;
-
-We can combine the last 3 lines of the above like so:
-
-    my $ctx = context();
-    release $ctx, some_tool(...);
-
 =head1 METHODS
-
-=head2 CLASS METHODS
-
-=over 4
-
-=item Test2::Context->ON_INIT(sub { ... }, ...)
-
-=item Test2::Context->ON_RELEASE(sub { ... }, ...)
-
-These are B<GLOBAL> hooks into the context tools. Every sub added via ON_INIT
-will be called every single time a new context is initialized. Every sub added
-via ON_RELEASE will be called every single time a context is released.
-
-Subs will receive exactly 1 argument, that is the context itself. You should
-not call C<release> on the context within your callback.
-
-=back
-
-=head2 INSTANCE METHODS
 
 =over 4
 
@@ -838,7 +505,7 @@ requests a context, just when a new one is created.
 This is how you add a global init callback. Global callbacks happen for every
 context for any hub or stack.
 
-    Test2::Context->ON_INIT(sub {
+    Test2::Global->add_context_init_callback(sub {
         my $ctx = shift;
         ...
     });
@@ -875,7 +542,7 @@ called every time C<< $ctx->release >> is called.
 This is how you add a global release callback. Global callbacks happen for every
 context for any hub or stack.
 
-    Test2::Context->ON_RELEASE(sub {
+    Test2::Global->add_context_release_callback(sub {
         my $ctx = shift;
         ...
     });

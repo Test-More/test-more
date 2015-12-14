@@ -7,6 +7,7 @@ use Carp qw/croak/;
 use Test2::Global::Instance;
 
 my $INST = Test2::Global::Instance->new;
+sub _internal_use_only_private_instance { $INST }
 
 sub pid       { $INST->pid }
 sub tid       { $INST->tid }
@@ -14,26 +15,12 @@ sub stack     { $INST->stack }
 sub ipc       { $INST->ipc }
 sub formatter { $INST->format }
 sub init_done { $INST->finalized }
+sub load_done { $INST->loaded }
 
-sub hooks      { scalar @{$INST->exit_hooks} }
-sub post_loads { scalar @{$INST->post_load_hooks} }
-
-sub post_load {
-    my $class = shift;
-    $INST->add_post_load_hook(@_);
-}
-
-sub loaded {
-    my $class = shift;
-    my $loaded = $INST->loaded;
-    return $loaded if $loaded || !$_[0];
-    $INST->load;
-}
-
-sub add_hook {
-    my $class = shift;
-    $INST->add_exit_hook(@_);
-}
+sub add_context_init_callback    { shift; $INST->add_context_init_callback(@_) }
+sub add_context_release_callback { shift; $INST->add_context_release_callback(@_) }
+sub add_post_load_callback       { shift; $INST->add_post_load_callback(@_) }
+sub add_exit_callback            { shift; $INST->add_exit_callback(@_) }
 
 sub set_formatter {
     my $class = shift;
@@ -154,13 +141,13 @@ default. Waiting will cause the parent process/thread to wait until all child
 processes and threads are finished before exiting. You will almost never want
 to turn this off.
 
-=item Test2::Global->add_hook(sub { ... })
+=item Test2::Global->add_callback(sub { ... })
 
-This can be used to add a hook that is called after all testing is done. This
-is too late to add additional results, the main use of this hook is to set the
+This can be used to add a callback that is called after all testing is done. This
+is too late to add additional results, the main use of this callback is to set the
 exit code.
 
-    Test2::Global->add_hook(
+    Test2::Global->add_callback(
         sub {
             my ($context, $exit, \$new_exit) = @_;
             ...
@@ -195,7 +182,7 @@ L<Test2> or alternative loader modules.
 =head1 MAGIC
 
 This package has an END block. This END block is responsible for setting the
-exit code based on the test results. This end block also calls the hooks that
+exit code based on the test results. This end block also calls the callbacks that
 can be added to this package.
 
 =head1 SOURCE

@@ -12,8 +12,9 @@ my $one = $CLASS->new;
 is_deeply(
     $one,
     {
-        pid => $$,
-        tid => get_tid(),
+        pid      => $$,
+        tid      => get_tid(),
+        contexts => {},
 
         finalized => undef,
         ipc       => undef,
@@ -23,8 +24,10 @@ is_deeply(
         no_wait => 0,
         loaded  => 0,
 
-        exit_hooks      => [],
-        post_load_hooks => [],
+        exit_callbacks            => [],
+        post_load_callbacks       => [],
+        context_init_callbacks    => [],
+        context_release_callbacks => [],
     },
     "Got initial settings"
 );
@@ -36,8 +39,9 @@ $one->reset;
 is_deeply(
     $one,
     {
-        pid => $$,
-        tid => get_tid(),
+        pid      => $$,
+        tid      => get_tid(),
+        contexts => {},
 
         finalized => undef,
         ipc       => undef,
@@ -47,8 +51,10 @@ is_deeply(
         no_wait => 0,
         loaded  => 0,
 
-        exit_hooks      => [],
-        post_load_hooks => [],
+        exit_callbacks            => [],
+        post_load_callbacks       => [],
+        context_init_callbacks    => [],
+        context_release_callbacks => [],
     },
     "Reset Object"
 );
@@ -59,27 +65,27 @@ ok($one->format_set, "formatter set");
 $one->reset;
 
 my $ran = 0;
-my $hook = sub { $ran++ };
-$one->add_post_load_hook($hook);
+my $callback = sub { $ran++ };
+$one->add_post_load_callback($callback);
 ok(!$ran, "did not run yet");
-is_deeply($one->post_load_hooks, [$hook], "stored hook for later");
+is_deeply($one->post_load_callbacks, [$callback], "stored callback for later");
 
 ok(!$one->loaded, "not loaded");
 $one->load;
 ok($one->loaded, "loaded");
-is($ran, 1, "ran the hook");
+is($ran, 1, "ran the callback");
 
 $one->load;
-is($ran, 1, "Did not run the hook again");
+is($ran, 1, "Did not run the callback again");
 
-$one->add_post_load_hook($hook);
-is($ran, 2, "ran the new hook");
-is_deeply($one->post_load_hooks, [$hook, $hook], "stored hook for the record");
+$one->add_post_load_callback($callback);
+is($ran, 2, "ran the new callback");
+is_deeply($one->post_load_callbacks, [$callback, $callback], "stored callback for the record");
 
 like(
-    exception { $one->add_post_load_hook({}) },
-    qr/Post-load hooks must be coderefs/,
-    "Post-load hooks must be coderefs"
+    exception { $one->add_post_load_callback({}) },
+    qr/Post-load callbacks must be coderefs/,
+    "Post-load callbacks must be coderefs"
 );
 
 $one->reset;
@@ -129,15 +135,15 @@ ok($one->finalized, "calling format finalized the object");
 
 $ran = 0;
 $one->reset;
-$one->add_exit_hook($hook);
-is(@{$one->exit_hooks}, 1, "added an exit hook");
-$one->add_exit_hook($hook);
-is(@{$one->exit_hooks}, 2, "added another exit hook");
+$one->add_exit_callback($callback);
+is(@{$one->exit_callbacks}, 1, "added an exit callback");
+$one->add_exit_callback($callback);
+is(@{$one->exit_callbacks}, 2, "added another exit callback");
 
 like(
-    exception { $one->add_exit_hook({}) },
-    qr/End hooks must be coderefs/,
-    "Exit hooks must be coderefs"
+    exception { $one->add_exit_callback({}) },
+    qr/End callbacks must be coderefs/,
+    "Exit callbacks must be coderefs"
 );
 
 if (CAN_REALLY_FORK) {
@@ -282,4 +288,28 @@ if (CAN_REALLY_FORK) {
     is($?, 122, "kept original exit");
 }
 
+{
+    my $ctx = bless {
+        trace => Test2::Context::Trace->new(frame => ['Foo::Bar', 'Foo/Bar.pm', 42, 'xxx']),
+    }, 'Test2::Context';
+    $one->contexts->{1234} = $ctx;
+
+    local $? = 500;
+    my $warnings = warnings { $one->set_exit };
+    is($?, 255, "set exit code to a sane number");
+
+    is_deeply(
+        $warnings,
+        [
+            "context object was never released! This means a testing tool is behaving very badly at Foo/Bar.pm line 42.\n"
+        ],
+        "Warned about unfreed context"
+    );
+}
+
 done_testing;
+
+
+__END__
+
+

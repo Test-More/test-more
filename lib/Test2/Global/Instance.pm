@@ -11,7 +11,18 @@ use Test2::Context::Trace();
 use Test2::Context::Stack();
 
 use Test2::Util::HashBase(
-    accessors => [qw/pid tid no_wait finalized ipc stack format exit_hooks loaded post_load_hooks/],
+    accessors => [qw{
+        pid tid
+        no_wait
+        finalized loaded
+        ipc stack format
+        contexts
+
+        exit_callbacks
+        post_load_callbacks
+        context_init_callbacks
+        context_release_callbacks
+    }],
 );
 
 # Wrap around the getters that should call _finalize.
@@ -35,6 +46,7 @@ sub reset {
 
     $self->{+PID} = $$;
     $self->{+TID} = get_tid();
+    $self->{+CONTEXTS} = {};
 
     $self->{+FINALIZED} = undef;
     $self->{+IPC}       = undef;
@@ -44,8 +56,10 @@ sub reset {
     $self->{+NO_WAIT} = 0;
     $self->{+LOADED}  = 0;
 
-    $self->{+EXIT_HOOKS}      = [];
-    $self->{+POST_LOAD_HOOKS} = [];
+    $self->{+EXIT_CALLBACKS}            = [];
+    $self->{+POST_LOAD_CALLBACKS}       = [];
+    $self->{+CONTEXT_INIT_CALLBACKS}    = [];
+    $self->{+CONTEXT_RELEASE_CALLBACKS} = [];
 }
 
 sub _finalize {
@@ -88,16 +102,40 @@ sub _finalize {
 
 sub format_set { $_[0]->{+FORMAT} ? 1 : 0 }
 
-sub add_post_load_hook {
+sub add_context_init_callback {
+    my $self =  shift;
+    my ($code) = @_;
+
+    my $rtype = reftype($code) || "";
+
+    confess "Context-init callbacks must be coderefs"
+        unless $code && $rtype eq 'CODE';
+
+    push @{$self->{+CONTEXT_INIT_CALLBACKS}} => $code;
+}
+
+sub add_context_release_callback {
+    my $self =  shift;
+    my ($code) = @_;
+
+    my $rtype = reftype($code) || "";
+
+    confess "Context-release callbacks must be coderefs"
+        unless $code && $rtype eq 'CODE';
+
+    push @{$self->{+CONTEXT_RELEASE_CALLBACKS}} => $code;
+}
+
+sub add_post_load_callback {
     my $self = shift;
     my ($code) = @_;
 
     my $rtype = reftype($code) || "";
 
-    confess "Post-load hooks must be coderefs"
+    confess "Post-load callbacks must be coderefs"
         unless $code && $rtype eq 'CODE';
 
-    push @{$self->{+POST_LOAD_HOOKS}} => $code;
+    push @{$self->{+POST_LOAD_CALLBACKS}} => $code;
     $code->() if $self->{+LOADED};
 }
 
@@ -105,20 +143,20 @@ sub load {
     my $self = shift;
     unless ($self->{+LOADED}) {
         $self->{+LOADED} = 1;
-        $_->() for @{$self->{+POST_LOAD_HOOKS}};
+        $_->() for @{$self->{+POST_LOAD_CALLBACKS}};
     }
     return $self->{+LOADED};
 }
 
-sub add_exit_hook {
+sub add_exit_callback {
     my $self = shift;
     my ($code) = @_;
     my $rtype = reftype($code) || "";
 
-    confess "End hooks must be coderefs"
+    confess "End callbacks must be coderefs"
         unless $code && $rtype eq 'CODE';
 
-    push @{$self->{+EXIT_HOOKS}} => $code;
+    push @{$self->{+EXIT_CALLBACKS}} => $code;
 }
 
 sub _ipc_wait {
@@ -157,6 +195,15 @@ sub set_exit {
 
     my $exit     = $?;
     my $new_exit = $exit;
+
+    my @unreleased = grep { $_ && $_->trace->pid == $$ } values %{$self->{+CONTEXTS}};
+    if (@unreleased) {
+        $exit = 255;
+        $new_exit = 255;
+
+        $_->trace->alert("context object was never released! This means a testing tool is behaving very badly")
+            for @unreleased;
+    }
 
     if ($self->{+PID} != $$ or $self->{+TID} != get_tid()) {
         $? = $exit;
@@ -197,7 +244,7 @@ sub set_exit {
         unless ($root->no_ending) {
             local $?;
             $root->finalize($trace) unless $root->state->ended;
-            $_->($ctx, $exit, \$new_exit) for @{$self->{+EXIT_HOOKS}};
+            $_->($ctx, $exit, \$new_exit) for @{$self->{+EXIT_CALLBACKS}};
             $new_exit ||= $root->state->failed;
         }
     }
@@ -236,8 +283,6 @@ shape or form.
 
     my $obj = Test2::Global::Instance->new;
 
-=head1 METHODS
-
 =over 4
 
 =item $pid = $obj->pid
@@ -258,26 +303,49 @@ Check if a formatter has been set.
 
 =item $obj->load()
 
-Set the internal state to loaded, and run and stored post-load hooks.
+Set the internal state to loaded, and run and stored post-load callbacks.
 
 =item $bool = $obj->loaded
 
 Check if the state is set to loaded.
 
-=item $arrayref = $obj->post_load_hooks
+=item $arrayref = $obj->post_load_callbacks
 
-Get the post-load hooks.
+Get the post-load callbacks.
 
-=item $obj->add_post_load_hook(sub { ... })
+=item $obj->add_post_load_callback(sub { ... })
 
-Add a post-load hook. If C<load()> has already been called then the hook will
-be immedietly executed. If C<load()> has not been called then the hook will be
+Add a post-load callback. If C<load()> has already been called then the callback will
+be immedietly executed. If C<load()> has not been called then the callback will be
 stored and executed later when C<load()> is called.
+
+=item $hashref = $obj->contexts()
+
+Get a hashref of all active contexts keyed by hub id.
+
+=item $arrayref = $obj->context_init_callbacks
+
+Get all context init callbacks.
+
+=item $arrayref = $obj->context_release_callbacks
+
+Get all context release callbacks.
+
+=item $obj->add_context_init_callback(sub { ... })
+
+Add a context init callback. Subs are called every time a context is created. Subs
+get the newly created context as their only argument.
+
+=item $obj->add_context_release_callback(sub { ... })
+
+Add a context release callback. Subs are called every time a context is released. Subs
+get the released context as their only argument. These callbacks should not
+call release on the context.
 
 =item $obj->set_exit()
 
 This is intended to be called in an C<END { ... }> block. This will look at
-test state and set $?. This will also call any end hooks, and wait on child
+test state and set $?. This will also call any end callbacks, and wait on child
 processes/threads.
 
 =item $bool = $obj->no_wait
@@ -286,13 +354,13 @@ processes/threads.
 
 Get/Set no_wait. This option is used to turn off process/thread waiting at exit.
 
-=item $arrayref = $obj->exit_hooks
+=item $arrayref = $obj->exit_callbacks
 
-Get the exit hooks.
+Get the exit callbacks.
 
-=item $obj->add_exit_hook(sub { ... })
+=item $obj->add_exit_callback(sub { ... })
 
-Add an exit hook. This hook will be called by C<set_exit()>.
+Add an exit callback. This callback will be called by C<set_exit()>.
 
 =item $bool = $obj->finalized
 

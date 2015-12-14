@@ -7,7 +7,7 @@ use Test2::Context::Trace;
 use Test2::Event::Ok;
 use Test2::Event::Diag;
 
-use Test2::Context qw/context/;
+use Test2 qw/context/;
 
 my $trace;
 sub tests {

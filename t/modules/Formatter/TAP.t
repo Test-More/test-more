@@ -4,7 +4,7 @@ use Test2::Tester;
 use PerlIO;
 
 use Test2::Formatter::TAP qw/OUT_STD OUT_ERR OUT_TODO/;
-use Test2::Context qw/context/;
+use Test2 qw/context/;
 
 ok(my $one = Test2::Formatter::TAP->new, "Created a new instance");
 my $handles = $one->handles;

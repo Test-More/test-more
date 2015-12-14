@@ -50,7 +50,7 @@ sub polling_enabled { $POLLING }
 sub enable_polling {
     return if $POLLING++;
     require Test2::Context;
-    Test2::Context->ON_INIT(sub { $_[0]->hub->cull });
+    Test2::Global->add_context_init_callback(sub { $_[0]->hub->cull });
 }
 
 for my $meth (qw/send cull add_hub drop_hub waiting is_viable/) {

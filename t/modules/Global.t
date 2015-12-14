@@ -3,12 +3,10 @@ use warnings;
 
 use Test2::Global;
 
-my ($LOADED, $INIT, $POST_LOAD);
+my ($LOADED, $INIT);
 BEGIN {
     $INIT   = Test2::Global->init_done;
-    $LOADED = Test2::Global->loaded;
-    Test2::Global->loaded(1);
-    $POST_LOAD = Test2::Global->loaded;
+    $LOADED = Test2::Global->load_done;
 };
 
 use Test2::IPC;
@@ -16,9 +14,9 @@ use Test2::Tester;
 use Test2::Util qw/get_tid/;
 my $CLASS = 'Test2::Global';
 
-ok(!$LOADED, "Was not loaded right away");
+ok(!$LOADED, "Was not load_done right away");
 ok(!$INIT, "Init was not done right away");
-ok($POST_LOAD, "We loaded it");
+ok(Test2::Global->load_done, "We loaded it");
 
 # Note: This is a check that stuff happens in an END block.
 {
@@ -34,7 +32,7 @@ ok($POST_LOAD, "We loaded it");
     }
 
     our $kill1 = bless {fixed => 0, name => "Custom Hook"}, 'FOLLOW';
-    Test2::Global->add_hook(
+    Test2::Global->add_exit_callback(
         sub {
             print "# Running END hook\n";
             $kill1->{fixed} = 1;
@@ -52,7 +50,7 @@ ok($POST_LOAD, "We loaded it");
 }
 
 ok($CLASS->init_done, "init is done.");
-ok($CLASS->loaded, "Test2 is finished loading");
+ok($CLASS->load_done, "Test2 is finished loading");
 
 is($CLASS->pid, $$, "got pid");
 is($CLASS->tid, get_tid(), "got tid");
@@ -66,12 +64,9 @@ is($CLASS->ipc, $CLASS->ipc, "always get the same IPC");
 ok($CLASS->formatter, "Got a formatter");
 is($CLASS->formatter, $CLASS->formatter, "always get the same Formatter (class name)");
 
-ok($CLASS->hooks >= 1, "We added a hook, make sure there is at least 1");
-
 my $ran = 0;
-$CLASS->post_load(sub { $ran++ });
+$CLASS->add_post_load_callback(sub { $ran++ });
 is($ran, 1, "ran the post-load");
-ok($CLASS->post_loads >= 1, "we have at least 1 post-load");
 
 like(
     exception { $CLASS->set_formatter() },

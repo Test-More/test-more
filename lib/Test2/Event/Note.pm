@@ -32,7 +32,7 @@ Notes, typically rendered to STDOUT.
 
 =head1 SYNOPSIS
 
-    use Test2::Context qw/context/;
+    use Test2 qw/context/;
     use Test2::Event::Note;
 
     my $ctx = context();

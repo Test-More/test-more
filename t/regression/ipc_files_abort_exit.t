@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test2::IPC;
 use Test2::Tester;
-use Test2::Context qw/context/;
+use Test2 qw/context/;
 use Test2::Util qw/CAN_FORK/;
 
 BEGIN {
