@@ -18,9 +18,9 @@ my %LOADED = (
     } qw/Ok Diag Note Plan Bail Exception Waiting Skip Subtest/
 );
 
-use Test2::Util::HashBase(
-    accessors => [qw/stack hub trace _on_release _depth _err _no_destroy_warning/],
-);
+use Test2::Util::HashBase qw{
+    stack hub trace _on_release _depth _err _no_destroy_warning
+};
 
 # Private, not package vars
 # It is safe to cache these.

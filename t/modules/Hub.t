@@ -32,7 +32,7 @@ sub tests {
     package My::Event;
 
     use base 'Test2::Event';
-    use Test2::Util::HashBase accessors => [qw/msg/];
+    use Test2::Util::HashBase qw{msg};
 }
 
 tests basic => sub {

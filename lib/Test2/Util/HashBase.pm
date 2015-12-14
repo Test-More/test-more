@@ -2,26 +2,22 @@ package Test2::Util::HashBase;
 use strict;
 use warnings;
 
-use Carp qw/confess croak carp/;
-use Scalar::Util qw/blessed reftype/;
-
-$Carp::Internal{(__PACKAGE__)}++;
-
-my (%META);
+my %META;
 
 sub import {
-    my ($class, %args) = @_;
+    my ($class, @accessors) = @_;
 
-    my $into = $args{into} || caller;
-    my $meta = $META{$into} = $args{accessors} || [];
+    my $into = caller;
+    my $meta = $META{$into} = \@accessors;
 
     # Use the comment to change the filename slightly so that Devel::Cover does
     # not try to cover the contents of the string eval.
     my $file = __FILE__;
-    $file =~ s/(\.*)$/.eval$1/;
-    my $eval = "# line 1 \"$file\"\npackage $into;\n";
+    my $eval = "# line 1 \"$file.eval\"\npackage $into;\n";
 
-    my $isa = do { no strict 'refs'; \@{"$into\::ISA"} };
+    no strict 'refs';
+    my $isa = \@{"$into\::ISA"};
+    use strict 'refs';
 
     if(my @bmetas = map { $META{$_} or () } @$isa) {
         $eval .= "sub " . uc($_) . "() { '$_' };\n" for map { @{$_} } @bmetas;
@@ -41,8 +37,6 @@ sub clear_$_ { delete \$_[0]->{'$_'} }
 
     eval "${eval}1;" || die $@;
 
-    return if $args{no_new};
-
     no strict 'refs';
     *{"$into\::new"} = \&_new;
 }
@@ -52,28 +46,6 @@ sub _new {
     my $self = bless \%params, $class;
     $self->init if $self->can('init');
     $self;
-}
-
-sub gen_accessor {
-    my $class = shift;
-    my ($field) = @_;
-    sub {
-        my $self = shift;
-        ($self->{$field}) = @_ if @_;
-        $self->{$field};
-    };
-}
-
-sub gen_getter {
-    my $class = shift;
-    my ($field) = @_;
-    sub { $_[0]->{$field} };
-}
-
-sub gen_setter {
-    my $class = shift;
-    my ($field) = @_;
-    sub { $_[0]->{$field} = $_[1] };
 }
 
 1;
@@ -97,7 +69,8 @@ A class:
     use strict;
     use warnings;
 
-    use Test2::Util::HashBase accessors => [qw/foo bar baz/];
+    # Generate 3 accessors
+    use Test2::Util::HashBase qw/foo bar baz/;
 
     # Chance to initialize defaults
     sub init {
@@ -119,7 +92,7 @@ Subclass it
 
     # Note, you should subclass before loading HashBase.
     use base 'My::Class';
-    use Test2::Util::HashBase accessors => ['bat'];
+    use Test2::Util::HashBase qw/bat/;
 
     sub init {
         my $self = shift;
@@ -166,28 +139,6 @@ generated for you. You also get constants for each accessor (all caps) which
 return the key into the hash for that accessor. Single inheritence is also
 supported.
 
-=head1 IMPORT ARGUMENTS
-
-=over 4
-
-=item accessors => [...]
-
-This is how you define your accessors. See the ACCESSORS section below.
-
-=item into => $class
-
-This is a way to apply HashBase to another class.
-
-    package My::Thing;
-
-    sub import {
-        my $caller = caller;
-        Test2::Util::HashBase->import(@_, into => $class);
-        ...
-    }
-
-=back
-
 =head1 METHODS
 
 =head2 PROVIDED BY HASH BASE
@@ -215,7 +166,7 @@ argument is C<$self> with its indexes already set from the constructor.
 
 To generate accessors you list them when using the module:
 
-    use Test2::Util::HashBase accessors => [qw/foo/];
+    use Test2::Util::HashBase qw/foo/;
 
 This will generate the following subs in your namespace:
 
@@ -249,43 +200,10 @@ and similar typos. It will not help you if you forget to prefix the '+' though.
 You can subclass an existing HashBase class.
 
     use base 'Another::HashBase::Class';
-    use Test2::Util::HashBase accessors => [qw/foo bar baz/];
+    use Test2::Util::HashBase qw/foo bar baz/;
 
 The base class is added to C<@ISA> for you, and all constants from base classes
 are added to subclasses automatically.
-
-=head1 UTILITIES
-
-hashbase has a handful of class methods that can be used to generate accessors.
-These methods B<ARE NOT> exported, and are not attached to objects created with
-hashbase.
-
-=over 4
-
-=item $sub = Test2::Util::HashBase->gen_accessor($field)
-
-This generates a coderef that acts as an accessor for the specified field.
-
-=item $sub = Test2::Util::HashBase->gen_getter($field)
-
-This generates a coderef that acts as a getter for the specified field.
-
-=item $sub = Test2::Util::HashBase->get_setter($field)
-
-This generates a coderef that acts as a setter for the specified field.
-
-=back
-
-These all work in the same way, except that getters only get, setters always
-set, and accessors can get and/or set.
-
-    my $sub = Test2::Util::HashBase->gen_accessor('foo');
-    my $foo = $obj->$sub();
-    $obj->$sub('value');
-
-You can also add the sub to your class as a named method:
-
-    *foo = Test2::Util::HashBase->gen_accessor('foo');
 
 =head1 SOURCE
 

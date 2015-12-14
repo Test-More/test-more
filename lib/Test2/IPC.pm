@@ -5,9 +5,7 @@ use warnings;
 use Config qw/%Config/;
 use Carp qw/confess carp longmess/;
 
-use Test2::Util::HashBase(
-    accessors => [qw/no_fatal/],
-);
+use Test2::Util::HashBase qw{no_fatal};
 
 sub import {
     my $class = shift;

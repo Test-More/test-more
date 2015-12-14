@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use base 'Test2::Event';
-use Test2::Util::HashBase accessors => [qw/error/];
+use Test2::Util::HashBase qw{error};
 
 sub update_state {
     my $self = shift;

@@ -6,9 +6,7 @@ use Test2::Util qw/get_tid/;
 
 use Carp qw/confess carp/;
 
-use Test2::Util::HashBase(
-    accessors => [qw/frame detail pid tid/],
-);
+use Test2::Util::HashBase qw{frame detail pid tid};
 
 sub init {
     confess "Frame is required"

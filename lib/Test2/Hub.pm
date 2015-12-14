@@ -8,20 +8,18 @@ use Test2::Util qw/get_tid/;
 
 use Scalar::Util qw/weaken/;
 
-use Test2::Util::HashBase(
-    accessors => [qw{
-        pid tid hid ipc
-        state
-        no_ending
-        _todo _meta parent_todo
-        _filters
-        _listeners
-        _follow_ups
-        _formatter
-        _context_init
-        _context_release
-    }],
-);
+use Test2::Util::HashBase qw{
+    pid tid hid ipc
+    state
+    no_ending
+    _todo _meta parent_todo
+    _filters
+    _listeners
+    _follow_ups
+    _formatter
+    _context_init
+    _context_release
+};
 
 my $ID_POSTFIX = 1;
 sub init {

@@ -39,7 +39,7 @@ ok($layers->{utf8}, "Now utf8");
     use Test2::Formatter::TAP qw/OUT_STD OUT_ERR/;
 
     use base 'Test2::Event';
-    use Test2::Util::HashBase accessors => [qw/pass name diag note/];
+    use Test2::Util::HashBase qw{pass name diag note};
 
     Test2::Formatter::TAP->register_event(
         __PACKAGE__,

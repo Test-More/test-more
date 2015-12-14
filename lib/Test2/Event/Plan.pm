@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use base 'Test2::Event';
-use Test2::Util::HashBase accessors => [qw/max directive reason/];
+use Test2::Util::HashBase qw{max directive reason};
 
 use Carp qw/confess/;
 

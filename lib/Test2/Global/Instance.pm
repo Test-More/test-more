@@ -10,20 +10,18 @@ use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file/;
 use Test2::Context::Trace();
 use Test2::Context::Stack();
 
-use Test2::Util::HashBase(
-    accessors => [qw{
-        pid tid
-        no_wait
-        finalized loaded
-        ipc stack format
-        contexts
+use Test2::Util::HashBase qw{
+    pid tid
+    no_wait
+    finalized loaded
+    ipc stack format
+    contexts
 
-        exit_callbacks
-        post_load_callbacks
-        context_init_callbacks
-        context_release_callbacks
-    }],
-);
+    exit_callbacks
+    post_load_callbacks
+    context_init_callbacks
+    context_release_callbacks
+};
 
 # Wrap around the getters that should call _finalize.
 for my $finalizer (STACK, IPC, FORMAT) {

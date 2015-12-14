@@ -4,9 +4,7 @@ use warnings;
 
 use base 'Test2::IPC';
 
-use Test2::Util::HashBase(
-    accessors => [qw/tempdir event_id tid pid globals/],
-);
+use Test2::Util::HashBase qw{tempdir event_id tid pid globals};
 
 use Scalar::Util qw/blessed/;
 use File::Temp();

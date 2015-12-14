@@ -4,9 +4,7 @@ use warnings;
 
 use Carp qw/confess/;
 
-use Test2::Util::HashBase(
-    accessors => [qw{count failed ended bailed_out _passing _plan skip_reason}],
-);
+use Test2::Util::HashBase qw{count failed ended bailed_out _passing _plan skip_reason};
 
 sub init {
     my $self = shift;

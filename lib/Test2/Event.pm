@@ -4,9 +4,7 @@ use warnings;
 
 use Carp qw/confess carp/;
 
-use Test2::Util::HashBase(
-    accessors => [qw/trace nested/],
-);
+use Test2::Util::HashBase qw/trace nested/;
 
 sub causes_fail  { 0 }
 

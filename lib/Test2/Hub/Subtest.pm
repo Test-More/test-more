@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use base 'Test2::Hub';
-use Test2::Util::HashBase accessors => [qw/nested bailed_out exit_code/];
+use Test2::Util::HashBase qw/nested bailed_out exit_code/;
 
 sub process {
     my $self = shift;

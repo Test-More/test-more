@@ -3,9 +3,9 @@ use strict;
 use warnings;
 
 use Test2::Util qw/protect/;
-use Test2::Util::HashBase(
-    accessors => [qw/no_numbers no_header no_diag handles _encoding/],
-);
+use Test2::Util::HashBase qw{
+    no_numbers no_header no_diag handles _encoding
+};
 
 sub OUT_STD()  { 0 }
 sub OUT_ERR()  { 1 }

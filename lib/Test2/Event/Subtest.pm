@@ -6,7 +6,7 @@ use Scalar::Util qw/blessed/;
 use Carp qw/confess/;
 
 use base 'Test2::Event::Ok';
-use Test2::Util::HashBase accessors => [qw/subevents buffered/];
+use Test2::Util::HashBase qw{subevents buffered};
 
 sub init {
     my $self = shift;
