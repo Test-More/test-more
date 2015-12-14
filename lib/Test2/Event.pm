@@ -2,8 +2,6 @@ package Test2::Event;
 use strict;
 use warnings;
 
-use Carp qw/confess carp/;
-
 use Test2::Util::HashBase qw/trace nested/;
 
 sub causes_fail  { 0 }
@@ -38,8 +36,10 @@ L<Test2>.
     # This will make our class an event subclass (required)
     use base 'Test2::Event';
 
-    # Add some accessors
-    use Test2::Util::HashBase accessors => [qw/foo bar baz/];
+    # Add some accessors (optional)
+    # You are not obligated to use HashBase, you can use any object tool you
+    # want, or roll your own accessors.
+    use Test2::Util::HashBase qw/foo bar baz/;
 
     # Chance to initialize some defaults
     sub init {
@@ -47,10 +47,6 @@ L<Test2>.
         # no other args in @_
 
         $self->set_foo('xxx') unless defined $self->foo;
-
-        # Events are arrayrefs, all accessors have a constant defined with
-        # their index.
-        $self->[BAR] ||= "";
 
         ...
     }

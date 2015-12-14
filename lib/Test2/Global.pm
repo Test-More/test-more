@@ -98,7 +98,15 @@ everything that uses it will get the same stuff.
 =item $bool = Test2::Global->init_done
 
 This will return true if the stack and ipc instances have already been
-initialized. It will return false if they have not.
+initialized. It will return false if they have not. Init happens as late as
+possible, it happens as soon as a tool requests the ipc instance, the
+formatter, or the stack. 
+
+=item $bool = Test2::Global->load_done
+
+This will simply return the boolean value of the loaded flag. If Test2 has
+finished loading this will be true, otherwise false. Loading is considered
+complete the first time a tool requests a context.
 
 =item $stack = Test2::Global->stack
 
@@ -141,7 +149,7 @@ default. Waiting will cause the parent process/thread to wait until all child
 processes and threads are finished before exiting. You will almost never want
 to turn this off.
 
-=item Test2::Global->add_callback(sub { ... })
+=item Test2::Global->add_exit_callback(sub { ... })
 
 This can be used to add a callback that is called after all testing is done. This
 is too late to add additional results, the main use of this callback is to set the
@@ -160,22 +168,21 @@ C<$$new_exit> is a reference to the new exit code. You may modify this to
 change the exit code. Please note that C<$$new_exit> may already be different
 from C<$exit>
 
-=item Test2::Global->post_load(sub { ... })
+=item Test2::Global->add_post_load_callback(sub { ... })
 
 Add a callback that will be called when Test2 is finished loading. This
-means the callback will be run when Test2 is done loading all the
-plugins in your use statement. If Test2 has already finished loading
-then the callback will be run immedietly.
+means the callback will be run once, the first time a context is obtained.
+If Test2 has already finished loading then the callback will be run immedietly.
 
-=item $bool = Test2::Global->loaded
+=item Test2::Global->add_context_init_callback(sub { ... })
 
-=item Test2::Global->loaded($true)
+Add a callback that will be called every time a new context is created. The
+callback will recieve the newly created context as its only argument.
 
-Without arguments this will simply return the boolean value of the loaded flag.
-If Test2 has finished loading this will be true, otherwise false. If a
-true value is provided as an argument then this will set the flag to true, and
-run all C<post_load> callbacks. The second form should B<ONLY> ever be used in
-L<Test2> or alternative loader modules.
+=item Test2::Global->add_context_release_callback(sub { ... })
+
+Add a callback that will be called every time a context is released. The
+callback will recieve the released context as its only argument.
 
 =back
 

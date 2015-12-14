@@ -268,7 +268,7 @@ Test2::Global::Instance - Object used by Sync under the hood
 
 This object encapsulates the global shared state tracked by
 L<Test2>. A single global instance of this package is stored (and
-obscured) by the L<Test2> package.
+obscured) by the L<Test2::Global> package.
 
 There is no reason to directly use this package. This package is documented for
 completeness. This package can change, or go away completely at any time.

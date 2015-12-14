@@ -504,6 +504,10 @@ Any extra arguments you want passed into the subtest code.
 
 =back
 
+=head1 OTHER EXAMPLES
+
+See the C</Examples/> directory included in this distribution.
+
 =head1 SEE ALSO
 
 L<Test2::Context> - Detailed documentation of the context object.
@@ -551,5 +555,3 @@ modify it under the same terms as Perl itself.
 See F<http://dev.perl.org/licenses/>
 
 =cut
-
-
