@@ -131,6 +131,12 @@ sub do_in_context {
     die $err unless $ok;
 }
 
+sub done_testing {
+    my $self = shift;
+    $self->hub->finalize($self->trace, 1);
+    return;
+}
+
 sub throw {
     my ($self, $msg) = @_;
     $_[0]->release; # We have to act on $_[0] because it is aliased
@@ -379,6 +385,11 @@ context you want them to find.
 =head1 METHODS
 
 =over 4
+
+=item $ctx->done_testing;
+
+Note that testing is finished. If no plan has been set this will generate a
+Plan event.
 
 =item $clone = $ctx->snapshot()
 
