@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test2::Tester;
+BEGIN { require "t/tools.pl" };
 use Test2::Event::Plan;
 use Test2::Context::Trace;
 use Test2::Hub::State;

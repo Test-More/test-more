@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test2::Tester;
+BEGIN { require "t/tools.pl" };
 use PerlIO;
 
 use Test2::Formatter::TAP qw/OUT_STD OUT_ERR OUT_TODO/;
@@ -126,19 +126,11 @@ is($std, "ok - xxx\n", "Only got the 'ok'");
 is($err, "", "no diag");
 
 my $fmt = Test2::Formatter::TAP->new;
-sub tests {
-    my ($name, $code) = @_;
-
+sub before_each {
     # Make sure there is a fresh trace object for each group
     $trace = Test2::Context::Trace->new(
         frame => ['main_foo', 'foo.t', 42, 'main_foo::flubnarb'],
     );
-
-    my $ok = eval { $code->(); 1 };
-    my $err = $@;
-    my $ctx = context();
-    $ctx->ok($ok, $name, [$err]);
-    $ctx->release;
 }
 
 tests bail => sub {

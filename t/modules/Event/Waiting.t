@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test2::Tester;
+BEGIN { require "t/tools.pl" };
 use Test2::Event::Waiting;
 
 my $waiting = Test2::Event::Waiting->new(

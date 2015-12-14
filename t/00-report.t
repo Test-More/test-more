@@ -1,4 +1,4 @@
-use Test2::Tester;
+BEGIN { require "t/tools.pl" };
 BEGIN {
     skip_all "Still need to port this"
 }

@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test2::Tester;
+BEGIN { require "t/tools.pl" };
 use Test2::Hub::State;
 use Test2::Context::Trace;
 use Test2::Event::Ok;
@@ -10,19 +10,11 @@ use Test2::Event::Diag;
 use Test2 qw/context/;
 
 my $trace;
-sub tests {
-    my ($name, $code) = @_;
-
+sub before_each {
     # Make sure there is a fresh trace object for each group
     $trace = Test2::Context::Trace->new(
         frame => ['main_foo', 'foo.t', 42, 'main_foo::flubnarb'],
     );
-
-    my $ok = eval { $code->(); 1 };
-    my $err = $@;
-    my $ctx = context();
-    $ctx->ok($ok, $name, [$err]);
-    $ctx->release;
 }
 
 tests Passing => sub {

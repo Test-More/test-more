@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test2::Tester;
+BEGIN { require "t/tools.pl" };
 
 use Test2::Hub::Interceptor::Terminator;
 

@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use Test2::IPC;
-use Test2::Tester;
+BEGIN { require "t/tools.pl" };
 use Test2::Context::Stack;
 
 ok(my $stack = Test2::Context::Stack->new, "Create a stack");

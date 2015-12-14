@@ -1,4 +1,4 @@
-use Test2::Tester;
+BEGIN { require "t/tools.pl" };
 use Test2::Util qw/get_tid USE_THREADS try/;
 use File::Temp qw/tempfile/;
 

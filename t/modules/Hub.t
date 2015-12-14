@@ -2,18 +2,9 @@ use strict;
 use warnings;
 
 use Test2::IPC;
-use Test2::Tester;
+BEGIN { require "t/tools.pl" };
 use Test2 qw/context/;
 use Test2::Util qw/CAN_FORK CAN_THREAD CAN_REALLY_FORK/;
-
-sub tests {
-    my ($name, $code) = @_;
-    my $ok = eval { $code->(); 1 };
-    my $err = $@;
-    my $ctx = context();
-    $ctx->ok($ok, $name, [$err]);
-    $ctx->release;
-}
 
 {
     package My::Formatter;

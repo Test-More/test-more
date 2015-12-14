@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test2::Tester;
+BEGIN { require "t/tools.pl" };
 
 BEGIN {
     $INC{'My/HBase.pm'} = __FILE__;
@@ -8,10 +8,9 @@ BEGIN {
     package My::HBase;
     use Test2::Util::HashBase qw/foo bar baz/;
 
-    use Test2::Tester;
-    is(FOO, 'foo', "FOO CONSTANT");
-    is(BAR, 'bar', "BAR CONSTANT");
-    is(BAZ, 'baz', "BAZ CONSTANT");
+    main::is(FOO, 'foo', "FOO CONSTANT");
+    main::is(BAR, 'bar', "BAR CONSTANT");
+    main::is(BAZ, 'baz', "BAZ CONSTANT");
 }
 
 BEGIN {
@@ -19,12 +18,11 @@ BEGIN {
     use base 'My::HBase';
     use Test2::Util::HashBase qw/apple pear/;
 
-    use Test2::Tester;
-    is(FOO,   'foo',   "FOO CONSTANT");
-    is(BAR,   'bar',   "BAR CONSTANT");
-    is(BAZ,   'baz',   "BAZ CONSTANT");
-    is(APPLE, 'apple', "APPLE CONSTANT");
-    is(PEAR,  'pear',  "PEAR CONSTANT");
+    main::is(FOO,   'foo',   "FOO CONSTANT");
+    main::is(BAR,   'bar',   "BAR CONSTANT");
+    main::is(BAZ,   'baz',   "BAZ CONSTANT");
+    main::is(APPLE, 'apple', "APPLE CONSTANT");
+    main::is(PEAR,  'pear',  "PEAR CONSTANT");
 }
 
 my $one = My::HBase->new(foo => 'a', bar => 'b', baz => 'c');

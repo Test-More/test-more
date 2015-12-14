@@ -9,7 +9,7 @@ use Test2::Hub::Interceptor();
 use Test2::Hub::Interceptor::Terminator();
 
 use Carp qw/croak confess longmess/;
-use Scalar::Util qw/weaken/;
+use Scalar::Util qw/weaken blessed/;
 use Test2::Util qw/get_tid try/;
 
 use vars qw/$VERSION/;

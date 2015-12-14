@@ -2,13 +2,11 @@ use strict;
 use warnings;
 
 use Test2::IPC;
-use Test2::Tester;
+BEGIN { require "t/tools.pl" };
 
-use Test2 qw/context/;
+use Test2 qw/context intercept/;
 
 ok(__PACKAGE__->can($_), "imported '$_\()'") for qw{
-    intercept
-
     ok
     is   isnt
     like unlike

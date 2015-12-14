@@ -6,16 +6,8 @@ use Test2::IPC;
 my @drivers;
 BEGIN { @drivers = Test2::IPC->drivers };
 
-use Test2::Tester;
+BEGIN { require "t/tools.pl" };
 use Test2 qw/context/;
-sub tests {
-    my ($name, $code) = @_;
-    my $ok = eval { $code->(); 1 };
-    my $err = $@;
-    my $ctx = context();
-    $ctx->ok($ok, $name, [$err]);
-    $ctx->release;
-}
 
 is_deeply(
     \@drivers,

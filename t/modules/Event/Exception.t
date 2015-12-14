@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test2::Tester;
+BEGIN { require "t/tools.pl" };
 use Test2::Event::Exception;
 
 my $exception = Test2::Event::Exception->new(
