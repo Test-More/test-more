@@ -343,7 +343,7 @@ active context one will be generated. When a context is generated it will
 default to using the file and line number where the currently running sub was
 called from.
 
-Please see the L</"CRITICAL DETAILS"> section for important rools about what
+Please see L<Test2::Context/"CRITICAL DETAILS"> for important rules about what
 you can and acannot do with a context once it is obtained.
 
 B<Note> This function will throw an exception if you ignore the context object
