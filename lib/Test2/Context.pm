@@ -289,6 +289,10 @@ __END__
 
 Test2::Context - Object to represent a testing context.
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 The context object is the primary interface for authors of testing tools

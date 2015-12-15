@@ -27,6 +27,10 @@ __END__
 
 Test2::Event::Skip - Skip event type
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 Skip events bump test counts just like L<Test2::Event::Ok> events, but

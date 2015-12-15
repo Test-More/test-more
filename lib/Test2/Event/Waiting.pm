@@ -18,6 +18,10 @@ __END__
 
 Test2::Event::Waiting - Tell all procs/threads it is time to be done
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 This event has no data of its own. This event is sent out by the IPC system

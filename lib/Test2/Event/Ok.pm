@@ -64,6 +64,10 @@ __END__
 
 Test2::Event::Ok - Ok event type
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 Ok events are generated whenever you run a test that produces a result.

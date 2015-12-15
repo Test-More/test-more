@@ -56,6 +56,10 @@ __END__
 
 Test2::Context::Trace - Debug information for events
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 All events need to have access to information about where they were created, as

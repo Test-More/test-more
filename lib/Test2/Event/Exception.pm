@@ -27,6 +27,10 @@ __END__
 
 Test2::Event::Exception - Exception event
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 An exception event will display to STDERR, and will prevent the overall test

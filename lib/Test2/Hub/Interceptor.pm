@@ -36,6 +36,10 @@ __END__
 
 Test2::Hub::Interceptor - Hub used by interceptor to grab results.
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 SOURCE
 
 The source code repository for Test2 can be found at

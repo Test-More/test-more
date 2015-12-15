@@ -52,6 +52,10 @@ __END__
 Test2::Global - Primary Synchronization point, this is where global stuff
 lives.
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 ***INTERNALS NOTE***
 
 B<The internals of this package are subject to change at any time!> The public

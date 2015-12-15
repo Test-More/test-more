@@ -68,6 +68,10 @@ __END__
 
 Test2::Event::Plan - The event of a plan
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 Plan events are fired off whenever a plan is declared, done testing is called,

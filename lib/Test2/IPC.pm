@@ -92,6 +92,10 @@ __END__
 
 Test2::IPC - Base class for Test2 IPC drivers.
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 SYNOPSIS
 
     package Test2::IPC::MyDriver;

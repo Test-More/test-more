@@ -362,6 +362,10 @@ __END__
 
 Test2::Hub - The conduit through which all events flow.
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 SYNOPSIS
 
     use Test2::Hub;

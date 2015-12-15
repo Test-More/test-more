@@ -264,6 +264,10 @@ __END__
 
 Test2::Global::Instance - Object used by Sync under the hood
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 This object encapsulates the global shared state tracked by

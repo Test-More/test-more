@@ -26,6 +26,10 @@ __END__
 
 Test2::Event::Subtest - Event for subtest types
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 This class represents a subtest. This class is a subclass of

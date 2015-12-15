@@ -33,6 +33,10 @@ __END__
 
 Test2::Hub::Subtest - Hub used by subtests
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 Subtests make use of this hub to route events.

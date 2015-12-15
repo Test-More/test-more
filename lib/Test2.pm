@@ -266,6 +266,10 @@ __END__
 
 Test2 - Framework for writing test tools that all work together.
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 This package exports all the functions necessary to write and/or verify testing

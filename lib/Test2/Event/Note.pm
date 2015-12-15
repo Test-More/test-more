@@ -26,6 +26,10 @@ __END__
 
 Test2::Event::Note - Note event type
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 Notes, typically rendered to STDOUT.

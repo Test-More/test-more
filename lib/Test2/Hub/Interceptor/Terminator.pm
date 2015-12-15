@@ -15,6 +15,10 @@ __END__
 Test2::Hub::Interceptor::Terminator - Exception class used by
 Test2::Hub::Interceptor
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 SOURCE
 
 The source code repository for Test2 can be found at

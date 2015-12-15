@@ -103,6 +103,10 @@ __END__
 Test2::Context::Stack - Object to manage a stack of L<Test2::Hub>
 instances.
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 ***INTERNALS NOTE***
 
 B<The internals of this package are subject to change at any time!> The public

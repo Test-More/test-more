@@ -61,6 +61,10 @@ __END__
 Test2::Util::HashBase - Base class for classes that use a hashref
 of a hash.
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 SYNOPSIS
 
 A class:

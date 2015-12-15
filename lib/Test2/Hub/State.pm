@@ -114,6 +114,10 @@ __END__
 
 Test2::Hub::State - Representation of the state of the testing
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 METHODS
 
 =over 4

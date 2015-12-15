@@ -299,6 +299,10 @@ __END__
 
 Test2::Formatter::TAP - Standard TAP formatter
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 This is what takes events and turns them into TAP.

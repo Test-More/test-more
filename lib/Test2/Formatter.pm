@@ -14,6 +14,10 @@ __END__
 
 Test2::Formatter - Namespace for formatters.
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 This is the namespace for formatters. This is an empty package.

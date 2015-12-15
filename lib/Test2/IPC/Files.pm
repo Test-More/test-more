@@ -285,6 +285,10 @@ __END__
 
 Test2::IPC::Files - Temp dir + Files concurrency model.
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 This is the default, and fallback concurrency model for L<Test2>. This

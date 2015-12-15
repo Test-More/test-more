@@ -185,6 +185,10 @@ __END__
 
 Test2::Util - Tools used by Test2 and friends.
 
+=head1 EXPERIMENTAL RELEASE
+
+This is an experimental release. Using this right now is not recommended.
+
 =head1 DESCRIPTION
 
 Collection of tools used by L<Test2> and friends.
