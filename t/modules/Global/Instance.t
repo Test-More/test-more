@@ -3,8 +3,7 @@ use warnings;
 
 use Test2::IPC;
 BEGIN { require "t/tools.pl" };
-use Test2::Util qw/get_tid/;
-use Test2::Util qw/CAN_THREAD CAN_REALLY_FORK/;
+use Test2::Util qw/CAN_THREAD CAN_REALLY_FORK USE_THREADS get_tid/;
 
 my $CLASS = 'Test2::Global::Instance';
 
@@ -20,6 +19,9 @@ is_deeply(
         ipc       => undef,
         stack     => undef,
         format    => undef,
+
+        ipc_polling => undef,
+        ipc_drivers => [],
 
         no_wait => 0,
         loaded  => 0,
@@ -42,6 +44,9 @@ is_deeply(
         pid      => $$,
         tid      => get_tid(),
         contexts => {},
+
+        ipc_polling => undef,
+        ipc_drivers => [],
 
         finalized => undef,
         ipc       => undef,
@@ -99,14 +104,6 @@ ok($one->finalized, "calling stack finalized the object");
 $one->reset;
 ok($one->format, 'Got formatter');
 ok($one->finalized, "calling format finalized the object");
-
-{
-    $one->reset;
-    local %INC = %INC;
-    delete $INC{'Test2/IPC.pm'};
-    ok(!$one->ipc, 'IPC not loaded, no IPC object');
-    ok($one->finalized, "calling ipc finalized the object");
-}
 
 $one->reset;
 $one->set_format('Foo');
@@ -307,9 +304,94 @@ if (CAN_REALLY_FORK) {
     );
 }
 
+{
+    local %INC = %INC;
+    delete $INC{'Test2/IPC.pm'};
+    delete $INC{'threads.pm'};
+    ok(!USE_THREADS, "Sanity Check");
+
+    $one->reset;
+    ok(!$one->ipc, 'IPC not loaded, no IPC object');
+    ok($one->finalized, "calling ipc finalized the object");
+    is($one->ipc_polling, undef, "no polling defined");
+    ok(!@{$one->ipc_drivers}, "no driver");
+
+    if (CAN_THREAD) {
+        local $INC{'threads.pm'} = 1;
+        $one->reset;
+        ok($one->ipc, 'IPC loaded if threads are');
+        ok($one->finalized, "calling ipc finalized the object");
+        ok($one->ipc_polling, "polling on by default");
+        is($one->ipc_drivers->[0], 'Test2::IPC::Driver::Files', "default driver");
+    }
+
+    {
+        local $INC{'Test2/IPC.pm'} = 1;
+        $one->reset;
+        ok($one->ipc, 'IPC loaded if Test2::IPC is');
+        ok($one->finalized, "calling ipc finalized the object");
+        ok($one->ipc_polling, "polling on by default");
+        is($one->ipc_drivers->[0], 'Test2::IPC::Driver::Files', "default driver");
+    }
+
+    require Test2::IPC::Driver::Files;
+    $one->reset;
+    $one->add_ipc_driver('Test2::IPC::Driver::Files');
+    ok($one->ipc, 'IPC loaded if drivers have been added');
+    ok($one->finalized, "calling ipc finalized the object");
+    ok($one->ipc_polling, "polling on by default");
+
+    my $file = __FILE__;
+    my $line = __LINE__ + 1;
+    my $warnings = warnings { $one->add_ipc_driver('Test2::IPC::Driver::Files') };
+    like(
+        $warnings->[0],
+        qr{^IPC driver Test2::IPC::Driver::Files loaded too late to be used at \Q$file\E line $line},
+        "Got warning at correct frame"
+    );
+
+    $one->reset;
+    $one->add_ipc_driver('Fake::Fake::XXX');
+    is(
+        exception { $one->ipc },
+        "IPC has been requested, but no viable drivers were found. Aborting...\n",
+        "Failed without viable IPC driver"
+    );
+}
+
+{
+    $one->reset;
+    ok(!@{$one->context_init_callbacks}, "no callbacks");
+    is($one->ipc_polling, undef, "no polling, undef");
+
+    $one->disable_ipc_polling;
+    ok(!@{$one->context_init_callbacks}, "no callbacks");
+    is($one->ipc_polling, undef, "no polling, still undef");
+
+    my $cull = 0;
+    no warnings 'once';
+    local *Fake::Hub::cull = sub { $cull++ };
+    use warnings;
+
+    $one->enable_ipc_polling;
+    is(@{$one->context_init_callbacks}, 1, "added the callback");
+    is($one->ipc_polling, 1, "polling on");
+    $one->context_init_callbacks->[0]->({'hub' => 'Fake::Hub'});
+    is($cull, 1, "called cull once");
+    $cull = 0;
+
+    $one->disable_ipc_polling;
+    is(@{$one->context_init_callbacks}, 1, "kept the callback");
+    is($one->ipc_polling, 0, "no polling, set to 0");
+    $one->context_init_callbacks->[0]->({'hub' => 'Fake::Hub'});
+    is($cull, 0, "did not call cull");
+    $cull = 0;
+
+    $one->enable_ipc_polling;
+    is(@{$one->context_init_callbacks}, 1, "did not add the callback");
+    is($one->ipc_polling, 1, "polling on");
+    $one->context_init_callbacks->[0]->({'hub' => 'Fake::Hub'});
+    is($cull, 1, "called cull once");
+}
+
 done_testing;
-
-
-__END__
-
-

@@ -17,6 +17,13 @@ sub formatter { $INST->format }
 sub init_done { $INST->finalized }
 sub load_done { $INST->loaded }
 
+sub enable_ipc_polling  { $INST->enable_ipc_polling }
+sub disable_ipc_polling { $INST->disable_ipc_polling }
+
+sub add_ipc_driver { shift; $INST->add_ipc_driver(@_) }
+sub ipc_drivers    { @{$INST->ipc_drivers} }
+sub ipc_polling    { $INST->ipc_polling }
+
 sub add_context_init_callback    { shift; $INST->add_context_init_callback(@_) }
 sub add_context_release_callback { shift; $INST->add_context_release_callback(@_) }
 sub add_post_load_callback       { shift; $INST->add_post_load_callback(@_) }
@@ -119,8 +126,30 @@ yet been initialized it will be initialized now.
 
 =item $ipc = Test2::Global->ipc
 
-This will return the global L<Test2::IPC> instance. If this has not yet
+This will return the global L<Test2::IPC::Driver> instance. If this has not yet
 been initialized it will be initialized now.
+
+=item Test2::Global->add_ipc_driver($DRIVER)
+
+Add an IPC driver to the list. This will add the driver to the start of the
+list.
+
+=item @drivers = Test2::Global->ipc_drivers
+
+Get the list of IPC drivers.
+
+=item $bool = Test2::Global->ipc_polling
+
+Check if polling is enabled.
+
+=item Test2::Global->enable_ipc_polling
+
+Turn on polling. This will cull events from other processes and threads every
+time a context is created.
+
+=item Test2::Global->disable_ipc_polling
+
+Turn off IPC polling.
 
 =item $formatter = Test2::Global->formatter
 

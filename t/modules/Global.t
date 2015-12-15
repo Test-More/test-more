@@ -14,6 +14,14 @@ BEGIN { require "t/tools.pl" };
 use Test2::Util qw/get_tid/;
 my $CLASS = 'Test2::Global';
 
+# Ensure we do not break backcompat later by removing anything
+ok(Test2::Global->can($_), "$_ method is present") for qw{
+    pid tid stack ipc formatter init_done load_done add_ipc_driver ipc_drivers
+    enable_ipc_polling disable_ipc_polling add_context_init_callback
+    add_context_release_callback add_post_load_callback add_exit_callback
+    set_formatter no_wait
+};
+
 ok(!$LOADED, "Was not load_done right away");
 ok(!$INIT, "Init was not done right away");
 ok(Test2::Global->load_done, "We loaded it");
@@ -60,6 +68,26 @@ is($CLASS->stack, $CLASS->stack, "always get the same stack");
 
 ok($CLASS->ipc, 'got ipc');
 is($CLASS->ipc, $CLASS->ipc, "always get the same IPC");
+
+is_deeply([$CLASS->ipc_drivers], [qw/Test2::IPC::Driver::Files/], "Got driver list");
+
+# Verify it reports to the correct file/line, there was some trouble with this...
+my $file = __FILE__;
+my $line = __LINE__ + 1;
+my $warnings = warnings { $CLASS->add_ipc_driver('fake') };
+like(
+    $warnings->[0],
+    qr{^IPC driver fake loaded too late to be used at \Q$file\E line $line},
+    "got warning about adding driver too late"
+);
+
+is_deeply([$CLASS->ipc_drivers], [qw/fake Test2::IPC::Driver::Files/], "Got updated list");
+
+ok($CLASS->ipc_polling, "Polling is on");
+$CLASS->disable_ipc_polling;
+ok(!$CLASS->ipc_polling, "Polling is off");
+$CLASS->enable_ipc_polling;
+ok($CLASS->ipc_polling, "Polling is on");
 
 ok($CLASS->formatter, "Got a formatter");
 is($CLASS->formatter, $CLASS->formatter, "always get the same Formatter (class name)");

@@ -2,6 +2,7 @@ package Test2;
 use strict;
 use warnings;
 
+use Test2::Global();
 use Test2::Context();
 use Test2::Context::Trace();
 use Test2::Hub::Subtest();
@@ -143,8 +144,8 @@ sub intercept(&) {
     my $ctx = context();
 
     my $ipc;
-    if ($INC{'Test2/IPC.pm'}) {
-        my ($driver) = Test2::IPC->drivers;
+    if (my $global_ipc = Test2::Global->ipc) {
+        my $driver = blessed($global_ipc);
         $ipc = $driver->new;
     }
 
@@ -483,7 +484,7 @@ will be run as a subtest. A subtest is an isolated test state that is condensed
 into a single L<Test2::Event::Subtest> event, which contains all events
 generated inside the subtest.
 
-Arguments:
+=head3 ARGUMENTS:
 
 =over 4
 

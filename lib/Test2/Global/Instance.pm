@@ -2,7 +2,8 @@ package Test2::Global::Instance;
 use strict;
 use warnings;
 
-use Carp qw/confess/;
+our @CARP_NOT = qw/Test2::Global Test2::Global::Instance Test2::IPC::Driver/;
+use Carp qw/confess carp/;
 use Scalar::Util qw/reftype/;
 
 use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file/;
@@ -16,6 +17,9 @@ use Test2::Util::HashBase qw{
     finalized loaded
     ipc stack format
     contexts
+
+    ipc_polling
+    ipc_drivers
 
     exit_callbacks
     post_load_callbacks
@@ -44,7 +48,10 @@ sub reset {
 
     $self->{+PID} = $$;
     $self->{+TID} = get_tid();
-    $self->{+CONTEXTS} = {};
+    $self->{+CONTEXTS}    = {};
+
+    $self->{+IPC_DRIVERS} = [];
+    $self->{+IPC_POLLING} = undef;
 
     $self->{+FINALIZED} = undef;
     $self->{+IPC}       = undef;
@@ -94,8 +101,25 @@ sub _finalize {
         $self->{+FORMAT} = $mod;
     }
 
-    return unless $INC{'Test2/IPC.pm'};
-    $self->{+IPC} = Test2::IPC->init;
+    # Turn on IPC if threads are on, drivers are reigstered, or the Test2::IPC
+    # module is loaded.
+    return unless USE_THREADS || $INC{'Test2/IPC.pm'} || @{$self->{+IPC_DRIVERS}};
+
+    # Turn on polling by default, people expect it.
+    $self->enable_ipc_polling;
+
+    unless (@{$self->{+IPC_DRIVERS}}) {
+        require Test2::IPC::Driver::Files;
+        push @{$self->{+IPC_DRIVERS}} => 'Test2::IPC::Driver::Files';
+    }
+
+    for my $driver (@{$self->{+IPC_DRIVERS}}) {
+        next unless $driver->can('is_viable') && $driver->is_viable;
+        $self->{+IPC} = $driver->new or next;
+        return;
+    }
+
+    die "IPC has been requested, but no viable drivers were found. Aborting...\n";
 }
 
 sub format_set { $_[0]->{+FORMAT} ? 1 : 0 }
@@ -155,6 +179,38 @@ sub add_exit_callback {
         unless $code && $rtype eq 'CODE';
 
     push @{$self->{+EXIT_CALLBACKS}} => $code;
+}
+
+sub add_ipc_driver {
+    my $self = shift;
+    my ($driver) = @_;
+    unshift @{$self->{+IPC_DRIVERS}} => $driver;
+
+    return unless $self->{+FINALIZED};
+
+    # Why is the @CARP_NOT entry not enough?
+    local %Carp::Internal = %Carp::Internal;
+    $Carp::Internal{Test2::IPC::Driver} = 1;
+
+    carp "IPC driver $driver loaded too late to be used";
+}
+
+sub enable_ipc_polling {
+    my $self = shift;
+
+    $self->add_context_init_callback(
+        # This is called every time a context is created, it needs to be fast.
+        # $_[0] is a context object
+        sub { $_[0]->{hub}->cull if $self->{+IPC_POLLING} }
+    ) unless defined $self->ipc_polling;
+
+    $self->set_ipc_polling(1);
+}
+
+sub disable_ipc_polling {
+    my $self = shift;
+    return unless defined $self->{+IPC_POLLING};
+    $self->{+IPC_POLLING} = 0;;
 }
 
 sub _ipc_wait {
@@ -349,6 +405,28 @@ call release on the context.
 This is intended to be called in an C<END { ... }> block. This will look at
 test state and set $?. This will also call any end callbacks, and wait on child
 processes/threads.
+
+=item $drivers = $obj->ipc_drivers
+
+Get the list of IPC drivers.
+
+=item $obj->add_ipc_driver($DRIVER_CLASS)
+
+Add an IPC driver to the list. This will add the driver to the start of the
+list.
+
+=item $bool = $obj->ipc_polling
+
+Check if polling is enabled.
+
+=item $obj->enable_ipc_polling
+
+Turn on polling. This will cull events from other processes and threads every
+time a context is created.
+
+=item $obj->disable_ipc_polling
+
+Turn off IPC polling.
 
 =item $bool = $obj->no_wait
 

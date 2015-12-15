@@ -1,8 +1,8 @@
-package Test2::IPC::Files;
+package Test2::IPC::Driver::Files;
 use strict;
 use warnings;
 
-use base 'Test2::IPC';
+use base 'Test2::IPC::Driver';
 
 use Test2::Util::HashBase qw{tempdir event_id tid pid globals};
 
@@ -18,7 +18,7 @@ sub is_viable { 1 }
 sub init {
     my $self = shift;
 
-    my $tmpdir = File::Temp::tempdir(CLEANUP => 0);
+    my $tmpdir = File::Temp::tempdir('test2-XXXXXX', CLEANUP => 0, TMPDIR => 1);
 
     $self->abort_trace("Could not get a temp dir") unless $tmpdir;
 
@@ -283,7 +283,7 @@ __END__
 
 =head1 NAME
 
-Test2::IPC::Files - Temp dir + Files concurrency model.
+Test2::IPC::Driver::Files - Temp dir + Files concurrency model.
 
 =head1 EXPERIMENTAL RELEASE
 
@@ -297,20 +297,13 @@ temporary directory. This is not particularily fast, but it works everywhere.
 
 =head1 SYNOPSIS
 
-    use Test2::IPC::Files;
-    use Test2 ...;
+    use Test2::IPC::Driver::Files;
 
-or
-
-    use Test2 ..., 'IPC' => ['Files'];
-
-or
-
-    use Test2 ..., 'IPC' => ['+Test2::IPC::Files'];
+    # IPC is now enabled
 
 =head1 SEE ALSO
 
-See L<Test2::IPC> for methods.
+See L<Test2::IPC::Driver> for methods.
 
 =head1 SOURCE
 

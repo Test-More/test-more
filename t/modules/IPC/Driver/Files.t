@@ -28,10 +28,10 @@ sub capture(&) {
     };
 }
 
-require Test2::IPC::Files;
-ok(my $ipc = Test2::IPC::Files->new, "Created an IPC instance");
-ok($ipc->isa('Test2::IPC::Files'), "Correct type");
-ok($ipc->isa('Test2::IPC'), "inheritence");
+require Test2::IPC::Driver::Files;
+ok(my $ipc = Test2::IPC::Driver::Files->new, "Created an IPC instance");
+ok($ipc->isa('Test2::IPC::Driver::Files'), "Correct type");
+ok($ipc->isa('Test2::IPC::Driver'), "inheritence");
 
 ok(-d $ipc->tempdir, "created temp dir");
 is($ipc->pid, $$, "stored pid");
@@ -89,27 +89,27 @@ $ipc = undef;
 ok(!-d $tmpdir, "cleaned up temp dir");
 
 {
-    my $ipc = Test2::IPC::Files->new();
+    my $ipc = Test2::IPC::Driver::Files->new();
 
     my $tmpdir = $ipc->tempdir;
 
-    my $ipc_thread_clone = bless {%$ipc}, 'Test2::IPC::Files';
+    my $ipc_thread_clone = bless {%$ipc}, 'Test2::IPC::Driver::Files';
     $ipc_thread_clone->set_tid(100);
     $ipc_thread_clone = undef;
     ok(-d $tmpdir, "Directory not removed (different thread)");
 
-    my $ipc_fork_clone = bless {%$ipc}, 'Test2::IPC::Files';
+    my $ipc_fork_clone = bless {%$ipc}, 'Test2::IPC::Driver::Files';
     $ipc_fork_clone->set_pid($$ + 10);
     $ipc_fork_clone = undef;
     ok(-d $tmpdir, "Directory not removed (different proc)");
 
 
-    $ipc_thread_clone = bless {%$ipc}, 'Test2::IPC::Files';
+    $ipc_thread_clone = bless {%$ipc}, 'Test2::IPC::Driver::Files';
     $ipc_thread_clone->set_tid(undef);
     $ipc_thread_clone = undef;
     ok(-d $tmpdir, "Directory not removed (no thread)");
 
-    $ipc_fork_clone = bless {%$ipc}, 'Test2::IPC::Files';
+    $ipc_fork_clone = bless {%$ipc}, 'Test2::IPC::Driver::Files';
     $ipc_fork_clone->set_pid(undef);
     $ipc_fork_clone = undef;
     ok(-d $tmpdir, "Directory not removed (no proc)");
@@ -119,10 +119,10 @@ ok(!-d $tmpdir, "cleaned up temp dir");
 }
 
 {
-    local *Test2::IPC::Files::abort = sub {
+    local *Test2::IPC::Driver::Files::abort = sub {
         my $self = shift;
         local $self->{no_fatal} = 1;
-        $self->Test2::IPC::abort(@_);
+        $self->Test2::IPC::Driver::abort(@_);
         die 255;
     };
 
@@ -133,7 +133,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
     my $out = capture {
         local $ENV{TS_KEEP_TEMPDIR} = 1;
 
-        my $ipc = Test2::IPC::Files->new();
+        my $ipc = Test2::IPC::Driver::Files->new();
         $tmpdir = $ipc->tempdir;
         $ipc->add_hub($hid);
         eval { $ipc->add_hub($hid) }; push @lines => __LINE__;
@@ -158,7 +158,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
     like($out->{STDERR}, qr/^IPC Fatal Error: File for hub '12345' does not exist/m, "Cannot remove hub twice");
 
     $out = capture {
-        my $ipc = Test2::IPC::Files->new();
+        my $ipc = Test2::IPC::Driver::Files->new();
         $ipc->add_hub($hid);
         my $trace = Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
         my $e = eval { $ipc->send($hid, bless({glob => \*ok, trace => $trace}, 'Foo')); 1 };
@@ -173,7 +173,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
     like($out->{STDERR}, qr/Error: Can't store GLOB items/, "Got cause");
 
     $out = capture {
-        my $ipc = Test2::IPC::Files->new();
+        my $ipc = Test2::IPC::Driver::Files->new();
         local $@;
         eval { $ipc->send($hid, bless({ foo => 1 }, 'Foo')) };
         print STDERR $@ unless $@ =~ m/^255/;
@@ -182,7 +182,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
     is($out->{STDERR}, "IPC Fatal Error: hub '12345' is not available! Failed to send event!\n", "Cannot send to missing hub");
 
     $out = capture {
-        my $ipc = Test2::IPC::Files->new();
+        my $ipc = Test2::IPC::Driver::Files->new();
         $ipc->add_hub($hid);
         $ipc->send($hid, bless({ foo => 1 }, 'Foo'));
         local $@;
@@ -193,7 +193,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
     like($out->{STDERR}, qr/IPC Fatal Error: Leftover files in the directory \(.*\.ready\)/, "What file");
 
     $out = capture {
-        my $ipc = Test2::IPC::Files->new();
+        my $ipc = Test2::IPC::Driver::Files->new();
         $ipc->add_hub($hid);
 
         eval { $ipc->send($hid, { foo => 1 }) };
@@ -206,7 +206,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
     like($out->{STDERR}, qr/IPC Fatal Error: 'xxx=HASH\(.*\)' is not an event object!/, "Cannot send non-event objects");
 
 
-    $ipc = Test2::IPC::Files->new();
+    $ipc = Test2::IPC::Driver::Files->new();
 
     my ($fh, $fn) = tempfile();
     print $fh "\n";
@@ -249,7 +249,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
 }
 
 {
-    my $ipc = Test2::IPC::Files->new();
+    my $ipc = Test2::IPC::Driver::Files->new();
     $ipc->add_hub($hid);
     $ipc->send('GLOBAL', bless({global => 1}, 'Foo'));
     $ipc->set_globals({});
