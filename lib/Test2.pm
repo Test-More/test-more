@@ -13,7 +13,7 @@ use Scalar::Util qw/weaken blessed/;
 use Test2::Util qw/get_tid try/;
 
 use vars qw/$VERSION/;
-$Test2::VERSION = 0.000001;
+$Test2::VERSION = 0.000005;
 
 our @EXPORT_OK = qw{
     context
