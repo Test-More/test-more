@@ -318,6 +318,8 @@ if (CAN_REALLY_FORK) {
 
     if (CAN_THREAD) {
         local $INC{'threads.pm'} = 1;
+        no warnings 'once';
+        local *threads::tid = sub { 0 } unless threads->can('tid');
         $one->reset;
         ok($one->ipc, 'IPC loaded if threads are');
         ok($one->finalized, "calling ipc finalized the object");
