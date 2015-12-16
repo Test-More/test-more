@@ -2,7 +2,6 @@ package Test2::Formatter::TAP;
 use strict;
 use warnings;
 
-use Test2::Util qw/protect/;
 use Test2::Util::HashBase qw{
     no_numbers no_header no_diag handles _encoding
 };

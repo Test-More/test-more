@@ -2,8 +2,6 @@ package Test2::Event::Ok;
 use strict;
 use warnings;
 
-use Carp qw/confess/;
-
 use base 'Test2::Event';
 use Test2::Util::HashBase qw{
     pass effective_pass name diag allow_bad_name todo diag_todo

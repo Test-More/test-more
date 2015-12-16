@@ -2,9 +2,6 @@ package Test2::Event::Subtest;
 use strict;
 use warnings;
 
-use Scalar::Util qw/blessed/;
-use Carp qw/confess/;
-
 use base 'Test2::Event::Ok';
 use Test2::Util::HashBase qw{subevents buffered};
 
