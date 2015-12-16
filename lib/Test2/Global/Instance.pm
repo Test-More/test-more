@@ -190,7 +190,7 @@ sub add_ipc_driver {
 
     # Why is the @CARP_NOT entry not enough?
     local %Carp::Internal = %Carp::Internal;
-    $Carp::Internal{Test2::IPC::Driver} = 1;
+    $Carp::Internal{'Test2::IPC::Driver'} = 1;
 
     carp "IPC driver $driver loaded too late to be used";
 }
