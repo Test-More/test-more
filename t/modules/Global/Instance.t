@@ -348,7 +348,7 @@ if (CAN_REALLY_FORK) {
     my $warnings = warnings { $one->add_ipc_driver('Test2::IPC::Driver::Files') };
     like(
         $warnings->[0],
-        qr{^IPC driver Test2::IPC::Driver::Files loaded too late to be used at \Q$file\E line $line},
+        qr{^IPC driver Test2::IPC::Driver::Files loaded too late to be used as the global ipc driver at \Q$file\E line $line},
         "Got warning at correct frame"
     );
 

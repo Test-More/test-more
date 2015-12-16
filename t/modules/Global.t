@@ -77,7 +77,7 @@ my $line = __LINE__ + 1;
 my $warnings = warnings { $CLASS->add_ipc_driver('fake') };
 like(
     $warnings->[0],
-    qr{^IPC driver fake loaded too late to be used at \Q$file\E line $line},
+    qr{^IPC driver fake loaded too late to be used as the global ipc driver at \Q$file\E line $line},
     "got warning about adding driver too late"
 );
 

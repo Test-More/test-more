@@ -192,7 +192,7 @@ sub add_ipc_driver {
     local %Carp::Internal = %Carp::Internal;
     $Carp::Internal{'Test2::IPC::Driver'} = 1;
 
-    carp "IPC driver $driver loaded too late to be used";
+    carp "IPC driver $driver loaded too late to be used as the global ipc driver";
 }
 
 sub enable_ipc_polling {
@@ -412,8 +412,11 @@ Get the list of IPC drivers.
 
 =item $obj->add_ipc_driver($DRIVER_CLASS)
 
-Add an IPC driver to the list. This will add the driver to the start of the
-list.
+Add an IPC driver to the list. The most recently added IPC driver will become
+the global one during initialization. If a driver is added after initialization
+has occured a warning will be generated:
+
+    "IPC driver $driver loaded too late to be used as the global ipc driver"
 
 =item $bool = $obj->ipc_polling
 
