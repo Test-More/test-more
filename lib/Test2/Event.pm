@@ -111,6 +111,8 @@ to exit with a failure.
 This is called after the event has been sent to the formatter in order to
 ensure the event is seen and understood.
 
+=back
+
 =head1 SOURCE
 
 The source code repository for Test2 can be found at
