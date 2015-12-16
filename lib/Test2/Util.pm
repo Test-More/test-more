@@ -5,7 +5,7 @@ use warnings;
 use Config qw/%Config/;
 
 our @EXPORT_OK = qw{
-    try protect
+    try
 
     pkg_to_file
 
@@ -47,87 +47,37 @@ BEGIN {
     *CAN_FORK        = _can_fork()     ? sub() { 1 } : sub() { 0 };
 }
 
-sub _manual_protect(&) {
-    my $code = shift;
-
-    my ($ok, $error);
-    {
-        my ($msg, $no) = ($@, $!);
-        $ok = eval {
-            $code->();
-            1
-        } || 0;
-        $error = $@ || "Error was squashed!\n";
-        ($@, $!) = ($msg, $no);
-    }
-    die $error unless $ok;
-    return $ok;
-}
-
-sub _local_protect(&) {
-    my $code = shift;
-
-    my ($ok, $error);
-    {
-        local ($@, $!);
-        $ok = eval {
-            $code->();
-            1
-        } || 0;
-        $error = $@ || "Error was squashed!\n";
-    }
-    die $error unless $ok;
-    return $ok;
-}
-
 sub _manual_try(&;@) {
     my $code = shift;
     my $args = \@_;
-    my $error;
-    my $ok;
+    my $err;
 
-    {
-        my ($msg, $no) = ($@, $!);
-        my $die = delete $SIG{__DIE__};
+    my ($msg, $no) = ($@, $!);
+    my $die = delete $SIG{__DIE__};
 
-        $ok = eval {
-            $code->(@$args);
-            1
-        } || 0;
-        unless($ok) {
-            $error = $@ || "Error was squashed!\n";
-        }
+    eval { $code->(@$args); 1 } or $err = $@ || "Error was squashed!\n";
 
-        ($@, $!) = ($msg, $no);
-        if ($die) {
-            $SIG{__DIE__} = $die;
-        }
-        else {
-            delete $SIG{__DIE__};
-        }
+    ($@, $!) = ($msg, $no);
+    if ($die) {
+        $SIG{__DIE__} = $die;
+    }
+    else {
+        delete $SIG{__DIE__};
     }
 
-    return ($ok, $error);
+    return (!defined($err), $err);
 }
 
 sub _local_try(&;@) {
     my $code = shift;
     my $args = \@_;
-    my $error;
-    my $ok;
+    my $err;
 
-    {
-        local ($@, $!, $SIG{__DIE__});
-        $ok = eval {
-            $code->(@$args);
-            1
-        } || 0;
-        unless($ok) {
-            $error = $@ || "Error was squashed!\n";
-        }
-    }
+    no warnings;
+    local ($@, $!, $SIG{__DIE__}) = ($@, int($!));
+    eval { $code->(@$args); 1 } or $err = $@ || "Error was squashed!\n";
 
-    return ($ok, $error);
+    return (!defined($err), $err);
 }
 
 # Older versions of perl have a nasty bug on win32 when localizing a variable
@@ -135,12 +85,10 @@ sub _local_try(&;@) {
 # non-local form. When possible though we use the faster 'local' form.
 BEGIN {
     if ($^O eq 'MSWin32' && $] < 5.020002) {
-        *protect = \&_manual_protect;
-        *try     = \&_manual_try;
+        *try = \&_manual_try;
     }
     else {
-        *protect = \&_local_protect;
-        *try     = \&_local_try;
+        *try = \&_local_try;
     }
 }
 
