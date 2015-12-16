@@ -5,7 +5,7 @@ use Test2::Context::Trace;
 
 like(
     exception { 'Test2::Context::Trace'->new() },
-    qr/Frame is required/,
+    qr/The 'frame' attribute is required/,
     "got error"
 );
 

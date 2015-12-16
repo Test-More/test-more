@@ -4,12 +4,12 @@ use warnings;
 
 use Test2::Util qw/get_tid/;
 
-use Carp qw/confess carp/;
+use Carp qw/confess/;
 
 use Test2::Util::HashBase qw{frame detail pid tid};
 
 sub init {
-    confess "Frame is required"
+    confess "The 'frame' attribute is required"
         unless $_[0]->{+FRAME};
 
     $_[0]->{+PID} ||= $$;
