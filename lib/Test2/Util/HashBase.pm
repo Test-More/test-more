@@ -2,43 +2,48 @@ package Test2::Util::HashBase;
 use strict;
 use warnings;
 
+my %ATTRS;
 my %META;
 
+sub _get_inherited_attrs {
+    my @todo = @_;
+    my %seen;
+    my @all;
+    while (my $pkg = shift @todo) {
+        next if $seen{$pkg}++;
+        my $found = $META{$pkg};
+        push @all => %$found if $found;
+
+        no strict 'refs';
+        my $isa = \@{"$pkg\::ISA"};
+        push @todo => @$isa if @$isa;
+    }
+
+    return \@all;
+}
+
+sub _make_subs {
+    my ($str) = @_;
+    $ATTRS{$str} ||= {
+        uc($str) => sub() { $str },
+        $str => sub { $_[0]->{$str} },
+        "set_$str" => sub { $_[0]->{$str} = $_[1] },
+    };
+    return $ATTRS{$str};
+}
+
 sub import {
-    my ($class, @accessors) = @_;
-
+    my $class = shift;
     my $into = caller;
-    my $meta = $META{$into} = \@accessors;
 
-    # Use the comment to change the filename slightly so that Devel::Cover does
-    # not try to cover the contents of the string eval.
-    my $file = __FILE__;
-    my $eval = "# line 1 \"$file.eval\"\npackage $into;\n";
+    my $old = $META{$into};
+    my %meta = map { %{_make_subs($_)} } @_;
+    $META{$into} = {%meta, $old ? (%$old) : ()};
 
-    no strict 'refs';
-    my $isa = \@{"$into\::ISA"};
-    use strict 'refs';
-
-    if(my @bmetas = map { $META{$_} or () } @$isa) {
-        $eval .= "sub " . uc($_) . "() { '$_' };\n" for map { @{$_} } @bmetas;
-    }
-
-    {
-        $eval .= join '' => map {
-            my $const = uc($_);
-            <<"            EOT"
-sub $const() { '$_' }
-sub $_       { \$_[0]->{'$_'} }
-sub set_$_   { \$_[0]->{'$_'} = \$_[1] }
-sub clear_$_ { delete \$_[0]->{'$_'} }
-            EOT
-        } @$meta;
-    }
-
-    eval "${eval}1;" || die $@;
+    my %subs = (%meta, @{_get_inherited_attrs($into)}, new => \&_new);
 
     no strict 'refs';
-    *{"$into\::new"} = \&_new;
+    *{"$into\::$_"} = $subs{$_} for keys %subs;
 }
 
 sub _new {
@@ -127,11 +132,6 @@ use it:
     $one->set_bar('A Bar');
     $one->set_baz('A Baz');
 
-    # Clear!
-    $one->clear_foo;
-    $one->clear_bar;
-    $one->clear_baz;
-
     $one->{+FOO} = 'xxx';
 
 =head1 DESCRIPTION
@@ -183,10 +183,6 @@ Getter, used to get the value of the C<foo> field.
 =item set_foo()
 
 Setter, used to set the value of the C<foo> field.
-
-=item clear_foo()
-
-Clearer, used to completely remove the 'foo' key from the object hash.
 
 =item FOO()
 

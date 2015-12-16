@@ -43,14 +43,25 @@ is_deeply(
     'hash'
 );
 
-$one->clear_foo;
-is_deeply(
-    $one,
-    {
-        bar => 'b',
-        baz => 'c',
-    },
-    'hash'
-);
+BEGIN {
+    package My::Const::Test;
+    use Test2::Util::HashBase qw/foo/;
+
+    sub do_it {
+        if (FOO()) {
+            return 'const';
+        }
+        return 'not const'
+    }
+}
+
+my $pkg = 'My::Const::Test';
+is($pkg->do_it, 'const', "worked as expected");
+{
+    local $SIG{__WARN__} = sub { };
+    *My::Const::Test::FOO = sub { 0 };
+}
+ok(!$pkg->FOO, "overrode const sub");
+is($pkg->do_it, 'const', "worked as expected, const was constant");
 
 done_testing;
