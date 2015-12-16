@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use Test2::IPC;
-use Test2::Tester;
+BEGIN { require 't/tools.pl' };
 
 my $count = 10000;
 plan($count);

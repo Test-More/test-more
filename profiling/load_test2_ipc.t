@@ -1,5 +1,5 @@
 use Test2::IPC;
-use Test2::Tester;
+BEGIN { require 't/tools.pl' };
 
 ok(1, "an ok");
 
