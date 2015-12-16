@@ -45,15 +45,27 @@ sub init {
 
 sub snapshot { bless {%{$_[0]}}, __PACKAGE__ }
 
+# release exists to implement behaviors like die-on-fail. In die-on-fail you
+# want to die after a failure, but only after diagnostics have been reported.
+# The ideal time for the die to happen is when the context is released.
+# Unfortunately die does not work in a DESTROY block.
+# We undef the callers instance of the contect to ensure it is actually
+# destroyed and not re-used. It also makes sure the weak canonical
+# global reference gets removed.
 sub release {
     my ($self) = @_;
+
+    # Layered tools share contexts, and each of them call release, but we only want
+    # release to do anything when it is the last instance of the context.
+    # This happens when refcount is 2 (our caller, and us)
+    # We always undef the callers reference
     return $_[0] = undef if Internals::SvREFCNT(%$self) != 2;
 
     my $hub = $self->{+HUB};
     my $hid = $hub->{hid};
 
     if (!$CONTEXTS->{$hid} || $self != $CONTEXTS->{$hid}) {
-        $_[0] = undef;
+        $_[0] = undef; # Be consistent, ->release removes the object
         croak "release() should not be called on a non-canonical context.";
     }
 
@@ -61,6 +73,7 @@ sub release {
     # having an issue.
     # Remove the key itself to avoid a slow memory leak
     delete $CONTEXTS->{$hid};
+    $_[0] = undef;
 
     if (my $cbk = $self->{+_ON_RELEASE}) {
         $_->($self) for reverse @$cbk;
