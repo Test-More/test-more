@@ -1,5 +1,19 @@
 {{$NEXT}}
 
+    - Port 00-report.t from old form
+    - Prevent TAP from killing $!
+    - Fix Instance.t
+    - Typo fix
+    - Comment Contex.pm better, fix minor bug
+    - Better error in Trace.pm constructor
+    - Test2.pm, comments, and do not use try
+    - Improve try, remove protect
+    - Remove unused imports
+    - Fix profling scripts
+    - Improve HashBase
+    - IPC improvements
+    - Doc fix
+
 0.000005  2015-12-14 20:21:34-08:00 America/Los_Angeles
 
     - Pull out guts into Test2 namespace
