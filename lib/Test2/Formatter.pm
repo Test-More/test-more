@@ -2,6 +2,16 @@ package Test2::Formatter;
 use strict;
 use warnings;
 
+use Test2::Global;
+
+my %ADDED;
+sub import {
+    my $class = shift;
+    return if $class eq __PACKAGE__;
+    return if $ADDED{$class}++;
+    Test2::Global->add_formatter($class);
+}
+
 1;
 
 __END__

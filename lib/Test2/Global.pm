@@ -13,7 +13,7 @@ sub pid       { $INST->pid }
 sub tid       { $INST->tid }
 sub stack     { $INST->stack }
 sub ipc       { $INST->ipc }
-sub formatter { $INST->format }
+sub formatter { $INST->formatter }
 sub init_done { $INST->finalized }
 sub load_done { $INST->loaded }
 
@@ -29,12 +29,15 @@ sub add_context_release_callback { shift; $INST->add_context_release_callback(@_
 sub add_post_load_callback       { shift; $INST->add_post_load_callback(@_) }
 sub add_exit_callback            { shift; $INST->add_exit_callback(@_) }
 
+sub add_formatter { shift; $INST->add_formatter(@_) }
+sub formatters    { @{$INST->formatters} }
+
 sub set_formatter {
     my $class = shift;
-    my ($format) = @_;
-    croak "No formatter specified" unless $format;
-    croak "Global Formatter already set" if $INST->format_set;
-    $INST->set_format($format);
+    my ($formater) = @_;
+    croak "No formatter specified" unless $formater;
+    croak "Global Formatter already set" if $INST->formatter_set;
+    $INST->set_format($formater);
 }
 
 sub no_wait {

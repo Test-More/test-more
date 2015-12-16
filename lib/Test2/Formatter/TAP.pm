@@ -14,9 +14,6 @@ use Carp qw/croak/;
 
 use base 'Test2::Formatter';
 
-our @EXPORT_OK = qw/OUT_STD OUT_ERR OUT_TODO/;
-use base 'Exporter';
-
 my %CONVERTERS = (
     'Test2::Event::Ok'        => \&_ok_event,
     'Test2::Event::Skip'      => \&_skip_event,

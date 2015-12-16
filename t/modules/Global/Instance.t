@@ -18,10 +18,12 @@ is_deeply(
         finalized => undef,
         ipc       => undef,
         stack     => undef,
-        format    => undef,
+        formatter => undef,
 
         ipc_polling => undef,
         ipc_drivers => [],
+
+        formatters => [],
 
         no_wait => 0,
         loaded  => 0,
@@ -48,10 +50,12 @@ is_deeply(
         ipc_polling => undef,
         ipc_drivers => [],
 
+        formatters => [],
+
         finalized => undef,
         ipc       => undef,
         stack     => undef,
-        format    => undef,
+        formatter => undef,
 
         no_wait => 0,
         loaded  => 0,
@@ -64,9 +68,9 @@ is_deeply(
     "Reset Object"
 );
 
-ok(!$one->format_set, "no formatter set");
-$one->set_format('Foo');
-ok($one->format_set, "formatter set");
+ok(!$one->formatter_set, "no formatter set");
+$one->set_formatter('Foo');
+ok($one->formatter_set, "formatter set");
 $one->reset;
 
 my $ran = 0;
@@ -102,30 +106,30 @@ ok($one->stack, 'got stack');
 ok($one->finalized, "calling stack finalized the object");
 
 $one->reset;
-ok($one->format, 'Got formatter');
+ok($one->formatter, 'Got formatter');
 ok($one->finalized, "calling format finalized the object");
 
 $one->reset;
-$one->set_format('Foo');
-is($one->format, 'Foo', "got specified formatter");
+$one->set_formatter('Foo');
+is($one->formatter, 'Foo', "got specified formatter");
 ok($one->finalized, "calling format finalized the object");
 
 {
     local $ENV{TS_FORMATTER} = 'TAP';
     $one->reset;
-    is($one->format, 'Test2::Formatter::TAP', "got specified formatter");
+    is($one->formatter, 'Test2::Formatter::TAP', "got specified formatter");
     ok($one->finalized, "calling format finalized the object");
 
     local $ENV{TS_FORMATTER} = '+Test2::Formatter::TAP';
     $one->reset;
-    is($one->format, 'Test2::Formatter::TAP', "got specified formatter");
+    is($one->formatter, 'Test2::Formatter::TAP', "got specified formatter");
     ok($one->finalized, "calling format finalized the object");
 
     local $ENV{TS_FORMATTER} = '+Fake';
     $one->reset;
     like(
-        exception { $one->format },
-        qr/COULD NOT LOAD FORMATTER '\+Fake' \(set by the 'TS_FORMATTER' environment variable\)/,
+        exception { $one->formatter },
+        qr/COULD NOT LOAD FORMATTER 'Fake' \(set by the 'TS_FORMATTER' environment variable\)/,
         "Bad formatter"
     );
 }

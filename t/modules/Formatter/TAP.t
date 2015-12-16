@@ -1,10 +1,15 @@
 use strict;
 use warnings;
-BEGIN { require "t/tools.pl" };
+use Test2::Formatter::TAP;
+use Test2 qw/context/;
 use PerlIO;
 
-use Test2::Formatter::TAP qw/OUT_STD OUT_ERR OUT_TODO/;
-use Test2 qw/context/;
+BEGIN {
+    require "t/tools.pl";
+    *OUT_STD  = Test2::Formatter::TAP->can('OUT_STD')  or die;
+    *OUT_ERR  = Test2::Formatter::TAP->can('OUT_ERR')  or die;
+    *OUT_TODO = Test2::Formatter::TAP->can('OUT_TODO') or die;
+}
 
 ok(my $one = Test2::Formatter::TAP->new, "Created a new instance");
 my $handles = $one->handles;
@@ -36,7 +41,6 @@ ok($layers->{utf8}, "Now utf8");
 
 {
     package My::Event;
-    use Test2::Formatter::TAP qw/OUT_STD OUT_ERR/;
 
     use base 'Test2::Event';
     use Test2::Util::HashBase qw{pass name diag note};
@@ -47,9 +51,9 @@ ok($layers->{utf8}, "Now utf8");
             my $self = shift;
             my ($e, $num) = @_;
             return (
-                [OUT_STD, "ok $num - " . $e->name . "\n"],
-                [OUT_ERR, "# " . $e->name . " " . $e->diag . "\n"],
-                [OUT_STD, "# " . $e->name . " " . $e->note . "\n"],
+                [main::OUT_STD, "ok $num - " . $e->name . "\n"],
+                [main::OUT_ERR, "# " . $e->name . " " . $e->diag . "\n"],
+                [main::OUT_STD, "# " . $e->name . " " . $e->note . "\n"],
             );
         }
     );

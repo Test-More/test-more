@@ -2,7 +2,7 @@ package Test2::Global::Instance;
 use strict;
 use warnings;
 
-our @CARP_NOT = qw/Test2::Global Test2::Global::Instance Test2::IPC::Driver/;
+our @CARP_NOT = qw/Test2::Global Test2::Global::Instance Test2::IPC::Driver Test2::Formatter/;
 use Carp qw/confess carp/;
 use Scalar::Util qw/reftype/;
 
@@ -15,11 +15,12 @@ use Test2::Util::HashBase qw{
     pid tid
     no_wait
     finalized loaded
-    ipc stack format
+    ipc stack formatter
     contexts
 
     ipc_polling
     ipc_drivers
+    formatters
 
     exit_callbacks
     post_load_callbacks
@@ -28,7 +29,7 @@ use Test2::Util::HashBase qw{
 };
 
 # Wrap around the getters that should call _finalize.
-for my $finalizer (STACK, IPC, FORMAT) {
+for my $finalizer (STACK, IPC, FORMATTER) {
     my $orig = __PACKAGE__->can($finalizer);
     my $new = sub {
         my $self = shift;
@@ -53,10 +54,12 @@ sub reset {
     $self->{+IPC_DRIVERS} = [];
     $self->{+IPC_POLLING} = undef;
 
+    $self->{+FORMATTERS} = [];
+    $self->{+FORMATTER}  = undef;
+
     $self->{+FINALIZED} = undef;
     $self->{+IPC}       = undef;
     $self->{+STACK}     = undef;
-    $self->{+FORMAT}    = undef;
 
     $self->{+NO_WAIT} = 0;
     $self->{+LOADED}  = 0;
@@ -75,30 +78,35 @@ sub _finalize {
     $self->{+FINALIZED} = $caller;
     $self->{+STACK}     = Test2::Context::Stack->new;
 
-    unless ($self->{+FORMAT}) {
-        my ($name, $source);
+    unless ($self->{+FORMATTER}) {
+        my ($formatter, $source);
         if ($ENV{TS_FORMATTER}) {
-            $name = $ENV{TS_FORMATTER};
-            $source = "set by the 'TS_FORMATTER' environment variable";
+            $formatter = $ENV{TS_FORMATTER};
+            $source    = "set by the 'TS_FORMATTER' environment variable";
+
+            $formatter = "Test2::Formatter::$formatter"
+                unless $formatter =~ s/^\+//;
+        }
+        elsif (@{$self->{+FORMATTERS}}) {
+            ($formatter) = @{$self->{+FORMATTERS}};
+            $source = "Most recently added";
         }
         else {
-            $name = 'TAP';
-            $source = 'default formatter';
+            $formatter = 'Test2::Formatter::TAP';
+            $source    = 'default formatter';
         }
 
-        my $mod = $name;
-        $mod = "Test2::Formatter::$mod"
-            unless $mod =~ s/^\+//;
-
-        my $file = pkg_to_file($mod);
-        unless (eval { require $file; 1 }) {
-            my $err = $@;
-            my $line = "* COULD NOT LOAD FORMATTER '$name' ($source) *";
-            my $border = '*' x length($line);
-            die "\n\n  $border\n  $line\n  $border\n\n$err";
+        unless (ref($formatter) || $formatter->can('write')) {
+            my $file = pkg_to_file($formatter);
+            unless (eval { require $file; 1 }) {
+                my $err    = $@;
+                my $line   = "* COULD NOT LOAD FORMATTER '$formatter' ($source) *";
+                my $border = '*' x length($line);
+                die "\n\n  $border\n  $line\n  $border\n\n$err";
+            }
         }
 
-        $self->{+FORMAT} = $mod;
+        $self->{+FORMATTER} = $formatter;
     }
 
     # Turn on IPC if threads are on, drivers are reigstered, or the Test2::IPC
@@ -122,7 +130,21 @@ sub _finalize {
     die "IPC has been requested, but no viable drivers were found. Aborting...\n";
 }
 
-sub format_set { $_[0]->{+FORMAT} ? 1 : 0 }
+sub formatter_set { $_[0]->{+FORMATTER} ? 1 : 0 }
+
+sub add_formatter {
+    my $self = shift;
+    my ($formatter) = @_;
+    unshift @{$self->{+FORMATTERS}} => $formatter;
+
+    return unless $self->{+FINALIZED};
+
+    # Why is the @CARP_NOT entry not enough?
+    local %Carp::Internal = %Carp::Internal;
+    $Carp::Internal{'Test2::Formatter'} = 1;
+
+    carp "Formatter $formatter loaded too late to be used as the global formatter";
+}
 
 sub add_context_init_callback {
     my $self =  shift;
@@ -355,10 +377,6 @@ Thread ID of this instance.
 
 Reset the object to defaults.
 
-=item $bool = $obj->format_set()
-
-Check if a formatter has been set.
-
 =item $obj->load()
 
 Set the internal state to loaded, and run and stored post-load callbacks.
@@ -460,9 +478,25 @@ Get the one true IPC instance.
 
 Get the one true hub stack.
 
-=item $formatter_class = $obj->format
+=item $formatter = $obj->formatter
 
-Get the one true formatter class.
+Get the global formatter. By default this is the C<'Test2::Formatter::TAP'>
+package. This could be any package that implements the C<write()> method. This
+can also be an instantiated object.
+
+=item $bool = $obj->formatter_set()
+
+Check if a formatter has been set.
+
+=item $obj->add_formatter($class)
+
+=item $obj->add_formatter($obj)
+
+Add a formatter. The most recently added formatter will become the global one
+during initialization. If a formatter is added after initialization has occured
+a warning will be generated:
+
+    "Formatter $formatter loaded too late to be used as the global formatter"
 
 =back
 
