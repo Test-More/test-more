@@ -1,68 +1,36 @@
+use strict;
+use warnings;
+
 BEGIN { require "t/tools.pl" };
-BEGIN {
-    skip_all "Still need to port this"
-}
-
-use Test2 -V1;
-
-use Test2::Table qw/table/;
+use Data::Dumper;
 
 use Test2::Util qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
 
 diag "\nDIAGNOSTICS INFO IN CASE OF FAILURE:\n";
-diag(join "\n", table(rows => [[ 'perl', $] ]]));
+diag "\nPerl: $]";
 
-diag(
-    join "\n",
-    table(
-        header => [qw/CAPABILITY SUPPORTED/],
-        rows   => [
-            ['CAN_FORK',        CAN_FORK        ? 'Yes' : 'No'],
-            ['CAN_REALLY_FORK', CAN_REALLY_FORK ? 'Yes' : 'No'],
-            ['CAN_THREAD',      CAN_THREAD      ? 'Yes' : 'No'],
-        ],
-    )
-);
+diag "\nCAPABILITIES:";
+diag 'CAN_FORK         ' . (CAN_FORK        ? 'Yes' : 'No');
+diag 'CAN_REALLY_FORK  ' . (CAN_REALLY_FORK ? 'Yes' : 'No');
+diag 'CAN_THREAD       ' . (CAN_THREAD      ? 'Yes' : 'No');
 
-{
-    my @depends = qw{
-        Carp File::Spec File::Temp PerlIO
-        Scalar::Util Storable overload utf8
-    };
+diag "\nDEPENDENCIES:";
 
-    my @rows;
-    for my $mod (sort @depends) {
-        my $installed = eval "require $mod; $mod->VERSION";
-        push @rows => [ $mod, $installed || "N/A" ];
-    }
+my @depends = sort qw{
+    Carp File::Spec File::Temp PerlIO
+    Scalar::Util Storable overload utf8
+    threads
+};
 
-    my @table = table(
-        header => [ 'DEPENDENCY', 'VERSION' ],
-        rows => \@rows,
-    );
-
-    diag(join "\n", @table);
+my %deps;
+my $len = 0;
+for my $dep (@depends) {
+    my $l = length($dep);
+    $len = $l if $l > $len;
+    $deps{$dep} = eval "require $dep; $dep->VERSION" || "N/A";
 }
 
-{
-    my @options = qw{
-        Sub::Name Sub::Util Term::ReadKey Unicode::GCString Unicode::LineBreak
-        Trace::Mask
-    };
+diag sprintf("%-${len}s  %s", $_, $deps{$_}) for @depends;
 
-    my @rows;
-    for my $mod (sort @options) {
-        my $installed = eval "require $mod; $mod->VERSION";
-        push @rows => [ $mod, $installed || "N/A" ];
-    }
-
-    my @table = table(
-        header => [ 'OPTIONAL', 'VERSION' ],
-        rows => \@rows,
-    );
-
-    diag(join "\n", @table);
-}
-
-pass;
+ok(1);
 done_testing;
