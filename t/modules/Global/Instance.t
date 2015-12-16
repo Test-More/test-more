@@ -115,21 +115,21 @@ is($one->formatter, 'Foo', "got specified formatter");
 ok($one->finalized, "calling format finalized the object");
 
 {
-    local $ENV{TS_FORMATTER} = 'TAP';
+    local $ENV{T2_FORMATTER} = 'TAP';
     $one->reset;
     is($one->formatter, 'Test2::Formatter::TAP', "got specified formatter");
     ok($one->finalized, "calling format finalized the object");
 
-    local $ENV{TS_FORMATTER} = '+Test2::Formatter::TAP';
+    local $ENV{T2_FORMATTER} = '+Test2::Formatter::TAP';
     $one->reset;
     is($one->formatter, 'Test2::Formatter::TAP', "got specified formatter");
     ok($one->finalized, "calling format finalized the object");
 
-    local $ENV{TS_FORMATTER} = '+Fake';
+    local $ENV{T2_FORMATTER} = '+Fake';
     $one->reset;
     like(
         exception { $one->formatter },
-        qr/COULD NOT LOAD FORMATTER 'Fake' \(set by the 'TS_FORMATTER' environment variable\)/,
+        qr/COULD NOT LOAD FORMATTER 'Fake' \(set by the 'T2_FORMATTER' environment variable\)/,
         "Bad formatter"
     );
 }

@@ -80,7 +80,7 @@ do_def;
 
 $ran = 0;
 
-TS_SUBTEST_WRAPPER: {
+T2_SUBTEST_WRAPPER: {
     $ran++;
     $one->terminate(100);
     $ran++;

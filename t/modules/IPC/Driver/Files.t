@@ -131,7 +131,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
     my $file = __FILE__;
 
     my $out = capture {
-        local $ENV{TS_KEEP_TEMPDIR} = 1;
+        local $ENV{T2_KEEP_TEMPDIR} = 1;
 
         my $ipc = Test2::IPC::Driver::Files->new();
         $tmpdir = $ipc->tempdir;
@@ -143,7 +143,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
         eval { $ipc->drop_hub($hid) }; push @lines => __LINE__;
 
         # Make sure having a hub file sitting around does not throw things off
-        # in TS_KEEP_TEMPDIR
+        # in T2_KEEP_TEMPDIR
         $ipc->add_hub($hid);
         $ipc = undef;
         1;

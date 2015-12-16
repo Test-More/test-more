@@ -159,22 +159,22 @@ Turn off IPC polling.
 This will return the global formatter class. This is not an instance. By
 default the formatter is set to L<Test2::Formatter::TAP>.
 
-You can override this default using the C<TS_FORMATTER> environment variable.
+You can override this default using the C<T2_FORMATTER> environment variable.
 
 Normally 'Test2::Formatter::' is prefixed to the value in the
 environment variable:
 
-    $ TS_FORMATTER='TAP' perl test.t     # Use the Test2::Formatter::TAP formatter
-    $ TS_FORMATTER='Foo' perl test.t     # Use the Test2::Formatter::Foo formatter
+    $ T2_FORMATTER='TAP' perl test.t     # Use the Test2::Formatter::TAP formatter
+    $ T2_FORMATTER='Foo' perl test.t     # Use the Test2::Formatter::Foo formatter
 
 If you want to specify a full module name you use the '+' prefix:
 
-    $ TS_FORMATTER='+Foo::Bar' perl test.t     # Use the Foo::Bar formatter
+    $ T2_FORMATTER='+Foo::Bar' perl test.t     # Use the Foo::Bar formatter
 
 =item Test2::Global->set_formatter($class)
 
 Set the global formatter class. This can only be set once. B<Note:> This will
-override anything specified in the 'TS_FORMATTER' environment variable.
+override anything specified in the 'T2_FORMATTER' environment variable.
 
 =item $bool = Test2::Global->no_wait
 

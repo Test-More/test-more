@@ -25,7 +25,7 @@ sub init {
     $self->{+TEMPDIR} = File::Spec->canonpath($tmpdir);
 
     print STDERR "\nIPC Temp Dir: $tmpdir\n\n"
-        if $ENV{TS_KEEP_TEMPDIR};
+        if $ENV{T2_KEEP_TEMPDIR};
 
     $self->{+EVENT_ID} = 1;
 
@@ -94,7 +94,7 @@ sub drop_hub {
     $self->abort_trace("A hub file can only be closed by the thread that started it\nExpected $tid, got " . get_tid())
         unless get_tid() == $tid;
 
-    if ($ENV{TS_KEEP_TEMPDIR}) {
+    if ($ENV{T2_KEEP_TEMPDIR}) {
         rename($hfile, File::Spec->canonpath("$hfile.complete")) or $self->abort_trace("Could not rename file '$hfile' -> '$hfile.complete'");
     }
     else {
@@ -187,7 +187,7 @@ sub cull {
         # Do not remove global events
         unless ($global) {
             my $complete = File::Spec->canonpath("$full.complete");
-            if ($ENV{TS_KEEP_TEMPDIR}) {
+            if ($ENV{T2_KEEP_TEMPDIR}) {
                 rename($full, $complete) or $self->abort("Could not rename IPC file '$full', '$complete'");
             }
             else {
@@ -256,7 +256,7 @@ sub DESTROY {
         if ($file =~ m/^(GLOBAL|HUB-)/) {
             $full =~ m/^(.*)$/;
             $full = $1; # Untaint it
-            next if $ENV{TS_KEEP_TEMPDIR};
+            next if $ENV{T2_KEEP_TEMPDIR};
             unlink($full) or $self->abort("Could not unlink IPC file: $full");
             next;
         }
@@ -265,7 +265,7 @@ sub DESTROY {
     }
     closedir($dh);
 
-    if ($ENV{TS_KEEP_TEMPDIR}) {
+    if ($ENV{T2_KEEP_TEMPDIR}) {
         print STDERR "# Not removing temp dir: $tempdir\n";
         return;
     }

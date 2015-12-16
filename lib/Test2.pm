@@ -213,7 +213,7 @@ sub run_subtest {
     $hub->set_parent_todo($no_diag) if $no_diag;
 
     my ($ok, $err, $finished);
-    TS_SUBTEST_WRAPPER: {
+    T2_SUBTEST_WRAPPER: {
         # Do not use 'try' cause it localizes __DIE__, and does not preserve $@
         # or $!
         local $@ = $@;
@@ -222,7 +222,7 @@ sub run_subtest {
         $err = $@;
 
         # They might have done 'BEGIN { skip_all => "whatever" }'
-        if (!$ok && $err =~ m/Label not found for "last TS_SUBTEST_WRAPPER"/) {
+        if (!$ok && $err =~ m/Label not found for "last T2_SUBTEST_WRAPPER"/) {
             $ok  = undef;
             $err = undef;
         }

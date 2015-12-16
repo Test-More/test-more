@@ -80,9 +80,9 @@ sub _finalize {
 
     unless ($self->{+FORMATTER}) {
         my ($formatter, $source);
-        if ($ENV{TS_FORMATTER}) {
-            $formatter = $ENV{TS_FORMATTER};
-            $source    = "set by the 'TS_FORMATTER' environment variable";
+        if ($ENV{T2_FORMATTER}) {
+            $formatter = $ENV{T2_FORMATTER};
+            $source    = "set by the 'T2_FORMATTER' environment variable";
 
             $formatter = "Test2::Formatter::$formatter"
                 unless $formatter =~ s/^\+//;

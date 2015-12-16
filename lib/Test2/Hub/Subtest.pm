@@ -18,7 +18,7 @@ sub terminate {
     my ($code) = @_;
     $self->set_exit_code($code);
     no warnings 'exiting';
-    last TS_SUBTEST_WRAPPER;
+    last T2_SUBTEST_WRAPPER;
 }
 
 1;
