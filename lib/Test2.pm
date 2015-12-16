@@ -11,10 +11,9 @@ use Test2::Hub::Interceptor::Terminator();
 
 use Carp qw/croak confess longmess/;
 use Scalar::Util qw/weaken blessed/;
-use Test2::Util qw/get_tid try/;
+use Test2::Util qw/get_tid/;
 
-use vars qw/$VERSION/;
-$Test2::VERSION = 0.000005;
+our $VERSION = 0.000005;
 
 our @EXPORT_OK = qw{
     context
@@ -67,6 +66,8 @@ sub context {
     _depth_error($current, [$pkg, $file, $line, $sub, $depth])
         if $current;
 
+    # Directly bless the object here, calling new is a noticable performance
+    # hit with how often this needs to be called.
     my $dbg = bless(
         {
             frame => [$pkg, $file, $line, $sub],
@@ -76,6 +77,8 @@ sub context {
         'Test2::Context::Trace'
     );
 
+    # Directly bless the object here, calling new is a noticable performance
+    # hit with how often this needs to be called.
     $current = bless(
         {
             stack  => $stack,
@@ -159,12 +162,17 @@ sub intercept(&) {
 
     $ctx->stack->top; # Make sure there is a top hub before we begin.
     $ctx->stack->push($hub);
-    my ($ok, $err) = try {
-        $code->(
-            hub => $hub,
-            context => $ctx->snapshot,
-        );
-    };
+
+    # Do not use 'try' cause it localizes __DIE__, and does not preserve $@
+    # or $!
+    my ($ok, $err);
+    {
+        local $@ = $@;
+        local $! = int($!);
+        $ok = eval { $code->(hub => $hub, context => $ctx->snapshot); 1 };
+        $err = $@;
+    }
+
     $hub->cull;
     $ctx->stack->pop($hub);
 
@@ -206,7 +214,12 @@ sub run_subtest {
 
     my ($ok, $err, $finished);
     TS_SUBTEST_WRAPPER: {
-        ($ok, $err) = try { $code->(@args) };
+        # Do not use 'try' cause it localizes __DIE__, and does not preserve $@
+        # or $!
+        local $@ = $@;
+        local $! = int($!);
+        $ok = eval { $code->(@args); 1 };
+        $err = $@;
 
         # They might have done 'BEGIN { skip_all => "whatever" }'
         if (!$ok && $err =~ m/Label not found for "last TS_SUBTEST_WRAPPER"/) {
