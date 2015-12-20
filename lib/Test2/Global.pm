@@ -191,7 +191,7 @@ This can be used to add a callback that is called after all testing is done. Thi
 is too late to add additional results, the main use of this callback is to set the
 exit code.
 
-    Test2::Global->add_callback(
+    Test2::Global->add_exit_callback(
         sub {
             my ($context, $exit, \$new_exit) = @_;
             ...
