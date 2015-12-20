@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Fix version number string
+    - Fix typo
+
 0.000006  2015-12-15 20:30:46-08:00 America/Los_Angeles
 
     - Port 00-report.t from old form
