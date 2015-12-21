@@ -76,3 +76,8 @@
 .travis.yml
 
 ^t2_lib
+
+dist.ini
+^profiling/
+TODO
+^xt/

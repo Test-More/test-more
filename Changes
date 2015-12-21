@@ -1,110 +1,116 @@
-1.302012_004 Mon Nov 16 07:45:11:00 PST 2015
+{{$NEXT}}
+
+    - Switch to using Test2 under the hood
+    - Use Dist::Zilla for releases
+    - Reformat Changes file
+
+1.302012_004 2015-Nov-16 07:45:11-08:00 PST
     * Fix #600 - done_testing($count)
 
-1.302012_003 Tue Oct 27 00:02:44:00 PST 2015
+1.302012_003 2015-Oct-27 00:02:44-08:00 PST
     * Fix typo that called wrong 'try'
 
-1.302012_002 Fri Oct 02 21:57:19:00 PST 2015
+1.302012_002 2015-Oct-02 21:57:19-08:00 PST
     * Add version eval to several modules (#605)
 
-1.302012_001 Thu Oct 01 15:47:39:00 PST 2015
+1.302012_001 2015-Oct-01 15:47:39-08:00 PST
     * Support for Test::Stream 1.302012
 
-1.302010_001 Tue Sep 29 21:18:38:00 PST 2015
+1.302010_001 2015-Sep-29 21:18:38-08:00 PST
     * Support for Test::Stream 1.302010
     * Some upstream package names changed
     * Test::Stream's interface changed, tests needed to change too.
 
-1.302007_004 Mon Jul 27 21:13:39:00 PST 2015
+1.302007_004 2015-Jul-27 21:13:39-08:00 PST
     * Work around perlbug 125702
 
-1.302007_003 Mon Jul 24 08:34:46:00 PST 2015
+1.302007_003 2015-Jul-24 08:34:46-08:00 PST
     * Remove singleton from closure
 
-1.302007_002 Sat Jul 18 17:38:26:00 PST 2015
+1.302007_002 2015-Jul-18 17:38:26-08:00 PST
     * Fix subtest + Test::Stream::Tester
 
-1.302007_001 Wed Jun 24 08:06:00:00 PST 2015
+1.302007_001 2015-Jun-24 08:06:00-08:00 PST
     * Tests no longer copy thread/fork checks
     * Bump minimum Test::Stream version
 
-1.302004_001 Wed Jun 17 08:33:00:00 PST 2015
+1.302004_001 2015-Jun-17 08:33:00-08:00 PST
     * Update for newer Test-Stream with XS support
     * Use 'fudge' in Test::Stream instead of doing level adjustments here
     * Fix minor POD encoding issue #593
     * Some performance enhancements in T::B->ok
 
-1.302003_001 Sat Jan 06 21:52:00:00 PST 2015
+1.302003_001 2015-Jan-06 21:52:00-08:00 PST
     * Convert internals to use Test-Stream
     * Optimizations for performance
     * Note this is a completely new branch off of legacy/master, not taken from the old stream branches
 
-1.001014     Tue Dec 28 08:31:00:00 PST 2014
+1.001014 2014-Dec-28 08:31:00-08:00 PST
     * Write a test to ensure this changes file gets updated
     * Update changes file for 1.001013
 
-1.001013     Sun Dec 28 08:00:00:00 PST 2014
+1.001013 2014-Dec-28 08:00:00-08:00 PST
     * Fix a unit test that broke on some platforms with spaces in the $^X path
 
-1.001012     Tue Dec 23 07:39:00:00 PST 2014
+1.001012 2014-Dec-23 07:39:00-08:00 PST
     * Move test that was dropped in the wrong directory
 
-1.001011     Sat Dec 20 09:08:00:00 PST 2014
+1.001011 2014-Dec-20 09:08:00-08:00 PST
     * Remove POD Coverage test
 
-1.001010     Fri Dec 19 20:16:00:00 PST 2014
+1.001010 2014-Dec-19 20:16:00-08:00 PST
     * Fix windows test bug #491
     * Integrate Test::Tester and Test::use::ok for easier downgrade from trial
 
-1.001009     Sun Nov  2 22:31:08:00 PST 2014
+1.001009 2014-Nov-2 22:31:08-08:00 PST
     * Fix bug in cmp_ok
 
-1.001008     Wed Oct 15 20:10:22:00 PST 2014
+1.001008 2014-Oct-15 20:10:22-08:00 PST
     * Updated Changes file
 
-1.001007     Wed Oct 15 16:37:11:00 PST 2014
+1.001007 2014-Oct-15 16:37:11-08:00 PST
     * Fix subtest name when skip_all is used
 
-1.001006     Tue Sep  2 14:39:05:00 PST 2014
+1.001006 2014-Sep-2 14:39:05-08:00 PST
     * Reverted change that is now part of alpha branch
 
-1.001005     Tue Sep  2 19:47:19:00 JST 2014
+1.001005 2014-Sep-2 19:47:19-08:00 JST
     * Changed install path for perl 5.12 or higher.
 
-1.001004_003 Sat May  17 13:43:00 PST 2014
+1.001004_003 2014-May-17 13:43-08:00 PST
     * Another Minor doc fix to solve test bug
     * Fix #399, conflict with strawberry-portable
 
-1.001004_002 Sat May  17 13:43:00 PST 2014
+1.001004_002 2014-May-17 13:43-08:00 PST
     * Minor doc fix to solve test bug
 
-1.001004_001 Sat May  10 08:39:00 PST 2014
+1.001004_001 2014-May-10 08:39-08:00 PST
     * Doc updates
     * Subtests accept args
     * Outdent subtest diag
 
-1.001003     Fri Mar  21 21:12:32 PST 2014
+1.001003 2014-Mar-21 21:12-08:00 PST
     * Doc updates for maintainer change
 
-1.001002     Mon Nov  4 15:13:58 EST 2013
+1.001002 2013-Nov-4 15:13-08:00 EST
     * no changes since 0.99
 
-1.001001_001 Wed Oct 30 20:47:23 EDT 2013
+1.001001_001 2013-Oct-30 20:47-08:00 EDT
     * no code changes, just a new version number with more room to grow
 
-0.99     Tue Oct 29 13:21:03 2013 EDT 2013
+0.99 2013-Oct-29 13:21:03-08:00 EDT
     * restore ability to use regex with test_err and test_out
       (Zefram) [rt.cpan.org #89655] [github #389] [github #387]
 
-0.99     Sat Oct 12 15:05:41 EDT 2013
+0.99 2013-Oct-12 15:05-08:00 EDT
     * no changes since 0.98_06
 
-0.98_06  Fri Sep 27 10:11:05 EDT 2013
+0.98_06 2013-Sep-27 10:11-08:00 EDT
     Bug Fixes
     * Fix precedence error with (return ... and ...)
       (nthykier) [github #385]
 
-0.98_05  Tue Apr 23 17:33:51 PDT 2013
+0.98_05 2013-Apr-23 17:33-08:00 PDT
     Doc Changes
     * Add a shorter work around for the UTF-8 output problem.
       (Michael G Schwern)
@@ -125,7 +131,7 @@
       (Michael G Schwern)
 
 
-0.98_04  Sun Apr 14 10:54:13 BST 2013
+0.98_04 2013-Apr-14 10:54-08:00 BST
     Distribution Changes
     * Scalar::Util 1.13 (ships with Perl 5.8.1) is now required.
       (Michael G Schwern)
@@ -147,7 +153,7 @@
       method resolution. [github #353] (Michael G Schwern)
 
 
-0.98_03  Thu Jun 21 13:04:19 PDT 2012
+0.98_03 2012-Jun-21 13:04-08:00 PDT
     New Features
     * cmp_ok() will error when used with something which is not a
       comparison operator, including =, += and the like.
@@ -169,14 +175,14 @@
       [github #287]
 
 
-0.98_02  Thu Nov 24 01:13:53 PST 2011
+0.98_02 2011-Nov-24 01:13-08:00 PST
     Bug Fixes
     * use_ok() in 0.98_01 was leaking pragmas from inside Test::More.
       This looked like Test::More was forcing strict. [rt.cpan.org 67538]
       (Father Chrysostomos)
 
 
-0.98_01  Tue Nov  8 17:07:58 PST 2011
+0.98_01 2011-Nov-8 17:07-08:00 PST
     Bug Fixes
     * BAIL_OUT works inside a subtest. (Larry Leszczynski) [github #138]
     * subtests now work with threads turned on. [github #145]
@@ -191,7 +197,7 @@
       Test::Builder from getting out of sync. [github #89]
 
 
-0.98  Wed, 23 Feb 2011 14:38:02 +1100
+0.98  2011-Fev-23 14:38:02 +1100
     Bug Fixes
     * subtest() should not fail if $? is non-zero. (Aaron Crane)
 
@@ -199,7 +205,7 @@
     * The behavior of is() and undef has been documented. (Pedro Melo)
 
 
-0.97_01  Fri Aug 27 22:50:30 PDT 2010
+0.97_01 2010-Aug-27 22:50-08:00 PDT
     Test Fixes
     * Adapted the tests for the new Perl 5.14 regex stringification.
       (Karl Williamson) [github 44]
@@ -215,7 +221,7 @@
       before Test::Builder is loaded.  More later. [rt.cpan.org 46542]
 
 
-0.96  Tue Aug 10 21:13:04 PDT 2010
+0.96 2010-Aug-10 21:13-08:00 PDT
     Bug Fixes
     * You can call done_testing() again after reset() [googlecode 59]
 
@@ -223,7 +229,7 @@
     * Bug tracker moved to github
 
 
-0.95_02  Wed May 19 15:46:52 PDT 2010
+0.95_02 2010-May-19 15:46-08:00 PDT
     Bug Fixes
     * Correct various typos and spelling errors (Nick Cleaton)
     * Fix alignment of indented multi-line diagnostics from subtests
@@ -234,7 +240,7 @@
       (Nick Cleaton)
 
 
-0.95_01  Wed Mar  3 15:36:59 PST 2010
+0.95_01 2010-Mar-3 15:36-08:00 PST
     Bug Fixes
     * is_deeply() didn't see a difference in regexes [rt.cpan.org 53469]
     * Test::Builder::Tester now sets $tb->todo_output to the output handle and
@@ -257,11 +263,11 @@
       the biggest example.
 
 
-0.94  Wed Sep  2 11:17:47 PDT 2009
+0.94 2009-Sep-2 11:17-08:00 PDT
     Releasing 0.93_01 as stable.
 
 
-0.93_01  Mon Jul 20 09:51:08 PDT 2009
+0.93_01 2009-Jul-20 09:51-08:00 PDT
     Bug Fixes
     * Make sure that subtest works with Test:: modules which call
       Test::Builder->new at the top of their code. (Ovid)
@@ -270,13 +276,13 @@
     * subtest() returns!
 
 
-0.92  Fri Jul  3 11:08:56 PDT 2009
+0.92 2009-Jul-3 11:08-08:00 PDT
     Test Fixes
     * Silence noise on VMS in exit.t (Craig Berry)
     * Skip Builder/fork_with_new_stdout.t on systems without fork (Craig Berry)
 
 
-0.90  Thu Jul  2 13:18:25 PDT 2009
+0.90 2009-Jul-2 13:18-08:00 PDT
     Docs
     * Note the IO::Stringy license in our copy of it.
       [test-more.googlecode.com 47]
@@ -286,7 +292,7 @@
       the subtest() work in 0.89_01.
 
 
-0.89_01  Tue Jun 23 15:13:16 EDT 2009
+0.89_01 2009-Jun-23 15:13-08:00 EDT
     New Features
     * subtest() allows you to run more tests in their own plan.
       (Thanks Ovid!)
@@ -304,16 +310,16 @@
       [bleadperl c76230386fc5e6fba9fdbeab473abbf4f4adcbe3]
 
 
-0.88  Sat May 30 12:31:24 PDT 2009
+0.88 2009-May-30 12:31-08:00 PDT
     Turing 0.87_03 into a stable release.
 
 
-0.87_03  Sun May 24 13:41:40 PDT 2009
+0.87_03 2009-May-24 13:41-08:00 PDT
     New Features
     * isa_ok() now works on classes. (Peter Scott)
 
 
-0.87_02  Sat Apr 11 12:54:14 PDT 2009
+0.87_02 2009-Apr-11 12:54-08:00 PDT
     Test Fixes
     * Some filesystems don't like it when you open a file for writing multiple
       times.  Fixes t/Builder/reset.t. [rt.cpan.org 17298]
@@ -322,7 +328,7 @@
     * Fix Test::Builder::NoOutput on 5.6.2.
 
 
-0.87_01  Sun Mar 29 09:56:52 BST 2009
+0.87_01 2009-Mar-29 09:56-08:00 BST
     New Features
     * done_testing() allows you to declare that you have finished running tests,
       and how many you ran.  It is a safer no_plan and effectively replaces it.
@@ -341,11 +347,11 @@
     * Repository moved to github.
 
 
-0.86  Sun Nov  9 01:09:05 PST 2008
+0.86 2008-Nov-9 01:09-08:00 PST
     Same as 0.85_01
 
 
-0.85_01  Thu Oct 23 18:57:38 PDT 2008
+0.85_01 2008-Oct-23 18:57-08:00 PDT
     New Features
     * cmp_ok() now displays the error if the comparison throws one.
       For example, broken overloaded objects.
@@ -367,17 +373,17 @@
       nested tests won't run.
 
 
-0.84  Wed Oct 15 09:06:12 EDT 2008
+0.84 2008-Oct-15 09:06-08:00 EDT
     Other
     * 0.82 accidentally shipped with experimental Mouse dependency.
 
 
-0.82  Tue Oct 14 23:06:56 EDT 2008
+0.82 2008-Oct-14 23:06-08:00 EDT
     Bug Fixes
     - 0.81_01 broke $TODO such that $TODO = '' was considered todo.
 
 
-0.81_02  Tue Sep  9 04:35:40 PDT 2008
+0.81_02 2008-Sep-9 04:35-08:00 PDT
     New Features
     * Test::Builder->reset_outputs() to reset all the output methods back to
       their defaults.
@@ -395,7 +401,7 @@
       doing that, and it's a sensible mistake.  [test-more.googlecode.com 13]
 
 
-0.81_01  Sat Sep  6 15:13:50 PDT 2008
+0.81_01 2008-Sep-6 15:13-08:00 PDT
     New Features
     * Adam Kennedy bribed me to add new_ok().  The price was one DEFCON license key.
       [rt.cpan.org 8891]
@@ -421,23 +427,23 @@
     - die if no_plan is given an argument                    [rt.cpan.org 27429]
 
 
-0.80  Sun Apr  6 17:25:01 CEST 2008
+0.80 2008-Apr-6 17:25-08:00 CEST
     Test fixes
     - Completely disable the utf8 test.  It was causing perl to panic on some OS's.
 
 
-0.79_01  Wed Feb 27 03:04:54 PST 2008
+0.79_01 2008-Feb-27 03:04-08:00 PST
     Bug fixes
     - Let's try the IO layer copying again, this time with the test
       fixed for 5.10.
 
 
-0.78  Wed Feb 27 01:59:09 PST 2008
+0.78 2008-Feb-27 01:59-08:00 PST
     Bug fixes
     * Whoops, the version of Test::Builder::Tester got moved backwards.
 
 
-0.77  Wed Feb 27 01:55:55 PST 2008
+0.77 2008-Feb-27 01:55-08:00 PST
     Bug fixes
     - "use Test::Builder::Module" no longer sets exported_to() or does
       any other importing.
@@ -451,7 +457,7 @@
       rather than write it's own import().
 
 
-0.76_02  Sun Feb 24 13:12:55 PST 2008
+0.76_02 2008-Feb-24 13:12-08:00 PST
     Bug fixes
     * The default test output filehandles will NOT use utf8.
       They will now copy the IO layers from STDOUT and STDERR.
@@ -459,7 +465,7 @@
       warn about wide characters.
 
 
-0.76_01  Sat Feb 23 20:44:32 PST 2008
+0.76_01 2008-Feb-23 20:44-08:00 PST
     Bug fixes
     * Test::Builder no longer uses a __DIE__ handler.  This resolves a number
       of problems with exit codes being swallowed or other module's handlers
@@ -473,7 +479,7 @@
       failures.
 
 
-0.75  Sat Feb 23 19:03:38 PST 2008
+0.75 2008-Feb-23 19:03-08:00 PST
     Incompatibilities
     * The minimum version is now 5.6.0.
 
@@ -490,21 +496,21 @@
     Misc
     - Ran through perlcritic and did some cleaning.
 
-0.74  Thu Nov 29 15:39:57 PST 2007
+0.74 2007-Nov-29 15:39-08:00 PST
     Misc
     - Add abstract and author to the meta information.
 
-0.73_01  Mon Oct 15 20:35:15 EDT 2007
+0.73_01 2007-Oct-15 20:35-08:00 EDT
     Bug fixes
     * Put the use_ok() fix from 0.71 back.
 
-0.72  Wed Sep 19 20:08:07 PDT 2007
+0.72 2007-Sep-19 20:08-08:00 PDT
     Bug unfixes
     * The BEGIN { use_ok } fix for [rt.cpan.org 28345] revealed a small pile of 
       mistakes in CPAN module test suites.  Rolling the fix back to give the
       authors a bit of time to fix their tests.
 
-0.71  Thu Sep 13 20:42:36 PDT 2007
+0.71 2007-Sep-13 20:42-08:00 PDT
     Bug fixes
     - Fixed a problem with BEGIN { use_ok } silently failing when there's no
       plan set.  [rt.cpan.org 28345]  Thanks Adriano Ferreira and Yitzchak.
@@ -526,17 +532,17 @@
     - Fixed the "LICENSE is not a known MakeMaker parameter name" warning
       on older MakeMakers for real this time.
 
-0.70  Thu Mar 15 15:53:05 PDT 2007
+0.70 2007-Mar-15 15:53-08:00 PDT
     Bug Fixes
     * The change to is_fh() in 0.68 broke the case where a reference to
       a tied filehandle is used for perl 5.6 and back.  This made the tests
       puke their guts out.
 
-0.69  Wed Mar 14 06:43:35 PDT 2007
+0.69 2007-Mar-14 06:43-08:00 PDT
     Test fixes
     - Minor filename compatibility fix to t/fail-more.t [rt.cpan.org 25428]
 
-0.68  Tue Mar 13 17:27:26 PDT 2007
+0.68 2007-Mar-13 17:27-08:00 PDT
     Bug fixes
     * If your code has a $SIG{__DIE__} handler in some cases functions like
       use_ok(), require_ok(), can_ok() and isa_ok() could trigger that
@@ -562,18 +568,18 @@
     - We required too old a version of Test::Pod::Coverage.  Need 1.08 and not
       1.00. [rt.cpan.org 25351]
 
-0.67  Mon Jan 22 13:27:40 PST 2007
+0.67 2007-Jan-22 13:27-08:00 PST
     Test fixes
     - t/pod_coverage.t would fail if Test::Pod::Coverage between 1.07 and
       1.00 were installed as it depended on all_modules being exported.
       [rt.cpan.org 24483]
 
-0.66  Sun Dec  3 15:25:45 PST 2006
+0.66 2006-Dec-3 15:25-08:00 PST
     - Restore 5.4.5 compatibility (unobe@cpan.org) [rt.cpan.org 20513]
 
-0.65  Fri Nov 10 10:26:51 CST 2006
+0.65 2006-Nov-10 10:26-08:00 CST
 
-0.64_03  Sun Nov  5 13:09:55 EST 2006
+0.64_03 2006-Nov-5 13:09-08:00 EST
     - Tests will no longer warn when run against an alpha version of
       Test::Harness [rt.cpan.org #20501]
     - Now testing our POD and POD coverage.
@@ -584,10 +590,10 @@
       $this and $that to correspond better to the diagnostic output
       [rt.cpan.org 2655]
 
-0.64_02  Sat Sep  9 12:16:56 EDT 2006
+0.64_02 2006-Sep-9 12:16-08:00 EDT
     - Last release broke Perls earlier than 5.8.
 
-0.64_01  Mon Sep  4 04:40:42 EDT 2006
+0.64_01 2006-Sep-4 04:40-08:00 EDT
     - Small improvement to the docs to avoid user confusion over
       "use Test::More tests => $num_tests" (Thanks Eric Wilhelm)
     - Minor fix for a test failure in is_deeply_fail for some Windows
@@ -603,13 +609,13 @@
       [rt.cpan.org #20639]
     * 5.8.0 threads are no longer supported.  There's too many bugs.
 
-0.64  Sun Jul 16 02:47:29 PDT 2006
+0.64 2006-Jul-16 02:47-08:00 PDT
     * 0.63's change to test_fail() broke backwards compatibility.  They
       have been removed for the time being.  test_pass() went with it.
       This is [rt.cpan.org 11317] and [rt.cpan.org 11319].
     - skip() will now warn if you get the args backwards.
 
-0.63  Sun Jul  9 02:36:36 PDT 2006
+0.63 2006-Jul-9 02:36-08:00 PDT
     * Fixed can_ok() to gracefully handle no class name.
       Submitted by "Pete Krawczyk" <perl@bsod.net>
       Implemented by "Richard Foley" <richard.foley@rfi.net>
@@ -625,7 +631,7 @@
     - Removed the LICENSE field from the Makefile.PL as the release of
       MakeMaker with that feature has been delayed.
 
-0.62  Sat Oct  8 01:25:03 PDT 2005
+0.62 2005-Oct-8 01:25-08:00 PDT
     * Absorbed Test::Builder::Tester.  The last release broke it because its
       screen scraping Test::More and the failure output changed.  By
       distributing them together we ensure TBT won't break again.
@@ -634,14 +640,14 @@
       way.  It simply looks to see if they have the same referent.
       [rt.cpan.org 14746]
 
-0.61  Fri Sep 23 23:26:05 PDT 2005
+0.61 2005-Sep-23 23:26-08:00 PDT
     - create.t was trying to read from a file before it had been closed
       (and thus the changes may not have yet been written).
     * is_deeply() would call stringification methods on non-object strings
       which happened to be the name of a string overloaded class.
       [rt.cpan.org 14675]
 
-0.60_02  Tue Aug  9 00:27:41 PDT 2005
+0.60_02 2005-Aug-9 00:27-08:00 PDT
     * Added Test::Builder::Module.
     - Changed Test::More and Test::Simple to use Test::Builder::Module
     - Minor Win32 testing nit in fail-more.t
@@ -650,7 +656,7 @@
     * Deprecated no_diag() as an option to "use Test::More".  Call the
       Test::Builder method instead.
 
-0.60_01  Sun Jul  3 18:11:58 PDT 2005
+0.60_01 2005-Jul-3 18:11-08:00 PDT
     - Moved the docs around a little to better group all the testing
       functions together. [rt.cpan.org 8388]
     * Added a BAIL_OUT() function to Test::More [rt.cpan.org 8381]
@@ -682,9 +688,9 @@
     - Clarified how is_deeply() compares a bit.
     * Once again working on 5.4.5.
 
-0.60  Tue May  3 14:20:34 PDT 2005
+0.60 2005-May-3 14:20-08:00 PDT
 
-0.59_01  Tue Apr 26 21:51:12 PDT 2005
+0.59_01 2005-Apr-26 21:51-08:00 PDT
     * Test::Builder now has a create() method which allows you to create
       a brand spanking new Test::Builder object.
     * require_ok() was not working for single letter module names.
@@ -703,14 +709,14 @@
     - Files opened by the output methods are now autoflushed.
     - todo() now honors $Level when looking for $TODO.
 
-0.54  Wed Dec 15 04:18:43 EST 2004
+0.54 2004-Dec-15 04:18-08:00 EST
     * $how_many is optional for skip() and todo_skip().  Thanks to 
       Devel::Cover for pointing this out.
     - Removed a user defined function called err() in the tests to placate
       users of older versions of the dor patch before err() was weakend.
       [rt.cpan.org 8734]
 
-0.53_01  Sat Dec 11 19:02:18 EST 2004
+0.53_01 2004-Dec-11 19:02-08:00 EST
     - current_test() can now be set backward.
     - *output() methods now handle tied handles and *FOO{IO} properly.
     - maybe_regex() now handles undef gracefully.
@@ -718,16 +724,16 @@
     - sort_bug.t wasn't checking for threads properly.  Would fail on
       5.6 that had ithreads compiled in. [rt.cpan.org 8765]
 
-0.53  Mon Nov 29 04:43:24 EST 2004
+0.53 2004-Nov-29 04:43-08:00 EST
     - Apparently its possible to have Module::Signature installed without
       it being functional.  Fixed the signature test to account for this.
       (not a real bug)
 
-0.52  Sun Nov 28 21:41:03 EST 2004
+0.52 2004-Nov-28 21:41-08:00 EST
     - plan() now better checks that the given plan is valid. 
       [rt.cpan.org 2597]
 
-0.51_02  Sat Nov 27 01:25:25 EST 2004
+0.51_02 2004-Nov-27 01:25-08:00 EST
     * is_deeply() and all the eq_* functions now handle circular data
       structures.  [rt.cpan.org 7289]
     * require_ok() now handles filepaths in addition to modules.
@@ -736,7 +742,7 @@
       overloaded objects.
     - Mentioning rt.cpan.org for reporting bugs.
 
-0.51_01  Fri Nov 26 02:59:30 EST 2004
+0.51_01 2004-Nov-26 02:59-08:00 EST
     - plan() was accidentally exporting functions [rt.cpan.org 8385]
     * diag @msgs would insert # between arguments. [rt.cpan.org 8392]
     * eq_set() could cause problems under threads due to a weird sort bug
@@ -753,14 +759,14 @@
     - Thanks to Fergal Daly for ferretting out all these long standing 
       is_deeply and eq_* bugs.
 
-0.51  Tue Nov 23 04:51:12 EST 2004
+0.51 2004-Nov-23 04:51-08:00 EST
     - Fixed bug in fail_one.t on Windows (not a real bug).
     - TODO reasons as overloaded objects now won't blow up under threads.
       [Autrijus Tang]
     - skip() in 0.50 tickled yet another bug in threads::shared.  Hacked
       around it.
 
-0.50  Sat Nov 20 00:28:44 EST 2004
+0.50 2004-Nov-20 00:28-08:00 EST
     - Fixed bug in fail-more test on Windows (not a real bug).
       [rt.cpan.org 8022]
     - Change from CVS to SVK.  Hopefully this is the last time I move
@@ -768,11 +774,11 @@
     - Again removing File::Spec dependency (came back in 0.48_02)
     - Change from Aegis back to CVS
 
-0.49  Thu Oct 14 21:58:50 EDT 2004
+0.49 2004-Oct-14 21:58-08:00 EDT
     - t/harness_active.t would fail for frivolous reasons with older
       MakeMakers (test bug) [thanks Bill Moseley for noticing]
 
-0.48_02  Mon Jul 19 02:07:23 EDT 2004
+0.48_02 2004-Jul-19 02:07-08:00 EDT
     * Overloaded objects as names now won't blow up under threads
       [rt.cpan.org 4218 and 4232]
     * Overloaded objects which stringify to undef used as test names
@@ -792,7 +798,7 @@
       is run or failed (ie. "Looks like you failed 1 tests").
       [Darren Chamberlain]
 
-0.48_01  Mon Nov 11 02:36:43 EST 2002
+0.48_01 2002-Nov-11 02:36-08:00 EST
     - Mention Test::Class in Test::More's SEE ALSO
     * use_ok() now DWIM for version checks
     - More problems with ithreads fixed.
@@ -807,7 +813,7 @@
     - David Hand noted that Test::Builder/More exit code behavior was
       not documented.  Only Test::Simple.
 
-0.47  Mon Aug 26 03:54:22 PDT 2002 
+0.47 2002-Aug-26 03:54-08:00 PDT 
     * Tatsuhiko Miyagawa noticed Test::Builder was accidentally storing 
       objects passed into test functions causing problems with tests 
       relying on object destruction.
@@ -816,7 +822,7 @@
       forking.
     * Test::Builder is once again ithread safe.
 
-0.46  Sat Jul 20 19:57:40 EDT 2002
+0.46 2002-Jul-20 19:57-08:00 EDT
     - Noted eq_set() isn't really a set comparison.
     - Test fix, exit codes are broken on MacPerl (bleadperl@16868)
     - Make Test::Simple install itself into the core for >= 5.8
@@ -827,7 +833,7 @@
     - Neil Watkiss fixed a pre-5.8 test glitch with threads.t
     * If the test died before a plan, it would exit with 0 [ID 20020716.013]
 
-0.45  Wed Jun 19 18:41:12 EDT 2002
+0.45 2002-Jun-19 18:41-08:00 EDT
     - Andy Lester made the SKIP & TODO docs a bit clearer.
     - Explicitly disallowing double plans. (RT #553)
     - Kicking up the minimum version of Test::Harness to one that's
@@ -835,7 +841,7 @@
     - Made clear a common problem with use_ok and BEGIN blocks.
     - Arthur Bergman made Test::Builder thread-safe.
 
-0.44  Thu Apr 25 00:27:27 EDT 2002
+0.44 2002-Apr-25 00:27-08:00 EDT
     - names containing newlines no longer produce confusing output
       (from chromatic)
     - chromatic provided a fix so can_ok() honors can() overrides.
@@ -845,14 +851,14 @@
     - Tatsuhiko Miyagawa fixed use_ok() with pragmata on older perls.
     - quieting diag(undef)
 
-0.43  Thu Apr 11 22:55:23 EDT 2002
+0.43 2002-Apr-11 22:55-08:00 EDT
     - Adrian Howard added TB->maybe_regex()
     - Adding Mark Fowler's suggestion to make diag() return
       false.
     - TB->current_test() still not working when no tests were run via
       TB itself.  Fixed by Dave Rolsky.
 
-0.42  Wed Mar  6 15:00:24 EST 2002
+0.42 2002-Mar-6 15:00-08:00 EST
     - Setting Test::Builder->current_test() now works (see what happens
       when you forget to test things?)
     - The change in is()'s undef/'' handling in 0.34 was an API change, 
@@ -860,11 +866,11 @@
     - The apostrophilic jihad attacks!  Philip Newtons patch for
       grammar mistakes in the doc's.
 
-0.41  Mon Dec 17 22:45:20 EST 2001
+0.41 2001-Dec-17 22:45-08:00 EST
     * chromatic added diag()
     - Internal eval()'s sometimes interfering with $@ and $!.  Fixed.
 
-0.40  Fri Dec 14 15:41:39 EST 2001
+0.40 2001-Dec-14 15:41-08:00 EST
     * isa_ok() now accepts unblessed references gracefully
     - Nick Clark found a bug with like() and a regex with % in it.
     - exit.t was hanging on 5.005_03 VMS perl.  Test now skipped.
@@ -878,33 +884,33 @@
     - Piers pointed out that sometimes people override isa().
       isa_ok() now accounts for that.
 
-0.36  Thu Nov 29 14:07:39 EST 2001
+0.36 2001-Nov-29 14:07-08:00 EST
     - Matthias Urlichs found that intermixed prints to STDOUT and test 
       output came out in the wrong order when piped.
 
-0.35  Tue Nov 27 19:57:03 EST 2001
+0.35 2001-Nov-27 19:57-08:00 EST
     - Little glitch in the test suite.  No actual bug.
 
-0.34  Tue Nov 27 15:43:56 EST 2001
+0.34 2001-Nov-27 15:43-08:00 EST
     * **API CHANGE** Empty string no longer matches undef in is() 
       and isnt().
     * Added isnt_eq and isnt_num to Test::Builder.
 
-0.33  Mon Oct 22 21:05:47 EDT 2001
+0.33 2001-Oct-22 21:05-08:00 EDT
     * It's now officially safe to redirect STDOUT and STDERR without
       affecting test output.
     - License and POD cleanup by Autrijus Tang
     - Synched up Test::Tutorial with the wiki version
     - Minor VMS test nit.
 
-0.32  Tue Oct 16 16:52:02 EDT 2001
+0.32 2001-Oct-16 16:52-08:00 EDT
     * Finally added a separate plan() function
     * Adding a name field to isa_ok()
       (Requested by Dave Rolsky)
     - Test::More was using Carp.pm, causing the occasional false positive.
       (Reported by Tatsuhiko Miyagawa)
 
-0.31  Mon Oct  8 19:24:53 EDT 2001
+0.31 2001-Oct-8 19:24-08:00 EDT
     * Added an import option to Test::More
     * Added no_ending and no_header options to Test::Builder
       (Thanks to Dave Rolsky for giving this a swift kick in the ass)
@@ -913,7 +919,7 @@
     - Fixed a minor warning with skip()
       (Thanks to Wolfgang Weisselberg for finding this one)
 
-0.30  Thu Sep 27 22:10:04 EDT 2001
+0.30 2001-Sep-27 22:10-08:00 EDT
     * Added Test::Builder
       (Thanks muchly to chromatic for getting this off the ground!)
     * Diagnostics are back to using STDERR *unless* it's from a todo
@@ -923,7 +929,7 @@
 
 0.20  *UNRELEASED*
 
-0.19  Tue Sep 18 17:48:32 EDT 2001
+0.19 2001-Sep-18 17:48-08:00 EDT
     * Test::Simple and Test::More no longer print their diagnostics
       to STDERR.  It instead goes to STDOUT.
     * TODO tests which fail now print full failure diagnostics.
@@ -933,81 +939,81 @@
     - Added temporary special case for Parrot::Test
     - Now requiring File::Spec for our tests.
 
-0.18  Wed Sep  5 20:35:24 EDT 2001
+0.18 2001-Sep-5 20:35-08:00 EDT
     * ***API CHANGE*** can_ok() only counts as one test
     - can_ok() has better diagnostics
     - Minor POD fixes from mjd
     - adjusting the internal layout to make it easier to put it into
       the core
 
-0.17  Wed Aug 29 20:16:28 EDT 2001
+0.17 2001-Aug-29 20:16-08:00 EDT
     * Added can_ok() and isa_ok() to Test::More
 
-0.16  Tue Aug 28 19:52:11 EDT 2001
+0.16 2001-Aug-28 19:52-08:00 EDT
     * vmsperl foiled my sensible exit codes.  Reverting to a much more
       coarse scheme.
 
-0.15  Tue Aug 28 06:18:35 EDT 2001  *UNRELEASED*
+0.15 2001-Aug-28 06:18-08:00 EDT  *UNRELEASED*
     * Now using sensible exit codes on VMS.
 
-0.14  Wed Aug 22 17:26:28 EDT 2001
+0.14 2001-Aug-22 17:26-08:00 EDT
     * Added a first cut at Test::Tutorial
 
-0.13  Tue Aug 14 15:30:10 EDT 2001
+0.13 2001-Aug-14 15:30-08:00 EDT
     * Added a reason to the skip_all interface
     - Fixed a bug to allow 'use Test::More;' to work.
       (Thanks to Tatsuhiko Miyagawa again)
     - Now always testing backwards compatibility.
 
-0.12  Tue Aug 14 11:02:39 EDT 2001
+0.12 2001-Aug-14 11:02-08:00 EDT
     * Fixed some compatibility bugs with older Perls
       (Thanks to Tatsuhiko Miyagawa)
 
-0.11  Sat Aug 11 23:05:19 EDT 2001
+0.11 2001-Aug-11 23:05-08:00 EDT
     * Will no longer warn about testing undef values
     - Escaping # in test names
     - Ensuring that ok() returns true or false and not undef
     - Minor doc typo in the example
 
-0.10  Tue Jul 31 15:01:11 EDT 2001
+0.10 2001-Jul-31 15:01-08:00 EDT
     * Test::More is now distributed in this tarball.
     * skip and todo tests work!
     * Extended use_ok() so it can import
     - A little internal rejiggering
     - Added a TODO file
 
-0.09  Wed Jun 27 02:55:54 EDT 2001
+0.09 2001-Jun-27 02:55-08:00 EDT
     - VMS fixes
 
-0.08  Fri Jun 15 14:39:50 EDT 2001
+0.08 2001-Jun-15 14:39-08:00 EDT
     - Guarding against $/ and -l
     - Reformatted the way failed tests are reported to make them stand out
       a bit better.
 
-0.07  Tue Jun 12 15:55:54 BST 2001
+0.07 2001-Jun-12 15:55-08:00 BST
     - 'use Test::Simple' by itself no longer causes death
     - Yet more fixes for death in eval
     - Limiting max failures reported via exit code to 254.
 
-0.06  Wed May  9 23:38:17 BST 2001
+0.06 2001-May-9 23:38-08:00 BST
     - Whoops, left a private method in the public docs.
 
-0.05  Wed May  9 20:40:35 BST 2001
+0.05 2001-May-9 20:40-08:00 BST
     - Forgot to include the exit tests.
     - Trouble with exiting properly under 5.005_03 and 5.6.1 fixed
     - Turned off buffering
     * 5.004 new minimum version
     - Now explicitly tested with 5.6.1, 5.6.0, 5.005_03 and 5.004
 
-0.04  Mon Apr  2 11:05:01 BST 2001
+0.04 2001-Apr-2 11:05-08:00 BST
     - Fixed "require Test::Simple" so it doesn't bitch and exit 255
     - Now installable with the CPAN shell.
 
-0.03  Fri Mar 30 08:08:33 BST 2001
+0.03 2001-Mar-30 08:08-08:00 BST
     - ok() now prints on what line and file it failed.
     - eval 'die' was considered abnormal.  Fixed.
 
-0.02  Fri Mar 30 05:12:14 BST 2001      *UNRELEASED*
+0.02 2001-Mar-30 05:12-08:00 BST      *UNRELEASED*
     - exit codes tested
     * exit code on abnormal exit changed to 255 (thanks to Tim Bunce for
       pointing out that Unix can't do negative exit codes)
@@ -1015,6 +1021,6 @@
     - No longer using Test.pm to test this, but still minimum of 5.005
       due to needing $^S.
 
-0.01  Wed Mar 28 06:44:44 BST 2001
+0.01 2001-Mar-28 06:44-08:00 BST
     - First working version released to CPAN
 

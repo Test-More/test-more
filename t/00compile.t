@@ -19,7 +19,7 @@ BEGIN {
 
 chdir "..";
 my $manifest = "MANIFEST";
-open(my $manifest_fh, "<", $manifest) or die "Can't open $manifest: $!";
+open(my $manifest_fh, "<", $manifest) or plan(skip_all => "Can't open $manifest: $!");
 my @modules = map  { m{^lib/(\S+)}; $1 } 
               grep { m{^lib/Test/\S*\.pm} } 
               grep { !m{/t/} } <$manifest_fh>;
