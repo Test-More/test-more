@@ -73,7 +73,7 @@ Examples are C<ok()>, and C<is()>.
 
 =head1 SYNOPSIS
 
-    use Test2 qw/context/;
+    use Test2::API qw/context/;
     use Test2::Event::Ok;
 
     my $ctx = context();

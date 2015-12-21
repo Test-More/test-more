@@ -139,15 +139,6 @@ possible things should not be global.
 
 All exports are optional, you must specify ones you want.
 
-=head2 MAIN API
-
-These are the primary exports that you are likely to use when writing tools or
-plugins.
-
-=over 4
-
-=back
-
 =head2 STATUS AND INITIALIZATION STATE
 
 These provide access to internal state and object instances.

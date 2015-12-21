@@ -1,7 +1,7 @@
 use Scalar::Util qw/blessed/;
 
 use Test2::Util qw/try/;
-use Test2 qw/context run_subtest/;
+use Test2::API qw/context run_subtest/;
 
 use Test2::Hub::Interceptor();
 use Test2::Hub::Interceptor::Terminator();

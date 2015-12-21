@@ -3,7 +3,7 @@ use warnings;
 
 BEGIN { require "t/tools.pl" };
 
-use Test2 qw/context intercept/;
+use Test2::API qw/context intercept/;
 
 my $error = exception { context(); 1 };
 my $exception = "context() called, but return value is ignored at " . __FILE__ . ' line ' . (__LINE__ - 1);

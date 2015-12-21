@@ -4,7 +4,7 @@ use warnings;
 use Test2::IPC::Driver::Files;
 
 BEGIN { require "t/tools.pl" };
-use Test2 qw/context/;
+use Test2::API qw/context/;
 
 Test2::IPC::Driver::Files->import();
 Test2::IPC::Driver::Files->import();

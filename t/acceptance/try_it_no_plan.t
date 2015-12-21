@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test2 qw/context/;
+use Test2::API qw/context/;
 
 sub plan {
     my $ctx = context();

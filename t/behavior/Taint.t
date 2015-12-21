@@ -1,5 +1,5 @@
 #!/usr/bin/env perl -T
-use Test2 qw/context/;
+use Test2::API qw/context/;
 
 sub ok($;$@) {
     my ($bool, $name) = @_;

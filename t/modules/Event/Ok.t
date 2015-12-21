@@ -7,7 +7,7 @@ use Test2::Context::Trace;
 use Test2::Event::Ok;
 use Test2::Event::Diag;
 
-use Test2 qw/context/;
+use Test2::API qw/context/;
 
 my $trace;
 sub before_each {

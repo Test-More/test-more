@@ -79,7 +79,7 @@ or a subtext completes.
 
 =head1 SYNOPSIS
 
-    use Test2 qw/context/;
+    use Test2::API qw/context/;
     use Test2::Event::Plan;
 
     my $ctx = context();

@@ -319,7 +319,7 @@ sending events to the correct L<Test2::Hub> instance.
 In general you will not be creating contexts directly. To obtain a context you
 should always use C<context()> which is exported by the L<Test2> module.
 
-    use Test2 qw/context/;
+    use Test2::API qw/context/;
 
     sub my_ok {
         my ($bool, $name) = @_;

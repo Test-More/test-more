@@ -4,7 +4,7 @@ use warnings;
 use Test2::IPC qw/cull/;
 
 BEGIN { require "t/tools.pl" };
-use Test2 qw/context/;
+use Test2::API qw/context/;
 
 is_deeply(
     [Test2::Global::test2_ipc_drivers],

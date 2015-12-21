@@ -4,7 +4,7 @@ use warnings;
 use Test2::IPC;
 BEGIN { require "t/tools.pl" };
 
-use Test2 qw/context intercept/;
+use Test2::API qw/context intercept/;
 
 ok(__PACKAGE__->can($_), "imported '$_\()'") for qw{
     ok
