@@ -157,11 +157,11 @@ pop @$events;
 # Test hooks
 
 my @hooks;
-$hub =  Test2::Global->stack->top;
+$hub =  Test2::Global::test2_stack()->top;
 my $ref1 = $hub->add_context_init(sub { push @hooks => 'hub_init' });
 my $ref2 = $hub->add_context_release(sub { push @hooks => 'hub_release' });
-Test2::Global->add_context_init_callback(sub { push @hooks => 'global_init' });
-Test2::Global->add_context_release_callback(sub { push @hooks => 'global_release' });
+Test2::Global::test2_add_callback_context_init(sub { push @hooks => 'global_init' });
+Test2::Global::test2_add_callback_context_release(sub { push @hooks => 'global_release' });
 
 sub {
     push @hooks => 'start';
@@ -185,7 +185,7 @@ sub {
 
 $hub->remove_context_init($ref1);
 $hub->remove_context_release($ref2);
-my $inst = Test2::Global->_internal_use_only_private_instance;
+my $inst = Test2::Global::_internal_use_only_private_instance;
 @{$inst->context_init_callbacks} = ();
 @{$inst->context_release_callbacks} = ();
 
@@ -223,7 +223,7 @@ is_deeply(
     local $@ = 'testing error';
     my $one = Test2::Context->new(
         trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
-        hub => Test2::Global->stack->top,
+        hub => Test2::Global::test2_stack()->top,
     );
     is($one->_err, 'testing error', "Copied \$@");
     is($one->_depth, 0, "default depth");
@@ -249,7 +249,7 @@ is_deeply(
     my $trace = Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
     like(exception { Test2::Context->new(trace => $trace) }, qr/The 'hub' attribute is required/, "need to have hub");
 
-    my $hub = Test2::Global->stack->top;
+    my $hub = Test2::Global::test2_stack()->top;
     my $ctx = Test2::Context->new(trace => $trace, hub => $hub);
     is($ctx->{_depth}, 0, "depth set to 0 when not defined.");
 

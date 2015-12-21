@@ -92,7 +92,7 @@ tests follow_ups => sub {
 };
 
 tests IPC => sub {
-    my ($driver) = Test2::Global->ipc_drivers;
+    my ($driver) = Test2::Global::test2_ipc_drivers;
     is($driver, 'Test2::IPC::Driver::Files', "Default Driver");
     my $ipc = $driver->new;
     my $hub = Test2::Hub->new(

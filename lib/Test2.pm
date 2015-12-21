@@ -24,7 +24,7 @@ use base 'Exporter';
 
 # Private, not package vars
 # It is safe to cache these.
-my $INST     = Test2::Global->_internal_use_only_private_instance;
+my $INST     = Test2::Global::_internal_use_only_private_instance;
 my $ON_INIT  = $INST->context_init_callbacks;
 my $CONTEXTS = $INST->contexts;
 my $STACK    = $INST->stack;
@@ -152,7 +152,7 @@ sub intercept(&) {
     my $ctx = context();
 
     my $ipc;
-    if (my $global_ipc = Test2::Global->ipc) {
+    if (my $global_ipc = Test2::Global::test2_ipc()) {
         my $driver = blessed($global_ipc);
         $ipc = $driver->new;
     }

@@ -11,7 +11,7 @@ Test2::IPC::Driver::Files->import();
 Test2::IPC::Driver::Files->import();
 
 is_deeply(
-    [Test2::Global->ipc_drivers],
+    [Test2::Global::test2_ipc_drivers],
     ['Test2::IPC::Driver::Files'],
     "Driver not added multiple times"
 );

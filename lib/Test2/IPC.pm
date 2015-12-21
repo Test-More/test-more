@@ -8,7 +8,7 @@ our @EXPORT_OK = qw/cull/;
 use base 'Exporter';
 
 die __PACKAGE__ . " was loaded too late, IPC will not be enabled!"
-    if Test2::Global->init_done && !Test2::Global->ipc;
+    if Test2::Global::test2_init_done() && !Test2::Global::test2_ipc();
 
 sub cull {
     my $ctx = context();

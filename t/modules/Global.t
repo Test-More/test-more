@@ -5,8 +5,8 @@ use Test2::Global;
 
 my ($LOADED, $INIT);
 BEGIN {
-    $INIT   = Test2::Global->init_done;
-    $LOADED = Test2::Global->load_done;
+    $INIT   = Test2::Global::test2_init_done;
+    $LOADED = Test2::Global::test2_load_done;
 };
 
 use Test2::IPC;
@@ -16,15 +16,35 @@ my $CLASS = 'Test2::Global';
 
 # Ensure we do not break backcompat later by removing anything
 ok(Test2::Global->can($_), "$_ method is present") for qw{
-    pid tid stack ipc formatter init_done load_done add_ipc_driver ipc_drivers
-    enable_ipc_polling disable_ipc_polling add_context_init_callback
-    add_context_release_callback add_post_load_callback add_exit_callback
-    set_formatter no_wait
+    test2_init_done
+    test2_load_done
+
+    test2_pid
+    test2_tid
+    test2_stack
+    test2_no_wait
+
+    test2_add_callback_context_init
+    test2_add_callback_context_release
+    test2_add_callback_exit
+    test2_add_callback_post_load
+
+    test2_ipc
+    test2_ipc_drivers
+    test2_ipc_add_driver
+    test2_ipc_polling
+    test2_ipc_disable_polling
+    test2_ipc_enable_polling
+
+    test2_formatter
+    test2_formatters
+    test2_formatter_add
+    test2_formatter_set
 };
 
 ok(!$LOADED, "Was not load_done right away");
 ok(!$INIT, "Init was not done right away");
-ok(Test2::Global->load_done, "We loaded it");
+ok(Test2::Global::test2_load_done, "We loaded it");
 
 # Note: This is a check that stuff happens in an END block.
 {
@@ -40,7 +60,7 @@ ok(Test2::Global->load_done, "We loaded it");
     }
 
     our $kill1 = bless {fixed => 0, name => "Custom Hook"}, 'FOLLOW';
-    Test2::Global->add_exit_callback(
+    Test2::Global::test2_add_callback_exit(
         sub {
             print "# Running END hook\n";
             $kill1->{fixed} = 1;
@@ -57,61 +77,61 @@ ok(Test2::Global->load_done, "We loaded it");
     };
 }
 
-ok($CLASS->init_done, "init is done.");
-ok($CLASS->load_done, "Test2 is finished loading");
+ok($CLASS->can('test2_init_done')->(), "init is done.");
+ok($CLASS->can('test2_load_done')->(), "Test2 is finished loading");
 
-is($CLASS->pid, $$, "got pid");
-is($CLASS->tid, get_tid(), "got tid");
+is($CLASS->can('test2_pid')->(), $$, "got pid");
+is($CLASS->can('test2_tid')->(), get_tid(), "got tid");
 
-ok($CLASS->stack, 'got stack');
-is($CLASS->stack, $CLASS->stack, "always get the same stack");
+ok($CLASS->can('test2_stack')->(), 'got stack');
+is($CLASS->can('test2_stack')->(), $CLASS->can('test2_stack')->(), "always get the same stack");
 
-ok($CLASS->ipc, 'got ipc');
-is($CLASS->ipc, $CLASS->ipc, "always get the same IPC");
+ok($CLASS->can('test2_ipc')->(), 'got ipc');
+is($CLASS->can('test2_ipc')->(), $CLASS->can('test2_ipc')->(), "always get the same IPC");
 
-is_deeply([$CLASS->ipc_drivers], [qw/Test2::IPC::Driver::Files/], "Got driver list");
+is_deeply([$CLASS->can('test2_ipc_drivers')->()], [qw/Test2::IPC::Driver::Files/], "Got driver list");
 
 # Verify it reports to the correct file/line, there was some trouble with this...
 my $file = __FILE__;
 my $line = __LINE__ + 1;
-my $warnings = warnings { $CLASS->add_ipc_driver('fake') };
+my $warnings = warnings { $CLASS->can('test2_ipc_add_driver')->('fake') };
 like(
     $warnings->[0],
     qr{^IPC driver fake loaded too late to be used as the global ipc driver at \Q$file\E line $line},
     "got warning about adding driver too late"
 );
 
-is_deeply([$CLASS->ipc_drivers], [qw/fake Test2::IPC::Driver::Files/], "Got updated list");
+is_deeply([$CLASS->can('test2_ipc_drivers')->()], [qw/fake Test2::IPC::Driver::Files/], "Got updated list");
 
-ok($CLASS->ipc_polling, "Polling is on");
-$CLASS->disable_ipc_polling;
-ok(!$CLASS->ipc_polling, "Polling is off");
-$CLASS->enable_ipc_polling;
-ok($CLASS->ipc_polling, "Polling is on");
+ok($CLASS->can('test2_ipc_polling')->(), "Polling is on");
+$CLASS->can('test2_ipc_disable_polling')->();
+ok(!$CLASS->can('test2_ipc_polling')->(), "Polling is off");
+$CLASS->can('test2_ipc_enable_polling')->();
+ok($CLASS->can('test2_ipc_polling')->(), "Polling is on");
 
-ok($CLASS->formatter, "Got a formatter");
-is($CLASS->formatter, $CLASS->formatter, "always get the same Formatter (class name)");
+ok($CLASS->can('test2_formatter')->(), "Got a formatter");
+is($CLASS->can('test2_formatter')->(), $CLASS->can('test2_formatter')->(), "always get the same Formatter (class name)");
 
 my $ran = 0;
-$CLASS->add_post_load_callback(sub { $ran++ });
+$CLASS->can('test2_add_callback_post_load')->(sub { $ran++ });
 is($ran, 1, "ran the post-load");
 
 like(
-    exception { $CLASS->set_formatter() },
+    exception { $CLASS->can('test2_formatter_set')->() },
     qr/No formatter specified/,
-    "set_formatter requires an argument"
+    "formatter_set requires an argument"
 );
 
 like(
-    exception { $CLASS->set_formatter('fake') },
+    exception { $CLASS->can('test2_formatter_set')->('fake') },
     qr/Global Formatter already set/,
-    "set_formatter doesn't work after initialization",
+    "formatter_set doesn't work after initialization",
 );
 
-ok(!$CLASS->no_wait, "no_wait is not set");
-$CLASS->no_wait(1);
-ok($CLASS->no_wait, "no_wait is set");
-$CLASS->no_wait(undef);
-ok(!$CLASS->no_wait, "no_wait is not set");
+ok(!$CLASS->can('test2_no_wait')->(), "no_wait is not set");
+$CLASS->can('test2_no_wait')->(1);
+ok($CLASS->can('test2_no_wait')->(), "no_wait is set");
+$CLASS->can('test2_no_wait')->(undef);
+ok(!$CLASS->can('test2_no_wait')->(), "no_wait is not set");
 
 done_testing;

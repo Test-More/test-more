@@ -26,7 +26,7 @@ use Test2::Util::HashBase qw{
 # It is safe to cache these.
 my ($ON_RELEASE, $CONTEXTS);
 {
-    my $INST = Test2::Global->_internal_use_only_private_instance;
+    my $INST = Test2::Global::_internal_use_only_private_instance;
     $ON_RELEASE  = $INST->context_release_callbacks;
     $CONTEXTS    = $INST->contexts;
 }
@@ -533,7 +533,7 @@ requests a context, just when a new one is created.
 This is how you add a global init callback. Global callbacks happen for every
 context for any hub or stack.
 
-    Test2::Global->add_context_init_callback(sub {
+    Test2::Global::test2_add_callback_context_init(sub {
         my $ctx = shift;
         ...
     });
@@ -570,7 +570,7 @@ called every time C<< $ctx->release >> is called.
 This is how you add a global release callback. Global callbacks happen for every
 context for any hub or stack.
 
-    Test2::Global->add_context_release_callback(sub {
+    Test2::Global::test2_add_callback_context_release(sub {
         my $ctx = shift;
         ...
     });

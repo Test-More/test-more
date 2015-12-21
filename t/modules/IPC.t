@@ -7,7 +7,7 @@ BEGIN { require "t/tools.pl" };
 use Test2 qw/context/;
 
 is_deeply(
-    [Test2::Global->ipc_drivers],
+    [Test2::Global::test2_ipc_drivers],
     ['Test2::IPC::Driver::Files'],
     "Default driver"
 );

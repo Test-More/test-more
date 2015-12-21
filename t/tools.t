@@ -185,7 +185,7 @@ like(
 );
 
 $events = intercept {
-    Test2::Global->stack->top->set_no_ending(0);
+    Test2::Global::test2_stack->top->set_no_ending(0);
     ok(1);
 };
 
@@ -194,7 +194,7 @@ ok($events->[0]->isa('Test2::Event::Ok'), "got ok");
 ok($events->[1]->isa('Test2::Event::Plan'), "finalize was called");
 
 $events = intercept {
-    Test2::Global->stack->top->set_no_ending(0);
+    Test2::Global::test2_stack->top->set_no_ending(0);
     ok(1);
     done_testing;
 };
