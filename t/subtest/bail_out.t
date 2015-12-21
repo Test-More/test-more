@@ -60,4 +60,4 @@ OUT
 
 $Test->is_eq( $Exit_Code, 255 );
 
-Test2::Global->stack->top->set_no_ending(1);
+Test2::Global::test2_stack()->top->set_no_ending(1);

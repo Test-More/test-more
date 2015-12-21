@@ -20,17 +20,17 @@ use Scalar::Util qw/blessed reftype weaken/;
 
 use Test2::Util qw/USE_THREADS try/;
 # Make Test::Builder thread-safe for ithreads.
+use Test2::Global;
 BEGIN {
     if (USE_THREADS) {
         require Test2::IPC;
         require Test2::IPC::Driver::Files;
         Test2::IPC::Driver::Files->import;
-        Test2::Global->enable_ipc_polling;
+        Test2::Global::test2_ipc_enable_polling();
     }
 }
 
-use Test2 qw/context release/;
-use Test2::Global;
+use Test2::API qw/context release/;
 use Test2::Event::Subtest;
 use Test2::Hub::Subtest;
 use Test2::Formatter::TAP();
@@ -38,11 +38,11 @@ use Test2::Formatter::TAP();
 our $Test = Test::Builder->new;
 our $Level;
 
-Test2::Global->add_exit_callback(sub {
+Test2::Global::test2_add_callback_exit(sub {
     $Test->_ending(@_);
 });
 
-Test2::Global->ipc->set_no_fatal(1) if USE_THREADS;
+Test2::Global::test2_ipc()->set_no_fatal(1) if USE_THREADS;
 
 sub _add_ts_hooks {
     my $self = shift;
@@ -86,13 +86,13 @@ sub create {
 
     my $self = bless {}, $class;
     if ($params{singleton}) {
-        $self->{Stack} = Test2::Global->stack;
+        $self->{Stack} = Test2::Global::test2_stack();
     }
     else {
         $self->{Stack} = Test2::Context::Stack->new;
         $self->{Stack}->new_hub(
             formatter => Test2::Formatter::TAP->new,
-            ipc       => Test2::Global->ipc,
+            ipc       => Test2::Global::test2_ipc(),
         );
     }
     $self->reset;

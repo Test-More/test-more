@@ -2,7 +2,7 @@ use strict;
 use warnings;
 
 use Test::More;
-use Test2 qw/intercept/;
+use Test2::API qw/intercept/;
 
 my $res = intercept {
     subtest foo => sub {

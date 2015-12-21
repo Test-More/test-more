@@ -1,4 +1,4 @@
-use Test2 qw/intercept/;
+use Test2::API qw/intercept/;
 use Test::More;
 
 my $TEST = Test::Builder->new();
