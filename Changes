@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Rename Test2.pm to Test2/API.pm.
+    - Turn Global.pm into and exporter.
+
 0.000009  2015-12-21 10:13:18-08:00 America/Los_Angeles
 
     - Fix typo in Test2::Event
