@@ -16,7 +16,7 @@ use Test2::Util qw/get_tid/;
 our $VERSION = '0.000007';
 
 our @EXPORT_OK = qw{
-    context
+    context release
     intercept
     run_subtest
 };
@@ -139,6 +139,11 @@ Removing the old context and creating a new one...
     my $hid = $ctx->{hub}->hid;
     delete $CONTEXTS->{$hid};
     $ctx->release;
+}
+
+sub release($;$) {
+    $_[0]->release;
+    return $_[1];
 }
 
 sub intercept(&) {
@@ -467,6 +472,43 @@ then all will be called in reverse order when the context is finally released.
     }
 
 =back
+
+=head2 release($;$)
+
+Usage:
+
+=over 4
+
+=item release $ctx;
+
+=item release $ctx, ...;
+
+=back
+
+This is intended as a shortcut that lets you release your context and return a
+value in one statement. This function will get your context, and an optional
+return value. It will release your context, then return your value. Scalar
+context is always assumed.
+
+    sub tool {
+        my $ctx = context();
+        ...
+
+        return release $ctx, 1;
+    }
+
+This tool is most useful when you want to return the value you get from calling
+a function that needs to see the current context:
+
+    my $ctx = context();
+    my $out = some_tool(...);
+    $ctx->release;
+    return $out;
+
+We can combine the last 3 lines of the above like so:
+
+    my $ctx = context();
+    release $ctx, some_tool(...);
 
 =head2 intercept(&)
 
