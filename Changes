@@ -1,3 +1,44 @@
+1.302012_004 Mon Nov 16 07:45:11:00 PST 2015
+    * Fix #600 - done_testing($count)
+
+1.302012_003 Tue Oct 27 00:02:44:00 PST 2015
+    * Fix typo that called wrong 'try'
+
+1.302012_002 Fri Oct 02 21:57:19:00 PST 2015
+    * Add version eval to several modules (#605)
+
+1.302012_001 Thu Oct 01 15:47:39:00 PST 2015
+    * Support for Test::Stream 1.302012
+
+1.302010_001 Tue Sep 29 21:18:38:00 PST 2015
+    * Support for Test::Stream 1.302010
+    * Some upstream package names changed
+    * Test::Stream's interface changed, tests needed to change too.
+
+1.302007_004 Mon Jul 27 21:13:39:00 PST 2015
+    * Work around perlbug 125702
+
+1.302007_003 Mon Jul 24 08:34:46:00 PST 2015
+    * Remove singleton from closure
+
+1.302007_002 Sat Jul 18 17:38:26:00 PST 2015
+    * Fix subtest + Test::Stream::Tester
+
+1.302007_001 Wed Jun 24 08:06:00:00 PST 2015
+    * Tests no longer copy thread/fork checks
+    * Bump minimum Test::Stream version
+
+1.302004_001 Wed Jun 17 08:33:00:00 PST 2015
+    * Update for newer Test-Stream with XS support
+    * Use 'fudge' in Test::Stream instead of doing level adjustments here
+    * Fix minor POD encoding issue #593
+    * Some performance enhancements in T::B->ok
+
+1.302003_001 Sat Jan 06 21:52:00:00 PST 2015
+    * Convert internals to use Test-Stream
+    * Optimizations for performance
+    * Note this is a completely new branch off of legacy/master, not taken from the old stream branches
+
 1.001014     Tue Dec 28 08:31:00:00 PST 2014
     * Write a test to ensure this changes file gets updated
     * Update changes file for 1.001013
