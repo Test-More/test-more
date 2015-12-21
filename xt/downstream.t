@@ -16,6 +16,11 @@ perlbrew uninstall TestMore$$ 1>/dev/null 2>/dev/null || true
 perlbrew install --thread --notest -j9 --as TestMore$$ perl-5.20.1
 EOT
 
+ok(run_string(<<"EOT"), "Installed Test::Stream") || exit 1;
+cd ../Test-Stream
+perlbrew exec --with TestMore$$ cpan .
+EOT
+
 ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
 perlbrew exec --with TestMore$$ cpan .
 EOT
@@ -24,16 +29,37 @@ ok(run_string(<<"EOT"), "Installed cpanm") || exit 1;
 perlbrew exec --with TestMore$$ cpan App::cpanminus
 EOT
 
-ok(run_string(<<"EOT"), "Installed downstream modules with no issues") || exit 1;
-perlbrew exec --with TestMore$$ cpanm `cat xt/downstream_dists.list`
-EOT
+my @BAD;
+open(my $list, '<', 'xt/downstream_dists.list') || die "Could not open downstream list";
+while(my $name = <$list>) {
+    chomp($name);
+    my $ok = 0;
+    for (1 .. 2) {
+        $ok = run_string("perlbrew exec --with TestMore$$ -- cpanm $name");
+        last if $ok;
+        diag "'$name' did not install properly, trying 1 more time.";
+    }
 
+    ok($ok, "Installed downstream module '$name'") || push @BAD => $name;
+}
+close($list);
 
-if (-e 'xt/downstream_dists.list.known_broken') {
-    local $TODO = "These are known to be broken";
-    ok(run_string(<<"    EOT"), "Known broken dists");
-    perlbrew exec --with TestMore$$ cpanm `cat xt/downstream_dists.list.known_broken`
-    EOT
+TODO: {
+    local $TODO = "known to be broken";
+
+    open($list, '<', 'xt/downstream_dists.list.known_broken') || die "Could not open downstream list";
+    while(my $name = <$list>) {
+        chomp($name);
+        my $ok = 0;
+        for (1 .. 2) {
+            $ok = run_string("perlbrew exec --with TestMore$$ cpanm $name");
+            last if $ok;
+            diag "'$name' did not install properly, trying 1 more time.";
+        }
+
+        ok($ok, "Installed downstream module '$name'");
+    }
+    close($list);
 }
 
 ok(run_string(<<"EOT"), "Cleanup up the perlbrew");
@@ -55,7 +81,20 @@ sub run_string {
         'TEST_VERBOSE',
     );
 
-    return !system($exec);
+    my $pid = fork;
+    die "Failed to fork!" unless defined $pid;
+    exec $exec unless $pid;
+
+    die "Something went wrong!" unless $pid;
+
+    my $got = waitpid($pid, 0);
+    my $out = !$?;
+    die "waitpid oddity, got $got, expected $pid" unless $got == $pid;
+    return $out;
 }
 
 done_testing;
+
+if (@BAD) {
+    print "Bad:\n",join( "\n", @BAD ), "\n";
+}

@@ -1,4 +1,5 @@
 #!perl -w
+use Test2::Util qw/CAN_THREAD/;
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {
@@ -14,7 +15,7 @@ chdir 't';
 BEGIN {
     # There was a bug with overloaded objects and threads.
     # See rt.cpan.org 4218
-    eval { require threads; 'threads'->import; 1; };
+    eval { require threads; 'threads'->import; 1; } if CAN_THREAD;
 }
 
 use Test::More tests => 5;

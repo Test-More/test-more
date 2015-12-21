@@ -1,23 +1,20 @@
 #!/usr/bin/perl -w
 use strict;
 use warnings;
-use Config;
+
+use Test2::Util qw/CAN_FORK/;
+BEGIN {
+    unless(CAN_FORK) {
+        require Test::More;
+        Test::More->import(skip_all => "fork is not supported");
+    }
+}
+
 use IO::Pipe;
 use Test::Builder;
 use Test::More;
 
-my $Can_Fork = $Config{d_fork} ||
-               (($^O eq 'MSWin32' || $^O eq 'NetWare') and
-                $Config{useithreads} and
-                $Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/
-               );
-
-if( !$Can_Fork ) {
-    plan 'skip_all' => "This system cannot fork";
-}
-else {
-    plan 'tests' => 1;
-}
+plan 'tests' => 1;
 
 subtest 'fork within subtest' => sub {
     plan tests => 2;
@@ -39,11 +36,11 @@ subtest 'fork within subtest' => sub {
 
         # Force all T::B output into the pipe, for the parent
         # builder as well as the current subtest builder.
-        no warnings 'redefine';
-        *Test::Builder::output         = sub { $pipe };
-        *Test::Builder::failure_output = sub { $pipe };
-        *Test::Builder::todo_output    = sub { $pipe };
-        
+        my $tb = Test::Builder->new;
+        $tb->output($pipe);
+        $tb->failure_output($pipe);
+        $tb->todo_output($pipe);
+
         diag 'Child Done';
         exit 0;
     }

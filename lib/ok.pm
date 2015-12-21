@@ -1,5 +1,5 @@
 package ok;
-$ok::VERSION = '1.302001_001';
+$ok::VERSION = '1.302012_004';
 
 use strict;
 use Test::More ();
@@ -20,9 +20,7 @@ sub import {
 
 __END__
 
-=pod
-
-=encoding utf8
+=encoding UTF-8
 
 =head1 NAME
 

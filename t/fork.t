@@ -1,4 +1,14 @@
 #!/usr/bin/perl -w
+use strict;
+use warnings;
+
+use Test2::Util qw/CAN_FORK/;
+BEGIN {
+    unless(CAN_FORK) {
+        require Test::More;
+        Test::More->import(skip_all => "fork is not supported");
+    }
+}
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {
@@ -8,20 +18,7 @@ BEGIN {
 }
 
 use Test::More;
-use Config;
-
-my $Can_Fork = $Config{d_fork} ||
-               (($^O eq 'MSWin32' || $^O eq 'NetWare') and
-                $Config{useithreads} and 
-                $Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/
-               );
-
-if( !$Can_Fork ) {
-    plan skip_all => "This system cannot fork";
-}
-else {
-    plan tests => 1;
-}
+plan tests => 1;
 
 if( fork ) { # parent
     pass("Only the parent should process the ending, not the child");

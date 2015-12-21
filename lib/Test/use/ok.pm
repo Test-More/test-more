@@ -1,6 +1,8 @@
 package Test::use::ok;
 use 5.005;
-$Test::use::ok::VERSION = '1.302001_001';
+
+our $VERSION = '1.302012_004';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 __END__
 

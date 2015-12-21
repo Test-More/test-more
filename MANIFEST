@@ -20,6 +20,9 @@ lib/Test/use/ok.pm
 Makefile.PL
 MANIFEST			This list of files
 MANIFEST.SKIP
+profiling/compile.pl
+profiling/long-run.pl
+profiling/run.pl
 README
 t/00compile.t
 t/00test_harness_check.t
@@ -31,6 +34,7 @@ t/bail_out.t
 t/BEGIN_require_ok.t
 t/BEGIN_use_ok.t
 t/buffer.t
+t/Bugs/600.t
 t/Builder/Builder.t
 t/Builder/carp.t
 t/Builder/create.t
@@ -63,7 +67,6 @@ t/capture.t
 t/check_tests.t
 t/circular_data.t
 t/cmp_ok.t
-t/dependents.t
 t/depth.t
 t/diag.t
 t/died.t
@@ -130,12 +133,12 @@ t/Simple/load.t
 t/skip.t
 t/skipall.t
 t/SmallTest.pm
+t/Stream/Subtest.t
 t/subtest/args.t
 t/subtest/bail_out.t
 t/subtest/basic.t
 t/subtest/die.t
 t/subtest/do.t
-t/subtest/exceptions.t
 t/subtest/for_do_t.test
 t/subtest/fork.t
 t/subtest/implicit_done.t
@@ -165,8 +168,9 @@ t/use_ok.t
 t/useing.t
 t/utf8.t
 t/versions.t
-t/xt/dependents.t
 t/xxx-changes_updated.t
+t/zzz-check-breaks.t
 TODO
 xt/downstream.t
 xt/downstream_dists.list
+xt/downstream_dists.list.known_broken

@@ -1,7 +1,8 @@
 package Test::Builder::Tester;
 
 use strict;
-our $VERSION = "1.302001_001";
+our $VERSION = '1.302012_004';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test::Builder 0.99;
 use Symbol;
@@ -109,6 +110,8 @@ my $original_harness_env;
 
 # function that starts testing and redirects the filehandles for now
 sub _start_testing {
+    # Hack for things that conditioned on Test-Stream being loaded
+    $INC{'Test/Stream.pm'} ||= 'fake' if $INC{'Test/Moose/More.pm'};
     # even if we're running under Test::Harness pretend we're not
     # for now.  This needed so Test::Builder doesn't add extra spaces
     $original_harness_env = $ENV{HARNESS_ACTIVE} || 0;
@@ -304,6 +307,8 @@ will function normally and cause success/errors for L<Test::Harness>.
 =cut
 
 sub test_test {
+    # END the hack
+    delete $INC{'Test/Stream.pm'} if $INC{'Test/Stream.pm'} && $INC{'Test/Stream.pm'} eq 'fake';
     # decode the arguments as described in the pod
     my $mess;
     my %args;
@@ -487,8 +492,9 @@ sub expect {
 sub _account_for_subtest {
     my( $self, $check ) = @_;
 
-    # Since we ship with Test::Builder, calling a private method is safe...ish.
-    return ref($check) ? $check : $t->_indent . $check;
+    my $hub = $t->{Stack}->top;
+    my $nesting = $hub->isa('Test2::Hub::Subtest') ? $hub->nested : 0;
+    return ref($check) ? $check : ('    ' x $nesting) . $check;
 }
 
 sub _translate_Failed_check {
@@ -561,6 +567,33 @@ sub complaint {
             $got    = $start . $gotend;
             $wanted = $start . $wantedend;
         }
+    }
+
+    my @got = split "\n", $got;
+    my @wanted = split "\n", $wanted;
+
+    $got = "";
+    $wanted = "";
+
+    while (@got || @wanted) {
+        my $g = shift @got    || "";
+        my $w = shift @wanted || "";
+        if ($g ne $w) {
+            if($g =~ s/(\s+)$/    |> /g) {
+                $g .= ($_ eq ' ' ? '_' : '\t') for split '', $1;
+            }
+            if($w =~ s/(\s+)$/    |> /g) {
+                $w .= ($_ eq ' ' ? '_' : '\t') for split '', $1;
+            }
+            $g = "> $g";
+            $w = "> $w";
+        }
+        else {
+            $g = "  $g";
+            $w = "  $w";
+        }
+        $got = $got ? "$got\n$g" : $g;
+        $wanted = $wanted ? "$wanted\n$w" : $w;
     }
 
     return "$type is:\n" . "$got\nnot:\n$wanted\nas expected";

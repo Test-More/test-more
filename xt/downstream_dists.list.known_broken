@@ -1,0 +1,9 @@
+Test::Aggregate
+Test::Wrapper
+Test::FileReferenced
+Test::DBIx::Class::Schema
+Test::ParallelSubtest
+Test::Pretty
+Test::Builder:Clutch
+Test::Kit
+Test::More::Prefix

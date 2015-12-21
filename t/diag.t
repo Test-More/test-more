@@ -1,4 +1,16 @@
 #!perl -w
+use strict;
+
+use Test2::Util qw/CAN_THREAD/;
+
+# Turn on threads here, if available, since this test tends to find
+# lots of threading bugs.
+BEGIN {
+    if (CAN_THREAD) {
+        require threads;
+        threads->import;
+    }
+}
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {
@@ -9,20 +21,6 @@ BEGIN {
         unshift @INC, 't/lib';
     }
 }
-
-
-# Turn on threads here, if available, since this test tends to find
-# lots of threading bugs.
-use Config;
-BEGIN {
-    if( $] >= 5.008001 && $Config{useithreads} ) {
-        require threads;
-        'threads'->import;
-    }
-}
-
-
-use strict;
 
 use Test::Builder::NoOutput;
 use Test::More tests => 7;
