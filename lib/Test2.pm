@@ -13,7 +13,7 @@ use Carp qw/croak confess longmess/;
 use Scalar::Util qw/weaken blessed/;
 use Test2::Util qw/get_tid/;
 
-our $VERSION = '0.000008';
+our $VERSION = '0.000009';
 
 our @EXPORT_OK = qw{
     context release

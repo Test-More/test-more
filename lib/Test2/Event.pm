@@ -14,21 +14,21 @@ sub set_meta {
     my $self = shift;
     my ($key, $value) = @_;
 
-    $self->{+META} ||= {};
+    $self->{+_META} ||= {};
 
-    $self->{+META}->{$key} = $value;
+    $self->{+_META}->{$key} = $value;
 }
 
 sub get_meta {
     my $self = shift;
     my ($key, $default) = @_;
 
-    $self->{+META} ||= {};
+    $self->{+_META} ||= {};
 
-    $self->{+META}->{$key} = $default
-        if defined($default) && !defined($self->{+META}->{$key});
+    $self->{+_META}->{$key} = $default
+        if defined($default) && !defined($self->{+_META}->{$key});
 
-    return $self->{+META}->{$key};
+    return $self->{+_META}->{$key};
 }
 
 1;
