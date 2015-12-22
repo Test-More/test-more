@@ -4,29 +4,30 @@ use warnings;
 
 BEGIN {
     unless ( $ENV{DOWNSTREAM_TESTS} ) {
-        print "1..0 # Skip many perls have broken threads.  Enable with DOWNSTREAM_TESTS.\n";
+        print "1..0 # Enable with DOWNSTREAM_TESTS.\n";
         exit 0;
     }
 }
 
 use Test::More;
 
+my $lib = "5.20.3_thr\@TestMore$$";
+
 ok(run_string(<<"EOT"), "Installed a fresh perlbrew") || exit 1;
-perlbrew uninstall TestMore$$ 1>/dev/null 2>/dev/null || true
-perlbrew install --thread --notest -j9 --as TestMore$$ perl-5.20.1
-EOT
-
-ok(run_string(<<"EOT"), "Installed Test::Stream") || exit 1;
-cd ../Test-Stream
-perlbrew exec --with TestMore$$ cpan .
-EOT
-
-ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
-perlbrew exec --with TestMore$$ cpan .
+perlbrew lib create $lib
 EOT
 
 ok(run_string(<<"EOT"), "Installed cpanm") || exit 1;
-perlbrew exec --with TestMore$$ cpan App::cpanminus
+perlbrew exec --with $lib cpan App::cpanminus
+EOT
+
+ok(run_string(<<"EOT"), "Installed Test2") || exit 1;
+cd ../Test2
+perlbrew exec --with $lib cpanm Test2-0.000010.tar.gz
+EOT
+
+ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
+perlbrew exec --with $lib cpanm Test-Simple-1.302013_002.tar.gz
 EOT
 
 my @BAD;
@@ -35,7 +36,7 @@ while(my $name = <$list>) {
     chomp($name);
     my $ok = 0;
     for (1 .. 2) {
-        $ok = run_string("perlbrew exec --with TestMore$$ -- cpanm $name");
+        $ok = run_string("perlbrew exec --with $lib -- cpanm $name");
         last if $ok;
         diag "'$name' did not install properly, trying 1 more time.";
     }
@@ -52,7 +53,7 @@ TODO: {
         chomp($name);
         my $ok = 0;
         for (1 .. 2) {
-            $ok = run_string("perlbrew exec --with TestMore$$ cpanm $name");
+            $ok = run_string("perlbrew exec --with $lib cpanm $name");
             last if $ok;
             diag "'$name' did not install properly, trying 1 more time.";
         }
@@ -63,7 +64,7 @@ TODO: {
 }
 
 ok(run_string(<<"EOT"), "Cleanup up the perlbrew");
-perlbrew uninstall TestMore$$
+perlbrew lib delete $lib
 EOT
 
 sub run_string {
