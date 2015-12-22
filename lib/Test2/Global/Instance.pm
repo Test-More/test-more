@@ -340,7 +340,7 @@ __END__
 
 =head1 NAME
 
-Test2::Global::Instance - Object used by Sync under the hood
+Test2::Global::Instance - Object used by Test2::Global under the hood
 
 =head1 EXPERIMENTAL RELEASE
 
