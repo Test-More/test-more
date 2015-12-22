@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302013_003 2015-12-22 09:41:46-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix bug in details() structure for subtests when the parent is todo
 
 1.302013_002 2015-12-21 13:21:51-08:00 America/Los_Angeles (TRIAL RELEASE)
