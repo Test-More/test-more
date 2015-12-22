@@ -588,7 +588,7 @@ sub ok {
                        : ( reason => '',    type => '' ),
     };
 
-    @$result{ 'ok', 'actual_ok' } = ( ( (defined($todo) || $hub->parent_todo) ? 1 : 0 ), 0 ) unless $test;
+    @$result{ 'ok', 'actual_ok' } = ( ( defined($todo) ? 1 : 0 ), 0 ) unless $test;
 
     $hub->{_meta}->{+__PACKAGE__}->{Test_Results}[ $hub->{state}->{count} ] = $result;
 
