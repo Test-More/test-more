@@ -6,12 +6,7 @@ use base 'Test2::Event';
 use Test2::Util::HashBase qw/message/;
 
 sub init {
-    if (defined $_[0]->{+MESSAGE}) {
-        $_[0]->{+MESSAGE} .= "";
-    }
-    else {
-        $_[0]->{+MESSAGE} = 'undef';
-    }
+    $_[0]->{+MESSAGE} = 'undef' unless defined $_[0]->{+MESSAGE};
 }
 
 1;

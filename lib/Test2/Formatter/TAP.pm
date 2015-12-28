@@ -137,7 +137,7 @@ sub _ok_event {
     $out .= "not " unless $e->{pass};
     $out .= "ok";
     $out .= " $num" if defined $num;
-    $out .= " - $name" if $name;
+    $out .= " - $name" if defined $name;
 
     if (defined $todo) {
         $out .= " # TODO";
@@ -190,8 +190,7 @@ sub _note_event {
     my ($e, $num) = @_;
 
     chomp(my $msg = $e->message);
-    return unless $msg;
-    $msg = "# $msg" unless $msg =~ m/^\n/;
+    $msg =~ s/^/# /;
     $msg =~ s/\n/\n# /g;
 
     return [OUT_STD, "$msg\n"];
@@ -202,11 +201,8 @@ sub _diag_event {
     my ($e, $num) = @_;
     return if $self->{+NO_DIAG};
 
-    my $msg = $e->message or return;
-
-    $msg = "# $msg" unless $msg eq "\n";
-
-    chomp($msg);
+    chomp(my $msg = $e->message);
+    $msg =~ s/^/# /;
     $msg =~ s/\n/\n# /g;
 
     return [
@@ -274,6 +270,7 @@ sub _plan_event {
     return if $directive && $directive eq 'NO PLAN';
 
     my $reason = $e->reason;
+    $reason =~ s/\n/\n# /g if $reason;
 
     my $plan = "1.." . $e->max;
     if ($directive) {

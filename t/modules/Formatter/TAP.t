@@ -182,13 +182,6 @@ tests diag => sub {
         [[OUT_TODO, "# foo\n# bar\n# baz\n"]],
         "All lines have proper prefix"
     );
-
-    $diag->set_todo(undef);
-    $diag->set_message("");
-    is_deeply([$fmt->event_tap($diag)], [], "no tap with an empty message");
-
-    $diag->set_message("\n");
-    is_deeply([$fmt->event_tap($diag)], [[OUT_ERR, "\n"]], "newline on its own is unchanged");
 };
 
 tests exception => sub {
@@ -229,15 +222,6 @@ tests note => sub {
         [[OUT_STD, "# foo\n# bar\n# baz\n"]],
         "All lines have proper prefix"
     );
-
-    $note->set_message("");
-    is_deeply([$fmt->event_tap($note)], [], "no tap with an empty message");
-
-    $note->set_message("\n");
-    is_deeply([$fmt->event_tap($note)], [], "newline on its own is not shown");
-
-    $note->set_message("\nxxx");
-    is_deeply([$fmt->event_tap($note)], [[OUT_STD, "\n# xxx\n"]], "newline starting");
 };
 
 for my $pass (1, 0) {
@@ -383,6 +367,20 @@ tests plan => sub {
         [$fmt->event_tap($plan)],
         [],
         "NO PLAN"
+    );
+
+    $plan = Test2::Event::Plan->new(
+        trace => $trace,
+        max => 0,
+        directive => 'skip_all',
+        reason => "Foo\nBar\nBaz",
+    );
+    is_deeply(
+        [$fmt->event_tap($plan)],
+        [
+            [OUT_STD, "1..0 # SKIP Foo\n# Bar\n# Baz\n"],
+        ],
+        "Multi-line reason for skip"
     );
 };
 
