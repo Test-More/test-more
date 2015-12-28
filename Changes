@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix diag/note bugs from refactor
+
 1.302013_003 2015-12-22 09:41:46-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix bug in details() structure for subtests when the parent is todo

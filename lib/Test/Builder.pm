@@ -622,7 +622,7 @@ sub _ok_debug {
     my $self = shift;
     my ($trace, $orig_name, $is_todo) = @_;
     my $msg = $is_todo ? "Failed (TODO)" : "Failed";
-    $self->diag("\n") if $ENV{HARNESS_ACTIVE};
+    print {$self->_diag_fh} "\n" if $ENV{HARNESS_ACTIVE};
 
     my (undef, $file, $line) = $trace->call;
     if (defined $orig_name) {
@@ -632,6 +632,12 @@ sub _ok_debug {
     else {
         $self->diag(qq[  $msg test at $file line $line.\n]);
     }
+}
+
+sub _diag_fh {
+    my $self = shift;
+    local $Level = $Level + 1;
+    return $self->in_todo ? $self->todo_output : $self->failure_output;
 }
 
 sub _unoverload {
@@ -1120,6 +1126,7 @@ sub no_ending {
 
 sub diag {
     my $self = shift;
+    return unless @_;
 
     my $ctx = $self->ctx;
     $ctx->diag(join '' => map {defined($_) ? $_ : 'undef'} @_);
@@ -1129,6 +1136,7 @@ sub diag {
 
 sub note {
     my $self = shift;
+    return unless @_;
 
     my $ctx = $self->ctx;
     $ctx->note(join '' => map {defined($_) ? $_ : 'undef'} @_);
