@@ -3,7 +3,7 @@ use warnings;
 
 use Test2::IPC;
 BEGIN { require "t/tools.pl" };
-use Test2::API qw/context/;
+use Test2::API qw/context test2_ipc_drivers/;
 use Test2::Util qw/CAN_FORK CAN_THREAD CAN_REALLY_FORK/;
 
 {
@@ -92,7 +92,7 @@ tests follow_ups => sub {
 };
 
 tests IPC => sub {
-    my ($driver) = Test2::Global::test2_ipc_drivers;
+    my ($driver) = test2_ipc_drivers();
     is($driver, 'Test2::IPC::Driver::Files', "Default Driver");
     my $ipc = $driver->new;
     my $hub = Test2::Hub->new(

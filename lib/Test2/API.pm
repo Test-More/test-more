@@ -2,9 +2,11 @@ package Test2::API;
 use strict;
 use warnings;
 
-use Test2::Global();
+use Test2::API::Instance();
+
 use Test2::Context();
 use Test2::Context::Trace();
+
 use Test2::Hub::Subtest();
 use Test2::Hub::Interceptor();
 use Test2::Hub::Interceptor::Terminator();
@@ -17,15 +19,72 @@ our @EXPORT_OK = qw{
     context release
     intercept
     run_subtest
+
+    test2_init_done
+    test2_load_done
+
+    test2_pid
+    test2_tid
+    test2_stack
+    test2_no_wait
+
+    test2_add_callback_context_init
+    test2_add_callback_context_release
+    test2_add_callback_exit
+    test2_add_callback_post_load
+
+    test2_ipc
+    test2_ipc_drivers
+    test2_ipc_add_driver
+    test2_ipc_polling
+    test2_ipc_disable_polling
+    test2_ipc_enable_polling
+
+    test2_formatter
+    test2_formatters
+    test2_formatter_add
+    test2_formatter_set
 };
 use base 'Exporter';
 
-# Private, not package vars
-# It is safe to cache these.
-my $INST     = Test2::Global::_internal_use_only_private_instance;
-my $ON_INIT  = $INST->context_init_callbacks;
-my $CONTEXTS = $INST->contexts;
-my $STACK    = $INST->stack;
+my $INST = Test2::API::Instance->new;
+sub _internal_use_only_private_instance() { $INST }
+
+# Set the exit status
+END { $INST->set_exit() }
+
+sub test2_init_done { $INST->finalized }
+sub test2_load_done { $INST->loaded }
+
+sub test2_pid     { $INST->pid }
+sub test2_tid     { $INST->tid }
+sub test2_stack   { $INST->stack }
+sub test2_no_wait {
+    $INST->set_no_wait(@_) if @_;
+    $INST->no_wait;
+}
+
+sub test2_add_callback_context_init    { $INST->add_context_init_callback(@_) }
+sub test2_add_callback_context_release { $INST->add_context_release_callback(@_) }
+sub test2_add_callback_post_load       { $INST->add_post_load_callback(@_) }
+sub test2_add_callback_exit            { $INST->add_exit_callback(@_) }
+
+sub test2_ipc                 { $INST->ipc }
+sub test2_ipc_add_driver      { $INST->add_ipc_driver(@_) }
+sub test2_ipc_drivers         { @{$INST->ipc_drivers} }
+sub test2_ipc_polling         { $INST->ipc_polling }
+sub test2_ipc_enable_polling  { $INST->enable_ipc_polling }
+sub test2_ipc_disable_polling { $INST->disable_ipc_polling }
+
+sub test2_formatter     { $INST->formatter }
+sub test2_formatters    { @{$INST->formatters} }
+sub test2_formatter_add { $INST->add_formatter(@_) }
+sub test2_formatter_set {
+    my ($formater) = @_;
+    croak "No formatter specified" unless $formater;
+    croak "Global Formatter already set" if $INST->formatter_set;
+    $INST->set_formatter($formater);
+}
 
 sub context {
     my %params = (level => 0, wrapped => 0, @_);
@@ -37,10 +96,10 @@ sub context {
     croak "context() called, but return value is ignored"
         unless defined wantarray;
 
-    my $stack = $params{stack} || $STACK;
-    my $hub = $params{hub} || @$stack ? $stack->[-1] : $stack->top;
+    my $stack = $params{stack} || $INST->stack;
+    my $hub   = $params{hub} || @$stack ? $stack->[-1] : $stack->top;
     my $hid     = $hub->{hid};
-    my $current = $CONTEXTS->{$hid};
+    my $current = $INST->{contexts}->{$hid};
 
     my $level = 1 + $params{level};
     my ($pkg, $file, $line, $sub) = caller($level);
@@ -89,9 +148,9 @@ sub context {
         'Test2::Context'
     );
 
-    weaken($CONTEXTS->{$hid} = $current);
+    weaken($INST->{contexts}->{$hid} = $current);
 
-    $_->($current) for @$ON_INIT;
+    $_->($current) for @{$INST->{context_init_callbacks}};
 
     if (my $hcbk = $hub->{_context_init}) {
         $_->($current) for @$hcbk;
@@ -135,7 +194,7 @@ Removing the old context and creating a new one...
     EOT
 
     my $hid = $ctx->{hub}->hid;
-    delete $CONTEXTS->{$hid};
+    delete $INST->{contexts}->{$hid};
     $ctx->release;
 }
 
@@ -150,7 +209,7 @@ sub intercept(&) {
     my $ctx = context();
 
     my $ipc;
-    if (my $global_ipc = Test2::Global::test2_ipc()) {
+    if (my $global_ipc = test2_ipc()) {
         my $driver = blessed($global_ipc);
         $ipc = $driver->new;
     }
@@ -202,7 +261,7 @@ sub run_subtest {
 
     my $parent = $ctx->hub;
 
-    my $stack = $ctx->stack || $STACK;
+    my $stack = $ctx->stack || $INST->stack;
     my $hub = $stack->new_hub(
         class => 'Test2::Hub::Subtest',
     );
@@ -287,6 +346,26 @@ Test2::API - Primary interface for writing Test2 based testing tools.
 
 This is an experimental release. Using this right now is not recommended.
 
+=head1 ***INTERNALS NOTE***
+
+B<The internals of this package are subject to change at any time!> The public
+methods provided will not change in backwords incompatible ways (once there is
+a stable release), but the underlying implementation details might.
+B<Do not break encapsulation here!>
+
+Currently the implementation is to create a single instance of the
+L<Test2::API::Instance> Object. All class methods defer to the single
+instance. There is no public access to the singleton, and that is intentional.
+The class methods provided by this package provide the only functionality
+publicly exposed.
+
+This is done primarily to avoid the problems Test::Builder had by exposing its
+singleton. We do not want anyone to replace this singleton, rebless it, or
+directly muck with its internals. If you need to do something, and cannot
+because of the restrictions placed here then please report it as an issue. If
+possible we will create a way for you to implement your functionality without
+exposing things that should not be exposed.
+
 =head1 DESCRIPTION
 
 This package exports all the functions necessary to write and/or verify testing
@@ -336,11 +415,38 @@ generated by the test system:
     my_ok($events->[0]->pass, "first event passed");
     my_ok(!$events->[1]->pass, "second event failed");
 
-=head1 EXPORTS
+=head2 OTHER API FUNCTIONS
+
+    use Test2::API qw{
+        test2_init_done
+        test2_stack
+        test2_ipc
+        test2_formatter_set
+        test2_formatter
+    };
+
+    my $init  = test2_init_done();
+    my $stack = test2_stack();
+    my $ipc   = test2_ipc();
+
+    test2_formatter_set($FORMATTER)
+    my $formatter = test2_formatter();
+
+    ... And others ...
+
+=head1 MAIN API EXPORTS
 
 All exports are optional, you must specify subs to import.
 
     use Test2::API qw/context intercept run_subtest/;
+
+This is the list of exports that are most commonly needed. If you are simply
+writing a tool then this is probably all you need. If you need something and
+you cannot find it here then you can also look at L</OTHER API EXPORTS>.
+
+These exports lack the 'test2_' prefix because of how important/common they
+are. Exports in the L</OTHER API EXPORTS> section have the 'test2_' prefix to
+ensure they stand out.
 
 =head2 context(...)
 
@@ -417,9 +523,9 @@ context.
 
 =item stack => $stack
 
-Normally C<context()> looks at the global hub stack initialized in
-L<Test2::Global>. If you are maintaining your own L<Test2::Context::Stack>
-instance you may pass it in to be used instead of the global one.
+Normally C<context()> looks at the global hub stack. If you are maintaining
+your own L<Test2::Context::Stack> instance you may pass it in to be used
+instead of the global one.
 
 =item hub => $hub
 
@@ -562,6 +668,171 @@ Any extra arguments you want passed into the subtest code.
 
 =back
 
+=head1 OTHER API EXPORTS
+
+Exports in this section are not commonly needed. These all have the 'test2_'
+prefix to help ensure they stand out. You should look at the L</MAIN API
+EXPORTS> section before looking here. This section is one where "Great power
+comes with great responsiblity". It is possible to break things badly if you
+are not careful with these.
+
+All exports are optional, you need to list which ones you want at import time:
+
+    use Test2::API qw/test2_init_done .../;
+
+=head2 STATUS AND INITIALIZATION STATE
+
+These provide access to internal state and object instances.
+
+=over 4
+
+=item $bool = test2_init_done()
+
+This will return true if the stack and ipc instances have already been
+initialized. It will return false if they have not. Init happens as late as
+possible, it happens as soon as a tool requests the ipc instance, the
+formatter, or the stack.
+
+=item $bool = test2_load_done()
+
+This will simply return the boolean value of the loaded flag. If Test2 has
+finished loading this will be true, otherwise false. Loading is considered
+complete the first time a tool requests a context.
+
+=item $stack = test2_stack()
+
+This will return the global L<Test2::Context::Stack> instance. If this has not
+yet been initialized it will be initialized now.
+
+=item $bool = test2_no_wait()
+
+=item test2_no_wait($bool)
+
+This can be used to get/set the no_wait status. Waiting is turned on by
+default. Waiting will cause the parent process/thread to wait until all child
+processes and threads are finished before exiting. You will almost never want
+to turn this off.
+
+=back
+
+=head2 BEHAVIOR HOOKS
+
+These are hooks that allow you to add custom behavior to actions taken by Test2
+and tools built on top of it.
+
+=over 4
+
+=item test2_add_callback_exit(sub { ... })
+
+This can be used to add a callback that is called after all testing is done. This
+is too late to add additional results, the main use of this callback is to set the
+exit code.
+
+    test2_add_callback_exit(
+        sub {
+            my ($context, $exit, \$new_exit) = @_;
+            ...
+        }
+    );
+
+The C<$context> passed in will be an instance of L<Test2::Context>. The
+C<$exit> argument will be the original exit code before anything modified it.
+C<$$new_exit> is a reference to the new exit code. You may modify this to
+change the exit code. Please note that C<$$new_exit> may already be different
+from C<$exit>
+
+=item test2_add_callback_post_load(sub { ... })
+
+Add a callback that will be called when Test2 is finished loading. This
+means the callback will be run once, the first time a context is obtained.
+If Test2 has already finished loading then the callback will be run immedietly.
+
+=item test2_add_callback_context_init(sub { ... })
+
+Add a callback that will be called every time a new context is created. The
+callback will recieve the newly created context as its only argument.
+
+=item test2_add_callback_context_release(sub { ... })
+
+Add a callback that will be called every time a context is released. The
+callback will recieve the released context as its only argument.
+
+=back
+
+=head2 IPC AND CONCURRENCY
+
+These let you access, or specify, the IPC system internals.
+
+=over 4
+
+=item $ipc = test2_ipc()
+
+This will return the global L<Test2::IPC::Driver> instance. If this has not yet
+been initialized it will be initialized now.
+
+=item test2_ipc_add_driver($DRIVER)
+
+Add an IPC driver to the list. This will add the driver to the start of the
+list.
+
+=item @drivers = test2_ipc_drivers()
+
+Get the list of IPC drivers.
+
+=item $bool = test2_ipc_polling()
+
+Check if polling is enabled.
+
+=item test2_ipc_enable_polling()
+
+Turn on polling. This will cull events from other processes and threads every
+time a context is created.
+
+=item test2_ipc_disable_polling()
+
+Turn off IPC polling.
+
+=back
+
+=head2 MANAGING FORMATTERS
+
+These let you access, or specify, the formatters that can/should be used.
+
+=over 4
+
+=item $formatter = test2_formatter
+
+This will return the global formatter class. This is not an instance. By
+default the formatter is set to L<Test2::Formatter::TAP>.
+
+You can override this default using the C<T2_FORMATTER> environment variable.
+
+Normally 'Test2::Formatter::' is prefixed to the value in the
+environment variable:
+
+    $ T2_FORMATTER='TAP' perl test.t     # Use the Test2::Formatter::TAP formatter
+    $ T2_FORMATTER='Foo' perl test.t     # Use the Test2::Formatter::Foo formatter
+
+If you want to specify a full module name you use the '+' prefix:
+
+    $ T2_FORMATTER='+Foo::Bar' perl test.t     # Use the Foo::Bar formatter
+
+=item test2_formatter_set($class_or_instance)
+
+Set the global formatter class. This can only be set once. B<Note:> This will
+override anything specified in the 'T2_FORMATTER' environment variable.
+
+=item @formatters = test2_formatters()
+
+Get a list of all loaded formatters.
+
+=item test2_formatter_add($class_or_instance)
+
+Add a formatter to the list. Last formatter added is used at initialization. If
+this is called after initialization a warning will be issued.
+
+=back
+
 =head1 OTHER EXAMPLES
 
 See the C</Examples/> directory included in this distribution.
@@ -569,9 +840,6 @@ See the C</Examples/> directory included in this distribution.
 =head1 SEE ALSO
 
 L<Test2::Context> - Detailed documentation of the context object.
-
-L<Test2::Global> - Interface to global state. This is where to look if you need
-a tool to produce a global effect.
 
 L<Test2::IPC> - The IPC system used for threading/fork support.
 
@@ -581,6 +849,12 @@ L<Test2::Event> - Events live in this namespace.
 
 L<Test2::Hub> - All events eventually funnel through a hub. Custom hubs are how
 C<intercept()> and C<run_subtest()> are implemented.
+
+=head1 MAGIC
+
+This package has an END block. This END block is responsible for setting the
+exit code based on the test results. This end block also calls the callbacks that
+can be added to this package.
 
 =head1 SOURCE
 

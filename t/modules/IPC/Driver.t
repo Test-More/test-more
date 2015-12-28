@@ -4,14 +4,14 @@ use warnings;
 use Test2::IPC::Driver::Files;
 
 BEGIN { require "t/tools.pl" };
-use Test2::API qw/context/;
+use Test2::API qw/context test2_ipc_drivers/;
 
 Test2::IPC::Driver::Files->import();
 Test2::IPC::Driver::Files->import();
 Test2::IPC::Driver::Files->import();
 
 is_deeply(
-    [Test2::Global::test2_ipc_drivers],
+    [test2_ipc_drivers()],
     ['Test2::IPC::Driver::Files'],
     "Driver not added multiple times"
 );

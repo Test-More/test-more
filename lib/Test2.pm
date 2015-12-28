@@ -39,9 +39,6 @@ L<Test2::API> - Primary API functions.
 
 L<Test2::Context> - Detailed documentation of the context object.
 
-L<Test2::Global> - Interface to global state. This is where to look if you need
-a tool to produce a global effect.
-
 L<Test2::IPC> - The IPC system used for threading/fork support.
 
 L<Test2::Formatter> - Formatters such as TAP live here.

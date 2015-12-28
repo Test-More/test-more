@@ -21,7 +21,7 @@ SEE ALSO
 
     Test2::Context - Detailed documentation of the context object.
 
-    Test2::Global - Interface to global state. This is where to look if you
+    Test2::API - Interface to global state. This is where to look if you
     need a tool to produce a global effect.
 
     Test2::IPC - The IPC system used for threading/fork support.

@@ -1,12 +1,12 @@
-package Test2::Global::Instance;
+package Test2::API::Instance;
 use strict;
 use warnings;
 
-our @CARP_NOT = qw/Test2::Global Test2::Global::Instance Test2::IPC::Driver Test2::Formatter/;
+our @CARP_NOT = qw/Test2::API Test2::API::Instance Test2::IPC::Driver Test2::Formatter/;
 use Carp qw/confess carp/;
 use Scalar::Util qw/reftype/;
 
-use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file/;
+use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try/;
 
 use Test2::Context::Trace();
 use Test2::Context::Stack();
@@ -98,8 +98,8 @@ sub _finalize {
 
         unless (ref($formatter) || $formatter->can('write')) {
             my $file = pkg_to_file($formatter);
-            unless (eval { require $file; 1 }) {
-                my $err    = $@;
+            my ($ok, $err) = try { require $file };
+            unless ($ok) {
                 my $line   = "* COULD NOT LOAD FORMATTER '$formatter' ($source) *";
                 my $border = '*' x length($line);
                 die "\n\n  $border\n  $line\n  $border\n\n$err";
@@ -117,7 +117,8 @@ sub _finalize {
     $self->enable_ipc_polling;
 
     unless (@{$self->{+IPC_DRIVERS}}) {
-        require Test2::IPC::Driver::Files;
+        my ($ok, $error) = try { require Test2::IPC::Driver::Files };
+        die $error unless $ok;
         push @{$self->{+IPC_DRIVERS}} => 'Test2::IPC::Driver::Files';
     }
 
@@ -340,7 +341,7 @@ __END__
 
 =head1 NAME
 
-Test2::Global::Instance - Object used by Test2::Global under the hood
+Test2::API::Instance - Object used by Test2::API under the hood
 
 =head1 EXPERIMENTAL RELEASE
 
@@ -350,7 +351,7 @@ This is an experimental release. Using this right now is not recommended.
 
 This object encapsulates the global shared state tracked by
 L<Test2>. A single global instance of this package is stored (and
-obscured) by the L<Test2::Global> package.
+obscured) by the L<Test2::API> package.
 
 There is no reason to directly use this package. This package is documented for
 completeness. This package can change, or go away completely at any time.
@@ -359,9 +360,9 @@ shape or form.
 
 =head1 SYNOPSIS
 
-    use Test2::Global::Instance;
+    use Test2::API::Instance;
 
-    my $obj = Test2::Global::Instance->new;
+    my $obj = Test2::API::Instance->new;
 
 =over 4
 

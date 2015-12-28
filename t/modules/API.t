@@ -1,21 +1,21 @@
 use strict;
 use warnings;
 
-use Test2::Global;
+use Test2::API;
 
 my ($LOADED, $INIT);
 BEGIN {
-    $INIT   = Test2::Global::test2_init_done;
-    $LOADED = Test2::Global::test2_load_done;
+    $INIT   = Test2::API::test2_init_done;
+    $LOADED = Test2::API::test2_load_done;
 };
 
 use Test2::IPC;
 BEGIN { require "t/tools.pl" };
 use Test2::Util qw/get_tid/;
-my $CLASS = 'Test2::Global';
+my $CLASS = 'Test2::API';
 
 # Ensure we do not break backcompat later by removing anything
-ok(Test2::Global->can($_), "$_ method is present") for qw{
+ok(Test2::API->can($_), "$_ method is present") for qw{
     test2_init_done
     test2_load_done
 
@@ -44,7 +44,7 @@ ok(Test2::Global->can($_), "$_ method is present") for qw{
 
 ok(!$LOADED, "Was not load_done right away");
 ok(!$INIT, "Init was not done right away");
-ok(Test2::Global::test2_load_done, "We loaded it");
+ok(Test2::API::test2_load_done, "We loaded it");
 
 # Note: This is a check that stuff happens in an END block.
 {
@@ -60,7 +60,7 @@ ok(Test2::Global::test2_load_done, "We loaded it");
     }
 
     our $kill1 = bless {fixed => 0, name => "Custom Hook"}, 'FOLLOW';
-    Test2::Global::test2_add_callback_exit(
+    Test2::API::test2_add_callback_exit(
         sub {
             print "# Running END hook\n";
             $kill1->{fixed} = 1;
@@ -68,9 +68,9 @@ ok(Test2::Global::test2_load_done, "We loaded it");
     );
 
     our $kill2 = bless {fixed => 0, name => "set exit"}, 'FOLLOW';
-    my $old = Test2::Global::Instance->can('set_exit');
+    my $old = Test2::API::Instance->can('set_exit');
     no warnings 'redefine';
-    *Test2::Global::Instance::set_exit = sub {
+    *Test2::API::Instance::set_exit = sub {
         $kill2->{fixed} = 1;
         print "# Running set_exit\n";
         $old->(@_);

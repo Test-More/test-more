@@ -3,6 +3,7 @@ use warnings;
 use Test2::IPC;
 BEGIN { require "t/tools.pl" };
 use Test2::Context::Stack;
+use Test2::API qw/test2_ipc/;
 
 ok(my $stack = Test2::Context::Stack->new, "Create a stack");
 
@@ -61,7 +62,7 @@ is_deeply(
 );
 
 ok(my $top = $stack->top, "Generated a top hub");
-is($top->ipc, Test2::Global::test2_ipc, "Used sync's ipc");
+is($top->ipc, test2_ipc, "Used sync's ipc");
 ok($top->format, 'Got formatter');
 
 is($stack->top, $stack->top, "do not generate a new top if there is already a top");

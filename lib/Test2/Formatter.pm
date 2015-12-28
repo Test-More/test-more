@@ -2,14 +2,14 @@ package Test2::Formatter;
 use strict;
 use warnings;
 
-use Test2::Global();
+use Test2::API qw/test2_formatter_add/;
 
 my %ADDED;
 sub import {
     my $class = shift;
     return if $class eq __PACKAGE__;
     return if $ADDED{$class}++;
-    Test2::Global::test2_formatter_add($class);
+    test2_formatter_add($class);
 }
 
 1;

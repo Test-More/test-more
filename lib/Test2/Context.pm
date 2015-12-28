@@ -6,7 +6,6 @@ use Scalar::Util qw/weaken/;
 use Carp qw/confess croak longmess/;
 use Test2::Util qw/get_tid try pkg_to_file/;
 
-use Test2::Global();
 use Test2::Context::Trace();
 
 # Preload some key event types
@@ -24,11 +23,13 @@ use Test2::Util::HashBase qw{
 
 # Private, not package vars
 # It is safe to cache these.
-my ($ON_RELEASE, $CONTEXTS);
-{
-    my $INST = Test2::Global::_internal_use_only_private_instance;
-    $ON_RELEASE  = $INST->context_release_callbacks;
-    $CONTEXTS    = $INST->contexts;
+my ($ON_RELEASE, $CONTEXTS, $CACHED);
+sub _CACHE_API {
+    require Test2::API;
+    my $INST = Test2::API::_internal_use_only_private_instance();
+    $ON_RELEASE = $INST->context_release_callbacks;
+    $CONTEXTS   = $INST->contexts;
+    $CACHED = 1;
 }
 
 sub init {
@@ -61,6 +62,7 @@ sub release {
     # We always undef the callers reference
     return $_[0] = undef if Internals::SvREFCNT(%$self) != 2;
 
+    _CACHE_API() unless $CACHED;
     my $hub = $self->{+HUB};
     my $hid = $hub->{hid};
 
@@ -91,6 +93,8 @@ sub DESTROY {
 
     return unless $self->{+HUB};
     my $hid = $self->{+HUB}->hid;
+
+    _CACHE_API() unless $CACHED;
 
     return unless $CONTEXTS->{$hid} && $CONTEXTS->{$hid} == $self;
     return unless "$@" eq "" . $self->{+_ERR};
@@ -130,6 +134,7 @@ sub do_in_context {
     my $hub = $self->{+HUB};
     my $hid = $hub->hid;
 
+    _CACHE_API() unless $CACHED;
     my $old = $CONTEXTS->{$hid};
 
     weaken($CONTEXTS->{$hid} = $self);
@@ -533,7 +538,7 @@ requests a context, just when a new one is created.
 This is how you add a global init callback. Global callbacks happen for every
 context for any hub or stack.
 
-    Test2::Global::test2_add_callback_context_init(sub {
+    Test2::API::test2_add_callback_context_init(sub {
         my $ctx = shift;
         ...
     });
@@ -570,7 +575,7 @@ called every time C<< $ctx->release >> is called.
 This is how you add a global release callback. Global callbacks happen for every
 context for any hub or stack.
 
-    Test2::Global::test2_add_callback_context_release(sub {
+    Test2::API::test2_add_callback_context_release(sub {
         my $ctx = shift;
         ...
     });

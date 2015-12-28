@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test2::IPC;
 BEGIN { require "t/tools.pl" };
-use Test2::API qw/context/;
+use Test2::API qw/context test2_stack/;
 use Test2::Util qw/CAN_FORK/;
 
 BEGIN {
@@ -13,15 +13,15 @@ plan(3);
 
 pipe(my ($read, $write));
 
-Test2::Global::test2_stack()->top;
-my $hub = Test2::Global::test2_stack()->new_hub();
+test2_stack()->top;
+my $hub = test2_stack()->new_hub();
 
 my $pid = fork();
 die "Failed to fork" unless defined $pid;
 
 if ($pid) {
     close($read);
-    Test2::Global::test2_stack()->pop($hub);
+    test2_stack()->pop($hub);
     $hub = undef;
     print $write "Go\n";
     close($write);

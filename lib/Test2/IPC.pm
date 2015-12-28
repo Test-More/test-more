@@ -2,13 +2,13 @@ package Test2::IPC;
 use strict;
 use warnings;
 
-use Test2::Global();
+use Test2::API qw/test2_init_done test2_ipc/;
 
 our @EXPORT_OK = qw/cull/;
 use base 'Exporter';
 
 die __PACKAGE__ . " was loaded too late, IPC will not be enabled!"
-    if Test2::Global::test2_init_done() && !Test2::Global::test2_ipc();
+    if test2_init_done() && !test2_ipc();
 
 sub cull {
     my $ctx = context();

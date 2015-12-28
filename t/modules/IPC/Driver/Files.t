@@ -228,11 +228,11 @@ ok(!-d $tmpdir, "cleaned up temp dir");
         "Events must actually be events (not a real module)"
     );
 
-    Storable::store(bless({}, 'Test2::Global'), $fn);
+    Storable::store(bless({}, 'Test2::API'), $fn);
     $out = capture { eval { $ipc->read_event_file($fn) } };
     like(
         $out->{STDERR},
-        qr{'Test2::Global=HASH\(.*\)' is not a 'Test2::Event' object},
+        qr{'Test2::API=HASH\(.*\)' is not a 'Test2::Event' object},
         "Events must actually be events (not an event type)"
     );
 

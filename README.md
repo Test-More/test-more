@@ -25,7 +25,7 @@ If you are interested in writing new tools you should take a look at
 
 [Test2::Context](https://metacpan.org/pod/Test2::Context) - Detailed documentation of the context object.
 
-[Test2::Global](https://metacpan.org/pod/Test2::Global) - Interface to global state. This is where to look if you need
+[Test2::API](https://metacpan.org/pod/Test2::API) - Interface to global state. This is where to look if you need
 a tool to produce a global effect.
 
 [Test2::IPC](https://metacpan.org/pod/Test2::IPC) - The IPC system used for threading/fork support.

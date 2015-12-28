@@ -9,7 +9,7 @@ BEGIN { require "t/tools.pl" };
 #
 #########################
 
-use Test2::Global qw/test2_stack/;
+use Test2::API qw/test2_stack/;
 
 sub capture(&) {
     my $code = shift;

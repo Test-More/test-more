@@ -23,10 +23,11 @@ sub new_hub {
         $hub->inherit($self->[-1], %params);
     }
     else {
-        $hub->format(Test2::Global::test2_formatter()->new)
+        require Test2::API;
+        $hub->format(Test2::API::test2_formatter()->new)
             unless $hub->format || exists($params{formatter});
 
-        my $ipc = Test2::Global::test2_ipc();
+        my $ipc = Test2::API::test2_ipc();
         if ($ipc && !$hub->ipc && !exists($params{ipc})) {
             $hub->set_ipc($ipc);
             $ipc->add_hub($hub->hid);
@@ -151,7 +152,7 @@ set the parameters to C<undef> to avoid having a formatter or ipc instance.
 
 If there is no top hub, and you do not ask to leave ipc and formatter undef,
 then a new formatter will be created, and the IPC instance from
-L<Test2::Global> will be used.
+L<Test2::API> will be used.
 
 =item $hub = $stack->top()
 
