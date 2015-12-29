@@ -1,4 +1,4 @@
-package Test2::Context::Trace;
+package Test2::Util::Trace;
 use strict;
 use warnings;
 
@@ -54,7 +54,7 @@ __END__
 
 =head1 NAME
 
-Test2::Context::Trace - Debug information for events
+Test2::Util::Trace - Debug information for events
 
 =head1 EXPERIMENTAL RELEASE
 
@@ -62,15 +62,15 @@ This is an experimental release. Using this right now is not recommended.
 
 =head1 DESCRIPTION
 
-All events need to have access to information about where they were created, as
-well as if they are todo, or part of a skipped test. This object represents
-that information.
+The L<Test2::API::Context> object, as well as all L<Test2::Event> types need to
+have access to information about where they were created.  This object
+represents that information.
 
 =head1 SYNOPSIS
 
-    use Test2::Context::Trace;
+    use Test2::Util::Trace;
 
-    my $trace = Test2::Context::Trace->new(
+    my $trace = Test2::Util::Trace->new(
         frame => [$package, $file, $line, $subname],
     );
 

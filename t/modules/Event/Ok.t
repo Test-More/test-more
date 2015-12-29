@@ -3,7 +3,7 @@ use warnings;
 
 BEGIN { require "t/tools.pl" };
 use Test2::Hub::State;
-use Test2::Context::Trace;
+use Test2::Util::Trace;
 use Test2::Event::Ok;
 use Test2::Event::Diag;
 
@@ -12,7 +12,7 @@ use Test2::API qw/context/;
 my $trace;
 sub before_each {
     # Make sure there is a fresh trace object for each group
-    $trace = Test2::Context::Trace->new(
+    $trace = Test2::Util::Trace->new(
         frame => ['main_foo', 'foo.t', 42, 'main_foo::flubnarb'],
     );
 }

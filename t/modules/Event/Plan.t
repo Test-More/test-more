@@ -3,11 +3,11 @@ use warnings;
 
 BEGIN { require "t/tools.pl" };
 use Test2::Event::Plan;
-use Test2::Context::Trace;
+use Test2::Util::Trace;
 use Test2::Hub::State;
 
 my $plan = Test2::Event::Plan->new(
-    trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     max => 100,
 );
 
@@ -39,14 +39,14 @@ $plan->update_state($state);
 is($state->plan, '100', "Update plan in state if it is 'NO PLAN'");
 
 $plan = Test2::Event::Plan->new(
-    trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     max => 0,
     directive => 'skip_all',
 );
 is($plan->directive, 'SKIP', "Change skip_all to SKIP");
 
 $plan = Test2::Event::Plan->new(
-    trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     max => 0,
     directive => 'no_plan',
 );
@@ -56,7 +56,7 @@ ok(!$plan->global, "NO PLAN is not global");
 like(
     exception {
         $plan = Test2::Event::Plan->new(
-            trace     => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+            trace     => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
             max       => 0,
             directive => 'foo',
         );
@@ -68,7 +68,7 @@ like(
 like(
     exception {
         $plan = Test2::Event::Plan->new(
-            trace  => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+            trace  => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
             max    => 0,
             reason => 'foo',
         );
@@ -80,7 +80,7 @@ like(
 like(
     exception {
         $plan = Test2::Event::Plan->new(
-            trace  => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+            trace  => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
         );
     },
     qr/No number of tests specified/,
@@ -90,7 +90,7 @@ like(
 like(
     exception {
         $plan = Test2::Event::Plan->new(
-            trace  => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+            trace  => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
             max => 'skip',
         );
     },

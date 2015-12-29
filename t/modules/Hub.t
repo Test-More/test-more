@@ -55,7 +55,7 @@ tests follow_ups => sub {
     my $hub = Test2::Hub->new;
     $hub->state->set_count(1);
 
-    my $trace = Test2::Context::Trace->new(
+    my $trace = Test2::Util::Trace->new(
         frame => [__PACKAGE__, __FILE__, __LINE__],
     );
 
@@ -175,7 +175,7 @@ tests listen => sub {
     my $ok1 = Test2::Event::Ok->new(
         pass => 1,
         name => 'foo',
-        trace => Test2::Context::Trace->new(
+        trace => Test2::Util::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -183,7 +183,7 @@ tests listen => sub {
     my $ok2 = Test2::Event::Ok->new(
         pass => 0,
         name => 'bar',
-        trace => Test2::Context::Trace->new(
+        trace => Test2::Util::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -191,7 +191,7 @@ tests listen => sub {
     my $ok3 = Test2::Event::Ok->new(
         pass => 1,
         name => 'baz',
-        trace => Test2::Context::Trace->new(
+        trace => Test2::Util::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -272,7 +272,7 @@ tests filter => sub {
     my $ok1 = Test2::Event::Ok->new(
         pass => 1,
         name => 'foo',
-        trace => Test2::Context::Trace->new(
+        trace => Test2::Util::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -280,7 +280,7 @@ tests filter => sub {
     my $ok2 = Test2::Event::Ok->new(
         pass => 0,
         name => 'bar',
-        trace => Test2::Context::Trace->new(
+        trace => Test2::Util::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );
@@ -288,7 +288,7 @@ tests filter => sub {
     my $ok3 = Test2::Event::Ok->new(
         pass => 1,
         name => 'baz',
-        trace => Test2::Context::Trace->new(
+        trace => Test2::Util::Trace->new(
             frame => [ __PACKAGE__, __FILE__, __LINE__ ],
         ),
     );

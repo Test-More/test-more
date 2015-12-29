@@ -8,8 +8,8 @@ use Scalar::Util qw/reftype/;
 
 use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try/;
 
-use Test2::Context::Trace();
-use Test2::Context::Stack();
+use Test2::Util::Trace();
+use Test2::API::Stack();
 
 use Test2::Util::HashBase qw{
     pid tid
@@ -76,7 +76,7 @@ sub _finalize {
     $caller ||= [caller(1)];
 
     $self->{+FINALIZED} = $caller;
-    $self->{+STACK}     = Test2::Context::Stack->new;
+    $self->{+STACK}     = Test2::API::Stack->new;
 
     unless ($self->{+FORMATTER}) {
         my ($formatter, $source);
@@ -304,11 +304,11 @@ sub set_exit {
 
     # None of this is necessary if we never got a root hub
     if(my $root = shift @hubs) {
-        my $trace = Test2::Context::Trace->new(
+        my $trace = Test2::Util::Trace->new(
             frame  => [__PACKAGE__, __FILE__, 0, __PACKAGE__ . '::END'],
             detail => __PACKAGE__ . ' END Block finalization',
         );
-        my $ctx = Test2::Context->new(
+        my $ctx = Test2::API::Context->new(
             trace => $trace,
             hub   => $root,
         );

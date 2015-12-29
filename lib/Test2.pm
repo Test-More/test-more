@@ -37,7 +37,7 @@ L<Test2::API> first.
 
 L<Test2::API> - Primary API functions.
 
-L<Test2::Context> - Detailed documentation of the context object.
+L<Test2::API::Context> - Detailed documentation of the context object.
 
 L<Test2::IPC> - The IPC system used for threading/fork support.
 

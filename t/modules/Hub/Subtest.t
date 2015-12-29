@@ -52,7 +52,7 @@ ok($one->isa('Test2::Hub'), "inheritence");
     my $ok = Test2::Event::Ok->new(
         pass => 1,
         name => 'blah',
-        trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']),
+        trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']),
     );
 
     def is => ($one->process($ok), 'P!', "processed");
@@ -66,7 +66,7 @@ ok($one->isa('Test2::Hub'), "inheritence");
 
     my $bail = Test2::Event::Bail->new(
         message => 'blah',
-        trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']),
+        trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']),
     );
 
     def is => ($one->process($bail), 'P!', "processed");

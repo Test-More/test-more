@@ -2,22 +2,22 @@ use strict;
 use warnings;
 BEGIN { require "t/tools.pl" };
 use Test2::Event::Diag;
-use Test2::Context::Trace;
+use Test2::Util::Trace;
 
 my $diag = Test2::Event::Diag->new(
-    trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     message => 'foo',
 );
 
 $diag = Test2::Event::Diag->new(
-    trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     message => undef,
 );
 
 is($diag->message, 'undef', "set undef message to undef");
 
 $diag = Test2::Event::Diag->new(
-    trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     message => {},
 );
 

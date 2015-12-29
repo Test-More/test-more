@@ -4,8 +4,8 @@ use warnings;
 
 use Test2::API::Instance();
 
-use Test2::Context();
-use Test2::Context::Trace();
+use Test2::API::Context();
+use Test2::Util::Trace();
 
 use Test2::Hub::Subtest();
 use Test2::Hub::Interceptor();
@@ -131,7 +131,7 @@ sub context {
             pid   => $$,
             tid   => get_tid(),
         },
-        'Test2::Context::Trace'
+        'Test2::Util::Trace'
     );
 
     # Directly bless the object here, calling new is a noticable performance
@@ -145,7 +145,7 @@ sub context {
             _err   => $@,
             $params{on_release} ? (_on_release => [$params{on_release}]) : (),
         },
-        'Test2::Context'
+        'Test2::API::Context'
     );
 
     weaken($INST->{contexts}->{$hid} = $current);
@@ -394,7 +394,7 @@ The C<context()> method is your primary interface into the Test2 framework.
         return $bool;
     }
 
-See L<Test2::Context> for a list of methods avabilable on the context object.
+See L<Test2::API::Context> for a list of methods avabilable on the context object.
 
 =head2 TESTING YOUR TOOLS
 
@@ -466,7 +466,7 @@ active context one will be generated. When a context is generated it will
 default to using the file and line number where the currently running sub was
 called from.
 
-Please see L<Test2::Context/"CRITICAL DETAILS"> for important rules about what
+Please see L<Test2::API::Context/"CRITICAL DETAILS"> for important rules about what
 you can and acannot do with a context once it is obtained.
 
 B<Note> This function will throw an exception if you ignore the context object
@@ -524,7 +524,7 @@ context.
 =item stack => $stack
 
 Normally C<context()> looks at the global hub stack. If you are maintaining
-your own L<Test2::Context::Stack> instance you may pass it in to be used
+your own L<Test2::API::Stack> instance you may pass it in to be used
 instead of the global one.
 
 =item hub => $hub
@@ -701,7 +701,7 @@ complete the first time a tool requests a context.
 
 =item $stack = test2_stack()
 
-This will return the global L<Test2::Context::Stack> instance. If this has not
+This will return the global L<Test2::API::Stack> instance. If this has not
 yet been initialized it will be initialized now.
 
 =item $bool = test2_no_wait()
@@ -735,7 +735,7 @@ exit code.
         }
     );
 
-The C<$context> passed in will be an instance of L<Test2::Context>. The
+The C<$context> passed in will be an instance of L<Test2::API::Context>. The
 C<$exit> argument will be the original exit code before anything modified it.
 C<$$new_exit> is a reference to the new exit code. You may modify this to
 change the exit code. Please note that C<$$new_exit> may already be different
@@ -839,7 +839,7 @@ See the C</Examples/> directory included in this distribution.
 
 =head1 SEE ALSO
 
-L<Test2::Context> - Detailed documentation of the context object.
+L<Test2::API::Context> - Detailed documentation of the context object.
 
 L<Test2::IPC> - The IPC system used for threading/fork support.
 

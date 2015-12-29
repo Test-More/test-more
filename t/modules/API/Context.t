@@ -76,10 +76,10 @@ my $events = bless [], 'My::Formatter';
 my $hub = Test2::Hub->new(
     formatter => $events,
 );
-my $trace = Test2::Context::Trace->new(
+my $trace = Test2::Util::Trace->new(
     frame => [ 'Foo::Bar', 'foo_bar.t', 42, 'Foo::Bar::baz' ],
 );
-my $ctx = Test2::Context->new(
+my $ctx = Test2::API::Context->new(
     trace => $trace,
     hub   => $hub,
 );
@@ -226,8 +226,8 @@ is_deeply(
     my $ctx = context(level => -1);
 
     local $@ = 'testing error';
-    my $one = Test2::Context->new(
-        trace => Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
+    my $one = Test2::API::Context->new(
+        trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
         hub => test2_stack()->top,
     );
     is($one->_err, 'testing error', "Copied \$@");
@@ -249,16 +249,16 @@ is_deeply(
 }
 
 {
-    like(exception { Test2::Context->new() }, qr/The 'trace' attribute is required/, "need to have trace");
+    like(exception { Test2::API::Context->new() }, qr/The 'trace' attribute is required/, "need to have trace");
 
-    my $trace = Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
-    like(exception { Test2::Context->new(trace => $trace) }, qr/The 'hub' attribute is required/, "need to have hub");
+    my $trace = Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
+    like(exception { Test2::API::Context->new(trace => $trace) }, qr/The 'hub' attribute is required/, "need to have hub");
 
     my $hub = test2_stack()->top;
-    my $ctx = Test2::Context->new(trace => $trace, hub => $hub);
+    my $ctx = Test2::API::Context->new(trace => $trace, hub => $hub);
     is($ctx->{_depth}, 0, "depth set to 0 when not defined.");
 
-    $ctx = Test2::Context->new(trace => $trace, hub => $hub, _depth => 1);
+    $ctx = Test2::API::Context->new(trace => $trace, hub => $hub, _depth => 1);
     is($ctx->{_depth}, 1, "Do not reset depth");
 
     like(

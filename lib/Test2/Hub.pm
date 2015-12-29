@@ -583,7 +583,7 @@ returned by the C<listen()> method.
 
 Use this to add behaviors that are called just before the
 L<Test2::Hub::State> for the hub is finalized. The only argument to your
-codeblock will be a L<Test2::Context::Trace> instance.
+codeblock will be a L<Test2::Util::Trace> instance.
 
     $hub->follow_up(sub {
         my ($trace, $hub) = @_;
@@ -600,7 +600,7 @@ an END block.
 
 This allows you to add callbacks that will trigger every time a new context is
 created for the hub. The only argument to the sub will be the
-L<Test2::Context> instance that was created.
+L<Test2::API::Context> instance that was created.
 
 B<Note> Using this hook could have a huge performance impact.
 
@@ -614,7 +614,7 @@ This can be used to remove a context init hook.
 
 This allows you to add callbacks that will trigger every time a context for
 this hub is released. The only argument to the sub will be the
-L<Test2::Context> instance that was released. These will run in reverse
+L<Test2::API::Context> instance that was released. These will run in reverse
 order.
 
 B<Note> Using this hook could have a huge performance impact.

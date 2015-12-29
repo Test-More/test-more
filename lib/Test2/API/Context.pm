@@ -1,4 +1,4 @@
-package Test2::Context;
+package Test2::API::Context;
 use strict;
 use warnings;
 
@@ -6,7 +6,8 @@ use Scalar::Util qw/weaken/;
 use Carp qw/confess croak longmess/;
 use Test2::Util qw/get_tid try pkg_to_file/;
 
-use Test2::Context::Trace();
+use Test2::Util::Trace();
+use Test2::API::Instance();
 
 # Preload some key event types
 my %LOADED = (
@@ -201,7 +202,7 @@ sub ok {
     my $hub = $self->{+HUB};
 
     my $e = bless {
-        trace => bless( {%{$self->{+TRACE}}}, 'Test2::Context::Trace'),
+        trace => bless( {%{$self->{+TRACE}}}, 'Test2::Util::Trace'),
         pass  => $pass,
         name  => $name,
         $hub->_fast_todo,
@@ -305,7 +306,7 @@ __END__
 
 =head1 NAME
 
-Test2::Context - Object to represent a testing context.
+Test2::API::Context - Object to represent a testing context.
 
 =head1 EXPERIMENTAL RELEASE
 
@@ -354,7 +355,7 @@ inherit it:
 
 =item you MUST always use the context() sub from Test2
 
-Creating your own context via C<< Test2::Context->new() >> will almost never
+Creating your own context via C<< Test2::API::Context->new() >> will almost never
 produce a desirable result. Use C<context()> which is exported by L<Test2>.
 
 There are a handful of cases where a tool author may want to create a new
@@ -434,7 +435,7 @@ This will issue a warning from the file and line number of the context.
 
 =item $stack = $ctx->stack()
 
-This will return the L<Test2::Context::Stack> instance the context used to find
+This will return the L<Test2::API::Stack> instance the context used to find
 the current hub.
 
 =item $hub = $ctx->hub()
@@ -444,7 +445,7 @@ the current one to which all events should be sent.
 
 =item $dbg = $ctx->trace()
 
-This will return the L<Test2::Context::Trace> instance used by the context.
+This will return the L<Test2::Util::Trace> instance used by the context.
 
 =item $ctx->do_in_context(\&code, @args);
 

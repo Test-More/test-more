@@ -117,7 +117,7 @@ $it = Test2::Formatter::TAP->new(
     no_numbers => 1,
 );
 
-my $trace = Test2::Context::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
+my $trace = Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
 my $ok = Test2::Event::Ok->new(pass => 1, name => 'xxx', trace => $trace);
 my $diag = Test2::Event::Diag->new(msg    => 'foo', trace  => $trace);
 my $plan = Test2::Event::Plan->new(max    => 5,     trace  => $trace);
@@ -132,7 +132,7 @@ is($err, "", "no diag");
 my $fmt = Test2::Formatter::TAP->new;
 sub before_each {
     # Make sure there is a fresh trace object for each group
-    $trace = Test2::Context::Trace->new(
+    $trace = Test2::Util::Trace->new(
         frame => ['main_foo', 'foo.t', 42, 'main_foo::flubnarb'],
     );
 }

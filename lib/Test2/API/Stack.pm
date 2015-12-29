@@ -1,4 +1,4 @@
-package Test2::Context::Stack;
+package Test2::API::Stack;
 use strict;
 use warnings;
 
@@ -101,7 +101,7 @@ __END__
 
 =head1 NAME
 
-Test2::Context::Stack - Object to manage a stack of L<Test2::Hub>
+Test2::API::Stack - Object to manage a stack of L<Test2::Hub>
 instances.
 
 =head1 EXPERIMENTAL RELEASE
@@ -122,14 +122,14 @@ that can intercept and handle events differently than the primary hub.
 
 =head1 SYNOPSIS
 
-    my $stack = Test2::Context::Stack->new;
+    my $stack = Test2::API::Stack->new;
     my $hub = $stack->top;
 
 =head1 METHODS
 
 =over 4
 
-=item $stack = Test2::Context::Stack->new()
+=item $stack = Test2::API::Stack->new()
 
 This will create a new empty stack instance. All arguments are ignored.
 

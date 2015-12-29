@@ -84,7 +84,7 @@ L<Test2>.
 
 =item $trace = $e->trace
 
-Get a snapshot of the L<Test2::Context::Trace> as it was when this event was
+Get a snapshot of the L<Test2::Util::Trace> as it was when this event was
 generated
 
 =item $bool = $e->causes_fail

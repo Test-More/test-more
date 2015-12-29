@@ -2,10 +2,10 @@ use strict;
 use warnings;
 use Test2::IPC;
 BEGIN { require "t/tools.pl" };
-use Test2::Context::Stack;
+use Test2::API::Stack;
 use Test2::API qw/test2_ipc/;
 
-ok(my $stack = Test2::Context::Stack->new, "Create a stack");
+ok(my $stack = Test2::API::Stack->new, "Create a stack");
 
 ok(!@$stack, "Empty stack");
 ok(!$stack->peek, "Nothing to peek at");
