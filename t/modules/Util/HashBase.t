@@ -1,7 +1,6 @@
 use strict;
 use warnings;
 BEGIN { require "t/tools.pl" };
-
 BEGIN {
     $INC{'My/HBase.pm'} = __FILE__;
 
@@ -63,5 +62,31 @@ is($pkg->do_it, 'const', "worked as expected");
 }
 ok(!$pkg->FOO, "overrode const sub");
 is($pkg->do_it, 'const', "worked as expected, const was constant");
+
+BEGIN {
+    $INC{'My/HBase/Wrapped.pm'} = __FILE__;
+
+    package My::HBase::Wrapped;
+    use Test2::Util::HashBase qw/foo bar/;
+
+    my $foo = __PACKAGE__->can('foo');
+    *foo = sub {
+        my $self = shift;
+        $self->set_bar(1);
+        $self->$foo(@_);
+    };
+}
+
+BEGIN {
+    $INC{'My/HBase/Wrapped/Inherit.pm'} = __FILE__;
+
+    package My::HBase::Wrapped::Inherit;
+    use base 'My::HBase::Wrapped';
+    use Test2::Util::HashBase;
+}
+
+my $o = My::HBase::Wrapped::Inherit->new(foo => 1);
+my $foo = $o->foo;
+is($o->bar, 1, 'parent attribute sub not overridden');
 
 done_testing;

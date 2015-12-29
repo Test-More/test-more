@@ -6,7 +6,8 @@ my %ATTRS;
 my %META;
 
 sub _get_inherited_attrs {
-    my @todo = @_;
+    no strict 'refs';
+    my @todo = map @{"$_\::ISA"}, @_;
     my %seen;
     my @all;
     while (my $pkg = shift @todo) {
@@ -14,7 +15,6 @@ sub _get_inherited_attrs {
         my $found = $META{$pkg};
         push @all => %$found if $found;
 
-        no strict 'refs';
         my $isa = \@{"$pkg\::ISA"};
         push @todo => @$isa if @$isa;
     }
@@ -24,23 +24,23 @@ sub _get_inherited_attrs {
 
 sub _make_subs {
     my ($str) = @_;
-    $ATTRS{$str} ||= {
+    return $ATTRS{$str} ||= {
         uc($str) => sub() { $str },
         $str => sub { $_[0]->{$str} },
         "set_$str" => sub { $_[0]->{$str} = $_[1] },
     };
-    return $ATTRS{$str};
 }
 
 sub import {
     my $class = shift;
     my $into = caller;
 
-    my $old = $META{$into};
-    my %meta = map { %{_make_subs($_)} } @_;
-    $META{$into} = {%meta, $old ? (%$old) : ()};
+    my %attrs = map %{_make_subs($_)}, @_;
 
-    my %subs = (%meta, @{_get_inherited_attrs($into)}, new => \&_new);
+    my @meta = map uc, @_;
+    @{$META{$into}}{@meta} = map $attrs{$_}, @meta;
+
+    my %subs = (%attrs, @{_get_inherited_attrs($into)}, new => \&_new);
 
     no strict 'refs';
     *{"$into\::$_"} = $subs{$_} for keys %subs;
