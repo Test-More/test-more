@@ -19,18 +19,17 @@ use Data::Dumper();
 use Scalar::Util qw/blessed reftype weaken/;
 
 use Test2::Util qw/USE_THREADS try/;
+use Test2::API qw/context release/;
 # Make Test::Builder thread-safe for ithreads.
-use Test2::Global;
 BEGIN {
     if (USE_THREADS) {
         require Test2::IPC;
         require Test2::IPC::Driver::Files;
         Test2::IPC::Driver::Files->import;
-        Test2::Global::test2_ipc_enable_polling();
+        Test2::API::test2_ipc_enable_polling();
     }
 }
 
-use Test2::API qw/context release/;
 use Test2::Event::Subtest;
 use Test2::Hub::Subtest;
 use Test2::Formatter::TAP();
@@ -38,11 +37,11 @@ use Test2::Formatter::TAP();
 our $Test = Test::Builder->new;
 our $Level;
 
-Test2::Global::test2_add_callback_exit(sub {
+Test2::API::test2_add_callback_exit(sub {
     $Test->_ending(@_);
 });
 
-Test2::Global::test2_ipc()->set_no_fatal(1) if USE_THREADS;
+Test2::API::test2_ipc()->set_no_fatal(1) if USE_THREADS;
 
 sub _add_ts_hooks {
     my $self = shift;
@@ -86,13 +85,13 @@ sub create {
 
     my $self = bless {}, $class;
     if ($params{singleton}) {
-        $self->{Stack} = Test2::Global::test2_stack();
+        $self->{Stack} = Test2::API::test2_stack();
     }
     else {
-        $self->{Stack} = Test2::Context::Stack->new;
+        $self->{Stack} = Test2::API::Stack->new;
         $self->{Stack}->new_hub(
             formatter => Test2::Formatter::TAP->new,
-            ipc       => Test2::Global::test2_ipc(),
+            ipc       => Test2::API::test2_ipc(),
         );
     }
     $self->reset;
@@ -601,7 +600,7 @@ sub ok {
     }
 
     my $e = bless {
-        trace => bless( {%$trace}, 'Test2::Context::Trace'),
+        trace => bless( {%$trace}, 'Test2::Util::Trace'),
         pass  => $test,
         name  => $name,
         allow_bad_name => 1,
@@ -1576,6 +1575,21 @@ sub _print_comment {
     print $fh $msg;
 
     return 0;
+}
+
+# This is used by Test::SharedFork to turn on IPC after the fact. Not
+# documenting because I do not want it used. The method name is borrowed from
+# Test::Builder 2
+# Once Test2 stuff goes stable this method will be removed and Test::SharedFork
+# will be made smarter.
+sub coordinate_forks {
+    my $self = shift;
+
+    require Test2::IPC;
+    Test2::IPC->import;
+    Test2::API::test2_ipc_enable_polling();
+    my $ipc = Test2::IPC::apply_ipc($self->{Stack});
+    $ipc->set_no_fatal(1);
 }
 
 1;

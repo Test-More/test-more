@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Updates for Test2 0.000012
+    - Helper for Test::SharedFork
+
 1.302013_004 2015-12-28 13:12:23-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix diag/note bugs from refactor
