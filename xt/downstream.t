@@ -23,11 +23,11 @@ EOT
 
 ok(run_string(<<"EOT"), "Installed Test2") || exit 1;
 cd ../Test2
-perlbrew exec --with $lib cpanm Test2-0.000010.tar.gz
+perlbrew exec --with $lib cpanm Test2-0.000012.tar.gz
 EOT
 
 ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
-perlbrew exec --with $lib cpanm Test-Simple-1.302013_002.tar.gz
+perlbrew exec --with $lib cpanm Test-Simple-1.302013_005.tar.gz
 EOT
 
 my @BAD;
