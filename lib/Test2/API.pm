@@ -97,8 +97,8 @@ sub context {
     croak "context() called, but return value is ignored"
         unless defined wantarray;
 
-    my $stack = $params{stack} || $STACK;
-    my $hub   = $params{hub} || @$stack ? $stack->[-1] : $stack->top;
+    my $stack   = $params{stack} || $STACK;
+    my $hub     = $params{hub}   || @$stack ? $stack->[-1] : $stack->top;
     my $hid     = $hub->{hid};
     my $current = $CONTEXTS->{$hid};
 
@@ -126,7 +126,7 @@ sub context {
 
     # Directly bless the object here, calling new is a noticable performance
     # hit with how often this needs to be called.
-    my $dbg = bless(
+    my $trace = bless(
         {
             frame => [$pkg, $file, $line, $sub],
             pid   => $$,
@@ -141,7 +141,7 @@ sub context {
         {
             stack  => $stack,
             hub    => $hub,
-            trace  => $dbg,
+            trace  => $trace,
             _depth => $depth,
             _err   => $@,
             $params{on_release} ? (_on_release => [$params{on_release}]) : (),
