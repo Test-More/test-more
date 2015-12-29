@@ -29,17 +29,24 @@ use Test2::Util::HashBase qw{
 };
 
 # Wrap around the getters that should call _finalize.
-for my $finalizer (STACK, IPC, FORMATTER) {
-    my $orig = __PACKAGE__->can($finalizer);
-    my $new = sub {
-        my $self = shift;
-        $self->_finalize unless $self->{+FINALIZED};
-        $self->$orig;
-    };
+BEGIN {
+    for my $finalizer (IPC, FORMATTER) {
+        my $orig = __PACKAGE__->can($finalizer);
+        my $new  = sub {
+            my $self = shift;
+            $self->_finalize unless $self->{+FINALIZED};
+            $self->$orig;
+        };
 
-    no strict 'refs';
-    no warnings 'redefine';
-    *{$finalizer} = $new;
+        no strict 'refs';
+        no warnings 'redefine';
+        *{$finalizer} = $new;
+    }
+}
+
+{
+    my $INST = __PACKAGE__->new;
+    sub _internal_use_only_private_instance() { $INST }
 }
 
 sub init { $_[0]->reset }
@@ -59,7 +66,6 @@ sub reset {
 
     $self->{+FINALIZED} = undef;
     $self->{+IPC}       = undef;
-    $self->{+STACK}     = undef;
 
     $self->{+NO_WAIT} = 0;
     $self->{+LOADED}  = 0;
@@ -68,6 +74,8 @@ sub reset {
     $self->{+POST_LOAD_CALLBACKS}       = [];
     $self->{+CONTEXT_INIT_CALLBACKS}    = [];
     $self->{+CONTEXT_RELEASE_CALLBACKS} = [];
+
+    $self->{+STACK} = Test2::API::Stack->new;
 }
 
 sub _finalize {
@@ -76,7 +84,6 @@ sub _finalize {
     $caller ||= [caller(1)];
 
     $self->{+FINALIZED} = $caller;
-    $self->{+STACK}     = Test2::API::Stack->new;
 
     unless ($self->{+FORMATTER}) {
         my ($formatter, $source);

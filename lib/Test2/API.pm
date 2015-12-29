@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use Test2::API::Instance();
-
 use Test2::API::Context();
 use Test2::Util::Trace();
 
@@ -47,8 +46,10 @@ our @EXPORT_OK = qw{
 };
 use base 'Exporter';
 
-my $INST = Test2::API::Instance->new;
-sub _internal_use_only_private_instance() { $INST }
+my $INST     = Test2::API::Instance::_internal_use_only_private_instance();
+my $STACK    = $INST->stack;
+my $CONTEXTS = $INST->contexts;
+my $INIT_CBS = $INST->context_init_callbacks;
 
 # Set the exit status
 END { $INST->set_exit() }
@@ -96,10 +97,10 @@ sub context {
     croak "context() called, but return value is ignored"
         unless defined wantarray;
 
-    my $stack = $params{stack} || $INST->stack;
+    my $stack = $params{stack} || $STACK;
     my $hub   = $params{hub} || @$stack ? $stack->[-1] : $stack->top;
     my $hid     = $hub->{hid};
-    my $current = $INST->{contexts}->{$hid};
+    my $current = $CONTEXTS->{$hid};
 
     my $level = 1 + $params{level};
     my ($pkg, $file, $line, $sub) = caller($level);
@@ -148,9 +149,9 @@ sub context {
         'Test2::API::Context'
     );
 
-    weaken($INST->{contexts}->{$hid} = $current);
+    weaken($CONTEXTS->{$hid} = $current);
 
-    $_->($current) for @{$INST->{context_init_callbacks}};
+    $_->($current) for @$INIT_CBS;
 
     if (my $hcbk = $hub->{_context_init}) {
         $_->($current) for @$hcbk;
@@ -194,7 +195,7 @@ Removing the old context and creating a new one...
     EOT
 
     my $hid = $ctx->{hub}->hid;
-    delete $INST->{contexts}->{$hid};
+    delete $CONTEXTS->{$hid};
     $ctx->release;
 }
 
@@ -261,7 +262,7 @@ sub run_subtest {
 
     my $parent = $ctx->hub;
 
-    my $stack = $ctx->stack || $INST->stack;
+    my $stack = $ctx->stack || $STACK;
     my $hub = $stack->new_hub(
         class => 'Test2::Hub::Subtest',
     );

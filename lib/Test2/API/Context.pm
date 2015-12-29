@@ -24,14 +24,9 @@ use Test2::Util::HashBase qw{
 
 # Private, not package vars
 # It is safe to cache these.
-my ($ON_RELEASE, $CONTEXTS, $CACHED);
-sub _CACHE_API {
-    require Test2::API;
-    my $INST = Test2::API::_internal_use_only_private_instance();
-    $ON_RELEASE = $INST->context_release_callbacks;
-    $CONTEXTS   = $INST->contexts;
-    $CACHED = 1;
-}
+my $INST       = Test2::API::Instance::_internal_use_only_private_instance();
+my $ON_RELEASE = $INST->context_release_callbacks;
+my $CONTEXTS   = $INST->contexts;
 
 sub init {
     confess "The 'trace' attribute is required"
@@ -63,7 +58,6 @@ sub release {
     # We always undef the callers reference
     return $_[0] = undef if Internals::SvREFCNT(%$self) != 2;
 
-    _CACHE_API() unless $CACHED;
     my $hub = $self->{+HUB};
     my $hid = $hub->{hid};
 
@@ -94,8 +88,6 @@ sub DESTROY {
 
     return unless $self->{+HUB};
     my $hid = $self->{+HUB}->hid;
-
-    _CACHE_API() unless $CACHED;
 
     return unless $CONTEXTS->{$hid} && $CONTEXTS->{$hid} == $self;
     return unless "$@" eq "" . $self->{+_ERR};
@@ -135,7 +127,6 @@ sub do_in_context {
     my $hub = $self->{+HUB};
     my $hid = $hub->hid;
 
-    _CACHE_API() unless $CACHED;
     my $old = $CONTEXTS->{$hid};
 
     weaken($CONTEXTS->{$hid} = $self);

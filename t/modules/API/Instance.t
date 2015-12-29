@@ -17,7 +17,6 @@ is_deeply(
 
         finalized => undef,
         ipc       => undef,
-        stack     => undef,
         formatter => undef,
 
         ipc_polling => undef,
@@ -32,6 +31,8 @@ is_deeply(
         post_load_callbacks       => [],
         context_init_callbacks    => [],
         context_release_callbacks => [],
+
+        stack => [],
     },
     "Got initial settings"
 );
@@ -54,7 +55,6 @@ is_deeply(
 
         finalized => undef,
         ipc       => undef,
-        stack     => undef,
         formatter => undef,
 
         no_wait => 0,
@@ -64,6 +64,8 @@ is_deeply(
         post_load_callbacks       => [],
         context_init_callbacks    => [],
         context_release_callbacks => [],
+
+        stack => [],
     },
     "Reset Object"
 );
@@ -103,7 +105,7 @@ ok($one->finalized, "calling ipc finalized the object");
 
 $one->reset;
 ok($one->stack, 'got stack');
-ok($one->finalized, "calling stack finalized the object");
+ok(!$one->finalized, "calling stack did not finaliz the object");
 
 $one->reset;
 ok($one->formatter, 'Got formatter');
@@ -272,6 +274,7 @@ if (CAN_REALLY_FORK) {
     my $pid = fork;
     die "Failed to fork!" unless defined $pid;
     unless ($pid) { exit 255 }
+    $one->_finalize;
     $one->stack->top;
 
     local $? = 0;
@@ -282,6 +285,7 @@ if (CAN_REALLY_FORK) {
     $pid = fork;
     die "Failed to fork!" unless defined $pid;
     unless ($pid) { exit 255 }
+    $one->_finalize;
     $one->stack->top;
 
     local $? = 122;
