@@ -240,7 +240,7 @@ sub enable_ipc_polling {
 sub disable_ipc_polling {
     my $self = shift;
     return unless defined $self->{+IPC_POLLING};
-    $self->{+IPC_POLLING} = 0;;
+    $self->{+IPC_POLLING} = 0;
 }
 
 sub _ipc_wait {

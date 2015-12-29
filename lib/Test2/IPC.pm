@@ -2,13 +2,62 @@ package Test2::IPC;
 use strict;
 use warnings;
 
-use Test2::API qw/test2_init_done test2_ipc/;
+use Test2::API::Instance;
+use Test2::API qw/test2_init_done test2_ipc test2_stack test2_pid test2_tid/;
+use Test2::Util qw/get_tid/;
+
+use Carp qw/confess/;
 
 our @EXPORT_OK = qw/cull/;
 use base 'Exporter';
 
-die __PACKAGE__ . " was loaded too late, IPC will not be enabled!"
-    if test2_init_done() && !test2_ipc();
+sub import {
+    goto &Exporter::import unless test2_init_done();
+
+    confess "Cannot add IPC in a child process" if test2_pid() != $$;
+    confess "Cannot add IPC in a child thread"  if test2_tid() != get_tid();
+
+    my $INST = Test2::API::Instance::_internal_use_only_private_instance();
+    $INST->set_ipc(_make_ipc());
+    apply_ipc(test2_stack());
+
+    goto &Exporter::import;
+}
+
+sub _make_ipc {
+    # Find a driver
+    my ($driver) = Test2::API::test2_ipc_drivers();
+    unless ($driver) {
+        require Test2::IPC::Driver::Files;
+        $driver = 'Test2::IPC::Driver::Files';
+    }
+
+    return $driver->new();
+}
+
+sub apply_ipc {
+    my $stack = shift;
+
+    my ($root) = @$stack;
+
+    return unless $root;
+
+    confess "Cannot add IPC in a child process" if $root->pid != $$;
+    confess "Cannot add IPC in a child thread"  if $root->tid != get_tid();
+
+    my $ipc = $root->ipc || test2_ipc() || _make_ipc();
+
+    # Add the IPC to all hubs
+    for my $hub (@$stack) {
+        my $has = $hub->ipc;
+        confess "IPC Mismatch!" if $has && $has != $ipc;
+        next if $has;
+        $hub->set_ipc($ipc);
+        $ipc->add_hub($hub->hid);
+    }
+
+    return $ipc;
+}
 
 sub cull {
     my $ctx = context();
@@ -34,11 +83,9 @@ This is an experimental release. Using this right now is not recommended.
 
 =head1 SYNOPSIS
 
-You should C<use Test2::IPC;> as early as possible in your test file.
-L<Test2::IPC> cannot be loaded after the first context is obtained.
-
-    use Test2::IPC;
-    # IPC is now enabled.
+You should C<use Test2::IPC;> as early as possible in your test file. If you
+import this module after API initialization it will attempt to retrofit IPC
+onto the existing hubs.
 
 =head1 EXPORTS
 
