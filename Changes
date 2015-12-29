@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - Restructure file layout
+    - Document namespaces
+    - Combine Global and API into a single module
+
 0.000011  2015-12-28 13:09:38-08:00 America/Los_Angeles
 
     - Fix TAP output to match what Test::More produced
