@@ -70,6 +70,7 @@ BEGIN {
     use Test2::Util::HashBase qw/foo bar/;
 
     my $foo = __PACKAGE__->can('foo');
+    no warnings 'redefine';
     *foo = sub {
         my $self = shift;
         $self->set_bar(1);

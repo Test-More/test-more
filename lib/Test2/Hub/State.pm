@@ -102,6 +102,18 @@ Second End: $sfile line $sline
     $self->is_passing(); # Generate the final boolean.
 }
 
+sub check_plan {
+    my $self = shift;
+
+    return undef unless $self->{+ENDED};
+    my $plan = $self->{+_PLAN} || return undef;
+
+    return 1 if $plan !~ m/^\d+$/;
+
+    return 1 if $plan == $self->{+COUNT};
+    return 0;
+}
+
 1;
 
 __END__

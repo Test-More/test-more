@@ -306,10 +306,12 @@ sub run_subtest {
         $err = "Subtest ended with exit code $code" if $code;
     }
 
+    my $state = $hub->state;
+
     $hub->finalize($trace, 1)
         if $ok
         && !$hub->no_ending
-        && !$hub->state->ended;
+        && !$state->ended;
 
     my $pass = $ok && $hub->state->is_passing;
     my $e = $ctx->build_event(
@@ -320,9 +322,16 @@ sub run_subtest {
         subevents => \@events,
     );
 
+    my $plan_ok = $state->check_plan;
+
     $e->set_diag([
         $e->default_diag,
         $ok ? () : ("Caught exception in subtest: $err"),
+        $plan_ok
+            ? ()
+            : defined($plan_ok)
+                ? ("Bad subtest plan, expected " . $state->plan . " but ran " . $state->count)
+                : (),
     ]) unless $pass;
 
     $ctx->hub->send($e);
