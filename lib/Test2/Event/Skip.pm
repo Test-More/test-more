@@ -11,8 +11,6 @@ sub init {
     $self->{+EFFECTIVE_PASS} = 1;
 }
 
-sub update_state { $_[1]->bump(1) }
-
 sub causes_fail { 0 }
 
 1;

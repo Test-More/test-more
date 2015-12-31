@@ -8,19 +8,16 @@ my $bail = Test2::Event::Bail->new(
     reason => 'evil',
 );
 
-ok($bail->causes_fail, "balout always causes fail.");
+ok($bail->causes_fail, "bailout always causes fail.");
 
 is($bail->terminate, 255, "Bail will cause the test to exit.");
 is($bail->global, 1, "Bail is global, everything should bail");
 
-require Test2::Hub::State;
-my $state = Test2::Hub::State->new;
-ok($state->is_passing, "passing");
-ok(!$state->failed, "no failures");
+my $hub = Test2::Hub->new;
+ok($hub->is_passing, "passing");
+ok(!$hub->failed, "no failures");
 
-$bail->update_state($state);
-
-ok(!$state->is_passing, "not passing");
-ok($state->failed, "failure added");
+$bail->callback($hub);
+is($hub->bailed_out, $bail, "set bailed out");
 
 done_testing;

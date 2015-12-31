@@ -5,9 +5,8 @@ use Test2::API qw/context/;
 
 sub done_testing {
     my $ctx = context();
-    my $state = $ctx->hub->state;
 
-    die "Test Already ended!" if $state->ended;
+    die "Test Already ended!" if $ctx->hub->ended;
     $ctx->hub->finalize($ctx->trace, 1);
     $ctx->release;
 }

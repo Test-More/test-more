@@ -23,16 +23,14 @@ tests Passing => sub {
         pass  => 1,
         name  => 'the_test',
     );
+    ok($ok->increments_count, "Bumps the count");
     ok(!$ok->causes_fail, "Passing 'OK' event does not cause failure");
     is($ok->pass, 1, "got pass");
     is($ok->name, 'the_test', "got name");
     is($ok->effective_pass, 1, "effective pass");
     is($ok->diag, undef, "no diag");
 
-    my $state = Test2::Hub::State->new;
-    $ok->update_state($state);
-    is($state->count, 1, "Added to the count");
-    is($state->is_passing, 1, "still passing");
+    my $hub = Test2::Hub::State->new;
 };
 
 tests Failing => sub {
@@ -43,6 +41,7 @@ tests Failing => sub {
         pass  => 0,
         name  => 'the_test',
     );
+    ok($ok->increments_count, "Bumps the count");
     ok($ok->causes_fail, "A failing test causes failures");
     is($ok->pass, 0, "got pass");
     is($ok->name, 'the_test', "got name");
@@ -53,12 +52,6 @@ tests Failing => sub {
         "Failed test 'the_test'\nat foo.t line 42.",
         "default diag"
     );
-
-    my $state = Test2::Hub::State->new;
-    $ok->update_state($state);
-    is($state->count, 1, "Added to the count");
-    is($state->failed, 1, "Added to failed count");
-    is($state->is_passing, 0, "not passing");
 };
 
 tests fail_with_diag => sub {
@@ -70,6 +63,7 @@ tests fail_with_diag => sub {
         name  => 'the_test',
         diag  => ['xxx'],
     );
+    ok($ok->increments_count, "Bumps the count");
     is($ok->pass, 0, "got pass");
     is($ok->name, 'the_test', "got name");
     is($ok->effective_pass, 0, "effective pass");
@@ -79,12 +73,6 @@ tests fail_with_diag => sub {
         [ "xxx" ],
         "Got diag"
     );
-
-    my $state = Test2::Hub::State->new;
-    $ok->update_state($state);
-    is($state->count, 1, "Added to the count");
-    is($state->failed, 1, "Added to failed count");
-    is($state->is_passing, 0, "not passing");
 };
 
 tests "Failing TODO" => sub {
@@ -96,6 +84,7 @@ tests "Failing TODO" => sub {
         name  => 'the_test',
         todo  => 'A Todo',
     );
+    ok($ok->increments_count, "Bumps the count");
     is($ok->pass, 0, "got pass");
     is($ok->name, 'the_test', "got name");
     is($ok->effective_pass, 1, "effective pass is true from todo");
@@ -106,12 +95,6 @@ tests "Failing TODO" => sub {
         [ "Failed (TODO) test 'the_test'\nat foo.t line 42." ],
         "Got diag"
     );
-
-    my $state = Test2::Hub::State->new;
-    $ok->update_state($state);
-    is($state->count, 1, "Added to the count");
-    is($state->failed, 0, "failed count unchanged");
-    is($state->is_passing, 1, "still passing");
 
     $ok = Test2::Event::Ok->new(
         trace => $trace,
@@ -148,6 +131,7 @@ tests init => sub {
         allow_bad_name => 1,
     );
     ok($ok, "allowed the bad name");
+    ok($ok->increments_count, "Bumps the count");
 };
 
 tests default_diag => sub {

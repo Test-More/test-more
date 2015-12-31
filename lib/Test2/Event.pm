@@ -4,11 +4,13 @@ use warnings;
 
 use Test2::Util::HashBase qw/trace nested _meta/;
 
-sub causes_fail  { 0 }
+sub causes_fail      { 0 }
+sub increments_count { 0 }
 
-sub update_state {()};
-sub terminate    {()};
-sub global       {()};
+sub callback { }
+
+sub terminate { () }
+sub global    { () }
 
 sub set_meta {
     my $self = shift;
@@ -94,6 +96,17 @@ generated
 Returns true if this event should result in a test failure. In general this
 should be false.
 
+=item $bool = $e->increments_count
+
+Should be true if this event should result in a test count increment.
+
+=item $e->callback($hub)
+
+If your event needs to have extra effects on the L<Test2::Hub> you can override
+this method.
+
+This is called B<BEFORE> your event is passed to the formatter.
+
 =item $call = $e->created
 
 Get the C<caller()> details from when the event was generated. This is usually
@@ -103,13 +116,6 @@ inside a tools package. This is typically used for debugging.
 
 If this event is nested inside of other events, this should be the depth of
 nesting. (This is mainly for subtests)
-
-=item $e->update_state($state)
-
-This callback is used by L<Test2::Hub> to give your event a chance to
-update the state.
-
-This is called B<BEFORE> your event is passed to the formatter.
 
 =item $bool = $e->global
 

@@ -17,7 +17,7 @@ my $one = My::MockEvent->new(trace => 'fake');
 
 ok(!$one->causes_fail, "Events do not cause failures by default");
 
-ok(!$one->$_, "$_ is false by default") for qw/update_state terminate global/;
+ok(!$one->$_, "$_ is false by default") for qw/increments_count terminate global/;
 
 ok(!$one->get_meta('xxx'), "no meta-data associated for key 'xxx'");
 

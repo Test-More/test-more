@@ -46,7 +46,7 @@ sub default_diag {
     return $msg;
 }
 
-sub update_state { $_[1]->bump($_[0]->{+EFFECTIVE_PASS}) }
+sub increments_count { 1 };
 
 sub causes_fail { !$_[0]->{+EFFECTIVE_PASS} }
 

@@ -5,12 +5,11 @@ use warnings;
 use base 'Test2::Event';
 use Test2::Util::HashBase qw{reason};
 
-sub update_state {
+sub callback {
     my $self = shift;
-    my ($state) = @_;
+    my ($hub) = @_;
 
-    $state->set_bailed_out($self);
-    $state->bump_fail;
+    $hub->set_bailed_out($self);
 }
 
 # Make sure the tests terminate

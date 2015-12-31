@@ -34,12 +34,12 @@ sub init {
     }
 }
 
-sub update_state {
+sub callback {
     my $self = shift;
-    my ($state) = @_;
+    my ($hub) = @_;
 
-    $state->plan($self->{+DIRECTIVE} || $self->{+MAX});
-    $state->set_skip_reason($self->{+REASON});
+    $hub->plan($self->{+DIRECTIVE} || $self->{+MAX});
+    $hub->set_skip_reason($self->{+REASON});
 }
 
 sub terminate {

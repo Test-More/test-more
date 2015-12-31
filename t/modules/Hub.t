@@ -53,7 +53,7 @@ tests basic => sub {
 
 tests follow_ups => sub {
     my $hub = Test2::Hub->new;
-    $hub->state->set_count(1);
+    $hub->set_count(1);
 
     my $trace = Test2::Util::Trace->new(
         frame => [__PACKAGE__, __FILE__, __LINE__],
@@ -64,7 +64,7 @@ tests follow_ups => sub {
         my ($d, $h) = @_;
         is_deeply($d, $trace, "Got trace");
         is_deeply($h, $hub, "Got hub");
-        ok(!$hub->state->ended, "Hub state has not ended yet");
+        ok(!$hub->ended, "Hub state has not ended yet");
         $ran++;
     });
 
@@ -79,7 +79,7 @@ tests follow_ups => sub {
     is($ran, 1, "ran once");
 
     is_deeply(
-        $hub->state->ended,
+        $hub->ended,
         $trace->frame,
         "Ended at the expected place."
     );
@@ -364,6 +364,92 @@ tests todo_system => sub {
         qr/set_todo\(\) called with undefined argument, todo not set!/,
         "Todo cannot be undef"
     );
+};
+
+tests state => sub {
+    my $hub = Test2::Hub->new;
+
+    is($hub->count,      0,     "count starts at 0");
+    is($hub->failed,     0,     "failed starts at 0");
+    is($hub->is_passing, 1,     "start off passing");
+    is($hub->plan,       undef, "no plan yet");
+
+    $hub->is_passing(0);
+    is($hub->is_passing, 0, "Can Fail");
+
+    $hub->is_passing(1);
+    is($hub->is_passing, 1, "Passes again");
+
+    $hub->set_count(1);
+    is($hub->count,      1, "Added a passing result");
+    is($hub->failed,     0, "still no fails");
+    is($hub->is_passing, 1, "Still passing");
+
+    $hub->set_count(2);
+    $hub->set_failed(1);
+    is($hub->count,      2, "Added a result");
+    is($hub->failed,     1, "new failure");
+    is($hub->is_passing, 0, "Not passing");
+
+    $hub->is_passing(1);
+    is($hub->is_passing, 0, "is_passing always false after a failure");
+
+    $hub->set_failed(0);
+    $hub->is_passing(1);
+    is($hub->is_passing, 1, "Passes again");
+
+    $hub->set_failed(1);
+    is($hub->count,      2, "No new result");
+    is($hub->failed,     1, "new failure");
+    is($hub->is_passing, 0, "Not passing");
+
+    ok(!eval { $hub->plan('foo'); 1 }, "Could not set plan to 'foo'");
+    like($@, qr/'foo' is not a valid plan! Plan must be an integer greater than 0, 'NO PLAN', or 'SKIP'/, "Got expected error");
+
+    ok($hub->plan(5), "Can set plan to integer");
+    is($hub->plan, 5, "Set the plan to an integer");
+
+    $hub->set__plan(undef);
+    ok($hub->plan('NO PLAN'), "Can set plan to 'NO PLAN'");
+    is($hub->plan, 'NO PLAN', "Set the plan to 'NO PLAN'");
+
+    $hub->set__plan(undef);
+    ok($hub->plan('SKIP'), "Can set plan to 'SKIP'");
+    is($hub->plan, 'SKIP', "Set the plan to 'SKIP'");
+
+    ok(!eval { $hub->plan(5); 1 }, "Cannot change plan");
+    like($@, qr/You cannot change the plan/, "Got error");
+
+    my $trace = Test2::Util::Trace->new(frame => ['Foo::Bar', 'foo.t', 42, 'blah']);
+    $hub->finalize($trace);
+    my $ok = eval { $hub->finalize($trace) };
+    my $err = $@;
+    ok(!$ok, "died");
+
+    is($err, <<"    EOT", "Got expected error");
+Test already ended!
+First End:  foo.t line 42
+Second End: foo.t line 42
+    EOT
+
+    $hub = Test2::Hub->new;
+
+    $hub->plan(5);
+    $hub->set_count(5);
+    $hub->set_failed(1);
+    $hub->set_ended($trace);
+    $hub->set_bailed_out("foo");
+    $hub->set_skip_reason('xxx');
+    ok(!$hub->is_passing, "not passing");
+
+    $hub->reset_state;
+
+    ok(!$hub->plan, "no plan");
+    is($hub->count, 0, "count reset to 0");
+    is($hub->failed, 0, "reset failures");
+    ok(!$hub->ended, "not ended");
+    ok(!$hub->bailed_out, "did not bail out");
+    ok(!$hub->skip_reason, "no skip reason");
 };
 
 done_testing;

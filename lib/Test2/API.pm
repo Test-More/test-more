@@ -248,7 +248,7 @@ sub intercept(&) {
     $hub->finalize($trace, 1)
         if $ok
         && !$hub->no_ending
-        && !$hub->state->ended;
+        && !$hub->ended;
 
     return \@events;
 }
@@ -306,14 +306,12 @@ sub run_subtest {
         $err = "Subtest ended with exit code $code" if $code;
     }
 
-    my $state = $hub->state;
-
     $hub->finalize($trace, 1)
         if $ok
         && !$hub->no_ending
-        && !$state->ended;
+        && !$hub->ended;
 
-    my $pass = $ok && $hub->state->is_passing;
+    my $pass = $ok && $hub->is_passing;
     my $e = $ctx->build_event(
         'Subtest',
         pass => $pass,
@@ -322,7 +320,7 @@ sub run_subtest {
         subevents => \@events,
     );
 
-    my $plan_ok = $state->check_plan;
+    my $plan_ok = $hub->check_plan;
 
     $e->set_diag([
         $e->default_diag,
@@ -330,14 +328,14 @@ sub run_subtest {
         $plan_ok
             ? ()
             : defined($plan_ok)
-                ? ("Bad subtest plan, expected " . $state->plan . " but ran " . $state->count)
+                ? ("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
                 : (),
     ]) unless $pass;
 
     $ctx->hub->send($e);
 
     $ctx->release;
-    return $hub->state->is_passing;
+    return $pass;
 }
 
 1;

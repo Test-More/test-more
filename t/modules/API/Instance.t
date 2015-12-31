@@ -224,8 +224,7 @@ if (CAN_THREAD && $] ge '5.010') {
 
 {
     $one->reset();
-    $one->stack->top->state->bump_fail;
-    $one->stack->top->state->bump_fail;
+    $one->stack->top->set_failed(2);
     local $? = 0;
     $one->set_exit;
     is($?, 2, "number of failures");

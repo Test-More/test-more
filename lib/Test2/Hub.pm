@@ -2,7 +2,7 @@ package Test2::Hub;
 use strict;
 use warnings;
 
-use Carp qw/carp croak/;
+use Carp qw/carp croak confess/;
 use Test2::Hub::State();
 use Test2::Util qw/get_tid/;
 
@@ -10,7 +10,6 @@ use Scalar::Util qw/weaken/;
 
 use Test2::Util::HashBase qw{
     pid tid hid ipc
-    state
     no_ending
     _todo _meta parent_todo
     _filters
@@ -19,6 +18,14 @@ use Test2::Util::HashBase qw{
     _formatter
     _context_init
     _context_release
+
+    count
+    failed
+    ended
+    bailed_out
+    _passing
+    _plan
+    skip_reason
 };
 
 my $ID_POSTFIX = 1;
@@ -32,7 +39,9 @@ sub init {
     $self->{+_TODO} = [];
     $self->{+_META} = {};
 
-    $self->{+STATE} ||= Test2::Hub::State->new;
+    $self->{+COUNT}    = 0;
+    $self->{+FAILED}   = 0;
+    $self->{+_PASSING} = 1;
 
     if (my $formatter = delete $self->{formatter}) {
         $self->format($formatter);
@@ -41,6 +50,19 @@ sub init {
     if (my $ipc = $self->{+IPC}) {
         $ipc->add_hub($self->{+HID});
     }
+}
+
+sub reset_state {
+    my $self = shift;
+
+    $self->{+COUNT} = 0;
+    $self->{+FAILED} = 0;
+    $self->{+_PASSING} = 1;
+
+    delete $self->{+_PLAN};
+    delete $self->{+ENDED};
+    delete $self->{+BAILED_OUT};
+    delete $self->{+SKIP_REASON};
 }
 
 sub inherit {
@@ -270,9 +292,12 @@ sub process {
         }
     }
 
-    my $state = $self->{+STATE};
-    $e->update_state($state);
-    my $count = $state->count;
+    $self->{+COUNT}++  if $e->increments_count;
+    $self->{+FAILED}++ and $self->{+_PASSING} = 0 if $e->causes_fail;
+
+    my $callback = $e->callback($self);
+
+    my $count = $self->{+COUNT};
 
     $self->{+_FORMATTER}->write($e, $count) if $self->{+_FORMATTER};
 
@@ -307,24 +332,23 @@ sub finalize {
     my ($trace, $do_plan) = @_;
 
     $self->cull();
-    my $state = $self->{+STATE};
 
-    my $plan   = $state->plan;
-    my $count  = $state->count;
-    my $failed = $state->failed;
+    my $plan   = $self->{+_PLAN};
+    my $count  = $self->{+COUNT};
+    my $failed = $self->{+FAILED};
 
     # return if NOTHING was done.
     return unless $do_plan || defined($plan) || $count || $failed;
 
-    unless ($state->ended) {
+    unless ($self->{+ENDED}) {
         if ($self->{+_FOLLOW_UPS}) {
             $_->($trace, $self) for reverse @{$self->{+_FOLLOW_UPS}};
         }
 
         # These need to be refreshed now
-        $plan   = $state->plan;
-        $count  = $state->count;
-        $failed = $state->failed;
+        $plan   = $self->{+_PLAN};
+        $count  = $self->{+COUNT};
+        $failed = $self->{+FAILED};
 
         if (($plan && $plan eq 'NO PLAN') || ($do_plan && !$plan)) {
             $self->send(
@@ -333,11 +357,85 @@ sub finalize {
                     max => $count,
                 )
             );
-            $plan = $state->plan;
         }
+        $plan = $self->{+_PLAN};
     }
 
-    $state->finish($trace->frame);
+    my $frame = $trace->frame;
+    if($self->{+ENDED}) {
+        my (undef, $ffile, $fline) = @{$self->{+ENDED}};
+        my (undef, $sfile, $sline) = @$frame;
+
+        die <<"        EOT"
+Test already ended!
+First End:  $ffile line $fline
+Second End: $sfile line $sline
+        EOT
+    }
+
+    $self->{+ENDED} = $frame;
+    $self->is_passing(); # Generate the final boolean.
+}
+
+sub is_passing {
+    my $self = shift;
+
+    ($self->{+_PASSING}) = @_ if @_;
+
+    # If we already failed just return 0.
+    my $pass = $self->{+_PASSING} || return 0;
+    return $self->{+_PASSING} = 0 if $self->{+FAILED};
+
+    my $count = $self->{+COUNT};
+    my $ended = $self->{+ENDED};
+    my $plan = $self->{+_PLAN};
+
+    return $pass if !$count && $plan && $plan =~ m/^SKIP$/;
+
+    return $self->{+_PASSING} = 0
+        if $ended && (!$count || !$plan);
+
+    return $pass unless $plan && $plan =~ m/^\d+$/;
+
+    if ($ended) {
+        return $self->{+_PASSING} = 0 if $count != $plan;
+    }
+    else {
+        return $self->{+_PASSING} = 0 if $count > $plan;
+    }
+
+    return $pass;
+}
+
+sub plan {
+    my $self = shift;
+
+    return $self->{+_PLAN} unless @_;
+
+    my ($plan) = @_;
+
+    confess "You cannot unset the plan"
+        unless defined $plan;
+
+    confess "You cannot change the plan"
+        if $self->{+_PLAN} && $self->{+_PLAN} !~ m/^NO PLAN$/;
+
+    confess "'$plan' is not a valid plan! Plan must be an integer greater than 0, 'NO PLAN', or 'SKIP'"
+        unless $plan =~ m/^(\d+|NO PLAN|SKIP)$/;
+
+    $self->{+_PLAN} = $plan;
+}
+
+sub check_plan {
+    my $self = shift;
+
+    return undef unless $self->{+ENDED};
+    my $plan = $self->{+_PLAN} || return undef;
+
+    return 1 if $plan !~ m/^\d+$/;
+
+    return 1 if $plan == $self->{+COUNT};
+    return 0;
 }
 
 sub DESTROY {
@@ -656,6 +754,50 @@ output the final plan if the plan was 'no_plan'.
 =item $bool = $hub->parent_todo
 
 This will be true if this hub is a child hub who's parent had todo set.
+
+=back
+
+=head2 STATE METHODS
+
+=over 4
+
+=item $hub->reset_state()
+
+Reset all state to the start. This sets the test count to 0, clears the plan,
+removes the failures, etc.
+
+=item $num = $hub->count
+
+Get the number of tests that have been run.
+
+=item $num = $hub->failed
+
+Get the number of failures (Not all failures come from a test fail, so this
+number can be larger than the count).
+
+=item $bool = $hub->ended
+
+True if the testing has ended. This MAY return the stack frame of the tool that
+ended the test, but that is not guarenteed.
+
+=item $bool = $hub->is_passing
+
+=item $hub->is_passing($bool)
+
+Check if the overall test run is a failure. Can also be used to set the
+pass/fail status.
+
+=item $hub->plan($plan)
+
+=item $plan = $hub->plan
+
+Get or set the plan. The plan must be an integer larger than 0, the string
+'no_plan', or the string 'skip_all'.
+
+=item $bool = $hub->check_plan
+
+Check if the plan and counts match, but only if the tests have ended. If tests
+have not unded this will return undef, otherwise it will be a true/false.
 
 =back
 

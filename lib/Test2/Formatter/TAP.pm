@@ -248,7 +248,7 @@ sub _subtest_event {
 
     my $count = 0;
     my @subs = map {
-        $count++ if $_->isa('Test2::Event::Ok');
+        $count++ if $_->increments_count;
         map { $_->[1] =~ s/^/    /mg; $_ } $self->event_tap($_, $count);
     } @{$e->subevents};
 

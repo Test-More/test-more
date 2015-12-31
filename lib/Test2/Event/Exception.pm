@@ -5,14 +5,6 @@ use warnings;
 use base 'Test2::Event';
 use Test2::Util::HashBase qw{error};
 
-sub update_state {
-    my $self = shift;
-    my ($state) = @_;
-
-    $state->bump_fail;
-    return undef;
-}
-
 sub causes_fail { 1 }
 
 1;

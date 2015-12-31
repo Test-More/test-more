@@ -327,9 +327,9 @@ sub set_exit {
 
         unless ($root->no_ending) {
             local $?;
-            $root->finalize($trace) unless $root->state->ended;
+            $root->finalize($trace) unless $root->ended;
             $_->($ctx, $exit, \$new_exit) for @{$self->{+EXIT_CALLBACKS}};
-            $new_exit ||= $root->state->failed;
+            $new_exit ||= $root->failed;
         }
     }
 
