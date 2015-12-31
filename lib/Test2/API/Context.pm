@@ -157,15 +157,12 @@ sub ok {
         trace => bless( {%{$self->{+TRACE}}}, 'Test2::Util::Trace'),
         pass  => $pass,
         name  => $name,
-        $hub->_fast_todo,
     }, 'Test2::Event::Ok';
     $e->init;
 
     return $hub->send($e) if $pass;
 
-    $diag ||= [];
-    unshift @$diag => $e->default_diag;
-    $e->set_diag($diag);
+    $e->set_diag($diag) if $diag;
 
     $hub->send($e);
 }
@@ -178,7 +175,6 @@ sub skip {
         name => $name,
         reason => $reason,
         pass => 1,
-        $self->hub->_fast_todo,
         @extra,
     );
 }
@@ -196,7 +192,6 @@ sub diag {
     $self->send_event(
         'Diag',
         message => $message,
-        todo => defined($hub->get_todo) || $hub->parent_todo,
     );
 }
 

@@ -132,30 +132,65 @@ sub _ok_event {
     # We use direct hash access for performance. OK events are so common we
     # need this to be fast.
     my ($name, $todo) = @{$e}{qw/name todo/};
+    my $in_todo = defined($todo);
 
     my $out = "";
     $out .= "not " unless $e->{pass};
     $out .= "ok";
     $out .= " $num" if defined $num;
     $out .= " - $name" if defined $name;
+    $out .= " # TODO" if $in_todo;
+    $out .= " $todo" if length $todo;
 
-    if (defined $todo) {
-        $out .= " # TODO";
-        $out .= " $todo" if length $todo;
-    }
-
+    # The primary line of TAP, if the test passed this is all we need.
     my @out = [OUT_STD, "$out\n"];
+    return @out if $e->pass;
 
-    if ($e->{diag} && @{$e->{diag}}) {
-        my $diag_handle = ($todo || $e->diag_todo) ? OUT_TODO : OUT_ERR;
+    #################
+    # The rest of this is production of the diagnostics messages.
+    #################
 
-        for my $diag (@{$e->{diag}}) {
-            chomp(my $msg = $diag);
+    # Figure out if the message goes to STDERR or to the TODO handle (typically STDOUT)
+    # If the OK is either todo, or has the diag_todo set then this should go to
+    # the TODO handle.
+    my $diag_handle = (defined($todo) || $e->diag_todo) ? OUT_TODO : OUT_ERR;
 
-            $msg = "# $msg" unless $msg =~ m/^\n/;
-            $msg =~ s/\n/\n# /g;
-            push @out => [$diag_handle, "$msg\n"];
-        }
+    # This behavior is inherited from Test::Builder which injected a newline at
+    # the start of the first diagnostics when the harness is active, but not
+    # verbose. This is important to keep the diagnostics from showing up
+    # appended to the existing line, which is hard to read. In a verbose
+    # harness there is no need for this.
+    my $prefix = $ENV{HARNESS_ACTIVE} && !$ENV{HARNESS_IS_VERBOSE} ? "\n" : "";
+
+    # Figure out the debug info, this is typically the file name and line
+    # number, but can also be a custom message. If no trace object is provided
+    # then we have nothing useful to display.
+    my $trace  = $e->trace;
+    my $debug  = $trace ? $trace->debug : "[No trace info available]";
+
+    # Create the initial diagnostics. If the test has a name we put the debug
+    # info on a second line, this behavior is inherited from Test::Builder.
+    my $msg = $in_todo ? "Failed (TODO)" : "Failed";
+    $msg = defined($name)
+        ? qq[$prefix# $msg test '$name'\n# $debug.\n]
+        : qq[$prefix# $msg test $debug.\n];
+
+    # Add the initial diagnostics line to the output list.
+    push @out => [$diag_handle, $msg];
+
+    # Sometimes additional diagnostics messages are associated with the Ok
+    # object, we are going to display them as well.
+    for my $diag (@{$e->diag || []}) {
+        # Remove any trailing newlines, they are not consistently provided, and
+        # we will add our own at the end.
+        chomp(my $diag = $diag);
+
+        # Add the '#' prefix to all lines, but skip the leading newlines.
+        $diag = "# $diag" unless $diag =~ m/^\n/;
+        $diag =~ s/\n/\n# /g;
+
+        # Add the message to the output.
+        push @out => [$diag_handle, "$diag\n"];
     }
 
     return @out;
@@ -206,7 +241,7 @@ sub _diag_event {
     $msg =~ s/\n/\n# /g;
 
     return [
-        $e->todo ? OUT_TODO : OUT_ERR,
+        ($e->todo || $e->diag_todo) ? OUT_TODO : OUT_ERR,
         "$msg\n",
     ];
 }
@@ -233,30 +268,41 @@ sub _subtest_event {
     my $self = shift;
     my ($e, $num) = @_;
 
+    # A 'subtest' is a subclass of 'ok'. Let the code that renders 'ok' render
+    # this event.
     my ($ok, @diag) = $self->_ok_event($e, $num);
 
-    return (
-        $ok,
-        @diag
-    ) unless $e->buffered;
+    # If the subtest is not buffered then the sub-events have already been
+    # rendered, we can go ahead and return.
+    return ($ok, @diag) unless $e->buffered;
 
+    # In a verbose harness we indent the diagnostics from the 'Ok' event since
+    # they will appear inside the subtest braces. This helps readability. In a
+    # non-verbose harness we do nto do this because it is less readable.
     if ($ENV{HARNESS_IS_VERBOSE}) {
-        $_->[1] =~ s/^/    /mg for @diag;
+        # index 0 is the filehandle, index 1 is the message we want to indent.
+        $_->[1] =~ s/^(.*\S)$/    $1/mg for @diag;
     }
 
+    # Add the trailing ' {' to the 'ok' line of TAP output.
     $ok->[1] =~ s/\n/ {\n/;
 
+    # Render the sub-events, we use our own counter for these.
     my $count = 0;
     my @subs = map {
+        # Bump the count for any event that should bump it.
         $count++ if $_->increments_count;
-        map { $_->[1] =~ s/^/    /mg; $_ } $self->event_tap($_, $count);
+
+        # This indents all output lines generated for the sub-events.
+        # index 0 is the filehandle, index 1 is the message we want to indent.
+        map { $_->[1] =~ s/^(.*\S)$/    $1/mg; $_ } $self->event_tap($_, $count);
     } @{$e->subevents};
 
     return (
-        $ok,
-        @diag,
-        @subs,
-        [OUT_STD(), "}\n"],
+        $ok,                # opening ok - name {
+        @diag,              #   diagnostics if the subtest failed
+        @subs,              #   All the inner-event lines
+        [OUT_STD(), "}\n"], # } (closing brace)
     );
 }
 

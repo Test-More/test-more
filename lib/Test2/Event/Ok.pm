@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Test2::Event';
 use Test2::Util::HashBase qw{
-    pass effective_pass name diag allow_bad_name todo diag_todo
+    pass effective_pass name diag allow_bad_name
 };
 
 sub init {
@@ -12,8 +12,7 @@ sub init {
 
     # Do not store objects here, only true or false
     $self->{+PASS} = $self->{+PASS} ? 1 : 0;
-
-    $self->{+EFFECTIVE_PASS} = ($self->{+PASS} || defined($self->{+TODO})) ? 1 : 0;
+    $self->{+EFFECTIVE_PASS} = $self->{+PASS} || (defined($self->{+TODO}) ? 1 : 0);
 
     return if $self->{+ALLOW_BAD_NAME};
     my $name = $self->{+NAME} || return;
@@ -21,29 +20,11 @@ sub init {
     $self->trace->throw("'$name' is not a valid name, names must not contain '#' or newlines.")
 }
 
-sub default_diag {
+sub set_todo {
     my $self = shift;
-
-    return if $self->{+PASS};
-
-    my $name  = $self->{+NAME};
-    my $trace = $self->{+TRACE};
-    my $pass  = $self->{+PASS};
-    my $todo  = defined($self->{+TODO});
-
-    my $msg = $todo ? "Failed (TODO)" : "Failed";
-    my $prefix = $ENV{HARNESS_ACTIVE} && !$ENV{HARNESS_IS_VERBOSE} ? "\n" : "";
-
-    my $debug = $trace ? $trace->debug : "[No trace info available]";
-
-    if (defined $name) {
-        $msg = qq[$prefix$msg test '$name'\n$debug.];
-    }
-    else {
-        $msg = qq[$prefix$msg test $debug.];
-    }
-
-    return $msg;
+    my ($todo) = @_;
+    $self->SUPER::set_todo($todo);
+    $self->{+EFFECTIVE_PASS} = defined($todo) ? 1 : $self->{+PASS};
 }
 
 sub increments_count { 1 };
@@ -106,32 +87,15 @@ Name of the test.
 
 An arrayref full of diagnostics strings to print in the event of a failure.
 
-B<Note:> This does not have anything by default, the C<default_diag()> method
-can be used to generate the basic diagnostics message which you may push into
-this arrayref.
-
 =item $b = $e->effective_pass
 
-This is the true/false value of the test after TODO, SKIP, and similar
-modifiers are taken into account.
+This is the true/false value of the test after TODO and similar modifiers are
+taken into account.
 
 =item $b = $e->allow_bad_name
 
 This relaxes the test name checks such that they allow characters that can
 confuse a TAP parser.
-
-=back
-
-=head1 METHODS
-
-=over 4
-
-=item $string = $e->default_diag()
-
-This generates the default diagnostics string:
-
-    # Failed test 'Some Test'
-    # at t/foo.t line 42.
 
 =back
 

@@ -293,9 +293,6 @@ sub run_subtest {
     $hub->listen(sub { push @events => $_[1] });
     $hub->format(undef) if $buffered;
 
-    my $no_diag = defined($parent->get_todo) || $parent->parent_todo;
-    $hub->set_parent_todo($no_diag) if $no_diag;
-
     my ($ok, $err, $finished);
     T2_SUBTEST_WRAPPER: {
         # Do not use 'try' cause it localizes __DIE__, and does not preserve $@
@@ -344,7 +341,6 @@ sub run_subtest {
     my $plan_ok = $hub->check_plan;
 
     $e->set_diag([
-        $e->default_diag,
         $ok ? () : ("Caught exception in subtest: $err"),
         $plan_ok
             ? ()

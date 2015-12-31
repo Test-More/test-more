@@ -225,6 +225,7 @@ tests note => sub {
 };
 
 for my $pass (1, 0) {
+    local $ENV{HARNESS_IS_VERBOSE} = 1;
     tests name_and_number => sub {
         my $ok = Test2::Event::Ok->new(trace => $trace, pass => $pass, name => 'foo');
         my @tap = $fmt->event_tap($ok, 7);
@@ -232,6 +233,7 @@ for my $pass (1, 0) {
             \@tap,
             [
                 [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7 - foo\n"],
+                $pass ? () : [OUT_ERR, "# Failed test 'foo'\n# at foo.t line 42.\n"],
             ],
             "Got expected output"
         );
@@ -244,6 +246,7 @@ for my $pass (1, 0) {
             \@tap,
             [
                 [OUT_STD, ($pass ? 'ok' : 'not ok') . " - foo\n"],
+                $pass ? () : [OUT_ERR, "# Failed test 'foo'\n# at foo.t line 42.\n"],
             ],
             "Got expected output"
         );
@@ -256,6 +259,7 @@ for my $pass (1, 0) {
             \@tap,
             [
                 [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7\n"],
+                $pass ? () : [OUT_ERR, "# Failed test at foo.t line 42.\n"],
             ],
             "Got expected output"
         );
@@ -269,6 +273,7 @@ for my $pass (1, 0) {
             \@tap,
             [
                 [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7 # TODO b\n"],
+                $pass ? () : [OUT_TODO, "# Failed (TODO) test at foo.t line 42.\n"],
             ],
             "Got expected output"
         );
@@ -280,6 +285,7 @@ for my $pass (1, 0) {
             \@tap,
             [
                 [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7 # TODO\n"],
+                $pass ? () : [OUT_TODO, "# Failed (TODO) test at foo.t line 42.\n"],
             ],
             "Got expected output"
         );
@@ -292,8 +298,9 @@ for my $pass (1, 0) {
             \@tap,
             [
                 [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7\n"],
+                $pass ? () : [OUT_ERR, "# Failed test at foo.t line 42.\n"],
             ],
-            "Got expected output (No diag)"
+            "Got expected output (No added diag)"
         );
 
         $ok = Test2::Event::Ok->new(trace => $trace, pass => $pass);
@@ -302,8 +309,9 @@ for my $pass (1, 0) {
             \@tap,
             [
                 [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7\n"],
+                $pass ? () : [OUT_ERR, "# Failed test at foo.t line 42.\n"],
             ],
-            "Got expected output (No diag)"
+            "Got expected output (No added diag)"
         );
     };
 
@@ -319,6 +327,7 @@ for my $pass (1, 0) {
             [$fmt->event_tap($ok, 4)],
             [
                 [OUT_STD, "not ok 4 - the_test\n"],
+                [OUT_ERR, "# Failed test 'the_test'\n# at foo.t line 42.\n"],
                 [OUT_ERR, "# xxx\n"],
             ],
             "Got tap for failing ok"
@@ -435,9 +444,11 @@ tests subtest => sub {
             [$fmt->event_tap($one, 5)],
             [
                 [OUT_STD, "not ok 5 - bar {\n"],
+                [OUT_ERR, "\n# Failed test 'bar'\n# at foo.t line 42.\n"],
                 [OUT_ERR, "# bar failed\n"],
                 [OUT_STD, "    ok 1 - first\n"],
                 [OUT_STD, "    not ok 2 - second\n"],
+                [OUT_ERR, "\n    # Failed test 'second'\n    # at foo.t line 42.\n"],
                 [OUT_ERR, "    # second failed\n"],
                 [OUT_STD, "    ok 3 - third\n"],
                 [OUT_ERR, "    # blah blah\n"],
@@ -454,9 +465,11 @@ tests subtest => sub {
             [$fmt->event_tap($one, 5)],
             [
                 [OUT_STD, "not ok 5 - bar {\n"],
+                [OUT_ERR, "    # Failed test 'bar'\n    # at foo.t line 42.\n"],
                 [OUT_ERR, "    # bar failed\n"],
                 [OUT_STD, "    ok 1 - first\n"],
                 [OUT_STD, "    not ok 2 - second\n"],
+                [OUT_ERR, "    # Failed test 'second'\n    # at foo.t line 42.\n"],
                 [OUT_ERR, "    # second failed\n"],
                 [OUT_STD, "    ok 3 - third\n"],
                 [OUT_ERR, "    # blah blah\n"],
@@ -475,6 +488,7 @@ tests subtest => sub {
             [
                 # In unbuffered TAP the subevents are rendered outside of this.
                 [OUT_STD, "not ok 5 - bar\n"],
+                [OUT_ERR, "\n# Failed test 'bar'\n# at foo.t line 42.\n"],
                 [OUT_ERR, "# bar failed\n"],
             ],
             "Got Unbuffered TAP output (non-verbose)"
@@ -489,6 +503,7 @@ tests subtest => sub {
             [
                 # In unbuffered TAP the subevents are rendered outside of this.
                 [OUT_STD, "not ok 5 - bar\n"],
+                [OUT_ERR, "# Failed test 'bar'\n# at foo.t line 42.\n"],
                 [OUT_ERR, "# bar failed\n"],
             ],
             "Got Unbuffered TAP output (verbose)"

@@ -2,7 +2,7 @@ package Test2::Event;
 use strict;
 use warnings;
 
-use Test2::Util::HashBase qw/trace nested _meta/;
+use Test2::Util::HashBase qw/trace nested _meta todo diag_todo/;
 
 sub causes_fail      { 0 }
 sub increments_count { 0 }
@@ -164,6 +164,23 @@ event then the default will be attached and returned.
 
     # Get the value, or set it to 'xxx' and get that.
     my $val = $e->get_meta('Foo::Bar', 'xxx');
+
+=item $todo = $e->todo
+
+=item $e->set_todo($todo)
+
+Get/Set the todo reason on the event. Any value other than C<undef> makes the
+event 'TODO'.
+
+Not all events make use of this field, but they can all have it set/cleared.
+
+=item $bool = $e->diag_todo
+
+=item $e->diag_todo($todo)
+
+True if this event should be considered 'TODO' for diagnostics purposes. This
+essentially means that any message that would go to STDERR will go to STDOUT
+instead so that a harness will hide it outside of verbose mode.
 
 =back
 

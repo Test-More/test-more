@@ -325,47 +325,6 @@ tests filter => sub {
     );
 };
 
-tests todo_system => sub {
-    my $hub = Test2::Hub->new();
-
-    {
-        my $todo = $hub->set_todo('foo');
-        ok($todo, "True");
-        is($hub->get_todo, 'foo', "In todo");
-    }
-
-    is($hub->get_todo, undef, "Todo ended");
-
-    my $todo = $hub->set_todo('foo');
-    ok($todo, "True");
-    is($hub->get_todo, 'foo', "In todo");
-    $todo = undef;
-    is($hub->get_todo, undef, "Todo ended");
-
-    # Imitate Test::Builders todo:
-    our $TODOX;
-    {
-        local $TODOX = $hub->set_todo('foo');
-        ok($TODOX, "True");
-        is($hub->get_todo, 'foo', "In todo");
-    }
-    is($hub->get_todo, undef, "Todo ended");
-
-    my $warnings = warnings { $hub->set_todo('xxx') };
-    like(
-        $warnings->[0],
-        qr/set_todo\Q(...)\E called in void context, todo not set!/,
-        "Need to capture the todo!"
-    );
-
-    $warnings = warnings { my $todo = $hub->set_todo() },
-    like(
-        $warnings->[0],
-        qr/set_todo\(\) called with undefined argument, todo not set!/,
-        "Todo cannot be undef"
-    );
-};
-
 tests state => sub {
     my $hub = Test2::Hub->new;
 

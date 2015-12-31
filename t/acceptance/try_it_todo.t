@@ -20,12 +20,17 @@ sub ok($;$) {
 
 ok(1, "First");
 
-my $todo = test2_stack()->top->set_todo('here be dragons');
+my $filter = test2_stack->top->filter(sub {
+    my ($hub, $event) = @_;
+    $event->set_todo('here be dragons');
+    $event->diag_todo(1);
+    return $event;
+});
+
 ok(0, "Second");
-$todo = undef;
+
+test2_stack->top->unfilter($filter);
 
 ok(1, "Third");
 
 done_testing;
-
-1;

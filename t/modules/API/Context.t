@@ -122,18 +122,6 @@ is(@$events, 1, "1 event");
 is_deeply($events, [$e], "Hub saw the event");
 pop @$events;
 
-$ctx->hub->set_parent_todo(1);
-$e = $ctx->diag('foo');
-$ctx->hub->set_parent_todo(0);
-ok($e->todo, "diag is todo");
-pop @$events;
-
-my $todo = $ctx->hub->set_todo("xxx");
-$e = $ctx->diag('foo');
-$todo = undef; # end todo
-ok($e->todo, "diag is todo");
-pop @$events;
-
 $e = $ctx->plan(100);
 is($e->max, 100, "got max");
 is_deeply($e->trace, $trace, "Got the trace info");
@@ -148,12 +136,6 @@ ok($e->pass, "skip events pass by default");
 is_deeply($e->trace, $trace, "Got the trace info");
 is(@$events, 1, "1 event");
 is_deeply($events, [$e], "Hub saw the event");
-pop @$events;
-
-$todo = $ctx->hub->set_todo("xxx");
-$e = $ctx->skip('foo', 'because');
-$todo = undef;
-ok($e->todo, "event is todo");
 pop @$events;
 
 $e = $ctx->skip('foo', 'because', pass => 0);
@@ -339,11 +321,9 @@ sub {
         $ctx->release;
     };
 
-    like($e1->diag->[0], qr/Failed test 'foo'/, "event 1 diag 1");
-    is($e1->diag->[1], 'xxx', "event 1 diag 2");
+    is($e1->diag->[0], 'xxx', "event 1 diag 2");
 
-    like($e2->diag->[0], qr/Failed test 'foo'/, "event 1 diag 1");
-    is(@{$e2->diag}, 1, "only 1 diag for event 2");
+    ok(!$e2->diag, "no diag for event 2");
 }
 
 done_testing;
