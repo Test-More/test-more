@@ -15,14 +15,14 @@ use Carp qw/croak/;
 use base 'Test2::Formatter';
 
 my %CONVERTERS = (
-    'Test2::Event::Ok'        => \&_ok_event,
-    'Test2::Event::Skip'      => \&_skip_event,
-    'Test2::Event::Note'      => \&_note_event,
-    'Test2::Event::Diag'      => \&_diag_event,
-    'Test2::Event::Bail'      => \&_bail_event,
-    'Test2::Event::Exception' => \&_exception_event,
-    'Test2::Event::Subtest'   => \&_subtest_event,
-    'Test2::Event::Plan'      => \&_plan_event,
+    'Test2::Event::Ok'        => '_ok_event',
+    'Test2::Event::Skip'      => '_skip_event',
+    'Test2::Event::Note'      => '_note_event',
+    'Test2::Event::Diag'      => '_diag_event',
+    'Test2::Event::Bail'      => '_bail_event',
+    'Test2::Event::Exception' => '_exception_event',
+    'Test2::Event::Subtest'   => '_subtest_event',
+    'Test2::Event::Plan'      => '_plan_event',
 );
 
 sub register_event {
