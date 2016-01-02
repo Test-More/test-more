@@ -23,6 +23,8 @@ sub get_meta {
     my $self = shift;
     my ($key, $default) = @_;
 
+    return undef unless $self->{+_META} || $default;
+
     $self->{+_META} ||= {};
 
     $self->{+_META}->{$key} = $default
