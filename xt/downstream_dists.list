@@ -9,6 +9,7 @@ Test::Effects
 Test::Exception
 Test::FITesque
 Test::Fatal
+Test::FileReferenced
 Test::FixtureBuilder
 Test::Harness
 Test::Kwalitee
@@ -22,6 +23,7 @@ Test::Most
 Test::SharedFork
 Test::Spec
 Test::Trap
+Test::Vars
 Test::WWW::Mechanize
 Test::Warn
 Test::Warnings
@@ -96,3 +98,5 @@ Fennec::Declare
 Dancer2::Plugin::DBIC
 App::Ack
 Minilla
+Pinto
+forks
