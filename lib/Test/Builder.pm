@@ -1591,6 +1591,7 @@ sub coordinate_forks {
     Test2::API::test2_ipc_enable_polling();
     my $ipc = Test2::IPC::apply_ipc($self->{Stack});
     $ipc->set_no_fatal(1);
+    Test2::API::test2_no_wait(1);
 }
 
 1;
