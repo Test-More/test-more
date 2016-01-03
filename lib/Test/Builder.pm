@@ -27,6 +27,7 @@ BEGIN {
         require Test2::IPC::Driver::Files;
         Test2::IPC::Driver::Files->import;
         Test2::API::test2_ipc_enable_polling();
+        Test2::API::test2_no_wait(1);
     }
 }
 
