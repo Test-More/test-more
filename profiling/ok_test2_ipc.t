@@ -3,7 +3,7 @@ use warnings;
 use Test2::IPC;
 BEGIN { require 't/tools.pl' };
 
-my $count = 10000;
+my $count = $ENV{OK_COUNT} || 100000;
 plan($count);
 
 ok(1, "an ok") for 1 .. $count;
