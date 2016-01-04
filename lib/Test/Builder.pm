@@ -200,16 +200,15 @@ sub finalize {
     my $trace = $ctx->trace;
     delete $ctx->hub->meta(__PACKAGE__, {})->{child};
 
-    my $state = $chub->state;
     $chub->finalize($trace, 1)
         if $ok
-        && $state->count
+        && $chub->count
         && !$chub->no_ending
-        && !$chub->state->ended;
+        && !$chub->ended;
 
-    my $plan   = $state->plan || 0;
-    my $count  = $state->count;
-    my $failed = $state->failed;
+    my $plan   = $chub->plan || 0;
+    my $count  = $chub->count;
+    my $failed = $chub->failed;
 
     my $num_extra = $plan =~ m/\D/ ? 0 : $count - $plan;
     if ($count && $num_extra != 0) {
@@ -231,22 +230,22 @@ FAIL
 
     $st_ctx->release;
 
-    unless ($state->bailed_out) {
-        my $plan = $state->plan;
+    unless ($chub->bailed_out) {
+        my $plan = $chub->plan;
         if ( $plan && $plan eq 'SKIP' ) {
-            $parent->skip($state->skip_reason, $meta->{Name});
+            $parent->skip($chub->skip_reason, $meta->{Name});
         }
-        elsif ( !$state->count ) {
+        elsif ( !$chub->count ) {
             $parent->ok( 0, sprintf q[No tests run for subtest "%s"], $meta->{Name} );
         }
         else {
             $parent->{subevents} = $meta->{subevents};
-            $parent->ok( $state->is_passing, $meta->{Name} );
+            $parent->ok( $chub->is_passing, $meta->{Name} );
         }
     }
 
     $ctx->release;
-    return $state->is_passing;
+    return $chub->is_passing;
 }
 
 sub subtest {
@@ -299,9 +298,9 @@ sub subtest {
         $err = "Subtest ended with exit code $code" if $code;
     }
 
-    my $state = $st_ctx->hub->state;
-    my $plan  = $state->plan;
-    my $count = $state->count;
+    my $st_hub  = $st_ctx->hub;
+    my $plan  = $st_hub->plan;
+    my $count = $st_hub->count;
 
     if (!$count && (!defined($plan) || "$plan" ne 'SKIP')) {
         $st_ctx->plan(0) unless defined $plan;
@@ -314,7 +313,7 @@ sub subtest {
 
     die $err unless $ok;
 
-    return $st_ctx->hub->state->is_passing;
+    return $st_hub->is_passing;
 }
 
 sub name {
@@ -333,7 +332,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Original_Pid} = $$;
 
     my $ctx = $self->ctx;
-    $ctx->hub->set_state(Test2::Hub::State->new());
+    $ctx->hub->reset_state();
 
     my $meta = $ctx->hub->meta(__PACKAGE__, {});
     %$meta = (
@@ -378,9 +377,9 @@ sub plan {
     return unless $cmd;
 
     my $ctx = $self->ctx;
-    my $state = $ctx->hub->state;
+    my $hub = $ctx->hub;
 
-    $ctx->throw("You tried to plan twice") if $state->plan;
+    $ctx->throw("You tried to plan twice") if $hub->plan;
 
     local $Level = $Level + 1;
 
@@ -430,11 +429,11 @@ sub expected_tests {
         $ctx->plan($max);
     }
 
-    my $state = $ctx->hub->state;
+    my $hub = $ctx->hub;
 
     $ctx->release;
 
-    my $plan = $state->plan;
+    my $plan = $hub->plan;
     return 0 unless $plan;
     return 0 if $plan =~ m/\D/;
     return $plan;
@@ -448,7 +447,7 @@ sub no_plan {
 
     $ctx->alert("no_plan takes no arguments") if $arg;
 
-    $ctx->hub->state->plan('NO PLAN');
+    $ctx->hub->plan('NO PLAN');
 
     release $ctx, 1;
 }
@@ -463,15 +462,15 @@ sub done_testing {
 
     if ($meta->{Done_Testing}) {
         my ($file, $line) = @{$meta->{Done_Testing}}[1,2];
-        local $ctx->hub->state->{ended}; # OMG This is awful.
+        local $ctx->hub->{ended}; # OMG This is awful.
         $self->ok(0, "done_testing() was already called at $file line $line");
         $ctx->release;
         return;
     }
     $meta->{Done_Testing} = [$ctx->trace->call];
 
-    my $plan = $ctx->hub->state->plan;
-    my $count = $ctx->hub->state->count;
+    my $plan = $ctx->hub->plan;
+    my $count = $ctx->hub->count;
 
     # If done_testing() specified the number of tests, shut off no_plan
     if( defined $num_tests ) {
@@ -489,7 +488,7 @@ sub done_testing {
                      "but done_testing() expects $num_tests");
     }
 
-    $ctx->plan($num_tests) if $ctx->hub->state->plan && $ctx->hub->state->plan eq 'NO PLAN';
+    $ctx->plan($num_tests) if $ctx->hub->plan && $ctx->hub->plan eq 'NO PLAN';
 
     $ctx->hub->finalize($ctx->trace, 1);
 
@@ -501,7 +500,7 @@ sub has_plan {
     my $self = shift;
 
     my $ctx = $self->ctx;
-    my $plan = $ctx->hub->state->plan;
+    my $plan = $ctx->hub->plan;
     $ctx->release;
 
     return( $plan ) if $plan && $plan !~ m/\D/;
@@ -589,7 +588,7 @@ sub ok {
 
     @$result{ 'ok', 'actual_ok' } = ( ( defined($todo) ? 1 : 0 ), 0 ) unless $test;
 
-    $hub->{_meta}->{+__PACKAGE__}->{Test_Results}[ $hub->{state}->{count} ] = $result;
+    $hub->{_meta}->{+__PACKAGE__}->{Test_Results}[ $hub->{count} ] = $result;
 
     my @attrs;
     my $subevents = delete $self->{subevents};
@@ -934,7 +933,7 @@ sub skip {
 
     my $ctx = $self->ctx;
 
-    $ctx->hub->meta(__PACKAGE__, {})->{Test_Results}[ $ctx->hub->state->count ] = {
+    $ctx->hub->meta(__PACKAGE__, {})->{Test_Results}[ $ctx->hub->count ] = {
         'ok'      => 1,
         actual_ok => 1,
         name      => $name,
@@ -959,7 +958,7 @@ sub todo_skip {
 
     my $ctx = $self->ctx;
 
-    $ctx->hub->meta(__PACKAGE__, {})->{Test_Results}[ $ctx->hub->state->count ] = {
+    $ctx->hub->meta(__PACKAGE__, {})->{Test_Results}[ $ctx->hub->count ] = {
         'ok'      => 1,
         actual_ok => 0,
         name      => '',
@@ -1274,10 +1273,10 @@ sub current_test {
     my( $self, $num ) = @_;
 
     my $ctx = $self->ctx;
-    my $state = $ctx->hub->state;
+    my $hub = $ctx->hub;
 
     if( defined $num ) {
-        $state->set_count($num);
+        $hub->set_count($num);
 
         # If the test counter is being pushed forward fill in the details.
         my $test_results = $ctx->hub->meta(__PACKAGE__, {})->{Test_Results};
@@ -1298,7 +1297,7 @@ sub current_test {
             $#{$test_results} = $num - 1;
         }
     }
-    return release $ctx, $state->count;
+    return release $ctx, $hub->count;
 }
 
 
@@ -1306,15 +1305,15 @@ sub is_passing {
     my $self = shift;
 
     my $ctx = $self->ctx;
-    my $state = $ctx->hub->state;
+    my $hub = $ctx->hub;
 
     if( @_ ) {
         my ($bool) = @_;
-        $state->set_failed(0) if $bool;
-        $state->is_passing($bool);
+        $hub->set_failed(0) if $bool;
+        $hub->is_passing($bool);
     }
 
-    return release $ctx, $state->is_passing;
+    return release $ctx, $hub->is_passing;
 }
 
 
@@ -1465,16 +1464,16 @@ sub _ending {
     # should do the ending.
     return unless $self->{Original_Pid} == $$;
 
-    my $state = $ctx->hub->state;
-    return if $state->bailed_out;
+    my $hub = $ctx->hub;
+    return if $hub->bailed_out;
 
-    my $plan  = $state->plan;
-    my $count = $state->count;
-    my $failed = $state->failed;
+    my $plan  = $hub->plan;
+    my $count = $hub->count;
+    my $failed = $hub->failed;
     return unless $plan || $count || $failed;
 
     # Ran tests but never declared a plan or hit done_testing
-    if( !$state->plan and $state->count ) {
+    if( !$hub->plan and $hub->count ) {
         $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
 
         if($real_exit_code) {
@@ -1520,7 +1519,7 @@ FAIL
 
     if ($plan eq 'NO PLAN') {
         $ctx->plan( $count );
-        $plan = $state->plan;
+        $plan = $hub->plan;
     }
 
     # Figure out if we passed or failed and print helpful messages.
