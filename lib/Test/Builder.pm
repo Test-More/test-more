@@ -7,7 +7,11 @@ use warnings;
 our $VERSION = '1.302013_005';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
+use Test2::API();
+use Test2::Formatter::TB;
+
 BEGIN {
+    Test2::API::test2_formatter_set('Test2::Formatter::TB');
     if( $] < 5.008 ) {
         require Test::Builder::IO::Scalar;
     }
@@ -32,7 +36,6 @@ BEGIN {
 
 use Test2::Event::Subtest;
 use Test2::Hub::Subtest;
-use Test2::Formatter::TAP();
 
 our $Test = Test::Builder->new;
 our $Level;
@@ -52,20 +55,24 @@ sub _add_ts_hooks {
     # in rare cases.
     my $epkgr = \$self->{Exported_To};
 
-    $hub->add_context_init(sub {
-        my $ctx = shift;
-        my $hub = $ctx->{hub};
-        return if defined $hub->get_todo;
+    $hub->filter(sub {
+        my ($active_hub, $e) = @_;
 
         my $epkg = $$epkgr;
-        my $cpkg = $ctx->{trace}->{frame}->[0];
+        my $cpkg = $e->{trace} ? $e->{trace}->{frame}->[0] : undef;
 
         no strict 'refs';
         no warnings 'once';
         my $todo;
-        $todo = ${"$cpkg\::TODO"};
+        $todo = ${"$cpkg\::TODO"} if $cpkg;
         $todo = ${"$epkg\::TODO"} if $epkg && !$todo;
-        $ctx->{tb_todo} = $hub->set_todo($todo) if $todo;
+
+        return $e unless $todo;
+
+        $e->set_diag_todo(1);
+        $e->set_todo($todo) if $hub == $active_hub;
+
+        return $e;
     });
 }
 
@@ -90,7 +97,7 @@ sub create {
     else {
         $self->{Stack} = Test2::API::Stack->new;
         $self->{Stack}->new_hub(
-            formatter => Test2::Formatter::TAP->new,
+            formatter => Test2::Formatter::TB->new,
             ipc       => Test2::API::test2_ipc(),
         );
     }
@@ -156,11 +163,15 @@ sub child {
         class => 'Test2::Hub::Subtest',
     );
 
+    $hub->filter(sub {
+        my ($active_hub, $e) = @_;
+        $e->set_diag_todo(1);
+        return $e;
+    }) if $orig_TODO;
+
     $hub->listen(sub { push @$subevents => $_[1] });
 
     $hub->set_nested( $parent->isa('Test2::Hub::Subtest') ? $parent->nested + 1 : 1 );
-
-    $hub->set_parent_todo(1) if defined $parent->get_todo || $parent->parent_todo;
 
     my $meta = $hub->meta(__PACKAGE__, {});
     $meta->{Name} = $name;
@@ -568,7 +579,7 @@ sub ok {
 
     my $trace = $ctx->{trace};
     my $hub   = $ctx->{hub};
-    my $todo  = $hub->get_todo;
+    my $todo  = $self->todo;
 
     my $orig_name = $name;
 
@@ -603,12 +614,12 @@ sub ok {
         trace => bless( {%$trace}, 'Test2::Util::Trace'),
         pass  => $test,
         name  => $name,
+        _meta => {'Test::Builder' => 1},
         allow_bad_name => 1,
-        $hub->_fast_todo,
+        effective_pass => $test,
         @attrs,
     }, $epkg;
-    $e->init;
-
+    #$e->init;
     $hub->send($e);
 
     $self->_ok_debug($trace, $orig_name, defined($todo)) unless($test);
@@ -1357,13 +1368,13 @@ sub find_TODO {
 sub todo {
     my( $self, $pack ) = @_;
 
+    local $Level = $Level + 1;
     my $ctx = $self->ctx;
 
-    my $todo = $ctx->hub->get_todo;
-    return release($ctx, $todo) if defined $todo;
+    my $meta = $ctx->hub->meta(__PACKAGE__, {todo => []})->{todo};
+    return release($ctx, $meta->[-1]->[1]) if $meta && @$meta;
 
-    local $Level = $Level + 1;
-    $todo = $self->find_TODO($pack);
+    my $todo = $self->find_TODO($pack);
     $ctx->release;
 
     return $todo;
@@ -1372,13 +1383,13 @@ sub todo {
 sub in_todo {
     my $self = shift;
 
+    local $Level = $Level + 1;
     my $ctx = $self->ctx;
 
-    my $todo = $ctx->hub->get_todo;
-    return release($ctx, 1) if defined $todo;
+    my $meta = $ctx->hub->meta(__PACKAGE__, {todo => []})->{todo};
+    return release($ctx, 1) if $meta && @$meta;
 
-    local $Level = $Level + 1;
-    $todo = $self->find_TODO();
+    my $todo = $self->find_TODO();
     $ctx->release;
 
     return 0 unless defined $todo;
@@ -1386,32 +1397,37 @@ sub in_todo {
     return 1;
 }
 
-
 sub todo_start {
     my $self = shift;
     my $message = @_ ? shift : '';
 
     my $ctx = $self->ctx;
-    my $todo = $ctx->hub->set_todo($message);
-    push @{$ctx->hub->meta(__PACKAGE__, {todo => []})->{todo}} => $todo;
+
+    my $hub = $ctx->hub;
+    my $filter = $hub->filter(sub {
+        my ($active_hub, $e) = @_;
+        $e->set_diag_todo(1);
+        $e->set_todo($message) if $hub == $active_hub;
+        return $e;
+    }, inherit => 1);
+
+    push @{$ctx->hub->meta(__PACKAGE__, {todo => []})->{todo}} => [$filter, $message];
 
     $ctx->release;
 
     return;
 }
 
-
 sub todo_end {
     my $self = shift;
 
     my $ctx = $self->ctx;
-    my $ref = pop @{$ctx->hub->meta(__PACKAGE__, {todo => []})->{todo}};
 
-    if( !$ref ) {
-        $ctx->throw('todo_end() called without todo_start()');
-    }
+    my $set = pop @{$ctx->hub->meta(__PACKAGE__, {todo => []})->{todo}};
 
-    $ref = undef;
+    $ctx->throw('todo_end() called without todo_start()') unless $set;
+
+    $ctx->hub->unfilter($set->[0]);
 
     $ctx->release;
 
