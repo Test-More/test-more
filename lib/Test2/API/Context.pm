@@ -2,7 +2,6 @@ package Test2::API::Context;
 use strict;
 use warnings;
 
-use Scalar::Util qw/weaken/;
 use Carp qw/confess croak longmess/;
 use Test2::Util qw/get_tid try pkg_to_file/;
 
@@ -19,7 +18,7 @@ my %LOADED = (
 );
 
 use Test2::Util::HashBase qw{
-    stack hub trace _on_release _depth _err _no_destroy_warning
+    stack hub trace _on_release _depth _canon_count
 };
 
 # Private, not package vars
@@ -40,37 +39,28 @@ sub init {
     $_[0]->{+_ERR} = $@;
 }
 
-sub snapshot { bless {%{$_[0]}}, __PACKAGE__ }
+sub snapshot { bless {%{$_[0]}, _canon_count => undef}, __PACKAGE__ }
 
 # release exists to implement behaviors like die-on-fail. In die-on-fail you
 # want to die after a failure, but only after diagnostics have been reported.
 # The ideal time for the die to happen is when the context is released.
 # Unfortunately die does not work in a DESTROY block.
-# We undef the callers instance of the contect to ensure it is actually
-# destroyed and not re-used. It also makes sure the weak canonical
-# global reference gets removed.
 sub release {
     my ($self) = @_;
 
-    # Layered tools share contexts, and each of them call release, but we only want
-    # release to do anything when it is the last instance of the context.
-    # This happens when refcount is 2 (our caller, and us)
-    # We always undef the callers reference
-    return $_[0] = undef if Internals::SvREFCNT(%$self) != 2;
+    croak "release() should not be called on a non-canonical context"
+        unless $self->{+_CANON_COUNT};
+
+    return if --($self->{+_CANON_COUNT});
 
     my $hub = $self->{+HUB};
     my $hid = $hub->{hid};
 
-    if (!$CONTEXTS->{$hid} || $self != $CONTEXTS->{$hid}) {
-        $_[0] = undef; # Be consistent, ->release removes the object
-        croak "release() should not be called on a non-canonical context.";
-    }
+    croak "context thinks it is canon, but it is not"
+        unless $CONTEXTS->{$hid} && $CONTEXTS->{$hid} == $self;
 
-    # Remove the weak reference, this will also prevent the destructor from
-    # having an issue.
     # Remove the key itself to avoid a slow memory leak
     delete $CONTEXTS->{$hid};
-    $_[0] = undef;
 
     if (my $cbk = $self->{+_ON_RELEASE}) {
         $_->($self) for reverse @$cbk;
@@ -83,62 +73,33 @@ sub release {
     return;
 }
 
-sub DESTROY {
-    my ($self) = @_;
-
-    return unless $self->{+HUB};
-    my $hid = $self->{+HUB}->hid;
-
-    return unless $CONTEXTS->{$hid} && $CONTEXTS->{$hid} == $self;
-    return unless "$@" eq "" . $self->{+_ERR};
-
-    my $trace = $self->{+TRACE} || return;
-    my $frame = $trace->frame;
-
-    my $mess = longmess;
-
-    warn <<"    EOT" unless $self->{+_NO_DESTROY_WARNING} || $self->{+TRACE}->pid != $$ || $self->{+TRACE}->tid != get_tid;
-Context was not released! Releasing at destruction.
-Context creation details:
-  Package: $frame->[0]
-     File: $frame->[1]
-     Line: $frame->[2]
-     Tool: $frame->[3]
-
-Trace: $mess
-    EOT
-
-    # Remove the key itself to avoid a slow memory leak
-    delete $CONTEXTS->{$hid};
-    if(my $cbk = $self->{+_ON_RELEASE}) {
-        $_->($self) for reverse @$cbk;
-    }
-    if (my $hcbk = $self->{+HUB}->{_context_release}) {
-        $_->($self) for reverse @$hcbk;
-    }
-    $_->($self) for reverse @$ON_RELEASE;
-    return;
-}
-
 sub do_in_context {
     my $self = shift;
     my ($sub, @args) = @_;
+
+    croak "Cannot call do_in_context on a canonical context"
+        if $self->{+_CANON_COUNT};
 
     my $hub = $self->{+HUB};
     my $hid = $hub->hid;
 
     my $old = $CONTEXTS->{$hid};
 
-    weaken($CONTEXTS->{$hid} = $self);
+    $self->{+_CANON_COUNT} = 1;
+    $CONTEXTS->{$hid} = $self;
     my ($ok, $err) = &try($sub, @args);
+    my ($rok, $rerr) = try { $self->release };
+    delete $self->{+_CANON_COUNT};
+
     if ($old) {
-        weaken($CONTEXTS->{$hid} = $old);
-        $old = undef;
+        $CONTEXTS->{$hid} = $old;
     }
     else {
         delete $CONTEXTS->{$hid};
     }
-    die $err unless $ok;
+
+    die $err  unless $ok;
+    die $rerr unless $rok;
 }
 
 sub done_testing {
@@ -149,7 +110,7 @@ sub done_testing {
 
 sub throw {
     my ($self, $msg) = @_;
-    $_[0]->release; # We have to act on $_[0] because it is aliased
+    $self->release if $self->{+_CANON_COUNT};
     $self->trace->throw($msg);
 }
 
@@ -241,20 +202,11 @@ sub diag {
 
 sub plan {
     my ($self, $max, $directive, $reason) = @_;
-    if ($directive && $directive =~ m/skip/i) {
-        $self->{+_NO_DESTROY_WARNING} = 1;
-        $self = $self->snapshot;
-        $_[0]->release;
-    }
-
     $self->send_event('Plan', max => $max, directive => $directive, reason => $reason);
 }
 
 sub bail {
     my ($self, $reason) = @_;
-    $self->{+_NO_DESTROY_WARNING} = 1;
-    $self = $self->snapshot;
-    $_[0]->release;
     $self->send_event('Bail', reason => $reason);
 }
 
@@ -344,7 +296,7 @@ inherit it:
 
 =over 4
 
-=item you MUST always use the context() sub from Test2
+=item you MUST always use the context() sub from Test2::API
 
 Creating your own context via C<< Test2::API::Context->new() >> will almost never
 produce a desirable result. Use C<context()> which is exported by L<Test2>.
@@ -357,12 +309,7 @@ what you are doing you should avoid this.
 
 Releasing the context tells the system you are done with it. This gives it a
 chance to run any necessary callbacks or cleanup tasks. If you forget to
-release the context it will be released for you using a destructor, and it will
-give you a warning.
-
-In general the destructor is not preferred because it does not allow callbacks
-to run some types of code, for example you cannot throw an exception from a
-destructor.
+release the context it will try to detect the problem and warn you about it.
 
 =item You MUST NOT pass context objects around
 

@@ -149,7 +149,7 @@ $events = intercept {
 is_deeply(
     \%params,
     {
-        context => $ctx,
+        context => { %$ctx, _canon_count => undef },
         hub => $ictx->hub,
     },
     "Passed in some useful params"

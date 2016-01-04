@@ -11,7 +11,7 @@ use Test2::Hub::Interceptor();
 use Test2::Hub::Interceptor::Terminator();
 
 use Carp qw/croak confess longmess/;
-use Scalar::Util qw/weaken blessed/;
+use Scalar::Util qw/blessed/;
 use Test2::Util qw/get_tid/;
 
 our @EXPORT_OK = qw{
@@ -118,11 +118,24 @@ sub context {
         push @{$current->{_on_release}} => $params{on_release};
     }
 
-    return $current if $current && $current->{_depth} < $depth;
+    # Messy, but a quick way to return ASAP.
+    return $current if $current && $current->{_depth} < $depth && $current->{_canon_count} && $current->{_canon_count}++;
 
     # Handle error condition of bad level
-    _depth_error($current, [$pkg, $file, $line, $sub, $depth])
-        if $current;
+    if ($current) {
+        _canon_error($current, [$pkg, $file, $line, $sub, $depth])
+            unless $current->{_canon_count};
+
+        _depth_error($current, [$pkg, $file, $line, $sub, $depth])
+            unless $current->{_depth} < $depth;
+
+        if ($current->{_canon_count}) {
+            $current->{_canon_count} = 1;
+            $current->release;
+        }
+
+        delete $CONTEXTS->{$hid};
+    }
 
     # Directly bless the object here, calling new is a noticable performance
     # hit with how often this needs to be called.
@@ -139,17 +152,17 @@ sub context {
     # hit with how often this needs to be called.
     $current = bless(
         {
-            stack  => $stack,
-            hub    => $hub,
-            trace  => $trace,
-            _depth => $depth,
-            _err   => $@,
+            stack        => $stack,
+            hub          => $hub,
+            trace        => $trace,
+            _canon_count => 1,
+            _depth       => $depth,
             $params{on_release} ? (_on_release => [$params{on_release}]) : (),
         },
         'Test2::API::Context'
     );
 
-    weaken($CONTEXTS->{$hid} = $current);
+    $CONTEXTS->{$hid} = $current;
 
     $_->($current) for @$INIT_CBS;
 
@@ -163,8 +176,23 @@ sub context {
 }
 
 sub _depth_error {
-    my $ctx = shift;
-    my ($details) = @_;
+    _existing_error(@_, <<"    EOT");
+context() was called to retrieve an existing context, however the existing
+context was created in a stack frame at the same, or deeper level. This usually
+means that a tool failed to release the context when it was finished.
+    EOT
+}
+
+sub _canon_error {
+    _existing_error(@_, <<"    EOT");
+context() was called to retrieve an existing context, however the existing
+context has an invalid internal state (!_canon_count). This should not normally
+happen unless something is mucking about with internals...
+    EOT
+}
+
+sub _existing_error {
+    my ($ctx, $details, $msg) = @_;
     my ($pkg, $file, $line, $sub, $depth) = @$details;
 
     my $oldframe = $ctx->{trace}->frame;
@@ -173,10 +201,7 @@ sub _depth_error {
     my $mess = longmess();
 
     warn <<"    EOT";
-context() was called to retrieve an existing context, however the existing
-context was created in a stack frame at the same, or deeper level. This usually
-means that a tool failed to release the context when it was finished.
-
+$msg
 Old context details:
    File: $oldframe->[1]
    Line: $oldframe->[2]
@@ -193,10 +218,6 @@ Trace: $mess
 
 Removing the old context and creating a new one...
     EOT
-
-    my $hid = $ctx->{hub}->hid;
-    delete $CONTEXTS->{$hid};
-    $ctx->release;
 }
 
 sub release($;$) {

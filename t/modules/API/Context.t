@@ -48,7 +48,8 @@ wrap {
 wrap {
     my $ctx = shift;
     my $snap = $ctx->snapshot;
-    is_deeply($ctx, $snap, "snapshot is identical");
+
+    is_deeply($snap, {%$ctx, _canon_count => undef}, "snapshot is identical");
     ok($ctx != $snap, "snapshot is a new instance");
 };
 
@@ -225,12 +226,10 @@ is_deeply(
 {
     my $ctx = context(level => -1);
 
-    local $@ = 'testing error';
     my $one = Test2::API::Context->new(
         trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
         hub => test2_stack()->top,
     );
-    is($one->_err, 'testing error', "Copied \$@");
     is($one->_depth, 0, "default depth");
 
     my $ran = 0;
@@ -242,7 +241,9 @@ is_deeply(
     };
 
     eval { $one->do_in_context($doit, 'foo', 'bar') };
+
     is(context(level => -1, wrapped => -2), $ctx, "Old context restored");
+    $ctx->release;
     $ctx->release;
 
     ok(!exception { $one->do_in_context(sub {1}) }, "do_in_context works without an original")
@@ -266,28 +267,7 @@ is_deeply(
         qr/release\(\) should not be called on a non-canonical context/,
         "Non canonical context, do not release"
     );
-    ok(!$ctx, "ctx still destroyed from bad release");
 }
-
-sub {
-    my $caller = [caller(0)];
-    my $ctx = context();
-
-    my $warnings = warnings { $ctx = undef };
-    my @parts = split /^\n/m, $warnings->[0];
-    is($parts[0], <<"    EOT", 'Got warning about unreleased context');
-Context was not released! Releasing at destruction\.
-Context creation details:
-  Package: main
-     File: $caller->[1]
-     Line: $caller->[2]
-     Tool: $caller->[3]
-    EOT
-
-    like($parts[1], qr/Trace:/, "got trace");
-
-    ok(@$warnings == 1, "Only 1 warning");
-}->();
 
 sub {
     like(
@@ -329,7 +309,6 @@ sub {
 sub {
     my $ctx = context();
     my $e = exception { $ctx->throw('xxx') };
-    ok(!$ctx, "context was destroyed");
     like($e, qr/xxx/, "got exception");
 
     $ctx = context();
@@ -340,9 +319,6 @@ sub {
 
 sub {
     my $ctx = context;
-    my $clone = $ctx;
-    $ctx = $clone->snapshot;
-    $clone->release;
 
     is($ctx->_parse_event('Ok'), 'Test2::Event::Ok', "Got the Ok event class");
     is($ctx->_parse_event('+Test2::Event::Ok'), 'Test2::Event::Ok', "Got the +Ok event class");

@@ -280,13 +280,25 @@ sub set_exit {
     my $exit     = $?;
     my $new_exit = $exit;
 
-    my @unreleased = grep { $_ && $_->trace->pid == $$ } values %{$self->{+CONTEXTS}};
-    if (@unreleased) {
-        $exit = 255;
-        $new_exit = 255;
+    for my $ctx (values %{$self->{+CONTEXTS}}) {
+        next unless $ctx;
 
-        $_->trace->alert("context object was never released! This means a testing tool is behaving very badly")
-            for @unreleased;
+        # Only worry about contexts in this PID
+        my $trace = $ctx->trace || next;
+        next unless $trace->pid == $$;
+
+        # Do not worry about contexts that have no hub
+        my $hub = $ctx->hub  || next;
+
+        # Do not worry if the state came to a sudden end.
+        next if $hub->bailed_out;
+        next if defined $hub->skip_reason;
+
+        # now we worry
+        $trace->alert("context object was never released! This means a testing tool is behaving very badly");
+
+        $exit     = 255;
+        $new_exit = 255;
     }
 
     if ($self->{+PID} != $$ or $self->{+TID} != get_tid()) {

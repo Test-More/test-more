@@ -135,7 +135,20 @@ sub is_deeply($$;$@) {
 
     my $bool = $g eq $w;
 
-    $ctx->ok($bool, $name, [$g, $w, @diag]);
+    my $diff;
+#    unless ($bool) {
+#        use File::Temp;
+#        my ($gFH, $fileg) = File::Temp::tempfile();
+#        my ($wFH, $filew) = File::Temp::tempfile();
+#        print $gFH $g;
+#        print $wFH $w;
+#        close($gFH) || die $!;
+#        close($wFH) || die $!;
+#        my $cmd = qq{git diff --color=always "$fileg" "$filew"};
+#        $diff = eval { `$cmd` };
+#    }
+
+    $ctx->ok($bool, $name, [$diff ? $diff : ($g, $w), @diag]);
     $ctx->release;
     return $bool;
 }

@@ -295,6 +295,7 @@ if (CAN_REALLY_FORK) {
 {
     my $ctx = bless {
         trace => Test2::Util::Trace->new(frame => ['Foo::Bar', 'Foo/Bar.pm', 42, 'xxx']),
+        hub => Test2::Hub->new(),
     }, 'Test2::API::Context';
     $one->contexts->{1234} = $ctx;
 
