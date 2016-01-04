@@ -14,7 +14,6 @@ BEGIN {
 }
 
 use overload();
-use Data::Dumper();
 
 use Scalar::Util qw/blessed reftype weaken/;
 
@@ -1146,6 +1145,8 @@ sub note {
 
 sub explain {
     my $self = shift;
+
+    require Data::Dumper;
 
     return map {
         ref $_
