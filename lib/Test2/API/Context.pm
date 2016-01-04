@@ -160,11 +160,43 @@ sub ok {
     }, 'Test2::Event::Ok';
     $e->init;
 
-    return $hub->send($e) if $pass;
-
-    $e->set_diag($diag) if $diag;
-
     $hub->send($e);
+    return $e if $pass;
+
+    $self->failure_diag($e);
+
+    if ($diag && @$diag) {
+        $self->diag($_) for @$diag
+    }
+
+    return $e;
+}
+
+sub failure_diag {
+    my $self = shift;
+    my ($e) = @_;
+
+    # This behavior is inherited from Test::Builder which injected a newline at
+    # the start of the first diagnostics when the harness is active, but not
+    # verbose. This is important to keep the diagnostics from showing up
+    # appended to the existing line, which is hard to read. In a verbose
+    # harness there is no need for this.
+    my $prefix = $ENV{HARNESS_ACTIVE} && !$ENV{HARNESS_IS_VERBOSE} ? "\n" : "";
+
+    # Figure out the debug info, this is typically the file name and line
+    # number, but can also be a custom message. If no trace object is provided
+    # then we have nothing useful to display.
+    my $name  = $e->name;
+    my $trace = $e->trace;
+    my $debug = $trace ? $trace->debug : "[No trace info available]";
+
+    # Create the initial diagnostics. If the test has a name we put the debug
+    # info on a second line, this behavior is inherited from Test::Builder.
+    my $msg = defined($name)
+        ? qq[${prefix}Failed test '$name'\n$debug.\n]
+        : qq[${prefix}Failed test $debug.\n];
+
+    $self->diag($msg);
 }
 
 sub skip {
@@ -406,9 +438,13 @@ will be effected.
 
 =item $event = $ctx->ok($bool, $name, \@diag)
 
-This will create an L<Test2::Event::Ok> object for you. The diagnostics
-array will be used on the object in the event of a failure, if the test passes
-the diagnostics will be ignored.
+This will create an L<Test2::Event::Ok> object for you. If C<$bool> is false
+then an L<Test2::Event::Diag> event will be sent as well with details about the
+failure. If you do not want automatic diagnostics you should use the
+C<send_event()> method directly.
+
+The C<\@diag> can contain diagnostics messages you wish to have displayed in the
+event of a failure. For a passing test the diagnostics array will be ignored.
 
 =item $event = $ctx->note($message)
 

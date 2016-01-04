@@ -55,7 +55,7 @@ is_deeply(
 is(exception { die "foo\n" }, "foo\n", "got exception");
 is(exception { 1 }, undef, "no exception");
 
-my $events = intercept {
+my $main_events = intercept {
     plan 8;
 
     ok(0, "'ok' Test");
@@ -64,9 +64,6 @@ my $events = intercept {
     like("foo", qr/a/, "'like' test");
     unlike("foo", qr/o/, "'unlike' test");
 
-    diag("Testing Diag");
-    note("Testing Note");
-
     is_deeply(
         { a => 1, b => 2, c => {}},
         { a => 1, b => 2, c => []},
@@ -74,9 +71,13 @@ my $events = intercept {
     );
 };
 
-is(@$events, 9, "got 9 events");
+my $other_events = intercept {
+    diag("Testing Diag");
+    note("Testing Note");
+};
 
-my ($plan, $ok, $is, $isnt, $like, $unlike, $diag, $note, $is_deeply) = @$events;
+my ($plan, $ok, $is, $isnt, $like, $unlike, $is_deeply) = grep {!$_->isa('Test2::Event::Diag')} @$main_events;
+my ($diag, $note) = @$other_events;
 
 ok($plan->isa('Test2::Event::Plan'), "got plan");
 is($plan->max, 8, "planned for 8 oks");
@@ -105,7 +106,7 @@ is($diag->message, "Testing Diag", "got diag message");
 ok($note->isa('Test2::Event::Note'), "got 'note' result");
 is($note->message, "Testing Note", "got note message");
 
-$events = intercept {
+my $events = intercept {
     skip_all 'because';
     ok(0, "should not see me");
     die "should not happen";
@@ -126,6 +127,7 @@ $events = intercept {
     unlike(undef, qr//);
 };
 
+@$events = grep {!$_->isa('Test2::Event::Diag')} @$events;
 is(@$events, 5, "5 events");
 ok(!$_->pass, "undef test - should not pass") for @$events;
 
@@ -145,6 +147,8 @@ $events = intercept {
     );
     $ictx->hub->finalize($trace, 1);
 };
+
+@$events = grep {!$_->isa('Test2::Event::Diag')} @$events;
 
 is_deeply(
     \%params,

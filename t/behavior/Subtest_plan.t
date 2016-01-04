@@ -11,7 +11,7 @@ my $events = intercept {
 };
 
 is(
-    $events->[0]->diag->[-1],
+    $events->[1]->message,
     "Bad subtest plan, expected 4 but ran 1",
     "Helpful message if subtest has a bad plan",
 );

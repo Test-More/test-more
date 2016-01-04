@@ -143,57 +143,7 @@ sub _ok_event {
     $out .= " $todo" if length $todo;
 
     # The primary line of TAP, if the test passed this is all we need.
-    my @out = [OUT_STD, "$out\n"];
-    return @out if $e->pass;
-
-    #################
-    # The rest of this is production of the diagnostics messages.
-    #################
-
-    # Figure out if the message goes to STDERR or to the TODO handle (typically STDOUT)
-    # If the OK is either todo, or has the diag_todo set then this should go to
-    # the TODO handle.
-    my $diag_handle = (defined($todo) || $e->diag_todo) ? OUT_TODO : OUT_ERR;
-
-    # This behavior is inherited from Test::Builder which injected a newline at
-    # the start of the first diagnostics when the harness is active, but not
-    # verbose. This is important to keep the diagnostics from showing up
-    # appended to the existing line, which is hard to read. In a verbose
-    # harness there is no need for this.
-    my $prefix = $ENV{HARNESS_ACTIVE} && !$ENV{HARNESS_IS_VERBOSE} ? "\n" : "";
-
-    # Figure out the debug info, this is typically the file name and line
-    # number, but can also be a custom message. If no trace object is provided
-    # then we have nothing useful to display.
-    my $trace  = $e->trace;
-    my $debug  = $trace ? $trace->debug : "[No trace info available]";
-
-    # Create the initial diagnostics. If the test has a name we put the debug
-    # info on a second line, this behavior is inherited from Test::Builder.
-    my $msg = $in_todo ? "Failed (TODO)" : "Failed";
-    $msg = defined($name)
-        ? qq[$prefix# $msg test '$name'\n# $debug.\n]
-        : qq[$prefix# $msg test $debug.\n];
-
-    # Add the initial diagnostics line to the output list.
-    push @out => [$diag_handle, $msg];
-
-    # Sometimes additional diagnostics messages are associated with the Ok
-    # object, we are going to display them as well.
-    for my $diag (@{$e->diag || []}) {
-        # Remove any trailing newlines, they are not consistently provided, and
-        # we will add our own at the end.
-        chomp(my $diag = $diag);
-
-        # Add the '#' prefix to all lines, but skip the leading newlines.
-        $diag = "# $diag" unless $diag =~ m/^\n/;
-        $diag =~ s/\n/\n# /g;
-
-        # Add the message to the output.
-        push @out => [$diag_handle, "$diag\n"];
-    }
-
-    return @out;
+    return([OUT_STD, "$out\n"]);
 }
 
 sub _skip_event {
@@ -240,10 +190,7 @@ sub _diag_event {
     $msg =~ s/^/# /;
     $msg =~ s/\n/\n# /g;
 
-    return [
-        ($e->todo || $e->diag_todo) ? OUT_TODO : OUT_ERR,
-        "$msg\n",
-    ];
+    return [OUT_ERR, "$msg\n"];
 }
 
 sub _bail_event {

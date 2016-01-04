@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Test2::Event';
 use Test2::Util::HashBase qw{
-    pass effective_pass name diag allow_bad_name
+    pass effective_pass name allow_bad_name todo
 };
 
 sub init {
@@ -20,11 +20,14 @@ sub init {
     $self->trace->throw("'$name' is not a valid name, names must not contain '#' or newlines.")
 }
 
-sub set_todo {
-    my $self = shift;
-    my ($todo) = @_;
-    $self->SUPER::set_todo($todo);
-    $self->{+EFFECTIVE_PASS} = defined($todo) ? 1 : $self->{+PASS};
+{
+    no warnings 'redefine';
+    sub set_todo {
+        my $self = shift;
+        my ($todo) = @_;
+        $self->{+TODO} = $todo;
+        $self->{+EFFECTIVE_PASS} = defined($todo) ? 1 : $self->{+PASS};
+    }
 }
 
 sub increments_count { 1 };

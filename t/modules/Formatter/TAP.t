@@ -11,6 +11,13 @@ BEGIN {
     *OUT_TODO = Test2::Formatter::TAP->can('OUT_TODO') or die;
 }
 
+use Test2::API;
+Test2::API::test2_add_callback_context_release(sub {
+    my $ctx = shift;
+    return if $ctx->hub->is_passing;
+    $ctx->throw("(Die On Fail)");
+});
+
 ok(my $one = Test2::Formatter::TAP->new, "Created a new instance");
 my $handles = $one->handles;
 is(@$handles, 3, "Got 3 handles");
@@ -169,17 +176,10 @@ tests diag => sub {
         "Only 1 newline"
     );
 
-    $diag->set_todo('todo');
-    is_deeply(
-        [$fmt->event_tap($diag, 1)],
-        [[OUT_TODO, "# foo\n"]],
-        "Got tap in todo"
-    );
-
     $diag->set_message("foo\nbar\nbaz");
     is_deeply(
         [$fmt->event_tap($diag, 1)],
-        [[OUT_TODO, "# foo\n# bar\n# baz\n"]],
+        [[OUT_ERR, "# foo\n# bar\n# baz\n"]],
         "All lines have proper prefix"
     );
 };
@@ -233,7 +233,6 @@ for my $pass (1, 0) {
             \@tap,
             [
                 [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7 - foo\n"],
-                $pass ? () : [OUT_ERR, "# Failed test 'foo'\n# at foo.t line 42.\n"],
             ],
             "Got expected output"
         );
@@ -246,7 +245,6 @@ for my $pass (1, 0) {
             \@tap,
             [
                 [OUT_STD, ($pass ? 'ok' : 'not ok') . " - foo\n"],
-                $pass ? () : [OUT_ERR, "# Failed test 'foo'\n# at foo.t line 42.\n"],
             ],
             "Got expected output"
         );
@@ -259,7 +257,6 @@ for my $pass (1, 0) {
             \@tap,
             [
                 [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7\n"],
-                $pass ? () : [OUT_ERR, "# Failed test at foo.t line 42.\n"],
             ],
             "Got expected output"
         );
@@ -273,7 +270,6 @@ for my $pass (1, 0) {
             \@tap,
             [
                 [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7 # TODO b\n"],
-                $pass ? () : [OUT_TODO, "# Failed (TODO) test at foo.t line 42.\n"],
             ],
             "Got expected output"
         );
@@ -285,52 +281,8 @@ for my $pass (1, 0) {
             \@tap,
             [
                 [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7 # TODO\n"],
-                $pass ? () : [OUT_TODO, "# Failed (TODO) test at foo.t line 42.\n"],
             ],
             "Got expected output"
-        );
-    };
-
-    tests empty_diag_array => sub {
-        my $ok = Test2::Event::Ok->new(trace => $trace, pass => $pass, diag => []);
-        my @tap = $fmt->event_tap($ok, 7);
-        is_deeply(
-            \@tap,
-            [
-                [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7\n"],
-                $pass ? () : [OUT_ERR, "# Failed test at foo.t line 42.\n"],
-            ],
-            "Got expected output (No added diag)"
-        );
-
-        $ok = Test2::Event::Ok->new(trace => $trace, pass => $pass);
-        @tap = $fmt->event_tap($ok, 7);
-        is_deeply(
-            \@tap,
-            [
-                [OUT_STD, ($pass ? 'ok' : 'not ok') . " 7\n"],
-                $pass ? () : [OUT_ERR, "# Failed test at foo.t line 42.\n"],
-            ],
-            "Got expected output (No added diag)"
-        );
-    };
-
-    tests diag => sub {
-        my $ok = Test2::Event::Ok->new(
-            trace => $trace,
-            pass  => 0,
-            name  => 'the_test',
-            diag  => ['xxx'],
-        );
-
-        is_deeply(
-            [$fmt->event_tap($ok, 4)],
-            [
-                [OUT_STD, "not ok 4 - the_test\n"],
-                [OUT_ERR, "# Failed test 'the_test'\n# at foo.t line 42.\n"],
-                [OUT_ERR, "# xxx\n"],
-            ],
-            "Got tap for failing ok"
         );
     };
 };
@@ -426,10 +378,9 @@ tests subtest => sub {
         pass      => 0,
         buffered  => 1,
         name      => 'bar',
-        diag      => [ 'bar failed' ],
         subevents => [
             Test2::Event::Ok->new(trace => $trace, name => 'first',  pass => 1),
-            Test2::Event::Ok->new(trace => $trace, name => 'second', pass => 0, diag => ["second failed"]),
+            Test2::Event::Ok->new(trace => $trace, name => 'second', pass => 0),
             Test2::Event::Ok->new(trace => $trace, name => 'third',  pass => 1),
 
             Test2::Event::Diag->new(trace => $trace, message => 'blah blah'),
@@ -444,12 +395,8 @@ tests subtest => sub {
             [$fmt->event_tap($one, 5)],
             [
                 [OUT_STD, "not ok 5 - bar {\n"],
-                [OUT_ERR, "\n# Failed test 'bar'\n# at foo.t line 42.\n"],
-                [OUT_ERR, "# bar failed\n"],
                 [OUT_STD, "    ok 1 - first\n"],
                 [OUT_STD, "    not ok 2 - second\n"],
-                [OUT_ERR, "\n    # Failed test 'second'\n    # at foo.t line 42.\n"],
-                [OUT_ERR, "    # second failed\n"],
                 [OUT_STD, "    ok 3 - third\n"],
                 [OUT_ERR, "    # blah blah\n"],
                 [OUT_STD, "    1..3\n"],
@@ -465,12 +412,8 @@ tests subtest => sub {
             [$fmt->event_tap($one, 5)],
             [
                 [OUT_STD, "not ok 5 - bar {\n"],
-                [OUT_ERR, "    # Failed test 'bar'\n    # at foo.t line 42.\n"],
-                [OUT_ERR, "    # bar failed\n"],
                 [OUT_STD, "    ok 1 - first\n"],
                 [OUT_STD, "    not ok 2 - second\n"],
-                [OUT_ERR, "    # Failed test 'second'\n    # at foo.t line 42.\n"],
-                [OUT_ERR, "    # second failed\n"],
                 [OUT_STD, "    ok 3 - third\n"],
                 [OUT_ERR, "    # blah blah\n"],
                 [OUT_STD, "    1..3\n"],
@@ -488,8 +431,6 @@ tests subtest => sub {
             [
                 # In unbuffered TAP the subevents are rendered outside of this.
                 [OUT_STD, "not ok 5 - bar\n"],
-                [OUT_ERR, "\n# Failed test 'bar'\n# at foo.t line 42.\n"],
-                [OUT_ERR, "# bar failed\n"],
             ],
             "Got Unbuffered TAP output (non-verbose)"
         );
@@ -503,8 +444,6 @@ tests subtest => sub {
             [
                 # In unbuffered TAP the subevents are rendered outside of this.
                 [OUT_STD, "not ok 5 - bar\n"],
-                [OUT_ERR, "# Failed test 'bar'\n# at foo.t line 42.\n"],
-                [OUT_ERR, "# bar failed\n"],
             ],
             "Got Unbuffered TAP output (verbose)"
         );

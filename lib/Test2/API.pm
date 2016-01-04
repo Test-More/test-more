@@ -340,16 +340,12 @@ sub run_subtest {
 
     my $plan_ok = $hub->check_plan;
 
-    $e->set_diag([
-        $ok ? () : ("Caught exception in subtest: $err"),
-        $plan_ok
-            ? ()
-            : defined($plan_ok)
-                ? ("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
-                : (),
-    ]) unless $pass;
-
     $ctx->hub->send($e);
+
+    $ctx->diag("Caught exception in subtest: $err") unless $ok;
+
+    $ctx->diag("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
+        if defined($plan_ok) && !$plan_ok;
 
     $ctx->release;
     return $pass;

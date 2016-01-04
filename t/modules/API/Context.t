@@ -115,7 +115,6 @@ is_deeply($events, [$e], "Hub saw the event");
 pop @$events;
 
 $e = $ctx->diag('foo');
-ok(!$e->todo, "no todo");
 is($e->message, 'foo', "got message");
 is_deeply($e->trace, $trace, "Got the trace info");
 is(@$events, 1, "1 event");
@@ -314,16 +313,20 @@ sub {
 
 {
     my ($e1, $e2);
-    intercept {
+    my $events = intercept {
         my $ctx = context();
         $e1 = $ctx->ok(0, 'foo', ['xxx']);
         $e2 = $ctx->ok(0, 'foo');
         $ctx->release;
     };
 
-    is($e1->diag->[0], 'xxx', "event 1 diag 2");
+    ok($e1->isa('Test2::Event::Ok'), "returned ok event");
+    ok($e2->isa('Test2::Event::Ok'), "returned ok event");
 
-    ok(!$e2->diag, "no diag for event 2");
+    is($events->[0], $e1, "got ok event 1");
+    is($events->[3], $e2, "got ok event 2");
+
+    is($events->[2]->message, 'xxx', "event 1 diag 2");
 }
 
 done_testing;

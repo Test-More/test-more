@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use base 'Test2::Event';
-use Test2::Util::HashBase qw{message};
+use Test2::Util::HashBase qw/message/;
 
 sub init {
     $_[0]->{+MESSAGE} = 'undef' unless defined $_[0]->{+MESSAGE};

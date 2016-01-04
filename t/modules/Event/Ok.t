@@ -28,7 +28,6 @@ tests Passing => sub {
     is($ok->pass, 1, "got pass");
     is($ok->name, 'the_test', "got name");
     is($ok->effective_pass, 1, "effective pass");
-    is($ok->diag, undef, "no diag");
 
     my $hub = Test2::Hub::State->new;
 };
@@ -48,20 +47,6 @@ tests Failing => sub {
     is($ok->effective_pass, 0, "effective pass");
 };
 
-tests fail_with_diag => sub {
-    local $ENV{HARNESS_ACTIVE} = 1;
-    local $ENV{HARNESS_IS_VERBOSE} = 1;
-    my $ok = Test2::Event::Ok->new(
-        trace => $trace,
-        pass  => 0,
-        name  => 'the_test',
-    );
-    ok($ok->increments_count, "Bumps the count");
-    is($ok->pass, 0, "got pass");
-    is($ok->name, 'the_test', "got name");
-    is($ok->effective_pass, 0, "effective pass");
-};
-
 tests "Failing TODO" => sub {
     local $ENV{HARNESS_ACTIVE} = 1;
     local $ENV{HARNESS_IS_VERBOSE} = 1;
@@ -75,8 +60,6 @@ tests "Failing TODO" => sub {
     is($ok->pass, 0, "got pass");
     is($ok->name, 'the_test', "got name");
     is($ok->effective_pass, 1, "effective pass is true from todo");
-
-    ok(!$ok->diag, "no default diag");
 
     $ok = Test2::Event::Ok->new(
         trace => $trace,

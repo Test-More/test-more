@@ -2,7 +2,7 @@ package Test2::Event;
 use strict;
 use warnings;
 
-use Test2::Util::HashBase qw/trace nested _meta todo diag_todo/;
+use Test2::Util::HashBase qw/trace nested _meta/;
 
 sub causes_fail      { 0 }
 sub increments_count { 0 }
