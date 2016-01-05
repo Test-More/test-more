@@ -2,7 +2,6 @@ use strict;
 use warnings;
 
 BEGIN { require "t/tools.pl" };
-use Test2::Hub::State;
 use Test2::Util::Trace;
 use Test2::Event::Ok;
 use Test2::Event::Diag;
@@ -28,8 +27,6 @@ tests Passing => sub {
     is($ok->pass, 1, "got pass");
     is($ok->name, 'the_test', "got name");
     is($ok->effective_pass, 1, "effective pass");
-
-    my $hub = Test2::Hub::State->new;
 };
 
 tests Failing => sub {
@@ -88,15 +85,6 @@ tests init => sub {
         pass  => 1,
     );
     is($ok->effective_pass, 1, "set effective pass");
-
-    $ok = Test2::Event::Ok->new(
-        trace => $trace,
-        pass  => 1,
-        name => 'foo#foo',
-        allow_bad_name => 1,
-    );
-    ok($ok, "allowed the bad name");
-    ok($ok->increments_count, "Bumps the count");
 };
 
 done_testing;

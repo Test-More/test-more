@@ -3,7 +3,6 @@ use strict;
 use warnings;
 
 use Carp qw/carp croak confess/;
-use Test2::Hub::State();
 use Test2::Util qw/get_tid/;
 
 use Scalar::Util qw/weaken/;
@@ -590,9 +589,8 @@ returned by the C<listen()> method.
 
 =item $hub->follow_op(sub { ... })
 
-Use this to add behaviors that are called just before the
-L<Test2::Hub::State> for the hub is finalized. The only argument to your
-codeblock will be a L<Test2::Util::Trace> instance.
+Use this to add behaviors that are called just before the hub is finalized. The
+only argument to your codeblock will be a L<Test2::Util::Trace> instance.
 
     $hub->follow_up(sub {
         my ($trace, $hub) = @_;

@@ -4,7 +4,6 @@ use warnings;
 BEGIN { require "t/tools.pl" };
 use Test2::Event::Plan;
 use Test2::Util::Trace;
-use Test2::Hub::State;
 
 my $plan = Test2::Event::Plan->new(
     trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
@@ -12,7 +11,7 @@ my $plan = Test2::Event::Plan->new(
 );
 
 ok(!$plan->global, "regular plan is not a global event");
-my $state = Test2::Hub::State->new;
+my $state = Test2::Hub->new;
 $plan->callback($state);
 is($state->plan, 100, "set plan in state");
 is($plan->terminate, undef, "No terminate for normal plan");
@@ -21,7 +20,7 @@ $plan->set_max(0);
 $plan->set_directive('SKIP');
 $plan->set_reason('foo');
 ok($plan->global, "plan is global on skip all");
-$state = Test2::Hub::State->new;
+$state = Test2::Hub->new;
 $plan->callback($state);
 is($state->plan, 'SKIP', "set plan in state");
 is($plan->terminate, 0, "Terminate 0 on skip_all");
@@ -29,7 +28,7 @@ is($plan->terminate, 0, "Terminate 0 on skip_all");
 $plan->set_max(0);
 $plan->set_directive('NO PLAN');
 $plan->set_reason(undef);
-$state = Test2::Hub::State->new;
+$state = Test2::Hub->new;
 $plan->callback($state);
 is($state->plan, 'NO PLAN', "set plan in state");
 is($plan->terminate, undef, "No terminate for no_plan");
