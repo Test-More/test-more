@@ -6,9 +6,8 @@ use PerlIO;
 
 BEGIN {
     require "t/tools.pl";
-    *OUT_STD  = Test2::Formatter::TAP->can('OUT_STD')  or die;
-    *OUT_ERR  = Test2::Formatter::TAP->can('OUT_ERR')  or die;
-    *OUT_TODO = Test2::Formatter::TAP->can('OUT_TODO') or die;
+    *OUT_STD = Test2::Formatter::TAP->can('OUT_STD') or die;
+    *OUT_ERR = Test2::Formatter::TAP->can('OUT_ERR') or die;
 }
 
 use Test2::API;
@@ -20,8 +19,7 @@ Test2::API::test2_add_callback_context_release(sub {
 
 ok(my $one = Test2::Formatter::TAP->new, "Created a new instance");
 my $handles = $one->handles;
-is(@$handles, 3, "Got 3 handles");
-is($handles->[0], $handles->[2], "First and last handles are the same");
+is(@$handles, 2, "Got 2 handles");
 ok($handles->[0] != $handles->[1], "First and second handles are not the same");
 my $layers = { map {$_ => 1} PerlIO::get_layers($handles->[0]) };
 
@@ -35,13 +33,13 @@ else {
 $one->encoding('utf8');
 is($one->encoding, 'utf8', "Got encoding");
 $handles = $one->handles;
-is(@$handles, 3, "Got 3 handles");
+is(@$handles, 2, "Got 2 handles");
 $layers = { map {$_ => 1} PerlIO::get_layers($handles->[0]) };
 ok($layers->{utf8}, "Now utf8");
 
 my $two = Test2::Formatter::TAP->new(encoding => 'utf8');
 $handles = $two->handles;
-is(@$handles, 3, "Got 3 handles");
+is(@$handles, 2, "Got 2 handles");
 $layers = { map {$_ => 1} PerlIO::get_layers($handles->[0]) };
 ok($layers->{utf8}, "Now utf8");
 
@@ -113,28 +111,7 @@ $it = undef;
 close($stdh);
 close($errh);
 
-($std, $err) = ("", "");
-open( $stdh, '>', \$std ) || die "Ooops";
-open( $errh, '>', \$err ) || die "Ooops";
-
-$it = Test2::Formatter::TAP->new(
-    handles    => [$stdh, $errh, $stdh],
-    no_diag    => 1,
-    no_header  => 1,
-    no_numbers => 1,
-);
-
-my $trace = Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
-my $ok = Test2::Event::Ok->new(pass => 1, name => 'xxx', trace => $trace);
-my $diag = Test2::Event::Diag->new(msg    => 'foo', trace  => $trace);
-my $plan = Test2::Event::Plan->new(max    => 5,     trace  => $trace);
-my $bail = Test2::Event::Bail->new(reason => 'foo', nested => 1, trace => $trace);
-
-$it->write($_, 1) for $ok, $diag, $plan, $bail;
-
-# This checks that the plan, the diag, and the bail are not rendered
-is($std, "ok - xxx\n", "Only got the 'ok'");
-is($err, "", "no diag");
+my ($trace, $ok, $diag, $plan, $bail);
 
 my $fmt = Test2::Formatter::TAP->new;
 sub before_each {

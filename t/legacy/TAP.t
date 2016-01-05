@@ -55,12 +55,15 @@ sub tm_ok($;$) {
         (index($name, "\n") >= 0 && $name =~ s{\n}{\n# }sg)
     );
 
-    $ctx->send_event(
-        'Ok',
+    my $ok = bless {
         pass => $bool,
         name => $name,
-        allow_bad_name => 1,
-    );
+        effective_pass => 1,
+        trace => $ctx->trace->snapshot,
+    }, 'Test2::Event::Ok';
+    # Do not call init
+
+    $ctx->hub->send($ok);
     $ctx->release;
     return $bool;
 }
