@@ -5,10 +5,12 @@
     - Make context less magic (Follwing advice from Graham Knop and RJBS)
     - Remove State.pm (part of Hub.pm again, no longer needs to be separate)
     - Make it possible to subclass the TAP formatter
-    - Minor optimizations
+    - Minor optimization in Event->meta
     - Better messaging if subtest plan is wrong
     - HashBase in subclass will not override accessors from parent (Graham Knop)
     - TAP formatter doc updates
+    - Optimizations for Hub->process and TAP->Write
+
 
 0.000012  2015-12-29 12:59:26-08:00 America/Los_Angeles
 
