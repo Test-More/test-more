@@ -304,21 +304,6 @@ This is what takes events and turns them into TAP.
 
     $tap->write($event, $number); # Output an event
 
-=head1 EXPORTS
-
-=over 4
-
-=item OUT_STD
-
-=item OUT_ERR
-
-=item OUT_TODO
-
-These are constants to identify filehandles. These constants are used by events
-to direct text to the correct filehandle.
-
-=back
-
 =head1 METHODS
 
 =over 4
@@ -368,7 +353,7 @@ you might want to write a custom event type that results in TAP output. In
 order to do this you use the C<register_event()> class method.
 
     package My::Event;
-    use Test2::Formatter::TAP qw/OUT_STD OUT_ERR/;
+    use Test2::Formatter::TAP;
 
     use base 'Test2::Event';
     use Test2::Util::HashBase accessors => [qw/pass name diag note/];
@@ -379,9 +364,9 @@ order to do this you use the C<register_event()> class method.
             my $self = shift;
             my ($e, $num) = @_;
             return (
-                [OUT_STD, "ok $num - " . $e->name . "\n"],
-                [OUT_ERR, "# " . $e->name . " " . $e->diag . "\n"],
-                [OUT_STD, "# " . $e->name . " " . $e->note . "\n"],
+                [Test2::Formatter::TAP::OUT_STD, "ok $num - " . $e->name . "\n"],
+                [Test2::Formatter::TAP::OUT_ERR, "# " . $e->name . " " . $e->diag . "\n"],
+                [Test2::Formatter::TAP::OUT_STD, "# " . $e->name . " " . $e->note . "\n"],
             );
         }
     );
