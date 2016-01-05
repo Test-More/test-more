@@ -39,7 +39,10 @@ sub callback {
     my ($hub) = @_;
 
     $hub->plan($self->{+DIRECTIVE} || $self->{+MAX});
-    $hub->set_skip_reason($self->{+REASON});
+
+    return unless $self->{+DIRECTIVE};
+
+    $hub->set_skip_reason($self->{+REASON} || 1) if $self->{+DIRECTIVE} eq 'SKIP';
 }
 
 sub terminate {

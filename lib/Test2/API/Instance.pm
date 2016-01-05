@@ -283,6 +283,8 @@ sub set_exit {
     for my $ctx (values %{$self->{+CONTEXTS}}) {
         next unless $ctx;
 
+        next if $ctx->aborted;
+
         # Only worry about contexts in this PID
         my $trace = $ctx->trace || next;
         next unless $trace->pid == $$;

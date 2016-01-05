@@ -18,7 +18,7 @@ my %LOADED = (
 );
 
 use Test2::Util::HashBase qw{
-    stack hub trace _on_release _depth _canon_count
+    stack hub trace _on_release _depth _canon_count aborted
 };
 
 # Private, not package vars
@@ -35,8 +35,6 @@ sub init {
         unless $_[0]->{+HUB};
 
     $_[0]->{+_DEPTH} = 0 unless defined $_[0]->{+_DEPTH};
-
-    $_[0]->{+_ERR} = $@;
 }
 
 sub snapshot { bless {%{$_[0]}, _canon_count => undef}, __PACKAGE__ }
@@ -110,6 +108,7 @@ sub done_testing {
 
 sub throw {
     my ($self, $msg) = @_;
+    $self->{+ABORTED} = 1;
     $self->release if $self->{+_CANON_COUNT};
     $self->trace->throw($msg);
 }
@@ -229,11 +228,13 @@ sub diag {
 
 sub plan {
     my ($self, $max, $directive, $reason) = @_;
+    $self->{+ABORTED} = 1 if $directive && $directive =~ m/^(SKIP|skip_all)$/;
     $self->send_event('Plan', max => $max, directive => $directive, reason => $reason);
 }
 
 sub bail {
     my ($self, $reason) = @_;
+    $self->{+ABORTED} = 1;
     $self->send_event('Bail', reason => $reason);
 }
 

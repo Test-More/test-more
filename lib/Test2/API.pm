@@ -123,11 +123,13 @@ sub context {
 
     # Handle error condition of bad level
     if ($current) {
-        _canon_error($current, [$pkg, $file, $line, $sub, $depth])
-            unless $current->{_canon_count};
+        unless ($current->aborted) {
+            _canon_error($current, [$pkg, $file, $line, $sub, $depth])
+                unless $current->{_canon_count};
 
-        _depth_error($current, [$pkg, $file, $line, $sub, $depth])
-            unless $current->{_depth} < $depth;
+            _depth_error($current, [$pkg, $file, $line, $sub, $depth])
+                unless $current->{_depth} < $depth;
+        }
 
         if ($current->{_canon_count}) {
             $current->{_canon_count} = 1;
