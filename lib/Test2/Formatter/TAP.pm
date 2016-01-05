@@ -25,6 +25,9 @@ my %CONVERTERS = (
     'Test2::Event::Plan'      => '_plan_event',
 );
 
+# Initial list of converters are safe for direct hash access cause we control them.
+my %SAFE_TO_ACCESS_HASH = %CONVERTERS;
+
 sub register_event {
     my $class = shift;
     my ($type, $convert) = @_;
@@ -76,13 +79,17 @@ if ($^C) {
 sub write {
     my ($self, $e, $num) = @_;
 
-    my @tap = $self->event_tap($e, $num) or return;
+    my $type = ref($e);
+
+    my $converter = $CONVERTERS{$type} or return;
+    my @tap = $self->$converter($e, $self->{+NO_NUMBERS} ? undef : $num) or return;
 
     my $handles = $self->{+HANDLES};
-    my $nesting = $e->nested || 0;
+    my $nesting = ($SAFE_TO_ACCESS_HASH{$type} ? $e->{nested} : $e->nested) || 0;
     my $indent = '    ' x $nesting;
 
-    local($\, $", $,) = (undef, ' ', '');
+    # Local is expensive! Only do it if we really need to.
+    local($\, $,) = (undef, '') if $\ || $,;
     for my $set (@tap) {
         no warnings 'uninitialized';
         my ($hid, $msg) = @$set;
@@ -137,7 +144,7 @@ sub _ok_event {
     my $out = "";
     $out .= "not " unless $e->{pass};
     $out .= "ok";
-    $out .= " $num" if defined $num;
+    $out .= " $num" if defined($num);
     $out .= " - $name" if defined $name;
     $out .= " # TODO" if $in_todo;
     $out .= " $todo" if length $todo;

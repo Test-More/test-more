@@ -252,10 +252,15 @@ sub process {
         }
     }
 
-    $self->{+COUNT}++  if $e->increments_count;
-    $self->{+FAILED}++ and $self->{+_PASSING} = 0 if $e->causes_fail;
+    my $type = ref($e);
+    my $is_ok = $type eq 'Test2::Event::Ok';
+    my $no_fail = $type eq 'Test2::Event::Diag' || $type eq 'Test2::Event::Note';
+    my $causes_fail = $is_ok ? !$e->{effective_pass} : $no_fail ? 0 : $e->causes_fail;
 
-    my $callback = $e->callback($self);
+    $self->{+COUNT}++  if $is_ok || (!$no_fail && $e->increments_count);
+    $self->{+FAILED}++ and $self->{+_PASSING} = 0 if $causes_fail;
+
+    my $callback = $e->callback($self) unless $is_ok || $no_fail;
 
     my $count = $self->{+COUNT};
 
@@ -264,6 +269,8 @@ sub process {
     if ($self->{+_LISTENERS}) {
         $_->{code}->($self, $e, $count) for @{$self->{+_LISTENERS}};
     }
+
+    return $e if $is_ok || $no_fail;
 
     my $code = $e->terminate;
     $self->terminate($code, $e) if defined $code;
