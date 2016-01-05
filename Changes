@@ -1,5 +1,15 @@
 {{$NEXT}}
 
+    - Remove diag from inside todo (separation of concerns, less TAP influence)
+    - Remove internal TODO tracking (not needed, less TAP influence)
+    - Make context less magic (Follwing advice from Graham Knop and RJBS)
+    - Remove State.pm (part of Hub.pm again, no longer needs to be separate)
+    - Make it possible to subclass the TAP formatter
+    - Minor optimizations
+    - Better messaging if subtest plan is wrong
+    - HashBase in subclass will not override accessors from parent (Graham Knop)
+    - TAP formatter doc updates
+
 0.000012  2015-12-29 12:59:26-08:00 America/Los_Angeles
 
     - Restructure file layout
