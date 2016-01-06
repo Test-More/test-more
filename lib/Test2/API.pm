@@ -40,6 +40,7 @@ our @EXPORT_OK = qw{
     test2_ipc_enable_polling
     test2_ipc_get_pending
     test2_ipc_set_pending
+    test2_ipc_enable_shm
 
     test2_formatter
     test2_formatters
@@ -80,6 +81,7 @@ sub test2_ipc_enable_polling  { $INST->enable_ipc_polling }
 sub test2_ipc_disable_polling { $INST->disable_ipc_polling }
 sub test2_ipc_get_pending     { $INST->get_ipc_pending }
 sub test2_ipc_set_pending     { $INST->set_ipc_pending(@_) }
+sub test2_ipc_enable_shm      { $INST->ipc_enable_shm }
 
 sub test2_formatter     { $INST->formatter }
 sub test2_formatters    { @{$INST->formatters} }
@@ -818,6 +820,11 @@ time a context is created.
 =item test2_ipc_disable_polling()
 
 Turn off IPC polling.
+
+=item test2_ipc_enable_shm()
+
+Turn on IPC shm. Only some IPC drivers use this, and most will turn it on
+themselves.
 
 =item test2_ipc_set_pending($uniq_val)
 

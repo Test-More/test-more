@@ -135,24 +135,7 @@ sub _finalize {
     for my $driver (@{$self->{+IPC_DRIVERS}}) {
         next unless $driver->can('is_viable') && $driver->is_viable;
         $self->{+IPC} = $driver->new or next;
-
-        return unless $self->{+IPC}->use_shm;
-
-        try {
-            require IPC::SysV;
-
-            my $ipc_key = IPC::SysV::IPC_PRIVATE();
-            my $shm_size = $self->{+IPC}->can('shm_size') ? $self->{+IPC}->shm_size : 64;
-            my $shm_id = shmget($ipc_key, $shm_size, 0666) or die;
-
-            my $initial = 'a' x $shm_size;
-            shmwrite($shm_id, $initial, 0, $shm_size) or die;
-
-            $self->{+IPC_SHM_SIZE} = $shm_size;
-            $self->{+IPC_SHM_ID}   = $shm_id;
-            $self->{+IPC_SHM_LAST} = $initial;
-        };
-
+        $self->ipc_enable_shm if $self->{+IPC}->use_shm;
         return;
     }
 
@@ -267,6 +250,29 @@ sub enable_ipc_polling {
     ) unless defined $self->ipc_polling;
 
     $self->set_ipc_polling(1);
+}
+
+sub ipc_enable_shm {
+    my $self = shift;
+
+    return 1 if defined $self->{+IPC_SHM_ID};
+
+    my ($ok, $err) = try {
+        require IPC::SysV;
+
+        my $ipc_key = IPC::SysV::IPC_PRIVATE();
+        my $shm_size = $self->{+IPC}->can('shm_size') ? $self->{+IPC}->shm_size : 64;
+        my $shm_id = shmget($ipc_key, $shm_size, 0666) or die;
+
+        my $initial = 'a' x $shm_size;
+        shmwrite($shm_id, $initial, 0, $shm_size) or die;
+
+        $self->{+IPC_SHM_SIZE} = $shm_size;
+        $self->{+IPC_SHM_ID}   = $shm_id;
+        $self->{+IPC_SHM_LAST} = $initial;
+    };
+
+    return $ok;
 }
 
 sub get_ipc_pending {
@@ -501,6 +507,10 @@ call release on the context.
 This is intended to be called in an C<END { ... }> block. This will look at
 test state and set $?. This will also call any end callbacks, and wait on child
 processes/threads.
+
+=item $obj->ipc_enable_shm()
+
+Turn on SHM for IPC (if possible)
 
 =item $shm_id = $obj->ipc_shm_id()
 
