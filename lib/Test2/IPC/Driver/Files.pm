@@ -179,6 +179,8 @@ sub cull {
     for my $file (sort readdir($dh)) {
         next if substr($file, 0, 1) eq '.';
 
+        next unless substr($file, -6, 6) eq '.ready';
+
         my $global   = substr($file, 0, 6) eq 'GLOBAL';
         my $have_hid = !$global && substr($file, 0, length($hid)) eq $hid;
 
