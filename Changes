@@ -10,7 +10,8 @@
     - HashBase in subclass will not override accessors from parent (Graham Knop)
     - TAP formatter doc updates
     - Optimizations for Hub->process and TAP->Write
-
+    - IPC File-Driver Optimizations
+    - IPC use SHM when possible to notify about pending events
 
 0.000012  2015-12-29 12:59:26-08:00 America/Los_Angeles
 
