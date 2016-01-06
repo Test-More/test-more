@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000013  2016-01-06 11:12:21-08:00 America/Los_Angeles
+
     - Remove diag from inside todo (separation of concerns, less TAP influence)
     - Remove internal TODO tracking (not needed, less TAP influence)
     - Make context less magic (Follwing advice from Graham Knop and RJBS)
