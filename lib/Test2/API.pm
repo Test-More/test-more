@@ -38,6 +38,8 @@ our @EXPORT_OK = qw{
     test2_ipc_polling
     test2_ipc_disable_polling
     test2_ipc_enable_polling
+    test2_ipc_get_pending
+    test2_ipc_set_pending
 
     test2_formatter
     test2_formatters
@@ -76,6 +78,8 @@ sub test2_ipc_drivers         { @{$INST->ipc_drivers} }
 sub test2_ipc_polling         { $INST->ipc_polling }
 sub test2_ipc_enable_polling  { $INST->enable_ipc_polling }
 sub test2_ipc_disable_polling { $INST->disable_ipc_polling }
+sub test2_ipc_get_pending     { $INST->get_ipc_pending }
+sub test2_ipc_set_pending     { $INST->set_ipc_pending(@_) }
 
 sub test2_formatter     { $INST->formatter }
 sub test2_formatters    { @{$INST->formatters} }
@@ -814,6 +818,23 @@ time a context is created.
 =item test2_ipc_disable_polling()
 
 Turn off IPC polling.
+
+=item test2_ipc_set_pending($uniq_val)
+
+Tell other processes and events that an event is pending. C<$uniq_val> should
+be a unique value no other thread/process will generate.
+
+B<Note:> After calling this C<test2_ipc_get_pending()> will return 1. This is
+intentional, and not avoidable.
+
+=item $pending = test2_ipc_get_pending()
+
+This returns -1 if there is no way to check (assume yes)
+
+This returns 0 if there are (most likely) no pending events.
+
+This returns 1 if there are (likely) pending events. Upon return it will reset,
+nothing else will be able to see that there were pending events.
 
 =back
 

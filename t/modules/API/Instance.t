@@ -386,6 +386,7 @@ if (CAN_REALLY_FORK) {
     $one->enable_ipc_polling;
     is(@{$one->context_init_callbacks}, 1, "added the callback");
     is($one->ipc_polling, 1, "polling on");
+    $one->set_ipc_shm_last('abc1');
     $one->context_init_callbacks->[0]->({'hub' => 'Fake::Hub'});
     is($cull, 1, "called cull once");
     $cull = 0;
@@ -393,6 +394,7 @@ if (CAN_REALLY_FORK) {
     $one->disable_ipc_polling;
     is(@{$one->context_init_callbacks}, 1, "kept the callback");
     is($one->ipc_polling, 0, "no polling, set to 0");
+    $one->set_ipc_shm_last('abc3');
     $one->context_init_callbacks->[0]->({'hub' => 'Fake::Hub'});
     is($cull, 0, "did not call cull");
     $cull = 0;
@@ -400,6 +402,7 @@ if (CAN_REALLY_FORK) {
     $one->enable_ipc_polling;
     is(@{$one->context_init_callbacks}, 1, "did not add the callback");
     is($one->ipc_polling, 1, "polling on");
+    $one->set_ipc_shm_last('abc3');
     $one->context_init_callbacks->[0]->({'hub' => 'Fake::Hub'});
     is($cull, 1, "called cull once");
 }

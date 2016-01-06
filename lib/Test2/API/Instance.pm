@@ -18,6 +18,9 @@ use Test2::Util::HashBase qw{
     ipc stack formatter
     contexts
 
+    ipc_shm_size
+    ipc_shm_last
+    ipc_shm_id
     ipc_polling
     ipc_drivers
     formatters
@@ -132,6 +135,24 @@ sub _finalize {
     for my $driver (@{$self->{+IPC_DRIVERS}}) {
         next unless $driver->can('is_viable') && $driver->is_viable;
         $self->{+IPC} = $driver->new or next;
+
+        return unless $self->{+IPC}->use_shm;
+
+        try {
+            require IPC::SysV;
+
+            my $ipc_key = IPC::SysV::IPC_PRIVATE();
+            my $shm_size = $self->{+IPC}->can('shm_size') ? $self->{+IPC}->shm_size : 64;
+            my $shm_id = shmget($ipc_key, $shm_size, 0666) or die;
+
+            my $initial = 'a' x $shm_size;
+            shmwrite($shm_id, $initial, 0, $shm_size) or die;
+
+            $self->{+IPC_SHM_SIZE} = $shm_size;
+            $self->{+IPC_SHM_ID}   = $shm_id;
+            $self->{+IPC_SHM_LAST} = $initial;
+        };
+
         return;
     }
 
@@ -231,10 +252,45 @@ sub enable_ipc_polling {
     $self->add_context_init_callback(
         # This is called every time a context is created, it needs to be fast.
         # $_[0] is a context object
-        sub { $_[0]->{hub}->cull if $self->{+IPC_POLLING} }
+        sub {
+            return unless $self->{+IPC_POLLING};
+            return $_[0]->{hub}->cull unless defined $self->{+IPC_SHM_ID};
+
+            my $val;
+            shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE}) or return -1;
+            return if $val eq $self->{+IPC_SHM_LAST};
+            shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE});
+            $self->{+IPC_SHM_LAST} = $val;
+
+            $_[0]->{hub}->cull;
+        }
     ) unless defined $self->ipc_polling;
 
     $self->set_ipc_polling(1);
+}
+
+sub get_ipc_pending {
+    my $self = shift;
+    return -1 unless defined $self->{+IPC_SHM_ID};
+    my $val;
+    shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE}) or return -1;
+    return 0 if $val eq $self->{+IPC_SHM_LAST};
+    $self->{+IPC_SHM_LAST} = $val;
+    return 1;
+}
+
+sub set_ipc_pending {
+    my $self = shift;
+
+    return undef unless defined $self->{+IPC_SHM_ID};
+
+    my ($val) = @_;
+
+    confess "value is required for set_ipc_pending"
+        unless $val;
+
+    shmwrite($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE});
+     shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE});
 }
 
 sub disable_ipc_polling {
@@ -445,6 +501,39 @@ call release on the context.
 This is intended to be called in an C<END { ... }> block. This will look at
 test state and set $?. This will also call any end callbacks, and wait on child
 processes/threads.
+
+=item $shm_id = $obj->ipc_shm_id()
+
+If SHM is enabled for IPC this will be the shm_id for it.
+
+=item $shm_size = $obj->ipc_shm_size()
+
+If SHM is enabled for IPC this will be the size of it.
+
+=item $shm_last_val = $obj->ipc_shm_last()
+
+If SHM is enabled for IPC this will return the last SHM value seen.
+
+=item $obj->set_ipc_pending($val)
+
+use the IPC SHM to tell other processes and threads there is a pending event.
+C<$val> should be a unique value no other thread/process will generate.
+
+B<Note:> This will also make the current process see a pending event. It does
+not set C<ipc_shm_last()>, this is important because doing so could hide a
+previous change.
+
+=item $pending = $obj->get_ipc_pending()
+
+This returns -1 if SHM is not enabled for IPC.
+
+This returns 0 if the SHM value matches the last known value, which means there
+are no pending events.
+
+This returns 1 if the SHM value has changed, which means there are probably
+pending events.
+
+When 1 is returned this will set C<< $obj->ipc_shm_last() >>.
 
 =item $drivers = $obj->ipc_drivers
 
