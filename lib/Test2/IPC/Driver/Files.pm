@@ -171,12 +171,15 @@ sub cull {
     opendir(my $dh, $tempdir) or $self->abort("could not open IPC temp dir ($tempdir)!");
 
     my @out;
-    my @files = sort readdir($dh);
-    for my $file (@files) {
-        next if $file =~ m/^\.+$/;
-        next unless $file =~ m/^(\Q$hid\E|GLOBAL)-.*\.ready$/;
-        my $global = $1 eq 'GLOBAL';
-        next if $global && $self->globals->{$file}++;
+    for my $file (sort readdir($dh)) {
+        next if substr($file, 0, 1) eq '.';
+
+        my $global   = substr($file, 0, 6) eq 'GLOBAL';
+        my $have_hid = !$global && substr($file, 0, length($hid)) eq $hid;
+
+        next unless $have_hid || $global;
+
+        next if $global && $self->{+GLOBALS}->{$file}++;
 
         # Untaint the path.
         my $full = File::Spec->canonpath("$tempdir/$file");
