@@ -146,7 +146,7 @@ sub event_ok {
     $out .= " $num" if defined($num);
     $out .= " - $name" if defined $name;
     $out .= " # TODO" if $in_todo;
-    $out .= " $todo" if length $todo;
+    $out .= " $todo" if defined($todo) && length($todo);
 
     # The primary line of TAP, if the test passed this is all we need.
     return([OUT_STD, "$out\n"]);
@@ -171,7 +171,7 @@ sub event_skip {
     else {
         $out .= " # skip";
     }
-    $out .= " $reason" if length $reason;
+    $out .= " $reason" if defined($reason) && length($reason);
 
     return([OUT_STD, "$out\n"]);
 }
