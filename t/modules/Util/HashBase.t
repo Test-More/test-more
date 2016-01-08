@@ -90,4 +90,16 @@ my $o = My::HBase::Wrapped::Inherit->new(foo => 1);
 my $foo = $o->foo;
 is($o->bar, 1, 'parent attribute sub not overridden');
 
+{
+    package Foo;
+
+    sub new;
+
+    use Test2::Util::HashBase qw/foo bar baz/;
+
+    sub new { 'foo' };
+}
+
+is(Foo->new, 'foo', "Did not override existing 'new' method");
+
 done_testing;

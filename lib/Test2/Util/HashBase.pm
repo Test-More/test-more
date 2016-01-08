@@ -40,7 +40,11 @@ sub import {
     my @meta = map uc, @_;
     @{$META{$into}}{@meta} = map $attrs{$_}, @meta;
 
-    my %subs = (%attrs, @{_get_inherited_attrs($into)}, new => \&_new);
+    my %subs = (
+        %attrs,
+        @{_get_inherited_attrs($into)},
+        $into->can('new') ? () : (new => \&_new)
+    );
 
     no strict 'refs';
     *{"$into\::$_"} = $subs{$_} for keys %subs;
@@ -152,6 +156,26 @@ supported.
 =item $it = $class->new(@VALUES)
 
 Create a new instance using key/value pairs.
+
+HashBase will not export C<new()> if there is already a C<new()> method in your
+packages inheritence chain.
+
+B<If you do not want this method you can define your own> you just have to
+declare it before loading L<Test2::Util::HashBase>.
+
+    package My::Package;
+
+    # predeclare new() so that HashBase does not give us one.
+    sub new;
+
+    use Test2::Util::HashBase qw/foo bar baz/;
+
+    # Now we define our own new method.
+    sub new { ... }
+
+This makes it so that HashBase sees that you have your own C<new()> method.
+Alternatively you can define the method before loading HashBase instead of just
+declaring it, but that scatters your use statements.
 
 =back
 

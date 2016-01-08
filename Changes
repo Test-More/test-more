@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Make it possible to use a custom new() with HashBase
+
 0.000014  2016-01-07 07:31:23-08:00 America/Los_Angeles
 
     - Silence a warning in older perls (warning breaks Test-Simple tests)
