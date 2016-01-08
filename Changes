@@ -2,6 +2,7 @@
 
     - Better encapsulation of API::Instance
     - API methods to get lists of hooks
+    - Minor fixes to IPC shm logic
 
 0.000015  2016-01-07 19:26:58-08:00 America/Los_Angeles
 

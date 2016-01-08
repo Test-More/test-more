@@ -242,9 +242,8 @@ sub enable_ipc_polling {
             return $_[0]->{hub}->cull unless defined $self->{+IPC_SHM_ID};
 
             my $val;
-            shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE}) or return -1;
+            shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE}) or return;
             return if $val eq $self->{+IPC_SHM_LAST};
-            shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE});
             $self->{+IPC_SHM_LAST} = $val;
 
             $_[0]->{hub}->cull;
@@ -298,7 +297,6 @@ sub set_ipc_pending {
         unless $val;
 
     shmwrite($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE});
-     shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE});
 }
 
 sub disable_ipc_polling {
