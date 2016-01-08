@@ -2,8 +2,11 @@ package Test2::API;
 use strict;
 use warnings;
 
-use Test2::API::Instance();
-use Test2::API::Context();
+my $INST;
+use Test2::API::Instance(\$INST);
+# Set the exit status
+END { $INST->set_exit() }
+
 use Test2::Util::Trace();
 
 use Test2::Hub::Subtest();
@@ -31,6 +34,10 @@ our @EXPORT_OK = qw{
     test2_add_callback_context_release
     test2_add_callback_exit
     test2_add_callback_post_load
+    test2_list_context_init_callbacks
+    test2_list_context_release_callbacks
+    test2_list_exit_callbacks
+    test2_list_post_load_callbacks
 
     test2_ipc
     test2_ipc_drivers
@@ -49,13 +56,28 @@ our @EXPORT_OK = qw{
 };
 use base 'Exporter';
 
-my $INST     = Test2::API::Instance::_internal_use_only_private_instance();
+# There is a use-cycle between API and API/Context. Context needs to use some
+# API functions as the package is compiling. Test2::API::context() needs
+# Test2::API::Context to be loaded, but we cannot 'require' the module there as
+# it causes a very noticable performance impact with how often context() is
+# called.
+#
+# This will make sure that Context.pm is loaded the first time this module is
+# imported, then the regular import method is swapped into place.
+sub import {
+    require Test2::API::Context unless $INC{'Test2/API/Context.pm'};
+
+    {
+        no warnings 'redefine';
+        *import = \&Exporter::import;
+    }
+
+    goto &import;
+}
+
 my $STACK    = $INST->stack;
 my $CONTEXTS = $INST->contexts;
 my $INIT_CBS = $INST->context_init_callbacks;
-
-# Set the exit status
-END { $INST->set_exit() }
 
 sub test2_init_done { $INST->finalized }
 sub test2_load_done { $INST->loaded }
@@ -68,10 +90,14 @@ sub test2_no_wait {
     $INST->no_wait;
 }
 
-sub test2_add_callback_context_init    { $INST->add_context_init_callback(@_) }
-sub test2_add_callback_context_release { $INST->add_context_release_callback(@_) }
-sub test2_add_callback_post_load       { $INST->add_post_load_callback(@_) }
-sub test2_add_callback_exit            { $INST->add_exit_callback(@_) }
+sub test2_add_callback_context_init      { $INST->add_context_init_callback(@_) }
+sub test2_add_callback_context_release   { $INST->add_context_release_callback(@_) }
+sub test2_add_callback_exit              { $INST->add_exit_callback(@_) }
+sub test2_add_callback_post_load         { $INST->add_post_load_callback(@_) }
+sub test2_list_context_init_callbacks    { @{$INST->context_init_callbacks} }
+sub test2_list_context_release_callbacks { @{$INST->context_release_callbacks} }
+sub test2_list_exit_callbacks            { @{$INST->exit_callbacks} }
+sub test2_list_post_load_callbacks       { @{$INST->post_load_callbacks} }
 
 sub test2_ipc                 { $INST->ipc }
 sub test2_ipc_add_driver      { $INST->add_ipc_driver(@_) }
@@ -92,6 +118,14 @@ sub test2_formatter_set {
     croak "Global Formatter already set" if $INST->formatter_set;
     $INST->set_formatter($formater);
 }
+
+# Private, for use in Test2::API::Context
+sub _contexts_ref                  { $INST->contexts }
+sub _context_init_callbacks_ref    { $INST->context_init_callbacks }
+sub _context_release_callbacks_ref { $INST->context_release_callbacks }
+
+# Private, for use in Test2::IPC
+sub _set_ipc { $INST->set_ipc(@_) }
 
 sub context {
     my %params = (level => 0, wrapped => 0, @_);
@@ -785,6 +819,23 @@ callback will recieve the newly created context as its only argument.
 
 Add a callback that will be called every time a context is released. The
 callback will recieve the released context as its only argument.
+
+
+=item @list = test2_list_context_init_callbacks()
+
+Returns all the context init callback references.
+
+=item @list = test2_list_context_release_callbacks()
+
+Returns all the context release callback references.
+
+=item @list = test2_list_exit_callbacks()
+
+Returns all the exit callback references.
+
+=item @list = test2_list_post_load_callbacks()
+
+Returns all the post load callback references.
 
 =back
 

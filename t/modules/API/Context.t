@@ -172,9 +172,8 @@ sub {
 
 $hub->remove_context_init($ref1);
 $hub->remove_context_release($ref2);
-my $inst = Test2::API::Instance::_internal_use_only_private_instance();
-@{$inst->context_init_callbacks} = ();
-@{$inst->context_release_callbacks} = ();
+@{Test2::API::_context_init_callbacks_ref()} = ();
+@{Test2::API::_context_release_callbacks_ref()} = ();
 
 is_deeply(
     \@hooks,

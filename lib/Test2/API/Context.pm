@@ -23,9 +23,8 @@ use Test2::Util::HashBase qw{
 
 # Private, not package vars
 # It is safe to cache these.
-my $INST       = Test2::API::Instance::_internal_use_only_private_instance();
-my $ON_RELEASE = $INST->context_release_callbacks;
-my $CONTEXTS   = $INST->contexts;
+my $ON_RELEASE = Test2::API::_context_release_callbacks_ref();
+my $CONTEXTS   = Test2::API::_contexts_ref();
 
 sub init {
     confess "The 'trace' attribute is required"

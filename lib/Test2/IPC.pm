@@ -17,8 +17,7 @@ sub import {
     confess "Cannot add IPC in a child process" if test2_pid() != $$;
     confess "Cannot add IPC in a child thread"  if test2_tid() != get_tid();
 
-    my $INST = Test2::API::Instance::_internal_use_only_private_instance();
-    $INST->set_ipc(_make_ipc());
+    Test2::API::_set_ipc(_make_ipc());
     apply_ipc(test2_stack());
 
     goto &Exporter::import;

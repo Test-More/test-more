@@ -47,9 +47,11 @@ BEGIN {
     }
 }
 
-{
-    my $INST = __PACKAGE__->new;
-    sub _internal_use_only_private_instance() { $INST }
+sub import {
+    my $class = shift;
+    return unless @_;
+    my ($ref) = @_;
+    $$ref = $class->new;
 }
 
 sub init { $_[0]->reset }
