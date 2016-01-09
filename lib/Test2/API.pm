@@ -13,6 +13,16 @@ use Test2::Hub::Subtest();
 use Test2::Hub::Interceptor();
 use Test2::Hub::Interceptor::Terminator();
 
+use Test2::Event::Ok();
+use Test2::Event::Diag();
+use Test2::Event::Note();
+use Test2::Event::Plan();
+use Test2::Event::Bail();
+use Test2::Event::Exception();
+use Test2::Event::Waiting();
+use Test2::Event::Skip();
+use Test2::Event::Subtest();
+
 use Carp qw/croak confess longmess/;
 use Scalar::Util qw/blessed/;
 use Test2::Util qw/get_tid/;

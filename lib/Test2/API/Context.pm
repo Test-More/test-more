@@ -11,8 +11,9 @@ use Test2::API::Instance();
 # Preload some key event types
 my %LOADED = (
     map {
-        require "Test2/Event/$_.pm";
-        my $pkg = "Test2::Event::$_";
+        my $pkg  = "Test2::Event::$_";
+        my $file = "Test2/Event/$_.pm";
+        require $file unless $INC{$file};
         ( $pkg => $pkg, $_ => $pkg )
     } qw/Ok Diag Note Plan Bail Exception Waiting Skip Subtest/
 );
