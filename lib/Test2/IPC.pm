@@ -3,8 +3,15 @@ use strict;
 use warnings;
 
 use Test2::API::Instance;
-use Test2::API qw/test2_init_done test2_ipc test2_stack test2_pid test2_tid/;
 use Test2::Util qw/get_tid/;
+use Test2::API qw{
+    test2_init_done
+    test2_ipc
+    test2_ipc_enable_polling
+    test2_pid
+    test2_stack
+    test2_tid
+};
 
 use Carp qw/confess/;
 
@@ -54,6 +61,8 @@ sub apply_ipc {
         $hub->set_ipc($ipc);
         $ipc->add_hub($hub->hid);
     }
+
+    test2_ipc_enable_polling();
 
     return $ipc;
 }
