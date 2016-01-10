@@ -6,3 +6,4 @@ Test::Pretty
 Test::Builder:Clutch
 Test::Kit
 Test::More::Prefix
+Net::BitTorrent
