@@ -5,7 +5,7 @@ use warnings;
 my $forks;
 BEGIN {
     require Test2::Util;
-    no warnings;
+    local $SIG{__WARN__} = sub { 1 }; # no warnings is not sufficient on older perls
     *Test2::Util::CAN_FORK = sub { $forks };
 }
 
