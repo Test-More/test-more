@@ -85,7 +85,7 @@ Instead you must plan in a seperate statement:
 
 =item You have 3 subs imported for use in planning
 
-Use C<plan($count)>, <skip_all($REASON)>, or C<done_testing()> for your
+Use C<plan($count)>, C<skip_all($REASON)>, or C<done_testing()> for your
 planning.
 
 =back
