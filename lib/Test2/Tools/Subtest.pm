@@ -1,0 +1,146 @@
+package Test2::Tools::Subtest;
+use strict;
+use warnings;
+
+use Test2::API qw/context run_subtest/;
+use Test2::Util qw/try/;
+
+our @EXPORT = qw/subtest_streamed subtest_buffered/;
+use base 'Exporter';
+
+sub subtest_streamed {
+    my ($name, $code, @args) = @_;
+    my $ctx = context();
+    my $pass = run_subtest("Subtest: $name", $code, 0, @args);
+    $ctx->release;
+    return $pass;
+}
+
+sub subtest_buffered {
+    my ($name, $code, @args) = @_;
+    my $ctx = context();
+    my $pass = run_subtest($name, $code, 1, @args);
+    $ctx->release;
+    return $pass;
+}
+
+1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Test2::Plugin::Subtest - Tools for writing subtests
+
+=head1 DESCRIPTION
+
+This package exports subs that let you write subtests.
+
+There are 2 types of subtests, buffered and streamed. Streamed subtests mimick
+subtest from L<Test::More> in that they render all events as soon as they are
+produced. Buffered subtests wait until the subtest completes before rendering
+any results.
+
+The main difference is that streamed subtests are unreadable when combined with
+concurrency. Buffered subtests look fine with any number of concurrent threads
+and processes.
+
+=head1 SYNOPSIS
+
+=head2 BUFFERED
+
+    use Test2::Tools::Subtest qw/subtest_buffered/;
+
+    subtest_buffered my_test => sub {
+        ok(1, "subtest event A");
+        ok(1, "subtest event B");
+    };
+
+This will produce output like this:
+
+    ok 1 - my_test {
+        ok 1 - subtest event A
+        ok 2 - subtest event B
+        1..2
+    }
+
+=head2 STREAMED
+
+The default option is 'buffered', use this if you want streamed, the way
+L<Test::Builder> does it.
+
+    use Test2::Tools::Subtest qw/subtest_streamed/;
+
+    subtest_streamed my_test => sub {
+        ok(1, "subtest event A");
+        ok(1, "subtest event B");
+    };
+
+This will produce output like this:
+
+    # Subtest: my_test
+        ok 1 - subtest event A
+        ok 2 - subtest event B
+        1..2
+    ok 1 - Subtest: my_test
+
+=head1 IMPORTANT NOTE
+
+You can use C<bail_out> or C<skip_all> in a subtest, but not in a BEGIN block
+or use statement. This is due to the way flow control works within a begin
+block. This is not normally an issue, but can happen in rare conditions using
+eval, or script files as subtests.
+
+=head1 EXPORTS
+
+=over 4
+
+=item subtest_streamed $name => $sub
+
+=item subtest_streamed($name, $sub, @args)
+
+Run subtest coderef, stream events as they happen.
+
+=item subtest_buffered $name => $sub
+
+=item subtest_buffered($name, $sub, @args)
+
+Run subtest coderef, render events all at once when subtest is complete.
+
+=back
+
+=head1 SOURCE
+
+The source code repository for Test2-Suite can be found at
+F<http://github.com/Test-More/Test2-Suite/>.
+
+=head1 MAINTAINERS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 AUTHORS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 COPYRIGHT
+
+Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http://dev.perl.org/licenses/>
+
+=cut
