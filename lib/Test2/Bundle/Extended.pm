@@ -124,6 +124,7 @@ __END__
 
 =head1 NAME
 
+Test2::Bundle::Extended - The bundle used by the Test2 Author.
 
 =head1 EXPERIMENTAL RELEASE
 
@@ -131,6 +132,9 @@ This is an experimental release. Using this right now is not recommended.
 
 =head1 DESCRIPTION
 
+This is the big-daddy bundle. This bundle includes nearly every tool, and
+several plugins, that the Test2 Author himself uses. This bundle is used
+extensively to test L<Test2::Suite> itself.
 
 =head1 SYNOPSYS
 
