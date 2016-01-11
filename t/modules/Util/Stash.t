@@ -29,7 +29,7 @@ is(sig_to_slot('$'), 'SCALAR', "Scalar slot sigil");
 is(sig_to_slot('%'), 'HASH',   "Hash slot sigil");
 is(sig_to_slot('@'), 'ARRAY',  "Array slot sigil");
 
-is(get_stash('main'), \%main::, "got stash");
+is(get_stash('main'), string(\%main::), "got stash");
 is(get_glob('main::ok'), \*main::ok, "got glob ref");
 
 is(
