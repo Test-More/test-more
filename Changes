@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Make skip work without a count w/ done_testing (#629)
+
 1.302013_008 2016-01-10 13:21:02-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Bump minimum Test2 version requirement (to fix downstream)
