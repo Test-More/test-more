@@ -239,12 +239,17 @@ sub enable_ipc_polling {
         # $_[0] is a context object
         sub {
             return unless $self->{+IPC_POLLING};
-            return $_[0]->{hub}->cull unless defined $self->{+IPC_SHM_ID};
+            return $_[0]->{hub}->cull unless $self->{+IPC_SHM_ID};
 
             my $val;
-            shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE}) or return;
-            return if $val eq $self->{+IPC_SHM_LAST};
-            $self->{+IPC_SHM_LAST} = $val;
+            {
+                # Prevent $! from being modified
+                local $!;
+                shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE}) or return;
+
+                return if $val eq $self->{+IPC_SHM_LAST};
+                $self->{+IPC_SHM_LAST} = $val;
+            }
 
             $_[0]->{hub}->cull;
         }
