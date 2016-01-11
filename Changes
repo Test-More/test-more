@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Add diagnostics test report
+    - Fix tests on older perls
+
 0.000015  2016-01-10 22:50:54-08:00 America/Los_Angeles
 
     - Fix documentation problem
