@@ -14,6 +14,7 @@ BEGIN { require "t/tools.pl" }
     sub can {
         my $thing = pop;
         return 1 if $thing =~ m/x/;
+        return 1 if $thing eq 'DOES';
     }
 
     sub isa {
@@ -38,6 +39,8 @@ BEGIN { require "t/tools.pl" }
 {
     package My::String;
     use overload '""' => sub { "xxx\nyyy" };
+
+    sub DOES { 0 }
 }
 
 like(
@@ -55,7 +58,7 @@ like(
 
         isa_ok($str, 'X');
         can_ok($str, 'X');
-        DOES_ok($str, 'X') if Object->can('DOES');
+        DOES_ok($str, 'X');
 
         isa_ok(undef, 'X');
         isa_ok('', 'X');
@@ -78,11 +81,11 @@ like(
         event Diag => { message => "Failed: X->DOES('bar')" };
 
         fail_events Ok => sub { call pass => 0 };
-        event Diag => { message => qr/Failed: My::String=HASH\(.*\)->isa\('X'\)/ };
+        event Diag => { message => qr/Failed: My::String=HASH->isa\('X'\)/ };
         fail_events Ok => sub { call pass => 0 };
-        event Diag => { message => qr/Failed: My::String=HASH\(.*\)->can\('X'\)/ };
+        event Diag => { message => qr/Failed: My::String=HASH->can\('X'\)/ };
         fail_events Ok => sub { call pass => 0 };
-        event Diag => { message => qr/Failed: My::String=HASH\(.*\)->DOES\('X'\)/ };
+        event Diag => { message => qr/Failed: My::String=HASH->DOES\('X'\)/ };
 
         fail_events Ok => sub { call pass => 0 };
         event Diag => { message => qr/<undef> is neither a blessed reference or a package name/ };
@@ -94,6 +97,35 @@ like(
         end;
     },
     "'can/isa/DOES_ok' events"
+);
+
+my $override = UNIVERSAL->can('DOES') ? 1 : 0;
+note "Will override UNIVERSAL::can to hide 'DOES'" if $override;
+
+my $events = intercept {
+    my $can = \&UNIVERSAL::can;
+
+    # If the platform does support 'DOES' lets pretend it doesn't.
+    no warnings 'redefine';
+    local *UNIVERSAL::can = sub {
+        my ($thing, $sub) = @_;
+        return undef if $sub eq 'DOES';
+        $thing->$can($sub);
+    } if $override;
+
+    DOES_ok('A::Fake::Package', 'xxx');
+};
+
+like(
+    $events,
+    array {
+        event Skip => {
+            pass   => 1,
+            name   => 'A::Fake::Package->DOES(...)',
+            reason => "'DOES' is not supported on this platform",
+        };
+    },
+    "Test us skipped when platform does not support 'DOES'"
 );
 
 done_testing;

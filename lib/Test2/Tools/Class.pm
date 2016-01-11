@@ -20,19 +20,24 @@ BEGIN {
             my ($thing, @items) = @_;
             my $ctx = context();
 
+            my $name = ref($thing) ? render_ref($thing) : defined($thing) ? "$thing" : "<undef>";
+            $name =~ s/\n/\\n/g;
+            $name =~ s/#//g;
+            $name =~ s/\(0x[a-f0-9]+\)//gi;
+
             unless ($thing && (blessed($thing) || !ref($thing))) {
                 my $thing = defined($thing)
                     ? ref($thing) || "'$thing'"
                     : '<undef>';
 
-                $ctx->ok(0, "$thing\->$op(...)", ["$thing is neither a blessed reference or a package name."]);
+                $ctx->ok(0, "$name\->$op(...)", ["$thing is neither a blessed reference or a package name."]);
 
                 $ctx->release;
                 return 0;
             }
 
             unless(UNIVERSAL->can($op) || $thing->can($op)) {
-                $ctx->skip("$thing\->$op(...)", "'$op' is not supported on this platform");
+                $ctx->skip("$name\->$op(...)", "'$op' is not supported on this platform");
                 $ctx->release;
                 return 1;
             }
@@ -55,8 +60,6 @@ BEGIN {
 
                 push @bad => $item;
             }
-
-            my $name = render_ref($thing);
 
             $ctx->ok(
                 !@bad,
