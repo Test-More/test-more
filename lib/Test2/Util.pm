@@ -52,18 +52,11 @@ sub _manual_try(&;@) {
     my $args = \@_;
     my $err;
 
-    my ($msg, $no) = ($@, $!);
     my $die = delete $SIG{__DIE__};
 
     eval { $code->(@$args); 1 } or $err = $@ || "Error was squashed!\n";
 
-    ($@, $!) = ($msg, $no);
-    if ($die) {
-        $SIG{__DIE__} = $die;
-    }
-    else {
-        delete $SIG{__DIE__};
-    }
+    $die ? $SIG{__DIE__} = $die : delete $SIG{__DIE__};
 
     return (!defined($err), $err);
 }
@@ -74,7 +67,7 @@ sub _local_try(&;@) {
     my $err;
 
     no warnings;
-    local ($@, $!, $SIG{__DIE__}) = ($@, int($!));
+    local $SIG{__DIE__};
     eval { $code->(@$args); 1 } or $err = $@ || "Error was squashed!\n";
 
     return (!defined($err), $err);

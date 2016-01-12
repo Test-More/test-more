@@ -138,6 +138,10 @@ sub _context_release_callbacks_ref { $INST->context_release_callbacks }
 sub _set_ipc { $INST->set_ipc(@_) }
 
 sub context {
+    # We need to grab these before anything else to ensure they are not
+    # changed.
+    my ($errno, $eval_error, $child_error) = (0 + $!, $@, $?);
+
     my %params = (level => 0, wrapped => 0, @_);
 
     # If something is getting a context then the sync system needs to be
@@ -209,6 +213,9 @@ sub context {
             trace        => $trace,
             _canon_count => 1,
             _depth       => $depth,
+            errno        => $errno,
+            eval_error   => $eval_error,
+            child_error  => $child_error,
             $params{on_release} ? (_on_release => [$params{on_release}]) : (),
         },
         'Test2::API::Context'
@@ -299,12 +306,9 @@ sub intercept(&) {
     $ctx->stack->top; # Make sure there is a top hub before we begin.
     $ctx->stack->push($hub);
 
-    # Do not use 'try' cause it localizes __DIE__, and does not preserve $@
-    # or $!
+    # Do not use 'try' cause it localizes __DIE__
     my ($ok, $err);
     {
-        local $@ = $@;
-        local $! = int($!);
         $ok = eval { $code->(hub => $hub, context => $ctx->snapshot); 1 };
         $err = $@;
     }
@@ -347,10 +351,7 @@ sub run_subtest {
 
     my ($ok, $err, $finished);
     T2_SUBTEST_WRAPPER: {
-        # Do not use 'try' cause it localizes __DIE__, and does not preserve $@
-        # or $!
-        local $@ = $@;
-        local $! = int($!);
+        # Do not use 'try' cause it localizes __DIE__
         $ok = eval { $code->(@args); 1 };
         $err = $@;
 

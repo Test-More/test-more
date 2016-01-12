@@ -20,6 +20,7 @@ my %LOADED = (
 
 use Test2::Util::HashBase qw{
     stack hub trace _on_release _depth _canon_count aborted
+    errno eval_error child_error
 };
 
 # Private, not package vars
@@ -28,16 +29,27 @@ my $ON_RELEASE = Test2::API::_context_release_callbacks_ref();
 my $CONTEXTS   = Test2::API::_contexts_ref();
 
 sub init {
+    my $self = shift;
+
     confess "The 'trace' attribute is required"
-        unless $_[0]->{+TRACE};
+        unless $self->{+TRACE};
 
     confess "The 'hub' attribute is required"
-        unless $_[0]->{+HUB};
+        unless $self->{+HUB};
 
-    $_[0]->{+_DEPTH} = 0 unless defined $_[0]->{+_DEPTH};
+    $self->{+_DEPTH} = 0 unless defined $self->{+_DEPTH};
+
+    $self->{+ERRNO}       = $! unless exists $self->{+ERRNO};
+    $self->{+EVAL_ERROR}  = $@ unless exists $self->{+EVAL_ERROR};
+    $self->{+CHILD_ERROR} = $? unless exists $self->{+CHILD_ERROR};
 }
 
 sub snapshot { bless {%{$_[0]}, _canon_count => undef}, __PACKAGE__ }
+
+sub restore_error_vars {
+    my $self = shift;
+    ($!, $@, $?) = @$self{+ERRNO, +EVAL_ERROR, +CHILD_ERROR};
+}
 
 # release exists to implement behaviors like die-on-fail. In die-on-fail you
 # want to die after a failure, but only after diagnostics have been reported.
@@ -68,6 +80,9 @@ sub release {
     }
     $_->($self) for reverse @$ON_RELEASE;
 
+    # Do this last so that nothing else changes them.
+    ($!, $@, $?) = @$self{+ERRNO, +EVAL_ERROR, +CHILD_ERROR};
+
     return;
 }
 
@@ -75,19 +90,23 @@ sub do_in_context {
     my $self = shift;
     my ($sub, @args) = @_;
 
-    croak "Cannot call do_in_context on a canonical context"
-        if $self->{+_CANON_COUNT};
+    # We need to update the pid/tid and error vars.
+    my $clone = $self->snapshot;
+    @$clone{+ERRNO, +EVAL_ERROR, +CHILD_ERROR} = ($!, $@, $?);
+    $clone->{+TRACE} = $clone->{+TRACE}->snapshot;
+    $clone->{+TRACE}->set_pid($$);
+    $clone->{+TRACE}->set_tid(get_tid());
 
-    my $hub = $self->{+HUB};
+    my $hub = $clone->{+HUB};
     my $hid = $hub->hid;
 
     my $old = $CONTEXTS->{$hid};
 
-    $self->{+_CANON_COUNT} = 1;
-    $CONTEXTS->{$hid} = $self;
+    $clone->{+_CANON_COUNT} = 1;
+    $CONTEXTS->{$hid} = $clone;
     my ($ok, $err) = &try($sub, @args);
-    my ($rok, $rerr) = try { $self->release };
-    delete $self->{+_CANON_COUNT};
+    my ($rok, $rerr) = try { $clone->release };
+    delete $clone->{+_CANON_COUNT};
 
     if ($old) {
         $CONTEXTS->{$hid} = $old;
@@ -387,8 +406,14 @@ store for later.
 
 =item $ctx->release()
 
-This will release the context. It will also set the C<$ctx> variable to
-C<undef> (it works regardless of what you name the variable).
+This will release the context. This runs cleanup tasks, and several important
+hooks. It will also restore C<$!>, C<$?>, and C<$@> to what they were when the
+context was created.
+
+B<Note:> If a context is aquired more than once an internal refcount is kept.
+C<release()> decrements the ref count, none of the other actions of
+C<release()> will occur unless the refcount hits 0. This means only the last
+call to C<release()> will reset C<$?>, C<$!>, C<$@>,and run the cleanup tasks.
 
 =item $ctx->throw($message)
 
@@ -428,6 +453,28 @@ will be effected.
     $ctx->do_in_context(sub {
         my $ctx = context(); # returns the $ctx the sub is called on
     });
+
+B<Note:> The context will actually be cloned, the clone will be used instead of
+the original. This allows the TID, PID, and error vars to be correct without
+modifying the original context.
+
+=item $ctx->restore_error_vars()
+
+This will set C<$!>, C<$?>, and C<$@> to what they were when the context was
+created. There is no localization or anything done here, calling this method
+will actually set these vars.
+
+=item $! = $ctx->errno()
+
+The (numeric) value of C<$!> when the context was created.
+
+=item $? = $ctx->child_error()
+
+The value of C<$?> when the context was created.
+
+=item $@ = $ctx->eval_error()
+
+The value of C<$@> when the context was created.
 
 =back
 

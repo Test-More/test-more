@@ -215,7 +215,6 @@ is_deeply(
     my $ran = 0;
     my $doit = sub {
         is_deeply(\@_, [qw/foo bar/], "got args");
-        is(context(), $one, "The one context is our context");
         $ran++;
         die "Make sure old context is restored";
     };
@@ -327,5 +326,31 @@ sub {
 
     is($events->[2]->message, 'xxx', "event 1 diag 2");
 }
+
+sub {
+    local $! = 100;
+    local $@ = 'foobarbaz';
+    local $? = 123;
+
+    my $ctx = context();
+
+    is($ctx->errno,       100,         "saved errno");
+    is($ctx->eval_error,  'foobarbaz', "saved eval error");
+    is($ctx->child_error, 123,         "saved child exit");
+
+    $! = 22;
+    $@ = 'xyz';
+    $? = 33;
+
+    is(0 + $!, 22,    "altered \$! in tool");
+    is($@,     'xyz', "altered \$@ in tool");
+    is($?,     33,    "altered \$? in tool");
+
+    $ctx->release;
+
+    is($ctx->errno,       100,         "restored errno");
+    is($ctx->eval_error,  'foobarbaz', "restored eval error");
+    is($ctx->child_error, 123,         "restored child exit");
+}->();
 
 done_testing;
