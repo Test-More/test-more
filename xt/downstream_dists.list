@@ -101,3 +101,4 @@ Minilla
 Pinto
 forks
 PAR::Packer
+PerlIO::via::Timeout
