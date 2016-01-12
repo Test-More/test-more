@@ -40,7 +40,7 @@ that possible.
 =head1 SYNOPSIS
 
     # Skip the test unless perl 5.10 or greater is installed.
-    use Test2 Perl 'v5.10';
+    use Test2::Require::Perl 'v5.10';
 
     # Enable 5.10 features.
     use v5.10;
