@@ -4,9 +4,9 @@ BEGIN { require 't/tools.pl' }
 is($CLASS->skip('Scalar::Util'), undef, "will not skip, module installed");
 is($CLASS->skip('Scalar::Util', 0.5), undef, "will not skip, module at sufficient version");
 
-is(
+like(
     $CLASS->skip('Test2', '99999'),
-    "Need 'Test2' version 99999, have 0.000016.",
+    qr/Need 'Test2' version 99999, have \d+.\d+\./,
     "Skip, insufficient version"
 );
 
