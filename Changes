@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302013_009 2016-01-11 16:35:57-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Make skip work without a count w/ done_testing (#629)
     - Require newer Test2 that fixes $! squashing (#628)
 
