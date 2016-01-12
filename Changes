@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Better solution to the $?, $!, and $@ problem
+    - error vars are stored/restored by the context
+
 0.000017  2016-01-11 16:33:55-08:00 America/Los_Angeles
 
     - Fix $! squashing
