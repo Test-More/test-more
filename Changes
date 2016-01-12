@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix poorly written test
+
 0.000016  2016-01-11 15:18:04-08:00 America/Los_Angeles
 
     - Add diagnostics test report
