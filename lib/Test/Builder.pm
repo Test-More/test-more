@@ -284,12 +284,13 @@ sub subtest {
 
     my $start_pid = $$;
     my $st_ctx;
-    my ($ok, $err, $finished);
+    my ($ok, $err, $finished, $child_error);
     T2_SUBTEST_WRAPPER: {
         my $ctx = $self->ctx;
         $st_ctx = $ctx->snapshot;
         $ctx->release;
-        ($ok, $err) = try { local $Level = 1; $code->(@args) };
+        $ok = eval { local $Level = 1; $code->(@args); 1 };
+        ($err, $child_error) = ($@, $?);
 
         # They might have done 'BEGIN { skip_all => "whatever" }'
         if (!$ok && $err =~ m/Label not found for "last T2_SUBTEST_WRAPPER"/) {
@@ -333,6 +334,8 @@ sub subtest {
     $ctx->release;
 
     die $err unless $ok;
+
+    $? = $child_error if defined $child_error;
 
     return $st_hub->is_passing;
 }
