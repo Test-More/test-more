@@ -7,10 +7,10 @@ use Test2::Util qw/get_tid/;
 
 use Scalar::Util qw/weaken/;
 
+use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 use Test2::Util::HashBase qw{
     pid tid hid ipc
     no_ending
-    _meta
     _filters
     _listeners
     _follow_ups
@@ -34,8 +34,6 @@ sub init {
     $self->{+PID} = $$;
     $self->{+TID} = get_tid();
     $self->{+HID} = join '-', $self->{+PID}, $self->{+TID}, $ID_POSTFIX++;
-
-    $self->{+_META} = {};
 
     $self->{+COUNT}    = 0;
     $self->{+FAILED}   = 0;
@@ -83,31 +81,6 @@ sub inherit {
     if (my $fs = $from->{+_FILTERS}) {
         push @{$self->{+_FILTERS}} => grep { $_->{inherit} } @$fs;
     }
-}
-
-sub meta {
-    my $self = shift;
-    my ($key, $default) = @_;
-
-    croak "Invalid key '" . (defined($key) ? $key : '(UNDEF)') . "'"
-        unless $key;
-
-    my $exists = $self->{+_META}->{$key};
-    return undef unless $default || $exists;
-
-    $self->{+_META}->{$key} = $default unless $exists;
-
-    return $self->{+_META}->{$key};
-}
-
-sub delete_meta {
-    my $self = shift;
-    my ($key) = @_;
-
-    croak "Invalid key '" . (defined($key) ? $key : '(UNDEF)') . "'"
-        unless $key;
-
-    delete $self->{+_META}->{$key};
 }
 
 sub format {
@@ -532,33 +505,6 @@ This is where all events enter the hub for processing.
 This is called by send after it does any IPC handling. You can use this to
 bypass the IPC process, but in general you should avoid using this.
 
-=item $val = $hub->meta($key)
-
-=item $val = $hub->meta($key, $default)
-
-This method is made available to allow third party plugins to associate
-meta-data with a hub. It is recommended that all third party plugins use their
-module namespace as their meta-data key.
-
-This method always returns the value for the key. If there is no value it will
-be initialized to C<$default>, in which case C<$default> is also returned.
-
-Recommended usage:
-
-    my $meta = $hub->meta(__PACKAGE__, {});
-    unless ($meta->{foo}) {
-        $meta->{foo} = 1;
-        $meta->{bar} = 2;
-    }
-
-=item $val = $hub->delete_meta($key)
-
-This will delete all data in the specified metadata key.
-
-=item $val = $hub->get_meta($key)
-
-This method will retrieve the value of any meta-data key specified.
-
 =item $old = $hub->format($formatter)
 
 Replace the existing formatter instance with a new one. Formatters must be
@@ -704,6 +650,12 @@ Check if the plan and counts match, but only if the tests have ended. If tests
 have not unded this will return undef, otherwise it will be a true/false.
 
 =back
+
+=head1 THIRD PARTY META-DATA
+
+This object consumes L<Test2::Util::ExternalMeta> which provides a consistent
+way for you to attach meta-data to instances of this class. This is useful for
+tools, plugins, and other extentions.
 
 =head1 SOURCE
 

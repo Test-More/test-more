@@ -232,25 +232,25 @@ tests metadata => sub {
 
     like(
         exception { $hub->meta(undef) },
-        qr/Invalid key '\(UNDEF\)'/,
+        qr/Invalid META key: undef, keys must be true, and may not be references/,
         "Cannot use undef as a meta key"
     );
 
     like(
         exception { $hub->meta(0) },
-        qr/Invalid key '0'/,
+        qr/Invalid META key: '0', keys must be true, and may not be references/,
         "Cannot use 0 as a meta key"
     );
 
     like(
         exception { $hub->delete_meta(undef) },
-        qr/Invalid key '\(UNDEF\)'/,
+        qr/Invalid META key: undef, keys must be true, and may not be references/,
         "Cannot use undef as a meta key"
     );
 
     like(
         exception { $hub->delete_meta(0) },
-        qr/Invalid key '0'/,
+        qr/Invalid META key: '0', keys must be true, and may not be references/,
         "Cannot use 0 as a meta key"
     );
 };

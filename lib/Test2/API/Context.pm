@@ -18,6 +18,7 @@ my %LOADED = (
     } qw/Ok Diag Note Plan Bail Exception Waiting Skip Subtest/
 );
 
+use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 use Test2::Util::HashBase qw{
     stack hub trace _on_release _depth _canon_count aborted
     errno eval_error child_error
@@ -618,6 +619,12 @@ new one is generated, or if an existing one is returned.
         my $ctx = shift;
         ...
     });
+
+=head1 THIRD PARTY META-DATA
+
+This object consumes L<Test2::Util::ExternalMeta> which provides a consistent
+way for you to attach meta-data to instances of this class. This is useful for
+tools, plugins, and other extentions.
 
 =head1 SOURCE
 

@@ -2,7 +2,8 @@ package Test2::Event;
 use strict;
 use warnings;
 
-use Test2::Util::HashBase qw/trace nested _meta/;
+use Test2::Util::HashBase qw/trace nested/;
+use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 
 sub causes_fail      { 0 }
 sub increments_count { 0 }
@@ -11,29 +12,6 @@ sub callback { }
 
 sub terminate { () }
 sub global    { () }
-
-sub set_meta {
-    my $self = shift;
-    my ($key, $value) = @_;
-
-    $self->{+_META} ||= {};
-
-    $self->{+_META}->{$key} = $value;
-}
-
-sub get_meta {
-    my $self = shift;
-    my ($key, $default) = @_;
-
-    return undef unless $self->{+_META} || $default;
-
-    $self->{+_META} ||= {};
-
-    $self->{+_META}->{$key} = $default
-        if defined($default) && !defined($self->{+_META}->{$key});
-
-    return $self->{+_META}->{$key};
-}
 
 1;
 
@@ -140,31 +118,6 @@ to exit with a failure.
 This is called after the event has been sent to the formatter in order to
 ensure the event is seen and understood.
 
-=item $e->set_meta($key, $val)
-
-Some plugins may want to attach information to an event. This is a generic way
-to do that. C<$key> should be chosen likely, and is ideally prefixed with a
-package name to avoid conflicts.
-
-    $e->set_meta('Foo::Bar', { a => 1 });
-
-=item $e->get_meta($key)
-
-=item $e->get_meta($key, $default)
-
-This how you read meta data that is attached to an event. The key should match
-that used when the meta-data was set. Ideally keys are prefixed with package
-names to avoid conflicts.
-
-    # Get the value, or undef if there is none.
-    my $val = $e->get_meta('Foo::Bar');
-
-A default value can be specified as well. If there is no value attached to the
-event then the default will be attached and returned.
-
-    # Get the value, or set it to 'xxx' and get that.
-    my $val = $e->get_meta('Foo::Bar', 'xxx');
-
 =item $todo = $e->todo
 
 =item $e->set_todo($todo)
@@ -183,6 +136,12 @@ essentially means that any message that would go to STDERR will go to STDOUT
 instead so that a harness will hide it outside of verbose mode.
 
 =back
+
+=head1 THIRD PARTY META-DATA
+
+This object consumes L<Test2::Util::ExternalMeta> which provides a consistent
+way for you to attach meta-data to instances of this class. This is useful for
+tools, plugins, and other extentions.
 
 =head1 SOURCE
 
