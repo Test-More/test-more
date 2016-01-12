@@ -285,6 +285,7 @@ sub get_ipc_pending {
     my $self = shift;
     return -1 unless defined $self->{+IPC_SHM_ID};
     my $val;
+    local $!;
     shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE}) or return -1;
     return 0 if $val eq $self->{+IPC_SHM_LAST};
     $self->{+IPC_SHM_LAST} = $val;
@@ -301,6 +302,7 @@ sub set_ipc_pending {
     confess "value is required for set_ipc_pending"
         unless $val;
 
+    local $!;
     shmwrite($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE});
 }
 

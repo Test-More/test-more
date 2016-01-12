@@ -29,6 +29,7 @@ sub new_hub {
 
         my $ipc = Test2::API::test2_ipc();
         if ($ipc && !$hub->ipc && !exists($params{ipc})) {
+            local $!;
             $hub->set_ipc($ipc);
             $ipc->add_hub($hub->hid);
         }

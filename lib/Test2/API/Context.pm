@@ -6,7 +6,7 @@ use Carp qw/confess croak longmess/;
 use Test2::Util qw/get_tid try pkg_to_file/;
 
 use Test2::Util::Trace();
-use Test2::API::Instance();
+use Test2::API();
 
 # Preload some key event types
 my %LOADED = (
