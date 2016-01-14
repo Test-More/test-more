@@ -325,6 +325,76 @@ tests filter => sub {
     );
 };
 
+tests pre_filter => sub {
+    my $hub = Test2::Hub->new();
+
+    my @events;
+    my $it = $hub->pre_filter(sub {
+        my ($h, $e) = @_;
+        is($h, $hub, "got hub");
+        push @events => $e;
+        return $e;
+    });
+
+    my $count;
+    my $it2 = $hub->pre_filter(sub { $count++; $_[1] });
+
+    my $ok1 = Test2::Event::Ok->new(
+        pass => 1,
+        name => 'foo',
+        trace => Test2::Util::Trace->new(
+            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+        ),
+    );
+
+    my $ok2 = Test2::Event::Ok->new(
+        pass => 0,
+        name => 'bar',
+        trace => Test2::Util::Trace->new(
+            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+        ),
+    );
+
+    my $ok3 = Test2::Event::Ok->new(
+        pass => 1,
+        name => 'baz',
+        trace => Test2::Util::Trace->new(
+            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+        ),
+    );
+
+    $hub->send($ok1);
+    $hub->send($ok2);
+
+    $hub->pre_unfilter($it);
+
+    $hub->send($ok3);
+
+    is_deeply(\@events, [$ok1, $ok2], "got events");
+    is($count, 3, "got all events, even after other pre_filter was removed");
+
+    $hub = Test2::Hub->new();
+    @events = ();
+
+    $hub->pre_filter(sub { undef });
+    $hub->listen(sub {
+        my ($hub, $e) = @_;
+        push @events => $e;
+    });
+
+    $hub->send($ok1);
+    $hub->send($ok2);
+    $hub->send($ok3);
+
+    ok(!@events, "Blocked events");
+
+    like(
+        exception { $hub->pre_filter('xxx') },
+        qr/pre_filter only takes coderefs for arguments, got 'xxx'/,
+        "pre_filter takes a coderef"
+    );
+};
+
 tests state => sub {
     my $hub = Test2::Hub->new;
 

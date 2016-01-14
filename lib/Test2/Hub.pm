@@ -12,6 +12,7 @@ use Test2::Util::HashBase qw{
     pid tid hid ipc
     no_ending
     _filters
+    _pre_filters
     _listeners
     _follow_ups
     _formatter
@@ -147,6 +148,24 @@ sub unfilter {
     @{$self->{+_FILTERS}} = grep { !$subs{$_->{code}} } @{$self->{+_FILTERS}};
 }
 
+sub pre_filter {
+    my $self = shift;
+    my ($sub, %params) = @_;
+
+    croak "pre_filter only takes coderefs for arguments, got '$sub'"
+        unless ref $sub && ref $sub eq 'CODE';
+
+    push @{$self->{+_PRE_FILTERS}} => { %params, code => $sub };
+
+    $sub; # Intentional Return
+}
+
+sub pre_unfilter {
+    my $self = shift;
+    my %subs = map {$_ => $_} @_;
+    @{$self->{+_PRE_FILTERS}} = grep { !$subs{$_->{code}} } @{$self->{+_PRE_FILTERS}};
+}
+
 sub follow_up {
     my $self = shift;
     my ($sub) = @_;
@@ -199,6 +218,13 @@ sub remove_context_release {
 sub send {
     my $self = shift;
     my ($e) = @_;
+
+    if ($self->{+_PRE_FILTERS}) {
+        for (@{$self->{+_PRE_FILTERS}}) {
+            $e = $_->{code}->($self, $e);
+            return unless $e;
+        }
+    }
 
     my $ipc = $self->{+IPC} || return $self->process($e);
 
@@ -426,6 +452,9 @@ handle thread/fork sync, filters, listeners, TAP output, etc.
 
 =head2 ALTERING OR REMOVING EVENTS
 
+You can use either C<filter()> or C<pre_filter()>, which one depends on your
+needs. Both have identical syntax, so only C<filter()> is shown here.
+
     $hub->filter(sub {
         my ($hub, $event) = @_;
 
@@ -510,7 +539,7 @@ bypass the IPC process, but in general you should avoid using this.
 Replace the existing formatter instance with a new one. Formatters must be
 objects that implement a C<< $formatter->write($event) >> method.
 
-=item $sub = $hub->listen(sub { ... })
+=item $sub = $hub->listen(sub { ... }, %optional_params)
 
 You can use this to record all events AFTER they have been sent to the
 formatter. No changes made here will be meaningful, except possibly to other
@@ -531,6 +560,42 @@ add the C<< inherit => 1 >> parameter to allow a listener to be inherited.
 
 You can use this to remove a listen callback. You must pass in the coderef
 returned by the C<listen()> method.
+
+=item $sub = $hub->filter(sub { ... }, %optional_params)
+
+=item $sub = $hub->pre_filter(sub { ... }, %optional_params)
+
+These can be used to add filters. Filters can modify, replace, or remove events
+before anything else can see them.
+
+    $hub->filter(
+        sub {
+            my ($hub, $event) = @_;
+
+            return $event;    # No Changes
+            return;           # Remove the event
+
+            # Or you can modify an event before returning it.
+            $event->modify;
+            return $event;
+        }
+    );
+
+If you are not using threads, forking, or IPC then the only difference between
+a C<filter> and a C<pre_filter> is that C<pre_filter> subs run first. When you
+are using threads, forking, or IPC, pre_filters happen to events before they
+are sent to their destination proc/thread, ordinary filters happen only in the
+destination hub/thread.
+
+You cannot add a regular filter to a hub if the hub was created in another
+process or thread. You can always add a pre_filter.
+
+=item $hub->unfilter($sub)
+
+=item $hub->pre_unfilter($sub)
+
+These can be used to remove filters and pre_filters. The C<$sub> argument is
+the reference returned by C<filter()> or C<pre_filter()>.
 
 =item $hub->follow_op(sub { ... })
 

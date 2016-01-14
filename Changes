@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Add pre_filter and pre_unfilter to Hubs
+
 0.000019  2016-01-12 16:08:11-08:00 America/Los_Angeles
 
     - Make third-party meta-data interface consistent.
