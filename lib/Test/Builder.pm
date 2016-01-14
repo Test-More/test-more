@@ -77,6 +77,12 @@ sub _add_ts_hooks {
         if ($hub == $active_hub && $e->isa('Test2::Event::Ok')) {
             $e->set_todo($todo);
             $e->set_effective_pass(1);
+
+            if (my $result = $e->get_meta(__PACKAGE__)) {
+                $result->{reason} ||= $todo;
+                $result->{type}   ||= 'todo';
+                $result->{ok}       = 1;
+            }
         }
 
         return $e;
@@ -591,7 +597,16 @@ sub ok {
 
     my $trace = $ctx->{trace};
     my $hub   = $ctx->{hub};
-    my $todo  = $self->todo;
+
+    my $result = {
+        ok => $test,
+        actual_ok => $test,
+        reason => '',
+        type => '',
+        (name => defined($name) ? $name : ''),
+    };
+
+    $hub->{_meta}->{+__PACKAGE__}->{Test_Results}[ $hub->{count} ] = $result;
 
     my $orig_name = $name;
 
@@ -601,18 +616,6 @@ sub ok {
         (index($name, "#" ) >= 0 && $name =~ s|#|\\#|g),
         (index($name, "\n") >= 0 && $name =~ s{\n}{\n# }sg)
     );
-
-    my $result = {
-        ok => 1,
-        actual_ok => $test,
-        (name => defined($name) ? $name : ''),
-        defined($todo) ? ( reason => $todo, type => 'todo' )
-                       : ( reason => '',    type => '' ),
-    };
-
-    @$result{ 'ok', 'actual_ok' } = ( ( defined($todo) ? 1 : 0 ), 0 ) unless $test;
-
-    $hub->{_meta}->{+__PACKAGE__}->{Test_Results}[ $hub->{count} ] = $result;
 
     my @attrs;
     my $subevents = delete $self->{subevents};
@@ -626,13 +629,13 @@ sub ok {
         trace => bless( {%$trace}, 'Test2::Util::Trace'),
         pass  => $test,
         name  => $name,
-        _meta => {'Test::Builder' => 1},
+        _meta => {'Test::Builder' => $result},
         effective_pass => $test,
         @attrs,
     }, $epkg;
     $hub->send($e);
 
-    $self->_ok_debug($trace, $orig_name, defined($todo)) unless($test);
+    $self->_ok_debug($trace, $orig_name) unless($test);
 
     $ctx->release;
     return $test;
@@ -640,7 +643,10 @@ sub ok {
 
 sub _ok_debug {
     my $self = shift;
-    my ($trace, $orig_name, $is_todo) = @_;
+    my ($trace, $orig_name) = @_;
+
+    my $is_todo = defined($self->todo);
+
     my $msg = $is_todo ? "Failed (TODO)" : "Failed";
     print {$self->_diag_fh} "\n" if $ENV{HARNESS_ACTIVE};
 
@@ -1432,6 +1438,12 @@ sub todo_start {
         if ($hub == $active_hub && $e->isa('Test2::Event::Ok')) {
             $e->set_todo($message);
             $e->set_effective_pass(1);
+
+            if (my $result = $e->get_meta(__PACKAGE__)) {
+                $result->{reason} ||= $message;
+                $result->{type}   ||= 'todo';
+                $result->{ok}       = 1;
+            }
         }
 
         return $e;
