@@ -3,7 +3,8 @@ use strict;
 use warnings;
 
 use Carp qw/confess croak longmess/;
-use Test2::Util qw/get_tid try pkg_to_file/;
+use Scalar::Util qw/weaken/;
+use Test2::Util qw/get_tid try pkg_to_file get_tid/;
 
 use Test2::Util::Trace();
 use Test2::API();
@@ -20,7 +21,7 @@ my %LOADED = (
 
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 use Test2::Util::HashBase qw{
-    stack hub trace _on_release _depth _canon_count aborted
+    stack hub trace _on_release _depth _is_canon _is_spawn _aborted
     errno eval_error child_error
 };
 
@@ -45,11 +46,57 @@ sub init {
     $self->{+CHILD_ERROR} = $? unless exists $self->{+CHILD_ERROR};
 }
 
-sub snapshot { bless {%{$_[0]}, _canon_count => undef}, __PACKAGE__ }
+sub snapshot { bless {%{$_[0]}, _is_canon => undef, _is_spawn => undef, _aborted => undef}, __PACKAGE__ }
 
 sub restore_error_vars {
     my $self = shift;
     ($!, $@, $?) = @$self{+ERRNO, +EVAL_ERROR, +CHILD_ERROR};
+}
+
+sub DESTROY {
+    return unless $_[0]->{+_IS_CANON} || $_[0]->{+_IS_SPAWN};
+    return if ${$_[0]->{+_ABORTED}};
+    my ($self) = @_;
+
+    my $hub = $self->{+HUB};
+    my $hid = $hub->{hid};
+
+    # Do not show the warning if it looks like an exception has been thrown, or
+    # if the context is not local to this process or thread.
+    if($self->{+EVAL_ERROR} eq $@ && $hub->is_local) {
+        my $frame = $self->{+_IS_SPAWN} || $self->{+TRACE}->frame;
+        warn <<"        EOT";
+A context appears to have been destroyed without first calling release().
+Based on \$@ it does not look like an exception was thrown (this is not always
+a reliable test)
+
+This is a problem because the global error variables (\$!, \$@, and \$?) will
+not be restored. In addition some release callbacks will not work properly from
+inside a DESTROY method.
+
+Here are the context creation details, just in case a tool forgot to call
+release():
+  File: $frame->[1]
+  Line: $frame->[2]
+  Tool: $frame->[3]
+
+Cleaning up the CONTEXT stack...
+        EOT
+    }
+
+    return if $self->{+_IS_SPAWN};
+
+    # Remove the key itself to avoid a slow memory leak
+    delete $CONTEXTS->{$hid};
+    $self->{+_IS_CANON} = undef;
+
+    if (my $cbk = $self->{+_ON_RELEASE}) {
+        $_->($self) for reverse @$cbk;
+    }
+    if (my $hcbk = $hub->{_context_release}) {
+        $_->($self) for reverse @$hcbk;
+    }
+    $_->($self) for reverse @$ON_RELEASE;
 }
 
 # release exists to implement behaviors like die-on-fail. In die-on-fail you
@@ -59,10 +106,11 @@ sub restore_error_vars {
 sub release {
     my ($self) = @_;
 
-    croak "release() should not be called on a non-canonical context"
-        unless $self->{+_CANON_COUNT};
+    ($!, $@, $?) = @$self{+ERRNO, +EVAL_ERROR, +CHILD_ERROR} and return $self->{+_IS_SPAWN} = undef
+        if $self->{+_IS_SPAWN};
 
-    return if --($self->{+_CANON_COUNT});
+    croak "release() should not be called on context that is neither canon nor a child"
+        unless $self->{+_IS_CANON};
 
     my $hub = $self->{+HUB};
     my $hid = $hub->{hid};
@@ -71,6 +119,7 @@ sub release {
         unless $CONTEXTS->{$hid} && $CONTEXTS->{$hid} == $self;
 
     # Remove the key itself to avoid a slow memory leak
+    $self->{+_IS_CANON} = undef;
     delete $CONTEXTS->{$hid};
 
     if (my $cbk = $self->{+_ON_RELEASE}) {
@@ -82,6 +131,8 @@ sub release {
     $_->($self) for reverse @$ON_RELEASE;
 
     # Do this last so that nothing else changes them.
+    # If one of the hooks dies then these do not get restored, this is
+    # intentional
     ($!, $@, $?) = @$self{+ERRNO, +EVAL_ERROR, +CHILD_ERROR};
 
     return;
@@ -103,14 +154,16 @@ sub do_in_context {
 
     my $old = $CONTEXTS->{$hid};
 
-    $clone->{+_CANON_COUNT} = 1;
+    $clone->{+_IS_CANON} = 1;
     $CONTEXTS->{$hid} = $clone;
+    weaken($CONTEXTS->{$hid});
     my ($ok, $err) = &try($sub, @args);
     my ($rok, $rerr) = try { $clone->release };
-    delete $clone->{+_CANON_COUNT};
+    delete $clone->{+_IS_CANON};
 
     if ($old) {
         $CONTEXTS->{$hid} = $old;
+        weaken($CONTEXTS->{$hid});
     }
     else {
         delete $CONTEXTS->{$hid};
@@ -128,8 +181,8 @@ sub done_testing {
 
 sub throw {
     my ($self, $msg) = @_;
-    $self->{+ABORTED} = 1;
-    $self->release if $self->{+_CANON_COUNT};
+    ${$self->{+_ABORTED}}++ if $self->{+_ABORTED};
+    $self->release if $self->{+_IS_CANON} || $self->{+_IS_SPAWN};
     $self->trace->throw($msg);
 }
 
@@ -248,13 +301,13 @@ sub diag {
 
 sub plan {
     my ($self, $max, $directive, $reason) = @_;
-    $self->{+ABORTED} = 1 if $directive && $directive =~ m/^(SKIP|skip_all)$/;
+    ${$self->{+_ABORTED}}++ if $self->{+_ABORTED} && $directive && $directive =~ m/^(SKIP|skip_all)$/;
     $self->send_event('Plan', max => $max, directive => $directive, reason => $reason);
 }
 
 sub bail {
     my ($self, $reason) = @_;
-    $self->{+ABORTED} = 1;
+    ${$self->{+_ABORTED}}++ if $self->{+_ABORTED};
     $self->send_event('Bail', reason => $reason);
 }
 

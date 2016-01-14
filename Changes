@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Change how contexts are stacked
+    - More/better messages when contexts are abused
+    - better handling of $@, $!, and $?
     - Add pre_filter and pre_unfilter to Hubs
 
 0.000019  2016-01-12 16:08:11-08:00 America/Los_Angeles

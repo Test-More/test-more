@@ -39,7 +39,12 @@ wrap {
     my $ctx = shift;
     ok("$ctx" ne "$ref", "Got a new context");
     my $new = context();
-    ok($ctx == $new, "Additional call to context gets same instance");
+    my @caller = caller(0);
+    is_deeply(
+        $new,
+        {%$ctx, _is_canon => undef, _is_spawn => [@caller[0,1,2,3]]},
+        "Additional call to context gets spawn"
+    );
     delete $ctx->trace->frame->[4];
     is_deeply($ctx->trace->frame, $frame, "Found place to report errors");
     $new->release;
@@ -49,7 +54,11 @@ wrap {
     my $ctx = shift;
     my $snap = $ctx->snapshot;
 
-    is_deeply($snap, {%$ctx, _canon_count => undef}, "snapshot is identical");
+    is_deeply(
+        $snap,
+        {%$ctx, _is_canon => undef, _is_spawn => undef, _aborted => undef},
+        "snapshot is identical except for canon/spawn/aborted"
+    );
     ok($ctx != $snap, "snapshot is a new instance");
 };
 
@@ -221,8 +230,9 @@ is_deeply(
 
     eval { $one->do_in_context($doit, 'foo', 'bar') };
 
-    is(context(level => -1, wrapped => -2), $ctx, "Old context restored");
-    $ctx->release;
+    my $spawn = context(level => -1, wrapped => -2);
+    is($spawn->trace, $ctx->trace, "Old context restored");
+    $spawn->release;
     $ctx->release;
 
     ok(!exception { $one->do_in_context(sub {1}) }, "do_in_context works without an original")
@@ -243,7 +253,7 @@ is_deeply(
 
     like(
         exception { $ctx->release },
-        qr/release\(\) should not be called on a non-canonical context/,
+        qr/release\(\) should not be called on context that is neither canon nor a child/,
         "Non canonical context, do not release"
     );
 }
@@ -346,11 +356,76 @@ sub {
     is($@,     'xyz', "altered \$@ in tool");
     is($?,     33,    "altered \$? in tool");
 
+    sub {
+        my $ctx2 = context();
+
+        $! = 42;
+        $@ = 'app';
+        $? = 43;
+
+        is(0 + $!, 42,    "altered \$! in tool (nested)");
+        is($@,     'app', "altered \$@ in tool (nested)");
+        is($?,     43,    "altered \$? in tool (nested)");
+
+        $ctx2->release;
+
+        is(0 + $!, 22,    "restored the nested \$! in tool");
+        is($@,     'xyz', "restored the nested \$@ in tool");
+        is($?,     33,    "restored the nested \$? in tool");
+    }->();
+
+    sub {
+        my $ctx2 = context();
+
+        $! = 42;
+        $@ = 'app';
+        $? = 43;
+
+        is(0 + $!, 42,    "altered \$! in tool (nested)");
+        is($@,     'app', "altered \$@ in tool (nested)");
+        is($?,     43,    "altered \$? in tool (nested)");
+
+        # Will not warn since $@ is changed
+        $ctx2 = undef;
+
+        is(0 + $!, 42,    'Destroy does not reset $!');
+        is($@,     'app', 'Destroy does not reset $@');
+        is($?,     43,    'Destroy does not reset $?');
+    }->();
+
     $ctx->release;
 
     is($ctx->errno,       100,         "restored errno");
     is($ctx->eval_error,  'foobarbaz', "restored eval error");
     is($ctx->child_error, 123,         "restored child exit");
+}->();
+
+
+sub {
+    local $! = 100;
+    local $@ = 'foobarbaz';
+    local $? = 123;
+
+    my $ctx = context();
+
+    is($ctx->errno,       100,         "saved errno");
+    is($ctx->eval_error,  'foobarbaz', "saved eval error");
+    is($ctx->child_error, 123,         "saved child exit");
+
+    $! = 22;
+    $@ = 'xyz';
+    $? = 33;
+
+    is(0 + $!, 22,    "altered \$! in tool");
+    is($@,     'xyz', "altered \$@ in tool");
+    is($?,     33,    "altered \$? in tool");
+
+    # Will not warn since $@ is changed
+    $ctx = undef;
+
+    is(0 + $!, 22,    "Destroy does not restore \$!");
+    is($@,     'xyz', "Destroy does not restore \$@");
+    is($?,     33,    "Destroy does not restore \$?");
 }->();
 
 done_testing;

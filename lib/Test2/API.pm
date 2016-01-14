@@ -24,7 +24,7 @@ use Test2::Event::Skip();
 use Test2::Event::Subtest();
 
 use Carp qw/croak confess longmess/;
-use Scalar::Util qw/blessed/;
+use Scalar::Util qw/blessed weaken/;
 use Test2::Util qw/get_tid/;
 
 our @EXPORT_OK = qw{
@@ -172,23 +172,30 @@ sub context {
         push @{$current->{_on_release}} => $params{on_release};
     }
 
-    # Messy, but a quick way to return ASAP.
-    return $current if $current && $current->{_depth} < $depth && $current->{_canon_count} && $current->{_canon_count}++;
+    # I know this is ugly....
+    ($!, $@, $?) = ($errno, $eval_error, $child_error) and return bless(
+        {
+            %$current,
+            _is_canon   => undef,
+            errno       => $errno,
+            eval_error  => $eval_error,
+            child_error => $child_error,
+            _is_spawn   => [$pkg, $file, $line, $sub],
+        },
+        'Test2::API::Context'
+    ) if $current && $current->{_depth} < $depth;
 
     # Handle error condition of bad level
     if ($current) {
-        unless ($current->aborted) {
+        unless (${$current->{_aborted}}) {
             _canon_error($current, [$pkg, $file, $line, $sub, $depth])
-                unless $current->{_canon_count};
+                unless $current->{_is_canon};
 
             _depth_error($current, [$pkg, $file, $line, $sub, $depth])
                 unless $current->{_depth} < $depth;
         }
 
-        if ($current->{_canon_count}) {
-            $current->{_canon_count} = 1;
-            $current->release;
-        }
+        $current->release if $current->{_is_canon};
 
         delete $CONTEXTS->{$hid};
     }
@@ -206,12 +213,14 @@ sub context {
 
     # Directly bless the object here, calling new is a noticable performance
     # hit with how often this needs to be called.
+    my $aborted = 0;
     $current = bless(
         {
+            _aborted     => \$aborted,
             stack        => $stack,
             hub          => $hub,
             trace        => $trace,
-            _canon_count => 1,
+            _is_canon    => 1,
             _depth       => $depth,
             errno        => $errno,
             eval_error   => $eval_error,
@@ -222,6 +231,7 @@ sub context {
     );
 
     $CONTEXTS->{$hid} = $current;
+    weaken($CONTEXTS->{$hid});
 
     $_->($current) for @$INIT_CBS;
 
@@ -230,6 +240,8 @@ sub context {
     }
 
     $params{on_init}->($current) if $params{on_init};
+
+    ($!, $@, $?) = ($errno, $eval_error, $child_error);
 
     return $current;
 }
