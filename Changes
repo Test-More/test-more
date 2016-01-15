@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000020  2016-01-14 21:52:43-08:00 America/Los_Angeles
+
     - Change how contexts are stacked
     - More/better messages when contexts are abused
     - better handling of $@, $!, and $?
