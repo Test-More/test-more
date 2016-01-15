@@ -1,5 +1,5 @@
 package ok;
-$ok::VERSION = '1.302013_010';
+$ok::VERSION = '1.302013_011';
 
 use strict;
 use Test::More ();
