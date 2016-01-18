@@ -1,0 +1,102 @@
+
+# Avoid version control files.
+\bRCS\b
+\bCVS\b
+\bSCCS\b
+,v$
+\B\.svn\b
+\B\.git\b
+\B\.gitignore\b
+\b_darcs\b
+\B\.cvsignore$
+
+# Avoid VMS specific MakeMaker generated files
+\bDescrip.MMS$
+\bDESCRIP.MMS$
+\bdescrip.mms$
+
+# Avoid Makemaker generated and utility files.
+\bMANIFEST\.bak
+\bMakefile$
+\bblib/
+\bMakeMaker-\d
+\bpm_to_blib\.ts$
+\bpm_to_blib$
+\bblibdirs\.ts$         # 6.18 through 6.25 generated this
+
+# Avoid Module::Build generated and utility files.
+\bBuild$
+\b_build/
+\bBuild.bat$
+\bBuild.COM$
+\bBUILD.COM$
+\bbuild.com$
+
+# Avoid temp and backup files.
+~$
+\.old$
+\#$
+\b\.#
+\.bak$
+\.tmp$
+\.#
+\.rej$
+
+# Avoid OS-specific files/dirs
+# Mac OSX metadata
+\B\.DS_Store
+# Mac OSX SMB mount metadata files
+\B\._
+
+# Avoid Devel::Cover and Devel::CoverX::Covered files.
+\bcover_db\b
+\bcovered\b
+ 
+# Avoid MYMETA files
+^MYMETA\.
+#!end included /Users/schwern/perl5/perlbrew/perls/perl-v5.12.2/lib/5.12.2/ExtUtils/MANIFEST.SKIP
+
+
+# Avoid this one test that doesn't work yet
+^t/strays.t
+
+# Don't distribute Test::Harness
+^t/lib/Test/Harness
+
+# Test::FAQ is not complete.
+^lib/Test/FAQ
+
+# Avoid Devel::Cover stuff
+^cover_db/
+
+# Don't include our dist director
+^Test-Simple-
+
+# Profiling stuff
+^nytp*
+^profile
+
+# The extra tests are for dist author testing only
+\bxt
+
+# For github testing
+.travis.yml
+
+dist.ini
+
+MANIFEST.SKIP
+
+# I never want this to go out.
+test.pl
+
+POD_TEMPLATE.pod
+
+^Test2-*
+
+^profiling/
+
+test.pl
+t2_lib
+t2s_lib
+
+POD_TEMPLATE.POD
