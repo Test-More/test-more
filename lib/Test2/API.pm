@@ -407,6 +407,8 @@ sub run_subtest {
 
     $ctx->hub->send($e);
 
+    $ctx->failure_diag($e) unless $e->pass;
+
     $ctx->diag("Caught exception in subtest: $err") unless $ok;
 
     $ctx->diag("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
