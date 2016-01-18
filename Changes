@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000021  2016-01-18 10:54:54-08:00 America/Los_Angeles
+
     - Fix bug where default diagnostics were not shown for subtests.
 
 0.000020  2016-01-14 21:52:43-08:00 America/Los_Angeles
