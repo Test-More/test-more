@@ -367,7 +367,7 @@ sending events to the correct L<Test2::Hub> instance.
 =head1 SYNOPSIS
 
 In general you will not be creating contexts directly. To obtain a context you
-should always use C<context()> which is exported by the L<Test2> module.
+should always use C<context()> which is exported by the L<Test2::API> module.
 
     use Test2::API qw/context/;
 
@@ -496,7 +496,7 @@ This will return the L<Test2::Util::Trace> instance used by the context.
 
 Sometimes you have a context that is not current, and you want things to use it
 as the current one. In these cases you can call
-L<< $ctx->do_in_context(sub { ... }) >>. The codeblock will be run, and
+C<< $ctx->do_in_context(sub { ... }) >>. The codeblock will be run, and
 anything inside of it that looks for a context will find the one on which the
 method was called.
 

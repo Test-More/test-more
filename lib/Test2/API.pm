@@ -617,13 +617,13 @@ instead of the global one.
 
 =item hub => $hub
 
-Use this parameter if you want to onbtain the context for a specific hub
-instead of whatever one happens to be at the top of the stack.
+Use this parameter if you want to obtain the context for a specific hub instead
+of whatever one happens to be at the top of the stack.
 
 =item on_init => sub { ... }
 
 This lets you provide a callback sub that will be called B<ONLY> if your call
-to c<context()> generated a new context. The callback B<WILL NOT> be called if
+to C<context()> generated a new context. The callback B<WILL NOT> be called if
 C<context()> is returning an existing context. The only argument passed into
 the callback will be the context object itself.
 
