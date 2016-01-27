@@ -197,7 +197,8 @@ sub exception(&) {
     my $code = shift;
     local ($@, $!, $SIG{__DIE__});
     my $ok = eval { $code->(); 1 };
-    return $ok ? undef : $@;
+    my $error = $@ || 'SQUASHED ERROR';
+    return $ok ? undef : $error;
 }
 
 sub tests {
