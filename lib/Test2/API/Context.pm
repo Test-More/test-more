@@ -500,8 +500,8 @@ L<< $ctx->do_in_context(sub { ... }) >>. The codeblock will be run, and
 anything inside of it that looks for a context will find the one on which the
 method was called.
 
-This B<DOES NOT> effect context on other hubs, only the hub used by the context
-will be effected.
+This B<DOES NOT> affect context on other hubs, only the hub used by the context
+will be affected.
 
     my $ctx = ...;
     $ctx->do_in_context(sub {
