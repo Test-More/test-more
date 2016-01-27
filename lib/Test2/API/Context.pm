@@ -403,7 +403,7 @@ Creating your own context via C<< Test2::API::Context->new() >> will almost neve
 produce a desirable result. Use C<context()> which is exported by L<Test2>.
 
 There are a handful of cases where a tool author may want to create a new
-congtext by hand, which is why the C<new> method exists. Unless you really know
+context by hand, which is why the C<new> method exists. Unless you really know
 what you are doing you should avoid this.
 
 =item You MUST always release the context when done with it
