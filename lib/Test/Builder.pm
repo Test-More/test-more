@@ -37,12 +37,15 @@ use Test2::Hub::Subtest;
 use Test::Builder::Formatter;
 use Test::Builder::TodoDiag;
 
+our $Level = 1;
 our $Test = Test::Builder->new;
-our $Level;
 
-Test2::API::test2_add_callback_exit(sub {
-    $Test->_ending(@_);
-});
+# Non-TB tools normally expect 0 added to the level. $Level is normally 1. So
+# we only want the level to change if $Level != 1.
+# TB->ctx compensates for this later.
+Test2::API::test2_add_callback_context_aquire(sub {$_[0]->{level} += $Level - 1});
+
+Test2::API::test2_add_callback_exit(sub { $Test->_ending(@_) });
 
 Test2::API::test2_ipc()->set_no_fatal(1) if USE_THREADS;
 
@@ -54,6 +57,8 @@ sub _add_ts_hooks {
     # which is the singleton. We use a reference because the value could change
     # in rare cases.
     my $epkgr = \$self->{Exported_To};
+
+    #$hub->add_context_aquire(sub {$_[0]->{level} += $Level - 1});
 
     $hub->filter(sub {
         my ($active_hub, $e) = @_;
@@ -122,13 +127,9 @@ sub create {
 
 sub ctx {
     my $self = shift;
-    # 1 - call to this sub
-    # Default $Level = 1 - call to $Test->...
-    # $Level Additional levels to go back
-    my $level = $Level + 1;
-
     context(
-        level   => $level,
+        # 1 for our frame, another for the -1 off of $Level in our hook at the top.
+        level   => 2,
         fudge   => 1,
         stack   => $self->{Stack},
         hub     => $self->{Hub},
