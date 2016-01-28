@@ -29,6 +29,7 @@ use Test2::Util qw/get_tid/;
 
 our @EXPORT_OK = qw{
     context release
+    context_do
     intercept
     run_subtest
 
@@ -40,10 +41,12 @@ our @EXPORT_OK = qw{
     test2_stack
     test2_no_wait
 
+    test2_add_callback_context_aquire
     test2_add_callback_context_init
     test2_add_callback_context_release
     test2_add_callback_exit
     test2_add_callback_post_load
+    test2_list_context_aquire_callbacks
     test2_list_context_init_callbacks
     test2_list_context_release_callbacks
     test2_list_exit_callbacks
@@ -85,9 +88,10 @@ sub import {
     goto &import;
 }
 
-my $STACK    = $INST->stack;
-my $CONTEXTS = $INST->contexts;
-my $INIT_CBS = $INST->context_init_callbacks;
+my $STACK      = $INST->stack;
+my $CONTEXTS   = $INST->contexts;
+my $INIT_CBS   = $INST->context_init_callbacks;
+my $AQUIRE_CBS = $INST->context_aquire_callbacks;
 
 sub test2_init_done { $INST->finalized }
 sub test2_load_done { $INST->loaded }
@@ -100,10 +104,12 @@ sub test2_no_wait {
     $INST->no_wait;
 }
 
+sub test2_add_callback_context_aquire    { $INST->add_context_aquire_callback(@_) }
 sub test2_add_callback_context_init      { $INST->add_context_init_callback(@_) }
 sub test2_add_callback_context_release   { $INST->add_context_release_callback(@_) }
 sub test2_add_callback_exit              { $INST->add_exit_callback(@_) }
 sub test2_add_callback_post_load         { $INST->add_post_load_callback(@_) }
+sub test2_list_context_aquire_callbacks  { @{$INST->context_aquire_callbacks} }
 sub test2_list_context_init_callbacks    { @{$INST->context_init_callbacks} }
 sub test2_list_context_release_callbacks { @{$INST->context_release_callbacks} }
 sub test2_list_exit_callbacks            { @{$INST->exit_callbacks} }
@@ -131,11 +137,38 @@ sub test2_formatter_set {
 
 # Private, for use in Test2::API::Context
 sub _contexts_ref                  { $INST->contexts }
+sub _context_aquire_callbacks_ref  { $INST->context_aquire_callbacks }
 sub _context_init_callbacks_ref    { $INST->context_init_callbacks }
 sub _context_release_callbacks_ref { $INST->context_release_callbacks }
 
 # Private, for use in Test2::IPC
 sub _set_ipc { $INST->set_ipc(@_) }
+
+sub context_do(&;@) {
+    my $code = shift;
+    my @args = @_;
+
+    my $ctx = context(level => 1);
+
+    my $want = wantarray;
+
+    my @out;
+    my $ok = eval {
+        $want          ? @out    = $code->($ctx, @args) :
+        defined($want) ? $out[0] = $code->($ctx, @args) :
+                                   $code->($ctx, @args) ;
+        1;
+    };
+    my $err = $@;
+
+    $ctx->release;
+
+    die $err unless $ok;
+
+    return @out    if $want;
+    return $out[0] if defined $want;
+    return;
+}
 
 sub context {
     # We need to grab these before anything else to ensure they are not
@@ -155,6 +188,9 @@ sub context {
     my $hub     = $params{hub}   || @$stack ? $stack->[-1] : $stack->top;
     my $hid     = $hub->{hid};
     my $current = $CONTEXTS->{$hid};
+
+    $_->(\%params) for @$AQUIRE_CBS;
+    map $_->(\%params), @{$hub->{_context_aquire}} if $hub->{_context_aquire};
 
     my $level = 1 + $params{level};
     my ($pkg, $file, $line, $sub) = caller($level);
@@ -234,10 +270,7 @@ sub context {
     weaken($CONTEXTS->{$hid});
 
     $_->($current) for @$INIT_CBS;
-
-    if (my $hcbk = $hub->{_context_init}) {
-        $_->($current) for @$hcbk;
-    }
+    map $_->($current), @{$hub->{_context_init}} if $hub->{_context_init};
 
     $params{on_init}->($current) if $params{on_init};
 
@@ -702,6 +735,33 @@ We can combine the last 3 lines of the above like so:
     my $ctx = context();
     release $ctx, some_tool(...);
 
+=head2 context_do(&;@)
+
+Usage:
+
+    sub my_tool {
+        context_do {
+            my $ctx = shift;
+
+            my (@args) = @_;
+
+            $ctx->ok(1, "pass");
+
+            ...
+
+            # No need to call $ctx->release, done for you on scope exit.
+        } @_;
+    }
+
+Using this inside your test tool takes care of a lot of boilerplate for you. It
+will ensure a context is aquired. It will capture and rethrow any exception. It
+will insure the context is released when you are done. It preserves the
+subroutine call context (array, scalar, void).
+
+This is the safest way to write a test tool. The only 2 downsides to this are a
+slight performance decrease, and some extra indentation in your source. If the
+indentation is a problem for you then you can take a peek at the next section.
+
 =head2 intercept(&)
 
 Usage:
@@ -835,6 +895,24 @@ Add a callback that will be called when Test2 is finished loading. This
 means the callback will be run once, the first time a context is obtained.
 If Test2 has already finished loading then the callback will be run immedietly.
 
+=item test2_add_callback_context_aquire(sub { ... })
+
+Add a callback that will be called every time someone tries to aquire a
+context. This will be called on EVERY call to C<context()>. It gets a single
+argument, a reference the the hash of parameters being used the construct the
+context. This is your chance to change the parameters by directly altering the
+hash.
+
+    test2_add_callback_context_aquire(sub {
+        my $params = shift;
+        $params->{level}++;
+    });
+
+This is a very scary API function. Please do not use this unless you need to.
+This is here for L<Test::Builder> and backwards compatability. This has you
+directly manipulate the hash instead of returning a new one for performance
+reasons.
+
 =item test2_add_callback_context_init(sub { ... })
 
 Add a callback that will be called every time a new context is created. The
@@ -845,6 +923,9 @@ callback will recieve the newly created context as its only argument.
 Add a callback that will be called every time a context is released. The
 callback will recieve the released context as its only argument.
 
+=item @list = test2_list_context_aquire_callbacks()
+
+Return all the context aquire callback references.
 
 =item @list = test2_list_context_init_callbacks()
 

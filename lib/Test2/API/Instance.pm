@@ -27,6 +27,7 @@ use Test2::Util::HashBase qw{
 
     exit_callbacks
     post_load_callbacks
+    context_aquire_callbacks
     context_init_callbacks
     context_release_callbacks
 };
@@ -77,6 +78,7 @@ sub reset {
 
     $self->{+EXIT_CALLBACKS}            = [];
     $self->{+POST_LOAD_CALLBACKS}       = [];
+    $self->{+CONTEXT_AQUIRE_CALLBACKS}  = [];
     $self->{+CONTEXT_INIT_CALLBACKS}    = [];
     $self->{+CONTEXT_RELEASE_CALLBACKS} = [];
 
@@ -158,6 +160,18 @@ sub add_formatter {
     $Carp::Internal{'Test2::Formatter'} = 1;
 
     carp "Formatter $formatter loaded too late to be used as the global formatter";
+}
+
+sub add_context_aquire_callback {
+    my $self =  shift;
+    my ($code) = @_;
+
+    my $rtype = reftype($code) || "";
+
+    confess "Context-aquire callbacks must be coderefs"
+        unless $code && $rtype eq 'CODE';
+
+    push @{$self->{+CONTEXT_AQUIRE_CALLBACKS}} => $code;
 }
 
 sub add_context_init_callback {
@@ -485,6 +499,10 @@ stored and executed later when C<load()> is called.
 =item $hashref = $obj->contexts()
 
 Get a hashref of all active contexts keyed by hub id.
+
+=item $arrayref = $obj->context_aquire_callbacks
+
+Get all context aquire callbacks.
 
 =item $arrayref = $obj->context_init_callbacks
 

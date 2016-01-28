@@ -16,6 +16,8 @@ my $CLASS = 'Test2::API';
 
 # Ensure we do not break backcompat later by removing anything
 ok(Test2::API->can($_), "$_ method is present") for qw{
+    context_do
+
     test2_init_done
     test2_load_done
 
@@ -138,26 +140,63 @@ ok($CLASS->can('test2_no_wait')->(), "no_wait is set");
 $CLASS->can('test2_no_wait')->(undef);
 ok(!$CLASS->can('test2_no_wait')->(), "no_wait is not set");
 
+my $pctx;
+sub tool_a($;$) {
+    Test2::API::context_do {
+        my $ctx = shift;
+        my ($bool, $name) = @_;
+        $pctx = wantarray;
+        die "xyz" unless $bool;
+        $ctx->ok($bool, $name);
+        return unless defined $pctx;
+        return (1, 2) if $pctx;
+        return 'a';
+    } @_;
+}
+
+$pctx = 'x';
+tool_a(1, "void context test");
+ok(!defined($pctx), "void context");
+
+my $x = tool_a(1, "scalar context test");
+ok(defined($pctx) && $pctx == 0, "scalar context");
+is($x, 'a', "got scalar return");
+
+my @x = tool_a(1, "array context test");
+ok($pctx, "array context");
+is_deeply(\@x, [1, 2], "Got array return");
+
+like(
+    exception { tool_a(0) },
+    qr/^xyz/,
+    "got exception"
+);
+
 my $sub = sub { };
 
+Test2::API::test2_add_callback_context_aquire($sub);
 Test2::API::test2_add_callback_context_init($sub);
 Test2::API::test2_add_callback_context_release($sub);
 Test2::API::test2_add_callback_exit($sub);
 Test2::API::test2_add_callback_post_load($sub);
 
+is((grep { $_ == $sub } Test2::API::test2_list_context_aquire_callbacks()),  1, "got the one instance of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_context_init_callbacks()),    1, "got the one instance of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_context_release_callbacks()), 1, "got the one instance of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_exit_callbacks()),            1, "got the one instance of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_post_load_callbacks()),       1, "got the one instance of the hook");
 
+Test2::API::test2_add_callback_context_aquire($sub);
 Test2::API::test2_add_callback_context_init($sub);
 Test2::API::test2_add_callback_context_release($sub);
 Test2::API::test2_add_callback_exit($sub);
 Test2::API::test2_add_callback_post_load($sub);
 
+is((grep { $_ == $sub } Test2::API::test2_list_context_aquire_callbacks()),  2, "got the two instances of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_context_init_callbacks()),    2, "got the two instances of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_context_release_callbacks()), 2, "got the two instances of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_exit_callbacks()),            2, "got the two instances of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_post_load_callbacks()),       2, "got the two instances of the hook");
 
 done_testing;
+
