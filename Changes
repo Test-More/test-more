@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Add context_do()
+    - Add context_aquire hooks
     - Documentation updates
     - Typo fixes (thanks rjbs)
     - Minor enhancement to test tools
