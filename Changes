@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - $Level effects all contexts once Test::Builder is loaded
+    - Requires Test2 0.000023
+
 1.302013_011 2016-01-14 21:55:28-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Performance enhancements
