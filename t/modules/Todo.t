@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Todo';
-BEGIN { require "t/tools.pl" }
 
 my $todo = Test2::Todo->new(reason => 'xyz');
 def isa_ok => ($todo, $CLASS);

@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Util::Stash';
-BEGIN { require 't/tools.pl' }
 
 use Test2::Util::Stash qw{
     get_stash

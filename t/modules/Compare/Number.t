@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Number';
-BEGIN { require 't/tools.pl' }
 
 my $num    = $CLASS->new(input => '22.0');
 my $untrue = $CLASS->new(input => 0);

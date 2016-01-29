@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Custom';
-BEGIN { require "t/tools.pl" }
 
 my $pass = $CLASS->new(code => sub { 1 });
 my $fail = $CLASS->new(code => sub { 0 });

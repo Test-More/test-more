@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Wildcard';
-BEGIN { require 't/tools.pl' }
 
 my $one = $CLASS->new(expect => 'foo');
 isa_ok($one, $CLASS, 'Test2::Compare::Base');

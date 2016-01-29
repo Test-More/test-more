@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Custom';
-BEGIN { require "t/tools.pl" }
 
 use Test2::Tools::Mock qw{
     mock_obj mock_class

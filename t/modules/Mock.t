@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Mock';
-BEGIN { require "t/tools.pl" }
 use Test2::API qw/context/;
 
 use Scalar::Util qw/blessed/;

@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Pattern';
-BEGIN { require 't/tools.pl' }
 
 my $one = $CLASS->new(pattern => qr/HASH/);
 isa_ok($one, $CLASS, 'Test2::Compare::Base');

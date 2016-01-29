@@ -1,6 +1,5 @@
 use Test2::Bundle::Extended;
 use Test2::API qw/intercept/;
-BEGIN { require 't/tools.pl' }
 
 use Test2::Compare qw{
     compare get_build push_build pop_build build

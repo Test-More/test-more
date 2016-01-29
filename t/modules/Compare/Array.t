@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Array';
-BEGIN { require "t/tools.pl" };
 
 isa_ok($CLASS, 'Test2::Compare::Base');
 is($CLASS->name, '<ARRAY>', "got name");

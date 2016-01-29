@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Undef';
-BEGIN { require 't/tools.pl' }
 
 my $undef = $CLASS->new();
 my $isdef = $CLASS->new(negate => 1);

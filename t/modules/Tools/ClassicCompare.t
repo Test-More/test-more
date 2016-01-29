@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Tools::ClassicCompare';
-BEGIN { require "t/tools.pl" }
 
 use Test2::Util::Stash qw/purge_symbol/;
 BEGIN {
@@ -95,7 +94,7 @@ cmp_ok(5, '==', 5.0, 'float pass');
 my $file = __FILE__;
 my $line = __LINE__ + 2;
 like(
-    main::warns { cmp_ok(undef, '==', undef, 'undef pass') },
+    warnings { cmp_ok(undef, '==', undef, 'undef pass') },
     [
         qr/uninitialized value.*at \(eval in cmp_ok\) \Q$file\E line $line/,
     ],
@@ -104,7 +103,7 @@ like(
 
 $line = __LINE__ + 2;
 like(
-    main::warns { cmp_ok(undef, 'eq', undef, 'undef pass') },
+    warnings { cmp_ok(undef, 'eq', undef, 'undef pass') },
     [
         qr/uninitialized value.*at \(eval in cmp_ok\) \Q$file\E line $line/,
     ],

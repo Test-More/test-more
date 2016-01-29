@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Require::AuthorTesting';
-BEGIN { require 't/tools.pl' }
 
 {
     local %ENV = %ENV;

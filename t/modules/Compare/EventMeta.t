@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::EventMeta';
-BEGIN { require "t/tools.pl" }
 
 use Test2::Util qw/get_tid/;
 

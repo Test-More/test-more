@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Hash';
-BEGIN { require 't/tools.pl' }
 
 subtest simple => sub {
     my $one = $CLASS->new();

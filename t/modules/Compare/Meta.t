@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Meta';
-BEGIN { require 't/tools.pl' }
 
 local *convert = Test2::Compare->can('strict_convert');
 

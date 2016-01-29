@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Tools::Ref';
-BEGIN { require "t/tools.pl" }
 
 {
     package Temp;

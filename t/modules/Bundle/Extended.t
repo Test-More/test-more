@@ -50,7 +50,7 @@ subtest warnings => sub {
     Test2::Bundle::Extended->import;
     my $wafter = ${^WARNING_BITS} || '';
 
-    my $warnings = do { local ${^WARNING_BITS}; warnings->import(); ${^WARNING_BITS} || '' };
+    my $warnings = do { local ${^WARNING_BITS}; 'warnings'->import(); ${^WARNING_BITS} || '' };
 
     ok($warnings, 'sanity, got ${^WARNING_BITS} value for warnings');
     ok($wbefore ne $warnings, "warnings are not on before loading Test2::Bundle::Extended") || diag($wbefore, "\n", $warnings);

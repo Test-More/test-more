@@ -10,7 +10,6 @@ BEGIN {
 }
 
 use Test2::Bundle::Extended -target => 'Test2::Require::RealFork';
-BEGIN { require 't/tools.pl' }
 
 {
     $forks = 0;

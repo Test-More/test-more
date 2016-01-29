@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Base';
-BEGIN { require "t/tools.pl" }
 
 my $one = $CLASS->new();
 isa_ok($one, $CLASS);

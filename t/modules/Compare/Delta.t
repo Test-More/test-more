@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Delta';
-BEGIN { require "t/tools.pl" }
 
 can_ok($CLASS, qw/check/);
 is(

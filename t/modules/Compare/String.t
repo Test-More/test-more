@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::String';
-BEGIN { require 't/tools.pl' }
 
 my $number = $CLASS->new(input => '22.0');
 my $string = $CLASS->new(input => 'hello');

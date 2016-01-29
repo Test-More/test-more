@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Tools::Compare';
-BEGIN { require "t/tools.pl" }
 use Test2::Util::Table();
 sub table { join "\n" => Test2::Util::Table::table(@_) }
 

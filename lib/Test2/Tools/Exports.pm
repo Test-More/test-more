@@ -61,6 +61,8 @@ Test2::Tools::Exports - Tools for validating exporters.
 
 =head1 DESCRIPTION
 
+These are tools for checking that symbols have been imported into your
+namespace.
 
 =head1 SYNOPSIS
 

@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Set';
-BEGIN { require 't/tools.pl' }
 
 subtest construction => sub {
     my $one = $CLASS->new();

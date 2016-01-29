@@ -33,14 +33,20 @@ use Test2::Tools::Compare qw{
     exact_ref
 };
 
+use Test2::Tools::Warnings qw{
+    warns warning warnings no_warnings
+};
+
 use Test2::Tools::ClassicCompare qw/cmp_ok/;
 
-use Test2::Tools::Subtest  qw/subtest_buffered/;
-use Test2::Tools::Class    qw/can_ok isa_ok DOES_ok/;
-use Test2::Tools::Encoding qw/set_encoding/;
-use Test2::Tools::Exports  qw/imported_ok not_imported_ok/;
-use Test2::Tools::Ref      qw/ref_ok ref_is ref_is_not/;
-use Test2::Tools::Mock     qw/mock mocked/;
+use Test2::Tools::Subtest   qw/subtest_buffered/;
+use Test2::Tools::Class     qw/can_ok isa_ok DOES_ok/;
+use Test2::Tools::Encoding  qw/set_encoding/;
+use Test2::Tools::Exports   qw/imported_ok not_imported_ok/;
+use Test2::Tools::Ref       qw/ref_ok ref_is ref_is_not/;
+use Test2::Tools::Mock      qw/mock mocked/;
+use Test2::Tools::Exception qw/dies lives/;
+
 
 BEGIN {
     *subtest = \&subtest_buffered;
@@ -56,12 +62,15 @@ our @EXPORT = qw{
 
     cmp_ok
 
+    warns warning warnings no_warnings
+
     subtest
     can_ok isa_ok DOES_ok
     set_encoding
     imported_ok not_imported_ok
     ref_ok ref_is ref_is_not
     mock mocked
+    dies lives
 
     is like isnt unlike
     match mismatch validator
@@ -102,7 +111,7 @@ sub import {
     my $no_utf8     = delete $options{'-no_utf8'} || $no_pragmas;
 
     strict->import()              unless $no_strict;
-    warnings->import()            unless $no_warnings;
+    'warnings'->import()          unless $no_warnings;
     Test2::Plugin::UTF8->import() unless $no_utf8;
 
     my $target = delete $options{'-target'};
@@ -435,6 +444,34 @@ See L<Test2::Tools::Mock>.
 =item $control = mock ...
 
 =item $bool = mocked($thing)
+
+=back
+
+=head2 EXCEPTION
+
+See L<Test2::Tools::Exception>.
+
+=over 4
+
+=item $exception = dies { ... }
+
+=item $bool = lives { ... }
+
+=back
+
+=head2 WARNINGS
+
+See L<Test2::Tools::Warnings>.
+
+=over 4
+
+=item $count = warns { ... }
+
+=item $warning = warning { ... }
+
+=item $warnings_ref = warnings { ... }
+
+=item $bool = no_warnings { ... }
 
 =back
 

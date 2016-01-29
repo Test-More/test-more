@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Regex';
-BEGIN { require 't/tools.pl' }
 
 my $one = $CLASS->new(input => qr/abc/i);
 

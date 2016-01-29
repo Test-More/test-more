@@ -10,7 +10,6 @@ BEGIN {
 }
 
 use Test2::Bundle::Extended -target => 'Test2::Require::Threads';
-BEGIN { require 't/tools.pl' }
 
 {
     $threads = 0;

@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Ref';
-BEGIN { require 't/tools.pl' }
 
 my $ref = sub { 1 };
 my $one = $CLASS->new(input => $ref);

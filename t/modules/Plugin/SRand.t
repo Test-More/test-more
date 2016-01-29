@@ -5,7 +5,7 @@ use Test2::Tools::Basic;
 use Test2::API qw/intercept/;
 use Test2::Tools::Compare qw/array event end is like/;
 use Test2::Tools::Target 'Test2::Plugin::SRand';
-BEGIN { require "t/tools.pl" }
+use Test2::Tools::Warnings qw/warning/;
 
 {
     local %ENV = %ENV;

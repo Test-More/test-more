@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended;
-BEGIN { require 't/tools.pl' }
 
 use Test2::Require;
 pass "Loaded Test2::Require";

@@ -15,7 +15,32 @@ BEGIN {
 }
 
 use Test2::Bundle::Extended -target => 'Test2::Tools::Defer';
-BEGIN { require "t/tools.pl" }
+
+sub capture(&) {
+    my $code = shift;
+
+    my ($err, $out) = ("", "");
+
+    my ($ok, $e);
+    {
+        local *STDOUT;
+        local *STDERR;
+
+        ($ok, $e) = Test2::Util::try(sub {
+            open(STDOUT, '>', \$out) or die "Failed to open a temporary STDOUT: $!";
+            open(STDERR, '>', \$err) or die "Failed to open a temporary STDERR: $!";
+
+            $code->();
+        });
+    }
+
+    die $e unless $ok;
+
+    return {
+        STDOUT => $out,
+        STDERR => $err,
+    };
+}
 
 is(
     intercept { do_def },

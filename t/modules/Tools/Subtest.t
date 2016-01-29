@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Tools::Subtest';
-BEGIN { require "t/tools.pl" }
 
 use Test2::Tools::Subtest qw/subtest_streamed subtest_buffered/;
 
