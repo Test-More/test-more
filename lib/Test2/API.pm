@@ -23,13 +23,14 @@ use Test2::Event::Waiting();
 use Test2::Event::Skip();
 use Test2::Event::Subtest();
 
-use Carp qw/croak confess longmess/;
+use Carp qw/carp croak confess longmess/;
 use Scalar::Util qw/blessed weaken/;
 use Test2::Util qw/get_tid/;
 
 our @EXPORT_OK = qw{
     context release
     context_do
+    no_context
     intercept
     run_subtest
 
@@ -169,6 +170,23 @@ sub context_do(&;@) {
     return $out[0] if defined $want;
     return;
 }
+
+sub no_context(&;$) {
+    my ($code, $hid) = @_;
+    $hid ||= $STACK->top->hid;
+
+    my $ctx = $CONTEXTS->{$hid};
+    delete $CONTEXTS->{$hid};
+    my $ok = eval { $code->(); 1 };
+    my $err = $@;
+
+    $CONTEXTS->{$hid} = $ctx;
+    weaken($CONTEXTS->{$hid});
+
+    die $err unless $ok;
+
+    return;
+};
 
 sub context {
     # We need to grab these before anything else to ensure they are not
@@ -761,6 +779,43 @@ subroutine call context (array, scalar, void).
 This is the safest way to write a test tool. The only 2 downsides to this are a
 slight performance decrease, and some extra indentation in your source. If the
 indentation is a problem for you then you can take a peek at the next section.
+
+=head2 no_context(&;$)
+
+Useage:
+
+=over 4
+
+=item no_context { ... };
+
+=item no_context { ... } $hid;
+
+    sub my_tool(&) {
+        my $code = shift;
+        my $ctx = context();
+        ...
+
+        no_context {
+            # Things in here will not see our current context, they get a new
+            # one.
+
+            $code->();
+        };
+
+        ...
+        $ctx->release;
+    };
+
+=back
+
+This tool will hide a context for the provided block of code. This means any
+tools run inside the block will get a completely new context if they aquire
+one. The new context will be inherited by tools nested below the one that
+aquired it.
+
+This will normally hide the current context for the top hub. If you need to
+hide the context for a different hub you can pass in the optional C<$hid>
+parameter.
 
 =head2 intercept(&)
 

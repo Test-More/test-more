@@ -17,6 +17,7 @@ my $CLASS = 'Test2::API';
 # Ensure we do not break backcompat later by removing anything
 ok(Test2::API->can($_), "$_ method is present") for qw{
     context_do
+    no_context
 
     test2_init_done
     test2_load_done
@@ -171,6 +172,69 @@ like(
     qr/^xyz/,
     "got exception"
 );
+
+sub {
+    my $outer = context();
+    sub {
+        my $middle = context();
+        is($outer->trace, $middle->trace, "got the same context before calling no_context");
+
+        Test2::API::no_context {
+            my $inner = context();
+            ok($inner->trace != $outer->trace, "Got a different context inside of no_context()");
+            $inner->release;
+        };
+
+        $middle->release;
+    }->();
+
+    $outer->release;
+}->();
+
+sub {
+    my $outer = context();
+    sub {
+        my $middle = context();
+        is($outer->trace, $middle->trace, "got the same context before calling no_context");
+
+        Test2::API::no_context {
+            my $inner = context();
+            ok($inner->trace != $outer->trace, "Got a different context inside of no_context({}, hid)");
+            $inner->release;
+        } $outer->hub->hid;
+
+        $middle->release;
+    }->();
+
+    $outer->release;
+}->();
+
+sub {
+    my @warnings;
+    my $outer = context();
+    sub {
+        my $middle = context();
+        is($outer->trace, $middle->trace, "got the same context before calling no_context");
+
+        local $SIG{__WARN__} = sub { push @warnings => @_ };
+        Test2::API::no_context {
+            my $inner = context();
+            ok($inner->trace != $outer->trace, "Got a different context inside of no_context({}, hid)");
+        } $outer->hub->hid;
+
+        $middle->release;
+    }->();
+
+    $outer->release;
+
+    is(@warnings, 1, "1 warning");
+    like(
+        $warnings[0],
+        qr/A context appears to have been destroyed without first calling release/,
+        "Got warning about unreleased context"
+    );
+}->();
+
 
 my $sub = sub { };
 
