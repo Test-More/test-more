@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix occasional warning in cleanup
+
 0.000024  2016-01-29 21:16:56-08:00 America/Los_Angeles
 
     - Add no_context() (needed for external tool)

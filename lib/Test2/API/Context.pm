@@ -55,7 +55,7 @@ sub restore_error_vars {
 
 sub DESTROY {
     return unless $_[0]->{+_IS_CANON} || $_[0]->{+_IS_SPAWN};
-    return if ${$_[0]->{+_ABORTED}};
+    return if $_[0]->{+_ABORTED} && ${$_[0]->{+_ABORTED}};
     my ($self) = @_;
 
     my $hub = $self->{+HUB};
