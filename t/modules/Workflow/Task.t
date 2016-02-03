@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Workflow::Task';
-BEGIN { require 't/tools.pl' }
 
 use Test2::Workflow::Runner;
 
@@ -78,33 +77,10 @@ ok($one->_have_primary, "populated array as primary");
 $unit->primary(undef);
 
 
-{
-    local $ENV{T2_WORKFLOW};
-    my $control = $unit->{'~~MOCK~CONTROL~~'};
-    $control->add('contains' => sub { 0 });
-    ok($one->should_run, "no request, so just run");
-    $ENV{T2_WORKFLOW} = 'foo';
-    $one->set_no_final(1);
-    ok($one->should_run, "no_final always run");
-
-    $one->set_no_final(0);
-    ok(!$one->should_run, "should not run");
-
-    $control->override('contains' => sub { 1 });
-    ok($one->should_run, "Run if the unit matches");
-    $control->reset('contains');
-}
-
 $one->set_stage($one->STAGE_COMPLETE);
 ok(!$one->run, "already complete is a no-op");
 $one->reset;
 
-{
-    my $mock = mock $CLASS => (
-        override => { should_run => sub { 0 } },
-    );
-    ok(!$one->run, "no-op due to should_run being 0");
-}
 
 my $trace = Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'none']);
 my $new_ctx = sub {
@@ -114,6 +90,12 @@ my $new_ctx = sub {
     );
 };
 $unit->{'~~MOCK~CONTROL~~'}->add( context => $new_ctx );
+
+$one->reset;
+$unit->name('bob');
+$unit->filtered(1);
+ok(!$one->run, "filtered, no-op"); # Should do nothing
+$unit->filtered(0);
 
 $one->reset;
 $unit->name('bob');
@@ -196,8 +178,14 @@ $unit->primary(sub { 1 });
     is(
         intercept { $one->run },
         array {
-            fail_events Ok => { pass => 0, name => 'bob' };
-            event Diag => { message => 'No events were generated' };
+            fail_events Subtest => sub {
+                call pass => 0;
+                call name => 'bob';
+                call subevents => array {
+                    fail_events Ok => { name => 'EVENT CHECK', pass => 0 };
+                    event Diag => { message => 'No events were generated' };
+                };
+            };
         },
         "Need events even in subtest"
     );
@@ -269,7 +257,7 @@ $unit->primary(sub { 1 });
         intercept { $one->run },
         array {
             fail_events Ok => { pass => 0 };
-            fail_events Ok => { pass => 0, name => 'bob' };
+            event Diag => {};
             end;
         },
         "Got failure event"
@@ -355,6 +343,7 @@ my $runner = mock 'Fake::Runner' => (
         run => sub {
             push @calls => [@_];
         },
+        verbose => sub { 0 },
     },
 );
 $one->set_args(['x']);
@@ -421,20 +410,6 @@ is(
 );
 is($one->stage, $one->STAGE_PRIMARY(), "bumped stage");
 
-$one->reset;
-$runner->override(run => sub { 1 });
-is(
-    intercept { $one->_run_buildups },
-    array {
-        fail_events Ok => { pass => 0, name => 'child1'};
-        event Diag => { message => match qr/Inner sub was never called/ };
-        fail_events Ok => { pass => 0, name => 'child2' };
-        event Diag => { message => match qr/Inner sub was never called/ };
-        end;
-    },
-    "Got failed event from not running inner sub"
-);
-
 $runner->override(
     run => sub {
         push @calls => [@_];
@@ -499,35 +474,6 @@ is(
 is($one->stage, $one->STAGE_COMPLETE, "Done!");
 
 
-$one->reset;
-$one->set_no_final(0);
-my $l = $one->_listener;
-$l->(undef, mock { causes_fail => 0 });
-is($one->events, 1, "1 event");
-is($one->failed, 0, "0 failures");
-$l->(undef, mock { causes_fail => 1 });
-is($one->events, 2, "2 event");
-is($one->failed, 1, "1 failures");
-$l->(undef, mock { causes_fail => 0 });
-is($one->events, 3, "3 event");
-is($one->failed, 1, "1 failures");
-
-
-$one->reset;
-$one->set_no_final(1);
-$unit->wrap(0);
-$l = $one->_listener;
-$l->(undef, mock { causes_fail => 0 });
-is($one->events, 1, "1 event");
-is($one->failed, 0, "0 failures");
-$l->(undef, mock { causes_fail => 1 });
-is($one->events, 2, "2 event");
-is($one->failed, 1, "1 failures");
-$l->(undef, mock { causes_fail => 0 });
-is($one->events, 3, "3 event");
-is($one->failed, 1, "1 failures");
-
-
 my $ran = 0;
 $one->reset;
 $one->set_no_final(0);
@@ -560,7 +506,7 @@ my $mod = Test2::Workflow::Unit->new(
     end_line => __LINE__,
 );
 $one->reset;
-$one->set_runner('Test2::Workflow::Runner');
+$one->set_runner(Test2::Workflow::Runner->instance);
 $one->set_no_final(0);
 $unit->wrap(0);
 $unit->modify([$mod]);
@@ -597,7 +543,7 @@ my $prim = Test2::Workflow::Unit->new(
     end_line => __LINE__,
 );
 $one->reset;
-$one->set_runner('Test2::Workflow::Runner');
+$one->set_runner(Test2::Workflow::Runner->instance);
 $one->set_no_final(0);
 $unit->wrap(0);
 $unit->modify([$mod]);

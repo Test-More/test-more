@@ -4,6 +4,8 @@ use warnings;
 
 our $VERSION = "0.000001";
 
+use B;
+
 use Scalar::Util qw/reftype blessed/;
 use Carp qw/confess croak/;
 
@@ -24,6 +26,7 @@ our @EXPORT_OK = qw{
     workflow_meta
     workflow_runner
     workflow_runner_args
+    workflow_find_runner
     workflow_var
     workflow_run
     new_proto_unit
@@ -56,7 +59,37 @@ sub tool_import {
     my $class = shift;
     my ($pkg, $file, $line) = caller;
 
-    $class->export_to_level(1, @_);
+    my (@imports, @params);
+    while (my $arg = shift @_) {
+        if ($arg =~ m/^-(.+)$/) {
+            push @params => $1;
+            push @params => shift(@_);
+        }
+        else {
+            push @imports => $arg;
+        }
+    }
+
+    $class->export_to_level(1, undef, @imports);
+    __PACKAGE__->add_mock_handler($pkg);
+
+    # This is a no-op if it has already been done.
+    my $meta = Test2::Workflow::Meta->build($pkg, $file, $line, 'EOF');
+
+    $meta->set_params(\@params);
+
+    return;
+}
+
+sub tool_unimport {
+    my $caller = caller;
+    my $meta = Test2::Workflow::Meta->get($caller);
+    $meta->set_autorun(0);
+};
+
+sub add_mock_handler {
+    my $class = shift;
+    my ($pkg) = @_;
 
     Test2::Tools::Mock->add_handler(
         $pkg,
@@ -68,20 +101,20 @@ sub tool_import {
             my $set_vars = sub {
                 workflow_var(__PACKAGE__, sub { {} })->{$class} = $builder->();
             };
-        
+
             if (has_workflow_vars()) {
                 $set_vars->();
                 return 1;
             }
-        
+
             my $meta = Test2::Workflow::Meta->get($caller->[0]);
             my $build = workflow_build() || $meta->unit;
 
             return 0 unless $build;
-        
+
             my $now = $builder->();
             $build->add_post(sub { $now = undef });
-        
+
             $build->add_buildup(
                 Test2::Workflow::Unit->new(
                     name       => "Mock $class",
@@ -97,23 +130,80 @@ sub tool_import {
             return 1;
         }
     );
-
-    # This is a no-op if it has already been done.
-    Test2::Workflow::Meta->build($pkg, $file, $line, 'EOF');
 }
-
-sub tool_unimport {
-    my $caller = caller;
-    my $meta = Test2::Workflow::Meta->get($caller);
-    $meta->set_autorun(0);
-};
-
 
 sub workflow_current     { _current(caller) }
 sub workflow_meta        { Test2::Workflow::Meta->get(scalar caller) }
-sub workflow_run         { Test2::Workflow::Meta->get(scalar caller)->run(@_) }
 sub workflow_runner      { Test2::Workflow::Meta->get(scalar caller)->set_runner(@_) }
 sub workflow_runner_args { Test2::Workflow::Meta->get(scalar caller)->set_runner_args(@_) }
+
+sub workflow_run {
+    my %params = @_;
+
+    my @caller = caller;
+
+    my $no_final = exists $params{no_final} ? $params{no_final} : 1;
+
+    my ($unit, $runner, $runner_params, $runner_args);
+    if ($params{unit} && !$params{meta}) {
+        $unit = $params{unit};
+
+        $runner        = $params{runner}        || workflow_find_runner($unit);
+        $runner_params = $params{runner_params} || [];
+        $runner_args   = $params{runner_args}   || [];
+    }
+    else {
+        my $meta = $params{meta} || Test2::Workflow::Meta->get($caller[0]);
+        $unit = $params{unit} || $meta->unit;
+
+        $runner = $params{runner} || $meta->runner || workflow_find_runner($unit);
+        $runner_params = $params{runner_params} || $meta->params || [];
+        $runner_args   = $params{runner_args}   || $meta->runner_args || [];
+    }
+
+    $unit->do_post;
+
+    $runner = $runner->instance(@$runner_params)
+        unless blessed($runner);
+
+    if (my $filter = $params{filter}) {
+        my ($file, $line, $name);
+        if ($filter =~ m/^(.*\S.*) (\d+)$/) {
+            ($file, $line) = ($1, $2);
+        }
+        elsif ($filter =~ m/^\d+$/) {
+            $line = $filter;
+        }
+        else {
+            $name = $filter;
+        }
+
+        $unit->filter($file, $line, $name);
+    }
+
+    BEGIN { update_mask(__FILE__, __LINE__ + 1, '*', {restart => 1}) }
+    $runner->run(unit => $unit, args => $runner_args, no_final => $no_final);
+}
+
+sub workflow_find_runner {
+    my $unit = shift;
+
+    my @stack = ($unit);
+    my %seen;
+    while (my $u = shift @stack) {
+        next if $seen{$u}++;
+        push @stack => $u->children;
+
+        my $meta = $u->meta or next;
+        next unless $meta->{iso} || $meta->{async};
+
+        require Test2::Workflow::Runner::Isolate;
+        return 'Test2::Workflow::Runner::Isolate';
+    }
+
+    require Test2::Workflow::Runner;
+    return 'Test2::Workflow::Runner';
+}
 
 sub workflow_build { @BUILD ? $BUILD[-1] : undef }
 sub push_workflow_build { push @BUILD => $_[0] || die "Nothing to push"; $_[0] }
@@ -183,6 +273,7 @@ sub new_proto_unit {
     my $caller = $params{caller} || [caller($params{level})];
     my $args = $params{args};
     my $subname = $params{subname};
+    my $meta_merge = $params{meta};
 
     unless ($subname) {
         $subname = $caller->[3];
@@ -227,8 +318,15 @@ sub new_proto_unit {
     die_at_caller $caller => "$subname() requires a code reference"
         unless $code;
 
+    my $cobj = B::svref_2object($code);
+    my $file = $cobj->FILE;
+    push @lines => $caller->[2] unless @lines || $file ne $caller->[1];
+
     my $info = sub_info($code, @lines);
     set_sub_name("$caller->[0]\::$name", $code) if CAN_SET_SUB_NAME && $info->{name} =~ m/__ANON__$/;
+
+    $meta = { $meta_merge ? %$meta_merge : (), $meta ? %$meta : () }
+        if $meta_merge;
 
     my $unit = Test2::Workflow::Unit->new(
         name       => $name,
@@ -247,7 +345,6 @@ sub new_proto_unit {
 }
 
 
-BEGIN { update_mask('*', '*', __PACKAGE__ . '::group_builder', {hide => 1}) }
 sub group_builder {
     my ($unit, $code, $caller) = new_proto_unit(
         args => \@_,
@@ -256,10 +353,13 @@ sub group_builder {
 
     push_workflow_build($unit);
     my ($ok, $err) = try {
-        BEGIN { update_mask(__FILE__, __LINE__ + 1, '*', {hide => 1}) }
+        my @caller = caller(0);
+        update_mask($caller[1], $caller[2], $caller[3], {hide => 2});
+        BEGIN { update_mask(__FILE__, __LINE__ + 1, '*', {shift => 1}) }
         $code->($unit);
         1; # To force the previous statement to be in void context
     };
+    BEGIN { update_mask(__FILE__, __LINE__ - 1, '*', {hide => 1}) }
     pop_workflow_build($unit);
     die $err unless $ok;
 
@@ -336,6 +436,7 @@ sub gen_unit_builder {
     my $name = $params{name};
     my $callback = $params{callback} || croak "'callback' is a required argument";
     my $stashes = $params{stashes} || croak "'stashes' is a required argument";
+    my $meta = $params{meta};
 
     my $reftype = reftype($callback) || "";
     my $cb_sub = $reftype eq 'CODE' ? $callback : $PKG->can("_unit_builder_callback_$callback");
@@ -357,6 +458,7 @@ sub gen_unit_builder {
             args        => [@_],
             unit        => {type => 'single', wrap => $wrap},
             name        => $name,
+            meta        => $meta,
         );
 
         my $subname = $name || $caller->[3];
@@ -561,7 +663,46 @@ Arguments that should be passed to the C<run()> method of your runner.
 
 =item workflow_run()
 
-Run the workflow now.
+=item workflow_run(%params)
+
+Run a workflow. If no parameters are given it will run the workflow for the
+calling package.
+
+Valid options:
+
+=over 4
+
+=item no_final => $bool
+
+If set to true, there will be no root level subtest.
+
+=item unit => $unit
+
+Unit to run, if not provided it will be taken from the meta data.
+
+=item meta => $meta
+
+Meta data to use, if none is provided then the meta for the calling package
+will be used.
+
+=item runner => $runner
+
+Either a runner class name, or a runner instance. If none is provided it will
+be calculated.
+
+=item runner_params => \@params
+
+Parameters to use when creating a new instance of a runner.
+
+=item runner_args => \@args
+
+Arguments used by the runner when run() is called.
+
+=item filter => $filter_string
+
+A filter string like any allowed in the C<T2_WORKFLOW> environment variable. 
+
+=back
 
 =back
 

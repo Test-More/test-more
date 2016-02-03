@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Workflow::Meta';
-BEGIN { require 't/tools.pl' }
 
 my $events = intercept {
     def ok => (!$CLASS->get('Foo'), "no meta for Foo yet");

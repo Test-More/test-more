@@ -9,7 +9,7 @@ use Test2::Workflow::Unit();
 
 use Test2::API qw/test2_stack/;
 
-use Test2::Util::HashBase qw/unit runner runner_args autorun/;
+use Test2::Util::HashBase qw/unit runner runner_args params autorun/;
 
 my %METAS;
 
@@ -18,6 +18,8 @@ sub init {
 
     confess "unit is a required attribute"
         unless $self->{+UNIT};
+
+    $self->{+PARAMS} ||= [];
 }
 
 sub build {
@@ -77,18 +79,12 @@ sub get {
 
 sub run {
     my $self = shift;
-    my $runner = $self->runner;
-    unless ($runner) {
-        require Test2::Workflow::Runner;
-        $runner = 'Test2::Workflow::Runner';
-    }
 
-    $self->unit->do_post;
-
-    $runner->run(
-        unit => $self->unit,
-        args => $self->runner_args || [],
-        no_final => 1
+    require Test2::Workflow;
+    Test2::Workflow::workflow_run(
+        meta => $self,
+        filter => $ENV{T2_WORKFLOW},
+        no_final => 1,
     );
 }
 

@@ -6,10 +6,25 @@ use Test2::Util qw/try/;
 
 use Test2::Workflow::Task();
 use Test2::API qw/test2_stack/;
+use List::Util qw/shuffle/;
 
-sub subtests { 1 }
+use Test2::Util::HashBase qw/verbose subtests rand/;
 
-sub instance { shift }
+sub init {
+    my $self = shift;
+
+    $self->{+RAND} = 1 unless exists $self->{+RAND};
+}
+
+sub instance {
+    my $class = shift;
+    my %args = @_;
+
+    return $class->new(
+        subtests => 1,
+        %args,
+    );
+}
 
 sub import {
     my $class  = shift;
@@ -20,36 +35,44 @@ sub import {
     $meta->set_runner($class->instance(@_));
 }
 
-my %SUPPORTED = map {$_ => 1} qw/todo skip/;
+my %SUPPORTED = map {$_ => 1} qw/todo skip mini/;
+sub supported_meta_keys { \%SUPPORTED }
+
 sub verify_meta {
     my $class = shift;
     my ($unit) = @_;
     my $meta = $unit->meta or return;
+    my $supported = $class->supported_meta_keys;
     my $ctx = $unit->context;
     for my $k (keys %$meta) {
-        next if $SUPPORTED{$k};
+        next if $supported->{$k};
         $ctx->alert("'$k' is not a recognised meta-key");
     }
 }
 
 sub run {
-    my $class = shift;
+    my $self = shift;
     my %params = @_;
     my $unit     = $params{unit};
     my $args     = $params{args};
     my $no_final = $params{no_final};
 
-    $class->verify_meta($unit);
+    $self->verify_meta($unit);
+
+    if ($self->{+RAND}) {
+        my $p = $unit->primary;
+        @$p = shuffle @$p if ref($p) eq 'ARRAY';
+    }
 
     my $task = Test2::Workflow::Task->new(
         unit       => $unit,
         args       => $args,
-        runner     => $class,
+        runner     => $self,
         no_final   => $no_final,
-        no_subtest => !$class->subtests($unit),
+        no_subtest => !$self->subtests($unit),
     );
 
-    my ($ok, $err) = try { $class->run_task($task) };
+    my ($ok, $err) = try { $self->run_task($task) };
     test2_stack->top->cull();
 
     # Report exceptions

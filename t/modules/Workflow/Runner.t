@@ -1,10 +1,9 @@
 use Test2::Bundle::Extended -target => 'Test2::Workflow::Runner';
-BEGIN { require 't/tools.pl' }
 
 require Test2::Workflow::Meta;
 use Test2::Util qw/get_tid/;
 
-is($CLASS->subtests, 1, "subtests enabled by default");
+is($CLASS->instance->subtests, 1, "subtests enabled by default");
 
 {
     package NO;
@@ -24,7 +23,7 @@ is($CLASS->subtests, 1, "subtests enabled by default");
     $meta->set_autorun(0);
     ok(!$meta->runner, "no runner set");
     $main::CLASS->import;
-    is($meta->runner, $main::CLASS, "runner set");
+    isa_ok($meta->runner, $main::CLASS);
 }
 
 my $unit = Test2::Workflow::Unit->new(
@@ -60,7 +59,7 @@ $unit->set_primary(sub { ok(1); @call = @_ });
 
 $unit->set_meta({todo => 1});
 like(
-    intercept { $CLASS->run(unit => $unit, args => ['xxx'], no_final => 0) },
+    intercept { $CLASS->instance->run(unit => $unit, args => ['xxx'], no_final => 0) },
     array {
         event Ok => { pass => 0, effective_pass => 1 };
         event Note => {};
@@ -71,7 +70,7 @@ like(
 
 $unit->set_meta({});
 like(
-    intercept { $CLASS->run(unit => $unit, args => ['xxx'], no_final => 0) },
+    intercept { $CLASS->instance->run(unit => $unit, args => ['xxx'], no_final => 0) },
     array {
         fail_events Ok => { pass => 0, effective_pass => 0 };
         event Diag => { message => qr/Caught Exception: xxx/ };
@@ -82,7 +81,7 @@ like(
 $mock->reset_all;
 
 is(
-    intercept { $CLASS->run(unit => $unit, args => ['xxx'], no_final => 0) },
+    intercept { $CLASS->instance->run(unit => $unit, args => ['xxx'], no_final => 0) },
     array {
         event Subtest => sub {
             call pass => 1;
@@ -99,7 +98,7 @@ is(
 is(\@call, ['xxx'], "got args in sub");
 
 is(
-    intercept { $CLASS->run(unit => $unit, args => ['xxx'], no_final => 1) },
+    intercept { $CLASS->instance->run(unit => $unit, args => ['xxx'], no_final => 1) },
     array {
         event Ok => { pass => 1 };
         end;
@@ -112,7 +111,7 @@ my $ran = 0;
 my $task = mock { unit => $unit };
 $task->{'~~MOCK~CONTROL~~'}->add(run => sub { $ran++ });
 $unit->set_meta({});
-$CLASS->run_task($task);
+$CLASS->instance->run_task($task);
 is($ran, 1, "ran task");
 
 done_testing;

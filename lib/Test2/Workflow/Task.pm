@@ -18,7 +18,7 @@ use overload(
     },
 );
 
-use Test2::API qw/test2_stack run_subtest/;
+use Test2::API qw/test2_stack run_subtest no_context/;
 use Test2::Util qw/try/;
 
 use Test2::Workflow qw/push_workflow_vars pop_workflow_vars/;
@@ -59,8 +59,12 @@ sub finished {
 
 sub subtest {
     my $self = shift;
-    return 0 if $self->{+NO_FINAL};
     return 0 if $self->{+NO_SUBTEST};
+
+    my $meta = $self->{+UNIT}->meta;
+    return $meta->{mini} ? 0 : 1 if $meta && defined($meta->{mini});
+
+    return 0 if $self->{+NO_FINAL};
     return 1;
 }
 
@@ -94,35 +98,31 @@ sub _have_primary {
     return @$primary;
 }
 
-sub should_run {
-    my $self = shift;
-    return 1 unless defined $ENV{T2_WORKFLOW};
-    return 1 if $self->{+NO_FINAL};
-    return 1 if $self->{+UNIT}->contains($ENV{T2_WORKFLOW});
-    return 0;
-}
-
 sub run {
     my $self = shift;
 
     return if $self->finished;
-    return unless $self->should_run;
 
     my $unit = $self->{+UNIT};
+
+    return if $unit->filtered;
+
     my $ctx = $unit->context;
 
+    my $meta = $unit->meta;
+
     # Skip?
-    if (my $reason = $unit->meta->{skip}) {
+    if (my $reason = $meta->{skip}) {
         $self->{+STAGE} = STAGE_COMPLETE();
-        $ctx->skip($self->{+UNIT}->name, $reason);
+        $ctx->skip($unit->name, $reason);
         return;
     }
 
     # Make sure we have something to do!
     unless ($self->_have_primary) {
-        return if $self->{+UNIT}->is_root;
+        return if $unit->is_root;
         $self->{+STAGE} = STAGE_COMPLETE();
-        $ctx->ok(0, $self->{+UNIT}->name, ['No primary actions defined! Nothing to do!']);
+        $ctx->ok(0, $unit->name, ['No primary actions defined! Nothing to do!']);
         return;
     }
 
@@ -135,20 +135,26 @@ sub run {
             $self->{+UNIT}->name,
             sub {
                 $self->iterate();
-                $ctx->ok(0, $unit->name, ["No events were generated"])
-                    unless $self->{+EVENTS};
+                return if $self->{+EVENTS};
+                my $ctx = Test2::API::context();
+                $ctx->ok(0, "EVENT CHECK", ["No events were generated"]) unless $self->{+EXCEPTION};
+                $ctx->release;
             },
             'buffered'
         );
     }
     else {
-        $self->iterate();
+        no_context { $self->iterate() };
 
         $ctx->ok(0, $unit->name, ["No events were generated"])
-            unless $self->{+EVENTS} || $self->{+NO_FINAL};
+            unless $self->{+EVENTS} || $self->{+NO_FINAL} || $self->{+EXCEPTION};
 
-        $ctx->ok(!$self->{+FAILED}, $unit->name)
-            if $self->{+FAILED} || !$self->{+NO_FINAL};
+        if (!($self->{+NO_FINAL} || $meta->{mini})) {
+            $ctx->ok(!$self->{+FAILED}, $unit->name)
+        }
+        elsif($self->{+FAILED}) {
+            $ctx->diag($ctx->trace->debug);
+        }
     }
 
     pop_workflow_vars($vars) if $vars;
@@ -202,7 +208,7 @@ sub _run_buildups {
                 $self->{+PENDING}--;
                 my $ctx = $bunit->context;
                 my $trace = $ctx->trace->debug;
-                $ctx->ok(0, $bunit->name, ["Inner sub was never called $trace"]);
+                die "Inner sub was never called $trace\n";
             }
         }
         else {
@@ -213,47 +219,56 @@ sub _run_buildups {
     $self->{+STAGE} = STAGE_PRIMARY() if $self->{+STAGE} == STAGE_BUILDUP();
 }
 
-sub _listener {
+sub intercept {
     my $self = shift;
 
-    return sub {
-        my ($hub, $e) = @_;
-        $self->{+EVENTS}++;
-        $self->{+FAILED}++ if $e->causes_fail;
-    } unless $self->{+NO_FINAL};
-
     my $ctx = $self->{+UNIT}->context;
-    my $trace = $ctx->trace->debug;
-    $trace = "wrapped $trace" if $self->{+UNIT}->wrap;
+    my $msg = $ctx->trace->debug;
+    $msg = "wrapped $msg" if $self->{+UNIT}->wrap;
 
-    return sub {
+    my $phub = test2_stack->top;
+    my $hub = test2_stack->new_hub;
+    $hub->format(undef);
+    $hub->listen(sub {
         my ($hub, $e) = @_;
+        $phub->send($e);
         $self->{+EVENTS}++;
         return unless $e->causes_fail;
         $self->{+FAILED}++;
-        return unless $e->can('diag');
-        $e->set_diag([]) unless $e->diag;
-        push @{$e->diag} => $trace;
-    };
+
+        return unless $self->runner->verbose;
+        return unless $self->{+NO_FINAL};
+        $ctx->diag($msg);
+    });
+
+    return $hub;
 }
 
 sub _run_primary {
     my $self = shift;
+
+    my $hub = $self->intercept;
+
+    my $ok = eval { $self->_really_run_primary(); 1 };
+    my $err = $@;
+
+    test2_stack->pop($hub);
+
+    die $err unless $ok;
+}
+
+sub _really_run_primary {
+    my $self = shift;
     my $unit = $self->{+UNIT};
     my $primary = $unit->primary;
-
-    my $hub = test2_stack->top;
-    my $l = $hub->listen($self->_listener) if $hub->is_local;
 
     if(reftype($primary) eq 'ARRAY') {
         $self->runner->run(unit => $_, args => $self->{+ARGS}) for @$primary
     }
     else {
-        BEGIN { update_mask(__FILE__, __LINE__ + 1, '*', {stop => 1, hide => 1}) }
+        BEGIN { update_mask(__FILE__, __LINE__ + 1, '*', {stop => 1, restart => 1, shift => 1}) }
         $primary->(@{$self->{+ARGS}});
     }
-
-    $hub->unlisten($l) if $l;
 }
 
 sub _run_primaries {
@@ -262,7 +277,7 @@ sub _run_primaries {
     # Make sure this does not run again
     $self->{+STAGE} = STAGE_TEARDOWN() if $self->{+STAGE} < STAGE_TEARDOWN();
 
-    my $modifiers = $self->{+UNIT}->modify || return $self->_run_primary();
+    my $modifiers = $self->{+UNIT}->modify or return $self->_run_primary();
 
     for my $mod (@$modifiers) {
         my $primary = sub {
@@ -362,10 +377,6 @@ Check if the task has finished running.
 =item $bool = $task->no_final()
 
 True if the task is not required to generate events.
-
-=item $bool = $task->should_run()
-
-True if there is still work to be done.
 
 =item $bool = $task->subtest()
 

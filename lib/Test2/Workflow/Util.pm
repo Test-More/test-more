@@ -69,7 +69,7 @@ __END__
 
 =head1 NAME
 
-Test2::Workflow::Util - Tools used by Test2 and friends.
+Test2::Workflow::Util - Tools used by Test2::Workflow.
 
 =head1 *** EXPERIMENTAL ***
 

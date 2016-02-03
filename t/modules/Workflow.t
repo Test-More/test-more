@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Workflow';
-BEGIN { require 't/tools.pl' }
 
 use Test2::Workflow qw{
     workflow_build
@@ -67,15 +66,6 @@ use Test2::Workflow qw{
 
     is(workflow_meta()->runner, 'foo', "set runner");
     is(workflow_meta()->runner_args, ['foo'], "set runner args");
-
-    my $args;
-    my $mock = mock 'Test2::Workflow::Meta' => (
-        override => {run => sub { shift; $args = [@_] }},
-    );
-
-    workflow_run('xxx');
-    $mock = undef;
-    is($args, ['xxx'], "got args");
 }
 
 ok(Test2::Workflow::Meta->get('Baz'), "Baz got a workflow");

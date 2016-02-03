@@ -7,7 +7,7 @@ use Test2::API qw/test2_stack/;
 use Test2::API::Context();
 use Test2::Util::Trace();
 
-use Carp qw/confess/;
+use Carp qw/confess croak/;
 use Scalar::Util qw/reftype/;
 
 use Test2::Util::HashBase qw{
@@ -19,6 +19,8 @@ use Test2::Util::HashBase qw{
     primary
     teardown
     is_root
+    filtered
+    _filtered
 };
 
 sub init {
@@ -29,47 +31,6 @@ sub init {
     }
 
     $_[0]->{+STASH} ||= {};
-}
-
-sub contains {
-    my $self = shift;
-    my ($thing) = @_;
-    my ($file, $line, $name);
-    if ($thing =~ m/^(\S+) (\d+)$/) {
-        ($file, $line) = ($1, $2);
-    }
-    elsif ($thing =~ m/^\d+$/) {
-        $line = $thing;
-    }
-    else {
-        $name = $thing;
-    }
-
-    return $self->_contains($file, $line, $name);
-}
-
-sub _contains {
-    my $self = shift;
-    my ($file, $line, $name) = @_;
-
-    my $name_ok = !defined($name) || $self->{+NAME} eq $name;
-    my $file_ok = !defined($file) || $self->{+FILE} eq $file;
-
-    my $line_ok = !defined($line) || (
-        $line >= $self->{+START_LINE}
-        && ($self->{+END_LINE} . "" eq 'EOF' || $line <= $self->{+END_LINE})
-    );
-
-    my $child_ok = 0;
-    for my $stash (MODIFY(), BUILDUP(), PRIMARY(), TEARDOWN()) {
-        my $set = $self->$stash || next;
-        next unless ref $set && reftype($set) eq 'ARRAY';
-        for my $unit (@$set) {
-            $child_ok = 1 if $unit->_contains($file, $line, $name);
-        }
-    }
-
-    return $child_ok || ($name_ok && $file_ok && $line_ok);
 }
 
 sub do_post {
@@ -87,6 +48,11 @@ for my $type (MODIFY(), BUILDUP(), PRIMARY(), TEARDOWN()) {
         $self->{$type} ||= [];
         push @{$self->{$type}} => @_;
     };
+}
+
+sub children {
+    my $self = shift;
+    return map { my $x = $self->$_; ref($x) eq 'ARRAY' ? @$x : () } MODIFY(), BUILDUP(), PRIMARY(), TEARDOWN();
 }
 
 sub adjust_lines {
@@ -173,6 +139,82 @@ sub context {
     return $ctx;
 }
 
+sub filter {
+    my $self = shift;
+    my ($file, $line, $name) = @_;
+
+    croak "At least 1 defined argument must be passed to filter()"
+        unless defined($file) || defined($line) || defined($name);
+
+    # Already filtered, no need to do it again
+    return $self->{+_FILTERED} ? 0 : 1 if defined $self->{+_FILTERED};
+
+    # Need to do a depth-first search, this will populate the 'filtered' key on
+    # all child units. This is important!
+    my $keep;
+    my $from_modify = 0;
+    for my $attr ( PRIMARY(), MODIFY(), BUILDUP(), TEARDOWN() ) {
+        next unless grep { $_->filter($file, $line, $name) }
+                    map  { @{$_} }
+                    grep {$_ && ref($_) eq 'ARRAY'}
+                    $self->$attr;
+
+        $keep = 1;
+        $from_modify = 1 if $attr eq MODIFY();
+    }
+
+    if($from_modify) {
+        # One of our modifiers is a keeper, we need to unfilter everything but
+        # our modifiers.
+        $_->_unfilter for
+            map  { @{$_} }
+            grep {$_ && ref($_) eq 'ARRAY'}
+            map  { $self->$_ }
+            PRIMARY(), BUILDUP(), TEARDOWN();
+    }
+    elsif($keep) {
+        # One of our children is a keeper, we need to unfilter everything but
+        # our primaries.
+        $_->_unfilter for
+            map  { @{$_} }
+            grep {$_ && ref($_) eq 'ARRAY'}
+            map  { $self->$_ }
+            MODIFY(), BUILDUP(), TEARDOWN();
+    }
+    else {
+        # If no children were keepers then we check if we are a keeper.
+        $keep = 1;
+        $keep &&= $file eq $self->{+FILE} if defined $file;
+        $keep &&= $name eq $self->{+NAME} if defined $name;
+        if (defined $line) {
+            $keep &&= $line >= $self->{+START_LINE};
+            $keep &&= $self->{+END_LINE} ne 'EOF';
+            $keep &&= $line <= $self->{+END_LINE};
+        }
+
+        # We are a keeper, unfilter everything under us
+        $self->_unfilter if $keep;
+    }
+
+    # Give us the mark
+    $self->{+_FILTERED} = $keep ? 0 : 1;
+    $self->{+FILTERED}  = $keep ? 0 : 1 unless defined $self->{+FILTERED};
+
+    return $keep;
+}
+
+sub _unfilter {
+    my $self = shift;
+
+    $self->{+FILTERED} = 0;
+
+    $_->_unfilter for
+        map  { @{$_} }
+        grep {$_ && ref($_) eq 'ARRAY'}
+        map  { $self->$_ }
+        PRIMARY(), MODIFY(), BUILDUP(), TEARDOWN();
+}
+
 1;
 
 __END__
@@ -197,16 +239,6 @@ contain a codeblock, or many child units.
 =head1 METHODS
 
 =over 4
-
-=item $bool = $unit->contains($name)
-
-=item $bool = $unit->contains($line)
-
-=item $bool = $unit->contains("$file $line)
-
-Check if the unit contains (or is) a unit with the given specification. The
-specification may be a line number, a filename + line number, or a unit name.
-This will return true if either the unit, or one of the child units, matches.
 
 =item $unit->add_modify($other_unit)
 
@@ -295,6 +327,39 @@ Access to the arrayrefs for the specific child types.
 =item $code_or_ar = $unit->primary
 
 Get the primary, which may be an arrayref of other units, or a single coderef.
+
+=item $check = $unit->filtered
+
+C<$check> will be undefined when there is no filter.
+
+C<$check> will be true if the unit has been filtered out. (Should not run)
+
+C<$check> will be 0 if the unit passed the filter. (Should run).
+
+This means that a false result is interpreted as RUN, and a true result is
+interpreted as DO NOT RUN.
+
+=item $keep = $unit->filter($file, $line, $name)
+
+This is used to filter out units that DO NOT match the input. All 3 arguments
+are optional, filtering will only consider the ones that are provided. Use
+undef for an argument to ignore it.
+
+This will set the C<filtered> attribute on the unit and all descendant units.
+The attribute will be set to C<1> or C<0> depending on if the unit should run
+given the filter.
+
+This will return true if the unit or one of its descendants matched the filter.
+It will return false if there are no matches.
+
+If C<filter()> has already run then it will return the result of its last run
+without even looking at the input parameters. This means you can only ever run
+filter once on any unit tree.
+
+=item $unit->unfilter()
+
+This will set the C<filtered> attribute to C<0> on the unit and all its
+descendednts.
 
 =back
 

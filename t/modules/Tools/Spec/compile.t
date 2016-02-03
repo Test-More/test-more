@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Workflow';
-BEGIN { require 't/tools.pl' }
 
 imported_ok qw{
     describe cases

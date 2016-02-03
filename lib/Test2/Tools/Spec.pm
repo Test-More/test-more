@@ -15,11 +15,14 @@ our @EXPORT = qw{
     describe cases
     before_all after_all around_all
 
-    tests it
+    tests it mini
     before_each after_each around_each
 
     case
     before_case after_case around_case
+
+    async  iso
+    masync miso
 };
 
 BEGIN {
@@ -41,6 +44,13 @@ BEGIN {
     *before_each = gen_unit_builder(name => 'before_each', callback => 'primaries', stashes => ['buildup']);
     *after_each  = gen_unit_builder(name => 'after_each',  callback => 'primaries', stashes => ['teardown']);
     *around_each = gen_unit_builder(name => 'around_each', callback => 'primaries', stashes => ['buildup', 'teardown']);
+
+    *mini = gen_unit_builder(name => 'mini', callback => 'simple', stashes => ['primary'], meta => { mini => 1 });
+
+    *iso    = gen_unit_builder(name => 'iso',    callback => 'simple', stashes => ['primary'], meta => {iso   => 1});
+    *async  = gen_unit_builder(name => 'async',  callback => 'simple', stashes => ['primary'], meta => {async => 1});
+    *miso   = gen_unit_builder(name => 'miso',   callback => 'simple', stashes => ['primary'], meta => {iso   => 1, mini => 1});
+    *masync = gen_unit_builder(name => 'masync', callback => 'simple', stashes => ['primary'], meta => {async => 1, mini => 1});
 }
 
 1;
@@ -61,10 +71,12 @@ This distribution is experimental, anything can change at any time!
 
 =head1 DESCRIPTION
 
+Tools for writing SPEC style tests.
+
 =head1 SYNOPSIS
 
     use Test2::Bundle::Extended;
-    use Test2::Tools::Spec
+    use Test2::Tools::Spec;
 
     describe fruit_shipment => sub {
         my $crates;
@@ -121,6 +133,53 @@ we need to do for each test block, so we use before_each and after_each.
 Each test block needs unique samples, so the sample is aquired within the test.
 We do not use a before_each as some tests require different numbers of samples.
 
+=head1 IMPORT OPTIONS
+
+    use Test2::Tools::Spec -opt => 'val', qw/tests describe .../;
+
+Any argument prefixed with a '-' is considered an option, it and the following
+argument will be used as arguments to the runner construction (with '-'
+stripped off). All arguments without the '-' prefix will be considered imports.
+
+=over 4
+
+=item -verbose => $BOOL
+
+Turns on some extra verbosity in debug messages.
+
+=item -subtests => $BOOL
+
+Normally all spec units are run as subtests. This can be used to turn off the
+behavior by setting it to C<0>. B<Note:> L<Test2::Workflow::Runner::Isolate>
+and subclasses currently ignore this flag.
+
+=item -rand => $BOOL
+
+Normally spec units are run in random order. This can be used to turn that
+behavior off by setting it to C<0>.
+
+=item -max => $INT
+
+Maximum number of async units to run at a time, default is 3. When the
+C<T2_WORKFLOW_ASYNC> environment variable is also set, the lowest value will be
+used.
+
+This is only effective when an isolating runner is used.
+
+=item -no_fork => $BOOL
+
+Specify that isolating runners should NOT use forking for isolation purposes.
+
+This is only effective when an isolating runner is used.
+
+=item -no_threads => $BOOL
+
+Specify that isolating runners should NOT use threads for isolation purposes.
+
+This is only effective when an isolating runner is used.
+
+=back
+
 =head1 EXPORTS
 
 All exports have the exact same syntax, there are 2 forms:
@@ -151,19 +210,31 @@ is inherited by nested blocks.
 This will skip the entire block, it will generate a single 'Ok' event with the
 skip reason set.
 
+=item mini => $bool
+
+This tells the workflow system that the specified block is not significant
+enough to need its own subtest or final 'ok'. This will basically cause all its
+output to be inlined into the parent subtest. Use this if you have a nested
+subtest with only 1 result, or where the additional subtest indentation adds
+noise instead of helping.
+
+This is completely aesthetic, it has no effect on if your tests will pass or
+fail. This is here for humans, not machines.
+
+=item async => $bool
+
+Test block can run concurrently with other tests in another process or thread.
+This does not mean it will, just that it may be.
+
+Using this option will upgrade the runner to an
+L<Test2::Workflow::Runner::Isolate> subclass.
+
 =item iso => $bool
 
-=item isolate => $bool
+Test block B<MUST> be run in an isolated process or thread.
 
-This tells the runner to isolate the task before running the block. This allows
-you to isolate blocks that may modify state in ways that should not be seen by
-later tests. Isolation is achieved either by forking, or by spawning a child
-thread, depending on the platform. If no isolation method is available the
-block will simply be skipped.
-
-B<CAVEAT:> Since the isolation may be threads (specially if you are on windows)
-it may fail to isolate shared variables. If you use variables that are shared
-between threads you cannot rely on this isolation mechanism.
+Using this option will upgrade the runner to an
+L<Test2::Workflow::Runner::Isolate> subclass.
 
 =back
 
@@ -178,7 +249,7 @@ other test blocks, groups, modifiers, etc, cannot be specified inside the test
 block.
 
 If a test block does not produce any events then it will be considered an
-error. Test blocks are run as subtests.
+error. Test blocks are usually run as subtests.
 
 =over 4
 
@@ -195,6 +266,37 @@ C<tests()> is present as the authors preference. C<it()> is present to reflect
 the name used in RSPEC for the Ruby programming language.
 
 B<Note:> The subs get no arguments, and their return is ignored.
+
+=item mini $name => sub { ... }
+
+=item mini $name => \%params, sub { ... }
+
+Same as C<tests> and C<it> except that C<< mini => 1 >> is added to
+C<\%params>.
+
+=item async $name => sub { ... }
+
+=item async $name => \%param, sub { ... }
+
+Shortcut, adds the C<< async => 1 >> parameter.
+
+=item iso $name => sub { ... }
+
+=item iso $name => \%params, sub { ... }
+
+Shortcut, adds the C<< iso => 1 >> parameter.
+
+=item masync $name => sub { ... }
+
+=item masync $name => \%params, sub { ... }
+
+Shortcut, adds the C<< async => 1, mini => 1 >> parameters.
+
+=item miso $name => sub { ... }
+
+=item miso $name => \%params, sub { ... }
+
+Shortcut, adds the C<< iso => 1, mini => 1 >> parameters.
 
 =back
 

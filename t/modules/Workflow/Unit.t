@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Workflow::Unit';
-BEGIN { require 't/tools.pl' }
 
 my $one = CLASS->new(
     name       => 'foo',
@@ -84,19 +83,6 @@ $one = CLASS->new(
     type       => 'group',
 );
 
-ok(!$one->contains(19), "does not have line 19");
-ok($one->contains(10000), "EOF");
-ok($one->contains(20), "does have line 20");
-ok($one->contains(40), "does have line 40");
-ok($one->contains(30), "does have line 30");
-
-ok($one->contains("XXX.pm 30"), "has line 30 of the file");
-ok(!$one->contains("XXY.pm 30"), "no line 30 of the file");
-
-ok($one->contains("foo"), "has the name");
-ok(!$one->contains("fob"), "does not have the name");
-ok(!$one->contains("bar"), "does not have the name");
-
 my $two = CLASS->new(
     name       => 'bar',
     package    => 'XXX',
@@ -105,17 +91,12 @@ my $two = CLASS->new(
     end_line   => 30,
     type       => 'group',
 );
-ok(!$two->contains(41), "does not have line 41");
-ok($two->contains("bar"), "has the name");
 
 $one->add_primary($two);
-ok($one->contains("foo"), "has the name");
-ok($one->contains("bar"), "found child");
-
 
 $one->set_end_line(25);
 is($one->start_line, 20, "start line is 20");
-is($one->end_line, 25, "start line is 20");
+is($one->end_line, 25, "end line is 25");
 
 $two->set_start_line(5);
 $two->set_end_line(30);

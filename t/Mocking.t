@@ -1,5 +1,4 @@
 use Test2::Bundle::Extended -target => 'Test2::Workflow';
-BEGIN { require 't/tools.pl' }
 use Test2::Tools::Spec;
 
 describe mock_spec => sub {
