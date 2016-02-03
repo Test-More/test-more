@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+    - Major overhaul
+    - Add isolation runners
+    - Lots of fixes
+    - Masking traces properly
+    - Better filtering
+
 0.000001  2016-01-18 10:54:17-08:00 America/Los_Angeles
 
     - Initial conversion from Test::Stream
