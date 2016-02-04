@@ -5,6 +5,7 @@ use warnings;
 use Test2::Util qw/CAN_THREAD/;
 
 use parent 'Test2::Workflow::Runner::Isolate';
+use Test2::Util::HashBase;
 
 sub can_async { 0 }
 

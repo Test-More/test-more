@@ -87,4 +87,5 @@ miso mock => sub {
     is(Foo::Bar::foo(), 'foo', "mocked");
 };
 
+
 done_testing;

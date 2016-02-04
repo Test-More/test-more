@@ -1,3 +1,4 @@
+use Test2::Require::Module 'Trace::Mask' => '0.000006';
 use Test2::Bundle::Extended;
 use Test2::Tools::Spec;
 use Trace::Mask::Carp qw/longmess/;
