@@ -238,6 +238,7 @@ sub mock_class {
     while (my @call = caller($level++)) {
         next if $call[0] eq __PACKAGE__;
         $caller = \@call;
+        last;
     }
 
     my $handled;
