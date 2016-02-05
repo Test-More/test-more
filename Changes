@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Bump minimum Test2::Suite version (fixes issue found in windows tests)
+
 0.000004  2016-02-04 21:48:07-08:00 America/Los_Angeles
 
     - Add Spec bundle
