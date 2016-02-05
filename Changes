@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix typo that made mock tool look in the wrong place for handlers
+
 0.000019  2016-01-28 21:28:37-08:00 America/Los_Angeles
 
     - Formally add the warning and exception tools
