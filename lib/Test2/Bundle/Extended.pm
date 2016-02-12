@@ -189,7 +189,7 @@ B<Note:> C<< -no_pragmas => 1 >> will turn off the entire plugin.
 
 See L<Test2::Plugin::SRand>.
 
-This will set the random see dot todays date. You can provide an alternate seed
+This will set the random seed to todays date. You can provide an alternate seed
 with the C<-srand> import option:
 
     use Test2::Bundle::Extended -srand => 1234;
