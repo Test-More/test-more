@@ -853,7 +853,7 @@ This is a handy check that can be used with C<field()> to ensure that a field
 
 B<Note: None of these are exported by default, you need to request them.>
 
-    $check = hash {
+    $check = array {
         # Uses the next index, in this case index 0;
         item 'a';
 
