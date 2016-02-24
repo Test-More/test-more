@@ -165,7 +165,7 @@ sub DESTROY {
     return if $self->{+TID} != get_tid;
 
     warn "Subtest $self->{+NAME} did not finish!" unless $self->{+_FINISHED};
-    warn "Subtest $self->{+NAME} was not used to procude any events";
+    warn "Subtest $self->{+NAME} was not used to produce any events";
 
     exit 255;
 }
