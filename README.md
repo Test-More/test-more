@@ -13,21 +13,23 @@ other events are also being generated.
     use Test2::Bundle::Extended;
     use Test2::Tools::AsyncSubtest;
 
-    my $ast = subtest_start('ast');
-
-    subtest_run $ast => sub {
-        ok(1, "not concurrent A");
+    my $ast1 = async_subtest local => sub {
+        ok(1, "Inside subtest");
     };
 
-    ok(1, "Something else");
-
-    subtest_run $ast => sub {
-        ok(1, "not concurrent B");
+    my $ast2 = fork_subtest child => sub {
+        ok(1, "Inside subtest in another process");
     };
 
-    ok(1, "Something else");
+    my $ast3 = thread_subtest thread => sub {
+        ok(1, "Inside subtest in a thread");
+    };
 
-    subtest_finish($ast);
+    # You must call finish on the subtests you create. Finish will wait/join on
+    # any child processes and threads.
+    $ast1->finish;
+    $ast2->finish;
+    $ast3->finish;
 
     done_testing;
 
@@ -35,24 +37,18 @@ other events are also being generated.
 
 Everything is exported by default.
 
-- $ast = subtest\_start($name)
+- $ast = async\_subtest $name
+- $ast = async\_subtest $name => sub { ... }
 
-    Create a new async subtest. `$ast` will be an instance of
-    [Test2::AsyncSubtest](https://metacpan.org/pod/Test2::AsyncSubtest).
+    Create an async subtest. Run the codeblock if it is provided.
 
-- $passing = subtest\_run($ast, sub { ... })
+- $ast = fork\_subtest $name => sub { ... }
 
-    Run the provided codeblock from inside the async subtest. This can be called
-    any number of times, and can be called from any process or thread spawned after
-    `$ast` was created.
+    Create an async subtest. Run the codeblock in a forked process.
 
-- $passing = subtest\_finish($ast)
+- $ast = thread\_subtest $name => sub { ... }
 
-    This will finish the async subtest and send the final [Test2::Event::Subtest](https://metacpan.org/pod/Test2::Event::Subtest)
-    event to the current hub.
-
-    **Note:** This must be called in the thread/process that created the Async
-    Subtest.
+    Create an async subtest. Run the codeblock in a thread.
 
 # NOTES
 
