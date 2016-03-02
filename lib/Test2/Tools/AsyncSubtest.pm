@@ -2,57 +2,54 @@ package Test2::Tools::AsyncSubtest;
 use strict;
 use warnings;
 
+use Test2::IPC;
 use Test2::AsyncSubtest;
 use Test2::API qw/context/;
 use Carp qw/croak/;
 
-our @EXPORT = qw/subtest_start subtest_finish subtest_run/;
+our @EXPORT = qw/async_subtest fork_subtest thread_subtest/;
 use base 'Exporter';
 
-sub subtest_start {
-    my ($name) = @_;
+sub async_subtest {
+    my ($name, $code) = @_;
+    my $ctx = context();
 
-    croak "The first argument to subtest_start should be a subtest name"
-        unless $name;
+    my $subtest = Test2::AsyncSubtest->new(name => $name, context => 1);
 
-    my $subtest = Test2::AsyncSubtest->new(name => $name);
+    $subtest->run($code, $subtest) if $code;
 
+    $ctx->release;
     return $subtest;
 }
 
-sub subtest_run {
-    my $subtest = shift;
-    my ($code) = @_;
-
+sub fork_subtest {
+    my ($name, $code) = @_;
     my $ctx = context();
 
-    my $ok = $subtest->run(trace => $ctx->trace, $code);
+    croak "fork_subtest requires a CODE reference as the second argument"
+        unless ref($code) eq 'CODE';
+
+    my $subtest = Test2::AsyncSubtest->new(name => $name, context => 1);
+
+    $subtest->run_fork($code, $subtest);
 
     $ctx->release;
-
-    return $ok;
+    return $subtest;
 }
 
-sub subtest_finish {
-    my $subtest = shift;
+sub thread_subtest {
+    my ($name, $code) = @_;
     my $ctx = context();
 
-    $subtest->finish(trace => $ctx->trace);
+    croak "thread_subtest requires a CODE reference as the second argument"
+        unless ref($code) eq 'CODE';
 
-    my $e = $ctx->build_event(
-        'Subtest',
-        $subtest->event_data,
-    );
+    my $subtest = Test2::AsyncSubtest->new(name => $name, context => 1);
 
-    $ctx->hub->send($e);
-    $ctx->failure_diag($e) unless $e->pass;
-
-    my @extra_diag = $subtest->diagnostics;
-    $ctx->diag($_) for @extra_diag;
+    $subtest->run_thread($code, $subtest);
 
     $ctx->release;
-
-    return $e->pass;
+    return $subtest;
 }
 
 1;
@@ -78,21 +75,23 @@ other events are also being generated.
     use Test2::Bundle::Extended;
     use Test2::Tools::AsyncSubtest;
 
-    my $ast = subtest_start('ast');
-
-    subtest_run $ast => sub {
-        ok(1, "not concurrent A");
+    my $ast1 = async_subtest local => sub {
+        ok(1, "Inside subtest");
     };
 
-    ok(1, "Something else");
-
-    subtest_run $ast => sub {
-        ok(1, "not concurrent B");
+    my $ast2 = fork_subtest child => sub {
+        ok(1, "Inside subtest in another process");
     };
 
-    ok(1, "Something else");
+    my $ast3 = thread_subtest thread => sub {
+        ok(1, "Inside subtest in a thread");
+    };
 
-    subtest_finish($ast);
+    # You must call finish on the subtests you create. Finish will wait/join on
+    # any child processes and threads.
+    $ast1->finish;
+    $ast2->finish;
+    $ast3->finish;
 
     done_testing;
 
@@ -102,24 +101,19 @@ Everything is exported by default.
 
 =over 4
 
-=item $ast = subtest_start($name)
+=item $ast = async_subtest $name
 
-Create a new async subtest. C<$ast> will be an instance of
-L<Test2::AsyncSubtest>.
+=item $ast = async_subtest $name => sub { ... }
 
-=item $passing = subtest_run($ast, sub { ... })
+Create an async subtest. Run the codeblock if it is provided.
 
-Run the provided codeblock from inside the async subtest. This can be called
-any number of times, and can be called from any process or thread spawned after
-C<$ast> was created.
+=item $ast = fork_subtest $name => sub { ... }
 
-=item $passing = subtest_finish($ast)
+Create an async subtest. Run the codeblock in a forked process.
 
-This will finish the async subtest and send the final L<Test2::Event::Subtest>
-event to the current hub.
+=item $ast = thread_subtest $name => sub { ... }
 
-B<Note:> This must be called in the thread/process that created the Async
-Subtest.
+Create an async subtest. Run the codeblock in a thread.
 
 =back
 

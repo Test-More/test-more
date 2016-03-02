@@ -1,8 +1,9 @@
-package Test2::Hub::AsyncSubtest;
+package Test2::AsyncSubtest::Hub;
 use strict;
 use warnings;
 
 use base 'Test2::Hub::Subtest';
+use Test2::Util::HashBase qw/ast_ids/;
 
 sub inherit { }
 
@@ -16,7 +17,7 @@ __END__
 
 =head1 NAME
 
-Test2::Hub::AsyncSubtest - Hub used by async subtests.
+Test2::AsyncSubtest::Hub - Hub used by async subtests.
 
 =head1 DESCRIPTION
 

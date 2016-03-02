@@ -1,13 +1,18 @@
 use Test2::Bundle::Extended;
-use Test2::Tools::AsyncSubtest;
+use Test2::AsyncSubtest;
 use Test2::Tools::Compare qw{ array event field };
 use Test2::IPC;
 use Test2::Util qw/CAN_REALLY_FORK CAN_THREAD get_tid/;
 
-my $t1 = subtest_start('t1');
-my $t2 = subtest_start('t2');
+my $wrap = Test2::AsyncSubtest->new(name => 'wrap');
+$wrap->start;
 
-subtest_run($_ => sub {
+my $t1 = Test2::AsyncSubtest->new(name => 't1');
+my $t2 = Test2::AsyncSubtest->new(name => 't2');
+
+$wrap->stop;
+
+$_->run(sub {
     ok(1, "not concurrent A");
 }) for $t1, $t2;
 
@@ -16,7 +21,8 @@ ok(1, "Something else");
 if (CAN_REALLY_FORK) {
     my @pids;
 
-    subtest_run($_ => sub {
+    $_->run(sub {
+        my $id = $_->cleave;
         my $pid = fork;
         die "Failed to fork!" unless defined $pid;
         if ($pid) {
@@ -24,9 +30,18 @@ if (CAN_REALLY_FORK) {
             return;
         }
 
-        ok(1, "from proc $$");
+        my $ok = eval {
+            $_->attach($id);
 
-        exit 0;
+            ok(1, "from proc $$");
+
+            $_->detach();
+
+            1
+        };
+        exit 0 if $ok;
+        warn $@;
+        exit 255;
     }) for $t1, $t2;
 
     waitpid($_, 0) for @pids;
@@ -34,32 +49,40 @@ if (CAN_REALLY_FORK) {
 
 ok(1, "Something else");
 
-if (CAN_THREAD) {
+if (0 && CAN_THREAD) {
     require threads;
     my @threads;
 
-    subtest_run($_ => sub {
+    $_->run(sub {
+        my $id = $_->cleave;
         push @threads => threads->create(sub {
+            $_->attach($id);
             ok(1, "from thread " . get_tid);
+            $_->detach();
         });
     }) for $t1, $t2;
 
     $_->join for @threads;
 }
 
-subtest_run($_ => sub {
+$_->run(sub {
     ok(1, "not concurrent B");
 }) for $t1, $t2;
 
 ok(1, "Something else");
 
-subtest_finish($_) for $t1, $t2;
+ok($wrap->pending, "Pending stuff");
+
+$_->finish for $t1, $t2;
+
+ok(!$wrap->pending, "Ready now");
+$wrap->finish;
 
 is(
     intercept {
-        my $t = subtest_start('will die');
-        subtest_run($t => sub { die "kaboom!\n" });
-        subtest_finish($t);
+        my $t = Test2::AsyncSubtest->new(name => 'will die');
+        $t->run(sub { die "kaboom!\n" });
+        $t->finish;
     },
     array {
         event Subtest => sub {

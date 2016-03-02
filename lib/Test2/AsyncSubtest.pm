@@ -2,19 +2,40 @@ package Test2::AsyncSubtest;
 use strict;
 use warnings;
 
-our $VERSION = '0.000001';
+use Test2::IPC;
 
-use Carp qw/croak/;
-use Test2::Util qw/get_tid/;
+our $VERSION = '0.000002';
 
+our @CARP_NOT = qw/Test2::Util::HashBase/;
+
+use Carp qw/croak cluck/;
+use Test2::Util qw/get_tid CAN_THREAD CAN_FORK/;
+use Scalar::Util qw/blessed/;
+
+use Scope::Guard();
 use Test2::API();
-use Test2::Hub::AsyncSubtest();
+use Test2::API::Context();
 use Test2::Util::Trace();
-use Test2::Event::Exception();
+use Time::HiRes();
 
-use Test2::Util::HashBase qw/name hub errored events _finished event_used pid tid/;
+use Test2::AsyncSubtest::Hub();
+use Test2::AsyncSubtest::Event::Attach();
+use Test2::AsyncSubtest::Event::Detach();
 
-our @CARP_NOT = qw/Test2::Tools::AsyncSubtest/;
+use Test2::Util::HashBase qw{
+    name hub
+    trace send_to
+    events
+    finished
+    active
+    stack
+    id
+    children
+    _in_use
+    _attached pid tid
+};
+
+my @STACK;
 
 sub init {
     my $self = shift;
@@ -22,38 +43,139 @@ sub init {
     croak "'name' is a required attribute"
         unless $self->{+NAME};
 
-    $self->{+PID} = $$;
-    $self->{+TID} = get_tid();
+    $self->{+SEND_TO} ||= Test2::API::test2_stack()->top;
+    $self->{+TRACE}   ||= Test2::Util::Trace->new(frame => [caller(1)]);
+
+    $self->{+STACK} = [@STACK];
+    $_->{+_IN_USE}++ for reverse @STACK;
+
+    $self->{+TID}       = get_tid;
+    $self->{+PID}       = $$;
+    $self->{+ID}        = 1;
+    $self->{+FINISHED}  = 0;
+    $self->{+ACTIVE}    = 0;
+    $self->{+_IN_USE}   = 0;
+    $self->{+CHILDREN}  = [];
 
     unless($self->{+HUB}) {
         my $ipc = Test2::API::test2_ipc();
-        my $hub = Test2::Hub::AsyncSubtest->new(format => undef, ipc => $ipc);
+        my $hub = Test2::AsyncSubtest::Hub->new(format => undef, ipc => $ipc);
         $self->{+HUB} = $hub;
     }
 
     my $hub = $self->{+HUB};
-    my @events;
-    $hub->listen(sub { push @events => $_[1] });
-    $self->{+EVENTS} = \@events;
+    $hub->set_ast_ids({}) unless $hub->ast_ids;
+    $hub->listen($self->_listener);
+    $hub->pre_filter($self->_pre_filter);
+}
+
+sub _listener {
+    my $self = shift;
+
+    my $events = $self->{+EVENTS} ||= [];
+
+    sub { push @$events => $_[1] };
+}
+
+sub _pre_filter {
+    my $self = shift;
+
+    sub {
+        my ($hub, $e) = @_;
+        return $e if $hub->is_local;
+
+        my $attached = $self->{+_ATTACHED};
+        return $e if $attached && @$attached && $attached->[0] == $$ && $attached->[1] == get_tid;
+        $e->trace->throw("You must attach to an AsyncSubtest before you can send events to it from another process or thread");
+        return;
+    };
+}
+
+sub context {
+    my $self = shift;
+    return Test2::API::Context->new(
+        trace => $self->{+TRACE},
+        hub   => $self->{+SEND_TO},
+    );
+}
+
+sub _gen_event {
+    my $self = shift;
+    my ($type, $id) = @_;
+
+    my $class = "Test2::AsyncSubtest::Event::$type";
+
+    return $class->new(id => $id, trace => Test2::Util::Trace->new(frame => [caller(1)]));
+}
+
+sub cleave {
+    my $self = shift;
+    my $id = $self->{+ID}++;
+    $self->{+HUB}->ast_ids->{$id} = 0;
+    return $id;
+}
+
+sub attach {
+    my $self = shift;
+    my ($id) = @_;
+
+    croak "An ID is required" unless $id;
+
+    croak "ID $id is not valid"
+        unless defined $self->{+HUB}->ast_ids->{$id};
+
+    croak "ID $id is already attached"
+        if $self->{+HUB}->ast_ids->{$id};
+
+    croak "You must attach INSIDE the child process/thread"
+        if $self->{+HUB}->is_local;
+
+    $self->{+_ATTACHED} = [ $$, get_tid, $id ];
+    $self->{+HUB}->send($self->_gen_event('Attach', $id));
+}
+
+sub detach {
+    my $self = shift;
+
+    croak "You must detach INSIDE the child process/thread"
+        if $self->{+PID} == $$ && $self->{+TID} == get_tid;
+
+    my $att = $self->{+_ATTACHED}
+        or croak "Not attached";
+
+    croak "Attempt to detach from wrong child"
+        unless $att->[0] == $$ && $att->[1] == get_tid;
+
+    my $id = $att->[2];
+
+    $self->{+HUB}->send($self->_gen_event('Detach', $id));
+
+    delete $self->{+_ATTACHED};
+}
+
+sub ready { return !shift->pending }
+sub pending {
+    my $self = shift;
+    my $hub = $self->{+HUB};
+    return -1 unless $hub->is_local;
+
+    $hub->cull;
+
+    return $self->{+_IN_USE} + keys %{$self->{+HUB}->ast_ids};
 }
 
 sub run {
     my $self = shift;
-    my $code = pop;
-    my %params = @_;
+    my ($code, @args) = @_;
 
-    croak "AsyncSubtest->run() takes a codeblock as its last argument"
+    croak "AsyncSubtest->run() takes a codeblock as the first argument"
         unless $code && ref($code) eq 'CODE';
 
-    croak "Subtest is already complete, cannot call run()"
-        if $self->{+_FINISHED};
+    $self->start;
 
-    my $hub = $self->{+HUB};
-    my $stack = Test2::API::test2_stack();
-    $stack->push($hub);
     my ($ok, $err, $finished);
     T2_SUBTEST_WRAPPER: {
-        $ok = eval { $code->($params{args} ? @{$params{args}} : ()); 1 };
+        $ok = eval { $code->(@args); 1 };
         $err = $@;
 
         # They might have done 'BEGIN { skip_all => "whatever" }'
@@ -65,52 +187,81 @@ sub run {
             $finished = 1;
         }
     }
-    $stack->pop($hub);
+
+    $self->stop;
+
+    my $hub = $self->{+HUB};
 
     if (!$finished) {
         if(my $bailed = $hub->bailed_out) {
-            my $ctx = Test2::API::context();
+            my $ctx = $self->context;
             $ctx->bail($bailed->reason);
-            $ctx->release;
+            return;
         }
         my $code = $hub->exit_code;
         $ok = !$code;
         $err = "Subtest ended with exit code $code" if $code;
     }
 
-    unless($ok) {
+    unless ($ok) {
         my $e = Test2::Event::Exception->new(
             error => $err,
-            trace => $params{trace} || Test2::Util::Trace->new(
-                frame => [caller(0)],
-            ),
+            trace => Test2::Util::Trace->new(frame => [caller(0)]),
         );
         $hub->send($e);
-        $self->{+ERRORED} = 1;
     }
 
     return $hub->is_passing;
 }
 
-sub finish {
+sub start {
     my $self = shift;
-    my %params = @_;
 
-    croak "Subtest is already finished"
-        if $self->{+_FINISHED}++;
+    croak "Subtest is already complete"
+        if $self->{+FINISHED};
 
-    croak "Subtest can only be finished in the process that created it"
-        unless $$ == $self->{+PID};
+    $self->{+ACTIVE}++;
 
-    croak "Subtest can only be finished in the thread that created it"
-        unless get_tid == $self->{+TID};
+    push @STACK => $self;
+    my $hub = $self->{+HUB};
+    my $stack = Test2::API::test2_stack();
+    $stack->push($hub);
+    return $hub->is_passing;
+}
+
+sub stop {
+    my $self = shift;
+
+    croak "Subtest is not active"
+        unless $self->{+ACTIVE}--;
+
+    croak "AsyncSubtest stack mismatch"
+        unless @STACK && $self == $STACK[-1];
+
+    pop @STACK;
 
     my $hub = $self->{+HUB};
-    my $trace = $params{trace} ||= Test2::Util::Trace->new(
-        frame => [caller[0]],
-    );
+    my $stack = Test2::API::test2_stack();
+    $stack->pop($hub);
+    return $hub->is_passing;
+}
 
-    $hub->finalize($trace, 1)
+sub finish {
+    my $self = shift;
+    my $hub = $self->hub;
+
+    croak "Subtest is already finished"
+        if $self->{+FINISHED}++;
+
+    croak "Subtest can only be finished in the process/thread that created it"
+        unless $hub->is_local;
+
+    croak "Subtest is still active"
+        if $self->{+ACTIVE};
+
+    $self->wait;
+
+    $hub->finalize($self->trace, 1)
         unless $hub->no_ending || $hub->ended;
 
     if ($hub->ipc) {
@@ -118,55 +269,155 @@ sub finish {
         $hub->set_ipc(undef);
     }
 
-    return $hub->is_passing;
-}
-
-sub event_data {
-    my $self = shift;
-    my $hub = $self->{+HUB};
-
-    croak "Subtest data can only be used in the process that created it"
-        unless $$ == $self->{+PID};
-
-    croak "Subtest data can only be used in the thread that created it"
-        unless get_tid == $self->{+TID};
-
-    $self->{+EVENT_USED} = 1;
-
-    return (
-        pass => $hub->is_passing,
-        name => $self->{+NAME},
+    my $ctx = $self->context;
+    my $e = $ctx->build_event(
+        'Subtest',
+        pass      => $hub->is_passing,
+        name      => $self->{+NAME},
         buffered  => 1,
         subevents => $self->{+EVENTS},
     );
+
+    $ctx->hub->send($e);
+
+    unless ($e->pass) {
+        $ctx->failure_diag($e);
+
+        $ctx->diag("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
+            if !$hub->check_plan && !grep {$_->causes_fail} @{$self->{+EVENTS}};
+    }
+
+    $_->{+_IN_USE}-- for reverse @{$self->{+STACK}};
+
+    return $e->pass;
 }
 
-sub diagnostics {
+sub wait {
     my $self = shift;
-    # If the subtest died then we've already sent an appropriate event. No
-    # need to send another telling the user that the plan was wrong.
-    return if $self->{+ERRORED};
-
-    croak "Subtest diagnostics can only be used in the process that created it"
-        unless $$ == $self->{+PID};
-
-    croak "Subtest diagnostics can only be used in the thread that created it"
-        unless get_tid == $self->{+TID};
 
     my $hub = $self->{+HUB};
-    return if $hub->check_plan;
-    return "Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count;
+    my $children = $self->{+CHILDREN};
+
+    while ($self->pending || @$children) {
+        $hub->cull;
+        if (my $child = pop @$children) {
+            if (blessed($child)) {
+                $child->join;
+            }
+            else {
+                waitpid($child, 0);
+            }
+        }
+        else {
+            Time::HiRes::sleep('0.01');
+        }
+    }
+
+    $hub->cull;
+}
+
+sub fork {
+    croak "Forking is not supported" unless CAN_FORK;
+    my $self = shift;
+    my $id = $self->cleave;
+    my $pid = CORE::fork();
+
+    unless (defined $pid) {
+        delete $self->{+HUB}->ast_ids->{$id};
+        croak "Failed to fork";
+    }
+
+    if($pid) {
+        push @{$self->{+CHILDREN}} => $pid;
+        return $pid;
+    }
+
+    $self->attach($id);
+
+    return $self->_guard;
+}
+
+sub run_fork {
+    my $self = shift;
+    my ($code, @args) = @_;
+
+    my $f = $self->fork;
+    return $f unless blessed($f);
+
+    $self->run($code, @args);
+
+    $self->detach();
+    $f->dismiss();
+    exit 0;
+}
+
+sub run_thread {
+    croak "Threading is not supported" unless CAN_THREAD;
+    require threads;
+
+    my $self = shift;
+    my ($code, @args) = @_;
+
+    my $id = $self->cleave;
+    my $thr =  threads->create(sub {
+        $self->attach($id);
+        my $guard = $self->_guard();
+
+        $self->run($code, @args);
+
+        $self->detach();
+        $guard->dismiss;
+        return 0;
+    });
+
+    push @{$self->{+CHILDREN}} => $thr;
+
+    return $thr;
+}
+
+sub _guard {
+    my $self = shift;
+
+    my ($pid, $tid) = ($$, get_tid);
+
+    return Scope::Guard->new(sub {
+        return unless $$ == $pid && get_tid == $tid;
+
+        my $error = "Scope Leak";
+        if (my $ex = $@) {
+            chomp($ex);
+            $error .= " ($ex)";
+        }
+
+        cluck $error;
+
+        my $e = $self->context->build_event(
+            'Exception',
+            error => "$error\n",
+        );
+        $self->{+HUB}->send($e);
+        $self->detach();
+        exit 255;
+    });
 }
 
 sub DESTROY {
     my $self = shift;
-    return if $self->{+EVENT_USED};
-    return if $self->{+PID} != $$;
-    return if $self->{+TID} != get_tid;
+    return unless $self->{+NAME};
 
-    warn "Subtest $self->{+NAME} did not finish!" unless $self->{+_FINISHED};
-    warn "Subtest $self->{+NAME} was not used to produce any events";
+    if (my $att = $self->{+_ATTACHED}) {
+        return unless $self->{+HUB};
+        eval { $self->detach() };
+    }
 
+    return if $self->{+FINISHED};
+    return unless $self->{+PID} == $$;
+    return unless $self->{+TID} == get_tid;
+
+    local $@;
+    eval { $_->{+_IN_USE}-- for reverse @{$self->{+STACK}} };
+
+    warn "Subtest $self->{+NAME} did not finish!";
     exit 255;
 }
 
@@ -196,89 +447,209 @@ continue instead of waiting on the children.
 
 =head1 SYNOPSYS
 
-B<Note:> Most people should use L<Test2::Tools::AsyncSubtest> instead of
-directly interfacing with this package.
-
     use Test2::AsyncSubtest;
 
-    my $ast = Test2::AsyncSubtest->new(name => 'a subtest');
+    my $ast = Test2::AsyncSubtest->new(name => foo);
 
-    ok(1, "event outside of subtest");
+    $ast->run(sub {
+        ok(1, "Event in parent" );
+    });
 
-    $ast->run(sub { ok(1, 'event in subtest') }
+    ok(1, "Event outside of subtest");
 
-    ok(1, "another event outside of subtest");
+    $ast->run_fork(sub {
+        ok(1, "Event in child process");
+    });
 
-    $ast->run(sub { ok(1, 'another event in subtest') }
+    $ast->run_thread(sub {
+        ok(1, "Event in child thread");
+    });
 
     ...
 
-    my $bool = $ast->finish;
+    $ast->finish;
 
-    $ctx->send_event(
-        'Subtest',
-        $ast->event_data,
-    );
-
-    $ctx->diag($_) for $ast->diagnostics;
+    done_testing;
 
 =head1 CONSTRUCTION
 
-    my $ast = Test2::AsyncSubtest->new(
-        name => 'a subtest',
-        hub  => undef,
-    );
+    my $ast = Test2::AsyncSubtest->new( ... );
 
 =over 4
 
 =item name => $name (required)
 
-Specify the subtest name. This argument is required.
+Name of the subtest. This construction argument is required.
+
+=item send_to => $hub (optional)
+
+Hub to which the final subtest event should be sent. This must be an instance
+of L<Test2::Hub> or a subclass. If none is specified then the current top hub
+will be used.
+
+=item trace => $trace (optional)
+
+File/Line to which errors should be attributed. This must be an instance of
+L<Test2::Util::Trace>. If none is specified then the file/line where the
+constructor was called will be used.
 
 =item hub => $hub (optional)
 
-Specify a hub to use. This is almost never necessary, typically you let the
-constructor create a hub for you.
-
-If you do provide your own hub it should be an instance of
-L<Test2::Hub::AsyncSubtest>.
+Use this to specify a hub the subtest should use. By default a new hub is
+generated. This must be an instance of L<Test2::AsyncSubtest::Hub>.
 
 =back
 
 =head1 METHODS
 
+=head2 SIMPLE ACCESSORS
+
 =over 4
 
-=item $passing = $ast->run(sub { ... })
+=item $bool = $ast->active
 
-=item $passing = $ast->run(%params, sub { ... })
+True if the subtest is active. The subtest is active if its hub appears in the
+global hub stack. This is true when C<< $ast->run(...) >> us running.
 
-Run will run the provided codeblock with the subtest hub at the top of the
-stack. The hub will be removed from the stack when the codeblock returns.
+=item $arrayref = $ast->children
 
-The codelbock must be the very last argument to the sub. All other arguments
-will be used as an C<%params> hash.
+Get an arrayref of child processes/threads. Numerical items are PIDs, blessed
+items are L<threads> instances.
 
-Params may be C<< args => [...] >>, which will be passed into the codeblock as
-argments. Or they may be C<< trace => Test2::Util::Trace->new(...) >> to
-provide a trace for any events generated.
+=item $arrayref = $ast->events
 
-=item $passing = $ast->finish()
+Get an arrayref of events that have been sent to the subtests hub.
 
-=item $passing = $ast->finish(trace => $trace)
+=item $bool = $ast->finished
 
-This will complete the subtest. Optinally you may provide C<< trace => $trace
->> which must be an instance of L<Test2::Util::Trace>.
+True if C<finished()> has already been called.
 
-=item %event_data = $ast->event_data()
+=item $hub = $ast->hub
 
-Get the data that should be used in a call to
-C<< $ctx->send_event(Subtest, %event_data) >> for the final
-L<Test2::Event::Subtest> event.
+The hub created for the subtest.
 
-=item @diags = $ast->diagnostics()
+=item $int = $ast->id
 
-Get the extra diagnostics that should be displayed at the end of the subtest.
+Attach/Detach counter. Used internally, not useful to users.
+
+=item $str = $ast->name
+
+Name of the subtest.
+
+=item $pid = $ast->pid
+
+PID in which the subtest was created.
+
+=item $tid = $ast->tid
+
+Thread ID in which the subtest was created.
+
+=item $hub = $ast->send_to
+
+Hub to which the final subtest event should be sent.
+
+=item $arrayref = $ast->stack
+
+Stack of async subtests at the time this one was created. This is mainly for
+internal use.
+
+=item $trace = $ast->trace
+
+L<Test2::Util::Trace> instance used for error reporting.
+
+=back
+
+=head2 INTERFACE
+
+=over 4
+
+=item $ast->attach($id)
+
+Attach a subtest in a child/process to the original.
+
+B<Note:> C<< my $id = $ast->cleave >> must have been called in the parent
+process/thread before the child was started, the id it returns must be used in
+the call to C<< $ast->attach($id) >>
+
+=item $id = $ast->cleave
+
+Prepare a slot for a child process/thread to attach. This must be called BEFORE
+the child process or thread is started. The ID returned is used by C<attach()>.
+
+This must only be called in the original process/thread.
+
+=item $ctx = $ast->context
+
+Get an L<Test2::API::Context> instance that can be used to send events to the
+context in which the hub was created. This is not a cononical context, you
+should not call C<< $ctx->release >> on it.
+
+=item $ast->detach
+
+Detach from the parent in a child process/thread. This should be called just
+before the child exits.
+
+=item $ast->finish
+
+Finish the subtest, wait on children, and send the final subtest event.
+
+This must only be called in the original process/thread.
+
+B<Note:> This calls C<< $ast->wait >>.
+
+=item $out = $ast->fork
+
+This is a slightly higher level interface to fork. Running it will fork your
+code in-place just like C<fork()>. It will return a pid in the parent, and an
+L<Scope::Guard> instance in the child. An exception will be thrown if fork
+fails.
+
+It is recomended that you use C<< $ast->run_fork(sub { ... }) >> instead.
+
+=item $bool = $ast->pending
+
+True if there are child processes, threads, or subtests that depend on this
+one.
+
+=item $bool = $ast->ready
+
+This is essentially C<< !$ast->pending >>.
+
+=item $ast->run(sub { ... })
+
+Run the provided codeblock inside the subtest. This will push the subtest hub
+onto the stack, run the code, then pop the hub off the stack.
+
+=item $pid = $ast->run_fork(sub { ... })
+
+Same as C<< $ast->run() >>, except that the codeblock is run in a child
+process.
+
+You do not need to directly call C<wait($pid)>, that will be done for you when
+C<< $ast->wait >>, or C<< $ast->finish >> are called.
+
+=item my $thr = $ast->run_thread(sub { ... });
+
+Same as C<< $ast->run() >>, except that the codeblock is run in a child
+thread.
+
+You do not need to directly call C<< $thr->join >>, that is done for you when
+C<< $ast->wait >>, or C<< $ast->finish >> are called.
+
+=item $passing = $ast->start
+
+Push the subtest hub onto the stack. Returns the current pass/fail status of
+the subtest.
+
+=item $ast->stop
+
+Pop the subtest hub off the stack. Returns the current pass/fail status of the
+subtest.
+
+=item $ast->wait
+
+Wait on all threads/processes that were started using C<< $ast->fork >>,
+C<< $ast->run_fork >>, or C<< $ast->run_thread >>.
 
 =back
 
