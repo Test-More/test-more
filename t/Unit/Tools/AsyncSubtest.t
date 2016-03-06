@@ -20,7 +20,7 @@ sub run {
         $ast->finish;
     }
 
-    if (CAN_THREAD) {
+    if (CAN_THREAD && eval { require threads; threads->VERSION('1.34'); 1 }) {
         $ast = thread_subtest foo => sub { ok(1, "threaded subtest: " . get_tid) };
         $ast->finish;
     }
@@ -49,7 +49,7 @@ is(
                 event '+Test2::AsyncSubtest::Event::Detach' => {};
                 event Plan => { max => 1 };
             };
-        } for grep { $_ } CAN_REALLY_FORK, CAN_THREAD;
+        } for grep { $_ } CAN_REALLY_FORK, CAN_THREAD && eval { require threads; threads->VERSION('1.34'); 1 };
     },
     "Got expected events"
 );

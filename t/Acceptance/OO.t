@@ -49,7 +49,7 @@ if (CAN_REALLY_FORK) {
 
 ok(1, "Something else");
 
-if (0 && CAN_THREAD) {
+if (CAN_THREAD && eval { require threads; threads->VERSION('1.34'); 1 }) {
     require threads;
     my @threads;
 

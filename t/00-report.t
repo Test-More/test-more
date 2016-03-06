@@ -21,6 +21,7 @@ diag(
 {
     my @depends = qw{
         Test2 Test2::Suite Carp Exporter Scalar::Util Scope::Guard Time::HiRes
+        threads
     };
 
     my @rows;

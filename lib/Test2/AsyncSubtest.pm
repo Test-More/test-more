@@ -4,7 +4,7 @@ use warnings;
 
 use Test2::IPC;
 
-our $VERSION = '0.000002';
+our $VERSION = '0.000003';
 
 our @CARP_NOT = qw/Test2::Util::HashBase/;
 
@@ -352,8 +352,8 @@ sub run_fork {
 }
 
 sub run_thread {
-    croak "Threading is not supported" unless CAN_THREAD;
-    require threads;
+    croak "Threading is not supported"
+        unless CAN_THREAD && eval { require threads; threads->VERSION('1.34'); 1 };
 
     my $self = shift;
     my ($code, @args) = @_;
