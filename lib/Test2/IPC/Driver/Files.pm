@@ -2,6 +2,8 @@ package Test2::IPC::Driver::Files;
 use strict;
 use warnings;
 
+our $VERSION = '0.000026';
+
 use base 'Test2::IPC::Driver';
 
 use Test2::Util::HashBase qw{tempdir event_id tid pid globals};

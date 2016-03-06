@@ -2,6 +2,8 @@ package Test2::Util::ExternalMeta;
 use strict;
 use warnings;
 
+our $VERSION = '0.000026';
+
 use Carp qw/croak/;
 
 sub META_KEY() { '_meta' }

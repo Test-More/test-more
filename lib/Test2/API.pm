@@ -2,6 +2,8 @@ package Test2::API;
 use strict;
 use warnings;
 
+our $VERSION = '0.000026';
+
 my $INST;
 use Test2::API::Instance(\$INST);
 # Set the exit status

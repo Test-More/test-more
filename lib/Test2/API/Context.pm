@@ -2,6 +2,8 @@ package Test2::API::Context;
 use strict;
 use warnings;
 
+our $VERSION = '0.000026';
+
 use Carp qw/confess croak longmess/;
 use Scalar::Util qw/weaken/;
 use Test2::Util qw/get_tid try pkg_to_file get_tid/;
