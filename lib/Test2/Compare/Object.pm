@@ -7,6 +7,9 @@ use Test2::Util qw/try/;
 use Test2::Compare::Meta();
 
 use base 'Test2::Compare::Base';
+
+our $VERSION = '0.000021';
+
 use Test2::Util::HashBase qw/calls meta refcheck ending/;
 
 use Carp qw/croak confess/;

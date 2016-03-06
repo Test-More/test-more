@@ -2,6 +2,8 @@ package Test2::Tools::Exception;
 use strict;
 use warnings;
 
+our $VERSION = '0.000021';
+
 use Test2::API qw/context/;
 
 our @EXPORT = qw/dies lives/;

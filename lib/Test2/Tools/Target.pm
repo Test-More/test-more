@@ -2,6 +2,8 @@ package Test2::Tools::Target;
 use strict;
 use warnings;
 
+our $VERSION = '0.000021';
+
 use Carp qw/croak/;
 
 use Test2::Util qw/pkg_to_file/;

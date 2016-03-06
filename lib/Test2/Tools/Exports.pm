@@ -2,6 +2,8 @@ package Test2::Tools::Exports;
 use strict;
 use warnings;
 
+our $VERSION = '0.000021';
+
 use Carp qw/croak carp/;
 use Test2::API qw/context/;
 use Test2::Util::Stash qw/get_symbol/;

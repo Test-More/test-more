@@ -3,6 +3,9 @@ use strict;
 use warnings;
 
 use base 'Test2::Compare::Meta';
+
+our $VERSION = '0.000021';
+
 use Test2::Util::HashBase;
 
 sub get_prop_file    { $_[1]->trace->file }

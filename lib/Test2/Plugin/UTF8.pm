@@ -2,6 +2,8 @@ package Test2::Plugin::UTF8;
 use strict;
 use warnings;
 
+our $VERSION = '0.000021';
+
 use Test2::API qw{
     test2_add_callback_post_load
     test2_stack

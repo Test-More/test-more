@@ -2,6 +2,8 @@ package Test2::Compare::Base;
 use strict;
 use warnings;
 
+our $VERSION = '0.000021';
+
 use Carp qw/confess/;
 
 use Test2::Util::Sub qw/sub_info/;

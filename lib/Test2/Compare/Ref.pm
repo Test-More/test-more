@@ -3,6 +3,9 @@ use strict;
 use warnings;
 
 use base 'Test2::Compare::Base';
+
+our $VERSION = '0.000021';
+
 use Test2::Util::HashBase qw/input/;
 
 use Test2::Util::Ref qw/render_ref rtype/;

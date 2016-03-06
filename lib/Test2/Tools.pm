@@ -2,6 +2,8 @@ package Test2::Tools;
 use strict;
 use warnings;
 
+our $VERSION = '0.000021';
+
 1;
 
 __END__

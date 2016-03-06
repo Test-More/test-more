@@ -2,6 +2,8 @@ package Test2::Compare;
 use strict;
 use warnings;
 
+our $VERSION = '0.000021';
+
 use Scalar::Util qw/blessed/;
 use Test2::Util qw/try/;
 use Test2::Util::Ref qw/rtype/;
