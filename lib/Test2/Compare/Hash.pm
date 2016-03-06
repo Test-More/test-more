@@ -3,6 +3,9 @@ use strict;
 use warnings;
 
 use base 'Test2::Compare::Base';
+
+our $VERSION = '0.000021';
+
 use Test2::Util::HashBase qw/inref ending items order/;
 
 use Carp qw/croak confess/;

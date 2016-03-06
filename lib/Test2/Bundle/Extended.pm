@@ -4,6 +4,8 @@ use warnings;
 
 use base 'Exporter';
 
+our $VERSION = '0.000021';
+
 use Carp qw/croak/;
 
 use Test2::Plugin::SRand();

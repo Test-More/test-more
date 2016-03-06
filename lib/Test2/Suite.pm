@@ -2,7 +2,7 @@ package Test2::Suite;
 use strict;
 use warnings;
 
-our $VERSION = "0.000020";
+our $VERSION = '0.000021';
 
 1;
 

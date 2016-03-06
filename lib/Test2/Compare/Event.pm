@@ -7,6 +7,9 @@ use Scalar::Util qw/blessed/;
 use Test2::Compare::EventMeta();
 
 use base 'Test2::Compare::Object';
+
+our $VERSION = '0.000021';
+
 use Test2::Util::HashBase qw/etype/;
 
 sub name {

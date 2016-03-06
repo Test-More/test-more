@@ -2,6 +2,8 @@ package Test2::Tools::Warnings;
 use strict;
 use warnings;
 
+our $VERSION = '0.000021';
+
 use Test2::API qw/context/;
 
 our @EXPORT = qw/warns warning warnings no_warnings/;

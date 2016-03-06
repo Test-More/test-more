@@ -2,6 +2,8 @@ package Test2::Util::Table;
 use strict;
 use warnings;
 
+our $VERSION = '0.000021';
+
 use Test2::Util::Table::LineBreak();
 
 use List::Util qw/max sum/;
