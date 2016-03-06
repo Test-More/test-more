@@ -2,6 +2,8 @@ package Test2::Util::Trace;
 use strict;
 use warnings;
 
+our $VERSION = '0.000026';
+
 use Test2::Util qw/get_tid/;
 
 use Carp qw/confess/;

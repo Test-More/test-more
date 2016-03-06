@@ -2,6 +2,8 @@ package Test2::API::Stack;
 use strict;
 use warnings;
 
+our $VERSION = '0.000026';
+
 use Test2::Hub();
 
 use Carp qw/confess/;

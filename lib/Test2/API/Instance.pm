@@ -2,6 +2,8 @@ package Test2::API::Instance;
 use strict;
 use warnings;
 
+our $VERSION = '0.000026';
+
 our @CARP_NOT = qw/Test2::API Test2::API::Instance Test2::IPC::Driver Test2::Formatter/;
 use Carp qw/confess carp/;
 use Scalar::Util qw/reftype/;

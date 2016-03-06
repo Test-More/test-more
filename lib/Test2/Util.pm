@@ -2,6 +2,8 @@ package Test2::Util;
 use strict;
 use warnings;
 
+our $VERSION = '0.000026';
+
 use Config qw/%Config/;
 
 our @EXPORT_OK = qw{

@@ -2,6 +2,8 @@ package Test2::Event::Waiting;
 use strict;
 use warnings;
 
+our $VERSION = '0.000026';
+
 use base 'Test2::Event';
 
 sub global { 1 };
