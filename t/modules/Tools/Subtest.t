@@ -402,4 +402,31 @@ like(
     "Can bail out"
 );
 
+@lines = ();
+my $xyz = 0;
+like(
+    intercept {
+        push @lines => __LINE__ + 5;
+        subtest_buffered 'foo' => {manual_skip_all => 1}, sub {
+            skip_all 'bleh';
+            $xyz = 1;
+            return;
+        };
+    },
+    array {
+        event Subtest => sub {
+            prop file => __FILE__;
+            prop line => $lines[0];
+            field pass => 1;
+            field name => 'foo';
+            field subevents => array {
+                event Plan => { directive => 'SKIP', reason => 'bleh' };
+                end;
+            };
+        };
+    },
+    "Can skip_all"
+);
+ok($xyz, "skip_all did not auto-abort");
+
 done_testing;

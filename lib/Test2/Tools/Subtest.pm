@@ -11,17 +11,27 @@ our @EXPORT = qw/subtest_streamed subtest_buffered/;
 use base 'Exporter';
 
 sub subtest_streamed {
-    my ($name, $code, @args) = @_;
+    my $name = shift;
+    my $params = ref($_[0]) eq 'HASH' ? shift(@_) : {};
+    my $code = shift;
+
+    $params->{buffered} = 0 unless defined $params->{buffered};
+
     my $ctx = context();
-    my $pass = run_subtest("Subtest: $name", $code, 0, @args);
+    my $pass = run_subtest("Subtest: $name", $code, $params, @_);
     $ctx->release;
     return $pass;
 }
 
 sub subtest_buffered {
-    my ($name, $code, @args) = @_;
+    my $name = shift;
+    my $params = ref($_[0]) eq 'HASH' ? shift(@_) : {};
+    my $code = shift;
+
+    $params->{buffered} = 1 unless defined $params->{buffered};
+
     my $ctx = context();
-    my $pass = run_subtest($name, $code, 1, @args);
+    my $pass = run_subtest($name, $code, $params, @_);
     $ctx->release;
     return $pass;
 }
@@ -105,13 +115,27 @@ eval, or script files as subtests.
 
 =item subtest_streamed($name, $sub, @args)
 
+=item subtest_streamed $name => \%params, $sub
+
+=item subtest_streamed($name, \%params, $sub, @args)
+
 Run subtest coderef, stream events as they happen.
+
+C<\%params> is a hashref with any arguments you wish to pass into hub
+construction.
 
 =item subtest_buffered $name => $sub
 
 =item subtest_buffered($name, $sub, @args)
 
+=item subtest_buffered $name => \%params, $sub
+
+=item subtest_buffered($name, \%params, $sub, @args)
+
 Run subtest coderef, render events all at once when subtest is complete.
+
+C<\%params> is a hashref with any arguments you wish to pass into hub
+construction.
 
 =back
 
