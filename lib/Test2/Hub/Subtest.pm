@@ -75,7 +75,7 @@ Subtests make use of this hub to route events.
 
 The default is false.
 
-Normalyl a skip-all plan event will cause a subtest to stop executing. This is
+Normally a skip-all plan event will cause a subtest to stop executing. This is
 accomplished via C<last LABEL> to a label inside the subtest code. Most of the
 time this is perfectly fine. There are times however where this flow control
 causes bad things to happen.
