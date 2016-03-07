@@ -14,8 +14,8 @@ sub init {
     confess "The 'frame' attribute is required"
         unless $_[0]->{+FRAME};
 
-    $_[0]->{+PID} ||= $$;
-    $_[0]->{+TID} ||= get_tid();
+    $_[0]->{+PID} = $$        unless defined $_[0]->{+PID};
+    $_[0]->{+TID} = get_tid() unless defined $_[0]->{+TID};
 }
 
 sub snapshot { bless {%{$_[0]}}, __PACKAGE__ };

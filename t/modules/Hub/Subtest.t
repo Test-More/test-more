@@ -3,6 +3,7 @@ use warnings;
 BEGIN { require "t/tools.pl" };
 
 use Test2::Hub::Subtest;
+use Test2::Util qw/get_tid/;
 use Carp qw/croak/;
 
 my %TODO;
@@ -78,11 +79,25 @@ ok($one->isa('Test2::Hub'), "inheritence");
 
 do_def;
 
-$ran = 0;
+my $skip = Test2::Event::Plan->new(
+    trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__], pid => $$, tid => get_tid),
+    directive => 'SKIP',
+    reason => 'foo',
+);
 
+$ran = 0;
 T2_SUBTEST_WRAPPER: {
     $ran++;
-    $one->terminate(100);
+    $one->terminate(100, $skip);
+    $ran++;
+}
+
+is($ran, 1, "did not get past the terminate");
+
+$ran = 0;
+T2_SUBTEST_WRAPPER: {
+    $ran++;
+    $one->send($skip);
     $ran++;
 }
 

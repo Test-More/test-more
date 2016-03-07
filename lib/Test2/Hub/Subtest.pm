@@ -6,6 +6,7 @@ our $VERSION = '0.000026';
 
 use base 'Test2::Hub';
 use Test2::Util::HashBase qw/nested bailed_out exit_code/;
+use Test2::Util qw/get_tid/;
 
 sub process {
     my $self = shift;
@@ -15,10 +16,29 @@ sub process {
     $self->SUPER::process($e);
 }
 
+sub send {
+    my $self = shift;
+    my ($e) = @_;
+
+    my $out = $self->SUPER::send($e);
+
+    return $out unless $e->isa('Test2::Event::Plan')
+        && $e->directive eq 'SKIP'
+        && ($e->trace->pid != $self->pid || $e->trace->tid != $self->tid);
+
+    no warnings 'exiting';
+    last T2_SUBTEST_WRAPPER;
+}
+
 sub terminate {
     my $self = shift;
-    my ($code) = @_;
+    my ($code, $e) = @_;
     $self->set_exit_code($code);
+
+    return if $e->isa('Test2::Event::Plan')
+           && $e->directive eq 'SKIP'
+           && ($e->trace->pid != $$ || $e->trace->tid != get_tid);
+
     no warnings 'exiting';
     last T2_SUBTEST_WRAPPER;
 }

@@ -136,7 +136,7 @@ load it too late for it to be effective.
 
     sub send {
         my $self = shift;
-        my ($hid, $e) = @_;
+        my ($hid, $e, $global) = @_;
 
         ... # Send the event to the proper hub.
 
@@ -201,6 +201,8 @@ to enforce).
 
 =item $ipc->send($hid, $event);
 
+=item $ipc->send($hid, $event, $global);
+
 Used to send events from the current process/thread to the specified hub in its
 process+thread.
 
@@ -214,6 +216,9 @@ process+thread.
         # there is a pending event.
         Test2::API::test2_ipc_set_pending($uniq_val);
     }
+
+If C<$global> is true then the driver should send the event to all hubs in all
+processes and threads.
 
 =item @events = $ipc->cull($hid)
 

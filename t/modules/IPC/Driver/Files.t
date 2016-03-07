@@ -1,6 +1,8 @@
 BEGIN { require "t/tools.pl" };
 use Test2::Util qw/get_tid USE_THREADS try/;
 use File::Temp qw/tempfile/;
+use strict;
+use warnings;
 
 sub capture(&) {
     my $code = shift;
@@ -79,7 +81,7 @@ is(@files, 0, "All files collected");
 $ipc->drop_hub($hid);
 ok(!-f $ipc->tempdir . '/' . $hid, "removed hub file");
 
-$ipc->send('GLOBAL', bless({global => 1}, 'Foo'));
+$ipc->send($hid, bless({global => 1}, 'Foo'), 'GLOBAL');
 my @got = $ipc->cull($hid);
 ok(@got == 0, "did not get our own global event");
 
@@ -119,6 +121,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
 }
 
 {
+    no warnings 'once';
     local *Test2::IPC::Driver::Files::abort = sub {
         my $self = shift;
         local $self->{no_fatal} = 1;
@@ -251,7 +254,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
 {
     my $ipc = Test2::IPC::Driver::Files->new();
     $ipc->add_hub($hid);
-    $ipc->send('GLOBAL', bless({global => 1}, 'Foo'));
+    $ipc->send($hid, bless({global => 1}, 'Foo'), 'GLOBAL');
     $ipc->set_globals({});
     my @events = $ipc->cull($hid);
     is_deeply(

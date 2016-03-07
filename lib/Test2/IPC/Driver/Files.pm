@@ -118,22 +118,22 @@ sub drop_hub {
 
 sub send {
     my $self = shift;
-    my ($hid, $e) = @_;
+    my ($hid, $e, $global) = @_;
 
     my $tempdir = $self->{+TEMPDIR};
-    my $global = $hid eq 'GLOBAL';
     my $hfile = $self->hub_file($hid);
+    my $dest = $global ? 'GLOBAL' : $hid;
 
     $self->abort("hub '$hid' is not available! Failed to send event!\n")
         unless $global || -f $hfile;
 
-    my $file = $self->event_file($hid, $e);
+    my $file = $self->event_file($dest, $e);
     my $ready = File::Spec->canonpath("$file.ready");
 
     if ($global) {
         my $name = $ready;
         $name =~ s{^.*(GLOBAL)}{GLOBAL};
-        $self->globals->{$name}++;
+        $self->{+GLOBALS}->{$hid}->{$name}++;
     }
 
     my ($ok, $err) = try {
@@ -153,7 +153,7 @@ sub send {
 
 *******************************************************************************
 There was an error writing an event:
-Destination: $hid
+Destination: $dest
 Origin PID:  $$
 Origin TID:  $tid
 Event Type:  $type
@@ -184,30 +184,30 @@ sub cull {
         next unless substr($file, -6, 6) eq '.ready';
 
         my $global   = substr($file, 0, 6) eq 'GLOBAL';
-        my $have_hid = !$global && substr($file, 0, length($hid)) eq $hid;
+        my $hid_len = length($hid);
+        my $have_hid = !$global && substr($file, 0, $hid_len) eq $hid && substr($file, $hid_len, 1) eq '-';
 
         next unless $have_hid || $global;
 
-        next if $global && $self->{+GLOBALS}->{$file}++;
+        next if $global && $self->{+GLOBALS}->{$hid}->{$file}++;
 
         # Untaint the path.
         my $full = File::Spec->canonpath("$tempdir/$file");
         ($full) = ($full =~ m/^(.*)$/gs);
 
         my $obj = $self->read_event_file($full);
+        push @out => $obj;
 
         # Do not remove global events
-        unless ($global) {
-            my $complete = File::Spec->canonpath("$full.complete");
-            if ($ENV{T2_KEEP_TEMPDIR}) {
-                rename($full, $complete) or $self->abort("Could not rename IPC file '$full', '$complete'");
-            }
-            else {
-                unlink($full) or $self->abort("Could not unlink IPC file: $file");
-            }
-        }
+        next if $global;
 
-        push @out => $obj;
+        my $complete = File::Spec->canonpath("$full.complete");
+        if ($ENV{T2_KEEP_TEMPDIR}) {
+            rename($full, $complete) or $self->abort("Could not rename IPC file '$full', '$complete'");
+        }
+        else {
+            unlink($full) or $self->abort("Could not unlink IPC file: $file");
+        }
     }
 
     closedir($dh);
@@ -243,7 +243,8 @@ sub waiting {
     $self->send(
         GLOBAL => Test2::Event::Waiting->new(
             trace => Test2::Util::Trace->new(frame => [caller()]),
-        )
+        ),
+        'GLOBAL'
     );
     return;
 }

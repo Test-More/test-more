@@ -250,7 +250,7 @@ sub send {
     my $ipc = $self->{+IPC} || return $self->process($e);
 
     if($e->global) {
-        $ipc->send('GLOBAL', $e);
+        $ipc->send($self->{+HID}, $e, 'GLOBAL');
         return $self->process($e);
     }
 

@@ -19,7 +19,6 @@ is($plan->terminate, undef, "No terminate for normal plan");
 $plan->set_max(0);
 $plan->set_directive('SKIP');
 $plan->set_reason('foo');
-ok($plan->global, "plan is global on skip all");
 $state = Test2::Hub->new;
 $plan->callback($state);
 is($state->plan, 'SKIP', "set plan in state");

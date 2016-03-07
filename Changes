@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+    - Version number in all modules (autarch)
+    - Fix rare/minor Race condition in Files IPC driver
+    - skip-all plan is not global anymore (never should have been)
+    - skip-all properly aborts in child proc/thread
+    - don't override defined but falsy pid/rid in traces
+
 0.000025  2016-02-02 12:08:32-08:00 America/Los_Angeles
 
     - Fix occasional warning in cleanup

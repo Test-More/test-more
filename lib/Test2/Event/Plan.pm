@@ -54,13 +54,6 @@ sub terminate {
     return undef;
 }
 
-sub global {
-    my $self = shift;
-    return 0 unless $self->{+DIRECTIVE};
-    return 0 unless $self->{+DIRECTIVE} eq 'SKIP';
-    return 1;
-}
-
 1;
 
 __END__
