@@ -17,13 +17,13 @@ subtest(
     }
 ) if CAN_REALLY_FORK;
 
-#subtest(
-#    'thread tests',
-#    sub {
-#        run_tests('thread');
-#        stress_tests('thread');
-#    }
-#) if CAN_THREAD;
+subtest(
+    'thread tests',
+    sub {
+        run_tests('thread');
+        stress_tests('thread');
+    }
+) if CAN_THREAD;
 
 done_testing;
 
@@ -65,9 +65,11 @@ sub run_tests {
         intercept {
             $st_sub->(
                 'skip_all',
+                { manual_skip_all => 1 },
                 sub {
                     skip_all 'because';
-                    ok(0, "Should not see");
+                    note "Post skip";
+                    return;
                 }
             )->finish;
         },
@@ -81,13 +83,14 @@ sub run_tests {
                         call directive => 'SKIP';
                         call reason    => 'because';
                     };
+                    event Note => { message => 'Post skip' };
                     event '+Test2::AsyncSubtest::Event::Detach';
                     end();
                 };
             };
             end();
         },
-        qq[${type}_subtest with skip_all}]
+        qq[${type}_subtest with skip_all and manual skip return}]
     );
 
     my $method = 'run_' . $type;

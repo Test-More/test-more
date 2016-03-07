@@ -59,7 +59,12 @@ sub init {
 
     unless($self->{+HUB}) {
         my $ipc = Test2::API::test2_ipc();
-        my $hub = Test2::AsyncSubtest::Hub->new(format => undef, ipc => $ipc);
+        my $args = delete $self->{hub_init_args} || {};
+        my $hub = Test2::AsyncSubtest::Hub->new(
+            %$args,
+            format => undef,
+            ipc => $ipc,
+        );
         $self->{+HUB} = $hub;
     }
 

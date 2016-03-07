@@ -13,10 +13,12 @@ our @EXPORT = qw/async_subtest fork_subtest thread_subtest/;
 use base 'Exporter';
 
 sub async_subtest {
-    my ($name, $code) = @_;
+    my $name = shift;
+    my $code = pop;
+    my $params = shift;
     my $ctx = context();
 
-    my $subtest = Test2::AsyncSubtest->new(name => $name, context => 1);
+    my $subtest = Test2::AsyncSubtest->new(name => $name, context => 1, hub_init_args => $params);
 
     $subtest->run($code, $subtest) if $code;
 
@@ -25,13 +27,15 @@ sub async_subtest {
 }
 
 sub fork_subtest {
-    my ($name, $code) = @_;
+    my $name = shift;
+    my $code = pop;
+    my $params = shift;
     my $ctx = context();
 
     croak "fork_subtest requires a CODE reference as the second argument"
         unless ref($code) eq 'CODE';
 
-    my $subtest = Test2::AsyncSubtest->new(name => $name, context => 1);
+    my $subtest = Test2::AsyncSubtest->new(name => $name, context => 1, hub_init_args => $params);
 
     $subtest->run_fork($code, $subtest);
 
@@ -40,13 +44,15 @@ sub fork_subtest {
 }
 
 sub thread_subtest {
-    my ($name, $code) = @_;
+    my $name = shift;
+    my $code = pop;
+    my $params = shift;
     my $ctx = context();
 
     croak "thread_subtest requires a CODE reference as the second argument"
         unless ref($code) eq 'CODE';
 
-    my $subtest = Test2::AsyncSubtest->new(name => $name, context => 1);
+    my $subtest = Test2::AsyncSubtest->new(name => $name, context => 1, hub_init_args => $params);
 
     $subtest->run_thread($code, $subtest);
 
@@ -107,13 +113,19 @@ Everything is exported by default.
 
 =item $ast = async_subtest $name => sub { ... }
 
+=item $ast = async_subtest $name => \%hub_params, sub { ... }
+
 Create an async subtest. Run the codeblock if it is provided.
 
 =item $ast = fork_subtest $name => sub { ... }
 
+=item $ast = fork_subtest $name => \%hub_params, sub { ... }
+
 Create an async subtest. Run the codeblock in a forked process.
 
 =item $ast = thread_subtest $name => sub { ... }
+
+=item $ast = thread_subtest $name => \%hub_params, sub { ... }
 
 Create an async subtest. Run the codeblock in a thread.
 
