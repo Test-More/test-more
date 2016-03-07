@@ -5,7 +5,7 @@ use warnings;
 our $VERSION = '0.000027';
 
 use base 'Test2::Hub';
-use Test2::Util::HashBase qw/nested bailed_out exit_code/;
+use Test2::Util::HashBase qw/nested bailed_out exit_code manual_skip_all/;
 use Test2::Util qw/get_tid/;
 
 sub process {
@@ -22,6 +22,7 @@ sub send {
 
     my $out = $self->SUPER::send($e);
 
+    return $out if $self->{+MANUAL_SKIP_ALL};
     return $out unless $e->isa('Test2::Event::Plan')
         && $e->directive eq 'SKIP'
         && ($e->trace->pid != $self->pid || $e->trace->tid != $self->tid);
@@ -35,6 +36,7 @@ sub terminate {
     my ($code, $e) = @_;
     $self->set_exit_code($code);
 
+    return if $self->{+MANUAL_SKIP_ALL};
     return if $e->isa('Test2::Event::Plan')
            && $e->directive eq 'SKIP'
            && ($e->trace->pid != $$ || $e->trace->tid != get_tid);
@@ -62,6 +64,26 @@ This is an experimental release. Using this right now is not recommended.
 =head1 DESCRIPTION
 
 Subtests make use of this hub to route events.
+
+=head1 TOGGLES
+
+=over 4
+
+=item $bool = $hub->manual_skip_all
+
+=item $hub->set_manual_skip_all($bool)
+
+The default is false.
+
+Normalyl a skip-all plan event will cause a subtest to stop executing. This is
+accomplished via C<last LABEL> to a label inside the subtest code. Most of the
+time this is perfectly fine. There are times however where this flow control
+causes bad things to happen.
+
+This toggle lets you turn off the abort logic for the hub. When this is toggled
+to true B<you> are responsible for ensuring no additional events are generated.
+
+=back
 
 =head1 SOURCE
 

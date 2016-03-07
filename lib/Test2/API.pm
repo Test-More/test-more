@@ -396,7 +396,10 @@ sub intercept(&) {
 }
 
 sub run_subtest {
-    my ($name, $code, $buffered, @args) = @_;
+    my ($name, $code, $params, @args) = @_;
+
+    $params = { buffered => $params } unless ref $params;
+    my $buffered = delete $params->{buffered};
 
     my $ctx = context();
 
@@ -407,6 +410,7 @@ sub run_subtest {
     my $stack = $ctx->stack || $STACK;
     my $hub = $stack->new_hub(
         class => 'Test2::Hub::Subtest',
+        %$params,
     );
 
     my @events;
@@ -843,6 +847,10 @@ Usage:
 
     run_subtest($NAME, \&CODE, $BUFFERED, @ARGS)
 
+    # or
+
+    run_subtest($NAME, \&CODE, \%PARAMS, @ARGS)
+
 This will run the provided codeblock with the args in C<@args>. This codeblock
 will be run as a subtest. A subtest is an isolated test state that is condensed
 into a single L<Test2::Event::Subtest> event, which contains all events
@@ -860,12 +868,18 @@ The name of the subtest.
 
 The code to run inside the subtest.
 
-=item $BUFFERED
+=item $BUFFERED or \%PARAMS
 
-If this is true then the subtest will be buffered. In a buffered subtest the
-child events are hidden from the formatter, the formatter will only recieve the
-final L<Test2:Event::Subtest> event. In an unbuffered subtest the formatter
-will see all events as they happen, as well as the final one.
+If this is a simple scalar then it will be treated as a boolean for the
+'buffered' setting. If this is a hash reference then it wil be used as a
+parameters hash. The param hash will be used for hub construction (with the
+'buffered' key removed).
+
+If this is true, or a hashref with a true value for the 'buffered' key, then
+the subtest will be buffered. In a buffered subtest the child events are hidden
+from the formatter, the formatter will only recieve the final
+L<Test2:Event::Subtest> event. In an unbuffered subtest the formatter will see
+all events as they happen, as well as the final one.
 
 =item @ARGS
 

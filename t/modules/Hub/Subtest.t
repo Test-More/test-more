@@ -91,7 +91,6 @@ T2_SUBTEST_WRAPPER: {
     $one->terminate(100, $skip);
     $ran++;
 }
-
 is($ran, 1, "did not get past the terminate");
 
 $ran = 0;
@@ -100,7 +99,26 @@ T2_SUBTEST_WRAPPER: {
     $one->send($skip);
     $ran++;
 }
-
 is($ran, 1, "did not get past the terminate");
+
+$one->reset_state;
+$one->set_manual_skip_all(1);
+
+$ran = 0;
+T2_SUBTEST_WRAPPER: {
+    $ran++;
+    $one->terminate(100, $skip);
+    $ran++;
+}
+is($ran, 2, "did not automatically abort");
+
+$one->reset_state;
+$ran = 0;
+T2_SUBTEST_WRAPPER: {
+    $ran++;
+    $one->send($skip);
+    $ran++;
+}
+is($ran, 2, "did not automatically abort");
 
 done_testing;

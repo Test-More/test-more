@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Ability to disable skip_all subtest abort construct
+
 0.000026  2016-03-06 20:15:19-08:00 America/Los_Angeles
 
     - Version number in all modules (autarch)
