@@ -1,6 +1,8 @@
 {{$NEXT}}
 
+    - Add version to all modules
     - Minor doc fixes
+    - No logic changes
 
 0.000020  2016-02-05 09:32:52-08:00 America/Los_Angeles
 
