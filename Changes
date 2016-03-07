@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - Bump minimum Test2 version
     - Add version to all modules
     - Minor doc fixes
     - No logic changes
