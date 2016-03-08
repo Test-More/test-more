@@ -17,7 +17,7 @@ use overload();
 
 use Scalar::Util qw/blessed reftype weaken/;
 
-use Test2::Util qw/USE_THREADS try/;
+use Test2::Util qw/USE_THREADS try get_tid/;
 use Test2::API qw/context release/;
 # Make Test::Builder thread-safe for ithreads.
 BEGIN {
@@ -364,6 +364,8 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 
     my $ctx = $self->ctx;
     $ctx->hub->reset_state();
+    $ctx->hub->set_pid($$);
+    $ctx->hub->set_tid(get_tid);
 
     my $meta = $ctx->hub->meta(__PACKAGE__, {});
     %$meta = (

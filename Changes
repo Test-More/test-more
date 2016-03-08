@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Test::Builder->reset now resets hub's idea of root pid/tid (#637)
+
 1.302013_012 2016-01-28 20:38:16-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - $Level effects all contexts once Test::Builder is loaded
