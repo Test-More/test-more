@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix #6, make tools more argument aware
+
 0.000005  2016-03-07 12:21:28-08:00 America/Los_Angeles
 
     - Add ability to bypass subtest skip_all flow control

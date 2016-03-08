@@ -14,8 +14,10 @@ use base 'Exporter';
 
 sub async_subtest {
     my $name = shift;
-    my $code = pop;
-    my $params = shift;
+    my ($params, $code);
+    $params = shift(@_) if @_ && ref($_[0]) eq 'HASH';
+    $code   = shift(@_) if @_ && ref($_[0]) eq 'CODE';
+
     my $ctx = context();
 
     my $subtest = Test2::AsyncSubtest->new(name => $name, context => 1, hub_init_args => $params);
@@ -28,8 +30,10 @@ sub async_subtest {
 
 sub fork_subtest {
     my $name = shift;
-    my $code = pop;
-    my $params = shift;
+    my ($params, $code);
+    $params = shift(@_) if @_ && ref($_[0]) eq 'HASH';
+    $code   = shift(@_) if @_ && ref($_[0]) eq 'CODE';
+
     my $ctx = context();
 
     croak "fork_subtest requires a CODE reference as the second argument"
@@ -45,8 +49,10 @@ sub fork_subtest {
 
 sub thread_subtest {
     my $name = shift;
-    my $code = pop;
-    my $params = shift;
+    my ($params, $code);
+    $params = shift(@_) if @_ && ref($_[0]) eq 'HASH';
+    $code   = shift(@_) if @_ && ref($_[0]) eq 'CODE';
+
     my $ctx = context();
 
     croak "thread_subtest requires a CODE reference as the second argument"
