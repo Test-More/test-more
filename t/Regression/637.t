@@ -1,8 +1,16 @@
 use strict;
 use warnings;
 
-use Test::More;
+BEGIN {
+    my $skip = !eval { require threads; 1 };
+    if ($skip) {
+        require Test::More;
+        Test::More::plan(skip_all => 'no threads');
+    }
+}
+
 use threads;
+use Test::More;
 
 ok 1 for (1 .. 2);
 
