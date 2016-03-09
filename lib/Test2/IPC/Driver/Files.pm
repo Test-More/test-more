@@ -24,7 +24,11 @@ sub is_viable { 1 }
 sub init {
     my $self = shift;
 
-    my $tmpdir = File::Temp::tempdir($ENV{T2_TEMPDIR_TEMPLATE} || 'test2-XXXXXX', CLEANUP => 0, TMPDIR => 1);
+    my $tmpdir = File::Temp::tempdir(
+        $ENV{T2_TEMPDIR_TEMPLATE} || "test2-$$-XXXXXX",
+        CLEANUP => 0,
+        TMPDIR => 1,
+    );
 
     $self->abort_trace("Could not get a temp dir") unless $tmpdir;
 
