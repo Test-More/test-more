@@ -26,7 +26,7 @@ if (CAN_REALLY_FORK) {
     $f_ast->finish;
 }
 
-if (CAN_THREAD && eval { require threads; threads->VERSION('1.34'); 1 }) {
+if (Test2::AsyncSubtest->CAN_REALLY_THREAD) {
     my $t_ast = thread_subtest foo => sub {
         ok(1, "threaded " . get_tid);
 

@@ -23,7 +23,7 @@ subtest(
         run_tests('thread');
         stress_tests('thread');
     }
-) if CAN_THREAD;
+) if Test2::AsyncSubtest->CAN_REALLY_THREAD;
 
 done_testing;
 

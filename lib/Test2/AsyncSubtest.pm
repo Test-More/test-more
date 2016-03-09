@@ -35,6 +35,12 @@ use Test2::Util::HashBase qw{
     _attached pid tid
 };
 
+sub CAN_REALLY_THREAD {
+    return 0 unless CAN_THREAD;
+    return 0 unless eval { require threads; threads->VERSION('1.34'); 1 };
+    return 1;
+}
+
 my @STACK;
 
 sub init {
@@ -142,8 +148,10 @@ sub attach {
 sub detach {
     my $self = shift;
 
-    croak "You must detach INSIDE the child process/thread"
-        if $self->{+PID} == $$ && $self->{+TID} == get_tid;
+    if ($self->{+PID} == $$ && $self->{+TID} == get_tid) {
+        cluck "You must detach INSIDE the child process/thread";
+        return;
+    }
 
     my $att = $self->{+_ATTACHED}
         or croak "Not attached";
@@ -303,7 +311,7 @@ sub wait {
     my $hub = $self->{+HUB};
     my $children = $self->{+CHILDREN};
 
-    while ($self->pending || @$children) {
+    while (@$children) {
         $hub->cull;
         if (my $child = pop @$children) {
             if (blessed($child)) {
@@ -317,6 +325,9 @@ sub wait {
             Time::HiRes::sleep('0.01');
         }
     }
+
+    cluck "All children have completed, but we still appear to be pending!"
+        if $self->pending;
 
     $hub->cull;
 }
@@ -358,7 +369,7 @@ sub run_fork {
 
 sub run_thread {
     croak "Threading is not supported"
-        unless CAN_THREAD && eval { require threads; threads->VERSION('1.34'); 1 };
+        unless CAN_REALLY_THREAD;
 
     my $self = shift;
     my ($code, @args) = @_;
@@ -366,12 +377,10 @@ sub run_thread {
     my $id = $self->cleave;
     my $thr =  threads->create(sub {
         $self->attach($id);
-        my $guard = $self->_guard();
 
         $self->run($code, @args);
 
-        $self->detach();
-        $guard->dismiss;
+        $self->detach(get_tid);
         return 0;
     });
 
