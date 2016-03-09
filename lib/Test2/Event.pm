@@ -2,7 +2,7 @@ package Test2::Event;
 use strict;
 use warnings;
 
-our $VERSION = '0.000029';
+our $VERSION = '0.000030';
 
 use Test2::Util::HashBase qw/trace nested/;
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
