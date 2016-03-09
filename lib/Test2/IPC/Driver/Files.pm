@@ -24,7 +24,7 @@ sub is_viable { 1 }
 sub init {
     my $self = shift;
 
-    my $tmpdir = File::Temp::tempdir('test2-XXXXXX', CLEANUP => 0, TMPDIR => 1);
+    my $tmpdir = File::Temp::tempdir($ENV{T2_TEMPDIR_TEMPLATE} || 'test2-XXXXXX', CLEANUP => 0, TMPDIR => 1);
 
     $self->abort_trace("Could not get a temp dir") unless $tmpdir;
 
@@ -313,6 +313,22 @@ temporary directory. This is not particularily fast, but it works everywhere.
     use Test2::IPC::Driver::Files;
 
     # IPC is now enabled
+
+=head1 ENVIRONMENT VARIABLES
+
+=over 4
+
+=item T2_KEEP_TEMPDIR=0
+
+When true, the tempdir used by the IPC driver will not be deleted when the test
+is done.
+
+=item T2_TEMPDIR_TEMPLATE='test2-XXXXXX'
+
+This can be used to set the template for the IPC temp dir. The template should
+follow template specifications from L<File::Temp>.
+
+=back
 
 =head1 SEE ALSO
 
