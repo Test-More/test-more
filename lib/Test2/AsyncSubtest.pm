@@ -43,6 +43,8 @@ sub CAN_REALLY_THREAD {
 
 my @STACK;
 
+sub TOP { @STACK ? $STACK[-1] : undef }
+
 sub init {
     my $self = shift;
 
@@ -261,6 +263,8 @@ sub stop {
 
 sub finish {
     my $self = shift;
+    my %params = @_;
+
     my $hub = $self->hub;
 
     croak "Subtest is already finished"
@@ -274,7 +278,12 @@ sub finish {
 
     $self->wait;
 
-    $hub->finalize($self->trace, 1)
+    my $empty      = !@{$self->{+EVENTS}};
+    my $no_asserts = !$hub->count;
+    my $collapse   = $params{collapse};
+    my $no_plan    = $params{no_plan} || ($collapse && $no_asserts);
+
+    $hub->finalize($self->trace, !$no_plan)
         unless $hub->no_ending || $hub->ended;
 
     if ($hub->ipc) {
@@ -282,7 +291,15 @@ sub finish {
         $hub->set_ipc(undef);
     }
 
+    return $hub->is_passing if $params{silent};
+
     my $ctx = $self->context;
+
+    if ($collapse && $empty) {
+        $ctx->ok($hub->is_passing, $self->{+NAME});
+        return $hub->is_passing;
+    }
+
     my $e = $ctx->build_event(
         'Subtest',
         pass      => $hub->is_passing,
@@ -297,7 +314,7 @@ sub finish {
         $ctx->failure_diag($e);
 
         $ctx->diag("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
-            if !$hub->check_plan && !grep {$_->causes_fail} @{$self->{+EVENTS}};
+            if $hub->plan && !$hub->check_plan && !grep {$_->causes_fail} @{$self->{+EVENTS}};
     }
 
     $_->{+_IN_USE}-- for reverse @{$self->{+STACK}};
@@ -605,11 +622,41 @@ before the child exits.
 
 =item $ast->finish
 
+=item $ast->finish(%options)
+
 Finish the subtest, wait on children, and send the final subtest event.
 
 This must only be called in the original process/thread.
 
 B<Note:> This calls C<< $ast->wait >>.
+
+These are the options:
+
+=over 4
+
+=item collapse => 1
+
+This intelligently allows a subtest to be empty.
+
+If no events bump the test count then the subtest no final plan will be added.
+The subtest will not be considered a failure (normally an empty subtest is a
+failure).
+
+If there are no events at all the subtest will be collapsed into an
+L<Test2::Event::Ok> event.
+
+=item silent => 1
+
+This will prevent finish from generating a final L<Test2::Event::Subtest>
+event. This effectively ends the subtest without it effecting the parent
+subtest (or top level test).
+
+=item no_plan => 1
+
+This will prevent a final plan from being added to the subtest for you when
+none is directly specified.
+
+=back
 
 =item $out = $ast->fork
 

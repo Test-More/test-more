@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Add 'silent', 'no_plan' and 'collapse' options for finish()
+
 0.000007  2016-03-09 10:07:53-08:00 America/Los_Angeles
 
     - Fix tests for some perl+thread combos

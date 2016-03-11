@@ -104,4 +104,16 @@ is(
     'Subtest that dies not add a diagnostic about a bad plan'
 );
 
+my $sta = Test2::AsyncSubtest->new(name => 'collapse: empty');
+my $stb = Test2::AsyncSubtest->new(name => 'collapse: note only');
+my $stc = Test2::AsyncSubtest->new(name => 'collapse: full');
+
+$stb->run(sub { note "inside" });
+$stc->run(sub { ok(1, "test") });
+
+$sta->finish(collapse => 1);
+$stb->finish(collapse => 1);
+$stc->finish(collapse => 1);
+
+
 done_testing;

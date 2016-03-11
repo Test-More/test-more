@@ -101,4 +101,77 @@ like(
 
 $_->finish for $three, $two, $one;
 
+is(
+    intercept {
+        my $st = Test2::AsyncSubtest->new(name => 'collapse: empty');
+        $st->finish(collapse => 1);
+    },
+    array {
+        event Ok => {
+            pass => 1,
+            name => 'collapse: empty',
+        };
+        end;
+    },
+    "Got 1 ok event for collapsed/empty subtest"
+);
+
+is(
+    intercept {
+        my $st = Test2::AsyncSubtest->new(name => 'collapse: note only');
+        $st->run(sub { note "inside" });
+        $st->finish(collapse => 1);
+    },
+    array {
+        event Subtest => sub {
+            call pass => 1;
+            call name => 'collapse: note only';
+            call subevents => array {
+                event Note => { message => "inside" };
+                end;
+            };
+        };
+        end;
+    },
+    "Got subtest event containing only the note"
+);
+
+is(
+    intercept {
+        my $st = Test2::AsyncSubtest->new(name => 'collapse: full');
+        $st->run(sub { ok(1, "test") });
+        $st->finish(collapse => 1);
+    },
+    array {
+        event Subtest => sub {
+            call pass => 1;
+            call name => 'collapse: full';
+            call subevents => array {
+                event Ok => { pass => 1 };
+                event Plan => { max => 1 };
+                end;
+            };
+        };
+        end;
+    },
+    "Got full subtest"
+);
+
+is(
+    intercept {
+        my $st = Test2::AsyncSubtest->new(name => 'collapse: no assert, but fail');
+        $st->hub->set_failed(1);
+        $st->finish(collapse => 1);
+    },
+    array {
+        fail_events Ok => sub {
+            call pass => 0;
+            call name => 'collapse: no assert, but fail';
+        };
+        end;
+    },
+    "Failure with no assertion (no test count)"
+);
+
+
 done_testing;
