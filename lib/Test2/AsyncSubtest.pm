@@ -4,7 +4,7 @@ use warnings;
 
 use Test2::IPC;
 
-our $VERSION = '0.000008';
+our $VERSION = '0.000009';
 
 our @CARP_NOT = qw/Test2::Util::HashBase/;
 
