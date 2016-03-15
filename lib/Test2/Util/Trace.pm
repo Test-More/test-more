@@ -2,7 +2,7 @@ package Test2::Util::Trace;
 use strict;
 use warnings;
 
-our $VERSION = '0.000030';
+our $VERSION = '0.000031';
 
 use Test2::Util qw/get_tid/;
 

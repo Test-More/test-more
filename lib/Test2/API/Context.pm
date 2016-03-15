@@ -2,7 +2,7 @@ package Test2::API::Context;
 use strict;
 use warnings;
 
-our $VERSION = '0.000030';
+our $VERSION = '0.000031';
 
 use Carp qw/confess croak longmess/;
 use Scalar::Util qw/weaken/;

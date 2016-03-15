@@ -2,7 +2,7 @@ package Test2::Util::HashBase;
 use strict;
 use warnings;
 
-our $VERSION = '0.000030';
+our $VERSION = '0.000031';
 
 my %ATTRS;
 my %META;
