@@ -2,251 +2,261 @@ package Test2::Workflow::Runner;
 use strict;
 use warnings;
 
-use Test2::Util qw/try/;
+use Test2::API();
+use Test2::Todo();
 
-use Test2::Workflow::Task();
-use Test2::API qw/test2_stack/;
 use List::Util qw/shuffle/;
+use Carp qw/confess/;
 
-use Test2::Util::HashBase qw/verbose subtests rand/;
+use Test2::Util::HashBase qw{
+    stack no_fork no_threads max slots pid tid rand subtests
+};
+
+use overload(
+    'fallback' => 1,
+    '&{}' => \&run
+);
 
 sub init {
     my $self = shift;
 
-    $self->{+RAND} = 1 unless exists $self->{+RAND};
-}
+    $self->{+STACK}    = [];
+    $self->{+SUBTESTS} = [];
 
-sub instance {
-    my $class = shift;
-    my %args = @_;
+    $self->{+PID} = $$;
+    $self->{+TID} = get_tid();
 
-    return $class->new(
-        subtests => 1,
-        %args,
-    );
-}
+    $self->{+NO_FORK}    ||= $ENV{T2_WORKFLOW_NO_FORK}    || !CAN_REALLY_FORK();
+    $self->{+NO_THREADS} ||= $ENV{T2_WORKFLOW_NO_THREADS} || !Test2::AsyncSubtest->CAN_REALLY_THREAD();
 
-sub import {
-    my $class  = shift;
-    my $caller = caller;
+    my @max = grep {defined $_} $self->{+MAX}, $ENV{T2_WORKFLOW_ASYNC};
+    my $max = @max ? min(@max) : 3;
+    $self->{+MAX} = $max;
+    $self->{+SLOTS} = [] if $max;
 
-    require Test2::Workflow::Meta;
-    my $meta = Test2::Workflow::Meta->get($caller) or return;
-    $meta->set_runner($class->instance(@_));
-}
-
-my %SUPPORTED = map {$_ => 1} qw/todo skip mini/;
-sub supported_meta_keys { \%SUPPORTED }
-
-sub verify_meta {
-    my $class = shift;
-    my ($unit) = @_;
-    my $meta = $unit->meta or return;
-    my $supported = $class->supported_meta_keys;
-    my $ctx = $unit->context;
-    for my $k (keys %$meta) {
-        next if $supported->{$k};
-        $ctx->alert("'$k' is not a recognised meta-key");
+    if (my $task = delete $self->{task}) {
+        $self->push_task($task);
     }
 }
 
 sub run {
     my $self = shift;
-    my %params = @_;
-    my $unit     = $params{unit};
-    my $args     = $params{args};
-    my $no_final = $params{no_final};
 
-    $self->verify_meta($unit);
+    my $stack = $self->stack;
 
-    if ($self->{+RAND}) {
-        my $p = $unit->primary;
-        @$p = shuffle @$p if ref($p) eq 'ARRAY';
+    while (@$stack) {
+        $self->cull;
+
+        my ($state) = @$stack;
+        my $task = $state->{task};
+
+        # TODO: $self->start()?
+        unless($state->{started}++) {
+            if (my $skip = $task->{skip}) {
+                $state->{ended}++;
+                Test2::API::test2_stack->top->send(
+                    Test2::Event::Skip->new(
+                        trace  => $task->trace,
+                        reason => $skip,
+                        name   => $task->name,
+                    )
+                );
+                pop @$stack;
+                next;
+            }
+
+            $state->{todo} = Test2::Todo->new(reason => $task->todo)
+                if $task->todo;
+
+            unless ($task->flat) {
+                my $st = Test2::AsyncSubtest->new(name => $task->name);
+                push @{$self->{+SUBTESTS}} => $st;
+                $state->{subtest} = $st;
+
+                my $slot = $self->isolate($state);
+
+                # if we forked/threaded then this state has ended here.
+                if (defined($slot)) {
+                    $state->{ended} = 1;
+                    pop @$stack;
+                    next;
+                }
+
+                $state->{subtest}->start();
+            }
+        }
+
+        # TODO $self->end()?
+        if ($state->{ended}) {
+            $state->{subtest}->stop() if $state->{subtest};
+            $state->{todo}->end() if $state->{todo};
+
+            return if $state->{in_thread};
+            if(my $guard = delete $state->{in_fork}) {
+                $state->{subtest}->detach;
+                $guard->dismiss;
+                exit 0;
+            }
+
+            pop @$stack;
+            next;
+        }
+
+        if ($task->isa('Test2::Workflow::Task::Action')) {
+            # TODO: $task->run?
+            my $ok = eval { $task->code->(); 1 };
+            $task->exception($@) unless $ok;
+            $state->{ended} = 1;
+            next;
+        }
+
+        # TODO: self->iterate?
+        if (!$state->{stage} || $state->{stage} eq 'BEFORE') {
+            $state->{before} //= 0;
+            if (my $add = $task->before->[$state->{before}++]) {
+                if ($add->around) {
+                    my $ok = eval { $add->code->($self); 1 };
+                    my $err = $@;
+                    my $complete = $state->{stage} eq 'AFTER';
+
+                    unless($ok && $complete) {
+                        $state->{ended} = 1;
+                        $state->{stage} = 'AFTER';
+                        $task->exception($ok ? "'around' task failed to continue into the workflow chain.\n" : $err);
+                    }
+                }
+                else {
+                    $self->push_task($add);
+                }
+            }
+            else {
+                $state->{stage} = 'PRIMARY';
+            }
+        }
+        elsif ($state->{stage} eq 'PRIMARY') {
+            unless (defined $state->{order}) {
+                my $rand = defined($task->rand) ? $task->rand : $self->rand;
+                $state->{order} = [0 .. scalar @{$task->primary}];
+                @{$state->{order}} = shuffle(@{$state->{order}})
+                    if $rand;
+            }
+            if (my $num = shift @{$state->{order}}) {
+                $self->push_task($task->primary->[$num]);
+            }
+            else {
+                $state->{stage} = 'AFTER';
+            }
+        }
+        elsif ($state->{stage} eq 'AFTER') {
+            $state->{after} //= 0;
+            if (my $add = $task->after->[$state->{after}++]) {
+                return if $add->around;
+                $self->push_task($add);
+            }
+            else {
+                $state->{ended} = 1;
+            }
+        }
     }
 
-    my $task = Test2::Workflow::Task->new(
-        unit       => $unit,
-        args       => $args,
-        runner     => $self,
-        no_final   => $no_final,
-        no_subtest => !$self->subtests($unit),
-    );
+    $self->finish;
+}
 
-    my ($ok, $err) = try { $self->run_task($task) };
-    test2_stack->top->cull();
+sub push_task {
+    my $self = shift;
+    my ($task) = @_;
 
-    # Report exceptions
-    unless($ok) {
-        my $ctx = $unit->context;
-        $ctx->ok(0, $unit->name, ["Caught Exception: $err"]);
+    push @{$self->{+STACK}} => {
+        task => $task,
+    };
+}
+
+sub isolate {
+    my $self = shift;
+    my ($state) = @_;
+
+    return if $state->{task}->skip;
+
+    my $iso   = $state->{task}->iso;
+    my $async = $state->{task}->async;
+
+    # No need to isolate
+    return undef unless $iso || $async;
+
+    # Cannot isolate
+    unless($self->{+MAX}) {
+        # async does not NEED to be isolated
+        return undef unless $iso;
     }
+
+    # TODO: $self->wait
+    # Wait for a slot, if max is set to 0 then we will not find a slot, instead
+    # we use '0'.  We need to return a defined value to let the stack know that
+    # the task has ended.
+    my $slot = 0;
+    while($self->{+MAX}) {
+        $self->cull;
+        for my $s (1 .. $self->{+MAX}) {
+            my $st = $self->{+SLOTS}->[$s];
+            next if $st && !$st->finished;
+            $self->{+SLOTS}->[$s] = undef;
+            $slot = $s;
+            last;
+        }
+    }
+
+    my $st = $state->{subtest}
+        or confess "Cannot isolate a task without a subtest";
+
+    if (!$self->no_fork) {
+        my $out = $st->fork;
+        if (blessed($out)) {
+            $state->{in_fork} = $out;
+
+            # drop back out to complete the task.
+            return undef;
+        }
+        else {
+            $state->{pid} = $out;
+        }
+    }
+    elsif (!$self->no_thread) {
+        $state->{in_thread} = 1;
+        $state->{thread} = $st->run_thread(\&run, $self);
+        delete $state->{in_thread};
+    }
+    else {
+        $st->finish(skip => "No isolation method available");
+        return 0;
+    }
+
+    if($slot) {
+        $self->{+SLOTS}->[$slot] = $st;
+    }
+    else {
+        $st->finish;
+    }
+
+    return $slot;
+}
+
+sub cull {
+    my $self = shift;
+
+    my $subtests = delete $self->{+SUBTESTS} || return;
+    $self->{+SUBTESTS} = [grep { !($_->ready && ($_->finish || 1)) } @$subtests];
 
     return;
 }
 
-sub run_task {
-    my $class = shift;
-    my ($task) = @_;
-
-    return $task->run();
+sub finish {
+    my $self = shift;
+    $self->cull while @{$self->{+SUBTESTS}};
 }
 
 1;
 
 __END__
 
-=pod
 
-=encoding UTF-8
 
-=head1 NAME
-
-Test2::Workflow::Runner - Simple runner for workflows.
-
-=head1 *** EXPERIMENTAL ***
-
-This distribution is experimental, anything can change at any time!
-
-=head1 DESCRIPTION
-
-This is a basic class for running workflows. This class is intended to be
-subclasses for more fancy/feature rich workflows.
-
-=head1 SYNOPSIS
-
-=head2 SUBCLASS
-
-    package My::Runner;
-    use strict;
-    use warnings;
-
-    use parent 'Test2::Workflow::Runner';
-
-    sub instance {
-        my $class = shift;
-        return $class->new(@_);
-    }
-
-    sub subtest {
-        my $self = shift;
-        my ($unit) = @_;
-        ...
-        return $bool
-    }
-
-    sub verify_meta {
-        my $self = shift;
-        my ($unit) = @_;
-        my $meta = $unit->meta || return;
-        warn "the 'foo' meta attribute is not supported" if $meta->{foo};
-        ...
-    }
-
-    sub run_task {
-        my $self = shift;
-        my ($task) = @_;
-        ...
-        $task->run();
-        ...
-    }
-
-=head2 USE SUBCLASS
-
-    use Test2 qw/... Spec/;
-
-    use My::Runner; # Sets the runner for the Spec plugin.
-
-    ...
-
-=head1 METHODS
-
-=head2 CLASS METHODS
-
-=over 4
-
-=item $class->import()
-
-=item $class->import(@instance_args)
-
-The import method checks the calling class to see if it has an
-L<Test2::Workflow::Meta> instance, if it does then it sets the runner.
-The runner that is set is the result of calling
-C<< $class->instance(@instance_args) >>. The instance_args are optional.
-
-If there is no meta instance for the calling class then import is a no-op.
-
-=item $bool = $class->subtests($unit)
-
-This determines if the units should be run as subtest or flat. The base class
-always returns true for this. This is a hook that allows you to override the
-default behavior.
-
-=item $runner = $class->instance()
-
-=item $runner = $class->instance(@args)
-
-This is a hook allowing you to construct an instance of your runner. The base
-class simply returns the class name as it does not need to be instansiated. If
-your runner needs to maintain state then this can return a blessed instance.
-
-=back
-
-=head2 CLASS AND/OR OBJECT METHODS
-
-These are made to work on the class itself, but should also work just fine on a
-blessed instance if your subclass needs to be instantiated.
-
-=over 4
-
-=item $runner->verify_meta($unit)
-
-This method reads the C<< $unit->meta >> hash and warns about any unrecognised
-keys. Your subclass should override this if it wants to add support for any
-meta-keys.
-
-=item $runner->run(unit => $unit, args => $arg)
-
-=item $runner->run(unit => $unit, args => $arg, no_final => $bool)
-
-Tell the runner to run a unit with the specified args. The args are optional.
-The C<no_final> arg is optional, it should be used on support units that should
-not produce final results (or be a subtest of their own).
-
-=item $runner->run_task($task)
-
-This simply calls C<< $task->run() >>. It is mainly here for subclasses to
-override.
-
-=back
-
-=head1 SOURCE
-
-The source code repository for Test2-Workflow can be found at
-F<http://github.com/Test-More/Test2-Workflow/>.
-
-=head1 MAINTAINERS
-
-=over 4
-
-=item Chad Granum E<lt>exodist@cpan.orgE<gt>
-
-=back
-
-=head1 AUTHORS
-
-=over 4
-
-=item Chad Granum E<lt>exodist@cpan.orgE<gt>
-
-=back
-
-=head1 COPYRIGHT
-
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
-
-This program is free software; you can redistribute it and/or
-modify it under the same terms as Perl itself.
-
-See F<http://dev.perl.org/licenses/>
-
-=cut
