@@ -2,7 +2,7 @@ package Test2::Workflow::BlockBase;
 use strict;
 use warnings;
 
-use Test2::Util::HashBase qw/code frame _info/;
+use Test2::Util::HashBase qw/code frame _info _lines/;
 use Test2::Util::Sub qw/sub_info/;
 use List::Util qw/min max/;
 use Carp qw/croak/;
@@ -34,6 +34,9 @@ sub init {
 
     croak "The 'frame' attribute is required"
         unless $self->{+FRAME};
+
+    $self->{+_LINES} = delete $self->{lines}
+        if $self->{lines};
 }
 
 sub file    { shift->info->{file} }
@@ -47,14 +50,20 @@ sub info {
     unless ($self->{+_INFO}) {
         my $info = sub_info($self->code);
 
-        my $frame = $self->frame;
-        my $file  = $info->{file};
-        my $lines = $info->{lines};
+        my $frame     = $self->frame;
+        my $file      = $info->{file};
+        my $lines     = $info->{lines};
+        my $pre_lines = $self->{+_LINES};
 
-        @$lines = (
-            max(@$lines, $frame->[2]),
-            min(@$lines, $frame->[2]),
-        ) if $frame->[1] eq $file;
+        if ($pre_lines && @$pre_lines) {
+            @$lines = @$pre_lines;
+        }
+        else {
+            @$lines = (
+                max(@$lines, $frame->[2]),
+                min(@$lines, $frame->[2]),
+            ) if $frame->[1] eq $file;
+        }
 
         $self->{+_INFO} = $info;
     }
@@ -72,7 +81,7 @@ sub debug {
     my $file = $self->file;
     my $lines = $self->lines;
 
-    my $line_str = @$lines == 1 ? "line $lines->[0]" : "around lines $lines->[0] -> $lines->[1]";
+    my $line_str = @$lines == 1 ? "around line $lines->[0]" : "around lines $lines->[0] -> $lines->[1]";
     return "at $file $line_str.";
 }
 

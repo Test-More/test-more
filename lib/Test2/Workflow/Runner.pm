@@ -4,6 +4,9 @@ use warnings;
 
 use Test2::API();
 use Test2::Todo();
+use Test2::AsyncSubtest();
+
+use Test2::Util qw/get_tid CAN_REALLY_FORK/;
 
 use List::Util qw/shuffle/;
 use Carp qw/confess/;
@@ -14,7 +17,14 @@ use Test2::Util::HashBase qw{
 
 use overload(
     'fallback' => 1,
-    '&{}' => \&run
+    '&{}' => sub {
+        my $self = shift;
+
+        sub {
+            @_ = ($self);
+            goto &run;
+        }
+    },
 );
 
 sub init {
@@ -47,12 +57,11 @@ sub run {
     while (@$stack) {
         $self->cull;
 
-        my ($state) = @$stack;
-        my $task = $state->{task};
+        my $state = $stack->[-1];
+        my $task  = $state->{task};
 
-        # TODO: $self->start()?
         unless($state->{started}++) {
-            if (my $skip = $task->{skip}) {
+            if (my $skip = $task->skip) {
                 $state->{ended}++;
                 Test2::API::test2_stack->top->send(
                     Test2::Event::Skip->new(
@@ -72,21 +81,15 @@ sub run {
                 my $st = Test2::AsyncSubtest->new(name => $task->name);
                 push @{$self->{+SUBTESTS}} => $st;
                 $state->{subtest} = $st;
+                $state->{subtest}->start();
 
                 my $slot = $self->isolate($state);
 
                 # if we forked/threaded then this state has ended here.
-                if (defined($slot)) {
-                    $state->{ended} = 1;
-                    pop @$stack;
-                    next;
-                }
-
-                $state->{subtest}->start();
+                $state->{ended} = 1 if defined($slot);
             }
         }
 
-        # TODO $self->end()?
         if ($state->{ended}) {
             $state->{subtest}->stop() if $state->{subtest};
             $state->{todo}->end() if $state->{todo};
@@ -103,21 +106,19 @@ sub run {
         }
 
         if ($task->isa('Test2::Workflow::Task::Action')) {
-            # TODO: $task->run?
             my $ok = eval { $task->code->(); 1 };
             $task->exception($@) unless $ok;
             $state->{ended} = 1;
             next;
         }
 
-        # TODO: self->iterate?
         if (!$state->{stage} || $state->{stage} eq 'BEFORE') {
             $state->{before} //= 0;
             if (my $add = $task->before->[$state->{before}++]) {
                 if ($add->around) {
                     my $ok = eval { $add->code->($self); 1 };
                     my $err = $@;
-                    my $complete = $state->{stage} eq 'AFTER';
+                    my $complete = $state->{stage} && $state->{stage} eq 'AFTER';
 
                     unless($ok && $complete) {
                         $state->{ended} = 1;
@@ -130,17 +131,24 @@ sub run {
                 }
             }
             else {
-                $state->{stage} = 'PRIMARY';
+                $state->{stage} = 'VARIANT';
             }
+        }
+        elsif ($state->{stage} eq 'VARIANT') {
+            if (my $v = $task->variant) {
+                $self->push_task($v);
+            }
+            $state->{stage} = 'PRIMARY';
         }
         elsif ($state->{stage} eq 'PRIMARY') {
             unless (defined $state->{order}) {
                 my $rand = defined($task->rand) ? $task->rand : $self->rand;
-                $state->{order} = [0 .. scalar @{$task->primary}];
+                $state->{order} = [0 .. scalar(@{$task->primary}) - 1];
                 @{$state->{order}} = shuffle(@{$state->{order}})
                     if $rand;
             }
-            if (my $num = shift @{$state->{order}}) {
+            my $num = shift @{$state->{order}};
+            if (defined $num) {
                 $self->push_task($task->primary->[$num]);
             }
             else {
@@ -165,6 +173,7 @@ sub run {
 sub push_task {
     my $self = shift;
     my ($task) = @_;
+    confess "WTF?" unless $task;
 
     push @{$self->{+STACK}} => {
         task => $task,
@@ -189,7 +198,6 @@ sub isolate {
         return undef unless $iso;
     }
 
-    # TODO: $self->wait
     # Wait for a slot, if max is set to 0 then we will not find a slot, instead
     # we use '0'.  We need to return a defined value to let the stack know that
     # the task has ended.
@@ -244,7 +252,7 @@ sub cull {
     my $self = shift;
 
     my $subtests = delete $self->{+SUBTESTS} || return;
-    $self->{+SUBTESTS} = [grep { !($_->ready && ($_->finish || 1)) } @$subtests];
+    $self->{+SUBTESTS} = [grep { !(!$_->active && $_->ready && ($_->finish || 1)) } @$subtests];
 
     return;
 }

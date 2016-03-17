@@ -10,7 +10,7 @@ use Carp qw/croak/;
 use base 'Test2::Workflow::BlockBase';
 use Test2::Util::HashBase qw/name flat async iso todo skip scaffold/;
 
-for my $attr (FLAT, ASYNC, TODO, SKIP, SCAFFOLD) {
+for my $attr (FLAT, ISO, ASYNC, TODO, SKIP, SCAFFOLD) {
     my $old = __PACKAGE__->can("set_$attr");
     my $new = sub {
         my $self = shift;
@@ -32,8 +32,17 @@ sub init {
         $self->SUPER::init();
     }
 
+    if (my $take = delete $self->{take}) {
+        $self->{$_} = delete $take->{$_} for ISO, ASYNC, TODO, SKIP;
+        $self->{$_} = $take->{$_} for FLAT, SCAFFOLD, NAME;
+        $take->{+FLAT}     = 1;
+        $take->{+SCAFFOLD} = 1;
+    }
+
     croak "the 'name' attribute is required"
-        unless $self->name;
+        unless $self->{+NAME};
+
+    $self->set_subname($self->package . "::<$self->{+NAME}>");
 
     $self->verify_scaffold;
 }

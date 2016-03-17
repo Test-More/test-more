@@ -2,16 +2,17 @@ package Test2::Workflow;
 use strict;
 use warnings;
 
-our @EXPORT_OK = qw/parse_args current_build all_builds build_group/;
+our @EXPORT_OK = qw/parse_args current_build all_builds build root_build init_root/;
 use base 'Exporter';
 
 use Test2::Workflow::Build;
-use Test2::Workflow::Group;
+use Test2::Workflow::Task::Group;
 
 sub parse_args {
     my %input = @_;
     my $args = delete $input{args};
     my %out;
+    my %props;
 
     my $caller = $out{frame} = $input{caller} || caller(defined $input{level} ? $input{level} : 1);
     $out{lines} = [$caller->[2]];
@@ -19,7 +20,7 @@ sub parse_args {
     for my $arg (@$args) {
         if (my $r = ref($arg)) {
             if ($r eq 'HASH') {
-                $out{props} = $arg;
+                %props = (%props, %$arg);
             }
             elsif ($r eq 'CODE') {
                 $out{code} = $arg
@@ -35,7 +36,7 @@ sub parse_args {
             next;
         }
 
-        die "Name is already set to '$out{name}', cannto set to '$arg', did you specify multiple names at $caller->[1] line $caller->[2].\n"
+        die "Name is already set to '$out{name}', cannot set to '$arg', did you specify multiple names at $caller->[1] line $caller->[2].\n"
             if $out{name};
 
         $out{name} = $arg;
@@ -47,17 +48,32 @@ sub parse_args {
     die "a codeblock must be provided at $caller->[1] line $caller->[2].\n"
         unless $out{code};
 
-    return \%out;
+    return { %props, %out };
 }
 
 {
+    my %ROOT_BUILDS;
     my @BUILD_STACK;
 
+    sub root_build    { $ROOT_BUILDS{$_[0]} }
     sub current_build { @BUILD_STACK ? $BUILD_STACK[-1] : undef }
     sub all_builds    { @BUILD_STACK }
 
-    sub build_group {
-        my $args = parse_args(args => \@_);
+    sub init_root {
+        my ($pkg) = @_;
+        $ROOT_BUILDS{$pkg} ||= Test2::Workflow::Build->new(
+            name  => $pkg,
+            flat  => 1,
+            iso   => 0,
+            async => 0,
+        );
+
+        return $ROOT_BUILDS{$pkg};
+    }
+
+    sub build {
+        my %params = @_;
+        my $args = parse_args(%params);
 
         my $build = Test2::Workflow::Build->new(%$args);
         push @BUILD_STACK => $build;
@@ -69,8 +85,10 @@ sub parse_args {
 
         die $err unless $ok;
 
-        return Test2::Workflow::Group->new_from_build($build);
+        return $build;
     }
 }
 
 1;
+
+__END__
