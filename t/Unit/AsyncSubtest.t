@@ -174,4 +174,17 @@ is(
 );
 
 
+is(
+    intercept {
+        my $st = Test2::AsyncSubtest->new(name => 'skip test');
+        $st->finish(skip => "foo bar");
+    },
+    array {
+        event Skip => { name => 'skip test', reason => 'foo bar' };
+        end;
+    },
+    "Can skip"
+);
+
+
 done_testing;

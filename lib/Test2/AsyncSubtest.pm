@@ -278,10 +278,11 @@ sub finish {
 
     $self->wait;
 
+    my $skip       = $params{skip};
     my $empty      = !@{$self->{+EVENTS}};
     my $no_asserts = !$hub->count;
     my $collapse   = $params{collapse};
-    my $no_plan    = $params{no_plan} || ($collapse && $no_asserts);
+    my $no_plan    = $params{no_plan} || ($collapse && $no_asserts) || $skip;
 
     $hub->finalize($self->trace, !$no_plan)
         unless $hub->no_ending || $hub->ended;
@@ -294,6 +295,11 @@ sub finish {
     return $hub->is_passing if $params{silent};
 
     my $ctx = $self->context;
+
+    if ($skip) {
+        $ctx->skip($self->{+NAME}, $skip);
+        return 1;
+    }
 
     if ($collapse && $empty) {
         $ctx->ok($hub->is_passing, $self->{+NAME});
@@ -655,6 +661,12 @@ subtest (or top level test).
 
 This will prevent a final plan from being added to the subtest for you when
 none is directly specified.
+
+=item skip => "reason"
+
+This will issue an L<Test2::Event::Skip> instead of a subtest. This will throw
+an exception if any events have been seen, or if state implies events have
+occured.
 
 =back
 
