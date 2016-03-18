@@ -12,8 +12,12 @@ use Test2::Util::HashBase qw/before after primary rand variant/;
 sub init {
     my $self = shift;
 
-    $self->{+CODE}  ||= sub { 1 };
-    $self->{+FRAME} ||= ['NONE', 'NONE', 1];
+    if (my $take = delete $self->{take}) {
+        $self->{$_} = delete $take->{$_} for ISO, ASYNC, TODO, SKIP;
+        $self->{$_} = $take->{$_} for FLAT, SCAFFOLD, NAME, CODE, FRAME;
+        $take->{+FLAT}     = 1;
+        $take->{+SCAFFOLD} = 1;
+    }
 
     {
         local $Carp::CarpLevel = $Carp::CarpLevel + 1;

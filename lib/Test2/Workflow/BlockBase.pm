@@ -73,7 +73,10 @@ sub info {
 
 sub trace {
     my $self = shift;
-    return Test2::Util::Trace->new(frame => $self->frame);
+    return Test2::Util::Trace->new(
+        frame  => $self->frame,
+        detail => $self->debug,
+    );
 }
 
 sub debug {
@@ -83,6 +86,12 @@ sub debug {
 
     my $line_str = @$lines == 1 ? "around line $lines->[0]" : "around lines $lines->[0] -> $lines->[1]";
     return "at $file $line_str.";
+}
+
+sub throw {
+    my $self = shift;
+    my ($msg) = @_;
+    die "$msg " . $self->debug . "\n";
 }
 
 1;

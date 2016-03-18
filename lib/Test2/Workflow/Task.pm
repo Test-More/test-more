@@ -6,6 +6,7 @@ use Test2::API();
 use Test2::Event::Exception();
 
 use Carp qw/croak/;
+our @CARP_NOT = qw/Test2::Util::HashBase/;
 
 use base 'Test2::Workflow::BlockBase';
 use Test2::Util::HashBase qw/name flat async iso todo skip scaffold/;
@@ -32,15 +33,11 @@ sub init {
         $self->SUPER::init();
     }
 
-    if (my $take = delete $self->{take}) {
-        $self->{$_} = delete $take->{$_} for ISO, ASYNC, TODO, SKIP;
-        $self->{$_} = $take->{$_} for FLAT, SCAFFOLD, NAME;
-        $take->{+FLAT}     = 1;
-        $take->{+SCAFFOLD} = 1;
-    }
-
-    croak "the 'name' attribute is required"
+    $self->throw("the 'name' attribute is required")
         unless $self->{+NAME};
+
+    $self->throw("the 'flat' attribute cannot be combined with 'iso' or 'async'")
+        if $self->{+FLAT} && ($self->{+ISO} || $self->{+ASYNC});
 
     $self->set_subname($self->package . "::<$self->{+NAME}>");
 

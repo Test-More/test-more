@@ -8,6 +8,8 @@ use Test2::AsyncSubtest();
 
 use Test2::Util qw/get_tid CAN_REALLY_FORK/;
 
+use Scalar::Util qw/blessed/;
+use Time::HiRes qw/sleep/;
 use List::Util qw/shuffle/;
 use Carp qw/confess/;
 
@@ -49,11 +51,19 @@ sub init {
     }
 }
 
+sub is_local {
+    my $self = shift;
+    return 0 unless $self->{+PID} == $$;
+    return 0 unless $self->{+TID} == get_tid();
+    return 1;
+}
+
 sub run {
     my $self = shift;
 
     my $stack = $self->stack;
 
+    my $c = 0;
     while (@$stack) {
         $self->cull;
 
@@ -79,14 +89,17 @@ sub run {
 
             unless ($task->flat) {
                 my $st = Test2::AsyncSubtest->new(name => $task->name);
-                push @{$self->{+SUBTESTS}} => $st;
                 $state->{subtest} = $st;
-                $state->{subtest}->start();
 
                 my $slot = $self->isolate($state);
 
                 # if we forked/threaded then this state has ended here.
-                $state->{ended} = 1 if defined($slot);
+                if (defined($slot)) {
+                    push @{$self->{+SUBTESTS}} => $st unless $st->finished;
+                    $state->{ended} = 1;
+                    pop @$stack;
+                    next;
+                }
             }
         }
 
@@ -103,6 +116,11 @@ sub run {
 
             pop @$stack;
             next;
+        }
+
+        if($state->{subtest} && !$state->{subtest_started}++) {
+            push @{$self->{+SUBTESTS}} => $state->{subtest};
+            $state->{subtest}->start();
         }
 
         if ($task->isa('Test2::Workflow::Task::Action')) {
@@ -202,7 +220,7 @@ sub isolate {
     # we use '0'.  We need to return a defined value to let the stack know that
     # the task has ended.
     my $slot = 0;
-    while($self->{+MAX}) {
+    while($self->{+MAX} && $self->is_local) {
         $self->cull;
         for my $s (1 .. $self->{+MAX}) {
             my $st = $self->{+SLOTS}->[$s];
@@ -211,6 +229,8 @@ sub isolate {
             $slot = $s;
             last;
         }
+        last if $slot;
+        sleep(0.02);
     }
 
     my $st = $state->{subtest}
@@ -228,7 +248,7 @@ sub isolate {
             $state->{pid} = $out;
         }
     }
-    elsif (!$self->no_thread) {
+    elsif (!$self->no_threads) {
         $state->{in_thread} = 1;
         $state->{thread} = $st->run_thread(\&run, $self);
         delete $state->{in_thread};
@@ -252,14 +272,29 @@ sub cull {
     my $self = shift;
 
     my $subtests = delete $self->{+SUBTESTS} || return;
-    $self->{+SUBTESTS} = [grep { !(!$_->active && $_->ready && ($_->finish || 1)) } @$subtests];
+    my @new;
+
+    for my $st (reverse @$subtests) {
+        next if $st->finished;
+        if (!$st->active && $st->ready) {
+            $st->finish;
+            next;
+        }
+
+        unshift @new => $st;
+    }
+
+    $self->{+SUBTESTS} = \@new;
 
     return;
 }
 
 sub finish {
     my $self = shift;
-    $self->cull while @{$self->{+SUBTESTS}};
+    while(@{$self->{+SUBTESTS}}) {
+        $self->cull;
+        sleep(0.02) if @{$self->{+SUBTESTS}};
+    }
 }
 
 1;

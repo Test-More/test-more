@@ -2,8 +2,9 @@ use strict;
 use warnings;
 use Test2::Bundle::Extended;
 use Test2::Tools::Spec;
+use Test2::Workflow::Runner;
 
-ok(1, 'outside');
+use Test2::Util qw/get_tid/;
 
 my $g = describe foo => sub {
     before_all start => sub { ok(1, 'start') };
@@ -15,7 +16,7 @@ my $g = describe foo => sub {
         ok(1, 'al end');
     };
 
-    after_all  end   => sub { ok(1, 'end')   };
+    after_all end => sub { ok(1, 'end')   };
 
     before_each bef => sub { ok(1, 'a') };
 
@@ -40,18 +41,27 @@ my $g = describe foo => sub {
     };
     after_case  ac => sub { ok(1, 'in ac') };
 
-    test bar => sub {
-        ok(1, "inside 1");
+    test bar => {iso => 1}, sub {
+        ok(1, "inside bar pid $$ - tid " . get_tid());
     };
 
     test baz => sub {
-        ok(1, "inside 2");
+        ok(1, "inside baz pid $$ - tid " . get_tid());
+    };
+
+    test bug => {todo => 'a bug'}, sub {
+        ok(0, 'fail');
     };
 };
 
-require Test2::Workflow::Runner;
 my $r = Test2::Workflow::Runner->new(task => $g);
 $r->run;
+
+my $r2 = Test2::Workflow::Runner->new(task => $g, no_fork => 1);
+$r2->run;
+
+my $r3 = Test2::Workflow::Runner->new(task => $g, no_fork => 1, no_threads => 1);
+$r3->run;
 
 done_testing;
 
