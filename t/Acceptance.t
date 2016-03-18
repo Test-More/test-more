@@ -41,16 +41,27 @@ my $g = describe foo => sub {
     };
     after_case  ac => sub { ok(1, 'in ac') };
 
-    test bar => {iso => 1}, sub {
+    tests bar => {iso => 1}, sub {
         ok(1, "inside bar pid $$ - tid " . get_tid());
     };
 
-    test baz => sub {
+    tests baz => sub {
         ok(1, "inside baz pid $$ - tid " . get_tid());
     };
 
-    test bug => {todo => 'a bug'}, sub {
+    tests uhg => sub {
+        my $todo = todo "foo todo";
+        ok(0, 'xxx');
+    };
+
+    tests bug => {todo => 'a bug'}, sub {
         ok(0, 'fail');
+    };
+
+    tests broken => {skip => 'will break things'}, sub {
+        warn "\n\n**** You should not see this! ****\n\n";
+        print "not ok - You should not see this\n";
+        exit 255;
     };
 };
 

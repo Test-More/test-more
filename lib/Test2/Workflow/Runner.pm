@@ -95,10 +95,9 @@ sub run {
 
                 # if we forked/threaded then this state has ended here.
                 if (defined($slot)) {
-                    push @{$self->{+SUBTESTS}} => $st unless $st->finished;
+                    push @{$self->{+SUBTESTS}} => [$st, $task] unless $st->finished;
+                    $state->{subtest} = undef;
                     $state->{ended} = 1;
-                    pop @$stack;
-                    next;
                 }
             }
         }
@@ -119,7 +118,7 @@ sub run {
         }
 
         if($state->{subtest} && !$state->{subtest_started}++) {
-            push @{$self->{+SUBTESTS}} => $state->{subtest};
+            push @{$self->{+SUBTESTS}} => [$state->{subtest}, $task];
             $state->{subtest}->start();
         }
 
@@ -274,14 +273,15 @@ sub cull {
     my $subtests = delete $self->{+SUBTESTS} || return;
     my @new;
 
-    for my $st (reverse @$subtests) {
+    for my $set (reverse @$subtests) {
+        my ($st, $task) = @$set;
         next if $st->finished;
         if (!$st->active && $st->ready) {
-            $st->finish;
+            $st->finish(todo => $task->todo);
             next;
         }
 
-        unshift @new => $st;
+        unshift @new => $set;
     }
 
     $self->{+SUBTESTS} = \@new;

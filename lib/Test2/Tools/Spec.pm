@@ -9,7 +9,7 @@ use Test2::Workflow::Task::Action;
 
 our @EXPORT = qw{
     describe cases
-    test it
+    tests it
     case
     before_all  around_all  after_all
     before_case around_case after_case
@@ -36,9 +36,9 @@ sub describe {
 # Generate a bunch of subs that only have minor differences between them.
 BEGIN {
     my %map = (
-        case => ['add_variant'],
-        test => ['add_primary'],
-        it   => ['add_primary'],
+        case  => ['add_variant'],
+        tests => ['add_primary'],
+        it    => ['add_primary'],
     
         before_all => ['add_setup'],
         after_all  => ['add_teardown'],
@@ -54,7 +54,7 @@ BEGIN {
     );
 
     my %no_scaffold = (
-        test => 1,
+        tests => 1,
         it   => 1,
         case => 1,
     );
