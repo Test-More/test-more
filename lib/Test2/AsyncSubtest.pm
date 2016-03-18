@@ -278,6 +278,7 @@ sub finish {
 
     $self->wait;
 
+    my $todo       = $params{todo};
     my $skip       = $params{skip};
     my $empty      = !@{$self->{+EVENTS}};
     my $no_asserts = !$hub->count;
@@ -312,11 +313,15 @@ sub finish {
             name      => $self->{+NAME},
             buffered  => 1,
             subevents => $self->{+EVENTS},
+            $todo ? (
+                todo => $todo,
+                effective_pass => 1,
+            ) : (),
         );
 
         $ctx->hub->send($e);
 
-        unless ($e->pass) {
+        unless ($e->effective_pass) {
             $ctx->failure_diag($e);
 
             $ctx->diag("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)

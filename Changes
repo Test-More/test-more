@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Inherit listeners and filters (make TODO work)
+    - Add 'todo' option to finish()
+
 0.000010  2016-03-17 23:21:58-07:00 America/Los_Angeles
 
     - Fix bug in 'skip' option when nesting

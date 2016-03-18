@@ -7,7 +7,18 @@ our $VERSION = '0.000011';
 use base 'Test2::Hub::Subtest';
 use Test2::Util::HashBase qw/ast_ids/;
 
-sub inherit { }
+sub inherit {
+    my $self = shift;
+    my ($from, %params) = @_;
+
+    if (my $ls = $from->{+_LISTENERS}) {
+        push @{$self->{+_LISTENERS}} => grep { $_->{inherit} } @$ls;
+    }
+
+    if (my $fs = $from->{+_FILTERS}) {
+        push @{$self->{+_FILTERS}} => grep { $_->{inherit} } @$fs;
+    }
+}
 
 1;
 
