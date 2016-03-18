@@ -296,36 +296,39 @@ sub finish {
 
     my $ctx = $self->context;
 
+    my $pass = 1;
     if ($skip) {
         $ctx->skip($self->{+NAME}, $skip);
-        return 1;
     }
+    else {
+        if ($collapse && $empty) {
+            $ctx->ok($hub->is_passing, $self->{+NAME});
+            return $hub->is_passing;
+        }
 
-    if ($collapse && $empty) {
-        $ctx->ok($hub->is_passing, $self->{+NAME});
-        return $hub->is_passing;
-    }
+        my $e = $ctx->build_event(
+            'Subtest',
+            pass      => $hub->is_passing,
+            name      => $self->{+NAME},
+            buffered  => 1,
+            subevents => $self->{+EVENTS},
+        );
 
-    my $e = $ctx->build_event(
-        'Subtest',
-        pass      => $hub->is_passing,
-        name      => $self->{+NAME},
-        buffered  => 1,
-        subevents => $self->{+EVENTS},
-    );
+        $ctx->hub->send($e);
 
-    $ctx->hub->send($e);
+        unless ($e->pass) {
+            $ctx->failure_diag($e);
 
-    unless ($e->pass) {
-        $ctx->failure_diag($e);
+            $ctx->diag("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
+                if $hub->plan && !$hub->check_plan && !grep {$_->causes_fail} @{$self->{+EVENTS}};
+        }
 
-        $ctx->diag("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
-            if $hub->plan && !$hub->check_plan && !grep {$_->causes_fail} @{$self->{+EVENTS}};
+        $pass = $e->pass;
     }
 
     $_->{+_IN_USE}-- for reverse @{$self->{+STACK}};
 
-    return $e->pass;
+    return $pass;
 }
 
 sub wait {
