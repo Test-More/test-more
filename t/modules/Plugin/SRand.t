@@ -2,10 +2,35 @@ use strict;
 use warnings;
 
 use Test2::Tools::Basic;
-use Test2::API qw/intercept/;
+use Test2::API qw/intercept test2_stack context/;
 use Test2::Tools::Compare qw/array event end is like/;
 use Test2::Tools::Target 'Test2::Plugin::SRand';
 use Test2::Tools::Warnings qw/warning/;
+
+test2_stack->top;
+my ($root) = test2_stack->all;
+
+sub intercept_2(&) {
+    my $code = shift;
+
+    # This is to force loading to happen
+    my $ctx = context();
+
+    my @events;
+
+    my $l = $root->listen(sub {
+        my ($h, $e) = @_;
+        push @events => $e;
+    });
+
+    $code->();
+
+    $root->unlisten($l);
+
+    $ctx->release;
+
+    return \@events;
+}
 
 {
     local %ENV = %ENV;
@@ -15,7 +40,7 @@ use Test2::Tools::Warnings qw/warning/;
     my $caller = [__PACKAGE__, __FILE__, __LINE__, 'xxx'];
 
     is(
-        intercept { $CLASS->import('5555') },
+        intercept_2 { $CLASS->import('5555') },
         array {
             event Note => { message => "Seeded srand with seed '5555' from import arg." };
         },
@@ -25,7 +50,7 @@ use Test2::Tools::Warnings qw/warning/;
     is($CLASS->from, 'import arg', "set from");
 
     my ($events, $warning);
-    $warning = warning { $events = intercept { $CLASS->import() } };
+    $warning = warning { $events = intercept_2 { $CLASS->import() } };
 
     is(
         $events,
@@ -44,7 +69,7 @@ use Test2::Tools::Warnings qw/warning/;
     );
 
     delete $ENV{T2_RAND_SEED};
-    $warning = warning { $events = intercept { $CLASS->import() } };
+    $warning = warning { $events = intercept_2 { $CLASS->import() } };
 
     like(
         $events,

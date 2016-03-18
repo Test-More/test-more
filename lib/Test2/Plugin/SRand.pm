@@ -10,6 +10,7 @@ use Test2::API qw{
     context
     test2_add_callback_post_load
     test2_add_callback_exit
+    test2_stack
 };
 
 my $ADDED_HOOK = 0;
@@ -45,10 +46,16 @@ sub import {
     if ($ENV{HARNESS_IS_VERBOSE} || !$ENV{HARNESS_ACTIVE}) {
         # If the harness is verbose then just display the message for all to
         # see. It is nice info and they already asked for noisy output.
+
         test2_add_callback_post_load(sub {
-            my $ctx = context();
-            $ctx->note("Seeded srand with seed '$SEED' from $FROM.");
-            $ctx->release;
+            test2_stack()->top; # Insure we have at least 1 hub
+            my ($hub) = test2_stack()->all;
+            $hub->send(
+                Test2::Event::Note->new(
+                    trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'SRAND']),
+                    message => "Seeded srand with seed '$SEED' from $FROM.",
+                )
+            );
         });
     }
     elsif (!$ADDED_HOOK++) {

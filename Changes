@@ -1,6 +1,11 @@
 {{$NEXT}}
 
+    - Fix Changes file
+    - Fix bug where SRand plugin comment could appear in subtest
+
 0.000022  2016-03-07 12:18:25-08:00 America/Los_Angeles
+
+    - Ability to disable subtest skip_all flow control
 
 0.000021  2016-03-06 20:24:46-08:00 America/Los_Angeles
 
