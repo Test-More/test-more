@@ -128,8 +128,18 @@ sub send {
     my $hfile = $self->hub_file($hid);
     my $dest = $global ? 'GLOBAL' : $hid;
 
-    $self->abort("hub '$hid' is not available! Failed to send event!\n")
-        unless $global || -f $hfile;
+    $self->abort(<<"    EOT") unless $global || -f $hfile;
+hub '$hid' is not available, failed to send event!
+
+There was an attempt to send an event to a hub in a parent process or thread,
+but that hub appears to be gone. This can happen if you fork, or start a new
+thread from inside subtest, and the parent finishes the subtest before the
+child returns.
+
+This can also happen if the parent process is done testing before the child
+finishes. Test2 normally waits automatically in the root process, but will not
+do so if Test::Builder is loaded for legacy reasons.
+    EOT
 
     my $file = $self->event_file($dest, $e);
     my $ready = File::Spec->canonpath("$file.ready");

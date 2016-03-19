@@ -182,7 +182,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
         print STDERR $@ unless $@ =~ m/^255/;
         $ipc = undef;
     };
-    is($out->{STDERR}, "IPC Fatal Error: hub '12345' is not available! Failed to send event!\n", "Cannot send to missing hub");
+    like($out->{STDERR}, qr/IPC Fatal Error: hub '12345' is not available, failed to send event!/, "Cannot send to missing hub");
 
     $out = capture {
         my $ipc = Test2::IPC::Driver::Files->new();
