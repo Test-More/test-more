@@ -359,7 +359,7 @@ sub wait {
 
     $hub->cull;
 
-    cluck "All children have completed, but we still appear to be pending"
+    cluck "Subtest '$self->{+NAME}': All children have completed, but we still appear to be pending"
         if $hub->is_local && keys %{$self->{+HUB}->ast_ids};
 }
 
