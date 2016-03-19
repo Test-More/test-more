@@ -2,6 +2,7 @@ use strict;
 use warnings;
 use Test2::Bundle::Extended;
 use Test2::Tools::Spec;
+
 use Test2::Workflow::Runner;
 
 use Test2::Util qw/get_tid/;
@@ -63,16 +64,54 @@ my $g = describe foo => sub {
         print "not ok - You should not see this\n";
         exit 255;
     };
+
+    describe nested => {iso => 1}, sub {
+        before_each n1_be => sub { ok(1, 'nested before') };
+        after_each  n1_ae => sub { ok(1, 'nested after') };
+
+        tests n1 => sub { ok(1, 'nested 1') };
+        tests n2 => sub { ok(1, 'nested 2') };
+    };
 };
 
-my $r = Test2::Workflow::Runner->new(task => $g);
-$r->run;
+my $r1 = Test2::Workflow::Runner->new(task => $g, no_threads => 1);
+$r1->run;
 
 my $r2 = Test2::Workflow::Runner->new(task => $g, no_fork => 1);
 $r2->run;
 
 my $r3 = Test2::Workflow::Runner->new(task => $g, no_fork => 1, no_threads => 1);
 $r3->run;
+
+tests on_root => sub { ok(1, "in root") };
+
+{
+    package Foo::Bar;
+
+    sub foo { 'xxx' }
+}
+
+describe in_root => sub {
+    is(Foo::Bar->foo, 'xxx', "not mocked");
+
+    mock 'Foo::Bar' => (
+        override => [
+            foo => sub { 'foo' },
+        ],
+    );
+
+    is(Foo::Bar->foo, 'foo', "mocked");
+
+    tests on_root_a => sub {
+        ok(1, "in root");
+        is(Foo::Bar->foo, 'foo', "mocked");
+    };
+    tests on_root_b => sub { ok(1, "in root") };
+    tests on_root_c => sub { ok(1, "in root") };
+    tests on_root_d => sub { ok(1, "in root") };
+};
+
+is(Foo::Bar->foo, 'xxx', "not mocked");
 
 done_testing;
 

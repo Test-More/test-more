@@ -27,8 +27,6 @@ sub init {
     $self->{+BEFORE}  ||= [];
     $self->{+AFTER}   ||= [];
     $self->{+PRIMARY} ||= [];
-
-    $self->{+RAND} = 1 unless defined $self->{+RAND};
 }
 
 1;

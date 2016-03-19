@@ -41,6 +41,8 @@ sub init {
     $self->{+NO_FORK}    ||= $ENV{T2_WORKFLOW_NO_FORK}    || !CAN_REALLY_FORK();
     $self->{+NO_THREADS} ||= $ENV{T2_WORKFLOW_NO_THREADS} || !Test2::AsyncSubtest->CAN_REALLY_THREAD();
 
+    $self->{+RAND} = 1 unless defined $self->{+RAND};
+
     my @max = grep {defined $_} $self->{+MAX}, $ENV{T2_WORKFLOW_ASYNC};
     my $max = @max ? min(@max) : 3;
     $self->{+MAX} = $max;
@@ -58,6 +60,38 @@ sub is_local {
     return 1;
 }
 
+sub send_event {
+    my $self = shift;
+    my ($type, %params) = @_;
+
+    my $class;
+    if ($type =~ m/\+(.*)$/) {
+        $class = $1;
+    }
+    else {
+        $class = "Test2::Event::$type";
+    }
+
+    my $e = $class->new(
+        trace => Test2::Util::Trace->new(frame => [caller(0)]),
+        %params,
+    );
+
+    Test2::API::test2_stack()->top()->send($e);
+}
+
+sub current_subtest {
+    my $self = shift;
+    my $stack = $self->{+STACK} or return undef;
+
+    for my $state (reverse @$stack) {
+        next unless $state->{subtest};
+        return $state->{subtest};
+    }
+
+    return undef;
+}
+
 sub run {
     my $self = shift;
 
@@ -73,12 +107,10 @@ sub run {
         unless($state->{started}++) {
             if (my $skip = $task->skip) {
                 $state->{ended}++;
-                Test2::API::test2_stack->top->send(
-                    Test2::Event::Skip->new(
-                        trace  => $task->trace,
-                        reason => $skip,
-                        name   => $task->name,
-                    )
+                $self->send_event(
+                    'Skip',
+                    reason => $skip,
+                    name   => $task->name,
                 );
                 pop @$stack;
                 next;
@@ -123,9 +155,17 @@ sub run {
         }
 
         if ($task->isa('Test2::Workflow::Task::Action')) {
-            my $ok = eval { $task->code->(); 1 };
+            $state->{PID} = $$;
+            my $ok = eval { $task->code->($self); 1 };
+
+            unless ($state->{PID} == $$) {
+                print STDERR "Task '" . $task->name . "' started in pid $state->{PID}, but ended in pid $$, did you forget to exit after forking?\n";
+                exit 255;
+            }
+
             $task->exception($@) unless $ok;
             $state->{ended} = 1;
+
             next;
         }
 
@@ -133,9 +173,15 @@ sub run {
             $state->{before} //= 0;
             if (my $add = $task->before->[$state->{before}++]) {
                 if ($add->around) {
+                    $state->{PID} = $$;
                     my $ok = eval { $add->code->($self); 1 };
                     my $err = $@;
                     my $complete = $state->{stage} && $state->{stage} eq 'AFTER';
+
+                    unless ($state->{PID} == $$) {
+                        print STDERR "Task '" . $task->name . "' started in pid $state->{PID}, but ended in pid $$, did you forget to exit after forking?\n";
+                        exit 255;
+                    }
 
                     unless($ok && $complete) {
                         $state->{ended} = 1;
@@ -197,6 +243,18 @@ sub push_task {
     };
 }
 
+sub add_mock {
+    my $self = shift;
+    my ($mock) = @_;
+    my $stack = $self->{+STACK};
+
+    confess "Nothing on the stack!"
+        unless $stack && @$stack;
+
+    my ($state) = grep { !$_->{task}->scaffold} reverse @$stack;
+    push @{$state->{mocks}} => $mock;
+}
+
 sub isolate {
     my $self = shift;
     my ($state) = @_;
@@ -244,13 +302,22 @@ sub isolate {
             return undef;
         }
         else {
+            $self->send_event(
+                'Note',
+                message => "Forked PID $out to run: " . $state->{task}->name,
+            );
             $state->{pid} = $out;
         }
     }
     elsif (!$self->no_threads) {
         $state->{in_thread} = 1;
-        $state->{thread} = $st->run_thread(\&run, $self);
+        my $thr = $st->run_thread(\&run, $self);
+        $state->{thread} = $thr;
         delete $state->{in_thread};
+        $self->send_event(
+            'Note',
+            message => "Started Thread-ID " . $thr->tid . " to run: " . $state->{task}->name,
+        );
     }
     else {
         $st->finish(skip => "No isolation method available");
@@ -273,6 +340,7 @@ sub cull {
     my $subtests = delete $self->{+SUBTESTS} || return;
     my @new;
 
+    # Cull subtests in reverse order, Nested subtests end before their parents.
     for my $set (reverse @$subtests) {
         my ($st, $task) = @$set;
         next if $st->finished;
@@ -281,6 +349,7 @@ sub cull {
             next;
         }
 
+        # Use unshift to preserve order.
         unshift @new => $set;
     }
 
@@ -298,8 +367,3 @@ sub finish {
 }
 
 1;
-
-__END__
-
-
-

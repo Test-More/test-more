@@ -60,12 +60,13 @@ sub parse_args {
     sub all_builds    { @BUILD_STACK }
 
     sub init_root {
-        my ($pkg) = @_;
+        my ($pkg, %args) = @_;
         $ROOT_BUILDS{$pkg} ||= Test2::Workflow::Build->new(
             name  => $pkg,
             flat  => 1,
             iso   => 0,
             async => 0,
+            %args,
         );
 
         return $ROOT_BUILDS{$pkg};
@@ -78,8 +79,21 @@ sub parse_args {
         my $build = Test2::Workflow::Build->new(%$args);
         push @BUILD_STACK => $build;
 
+        my $st;
+        unless ($args->{flat}) {
+            $st = Test2::AsyncSubtest->new(name => "$args->{name} (During Build)");
+            $st->start;
+        }
+
         my $ok = eval { $args->{code}->(); 1 };
         my $err = $@;
+
+        if ($st) {
+            $st->stop;
+            $st->finish(collapse => 1, silent => !(@{$st->events} || $st->hub->failed) );
+        }
+
+        delete $build->{stash};
 
         pop @BUILD_STACK;
 

@@ -12,6 +12,7 @@ BEGIN {
         setup           teardown
         variant_setup   variant_teardown
         primary_setup   primary_teardown
+        stash
     };
 }
 
@@ -38,8 +39,20 @@ for my $field (@BUILD_FIELDS) {
     *{"add_$field"} = $code;
 }
 
+sub populated {
+    my $self = shift;
+    for my $field (@BUILD_FIELDS) {
+        return 1 if @{$self->{$field}};
+    }
+    return 0;
+}
+
 sub compile {
     my $self = shift;
+
+    die "Workflow build '$self->{+NAME}' is empty " . $self->debug . "\n"
+        unless $self->populated;
+
     my ($primary_setup, $primary_teardown) = @_;
     $primary_setup    ||= [];
     $primary_teardown ||= [];
