@@ -357,10 +357,10 @@ sub wait {
         }
     }
 
-    cluck "All children have completed, but we still appear to be pending!"
-        if $self->pending;
-
     $hub->cull;
+
+    cluck "All children have completed, but we still appear to be pending"
+        if $hub->is_local && keys %{$self->{+HUB}->ast_ids};
 }
 
 sub fork {
