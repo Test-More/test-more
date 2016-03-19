@@ -91,7 +91,7 @@ C<Carp::longmess> to add a stack trace to the message.
 =item $false = $self->use_shm
 
 The base class always returns false for this method. You may override it if you
-wish to use the SHM made avilable in L<Test2::API>/L<Test2::API::Instance>.
+wish to use the SHM made available in L<Test2::API>/L<Test2::API::Instance>.
 
 =back
 
@@ -257,7 +257,7 @@ True if you want to make use of the L<Test2::API>/L<Test2::API::Instance> SHM.
 
 =item $bites = $ipc->shm_size()
 
-Use this to customize the size of the shm space. There are no guarentees about
+Use this to customize the size of the shm space. There are no guarantees about
 what the size will be if you do not implement this.
 
 =back

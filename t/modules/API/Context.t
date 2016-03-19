@@ -6,7 +6,7 @@ BEGIN { require "t/tools.pl" };
 use Test2::API qw{
     context intercept
     test2_stack
-    test2_add_callback_context_aquire
+    test2_add_callback_context_acquire
     test2_add_callback_context_init
     test2_add_callback_context_release
 };
@@ -160,8 +160,8 @@ my $ref2 = $hub->add_context_release(sub { die "Bad Arg" unless ref($_[0]) eq 'T
 test2_add_callback_context_init(sub {      die "Bad Arg" unless ref($_[0]) eq 'Test2::API::Context'; push @hooks => 'global_init'    });
 test2_add_callback_context_release(sub {   die "Bad Arg" unless ref($_[0]) eq 'Test2::API::Context'; push @hooks => 'global_release' });
 
-my $ref3 = $hub->add_context_aquire(sub { die "Bad Arg" unless ref($_[0]) eq 'HASH'; push @hooks => 'hub_aquire'     });
-test2_add_callback_context_aquire(sub {   die "Bad Arg" unless ref($_[0]) eq 'HASH'; push @hooks => 'global_aquire'  });
+my $ref3 = $hub->add_context_acquire(sub { die "Bad Arg" unless ref($_[0]) eq 'HASH'; push @hooks => 'hub_acquire'     });
+test2_add_callback_context_acquire(sub {   die "Bad Arg" unless ref($_[0]) eq 'HASH'; push @hooks => 'global_acquire'  });
 
 sub {
     push @hooks => 'start';
@@ -185,23 +185,23 @@ sub {
 
 $hub->remove_context_init($ref1);
 $hub->remove_context_release($ref2);
-$hub->remove_context_aquire($ref3);
+$hub->remove_context_acquire($ref3);
 @{Test2::API::_context_init_callbacks_ref()} = ();
 @{Test2::API::_context_release_callbacks_ref()} = ();
-@{Test2::API::_context_aquire_callbacks_ref()} = ();
+@{Test2::API::_context_acquire_callbacks_ref()} = ();
 
 is_deeply(
     \@hooks,
     [qw{
         start
-        global_aquire
-        hub_aquire
+        global_acquire
+        hub_acquire
         global_init
         hub_init
         ctx_init
         deep
-        global_aquire
-        hub_aquire
+        global_acquire
+        hub_acquire
         release_deep
         release_parent
         ctx_release_deep
@@ -210,8 +210,8 @@ is_deeply(
         global_release
         released_all
         new
-        global_aquire
-        hub_aquire
+        global_acquire
+        hub_acquire
         global_init
         hub_init
         ctx_init2

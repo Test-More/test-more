@@ -18,7 +18,7 @@ use Test2::Util::HashBase qw{
     _listeners
     _follow_ups
     _formatter
-    _context_aquire
+    _context_acquire
     _context_init
     _context_release
 
@@ -182,22 +182,24 @@ sub follow_up {
     push @{$self->{+_FOLLOW_UPS}} => $sub;
 }
 
-sub add_context_aquire {
+*add_context_aquire = \&add_context_acquire;
+sub add_context_acquire {
     my $self = shift;
     my ($sub) = @_;
 
-    croak "add_context_aquire only takes coderefs for arguments, got '$sub'"
+    croak "add_context_acquire only takes coderefs for arguments, got '$sub'"
         unless ref $sub && ref $sub eq 'CODE';
 
-    push @{$self->{+_CONTEXT_AQUIRE}} => $sub;
+    push @{$self->{+_CONTEXT_ACQUIRE}} => $sub;
 
     $sub; # Intentional return.
 }
 
-sub remove_context_aquire {
+*remove_context_aquire = \&remove_context_acquire;
+sub remove_context_acquire {
     my $self = shift;
     my %subs = map {$_ => $_} @_;
-    @{$self->{+_CONTEXT_AQUIRE}} = grep { !$subs{$_} == $_ } @{$self->{+_CONTEXT_AQUIRE}};
+    @{$self->{+_CONTEXT_ACQUIRE}} = grep { !$subs{$_} == $_ } @{$self->{+_CONTEXT_ACQUIRE}};
 }
 
 sub add_context_init {
@@ -634,20 +636,20 @@ only argument to your codeblock will be a L<Test2::Util::Trace> instance.
 follow_up subs are called only once, ether when done_testing is called, or in
 an END block.
 
-=item $sub = $hub->add_context_aquire(sub { ... });
+=item $sub = $hub->add_context_acquire(sub { ... });
 
-Add a callback that will be called every time someone tries to aquire a
+Add a callback that will be called every time someone tries to acquire a
 context. It gets a single argument, a reference the the hash of parameters
 being used the construct the context. This is your chance to change the
 parameters by directly altering the hash.
 
-    test2_add_callback_context_aquire(sub {
+    test2_add_callback_context_acquire(sub {
         my $params = shift;
         $params->{level}++;
     });
 
 This is a very scary API function. Please do not use this unless you need to.
-This is here for L<Test::Builder> and backwards compatability. This has you
+This is here for L<Test::Builder> and backwards compatibility. This has you
 directly manipulate the hash instead of returning a new one for performance
 reasons.
 
@@ -655,9 +657,9 @@ B<Note> Using this hook could have a huge performance impact.
 
 The coderef you provide is returned and can be used to remove the hook later.
 
-=item $hub->remove_context_aquire($sub);
+=item $hub->remove_context_acquire($sub);
 
-This can be used to remove a context aquire hook.
+This can be used to remove a context acquire hook.
 
 =item $sub = $hub->add_context_init(sub { ... });
 
@@ -739,7 +741,7 @@ number can be larger than the count).
 =item $bool = $hub->ended
 
 True if the testing has ended. This MAY return the stack frame of the tool that
-ended the test, but that is not guarenteed.
+ended the test, but that is not guaranteed.
 
 =item $bool = $hub->is_passing
 

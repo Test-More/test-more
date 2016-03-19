@@ -29,7 +29,7 @@ use Test2::Util::HashBase qw{
 
     exit_callbacks
     post_load_callbacks
-    context_aquire_callbacks
+    context_acquire_callbacks
     context_init_callbacks
     context_release_callbacks
 };
@@ -80,7 +80,7 @@ sub reset {
 
     $self->{+EXIT_CALLBACKS}            = [];
     $self->{+POST_LOAD_CALLBACKS}       = [];
-    $self->{+CONTEXT_AQUIRE_CALLBACKS}  = [];
+    $self->{+CONTEXT_ACQUIRE_CALLBACKS} = [];
     $self->{+CONTEXT_INIT_CALLBACKS}    = [];
     $self->{+CONTEXT_RELEASE_CALLBACKS} = [];
 
@@ -164,16 +164,16 @@ sub add_formatter {
     carp "Formatter $formatter loaded too late to be used as the global formatter";
 }
 
-sub add_context_aquire_callback {
+sub add_context_acquire_callback {
     my $self =  shift;
     my ($code) = @_;
 
     my $rtype = reftype($code) || "";
 
-    confess "Context-aquire callbacks must be coderefs"
+    confess "Context-acquire callbacks must be coderefs"
         unless $code && $rtype eq 'CODE';
 
-    push @{$self->{+CONTEXT_AQUIRE_CALLBACKS}} => $code;
+    push @{$self->{+CONTEXT_ACQUIRE_CALLBACKS}} => $code;
 }
 
 sub add_context_init_callback {
@@ -502,9 +502,9 @@ stored and executed later when C<load()> is called.
 
 Get a hashref of all active contexts keyed by hub id.
 
-=item $arrayref = $obj->context_aquire_callbacks
+=item $arrayref = $obj->context_acquire_callbacks
 
-Get all context aquire callbacks.
+Get all context acquire callbacks.
 
 =item $arrayref = $obj->context_init_callbacks
 
@@ -576,7 +576,7 @@ Get the list of IPC drivers.
 
 Add an IPC driver to the list. The most recently added IPC driver will become
 the global one during initialization. If a driver is added after initialization
-has occured a warning will be generated:
+has occurred a warning will be generated:
 
     "IPC driver $driver loaded too late to be used as the global ipc driver"
 
@@ -637,7 +637,7 @@ Check if a formatter has been set.
 =item $obj->add_formatter($obj)
 
 Add a formatter. The most recently added formatter will become the global one
-during initialization. If a formatter is added after initialization has occured
+during initialization. If a formatter is added after initialization has occurred
 a warning will be generated:
 
     "Formatter $formatter loaded too late to be used as the global formatter"

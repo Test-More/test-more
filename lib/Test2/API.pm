@@ -45,11 +45,13 @@ our @EXPORT_OK = qw{
     test2_no_wait
 
     test2_add_callback_context_aquire
+    test2_add_callback_context_acquire
     test2_add_callback_context_init
     test2_add_callback_context_release
     test2_add_callback_exit
     test2_add_callback_post_load
     test2_list_context_aquire_callbacks
+    test2_list_context_acquire_callbacks
     test2_list_context_init_callbacks
     test2_list_context_release_callbacks
     test2_list_exit_callbacks
@@ -91,10 +93,10 @@ sub import {
     goto &import;
 }
 
-my $STACK      = $INST->stack;
-my $CONTEXTS   = $INST->contexts;
-my $INIT_CBS   = $INST->context_init_callbacks;
-my $AQUIRE_CBS = $INST->context_aquire_callbacks;
+my $STACK       = $INST->stack;
+my $CONTEXTS    = $INST->contexts;
+my $INIT_CBS    = $INST->context_init_callbacks;
+my $ACQUIRE_CBS = $INST->context_acquire_callbacks;
 
 sub test2_init_done { $INST->finalized }
 sub test2_load_done { $INST->loaded }
@@ -107,12 +109,14 @@ sub test2_no_wait {
     $INST->no_wait;
 }
 
-sub test2_add_callback_context_aquire    { $INST->add_context_aquire_callback(@_) }
+sub test2_add_callback_context_acquire   { $INST->add_context_acquire_callback(@_) }
+sub test2_add_callback_context_aquire    { $INST->add_context_acquire_callback(@_) }
 sub test2_add_callback_context_init      { $INST->add_context_init_callback(@_) }
 sub test2_add_callback_context_release   { $INST->add_context_release_callback(@_) }
 sub test2_add_callback_exit              { $INST->add_exit_callback(@_) }
 sub test2_add_callback_post_load         { $INST->add_post_load_callback(@_) }
-sub test2_list_context_aquire_callbacks  { @{$INST->context_aquire_callbacks} }
+sub test2_list_context_aquire_callbacks  { @{$INST->context_acquire_callbacks} }
+sub test2_list_context_acquire_callbacks { @{$INST->context_acquire_callbacks} }
 sub test2_list_context_init_callbacks    { @{$INST->context_init_callbacks} }
 sub test2_list_context_release_callbacks { @{$INST->context_release_callbacks} }
 sub test2_list_exit_callbacks            { @{$INST->exit_callbacks} }
@@ -140,7 +144,7 @@ sub test2_formatter_set {
 
 # Private, for use in Test2::API::Context
 sub _contexts_ref                  { $INST->contexts }
-sub _context_aquire_callbacks_ref  { $INST->context_aquire_callbacks }
+sub _context_acquire_callbacks_ref { $INST->context_acquire_callbacks }
 sub _context_init_callbacks_ref    { $INST->context_init_callbacks }
 sub _context_release_callbacks_ref { $INST->context_release_callbacks }
 
@@ -209,8 +213,8 @@ sub context {
     my $hid     = $hub->{hid};
     my $current = $CONTEXTS->{$hid};
 
-    $_->(\%params) for @$AQUIRE_CBS;
-    map $_->(\%params), @{$hub->{_context_aquire}} if $hub->{_context_aquire};
+    $_->(\%params) for @$ACQUIRE_CBS;
+    map $_->(\%params), @{$hub->{_context_acquire}} if $hub->{_context_acquire};
 
     my $level = 1 + $params{level};
     my ($pkg, $file, $line, $sub) = caller($level);
@@ -778,7 +782,7 @@ Usage:
     }
 
 Using this inside your test tool takes care of a lot of boilerplate for you. It
-will ensure a context is aquired. It will capture and rethrow any exception. It
+will ensure a context is acquired. It will capture and rethrow any exception. It
 will insure the context is released when you are done. It preserves the
 subroutine call context (array, scalar, void).
 
@@ -815,9 +819,9 @@ Useage:
 =back
 
 This tool will hide a context for the provided block of code. This means any
-tools run inside the block will get a completely new context if they aquire
+tools run inside the block will get a completely new context if they acquire
 one. The new context will be inherited by tools nested below the one that
-aquired it.
+acquired it.
 
 This will normally hide the current context for the top hub. If you need to
 hide the context for a different hub you can pass in the optional C<$hid>
@@ -877,7 +881,7 @@ parameters hash. The param hash will be used for hub construction (with the
 
 If this is true, or a hashref with a true value for the 'buffered' key, then
 the subtest will be buffered. In a buffered subtest the child events are hidden
-from the formatter, the formatter will only recieve the final
+from the formatter, the formatter will only receive the final
 L<Test2:Event::Subtest> event. In an unbuffered subtest the formatter will see
 all events as they happen, as well as the final one.
 
@@ -966,37 +970,37 @@ Add a callback that will be called when Test2 is finished loading. This
 means the callback will be run once, the first time a context is obtained.
 If Test2 has already finished loading then the callback will be run immedietly.
 
-=item test2_add_callback_context_aquire(sub { ... })
+=item test2_add_callback_context_acquire(sub { ... })
 
-Add a callback that will be called every time someone tries to aquire a
+Add a callback that will be called every time someone tries to acquire a
 context. This will be called on EVERY call to C<context()>. It gets a single
 argument, a reference the the hash of parameters being used the construct the
 context. This is your chance to change the parameters by directly altering the
 hash.
 
-    test2_add_callback_context_aquire(sub {
+    test2_add_callback_context_acquire(sub {
         my $params = shift;
         $params->{level}++;
     });
 
 This is a very scary API function. Please do not use this unless you need to.
-This is here for L<Test::Builder> and backwards compatability. This has you
+This is here for L<Test::Builder> and backwards compatibility. This has you
 directly manipulate the hash instead of returning a new one for performance
 reasons.
 
 =item test2_add_callback_context_init(sub { ... })
 
 Add a callback that will be called every time a new context is created. The
-callback will recieve the newly created context as its only argument.
+callback will receive the newly created context as its only argument.
 
 =item test2_add_callback_context_release(sub { ... })
 
 Add a callback that will be called every time a context is released. The
-callback will recieve the released context as its only argument.
+callback will receive the released context as its only argument.
 
-=item @list = test2_list_context_aquire_callbacks()
+=item @list = test2_list_context_acquire_callbacks()
 
-Return all the context aquire callback references.
+Return all the context acquire callback references.
 
 =item @list = test2_list_context_init_callbacks()
 

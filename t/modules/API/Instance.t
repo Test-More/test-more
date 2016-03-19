@@ -29,7 +29,7 @@ is_deeply(
 
         exit_callbacks            => [],
         post_load_callbacks       => [],
-        context_aquire_callbacks  => [],
+        context_acquire_callbacks => [],
         context_init_callbacks    => [],
         context_release_callbacks => [],
 
@@ -63,7 +63,7 @@ is_deeply(
 
         exit_callbacks            => [],
         post_load_callbacks       => [],
-        context_aquire_callbacks  => [],
+        context_acquire_callbacks => [],
         context_init_callbacks    => [],
         context_release_callbacks => [],
 

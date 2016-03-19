@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Apply spelling fixes (aquire->acquire) #11
+
 0.000030  2016-03-15 08:04:21-07:00 America/Los_Angeles
 
     - Re-Add transition document

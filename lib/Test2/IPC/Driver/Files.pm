@@ -310,7 +310,7 @@ This is an experimental release. Using this right now is not recommended.
 
 This is the default, and fallback concurrency model for L<Test2>. This
 sends events between processes and threads using serialized files in a
-temporary directory. This is not particularily fast, but it works everywhere.
+temporary directory. This is not particularly fast, but it works everywhere.
 
 =head1 SYNOPSIS
 

@@ -466,7 +466,7 @@ This will release the context. This runs cleanup tasks, and several important
 hooks. It will also restore C<$!>, C<$?>, and C<$@> to what they were when the
 context was created.
 
-B<Note:> If a context is aquired more than once an internal refcount is kept.
+B<Note:> If a context is acquired more than once an internal refcount is kept.
 C<release()> decrements the ref count, none of the other actions of
 C<release()> will occur unless the refcount hits 0. This means only the last
 call to C<release()> will reset C<$?>, C<$!>, C<$@>,and run the cleanup tasks.

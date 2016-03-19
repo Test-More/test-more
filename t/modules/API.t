@@ -238,25 +238,25 @@ sub {
 
 my $sub = sub { };
 
-Test2::API::test2_add_callback_context_aquire($sub);
+Test2::API::test2_add_callback_context_acquire($sub);
 Test2::API::test2_add_callback_context_init($sub);
 Test2::API::test2_add_callback_context_release($sub);
 Test2::API::test2_add_callback_exit($sub);
 Test2::API::test2_add_callback_post_load($sub);
 
-is((grep { $_ == $sub } Test2::API::test2_list_context_aquire_callbacks()),  1, "got the one instance of the hook");
+is((grep { $_ == $sub } Test2::API::test2_list_context_acquire_callbacks()), 1, "got the one instance of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_context_init_callbacks()),    1, "got the one instance of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_context_release_callbacks()), 1, "got the one instance of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_exit_callbacks()),            1, "got the one instance of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_post_load_callbacks()),       1, "got the one instance of the hook");
 
-Test2::API::test2_add_callback_context_aquire($sub);
+Test2::API::test2_add_callback_context_acquire($sub);
 Test2::API::test2_add_callback_context_init($sub);
 Test2::API::test2_add_callback_context_release($sub);
 Test2::API::test2_add_callback_exit($sub);
 Test2::API::test2_add_callback_post_load($sub);
 
-is((grep { $_ == $sub } Test2::API::test2_list_context_aquire_callbacks()),  2, "got the two instances of the hook");
+is((grep { $_ == $sub } Test2::API::test2_list_context_acquire_callbacks()), 2, "got the two instances of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_context_init_callbacks()),    2, "got the two instances of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_context_release_callbacks()), 2, "got the two instances of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_exit_callbacks()),            2, "got the two instances of the hook");

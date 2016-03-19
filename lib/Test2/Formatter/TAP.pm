@@ -369,7 +369,7 @@ order to do this you use the C<register_event()> class method.
 
 =head2 EVENT METHODS
 
-All these methods require the event itself. Optinally they can all except a
+All these methods require the event itself. Optionally they can all except a
 test number.
 
 All methods return a list of array-refs. Each array-ref will have 2 items, the

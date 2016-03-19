@@ -34,7 +34,7 @@ Some test modules would replace the Test::Builder singleton instance with their
 own instance or subclass. This was usually done to intercept, or modify results
 as they happened.
 
-The Test::Builder singleton is now a simple compatability wrapper around
+The Test::Builder singleton is now a simple compatibility wrapper around
 Test2. The Test::Builder singleton is no longer the central place for
 results. Most results bypass the Test::Builder singleton completely, which
 breaks and behavior intended when replacing the singleton.
@@ -145,7 +145,7 @@ L<Test2::Suite>.
 Every single tool in the chain from this, to C<ok>, to anything C<ok> calls
 needs to increment the C<$Level> variable. When an error occurs Test::Builder
 will do a trace to the stack frame determined by C<$Level>, and report that
-file+line as the one where the error occured. If you or any other tool you use
+file+line as the one where the error occurred. If you or any other tool you use
 forgets to set C<$Level> then errors will be reported to the wrong place.
 
 =head2 TEST2

@@ -212,7 +212,7 @@ Setter, used to set the value of the C<foo> field.
 
 =item FOO()
 
-Constant, returs the field C<foo>'s key into the class hashref. Subclasses will
+Constant, returns the field C<foo>'s key into the class hashref. Subclasses will
 also get this function as a constant, not simply a method, that means it is
 copied into the subclass namespace.
 
