@@ -18,32 +18,41 @@ push @EXPORT_OK => qw{include_workflow include_workflows};
 my %HANDLED;
 sub import {
     my $class = shift;
-    my %params = @_;
     my @caller = caller(0);
-
-    my $import = delete $params{import};
 
     my %root_args;
     my %runner_args;
-    for my $arg (keys %params) {
-        if (Test2::Workflow::Runner->can($arg)) {
-            $runner_args{$arg} = delete $params{$arg};
-        }
-        elsif (Test2::Workflow::Task::Group->can($arg)) {
-            $root_args{$arg} = delete $params{$arg};
-        }
-        elsif ($arg eq 'root_args') {
-            %root_args = (%root_args, %{delete $params{$arg}});
-        }
-        elsif ($arg eq 'runner_args') {
-            %runner_args = (%runner_args, %{delete $params{$arg}});
+    my @import;
+    while (my $arg = shift @_) {
+        if ($arg =~ s/^-//) {
+            my $val = shift @_;
+
+            if (Test2::Workflow::Runner->can($arg)) {
+                $runner_args{$arg} = $val;
+            }
+            elsif (Test2::Workflow::Task::Group->can($arg)) {
+                $root_args{$arg} = $val;
+            }
+            elsif ($arg eq 'root_args') {
+                %root_args = (%root_args, %$val);
+            }
+            elsif ($arg eq 'runner_args') {
+                %runner_args = (%runner_args, %$val);
+            }
+            else {
+                croak "Unrecognized arg: $arg";
+            }
         }
         else {
-            croak "Unrecognized arg: $arg";
+            push @import => $arg;
         }
     }
 
-    unless ($HANDLED{$caller[0]}++) {
+    if ($HANDLED{$caller[0]}++) {
+        croak "Package $caller[0] has already been initialized"
+            if keys(%root_args) || keys(%runner_args);
+    }
+    else {
         my $root = init_root(
             $caller[0],
             frame => \@caller,
@@ -94,7 +103,7 @@ sub import {
         );
     }
 
-    Importer->import_into($class, $caller[0], $import ? @$import : ());
+    Importer->import_into($class, $caller[0], @import);
 }
 
 {

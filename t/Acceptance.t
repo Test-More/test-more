@@ -1,8 +1,7 @@
 use strict;
 use warnings;
 use Test2::Bundle::Extended;
-use Test2::Tools::Spec;
-use Test2::Tools::Spec import => [qw/include_workflow/];
+use Test2::Tools::Spec qw/:DEFAULT include_workflow/;
 
 use Test2::Workflow::Runner;
 
@@ -138,7 +137,7 @@ describe skip_desc => {skip => 'cause'}, sub {
     exit 255;
 };
 
-eval { 
+eval {
     describe dies => sub {
         ok(1, 'xxx');
         ok(1, 'xxx');
@@ -149,11 +148,11 @@ eval {
 like(
     $@,
     check_set(
-		qr/^Exception in build 'dies' with 2 unseen event\(s\)\.$/m,
-		qr{^xxx at .*Acceptance\.t line \d+\.$}m,
-		qr/^Overview of unseen events:$/m,
-		qr/^    Test2::Event::Ok at .*Acceptance\.t line \d+$/m,
-		qr/^    Test2::Event::Ok at .*Acceptance\.t line \d+/m,
+        qr/^Exception in build 'dies' with 2 unseen event\(s\)\.$/m,
+        qr{^xxx at .*Acceptance\.t line \d+\.$}m,
+        qr/^Overview of unseen events:$/m,
+        qr/^    Test2::Event::Ok at .*Acceptance\.t line \d+$/m,
+        qr/^    Test2::Event::Ok at .*Acceptance\.t line \d+/m,
     ),
     "Error is as expected"
 );
