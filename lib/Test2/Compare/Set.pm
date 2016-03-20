@@ -118,7 +118,7 @@ checks.
 =head1 DESCRIPTION
 
 This module is used by the C<check_set> function in the
-L<Test2::Plugin::Compare> plugin.
+L<Test2::Tools::Compare> plugin.
 
 =head1 SOURCE
 

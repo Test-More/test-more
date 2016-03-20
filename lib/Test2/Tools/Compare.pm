@@ -444,7 +444,7 @@ __END__
 
 =head1 NAME
 
-Test2::Plugin::Compare - Tools for comparing deep data structures.
+Test2::Tools::Compare - Tools for comparing deep data structures.
 
 =head1 DESCRIPTION
 
@@ -548,7 +548,7 @@ to compare 2 strings:
 
 B<Note>: This is not the tool to use if you want to check if 2 references are
 the same exact reference, use C<ref_is()> from the
-L<Test2::Plugin::Core> plugin instead. I<Most> of the time this will
+L<Test2::Tools::Ref> plugin instead. I<Most> of the time this will
 work as well, however there are problems if your reference contains a cyle and
 refers back to itself at some point, if this happens an exception will be
 thrown to break an otherwise infinite recursion.

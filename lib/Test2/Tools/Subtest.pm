@@ -46,7 +46,7 @@ __END__
 
 =head1 NAME
 
-Test2::Plugin::Subtest - Tools for writing subtests
+Test2::Tools::Subtest - Tools for writing subtests
 
 =head1 DESCRIPTION
 

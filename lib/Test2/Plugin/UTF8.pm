@@ -64,8 +64,8 @@ This is the same as
 
     use utf8;
     BEGIN {
-        require Test2::Tools::Core;
-        Test2::Tools::Core::set_encoding('utf8');
+        require Test2::Tools::Encoding;
+        Test2::Tools::Encoding::set_encoding('utf8');
         binmode(STDERR, ':utf8');
         binmode(STDOUT, ':utf8');
     }

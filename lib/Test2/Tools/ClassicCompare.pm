@@ -308,7 +308,7 @@ displayed if the test fails. The diagnostics are ignored if the test passes.
 It is important to note that this tool considers C<"1"> and C<"1.0"> to not be
 equal as it uses a string comparison.
 
-See L<Test2::Plugin::Compare> if you want a C<is()> function that tries
+See L<Test2::Tools::Compare> if you want a C<is()> function that tries
 to be smarter for you.
 
 =item $bool = isnt($got, $dont_expect)
@@ -353,7 +353,7 @@ other values will be stringified and compared as strings. It is important to
 note that this tool considers C<"1"> and C<"1.0"> to not be equal as it uses a
 string comparison.
 
-This is the same as C<Test2::Plugin::Compare::is()>.
+This is the same as C<Test2::Tools::Compare::is()>.
 
 =item cmp_ok($got, $op, $expect)
 
