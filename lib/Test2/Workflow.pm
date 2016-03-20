@@ -17,7 +17,6 @@ sub parse_args {
     my %props;
 
     my $caller = $out{frame} = $input{caller} || caller(defined $input{level} ? $input{level} : 1);
-    $out{lines} = [$caller->[2]];
 
     for my $arg (@$args) {
         if (my $r = ref($arg)) {
@@ -64,10 +63,11 @@ sub parse_args {
     sub init_root {
         my ($pkg, %args) = @_;
         $ROOT_BUILDS{$pkg} ||= Test2::Workflow::Build->new(
-            name  => $pkg,
-            flat  => 1,
-            iso   => 0,
-            async => 0,
+            name    => $pkg,
+            flat    => 1,
+            iso     => 0,
+            async   => 0,
+            is_root => 1,
             %args,
         );
 

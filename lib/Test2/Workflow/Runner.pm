@@ -14,7 +14,7 @@ use List::Util qw/shuffle/;
 use Carp qw/confess/;
 
 use Test2::Util::HashBase qw{
-    stack no_fork no_threads max slots pid tid rand subtests
+    stack no_fork no_threads max slots pid tid rand subtests filter
 };
 
 use overload(
@@ -47,6 +47,27 @@ sub init {
     my $max = @max ? min(@max) : 3;
     $self->{+MAX} = $max;
     $self->{+SLOTS} = [] if $max;
+
+    unless(defined($self->{+FILTER})) {
+        if (my $raw = $ENV{T2_WORKFLOW}) {
+            my ($file, $line, $name);
+            if ($raw =~ m/^(.*)\s+(\d+)$/) {
+                ($file, $line) = ($1, $2);
+            }
+            elsif($raw =~ m/^(\d+)$/) {
+                $line = $1;
+            }
+            else {
+                $name = $raw;
+            }
+
+            $self->{+FILTER} = {
+                file => $file,
+                line => $line,
+                name => $name,
+            };
+        }
+    }
 
     if (my $task = delete $self->{task}) {
         $self->push_task($task);
@@ -101,15 +122,27 @@ sub run {
     while (@$stack) {
         $self->cull;
 
-        my $state = $stack->[-1];
-        my $task  = $state->{task};
+        my $state  = $stack->[-1];
+        my $task   = $state->{task};
 
         unless($state->{started}++) {
-            if (my $skip = $task->skip) {
+            my $skip = $task->skip;
+
+            my $filter;
+            if (my $f = $self->{+FILTER}) {
+                my $in_var = grep { $_->{filter_satisfied} } @$stack;
+
+                $filter = $task->filter($f) unless $in_var;
+                $state->{filter_satisfied} = 1 if $filter->{satisfied};
+            }
+
+            $skip ||= $filter->{skip} if $filter;
+
+            if ($skip) {
                 $state->{ended}++;
                 $self->send_event(
                     'Skip',
-                    reason         => $skip,
+                    reason         => $skip || $filter,
                     name           => $task->name,
                     pass           => 1,
                     effective_pass => 1,
@@ -256,6 +289,7 @@ sub push_task {
 
     push @{$self->{+STACK}} => {
         task => $task,
+        name => $task->name,
     };
 }
 

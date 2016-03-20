@@ -52,18 +52,22 @@ sub info {
 
         my $frame     = $self->frame;
         my $file      = $info->{file};
-        my $lines     = $info->{lines};
+        my $all_lines = $info->{all_lines};
         my $pre_lines = $self->{+_LINES};
+        my $lines     = $info->{lines} ||= [];
 
         if ($pre_lines && @$pre_lines) {
             @$lines = @$pre_lines;
         }
         else {
             @$lines = (
-                max(@$lines, $frame->[2]),
-                min(@$lines, $frame->[2]),
+                min(@$all_lines, $frame->[2]),
+                max(@$all_lines, $frame->[2]),
             ) if $frame->[1] eq $file;
         }
+
+        # Adjust for start
+        $lines->[0]-- if $lines->[0] != $lines->[1];
 
         $self->{+_INFO} = $info;
     }
