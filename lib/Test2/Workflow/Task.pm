@@ -5,11 +5,12 @@ use warnings;
 use Test2::API();
 use Test2::Event::Exception();
 
+use Scalar::Util qw/blessed/;
 use Carp qw/croak/;
 our @CARP_NOT = qw/Test2::Util::HashBase/;
 
 use base 'Test2::Workflow::BlockBase';
-use Test2::Util::HashBase qw/name flat async iso todo skip scaffold/;
+use Test2::Util::HashBase qw/name flat async iso todo skip scaffold events/;
 
 for my $attr (FLAT, ISO, ASYNC, TODO, SKIP, SCAFFOLD) {
     my $old = __PACKAGE__->can("set_$attr");
@@ -28,6 +29,8 @@ for my $attr (FLAT, ISO, ASYNC, TODO, SKIP, SCAFFOLD) {
 sub init {
     my $self = shift;
 
+    $self->{+EVENTS} ||= [];
+
     {
         local $Carp::CarpLevel = $Carp::CarpLevel + 1;
         $self->SUPER::init();
@@ -42,6 +45,11 @@ sub init {
     $self->set_subname($self->package . "::<$self->{+NAME}>");
 
     $self->verify_scaffold;
+}
+
+sub clone {
+    my $self = shift;
+    return bless {%$self}, blessed($self);
 }
 
 sub verify_scaffold {

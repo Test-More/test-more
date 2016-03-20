@@ -109,8 +109,10 @@ sub run {
                 $state->{ended}++;
                 $self->send_event(
                     'Skip',
-                    reason => $skip,
-                    name   => $task->name,
+                    reason         => $skip,
+                    name           => $task->name,
+                    pass           => 1,
+                    effective_pass => 1,
                 );
                 pop @$stack;
                 next;
@@ -119,9 +121,15 @@ sub run {
             $state->{todo} = Test2::Todo->new(reason => $task->todo)
                 if $task->todo;
 
-            unless ($task->flat) {
+            if ($task->flat) {
+                my $st = $self->current_subtest;
+                my $hub = $st ? $st->hub : Test2::API::test2_stack->top;
+                $hub->send($_) for @{$task->events};
+            }
+            else {
                 my $st = Test2::AsyncSubtest->new(name => $task->name);
                 $state->{subtest} = $st;
+                $st->hub->send($_) for @{$task->events};
 
                 my $slot = $self->isolate($state);
 
@@ -236,7 +244,15 @@ sub run {
 sub push_task {
     my $self = shift;
     my ($task) = @_;
-    confess "WTF?" unless $task;
+
+    confess "No Task!" unless $task;
+    confess "Bad Task ($task)!" unless blessed($task) && $task->isa('Test2::Workflow::Task');
+
+    if ($task->isa('Test2::Workflow::Build')) {
+        confess "Can only push a Build instance when initializing the stack"
+            if @{$self->{+STACK}};
+        $task = $task->compile();
+    }
 
     push @{$self->{+STACK}} => {
         task => $task,
@@ -268,7 +284,7 @@ sub isolate {
     return undef unless $iso || $async;
 
     # Cannot isolate
-    unless($self->{+MAX}) {
+    unless($self->{+MAX} && $self->is_local) {
         # async does not NEED to be isolated
         return undef unless $iso;
     }

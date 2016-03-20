@@ -13,7 +13,9 @@ use Importer();
 
 use vars qw/@EXPORT @EXPORT_OK/;
 push @EXPORT => qw{describe cases};
+push @EXPORT_OK => qw{include_workflow include_workflows};
 
+my %HANDLED;
 sub import {
     my $class = shift;
     my %params = @_;
@@ -41,72 +43,90 @@ sub import {
         }
     }
 
-    my $root = init_root(
-        $caller[0],
-        frame => \@caller,
-        code => sub { 1 },
-        %root_args,
-    );
+    unless ($HANDLED{$caller[0]}++) {
+        my $root = init_root(
+            $caller[0],
+            frame => \@caller,
+            code => sub { 1 },
+            %root_args,
+        );
 
-    my $runner = Test2::Workflow::Runner->new(%runner_args);
+        my $runner = Test2::Workflow::Runner->new(%runner_args);
 
-    Test2::Tools::Mock->add_handler(
-        $caller[0],
-        sub {
-            my %params = @_;
-            my ($class, $caller, $builder, $args) = @params{qw/class caller builder args/};
+        Test2::Tools::Mock->add_handler(
+            $caller[0],
+            sub {
+                my %params = @_;
+                my ($class, $caller, $builder, $args) = @params{qw/class caller builder args/};
 
-            # Running
-            if (@{$runner->stack}) {
-                $runner->add_mock($builder->());
+                # Running
+                if (@{$runner->stack}) {
+                    $runner->add_mock($builder->());
+                }
+                else { # Not running
+                    my $action = Test2::Workflow::Task::Action->new(
+                        code     => sub { $runner->add_mock($builder->()) },
+                        name     => "mock $class",
+                        frame    => $caller,
+                        scaffold => 1,
+                    );
+
+                    my $build = current_build() || $root;
+
+                    $build->add_primary_setup($action);
+                    $build->add_stash($builder->());
+                }
+
+                return 1;
             }
-            else { # Not running
-                my $action = Test2::Workflow::Task::Action->new(
-                    code     => sub { $runner->add_mock($builder->()) },
-                    name     => "mock $class",
-                    frame    => $caller,
-                    scaffold => 1,
-                );
+        );
 
-                my $build = current_build() || $root;
-
-                $build->add_primary_setup($action);
-                $build->add_stash($builder->());
+        my $stack = Test2::API::test2_stack;
+        $stack->top; # Insure we have a hub
+        my ($hub) = Test2::API::test2_stack->all;
+        $hub->follow_up(
+            sub {
+                return unless $root->populated;
+                my $g = $root->compile;
+                $runner->push_task($g);
+                $runner->run;
             }
-
-            return 1;
-        }
-    );
-
-    my $stack = Test2::API::test2_stack;
-    $stack->top; # Insure we have a hub
-    my ($hub) = Test2::API::test2_stack->all;
-    $hub->follow_up(
-        sub {
-            return unless $root->populated;
-            my $g = $root->compile;
-            $runner->push_task($g);
-            $runner->run;
-        }
-    );
+        );
+    }
 
     Importer->import_into($class, $caller[0], $import ? @$import : ());
 }
 
 {
     no warnings 'once';
-    *cases = \&describe;
+    *cases             = \&describe;
+    *include_workflows = \&include_workflow;
 }
+
 sub describe {
     my @caller = caller(0);
     my $build = build(args => \@_, caller => \@caller);
 
-    return $build->compile if defined wantarray;
+    return $build if defined wantarray;
 
     my $current = current_build() || root_build($caller[0])
         or croak "No current workflow build!";
 
     $current->add_primary($build);
+}
+
+sub include_workflow {
+    my @caller = caller(0);
+
+    my $build = current_build() || root_build(\$caller[0])
+        or croak "No current workflow build!";
+
+    for my $task (@_) {
+        croak "include_workflow only accepts Test2::Workflow::Task objects, got: $task"
+            unless $task->isa('Test2::Workflow::Task');
+
+        $build->add_primary($task);
+    }
 }
 
 # Generate a bunch of subs that only have minor differences between them.

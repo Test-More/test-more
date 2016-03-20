@@ -7,6 +7,8 @@ use base 'Exporter';
 
 use Test2::Workflow::Build;
 use Test2::Workflow::Task::Group;
+use Test2::API qw/intercept/;
+use Scalar::Util qw/blessed/;
 
 sub parse_args {
     my %input = @_;
@@ -77,27 +79,37 @@ sub parse_args {
         my $args = parse_args(%params);
 
         my $build = Test2::Workflow::Build->new(%$args);
+
+        return $build if $args->{skip};
+
         push @BUILD_STACK => $build;
 
-        my $st;
-        unless ($args->{flat}) {
-            $st = Test2::AsyncSubtest->new(name => "$args->{name} (During Build)");
-            $st->start;
-        }
+        my ($ok, $err);
+        my $events = intercept {
+            my $todo = $args->{todo} ? Test2::Todo->new(reason => $args->{todo}) : undef;
+            $ok = eval { $args->{code}->(); 1 };
+            $err = $@;
+            $todo->end if $todo;
+        };
 
-        my $ok = eval { $args->{code}->(); 1 };
-        my $err = $@;
-
-        if ($st) {
-            $st->stop;
-            $st->finish(collapse => 1, silent => !(@{$st->events} || $st->hub->failed) );
-        }
-
-        delete $build->{stash};
+        # Clear the stash
+        $build->{stash} = [];
+        $build->set_events($events);
 
         pop @BUILD_STACK;
 
-        die $err unless $ok;
+        unless($ok) {
+            my $hub = Test2::API::test2_stack->top;
+            my $count = @$events;
+            my $list = $count
+                ? "Overview of unseen events:\n" . join "" => map "    " . blessed($_) . " " . $_->trace->debug . "\n", @$events
+                : "";
+            die <<"            EOT";
+Exception in build '$args->{name}' with $count unseen event(s).
+$err
+$list
+            EOT
+        }
 
         return $build;
     }
