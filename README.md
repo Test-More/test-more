@@ -14,7 +14,7 @@ completely refactoring it, adding many new features and capabilities.
 # GETTING STARTED
 
 If you are interested in writing tests using new tools then you should look at
-**NOT YET DETERMINED**.
+[Test2::Suite](https://metacpan.org/pod/Test2::Suite).
 
 If you are interested in writing new tools you should take a look at
 [Test2::API](https://metacpan.org/pod/Test2::API) first.
@@ -115,15 +115,15 @@ The source code repository for Test2 can be found at
 
 # MAINTAINERS
 
-- Chad Granum &lt;exodist@cpan.org>
+- Chad Granum <exodist@cpan.org>
 
 # AUTHORS
 
-- Chad Granum &lt;exodist@cpan.org>
+- Chad Granum <exodist@cpan.org>
 
 # COPYRIGHT
 
-Copyright 2015 Chad Granum &lt;exodist7@gmail.com>.
+Copyright 2015 Chad Granum <exodist7@gmail.com>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

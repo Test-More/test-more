@@ -11,7 +11,7 @@ DESCRIPTION
 
 GETTING STARTED
     If you are interested in writing tests using new tools then you should
-    look at NOT YET DETERMINED.
+    look at Test2::Suite.
 
     If you are interested in writing new tools you should take a look at
     Test2::API first.

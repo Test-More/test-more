@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - Regenerate README files
     - Apply spelling fixes (aquire->acquire) #11
     - Improve error message for missing hubs #12
 
