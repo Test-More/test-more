@@ -33,26 +33,32 @@ sub filter {
     my $self = shift;
     my ($filter) = @_;
 
-    return unless $filter;
     return if $self->{+IS_ROOT};
-    return if $self->{+SCAFFOLD};
 
     my $result = $self->SUPER::filter($filter);
 
-    # If this is not a variant then we do nothing special.
-    return $result unless $self->{+VARIANT};
-
-    # The variant matches the filter, no more filtering below
-    return {satisfied => 1} unless $result;
-
+    my $child_ok = 0;
     for my $c (@{$self->{+PRIMARY}}) {
+        next if $c->{+SCAFFOLD};
         # A child matches the filter, so we should not be filtered, but also
         # should not satisfy the filter.
-        my $res = $c->filter($filter) or return;
+        my $res = $c->filter($filter);
 
         # A child satisfies the filter
-        return if $res->{satisfied};
+        $child_ok++ if !$res || $res->{satisfied};
+        last if $child_ok;
     }
+
+    # If the filter says we are ok
+    unless($result) {
+        # If we are a variant then allow everything under us to be run
+        return {satisfied => 1} if $self->{+VARIANT} || !$child_ok;
+
+        # Normal group
+        return;
+    }
+
+    return if $child_ok;
 
     return $result;
 }

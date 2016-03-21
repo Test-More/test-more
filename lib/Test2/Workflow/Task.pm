@@ -86,6 +86,7 @@ sub exception {
 sub filter {
     my $self = shift;
     my ($filter) = @_;
+
     return unless $filter;
     return if $self->{+IS_ROOT};
     return if $self->{+SCAFFOLD};
