@@ -160,7 +160,10 @@ sub run {
                 $hub->send($_) for @{$task->events};
             }
             else {
-                my $st = Test2::AsyncSubtest->new(name => $task->name);
+                my $st = Test2::AsyncSubtest->new(
+                    name  => $task->name,
+                    trace => Test2::Util::Trace->new(frame => $task->frame),
+                );
                 $state->{subtest} = $st;
                 $st->hub->send($_) for @{$task->events};
 

@@ -50,7 +50,7 @@ sub populated {
 sub compile {
     my $self = shift;
 
-    die "Workflow build '$self->{+NAME}' is empty " . $self->debug . "\n"
+    warn "Workflow build '$self->{+NAME}' is empty " . $self->debug . "\n"
         unless $self->populated || $self->{+SKIP};
 
     my ($primary_setup, $primary_teardown) = @_;
