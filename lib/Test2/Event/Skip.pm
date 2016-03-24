@@ -2,7 +2,7 @@ package Test2::Event::Skip;
 use strict;
 use warnings;
 
-our $VERSION = '0.000033';
+our $VERSION = '0.000034';
 
 use base 'Test2::Event::Ok';
 use Test2::Util::HashBase qw{reason};
