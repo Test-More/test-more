@@ -216,15 +216,20 @@ sub context {
     $_->(\%params) for @$ACQUIRE_CBS;
     map $_->(\%params), @{$hub->{_context_acquire}} if $hub->{_context_acquire};
 
+    # This is for https://github.com/Test-More/Test2/issues/16
+    # and https://rt.perl.org/Public/Bug/Display.html?id=127774
+    my $phase = ${^GLOBAL_PHASE} || 'NA';
+    my $caller_safe = $phase ne 'DESTRUCT' && $phase ne 'END';
+
     my $level = 1 + $params{level};
-    my ($pkg, $file, $line, $sub) = caller($level);
-    unless ($pkg) {
+    my ($pkg, $file, $line, $sub) = $caller_safe ? caller($level) : caller(0);
+    unless ($pkg || !$caller_safe) {
         confess "Could not find context at depth $level" unless $params{fudge};
         ($pkg, $file, $line, $sub) = caller(--$level) while ($level >= 0 && !$pkg);
     }
 
     my $depth = $level;
-    $depth++ while caller($depth + 1) && (!$current || $depth <= $current->{_depth} + $params{wrapped});
+    $depth++ while $caller_safe && caller($depth + 1) && (!$current || $depth <= $current->{_depth} + $params{wrapped}) && caller($depth + 1);
     $depth -= $params{wrapped};
 
     if ($current && $params{on_release} && $current->{_depth} < $depth) {

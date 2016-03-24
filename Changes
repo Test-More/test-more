@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix #16 (workaround for caller() in END bug)
+
 0.000031  2016-03-20 13:45:43-07:00 America/Los_Angeles
 
     - Regenerate README files
