@@ -2,7 +2,7 @@ package Test2::Formatter;
 use strict;
 use warnings;
 
-our $VERSION = '0.000032';
+our $VERSION = '0.000033';
 
 use Test2::API qw/test2_formatter_add/;
 

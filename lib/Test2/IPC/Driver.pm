@@ -2,7 +2,7 @@ package Test2::IPC::Driver;
 use strict;
 use warnings;
 
-our $VERSION = '0.000032';
+our $VERSION = '0.000033';
 
 use Carp qw/confess longmess/;
 use Test2::Util::HashBase qw{no_fatal};

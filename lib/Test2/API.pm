@@ -2,7 +2,7 @@ package Test2::API;
 use strict;
 use warnings;
 
-our $VERSION = '0.000032';
+our $VERSION = '0.000033';
 
 my $INST;
 use Test2::API::Instance(\$INST);

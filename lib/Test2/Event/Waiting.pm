@@ -2,7 +2,7 @@ package Test2::Event::Waiting;
 use strict;
 use warnings;
 
-our $VERSION = '0.000032';
+our $VERSION = '0.000033';
 
 use base 'Test2::Event';
 
