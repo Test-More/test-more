@@ -2,7 +2,7 @@ package Test2::Formatter::TAP;
 use strict;
 use warnings;
 
-our $VERSION = '0.000034';
+our $VERSION = '0.000035';
 
 use Test2::Util::HashBase qw{
     no_numbers handles _encoding

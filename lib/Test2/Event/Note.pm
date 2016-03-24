@@ -2,7 +2,7 @@ package Test2::Event::Note;
 use strict;
 use warnings;
 
-our $VERSION = '0.000034';
+our $VERSION = '0.000035';
 
 use base 'Test2::Event';
 use Test2::Util::HashBase qw/message/;
