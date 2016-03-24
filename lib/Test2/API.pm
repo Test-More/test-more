@@ -235,8 +235,9 @@ sub context {
     my $depth = $level;
     $depth++ while !$end_phase && caller($depth + 1) && (!$current || $depth <= $current->{_depth} + $params{wrapped}) && caller($depth + 1);
     $depth -= $params{wrapped};
+    my $depth_ok = !$current || $current->{_depth} < $depth || $end_phase;
 
-    if (!$end_phase && $current && $params{on_release} && $current->{_depth} < $depth) {
+    if ($current && $params{on_release} && $depth_ok) {
         $current->{_on_release} ||= [];
         push @{$current->{_on_release}} => $params{on_release};
     }
@@ -252,7 +253,7 @@ sub context {
             _is_spawn   => [$pkg, $file, $line, $sub],
         },
         'Test2::API::Context'
-    ) if $current && $current->{_depth} < $depth;
+    ) if $current && $depth_ok;
 
     # Handle error condition of bad level
     if ($current) {
@@ -261,7 +262,7 @@ sub context {
                 unless $current->{_is_canon};
 
             _depth_error($current, [$pkg, $file, $line, $sub, $depth])
-                unless $current->{_depth} < $depth;
+                unless $depth_ok;
         }
 
         $current->release if $current->{_is_canon};
