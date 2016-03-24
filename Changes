@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Better fox for #16 (workaround for caller() in END bug)
+    - Put test for #16 in regular testing dir as new fix is more stable
+
 0.000032  2016-03-23 23:54:40-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix #16 (workaround for caller() in END bug)

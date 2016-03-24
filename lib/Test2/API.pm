@@ -5,9 +5,13 @@ use warnings;
 our $VERSION = '0.000033';
 
 my $INST;
+my $ENDING = 0;
 use Test2::API::Instance(\$INST);
 # Set the exit status
-END { $INST->set_exit() }
+END {
+    $ENDING = 1;
+    $INST->set_exit();
+}
 
 use Test2::Util::Trace();
 
@@ -219,20 +223,20 @@ sub context {
     # This is for https://github.com/Test-More/Test2/issues/16
     # and https://rt.perl.org/Public/Bug/Display.html?id=127774
     my $phase = ${^GLOBAL_PHASE} || 'NA';
-    my $caller_safe = $phase ne 'DESTRUCT' && $phase ne 'END';
+    my $end_phase = $ENDING || $phase eq 'END' || $phase eq 'DESTRUCT';
 
     my $level = 1 + $params{level};
-    my ($pkg, $file, $line, $sub) = $caller_safe ? caller($level) : caller(0);
-    unless ($pkg || !$caller_safe) {
+    my ($pkg, $file, $line, $sub) = $end_phase ? caller(0) : caller($level);
+    unless ($pkg || $end_phase) {
         confess "Could not find context at depth $level" unless $params{fudge};
         ($pkg, $file, $line, $sub) = caller(--$level) while ($level >= 0 && !$pkg);
     }
 
     my $depth = $level;
-    $depth++ while $caller_safe && caller($depth + 1) && (!$current || $depth <= $current->{_depth} + $params{wrapped}) && caller($depth + 1);
+    $depth++ while !$end_phase && caller($depth + 1) && (!$current || $depth <= $current->{_depth} + $params{wrapped}) && caller($depth + 1);
     $depth -= $params{wrapped};
 
-    if ($current && $params{on_release} && $current->{_depth} < $depth) {
+    if (!$end_phase && $current && $params{on_release} && $current->{_depth} < $depth) {
         $current->{_on_release} ||= [];
         push @{$current->{_on_release}} => $params{on_release};
     }
