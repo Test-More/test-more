@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - More fixes for #16
+    - Add some END block manipulation for #16
+    - Turn off depth checking on older perls (for #16)
+
 0.000034  2016-03-24 10:32:57-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix depth bug introduced in the last trial

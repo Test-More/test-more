@@ -216,6 +216,12 @@ sub add_post_load_callback {
 sub load {
     my $self = shift;
     unless ($self->{+LOADED}) {
+        # This is for https://github.com/Test-More/Test2/issues/16
+        # and https://rt.perl.org/Public/Bug/Display.html?id=127774
+        # END blocks run in reverse order. This insures the END block is loaded
+        # as late as possible. It will not solve all cases, but it helps.
+        eval "END { Test2::API->_set_is_end() }; 1" or die $@;
+
         $self->{+LOADED} = 1;
         $_->() for @{$self->{+POST_LOAD_CALLBACKS}};
     }

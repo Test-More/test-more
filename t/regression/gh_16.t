@@ -13,10 +13,11 @@ BEGIN {
     open(STDERR, '>&', STDOUT);
 }
 
-require Test2::API;
+use Test2::API;
 
-eval(' sub { die } ')->();
+eval(' sub { die "xxx" } ')->();
 END {
     sub { my $ctx = Test2::API::context(); $ctx->release; }->();
     print "ok 1 - Did not segv\n";
+    $? = 0;
 }

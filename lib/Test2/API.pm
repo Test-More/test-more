@@ -6,11 +6,26 @@ our $VERSION = '0.000035';
 
 my $INST;
 my $ENDING = 0;
+sub _set_is_end { $ENDING = 1 }
+
 use Test2::API::Instance(\$INST);
 # Set the exit status
 END {
-    $ENDING = 1;
+    _set_is_end(); # See gh #16
     $INST->set_exit();
+}
+
+# See gh #16
+INIT { eval 'END { _set_is_end() }; 1' or die $@ }
+
+BEGIN {
+    no warnings 'once';
+    if($] ge '5.014' || $ENV{T2_CHECK_DEPTH} || $Test2::API::DO_DEPTH_CHECK) {
+        *DO_DEPTH_CHECK = sub() { 1 };
+    }
+    else {
+        *DO_DEPTH_CHECK = sub() { 0 };
+    }
 }
 
 use Test2::Util::Trace();
@@ -233,9 +248,9 @@ sub context {
     }
 
     my $depth = $level;
-    $depth++ while !$end_phase && caller($depth + 1) && (!$current || $depth <= $current->{_depth} + $params{wrapped}) && caller($depth + 1);
+    $depth++ while DO_DEPTH_CHECK && !$end_phase && (!$current || $depth <= $current->{_depth} + $params{wrapped}) && caller($depth + 1);
     $depth -= $params{wrapped};
-    my $depth_ok = !$current || $current->{_depth} < $depth || $end_phase;
+    my $depth_ok = !DO_DEPTH_CHECK || $end_phase || !$current || $current->{_depth} < $depth;
 
     if ($current && $params{on_release} && $depth_ok) {
         $current->{_on_release} ||= [];
@@ -630,6 +645,12 @@ what you can and cannot do with a context once it is obtained.
 
 B<Note> This function will throw an exception if you ignore the context object
 it returns.
+
+B<Note> On perls 5.14+ a depth check is used to insure there are no context
+leaks. This cannot be safely done on older perls due to
+L<https://rt.perl.org/Public/Bug/Display.html?id=127774>
+You can forcefully enable it either by setting C<$ENV{T2_CHECK_DEPTH} = 1> or
+C<$Test2::API::DO_DEPTH_CHECK = 1> B<BEFORE> loading L<Test2::API>.
 
 =head3 OPTIONAL PARAMETERS
 
