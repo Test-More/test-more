@@ -2,6 +2,8 @@ package Test2::Workflow;
 use strict;
 use warnings;
 
+our $VERSION = "0.000007";
+
 our @EXPORT_OK = qw/parse_args current_build all_builds build root_build init_root/;
 use base 'Exporter';
 
@@ -118,3 +120,80 @@ $list
 1;
 
 __END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Test2::Workflow - Interface for writing 'workflow' tools such as RSPEC
+implementations that all play nicely together.
+
+=head1 *** EXPERIMENTAL ***
+
+This distribution is experimental, anything can change at any time!
+
+=head1 DESCRIPTION
+
+This module intends to do for 'workflow' test tools what Test::Builder and
+Test2 do for general test tools. The problem with workflow tools is that
+most do not play well together. This module is a very generic/abstract look at
+workflows that allows tools to be built that accomplish their workflows, but in
+a way that plays well with others.
+
+=head1 SYNOPSIS
+
+=head1 IMPORTANT CONCEPTS
+
+A workflow is a way of defining tests with scaffolding. Essentially you are
+seperating your assertions and your setup/teardown/management code. This
+results in a separation of concerns that can produce more maintainable tests.
+In addition each component of a workflow can be re-usable and/or inheritable.
+
+=head1 EXPORTS
+
+All exports are optional, you must request the ones you want.
+
+=head1 SEE ALSO
+
+=over 4
+
+=item Test2::Tools::Spec
+
+L<Test2::Tools::Spec> is an implementation of RSPEC using this library.
+
+=back
+
+=head1 SOURCE
+
+The source code repository for Test2-Workflow can be found at
+F<http://github.com/Test-More/Test2-Workflow/>.
+
+=head1 MAINTAINERS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 AUTHORS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 COPYRIGHT
+
+Copyright 2016 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http://dev.perl.org/licenses/>
+
+=cut
+
