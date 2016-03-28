@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000036  2016-03-28 11:44:53-07:00 America/Los_Angeles
+
     - Do not warn if unimportant INIT block cannot be run
     - Change how TAP duplicates IO handles, use 3 arg form of open
 
