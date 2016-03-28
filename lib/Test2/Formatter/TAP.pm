@@ -105,8 +105,8 @@ sub write {
 sub _open_handles {
     my $self = shift;
 
-    open( my $out, ">&STDOUT" ) or die "Can't dup STDOUT:  $!";
-    open( my $err, ">&STDERR" ) or die "Can't dup STDERR:  $!";
+    open( my $out, '>&', STDOUT ) or die "Can't dup STDOUT:  $!";
+    open( my $err, '>&', STDERR ) or die "Can't dup STDERR:  $!";
 
     _autoflush($out);
     _autoflush($err);

@@ -16,7 +16,10 @@ END {
 }
 
 # See gh #16
-INIT { eval 'END { _set_is_end() }; 1' or die $@ }
+{
+    no warnings;
+    INIT { eval 'END { _set_is_end() }; 1' or die $@ }
+}
 
 BEGIN {
     no warnings 'once';
