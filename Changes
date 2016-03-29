@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Bump minimum Test2 version to protect from segv
+
 1.302013_014 2016-03-08 10:00:50-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Skip test added in last release when threading is not avilable
