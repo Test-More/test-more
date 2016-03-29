@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302013_015 2016-03-29 09:24:10-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Bump minimum Test2 version to protect from segv
 
 1.302013_014 2016-03-08 10:00:50-08:00 America/Los_Angeles (TRIAL RELEASE)
