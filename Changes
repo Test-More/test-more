@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Change Formatter to load Test2::API on demand
+    - Add test to insure Test2::API is not loaded by some modules
+
 0.000036  2016-03-28 11:44:53-07:00 America/Los_Angeles
 
     - Do not warn if unimportant INIT block cannot be run

@@ -4,14 +4,13 @@ use warnings;
 
 our $VERSION = '0.000037';
 
-use Test2::API qw/test2_formatter_add/;
-
 my %ADDED;
 sub import {
     my $class = shift;
     return if $class eq __PACKAGE__;
     return if $ADDED{$class}++;
-    test2_formatter_add($class);
+    require Test2::API;
+    Test2::API::test2_formatter_add($class);
 }
 
 1;
