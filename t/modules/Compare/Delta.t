@@ -502,6 +502,42 @@ subtest custom_columns => sub {
     is($CLASS->remove_column('FOO'), 1, "Removed the column");
 };
 
+subtest set_column_alias => sub {
+    $CLASS->set_column_alias(PATH => ' ');
+    is(
+        $CLASS->table_header,
+        [' ', qw/LNs GOT OP CHECK LNs/],
+        "hide column name"
+    );
+
+    $CLASS->set_column_alias(GLNs => 'Now This');
+    is(
+        $CLASS->table_header,
+        [' ', 'Now This', qw/GOT OP CHECK LNs/],
+        "column name with spaces"
+    );
+
+    $CLASS->add_column('NEW' => sub { '' });
+    $CLASS->set_column_alias(NEW => 'OLD');
+    is(
+        $CLASS->table_header,
+        [' ', 'Now This', qw/GOT OP CHECK LNs OLD/],
+        "change added column name"
+    );
+
+    like(
+        dies { $CLASS->set_column_alias('OP') },
+        qr/Missing alias/,
+        'Missing alias'
+    );
+
+    like(
+        dies { $CLASS->set_column_alias(DNE => 'NOPE') },
+        qr/Tried to alias a non-existent column/,
+        'Needs existing column name'
+    );
+};
+
 subtest overload => sub {
     no warnings 'once';
     {
