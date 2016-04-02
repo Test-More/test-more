@@ -74,6 +74,17 @@ sub add_column {
     $COLUMNS{$name} = \%params;
 }
 
+sub set_column_alias {
+    my ($class, $name, $alias) = @_;
+
+    croak "Tried to alias a non-existent column"
+        unless exists $COLUMNS{$name};
+
+    croak "Missing alias" unless defined $alias;
+
+    $COLUMNS{$name}->{alias} = $alias;
+}
+
 sub init {
     my $self = shift;
 
@@ -356,6 +367,11 @@ This will remove the specified column. This will return true if the column
 existed and was removed. This will return false if the column did not exist. No
 exceptions are thrown, if a missing column is a problem then you need to check
 the return yourself.
+
+=item $class->set_column_alias($NAME, $ALIAS)
+
+This can be used to change the table header, overriding the default column
+names with new ones.
 
 =back
 
