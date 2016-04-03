@@ -10,6 +10,8 @@ my $plan = Test2::Event::Plan->new(
     max => 100,
 );
 
+is($plan->summary, "Plan is 100 assertions", "simple summary");
+
 ok(!$plan->global, "regular plan is not a global event");
 my $state = Test2::Hub->new;
 $plan->callback($state);
@@ -24,9 +26,12 @@ $plan->callback($state);
 is($state->plan, 'SKIP', "set plan in state");
 is($plan->terminate, 0, "Terminate 0 on skip_all");
 
+is($plan->summary, "Plan is 'SKIP', foo", "skip summary");
+
 $plan->set_max(0);
 $plan->set_directive('NO PLAN');
 $plan->set_reason(undef);
+is($plan->summary, "Plan is 'NO PLAN'", "NO PLAN summary");
 $state = Test2::Hub->new;
 $plan->callback($state);
 is($state->plan, 'NO PLAN', "set plan in state");

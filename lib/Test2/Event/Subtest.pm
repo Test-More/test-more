@@ -13,6 +13,22 @@ sub init {
     $self->{+SUBEVENTS} ||= [];
 }
 
+sub summary {
+    my $self = shift;
+
+    my $name = $self->{+NAME} || "Nameless Subtest";
+
+    my $todo = $self->{+TODO};
+    if ($todo) {
+        $name .= " (TODO: $todo)";
+    }
+    elsif (defined $todo) {
+        $name .= " (TODO)"
+    }
+
+    return $name;
+}
+
 1;
 
 __END__

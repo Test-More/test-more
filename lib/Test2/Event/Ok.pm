@@ -35,6 +35,22 @@ sub increments_count { 1 };
 
 sub causes_fail { !$_[0]->{+EFFECTIVE_PASS} }
 
+sub summary {
+    my $self = shift;
+
+    my $name = $self->{+NAME} || "Nameless Assertion";
+
+    my $todo = $self->{+TODO};
+    if ($todo) {
+        $name .= " (TODO: $todo)";
+    }
+    elsif (defined $todo) {
+        $name .= " (TODO)"
+    }
+
+    return $name;
+}
+
 1;
 
 __END__

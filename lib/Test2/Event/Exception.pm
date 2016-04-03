@@ -9,6 +9,12 @@ use Test2::Util::HashBase qw{error};
 
 sub causes_fail { 1 }
 
+sub summary {
+    my $self = shift;
+    chomp(my $msg = "Exception: " . $self->{+ERROR});
+    return $msg;
+}
+
 1;
 
 __END__

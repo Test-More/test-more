@@ -15,6 +15,20 @@ sub init {
 
 sub causes_fail { 0 }
 
+sub summary {
+    my $self = shift;
+    my $out = $self->SUPER::summary(@_);
+
+    if (my $reason = $self->reason) {
+        $out .= " (SKIP: $reason)";
+    }
+    else {
+        $out .= " (SKIP)";
+    }
+
+    return $out;
+}
+
 1;
 
 __END__

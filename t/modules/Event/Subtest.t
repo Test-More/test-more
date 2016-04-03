@@ -16,4 +16,14 @@ my $one = $st->new(
 ok($one->isa('Test2::Event::Ok'), "Inherit from Ok");
 is_deeply($one->subevents, [], "subevents is an arrayref");
 
+is($one->summary, "foo", "simple summary");
+$one->set_todo('');
+is($one->summary, "foo (TODO)", "simple summary + TODO");
+$one->set_todo('foo');
+is($one->summary, "foo (TODO: foo)", "simple summary + TODO + Reason");
+
+$one->set_todo(undef);
+$one->set_name('');
+is($one->summary, "Nameless Subtest", "unnamed summary");
+
 done_testing;

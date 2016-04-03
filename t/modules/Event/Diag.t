@@ -9,12 +9,15 @@ my $diag = Test2::Event::Diag->new(
     message => 'foo',
 );
 
+is($diag->summary, 'foo', "summary is just message");
+
 $diag = Test2::Event::Diag->new(
     trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     message => undef,
 );
 
 is($diag->message, 'undef', "set undef message to undef");
+is($diag->summary, 'undef', "summary is just message even when undef");
 
 $diag = Test2::Event::Diag->new(
     trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
@@ -22,5 +25,6 @@ $diag = Test2::Event::Diag->new(
 );
 
 like($diag->message, qr/^HASH\(.*\)$/, "stringified the input value");
+
 
 done_testing;

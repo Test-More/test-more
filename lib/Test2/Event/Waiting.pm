@@ -8,6 +8,8 @@ use base 'Test2::Event';
 
 sub global { 1 };
 
+sub summary { "IPC is waiting for children to finish..." }
+
 1;
 
 __END__

@@ -21,6 +21,14 @@ sub global { 1 };
 
 sub causes_fail { 1 }
 
+sub summary {
+    my $self = shift;
+    return "Bail out!  " . $self->{+REASON}
+        if $self->{+REASON};
+
+    return "Bail out!";
+}
+
 1;
 
 __END__

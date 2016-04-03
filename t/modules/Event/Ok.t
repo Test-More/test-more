@@ -27,6 +27,15 @@ tests Passing => sub {
     is($ok->pass, 1, "got pass");
     is($ok->name, 'the_test', "got name");
     is($ok->effective_pass, 1, "effective pass");
+    is($ok->summary, "the_test", "Summary is just the name of the test");
+
+    $ok = Test2::Event::Ok->new(
+        trace => $trace,
+        pass  => 1,
+        name  => '',
+    );
+    is($ok->summary, "Nameless Assertion", "Nameless test");
+
 };
 
 tests Failing => sub {
@@ -42,6 +51,7 @@ tests Failing => sub {
     is($ok->pass, 0, "got pass");
     is($ok->name, 'the_test', "got name");
     is($ok->effective_pass, 0, "effective pass");
+    is($ok->summary, "the_test", "Summary is just the name of the test");
 };
 
 tests "Failing TODO" => sub {
@@ -57,6 +67,7 @@ tests "Failing TODO" => sub {
     is($ok->pass, 0, "got pass");
     is($ok->name, 'the_test', "got name");
     is($ok->effective_pass, 1, "effective pass is true from todo");
+    is($ok->summary, "the_test (TODO: A Todo)", "Summary is just the name of the test + todo");
 
     $ok = Test2::Event::Ok->new(
         trace => $trace,
@@ -65,6 +76,7 @@ tests "Failing TODO" => sub {
         todo  => '',
     );
     ok($ok->effective_pass, "empty string todo is still a todo");
+    is($ok->summary, "the_test2 (TODO)", "Summary is just the name of the test + todo");
 };
 
 tests init => sub {

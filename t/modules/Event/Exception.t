@@ -10,4 +10,6 @@ my $exception = Test2::Event::Exception->new(
 
 ok($exception->causes_fail, "Exception events always cause failure");
 
+is($exception->summary, "Exception: evil at lake_of_fire.t line 6", "Got summary");
+
 done_testing;

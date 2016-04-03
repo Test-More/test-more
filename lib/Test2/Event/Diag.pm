@@ -11,6 +11,8 @@ sub init {
     $_[0]->{+MESSAGE} = 'undef' unless defined $_[0]->{+MESSAGE};
 }
 
+sub summary { $_[0]->{+MESSAGE} }
+
 1;
 
 __END__

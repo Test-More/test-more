@@ -54,6 +54,21 @@ sub terminate {
     return undef;
 }
 
+sub summary {
+    my $self = shift;
+    my $max = $self->{+MAX};
+    my $directive = $self->{+DIRECTIVE};
+    my $reason = $self->{+REASON};
+
+    return "Plan is $max assertions"
+        if $max || !$directive;
+
+    return "Plan is '$directive', $reason"
+        if $reason;
+
+    return "Plan is '$directive'";
+}
+
 1;
 
 __END__

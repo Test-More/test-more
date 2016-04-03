@@ -31,4 +31,6 @@ is($one->meta('yyy', '1221'), '1221', "got the default");
 
 is($one->meta('yyy'), '1221', "last call set the value to the default for future use");
 
+is($one->summary, 'My::MockEvent', "Default summary is event package");
+
 done_testing;
