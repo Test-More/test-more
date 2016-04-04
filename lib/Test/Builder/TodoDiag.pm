@@ -4,4 +4,6 @@ use warnings;
 
 use base 'Test2::Event::Diag';
 
+sub diagnostics { 0 }
+
 1;

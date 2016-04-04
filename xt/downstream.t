@@ -23,11 +23,15 @@ EOT
 
 ok(run_string(<<"EOT"), "Installed Test2") || exit 1;
 cd ../Test2
-perlbrew exec --with $lib cpanm Test2
+perlbrew exec --with $lib cpanm Test2-0.000039.tar.gz
 EOT
 
 ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
-perlbrew exec --with $lib cpanm Test-Simple-1.302013_015.tar.gz
+perlbrew exec --with $lib cpanm Test-Simple-1.302013_016.tar.gz
+EOT
+
+ok(run_string(<<"EOT"), "Installed Archive::Zip") || exit 1;
+perlbrew exec --with $lib cpanm https://cpan.metacpan.org/authors/id/P/PH/PHRED/Archive-Zip-1.56.tar.gz
 EOT
 
 my @BAD;
@@ -63,7 +67,7 @@ TODO: {
     close($list);
 }
 
-ok(run_string(<<"EOT"), "Cleanup up the perlbrew");
+ok(run_string(<<"EOT"), "Cleanup up the perlbrew") unless @BAD;
 perlbrew lib delete $lib
 EOT
 
