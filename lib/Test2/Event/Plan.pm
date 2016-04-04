@@ -36,6 +36,15 @@ sub init {
     }
 }
 
+sub sets_plan {
+    my $self = shift;
+    return (
+        $self->{+MAX},
+        $self->{+DIRECTIVE},
+        $self->{+REASON},
+    );
+}
+
 sub callback {
     my $self = shift;
     my ($hub) = @_;

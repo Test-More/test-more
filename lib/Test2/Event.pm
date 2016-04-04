@@ -14,6 +14,7 @@ sub callback { }
 
 sub terminate { () }
 sub global    { () }
+sub sets_plan { () }
 
 sub summary { ref($_[0]) }
 
@@ -147,6 +148,12 @@ is intended for human consumption, you do not need to make it easy for machines
 to understand.
 
 The default is to simply return the event package name.
+
+=item ($count, $directive, $reason) = $e->sets_plan()
+
+Check if this event sets the testing plan. It will return an empty list if it
+does not. If it does set the plan it will return a list of 1 to 3 items in
+order: Expected Test Count, Test Directive, Reason for directive.
 
 =back
 
