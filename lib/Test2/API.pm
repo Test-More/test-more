@@ -448,7 +448,13 @@ sub run_subtest {
     my @events;
     $hub->set_nested( $parent->isa('Test2::Hub::Subtest') ? $parent->nested + 1 : 1 );
     $hub->listen(sub { push @events => $_[1] });
-    $hub->format(undef) if $buffered;
+
+    if ($buffered) {
+        if (my $format = $hub->format) {
+            my $hide = $format->can('hide_buffered') ? $format->hide_buffered : 1;
+            $hub->format(undef) if $hide;
+        }
+    }
 
     my ($ok, $err, $finished);
     T2_SUBTEST_WRAPPER: {
@@ -914,16 +920,59 @@ parameters hash. The param hash will be used for hub construction (with the
 'buffered' key removed).
 
 If this is true, or a hashref with a true value for the 'buffered' key, then
-the subtest will be buffered. In a buffered subtest the child events are hidden
-from the formatter, the formatter will only receive the final
-L<Test2:Event::Subtest> event. In an unbuffered subtest the formatter will see
-all events as they happen, as well as the final one.
+the subtest will be buffered.
 
 =item @ARGS
 
 Any extra arguments you want passed into the subtest code.
 
 =back
+
+=head3 BUFFERED VS UNBUFFERED (OR STREAMED)
+
+Normally all events inside and outside a subtest are sent to the formatter
+immedietly by the hub. Sometimes it is desirable to hold off sending events
+within a subtest until the subtest is complete. This usually depends on the
+formatter being used.
+
+=over 4
+
+=item Things not effected by this flag
+
+In both cases events are generated and stored in an array. This array is
+eventually used to populate the C<subevents> attribute on the
+L<Test2::Event::Subtest> event that is generated at the end of the subtest.
+This flag has no effect on this part, it always happens.
+
+At the end of the subtest the final L<Test2::Event::Subtest> event is sent to
+the formatter.
+
+=item Things that are effected by this flag
+
+The C<buffered> attribute of the L<Test2::Event::Subtest> event will be set to
+the value of this flag. This means any formatter, listener, etc which looks at
+the event will know if it was buffered.
+
+=item Things that are formatter dependant
+
+Events within a buffered subtest may or may not be sent to the formatter as
+they happen. If a formatter fails to specify then the default is to B<NOT SEND>
+the events as they are generated, instead the formatter can pull them from the
+C<subevents> attribute.
+
+A formatter can specify by implementing the C<hide_buffered()> method. If this
+method returns true then events generated inside a buffered subtest will not be
+sent independantly of the final subtest event.
+
+=back
+
+An example of how this is used is the L<Test2::Formatter::TAP> formatter. For
+unbuffered subtests the events are rendered as they are generated. At the end
+of the subtest the final subtest event is rendered, but the C<subevents>
+attribute is ignored. For buffered subtests the opposite occurs, the events are
+NOT rendered as they are generated, instead the C<subevents> attribute is used
+to render them all at once. This is useful when running subtests tests in
+parallel, without it the subtests would be garbled.
 
 =head1 OTHER API EXPORTS
 

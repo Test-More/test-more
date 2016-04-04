@@ -51,6 +51,8 @@ sub init {
     }
 }
 
+sub hide_buffered { 1 }
+
 sub encoding {
     my $self = shift;
 

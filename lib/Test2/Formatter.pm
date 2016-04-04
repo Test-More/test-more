@@ -13,6 +13,8 @@ sub import {
     Test2::API::test2_formatter_add($class);
 }
 
+sub hide_buffered { 1 }
+
 1;
 
 __END__
@@ -47,6 +49,8 @@ A formatter is any package or object with a C<write($event, $num)> method.
         ...
     }
 
+    sub hide_buffered { 1 }
+
     1;
 
 The C<write> method is a method, so it either gets a class or instance. The 2
@@ -54,6 +58,11 @@ arguments are the C<$event> object it should record, and the C<$assert_num>
 which is the number of the current assertion (ok), or the last assertion if
 this even is not itself an assertion. The assertion number may be any inyeger 0
 or greator, and may be undefined in some cases.
+
+The C<hide_buffered()> method must return a boolean. This is used to tell
+buffered subtests wether or not to send it events as they are being buffered.
+See L<Test2::API/"run_subtest(...)"> for more information.
+
 
 =head1 SOURCE
 
