@@ -15,6 +15,8 @@ sub summary {
     return $msg;
 }
 
+sub diagnostics { 1 }
+
 1;
 
 __END__

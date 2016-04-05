@@ -24,4 +24,6 @@ is($bail->summary, "Bail out!  evil", "Summary includes reason");
 $bail->set_reason("");
 is($bail->summary, "Bail out!", "Summary has no reason");
 
+ok($bail->diagnostics, "Bail events are counted as diagnostics");
+
 done_testing;

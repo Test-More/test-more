@@ -26,5 +26,6 @@ $diag = Test2::Event::Diag->new(
 
 like($diag->message, qr/^HASH\(.*\)$/, "stringified the input value");
 
+ok($diag->diagnostics, "Diag events are counted as diagnostics");
 
 done_testing;

@@ -33,4 +33,6 @@ is($one->meta('yyy'), '1221', "last call set the value to the default for future
 
 is($one->summary, 'My::MockEvent', "Default summary is event package");
 
+is($one->diagnostics, 0, "Not diagnostics by default");
+
 done_testing;

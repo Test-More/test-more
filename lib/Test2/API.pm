@@ -158,10 +158,10 @@ sub test2_formatter     { $INST->formatter }
 sub test2_formatters    { @{$INST->formatters} }
 sub test2_formatter_add { $INST->add_formatter(@_) }
 sub test2_formatter_set {
-    my ($formater) = @_;
-    croak "No formatter specified" unless $formater;
+    my ($formatter) = @_;
+    croak "No formatter specified" unless $formatter;
     croak "Global Formatter already set" if $INST->formatter_set;
-    $INST->set_formatter($formater);
+    $INST->set_formatter($formatter);
 }
 
 # Private, for use in Test2::API::Context

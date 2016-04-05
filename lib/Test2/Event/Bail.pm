@@ -29,6 +29,8 @@ sub summary {
     return "Bail out!";
 }
 
+sub diagnostics { 1 }
+
 1;
 
 __END__

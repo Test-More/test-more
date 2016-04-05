@@ -13,6 +13,8 @@ sub init {
 
 sub summary { $_[0]->{+MESSAGE} }
 
+sub diagnostics { 1 }
+
 1;
 
 __END__

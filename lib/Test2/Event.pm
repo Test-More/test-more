@@ -9,6 +9,7 @@ use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 
 sub causes_fail      { 0 }
 sub increments_count { 0 }
+sub diagnostics      { 0 }
 
 sub callback { }
 
@@ -154,6 +155,13 @@ The default is to simply return the event package name.
 Check if this event sets the testing plan. It will return an empty list if it
 does not. If it does set the plan it will return a list of 1 to 3 items in
 order: Expected Test Count, Test Directive, Reason for directive.
+
+=item $bool = $e->diagnostics
+
+True if the event contains diagnostics info. This is useful because a
+non-verbose harness may choose to hide events that are not in this category.
+Some formatters may choose to send these to STDERR instead of STDOUT to ensure
+they are seen.
 
 =back
 
