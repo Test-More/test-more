@@ -35,4 +35,6 @@ is($one->summary, 'My::MockEvent', "Default summary is event package");
 
 is($one->diagnostics, 0, "Not diagnostics by default");
 
+ok(!$one->in_subtest, "no subtest_id by default");
+
 done_testing;

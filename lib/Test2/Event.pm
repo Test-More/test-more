@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '0.000040';
 
-use Test2::Util::HashBase qw/trace nested/;
+use Test2::Util::HashBase qw/trace nested in_subtest/;
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 
 sub causes_fail      { 0 }

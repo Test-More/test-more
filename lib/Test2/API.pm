@@ -492,10 +492,11 @@ sub run_subtest {
     my $pass = $ok && $hub->is_passing;
     my $e = $ctx->build_event(
         'Subtest',
-        pass => $pass,
-        name => $name,
-        buffered  => $buffered,
-        subevents => \@events,
+        pass       => $pass,
+        name       => $name,
+        subtest_id => $hub->id,
+        buffered   => $buffered,
+        subevents  => \@events,
     );
 
     my $plan_ok = $hub->check_plan;

@@ -11,6 +11,7 @@ my $one = $st->new(
     pass      => 1,
     buffered  => 1,
     name      => 'foo',
+    subtest_id => "1-1-1",
 );
 
 ok($one->isa('Test2::Event::Ok'), "Inherit from Ok");

@@ -5,7 +5,7 @@ use warnings;
 our $VERSION = '0.000040';
 
 use base 'Test2::Event::Ok';
-use Test2::Util::HashBase qw{subevents buffered};
+use Test2::Util::HashBase qw{subevents buffered subtest_id};
 
 sub init {
     my $self = shift;

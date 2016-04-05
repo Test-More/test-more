@@ -326,10 +326,11 @@ tests subtest => sub {
     my $st = 'Test2::Event::Subtest';
 
     my $one = $st->new(
-        trace     => $trace,
-        pass      => 1,
-        buffered  => 1,
-        name      => 'foo',
+        trace      => $trace,
+        pass       => 1,
+        buffered   => 1,
+        name       => 'foo',
+        subtest_id => '1-1-1',
     );
 
     is_deeply(
@@ -355,6 +356,7 @@ tests subtest => sub {
         pass      => 0,
         buffered  => 1,
         name      => 'bar',
+        subtest_id => '1-1-1',
         subevents => [
             Test2::Event::Ok->new(trace => $trace, name => 'first',  pass => 1),
             Test2::Event::Ok->new(trace => $trace, name => 'second', pass => 0),
