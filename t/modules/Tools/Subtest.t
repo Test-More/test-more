@@ -24,14 +24,13 @@ if ($] > 5.020000) {
                 die "Ooops";
             };
         },
-        array {
+        subset {
             event Note => { message => 'Subtest: foo' };
             event Subtest => sub {
                 field pass => 1;
                 field name => 'Subtest: foo';
-                field subevents => array {
+                field subevents => subset {
                     event Plan => { directive => 'SKIP', reason => 'because' };
-                    end;
                 };
             }
         },
@@ -58,16 +57,16 @@ like(
             };
         };
     },
-    array {
+    subset {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
             field pass => 1;
             field name => 'Subtest: foo';
-            field subevents => array {
+            field subevents => subset {
                 event Subtest => sub {
                     field pass => 1;
                     field name => 'bar';
-                    field subevents => array {
+                    field subevents => subset {
                         event Ok => sub {
                             field name => 'pass';
                             field pass => 1;
@@ -89,14 +88,14 @@ like(
             ok(1, "pass");
         };
     },
-    array {
+    subset {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
             prop file => __FILE__;
             prop line => $lines[0];
             field pass => 1;
             field name => 'Subtest: foo';
-            field subevents => array {
+            field subevents => subset {
                 event Ok => sub {
                     prop file => __FILE__;
                     prop line => $lines[1];
@@ -118,14 +117,14 @@ like(
             ok(0, "fail");
         };
     },
-    array {
+    subset {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
             prop file => __FILE__;
             prop line => $lines[0];
             field pass => 0;
             field name => 'Subtest: foo';
-            field subevents => array {
+            field subevents => subset {
                 event Ok => sub {
                     prop file => __FILE__;
                     prop line => $lines[1];
@@ -148,14 +147,14 @@ like(
             done_testing;
         };
     },
-    array {
+    subset {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
             prop file => __FILE__;
             prop line => $lines[0];
             field pass => 1;
             field name => 'Subtest: foo';
-            field subevents => array {
+            field subevents => subset {
                 event Ok => sub {
                     prop file => __FILE__;
                     prop line => $lines[1];
@@ -163,7 +162,6 @@ like(
                     field pass => 1;
                 };
                 event Plan => { max => 1 };
-                end;
             };
         };
     },
@@ -180,14 +178,14 @@ like(
             ok(1, "pass");
         };
     },
-    array {
+    subset {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
             prop file => __FILE__;
             prop line => $lines[0];
             field pass => 1;
             field name => 'Subtest: foo';
-            field subevents => array {
+            field subevents => subset {
                 event Plan => { max => 1 };
                 event Ok => sub {
                     prop file => __FILE__;
@@ -195,7 +193,6 @@ like(
                     field name => 'pass';
                     field pass => 1;
                 };
-                end;
             };
         };
     },
@@ -212,16 +209,15 @@ like(
             ok(1, "pass");
         };
     },
-    array {
+    subset {
         event Note => { message => 'Subtest: foo' };
         event Subtest => sub {
             prop file => __FILE__;
             prop line => $lines[0];
             field pass => 1;
             field name => 'Subtest: foo';
-            field subevents => array {
+            field subevents => subset {
                 event Plan => { directive => 'SKIP', reason => 'bleh' };
-                end;
             };
         };
     },
@@ -236,10 +232,9 @@ like(
             ok(1, "should not see this");
         };
     },
-    array {
+    subset {
         event Note => { message => 'Subtest: foo' };
         event Bail => { reason => 'cause' };
-        end;
     },
     "Can bail out"
 );
@@ -253,13 +248,13 @@ like(
             ok(1, "pass");
         };
     },
-    array {
+    subset {
         event Subtest => sub {
             prop file => __FILE__;
             prop line => $lines[0];
             field pass => 1;
             field name => 'foo';
-            field subevents => array {
+            field subevents => subset {
                 event Ok => sub {
                     prop file => __FILE__;
                     prop line => $lines[1];
@@ -281,13 +276,13 @@ like(
             ok(0, "fail");
         };
     },
-    array {
+    subset {
         event Subtest => sub {
             prop file => __FILE__;
             prop line => $lines[0];
             field pass => 0;
             field name => 'foo';
-            field subevents => array {
+            field subevents => subset {
                 event Ok => sub {
                     prop file => __FILE__;
                     prop line => $lines[1];
@@ -310,13 +305,13 @@ like(
             done_testing;
         };
     },
-    array {
+    subset {
         event Subtest => sub {
             prop file => __FILE__;
             prop line => $lines[0];
             field pass => 1;
             field name => 'foo';
-            field subevents => array {
+            field subevents => subset {
                 event Ok => sub {
                     prop file => __FILE__;
                     prop line => $lines[1];
@@ -324,7 +319,6 @@ like(
                     field pass => 1;
                 };
                 event Plan => { max => 1 };
-                end;
             };
         };
     },
@@ -341,13 +335,13 @@ like(
             ok(1, "pass");
         };
     },
-    array {
+    subset {
         event Subtest => sub {
             prop file => __FILE__;
             prop line => $lines[0];
             field pass => 1;
             field name => 'foo';
-            field subevents => array {
+            field subevents => subset {
                 event Plan => { max => 1 };
                 event Ok => sub {
                     prop file => __FILE__;
@@ -355,7 +349,6 @@ like(
                     field name => 'pass';
                     field pass => 1;
                 };
-                end;
             };
         };
     },
@@ -372,15 +365,14 @@ like(
             ok(1, "pass");
         };
     },
-    array {
+    subset {
         event Subtest => sub {
             prop file => __FILE__;
             prop line => $lines[0];
             field pass => 1;
             field name => 'foo';
-            field subevents => array {
+            field subevents => subset {
                 event Plan => { directive => 'SKIP', reason => 'bleh' };
-                end;
             };
         };
     },
@@ -395,9 +387,8 @@ like(
             ok(1, "should not see this");
         };
     },
-    array {
+    subset {
         event Bail => { reason => 'cause' };
-        end;
     },
     "Can bail out"
 );
@@ -413,15 +404,14 @@ like(
             return;
         };
     },
-    array {
+    subset {
         event Subtest => sub {
             prop file => __FILE__;
             prop line => $lines[0];
             field pass => 1;
             field name => 'foo';
-            field subevents => array {
+            field subevents => subset {
                 event Plan => { directive => 'SKIP', reason => 'bleh' };
-                end;
             };
         };
     },
