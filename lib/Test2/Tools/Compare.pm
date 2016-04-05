@@ -23,6 +23,7 @@ use Test2::Compare::Hash();
 use Test2::Compare::Meta();
 use Test2::Compare::Number();
 use Test2::Compare::Object();
+use Test2::Compare::OrderedSubset();
 use Test2::Compare::Pattern();
 use Test2::Compare::Ref();
 use Test2::Compare::Regex();
@@ -34,29 +35,30 @@ use Test2::Compare::Wildcard();
 
 %Carp::Internal = (
     %Carp::Internal,
-    'Test2::Tools::Compare'    => 1,
-    'Test2::Compare::Array'    => 1,
-    'Test2::Compare::Custom'   => 1,
-    'Test2::Compare::Event'    => 1,
-    'Test2::Compare::Hash'     => 1,
-    'Test2::Compare::Meta'     => 1,
-    'Test2::Compare::Number'   => 1,
-    'Test2::Compare::Object'   => 1,
-    'Test2::Compare::Pattern'  => 1,
-    'Test2::Compare::Ref'      => 1,
-    'Test2::Compare::Regex'    => 1,
-    'Test2::Compare::Scalar'   => 1,
-    'Test2::Compare::Set'      => 1,
-    'Test2::Compare::String'   => 1,
-    'Test2::Compare::Undef'    => 1,
-    'Test2::Compare::Wildcard' => 1,
+    'Test2::Tools::Compare'         => 1,
+    'Test2::Compare::Array'         => 1,
+    'Test2::Compare::Custom'        => 1,
+    'Test2::Compare::Event'         => 1,
+    'Test2::Compare::Hash'          => 1,
+    'Test2::Compare::Meta'          => 1,
+    'Test2::Compare::Number'        => 1,
+    'Test2::Compare::Object'        => 1,
+    'Test2::Compare::Pattern'       => 1,
+    'Test2::Compare::Ref'           => 1,
+    'Test2::Compare::Regex'         => 1,
+    'Test2::Compare::Scalar'        => 1,
+    'Test2::Compare::Set'           => 1,
+    'Test2::Compare::String'        => 1,
+    'Test2::Compare::Undef'         => 1,
+    'Test2::Compare::Wildcard'      => 1,
+    'Test2::Compare::OrderedSubset' => 1,
 );
 
 our @EXPORT = qw/is like/;
 our @EXPORT_OK = qw{
     is like isnt unlike
     match mismatch validator
-    hash array object meta number string
+    hash array object meta number string subset
     in_set not_in_set check_set
     item field call prop check
     end filter_items
@@ -134,10 +136,11 @@ sub unlike($$;$@) {
     return $delta ? 1 : 0;
 }
 
-sub meta(&)   { build('Test2::Compare::Meta',   @_) }
-sub hash(&)   { build('Test2::Compare::Hash',   @_) }
-sub array(&)  { build('Test2::Compare::Array',  @_) }
-sub object(&) { build('Test2::Compare::Object', @_) }
+sub meta(&)   { build('Test2::Compare::Meta',          @_) }
+sub hash(&)   { build('Test2::Compare::Hash',          @_) }
+sub array(&)  { build('Test2::Compare::Array',         @_) }
+sub object(&) { build('Test2::Compare::Object',        @_) }
+sub subset(&) { build('Test2::Compare::OrderedSubset', @_) }
 
 my $FDNE = Test2::Compare::Custom->new(code => sub { $_ ? 0 : 1 }, name => 'FALSE', operator => 'FALSE() || !exists');
 my $DNE = Test2::Compare::Custom->new(code => sub { my %p = @_; $p{exists} ? 0 : 1 },          name => '<DOES NOT EXIST>', operator => '!exists');
@@ -855,7 +858,7 @@ This is a handy check that can be used with C<field()> to ensure that a field
 
 B<Note: None of these are exported by default, you need to request them.>
 
-    $check = hash {
+    $check = array {
         # Uses the next index, in this case index 0;
         item 'a';
 
@@ -904,8 +907,8 @@ check object.
 
 B<Note:> Items MUST be added in order.
 
-B<Note:> This function can only be used inside an array builder sub, and must
-be called in void context.
+B<Note:> This function can only be used inside an array or subset builder sub,
+and must be called in void context.
 
 =item filter_items { my @remaining = @_; ...; return @filtered }
 
@@ -927,6 +930,42 @@ This is a handy check that can be used with C<item()> to ensure that an index
 (D)oes (N)not (E)xist.
 
     item 5 => DNE();
+
+=back
+
+=head2 ORDERED SUBSET BUILDER
+
+B<Note: None of these are exported by default, you need to request them.>
+
+    $check = subset {
+        item 'a';
+        item 'b';
+        item 'c';
+
+        # Doesn't matter if the array has 'd', the check will skip past any
+        # unknown items until it finds the next one in our subset.
+
+        item 'e';
+        item 'f';
+    };
+
+=over 4
+
+=item $check = subset { ... }
+
+=item item $VAL
+
+=item item $CHECK
+
+Add an expected item to the subset.
+
+You can provide any value to check in C<$VAL>, or you can provide any valid
+check object.
+
+B<Note:> Items MUST be added in order.
+
+B<Note:> This function can only be used inside an array or subset builder sub,
+and must be called in void context.
 
 =back
 
