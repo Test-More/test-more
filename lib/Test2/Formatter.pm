@@ -2,7 +2,7 @@ package Test2::Formatter;
 use strict;
 use warnings;
 
-our $VERSION = '0.000040';
+our $VERSION = '0.000041';
 
 my %ADDED;
 sub import {
