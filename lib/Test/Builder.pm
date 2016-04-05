@@ -197,6 +197,7 @@ sub child {
     $meta->{parent} = $parent;
     $meta->{Test_Results} = [];
     $meta->{subevents} = $subevents;
+    $meta->{subtest_id} = $hub->id;
 
     $self->_add_ts_hooks;
 
@@ -267,7 +268,8 @@ FAIL
             $parent->ok( 0, sprintf q[No tests run for subtest "%s"], $meta->{Name} );
         }
         else {
-            $parent->{subevents} = $meta->{subevents};
+            $parent->{subevents}  = $meta->{subevents};
+            $parent->{subtest_id} = $meta->{subtest_id};
             $parent->ok( $chub->is_passing, $meta->{Name} );
         }
     }
@@ -621,11 +623,12 @@ sub ok {
     );
 
     my @attrs;
-    my $subevents = delete $self->{subevents};
+    my $subevents  = delete $self->{subevents};
+    my $subtest_id = delete $self->{subtest_id};
     my $epkg = 'Test2::Event::Ok';
     if ($subevents) {
         $epkg = 'Test2::Event::Subtest';
-        push @attrs => (subevents => $subevents);
+        push @attrs => (subevents => $subevents, subtest_id => $subtest_id);
     }
 
     my $e = bless {
