@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302013_017 2016-04-05 11:13:50-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Support subtest identification for events
     - Bump minimum Test2 version
 
