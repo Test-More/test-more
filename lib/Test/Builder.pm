@@ -654,7 +654,9 @@ sub _ok_debug {
     my $is_todo = defined($self->todo);
 
     my $msg = $is_todo ? "Failed (TODO)" : "Failed";
-    print {$self->_diag_fh} "\n" if $ENV{HARNESS_ACTIVE};
+
+    my $dfh = $self->_diag_fh;
+    print $dfh "\n" if $ENV{HARNESS_ACTIVE} && $dfh;
 
     my (undef, $file, $line) = $trace->call;
     if (defined $orig_name) {
@@ -1134,7 +1136,10 @@ BEGIN {
 
             my $ctx = $self->ctx;
             my $format = $ctx->hub->format;
-            return unless $format && $format->isa('Test2::Formatter::TAP');
+            unless ($format && $format->isa('Test2::Formatter::TAP')) {
+                $ctx->release;
+                return
+            }
 
             $format->$set($no) if defined $no;
 

@@ -105,6 +105,7 @@ my $original_is_passing;
 my $original_output_handle;
 my $original_failure_handle;
 my $original_todo_handle;
+my $original_formatter;
 
 my $original_harness_env;
 
@@ -116,6 +117,13 @@ sub _start_testing {
     # for now.  This needed so Test::Builder doesn't add extra spaces
     $original_harness_env = $ENV{HARNESS_ACTIVE} || 0;
     $ENV{HARNESS_ACTIVE} = 0;
+
+    my $hub = $t->{Hub} || Test2::API::test2_stack->top;
+    $original_formatter = $hub->format;
+    unless ($original_formatter && $original_formatter->isa('Test::Builder::Formatter')) {
+        my $fmt = Test::Builder::Formatter->new;
+        $hub->format($fmt);
+    }
 
     # remember what the handles were set to
     $original_output_handle  = $t->output();
@@ -325,6 +333,10 @@ sub test_test {
     # er, are we testing?
     croak "Not testing.  You must declare output with a test function first."
       unless $testing;
+
+
+    my $hub = $t->{Hub} || Test2::API::test2_stack->top;
+    $hub->format($original_formatter);
 
     # okay, reconnect the test suite back to the saved handles
     $t->output($original_output_handle);
