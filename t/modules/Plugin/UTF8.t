@@ -1,7 +1,6 @@
 use strict;
 use warnings;
-
-BEGIN { delete $ENV{T2_FORMATTER} }
+# HARNESS-NO-FORMATTER
 
 use Test2::Plugin::UTF8;
 use Test2::Tools::Basic qw/ok done_testing/;
