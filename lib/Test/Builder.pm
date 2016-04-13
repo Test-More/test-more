@@ -1119,7 +1119,7 @@ sub use_numbers {
 
     my $ctx = $self->ctx;
     my $format = $ctx->hub->format;
-    unless ($format && $format->isa('Test2::Formatter::TAP')) {
+    unless ($format && $format->can('no_numbers') && $format->can('set_no_numbers')) {
         return release $ctx, 0;
     }
 
