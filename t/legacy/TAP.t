@@ -1,6 +1,7 @@
 use strict;
 use warnings;
-BEGIN { delete $ENV{T2_FORMATTER} }
+# HARNESS-NO-FORMATTER
+
 BEGIN { require "t/tools.pl" };
 
 #########################
