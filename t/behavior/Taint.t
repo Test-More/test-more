@@ -1,4 +1,5 @@
 #!/usr/bin/env perl -T
+BEGIN { delete $ENV{T2_FORMATTER} }
 use Test2::API qw/context/;
 
 sub ok($;$@) {

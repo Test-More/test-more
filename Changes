@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Do not use custom formatter in sensitive tests
+
 0.000040  2016-04-05 11:09:52-07:00 America/Los_Angeles
 
     - Track subtest info inside subtest events

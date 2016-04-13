@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+BEGIN { delete $ENV{T2_FORMATTER} }
 BEGIN { require "t/tools.pl" };
 
 #########################
