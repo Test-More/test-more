@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Make some tests ignore custom formatters
+
 0.000026  2016-04-05 11:11:35-07:00 America/Los_Angeles
 
     - Add OrderedSubset compare tools

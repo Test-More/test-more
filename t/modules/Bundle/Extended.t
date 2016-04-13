@@ -1,3 +1,4 @@
+BEGIN { delete $ENV{T2_FORMATTER} }
 use Test2::Bundle::Extended;
 use Test2::API qw/test2_stack/;
 use PerlIO;
