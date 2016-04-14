@@ -97,11 +97,14 @@ sub _finalize {
     unless ($self->{+FORMATTER}) {
         my ($formatter, $source);
         if ($ENV{T2_FORMATTER}) {
-            $formatter = $ENV{T2_FORMATTER};
-            $source    = "set by the 'T2_FORMATTER' environment variable";
+            $source = "set by the 'T2_FORMATTER' environment variable";
 
-            $formatter = "Test2::Formatter::$formatter"
-                unless $formatter =~ s/^\+//;
+            if ($ENV{T2_FORMATTER} =~ m/^(\+)?(.*)$/) {
+                $formatter = $1 ? $2 : "Test2::Formatter::$2"
+            }
+            else {
+                $formatter = '';
+            }
         }
         elsif (@{$self->{+FORMATTERS}}) {
             ($formatter) = @{$self->{+FORMATTERS}};
