@@ -162,7 +162,7 @@ C<Test2::Tools::ClassicCompare::is_deeply()>.
         return Test2::Compare::MyCheck->new(stuff => $thing);
     }
 
-See L<Test2::Compare::Base> for detaisl about writing a custom check.
+See L<Test2::Compare::Base> for details about writing a custom check.
 
 =head1 EXPORTS
 
