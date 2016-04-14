@@ -459,7 +459,7 @@ versions of the tools.
 
 =head1 SYNOPSIS
 
-    use Test2 'Compare';
+    use Test2::Tools::Compare;
 
     # Hash for demonstration purposes
     my $some_hash = {a => 1, b => 2, c => 3};
@@ -488,7 +488,17 @@ associated. This is helpful for debugging as the failure output will tell you
 not only which fields was incorrect, but also the line on which you declared
 the field.
 
-    use Test2 'Compare' => '*';
+    use Test2::Tools::Compare qw{
+        is like isnt unlike
+        match mismatch validator
+        hash array object meta number string subset
+        in_set not_in_set check_set
+        item field call prop check
+        end filter_items
+        T F D DNE FDNE
+        event fail_events
+        exact_ref
+    };
 
     is(
         $some_hash,
