@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000014  2016-04-14 09:40:01-07:00 America/Los_Angeles
+
     - Support custom formatters
     - Add subtest info to events
 
