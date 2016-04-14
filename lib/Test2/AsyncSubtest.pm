@@ -11,6 +11,7 @@ our @CARP_NOT = qw/Test2::Util::HashBase/;
 use Carp qw/croak cluck/;
 use Test2::Util qw/get_tid CAN_THREAD CAN_FORK/;
 use Scalar::Util qw/blessed/;
+use List::Util qw/first/;
 
 use Scope::Guard();
 use Test2::API();
@@ -67,11 +68,13 @@ sub init {
 
     unless($self->{+HUB}) {
         my $ipc = Test2::API::test2_ipc();
+        my $formatter = Test2::API::test2_stack->top->format;
         my $args = delete $self->{hub_init_args} || {};
         my $hub = Test2::AsyncSubtest::Hub->new(
             %$args,
-            format => undef,
             ipc => $ipc,
+            nested => 1,
+            formatter => $formatter,
         );
         $self->{+HUB} = $hub;
     }
@@ -309,10 +312,11 @@ sub finish {
 
         my $e = $ctx->build_event(
             'Subtest',
-            pass      => $hub->is_passing,
-            name      => $self->{+NAME},
-            buffered  => 1,
-            subevents => $self->{+EVENTS},
+            pass       => $hub->is_passing,
+            subtest_id => $hub->id,
+            name       => $self->{+NAME},
+            buffered   => 1,
+            subevents  => $self->{+EVENTS},
             $todo ? (
                 todo => $todo,
                 effective_pass => 1,

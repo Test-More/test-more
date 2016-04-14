@@ -7,6 +7,8 @@ our $VERSION = '0.000014';
 use base 'Test2::Event';
 use Test2::Util::HashBase qw/id/;
 
+sub no_display { 1 }
+
 sub callback {
     my $self = shift;
     my ($hub) = @_;
