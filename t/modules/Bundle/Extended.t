@@ -7,6 +7,8 @@ imported_ok qw{
     ok pass fail diag note todo skip
     plan skip_all done_testing bail_out
 
+    gen_event
+
     intercept context
 
     cmp_ok

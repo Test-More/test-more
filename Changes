@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Add Tools/Event gen_event()
+    - Add Tools/Event to Extended bundle
+
 0.000027  2016-04-13 20:22:17-07:00 America/Los_Angeles
 
     - Make some tests ignore custom formatters

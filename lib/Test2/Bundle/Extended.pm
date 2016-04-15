@@ -16,6 +16,8 @@ use Test2::Plugin::ExitSummary;
 
 use Test2::API qw/intercept context/;
 
+use Test2::Tools::Event qw/gen_event/;
+
 use Test2::Tools::Defer qw/def do_def/;
 
 use Test2::Tools::Basic qw{
@@ -59,6 +61,8 @@ our @EXPORT = qw{
     plan skip_all done_testing bail_out
 
     intercept context
+
+    gen_event
 
     def do_def
 
