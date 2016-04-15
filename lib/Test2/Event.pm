@@ -10,6 +10,7 @@ use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 sub causes_fail      { 0 }
 sub increments_count { 0 }
 sub diagnostics      { 0 }
+sub no_display       { 0 }
 
 sub callback { }
 
@@ -162,6 +163,11 @@ True if the event contains diagnostics info. This is useful because a
 non-verbose harness may choose to hide events that are not in this category.
 Some formatters may choose to send these to STDERR instead of STDOUT to ensure
 they are seen.
+
+=item $bool = $e->no_display
+
+False by default. This will return true on events that should not be displayed
+by formatters.
 
 =back
 

@@ -84,7 +84,7 @@ sub write {
 
     my $type = ref($e);
 
-    my $converter = $CONVERTERS{$type} or return;
+    my $converter = $CONVERTERS{$type} || 'event_other';
     my @tap = $self->$converter($e, $self->{+NO_NUMBERS} ? undef : $num) or return;
 
     my $handles = $self->{+HANDLES};
@@ -280,6 +280,40 @@ sub event_plan {
     return [OUT_STD, "$plan\n"];
 }
 
+sub event_other {
+    my $self = shift;
+    my ($e, $num) = @_;
+    return if $e->no_display;
+
+    my @out;
+
+    if (my ($max, $directive, $reason) = $e->sets_plan) {
+        my $plan = "1..$max";
+        $plan .= " # $directive" if $directive;
+        $plan .= " $reason" if defined $reason;
+        push @out => [OUT_STD, "$plan\n"];
+    }
+
+    if ($e->increments_count) {
+        my $ok = "";
+        $ok .= "not " if $e->causes_fail;
+        $ok .= "ok";
+        $ok .= " $num" if defined($num);
+        $ok .= " - " . $e->summary if $e->summary;
+
+        push @out => [OUT_STD, "$ok\n"];
+    }
+    else { # Comment
+        my $handle =  ($e->causes_fail || $e->diagnostics) ? OUT_ERR : OUT_STD;
+        my $summary = $e->summary || ref($e);
+        chomp($summary);
+        $summary =~ s/^/# /smg;
+        push @out => [$handle, "$summary\n"];
+    }
+
+    return @out;
+}
+
 1;
 
 __END__
@@ -427,6 +461,11 @@ Process an L<Test2::Event::Skip> event.
 =item @out = $TAP->event_subtest($e, $num)
 
 Process an L<Test2::Event::Subtest> event.
+
+=item @out = $TAP->event_other($e, $num)
+
+Fallback for unregistered event types. It uses the L<Test2::Event> api to
+convert the event to TAP.
 
 =back
 
