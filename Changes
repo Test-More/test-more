@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix #17 (typo fix in docs)
+
 0.000042  2016-04-15 13:17:21-07:00 America/Los_Angeles
 
     - Let TAP render generic events

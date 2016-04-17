@@ -60,7 +60,7 @@ this even is not itself an assertion. The assertion number may be any inyeger 0
 or greator, and may be undefined in some cases.
 
 The C<hide_buffered()> method must return a boolean. This is used to tell
-buffered subtests wether or not to send it events as they are being buffered.
+buffered subtests whether or not to send it events as they are being buffered.
 See L<Test2::API/"run_subtest(...)"> for more information.
 
 
