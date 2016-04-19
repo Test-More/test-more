@@ -4,6 +4,9 @@ use warnings;
 
 our $VERSION = '0.000043';
 
+require Carp;
+$Carp::Internal{+__PACKAGE__} = 1;
+
 my %ATTRS;
 my %META;
 
