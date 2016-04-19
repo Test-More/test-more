@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '0.000043';
 
-use Test2::Util::HashBase qw/trace nested in_subtest/;
+use Test2::Util::HashBase qw/trace nested in_subtest subtest_id/;
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 
 sub causes_fail      { 0 }
@@ -168,6 +168,14 @@ they are seen.
 
 False by default. This will return true on events that should not be displayed
 by formatters.
+
+=item $id = $e->in_subtest
+
+If the event is inside a subtest this should have the subtest ID.
+
+=item $id = $e->subtest_id
+
+If the event is a final subtes event, this should contain the subtest ID.
 
 =back
 
