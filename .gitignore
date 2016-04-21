@@ -9,5 +9,7 @@ Build
 _build
 cover_db/
 MYMETA.*
-t2_lib
 Test-Simple-*
+/Test2-*/
+/.build
+TODO

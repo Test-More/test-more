@@ -1,5 +1,3 @@
-
-#!start included /Users/schwern/perl5/perlbrew/perls/perl-v5.12.2/lib/5.12.2/ExtUtils/MANIFEST.SKIP
 # Avoid version control files.
 \bRCS\b
 \bCVS\b
@@ -57,7 +55,6 @@
 ^MYMETA\.
 #!end included /Users/schwern/perl5/perlbrew/perls/perl-v5.12.2/lib/5.12.2/ExtUtils/MANIFEST.SKIP
 
-
 # Avoid this one test that doesn't work yet
 ^t/strays.t
 
@@ -72,12 +69,26 @@
 
 # Don't include our dist director
 ^Test-Simple-
-
-.travis.yml
-
-^t2_lib
+^Test2-*
 
 dist.ini
-^profiling/
 TODO
 ^xt/
+
+# Profiling stuff
+^nytp*
+^profile
+^profiling/
+
+# The extra tests are for dist author testing only
+\bxt
+
+# For github testing
+.travis.yml
+
+MANIFEST.SKIP
+
+# I never want this to go out.
+test.pl
+
+POD_TEMPLATE.pod

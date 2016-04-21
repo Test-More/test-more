@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More;
+BEGIN { require "t/tools.pl" };
 use Test2::Util qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
 
 diag "\nDIAGNOSTICS INFO IN CASE OF FAILURE:\n";
@@ -15,9 +15,16 @@ diag 'CAN_THREAD       ' . (CAN_THREAD      ? 'Yes' : 'No');
 diag "\nDEPENDENCIES:";
 
 my @depends = sort qw{
-    Test2 Carp File::Spec File::Temp PerlIO
-    Scalar::Util Storable overload utf8
+    Carp
+    File::Spec
+    File::Temp
+    PerlIO
+    Scalar::Util
+    Storable
+    Test2
+    overload
     threads
+    utf8
 };
 
 my %deps;
