@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Remove experimental status
+    - Update copyright dates
     - Better error messages when using Carp in Hashbase init()
     - Document 2 methods on Events
     - Fix #17 (typo fix in docs)

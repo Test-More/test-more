@@ -22,10 +22,6 @@ __END__
 
 Test2::Event::Waiting - Tell all procs/threads it is time to be done
 
-=head1 EXPERIMENTAL RELEASE
-
-This is an experimental release. Using this right now is not recommended.
-
 =head1 DESCRIPTION
 
 This event has no data of its own. This event is sent out by the IPC system
@@ -54,7 +50,7 @@ F<http://github.com/Test-More/Test2/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
