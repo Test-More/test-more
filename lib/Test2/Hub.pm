@@ -2,7 +2,8 @@ package Test2::Hub;
 use strict;
 use warnings;
 
-our $VERSION = '0.000043';
+our $VERSION = '1.302014_001';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Carp qw/carp croak confess/;
 use Test2::Util qw/get_tid/;

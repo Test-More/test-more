@@ -2,7 +2,8 @@ package Test2::IPC::Driver;
 use strict;
 use warnings;
 
-our $VERSION = '0.000043';
+our $VERSION = '1.302014_001';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Carp qw/confess longmess/;
 use Test2::Util::HashBase qw{no_fatal};

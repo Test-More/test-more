@@ -2,7 +2,8 @@ package Test2::Util::Trace;
 use strict;
 use warnings;
 
-our $VERSION = '0.000043';
+our $VERSION = '1.302014_001';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test2::Util qw/get_tid/;
 

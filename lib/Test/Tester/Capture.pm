@@ -2,6 +2,9 @@ use strict;
 
 package Test::Tester::Capture;
 
+our $VERSION = '1.302014_001';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 use Test::Builder;
 
 use vars qw( @ISA );
