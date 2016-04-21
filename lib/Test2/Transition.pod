@@ -151,6 +151,13 @@ No need to upgrade, old versions work fine. Only new versions will install.
 
 Fixed in version: 0.025
 
+=item Test::FITesque
+
+This was broken by a bugfix to how planning is done. The test was updated after
+the bugfix.
+
+Fixed in version: 0.04
+
 =item autouse
 
 A test broke because it depended on Scalar::Util not being loaded. Test2 loads
@@ -189,13 +196,6 @@ This had Test::Builder2 conditionals. This was fixed by removing the
 conditionals.
 
 Fixed in version: 1.1.4
-
-=item Test::FITesque
-
-This was broken by a bugfix to how planning is done. The test was updated after
-the bugfix.
-
-Fixed in version: 0.04
 
 =item Test::Modern
 
@@ -252,9 +252,6 @@ Still broken as of version: 0.32
 The current version, 0.005 is broken. A patch has been applied in git, and
 released in 0.006, but a version issue with 0.006 prevents its installation.
 
-This originally broke due to Test::Builder2 support code that needed to be
-removed.
-
 Still broken as of version: 0.005
 Potentially fixed in version: 0.006 (not installable)
 
@@ -268,9 +265,7 @@ Still broken in version: 0.052
 
 =item Test::Group
 
-It monkeypatches Test::Builder, and calls it "black magic" in the code. This
-was broken on legacy Test::Builder up until recently. They fixed it for legacy
-Test::Builder, but not the new one.
+It monkeypatches Test::Builder, and calls it "black magic" in the code.
 
 Still broken as of version: 0.20
 
