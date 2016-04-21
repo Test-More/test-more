@@ -64,6 +64,103 @@ important.
 The fix is to use the API specified in L<Test2::API> to look at or modify state
 as needed.
 
+=head1 DISTRIBUTIONS THAT BREAK OR NEED TO BE UPGRADED
+
+=head2 WORKS BUT WILL NOT INSTALL
+
+=over 4
+
+=item Test::DBIx::Class::Schema
+
+This module has a test that appears to work around a Test::Builder bug. The bug
+appears to have been fixed by Test2, which means the workaround causes a
+failure. This can be easily updated, but nobody has done so yet.
+
+=item Test::Kit
+
+This actually works fine, but will not install because L<Test::Aggregate> is in
+the dep chain.
+
+=back
+
+=head2 UPDATED
+
+=over 4
+
+=item Test::Exception
+
+Old versions work fine, but have a minor test name behavior that breaks with
+Test2. Old versions will no longer install because of this. The latest version
+on CPAN will install just fine. Upgrading is not required, but is recommended.
+
+=back
+
+=head2 NEED UPGRADES
+
+=over 4
+
+=item Test::SharedFork
+
+Old versions need to directly access Test::Builder singleton hash elements. The
+latest version on CPAN will still do this on old Test::Builder, but will defer
+to L<Test2::IPC> on Test2.
+
+=item Test::Builder:Clutch
+
+This works by doing overriding methods on the singleton, and directly accessing
+hash values on the singleton. A new version has been released that uses the
+Test2 API to accomplish the same result in a saner way.
+
+=back
+
+=head2 STILL BROKEN
+
+=over 4
+
+=item Test::Aggregate
+
+This distribution directly accesses the hash keys in the L<Test::Builder>
+singleton. It also approaches the problem from the wrong angle, please consider
+using L<Test2::Harness> (not yet released) or L<App::ForkProve> which both
+solve the same problem at the harness level.
+
+=item Test::Wrapper
+
+This module directly uses hash keys in the L<Test::BuildeR> singleton. This
+module is also obsolete thanks to the benefits of L<Test2>. Use C<intercept()>
+from L<Test2::API> to achieve a similar result.
+
+=item Test::ParallelSubtest
+
+This module overrides C<Test::Builder::subtest()> and
+C<Test::Builder::done_testing()>. It also directly accesses hash elements of
+the singleton. It has not yet been fixed.
+
+Alternatives: L<Test2::AsyncSubtest> and L<Test2::Workflow> (not stable).
+
+=item Test::Pretty
+
+See https://github.com/tokuhirom/Test-Pretty/issues/25
+
+The author admits the module is crazy, and he is awaiting a stable release of
+something new (Test2) to completely rewrite it in a sane way.
+
+=item Test::More::Prefix
+
+The current version, 0.005 is broken. A patch has been applied in git, and
+released in 0.006, but a version issue with 0.006 prevents its installation.
+
+This originally broke due to Test::Builder2 support code that needed to be
+removed.
+
+=item Net::BitTorrent
+
+The tests for this module directly access L<Test::Builder> hash keys. Most, if
+not all of these hash keys have public API methods that could be used instead
+to avoid the problem.
+
+=back
+
 =head1 MAKE ASSERTIONS -> SEND EVENTS
 
 =head2 LEGACY
