@@ -6,6 +6,7 @@
     - Better error messages when using Carp in Hashbase init()
     - Document 2 methods on Events
     - Fix Test2 #17 (typo fix in docs)
+    - Report version mismatches between Test::Builder and Test2
 
 *****************************************************************************
 *                                                                           *

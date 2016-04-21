@@ -371,6 +371,22 @@ sub set_exit {
     my $exit     = $?;
     my $new_exit = $exit;
 
+    if ($INC{'Test/Builder.pm'} && $Test::Builder::VERSION ne $Test2::API::VERSION) {
+        print STDERR <<"        EOT";
+
+********************************************************************************
+*                                                                              *
+*            Test::Builder -- Test2::API version mismatch detected             *
+*                                                                              *
+********************************************************************************
+   Test2::API Version: $Test2::API::VERSION
+Test::Builder Version: $Test::Builder::VERSION
+
+This is not a supported configuration, you will have problems.
+
+        EOT
+    }
+
     for my $ctx (values %{$self->{+CONTEXTS}}) {
         next unless $ctx;
 

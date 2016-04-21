@@ -253,6 +253,34 @@ if (CAN_THREAD && $] ge '5.010') {
 }
 
 {
+    $one->reset;
+    my $stderr = "";
+    {
+        local $INC{'Test/Builder.pm'} = __FILE__;
+        local $Test2::API::VERSION    = '0.002';
+        local $Test::Builder::VERSION = '0.001';
+        local *STDERR;
+        open(STDERR, '>', \$stderr) or print "Failed to open new STDERR";
+
+        $one->set_exit;
+    }
+
+    is($stderr, <<'    EOT', "Got warning about version mismatch");
+
+********************************************************************************
+*                                                                              *
+*            Test::Builder -- Test2::API version mismatch detected             *
+*                                                                              *
+********************************************************************************
+   Test2::API Version: 0.002
+Test::Builder Version: 0.001
+
+This is not a supported configuration, you will have problems.
+
+    EOT
+}
+
+{
     $one->reset();
     my @events;
     $one->stack->top->filter(sub { push @events => $_[1]; undef});
