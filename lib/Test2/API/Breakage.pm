@@ -2,6 +2,9 @@ package Test2::API::Breakage;
 use strict;
 use warnings;
 
+our $VERSION = '1.302014_001';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+
 our @EXPORT_OK = qw{
     upgrade_suggested
     upgrade_required
