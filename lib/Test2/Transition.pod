@@ -93,6 +93,40 @@ Old versions work fine, but have a minor test name behavior that breaks with
 Test2. Old versions will no longer install because of this. The latest version
 on CPAN will install just fine. Upgrading is not required, but is recommended.
 
+=item autouse
+
+A test broke because it depended on Scalar::Util not being loaded. Test2 loads
+Scalar::Util. The test was updated to load Test2 after checking Scalar::Util's
+load status.
+
+There is no need to upgrade if you already have it installed.
+
+=item Data::Peek
+
+Some tests depended on C<$!> and C<$?> being modified in subtle ways. A patch
+was applied to correct things that changed.
+
+The module itself works fine, there is no need to upgrade.
+
+=item circular::require
+
+Some tests were fragile and required base.pm to be loaded at a late stage.
+Test2 was loading base.pm too early. The tests were updated to fix this.
+
+The module itself never broke, you do not need to upgrade.
+
+=item Test::Module::Used
+
+A test worked around a now-fixed planning bug. There is no need to upgrade if
+you have an old version installed. New versions install fine if you want them.
+
+=item Test::Moose::More
+
+Some tests were fragile, but have been fixed. The actual breakage was from the
+subtest comment indentation change.
+
+No need to upgrade, old versions work fine. Only new versions will install.
+
 =back
 
 =head2 NEED UPGRADES
@@ -110,6 +144,22 @@ to L<Test2::IPC> on Test2.
 This works by doing overriding methods on the singleton, and directly accessing
 hash values on the singleton. A new version has been released that uses the
 Test2 API to accomplish the same result in a saner way.
+
+=item Test::Dist::VersionSync
+
+This had Test::Builder2 conditionals. This was fixed by removing the
+conditionals.
+
+=item Test::FITesque
+
+This was broken by a bugfix to how planning is done. The test was updated after
+the bugfix.
+
+=item Test::Modern
+
+This relied on C<< Test::Builder->_try() >> which was a private method,
+documented as something nobody should use. This was fixed by using a different
+tool.
 
 =back
 
@@ -158,6 +208,17 @@ removed.
 The tests for this module directly access L<Test::Builder> hash keys. Most, if
 not all of these hash keys have public API methods that could be used instead
 to avoid the problem.
+
+=item Test::Group
+
+It monkeypatches Test::Builder, and calls it "black magic" in the code. This
+was broken on legacy Test::Builder up until recently. They fixed it for legacy
+Test::Builder, but not the new one.
+
+=item Test::Flatten
+
+This modifies the Test::Builder internals in many ways. A better was to
+accomplish the goal of this module is to write your own subtest function.
 
 =back
 

@@ -5,4 +5,6 @@ Test::ParallelSubtest
 Test::Pretty
 Test::Kit
 Test::More::Prefix
+Test::Group
+Test::Flatten
 Net::BitTorrent
