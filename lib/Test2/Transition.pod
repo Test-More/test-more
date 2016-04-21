@@ -2,28 +2,35 @@
 
 =head1 NAME
 
-Test2::Transition - How to transition from Test::Builder to Test2
+Test2::Transition - Transition notes when upgrading to Test2
 
 =head1 DESCRIPTION
 
-This document demonstrates how to transition code from Test::Builder to Test2.
-This is a list of things people frequently need to do, and how to do them with
-both systems. This document also provides a list of things that had been done
-in legacy Test::Builder that will break with Test2.
+This is where gotchas and breakages related to the Test2 upgrade are
+documented. The upgrade causes Test::Builder to defer to Test2 uner the hood.
+This transition is mostly transparent, but there are a few cases that can trip
+you up.
 
 =head1 THINGS THAT BREAK
 
-=head2 Test::Builder1.5/2 Support
+This is the list of scenarios that break with the new internals.
+
+=head2 Test::Builder1.5/2 conditionals
 
 =head3 The Problem
 
-If you modified your code or tests such that they have behavior that is
-conditional on the Test-Simple version, it is likely to break. A vast majority
-of modules broken by Test2 fall into this category.
+a few years back there were two attempts to upgrade/replace Test::Builder.
+Confusingly these were called Test::Builder2 and Test::Builder1.5, in that
+order. Many people put conditionals in their code to check the Test::Builder
+version number and adapt their code accordingly.
+
+The Test::Builder2/1.5 projects both died out. Now the conditional code poeple
+added has become a mine field. A vast majority of modules broken by Test2 fall
+into this category.
 
 =head3 The Fix
 
-The fix is to remove all Test::Builder1.5/2.0 related code. Either use the
+The fix is to remove all Test::Builder1.5/2 related code. Either use the
 lagacy Test::Builder API, or use Test2 directly.
 
 =head2 Replacing the Test::Builder singleton
@@ -31,12 +38,12 @@ lagacy Test::Builder API, or use Test2 directly.
 =head3 The Problem
 
 Some test modules would replace the Test::Builder singleton instance with their
-own instance or subclass. This was usually done to intercept, or modify results
+own instance or subclass. This was usually done to intercept or modify results
 as they happened.
 
 The Test::Builder singleton is now a simple compatibility wrapper around
 Test2. The Test::Builder singleton is no longer the central place for
-results. Most results bypass the Test::Builder singleton completely, which
+results. Many results bypass the Test::Builder singleton completely, which
 breaks and behavior intended when replacing the singleton.
 
 =head3 The Fix
@@ -66,7 +73,15 @@ as needed.
 
 =head1 DISTRIBUTIONS THAT BREAK OR NEED TO BE UPGRADED
 
-=head2 WORKS BUT WILL NOT INSTALL
+This is a list of cpan modules that have been known to have been broken by the
+upgrade at one point.
+
+=head2 WORKS BUT TESTS WILL FAIL
+
+These modules still function correctly, but their test suites will not pass. If
+you already have these modules installed then you can continue to use them. If
+you are trying to install them after upgrading Test::Builder you will need to
+force installation, or bypass the broken tests.
 
 =over 4
 
@@ -76,14 +91,21 @@ This module has a test that appears to work around a Test::Builder bug. The bug
 appears to have been fixed by Test2, which means the workaround causes a
 failure. This can be easily updated, but nobody has done so yet.
 
+Known broken in versions: 1.0.9 and older
+
 =item Test::Kit
 
 This actually works fine, but will not install because L<Test::Aggregate> is in
 the dep chain.
 
+See the L<Test::Aggregate> info below for additional information.
+
 =back
 
-=head2 UPDATED
+=head2 UPGRADE SUGGESTED
+
+These are modules that did not break, but had broken test suites that have
+since been fixed.
 
 =over 4
 
@@ -93,13 +115,7 @@ Old versions work fine, but have a minor test name behavior that breaks with
 Test2. Old versions will no longer install because of this. The latest version
 on CPAN will install just fine. Upgrading is not required, but is recommended.
 
-=item autouse
-
-A test broke because it depended on Scalar::Util not being loaded. Test2 loads
-Scalar::Util. The test was updated to load Test2 after checking Scalar::Util's
-load status.
-
-There is no need to upgrade if you already have it installed.
+Fixed in version: 0.43
 
 =item Data::Peek
 
@@ -108,6 +124,8 @@ was applied to correct things that changed.
 
 The module itself works fine, there is no need to upgrade.
 
+Fixed in version: 0.45
+
 =item circular::require
 
 Some tests were fragile and required base.pm to be loaded at a late stage.
@@ -115,10 +133,14 @@ Test2 was loading base.pm too early. The tests were updated to fix this.
 
 The module itself never broke, you do not need to upgrade.
 
+Fixed in version: 0.12
+
 =item Test::Module::Used
 
 A test worked around a now-fixed planning bug. There is no need to upgrade if
 you have an old version installed. New versions install fine if you want them.
+
+Fixed in version: 0.2.5
 
 =item Test::Moose::More
 
@@ -127,9 +149,21 @@ subtest comment indentation change.
 
 No need to upgrade, old versions work fine. Only new versions will install.
 
+Fixed in version: 0.025
+
+=item autouse
+
+A test broke because it depended on Scalar::Util not being loaded. Test2 loads
+Scalar::Util. The test was updated to load Test2 after checking Scalar::Util's
+load status.
+
+There is no need to upgrade if you already have it installed.
+
+Fixed in version: 1.11
+
 =back
 
-=head2 NEED UPGRADES
+=head2 NEED TO UPGRADE
 
 =over 4
 
@@ -139,27 +173,37 @@ Old versions need to directly access Test::Builder singleton hash elements. The
 latest version on CPAN will still do this on old Test::Builder, but will defer
 to L<Test2::IPC> on Test2.
 
-=item Test::Builder:Clutch
+Fixed in version: 0.35
+
+=item Test::Builder::Clutch
 
 This works by doing overriding methods on the singleton, and directly accessing
 hash values on the singleton. A new version has been released that uses the
 Test2 API to accomplish the same result in a saner way.
+
+Fixed in version: 0.07
 
 =item Test::Dist::VersionSync
 
 This had Test::Builder2 conditionals. This was fixed by removing the
 conditionals.
 
+Fixed in version: 1.1.4
+
 =item Test::FITesque
 
 This was broken by a bugfix to how planning is done. The test was updated after
 the bugfix.
+
+Fixed in version: 0.04
 
 =item Test::Modern
 
 This relied on C<< Test::Builder->_try() >> which was a private method,
 documented as something nobody should use. This was fixed by using a different
 tool.
+
+Fixed in version: 0.012
 
 =back
 
@@ -174,11 +218,15 @@ singleton. It also approaches the problem from the wrong angle, please consider
 using L<Test2::Harness> (not yet released) or L<App::ForkProve> which both
 solve the same problem at the harness level.
 
+Still broken as of version: 0.373
+
 =item Test::Wrapper
 
 This module directly uses hash keys in the L<Test::BuildeR> singleton. This
 module is also obsolete thanks to the benefits of L<Test2>. Use C<intercept()>
 from L<Test2::API> to achieve a similar result.
+
+Still broken as of version: 0.3.0
 
 =item Test::ParallelSubtest
 
@@ -188,12 +236,16 @@ the singleton. It has not yet been fixed.
 
 Alternatives: L<Test2::AsyncSubtest> and L<Test2::Workflow> (not stable).
 
+Still broken as of version: 0.05
+
 =item Test::Pretty
 
 See https://github.com/tokuhirom/Test-Pretty/issues/25
 
 The author admits the module is crazy, and he is awaiting a stable release of
 something new (Test2) to completely rewrite it in a sane way.
+
+Still broken as of version: 0.32
 
 =item Test::More::Prefix
 
@@ -203,11 +255,16 @@ released in 0.006, but a version issue with 0.006 prevents its installation.
 This originally broke due to Test::Builder2 support code that needed to be
 removed.
 
+Still broken as of version: 0.005
+Potentially fixed in version: 0.006 (not installable)
+
 =item Net::BitTorrent
 
 The tests for this module directly access L<Test::Builder> hash keys. Most, if
 not all of these hash keys have public API methods that could be used instead
 to avoid the problem.
+
+Still broken in version: 0.052
 
 =item Test::Group
 
@@ -215,10 +272,14 @@ It monkeypatches Test::Builder, and calls it "black magic" in the code. This
 was broken on legacy Test::Builder up until recently. They fixed it for legacy
 Test::Builder, but not the new one.
 
+Still broken as of version: 0.20
+
 =item Test::Flatten
 
 This modifies the Test::Builder internals in many ways. A better was to
 accomplish the goal of this module is to write your own subtest function.
+
+Still broken as of version: 0.11
 
 =back
 
