@@ -190,7 +190,7 @@ match the hub you expect (passed in as an argument) it will throw an exception.
 =head1 SOURCE
 
 The source code repository for Test2 can be found at
-F<http://github.com/Test-More/Test2/>.
+F<http://github.com/Test-More/test-more/>.
 
 =head1 MAINTAINERS
 

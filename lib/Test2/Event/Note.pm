@@ -51,7 +51,7 @@ The message for the note.
 =head1 SOURCE
 
 The source code repository for Test2 can be found at
-F<http://github.com/Test-More/Test2/>.
+F<http://github.com/Test-More/test-more/>.
 
 =head1 MAINTAINERS
 

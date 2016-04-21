@@ -239,7 +239,7 @@ sub context {
     $_->(\%params) for @$ACQUIRE_CBS;
     map $_->(\%params), @{$hub->{_context_acquire}} if $hub->{_context_acquire};
 
-    # This is for https://github.com/Test-More/Test2/issues/16
+    # This is for https://github.com/Test-More/test-more/issues/16
     # and https://rt.perl.org/Public/Bug/Display.html?id=127774
     my $phase = ${^GLOBAL_PHASE} || 'NA';
     my $end_phase = $ENDING || $phase eq 'END' || $phase eq 'DESTRUCT';
@@ -1223,7 +1223,7 @@ can be added to this package.
 =head1 SOURCE
 
 The source code repository for Test2 can be found at
-F<http://github.com/Test-More/Test2/>.
+F<http://github.com/Test-More/test-more/>.
 
 =head1 MAINTAINERS
 
