@@ -281,6 +281,32 @@ This is not a supported configuration, you will have problems.
 }
 
 {
+    require Test2::API::Breakage;
+    no warnings qw/redefine once/;
+    my $ran = 0;
+    local *Test2::API::Breakage::report = sub { $ran++; return "foo" };
+    use warnings qw/redefine once/;
+    $one->reset();
+
+    my $stderr = "";
+    {
+        local *STDERR;
+        open(STDERR, '>', \$stderr) or print "Failed to open new STDERR";
+        local $? = 255;
+        $one->set_exit;
+    }
+
+    is($stderr, <<"    EOT", "Reported bad modules");
+
+You have loaded versions of test modules known to have problems with Test2.
+This could explain some test failures.
+foo
+
+    EOT
+}
+
+
+{
     $one->reset();
     my @events;
     $one->stack->top->filter(sub { push @events => $_[1]; undef});

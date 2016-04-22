@@ -456,6 +456,17 @@ This is not a supported configuration, you will have problems.
 
     $new_exit = 255 if $new_exit > 255;
 
+    if ($new_exit) {
+        require Test2::API::Breakage;
+        my @warn = Test2::API::Breakage->report();
+
+        if (@warn) {
+            print STDERR "\nYou have loaded versions of test modules known to have problems with Test2.\nThis could explain some test failures.\n";
+            print STDERR "$_\n" for @warn;
+            print STDERR "\n";
+        }
+    }
+
     $? = $new_exit;
 }
 

@@ -5,6 +5,8 @@ use warnings;
 our $VERSION = '1.302014_001';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
+use Test2::Util qw/pkg_to_file/;
+
 our @EXPORT_OK = qw{
     upgrade_suggested
     upgrade_required
@@ -14,36 +16,68 @@ use base 'Exporter';
 
 sub upgrade_suggested {
     return (
-        'Test::Exception'    => 0.43,
-        'Data::Peek'         => 0.45,
-        'circular::require'  => 0.12,
-        'Test::Module::Used' => 0.2.5,
-        'Test::Moose::More'  => 0.025,
-        'Test::FITesque'     => 0.04,
-        'autouse'            => 1.11,
+        'Test::Exception'    => '0.43',
+        'Test::FITesque'     => '0.04',
+        'Test::Module::Used' => '0.2.5',
+        'Test::Moose::More'  => '0.025',
     );
 }
 
 sub upgrade_required {
     return (
-        'Test::SharedFork'        => 0.35,
-        'Test::Builder::Clutch'   => 0.07,
-        'Test::Dist::VersionSync' => 1.1.4,
-        'Test::Modern'            => 0.012,
+        'Test::Builder::Clutch'   => '0.07',
+        'Test::Dist::VersionSync' => '1.1.4',
+        'Test::Modern'            => '0.012',
+        'Test::SharedFork'        => '0.35',
     );
 }
 
 sub known_broken {
     return (
-        'Test::Aggregate'       => 0.373,
-        'Test::Wrapper'         => 0.3.0,
-        'Test::ParallelSubtest' => 0.05,
-        'Test::Pretty'          => 0.32,
-        'Test::More::Prefix'    => 0.005,
-        'Net::BitTorrent'       => 0.052,
-        'Test::Group'           => 0.20,
-        'Test::Flatten'         => 0.11,
+        'Net::BitTorrent'       => '0.052',
+        'Test::Aggregate'       => '0.373',
+        'Test::Flatten'         => '0.11',
+        'Test::Group'           => '0.20',
+        'Test::More::Prefix'    => '0.005',
+        'Test::ParallelSubtest' => '0.05',
+        'Test::Pretty'          => '0.32',
+        'Test::Wrapper'         => '0.3.0',
     );
+}
+
+sub report {
+    my $class = shift;
+    my ($require) = @_;
+
+    my %suggest  = __PACKAGE__->upgrade_suggested();
+    my %required = __PACKAGE__->upgrade_required();
+    my %broken   = __PACKAGE__->known_broken();
+
+    my @warn;
+    for my $mod (keys %suggest) {
+        my $file = pkg_to_file($mod);
+        next unless $INC{$file} || ($require && eval { require $file; 1 });
+        my $want = $suggest{$mod};
+        next if eval { $mod->VERSION($want); 1 };
+        push @warn => " * Module '$mod' is outdated, we recommed updating above $want.";
+    }
+
+    for my $mod (keys %required) {
+        my $file = pkg_to_file($mod);
+        next unless $INC{$file} || ($require && eval { require $file; 1 });
+        my $want = $required{$mod};
+        next if eval { $mod->VERSION($want); 1 };
+        push @warn => " * Module '$mod' is outdated and known to be broken, please update to $want or higher.";
+    }
+
+    for my $mod (keys %broken) {
+        my $file = pkg_to_file($mod);
+        next unless $INC{$file} || ($require && eval { require $file; 1 });
+        my $tested = $broken{$mod};
+        push @warn => " * Module '$mod' is known to be broken in version $tested and below, newer versions have not been tested. You have: " . $mod->VERSION;
+    }
+
+    return @warn;
 }
 
 1;

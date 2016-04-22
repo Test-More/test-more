@@ -1,18 +1,26 @@
 use strict;
 use warnings;
 
-BEGIN { require "t/tools.pl" };
 use Test2::Util qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
 
-diag "\nDIAGNOSTICS INFO IN CASE OF FAILURE:\n";
-diag "\nPerl: $]";
+sub diag {
+    print STDERR "\n" unless @_;
+    print STDERR "# $_\n" for @_;
+}
 
-diag "\nCAPABILITIES:";
+diag;
+diag "DIAGNOSTICS INFO IN CASE OF FAILURE:";
+diag;
+diag "Perl: $]";
+
+diag;
+diag "CAPABILITIES:";
 diag 'CAN_FORK         ' . (CAN_FORK        ? 'Yes' : 'No');
 diag 'CAN_REALLY_FORK  ' . (CAN_REALLY_FORK ? 'Yes' : 'No');
 diag 'CAN_THREAD       ' . (CAN_THREAD      ? 'Yes' : 'No');
 
-diag "\nDEPENDENCIES:";
+diag;
+diag "DEPENDENCIES:";
 
 my @depends = sort qw{
     Carp
@@ -37,5 +45,14 @@ for my $dep (@depends) {
 
 diag sprintf("%-${len}s  %s", $_, $deps{$_}) for @depends;
 
-ok(1);
-done_testing;
+require Test2::API::Breakage;
+my @warn = Test2::API::Breakage->report(1);
+
+diag;
+if (@warn) {
+    diag "You have the following module versions known to have issues with Test2:";
+    diag "$_" for @warn;
+}
+
+print "ok 1\n";
+print "1..1\n";
