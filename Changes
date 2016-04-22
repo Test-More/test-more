@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - RC1
     - Merge Test2 into the Test-Simple dist
     - Remove experimental status
     - Update copyright dates
@@ -8,6 +9,7 @@
     - Fix Test2 #17 (typo fix in docs)
     - Report version mismatches between Test::Builder and Test2
     - Update transition docs
+    - Breakage library and warnings
 
 *****************************************************************************
 *                                                                           *
