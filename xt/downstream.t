@@ -21,13 +21,8 @@ ok(run_string(<<"EOT"), "Installed cpanm") || exit 1;
 perlbrew exec --with $lib cpan App::cpanminus
 EOT
 
-ok(run_string(<<"EOT"), "Installed Test2") || exit 1;
-cd ../Test2
-perlbrew exec --with $lib cpanm Test2-0.000040.tar.gz
-EOT
-
 ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
-perlbrew exec --with $lib cpanm Test-Simple-1.302013_016.tar.gz
+perlbrew exec --with $lib cpanm Test-Simple-1.302014_001.tar.gz
 EOT
 
 ok(run_string(<<"EOT"), "Installed Archive::Zip") || exit 1;
