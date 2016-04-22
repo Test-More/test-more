@@ -6,7 +6,7 @@ Test::Trap
 Test::BDD::Cucumber
 Test::Base
 Test::Bomb
-Test::Builder:Clutch
+Test::Builder::Clutch
 Test::Class::Moose
 Test::Classy
 Test::Differences
