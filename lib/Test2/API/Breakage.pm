@@ -29,6 +29,8 @@ sub upgrade_required {
         'Test::Dist::VersionSync' => '1.1.4',
         'Test::Modern'            => '0.012',
         'Test::SharedFork'        => '0.35',
+
+        'Test::Clustericious::Cluster' => '0.31',
     );
 }
 
