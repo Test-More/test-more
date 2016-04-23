@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - RC4
+    - Update breakage info
+    - Fix IPC files driver to use the most significant data in the shm (needs test)
+
 1.302014_003 2016-04-23 03:20:36-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - RC3
