@@ -1184,6 +1184,7 @@ sub note {
 sub explain {
     my $self = shift;
 
+    local ($@, $!);
     require Data::Dumper;
 
     return map {
@@ -1652,7 +1653,10 @@ sub _print_comment {
 sub coordinate_forks {
     my $self = shift;
 
-    require Test2::IPC;
+    {
+        local ($@, $!);
+        require Test2::IPC;
+    }
     Test2::IPC->import;
     Test2::API::test2_ipc_enable_polling();
     my $ipc = Test2::IPC::apply_ipc($self->{Stack});
