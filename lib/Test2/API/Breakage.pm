@@ -16,7 +16,7 @@ use base 'Exporter';
 
 sub upgrade_suggested {
     return (
-        'Test::Exception'    => '0.43',
+        'Test::Exception'    => '0.42',
         'Test::FITesque'     => '0.04',
         'Test::Module::Used' => '0.2.5',
         'Test::Moose::More'  => '0.025',
@@ -28,7 +28,7 @@ sub upgrade_required {
         'Test::Builder::Clutch'   => '0.07',
         'Test::Dist::VersionSync' => '1.1.4',
         'Test::Modern'            => '0.012',
-        'Test::SharedFork'        => '0.35',
+        'Test::SharedFork'        => '0.34',
 
         'Test::Clustericious::Cluster' => '0.31',
     );
@@ -44,6 +44,8 @@ sub known_broken {
         'Test::ParallelSubtest' => '0.05',
         'Test::Pretty'          => '0.32',
         'Test::Wrapper'         => '0.3.0',
+
+        'Test::DBIx::Class::Schema' => '1.0.9',
     );
 }
 
