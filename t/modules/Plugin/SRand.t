@@ -89,6 +89,7 @@ sub intercept_2(&) {
 
     my $hooks = Test2::API::test2_list_exit_callbacks();
     delete $ENV{HARNESS_IS_VERBOSE};
+    $ENV{HARNESS_ACTIVE} = 1;
     warning { $events = intercept { $CLASS->import() } };
     warning { $events = intercept { $CLASS->import() } };
     is(Test2::API::test2_list_exit_callbacks, $hooks + 1, "added hook, but only once");
