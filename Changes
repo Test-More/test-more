@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302014_003 2016-04-23 03:20:36-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - RC3
     - Localize $@ and $! when loading Data::Dumper in explain()
 
