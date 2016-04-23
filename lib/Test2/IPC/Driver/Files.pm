@@ -18,7 +18,7 @@ use Test2::Util qw/try get_tid pkg_to_file/;
 use Test2::API qw/test2_ipc_set_pending/;
 
 sub use_shm { 1 }
-sub shm_size { 64 }
+sub shm_size() { 64 }
 
 sub is_viable { 1 }
 
@@ -154,7 +154,7 @@ do so if Test::Builder is loaded for legacy reasons.
     my ($ok, $err) = try {
         Storable::store($e, $file);
         rename($file, $ready) or $self->abort("Could not rename file '$file' -> '$ready'");
-        test2_ipc_set_pending($file);
+        test2_ipc_set_pending(substr($file, -(shm_size)));
     };
     if (!$ok) {
         my $src_file = __FILE__;
