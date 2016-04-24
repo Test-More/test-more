@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302014_006 2016-04-24 02:31:13-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - RC6
     - Remove reduntant and problematic parts of 00-report.t
     - No changes to actual code, just a test that provides diags
