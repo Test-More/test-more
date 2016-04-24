@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - RC7
+    - Fix #642 - Persistent environments need to have ENDING flag cleared
+
 1.302014_006 2016-04-24 02:31:13-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - RC6
