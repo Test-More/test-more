@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302014_007 2016-04-24 13:09:03-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - RC7
     - Fix #642 - Persistent environments need to have ENDING flag cleared
 
