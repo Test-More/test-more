@@ -2,7 +2,7 @@ package Test::Builder::Formatter;
 use strict;
 use warnings;
 
-our $VERSION = '1.302014_006';
+our $VERSION = '1.302014_007';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use base 'Test2::Formatter::TAP';
