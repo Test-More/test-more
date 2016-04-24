@@ -1,11 +1,37 @@
 use strict;
 use warnings;
 
+my $exit = 0;
+END{ $? = $exit }
+
+my ($stderr, $stdout);
+my $fake = "";
+BEGIN {
+    $exit = 0;
+    END{ $? = $exit }
+    print STDOUT "ok 1\n";
+    print STDOUT "1..1\n";
+
+    open($stdout, '>&', *STDOUT) or die "Could not clone STDOUT";
+    open($stderr, '>&', *STDERR) or die "Could not clone STDERR";
+
+    close(STDOUT) or die "Could not close STDOUT";
+    unless(close(STDERR)) {
+        print $stderr "Could not close STDERR\n";
+        $exit = 255;
+        exit $exit;
+    }
+
+    open(STDOUT, '>>', \$fake);
+    open(STDERR, '>>', \$fake);
+}
+
 use Test2::Util qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
+use Test2::API;
 
 sub diag {
-    print STDERR "\n" unless @_;
-    print STDERR "# $_\n" for @_;
+    print $stderr "\n" unless @_;
+    print $stderr "# $_\n" for @_;
 }
 
 diag;
@@ -54,5 +80,4 @@ if (@warn) {
     diag "$_" for @warn;
 }
 
-print "ok 1\n";
-print "1..1\n";
+END{ $? = $exit }
