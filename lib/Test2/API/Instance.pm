@@ -224,7 +224,7 @@ sub load {
         # and https://rt.perl.org/Public/Bug/Display.html?id=127774
         # END blocks run in reverse order. This insures the END block is loaded
         # as late as possible. It will not solve all cases, but it helps.
-        eval "END { Test2::API->_set_is_end() }; 1" or die $@;
+        eval "END { Test2::API::test2_set_is_end() }; 1" or die $@;
 
         $self->{+LOADED} = 1;
         $_->() for @{$self->{+POST_LOAD_CALLBACKS}};

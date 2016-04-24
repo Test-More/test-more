@@ -358,6 +358,8 @@ sub name {
 sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my ($self) = @_;
 
+    Test2::API::test2_set_is_end(0);
+
     # We leave this a global because it has to be localized and localizing
     # hash keys is just asking for pain.  Also, it was documented.
     $Level = 1;
