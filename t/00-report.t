@@ -71,13 +71,4 @@ for my $dep (@depends) {
 
 diag sprintf("%-${len}s  %s", $_, $deps{$_}) for @depends;
 
-require Test2::API::Breakage;
-my @warn = Test2::API::Breakage->report(1);
-
-diag;
-if (@warn) {
-    diag "You have the following module versions known to have issues with Test2:";
-    diag "$_" for @warn;
-}
-
 END{ $? = $exit }
