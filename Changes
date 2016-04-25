@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - RC8
+    - Fix bug when using defined, but empty (or space) as a test name in a subtest
+
 1.302014_007 2016-04-24 13:09:03-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - RC7

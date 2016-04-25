@@ -237,7 +237,7 @@ sub event_subtest {
     # non-verbose harness we do nto do this because it is less readable.
     if ($ENV{HARNESS_IS_VERBOSE}) {
         # index 0 is the filehandle, index 1 is the message we want to indent.
-        $_->[1] =~ s/^(.*\S)$/    $1/mg for @diag;
+        $_->[1] =~ s/^(.*\S.*)$/    $1/mg for @diag;
     }
 
     # Add the trailing ' {' to the 'ok' line of TAP output.
@@ -251,7 +251,7 @@ sub event_subtest {
 
         # This indents all output lines generated for the sub-events.
         # index 0 is the filehandle, index 1 is the message we want to indent.
-        map { $_->[1] =~ s/^(.*\S)$/    $1/mg; $_ } $self->event_tap($_, $count);
+        map { $_->[1] =~ s/^(.*\S.*)$/    $1/mg; $_ } $self->event_tap($_, $count);
     } @{$e->subevents};
 
     return (
