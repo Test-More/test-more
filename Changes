@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302014_008 2016-04-26 11:40:40-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - RC8
     - Fix bug when using defined, but empty (or space) as a test name in a subtest
     - Better notificatons for late Test::Builder load
