@@ -2,6 +2,8 @@
 
     - RC8
     - Fix bug when using defined, but empty (or space) as a test name in a subtest
+    - Better notificatons for late Test::Builder load
+    - Recommend Test2::Transition if you have outdated modules
 
 1.302014_007 2016-04-24 13:09:03-07:00 America/Los_Angeles (TRIAL RELEASE)
 

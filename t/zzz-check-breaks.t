@@ -31,6 +31,7 @@ if (my @breaks = grep { defined $result->{$_} } keys %$result)
     diag 'You have the following modules installed, which are not compatible with the latest Test::More:';
     diag "$result->{$_}" for sort @breaks;
     diag "\n", 'You should now update these modules!';
+    diag "You should also see Test2::Transition!";
 }
 
 pass 'conflicting modules checked';
