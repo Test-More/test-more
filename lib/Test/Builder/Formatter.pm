@@ -45,3 +45,69 @@ sub event_plan {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Test::Builder::Formatter - Test::Builder subclass of Test2::Formatter::TAP
+
+=head1 DESCRIPTION
+
+This is what takes events and turns them into TAP.
+
+=head1 SYNOPSIS
+
+    use Test::Builder; # Loads Test::Builder::Formatter for you
+
+=head1 METHODS
+
+=over 4
+
+=item $f->event_todo_diag
+
+Additional method used to process L<Test::Builder::TodoDiag> events.
+
+=item $f->event_diag
+
+=item $f->event_plan
+
+These override the parent class methods to do nothing if C<no_header> is set.
+
+=back
+
+=head1 SOURCE
+
+The source code repository for Test2 can be found at
+F<http://github.com/Test-More/test-more/>.
+
+=head1 MAINTAINERS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 AUTHORS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 COPYRIGHT
+
+Copyright 2016 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http://dev.perl.org/licenses/>
+
+=cut
