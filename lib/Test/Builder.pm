@@ -21,6 +21,9 @@ use Test2::Util qw/USE_THREADS try get_tid/;
 use Test2::API qw/context release/;
 # Make Test::Builder thread-safe for ithreads.
 BEGIN {
+    warn "Test::Builder was loaded after Test2 initialization, this is not recommended."
+        if Test2::API::test2_init_done() || Test2::API::test2_load_done();
+
     if (USE_THREADS) {
         require Test2::IPC;
         require Test2::IPC::Driver::Files;
@@ -119,7 +122,7 @@ sub create {
             ipc       => Test2::API::test2_ipc(),
         );
     }
-    $self->reset;
+    $self->reset(%params);
     $self->_add_ts_hooks;
 
     return $self;
@@ -356,7 +359,7 @@ sub name {
 }
 
 sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    my ($self) = @_;
+    my ($self, %params) = @_;
 
     Test2::API::test2_set_is_end(0);
 
@@ -367,9 +370,11 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Original_Pid} = $$;
 
     my $ctx = $self->ctx;
-    $ctx->hub->reset_state();
-    $ctx->hub->set_pid($$);
-    $ctx->hub->set_tid(get_tid);
+    unless ($params{singleton}) {
+        $ctx->hub->reset_state();
+        $ctx->hub->set_pid($$);
+        $ctx->hub->set_tid(get_tid);
+    }
 
     my $meta = $ctx->hub->meta(__PACKAGE__, {});
     %$meta = (
@@ -1122,6 +1127,7 @@ sub use_numbers {
     my $ctx = $self->ctx;
     my $format = $ctx->hub->format;
     unless ($format && $format->can('no_numbers') && $format->can('set_no_numbers')) {
+        warn "The current formatter does not support 'use_numbers'" if $format;
         return release $ctx, 0;
     }
 
@@ -1138,7 +1144,8 @@ BEGIN {
 
             my $ctx = $self->ctx;
             my $format = $ctx->hub->format;
-            unless ($format && $format->isa('Test2::Formatter::TAP')) {
+            unless ($format && $format->isa('Test2::Formatter::TAP') && $format->can($set)) {
+                warn "The current formatter does not support '$method'" if $format;
                 $ctx->release;
                 return
             }
