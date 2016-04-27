@@ -290,7 +290,7 @@ The source code repository for Test2-Suite can be found at
 
 # COPYRIGHT
 
-Copyright 2015 Chad Granum <exodist7@gmail.com>.
+Copyright 2015 Chad Granum <exodist@cpan.org>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
