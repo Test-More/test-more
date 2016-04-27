@@ -2,7 +2,7 @@ package Test2::Event;
 use strict;
 use warnings;
 
-our $VERSION = '1.302014_008';
+our $VERSION = '1.302014_009';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use Test2::Util::HashBase qw/trace nested in_subtest subtest_id/;
