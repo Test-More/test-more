@@ -2,7 +2,7 @@ package Test::Builder::TodoDiag;
 use strict;
 use warnings;
 
-our $VERSION = '1.302014_009';
+our $VERSION = '1.302014_010';
 $VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
 use base 'Test2::Event::Diag';
