@@ -451,11 +451,10 @@ Test2::Tools::Compare - Tools for comparing deep data structures.
 
 =head1 DESCRIPTION
 
-Test::More had C<is_deeply()>. This library is the L<Test2> version.
-This library can be used to compare data structures. This library goes a step
-further though, it provides tools for building a data structure specification
-against which you can verify your data. There are both 'strict' and 'relaxed'
-versions of the tools.
+L<Test::More> had C<is_deeply()>. This library is the L<Test2> version that can
+be used to compare data structures, but goes a step further in that it provides
+tools for building a data structure specification against which you can verify
+your data. There are both 'strict' and 'relaxed' versions of the tools.
 
 =head1 SYNOPSIS
 
@@ -555,7 +554,7 @@ provided and converted to a specification for you.
     );
 
 This works for both deep and shallow structures. For instance you can use this
-to compare 2 strings:
+to compare two strings:
 
     is('foo', 'foo', "strings match");
 
@@ -605,7 +604,7 @@ In this tool regexes will stringify the thing they are checking.
     );
 
 This works for both deep and shallow structures. For instance you can use this
-to compare 2 strings:
+to compare two strings:
 
     like('foo bar', qr/^foo/, "string matches the pattern");
 
@@ -615,7 +614,7 @@ to compare 2 strings:
 
 =item unlike($got, $expect, $name, @diag)
 
-Opposite of L<like()>. Does all the same checks, but passes when there is a
+Opposite of C<like()>. Does all the same checks, but passes when there is a
 mismatch.
 
 =back
@@ -852,7 +851,7 @@ called in void context.
 =item end()
 
 Enforce that no keys are found in the hash other than those specified. This is
-essentually the 'use strict' of a hash check. This can be used anywhere in the
+essentially the C<use strict> of a hash check. This can be used anywhere in the
 hash builder, though typically it is placed at the end.
 
 =item DNE()
@@ -1074,7 +1073,7 @@ Specify an object check for use in comparisons.
 =item call sub { ... }, $CHECK
 
 Call the specified method (or coderef) and verify the result. The coderef form
-us useful if you want to check a method that returns a list as it allows you to
+is useful if you want to check a method that returns a list as it allows you to
 wrap the result in a reference.
 
     my $ref = sub {
@@ -1238,15 +1237,15 @@ Set to the todo value if TODO was set when the event was generated.
 
 =item 'trace'
 
-The 'at file foo.t line 42' string that will be used in diagnostics.
+The C<at file foo.t line 42> string that will be used in diagnostics.
 
 =item 'tid'
 
-Thread id in which the event was generated.
+Thread ID in which the event was generated.
 
 =item 'pid'
 
-PRocess id in which the event was generated.
+Process ID in which the event was generated.
 
 =back
 
@@ -1256,7 +1255,7 @@ PRocess id in which the event was generated.
 
 =item @checks = fail_events $TYPE => { ... };
 
-Just like C<event()> documented above. The difference is that this produces 2
+Just like C<event()> documented above. The difference is that this produces two
 events, the one you specify, and a C<Diag> after it. There are no extra checks
 in the Diag.
 
@@ -1289,7 +1288,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

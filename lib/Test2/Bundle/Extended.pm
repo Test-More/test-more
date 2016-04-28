@@ -195,7 +195,7 @@ B<Note:> C<< -no_pragmas => 1 >> will turn off the entire plugin.
 
 See L<Test2::Plugin::SRand>.
 
-This will set the random seed to todays date. You can provide an alternate seed
+This will set the random seed to today's date. You can provide an alternate seed
 with the C<-srand> import option:
 
     use Test2::Bundle::Extended -srand => 1234;
@@ -504,7 +504,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

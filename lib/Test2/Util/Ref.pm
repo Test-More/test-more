@@ -53,7 +53,7 @@ Test2::Util::Ref - Tools for inspecting or manipulating references.
 
 =head1 DESCRIPTION
 
-These are used by Test2::Tools to inspect, render, or manipulate references.
+These are used by L<Test2::Tools> to inspect, render, or manipulate references.
 
 =head1 EXPORTS
 
@@ -108,7 +108,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

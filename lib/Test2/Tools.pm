@@ -26,7 +26,7 @@ Tools are packages that export test functions, typically all related to a
 specific aspect of testing. If you have a couple different categories of
 exports then you may want to break them into seperate modules.
 
-Tools shoudl export testing functions. Loading tools B<should not> have side
+Tools shoul6 export testing functions. Loading tools B<should not> have side
 effects, or alter the behavior of other tools. If you want to alter behaviors
 or create side effects then you probably want to write a L<Test2::Plugin>.
 
@@ -111,7 +111,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

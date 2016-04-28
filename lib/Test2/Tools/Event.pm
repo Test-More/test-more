@@ -39,7 +39,7 @@ This is an experimental release. Using this right now is not recommended.
 
 =head1 DESCRIPTION
 
-This module provides tools for generating events quickly bypassing the
+This module provides tools for generating events quickly by bypassing the
 context/hub. This is particularly useful when testing other L<Test2> packages.
 
 =head1 EXPORTS
@@ -60,7 +60,7 @@ This will produce an event of the specified type. C<$TYPE> is assumed to be
 shorthand for C<Test2::Event::$TYPE>, you can prefix C<$TYPE> with a '+' to
 drop the assumption.
 
-An L<Test2::Util::Trace> will be generated using <caller(0)> and will be put in
+An L<Test2::Util::Trace> will be generated using C<caller(0)> and will be put in
 the 'trace' field of your new event, unless you specified your own 'trace'
 field.
 
@@ -89,7 +89,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

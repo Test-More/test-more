@@ -115,7 +115,7 @@ Test2::Tools::Basic - Test2 implementation of the basic testing tools.
 
 =head1 DESCRIPTION
 
-This is an L<Test2> based implementation of the more basic tools originally
+This is a L<Test2> based implementation of the more basic tools originally
 provided by L<Test::More>. Not all L<Test::More> tools are provided by this
 package, only the basic/simple ones. Some tools have been modified for better
 diagnistics capabilities.
@@ -326,7 +326,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

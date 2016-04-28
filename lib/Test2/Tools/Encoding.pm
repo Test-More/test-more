@@ -56,7 +56,7 @@ All subs are exported by default.
 
 =item set_encoding($encoding)
 
-This will set the encoding to whatever you specify. This will only effect the
+This will set the encoding to whatever you specify. This will only affect the
 output of the current formatter, which is usually your TAP output formatter.
 
 =back
@@ -84,7 +84,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

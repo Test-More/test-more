@@ -98,7 +98,7 @@ Test2::Tools::Ref - Tools for validating references.
 =head1 DESCRIPTION
 
 This module contains tools that allow you to verify that something is a ref. It
-also has tools to check if 2 refs are the same exact ref, or different. This
+also has tools to check if two refs are the same exact ref, or different. This
 module does not do any deep comparisons.
 
 =head1 SYNOPSIS
@@ -132,11 +132,11 @@ will check that C<$thing> is that type of reference.
 
 =item ref_is($ref1, $ref2, $name)
 
-Verify that 2 references are the exact same reference.
+Verify that two references are the exact same reference.
 
 =item ref_is_not($ref1, $ref2, $name)
 
-Verify that 2 references are not the exact same reference.
+Verify that two references are not the exact same reference.
 
 =back
 
@@ -163,7 +163,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

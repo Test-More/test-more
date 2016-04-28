@@ -274,7 +274,7 @@ This should be an arrayref containing an arrayref per row.
 
 =item collapse => $bool
 
-Use this if you want ot hide empty columns, that is any column that has no data
+Use this if you want to hide empty columns, that is any column that has no data
 in any row. Having a header for the column will not effect collapse.
 
 =item max_width => $num
@@ -370,7 +370,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
