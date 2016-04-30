@@ -59,7 +59,7 @@ sub build {
     die $err unless $ok;
 
     return $build;
-};
+}
 
 sub strict_convert  { convert($_[0], 1) }
 sub relaxed_convert { convert($_[0], 0) }
@@ -102,7 +102,7 @@ sub convert {
 
     if ($type eq 'SCALAR') {
         my $nested = convert($$thing, $strict);
-        return Test2::Compare::Scalar->new(item => $nested)
+        return Test2::Compare::Scalar->new(item => $nested);
     }
 
     return Test2::Compare::Ref->new(input => $thing)

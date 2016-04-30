@@ -9,7 +9,7 @@ use Test2::API qw/test2_add_callback_exit/;
 my $ADDED_HOOK = 0;
 sub import { test2_add_callback_exit(\&summary) unless $ADDED_HOOK++ }
 
-sub active { $ADDED_HOOK };
+sub active { $ADDED_HOOK }
 
 sub summary {
     my ($ctx, $real, $new) = @_;

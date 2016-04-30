@@ -210,7 +210,7 @@ sub filter_visible {
     return \@deltas;
 }
 
-sub table_header { [map {$COLUMNS{$_}->{alias} || $_} @COLUMN_ORDER] };
+sub table_header { [map {$COLUMNS{$_}->{alias} || $_} @COLUMN_ORDER] }
 
 sub table_op {
     my $self = shift;

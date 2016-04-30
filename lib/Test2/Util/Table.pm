@@ -16,7 +16,7 @@ BEGIN {
     my ($ok, $err) = try { require Term::ReadKey };
     $ok &&= Term::ReadKey->can('GetTerminalSize');
     *USE_TERM_READKEY = $ok ? sub() { 1 } : sub() { 0 };
-};
+}
 
 sub term_size {
     return $ENV{T2_TERM_SIZE} if $ENV{T2_TERM_SIZE};

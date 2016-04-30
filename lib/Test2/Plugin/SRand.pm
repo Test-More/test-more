@@ -28,11 +28,11 @@ sub import {
 
     if (@_) {
         ($SEED) = @_;
-        $FROM = 'import arg'
+        $FROM = 'import arg';
     }
     elsif(exists $ENV{T2_RAND_SEED}) {
         $SEED = $ENV{T2_RAND_SEED};
-        $FROM = 'environment variable'
+        $FROM = 'environment variable';
     }
     else {
         my @ltime = localtime;
@@ -76,6 +76,8 @@ sub import {
 }
 
 1;
+
+__END__
 
 =pod
 

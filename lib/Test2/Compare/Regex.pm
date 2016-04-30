@@ -27,7 +27,7 @@ sub stringify_got { 1 }
 
 sub operator { 'eq' }
 
-sub name { "" . $_[0]->{+INPUT} };
+sub name { "" . $_[0]->{+INPUT} }
 
 sub verify {
     my $self = shift;

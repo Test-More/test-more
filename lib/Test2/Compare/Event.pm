@@ -15,7 +15,7 @@ use Test2::Util::HashBase qw/etype/;
 sub name {
     my $self = shift;
     my $etype = $self->etype;
-    return "<EVENT: $etype>"
+    return "<EVENT: $etype>";
 }
 
 sub meta_class  { 'Test2::Compare::EventMeta' }
