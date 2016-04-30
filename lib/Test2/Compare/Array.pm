@@ -176,7 +176,7 @@ This module is an internal representation of an array for comparison purposes.
 
 =item $ref = $arr->inref()
 
-If the instance was constructed from an actual array, this will have the
+If the instance was constructed from an actual array, this will return the
 reference to that array.
 
 =item $bool = $arr->ending
@@ -184,26 +184,30 @@ reference to that array.
 =item $arr->set_ending($bool)
 
 Set this to true if you would like to fail when the array being validated has
-more items than the check. That is if you check indexes 0-3, but the array
-received has values for indexes 0-4, it will fail and list that last item in
-the array as unexpected. If this is false then it is assumed you do not care
-about extra items.
+more items than the check. That is, if you check indexes 0-3 but the array has
+values for indexes 0-4, it will fail and list that last item in the array as
+unexpected. If set to false then it is assumed you do not care about extra
+items.
 
 =item $hashref = $arr->items()
 
+Returns the hashref of C<< key => val >> pairs to be checked in the
+array.
+
 =item $arr->set_items($hashref)
 
-This gives you the hashref of C<< key => val >> pairs to be checked in the
-array. This is a hashref so that indexes can be skipped if desired.
+Accepts a hashref to permit indexes to be skipped if desired.
 
 B<Note:> that there is no validation when using C<set_items>, it is better to
 use the C<add_item> interface.
 
 =item $arrayref = $arr->order()
 
+Returns an arrayref of all indexes that will be checked, in order.
+
 =item $arr->set_order($arrayref)
 
-This gives you an arrayref of all indexes that will be checked, in order.
+Sets the order in which indexes will be checked.
 
 B<Note:> that there is no validation when using C<set_order>, it is better to
 use the C<add_item> interface.
@@ -218,15 +222,16 @@ Check if C<$got> is an array reference or not.
 
 =item $idx = $arr->top_index()
 
-Get the topmost index that gets checked. This will return undef if there are no
-items, C<0> is returned if there is only 1 item.
+Returns the topmost index which is checked. This will return undef if there
+are no items, or C<0> if there is only 1 item.
 
 =item $arr->add_item($item)
 
+Push an item onto the list of values to be checked.
+
 =item $arr->add_item($idx => $item)
 
-Add an item to the list of values to check. If index is omitted then the next
-index after the last is used.
+Add an item to the list of values to be checked at the specified index.
 
 =item $arr->add_filter(sub { ... })
 
