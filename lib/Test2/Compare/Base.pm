@@ -122,7 +122,7 @@ Test2::Compare::Base - Base class for comparison classes.
 
 =head1 DESCRIPTION
 
-All Comparison Classes for Test2::Compare should inherit from this base class.
+All Comparison classes for Test2::Compare should inherit from this base class.
 
 =head1 SYNOPSIS
 
@@ -187,7 +187,7 @@ can tell the difference between a missing value and an undefined one.
 =item $bool = $check->verify(id => $id, exists => $bool, got => $got, convert => \&convert, seen => \%seen)
 
 Return true if there is a shallow match, that is both items are arrayrefs, both
-items are the same string or same number, etc. This should not look deep, deep
+items are the same string or same number, etc. This should not recurse - deep
 checks are done in C<< $check->deltas() >>.
 
 =item $name = $check->name
