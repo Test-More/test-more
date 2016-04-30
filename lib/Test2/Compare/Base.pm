@@ -145,13 +145,14 @@ All Comparison classes for Test2::Compare should inherit from this base class.
         my $self = shift;
         my $params = @_;
 
-        # Always check if $got even exists, this will be false if no value at
-        # all was received. (as opposed to a $got of 'undef' or '0' which are
-        # valid meaning this field will be true).
+        # Always check if $got exists! This method must return false if no
+        # value at all was received.
         return 0 unless $params{exists};
 
         my $got = $params{got};
 
+        # Returns true if both values match. This includes undef, 0, and other
+        # false-y values!
         return $got eq $self->stuff;
     }
 
