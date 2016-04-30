@@ -27,9 +27,10 @@ our @EXPORT = qw{
     ok pass fail skip todo diag note
     plan skip_all done_testing BAIL_OUT
 
-    is isnt like unlike is_deeply cmp_ok isa_ok
+    is isnt like unlike is_deeply cmp_ok
 
-    can_ok
+    isa_ok can_ok
+
     subtest
 };
 use base 'Exporter';
