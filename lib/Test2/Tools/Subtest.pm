@@ -52,7 +52,7 @@ Test2::Tools::Subtest - Tools for writing subtests
 
 This package exports subs that let you write subtests.
 
-There are 2 types of subtests, buffered and streamed. Streamed subtests mimick
+There are two types of subtests, buffered and streamed. Streamed subtests mimick
 subtest from L<Test::More> in that they render all events as soon as they are
 produced. Buffered subtests wait until the subtest completes before rendering
 any results.
@@ -162,7 +162,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist@cpan.orgE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist@cpan.orgE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

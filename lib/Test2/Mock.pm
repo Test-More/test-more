@@ -491,8 +491,8 @@ This will create a new instance of L<Test2::Mock> that manages mocking
 for the specified C<$CLASS>.
 
 Any C<Test2::Mock> method can be used as a constructor argument, each
-should be followed by an arrayref of arguments to be used with the method. For
-instance the 'add' method:
+should be followed by an arrayref of arguments to be used within the method. For
+instance the C<add()> method:
 
     my $mock = Test2::Mock->new(
         class => 'AClass',
@@ -506,7 +506,7 @@ is identical to this:
     );
     $mock->add(foo => sub { 'foo' });
 
-=item $mock->add('symbol' => ..., 'synbol2' => ...)
+=item $mock->add('symbol' => ..., 'symbol2' => ...)
 
 =item $mock->override('symbol1' => ..., 'symbol2' => ...)
 
@@ -744,7 +744,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist@cpan.orgE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist@cpan.orgE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

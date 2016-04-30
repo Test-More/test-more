@@ -297,7 +297,7 @@ unlike the L<Test2::Tools::Compare> plugin which has modified them.
 =item $bool = is($got, $expect, $name, @diag)
 
 This does a string comparison of the 2 arguments. If the 2 arguments are the
-same after stringification the test passes. The test will also pas sif both
+same after stringification the test passes. The test will also pass if both
 arguments are undef.
 
 The test C<$name> is optional.
@@ -329,8 +329,8 @@ Check if C<$got> matches the specified pattern. Will fail if it does not match.
 
 The test C<$name> is optional.
 
-The test C<@diag> is optional, it is extra diagnostics messages that will be
-displayed if the test fails. The diagnostics are ignored if the test passes.
+The test C<@diag> is optional, it contains extra diagnostics messages that will
+be displayed if the test fails. The diagnostics are ignored if the test passes.
 
 =item $bool = unlike($got, $pattern)
 
@@ -374,7 +374,7 @@ them since L<Test::More>.
 B<Exceptions:> If the comparison results in an exception then the test will
 fail and the exception will be shown.
 
-cmp_ok has an internal list of operators it supports. If you provide an
+C<cmp_ok()> has an internal list of operators it supports. If you provide an
 unsupported operator it will issue a warning. You can add operators to the
 C<%Test2::Tools::ClassicCompare::OPS> hash, the key should be the operator, and
 the value should either be 'str' for string comparison operators, 'num' for
@@ -461,7 +461,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist@cpan.orgE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist@cpan.orgE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

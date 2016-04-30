@@ -71,15 +71,15 @@ __END__
 
 =head1 NAME
 
-Test2::Tools::Defer - Write tests that get executaed at a later time
+Test2::Tools::Defer - Write tests that get executed at a later time
 
 =head1 DESCRIPTION
 
 Sometimes you need to test things BEFORE loading the necessary functions. This
 module lets you do that. You can write tests, and then have them run later,
-after Test2 is loaded. You tell it what test function to run, and what
+after C<Test2> is loaded. You tell it what test function to run, and what
 arguments to give it.  The function name and arguments will be stored to be
-executed later. When ready run C<do_def()> to kick them off once the functions
+executed later. When ready, run C<do_def()> to kick them off once the functions
 are defined.
 
 =head1 SYNOPSIS
@@ -146,7 +146,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist@cpan.orgE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist@cpan.orgE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

@@ -83,7 +83,7 @@ All subs are exported by default.
 =item imported_ok(@SYMBOLS)
 
 Check that the specified symbols exist in the current package. This will not
-find inherited subs. This will only find symbols in the current packages symbol
+find inherited subs. This will only find symbols in the current package's symbol
 table. This B<WILL NOT> confirm that the symbols were defined outside of the
 package itself.
 
@@ -97,7 +97,7 @@ used as a sub name.
 =item not_imported_ok(@SYMBOLS)
 
 Check that the specified symbols do not exist in the current package. This will
-not find inherited subs. This will only look at symbols in the current packages
+not find inherited subs. This will only look at symbols in the current package's
 symbol table.
 
     not_imported_ok( '$scalar', '@array', '%hash', '&sub', 'also_a_sub' );
@@ -159,7 +159,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist@cpan.orgE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist@cpan.orgE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

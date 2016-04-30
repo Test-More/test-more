@@ -331,7 +331,7 @@ plugins in ways L<Mock::Quick> would be unable to.
 
 =item mock
 
-This is a 1-stop shop function that delgates to one of the other methods
+This is a one-stop shop function that delgates to one of the other methods
 depending on how it is used. If you are not comfortable with a function that
 has a lot of potential behaviors, you can use one of the other functions
 directly.
@@ -453,7 +453,7 @@ Generate a read/write accessor for the specified field. This will generate a sub
 
 =item $sub = mock_getter $field
 
-Generate a read obly accessor for the specified field. This will generate a sub like the following:
+Generate a read only accessor for the specified field. This will generate a sub like the following:
 
     $sub = sub {
         my $self = shift;
@@ -515,7 +515,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist@cpan.orgE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist@cpan.orgE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

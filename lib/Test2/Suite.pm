@@ -23,7 +23,7 @@ This is an experimental release. Using this right now is not recommended.
 
 =head1 DESCRIPTION
 
-Rich set fo tools, plugins, bundles, etc built upon the L<Test2> testing
+Rich set of tools, plugins, bundles, etc built upon the L<Test2> testing
 library. If you are interested in writing tests this is the distribution for
 you.
 
@@ -153,7 +153,7 @@ See L<Test2::Tools::ClassicCompare> for complete documentation.
 
 =item Class
 
-This provides functions for test objects and classes, things like C<isa_ok>.
+This provides functions for testing objects and classes, things like C<isa_ok>.
 
 See L<Test2::Tools::Class> for complete documentation.
 
@@ -332,7 +332,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist@cpan.orgE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist@cpan.orgE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
