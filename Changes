@@ -1176,6 +1176,10 @@ Test-Simple 0.02 2001-Mar-30 05:12-08:00 BST      *UNRELEASED*
 Test-Simple 0.01 2001-Mar-28 06:44-08:00 BST
     - First working version released to CPAN
 
+Test2 0.000044  2016-04-30 13:56:25-07:00 America/Los_Angeles
+
+    - Remove things that should nto have been backported from Test-Simple merger
+
 Test2 0.000043  2016-04-30 05:21:51-07:00 America/Los_Angeles
 
     - Better error messages when using Carp in Hashbase init()
