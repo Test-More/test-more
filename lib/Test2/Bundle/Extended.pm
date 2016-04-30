@@ -241,6 +241,9 @@ not provide a target then C<$CLASS> and C<CLASS()> will not be imported.
 
     use Test2::Bundle::Extended -target => 'My::Class';
 
+    print $CLASS;  # My::Class
+    print CLASS(); # My::Class
+
 =over 4
 
 =item $CLASS
