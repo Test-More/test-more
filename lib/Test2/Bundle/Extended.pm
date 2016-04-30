@@ -148,7 +148,7 @@ This is an experimental release. Using this right now is not recommended.
 =head1 DESCRIPTION
 
 This is the big-daddy bundle. This bundle includes nearly every tool, and
-several plugins, that the Test2 Author himself uses. This bundle is used
+several plugins, that the Test2 author uses. This bundle is used
 extensively to test L<Test2::Suite> itself.
 
 =head1 SYNOPSYS
@@ -195,7 +195,7 @@ B<Note:> C<< -no_pragmas => 1 >> will turn off the entire plugin.
 
 See L<Test2::Plugin::SRand>.
 
-This will set the random seed to todays date. You can provide an alternate seed
+This will set the random seed to today's date. You can provide an alternate seed
 with the C<-srand> import option:
 
     use Test2::Bundle::Extended -srand => 1234;
@@ -204,7 +204,7 @@ with the C<-srand> import option:
 
 See L<Test2::Plugin::UTF8>.
 
-This will set the file, and all output handles (including formatter handles) to
+This will set the file, and all output handles (including formatter handles), to
 utf8. This will turn on the utf8 pragma for the current scope.
 
 This can be disabled using the C<< -no_utf8 => 1 >> or C<< -no_pragmas => 1 >>
@@ -387,7 +387,7 @@ See L<Test2::Tools::Subtest>.
 
 =item subtest $name => sub { ... }
 
-(Note: This is called C<subtest_buffered()> in the tools module.)
+(Note: This is called C<subtest_buffered()> in the Tools module.)
 
 =back
 

@@ -21,8 +21,7 @@ __END__
 
 =head1 NAME
 
-Test2::Bundle::Simple - Bundle that is ALMOST a drop-in replacement for
-Test::Simple.
+Test2::Bundle::Simple - ALMOST a drop-in replacement for Test::Simple.
 
 =head1 EXPERIMENTAL RELEASE
 
@@ -31,7 +30,7 @@ This is an experimental release. Using this right now is not recommended.
 =head1 DESCRIPTION
 
 This bundle is intended to be a (mostly) drop-in replacement for
-L<Test::Simple>.
+L<Test::Simple>. See L<"KEY DIFFERENCES FROM Test::Simple"> for details.
 
 =head1 SYNOPSYS
 
@@ -53,7 +52,7 @@ These are all from L<Test2::Tools::Basic>.
 
 =item ok($bool, $name)
 
-Run a test. If bool is true the test passes, if bool is false it fails.
+Run a test. If bool is true, the test passes. If bool is false, it fails.
 
 =item plan($count)
 
@@ -61,7 +60,7 @@ Tell the system how many tests to expect.
 
 =item skip_all($reason)
 
-Tell the system to skip all the tests (this will exit the script)
+Tell the system to skip all the tests (this will exit the script).
 
 =item done_testing();
 
@@ -87,7 +86,7 @@ Instead you must plan in a seperate statement:
 
 =item You have 3 subs imported for use in planning
 
-Use C<plan($count)>, C<skip_all($REASON)>, or C<done_testing()> for your
+Use C<plan($count)>, C<skip_all($reason)>, or C<done_testing()> for your
 planning.
 
 =back

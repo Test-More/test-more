@@ -44,8 +44,7 @@ __END__
 
 =head1 NAME
 
-Test2::Bundle::More - Bundle that is ALMOST a drop-in replacement for
-Test::More.
+Test2::Bundle::More - ALMOST a drop-in replacement for Test::More.
 
 =head1 EXPERIMENTAL RELEASE
 
@@ -54,7 +53,7 @@ This is an experimental release. Using this right now is not recommended.
 =head1 DESCRIPTION
 
 This bundle is intended to be a (mostly) drop-in replacement for
-L<Test::More>.
+L<Test::More>. See L<"KEY DIFFERENCES FROM Test::Simple"> for details.
 
 =head1 SYNOPSYS
 
@@ -155,15 +154,15 @@ Instead you must plan in a seperate statement:
 
 =item You have 3 subs imported for use in planning
 
-Use C<plan($count)>, <skip_all($REASON)>, or C<done_testing()> for your
+Use C<plan($count)>, <skip_all($reason)>, or C<done_testing()> for your
 planning.
 
-=item isa_ok has different arguments
+=item isa_ok accepts different arguments
 
 C<isa_ok> in Test::More was:
 
     isa_ok($thing, $isa, $alt_thing_name);
-    
+
 This was very inconsistent with tools like C<can_ok($thing, @subs)>.
 
 In Test2::Bundle::More, C<isa_ok()> takes a C<$thing> and a list of C<@isa>.
@@ -196,7 +195,7 @@ Not necessary.
 
 =item eq_set()
 
-Discouraged in Test::More
+Discouraged in Test::More.
 
 =item explain()
 
