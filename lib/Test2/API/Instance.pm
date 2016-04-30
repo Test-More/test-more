@@ -305,6 +305,15 @@ sub ipc_enable_shm {
     return $ok;
 }
 
+sub ipc_free_shm {
+    my $self = shift;
+
+    my $id = delete $self->{+IPC_SHM_ID};
+    return unless defined $id;
+
+    shmctl($id, IPC::SysV::IPC_RMID(), 0);
+}
+
 sub get_ipc_pending {
     my $self = shift;
     return -1 unless defined $self->{+IPC_SHM_ID};
@@ -363,6 +372,15 @@ sub _ipc_wait {
 
     return 0 unless $fail;
     return 255;
+}
+
+sub DESTROY {
+    my $self = shift;
+
+    return unless $self->{+PID} == $$;
+    return unless $self->{+TID} == get_tid();
+
+    $self->ipc_free_shm;
 }
 
 sub set_exit {
