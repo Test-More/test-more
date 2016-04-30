@@ -408,11 +408,11 @@ sub event($;$) {
         );
     }
     elsif (!ref $spec) {
-        croak "'$spec' is not a valid event specification"
+        croak "'$spec' is not a valid event specification";
     }
     elsif (reftype($spec) eq 'CODE') {
         $event = build('Test2::Compare::Event', $spec);
-        $event->set_etype($intype),
+        $event->set_etype($intype);
         $event->set_builder($spec);
     }
     else {

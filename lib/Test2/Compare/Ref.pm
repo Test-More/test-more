@@ -26,7 +26,7 @@ sub init {
 
 sub operator { '==' }
 
-sub name { render_ref($_[0]->{+INPUT}) };
+sub name { render_ref($_[0]->{+INPUT}) }
 
 sub verify {
     my $self = shift;

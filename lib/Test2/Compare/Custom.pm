@@ -33,7 +33,7 @@ sub verify {
         got      => $got,
         exists   => $exists,
         operator => $self->{+OPERATOR},
-        name     => $self->{+NAME}
+        name     => $self->{+NAME},
     );
 
     return $ok;
