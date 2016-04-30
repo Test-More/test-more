@@ -200,10 +200,10 @@ Discouraged in Test::More.
 
 =item explain()
 
-This started a fight between Schwern and Ovid, now they can both write their
-own implementations in L<Test2> if they still care. (See explain in
-L<Test::Most> vs L<Test::More>. Hint, Test::Most wrote it first, then
-Test::More added it, but broke compatability).
+This started a fight between Test developers, who may now each write their own
+implementations in L<Test2>. (See explain in L<Test::Most> vs L<Test::More>.
+Hint: Test::Most wrote it first, then Test::More added it, but broke
+compatability).
 
 =item new_ok()
 
