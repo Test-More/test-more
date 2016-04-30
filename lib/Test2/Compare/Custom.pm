@@ -85,7 +85,7 @@ provides a way for you to write custom checks for fields in deep comparisons.
 
 =head1 ARGUMENTS
 
-Your custom sub will get 4 arguments:
+Your custom sub will be passed 4 arguments:
 
     code => sub {
         my ($got, $exists, $operator, $name) = @_;
@@ -101,7 +101,7 @@ regexes.
 
 =item $_
 
-This is the value to be checked.
+The value to be checked.
 
 =item $exists
 
@@ -111,11 +111,11 @@ exist at all (think checking the value of a hash key that does not exist).
 
 =item $operator
 
-This is the operator specified at construction.
+The operator specified at construction.
 
 =item $name
 
-This is the name provided at construction.
+The name provided at construction.
 
 =back
 
@@ -125,15 +125,15 @@ This is the name provided at construction.
 
 =item $code = $cus->code
 
-Get the coderef provided at construction.
+Returns the coderef provided at construction.
 
 =item $name = $cus->name
 
-Get the name provided at construction.
+Returns the name provided at construction.
 
 =item $op = $cus->operator
 
-Get the operator provided at construction
+Returns the operator provided at construction.
 
 =item $bool = $cus->verify(got => $got, exists => $bool)
 

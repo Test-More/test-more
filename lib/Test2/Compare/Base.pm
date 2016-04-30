@@ -122,7 +122,7 @@ Test2::Compare::Base - Base class for comparison classes.
 
 =head1 DESCRIPTION
 
-All Comparison Classes for Test2::Compare should inherit from this base class.
+All Comparison classes for Test2::Compare should inherit from this base class.
 
 =head1 SYNOPSIS
 
@@ -145,13 +145,14 @@ All Comparison Classes for Test2::Compare should inherit from this base class.
         my $self = shift;
         my $params = @_;
 
-        # Always check if $got even exists, this will be false if no value at
-        # all was received. (as opposed to a $got of 'undef' or '0' which are
-        # valid meaning this field will be true).
+        # Always check if $got exists! This method must return false if no
+        # value at all was received.
         return 0 unless $params{exists};
 
         my $got = $params{got};
 
+        # Returns true if both values match. This includes undef, 0, and other
+        # false-y values!
         return $got eq $self->stuff;
     }
 
@@ -187,7 +188,7 @@ can tell the difference between a missing value and an undefined one.
 =item $bool = $check->verify(id => $id, exists => $bool, got => $got, convert => \&convert, seen => \%seen)
 
 Return true if there is a shallow match, that is both items are arrayrefs, both
-items are the same string or same number, etc. This should not look deep, deep
+items are the same string or same number, etc. This should not recurse - deep
 checks are done in C<< $check->deltas() >>.
 
 =item $name = $check->name

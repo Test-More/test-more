@@ -27,9 +27,10 @@ our @EXPORT = qw{
     ok pass fail skip todo diag note
     plan skip_all done_testing BAIL_OUT
 
-    is isnt like unlike is_deeply cmp_ok isa_ok
+    is isnt like unlike is_deeply cmp_ok
 
-    can_ok
+    isa_ok can_ok
+
     subtest
 };
 use base 'Exporter';
@@ -44,8 +45,7 @@ __END__
 
 =head1 NAME
 
-Test2::Bundle::More - Bundle that is ALMOST a drop-in replacement for
-Test::More.
+Test2::Bundle::More - ALMOST a drop-in replacement for Test::More.
 
 =head1 EXPERIMENTAL RELEASE
 
@@ -54,7 +54,7 @@ This is an experimental release. Using this right now is not recommended.
 =head1 DESCRIPTION
 
 This bundle is intended to be a (mostly) drop-in replacement for
-L<Test::More>.
+L<Test::More>. See L<"KEY DIFFERENCES FROM Test::Simple"> for details.
 
 =head1 SYNOPSYS
 
@@ -155,15 +155,15 @@ Instead you must plan in a seperate statement:
 
 =item You have 3 subs imported for use in planning
 
-Use C<plan($count)>, <skip_all($REASON)>, or C<done_testing()> for your
+Use C<plan($count)>, <skip_all($reason)>, or C<done_testing()> for your
 planning.
 
-=item isa_ok has different arguments
+=item isa_ok accepts different arguments
 
 C<isa_ok> in Test::More was:
 
     isa_ok($thing, $isa, $alt_thing_name);
-    
+
 This was very inconsistent with tools like C<can_ok($thing, @subs)>.
 
 In Test2::Bundle::More, C<isa_ok()> takes a C<$thing> and a list of C<@isa>.
@@ -196,14 +196,14 @@ Not necessary.
 
 =item eq_set()
 
-Discouraged in Test::More
+Discouraged in Test::More.
 
 =item explain()
 
-This started a fight between Schwern and Ovid, now they can both write their
-own implementations in L<Test2> if they still care. (See explain in
-L<Test::Most> vs L<Test::More>. Hint, Test::Most wrote it first, then
-Test::More added it, but broke compatability).
+This started a fight between Test developers, who may now each write their own
+implementations in L<Test2>. (See explain in L<Test::Most> vs L<Test::More>.
+Hint: Test::Most wrote it first, then Test::More added it, but broke
+compatability).
 
 =item new_ok()
 
