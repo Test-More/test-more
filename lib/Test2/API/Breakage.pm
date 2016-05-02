@@ -30,7 +30,7 @@ sub upgrade_required {
         'Test::Modern'            => '0.012',
         'Test::SharedFork'        => '0.34',
 
-        'Test::Clustericious::Cluster' => '0.31',
+        'Test::Clustericious::Cluster' => '0.30',
     );
 }
 
