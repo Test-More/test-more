@@ -836,7 +836,7 @@ indentation is a problem for you then you can take a peek at the next section.
 
 =head2 no_context(&;$)
 
-Useage:
+Usage:
 
 =over 4
 
