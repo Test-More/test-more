@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302014_010 2016-05-03 12:09:14-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - RC10
     - Update x-breaks, Breakage.pm, and Transition.POD
     - Fix shared memory leak
