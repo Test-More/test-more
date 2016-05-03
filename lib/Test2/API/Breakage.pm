@@ -37,6 +37,7 @@ sub upgrade_required {
 sub known_broken {
     return (
         'Net::BitTorrent'       => '0.052',
+        'Test::Able'            => '0.11',
         'Test::Aggregate'       => '0.373',
         'Test::Flatten'         => '0.11',
         'Test::Group'           => '0.20',
@@ -45,7 +46,8 @@ sub known_broken {
         'Test::Pretty'          => '0.32',
         'Test::Wrapper'         => '0.3.0',
 
-        'Test::DBIx::Class::Schema' => '1.0.9',
+        'Test::DBIx::Class::Schema'      => '1.0.9',
+        'Log::Dispatch::Config::TestLog' => '0.02',
     );
 }
 

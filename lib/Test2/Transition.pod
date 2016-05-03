@@ -276,6 +276,18 @@ accomplish the goal of this module is to write your own subtest function.
 
 Still broken as of version: 0.11
 
+=item Log::Dispatch::Config::TestLog
+
+Modifies Test::Builder internals.
+
+Still broken as of version: 0.02
+
+=item Test::Able
+
+Modifies Test::Builder internals.
+
+Still broken as of version: 0.11
+
 =back
 
 =head1 MAKE ASSERTIONS -> SEND EVENTS
