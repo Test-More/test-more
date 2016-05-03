@@ -380,7 +380,8 @@ sub DESTROY {
     return unless $self->{+PID} == $$;
     return unless $self->{+TID} == get_tid();
 
-    $self->ipc_free_shm;
+    shmctl($self->{+IPC_SHM_ID}, IPC::SysV::IPC_RMID(), 0)
+        if defined $self->{+IPC_SHM_ID};
 }
 
 sub set_exit {
