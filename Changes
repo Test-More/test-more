@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - Add Test::Alien to breakage info
+    - Add Device::Chip to breakage info
+    - Add subtest outdent to transition.pod
+
 1.302014_010 2016-05-03 12:09:14-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - RC10

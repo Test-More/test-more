@@ -29,6 +29,7 @@ sub upgrade_required {
         'Test::Dist::VersionSync' => '1.1.4',
         'Test::Modern'            => '0.012',
         'Test::SharedFork'        => '0.34',
+        'Test::Alien'             => '0.04',
 
         'Test::Clustericious::Cluster' => '0.30',
     );
@@ -50,6 +51,9 @@ sub known_broken {
         'Log::Dispatch::Config::TestLog' => '0.02',
     );
 }
+
+# Not reportable:
+# Device::Chip => 0.07   - Tests will not pass, but not broken if already installed, also no fixed version we can upgrade to.
 
 sub report {
     my $class = shift;

@@ -71,6 +71,42 @@ important.
 The fix is to use the API specified in L<Test2::API> to look at or modify state
 as needed.
 
+=head2 Subtest indentation
+
+=head3 The Problem
+
+An early change, in fact the change that made Test2 an idea, was a change to
+the indentation of the subtest note. IT was decided it would be more readable
+to outdent the subtest note instead of having it inline withthe subtest:
+
+    # subtest foo
+        ok 1 - blah
+        1..1
+    ok 1 - subtest foo
+
+The old style indented the note:
+
+        # subtest foo
+        ok 1 - blah
+        1..1
+    ok 1 - subtest foo
+
+This breaks tests that do string comparison of TAP output.
+
+=head3 The Fix
+
+    my $indent = $INC{'Test2/API.pm'} ? '' : '    ';
+
+    is(
+        $subtest_output,
+        "${indent}# subtest foo",
+        "Got subtest note"
+    );
+
+Check if C<$INC{'Test2/API.pm'}> is set, if it is then no indentation should be
+expected. If it is not set than the old Test::Builder is in use, indentation
+should be expected.
+
 =head1 DISTRIBUTIONS THAT BREAK OR NEED TO BE UPGRADED
 
 This is a list of cpan modules that have been known to have been broken by the
@@ -99,6 +135,13 @@ This actually works fine, but will not install because L<Test::Aggregate> is in
 the dep chain.
 
 See the L<Test::Aggregate> info below for additional information.
+
+=item Device::Chip
+
+Tests break due to subtest indentation.
+
+Known broken in version 0.07. Apparently works fine in 0.06 though. Patch has
+been submitted to fix the issue.
 
 =back
 
