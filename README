@@ -2,12 +2,8 @@ NAME
     Test2::Suite - Distribution with a rich set of tools built upon the
     Test2 framework.
 
-EXPERIMENTAL RELEASE
-    This is an experimental release. Using this right now is not
-    recommended.
-
 DESCRIPTION
-    Rich set fo tools, plugins, bundles, etc built upon the Test2 testing
+    Rich set of tools, plugins, bundles, etc built upon the Test2 testing
     library. If you are interested in writing tests this is the distribution
     for you.
 
@@ -117,7 +113,7 @@ INCLUDED TOOLS
         See Test2::Tools::ClassicCompare for complete documentation.
 
     Class
-        This provides functions for test objects and classes, things like
+        This provides functions for testing objects and classes, things like
         "isa_ok".
 
         See Test2::Tools::Class for complete documentation.
@@ -257,7 +253,7 @@ AUTHORS
     Chad Granum <exodist@cpan.org>
 
 COPYRIGHT
-    Copyright 2015 Chad Granum <exodist@cpan.org>.
+    Copyright 2016 Chad Granum <exodist@cpan.org>.
 
     This program is free software; you can redistribute it and/or modify it
     under the same terms as Perl itself.
