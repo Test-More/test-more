@@ -61,10 +61,6 @@ __END__
 
 Test2::Tools::Target - Alias the testing target package.
 
-=head1 EXPERIMENTAL RELEASE
-
-This is an experimental release. Using this right now is not recommended.
-
 =head1 DESCRIPTION
 
 This lets you alias the package you are testing into a constant and a package

@@ -16,10 +16,6 @@ __END__
 
 Test2::Plugin - Documentation for plugins
 
-=head1 EXPERIMENTAL RELEASE
-
-This is an experimental release. Using this right now is not recommended.
-
 =head1 DESCRIPTION
 
 Plugins are packages that cause behavior changes, or other side effects for the

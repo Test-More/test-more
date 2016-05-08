@@ -150,10 +150,6 @@ __END__
 
 Test2::Util::Stash - Utilities for manipulating stashes and globs.
 
-=head1 EXPERIMENTAL RELEASE
-
-This is an experimental release. Using this right now is not recommended.
-
 =head1 DESCRIPTION
 
 This is a collection of utilities for manipulating and inspecting package

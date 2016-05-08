@@ -16,10 +16,6 @@ __END__
 
 Test2::Tools - Documentation for Tools.
 
-=head1 EXPERIMENTAL RELEASE
-
-This is an experimental release. Using this right now is not recommended.
-
 =head1 DESCRIPTION
 
 Tools are packages that export test functions, typically all related to a

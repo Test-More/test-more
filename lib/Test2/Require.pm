@@ -37,10 +37,6 @@ __END__
 Test2::Require - Base class and documentation for skip-unless type test
 packages.
 
-=head1 EXPERIMENTAL RELEASE
-
-This is an experimental release. Using this right now is not recommended.
-
 =head1 DESCRIPTION
 
 Test2::Require::* packages are packages you load to ensure your test file is

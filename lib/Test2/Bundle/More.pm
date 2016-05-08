@@ -47,10 +47,6 @@ __END__
 
 Test2::Bundle::More - ALMOST a drop-in replacement for Test::More.
 
-=head1 EXPERIMENTAL RELEASE
-
-This is an experimental release. Using this right now is not recommended.
-
 =head1 DESCRIPTION
 
 This bundle is intended to be a (mostly) drop-in replacement for

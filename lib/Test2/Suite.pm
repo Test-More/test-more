@@ -17,10 +17,6 @@ __END__
 Test2::Suite - Distribution with a rich set of tools built upon the Test2
 framework.
 
-=head1 EXPERIMENTAL RELEASE
-
-This is an experimental release. Using this right now is not recommended.
-
 =head1 DESCRIPTION
 
 Rich set of tools, plugins, bundles, etc built upon the L<Test2> testing

@@ -16,10 +16,6 @@ __END__
 
 Test2::Bundle - Documentation for bundles.
 
-=head1 EXPERIMENTAL RELEASE
-
-This is an experimental release. Using this right now is not recommended.
-
 =head1 DESCRIPTION
 
 Bundles are collections of Tools and Plugins. Bundles should not provide any

@@ -33,10 +33,6 @@ __END__
 
 Test2::Tools::Event - Tools for generating test events.
 
-=head1 EXPERIMENTAL RELEASE
-
-This is an experimental release. Using this right now is not recommended.
-
 =head1 DESCRIPTION
 
 This module provides tools for generating events quickly by bypassing the
