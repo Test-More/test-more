@@ -17,8 +17,7 @@ sub _carp {
     return warn @_, " at $file line $line\n";
 }
 
-our $VERSION = '1.302014_010';
-$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+our $VERSION = '1.302015';
 
 use Test::Builder::Module 0.99;
 our @ISA    = qw(Test::Builder::Module);

@@ -2,8 +2,8 @@ package Test2::API::Instance;
 use strict;
 use warnings;
 
-our $VERSION = '1.302014_010';
-$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+our $VERSION = '1.302015';
+
 
 our @CARP_NOT = qw/Test2::API Test2::API::Instance Test2::IPC::Driver Test2::Formatter/;
 use Carp qw/confess carp/;

@@ -3,8 +3,8 @@ use strict;
 
 package Test::Tester::CaptureRunner;
 
-our $VERSION = '1.302014_010';
-$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+our $VERSION = '1.302015';
+
 
 use Test::Tester::Capture;
 require Exporter;

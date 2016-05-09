@@ -2,8 +2,8 @@ package Test2::Hub::Subtest;
 use strict;
 use warnings;
 
-our $VERSION = '1.302014_010';
-$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
+our $VERSION = '1.302015';
+
 
 use base 'Test2::Hub';
 use Test2::Util::HashBase qw/nested bailed_out exit_code manual_skip_all id/;
