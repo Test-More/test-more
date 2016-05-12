@@ -15,7 +15,7 @@ use Storable();
 use File::Spec();
 use POSIX();
 
-use Test2::Util qw/try get_tid pkg_to_file/;
+use Test2::Util qw/try get_tid pkg_to_file IS_WIN32/;
 use Test2::API qw/test2_ipc_set_pending/;
 
 sub use_shm { 1 }
@@ -152,17 +152,20 @@ do so if Test::Builder is loaded for legacy reasons.
         $self->{+GLOBALS}->{$hid}->{$name}++;
     }
 
-    my $to_block = POSIX::SigSet->new(
-        POSIX::SIGINT(),
-        POSIX::SIGALRM(),
-        POSIX::SIGHUP(),
-        POSIX::SIGTERM(),
-        POSIX::SIGUSR1(),
-        POSIX::SIGUSR2(),
-    );
-    my $old = POSIX::SigSet->new;
-    my $blocked = POSIX::sigprocmask(POSIX::SIG_BLOCK(), $to_block, $old);
-    # Silently go on if we failed to blog signals, not much we can do.
+    my ($old, $blocked);
+    unless(IS_WIN32) {
+        my $to_block = POSIX::SigSet->new(
+            POSIX::SIGINT(),
+            POSIX::SIGALRM(),
+            POSIX::SIGHUP(),
+            POSIX::SIGTERM(),
+            POSIX::SIGUSR1(),
+            POSIX::SIGUSR2(),
+        );
+        $old = POSIX::SigSet->new;
+        $blocked = POSIX::sigprocmask(POSIX::SIG_BLOCK(), $to_block, $old);
+        # Silently go on if we failed to blog signals, not much we can do.
+    }
 
     # Write and rename the file.
     my ($ok, $err) = try {
