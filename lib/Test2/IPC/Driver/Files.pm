@@ -154,12 +154,11 @@ do so if Test::Builder is loaded for legacy reasons.
 
     my $to_block = POSIX::SigSet->new(
         POSIX::SIGINT(),
-        POSIX::SIGABRT(),
         POSIX::SIGALRM(),
         POSIX::SIGHUP(),
-        POSIX::SIGKILL(),
-        POSIX::SIGQUIT(),
         POSIX::SIGTERM(),
+        POSIX::SIGUSR1(),
+        POSIX::SIGUSR2(),
     );
     my $old = POSIX::SigSet->new;
     my $blocked = POSIX::sigprocmask(POSIX::SIG_BLOCK(), $to_block, $old);
@@ -173,7 +172,7 @@ do so if Test::Builder is loaded for legacy reasons.
     };
 
     # If our block was successful we want to restore the old mask.
-    POSIX::sigprocmask(POSIX::SIG_SETMASK, $old) if defined $blocked;
+    POSIX::sigprocmask(POSIX::SIG_SETMASK(), $old) if defined $blocked;
 
     if (!$ok) {
         my $src_file = __FILE__;
