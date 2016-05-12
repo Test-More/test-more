@@ -175,11 +175,21 @@ sub import_extra {
 
     my @other = ();
     my $idx   = 0;
+    my $import;
     while( $idx <= $#{$list} ) {
         my $item = $list->[$idx];
 
         if( defined $item and $item eq 'no_diag' ) {
             $class->builder->no_diag(1);
+        }
+        elsif( defined $item and $item eq 'import' ) {
+            if ($import) {
+                push @$import, @{$list->[ ++$idx ]};
+            }
+            else {
+                $import = $list->[ ++$idx ];
+                push @other, $item, $import;
+            }
         }
         else {
             push @other, $item;
@@ -189,6 +199,18 @@ sub import_extra {
     }
 
     @$list = @other;
+
+    if ($class eq __PACKAGE__ && (!$import || grep $_ eq '$TODO', @$import)) {
+        my $to = $class->builder->exported_to;
+        no strict 'refs';
+        *{"$to\::TODO"} = \our $TODO;
+        if ($import) {
+            @$import = grep $_ ne '$TODO', @$import;
+        }
+        else {
+            push @$list, import => [grep $_ ne '$TODO', @EXPORT];
+        }
+    }
 
     return;
 }

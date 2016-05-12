@@ -89,7 +89,8 @@ sub import {
 
     $test->plan(@_);
 
-    $class->export_to_level( 1, $class, @imports );
+    @_ = ($class, @imports);
+    goto &Exporter::import;
 }
 
 sub _strip_imports {
