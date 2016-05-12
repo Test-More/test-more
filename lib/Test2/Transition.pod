@@ -31,7 +31,7 @@ into this category.
 =head3 The Fix
 
 The fix is to remove all Test::Builder1.5/2 related code. Either use the
-lagacy Test::Builder API, or use Test2 directly.
+legacy Test::Builder API, or use Test2 directly.
 
 =head2 Replacing the Test::Builder singleton
 
