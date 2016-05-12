@@ -19,7 +19,7 @@ use Test2::API qw{
 use Carp qw/confess/;
 
 our @EXPORT_OK = qw/cull/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub import {
     goto &Exporter::import unless test2_init_done();

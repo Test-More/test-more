@@ -5,7 +5,7 @@ use warnings;
 our $VERSION = '1.302018';
 
 
-use base 'Test2::IPC::Driver';
+BEGIN { require Test2::IPC::Driver; our @ISA = qw(Test2::IPC::Driver) }
 
 use Test2::Util::HashBase qw{tempdir event_id tid pid globals};
 

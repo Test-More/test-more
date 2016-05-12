@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '1.302018';
 
-use base 'Test2::Event::Diag';
+BEGIN { require Test2::Event::Diag; our @ISA = qw(Test2::Event::Diag) }
 
 sub diagnostics { 0 }
 

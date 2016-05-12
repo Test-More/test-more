@@ -19,7 +19,7 @@ our @EXPORT_OK = qw{
 
     IS_WIN32
 };
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 BEGIN {
     *IS_WIN32 = ($^O eq 'MSWin32') ? sub() { 1 } : sub() { 0 };

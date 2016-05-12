@@ -12,7 +12,7 @@ our @EXPORT_OK = qw{
     upgrade_required
     known_broken
 };
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub upgrade_suggested {
     return (

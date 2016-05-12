@@ -5,7 +5,7 @@ use warnings;
 our $VERSION = '1.302018';
 
 
-use base 'Test2::Event';
+BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw{reason};
 
 sub callback {

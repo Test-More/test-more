@@ -7,7 +7,7 @@ our $VERSION = '1.302018';
 
 use Test2::Hub::Interceptor::Terminator();
 
-use base 'Test2::Hub';
+BEGIN { require Test2::Hub; our @ISA = qw(Test2::Hub) }
 use Test2::Util::HashBase;
 
 sub inherit {

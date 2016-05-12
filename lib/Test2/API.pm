@@ -99,7 +99,7 @@ our @EXPORT_OK = qw{
     test2_formatter_add
     test2_formatter_set
 };
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 # There is a use-cycle between API and API/Context. Context needs to use some
 # API functions as the package is compiling. Test2::API::context() needs
