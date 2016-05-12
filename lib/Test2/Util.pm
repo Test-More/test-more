@@ -51,9 +51,25 @@ sub _can_fork {
 
 BEGIN {
     no warnings 'once';
-    *CAN_REALLY_FORK = $Config{d_fork} ? sub() { 1 } : sub() { 0 };
     *CAN_THREAD      = _can_thread()   ? sub() { 1 } : sub() { 0 };
-    *CAN_FORK        = _can_fork()     ? sub() { 1 } : sub() { 0 };
+}
+my $can_fork;
+sub CAN_FORK () {
+    return $can_fork
+        if defined $can_fork;
+    $can_fork = !!_can_fork();
+    no warnings 'redefine';
+    *CAN_FORK = $can_fork ? sub() { 1 } : sub() { 0 };
+    $can_fork;
+}
+my $can_really_fork;
+sub CAN_REALLY_FORK () {
+    return $can_really_fork
+        if defined $can_really_fork;
+    $can_really_fork = !!$Config{d_fork};
+    no warnings 'redefine';
+    *CAN_REALLY_FORK = $can_really_fork ? sub() { 1 } : sub() { 0 };
+    $can_really_fork;
 }
 
 sub _manual_try(&;@) {
