@@ -13,6 +13,7 @@ use Scalar::Util qw/blessed/;
 use File::Temp();
 use Storable();
 use File::Spec();
+use POSIX();
 
 use Test2::Util qw/try get_tid pkg_to_file/;
 use Test2::API qw/test2_ipc_set_pending/;
@@ -151,11 +152,29 @@ do so if Test::Builder is loaded for legacy reasons.
         $self->{+GLOBALS}->{$hid}->{$name}++;
     }
 
+    my $to_block = POSIX::SigSet->new(
+        POSIX::SIGINT(),
+        POSIX::SIGABRT(),
+        POSIX::SIGALRM(),
+        POSIX::SIGHUP(),
+        POSIX::SIGKILL(),
+        POSIX::SIGQUIT(),
+        POSIX::SIGTERM(),
+    );
+    my $old = POSIX::SigSet->new;
+    my $blocked = POSIX::sigprocmask(POSIX::SIG_BLOCK(), $to_block, $old);
+    # Silently go on if we failed to blog signals, not much we can do.
+
+    # Write and rename the file.
     my ($ok, $err) = try {
         Storable::store($e, $file);
         rename($file, $ready) or $self->abort("Could not rename file '$file' -> '$ready'");
         test2_ipc_set_pending(substr($file, -(shm_size)));
     };
+
+    # If our block was successful we want to restore the old mask.
+    POSIX::sigprocmask(POSIX::SIG_SETMASK, $old) if defined $blocked;
+
     if (!$ok) {
         my $src_file = __FILE__;
         $err =~ s{ at \Q$src_file\E.*$}{};
