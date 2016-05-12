@@ -107,7 +107,6 @@ my $original_todo_handle;
 my $original_formatter;
 
 my $original_harness_env;
-my $original_plan;
 
 # function that starts testing and redirects the filehandles for now
 sub _start_testing {
@@ -124,8 +123,6 @@ sub _start_testing {
         my $fmt = Test::Builder::Formatter->new;
         $hub->format($fmt);
     }
-
-    $original_plan = delete $hub->{_plan};
 
     # remember what the handles were set to
     $original_output_handle  = $t->output();
@@ -339,7 +336,6 @@ sub test_test {
 
     my $hub = $t->{Hub} || Test2::API::test2_stack->top;
     $hub->format($original_formatter);
-    $hub->{_plan} = $original_plan;
 
     # okay, reconnect the test suite back to the saved handles
     $t->output($original_output_handle);
