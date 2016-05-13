@@ -3,7 +3,7 @@ use warnings;
 
 package Test::Tester::Delegate;
 
-our $VERSION = '1.302015';
+our $VERSION = '1.302016';
 
 
 use vars '$AUTOLOAD';

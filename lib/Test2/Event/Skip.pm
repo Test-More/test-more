@@ -2,7 +2,7 @@ package Test2::Event::Skip;
 use strict;
 use warnings;
 
-our $VERSION = '1.302015';
+our $VERSION = '1.302016';
 
 
 use base 'Test2::Event::Ok';
