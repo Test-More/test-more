@@ -7,7 +7,7 @@ Test2::Transition - Transition notes when upgrading to Test2
 =head1 DESCRIPTION
 
 This is where gotchas and breakages related to the Test2 upgrade are
-documented. The upgrade causes Test::Builder to defer to Test2 uner the hood.
+documented. The upgrade causes Test::Builder to defer to Test2 under the hood.
 This transition is mostly transparent, but there are a few cases that can trip
 you up.
 
