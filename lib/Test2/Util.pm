@@ -22,7 +22,7 @@ our @EXPORT_OK = qw{
 use base 'Exporter';
 
 BEGIN {
-    *IS_WIN32 = $^O eq 'MSWin32' ? sub() { 1 } : sub() { 0 };
+    *IS_WIN32 = ($^O eq 'MSWin32') ? sub() { 1 } : sub() { 0 };
 }
 
 sub _can_thread {

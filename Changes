@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix util.t win32 bug
+
 1.302016  2016-05-12 19:43:38-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Block signals in critical IPC section (Fix #661 and #668)

@@ -37,6 +37,6 @@ CAN_FORK();
 CAN_REALLY_FORK();
 IS_WIN32();
 
-is(IS_WIN32(), ($^O eq 'Win32' ? 1 : 0), "IS_WIN32 is correct ($^O)");
+is(IS_WIN32(), ($^O eq 'MSWin32') ? 1 : 0, "IS_WIN32 is correct ($^O)");
 
 done_testing;
