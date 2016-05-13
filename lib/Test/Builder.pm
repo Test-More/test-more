@@ -486,6 +486,12 @@ sub no_plan {
 
     my $ctx = $self->ctx;
 
+    if (defined $ctx->hub->plan) {
+        warn "Plan already set, no_plan() is a no-op, this will change to a hard failure in the future.";
+        $ctx->release;
+        return;
+    }
+
     $ctx->alert("no_plan takes no arguments") if $arg;
 
     $ctx->hub->plan('NO PLAN');
