@@ -139,6 +139,8 @@ version number. If the installed version of the module is at or below the
 specified one then the module will not work. A newer version may work, but is
 not tested or verified.
 
+=back
+
 =head1 SOURCE
 
 The source code repository for Test2 can be found at
