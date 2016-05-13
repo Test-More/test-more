@@ -2,7 +2,7 @@ package Test2::Formatter::TAP;
 use strict;
 use warnings;
 
-our $VERSION = '1.302016';
+our $VERSION = '1.302017';
 
 
 use Test2::Util::HashBase qw{

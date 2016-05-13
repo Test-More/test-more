@@ -2,7 +2,7 @@ package Test2::Event::Exception;
 use strict;
 use warnings;
 
-our $VERSION = '1.302016';
+our $VERSION = '1.302017';
 
 
 use base 'Test2::Event';
