@@ -16,8 +16,14 @@ our @EXPORT_OK = qw{
     CAN_THREAD
     CAN_REALLY_FORK
     CAN_FORK
+
+    IS_WIN32
 };
 use base 'Exporter';
+
+BEGIN {
+    *IS_WIN32 = $^O eq 'MSWin32' ? sub() { 1 } : sub() { 0 };
+}
 
 sub _can_thread {
     return 0 unless $] >= 5.008001;
@@ -36,7 +42,7 @@ sub _can_thread {
 
 sub _can_fork {
     return 1 if $Config{d_fork};
-    return 0 unless $^O eq 'MSWin32' || $^O eq 'NetWare';
+    return 0 unless IS_WIN32 || $^O eq 'NetWare';
     return 0 unless $Config{useithreads};
     return 0 unless $Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/;
 
@@ -80,7 +86,7 @@ sub _local_try(&;@) {
 # before forking or starting a new thread. So for those systems we use the
 # non-local form. When possible though we use the faster 'local' form.
 BEGIN {
-    if ($^O eq 'MSWin32' && $] < 5.020002) {
+    if (IS_WIN32 && $] < 5.020002) {
         *try = \&_manual_try;
     }
     else {

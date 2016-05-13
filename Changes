@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Block signals in critical IPC section (Fix #661 and #668)
+
 1.302015  2016-05-09 07:46:54-07:00 America/Los_Angeles
 
     - Add Test::Alien to breakage info
