@@ -3,6 +3,7 @@
     - Block signals in critical IPC section (Fix #661 and #668)
     - Merge Examples and examples into one dir (#660)
     - Documentation and typo fixes
+    - Make Test2::Util::get_tid have a consistent prototype (#665)
 
 1.302015  2016-05-09 07:46:54-07:00 America/Los_Angeles
 

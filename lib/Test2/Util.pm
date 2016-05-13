@@ -95,17 +95,17 @@ BEGIN {
 }
 
 BEGIN {
-    if(CAN_THREAD) {
+    if (CAN_THREAD) {
         if ($INC{'threads.pm'}) {
             # Threads are already loaded, so we do not need to check if they
             # are loaded each time
             *USE_THREADS = sub() { 1 };
-            *get_tid = sub { threads->tid() };
+            *get_tid     = sub() { threads->tid() };
         }
         else {
             # :-( Need to check each time to see if they have been loaded.
-            *USE_THREADS = sub { $INC{'threads.pm'} ? 1 : 0 };
-            *get_tid = sub { $INC{'threads.pm'} ? threads->tid() : 0 };
+            *USE_THREADS = sub() { $INC{'threads.pm'} ? 1 : 0 };
+            *get_tid     = sub() { $INC{'threads.pm'} ? threads->tid() : 0 };
         }
     }
     else {
