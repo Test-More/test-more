@@ -175,7 +175,7 @@ do so if Test::Builder is loaded for legacy reasons.
     };
 
     # If our block was successful we want to restore the old mask.
-    POSIX::sigprocmask(POSIX::SIG_SETMASK(), $old) if defined $blocked;
+    POSIX::sigprocmask(POSIX::SIG_SETMASK(), $old, POSIX::SigSet->new()) if defined $blocked;
 
     if (!$ok) {
         my $src_file = __FILE__;
