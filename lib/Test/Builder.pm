@@ -1786,19 +1786,6 @@ will print the appropriate headers and take the appropriate actions.
 
 If you call C<plan()>, don't call any of the other methods below.
 
-If a child calls "skip_all" in the plan, a C<Test::Builder::Exception> is
-thrown.  Trap this error, call C<finalize()> and don't run any more tests on
-the child.
-
- my $child = $Test->child('some child');
- eval { $child->plan( $condition ? ( skip_all => $reason ) : ( tests => 3 )  ) };
- if ( eval { $@->isa('Test::Builder::Exception') } ) {
-    $child->finalize;
-    return;
- }
- # run your tests
-
-
 =item B<expected_tests>
 
     my $max = $Test->expected_tests;
