@@ -2,7 +2,7 @@ package Test2::Event::Plan;
 use strict;
 use warnings;
 
-our $VERSION = '1.302017';
+our $VERSION = '1.302018';
 
 
 use base 'Test2::Event';

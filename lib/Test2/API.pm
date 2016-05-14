@@ -2,7 +2,7 @@ package Test2::API;
 use strict;
 use warnings;
 
-our $VERSION = '1.302017';
+our $VERSION = '1.302018';
 
 
 my $INST;
