@@ -468,7 +468,7 @@ sub run_subtest {
         $err = $@;
 
         # They might have done 'BEGIN { skip_all => "whatever" }'
-        if (!$ok && $err =~ m/Label not found for "last T2_SUBTEST_WRAPPER"/) {
+        if (!$ok && $err =~ m/Label not found for "last T2_SUBTEST_WRAPPER"/ || blessed($err) eq 'Test::Builder::Exception') {
             $ok  = undef;
             $err = undef;
         }
