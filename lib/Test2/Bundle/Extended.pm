@@ -208,7 +208,7 @@ import arguments.
 
     use Test2::Bundle::Extended -no_utf8 => 1;
 
-=head2 EXIT SUMMARRY
+=head2 EXIT SUMMARY
 
 See L<Test2::Plugin::ExitSummary>.
 
