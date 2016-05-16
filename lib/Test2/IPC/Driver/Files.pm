@@ -164,7 +164,7 @@ do so if Test::Builder is loaded for legacy reasons.
         );
         $old = POSIX::SigSet->new;
         $blocked = POSIX::sigprocmask(POSIX::SIG_BLOCK(), $to_block, $old);
-        # Silently go on if we failed to blog signals, not much we can do.
+        # Silently go on if we failed to log signals, not much we can do.
     }
 
     # Write and rename the file.

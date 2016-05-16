@@ -124,7 +124,7 @@ hash, then there is a conflict and you cannot use this package.
 =item $val = $obj->meta($key, $default)
 
 This will get the value for a specified meta C<$key>. Normally this will return
-C<undef> when there is no value for the C<$key>, however you can specfi a
+C<undef> when there is no value for the C<$key>, however you can specify a
 C<$default> value to set when no value is already set.
 
 =item $val = $obj->get_meta($key)

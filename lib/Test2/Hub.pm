@@ -458,7 +458,7 @@ Test2::Hub - The conduit through which all events flow.
 =head1 DESCRIPTION
 
 The hub is the place where all events get processed and handed off to the
-formatter. The hub also tracks test state, and provides everal hooks into the
+formatter. The hub also tracks test state, and provides several hooks into the
 event pipeline.
 
 =head1 COMMON TASKS
@@ -636,7 +636,7 @@ an END block.
 =item $sub = $hub->add_context_acquire(sub { ... });
 
 Add a callback that will be called every time someone tries to acquire a
-context. It gets a single argument, a reference the the hash of parameters
+context. It gets a single argument, a reference of the hash of parameters
 being used the construct the context. This is your chance to change the
 parameters by directly altering the hash.
 

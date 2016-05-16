@@ -160,7 +160,7 @@ be restored, but $@ will contain the exception being thrown.
 
 =item CAN_FORK
 
-True if this system is capable of true or psuedo-fork.
+True if this system is capable of true or pseudo-fork.
 
 =item CAN_REALLY_FORK
 

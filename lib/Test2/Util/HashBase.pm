@@ -146,7 +146,7 @@ This package is used to generate classes based on hashrefs. Using this class
 will give you a C<new()> method, as well as generating accessors you request.
 Generated accessors will be getters, C<set_ACCESSOR> setters will also be
 generated for you. You also get constants for each accessor (all caps) which
-return the key into the hash for that accessor. Single inheritence is also
+return the key into the hash for that accessor. Single inheritance is also
 supported.
 
 =head1 METHODS

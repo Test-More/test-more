@@ -109,7 +109,7 @@ thing to want, it is used by bail-out and skip_all to end testing.
 
 This is called B<AFTER> your event has been passed to the formatter. This
 should normally return undef, only change this if your event should cause the
-test to exit immedietly.
+test to exit immediately.
 
 If you want this event to cause the test to exit you should return the exit
 code here. Exit code of 0 means exit success, any other integer means exit with

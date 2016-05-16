@@ -29,7 +29,7 @@ for my $meth (qw/send cull add_hub drop_hub waiting is_viable/) {
 }
 
 # Print the error and call exit. We are not using 'die' cause this is a
-# catastophic error that should never be caught. If we get here it
+# catastrophic error that should never be caught. If we get here it
 # means some serious shit has happened in a child process, the only way
 # to inform the parent may be to exit false.
 

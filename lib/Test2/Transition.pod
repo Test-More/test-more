@@ -24,7 +24,7 @@ Confusingly these were called Test::Builder2 and Test::Builder1.5, in that
 order. Many people put conditionals in their code to check the Test::Builder
 version number and adapt their code accordingly.
 
-The Test::Builder2/1.5 projects both died out. Now the conditional code poeple
+The Test::Builder2/1.5 projects both died out. Now the conditional code people
 added has become a mine field. A vast majority of modules broken by Test2 fall
 into this category.
 
@@ -77,7 +77,7 @@ as needed.
 
 An early change, in fact the change that made Test2 an idea, was a change to
 the indentation of the subtest note. IT was decided it would be more readable
-to outdent the subtest note instead of having it inline withthe subtest:
+to outdent the subtest note instead of having it inline with the subtest:
 
     # subtest foo
         ok 1 - blah
