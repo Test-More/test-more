@@ -63,8 +63,9 @@ sub init { $_[0]->reset }
 sub reset {
     my $self = shift;
 
-    $self->{+PID} = $$;
-    $self->{+TID} = get_tid();
+    delete $self->{+PID};
+    delete $self->{+TID};
+
     $self->{+CONTEXTS}    = {};
 
     $self->{+IPC_DRIVERS} = [];
@@ -94,6 +95,9 @@ sub _finalize {
     $caller ||= [caller(1)];
 
     $self->{+FINALIZED} = $caller;
+
+    $self->{+PID} ||= $$;
+    $self->{+TID} ||= get_tid();
 
     unless ($self->{+FORMATTER}) {
         my ($formatter, $source);
@@ -220,6 +224,9 @@ sub add_post_load_callback {
 sub load {
     my $self = shift;
     unless ($self->{+LOADED}) {
+        $self->{+PID} ||= $$;
+        $self->{+TID} ||= get_tid();
+
         # This is for https://github.com/Test-More/test-more/issues/16
         # and https://rt.perl.org/Public/Bug/Display.html?id=127774
         # END blocks run in reverse order. This insures the END block is loaded
@@ -377,8 +384,8 @@ sub _ipc_wait {
 sub DESTROY {
     my $self = shift;
 
-    return unless $self->{+PID} == $$;
-    return unless $self->{+TID} == get_tid();
+    return unless defined($self->{+PID}) && $self->{+PID} == $$;
+    return unless defined($self->{+TID}) && $self->{+TID} == get_tid();
 
     shmctl($self->{+IPC_SHM_ID}, IPC::SysV::IPC_RMID(), 0)
         if defined $self->{+IPC_SHM_ID};
@@ -413,7 +420,7 @@ This is not a supported configuration, you will have problems.
 
         # Only worry about contexts in this PID
         my $trace = $ctx->trace || next;
-        next unless $trace->pid == $$;
+        next unless $trace->pid && $trace->pid == $$;
 
         # Do not worry about contexts that have no hub
         my $hub = $ctx->hub  || next;
@@ -429,7 +436,7 @@ This is not a supported configuration, you will have problems.
         $new_exit = 255;
     }
 
-    if ($self->{+PID} != $$ or $self->{+TID} != get_tid()) {
+    if (!defined($self->{+PID}) or !defined($self->{+TID}) or $self->{+PID} != $$ or $self->{+TID} != get_tid()) {
         $? = $exit;
         return;
     }

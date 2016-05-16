@@ -40,16 +40,7 @@ use Test::Builder::Formatter;
 use Test::Builder::TodoDiag;
 
 our $Level = 1;
-our $Test = Test::Builder->new;
-
-# Non-TB tools normally expect 0 added to the level. $Level is normally 1. So
-# we only want the level to change if $Level != 1.
-# TB->ctx compensates for this later.
-Test2::API::test2_add_callback_context_aquire(sub {$_[0]->{level} += $Level - 1});
-
-Test2::API::test2_add_callback_exit(sub { $Test->_ending(@_) });
-
-Test2::API::test2_ipc()->set_no_fatal(1) if USE_THREADS;
+our $Test = $ENV{TB_NO_EARLY_INIT} ? undef : Test::Builder->new;
 
 sub _add_ts_hooks {
     my $self = shift;
@@ -102,6 +93,15 @@ sub new {
         my $ctx = context();
         $Test = $class->create(singleton => 1);
         $ctx->release;
+
+        # Non-TB tools normally expect 0 added to the level. $Level is normally 1. So
+        # we only want the level to change if $Level != 1.
+        # TB->ctx compensates for this later.
+        Test2::API::test2_add_callback_context_aquire(sub { $_[0]->{level} += $Level - 1 });
+
+        Test2::API::test2_add_callback_exit(sub { $Test->_ending(@_) });
+
+        Test2::API::test2_ipc()->set_no_fatal(1) if USE_THREADS;
     }
     return $Test;
 }
