@@ -234,7 +234,7 @@ sub event_subtest {
 
     # In a verbose harness we indent the diagnostics from the 'Ok' event since
     # they will appear inside the subtest braces. This helps readability. In a
-    # non-verbose harness we do nto do this because it is less readable.
+    # non-verbose harness we do not do this because it is less readable.
     if ($ENV{HARNESS_IS_VERBOSE}) {
         # index 0 is the filehandle, index 1 is the message we want to indent.
         $_->[1] =~ s/^(.*\S.*)$/    $1/mg for @diag;

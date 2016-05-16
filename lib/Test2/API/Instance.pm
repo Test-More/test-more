@@ -129,7 +129,7 @@ sub _finalize {
         $self->{+FORMATTER} = $formatter;
     }
 
-    # Turn on IPC if threads are on, drivers are reigstered, or the Test2::IPC
+    # Turn on IPC if threads are on, drivers are registered, or the Test2::IPC
     # module is loaded.
     return unless USE_THREADS || $INC{'Test2/IPC.pm'} || @{$self->{+IPC_DRIVERS}};
 
@@ -547,7 +547,7 @@ Get the post-load callbacks.
 =item $obj->add_post_load_callback(sub { ... })
 
 Add a post-load callback. If C<load()> has already been called then the callback will
-be immedietly executed. If C<load()> has not been called then the callback will be
+be immediately executed. If C<load()> has not been called then the callback will be
 stored and executed later when C<load()> is called.
 
 =item $hashref = $obj->contexts()

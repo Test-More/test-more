@@ -676,7 +676,7 @@ new one is generated, or if an existing one is returned.
 
 This object consumes L<Test2::Util::ExternalMeta> which provides a consistent
 way for you to attach meta-data to instances of this class. This is useful for
-tools, plugins, and other extentions.
+tools, plugins, and other extensions.
 
 =head1 SOURCE
 

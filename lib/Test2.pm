@@ -67,12 +67,12 @@ perls, or when non-essential modules have not been installed.
 =head2 Test2::Formatter::
 
 Formatters live under this namespace. L<Test2::Formatter::TAP> is the only
-formatter currently. It is acceptible for third party distributions to create
+formatter currently. It is acceptable for third party distributions to create
 new formatters under this namespace.
 
 =head2 Test2::Event::
 
-Events live under this namespace. It is considered acceptible for third party
+Events live under this namespace. It is considered acceptable for third party
 distributions to add new event types in this namespace.
 
 =head2 Test2::Hub::
@@ -102,8 +102,8 @@ This is for Test2 API and related packages.
 
 =head2 Test2::
 
-The Test2:: namespace is intended for extentions and frameworks. Tools,
-Plugins, etc should not go directly into this namespace. However extentions
+The Test2:: namespace is intended for extensions and frameworks. Tools,
+Plugins, etc should not go directly into this namespace. However extensions
 that are used to build tools and plugins may go here.
 
 In short: If the module exports anything that should be run directly by a test

@@ -110,7 +110,7 @@ instances.
 =head1 ***INTERNALS NOTE***
 
 B<The internals of this package are subject to change at any time!> The public
-methods provided will not change in backwords incompatible ways, but the
+methods provided will not change in backwards incompatible ways, but the
 underlying implementation details might. B<Do not break encapsulation here!>
 
 =head1 DESCRIPTION

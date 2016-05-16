@@ -104,7 +104,7 @@ use base 'Exporter';
 # There is a use-cycle between API and API/Context. Context needs to use some
 # API functions as the package is compiling. Test2::API::context() needs
 # Test2::API::Context to be loaded, but we cannot 'require' the module there as
-# it causes a very noticable performance impact with how often context() is
+# it causes a very noticeable performance impact with how often context() is
 # called.
 #
 # This will make sure that Context.pm is loaded the first time this module is
@@ -293,7 +293,7 @@ sub context {
         delete $CONTEXTS->{$hid};
     }
 
-    # Directly bless the object here, calling new is a noticable performance
+    # Directly bless the object here, calling new is a noticeable performance
     # hit with how often this needs to be called.
     my $trace = bless(
         {
@@ -304,7 +304,7 @@ sub context {
         'Test2::Util::Trace'
     );
 
-    # Directly bless the object here, calling new is a noticable performance
+    # Directly bless the object here, calling new is a noticeable performance
     # hit with how often this needs to be called.
     my $aborted = 0;
     $current = bless(
@@ -579,7 +579,7 @@ The C<context()> method is your primary interface into the Test2 framework.
         return $bool;
     }
 
-See L<Test2::API::Context> for a list of methods avabilable on the context object.
+See L<Test2::API::Context> for a list of methods available on the context object.
 
 =head2 TESTING YOUR TOOLS
 
