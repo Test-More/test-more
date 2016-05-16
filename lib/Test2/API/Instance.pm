@@ -15,7 +15,7 @@ use Test2::Util::Trace();
 use Test2::API::Stack();
 
 use Test2::Util::HashBase qw{
-    pid tid
+    _pid _tid
     no_wait
     finalized loaded
     ipc stack formatter
@@ -34,6 +34,9 @@ use Test2::Util::HashBase qw{
     context_init_callbacks
     context_release_callbacks
 };
+
+sub pid { $_[0]->{+_PID} ||= $$ }
+sub tid { $_[0]->{+_TID} ||= get_tid() }
 
 # Wrap around the getters that should call _finalize.
 BEGIN {
@@ -63,8 +66,8 @@ sub init { $_[0]->reset }
 sub reset {
     my $self = shift;
 
-    delete $self->{+PID};
-    delete $self->{+TID};
+    delete $self->{+_PID};
+    delete $self->{+_TID};
 
     $self->{+CONTEXTS}    = {};
 
@@ -96,8 +99,8 @@ sub _finalize {
 
     $self->{+FINALIZED} = $caller;
 
-    $self->{+PID} ||= $$;
-    $self->{+TID} ||= get_tid();
+    $self->{+_PID} = $$        unless defined $self->{+_PID};
+    $self->{+_TID} = get_tid() unless defined $self->{+_TID};
 
     unless ($self->{+FORMATTER}) {
         my ($formatter, $source);
@@ -224,8 +227,8 @@ sub add_post_load_callback {
 sub load {
     my $self = shift;
     unless ($self->{+LOADED}) {
-        $self->{+PID} ||= $$;
-        $self->{+TID} ||= get_tid();
+        $self->{+_PID} = $$        unless defined $self->{+_PID};
+        $self->{+_TID} = get_tid() unless defined $self->{+_TID};
 
         # This is for https://github.com/Test-More/test-more/issues/16
         # and https://rt.perl.org/Public/Bug/Display.html?id=127774
@@ -384,8 +387,8 @@ sub _ipc_wait {
 sub DESTROY {
     my $self = shift;
 
-    return unless defined($self->{+PID}) && $self->{+PID} == $$;
-    return unless defined($self->{+TID}) && $self->{+TID} == get_tid();
+    return unless defined($self->{+_PID}) && $self->{+_PID} == $$;
+    return unless defined($self->{+_TID}) && $self->{+_TID} == get_tid();
 
     shmctl($self->{+IPC_SHM_ID}, IPC::SysV::IPC_RMID(), 0)
         if defined $self->{+IPC_SHM_ID};
@@ -436,7 +439,7 @@ This is not a supported configuration, you will have problems.
         $new_exit = 255;
     }
 
-    if (!defined($self->{+PID}) or !defined($self->{+TID}) or $self->{+PID} != $$ or $self->{+TID} != get_tid()) {
+    if (!defined($self->{+_PID}) or !defined($self->{+_TID}) or $self->{+_PID} != $$ or $self->{+_TID} != get_tid()) {
         $? = $exit;
         return;
     }

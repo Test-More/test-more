@@ -197,7 +197,7 @@ if (CAN_THREAD && $] ge '5.010') {
 
 {
     $one->reset();
-    $one->set_tid(1);
+    $one->set__tid(1);
     local $? = 0;
     $one->set_exit;
     is($?, 0, "no errors on exit");
