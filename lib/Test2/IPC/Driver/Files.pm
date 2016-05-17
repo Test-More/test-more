@@ -7,7 +7,7 @@ our $VERSION = '1.302018';
 
 use base 'Test2::IPC::Driver';
 
-use Test2::Util::HashBase qw{tempdir event_id tid pid globals};
+use Test2::Util::HashBase qw{tempdir event_id tid pid globals _cleanup};
 
 use Scalar::Util qw/blessed/;
 use File::Temp();
@@ -45,6 +45,8 @@ sub init {
     $self->{+PID} = $$;
 
     $self->{+GLOBALS} = {};
+
+    $self->{+_CLEANUP} = 0;
 
     return $self;
 }
@@ -285,8 +287,12 @@ sub waiting {
     return;
 }
 
-sub DESTROY {
+sub DESTROY { $_[0]->cleanup }
+
+sub cleanup {
     my $self = shift;
+
+    return if $self->{+_CLEANUP}++;
 
     return unless defined $self->pid;
     return unless defined $self->tid;

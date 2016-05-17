@@ -9,7 +9,7 @@ our @CARP_NOT = qw/Test2::API Test2::API::Instance Test2::IPC::Driver Test2::For
 use Carp qw/confess carp/;
 use Scalar::Util qw/reftype/;
 
-use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try/;
+use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try have_detached_threads/;
 
 use Test2::Util::Trace();
 use Test2::API::Stack();
@@ -471,6 +471,14 @@ This is not a supported configuration, you will have problems.
             $_->($ctx, $exit, \$new_exit) for @{$self->{+EXIT_CALLBACKS}};
             $new_exit ||= $root->failed;
         }
+    }
+
+    if (grep { $_->is_running } have_detached_threads()) {
+        warn <<"        EOT";
+Detached threads detected! This prevents global destruction.
+Taking extra steps to ensure we clean up the IPC instance.
+        EOT
+        $self->{+IPC}->cleanup if $self->{+IPC};
     }
 
     $new_exit = 255 if $new_exit > 255;

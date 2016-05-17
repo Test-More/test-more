@@ -152,6 +152,18 @@ ok(!-d $tmpdir, "cleaned up temp dir");
         1;
     };
 
+    my $cleanup = sub {
+        if (opendir(my $d, $tmpdir)) {
+            for my $f (readdir($d)) {
+                next if $f =~ m/^\.+$/;
+                next unless -f "$tmpdir/$f";
+                unlink("$tmpdir/$f");
+            }
+        }
+        rmdir($tmpdir) or die "$!";
+    };
+    $cleanup->();
+
     is($out->{STDOUT}, "not ok - IPC Fatal Error\nnot ok - IPC Fatal Error\n", "printed ");
 
     like($out->{STDERR}, qr/IPC Temp Dir: \Q$tmpdir\E/m, "Got temp dir path");
@@ -186,12 +198,14 @@ ok(!-d $tmpdir, "cleaned up temp dir");
 
     $out = capture {
         my $ipc = Test2::IPC::Driver::Files->new();
+        $tmpdir = $ipc->tempdir;
         $ipc->add_hub($hid);
         $ipc->send($hid, bless({ foo => 1 }, 'Foo'));
         local $@;
         eval { $ipc->drop_hub($hid) };
         print STDERR $@ unless $@ =~ m/^255/;
     };
+    $cleanup->();
     like($out->{STDERR}, qr/IPC Fatal Error: Not all files from hub '12345' have been collected/, "Leftover files");
     like($out->{STDERR}, qr/IPC Fatal Error: Leftover files in the directory \(.*\.ready\)/, "What file");
 
