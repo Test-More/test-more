@@ -40,7 +40,7 @@ sub show_space
 my $colour = '';
 my $reset = '';
 
-if (my $want_colour = $ENV{TESTTESTERCOLOUR} || $ENV{TESTTESTERCOLOUR})
+if (my $want_colour = $ENV{TESTTESTERCOLOUR} || $ENV{TESTTESTERCOLOR})
 {
 	if (eval "require Term::ANSIColor")
 	{
