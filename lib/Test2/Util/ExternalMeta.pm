@@ -91,7 +91,7 @@ tools to attach meta-data to your instances. If your object consumes this
 package, and imports its methods, then third party meta-data has a safe place
 to live.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     package My::Object;
     use strict;
@@ -143,7 +143,7 @@ Set the value of a specified meta C<$key>.
 
 =back
 
-=head1 META-KEY RESTICTIONS
+=head1 META-KEY RESTRICTIONS
 
 Meta keys must be defined, and must be true when used as a boolean. Keys may
 not be references. You are free to stringify a reference C<"$ref"> for use as a

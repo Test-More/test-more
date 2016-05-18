@@ -508,7 +508,7 @@ will be affected.
     });
 
 B<Note:> The context will actually be cloned, the clone will be used instead of
-the original. This allows the TID, PID, and error vars to be correct without
+the original. This allows the thread id, process id, and error variables to be correct without
 modifying the original context.
 
 =item $ctx->restore_error_vars()

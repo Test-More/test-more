@@ -72,15 +72,11 @@
 ^Test2-*
 
 TODO
-^xt/
 
 # Profiling stuff
 ^nytp*
 ^profile
 ^profiling/
-
-# The extra tests are for dist author testing only
-\bxt
 
 # For github testing
 .travis.yml

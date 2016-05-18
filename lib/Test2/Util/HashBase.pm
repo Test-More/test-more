@@ -160,7 +160,7 @@ supported.
 Create a new instance using key/value pairs.
 
 HashBase will not export C<new()> if there is already a C<new()> method in your
-packages inheritence chain.
+packages inheritance chain.
 
 B<If you do not want this method you can define your own> you just have to
 declare it before loading L<Test2::Util::HashBase>.

@@ -254,7 +254,7 @@ True if you want to make use of the L<Test2::API>/L<Test2::API::Instance> SHM.
 
 =item $bites = $ipc->shm_size()
 
-Use this to customize the size of the shm space. There are no guarantees about
+Use this to customize the size of the SHM space. There are no guarantees about
 what the size will be if you do not implement this.
 
 =back

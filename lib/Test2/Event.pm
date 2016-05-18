@@ -172,7 +172,7 @@ If the event is inside a subtest this should have the subtest ID.
 
 =item $id = $e->subtest_id
 
-If the event is a final subtes event, this should contain the subtest ID.
+If the event is a final subtest event, this should contain the subtest ID.
 
 =back
 
@@ -180,7 +180,7 @@ If the event is a final subtes event, this should contain the subtest ID.
 
 This object consumes L<Test2::Util::ExternalMeta> which provides a consistent
 way for you to attach meta-data to instances of this class. This is useful for
-tools, plugins, and other extentions.
+tools, plugins, and other extensions.
 
 =head1 SOURCE
 

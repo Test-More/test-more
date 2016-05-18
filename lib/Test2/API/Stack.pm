@@ -146,10 +146,10 @@ If you specify the C<< 'class' => $class >> argument, the new hub will be an
 instance of the specified class.
 
 Unless your parameters specify C<'formatter'> or C<'ipc'> arguments, the
-formatter and ipc instance will be inherited from the current top hub. You can
-set the parameters to C<undef> to avoid having a formatter or ipc instance.
+formatter and IPC instance will be inherited from the current top hub. You can
+set the parameters to C<undef> to avoid having a formatter or IPC instance.
 
-If there is no top hub, and you do not ask to leave ipc and formatter undef,
+If there is no top hub, and you do not ask to leave IPC and formatter undef,
 then a new formatter will be created, and the IPC instance from
 L<Test2::API> will be used.
 

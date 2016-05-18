@@ -132,7 +132,7 @@ Known broken in versions: 1.0.9 and older
 =item Test::Kit
 
 This actually works fine, but will not install because L<Test::Aggregate> is in
-the dep chain.
+the dependency chain.
 
 See the L<Test::Aggregate> info below for additional information.
 
