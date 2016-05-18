@@ -82,8 +82,8 @@ This is for Test2 API and related packages.
 
 ## Test2::
 
-The Test2:: namespace is intended for extentions and frameworks. Tools,
-Plugins, etc should not go directly into this namespace. However extentions
+The Test2:: namespace is intended for extensions and frameworks. Tools,
+Plugins, etc should not go directly into this namespace. However extensions
 that are used to build tools and plugins may go here.
 
 In short: If the module exports anything that should be run directly by a test

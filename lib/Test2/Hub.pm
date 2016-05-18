@@ -757,7 +757,7 @@ Get or set the plan. The plan must be an integer larger than 0, the string
 =item $bool = $hub->check_plan
 
 Check if the plan and counts match, but only if the tests have ended. If tests
-have not unded this will return undef, otherwise it will be a true/false.
+have not ended this will return undef, otherwise it will be a true/false.
 
 =back
 
@@ -765,7 +765,7 @@ have not unded this will return undef, otherwise it will be a true/false.
 
 This object consumes L<Test2::Util::ExternalMeta> which provides a consistent
 way for you to attach meta-data to instances of this class. This is useful for
-tools, plugins, and other extentions.
+tools, plugins, and other extensions.
 
 =head1 SOURCE
 

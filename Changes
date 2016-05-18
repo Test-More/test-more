@@ -1456,7 +1456,7 @@ Test-Stream 1.302024  2015-11-04 11:15:14-08:00 America/Los_Angeles
 
 Test-Stream 1.302023  2015-11-04 00:12:49-08:00 America/Los_Angeles (TRIAL RELEASE)
 
-    - String and Number comparisons no longer allow undef (backwords incompatible change, sorry)
+    - String and Number comparisons no longer allow undef (backwards-incompatible change, sorry)
     - Doc spelling fixes (Evan Zacks)
     - Add Undef type in deep check
     - Fix docs for buffered subtests (Noticed by Magnolia.K)

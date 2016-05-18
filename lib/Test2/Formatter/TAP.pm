@@ -461,7 +461,7 @@ Process an L<Test2::Event::Subtest> event.
 
 =item @out = $TAP->event_other($e, $num)
 
-Fallback for unregistered event types. It uses the L<Test2::Event> api to
+Fallback for unregistered event types. It uses the L<Test2::Event> API to
 convert the event to TAP.
 
 =back

@@ -534,7 +534,7 @@ Test2::API - Primary interface for writing Test2 based testing tools.
 =head1 ***INTERNALS NOTE***
 
 B<The internals of this package are subject to change at any time!> The public
-methods provided will not change in backwords incompatible ways (once there is
+methods provided will not change in backwards-incompatible ways (once there is
 a stable release), but the underlying implementation details might.
 B<Do not break encapsulation here!>
 
@@ -558,7 +558,7 @@ tools. Using these building blocks you can begin writing test tools very
 quickly. You are also provided with tools that help you to test the tools you
 write.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 =head2 WRITING A TOOL
 
@@ -673,7 +673,7 @@ All parameters to C<context> are optional.
 
 =item level => $int
 
-If you must obtain a context in a sub deper than your entry point you can use
+If you must obtain a context in a sub deeper than your entry point you can use
 this to tell it how many EXTRA stack frames to look back. If this option is not
 provided the default of C<0> is used.
 
@@ -919,7 +919,7 @@ The code to run inside the subtest.
 =item $BUFFERED or \%PARAMS
 
 If this is a simple scalar then it will be treated as a boolean for the
-'buffered' setting. If this is a hash reference then it wil be used as a
+'buffered' setting. If this is a hash reference then it will be used as a
 parameters hash. The param hash will be used for hub construction (with the
 'buffered' key removed).
 
@@ -935,7 +935,7 @@ Any extra arguments you want passed into the subtest code.
 =head3 BUFFERED VS UNBUFFERED (OR STREAMED)
 
 Normally all events inside and outside a subtest are sent to the formatter
-immedietly by the hub. Sometimes it is desirable to hold off sending events
+immediately by the hub. Sometimes it is desirable to hold off sending events
 within a subtest until the subtest is complete. This usually depends on the
 formatter being used.
 
@@ -966,7 +966,7 @@ C<subevents> attribute.
 
 A formatter can specify by implementing the C<hide_buffered()> method. If this
 method returns true then events generated inside a buffered subtest will not be
-sent independantly of the final subtest event.
+sent independently of the final subtest event.
 
 =back
 
@@ -983,7 +983,7 @@ parallel, without it the subtests would be garbled.
 Exports in this section are not commonly needed. These all have the 'test2_'
 prefix to help ensure they stand out. You should look at the L</MAIN API
 EXPORTS> section before looking here. This section is one where "Great power
-comes with great responsiblity". It is possible to break things badly if you
+comes with great responsibility". It is possible to break things badly if you
 are not careful with these.
 
 All exports are optional, you need to list which ones you want at import time:
@@ -998,9 +998,9 @@ These provide access to internal state and object instances.
 
 =item $bool = test2_init_done()
 
-This will return true if the stack and ipc instances have already been
+This will return true if the stack and IPC instances have already been
 initialized. It will return false if they have not. Init happens as late as
-possible, it happens as soon as a tool requests the ipc instance, the
+possible, it happens as soon as a tool requests the IPC instance, the
 formatter, or the stack.
 
 =item $bool = test2_load_done()
@@ -1071,7 +1071,7 @@ from C<$exit>
 
 Add a callback that will be called when Test2 is finished loading. This
 means the callback will be run once, the first time a context is obtained.
-If Test2 has already finished loading then the callback will be run immedietly.
+If Test2 has already finished loading then the callback will be run immediately.
 
 =item test2_add_callback_context_acquire(sub { ... })
 
@@ -1158,7 +1158,7 @@ Turn off IPC polling.
 
 =item test2_ipc_enable_shm()
 
-Turn on IPC shm. Only some IPC drivers use this, and most will turn it on
+Turn on IPC SHM. Only some IPC drivers use this, and most will turn it on
 themselves.
 
 =item test2_ipc_set_pending($uniq_val)
