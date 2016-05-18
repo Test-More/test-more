@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - POD Spelling fixes
+
 1.302018  2016-05-14 09:08:05-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Handle Test::Builder::Exception properly
