@@ -24,8 +24,8 @@ use base 'Exporter';
 sub import {
     goto &Exporter::import unless test2_init_done();
 
-    confess "Cannot add IPC in a child process" if test2_pid() != $$;
-    confess "Cannot add IPC in a child thread"  if test2_tid() != get_tid();
+    confess "Cannot add IPC in a child process (" . test2_pid() . " vs $$)" if test2_pid() != $$;
+    confess "Cannot add IPC in a child thread (" . test2_tid() . " vs " . get_tid() . ")"  if test2_tid() != get_tid();
 
     Test2::API::_set_ipc(_make_ipc());
     apply_ipc(test2_stack());
