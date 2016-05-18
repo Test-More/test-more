@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302020  2016-05-18 11:54:15-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Many micro-opts from Graham Knop (haarg)
     - Spelling fixes and tests from Karen Etheridge (ether)
     - Fix leaky File.t file so that tmp doesn't fill up
