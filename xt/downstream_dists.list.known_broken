@@ -1,10 +1,8 @@
 Test::Aggregate
 Test::Wrapper
-Test::DBIx::Class::Schema
 Test::ParallelSubtest
 Test::Pretty
 Test::Kit
-Test::More::Prefix
 Test::Group
 Test::Flatten
 Net::BitTorrent
