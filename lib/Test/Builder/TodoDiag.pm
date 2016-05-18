@@ -2,7 +2,7 @@ package Test::Builder::TodoDiag;
 use strict;
 use warnings;
 
-our $VERSION = '1.302018';
+our $VERSION = '1.302019';
 
 use base 'Test2::Event::Diag';
 

@@ -22,7 +22,7 @@ perlbrew exec --with $lib cpan App::cpanminus
 EOT
 
 ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
-perlbrew exec --with $lib cpanm Test-Simple-1.302018.tar.gz
+perlbrew exec --with $lib cpanm Test-Simple-1.302019.tar.gz
 EOT
 
 ok(run_string(<<"EOT"), "Installed Archive::Zip") || exit 1;
