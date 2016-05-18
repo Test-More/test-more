@@ -2,7 +2,7 @@ package Test::Builder::Module;
 
 use strict;
 
-use Test::Builder 1.00;
+use Test::Builder;
 
 require Exporter;
 our @ISA = qw(Exporter);
@@ -89,7 +89,8 @@ sub import {
 
     $test->plan(@_);
 
-    $class->export_to_level( 1, $class, @imports );
+    @_ = ($class, @imports);
+    goto &Exporter::import;
 }
 
 sub _strip_imports {

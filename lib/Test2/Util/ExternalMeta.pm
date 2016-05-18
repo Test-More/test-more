@@ -10,7 +10,7 @@ use Carp qw/croak/;
 sub META_KEY() { '_meta' }
 
 our @EXPORT = qw/meta set_meta get_meta delete_meta/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub set_meta {
     my $self = shift;

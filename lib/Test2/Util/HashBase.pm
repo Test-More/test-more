@@ -8,48 +8,37 @@ our $VERSION = '1.302019';
 require Carp;
 $Carp::Internal{+__PACKAGE__} = 1;
 
-my %ATTRS;
-my %META;
+my %ATTR_SUBS;
 
-sub _get_inherited_attrs {
-    no strict 'refs';
-    my @todo = map @{"$_\::ISA"}, @_;
-    my %seen;
-    my @all;
-    while (my $pkg = shift @todo) {
-        next if $seen{$pkg}++;
-        my $found = $META{$pkg};
-        push @all => %$found if $found;
-
-        my $isa = \@{"$pkg\::ISA"};
-        push @todo => @$isa if @$isa;
+BEGIN {
+    # these are not strictly equivalent, but for out use we don't care
+    # about order
+    *_isa = ($] >= 5.010 && require mro) ? \&mro::get_linear_isa : sub {
+        no strict 'refs';
+        my @packages = ($_[0]);
+        my %seen;
+        for my $package (@packages) {
+            push @packages, grep !$seen{$_}++, @{"$package\::ISA"};
+        }
+        return \@packages;
     }
-
-    return \@all;
-}
-
-sub _make_subs {
-    my ($str) = @_;
-    return $ATTRS{$str} ||= {
-        uc($str) => sub() { $str },
-        $str => sub { $_[0]->{$str} },
-        "set_$str" => sub { $_[0]->{$str} = $_[1] },
-    };
 }
 
 sub import {
     my $class = shift;
     my $into = caller;
 
-    my %attrs = map %{_make_subs($_)}, @_;
-
-    my @meta = map uc, @_;
-    @{$META{$into}}{@meta} = map $attrs{$_}, @meta;
-
+    my $isa = _isa($into);
+    my $attr_subs = $ATTR_SUBS{$into} ||= {};
     my %subs = (
-        %attrs,
-        @{_get_inherited_attrs($into)},
-        $into->can('new') ? () : (new => \&_new)
+        ($into->can('new') ? () : (new => \&_new)),
+        (map %{ $ATTR_SUBS{$_}||{} }, @{$isa}[1 .. $#$isa]),
+        (map {
+            my ($sub, $attr) = (uc $_, $_);
+            $sub => ($attr_subs->{$sub} = sub() { $attr }),
+            $attr => sub { $_[0]->{$attr} },
+            "set_$attr" => sub { $_[0]->{$attr} = $_[1] },
+        } @_),
     );
 
     no strict 'refs';

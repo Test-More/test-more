@@ -12,8 +12,6 @@ BEGIN {
     }
 }
 
-use overload();
-
 use Scalar::Util qw/blessed reftype weaken/;
 
 use Test2::Util qw/USE_THREADS try get_tid/;
@@ -691,6 +689,10 @@ sub _unoverload {
 
     return unless ref $$thing;
     return unless blessed($$thing) || scalar $self->_try(sub{ $$thing->isa('UNIVERSAL') });
+    {
+        local ($!, $@);
+        require overload;
+    }
     my $string_meth = overload::Method( $$thing, $type ) || return;
     $$thing = $$thing->$string_meth();
 }

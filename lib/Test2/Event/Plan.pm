@@ -5,7 +5,7 @@ use warnings;
 our $VERSION = '1.302019';
 
 
-use base 'Test2::Event';
+BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw{max directive reason};
 
 use Carp qw/confess/;

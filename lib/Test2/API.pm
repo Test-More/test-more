@@ -99,26 +99,7 @@ our @EXPORT_OK = qw{
     test2_formatter_add
     test2_formatter_set
 };
-use base 'Exporter';
-
-# There is a use-cycle between API and API/Context. Context needs to use some
-# API functions as the package is compiling. Test2::API::context() needs
-# Test2::API::Context to be loaded, but we cannot 'require' the module there as
-# it causes a very noticeable performance impact with how often context() is
-# called.
-#
-# This will make sure that Context.pm is loaded the first time this module is
-# imported, then the regular import method is swapped into place.
-sub import {
-    require Test2::API::Context unless $INC{'Test2/API/Context.pm'};
-
-    {
-        no warnings 'redefine';
-        *import = \&Exporter::import;
-    }
-
-    goto &import;
-}
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 my $STACK       = $INST->stack;
 my $CONTEXTS    = $INST->contexts;
@@ -518,6 +499,13 @@ sub run_subtest {
     $ctx->release;
     return $pass;
 }
+
+# There is a use-cycle between API and API/Context. Context needs to use some
+# API functions as the package is compiling. Test2::API::context() needs
+# Test2::API::Context to be loaded, but we cannot 'require' the module there as
+# it causes a very noticeable performance impact with how often context() is
+# called.
+require Test2::API::Context;
 
 1;
 

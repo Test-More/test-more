@@ -14,7 +14,7 @@ sub OUT_ERR() { 1 }
 
 use Carp qw/croak/;
 
-use base 'Test2::Formatter';
+BEGIN { require Test2::Formatter; our @ISA = qw(Test2::Formatter) }
 
 my %CONVERTERS = (
     'Test2::Event::Ok'        => 'event_ok',

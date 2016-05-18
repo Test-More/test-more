@@ -5,7 +5,7 @@ use warnings;
 our $VERSION = '1.302019';
 
 
-use base 'Test2::Hub';
+BEGIN { require Test2::Hub; our @ISA = qw(Test2::Hub) }
 use Test2::Util::HashBase qw/nested bailed_out exit_code manual_skip_all id/;
 use Test2::Util qw/get_tid/;
 

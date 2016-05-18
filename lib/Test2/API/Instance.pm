@@ -356,14 +356,16 @@ sub disable_ipc_polling {
 sub _ipc_wait {
     my $fail = 0;
 
-    while (CAN_FORK) {
-        my $pid = CORE::wait();
-        my $err = $?;
-        last if $pid == -1;
-        next unless $err;
-        $fail++;
-        $err = $err >> 8;
-        warn "Process $pid did not exit cleanly (status: $err)\n";
+    if (CAN_FORK) {
+        while (1) {
+            my $pid = CORE::wait();
+            my $err = $?;
+            last if $pid == -1;
+            next unless $err;
+            $fail++;
+            $err = $err >> 8;
+            warn "Process $pid did not exit cleanly (status: $err)\n";
+        }
     }
 
     if (USE_THREADS) {
