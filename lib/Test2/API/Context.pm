@@ -484,8 +484,8 @@ the current hub.
 
 =item $hub = $ctx->hub()
 
-This will return the L<Test2::Hub> instance the context recognises as
-the current one to which all events should be sent.
+This will return the L<Test2::Hub> instance the context recognizes as the
+current one to which all events should be sent.
 
 =item $dbg = $ctx->trace()
 

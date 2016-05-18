@@ -1739,9 +1739,9 @@ Ok, so there can be more than one Test::Builder object and this is how
 you get it.  You might use this instead of C<new()> if you're testing
 a Test::Builder based module, but otherwise you probably want C<new>.
 
-B<NOTE>: the implementation is not complete.  C<level>, for example, is
-still shared amongst B<all> Test::Builder objects, even ones created using
-this method.  Also, the method name may change in the future.
+B<NOTE>: the implementation is not complete.  C<level>, for example, is still
+shared by B<all> Test::Builder objects, even ones created using this method.
+Also, the method name may change in the future.
 
 =item B<subtest>
 
@@ -2015,7 +2015,7 @@ Takes a quoted regular expression produced by C<qr//>, or a string
 representing a regular expression.
 
 Returns a Perl value which may be used instead of the corresponding
-regular expression, or C<undef> if its argument is not recognised.
+regular expression, or C<undef> if its argument is not recognized.
 
 For example, a version of C<like()>, sans the useful diagnostic messages,
 could be written as:
@@ -2435,9 +2435,9 @@ If you fail more than 254 tests, it will be reported as 254.
 
 =head1 THREADS
 
-In perl 5.8.1 and later, Test::Builder is thread-safe.  The test
-number is shared amongst all threads.  This means if one thread sets
-the test number using C<current_test()> they will all be effected.
+In perl 5.8.1 and later, Test::Builder is thread-safe.  The test number is
+shared by all threads.  This means if one thread sets the test number using
+C<current_test()> they will all be effected.
 
 While versions earlier than 5.8.1 had threads they contain too many
 bugs to support.
