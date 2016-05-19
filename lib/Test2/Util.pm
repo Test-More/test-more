@@ -17,6 +17,8 @@ our @EXPORT_OK = qw{
     CAN_REALLY_FORK
     CAN_FORK
 
+    have_detached_threads
+
     IS_WIN32
 };
 BEGIN { require Exporter; our @ISA = qw(Exporter) }
@@ -112,22 +114,52 @@ BEGIN {
 
 BEGIN {
     if (CAN_THREAD) {
+        my @detached;
+        # the 0 + is to prevent it from trying to make it a constant and
+        # warning us that it might be modified in another place.
+        *have_detached_threads = sub() { @detached };
+
+        my $mpatch = 0;
+        my $do_patch = sub {
+            $mpatch++;
+            my $orig = threads->can('detach');
+            no warnings qw/once redefine/;
+            *threads::detach = sub {
+                push @detached => $_[0];
+                goto &$orig;
+            }
+        };
+
         if ($INC{'threads.pm'}) {
             # Threads are already loaded, so we do not need to check if they
             # are loaded each time
             *USE_THREADS = sub() { 1 };
             *get_tid     = sub() { threads->tid() };
+
+            $do_patch->();
         }
         else {
             # :-( Need to check each time to see if they have been loaded.
-            *USE_THREADS = sub() { $INC{'threads.pm'} ? 1 : 0 };
-            *get_tid     = sub() { $INC{'threads.pm'} ? threads->tid() : 0 };
+            *USE_THREADS = sub() {
+                return 0 unless $INC{'threads.pm'};
+                return 1 if $mpatch;
+                $do_patch->();
+                return 1;
+            };
+
+            *get_tid = sub() {
+                return 0 unless $INC{'threads.pm'};
+                return threads->tid() if $mpatch;
+                $do_patch->();
+                return threads->tid();
+            };
         }
     }
     else {
         # No threads, not now, not ever!
         *USE_THREADS = sub() { 0 };
         *get_tid     = sub() { 0 };
+        *have_detached_threads = sub() { () };
     }
 }
 
