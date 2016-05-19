@@ -160,7 +160,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
                 unlink("$tmpdir/$f");
             }
         }
-        rmdir($tmpdir) or die "$!";
+        rmdir($tmpdir) or warn "Could not remove temp dir '$tmpdir': $!";
     };
     $cleanup->();
 
