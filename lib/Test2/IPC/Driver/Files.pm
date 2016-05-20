@@ -53,7 +53,7 @@ sub hub_file {
     my $self = shift;
     my ($hid) = @_;
     my $tdir = $self->{+TEMPDIR};
-    return File::Spec->canonpath("$tdir/HUB-$hid");
+    return File::Spec->catfile($tdir, "HUB-$hid");
 }
 
 sub event_file {
@@ -69,7 +69,7 @@ sub event_file {
     my @type = split '::', $type;
     my $name = join('-', $hid, $$, get_tid(), $self->{+EVENT_ID}++, @type);
 
-    return File::Spec->canonpath("$tempdir/$name");
+    return File::Spec->catfile($tempdir, $name);
 }
 
 sub add_hub {
@@ -228,7 +228,7 @@ sub cull {
         next if $global && $self->{+GLOBALS}->{$hid}->{$file}++;
 
         # Untaint the path.
-        my $full = File::Spec->canonpath("$tempdir/$file");
+        my $full = File::Spec->catfile($tempdir, $file);
         ($full) = ($full =~ m/^(.*)$/gs);
 
         my $obj = $self->read_event_file($full);
@@ -300,7 +300,7 @@ sub DESTROY {
     while(my $file = readdir($dh)) {
         next if $file =~ m/^\.+$/;
         next if $file =~ m/\.complete$/;
-        my $full = File::Spec->canonpath("$tempdir/$file");
+        my $full = File::Spec->catfile($tempdir, $file);
 
         if ($file =~ m/^(GLOBAL|HUB-)/) {
             $full =~ m/^(.*)$/;
