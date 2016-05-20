@@ -1,6 +1,7 @@
 {{$NEXT}}
 
     - Files.t should warn, not die, if it cannot remove its temp dir.
+    - VMS fixes for Files.t and IPC system
 
 1.302020  2016-05-18 11:54:15-07:00 America/Los_Angeles (TRIAL RELEASE)
 
