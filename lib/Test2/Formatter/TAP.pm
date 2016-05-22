@@ -381,7 +381,7 @@ order to do this you use the C<register_event()> class method.
     use Test2::Formatter::TAP;
 
     use base 'Test2::Event';
-    use Test2::Util::HashBase accessors => qw/pass name diag note/;
+    use Test2::Util::HashBase qw/pass name diag note/;
 
     Test2::Formatter::TAP->register_event(
         __PACKAGE__,
