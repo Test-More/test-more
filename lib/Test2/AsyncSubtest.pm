@@ -487,7 +487,7 @@ Test2::AsyncSubtest - Object representing an async subtest.
 Regular subtests have a limited scope, they start, events are generated, then
 they close and send an L<Test2::Event::Subtest> event. This is a problem if you
 want the subtest to keep recieving events while other events are also being
-generated. This class implements subtests that stay pen until you decide to
+generated. This class implements subtests that stay open until you decide to
 close them.
 
 This is mainly useful for tools that start a subtest in one process or thread
