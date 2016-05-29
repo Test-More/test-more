@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302022  2016-05-28 17:53:11-07:00 America/Los_Angeles
+
     - Improve thread checks to better detect broken 5.10 builds
     - Use thread checks to skip/run t/Legacy/Regression/637.t
 
