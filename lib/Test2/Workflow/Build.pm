@@ -126,15 +126,7 @@ __END__
 
 =head1 NAME
 
-=head1 *** EXPERIMENTAL ***
-
-This distribution is experimental, anything can change at any time!
-
-=head1 DESCRIPTION
-
-=head1 SYNOPSIS
-
-=head1 EXPORTS
+Test2::Workflow::Build - Represents a build in progress.
 
 =head1 SOURCE
 

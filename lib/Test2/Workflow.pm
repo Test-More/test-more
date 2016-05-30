@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = "0.000007";
 
-our @EXPORT_OK = qw/parse_args current_build all_builds build root_build init_root/;
+our @EXPORT_OK = qw/parse_args current_build build root_build init_root/;
 use base 'Exporter';
 
 use Test2::Workflow::Build;
@@ -26,6 +26,9 @@ sub parse_args {
                 %props = (%props, %$arg);
             }
             elsif ($r eq 'CODE') {
+                die "Code is already set, did you provide multiple code blocks at $caller->[1] line $caller->[2].\n"
+                    if $out{code};
+
                 $out{code} = $arg
             }
             else {
@@ -60,7 +63,6 @@ sub parse_args {
 
     sub root_build    { $ROOT_BUILDS{$_[0]} }
     sub current_build { @BUILD_STACK ? $BUILD_STACK[-1] : undef }
-    sub all_builds    { @BUILD_STACK }
 
     sub init_root {
         my ($pkg, %args) = @_;
@@ -127,33 +129,118 @@ __END__
 
 =head1 NAME
 
-Test2::Workflow - Interface for writing 'workflow' tools such as RSPEC
-implementations that all play nicely together.
-
-=head1 *** EXPERIMENTAL ***
-
-This distribution is experimental, anything can change at any time!
+Test2::Workflow - A test workflow is a way of structuring tests using
+composable units.
 
 =head1 DESCRIPTION
 
-This module intends to do for 'workflow' test tools what Test::Builder and
-Test2 do for general test tools. The problem with workflow tools is that
-most do not play well together. This module is a very generic/abstract look at
-workflows that allows tools to be built that accomplish their workflows, but in
-a way that plays well with others.
-
-=head1 SYNOPSIS
+A test workflow is a way of structuring tests using composable units. A well
+known example of a test workflow is L<RSPEC|http://rspec.info/>. RSPEC is
+implemented using Test2::Workflow in L<Test2::Tools::Spec> along with several
+extentions.
 
 =head1 IMPORTANT CONCEPTS
 
-A workflow is a way of defining tests with scaffolding. Essentially you are
-seperating your assertions and your setup/teardown/management code. This
-results in a separation of concerns that can produce more maintainable tests.
-In addition each component of a workflow can be re-usable and/or inheritable.
+=head2 BUILD
+
+L<Test2::Workflow::Build>
+
+A Build is used to compose tasks. Usually a build object is pushed to the stack
+before running code that adds tasks to the build. Once the build sub is
+complete the build is popped and returned. Usually a build is converted into a
+root task or task group.
+
+=head2 RUNNER
+
+L<Test2::Workflow::Runner>
+
+A runner takes the composed tasks and executes them in the proper order.
+
+=head2 TASK
+
+L<Test2::Workflow::Task>
+
+A task is a unit of work to accomplish. There are 2 main types of task.
+
+=head3 ACTION
+
+An action is the most simple unit used in composition. An action is essentially
+a name and a codeblock to run.
+
+=head3 GROUP
+
+A group is a task that is composed of other tasks.
 
 =head1 EXPORTS
 
 All exports are optional, you must request the ones you want.
+
+=over 4
+
+=item $parsed = parse_args(args => \@args)
+
+=item $parsed = parse_args(args => \@args, level => $L)
+
+=item $parsed = parse_args(args => \@args, caller => [caller($L)])
+
+This will parse a "typical" task builers arguments. The C<@args> array MUST
+contain a name (plain scalar containing text) and also a single CODE reference.
+The C<@args> array MAY also contain any quantity of line numbers or hashrefs.
+The resulting data structure will be a single hashref with all the provided
+hashrefs squashed together, and the 'name', 'code', 'lines' and 'frame' keys
+set from other arguments.
+
+    {
+        # All hashrefs from @args get squashed together:
+        %squashed_input_hashref_data,
+
+        # @args must have exactly 1 plaintext scalar that is not a number, it
+        # is considered the name:
+        name => 'name from input args'
+
+        # Integer values are treated as line numbers
+        lines => [ 35, 44 ],
+
+        # Exactly 1 coderef must be provided in @args:
+        code => \&some_code,
+
+        # 'frame' contains the 'caller' data. This may be passed in directly,
+        # obtained from the 'level' parameter, or automatically deduced.
+        frame => ['A::Package', 'a_file.pm', 42, ...],
+    }
+
+=item $build = init_root($pkg, %args)
+
+This will initialize (or return the existing) a build for the specified
+package. C<%args> get passed into the L<Test2::Workflow::Build> constructor.
+This uses the following defaults (which can be overriden using C<%args>):
+
+    name    => $pkg,
+    flat    => 1,
+    iso     => 0,
+    async   => 0,
+    is_root => 1,
+
+Note that C<%args> is completely ignored if the package build has already been
+initialized.
+
+=item $build = root_build($pkg)
+
+This will return the root build for the specified package.
+
+=item $build = current_build()
+
+This will return the build cuurently at the top of the build stack (or undef).
+
+=item $build = build($name, \%params, sub { ... })
+
+This will push a new build object onto the build stash then run the provided
+codeblock. Once the codeblock has finished running the build will be popped off
+the stack and returned.
+
+See C<parse_args()> for details about argument processing.
+
+=back
 
 =head1 SEE ALSO
 

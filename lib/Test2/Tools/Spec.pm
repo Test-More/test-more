@@ -245,15 +245,306 @@ __END__
 
 =head1 NAME
 
-=head1 *** EXPERIMENTAL ***
-
-This distribution is experimental, anything can change at any time!
+Test2::Tools::Spec - RSPEC implementation on top of Test2::Workflow
 
 =head1 DESCRIPTION
 
+This uses L<Test::Workflow> to implement an RSPEC variant. This variant
+supports isolation and/or concurrency via forking or threads.
+
 =head1 SYNOPSIS
 
+    use Test2::Suite::Extended;
+    use Test2::Tools::Spec;
+
+    describe foo => sub {
+        before_all  once => sub { ... };
+        before_each many => sub { ... };
+
+        after_all  once => sub { ... };
+        after_each many => sub { ... };
+
+        case condition_a => sub { ... };
+        case condition_b => sub { ... };
+
+        tests foo => sub { ... };
+        tests bar => sub { ... };
+    };
+
+    done_testing;
+
 =head1 EXPORTS
+
+All of these use the same argument pattern. The first argument must always be a
+name for the block. The last argument must always be a code reference.
+Optionally a configuration hash can be inserted between the name and the code
+reference.
+
+    FUNCTION "name" => sub { ... };
+
+    FUNCTION "name" => {...}, sub { ... };
+
+=over 4
+
+=item NAME
+
+The first argument to a Test2::Tools::Spec function MUST be a name. The name
+does not need to be unique.
+
+=item PARAMS
+
+This argument is optional. If present this should be a hashref.
+
+Here are the valid keys for the hashref:
+
+=over 8
+
+=item flat => $bool
+
+If this is set to true then the block will not render as a subtest, instead the
+events will be inline with the parent subtest (or main test).
+
+=item async => $bool
+
+Set this to true to mark a block as being capable of running concurrently with
+other test blocks. This does not mean the block WILL be run concurrently, just
+that it can be.
+
+=item iso => $bool
+
+Set this to true if the block MUST be run in isolation. If this is true then
+the block will run in its own thread or fork.
+
+=item todo => $reason
+
+Use this to mark an entire block as TODO.
+
+=item skip => $reason
+
+Use this to prevent a block from running at all.
+
+=back
+
+=item CODEREF
+
+This argument is required. This should be a code reference that will run some
+assertions.
+
+=back
+
+=head2 ESSENTIALS
+
+=over 4
+
+=item tests NAME => sub { ... }
+
+=item tests NAME => \%params, sub { ... }
+
+=item tests($NAME, \%PARAMS, \&CODE)
+
+=item it NAME => sub { ... }
+
+=item it NAME => \%params, sub { ... }
+
+=item it($NAME, \%PARAMS, \&CODE)
+
+This defines a test block. Test blocks are essentially subtests. All test
+blocks will be run, and are expected to produce events. Test blocks can run
+multiple times if the C<case()> function is also used.
+
+C<it()> is an alias to C<tests()>.
+
+These ARE NOT inherited by nested describe blocks.
+
+=item case NAME => sub { ... }
+
+=item case NAME => \%params, sub { ... }
+
+=item case($NAME, \%PARAMS, \&CODE)
+
+This lets you specify multiple conditions in which the test blocks should be
+run. Every test block within the same group (C<describe>) will be run once per
+case.
+
+These ARE NOT inherited by nested describe blocks, but nested describe blocks
+will be executed once per case.
+
+=item before_each NAME => sub { ... }
+
+=item before_each NAME => \%params, sub { ... }
+
+=item before_each($NAME, \%PARAMS, \&CODE)
+
+Specify a codeblock that should be run multiple times, once before each
+C<tests()> block is run. These will run AFTER C<case()> blocks but before
+C<tests()> blocks.
+
+These ARE inherited by nested describe blocks.
+
+=item before_case NAME => sub { ... }
+
+=item before_case NAME => \%params, sub { ... }
+
+=item before_case($NAME, \%PARAMS, \&CODE)
+
+Same as C<before_each()>, except these blocks run BEFORE C<case()> blocks.
+
+These ARE NOT inherited by nested describe blocks.
+
+=item before_all NAME => sub { ... }
+
+=item before_all NAME => \%params, sub { ... }
+
+=item before_all($NAME, \%PARAMS, \&CODE)
+
+Specify a codeblock that should be run once, before all the test blocks run.
+
+These ARE NOT inherited by nested describe blocks.
+
+=item around_each NAME => sub { ... }
+
+=item around_each NAME => \%params, sub { ... }
+
+=item around_each($NAME, \%PARAMS, \&CODE)
+
+Specify a codeblock that should wrap around each test block. These blocks are
+run AFTER case blocks, but before test blocks.
+
+    around_each wrapit => sub {
+        my $cont = shift;
+
+        local %ENV = ( ... );
+
+        $cont->();
+
+        ...
+    };
+
+The first argument to the codeblock will be a callback that MUST be called
+somewhere inside the sub in order for nested items to run.
+
+These ARE inherited by nested describe blocks.
+
+=item around_case NAME => sub { ... }
+
+=item around_case NAME => \%params, sub { ... }
+
+=item around_case($NAME, \%PARAMS, \&CODE)
+
+Same as C<around_each> except these run BEFORE case blocks.
+
+These ARE NOT inherited by nested describe blocks.
+
+=item around_all NAME => sub { ... }
+
+=item around_all NAME => \%params, sub { ... }
+
+=item around_all($NAME, \%PARAMS, \&CODE)
+
+Same as C<around_each> except that it only runs once to wrap ALL test blocks.
+
+These ARE NOT inherited by nested describe blocks.
+
+=item after_each NAME => sub { ... }
+
+=item after_each NAME => \%params, sub { ... }
+
+=item after_each($NAME, \%PARAMS, \&CODE)
+
+Same as C<before_each> except it runs right after each test block.
+
+These ARE inherited by nested describe blocks.
+
+=item after_case NAME => sub { ... }
+
+=item after_case NAME => \%params, sub { ... }
+
+=item after_case($NAME, \%PARAMS, \&CODE)
+
+Same as C<after_each> except it runs right after the case block, and before the
+test block.
+
+These ARE NOT inherited by nested describe blocks.
+
+=item after_all NAME => sub { ... }
+
+=item after_all NAME => \%params, sub { ... }
+
+=item after_all($NAME, \%PARAMS, \&CODE)
+
+Same as C<before_all> except it runs after all test blocks have been run.
+
+These ARE NOT inherited by nested describe blocks.
+
+=back
+
+=head2 SHORTCUTS
+
+These are shortcuts. Each of these is the same as C<tests()> except some
+parameters are added for you.
+
+These are NOT exported by default/.
+
+=over 4
+
+=item mini NAME => sub { ... }
+
+Same as:
+
+    tests NAME => { flat => 1 }, sub { ... }
+
+=item iso NAME => sub { ... }
+
+Same as:
+
+    tests NAME => { iso => 1 }, sub { ... }
+
+=item miso NAME => sub { ... }
+
+Same as:
+
+    tests NAME => { mini => 1, iso => 1 }, sub { ... }
+
+=item async NAME => sub { ... }
+
+Same as:
+
+    tests NAME => { async => 1 }, sub { ... }
+
+B<Note:> This conflicts with the C<async()> exported from L<threads>. Don't
+import both.
+
+=item masync NAME => sub { ... }
+
+Same as:
+
+    tests NAME => { minit => 1, async => 1 }, sub { ... }
+
+=back
+
+=head1 EXECUTION ORDER
+
+As each function is encountered it executes, just like any other function. The
+C<describe()> function will immedietly execute the codeblock it is given. All
+other functions will stash their codeblocks to be run later. When
+C<done_testing()> is run the workflow will be compiled, at which point all
+other blocks will run.
+
+Here is an overview of the order in which blocks get called once compiled (at
+C<done_testing()>).
+
+    before_all
+        for-each-case {
+            before_case
+                case
+            after_case
+
+            # AND/OR nested describes
+            before_each
+                tests
+            after_each
+        }
+    after_all
 
 =head1 SOURCE
 
