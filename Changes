@@ -1,8 +1,10 @@
 {{$NEXT}}
 
+    - Require newer Test2::AsyncSubtest
+
 0.000007  2016-05-30 06:58:17-07:00 America/Los_Angeles
 
-    - Comp[lete rewrite
+    - Complete rewrite
 
 0.000006  2016-02-05 15:45:57-08:00 America/Los_Angeles
 
