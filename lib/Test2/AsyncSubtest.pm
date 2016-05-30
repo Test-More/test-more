@@ -244,6 +244,7 @@ sub start {
     my $hub = $self->{+HUB};
     my $stack = Test2::API::test2_stack();
     $stack->push($hub);
+
     return $hub->is_passing;
 }
 

@@ -7,6 +7,17 @@ our $VERSION = '0.000016';
 use base 'Test2::Hub::Subtest';
 use Test2::Util::HashBase qw/ast_ids/;
 
+sub init {
+    my $self = shift;
+
+    $self->SUPER::init();
+
+    if (my $format = $self->format) {
+        my $hide = $format->can('hide_buffered') ? $format->hide_buffered : 1;
+        $self->format(undef) if $hide;
+    }
+}
+
 sub inherit {
     my $self = shift;
     my ($from, %params) = @_;
