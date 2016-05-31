@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Require perl 5.10
+
 0.000008  2016-05-30 07:38:55-07:00 America/Los_Angeles
 
     - Require newer Test2::AsyncSubtest
