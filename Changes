@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Potential fix for t/Legacy/Regression/637.t
+    - Make t/Legacy/Regression/637.t AUTHOR_TESTING for now
+
 1.302022  2016-05-28 17:53:11-07:00 America/Los_Angeles
 
     - Improve thread checks to better detect broken 5.10 builds
