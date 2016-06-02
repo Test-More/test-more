@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - Do not fail if Test2::API::Breakage cannot load (rare 5.10.0 issue)
     - Potential fix for t/Legacy/Regression/637.t
     - Make t/Legacy/Regression/637.t AUTHOR_TESTING for now
 

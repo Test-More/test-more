@@ -487,8 +487,7 @@ This is not a supported configuration, you will have problems.
 
     $new_exit = 255 if $new_exit > 255;
 
-    if ($new_exit) {
-        require Test2::API::Breakage;
+    if ($new_exit && eval { require Test2::API::Breakage; 1 }) {
         my @warn = Test2::API::Breakage->report();
 
         if (@warn) {
