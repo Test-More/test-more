@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Make sure enabling culling/shm sets pid and tid (Fix #679)
+
 1.302024  2016-06-02 20:27:35-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Add Generic event type

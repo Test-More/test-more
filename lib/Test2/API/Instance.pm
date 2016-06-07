@@ -270,6 +270,9 @@ sub add_ipc_driver {
 sub enable_ipc_polling {
     my $self = shift;
 
+    $self->{+_PID} = $$        unless defined $self->{+_PID};
+    $self->{+_TID} = get_tid() unless defined $self->{+_TID};
+
     $self->add_context_init_callback(
         # This is called every time a context is created, it needs to be fast.
         # $_[0] is a context object
@@ -296,6 +299,9 @@ sub ipc_enable_shm {
     my $self = shift;
 
     return 1 if defined $self->{+IPC_SHM_ID};
+
+    $self->{+_PID} = $$        unless defined $self->{+_PID};
+    $self->{+_TID} = get_tid() unless defined $self->{+_TID};
 
     my ($ok, $err) = try {
         require IPC::SysV;

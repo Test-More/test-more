@@ -428,6 +428,7 @@ if (CAN_REALLY_FORK) {
 
 {
     $one->reset;
+
     ok(!@{$one->context_init_callbacks}, "no callbacks");
     is($one->ipc_polling, undef, "no polling, undef");
 
@@ -441,6 +442,8 @@ if (CAN_REALLY_FORK) {
     use warnings;
 
     $one->enable_ipc_polling;
+    ok(defined($one->{_pid}), "pid is defined");
+    ok(defined($one->{_tid}), "tid is defined");
     is(@{$one->context_init_callbacks}, 1, "added the callback");
     is($one->ipc_polling, 1, "polling on");
     $one->set_ipc_shm_last('abc1');
