@@ -51,7 +51,7 @@ sub _add_ts_hooks {
 
     #$hub->add_context_aquire(sub {$_[0]->{level} += $Level - 1});
 
-    $hub->filter(sub {
+    $hub->pre_filter(sub {
         my ($active_hub, $e) = @_;
 
         my $epkg = $$epkgr;
@@ -64,7 +64,6 @@ sub _add_ts_hooks {
         $todo = ${"$epkg\::TODO"} if $epkg && !$todo;
 
         return $e unless $todo;
-
 
         # Turn a diag into a todo diag
         return Test::Builder::TodoDiag->new(%$e) if ref($e) eq 'Test2::Event::Diag';
