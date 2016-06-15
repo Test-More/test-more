@@ -1,6 +1,7 @@
 {{$NEXT}}
 
     - use pre_filter instead of filter for TODO in Test::Builder (Fix $683)
+    - Fix typos in transitions doc (#681)
 
 1.302026  2016-06-07 07:53:30-07:00 America/Los_Angeles
 
