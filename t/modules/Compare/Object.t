@@ -89,15 +89,17 @@ subtest add_call => sub {
     $one->add_call(foo => 'FOO');
     $one->add_call($code, 1);
     $one->add_call($code, 1, 'custom');
+    $one->add_call($code, 1, 'custom', 'list');
 
     is(
         $one->calls,
         [
-            ['foo', 'FOO', 'foo'],
-            [$code, 1,     '\&CODE'],
-            [$code, 1,     'custom'],
+            ['foo', 'FOO', 'foo',    'scalar'],
+            [$code, 1,     '\&CODE', 'scalar'],
+            [$code, 1,     'custom', 'scalar'],
+            [$code, 1,     'custom', 'list'],
         ],
-        "Added all 3 calls"
+        "Added all 4 calls"
     );
 };
 
@@ -107,11 +109,14 @@ subtest add_call => sub {
     sub foo { 'foo' }
     sub baz { 'baz' }
     sub one { 1 }
+    sub many { return (1,2,3,4) }
+    sub args { shift; +{@_} }
 
     package Fake::Fake;
 
     sub foo { 'xxx' }
     sub one { 2 }
+    sub args { shift; +[@_] }
 }
 
 subtest deltas => sub {
@@ -133,6 +138,9 @@ subtest deltas => sub {
     $one->add_call('foo' => 'foo');
     $one->add_call('baz' => 'baz');
     $one->add_call('one' => 1);
+    $one->add_call('many' => [1,2,3,4],undef,'list');
+    $one->add_call('many' => {1=>2,3=>4},undef,'hash');
+    $one->add_call([args => 1,2] => {1=>2});
 
     is(
         [$one->deltas(exists => 1, got => $good, convert => $convert, seen => {})],
@@ -169,6 +177,23 @@ subtest deltas => sub {
                 chk => T(),
                 got => 2,
                 id  => [METHOD => 'one'],
+            },
+            {
+                chk => T(),
+                dne => 'got',
+                got => undef,
+                id  => [METHOD => 'many'],
+            },
+            {
+                chk => T(),
+                dne => 'got',
+                got => undef,
+                id  => [METHOD => 'many'],
+            },
+            {
+                chk => T(),
+                got => [1,2],
+                id  => [METHOD => 'args'],
             },
             {
                 chk => T(),
@@ -213,6 +238,23 @@ subtest deltas => sub {
                         chk => T(),
                         got => 2,
                         id  => [METHOD => 'one'],
+                    },
+                    {
+                        chk => T(),
+                        dne => 'got',
+                        got => undef,
+                        id  => [METHOD => 'many'],
+                    },
+                    {
+                        chk => T(),
+                        dne => 'got',
+                        got => undef,
+                        id  => [METHOD => 'many'],
+                    },
+                    {
+                        chk => T(),
+                        got => [1,2],
+                        id  => [METHOD => 'args'],
                     },
                     {
                         chk => T(),

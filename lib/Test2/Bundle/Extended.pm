@@ -28,9 +28,9 @@ use Test2::Tools::Basic qw{
 use Test2::Tools::Compare qw{
     is like isnt unlike
     match mismatch validator
-    hash array object meta number string subset
+    hash array bag object meta number string subset
     in_set not_in_set check_set
-    item field call prop check
+    item field call call_list call_hash prop check
     end filter_items
     T F D DNE FDNE
     event fail_events
@@ -80,9 +80,9 @@ our @EXPORT = qw{
 
     is like isnt unlike
     match mismatch validator
-    hash array object meta number string subset
+    hash array bag object meta number string subset
     in_set not_in_set check_set
-    item field call prop check
+    item field call call_list call_hash prop check
     end filter_items
     T F D DNE FDNE
     event fail_events
@@ -320,6 +320,8 @@ See L<Test2::Tools::Compare>.
 
 =item $check = array { ... }
 
+=item $check = bag { ... }
+
 =item $check = object { ... }
 
 =item $check = meta { ... }
@@ -341,6 +343,10 @@ See L<Test2::Tools::Compare>.
 =item $check = field($name => $val)
 
 =item $check = call($method => $expect)
+
+=item $check = call_list($method => $expect)
+
+=item $check = call_hash($method => $expect)
 
 =item $check = prop($name => $expect)
 

@@ -17,6 +17,7 @@ use Test2::Compare qw{
 };
 
 use Test2::Compare::Array();
+use Test2::Compare::Bag();
 use Test2::Compare::Custom();
 use Test2::Compare::Event();
 use Test2::Compare::Hash();
@@ -37,6 +38,7 @@ use Test2::Compare::Wildcard();
     %Carp::Internal,
     'Test2::Tools::Compare'         => 1,
     'Test2::Compare::Array'         => 1,
+    'Test2::Compare::Bag'           => 1,
     'Test2::Compare::Custom'        => 1,
     'Test2::Compare::Event'         => 1,
     'Test2::Compare::Hash'          => 1,
@@ -58,9 +60,9 @@ our @EXPORT = qw/is like/;
 our @EXPORT_OK = qw{
     is like isnt unlike
     match mismatch validator
-    hash array object meta number string subset
+    hash array bag object meta number string subset
     in_set not_in_set check_set
-    item field call prop check
+    item field call call_list call_hash prop check
     end filter_items
     T F D DNE FDNE
     event fail_events
@@ -139,6 +141,7 @@ sub unlike($$;$@) {
 sub meta(&)   { build('Test2::Compare::Meta',          @_) }
 sub hash(&)   { build('Test2::Compare::Hash',          @_) }
 sub array(&)  { build('Test2::Compare::Array',         @_) }
+sub bag(&)    { build('Test2::Compare::Bag',           @_) }
 sub object(&) { build('Test2::Compare::Object',        @_) }
 sub subset(&) { build('Test2::Compare::OrderedSubset', @_) }
 
@@ -243,14 +246,14 @@ sub end() {
     $build->set_ending(1);
 }
 
-sub call($$) {
-    my ($name, $expect) = @_;
+my $_call = sub {
+    my ($name, $expect, $context, $func_name) = @_;
     my $build = get_build() or croak "No current build!";
 
     croak "'$build' does not support method calls"
         unless $build->can('add_call');
 
-    croak "'call' should only ever be called in void context"
+    croak "'$func_name' should only ever be called in void context"
         if defined wantarray;
 
     my @caller = caller;
@@ -261,8 +264,14 @@ sub call($$) {
             file   => $caller[1],
             lines  => [$caller[2]],
         ),
+        undef,
+        $context,
     );
-}
+};
+
+sub call($$)      { $_call->(@_,'scalar','call') }
+sub call_list($$) { $_call->(@_,'list','call_list') }
+sub call_hash($$) { $_call->(@_,'hash','call_hash') }
 
 sub prop($$) {
     my ($name, $expect) = @_;
@@ -492,7 +501,7 @@ the field.
         match mismatch validator
         hash array object meta number string subset
         in_set not_in_set check_set
-        item field call prop check
+        item field call call_list call_hash prop check
         end filter_items
         T F D DNE FDNE
         event fail_events
@@ -916,8 +925,8 @@ check object.
 
 B<Note:> Items MUST be added in order.
 
-B<Note:> This function can only be used inside an array or subset builder sub,
-and must be called in void context.
+B<Note:> This function can only be used inside an array, bag or subset
+builder sub, and must be called in void context.
 
 =item filter_items { my @remaining = @_; ...; return @filtered }
 
@@ -939,6 +948,43 @@ This is a handy check that can be used with C<item()> to ensure that an index
 (D)oes (N)not (E)xist.
 
     item 5 => DNE();
+
+=back
+
+=head2 BAG BUILDER
+
+B<Note: None of these are exported by default, you need to request them.>
+
+    $check = bag {
+        item 'a';
+        item 'b';
+
+        end(); # Ensure no other elements exist.
+    };
+
+A bag is like an array, but we don't care about the order of the
+items. In the example, C<$check> would match both C<['a','b']> and
+C<['b','a']>.
+
+=over 4
+
+=item $check = bag { ... }
+
+=item item $VAL
+
+=item item $CHECK
+
+Add an expected item to the bag.
+
+You can provide any value to check in C<$VAL>, or you can provide any valid
+check object.
+
+B<Note:> This function can only be used inside an array, bag or subset
+builder sub, and must be called in void context.
+
+=item end()
+
+Enforce that there are no more items after the last one specified.
 
 =back
 
@@ -973,8 +1019,8 @@ check object.
 
 B<Note:> Items MUST be added in order.
 
-B<Note:> This function can only be used inside an array or subset builder sub,
-and must be called in void context.
+B<Note:> This function can only be used inside an array, bag or subset
+builder sub, and must be called in void context.
 
 =back
 
@@ -1068,21 +1114,61 @@ Specify an object check for use in comparisons.
 
 =item call $METHOD_NAME => $CHECK
 
+=item call [$METHOD_NAME, @METHOD_ARGS] => $RESULT
+
+=item call [$METHOD_NAME, @METHOD_ARGS] => $CHECK
+
 =item call sub { ... }, $RESULT
 
 =item call sub { ... }, $CHECK
 
-Call the specified method (or coderef) and verify the result. The coderef form
-is useful if you want to check a method that returns a list as it allows you to
-wrap the result in a reference.
+Call the specified method (or coderef) and verify the result. If you
+pass an arrayref, the first element must be the method name, the
+others are the arguments it will be called with.
+
+The coderef form is useful if you need to do something more complex.
 
     my $ref = sub {
-        my $self = shift;
-        my @result = $self->get_list;
-        return \@result;
+      local $SOME::GLOBAL::THING = 3;
+      return [shift->get_values_for('thing')];
     };
 
-    call $ref => [ ... ];
+    call $ref => ...;
+
+=item call_list $METHOD_NAME => $RESULT
+
+=item call_list $METHOD_NAME => $CHECK
+
+=item call_list [$METHOD_NAME, @METHOD_ARGS] => $RESULT
+
+=item call_list [$METHOD_NAME, @METHOD_ARGS] => $CHECK
+
+=item call_list sub { ... }, $RESULT
+
+=item call_list sub { ... }, $CHECK
+
+Same as C<call>, but the method is invoked in list context, and the
+result is always an arrayref.
+
+    call_list get_items => [ ... ];
+
+=item call_hash $METHOD_NAME => $RESULT
+
+=item call_hash $METHOD_NAME => $CHECK
+
+=item call_hash [$METHOD_NAME, @METHOD_ARGS] => $RESULT
+
+=item call_hash [$METHOD_NAME, @METHOD_ARGS] => $CHECK
+
+=item call_hash sub { ... }, $RESULT
+
+=item call_hash sub { ... }, $CHECK
+
+Same as C<call>, but the method is invoked in list context, and the
+result is always a hashref. This will warn if the method returns an
+odd number of values.
+
+    call_hash get_items => { ... };
 
 =item field $NAME => $VAL
 

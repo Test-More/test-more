@@ -15,9 +15,9 @@ sub table { join "\n" => Test2::Util::Table::table(@_) }
 subtest simple => sub {
     imported_ok qw{
         match mismatch validator
-        hash array object meta number string
+        hash array bag object meta number string
         in_set not_in_set check_set
-        item field call prop
+        item field call call_list call_hash prop
         end filter_items
         T F D DNE FDNE
         event
@@ -845,17 +845,67 @@ subtest array => sub {
     is($_->pass, 0, "event failed") for @$events;
 };
 
+subtest bag => sub {
+    my $empty = bag { };
+
+    my $simple = bag {
+        item 'a';
+        item 'b';
+        item 'c';
+    };
+
+    my $closed = array {
+        item 0 => 'a';
+        item 1 => 'b';
+        item 2 => 'c';
+        end;
+    };
+
+    is([], $empty, "empty array");
+    is(['a'], $empty, "any array matches empty");
+
+    is([qw/a b c/], $simple, "simple exact match");
+    is([qw/b c a/], $simple, "simple out of order");
+    is([qw/a b c d e/], $simple, "simple with extra");
+    is([qw/b a d e c/], $simple, "simple with extra, out of order");
+
+    is([qw/a b c/], $closed, "closed array");
+
+    my $events = intercept {
+        is({}, $empty);
+        is(undef, $empty);
+        is(1, $empty);
+        is('ARRAY', $empty);
+
+        is([qw/x y z/], $simple);
+        is([qw/a b x/], $simple);
+        is([qw/x b c/], $simple);
+
+        is([qw/a b c d/], $closed);
+    };
+
+    @$events = grep {$_->isa('Test2::Event::Ok')} @$events;
+    is(@$events, 8, "8 events");
+    is($_->pass, 0, "event failed") for @$events;
+};
+
 subtest object => sub {
     my $empty = object { };
 
     my $simple = object {
         call foo => 'foo';
         call bar => 'bar';
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
+        call [args => qw(a b)] => {a=>'b'};
     };
 
     my $array = object {
         call foo => 'foo';
         call bar => 'bar';
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
+        call [args => qw(a b)] => {a=>'b'};
         item 0 => 'x';
         item 1 => 'y';
     };
@@ -863,6 +913,9 @@ subtest object => sub {
     my $closed_array = object {
         call foo => 'foo';
         call bar => 'bar';
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
+        call [args => qw(a b)] => {a=>'b'};
         item 0 => 'x';
         item 1 => 'y';
         end();
@@ -871,6 +924,9 @@ subtest object => sub {
     my $hash = object {
         call foo => 'foo';
         call bar => 'bar';
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
+        call [args => qw(a b)] => {a=>'b'};
         field x => 1;
         field y => 2;
     };
@@ -878,6 +934,9 @@ subtest object => sub {
     my $closed_hash = object {
         call foo => 'foo';
         call bar => 'bar';
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
+        call [args => qw(a b)] => {a=>'b'};
         field x => 1;
         field y => 2;
         end();
@@ -886,6 +945,9 @@ subtest object => sub {
     my $meta = object {
         call foo => 'foo';
         call bar => 'bar';
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
+        call [args => qw(a b)] => {a=>'b'};
         prop blessed => 'ObjectFoo';
         prop reftype => 'HASH';
     };
@@ -893,14 +955,28 @@ subtest object => sub {
     my $mix = object {
         call foo => 'foo';
         call bar => 'bar';
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
+        call [args => qw(a b)] => {a=>'b'};
         field x => 1;
         field y => 2;
         prop blessed => 'ObjectFoo';
         prop reftype => 'HASH';
     };
 
-    my $obf = mock 'ObjectFoo' => (add => [foo => sub { 'foo' }, bar => sub { 'bar' }, baz => sub {'baz'}]);
-    my $obb = mock 'ObjectBar' => (add => [foo => sub { 'nop' }, baz => sub { 'baz' }]);
+    my $obf = mock 'ObjectFoo' => (add => [
+        foo => sub { 'foo' },
+        bar => sub { 'bar' },
+        baz => sub {'baz'},
+        many => sub { (1,2,3,4) },
+        args => sub { shift; +{@_} },
+    ]);
+    my $obb = mock 'ObjectBar' => (add => [
+        foo => sub { 'nop' },
+        baz => sub { 'baz' },
+        many => sub { (1,2,3,4) },
+        args => sub { shift; +{@_} },
+    ]);
 
     is(bless({}, 'ObjectFoo'), $empty, "Empty matches any object");
     is(bless({}, 'ObjectBar'), $empty, "Empty matches any object");
