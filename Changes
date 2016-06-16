@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - Add 'bag' comparison (dakkar)
+    - Add 'call_list()' for DSL (dakkar)
+    - Add 'call_hash()' for DSL (dakkar)
+
 0.000031  2016-06-15 21:32:05-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix TODO to use pre-filters
