@@ -62,7 +62,7 @@ our @EXPORT_OK = qw{
     match mismatch validator
     hash array bag object meta number string subset
     in_set not_in_set check_set
-    item field call prop check
+    item field call call_list prop check
     end filter_items
     T F D DNE FDNE
     event fail_events
@@ -246,14 +246,14 @@ sub end() {
     $build->set_ending(1);
 }
 
-sub call($$) {
-    my ($name, $expect) = @_;
+my $_call = sub {
+    my ($name, $expect, $context, $func_name) = @_;
     my $build = get_build() or croak "No current build!";
 
     croak "'$build' does not support method calls"
         unless $build->can('add_call');
 
-    croak "'call' should only ever be called in void context"
+    croak "'$func_name' should only ever be called in void context"
         if defined wantarray;
 
     my @caller = caller;
@@ -264,8 +264,13 @@ sub call($$) {
             file   => $caller[1],
             lines  => [$caller[2]],
         ),
+        undef,
+        $context,
     );
-}
+};
+
+sub call($$) { $_call->(@_,'scalar','call') }
+sub call_list($$) { $_call->(@_,'list','call_list') }
 
 sub prop($$) {
     my ($name, $expect) = @_;
@@ -495,7 +500,7 @@ the field.
         match mismatch validator
         hash array object meta number string subset
         in_set not_in_set check_set
-        item field call prop check
+        item field call call_list prop check
         end filter_items
         T F D DNE FDNE
         event fail_events
@@ -1113,16 +1118,24 @@ Specify an object check for use in comparisons.
 =item call sub { ... }, $CHECK
 
 Call the specified method (or coderef) and verify the result. The coderef form
-is useful if you want to check a method that returns a list as it allows you to
-wrap the result in a reference.
+is useful if you want to check a method that requires arguments.
 
-    my $ref = sub {
-        my $self = shift;
-        my @result = $self->get_list;
-        return \@result;
-    };
+    my $ref = sub { return shift->get_value_for('thing') };
 
-    call $ref => [ ... ];
+    call $ref => ...;
+
+=item call_list $METHOD_NAME => $RESULT
+
+=item call_list $METHOD_NAME => $CHECK
+
+=item call_list sub { ... }, $RESULT
+
+=item call_list sub { ... }, $CHECK
+
+Same as C<call>, but the method is invoked in list context, and the
+result is always an arrayref.
+
+    call_list get_items => [ ... ];
 
 =item field $NAME => $VAL
 
