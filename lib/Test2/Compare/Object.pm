@@ -100,9 +100,9 @@ sub deltas {
         my $val;
         my ($ok, $err) = try {
             $val = $exists
-                ? ( $context eq 'scalar'
-                    ? $got->$meth(@args)
-                    : [ $got->$meth(@args) ],
+                ? ( $context eq 'list' ? [ $got->$meth(@args) ] :
+                    $context eq 'hash' ? { $got->$meth(@args) } :
+                    $got->$meth(@args)
                 )
                 : undef;
         };
@@ -216,6 +216,10 @@ string '\&CODE'.
 
 If C<$context> is C<'list'>, the method will be invoked in list
 context, and the result will be an arrayref.
+
+If C<$context> is C<'hash'>, the method will be invoked in list
+context, and the result will be a hashref (this will warn if the
+method returns an odd number of values).
 
 =back
 

@@ -17,7 +17,7 @@ subtest simple => sub {
         match mismatch validator
         hash array bag object meta number string
         in_set not_in_set check_set
-        item field call call_list prop
+        item field call call_list call_hash prop
         end filter_items
         T F D DNE FDNE
         event
@@ -895,14 +895,16 @@ subtest object => sub {
     my $simple = object {
         call foo => 'foo';
         call bar => 'bar';
-        call_list many => [1,2,3];
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
         call [args => qw(a b)] => {a=>'b'};
     };
 
     my $array = object {
         call foo => 'foo';
         call bar => 'bar';
-        call_list many => [1,2,3];
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
         call [args => qw(a b)] => {a=>'b'};
         item 0 => 'x';
         item 1 => 'y';
@@ -911,7 +913,8 @@ subtest object => sub {
     my $closed_array = object {
         call foo => 'foo';
         call bar => 'bar';
-        call_list many => [1,2,3];
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
         call [args => qw(a b)] => {a=>'b'};
         item 0 => 'x';
         item 1 => 'y';
@@ -921,7 +924,8 @@ subtest object => sub {
     my $hash = object {
         call foo => 'foo';
         call bar => 'bar';
-        call_list many => [1,2,3];
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
         call [args => qw(a b)] => {a=>'b'};
         field x => 1;
         field y => 2;
@@ -930,7 +934,8 @@ subtest object => sub {
     my $closed_hash = object {
         call foo => 'foo';
         call bar => 'bar';
-        call_list many => [1,2,3];
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
         call [args => qw(a b)] => {a=>'b'};
         field x => 1;
         field y => 2;
@@ -940,7 +945,8 @@ subtest object => sub {
     my $meta = object {
         call foo => 'foo';
         call bar => 'bar';
-        call_list many => [1,2,3];
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
         call [args => qw(a b)] => {a=>'b'};
         prop blessed => 'ObjectFoo';
         prop reftype => 'HASH';
@@ -949,7 +955,8 @@ subtest object => sub {
     my $mix = object {
         call foo => 'foo';
         call bar => 'bar';
-        call_list many => [1,2,3];
+        call_list many => [1,2,3,4];
+        call_hash many => {1=>2,3=>4};
         call [args => qw(a b)] => {a=>'b'};
         field x => 1;
         field y => 2;
@@ -961,13 +968,13 @@ subtest object => sub {
         foo => sub { 'foo' },
         bar => sub { 'bar' },
         baz => sub {'baz'},
-        many => sub { (1,2,3) },
+        many => sub { (1,2,3,4) },
         args => sub { shift; +{@_} },
     ]);
     my $obb = mock 'ObjectBar' => (add => [
         foo => sub { 'nop' },
         baz => sub { 'baz' },
-        many => sub { (1,2,3) },
+        many => sub { (1,2,3,4) },
         args => sub { shift; +{@_} },
     ]);
 

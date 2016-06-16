@@ -62,7 +62,7 @@ our @EXPORT_OK = qw{
     match mismatch validator
     hash array bag object meta number string subset
     in_set not_in_set check_set
-    item field call call_list prop check
+    item field call call_list call_hash prop check
     end filter_items
     T F D DNE FDNE
     event fail_events
@@ -271,6 +271,7 @@ my $_call = sub {
 
 sub call($$) { $_call->(@_,'scalar','call') }
 sub call_list($$) { $_call->(@_,'list','call_list') }
+sub call_hash($$) { $_call->(@_,'hash','call_hash') }
 
 sub prop($$) {
     my ($name, $expect) = @_;
@@ -500,7 +501,7 @@ the field.
         match mismatch validator
         hash array object meta number string subset
         in_set not_in_set check_set
-        item field call call_list prop check
+        item field call call_list call_hash prop check
         end filter_items
         T F D DNE FDNE
         event fail_events
@@ -1150,6 +1151,24 @@ Same as C<call>, but the method is invoked in list context, and the
 result is always an arrayref.
 
     call_list get_items => [ ... ];
+
+=item call_hash $METHOD_NAME => $RESULT
+
+=item call_hash $METHOD_NAME => $CHECK
+
+=item call_hash [$METHOD_NAME, @METHOD_ARGS] => $RESULT
+
+=item call_hash [$METHOD_NAME, @METHOD_ARGS] => $CHECK
+
+=item call_hash sub { ... }, $RESULT
+
+=item call_hash sub { ... }, $CHECK
+
+Same as C<call>, but the method is invoked in list context, and the
+result is always a hashref. This will warn if the method returns an
+odd number of values.
+
+    call_hash get_items => { ... };
 
 =item field $NAME => $VAL
 
