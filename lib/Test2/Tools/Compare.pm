@@ -1113,20 +1113,34 @@ Specify an object check for use in comparisons.
 
 =item call $METHOD_NAME => $CHECK
 
+=item call [$METHOD_NAME, @METHOD_ARGS] => $RESULT
+
+=item call [$METHOD_NAME, @METHOD_ARGS] => $CHECK
+
 =item call sub { ... }, $RESULT
 
 =item call sub { ... }, $CHECK
 
-Call the specified method (or coderef) and verify the result. The coderef form
-is useful if you want to check a method that requires arguments.
+Call the specified method (or coderef) and verify the result. If you
+pass an arrayref, the first element must be the method name, the
+others are the arguments it will be called with.
 
-    my $ref = sub { return shift->get_value_for('thing') };
+The coderef form is useful if you need to do something more complex.
+
+    my $ref = sub {
+      local $SOME::GLOBAL::THING = 3;
+      return [shift->get_values_for('thing')];
+    };
 
     call $ref => ...;
 
 =item call_list $METHOD_NAME => $RESULT
 
 =item call_list $METHOD_NAME => $CHECK
+
+=item call_list [$METHOD_NAME, @METHOD_ARGS] => $RESULT
+
+=item call_list [$METHOD_NAME, @METHOD_ARGS] => $CHECK
 
 =item call_list sub { ... }, $RESULT
 

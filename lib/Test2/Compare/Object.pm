@@ -68,7 +68,9 @@ sub add_item {
 sub add_call {
     my $self = shift;
     my ($meth, $check, $name, $context) = @_;
-    $name ||= ref $meth ? '\&CODE' : $meth;
+    $name ||= ref $meth eq 'ARRAY' ? $meth->[0]
+        : ref $meth eq 'CODE' ? '\&CODE'
+        : $meth;
     push @{$self->{+CALLS}} => [$meth, $check, $name, $context||'scalar'];
 }
 
@@ -89,13 +91,18 @@ sub deltas {
 
         $check = $convert->($check);
 
+        my @args;
+        if (ref($meth) eq 'ARRAY') {
+            ($meth,@args) = @{$meth};
+        }
+
         my $exists = ref($meth) || $got->can($meth);
         my $val;
         my ($ok, $err) = try {
             $val = $exists
                 ? ( $context eq 'scalar'
-                    ? $got->$meth
-                    : [ $got->$meth ],
+                    ? $got->$meth(@args)
+                    : [ $got->$meth(@args) ],
                 )
                 : undef;
         };
@@ -198,9 +205,14 @@ just delegates.
 =item $obj->add_call($method, $check, $name, $context)
 
 Add a method call check. This will call the specified method on your object and
-verify the result. C<$method> may be a method name, or a coderef. In the case
-of a coderef it can be helpful to provide an alternate name. When no name is
-provided the name is either C<$method> or the string '\&CODE'.
+verify the result. C<$method> may be a method name, an array ref, or a coderef.
+
+If it's an arrayref, the first element must be the method name, and
+the rest are arguments that will be passed to it.
+
+In the case of a coderef it can be helpful to provide an alternate
+name. When no name is provided the name is either C<$method> or the
+string '\&CODE'.
 
 If C<$context> is C<'list'>, the method will be invoked in list
 context, and the result will be an arrayref.

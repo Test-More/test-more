@@ -896,12 +896,14 @@ subtest object => sub {
         call foo => 'foo';
         call bar => 'bar';
         call_list many => [1,2,3];
+        call [args => qw(a b)] => {a=>'b'};
     };
 
     my $array = object {
         call foo => 'foo';
         call bar => 'bar';
         call_list many => [1,2,3];
+        call [args => qw(a b)] => {a=>'b'};
         item 0 => 'x';
         item 1 => 'y';
     };
@@ -910,6 +912,7 @@ subtest object => sub {
         call foo => 'foo';
         call bar => 'bar';
         call_list many => [1,2,3];
+        call [args => qw(a b)] => {a=>'b'};
         item 0 => 'x';
         item 1 => 'y';
         end();
@@ -919,6 +922,7 @@ subtest object => sub {
         call foo => 'foo';
         call bar => 'bar';
         call_list many => [1,2,3];
+        call [args => qw(a b)] => {a=>'b'};
         field x => 1;
         field y => 2;
     };
@@ -927,6 +931,7 @@ subtest object => sub {
         call foo => 'foo';
         call bar => 'bar';
         call_list many => [1,2,3];
+        call [args => qw(a b)] => {a=>'b'};
         field x => 1;
         field y => 2;
         end();
@@ -936,6 +941,7 @@ subtest object => sub {
         call foo => 'foo';
         call bar => 'bar';
         call_list many => [1,2,3];
+        call [args => qw(a b)] => {a=>'b'};
         prop blessed => 'ObjectFoo';
         prop reftype => 'HASH';
     };
@@ -944,14 +950,26 @@ subtest object => sub {
         call foo => 'foo';
         call bar => 'bar';
         call_list many => [1,2,3];
+        call [args => qw(a b)] => {a=>'b'};
         field x => 1;
         field y => 2;
         prop blessed => 'ObjectFoo';
         prop reftype => 'HASH';
     };
 
-    my $obf = mock 'ObjectFoo' => (add => [foo => sub { 'foo' }, bar => sub { 'bar' }, baz => sub {'baz'}, many => sub { (1,2,3) }]);
-    my $obb = mock 'ObjectBar' => (add => [foo => sub { 'nop' }, baz => sub { 'baz' }, many => sub { (1,2,3) }]);
+    my $obf = mock 'ObjectFoo' => (add => [
+        foo => sub { 'foo' },
+        bar => sub { 'bar' },
+        baz => sub {'baz'},
+        many => sub { (1,2,3) },
+        args => sub { shift; +{@_} },
+    ]);
+    my $obb = mock 'ObjectBar' => (add => [
+        foo => sub { 'nop' },
+        baz => sub { 'baz' },
+        many => sub { (1,2,3) },
+        args => sub { shift; +{@_} },
+    ]);
 
     is(bless({}, 'ObjectFoo'), $empty, "Empty matches any object");
     is(bless({}, 'ObjectBar'), $empty, "Empty matches any object");

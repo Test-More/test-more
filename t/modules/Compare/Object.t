@@ -110,11 +110,13 @@ subtest add_call => sub {
     sub baz { 'baz' }
     sub one { 1 }
     sub many { return (1,2,3) }
+    sub args { shift; +{@_} }
 
     package Fake::Fake;
 
     sub foo { 'xxx' }
     sub one { 2 }
+    sub args { shift; +[@_] }
 }
 
 subtest deltas => sub {
@@ -137,6 +139,7 @@ subtest deltas => sub {
     $one->add_call('baz' => 'baz');
     $one->add_call('one' => 1);
     $one->add_call('many' => [1,2,3],undef,'list');
+    $one->add_call([args => 1,2] => {1=>2});
 
     is(
         [$one->deltas(exists => 1, got => $good, convert => $convert, seen => {})],
@@ -179,6 +182,11 @@ subtest deltas => sub {
                 dne => 'got',
                 got => undef,
                 id  => [METHOD => 'many'],
+            },
+            {
+                chk => T(),
+                got => [1,2],
+                id  => [METHOD => 'args'],
             },
             {
                 chk => T(),
@@ -229,6 +237,11 @@ subtest deltas => sub {
                         dne => 'got',
                         got => undef,
                         id  => [METHOD => 'many'],
+                    },
+                    {
+                        chk => T(),
+                        got => [1,2],
+                        id  => [METHOD => 'args'],
                     },
                     {
                         chk => T(),
