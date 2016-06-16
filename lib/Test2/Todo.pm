@@ -19,7 +19,7 @@ sub init {
 
     my $hub = $self->{+HUB} ||= test2_stack->top;
 
-    $self->{+_FILTER} = $hub->filter(
+    $self->{+_FILTER} = $hub->pre_filter(
         sub {
             my ($active_hub, $event) = @_;
 
@@ -43,7 +43,7 @@ sub end {
     my $self = shift;
     my $hub = $self->{+HUB} or return;
 
-    $hub->unfilter($self->{+_FILTER});
+    $hub->pre_unfilter($self->{+_FILTER});
     delete $self->{+HUB};
     delete $self->{+_FILTER};
 }
