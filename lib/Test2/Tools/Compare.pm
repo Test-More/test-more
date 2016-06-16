@@ -919,8 +919,8 @@ check object.
 
 B<Note:> Items MUST be added in order.
 
-B<Note:> This function can only be used inside an array or subset builder sub,
-and must be called in void context.
+B<Note:> This function can only be used inside an array, bag or subset
+builder sub, and must be called in void context.
 
 =item filter_items { my @remaining = @_; ...; return @filtered }
 
@@ -942,6 +942,43 @@ This is a handy check that can be used with C<item()> to ensure that an index
 (D)oes (N)not (E)xist.
 
     item 5 => DNE();
+
+=back
+
+=head2 BAG BUILDER
+
+B<Note: None of these are exported by default, you need to request them.>
+
+    $check = bag {
+        item 'a';
+        item 'b';
+
+        end(); # Ensure no other elements exist.
+    };
+
+A bag is like an array, but we don't care about the order of the
+items. In the example, C<$check> would match both C<['a','b']> and
+C<['b','a']>.
+
+=over 4
+
+=item $check = bag { ... }
+
+=item item $VAL
+
+=item item $CHECK
+
+Add an expected item to the bag.
+
+You can provide any value to check in C<$VAL>, or you can provide any valid
+check object.
+
+B<Note:> This function can only be used inside an array, bag or subset
+builder sub, and must be called in void context.
+
+=item end()
+
+Enforce that there are no more items after the last one specified.
 
 =back
 
@@ -976,8 +1013,8 @@ check object.
 
 B<Note:> Items MUST be added in order.
 
-B<Note:> This function can only be used inside an array or subset builder sub,
-and must be called in void context.
+B<Note:> This function can only be used inside an array, bag or subset
+builder sub, and must be called in void context.
 
 =back
 

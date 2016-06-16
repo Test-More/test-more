@@ -15,7 +15,7 @@ sub table { join "\n" => Test2::Util::Table::table(@_) }
 subtest simple => sub {
     imported_ok qw{
         match mismatch validator
-        hash array object meta number string
+        hash array bag object meta number string
         in_set not_in_set check_set
         item field call prop
         end filter_items
@@ -842,6 +842,50 @@ subtest array => sub {
 
     @$events = grep {$_->isa('Test2::Event::Ok')} @$events;
     is(@$events, 10, "10 events");
+    is($_->pass, 0, "event failed") for @$events;
+};
+
+subtest bag => sub {
+    my $empty = bag { };
+
+    my $simple = bag {
+        item 'a';
+        item 'b';
+        item 'c';
+    };
+
+    my $closed = array {
+        item 0 => 'a';
+        item 1 => 'b';
+        item 2 => 'c';
+        end;
+    };
+
+    is([], $empty, "empty array");
+    is(['a'], $empty, "any array matches empty");
+
+    is([qw/a b c/], $simple, "simple exact match");
+    is([qw/b c a/], $simple, "simple out of order");
+    is([qw/a b c d e/], $simple, "simple with extra");
+    is([qw/b a d e c/], $simple, "simple with extra, out of order");
+
+    is([qw/a b c/], $closed, "closed array");
+
+    my $events = intercept {
+        is({}, $empty);
+        is(undef, $empty);
+        is(1, $empty);
+        is('ARRAY', $empty);
+
+        is([qw/x y z/], $simple);
+        is([qw/a b x/], $simple);
+        is([qw/x b c/], $simple);
+
+        is([qw/a b c d/], $closed);
+    };
+
+    @$events = grep {$_->isa('Test2::Event::Ok')} @$events;
+    is(@$events, 8, "8 events");
     is($_->pass, 0, "event failed") for @$events;
 };
 

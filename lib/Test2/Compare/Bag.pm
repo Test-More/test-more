@@ -6,7 +6,7 @@ use base 'Test2::Compare::Base';
 
 our $VERSION = '0.000032';
 
-use Test2::Util::HashBase qw/inref ending items order/;
+use Test2::Util::HashBase qw/ending items/;
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/reftype looks_like_number/;
@@ -14,31 +14,12 @@ use Scalar::Util qw/reftype looks_like_number/;
 sub init {
     my $self = shift;
 
-    if(my $ref = $self->{+INREF}) {
-        croak "Cannot specify both 'inref' and 'items'" if $self->{+ITEMS};
-        croak "Cannot specify both 'inref' and 'order'" if $self->{+ORDER};
-        croak "'inref' must be an array reference, got '$ref'" unless reftype($ref) eq 'ARRAY';
-        my $order = $self->{+ORDER} = [];
-        my $items = $self->{+ITEMS} = {};
-        for (my $i = 0; $i < @$ref; $i++) {
-            push @$order => $i;
-            $items->{$i} = $ref->[$i];
-        }
-    }
-    else {
-        $self->{+ITEMS} ||= {};
-        croak "All indexes listed in the 'items' hashref must be numeric"
-            if grep { !looks_like_number($_) } keys %{$self->{+ITEMS}};
-
-        $self->{+ORDER} ||= [sort { $a <=> $b } keys %{$self->{+ITEMS}}];
-        croak "All indexes listed in the 'order' arrayref must be numeric"
-            if grep { !(looks_like_number($_) || (ref($_) && reftype($_) eq 'CODE')) } @{$self->{+ORDER}};
-    }
+    $self->{+ITEMS} ||= [];
 
     $self->SUPER::init();
 }
 
-sub name { '<ARRAY>' }
+sub name { '<BAG>' }
 
 sub verify {
     my $self = shift;
@@ -51,43 +32,12 @@ sub verify {
     return 1;
 }
 
-sub top_index {
-    my $self = shift;
-    my @order = @{$self->{+ORDER}};
-
-    while(@order) {
-        my $idx = pop @order;
-        next if ref $idx;
-        return $idx;
-    }
-
-    return undef; # No indexes
-}
-
 sub add_item {
     my $self = shift;
     my $check = pop;
     my ($idx) = @_;
 
-    my $top = $self->top_index;
-
-    croak "elements must be added in order!"
-        if $top && $idx && $idx <= $top;
-
-    $idx = defined($top) ? $top + 1 : 0
-        unless defined($idx);
-
-    push @{$self->{+ORDER}} => $idx;
-    $self->{+ITEMS}->{$idx} = $check;
-}
-
-sub add_filter {
-    my $self = shift;
-    my ($code) = @_;
-    croak "A single coderef is required"
-        unless @_ == 1 && $code && ref $code && reftype($code) eq 'CODE';
-
-    push @{$self->{+ORDER}} => $code;
+    push @{$self->{+ITEMS}}, $check;
 }
 
 sub deltas {
@@ -97,55 +47,57 @@ sub deltas {
 
     my @deltas;
     my $state = 0;
-    my @order = @{$self->{+ORDER}};
-    my $items = $self->{+ITEMS};
+    my @items = @{$self->{+ITEMS}};
 
     # Make a copy that we can munge as needed.
     my @list = @$got;
+    my %unmatched = map { $_ => $list[$_] } 0..$#list;
 
-    while (@order) {
-        my $idx = shift @order;
-        my $overflow = 0;
-        my $val;
+    while (@items) {
+        my $item = shift @items;
 
-        # We have a filter, not an index
-        if (ref($idx)) {
-            @list = $idx->(@list);
-            next;
+        my $check = $convert->($item);
+
+        my @item_deltas;
+        for my $idx (0..$#list) {
+            my $val = $list[$idx];
+            my @this_deltas = $check->run(
+                id      => [ARRAY => $idx],
+                convert => $convert,
+                seen    => $seen,
+                exists  => 1,
+                got     => $val,
+            );
+            if (@this_deltas) {
+                push @item_deltas,@this_deltas;
+            }
+            else {
+                @item_deltas = ();
+                delete $unmatched{$idx};
+                last;
+            }
         }
-
-        confess "Internal Error: Stacks are out of sync (state > idx)"
-            if $state > $idx + 1;
-
-        while ($state <= $idx) {
-            $state++;
-            $overflow = !@list;
-            $val = shift @list;
+        if (@item_deltas) {
+            push @deltas, $self->delta_class->new(
+                dne      => 'got',
+                verified => 1,
+                id       => [ARRAY => '*'],
+                got      => undef,
+                check    => $check,
+                children => \@item_deltas,
+            );
         }
-
-        confess "Internal Error: Stacks are out of sync (state != idx + 1)"
-            unless $state == $idx + 1;
-
-        my $check = $convert->($items->{$idx});
-
-        push @deltas => $check->run(
-            id      => [ARRAY => $idx],
-            convert => $convert,
-            seen    => $seen,
-            exists  => !$overflow,
-            $overflow ? () : (got => $val),
-        );
     }
 
-    # if items are left over, and ending is true, we have a problem!
-    if($self->{+ENDING} && @list) {
-        while (@list) {
-            my $item = shift @list;
+    # if elements are left over, and ending is true, we have a problem!
+    if($self->{+ENDING} && keys %unmatched) {
+        for my $idx (sort keys %unmatched) {
+            my $elem = $list[$idx];
             push @deltas => $self->delta_class->new(
                 dne      => 'check',
                 verified => undef,
-                id       => [ARRAY => $state++],
-                got      => $item,
+                id       => [ARRAY => $idx],
+                got      => $elem,
                 check    => undef,
             );
         }
@@ -164,84 +116,52 @@ __END__
 
 =head1 NAME
 
-Test2::Compare::Bag - Internal representation of an array comparison.
+Test2::Compare::Bag - Internal representation of a bag comparison.
 
 =head1 DESCRIPTION
 
-This module is an internal representation of an array for comparison purposes.
+This module is an internal representation of a bag for comparison purposes.
 
 =head1 METHODS
 
 =over 4
-
-=item $ref = $arr->inref()
-
-If the instance was constructed from an actual array, this will return the
-reference to that array.
 
 =item $bool = $arr->ending
 
 =item $arr->set_ending($bool)
 
 Set this to true if you would like to fail when the array being validated has
-more items than the check. That is, if you check indexes 0-3 but the array has
-values for indexes 0-4, it will fail and list that last item in the array as
+more items than the check. That is, if you check for 4 items but the array has
+5 values, it will fail and list that unmatched item in the array as
 unexpected. If set to false then it is assumed you do not care about extra
 items.
 
 =item $hashref = $arr->items()
 
-Returns the hashref of C<< key => val >> pairs to be checked in the
-array.
+Returns the arrayref of values to be checked in the array.
 
-=item $arr->set_items($hashref)
+=item $arr->set_items($arrayref)
 
-Accepts a hashref to permit indexes to be skipped if desired.
+Accepts an arrayref.
 
 B<Note:> that there is no validation when using C<set_items>, it is better to
 use the C<add_item> interface.
 
-=item $arrayref = $arr->order()
-
-Returns an arrayref of all indexes that will be checked, in order.
-
-=item $arr->set_order($arrayref)
-
-Sets the order in which indexes will be checked.
-
-B<Note:> that there is no validation when using C<set_order>, it is better to
-use the C<add_item> interface.
-
 =item $name = $arr->name()
 
-Always returns the string C<< "<ARRAY>" >>.
+Always returns the string C<< "<BAG>" >>.
 
 =item $bool = $arr->verify(got => $got, exists => $bool)
 
 Check if C<$got> is an array reference or not.
 
-=item $idx = $arr->top_index()
-
-Returns the topmost index which is checked. This will return undef if there
-are no items, or C<0> if there is only 1 item.
-
 =item $arr->add_item($item)
 
 Push an item onto the list of values to be checked.
 
-=item $arr->add_item($idx => $item)
-
-Add an item to the list of values to be checked at the specified index.
-
-=item $arr->add_filter(sub { ... })
-
-Add a filter sub. The filter receives all remaining values of the array being
-checked, and should return the values that should still be checked. The filter
-will be run between the last item added and the next item added.
-
 =item @deltas = $arr->deltas(got => $got, convert => \&convert, seen => \%seen)
 
-Find the differences between the expected array values and those in the C<$got>
+Find the differences between the expected bag values and those in the C<$got>
 arrayref.
 
 =back
@@ -256,6 +176,8 @@ F<http://github.com/Test-More/Test2-Suite/>.
 =over 4
 
 =item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=item Gianni Ceccarelli E<lt>dakkar@thenautilus.netE<gt>
 
 =back
 
