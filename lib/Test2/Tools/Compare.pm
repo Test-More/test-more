@@ -17,6 +17,7 @@ use Test2::Compare qw{
 };
 
 use Test2::Compare::Array();
+use Test2::Compare::Bag();
 use Test2::Compare::Custom();
 use Test2::Compare::Event();
 use Test2::Compare::Hash();
@@ -37,6 +38,7 @@ use Test2::Compare::Wildcard();
     %Carp::Internal,
     'Test2::Tools::Compare'         => 1,
     'Test2::Compare::Array'         => 1,
+    'Test2::Compare::Bag'         => 1,
     'Test2::Compare::Custom'        => 1,
     'Test2::Compare::Event'         => 1,
     'Test2::Compare::Hash'          => 1,
@@ -58,7 +60,7 @@ our @EXPORT = qw/is like/;
 our @EXPORT_OK = qw{
     is like isnt unlike
     match mismatch validator
-    hash array object meta number string subset
+    hash array bag object meta number string subset
     in_set not_in_set check_set
     item field call prop check
     end filter_items
@@ -139,6 +141,7 @@ sub unlike($$;$@) {
 sub meta(&)   { build('Test2::Compare::Meta',          @_) }
 sub hash(&)   { build('Test2::Compare::Hash',          @_) }
 sub array(&)  { build('Test2::Compare::Array',         @_) }
+sub bag(&)    { build('Test2::Compare::Bag',         @_) }
 sub object(&) { build('Test2::Compare::Object',        @_) }
 sub subset(&) { build('Test2::Compare::OrderedSubset', @_) }
 
