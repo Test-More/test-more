@@ -1,12 +1,11 @@
 use strict;
 use warnings;
 
-use Config;
-
+use Test2::Util qw/CAN_THREAD/;
 BEGIN {
-    unless ($Config{useithreads}) {
-        print "1..0 # SKIP your perl does not support ithreads\n";
-        exit 0;
+    unless(CAN_THREAD) {
+        require Test::More;
+        Test::More->import(skip_all => "threads are not supported");
     }
 }
 

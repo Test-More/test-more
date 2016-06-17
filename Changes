@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Properly skip thread test when threads are broken
+
 1.302028  2016-06-16 19:21:58-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Add 'inherit_trace' param to run_subtest
