@@ -3,7 +3,7 @@ use strict;
 
 package Test::Tester::CaptureRunner;
 
-our $VERSION = '1.302028';
+our $VERSION = '1.302029';
 
 
 use Test::Tester::Capture;
