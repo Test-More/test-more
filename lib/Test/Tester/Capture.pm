@@ -2,7 +2,7 @@ use strict;
 
 package Test::Tester::Capture;
 
-our $VERSION = '1.302027';
+our $VERSION = '1.302028';
 
 
 use Test::Builder;

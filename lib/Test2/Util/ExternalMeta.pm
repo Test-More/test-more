@@ -2,7 +2,7 @@ package Test2::Util::ExternalMeta;
 use strict;
 use warnings;
 
-our $VERSION = '1.302027';
+our $VERSION = '1.302028';
 
 
 use Carp qw/croak/;
