@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - No changes from last DEV release
+
 1.302029  2016-06-17 06:56:54-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Properly skip thread test when threads are broken

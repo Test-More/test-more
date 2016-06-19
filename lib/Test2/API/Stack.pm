@@ -2,7 +2,7 @@ package Test2::API::Stack;
 use strict;
 use warnings;
 
-our $VERSION = '1.302029';
+our $VERSION = '1.302030';
 
 
 use Test2::Hub();
