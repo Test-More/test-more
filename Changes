@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Remove carp from dep list #682
+
 1.302030  2016-06-18 19:02:55-07:00 America/Los_Angeles
 
     - No changes from last DEV release
