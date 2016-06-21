@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Exporter';
 
-our $VERSION = '0.000032';
+our $VERSION = '0.000033';
 
 use Carp qw/croak/;
 
