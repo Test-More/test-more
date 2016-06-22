@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302032  2016-06-22 11:30:46-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix nested TODO handling of Diags (#684)
 
 1.302031  2016-06-21 09:51:27-07:00 America/Los_Angeles
