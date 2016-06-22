@@ -15,9 +15,23 @@ use Test2::Compare qw/compare strict_convert/;
 use Test2::Util::Ref qw/rtype render_ref/;
 use Test2::Util::Table qw/table/;
 
-use Test2::Compare::Undef();
-use Test2::Compare::String();
+use Test2::Compare::Array();
+use Test2::Compare::Bag();
+use Test2::Compare::Custom();
+use Test2::Compare::Event();
+use Test2::Compare::Hash();
+use Test2::Compare::Meta();
+use Test2::Compare::Number();
+use Test2::Compare::Object();
+use Test2::Compare::OrderedSubset();
 use Test2::Compare::Pattern();
+use Test2::Compare::Ref();
+use Test2::Compare::Regex();
+use Test2::Compare::Scalar();
+use Test2::Compare::Set();
+use Test2::Compare::String();
+use Test2::Compare::Undef();
+use Test2::Compare::Wildcard();
 
 sub is($$;$@) {
     my ($got, $exp, $name, @diag) = @_;
