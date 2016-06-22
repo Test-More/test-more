@@ -376,9 +376,8 @@ is(
 
                         event Subtest => sub {
                             call name           => 'bug';
-                            call pass           => 0;
+                            call pass           => 1;
                             call effective_pass => 1;
-                            call todo           => 'a bug';
 
                             prop file => match qr{\QAcceptance.t\E$};
                             prop line => 61;
@@ -405,7 +404,7 @@ is(
                                 event Ok => sub {
                                     call name           => 'fail';
                                     call pass           => 0;
-                                    call effective_pass => 0;
+                                    call effective_pass => 1;
 
                                     prop file => match qr{\QAcceptance.t\E$};
                                     prop line => 60;
@@ -678,9 +677,8 @@ is(
 
                         event Subtest => sub {
                             call name           => 'bug';
-                            call pass           => 0;
+                            call pass           => 1;
                             call effective_pass => 1;
-                            call todo           => 'a bug';
 
                             prop file => match qr{\QAcceptance.t\E$};
                             prop line => 61;
@@ -707,7 +705,7 @@ is(
                                 event Ok => sub {
                                     call name           => 'fail';
                                     call pass           => 0;
-                                    call effective_pass => 0;
+                                    call effective_pass => 1;
 
                                     prop file => match qr{\QAcceptance.t\E$};
                                     prop line => 60;

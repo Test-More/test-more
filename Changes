@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Fix for (and require) Test2-Suite 0.000032 (#2)
+    - Better TODO handling
+
 0.000009  2016-05-31 07:18:50-07:00 America/Los_Angeles
 
     - Require perl 5.10

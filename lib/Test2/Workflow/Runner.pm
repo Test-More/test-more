@@ -151,12 +151,13 @@ sub run {
                 next;
             }
 
-            $state->{todo} = Test2::Todo->new(reason => $task->todo)
-                if $task->todo;
-
             if ($task->flat) {
                 my $st = $self->current_subtest;
                 my $hub = $st ? $st->hub : Test2::API::test2_stack->top;
+
+                $state->{todo} = Test2::Todo->new(reason => $task->todo, hub => $hub)
+                    if $task->todo;
+
                 $hub->send($_) for @{$task->events};
             }
             else {
@@ -165,6 +166,10 @@ sub run {
                     trace => Test2::Util::Trace->new(frame => $task->frame),
                 );
                 $state->{subtest} = $st;
+
+                $state->{todo} = Test2::Todo->new(reason => $task->todo, hub => $st->hub)
+                    if $task->todo;
+
                 $st->hub->send($_) for @{$task->events};
 
                 my $slot = $self->isolate($state);
@@ -179,8 +184,8 @@ sub run {
         }
 
         if ($state->{ended}) {
-            $state->{subtest}->stop() if $state->{subtest};
             $state->{todo}->end() if $state->{todo};
+            $state->{subtest}->stop() if $state->{subtest};
 
             return if $state->{in_thread};
             if(my $guard = delete $state->{in_fork}) {
@@ -398,7 +403,7 @@ sub cull {
         my ($st, $task) = @$set;
         next if $st->finished;
         if (!$st->active && $st->ready) {
-            $st->finish(todo => $task->todo);
+            $st->finish();
             next;
         }
 
