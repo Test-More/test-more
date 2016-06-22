@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '1.302031';
+our $VERSION = '1.302032';
 
 BEGIN {
     if( $] < 5.008 ) {
@@ -81,7 +81,7 @@ sub _add_ts_hooks {
         }
 
         return $e;
-    });
+    }, inherit => 1);
 }
 
 sub new {
@@ -176,14 +176,14 @@ sub child {
         class => 'Test2::Hub::Subtest',
     );
 
-    $hub->filter(sub {
+    $hub->pre_filter(sub {
         my ($active_hub, $e) = @_;
 
         # Turn a diag into a todo diag
         return Test::Builder::TodoDiag->new(%$e) if ref($e) eq 'Test2::Event::Diag';
 
         return $e;
-    }) if $orig_TODO;
+    }, inherit => 1) if $orig_TODO;
 
     $hub->listen(sub { push @$subevents => $_[1] });
 
@@ -1455,7 +1455,7 @@ sub todo_start {
     my $ctx = $self->ctx;
 
     my $hub = $ctx->hub;
-    my $filter = $hub->filter(sub {
+    my $filter = $hub->pre_filter(sub {
         my ($active_hub, $e) = @_;
 
         # Turn a diag into a todo diag
@@ -1492,7 +1492,7 @@ sub todo_end {
 
     $ctx->throw('todo_end() called without todo_start()') unless $set;
 
-    $ctx->hub->unfilter($set->[0]);
+    $ctx->hub->pre_unfilter($set->[0]);
 
     $ctx->release;
 

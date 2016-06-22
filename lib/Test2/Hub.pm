@@ -2,7 +2,7 @@ package Test2::Hub;
 use strict;
 use warnings;
 
-our $VERSION = '1.302031';
+our $VERSION = '1.302032';
 
 
 use Carp qw/carp croak confess/;
@@ -81,6 +81,10 @@ sub inherit {
 
     if (my $ls = $from->{+_LISTENERS}) {
         push @{$self->{+_LISTENERS}} => grep { $_->{inherit} } @$ls;
+    }
+
+    if (my $pfs = $from->{+_PRE_FILTERS}) {
+        push @{$self->{+_PRE_FILTERS}} => grep { $_->{inherit} } @$pfs;
     }
 
     if (my $fs = $from->{+_FILTERS}) {
