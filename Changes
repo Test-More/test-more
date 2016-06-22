@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Bump minimum Test2 version
+
 0.000033  2016-06-22 08:41:22-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix ClassicCompare to load deps (#23)
