@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000011  2016-06-22 11:32:58-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Require newer Test2::AsyncSubtest for bugfixes
 
 0.000010  2016-06-22 09:16:07-07:00 America/Los_Angeles
