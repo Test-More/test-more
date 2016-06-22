@@ -26,6 +26,10 @@ sub inherit {
         push @{$self->{+_LISTENERS}} => grep { $_->{inherit} } @$ls;
     }
 
+    if (my $pfs = $from->{+_PRE_FILTERS}) {
+        push @{$self->{+_PRE_FILTERS}} => grep { $_->{inherit} } @$pfs;
+    }
+
     if (my $fs = $from->{+_FILTERS}) {
         push @{$self->{+_FILTERS}} => grep { $_->{inherit} } @$fs;
     }
