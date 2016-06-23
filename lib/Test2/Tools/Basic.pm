@@ -75,9 +75,21 @@ sub skip {
 }
 
 sub plan {
-    my ($max) = @_;
+    my $plan = shift;
     my $ctx = context();
-    $ctx->plan($max);
+
+    if ($plan && $plan =~ m/\D/) {
+        if ($plan eq 'tests') {
+            $plan = shift;
+        }
+        elsif ($plan eq 'skip_all') {
+            skip_all(@_);
+            $ctx->release;
+            return;
+        }
+    }
+
+    $ctx->plan($plan);
     $ctx->release;
 }
 
@@ -168,8 +180,16 @@ All subs are exported by default.
 
 =item plan($num)
 
+=item plan('tests' => $num)
+
+=item plan('skip_all' => $reason)
+
 Set the number of tests that are expected. This must be done first or last,
 never in the middle of testing.
+
+For legacy compatibility you can specify 'tests' as the first argument before
+the number. You can also use this to skip all with the 'skip_all' prefix,
+followed by a reason for skipping.
 
 =item skip_all($reason)
 

@@ -182,6 +182,21 @@ like(
 
 like(
     intercept {
+        plan skip_all => 'oops';
+        # Should not get here
+        print STDERR "Something is wrong, did not skip!\n";
+        exit 255;
+    },
+    array {
+        event Plan => { max => 0, directive => 'SKIP', reason => 'oops' };
+        end;
+    },
+    "Got plan 'skip_all' prefix"
+);
+
+
+like(
+    intercept {
         plan(5);
     },
     array {
@@ -190,6 +205,18 @@ like(
     },
     "Got plan"
 );
+
+like(
+    intercept {
+        plan(tests => 5);
+    },
+    array {
+        event Plan => { max => 5 };
+        end;
+    },
+    "Got plan 'tests' prefix"
+);
+
 
 like(
     intercept {
