@@ -193,7 +193,7 @@ F<http://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2015 Chad Granum E<lt>exodist@cpan.orgE<gt>.
+Copyright 2016 Chad Granum E<lt>exodist@cpan.orgE<gt>.
 
 Copyright 2016 Gianni Ceccarelli E<lt>dakkar@thenautilus.netE<gt>
 
