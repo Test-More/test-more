@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Test2::Require';
 
-our $VERSION = '0.000035';
+our $VERSION = '0.000036';
 
 use Test2::Util qw/CAN_FORK/;
 

@@ -6,7 +6,7 @@ use Test2::Compare::Delta();
 
 use base 'Test2::Compare::Base';
 
-our $VERSION = '0.000035';
+our $VERSION = '0.000036';
 
 use Test2::Util::HashBase qw/items/;
 
