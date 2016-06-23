@@ -36,6 +36,10 @@ sub import {
     }
     else {
         my @ltime = localtime;
+        # Yes, this would be an awful seed if you actually wanted randomness.
+        # The idea here is that we want "random" behavior to be predictable
+        # within a given day. This allows you to reproduce failures that may or
+        # may not happen due to randomness.
         $SEED = sprintf('%04d%02d%02d', 1900 + $ltime[5], 1 + $ltime[4], $ltime[3]);
         $FROM = 'local date';
     }
