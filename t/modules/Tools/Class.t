@@ -62,6 +62,14 @@ like(
         isa_ok(undef, 'X');
         isa_ok('', 'X');
         isa_ok({}, 'X');
+
+        isa_ok('X',  [qw/axe box fox/], 'alt name');
+        can_ok('X',  [qw/axe box fox/], 'alt name');
+        DOES_ok('X', [qw/axe box fox/], 'alt name');
+
+        isa_ok('X',  [qw/foo bar axe box/], 'alt name');
+        can_ok('X',  [qw/foo bar axe box/], 'alt name');
+        DOES_ok('X', [qw/foo bar axe box/], 'alt name');
     },
     array {
         event Ok => { pass => 1, name => 'X->isa(...)' };
@@ -93,6 +101,20 @@ like(
         fail_events Ok => sub { call pass => 0 };
         event Diag => { message => qr/HASH is neither a blessed reference or a package name/ };
 
+        event Ok => { pass => 1, name => 'alt name' };
+        event Ok => { pass => 1, name => 'alt name' };
+        event Ok => { pass => 1, name => 'alt name' };
+
+        fail_events Ok => sub { call pass => 0; call name => 'alt name' };
+        event Diag => {message => "Failed: X->isa('foo')"};
+        event Diag => {message => "Failed: X->isa('bar')"};
+        fail_events Ok => sub { call pass => 0; call name => 'alt name' };
+        event Diag => {message => "Failed: X->can('foo')"};
+        event Diag => {message => "Failed: X->can('bar')"};
+        fail_events Ok => sub { call pass => 0; call name => 'alt name' };
+        event Diag => {message => "Failed: X->DOES('foo')"};
+        event Diag => {message => "Failed: X->DOES('bar')"};
+
         end;
     },
     "'can/isa/DOES_ok' events"
@@ -120,7 +142,7 @@ like(
     array {
         event Skip => {
             pass   => 1,
-            name   => 'A::Fake::Package->DOES(...)',
+            name   => "A::Fake::Package->DOES('xxx')",
             reason => "'DOES' is not supported on this platform",
         };
     },

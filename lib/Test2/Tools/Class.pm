@@ -19,27 +19,38 @@ use base 'Exporter';
 BEGIN {
     for my $op (qw/isa can DOES/) {
         my $sub = sub($;@) {
-            my ($thing, @items) = @_;
+            my ($thing, @args) = @_;
             my $ctx = context();
 
-            my $name = ref($thing) ? render_ref($thing) : defined($thing) ? "$thing" : "<undef>";
-            $name =~ s/\n/\\n/g;
-            $name =~ s/#//g;
-            $name =~ s/\(0x[a-f0-9]+\)//gi;
+            my (@items, $name);
+            if (ref($args[0]) eq 'ARRAY') {
+                $name  = $args[1];
+                @items = @{$args[0]};
+            }
+            else {
+                @items = @args;
+            }
+
+            my $thing_name = ref($thing) ? render_ref($thing) : defined($thing) ? "$thing" : "<undef>";
+            $thing_name =~ s/\n/\\n/g;
+            $thing_name =~ s/#//g;
+            $thing_name =~ s/\(0x[a-f0-9]+\)//gi;
+
+            $name ||= @items == 1 ? "$thing_name\->$op('$items[0]')" : "$thing_name\->$op(...)";
 
             unless ($thing && (blessed($thing) || !ref($thing))) {
                 my $thing = defined($thing)
                     ? ref($thing) || "'$thing'"
                     : '<undef>';
 
-                $ctx->ok(0, "$name\->$op(...)", ["$thing is neither a blessed reference or a package name."]);
+                $ctx->ok(0, $name, ["$thing is neither a blessed reference or a package name."]);
 
                 $ctx->release;
                 return 0;
             }
 
             unless(UNIVERSAL->can($op) || $thing->can($op)) {
-                $ctx->skip("$name\->$op(...)", "'$op' is not supported on this platform");
+                $ctx->skip($name, "'$op' is not supported on this platform");
                 $ctx->release;
                 return 1;
             }
@@ -63,11 +74,7 @@ BEGIN {
                 push @bad => $item;
             }
 
-            $ctx->ok(
-                !@bad,
-                @items == 1 ? "$name\->$op('$items[0]')" : "$name\->$op(...)",
-                [map { "Failed: $name\->$op('$_')" } @bad],
-            );
+            $ctx->ok( !@bad, $name, [map { "Failed: $thing_name\->$op('$_')" } @bad]);
 
             $ctx->release;
 
@@ -101,10 +108,13 @@ some tools from L<Test::More>, but they have a more consistent interface.
     use Test2::Tools::Class;
 
     isa_ok($CLASS_OR_INSTANCE, $PARENT_CLASS1, $PARENT_CLASS2, ...);
+    isa_ok($CLASS_OR_INSTANCE, [$PARENT_CLASS1, $PARENT_CLASS2, ...], "Test Name");
 
     can_ok($CLASS_OR_INSTANCE, $METHOD1, $METHOD2, ...);
+    can_ok($CLASS_OR_INSTANCE, [$METHOD1, $METHOD2, ...], "Test Name");
 
     DOES_ok($CLASS_OR_INSTANCE, $ROLE1, $ROLE2, ...);
+    DOES_ok($CLASS_OR_INSTANCE, [$ROLE1, $ROLE2, ...], "Test Name");
 
 =head1 EXPORTS
 
@@ -114,18 +124,33 @@ All subs are exported by default.
 
 =item can_ok($thing, @methods)
 
+=item can_ok($thing, \@methods, $test_name)
+
 This checks that C<$thing> (either a class name, or a blessed instance) has the
 specified methods.
 
+If the second argument is an arrayref then it will be used as the list of
+methods leaving the third argument to be the test name.
+
 =item isa_ok($thing, @classes)
+
+=item isa_ok($thing, \@classes, $test_name)
 
 This checks that C<$thing> (either a class name, or a blessed instance) is or
 subclasses the specified classes.
 
+If the second argument is an arrayref then it will be used as the list of
+classes leaving the third argument to be the test name.
+
 =item DOES_ok($thing, @roles)
+
+=item DOES_ok($thing, \@roles, $test_name)
 
 This checks that C<$thing> (either a class name, or a blessed instance) does
 the specified roles.
+
+If the second argument is an arrayref then it will be used as the list of
+roles leaving the third argument to be the test name.
 
 B<Note 1:> This uses the C<< $class->DOES(...) >> method, not the C<does()>
 method Moose provides.

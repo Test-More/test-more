@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - Make it possible to provide a name to isa_ok, can_ok, and DOES_ok
     - Add some regression tests for previous fixes
 
 0.000034  2016-06-22 11:30:00-07:00 America/Los_Angeles (TRIAL RELEASE)
