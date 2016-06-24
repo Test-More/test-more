@@ -2,7 +2,7 @@ package Test2::Mock;
 use strict;
 use warnings;
 
-our $VERSION = '0.000036';
+our $VERSION = '0.000037';
 
 use Carp qw/croak confess/;
 our @CARP_NOT = (__PACKAGE__);
