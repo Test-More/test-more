@@ -62,9 +62,9 @@ our @EXPORT_OK = qw{
     match mismatch validator
     hash array bag object meta number string subset
     in_set not_in_set check_set
-    item field call call_list call_hash prop check
+    item field call call_list call_hash prop check all_items all_keys all_vals all_values
     end filter_items
-    T F D DNE FDNE
+    T F D DNE FDNE E
     event fail_events
     exact_ref
 };
@@ -145,17 +145,59 @@ sub bag(&)    { build('Test2::Compare::Bag',           @_) }
 sub object(&) { build('Test2::Compare::Object',        @_) }
 sub subset(&) { build('Test2::Compare::OrderedSubset', @_) }
 
-my $FDNE = Test2::Compare::Custom->new(code => sub { $_ ? 0 : 1 }, name => 'FALSE', operator => 'FALSE() || !exists');
-my $DNE = Test2::Compare::Custom->new(code => sub { my %p = @_; $p{exists} ? 0 : 1 },          name => '<DOES NOT EXIST>', operator => '!exists');
-my $F   = Test2::Compare::Custom->new(code => sub { my %p = @_; $p{got}    ? 0 : $p{exists} }, name => 'FALSE',            operator => 'FALSE()');
-my $T = Test2::Compare::Custom->new(code => sub { $_         ? 1 : 0 }, name => 'TRUE',    operator => 'TRUE()');
-my $D = Test2::Compare::Custom->new(code => sub { defined $_ ? 1 : 0 }, name => 'DEFINED', operator => 'DEFINED()');
+sub D() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { defined $_ ? 1 : 0 }, name => 'DEFINED', operator => 'DEFINED()',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
 
-sub T()    { $T }
-sub F()    { $F }
-sub D()    { $D }
-sub DNE()  { $DNE }
-sub FDNE() { $FDNE }
+sub DNE() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { my %p = @_; $p{exists} ? 0 : 1 }, name => '<DOES NOT EXIST>', operator => '!exists',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
+
+sub E() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { my %p = @_; $p{exists} ? 1 : 0 }, name => '<DOES EXIST>', operator => '!exists',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
+
+sub F() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { my %p = @_; $p{got} ? 0 : $p{exists} }, name => 'FALSE', operator => 'FALSE()',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
+
+sub FDNE() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { $_ ? 0 : 1 }, name => 'FALSE', operator => 'FALSE() || !exists',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
+
+sub T() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { $_ ? 1 : 0 }, name => 'TRUE', operator => 'TRUE()',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
 
 sub exact_ref($) {
     my @caller = caller;
@@ -233,6 +275,44 @@ sub filter_items(&) {
 
     $build->add_filter(@_);
 }
+
+sub all_items {
+    my $build = get_build() or croak "No current build!";
+
+    croak "'$build' does not support all-items"
+        unless $build->can('add_for_each');
+
+    croak "'all_items' should only ever be called in void context"
+        if defined wantarray;
+
+    $build->add_for_each(@_);
+}
+
+sub all_keys {
+    my $build = get_build() or croak "No current build!";
+
+    croak "'$build' does not support all-keys"
+        unless $build->can('add_for_each_key');
+
+    croak "'all_keys' should only ever be called in void context"
+        if defined wantarray;
+
+    $build->add_for_each_key(@_);
+}
+
+*all_vals = *all_values;
+sub all_values {
+    my $build = get_build() or croak "No current build!";
+
+    croak "'$build' does not support all-values"
+        unless $build->can('add_for_each_val');
+
+    croak "'all_values' should only ever be called in void context"
+        if defined wantarray;
+
+    $build->add_for_each_val(@_);
+}
+
 
 sub end() {
     my $build = get_build() or croak "No current build!";
@@ -499,11 +579,11 @@ the field.
     use Test2::Tools::Compare qw{
         is like isnt unlike
         match mismatch validator
-        hash array object meta number string subset
+        hash array bag object meta number string subset
         in_set not_in_set check_set
-        item field call call_list call_hash prop check
+        item field call call_list call_hash prop check all_items all_keys all_vals all_values
         end filter_items
-        T F D DNE FDNE
+        T F D DNE FDNE E
         event fail_events
         exact_ref
     };
@@ -835,6 +915,11 @@ B<Note: None of these are exported by default, you need to request them.>
         # Any check can be used
         field boo => $check;
 
+        # Set checks that apply to all keys or values. Can be done multiple
+        # times, and each call can define multiple checks, all will be run.
+        all_vals match qr/a/, match qr/b/;    # All keys must have an 'a' and a 'b'
+        all_keys match qr/x/;                 # All keys must have an 'x'
+
         ...
 
         end(); # optional, enforces that no other keys are present.
@@ -856,6 +941,18 @@ such as the result of another call to C<array { ... }>, C<DNE()>, etc.
 
 B<Note:> This function can only be used inside a hash builder sub, and must be
 called in void context.
+
+=item all_keys($CHECK1, $CHECK2, ...)
+
+Add checks that apply to all keys. You can put this anywhere in the hash
+block, and can call it any number of times with any number of arguments.
+
+=item all_vals($CHECK1, $CHECK2, ...)
+
+=item all_values($CHECK1, $CHECK2, ...)
+
+Add checks that apply to all keys. You can put this anywhere in the hash
+block, and can call it any number of times with any number of arguments.
 
 =item end()
 
@@ -894,6 +991,11 @@ B<Note: None of these are exported by default, you need to request them.>
 
         # Remove any REMAINING items that contain 0-9.
         filter_items { grep {m/\D/} @_ };
+
+        # Set checks that apply to all items. Can be done multiple times, and
+        # each call can define multiple checks, all will be run.
+        all_items match qr/a/, match qr/b/;
+        all_items match qr/x/;
 
         # Of the remaining items (after the filter is applied) the next one
         # (which is now index 6) should be 'g'.
@@ -936,6 +1038,11 @@ should return only the items that should be checked.
 
 B<Note:> This function can only be used inside an array builder sub, and must
 be called in void context.
+
+=item all_items($CHECK1, $CHECK2, ...)
+
+Add checks that apply to all items. You can put this anywhere in the array
+block, and can call it any number of times with any number of arguments.
 
 =item end()
 

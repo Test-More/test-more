@@ -137,6 +137,7 @@ sub _full_id {
     return "<$id>" if !$type || $type eq 'META';
     return $id     if $type eq 'SCALAR';
     return "{$id}" if $type eq 'HASH';
+    return "{$id} <KEY>" if $type eq 'HASHKEY';
     return "[$id]" if $type eq 'ARRAY';
     return "$id()" if $type eq 'METHOD';
     return "<$id>";

@@ -39,7 +39,9 @@ subtest verify => sub {
     my $one = $CLASS->new();
 
     is($one->verify(exists => 1), 1, "valid");
-    is($one->verify(exists => 0), 0, "invalid");
+
+    # in_set(DNE) is a valid construct, so we cannot reject non-existing values.
+    is($one->verify(exists => 0), 1, "valid");
 };
 
 subtest add_check => sub {

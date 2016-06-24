@@ -6,7 +6,7 @@ use base 'Test2::Compare::Base';
 
 our $VERSION = '0.000037';
 
-use Test2::Util::HashBase qw/inref ending items order/;
+use Test2::Util::HashBase qw/inref ending items order for_each_key for_each_val/;
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/reftype/;
@@ -34,6 +34,9 @@ sub init {
             $self->{+ORDER} = [sort keys %{$self->{+ITEMS}}];
         }
     }
+
+    $self->{+FOR_EACH_KEY} ||= [];
+    $self->{+FOR_EACH_VAL} ||= [];
 
     $self->SUPER::init();
 }
@@ -66,6 +69,16 @@ sub add_field {
     $self->{+ITEMS}->{$name} = $check;
 }
 
+sub add_for_each_key {
+    my $self = shift;
+    push @{$self->{+FOR_EACH_KEY}} => @_;
+}
+
+sub add_for_each_val {
+    my $self = shift;
+    push @{$self->{+FOR_EACH_VAL}} => @_;
+}
+
 sub deltas {
     my $self = shift;
     my %params = @_;
@@ -73,6 +86,8 @@ sub deltas {
 
     my @deltas;
     my $items = $self->{+ITEMS};
+    my $each_key = $self->{+FOR_EACH_KEY};
+    my $each_val = $self->{+FOR_EACH_VAL};
 
     # Make a copy that we can munge as needed.
     my %fields = %$got;
@@ -81,6 +96,32 @@ sub deltas {
         my $check  = $convert->($items->{$key});
         my $exists = exists $fields{$key};
         my $val    = delete $fields{$key};
+
+        if ($exists) {
+            for my $kcheck (@$each_key) {
+                $kcheck = $convert->($kcheck);
+
+                push @deltas => $kcheck->run(
+                    id      => [HASHKEY => $key],
+                    convert => $convert,
+                    seen    => $seen,
+                    exists  => $exists,
+                    got     => $key,
+                );
+            }
+
+            for my $vcheck (@$each_val) {
+                $vcheck = $convert->($vcheck);
+
+                push @deltas => $vcheck->run(
+                    id      => [HASH => $key],
+                    convert => $convert,
+                    seen    => $seen,
+                    exists  => $exists,
+                    got     => $val,
+                );
+            }
+        }
 
         push @deltas => $check->run(
             id      => [HASH => $key],
@@ -91,16 +132,44 @@ sub deltas {
         );
     }
 
-    # if items are left over, and ending is true, we have a problem!
-    if($self->{+ENDING} && keys %fields) {
+    if (keys %fields) {
         for my $key (sort keys %fields) {
-            push @deltas => $self->delta_class->new(
-                dne      => 'check',
-                verified => undef,
-                id       => [HASH => $key],
-                got      => $fields{$key},
-                check    => undef,
-            );
+            my $val = $fields{$key};
+
+            for my $kcheck (@$each_key) {
+                $kcheck = $convert->($kcheck);
+
+                push @deltas => $kcheck->run(
+                    id      => [HASHKEY => $key],
+                    convert => $convert,
+                    seen    => $seen,
+                    got     => $key,
+                    exists  => 1,
+                );
+            }
+
+            for my $vcheck (@$each_val) {
+                $vcheck = $convert->($vcheck);
+
+                push @deltas => $vcheck->run(
+                    id      => [HASH => $key],
+                    convert => $convert,
+                    seen    => $seen,
+                    got     => $val,
+                    exists  => 1,
+                );
+            }
+
+            # if items are left over, and ending is true, we have a problem!
+            if ($self->{+ENDING}) {
+                push @deltas => $self->delta_class->new(
+                    dne      => 'check',
+                    verified => undef,
+                    id       => [HASH => $key],
+                    got      => $val,
+                    check    => undef,
+                );
+            }
         }
     }
 

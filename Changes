@@ -1,5 +1,12 @@
 {{$NEXT}}
 
+    - Add all_keys() to Compare tools
+    - add all_vals() to Compare tools
+    - add all_items() to Compare tools
+    - Fix in_set(DNE) (#10)
+    - Add E()
+    - Proper line reporting for shortcuts.
+
 0.000036  2016-06-24 05:58:51-07:00 America/Los_Angeles
 
     - Better comments in SRAND (#7)

@@ -43,7 +43,7 @@ sub set_reduction {
 sub verify {
     my $self = shift;
     my %params = @_;
-    return $params{exists} ? 1 : 0;
+    return 1;
 }
 
 sub add_check {
