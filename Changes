@@ -5,6 +5,7 @@
     - Better comments in SRAND (#7)
     - Fix in_set(DNE) (#10)
     - Add E()
+    - Proper line reporting for shortcuts.
 
 0.000035  2016-06-23 14:48:54-07:00 America/Los_Angeles (TRIAL RELEASE)
 

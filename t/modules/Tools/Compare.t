@@ -211,18 +211,19 @@ subtest shortcuts => sub {
     is(' ',          T(), "true");
     is('0 but true', T(), "true");
 
+    my @lines;
     my $events = intercept {
-        is(0, T(), "not true");
-        is('', T(), "not true");
-        is(undef, T(), "not true");
+        is(0, T(), "not true");     push @lines => __LINE__;
+        is('', T(), "not true");    push @lines => __LINE__;
+        is(undef, T(), "not true"); push @lines => __LINE__;
     };
     like(
         $events,
         array {
             filter_items { grep { !$_->isa('Test2::Event::Diag') } @_ };
-            event Ok => { pass => 0 };
-            event Ok => { pass => 0 };
-            event Ok => { pass => 0 };
+            event Ok => sub { call pass => 0; prop line => $lines[0]; prop file => __FILE__; };
+            event Ok => sub { call pass => 0; prop line => $lines[1]; prop file => __FILE__; };
+            event Ok => sub { call pass => 0; prop line => $lines[2]; prop file => __FILE__; };
             end()
         },
         "T() fails for untrue",

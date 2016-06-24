@@ -145,19 +145,59 @@ sub bag(&)    { build('Test2::Compare::Bag',           @_) }
 sub object(&) { build('Test2::Compare::Object',        @_) }
 sub subset(&) { build('Test2::Compare::OrderedSubset', @_) }
 
-my $FDNE = Test2::Compare::Custom->new(code => sub { $_ ? 0 : 1 }, name => 'FALSE', operator => 'FALSE() || !exists');
-my $DNE = Test2::Compare::Custom->new(code => sub { my %p = @_; $p{exists} ? 0 : 1 },          name => '<DOES NOT EXIST>', operator => '!exists');
-my $E   = Test2::Compare::Custom->new(code => sub { my %p = @_; $p{exists} ? 1 : 0 },          name => '<DOES EXIST>',     operator => '!exists');
-my $F   = Test2::Compare::Custom->new(code => sub { my %p = @_; $p{got}    ? 0 : $p{exists} }, name => 'FALSE',            operator => 'FALSE()');
-my $T = Test2::Compare::Custom->new(code => sub { $_         ? 1 : 0 }, name => 'TRUE',    operator => 'TRUE()');
-my $D = Test2::Compare::Custom->new(code => sub { defined $_ ? 1 : 0 }, name => 'DEFINED', operator => 'DEFINED()');
+sub D() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { defined $_ ? 1 : 0 }, name => 'DEFINED', operator => 'DEFINED()',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
 
-sub T()    { $T }
-sub F()    { $F }
-sub D()    { $D }
-sub E()    { $E }
-sub DNE()  { $DNE }
-sub FDNE() { $FDNE }
+sub DNE() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { my %p = @_; $p{exists} ? 0 : 1 }, name => '<DOES NOT EXIST>', operator => '!exists',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
+
+sub E() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { my %p = @_; $p{exists} ? 1 : 0 }, name => '<DOES EXIST>', operator => '!exists',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
+
+sub F() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { my %p = @_; $p{got} ? 0 : $p{exists} }, name => 'FALSE', operator => 'FALSE()',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
+
+sub FDNE() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { $_ ? 0 : 1 }, name => 'FALSE', operator => 'FALSE() || !exists',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
+
+sub T() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { $_ ? 1 : 0 }, name => 'TRUE', operator => 'TRUE()',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
 
 sub exact_ref($) {
     my @caller = caller;
