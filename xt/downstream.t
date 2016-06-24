@@ -25,6 +25,12 @@ ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
 perlbrew exec --with $lib cpanm Test-Simple-1.302032-TRIAL.tar.gz
 EOT
 
+for my $i (qw/Suite AsyncSubtest Workflow/) {
+    ok(run_string(<<"    EOT"), "Installed Test2::$i") || exit 1;
+    perlbrew exec --with $lib cpanm --dev Test2::$i
+    EOT
+}
+
 ok(run_string(<<"EOT"), "Installed Archive::Zip") || exit 1;
 perlbrew exec --with $lib cpanm https://cpan.metacpan.org/authors/id/P/PH/PHRED/Archive-Zip-1.56.tar.gz
 EOT
