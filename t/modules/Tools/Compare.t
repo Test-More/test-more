@@ -19,7 +19,7 @@ subtest simple => sub {
         in_set not_in_set check_set
         item field call call_list call_hash prop
         end filter_items
-        T F D DNE FDNE
+        T F D E DNE FDNE
         event
         exact_ref
     };
@@ -261,9 +261,11 @@ subtest shortcuts => sub {
         "undef is not defined"
     );
 
-    is([], [DNE()], "does not exist");
+    is([undef], [E()],   "does exist");
+    is([],      [DNE()], "does not exist");
     is({}, {a => DNE()}, "does not exist");
     $events = intercept {
+        is([], [E()]);
         is([undef], [DNE()]);
         is({a => undef}, {a => DNE()});
     };
@@ -271,6 +273,7 @@ subtest shortcuts => sub {
         $events,
         array {
             filter_items { grep { !$_->isa('Test2::Event::Diag') } @_ };
+            event Ok => { pass => 0 };
             event Ok => { pass => 0 };
             event Ok => { pass => 0 };
         },

@@ -64,7 +64,7 @@ our @EXPORT_OK = qw{
     in_set not_in_set check_set
     item field call call_list call_hash prop check
     end filter_items
-    T F D DNE FDNE
+    T F D DNE FDNE E
     event fail_events
     exact_ref
 };
@@ -147,6 +147,7 @@ sub subset(&) { build('Test2::Compare::OrderedSubset', @_) }
 
 my $FDNE = Test2::Compare::Custom->new(code => sub { $_ ? 0 : 1 }, name => 'FALSE', operator => 'FALSE() || !exists');
 my $DNE = Test2::Compare::Custom->new(code => sub { my %p = @_; $p{exists} ? 0 : 1 },          name => '<DOES NOT EXIST>', operator => '!exists');
+my $E   = Test2::Compare::Custom->new(code => sub { my %p = @_; $p{exists} ? 1 : 0 },          name => '<DOES EXIST>',     operator => '!exists');
 my $F   = Test2::Compare::Custom->new(code => sub { my %p = @_; $p{got}    ? 0 : $p{exists} }, name => 'FALSE',            operator => 'FALSE()');
 my $T = Test2::Compare::Custom->new(code => sub { $_         ? 1 : 0 }, name => 'TRUE',    operator => 'TRUE()');
 my $D = Test2::Compare::Custom->new(code => sub { defined $_ ? 1 : 0 }, name => 'DEFINED', operator => 'DEFINED()');
@@ -154,6 +155,7 @@ my $D = Test2::Compare::Custom->new(code => sub { defined $_ ? 1 : 0 }, name => 
 sub T()    { $T }
 sub F()    { $F }
 sub D()    { $D }
+sub E()    { $E }
 sub DNE()  { $DNE }
 sub FDNE() { $FDNE }
 
