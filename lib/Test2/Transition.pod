@@ -248,6 +248,14 @@ tool.
 
 Fixed in version: 0.012
 
+=item Test::UseAllModules
+
+Version 0.14 relied on C<< Test::Builder->history >> which was available in
+Test::Builder 1.5. Versions 0.12 and 0.13 relied on other Test::Builder
+internals.
+
+Fixed in version: 0.15
+
 =back
 
 =head2 STILL BROKEN
