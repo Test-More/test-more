@@ -17,7 +17,7 @@ subtest simple => sub {
         match mismatch validator
         hash array bag object meta number string
         in_set not_in_set check_set
-        item field call call_list call_hash prop
+        item field call call_list call_hash prop check all_items all_keys all_vals all_values
         end filter_items
         T F D E DNE FDNE
         event
@@ -1229,5 +1229,108 @@ subtest unlike => sub {
     is(@$events, 5, "5 events");
     ok(!$_->{pass}, "Event was a failure") for @$events
 };
+
+subtest all_items => sub {
+    is(
+        [qw/a aa aaa/],
+        array {
+            all_items match qr/^a+$/;
+            item 'a';
+            item 'aa';
+        },
+        "All items match regex"
+    );
+
+    my @lines;
+    my $array = [qw/a aa aaa/];
+    my $events = intercept {
+        is(
+            $array,
+            array {
+                all_items match qr/^b+$/;   push @lines => __LINE__;
+                item 'b';                   push @lines => __LINE__;
+                item 'aa';                  push @lines => __LINE__;
+                end;
+            },
+            "items do not all match, and diag reflects all issues, and in order"
+        );
+    };
+    is(
+        $events,
+        array {
+            fail_events Ok => {pass => 0};
+            event Diag => {
+                message => table(
+                    header => [qw/PATH GOT OP CHECK LNs/],
+                    rows   => [
+                        ['', "$array", '', "<ARRAY>", ($lines[0] - 1) . ", " . ($lines[-1] + 2)],
+                        ['[0]', 'a',   '=~',      '(?^:^b+$)',        $lines[0]],
+                        ['[0]', 'a',   'eq',      'b',                $lines[1]],
+                        ['[1]', 'aa',  '=~',      '(?^:^b+$)',        $lines[0]],
+                        ['[2]', 'aaa', '=~',      '(?^:^b+$)',        $lines[0]],
+                        ['[2]', 'aaa', '!exists', '<DOES NOT EXIST>', ''],
+                    ],
+                ),
+            };
+
+        },
+        "items do not all match, and diag reflects all issues, and in order"
+    );
+};
+
+subtest all_keys => sub {
+    is(
+        {a => 'a', 'aa' => 'aa', 'aaa' => 'aaa'},
+        hash {
+            all_values match qr/^a+$/;
+            all_keys match qr/^a+$/;
+            field a   => 'a';
+            field aa  => 'aa';
+            field aaa => 'aaa';
+        },
+        "All items match regex"
+    );
+
+    my @lines;
+    my $hash = {a => 'a', 'aa' => 'aa', 'aaa' => 'aaa'};
+    my $events = intercept {
+        is(
+            $hash,
+            hash {
+                all_keys match qr/^b+$/;   push @lines => __LINE__;
+                all_vals match qr/^b+$/;   push @lines => __LINE__;
+                field aa => 'aa';          push @lines => __LINE__;
+                field b  => 'b';           push @lines => __LINE__;
+                end;
+            },
+            "items do not all match, and diag reflects all issues, and in order"
+        );
+    };
+    is(
+        $events,
+        array {
+            fail_events Ok => {pass => 0};
+            event Diag => {
+                message => table(
+                    header => [qw/PATH GOT OP CHECK LNs/],
+                    rows   => [
+                        ['',            $hash,              '',        '<HASH>',           join(', ', $lines[0] - 1, $lines[-1] + 2)],
+                        ['{aa} <KEY>',  'aa',               '=~',      '(?^:^b+$)',        $lines[0]],
+                        ['{aa}',        'aa',               '=~',      '(?^:^b+$)',        $lines[1]],
+                        ['{b}',         '<DOES NOT EXIST>', '',        'b',                $lines[3]],
+                        ['{a} <KEY>',   'a',                '=~',      '(?^:^b+$)',        $lines[0]],
+                        ['{a}',         'a',                '=~',      '(?^:^b+$)',        $lines[1]],
+                        ['{a}',         'a',                '!exists', '<DOES NOT EXIST>', '',],
+                        ['{aaa} <KEY>', 'aaa',              '=~',      '(?^:^b+$)',        $lines[0]],
+                        ['{aaa}',       'aaa',              '=~',      '(?^:^b+$)',        $lines[1]],
+                        ['{aaa}',       'aaa',              '!exists', '<DOES NOT EXIST>', ''],
+                    ],
+                ),
+            };
+        },
+        "items do not all match, and diag reflects all issues, and in order"
+    );
+};
+
 
 done_testing;

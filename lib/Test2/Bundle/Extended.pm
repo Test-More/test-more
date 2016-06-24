@@ -30,7 +30,7 @@ use Test2::Tools::Compare qw{
     match mismatch validator
     hash array bag object meta number string subset
     in_set not_in_set check_set
-    item field call call_list call_hash prop check
+    item field call call_list call_hash prop check all_items all_keys all_vals all_values
     end filter_items
     T F D E DNE FDNE
     event fail_events
@@ -82,7 +82,7 @@ our @EXPORT = qw{
     match mismatch validator
     hash array bag object meta number string subset
     in_set not_in_set check_set
-    item field call call_list call_hash prop check
+    item field call call_list call_hash prop check all_items all_keys all_vals all_values
     end filter_items
     T F D E DNE FDNE
     event fail_events

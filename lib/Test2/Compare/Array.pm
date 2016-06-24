@@ -6,7 +6,7 @@ use base 'Test2::Compare::Base';
 
 our $VERSION = '0.000037';
 
-use Test2::Util::HashBase qw/inref ending items order/;
+use Test2::Util::HashBase qw/inref ending items order for_each/;
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/reftype looks_like_number/;
@@ -34,6 +34,8 @@ sub init {
         croak "All indexes listed in the 'order' arrayref must be numeric"
             if grep { !(looks_like_number($_) || (ref($_) && reftype($_) eq 'CODE')) } @{$self->{+ORDER}};
     }
+
+    $self->{+FOR_EACH} ||= [];
 
     $self->SUPER::init();
 }
@@ -90,6 +92,11 @@ sub add_filter {
     push @{$self->{+ORDER}} => $code;
 }
 
+sub add_for_each {
+    my $self = shift;
+    push @{$self->{+FOR_EACH}} => @_;
+}
+
 sub deltas {
     my $self = shift;
     my %params = @_;
@@ -99,6 +106,7 @@ sub deltas {
     my $state = 0;
     my @order = @{$self->{+ORDER}};
     my $items = $self->{+ITEMS};
+    my $for_each = $self->{+FOR_EACH};
 
     # Make a copy that we can munge as needed.
     my @list = @$got;
@@ -118,9 +126,22 @@ sub deltas {
             if $state > $idx + 1;
 
         while ($state <= $idx) {
-            $state++;
             $overflow = !@list;
             $val = shift @list;
+
+            # check-all goes here so we hit each item, even unspecified ones.
+            for my $check (@$for_each) {
+                $check = $convert->($check);
+                push @deltas => $check->run(
+                    id      => [ARRAY => $state],
+                    convert => $convert,
+                    seen    => $seen,
+                    exists  => !$overflow,
+                    $overflow ? () : (got => $val),
+                );
+            }
+
+            $state++;
         }
 
         confess "Internal Error: Stacks are out of sync (state != idx + 1)"
@@ -137,18 +158,32 @@ sub deltas {
         );
     }
 
-    # if items are left over, and ending is true, we have a problem!
-    if($self->{+ENDING} && @list) {
-        while (@list) {
-            my $item = shift @list;
+    while (@list && (@$for_each || $self->{+ENDING})) {
+        my $item = shift @list;
+
+        for my $check (@$for_each) {
+            $check = $convert->($check);
+            push @deltas => $check->run(
+                id      => [ARRAY => $state],
+                convert => $convert,
+                seen    => $seen,
+                got     => $item,
+                exists  => 1,
+            );
+        }
+
+        # if items are left over, and ending is true, we have a problem!
+        if ($self->{+ENDING}) {
             push @deltas => $self->delta_class->new(
                 dne      => 'check',
                 verified => undef,
-                id       => [ARRAY => $state++],
+                id       => [ARRAY => $state],
                 got      => $item,
                 check    => undef,
             );
         }
+
+        $state++;
     }
 
     return @deltas;
