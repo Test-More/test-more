@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - No changes from last trial release
+
 1.302032  2016-06-22 11:30:46-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix nested TODO handling of Diags (#684)
