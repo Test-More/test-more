@@ -2,7 +2,7 @@ package Test2::Compare::Base;
 use strict;
 use warnings;
 
-our $VERSION = '0.000037';
+our $VERSION = '0.000038';
 
 use Carp qw/confess/;
 
