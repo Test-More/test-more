@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Test2::Compare::Meta';
 
-our $VERSION = '0.000040';
+our $VERSION = '0.000041';
 
 use Test2::Util::HashBase;
 
