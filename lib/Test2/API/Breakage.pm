@@ -30,6 +30,7 @@ sub upgrade_required {
         'Test::Modern'            => '0.012',
         'Test::SharedFork'        => '0.34',
         'Test::Alien'             => '0.04',
+        'Test::UseAllModules'     => '0.14',
 
         'Test::Clustericious::Cluster' => '0.30',
     );
