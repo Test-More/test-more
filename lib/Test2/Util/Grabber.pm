@@ -2,7 +2,7 @@ package Test2::Util::Grabber;
 use strict;
 use warnings;
 
-our $VERSION = '0.000038';
+our $VERSION = '0.000039';
 
 use Test2::Hub::Interceptor();
 use Test2::Util::Trace();
