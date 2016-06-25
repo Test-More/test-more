@@ -14,7 +14,12 @@ intercept {
     $warnings = warns {
         use utf8;
 
-        my ($fh, $name) = tempfile();
+        my ($fh, $name);
+        my $ct = 100;
+        until ($fh) {
+            --$ct or die "Failed to get temp file after 100 tries";
+            ($fh, $name) = eval { tempfile() };
+        }
 
         Test2::API::test2_stack->top->format(
             Test2::Formatter::TAP->new(
@@ -24,6 +29,8 @@ intercept {
 
         set_encoding('utf8');
         ok(1, '†');
+
+        unlink($name) or warn "Could not remove temp dir $name: $!";
     };
 };
 

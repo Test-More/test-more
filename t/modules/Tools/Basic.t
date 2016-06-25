@@ -124,7 +124,7 @@ like(
     "Got expected events for 'ok'"
 );
 
-diag "Testing Diag";
+diag "Testing Diag (AUTHOR_TESTING ONLY)" if $ENV{AUTHOR_TESTING};
 
 like(
     intercept {

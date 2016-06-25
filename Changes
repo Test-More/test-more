@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - Stop leaking temp files
+    - clean up STDERR
+    - Fix #28
+
 0.000038  2016-06-25 13:20:07-07:00 America/Los_Angeles
 
     - No Changes from last TRIAL release

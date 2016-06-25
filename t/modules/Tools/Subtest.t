@@ -20,6 +20,7 @@ if ($] > 5.020000) {
                 EOT
                 close($fh);
                 do $name;
+                unlink($name) or warn "Could not remove temp file $name: $!";
                 die $@ if $@;
                 die "Ooops";
             };
