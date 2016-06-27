@@ -149,7 +149,7 @@ This is the c-object representation of the coderef.
 
 =item $info->{name} => "Some::Mod::code"
 
-This is the name of the coderef, for anonymous coderefs this may end with
+This is the name of the coderef. For anonymous coderefs this may end with
 C<'__ANON__'>. Also note that the package 'main' is special, and 'main::' may
 be omitted.
 
@@ -167,18 +167,18 @@ The package in which the sub was defined.
 
 =item $info->{lines} => [22, 42]
 
-These 3 fields are the I<adjusted> start line, end line, and array with both.
+These three fields are the I<adjusted> start line, end line, and array with both.
 It is important to note that these lines have been adjusted and may not be
 accurate.
 
-The lines are obtained by walking the ops, as such the first line is the line
+The lines are obtained by walking the ops. As such, the first line is the line
 of the first statement, and the last line is the line of the last statement.
 This means that in multi-line subs the lines are usually off by 1.  The lines
 in these keys will be adjusted for you if it detects a multi-line sub.
 
 =item $info->{all_lines} => [23, 25, ..., 39, 41]
 
-This is an array with the lines of every statement in the sub. unlike the other
+This is an array with the lines of every statement in the sub. Unlike the other
 line fields, these have not been adjusted for you.
 
 =back

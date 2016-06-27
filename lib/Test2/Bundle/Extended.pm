@@ -147,7 +147,7 @@ This is the big-daddy bundle. This bundle includes nearly every tool, and
 several plugins, that the Test2 author uses. This bundle is used
 extensively to test L<Test2::Suite> itself.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test2::Bundle::Extended;
 

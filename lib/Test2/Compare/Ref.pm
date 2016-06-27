@@ -62,7 +62,7 @@ Test2::Compare::Ref - Ref comparison
 
 =head1 DESCRIPTION
 
-Used to compare 2 refs in a deep comparison.
+Used to compare two refs in a deep comparison.
 
 =head1 SYNOPSIS
 

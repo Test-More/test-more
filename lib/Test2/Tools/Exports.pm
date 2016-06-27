@@ -103,15 +103,15 @@ symbol table.
     not_imported_ok( '$scalar', '@array', '%hash', '&sub', 'also_a_sub' );
 
 C<@SYMBOLS> can contain any number of symbols. Each item in the array must be a
-string. The string should be the name of a symbol. If a sigil is present then
-it will search for that specified type, if no sigil is specified it will be
+string. The string should be the name of a symbol. If a sigil is present, then
+it will search for that specified type. If no sigil is specified, it will be
 used as a sub name.
 
 =back
 
 =head1 CAVEATS
 
-Before perl 5.10 it is very difficult to distinguish between a package scalar
+Before Perl 5.10, it is very difficult to distinguish between a package scalar
 that is undeclared vs declared and undefined. Currently C<imported_ok> and
 C<not_imported_ok> cannot see package scalars declared using C<our $var> unless
 the variable has been assigned a defined value.

@@ -647,14 +647,14 @@ to compare two strings:
 
     is('foo', 'foo', "strings match");
 
-B<Note>: This is not the tool to use if you want to check if 2 references are
+B<Note>: This is not the tool to use if you want to check if two references are
 the same exact reference, use C<ref_is()> from the
 L<Test2::Tools::Ref> plugin instead. I<Most> of the time this will
-work as well, however there are problems if your reference contains a cyle and
-refers back to itself at some point, if this happens an exception will be
+work as well, however there are problems if your reference contains a cycle and
+refers back to itself at some point. If this happens, an exception will be
 thrown to break an otherwise infinite recursion.
 
-B<Note>: Non-reference values will be compared as strings using C<eq>, that
+B<Note>: Non-reference values will be compared as strings using C<eq>, so that
 means '2.0' and '2' will match.
 
 =item $bool = isnt($got, $expect)
@@ -710,7 +710,7 @@ mismatch.
 
 =head2 QUICK CHECKS
 
-B<Note: None of these are exported by default, you need to request them.>
+B<Note: None of these are exported by default. You need to request them.>
 
 Quick checks are a way to quickly generate a common value specification. These
 can be used in structures passed into C<is> and C<like> through the C<$expect>
@@ -748,7 +748,7 @@ false, any false value will do, B<but the value must exist>.
         "The 'a' key is false"
     );
 
-It is important to note that a non-existant value does not count as false, this
+It is important to note that a nonexistent value does not count as false. This
 check will generate a failing test result:
 
     is(
@@ -768,8 +768,8 @@ This will produce the following output:
     # | {b}  | <DOES NOT EXIST> | FALSE | FALSE() |
     # +------+------------------+-------+---------+
 
-In perl you can have behavior that is different for a missing key vs a false
-key, as such it was decided not to count a completely absent value as false.
+In Perl, you can have behavior that is different for a missing key vs. a false
+key, so it was decided not to count a completely absent value as false.
 See the C<DNE()> shortcut below for checking that a field is missing.
 
 If you want to check for false and/or DNE use the C<FDNE()> check.
@@ -805,13 +805,13 @@ These will fail:
 =item $check = FDNE()
 
 This is a combination of C<F()> and C<DNE()>. This will pass for a false value,
-or a non-existant value.
+or a nonexistent value.
 
 =back
 
 =head2 VALUE SPECIFICATIONS
 
-B<Note: None of these are exported by default, you need to request them.>
+B<Note: None of these are exported by default. You need to request them.>
 
 =over 4
 
@@ -840,12 +840,12 @@ check will B<NOT> stringify references being checked.
 =item $check = validator($OP, $NAME, sub{ ... })
 
 The coderef is the only required argument. The coderef should check that the
-value is what you expect, it should return a boolean true or false. Optionally
-you can specify a name and operator that are used in diagnostics, they are also
+value is what you expect and return a boolean true or false. Optionally,
+you can specify a name and operator that are used in diagnostics. They are also
 provided to the sub itself as named parameters.
 
-Check the value using this sub. The sub gets the value in C<$_>, as well it
-received the value and several other items as named parameters.
+Check the value using this sub. The sub gets the value in C<$_>, and it
+receives the value and several other items as named parameters.
 
     my $check = validator(sub {
         my %params = @_;
@@ -876,7 +876,7 @@ Check that the value is exactly the same reference as the one provided.
 
 =head2 SET BUILDERS
 
-B<Note: None of these are exported by default, you need to request them.>
+B<Note: None of these are exported by default. You need to request them.>
 
 =over 4
 
@@ -886,7 +886,7 @@ Check that the value matches ALL of the specified checks.
 
 =item my $check = in_set($check1, $check2, ...)
 
-Check that the value matches 1 OR MORE of the specified checks.
+Check that the value matches ONE OR MORE of the specified checks.
 
 =item not_in_set($check1, $check2, ...)
 
@@ -900,7 +900,7 @@ Check that the value matches the specified thing.
 
 =head2 HASH BUILDER
 
-B<Note: None of these are exported by default, you need to request them.>
+B<Note: None of these are exported by default. You need to request them.>
 
     $check = hash {
         field foo => 1;
@@ -971,7 +971,7 @@ This is a handy check that can be used with C<field()> to ensure that a field
 
 =head2 ARRAY BUILDER
 
-B<Note: None of these are exported by default, you need to request them.>
+B<Note: None of these are exported by default. You need to request them.>
 
     $check = array {
         # Uses the next index, in this case index 0;
@@ -1060,7 +1060,7 @@ This is a handy check that can be used with C<item()> to ensure that an index
 
 =head2 BAG BUILDER
 
-B<Note: None of these are exported by default, you need to request them.>
+B<Note: None of these are exported by default. You need to request them.>
 
     $check = bag {
         item 'a';
@@ -1097,7 +1097,7 @@ Enforce that there are no more items after the last one specified.
 
 =head2 ORDERED SUBSET BUILDER
 
-B<Note: None of these are exported by default, you need to request them.>
+B<Note: None of these are exported by default. You need to request them.>
 
     $check = subset {
         item 'a';
@@ -1133,7 +1133,7 @@ builder sub, and must be called in void context.
 
 =head2 META BUILDER
 
-B<Note: None of these are exported by default, you need to request them.>
+B<Note: None of these are exported by default. You need to request them.>
 
     my $check = meta {
         prop blessed => 'My::Module'; # Ensure value is blessed as our package
@@ -1181,7 +1181,7 @@ returns the number of keys. For everything else this returns undef.
 
 =head2 OBJECT BUILDER
 
-B<Note: None of these are exported by default, you need to request them.>
+B<Note: None of these are exported by default. You need to request them.>
 
     my $check = object {
         call foo => 1; # Call the 'foo' method, check the result.
@@ -1324,14 +1324,14 @@ exist.
 
 =item end()
 
-Turn on strict array/hash checking, that is ensure that no extra keys/indexes
+Turn on strict array/hash checking, ensuring that no extra keys/indexes
 are present.
 
 =back
 
 =head2 EVENT BUILDERS
 
-B<Note: None of these are exported by default, you need to request them.>
+B<Note: None of these are exported by default. You need to request them.>
 
 Check that we got an event of a specified type:
 

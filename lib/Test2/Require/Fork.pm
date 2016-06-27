@@ -40,7 +40,7 @@ and exit true.
 
 =head1 EXPLANATION
 
-Checking if the current system supports forking is not simple, here is an
+Checking if the current system supports forking is not simple. Here is an
 example of how to do it:
 
     use Config;
@@ -61,8 +61,8 @@ example of how to do it:
         return 1;
     }
 
-Duplicating this non-trivial code in all tests that need to fork is dumb. It is
-easy to forget bits, or get it wrong. On top of these checks you also need to
+Duplicating this non-trivial code in all tests that need to fork is error-prone. It is
+easy to forget bits, or get it wrong. On top of these checks, you also need to
 tell the harness that no tests should run and why.
 
 =head1 SEE ALSO

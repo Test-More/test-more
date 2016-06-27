@@ -96,8 +96,8 @@ C<$@> will have the exception so that you can look at it.
 
 L<Test::Fatal> sets C<$Test::Builder::Level> such that failing tests inside the
 exception block will report to the line where C<exception()> is called. I
-disagree with this behavior, I think the actual line of the failing test is
-more important. Ultimately though L<Test::Fatal> cannot be changed, people
+disagree with this, and think the actual line of the failing test is
+more important. Ultimately, though L<Test::Fatal> cannot be changed, people
 probably already depend on that behavior.
 
 =head1 SOURCE

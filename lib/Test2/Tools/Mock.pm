@@ -490,7 +490,7 @@ key is the field name, and the value is the coderef.
 
     my $mock = mock(...);
 
-Mock objects are instances of L<Test2::Mock>, see it for their methods.
+Mock objects are instances of L<Test2::Mock>. See it for their methods.
 
 =head1 SOURCE
 

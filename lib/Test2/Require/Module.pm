@@ -64,7 +64,7 @@ that possible.
 This module is modeled after L<Test::Requires>. The difference is that this
 module is based on L<Test2> directly, and does not go through L<Test::Builder>.
 Another difference is that the packages you check for are not imported into
-your namespace for you, this is intentional.
+your namespace for you. This is intentional.
 
 =head1 SYNOPSIS
 

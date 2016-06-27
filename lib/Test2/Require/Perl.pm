@@ -29,15 +29,14 @@ __END__
 
 =head1 NAME
 
-Test2::Require::Perl - Skip the test unless the necessary version of perl is
+Test2::Require::Perl - Skip the test unless the necessary version of Perl is
 installed.
 
 =head1 DESCRIPTION
 
-Sometimes you have tests that are nice to run, but depend on tools that may not
-be available. Instead of adding the tool as a dep, or making the test always
-skip, it is common to make the test run conditionally. This package helps make
-that possible.
+Sometimes you have tests that are nice to run, but depend on a certain version
+of Perl. This package lets you run the test conditionally, depending on if the
+correct version of Perl is available.
 
 =head1 SYNOPSIS
 

@@ -191,8 +191,8 @@ sub cmp_ok($$$;$@) {
 
     my $ctx = context();
 
-    # warnings and syntax errors should report to the cmp_ok call, not the test
-    # context, they may not be the same.
+    # Warnings and syntax errors should report to the cmp_ok call, not the test
+    # context. They may not be the same.
     my ($pkg, $file, $line) = caller;
 
     my $type = $OPS{$op};
@@ -218,7 +218,7 @@ sub cmp_ok($$$;$@) {
         return 1;
     }
 
-    # Uhg, it failed, do roughly the same thing Test::More did to try and show
+    # Ugh, it failed. Do roughly the same thing Test::More did to try and show
     # diagnostics, but make it better by showing both the overloaded and
     # unoverloaded form if overloading is in play. Also unoverload numbers,
     # Test::More only unoverloaded strings.
@@ -290,8 +290,8 @@ unlike the L<Test2::Tools::Compare> plugin which has modified them.
 
     use Test2::Tools::ClassicCompare qw/is is_deeply isnt like unlike cmp_ok/;
 
-    is($got, $expect, "these are the same when stringified");
-    isnt($got, $unexpect, "these are not the same when stringified");
+    is($got, $expect, "These are the same when stringified");
+    isnt($got, $unexpect, "These are not the same when stringified");
 
     like($got, qr/.../, "'got' matches the pattern");
     unlike($got, qr/.../, "'got' does not match the pattern");
@@ -310,7 +310,7 @@ unlike the L<Test2::Tools::Compare> plugin which has modified them.
 
 =item $bool = is($got, $expect, $name, @diag)
 
-This does a string comparison of the 2 arguments. If the 2 arguments are the
+This does a string comparison of the two arguments. If the two arguments are the
 same after stringification the test passes. The test will also pass if both
 arguments are undef.
 
@@ -322,7 +322,7 @@ displayed if the test fails. The diagnostics are ignored if the test passes.
 It is important to note that this tool considers C<"1"> and C<"1.0"> to not be
 equal as it uses a string comparison.
 
-See L<Test2::Tools::Compare> if you want a C<is()> function that tries
+See L<Test2::Tools::Compare> if you want an C<is()> function that tries
 to be smarter for you.
 
 =item $bool = isnt($got, $dont_expect)
@@ -343,7 +343,7 @@ Check if C<$got> matches the specified pattern. Will fail if it does not match.
 
 The test C<$name> is optional.
 
-The test C<@diag> is optional, it contains extra diagnostics messages that will
+The test C<@diag> is optional. It contains extra diagnostics messages that will
 be displayed if the test fails. The diagnostics are ignored if the test passes.
 
 =item $bool = unlike($got, $pattern)
@@ -361,7 +361,7 @@ C<$pattern>.
 
 =item $bool = is_deeply($got, $expect, $name, @diag)
 
-This does a deep check, it compares the structures in C<$got> with those in
+This does a deep check, comparing the structures in C<$got> with those in
 C<$expect>. It will recurse into hashrefs, arrayrefs, and scalar refs. All
 other values will be stringified and compared as strings. It is important to
 note that this tool considers C<"1"> and C<"1.0"> to not be equal as it uses a
@@ -376,11 +376,11 @@ This is the same as C<Test2::Tools::Compare::is()>.
 =item cmp_ok($got, $op, $expect, $name, @diag)
 
 Compare C<$got> to C<$expect> using the operator specified in C<$op>. This is
-effectively a C<eval "\$got $op \$expect"> with some other stuff to make it
+effectively an C<eval "\$got $op \$expect"> with some other stuff to make it
 more sane. This is useful for comparing numbers, overloaded objects, etc.
 
-B<Overloading Note:> Your input is passed as-is to the comparison. In the event
-that the comparison fails between 2 overloaded objects, the diagnostics will
+B<Overloading Note:> Your input is passed as-is to the comparison.
+If the comparison fails between two overloaded objects, the diagnostics will
 try to show you the overload form that was used in comparisons. It is possible
 that the diagnostics will be wrong, though attempts have been made to improve
 them since L<Test::More>.

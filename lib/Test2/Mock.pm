@@ -534,7 +534,7 @@ You can also simply provide a value and it will be wrapped in a sub for you:
 
 The example above will generate a sub that always returns the string 'foo'.
 
-There are 3 *special* values that can be used to generate accessors:
+There are three *special* values that can be used to generate accessors:
 
     $mock->add(
         name => 'rw',   # Generates a read/write accessor
@@ -542,7 +542,7 @@ There are 3 *special* values that can be used to generate accessors:
         size => 'wo',   # Generates a write only accessor
     );
 
-If you want to have a sub that actually returns on of the 3 special strings, or
+If you want to have a sub that actually returns one of the three special strings, or
 that returns a coderef, you can use a hashref as the spec:
 
     my $ref = sub { 'my sub' };
@@ -576,12 +576,12 @@ reference, rules are similar to glob assignments:
 
 Restore the symbol to what it was before the last override. If the symbol was
 recently added this will remove it. If the symbol has been overriden multiple
-times this will ONLY restore it to the previous state. Think of override as a
-push operation, this is the pop operation.
+times this will ONLY restore it to the previous state. Think of C<override> as a
+push operation, and C<restore> as the pop operation.
 
 =item $mock->reset($SYMBOL)
 
-Remove all mocking of the symbol, restore the original symbol. If the symbol
+Remove all mocking of the symbol and restore the original symbol. If the symbol
 was initially added then it will be completely removed.
 
 =item $mock->orig($SYMBOL)

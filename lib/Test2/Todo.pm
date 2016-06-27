@@ -63,18 +63,18 @@ __END__
 
 =head1 NAME
 
-Test2::Todo - TODO extention for Test2.
+Test2::Todo - TODO extension for Test2.
 
 =head1 DESCRIPTION
 
 This is an object that lets you create and manage TODO states for tests. This
-is an extention, not a plugin or a tool. This library can be used by plugins
+is an extension, not a plugin or a tool. This library can be used by plugins
 and tools to manage todo states.
 
 If you simply want to write a todo test then you should look at the C<todo>
 function provided by L<Test2::Tools::Basic>.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test2::Todo;
 
@@ -146,7 +146,7 @@ will end.
 
 =head2 Can I use multiple instances?
 
-Yes. Most recently created one that is still active will win.
+Yes. The most recently created one that is still active will win.
 
 =head1 SOURCE
 

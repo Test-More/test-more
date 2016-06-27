@@ -83,18 +83,18 @@ __END__
 
 =head1 NAME
 
-Test2::Compare::Number - Compare 2 values as numbers
+Test2::Compare::Number - Compare two values as numbers
 
 =head1 DESCRIPTION
 
-This is used to compare 2 numbers. You can also check that 2 numbers are not
+This is used to compare two numbers. You can also check that two numbers are not
 the same.
 
-B<Note>: This will fail if the recieved value is undefined, it must be a number.
+B<Note>: This will fail if the recieved value is undefined. It must be a number.
 
 B<Note>: This will fail if the comparison generates a non-numeric value warning
-(which will not be shown), this is because it must get a number. The warning is
-not shown as it will report to a useless line and filename, however the test
+(which will not be shown). This is because it must get a number. The warning is
+not shown as it will report to a useless line and filename. However, the test
 diagnotics show both values.
 
 =head1 SOURCE

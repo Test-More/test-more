@@ -123,7 +123,7 @@ __END__
 
 =head1 NAME
 
-Test2::Compare - Test2 Extention for writing deep comparison tools.
+Test2::Compare - Test2 extension for writing deep comparison tools.
 
 =head1 DESCRIPTION
 

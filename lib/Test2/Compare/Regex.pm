@@ -58,7 +58,7 @@ Test2::Compare::Regex - Regex direct comparison
 
 =head1 DESCRIPTION
 
-Used to compare 2 regexes. This compares the stringified form of each regex.
+Used to compare two regexes. This compares the stringified form of each regex.
 
 =head1 SOURCE
 
