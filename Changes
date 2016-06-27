@@ -2,6 +2,7 @@
 
     - Add perltidy rc to dist
     - Documentation fixes (Thanks petdance)
+    - revert "Attempt a fix to Delta #29"
 
 0.000039  2016-06-25 13:44:03-07:00 America/Los_Angeles (TRIAL RELEASE)
 
