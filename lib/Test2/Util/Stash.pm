@@ -170,7 +170,7 @@ Gets the package stash. This is the same as C<$stash = \%Package::Name::>.
 Parse a symbol name, and return a hashref with info about the symbol.
 
 C<$symbol> can be a simple name, or a fully qualified symbol name. The sigil is
-optional, '&' is assumed if none is provided. If C<$symbol> is fully qualified,
+optional, and C<&> is assumed if none is provided. If C<$symbol> is fully qualified,
 and C<$package> is also provided, then the package of the symbol must match the
 C<$package>.
 

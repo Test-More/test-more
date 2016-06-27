@@ -55,7 +55,7 @@ comparison.
 
 This allows you to use a regex to validate a value in a deep comparison.
 Sometimes a value just needs to look right, it may not need to be exact. An
-example is a memory address, it might change from run to run.
+example is a memory address that might change from run to run.
 
 =head1 SOURCE
 

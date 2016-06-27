@@ -20,7 +20,7 @@ framework.
 =head1 DESCRIPTION
 
 Rich set of tools, plugins, bundles, etc built upon the L<Test2> testing
-library. If you are interested in writing tests this is the distribution for
+library. If you are interested in writing tests, this is the distribution for
 you.
 
 =head2 WHAT ARE TOOLS, PLUGINS, AND BUNDLES?
@@ -48,9 +48,9 @@ any number of plugins.
 =back
 
 If you want to write something that both exports new functions, and effects
-behavior, you should write both a Tool distribution, and a Plugin distribution,
+behavior, you should write both a Tools distribution, and a Plugin distribution,
 then a Bundle that loads them both. This is important as it helps avoid the
-L<Test::Most> problem, which is where a package exports much-desired tools, but
+problem where a package exports much-desired tools, but
 also produces undesirable side effects.
 
 =head1 INCLUDED BUNDLES

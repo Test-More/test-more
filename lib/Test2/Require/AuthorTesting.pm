@@ -28,7 +28,7 @@ environment variable is set.
 =head1 DESCRIPTION
 
 It is common practice to write tests that are only run when the AUTHOR_TESTING
-environment variable is set. This module automates the (admitedly trivial) work
+environment variable is set. This module automates the (admittedly trivial) work
 of creating such a test.
 
 =head1 SYNOPSIS

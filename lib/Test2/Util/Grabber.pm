@@ -94,7 +94,7 @@ Test2::Util::Grabber - Object used to temporarily intercept all events.
 =head1 DESCRIPTION
 
 Once created this object will intercept and stash all events sent to the shared
-L<Test2::Hub> object. Once the object is destroyed events will once
+L<Test2::Hub> object. Once the object is destroyed, events will once
 again be sent to the shared hub.
 
 =head1 SYNOPSIS
@@ -117,8 +117,8 @@ again be sent to the shared hub.
     my $events_b = $grab->finish;
 
 After calling C<finish()> the grab object is destroyed and C<$grab> is set to
-undef. C<$events_a> is an arrayref with the first 2 events. C<$events_b> is an
-arrayref with the second 2 events.
+undef. C<$events_a> is an arrayref with the first two events. C<$events_b> is an
+arrayref with the second two events.
 
 =head1 EXPORTS
 
@@ -135,7 +135,7 @@ changes in the stack depth.
     # $grab is magically undef after this.
     my $events = $grab->finish;
 
-    is(@$events, 2, "grabbed 2 events.");
+    is(@$events, 2, "grabbed two events.");
 
 When you call C<finish()> the C<$grab> object will automagically undef itself,
 but only for the reference used in the method call. If you have other
@@ -151,7 +151,7 @@ automatically clean up after itself and restore the parent hub.
     # Things are back to normal
 
 By default the hub used has C<no_ending> set to true. This will prevent the hub
-from enforcing that you issued a plan and ran at least 1 test. You can turn
+from enforcing that you issued a plan and ran at least one test. You can turn
 enforcement back one like this:
 
     $grab->hub->set_no_ending(0);
@@ -175,7 +175,7 @@ list.
 
 =item $ar = $grab->events()
 
-Get an arrayref of all events so far, does not clear the internal list.
+Get an arrayref of all events so far. Does not clear the internal list.
 
 =item $ar = $grab->finish()
 
@@ -190,7 +190,7 @@ Get the hub that is used by the grab event.
 =head1 ENDING BEHAVIOR
 
 By default the hub used has C<no_ending> set to true. This will prevent the hub
-from enforcing that you issued a plan and ran at least 1 test. You can turn
+from enforcing that you issued a plan and ran at least one test. You can turn
 enforcement back one like this:
 
     $grab->hub->set_no_ending(0);

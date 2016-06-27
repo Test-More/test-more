@@ -59,11 +59,11 @@ The debu information that will be printed in event of a failure.
 
 =item tid
 
-Thread id of the thread that generated the event.
+Thread ID of the thread that generated the event.
 
 =item pid
 
-Process id of the process that generated the event.
+Process ID of the process that generated the event.
 
 =back
 

@@ -33,7 +33,7 @@ Test2::Compare::Wildcard - Placeholder check.
 =head1 DESCRIPTION
 
 This module is used as a temporary placeholder for values that still need to be
-converted. This is necessary to carry-forward filename and line number which
+converted. This is necessary to carry forward the filename and line number which
 would be lost in the conversion otherwise.
 
 =head1 SOURCE

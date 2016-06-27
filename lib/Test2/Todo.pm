@@ -74,7 +74,7 @@ and tools to manage todo states.
 If you simply want to write a todo test then you should look at the C<todo>
 function provided by L<Test2::Tools::Basic>.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test2::Todo;
 
@@ -146,7 +146,7 @@ will end.
 
 =head2 Can I use multiple instances?
 
-Yes. Most recently created one that is still active will win.
+Yes. The most recently created one that is still active will win.
 
 =head1 SOURCE
 

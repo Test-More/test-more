@@ -52,8 +52,8 @@ Test2::Tools::Subtest - Tools for writing subtests
 
 This package exports subs that let you write subtests.
 
-There are two types of subtests, buffered and streamed. Streamed subtests mimick
-subtest from L<Test::More> in that they render all events as soon as they are
+There are two types of subtests, buffered and streamed. Streamed subtests mimic
+subtests from L<Test::More> in that they render all events as soon as they are
 produced. Buffered subtests wait until the subtest completes before rendering
 any results.
 
@@ -82,8 +82,8 @@ This will produce output like this:
 
 =head2 STREAMED
 
-The default option is 'buffered', use this if you want streamed, the way
-L<Test::Builder> does it.
+The default option is 'buffered'. If you want streamed subtests,
+the way L<Test::Builder> does it, use this:
 
     use Test2::Tools::Subtest qw/subtest_streamed/;
 
@@ -103,7 +103,7 @@ This will produce output like this:
 =head1 IMPORTANT NOTE
 
 You can use C<bail_out> or C<skip_all> in a subtest, but not in a BEGIN block
-or use statement. This is due to the way flow control works within a begin
+or C<use> statement. This is due to the way flow control works within a BEGIN
 block. This is not normally an issue, but can happen in rare conditions using
 eval, or script files as subtests.
 

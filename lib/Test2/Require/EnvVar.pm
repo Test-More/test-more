@@ -31,7 +31,7 @@ is set.
 =head1 DESCRIPTION
 
 It is common practice to write tests that are only run when an environment
-variable is set. This module automates the (admitedly trivial) work of creating
+variable is set. This module automates the (admittedly trivial) work of creating
 such a test.
 
 =head1 SYNOPSIS

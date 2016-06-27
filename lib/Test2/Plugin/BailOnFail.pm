@@ -34,8 +34,8 @@ failure.
 
 This module will issue a bailout event after the first test failure. This will
 prevent your tests from continuing. The bailout runs when the context is
-released, that is it will run when the test function you are using, such as
-C<ok()>, returns; This gives the tools the ability to output any extra
+released; that is, it will run when the test function you are using, such as
+C<ok()>, returns. This gives the tools the ability to output any extra
 diagnostics they may need.
 
 =head1 SYNOPSIS

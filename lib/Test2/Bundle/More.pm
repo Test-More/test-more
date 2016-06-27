@@ -52,7 +52,7 @@ Test2::Bundle::More - ALMOST a drop-in replacement for Test::More.
 This bundle is intended to be a (mostly) drop-in replacement for
 L<Test::More>. See L<"KEY DIFFERENCES FROM Test::Simple"> for details.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test2::Bundle::More;
 
@@ -125,7 +125,7 @@ These are from L<Test2::Tools::Class>. See L<Test2::Tools::Class> for details.
 
 =back
 
-This is from L<Test2::Tools::Subtest>, it is called C<subtest_streamed()> in
+This is from L<Test2::Tools::Subtest>. It is called C<subtest_streamed()> in
 that package.
 
 =over 4
@@ -149,7 +149,7 @@ Instead you must plan in a seperate statement:
     use Test2::Bundle::Simple;
     plan 5;
 
-=item You have 3 subs imported for use in planning
+=item You have three subs imported for use in planning
 
 Use C<plan($count)>, C<skip_all($reason)>, or C<done_testing()> for your
 planning.

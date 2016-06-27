@@ -44,7 +44,7 @@ skipped unless a specific requirement is met. Modules in this namespace may
 subclass L<Test2::Require> if they wish, but it is not strictly necessary to do
 so.
 
-=head1 HOW DO I WRITE A 'REQUIRE' module?
+=head1 HOW DO I WRITE A 'REQUIRE' MODULE?
 
 =head2 AS A SUBCLASS
 
@@ -92,7 +92,7 @@ C<import()> method:
 
     sub import {
         my $class = shift;
-    
+
         # Have widgets, should run.
         return if HAVE_WIDGETS();
 

@@ -28,7 +28,7 @@ Test2::Bundle::Simple - ALMOST a drop-in replacement for Test::Simple.
 This bundle is intended to be a (mostly) drop-in replacement for
 L<Test::Simple>. See L<"KEY DIFFERENCES FROM Test::Simple"> for details.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test2::Bundle::Simple;
 
@@ -80,7 +80,7 @@ Instead you must plan in a seperate statement:
     use Test2::Bundle::Simple;
     plan 5;
 
-=item You have 3 subs imported for use in planning
+=item You have three subs imported for use in planning
 
 Use C<plan($count)>, C<skip_all($reason)>, or C<done_testing()> for your
 planning.

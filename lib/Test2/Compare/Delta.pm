@@ -325,7 +325,7 @@ structures.
 
 This is used by L<Test2::Compare>. When data structures are compared a
 delta will be returned. Deltas are a tree datastructure that represent all the
-differences between 2 other data structures.
+differences between two other data structures.
 
 =head1 METHODS
 
@@ -343,7 +343,7 @@ unique.
 
 The first form simply takes a coderef that produces the value that should be
 displayed in the column for any given delta. The arguments passed into the sub
-are the delta, and the row id.
+are the delta, and the row ID.
 
     Test2::Compare::Delta->add_column(
         Foo => sub {
@@ -366,7 +366,7 @@ and must be a coderef. All other keys are optional.
 
 This will remove the specified column. This will return true if the column
 existed and was removed. This will return false if the column did not exist. No
-exceptions are thrown, if a missing column is a problem then you need to check
+exceptions are thrown. If a missing column is a problem then you need to check
 the return yourself.
 
 =item $class->set_column_alias($NAME, $ALIAS)
@@ -385,13 +385,13 @@ names with new ones.
 =item $delta->set_verified($bool)
 
 This will be true if the delta itself matched, if the delta matched then the
-problem is in the deltas children, not the delta itself.
+problem is in the delta's children, not the delta itself.
 
 =item $aref = $delta->id
 
 =item $delta->set_id([$type, $name])
 
-Id for the delta, this is used to produce the path into the data structure. An
+ID for the delta, used to produce the path into the data structure. An
 example is C<< ['HASH' => 'foo'] >> which means the delta is in the path
 C<< ...->{'foo'} >>. Valid types are C<HASH>, C<ARRAY>, C<SCALAR>, C<META>, and
 C<METHOD>.
@@ -422,7 +422,7 @@ C<check> and C<chk> are aliases for the same attribute.
 
 =item $delta->set_children([$delta1, $delta2, ...])
 
-A Delta may have child deltas, if it does then this is an arrayref with those
+A Delta may have child deltas. If it does then this is an arrayref with those
 children.
 
 =item $dne = $delta->dne

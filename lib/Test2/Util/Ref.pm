@@ -57,7 +57,7 @@ These are used by L<Test2::Tools> to inspect, render, or manipulate references.
 
 =head1 EXPORTS
 
-All exports are optional, you must specify subs to import.
+All exports are optional. You must specify subs to import.
 
 =over 4
 

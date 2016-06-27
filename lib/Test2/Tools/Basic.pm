@@ -130,7 +130,7 @@ Test2::Tools::Basic - Test2 implementation of the basic testing tools.
 This is a L<Test2> based implementation of the more basic tools originally
 provided by L<Test::More>. Not all L<Test::More> tools are provided by this
 package, only the basic/simple ones. Some tools have been modified for better
-diagnistics capabilities.
+diagnostics capabilities.
 
 =head1 SYNOPSIS
 
@@ -203,7 +203,7 @@ unknown number of tests.
 
 =item bail_out($reason)
 
-Something has gone horribly wrong, stop everything, kill all threads and
+Invoked when something has gone horribly wrong: stop everything, kill all threads and
 processes, end the process with a false exit status.
 
 =back
@@ -218,7 +218,7 @@ processes, end the process with a false exit status.
 
 =item ok($bool, $name, @diag)
 
-Simple assertion. If C<$bool> is true the test passes, if it is false the test
+Simple assertion. If C<$bool> is true the test passes, and if it is false the test
 fails. The test name is optional, and all arguments after the name are added as
 diagnostics message if and only if the test fails. If the test passes all the
 diagnostics arguments will be ignored.
@@ -246,13 +246,12 @@ Fire off a failing test (a single Ok event). The name and diagnostics are option
 =item diag(@messages)
 
 Write diagnostics messages. All items in C<@messages> will be joined into a
-single string with no seperator. When using TAP diagnostics are sent to STDERR.
+single string with no seperator. When using TAP, diagnostics are sent to STDERR.
 
 =item note(@messages)
 
 Write note-diagnostics messages. All items in C<@messages> will be joined into
-a single string with no seperator. When using TAP note-diagnostics are sent to
-STDOUT.
+a single string with no seperator. When using TAP, notes are sent to STDOUT.
 
 =back
 
@@ -267,7 +266,7 @@ STDOUT.
 This is used to mark some results as TODO. TODO means that the test may fail,
 but will not cause the overall test suite to fail.
 
-There are 2 ways to use this, the first is to use a codeblock, the TODO will
+There are two ways to use this. The first is to use a codeblock, and the TODO will
 only apply to the codeblock.
 
     ok(1, "before"); # Not TODO
@@ -279,7 +278,7 @@ only apply to the codeblock.
 
     ok(1, "after"); # Not TODO
 
-The other way is to use a scoped variable, TODO will end when the variable is
+The other way is to use a scoped variable. TODO will end when the variable is
 destroyed or set to undef.
 
     ok(1, "before"); # Not TODO
@@ -310,7 +309,7 @@ This is the same thing, but without the C<{...}> scope.
 =item skip($why, $count)
 
 This is used to skip some tests. This requires you to wrap your tests in a
-block labeled C<SKIP:>, this is somewhat magical. If no C<$count> is specified
+block labeled C<SKIP:>. This is somewhat magical. If no C<$count> is specified
 then it will issue a single result. If you specify C<$count> it will issue that
 many results.
 

@@ -32,10 +32,10 @@ or create side effects then you probably want to write a L<Test2::Plugin>.
 
 =item Why is it called Test2::Tools, and not Test2::Tool?
 
-This question arrises since Tools is the only namespace in the plural. This is
+This question arises since Tools is the only namespace in the plural. This is
 because each Plugin should be a distinct unit of functionality, but a Tools
 dist can (and usually should) export several tools. A bundle is also typically
-described as a single unit, nobody would like Test2::Bundles::Foo.
+described as a single unit. Nobody would like Test2::Bundles::Foo.
 
 =item Should my tools subclass Test2::Tools?
 
@@ -44,7 +44,7 @@ which case we do not want anyone to already be subclassing it.
 
 =back
 
-=head1 HOW DO I WRITE A 'TOOLS' module?
+=head1 HOW DO I WRITE A 'TOOLS' MODULE?
 
 It is very easy to write tools:
 

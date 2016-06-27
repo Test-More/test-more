@@ -122,7 +122,7 @@ Test2::Compare::Base - Base class for comparison classes.
 
 =head1 DESCRIPTION
 
-All Comparison classes for Test2::Compare should inherit from this base class.
+All comparison classes for Test2::Compare should inherit from this base class.
 
 =head1 SYNOPSIS
 
@@ -182,13 +182,13 @@ structure.
 
 Returns the operator that was used to compare the check with the received data
 in C<$got>. If there was no value for got then there will be no arguments,
-undef will only be an argument if undef was seen in C<$got>, this is how you
+undef will only be an argument if undef was seen in C<$got>. This is how you
 can tell the difference between a missing value and an undefined one.
 
 =item $bool = $check->verify(id => $id, exists => $bool, got => $got, convert => \&convert, seen => \%seen)
 
 Return true if there is a shallow match, that is both items are arrayrefs, both
-items are the same string or same number, etc. This should not recurse - deep
+items are the same string or same number, etc. This should not recurse, as deep
 checks are done in C<< $check->deltas() >>.
 
 =item $name = $check->name

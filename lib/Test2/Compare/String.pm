@@ -63,12 +63,12 @@ __END__
 
 =head1 NAME
 
-Test2::Compare::String - Compare 2 values as strings
+Test2::Compare::String - Compare two values as strings
 
 =head1 DESCRIPTION
 
-This is used to compare 2 items after they are stringified. You can also check
-that 2 strings are not equal.
+This is used to compare two items after they are stringified. You can also check
+that two strings are not equal.
 
 B<Note>: This will fail if the recieved value is undefined, it must be defined.
 
