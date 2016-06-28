@@ -30,7 +30,7 @@ intercept {
         set_encoding('utf8');
         ok(1, '†');
 
-        unlink($name) or warn "Could not remove temp dir $name: $!";
+        unlink($name) or print STDERR "Could not remove temp file $name: $!\n";
     };
 };
 
