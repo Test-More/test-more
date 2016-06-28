@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000042  2016-06-27 21:37:22-07:00 America/Los_Angeles
+
     - Change Encoding.t to spit out debug message without failing
 
 0.000041  2016-06-27 09:00:46-07:00 America/Los_Angeles
