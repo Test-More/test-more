@@ -273,15 +273,14 @@ sub table_rows {
 sub table {
     my $self = shift;
 
-    my @out;
-
+    my @diag;
     my $header = $self->table_header;
     my $rows   = $self->table_rows;
 
     my $max = exists $ENV{TS_MAX_DELTA} ? $ENV{TS_MAX_DELTA} : 25;
     if ($max && @$rows > $max) {
         @$rows = @{$rows}[0 .. ($max - 1)];
-        push @out => (
+        @diag = (
             "************************************************************",
             sprintf("* Stopped after %-42.42s *", "$max differences."),
             "* Set the TS_MAX_DELTA environment var to raise the limit. *",
@@ -290,17 +289,17 @@ sub table {
         );
     }
 
-    my @no_collapse = grep { $COLUMNS{$COLUMN_ORDER[$_]}->{no_collapse} } 0 .. $#COLUMN_ORDER;
-    unshift @out => Test2::Util::Table::table(
-        header      => $header,
-        rows        => $rows,
-        collapse    => 1,
-        sanitize    => 1,
-        mark_tail   => 1,
-        no_collapse => \@no_collapse,
+    return (
+        Test2::Util::Table::table(
+            header      => $header,
+            rows        => $rows,
+            collapse    => 1,
+            sanitize    => 1,
+            mark_tail   => 1,
+            no_collapse => [grep { $COLUMNS{$COLUMN_ORDER[$_]}->{no_collapse} } 0 .. $#COLUMN_ORDER],
+        ),
+        @diag,
     );
-
-    return @out;
 }
 
 sub diag {
