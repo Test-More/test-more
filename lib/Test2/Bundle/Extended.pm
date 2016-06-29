@@ -32,7 +32,7 @@ use Test2::Tools::Compare qw{
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     end filter_items
-    T F D E DNE FDNE
+    T F D DF E DNE FDNE
     event fail_events
     exact_ref
 };
@@ -84,7 +84,7 @@ our @EXPORT = qw{
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     end filter_items
-    T F D E DNE FDNE
+    T F D DF E DNE FDNE
     event fail_events
     exact_ref
 };
@@ -359,6 +359,8 @@ See L<Test2::Tools::Compare>.
 =item $check = F()
 
 =item $check = D()
+
+=item $check = DF()
 
 =item $check = DNE()
 

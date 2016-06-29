@@ -64,7 +64,7 @@ our @EXPORT_OK = qw{
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     end filter_items
-    T F D DNE FDNE E
+    T F D DF DNE FDNE E
     event fail_events
     exact_ref
 };
@@ -149,6 +149,15 @@ sub D() {
     my @caller = caller;
     Test2::Compare::Custom->new(
         code => sub { defined $_ ? 1 : 0 }, name => 'DEFINED', operator => 'DEFINED()',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
+
+sub DF() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { defined $_ && ! $_ ? 1 : 0 }, name => 'DEFINED BUT FALSE', operator => 'DEFINED() && FALSE()',
         file => $caller[1],
         lines => [$caller[2]],
     );
@@ -786,6 +795,20 @@ This will pass:
 This will fail:
 
     is(undef, D(), 'foo is defined');
+
+=item $check = DF()
+
+This is to verify that the value in the C<$got> structure is defined but false.
+Any false value other than C<undef> will pass.
+
+This will pass:
+
+    is(0, DF(), 'foo is defined but false');
+
+These will fail:
+
+    is(undef, DF(), 'foo is defined but false');
+    is(1, DF(), 'foo is defined but false');
 
 =item $check = DNE()
 

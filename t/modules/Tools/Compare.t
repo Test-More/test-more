@@ -19,7 +19,7 @@ subtest simple => sub {
         in_set not_in_set check_set
         item field call call_list call_hash prop check all_items all_keys all_vals all_values
         end filter_items
-        T F D E DNE FDNE
+        T F D DF E DNE FDNE
         event
         exact_ref
     };
@@ -260,6 +260,26 @@ subtest shortcuts => sub {
         intercept { is(undef, D(), "not defined") },
         array { event Ok => { pass => 0 } },
         "undef is not defined"
+    );
+
+    is(0,            DF(), "defined but false");
+    is('',           DF(), "defined but false");
+
+    like(
+        intercept {
+          is(undef,        DF());
+          is(1,            DF());
+          is(' ',          DF());
+          is('0 but true', DF());
+        },
+        array {
+          filter_items { grep { !$_->isa('Test2::Event::Diag') } @_ };
+          event Ok => { pass => 0 };
+          event Ok => { pass => 0 };
+          event Ok => { pass => 0 };
+          event Ok => { pass => 0 };
+        },
+        "got fail for DF"
     );
 
     is([undef], [E()],   "does exist");
