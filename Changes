@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+0.000044  2016-06-29 15:48:33-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Add DF() shortcut (JBerger)
+
 0.000043  2016-06-28 06:23:46-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Restructure Delta.pm to try and solve read-only problem
