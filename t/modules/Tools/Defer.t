@@ -113,14 +113,25 @@ like(
     "Fails if there are no tests"
 );
 
+my $line1 = __LINE__ + 1;
 sub oops { die 'oops' }
 
+my $line2 = __LINE__ + 1;
 def oops => (1);
-like(
-    dies { do_def() },
-    qr/oops/,
-    "Exceptions in the test are propogated"
-);
+like( dies { do_def() }, <<EOT, "Exceptions in the test are propogated");
+Exception: oops at t/modules/Tools/Defer.t line $line1.
+--eval--
+package main;
+# line $line2 "(eval in Test2::Tools::Defer) t/modules/Tools/Defer.t"
+&oops(\@\$args);
+1;
+--------
+Tool:   oops
+Caller: main, t/modules/Tools/Defer.t, $line2
+\$args:  [
+          1
+        ];
+EOT
 
 
 {

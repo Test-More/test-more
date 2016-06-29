@@ -2,7 +2,7 @@ package Test2::Tools::Defer;
 use strict;
 use warnings;
 
-our $VERSION = '0.000043';
+our $VERSION = '0.000044';
 
 use Carp qw/croak/;
 
@@ -35,14 +35,31 @@ sub do_def {
 
         my ($pkg, $file, $line) = @$caller;
 
-        # Note: The '&' below is to bypass the prototype, which is important here.
-        eval <<"        EOT" or die $@;
+        chomp(my $eval = <<"        EOT");
 package $pkg;
 # line $line "(eval in Test2::Tools::Defer) $file"
 \&$func(\@\$args);
 1;
         EOT
+
+        eval $eval and next;
+        chomp(my $error = $@);
+
+        require Data::Dumper;
+        chomp(my $td = Data::Dumper::Dumper($args));
+        $td =~ s/^\$VAR1 =/\$args: /;
+        die <<"        EOT";
+Exception: $error
+--eval--
+$eval
+--------
+Tool:   $func
+Caller: $caller->[0], $caller->[1], $caller->[2]
+$td
+        EOT
     }
+
+    return;
 }
 
 sub _verify {
