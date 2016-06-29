@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Test2::Require';
 
-our $VERSION = '0.000044';
+our $VERSION = '0.000045';
 
 use Test2::Util qw/pkg_to_file/;
 use Scalar::Util qw/reftype/;

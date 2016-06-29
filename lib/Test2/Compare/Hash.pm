@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Test2::Compare::Base';
 
-our $VERSION = '0.000044';
+our $VERSION = '0.000045';
 
 use Test2::Util::HashBase qw/inref ending items order for_each_key for_each_val/;
 
