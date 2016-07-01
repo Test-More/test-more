@@ -323,7 +323,7 @@ structures.
 =head1 DESCRIPTION
 
 This is used by L<Test2::Compare>. When data structures are compared a
-delta will be returned. Deltas are a tree datastructure that represent all the
+delta will be returned. Deltas are a tree data structure that represent all the
 differences between two other data structures.
 
 =head1 METHODS

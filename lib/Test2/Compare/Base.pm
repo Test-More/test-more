@@ -158,7 +158,7 @@ All comparison classes for Test2::Compare should inherit from this base class.
 
 =head1 METHODS
 
-Some of these must be overriden, others can be.
+Some of these must be overridden, others can be.
 
 =over 4
 

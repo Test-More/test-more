@@ -280,7 +280,7 @@ in any row. Having a header for the column will not effect collapse.
 =item max_width => $num
 
 Set the maximum width of the table, the table may not be this big, but it will
-be no bigger. If none is specified it will attempt to fidn the width of your
+be no bigger. If none is specified it will attempt to find the width of your
 terminal and use that, otherwise it falls back to C<80>.
 
 =item sanitize => $bool
@@ -332,12 +332,12 @@ Attempts to find the width in columns (characters) of the current terminal.
 Returns 80 as a safe bet if it cannot find it another way. This is most
 accurate if L<Term::ReadKey> is installed.
 
-=head1 NOTE ON UNICODE/WIDE CHARATERS
+=head1 NOTE ON UNICODE/WIDE CHARACTERS
 
 Some unicode characters, such as C<婧> (C<U+5A67>) are wider than others. These
 will render just fine if you C<use utf8;> as necessary, and
 L<Unicode::GCString> is installed, however if the module is not installed there
-will be anomolies in the table:
+will be anomalies in the table:
 
     +-----+-----+---+
     | a   | b   | c |

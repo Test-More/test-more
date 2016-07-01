@@ -122,6 +122,8 @@ arrayref with the second two events.
 
 =head1 EXPORTS
 
+=over 4
+
 =item $grab = grab()
 
 This lets you intercept all events for a section of code without adding
@@ -139,7 +141,7 @@ changes in the stack depth.
 
 When you call C<finish()> the C<$grab> object will automagically undef itself,
 but only for the reference used in the method call. If you have other
-references to the C<$grab> object they will not be undef'd.
+references to the C<$grab> object they will not be set to undef.
 
 If the C<$grab> object is destroyed without calling C<finish()>, it will
 automatically clean up after itself and restore the parent hub.
@@ -159,6 +161,8 @@ enforcement back one like this:
 With C<no_ending> turned off, C<finish> will run the post-test checks to
 enforce the plan and that tests were run. In many cases this will result in
 additional events in your events array.
+
+=back
 
 =head1 METHODS
 

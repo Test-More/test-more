@@ -575,7 +575,7 @@ reference, rules are similar to glob assignments:
 =item $mock->restore($SYMBOL)
 
 Restore the symbol to what it was before the last override. If the symbol was
-recently added this will remove it. If the symbol has been overriden multiple
+recently added this will remove it. If the symbol has been overridden multiple
 times this will ONLY restore it to the previous state. Think of C<override> as a
 push operation, and C<restore> as the pop operation.
 
@@ -595,7 +595,7 @@ This will return the current symbol.
 
 =item $mock->reset_all
 
-Remove all added symbols, and restore all overriden symbols to their originals.
+Remove all added symbols, and restore all overridden symbols to their originals.
 
 =item $mock->add_constructor($NAME => $TYPE)
 
@@ -645,7 +645,7 @@ The C<ref_copy> type will copy your reference and bless the copy:
 
 =item $mock->before($NAME, sub { ... })
 
-This will replace the orignal sub C<$NAME> with a new sub that calls your
+This will replace the original sub C<$NAME> with a new sub that calls your
 custom code just before calling the original method. The return from your
 custom sub is ignored. Your sub and the original both get the unmodified
 arguments.
@@ -699,7 +699,7 @@ normally want this.
 
 =item $stash = $mock->stash
 
-This returns the stash for the class being mocked. This is the equivelent of:
+This returns the stash for the class being mocked. This is the equivalent of:
 
     my $stash = \%{"${class}\::"};
 

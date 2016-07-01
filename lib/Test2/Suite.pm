@@ -178,7 +178,7 @@ See L<Test2::Tools::Exports> for complete documentation.
 
 This provides tools for mocking objects and classes. This is based largely on
 L<Mock::Quick>, but several interface improvements have been added that cannot
-be added to Mock::Quick itself without breaking backwords compatability.
+be added to Mock::Quick itself without breaking backwards compatibility.
 
 See L<Test2::Tools::Mock> for complete documentation.
 
@@ -210,14 +210,14 @@ See L<Test2::Tools::Target> for complete documentation.
 =item BailOnFail
 
 The much requested "bail-out on first failure" plugin. When this plugin is
-loaded, any failure will cause the test to bail out immedietly.
+loaded, any failure will cause the test to bail out immediately.
 
 See L<Test2::Plugin::BailOnFail> for complete documentation.
 
 =item DieOnFail
 
-The much requestied "die on first failure" plugin. When this plugin is
-loaded, any failure will cause the test to die immedietly.
+The much requested "die on first failure" plugin. When this plugin is
+loaded, any failure will cause the test to die immediately.
 
 See L<Test2::Plugin::DieOnFail> for complete documentation.
 

@@ -185,7 +185,7 @@ This normally just returns 'UNIVERSAL'.
 
 =item $obj->add_prop(...)
 
-Add a meta-propery to check, see L<Test2::Compare::Meta>. This method
+Add a meta-property to check, see L<Test2::Compare::Meta>. This method
 just delegates.
 
 =item $obj->add_field(...)

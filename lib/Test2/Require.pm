@@ -73,7 +73,7 @@ so.
     1;
 
 A subclass of L<Test2::Require> simply needs to implement a C<skip()> method.
-This method will recieve all import arguments. This method should return undef
+This method will receive all import arguments. This method should return undef
 if the test should run, and should return a reason for skipping if the test
 should be skipped.
 

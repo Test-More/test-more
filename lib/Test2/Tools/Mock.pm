@@ -331,7 +331,7 @@ plugins in ways L<Mock::Quick> would be unable to.
 
 =item mock
 
-This is a one-stop shop function that delgates to one of the other methods
+This is a one-stop shop function that delegates to one of the other methods
 depending on how it is used. If you are not comfortable with a function that
 has a lot of potential behaviors, you can use one of the other functions
 directly.
@@ -359,7 +359,7 @@ be explicit about what type of mocking you want.
 =item $obj = mock 'obj', ...;
 
 These forms delegate to C<mock_obj()> to create instances of anonymous packages
-where methods are vivified into existance as needed.
+where methods are vivified into existence as needed.
 
 =item mock $mock => sub { ... }
 
@@ -367,10 +367,10 @@ where methods are vivified into existance as needed.
 
 These forms go together, the first form will set C<$mock> as the current mock
 build, then run the sub. Within the sub you can declare mock specifications
-using the second form. The first form delgates to C<mock_build()>.
+using the second form. The first form delegates to C<mock_build()>.
 
 The second form calls the specified method on the current build. This second
-form delgates to C<mock_do()>.
+form delegates to C<mock_do()>.
 
 =back
 

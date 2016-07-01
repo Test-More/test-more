@@ -90,12 +90,12 @@ Test2::Compare::Number - Compare two values as numbers
 This is used to compare two numbers. You can also check that two numbers are not
 the same.
 
-B<Note>: This will fail if the recieved value is undefined. It must be a number.
+B<Note>: This will fail if the received value is undefined. It must be a number.
 
 B<Note>: This will fail if the comparison generates a non-numeric value warning
 (which will not be shown). This is because it must get a number. The warning is
 not shown as it will report to a useless line and filename. However, the test
-diagnotics show both values.
+diagnostics show both values.
 
 =head1 SOURCE
 

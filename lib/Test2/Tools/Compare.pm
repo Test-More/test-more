@@ -624,7 +624,7 @@ failure, they will not be displayed when the comparison is successful. The
 boolean true/false result of the comparison is returned.
 
 This is the strict checker. The strict checker requires a perfect match between
-C<$got> and C<$expect>. All hash fields must be specfied, all array items must
+C<$got> and C<$expect>. All hash fields must be specified, all array items must
 be present, etc. All non-scalar/hash/array/regex references must be identical
 (same memory address). Scalar, hash and array references will be traversed and
 compared. Regex references will be compared to see if they have the same

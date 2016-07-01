@@ -30,7 +30,7 @@ Test2::Compare::EventMeta - Meta class for events in deep comparisons
 
 =head1 DESCRIPTION
 
-This is used in deep compariosns of event objects. You should probably never
+This is used in deep comparisons of event objects. You should probably never
 use this directly.
 
 =head1 DEFINED CHECKS
@@ -55,7 +55,7 @@ Name of the tool that generated the event.
 
 =item debug
 
-The debu information that will be printed in event of a failure.
+The debug information that will be printed in event of a failure.
 
 =item tid
 

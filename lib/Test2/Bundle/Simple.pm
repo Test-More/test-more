@@ -75,7 +75,7 @@ THIS WILL B<NOT> WORK:
 
     use Test2::Bundle::Simple tests => 5;
 
-Instead you must plan in a seperate statement:
+Instead you must plan in a separate statement:
 
     use Test2::Bundle::Simple;
     plan 5;

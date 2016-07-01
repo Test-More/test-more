@@ -246,12 +246,12 @@ Fire off a failing test (a single Ok event). The name and diagnostics are option
 =item diag(@messages)
 
 Write diagnostics messages. All items in C<@messages> will be joined into a
-single string with no seperator. When using TAP, diagnostics are sent to STDERR.
+single string with no separator. When using TAP, diagnostics are sent to STDERR.
 
 =item note(@messages)
 
 Write note-diagnostics messages. All items in C<@messages> will be joined into
-a single string with no seperator. When using TAP, notes are sent to STDOUT.
+a single string with no separator. When using TAP, notes are sent to STDOUT.
 
 =back
 

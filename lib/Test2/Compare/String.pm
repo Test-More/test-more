@@ -70,7 +70,7 @@ Test2::Compare::String - Compare two values as strings
 This is used to compare two items after they are stringified. You can also check
 that two strings are not equal.
 
-B<Note>: This will fail if the recieved value is undefined, it must be defined.
+B<Note>: This will fail if the received value is undefined, it must be defined.
 
 =head1 SOURCE
 

@@ -20,7 +20,7 @@ Test2::Tools - Documentation for Tools.
 
 Tools are packages that export test functions, typically all related to a
 specific aspect of testing. If you have a couple different categories of
-exports then you may want to break them into seperate modules.
+exports then you may want to break them into separate modules.
 
 Tools should export testing functions. Loading tools B<should not> have side
 effects, or alter the behavior of other tools. If you want to alter behaviors

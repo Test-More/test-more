@@ -144,7 +144,7 @@ THIS WILL B<NOT> WORK:
 
     use Test2::Bundle::Simple tests => 5;
 
-Instead you must plan in a seperate statement:
+Instead you must plan in a separate statement:
 
     use Test2::Bundle::Simple;
     plan 5;
@@ -199,7 +199,7 @@ Discouraged in Test::More.
 This started a fight between Test developers, who may now each write their own
 implementations in L<Test2>. (See explain in L<Test::Most> vs L<Test::More>.
 Hint: Test::Most wrote it first, then Test::More added it, but broke
-compatability).
+compatibility).
 
 =item new_ok()
 
