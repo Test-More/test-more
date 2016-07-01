@@ -766,4 +766,24 @@ test exceptions => sub {
     );
 };
 
+test override_inherited_method => sub {
+    package ABC;
+    our @ISA = 'DEF';
+
+    package DEF;
+
+    sub foo { 'foo' };
+
+    package main;
+    is(ABC->foo, 'foo', "Original");
+
+    my $mock = Test2::Mock->new(class => 'ABC');
+    $mock->override('foo' => sub { 'bar' });
+    is(ABC->foo, 'bar', "Overrode method from base class");
+
+    $mock->reset('foo');
+    $mock->add('foo' => sub { 'baz' });
+    is(ABC->foo, 'baz', "Added method");
+};
+
 done_testing;
