@@ -42,6 +42,14 @@ subtest is => sub {
         my $false = do { bless \(my $dummy = 0), "My::Boolean" };
         def ok => (is($true,  $true,  "true scalar ref is itself"),  "true scalar ref is itself");
         def ok => (is($false, $false, "false scalar ref is itself"), "false scalar ref is itself");
+
+        my $x = \\"123";
+        def ok => (is($x, \\"123", "Ref-Ref check 1"), "Ref-Ref check 1");
+
+        $x = \[123];
+        def ok => (is($x, \["123"], "Ref-Ref check 2"), "Ref-Ref check 2");
+
+        def ok => (!is(\$x, \\["124"], "Ref-Ref check 3"), "Ref-Ref check 3");
     };
 
     do_def;
@@ -114,6 +122,24 @@ subtest is => sub {
                 call pass => T();
                 call name => "false scalar ref is itself";
             };
+
+            event Ok => sub {
+                call pass => T();
+                call name => "Ref-Ref check 1";
+            };
+
+            event Ok => sub {
+                call pass => T();
+                call name => "Ref-Ref check 2";
+            };
+
+            fail_events Ok => sub {
+                call pass => F();
+                call name => 'Ref-Ref check 3';
+            };
+
+            event Diag => { message => match qr/\$\*->\$\*->\[0\] \| 123 \| eq \| 124/ };
+
             end;
         },
         "Got expected events"

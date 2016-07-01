@@ -1,5 +1,6 @@
 use Test2::Bundle::Extended;
 use Test2::API qw/intercept/;
+use Data::Dumper;
 
 use Test2::Compare qw{
     compare get_build push_build pop_build build

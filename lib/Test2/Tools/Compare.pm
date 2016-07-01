@@ -27,6 +27,7 @@ use Test2::Compare::Object();
 use Test2::Compare::OrderedSubset();
 use Test2::Compare::Pattern();
 use Test2::Compare::Ref();
+use Test2::Compare::DeepRef();
 use Test2::Compare::Regex();
 use Test2::Compare::Scalar();
 use Test2::Compare::Set();

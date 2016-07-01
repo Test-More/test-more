@@ -140,6 +140,7 @@ sub _full_id {
     return "{$id} <KEY>" if $type eq 'HASHKEY';
     return "[$id]" if $type eq 'ARRAY';
     return "$id()" if $type eq 'METHOD';
+    return "$id" if $type eq 'DEREF';
     return "<$id>";
 }
 
@@ -151,6 +152,7 @@ sub _arrow_id {
 
     return '->' if $type eq 'METHOD';           # Method always needs an arrow
     return '->' if $type eq 'SCALAR';           # Scalar always needs an arrow
+    return '->' if $type eq 'DEREF';            # deref always needs arrow
     return '->' if $path =~ m/(>|\(\))$/;       # Need an arrow after meta, or after a method
     return '->' if $path eq '$VAR';             # Need an arrow after the initial ref
 

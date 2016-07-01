@@ -105,6 +105,9 @@ sub convert {
         return Test2::Compare::Scalar->new(item => $nested);
     }
 
+    return Test2::Compare::DeepRef->new(input => $thing)
+        if $type eq 'REF';
+
     return Test2::Compare::Ref->new(input => $thing)
         if $type;
 
