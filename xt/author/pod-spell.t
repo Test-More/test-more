@@ -97,12 +97,3 @@ AHHHHHHH
 Dummy
 globalest
 Hmmm
-
-___END__
-# All incorrect words, by number of occurrences:
-#      1: AHHHHHHH, Hmmm, TESTTESTCOLOUR, TESTTESTERCOLOR, TID, TIEHANDLE,
-#         , dep, , , , , th,
-#         todos, , wil
-#      2: , qa, , shm,
-#      5: ipc
-
