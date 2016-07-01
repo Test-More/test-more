@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - ref-ref's can be used in deep comparisons
+    - Fix mocking to override a base class's method
+
 0.000045  2016-07-01 09:30:09-07:00 America/Los_Angeles
 
     - Spelling and POD fixes
