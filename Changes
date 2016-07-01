@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Spelling and POD fixes
+
 0.000044  2016-06-29 15:48:33-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Add DF() shortcut (JBerger)
