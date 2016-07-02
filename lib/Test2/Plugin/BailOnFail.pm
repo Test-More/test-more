@@ -2,7 +2,7 @@ package Test2::Plugin::BailOnFail;
 use strict;
 use warnings;
 
-our $VERSION = '0.000046';
+our $VERSION = '0.000047';
 
 use Test2::API qw/test2_add_callback_context_release/;
 
