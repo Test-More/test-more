@@ -578,8 +578,8 @@ test 'override and orig' => sub {
     );
 
     like(
-        dies { $one->override(-nuthin => \'nope') },
-        qr/Cannot override '\$Fake::nuthin', symbol is not already defined/,
+        dies { $one->override(-nuthin2 => \'nope') },
+        qr/Cannot override '\$Fake::nuthin2', symbol is not already defined/,
         "Cannot override a SCALAR symbol that is not defined"
     );
 

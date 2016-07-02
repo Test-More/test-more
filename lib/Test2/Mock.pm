@@ -336,7 +336,7 @@ sub _inject {
         my $orig = $self->current("$sig$sym");
 
         croak "Cannot override '$sig$class\::$sym', symbol is not already defined"
-            unless $orig || $add || $self->{+CLASS}->can($sym);
+            unless $orig || $add || ($sig eq '&' && $class->can($sym));
 
         # Cannot be too sure about scalars in globs
         croak "Cannot add '$sig$class\::$sym', symbol is already defined"
