@@ -68,13 +68,15 @@ sub import {
                 my %params = @_;
                 my ($class, $caller, $builder, $args) = @params{qw/class caller builder args/};
 
+                my $do_it = eval "package $caller->[0];\n#line $caller->[2] \"$caller->[1]\"\nsub { \$runner\->add_mock(\$builder->()) }";
+
                 # Running
                 if (@{$runner->stack}) {
-                    $runner->add_mock($builder->());
+                    $do_it->();
                 }
                 else { # Not running
                     my $action = Test2::Workflow::Task::Action->new(
-                        code     => sub { $runner->add_mock($builder->()) },
+                        code     => $do_it,
                         name     => "mock $class",
                         frame    => $caller,
                         scaffold => 1,
@@ -83,7 +85,7 @@ sub import {
                     my $build = current_build() || $root;
 
                     $build->add_primary_setup($action);
-                    $build->add_stash($builder->());
+                    $build->add_stash($builder->()) unless $build->is_root;
                 }
 
                 return 1;
