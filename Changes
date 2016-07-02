@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - Fix global destruction warning
     - Minor test fix to keep 5.8 working
 
 0.000046  2016-07-01 17:31:23-07:00 America/Los_Angeles (TRIAL RELEASE)

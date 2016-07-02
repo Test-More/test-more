@@ -430,6 +430,7 @@ sub _purge {
 sub DESTROY {
     my $self = shift;
 
+    delete $self->{+CHILD};
     $self->reset_all if $self->{+_SYMBOLS};
 
     delete $INC{$self->file} if $self->{+_BLOCKED_LOAD};
