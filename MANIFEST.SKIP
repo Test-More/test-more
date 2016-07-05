@@ -71,7 +71,7 @@
 ^Test-Simple-
 ^Test2-*
 
-TODO
+^TODO$
 
 # Profiling stuff
 ^nytp*
@@ -79,11 +79,11 @@ TODO
 ^profiling/
 
 # For github testing
-.travis.yml
+^\.travis\.yml$
 
-MANIFEST.SKIP
+^MANIFEST\.SKIP$
 
 # I never want this to go out.
-test.pl
+^test\.pl$
 
-POD_TEMPLATE.pod
+^POD_TEMPLATE\.pod$
