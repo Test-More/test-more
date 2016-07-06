@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Add Info event for better diagnostics
+
 1.302038  2016-07-05 07:00:18-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix broken MANIFEST.SKIP entries (#689)
