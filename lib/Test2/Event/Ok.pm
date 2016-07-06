@@ -84,7 +84,6 @@ or:
         'Ok',
         pass => $bool,
         name => $name,
-        diag => \@diag
     );
 
 =head1 ACCESSORS
@@ -99,10 +98,6 @@ reduced down to 1 or 0).
 =item $name = $e->name
 
 Name of the test.
-
-=item $diag = $e->diag
-
-An arrayref full of diagnostics strings to print in the event of a failure.
 
 =item $b = $e->effective_pass
 
