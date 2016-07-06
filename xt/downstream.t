@@ -22,7 +22,7 @@ perlbrew exec --with $lib cpan App::cpanminus
 EOT
 
 ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
-perlbrew exec --with $lib cpanm Test-Simple-1.302037.tar.gz
+perlbrew exec --with $lib cpanm Test-Simple-1.302039-TRIAL.tar.gz
 EOT
 
 for my $i (qw/Suite AsyncSubtest Workflow/) {
