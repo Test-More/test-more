@@ -65,7 +65,7 @@ our @EXPORT_OK = qw{
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     end filter_items
-    T F D DF DNE FDNE E
+    T F D DF DNE FDNE E U
     event fail_events
     exact_ref
 };
@@ -145,6 +145,15 @@ sub array(&)  { build('Test2::Compare::Array',         @_) }
 sub bag(&)    { build('Test2::Compare::Bag',           @_) }
 sub object(&) { build('Test2::Compare::Object',        @_) }
 sub subset(&) { build('Test2::Compare::OrderedSubset', @_) }
+
+sub U() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { defined $_ ? 0 : 1 }, name => 'UNDEFINED', operator => '!DEFINED()',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
 
 sub D() {
     my @caller = caller;
@@ -796,6 +805,18 @@ This will pass:
 This will fail:
 
     is(undef, D(), 'foo is defined');
+
+=item $check = U()
+
+This is to verify that the value in the C<$got> structure is undefined.
+
+This will pass:
+
+    is(undef, U(), 'not defined');
+
+This will fail:
+
+    is('foo', U(), 'not defined');
 
 =item $check = DF()
 
