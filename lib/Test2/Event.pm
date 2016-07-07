@@ -142,8 +142,8 @@ instead so that a harness will hide it outside of verbose mode.
 =item $msg = $e->summary
 
 This is intended to be a human readable summary of the event. This should
-ideally only be 1-line long, but you can use multiple lines if necessary. This
-is intended for human consumption, you do not need to make it easy for machines
+ideally only be one line long, but you can use multiple lines if necessary. This
+is intended for human consumption. You do not need to make it easy for machines
 to understand.
 
 The default is to simply return the event package name.
