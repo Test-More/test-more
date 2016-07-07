@@ -157,7 +157,7 @@ Collection of tools used by L<Test2> and friends.
 
 =head1 EXPORTS
 
-All exports are optional, you must specify subs to import.
+All exports are optional. You must specify subs to import.
 
 =over 4
 
