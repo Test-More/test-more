@@ -54,7 +54,9 @@ color and highlighting to the harness.
 
 =head1 SYNOPSIS
 
+    use Test2::API::Context qw/context/;
 
+    $ctx->info($obj, diagnostics => $bool);
 
 =head1 FORMATS
 
