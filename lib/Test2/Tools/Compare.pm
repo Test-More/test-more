@@ -975,7 +975,7 @@ block, and can call it any number of times with any number of arguments.
 
 =item all_values($CHECK1, $CHECK2, ...)
 
-Add checks that apply to all keys. You can put this anywhere in the hash
+Add checks that apply to all values. You can put this anywhere in the hash
 block, and can call it any number of times with any number of arguments.
 
 =item end()
