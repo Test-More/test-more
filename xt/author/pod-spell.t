@@ -90,6 +90,8 @@ tie-ing
 VMS
 vmsperl
 YESNO
+ansi
+html
 
 ## other jargon, slang
 17th

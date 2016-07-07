@@ -557,7 +557,7 @@ then an L<Test2::Event::Diag> event will be sent as well with details about the
 failure. If you do not want automatic diagnostics you should use the
 C<send_event()> method directly.
 
-The third argument C<\@on_fail) is an optional set of diagnostics to be sent in
+The third argument C<\@on_fail>) is an optional set of diagnostics to be sent in
 the event of a test failure. Plain strings will be sent as
 L<Test2::Event::Diag> events. References will be used to construct
 L<Test2::Event::Info> events with C<< diagnostics => 1 >>.

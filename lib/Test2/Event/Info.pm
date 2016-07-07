@@ -59,7 +59,7 @@ color and highlighting to the harness.
 =head1 FORMATS
 
 Format will be passed in to C<render()> and C<summary()> as a string. Any
-string is considered valid, if your event does not recognise the format it
+string is considered valid, if your event does not recognize the format it
 should fallback to 'text'.
 
 =over 4
