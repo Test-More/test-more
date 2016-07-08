@@ -170,7 +170,14 @@ do so if Test::Builder is loaded for legacy reasons.
     # Write and rename the file.
     my ($ok, $err) = try {
         Storable::store($e, $file);
-        rename($file, $ready) or $self->abort("Could not rename file '$file' -> '$ready'");
+        # tests with fork on windows can run into file locking race conditions
+        # (particularly with Test::TCP),
+        # so give them a few seconds to work things out and retry
+        $self->abort("Could not rename file '$file' -> '$ready'") if !do {
+            my $res;
+            ($res = rename($file, $ready)) ? last : sleep 1 for 1..5;
+            $res;
+        };
         test2_ipc_set_pending(substr($file, -(shm_size)));
     };
 
