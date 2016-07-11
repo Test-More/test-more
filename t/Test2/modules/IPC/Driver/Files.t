@@ -40,7 +40,7 @@ ok(-d $ipc->tempdir, "created temp dir");
 is($ipc->pid, $$, "stored pid");
 is($ipc->tid, get_tid(), "stored the tid");
 
-my $hid = '12345';
+my $hid = '12345-1-1';
 
 $ipc->add_hub($hid);
 my $hubfile = File::Spec->catfile($ipc->tempdir, "HUB-$hid");
@@ -171,8 +171,8 @@ ok(!-d $tmpdir, "cleaned up temp dir");
     like($out->{STDERR}, qr/IPC Temp Dir: \Q$tmpdir\E/m, "Got temp dir path");
     like($out->{STDERR}, qr/^# Not removing temp dir: \Q$tmpdir\E$/m, "Notice about not closing tempdir");
 
-    like($out->{STDERR}, qr/^IPC Fatal Error: File for hub '12345' already exists/m, "Got message for duplicate hub");
-    like($out->{STDERR}, qr/^IPC Fatal Error: File for hub '12345' does not exist/m, "Cannot remove hub twice");
+    like($out->{STDERR}, qr/^IPC Fatal Error: File for hub '12345-1-1' already exists/m, "Got message for duplicate hub");
+    like($out->{STDERR}, qr/^IPC Fatal Error: File for hub '12345-1-1' does not exist/m, "Cannot remove hub twice");
 
     $out = capture {
         my $ipc = Test2::IPC::Driver::Files->new();
@@ -185,7 +185,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
 
     like($out->{STDERR}, qr/IPC Fatal Error:/, "Got fatal error");
     like($out->{STDERR}, qr/There was an error writing an event/, "Explanation");
-    like($out->{STDERR}, qr/Destination: 12345/, "Got dest");
+    like($out->{STDERR}, qr/Destination: 12345-1-1/, "Got dest");
     like($out->{STDERR}, qr/Origin PID:\s+$$/, "Got pid");
     like($out->{STDERR}, qr/Error: Can't store GLOB items/, "Got cause");
 
@@ -196,7 +196,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
         print STDERR $@ unless $@ =~ m/^255/;
         $ipc = undef;
     };
-    like($out->{STDERR}, qr/IPC Fatal Error: hub '12345' is not available, failed to send event!/, "Cannot send to missing hub");
+    like($out->{STDERR}, qr/IPC Fatal Error: hub '12345-1-1' is not available, failed to send event!/, "Cannot send to missing hub");
 
     $out = capture {
         my $ipc = Test2::IPC::Driver::Files->new();
@@ -208,7 +208,7 @@ ok(!-d $tmpdir, "cleaned up temp dir");
         print STDERR $@ unless $@ =~ m/^255/;
     };
     $cleanup->();
-    like($out->{STDERR}, qr/IPC Fatal Error: Not all files from hub '12345' have been collected/, "Leftover files");
+    like($out->{STDERR}, qr/IPC Fatal Error: Not all files from hub '12345-1-1' have been collected/, "Leftover files");
     like($out->{STDERR}, qr/IPC Fatal Error: Leftover files in the directory \(.*\.ready\)/, "What file");
 
     $out = capture {
