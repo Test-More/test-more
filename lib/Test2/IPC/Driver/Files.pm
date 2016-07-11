@@ -265,42 +265,85 @@ sub cull {
     opendir(my $dh, $tempdir) or $self->abort("could not open IPC temp dir ($tempdir)!");
 
     my @out;
-    for my $file (sort readdir($dh)) {
-        next if substr($file, 0, 1) eq '.';
-
-        next unless substr($file, -6, 6) eq '.ready';
-
-        my $global   = substr($file, 0, 6) eq 'GLOBAL';
-        my $hid_len = length($hid);
-        my $have_hid = !$global && substr($file, 0, $hid_len) eq $hid && substr($file, $hid_len, 1) eq '-';
-
-        next unless $have_hid || $global;
-
-        next if $global && $self->{+GLOBALS}->{$hid}->{$file}++;
-
-        # Untaint the path.
-        my $full = File::Spec->catfile($tempdir, $file);
-        ($full) = ($full =~ m/^(.*)$/gs);
-
+    for my $info (sort cmp_events map { $self->should_read_event($hid, $_) } readdir($dh)) {
+        my $full = $info->{full_path};
         my $obj = $self->read_event_file($full);
         push @out => $obj;
 
         # Do not remove global events
-        next if $global;
+        next if $info->{global};
 
-        my $complete = File::Spec->canonpath("$full.complete");
         if ($ENV{T2_KEEP_TEMPDIR}) {
+            my $complete = File::Spec->canonpath("$full.complete");
             my ($ok, $err) = do_rename($full, $complete);
             $self->abort("Could not rename IPC file '$full', '$complete': $err") unless $ok;
         }
         else {
             my ($ok, $err) = do_unlink("$full");
-            $self->abort("Could not unlink IPC file '$file': $err") unless $ok;
+            $self->abort("Could not unlink IPC file '$full': $err") unless $ok;
         }
     }
 
     closedir($dh);
     return @out;
+}
+
+sub parse_event_filename {
+    my $self = shift;
+    my ($file) = @_;
+
+    # The || is to force 0 in false
+    my $complete = substr($file, -9, 9) eq '.complete' || 0 and substr($file, -9, 9, "");
+    my $ready    = substr($file, -6, 6) eq '.ready'    || 0 and substr($file, -6, 6, "");
+
+    my @parts = split '-', $file;
+    my ($global, $hid) = $parts[0] eq 'GLOBAL' ? (1, shift @parts) : (0, join '-' => splice(@parts, 0, 3));
+    my ($pid, $tid, $eid) = splice(@parts, 0, 3);
+    my $type = join '::' => @parts;
+
+    return {
+        ready    => $ready,
+        complete => $complete,
+        global   => $global,
+        type     => $type,
+        hid      => $hid,
+        pid      => $pid,
+        tid      => $tid,
+        eid      => $eid,
+    };
+}
+
+sub should_read_event {
+    my $self = shift;
+    my ($hid, $file) = @_;
+
+    return if substr($file, 0, 1) eq '.';
+
+    my $parsed = $self->parse_event_filename($file);
+
+    return if $parsed->{complete};
+    return unless $parsed->{ready};
+    return unless $parsed->{global} || $parsed->{hid} eq $hid;
+
+    return if $parsed->{global} && $self->{+GLOBALS}->{$hid}->{$file}++;
+
+    # Untaint the path.
+    my $full = File::Spec->catfile($self->{+TEMPDIR}, $file);
+    ($full) = ($full =~ m/^(.*)$/gs) if ${^TAINT};
+
+    $parsed->{full_path} = $full;
+
+    return $parsed;
+}
+
+sub cmp_events {
+    # Globals first
+    return -1 if $a->{global} && !$b->{global};
+    return  1 if $b->{global} && !$a->{global};
+
+    return $a->{pid} <=> $b->{pid}
+        || $a->{tid} <=> $b->{tid}
+        || $a->{eid} <=> $b->{eid};
 }
 
 sub read_event_file {
