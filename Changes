@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix TODO in mixed T2/TB subtests
+
 1.302042  2016-07-11 20:30:35-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix IPC event ordering bug
