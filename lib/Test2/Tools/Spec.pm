@@ -256,7 +256,7 @@ supports isolation and/or concurrency via forking or threads.
 
 =head1 SYNOPSIS
 
-    use Test2::Suite::Extended;
+    use Test2::Bundle::Extended;
     use Test2::Tools::Spec;
 
     describe foo => sub {
