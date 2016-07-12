@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302042  2016-07-11 20:30:35-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix IPC event ordering bug
 
 1.302041  2016-07-09 17:01:45-07:00 America/Los_Angeles (TRIAL RELEASE)
