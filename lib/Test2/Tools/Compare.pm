@@ -61,7 +61,7 @@ our @EXPORT = qw/is like/;
 our @EXPORT_OK = qw{
     is like isnt unlike
     match mismatch validator
-    hash array bag object meta number string subset
+    hash array bag object meta meta_check number string subset
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     end filter_items
@@ -139,12 +139,13 @@ sub unlike($$;$@) {
     return $delta ? 1 : 0;
 }
 
-sub meta(&)   { build('Test2::Compare::Meta',          @_) }
-sub hash(&)   { build('Test2::Compare::Hash',          @_) }
-sub array(&)  { build('Test2::Compare::Array',         @_) }
-sub bag(&)    { build('Test2::Compare::Bag',           @_) }
-sub object(&) { build('Test2::Compare::Object',        @_) }
-sub subset(&) { build('Test2::Compare::OrderedSubset', @_) }
+sub meta(&)       { build('Test2::Compare::Meta',          @_) }
+sub meta_check(&) { build('Test2::Compare::Meta',          @_) }
+sub hash(&)       { build('Test2::Compare::Hash',          @_) }
+sub array(&)      { build('Test2::Compare::Array',         @_) }
+sub bag(&)        { build('Test2::Compare::Bag',           @_) }
+sub object(&)     { build('Test2::Compare::Object',        @_) }
+sub subset(&)     { build('Test2::Compare::OrderedSubset', @_) }
 
 sub U() {
     my @caller = caller;
@@ -1191,7 +1192,11 @@ B<Note: None of these are exported by default. You need to request them.>
 
 =item meta { ... }
 
-Build a meta check
+=item meta_check { ... }
+
+Build a meta check. If you are using L<Moose> then the C<meta()> function would
+conflict with the one exported by L<Moose>, in such cases C<meta_check()> is
+available. Neither is exported by default.
 
 =item prop $NAME => $VAL
 

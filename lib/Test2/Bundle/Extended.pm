@@ -2,7 +2,7 @@ package Test2::Bundle::Extended;
 use strict;
 use warnings;
 
-use base 'Exporter';
+use Importer;
 
 our $VERSION = '0.000051';
 
@@ -28,7 +28,7 @@ use Test2::Tools::Basic qw{
 use Test2::Tools::Compare qw{
     is like isnt unlike
     match mismatch validator
-    hash array bag object meta number string subset
+    hash array bag object meta meta_check number string subset
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     end filter_items
@@ -43,18 +43,16 @@ use Test2::Tools::Warnings qw{
 
 use Test2::Tools::ClassicCompare qw/cmp_ok/;
 
-use Test2::Tools::Subtest   qw/subtest_buffered/;
+use Importer 'Test2::Tools::Subtest' => (
+    subtest_buffered => { -as => 'subtest' },
+);
+
 use Test2::Tools::Class     qw/can_ok isa_ok DOES_ok/;
 use Test2::Tools::Encoding  qw/set_encoding/;
 use Test2::Tools::Exports   qw/imported_ok not_imported_ok/;
 use Test2::Tools::Ref       qw/ref_ok ref_is ref_is_not/;
 use Test2::Tools::Mock      qw/mock mocked/;
 use Test2::Tools::Exception qw/dies lives/;
-
-
-BEGIN {
-    *subtest = \&subtest_buffered;
-}
 
 our @EXPORT = qw{
     ok pass fail diag note todo skip
@@ -80,7 +78,7 @@ our @EXPORT = qw{
 
     is like isnt unlike
     match mismatch validator
-    hash array bag object meta number string subset
+    hash array bag object meta meta_check number string subset
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     end filter_items
@@ -88,6 +86,10 @@ our @EXPORT = qw{
     event fail_events
     exact_ref
 };
+
+our %EXPORT_TAGS = (
+    'v1' => \@EXPORT,
+);
 
 my $SRAND;
 sub import {
@@ -126,7 +128,7 @@ sub import {
 
     croak "Unknown option(s): " . join(', ', keys %options) if keys %options;
 
-    $class->Exporter::export_to_level(1, @exports);
+    Importer->import_into($class, $caller, @exports);
 }
 
 1;
@@ -149,13 +151,74 @@ extensively to test L<Test2::Suite> itself.
 
 =head1 SYNOPSIS
 
-    use Test2::Bundle::Extended;
+    use Test2::Bundle::Extended ':v1';
 
     ok(1, "pass");
 
     ...
 
     done_testing;
+
+=head1 RESOLVING CONFLICTS WITH MOOSE
+
+    use Test2::Bundle::Extended '!meta';
+
+L<Moose> and L<Test2::Bundle::Extended> both export very different C<meta()>
+subs. Adding C<'!meta'> to the import args will prevent the sub from being
+imported. This bundle also exports the sub under the name C<meta_check()> so
+you can use that spelling as an alternative.
+
+=head2 TAGS
+
+=over 4
+
+=item :v1
+
+=item :DEFAULT
+
+The following are all identical:
+
+    use Test2::Bundle::Extended;
+
+    use Test2::Bundle::Extended ':v1';
+
+    use Test2::Bundle::Extended ':DEFAULT';
+
+=item :v2 (FUTURE)
+
+Does not exist yet. This will be populated if we find need to make incompatible
+changes to C<:v1>. This was we can move forward with a new tag without breaking
+backwards compatibility.
+
+=back
+
+=head2 RENAMING ON IMPORT
+
+    use Test2::Bundle::Extended ':v1', '!ok', ok => {-as => 'my_ok'};
+
+This bundle uses L<Importer> for exporting, as such you can use any arguments
+it accepts.
+
+Explanation:
+
+=over 4
+
+=item ':v1'
+
+Use the default tag, all default exports.
+
+=item '!ok'
+
+Do not export C<ok()>
+
+=item ok => {-as => 'my_ok'}
+
+Actually, go ahead and import C<ok()> but under the name C<my_ok()>.
+
+=back
+
+If you did not add the C<'!ok'> argument then you would have both C<ok()> and
+C<my_ok()>
 
 =head1 PRAGMAS
 
