@@ -1,0 +1,361 @@
+<dl class="listnav">
+    <dt id="Tutorial">Tutorial</dt>
+    <dd>
+        <h2>Testing Tutorial</h2>
+
+        This is a tutorial introduction to writing tests using Test2. <br />
+        No prior test experience is required for this tutorial.
+
+        <br />
+        <br />
+        You will learn:
+
+        <ul>
+            <li>How to write a test file.</li>
+            <li>How to set the plan.</li>
+            <li>How to make assertions.</li>
+            <li>How to do advanced comparisons.</li>
+            <li>How to mark tests as TODO</li>
+        </ul>
+
+        After this tutorial you should explore the other headings at the top
+        such as <a href="/index.html#tools" target="_blank">Tools</a>.
+        <br /><p>
+        If you are currently watching a
+        this as a presentation we will cover the other sections next!
+    </dd>
+
+    <dt id="boilerplate">Boilerplate</dt>
+    <dd>
+        <h2>Boilerplate</h2>
+
+        <br />
+        <br />
+
+        You should start by creating a test file. Typically these live in the
+        t/ directory and end with the .t file extension.
+
+        <br />
+        <br />
+
+        t/first_test.t:
+        <script class="code">
+            use Test2::Bundle::Extended;
+        </script>
+
+        <br />
+        <br />
+
+        <ul>
+            <li>This loads Several plugins and tools.</li>
+            <li>This turns on strict and warnings for you. <small>(you can disable this)</small></li>
+            <li>This is everything you need to get started.</li>
+            <li>This is the bundle I recommend.</li>
+            <li>This will fail until we add a plan and at least 1 assertion.</li>
+        </ul>
+
+        <br />
+
+        <small>See the <b>Bundles</b> item at the top for alternative bundles. You could also load tools and plugins directly. </small>
+    </dd>
+
+    <dt id="Planning">Planning</dt>
+    <dd>
+        <dl class="sub_list">
+            <dt id="why_plan">Why&nbsp;Plan?</dt>
+            <dd>
+                <h2>Why do I need a plan?</h2>
+
+                <br />
+                <p>
+
+                <h3>A plan insures all tests run.</h3>
+
+                <br />
+
+                It is not impossible for a program to exit with code 0
+                (success) before you think it will.
+
+                <br />
+                <p>
+
+                A plan is a number of expected tests. If your test count and
+                your plan do not match it will be considered a test failure.
+            </dd>
+
+            <dt id="counting">Counting</dt>
+            <dd>
+                <h2>Counting tests</h2>
+
+                <p><br />
+
+                The old way to set the plan was to count your tests, and specify that number.
+
+                <p><br />
+
+                Test2 does support this form:
+
+                <script class="code">
+                    use Test2::Bundle::Extended;
+
+                    plan 5; # We expect 5 tests
+                </script>
+
+                <p><br />
+
+                <ul>
+                    <li>This form of planning is annoying.</li>
+                    <li>Needs to be updated any time you change your test.</li>
+                    <li>For long tests it can be hard to count.</li>
+                    <li>Your test count might differ depending on outside factors.</li>
+                </ul>
+            </dd>
+
+            <dt id="done_testing">done_testing</dt>
+            <dd>
+                <h2>done_testing()</h2>
+
+                <br />
+
+                A better (and newer) way to set the plan is to use done_testing.
+
+                <br />
+
+                <script class="code">
+                    use Test2::Bundle::Extended;
+
+                    ...
+
+                    done_testing;
+                </script>
+
+                <br />
+
+                <ul>
+                    <li>Counts tests for you.</li>
+                    <li>Does not need to be updated on every edit.</li>
+                    <li>Really easy.</li>
+                </ul>
+            </dd>
+
+            <dt id="skip_all">skip_all</dt>
+            <dd>
+                <h2>skip_all "..."</h2>
+
+                <p><br />
+
+                There are times where you might want to skip an entire test
+                file. skip_all allows you to do this.
+
+                <p><br />
+
+                <script class="code">
+                    use Test2::Bundle::Extended;
+
+                    skip_all "Do not run on windows"
+                        if $^O eq 'MSWin32';
+
+                    my @time = localtime(time);
+                    skip_all "Do not run on Tueseday"
+                        if $time[6] == 2;
+                </script>
+            </dd>
+        </dl>
+    </dd>
+
+    <dt id="Assertions">Assertions</dt>
+    <dd>
+        <h2>Assertions</h2>
+
+        <p><br />
+
+        The most simple assertion is ok().
+
+        <p><br />
+
+        <script class="code">
+            use Test2::Bundle::Extended;
+
+            ok(1, "This is a pass");
+            ok(0, "This is a failure");
+
+            ok(1 + 1 == 2, "Math works");
+
+            done_testing;
+        </script>
+
+        <p><br />
+
+        <ul>
+            <li>First argument is a boolean expression.</li>
+            <li>Second argument is an optinal description of the assertion.</li>
+        </ul>
+    </dd>
+
+    <dt id="Comparisons">Comparisons</dt>
+    <dd>
+
+        <dl class="sub_list">
+            <dt id="is">is()</dt>
+            <dd>
+                <h2>Compare items with <i>is()</i></h2>
+
+                <script class="code">
+                    # Shallow:
+                    is("apple", "apple", "strings are equivelent");
+
+                    # And deep:
+                    is([1, 2, 3, 4], [1, 2, 3, 4], "arrays have the same contents");
+
+
+                    # Lets go deeper
+                    is(
+                        {a => 1, b => [1, 2, 3, 4], c => 'cat'},
+                        {a => 1, b => [1, 2, 3, 4], c => 'cat'},
+                        "Deep structure is a complete match"
+                    );
+
+                    # Overloading
+                    is($obj, "Stringified Object", "Second argument determines comparison type");
+                </script>
+
+                <ul>
+                    <li>Can compare deep or shallow structures.</li>
+                    <li>Item in second argument determines comparison type.</li>
+                    <li>Does not look at blessed vs non-blessed.</li>
+                    <li>First and second arguments must be identical structures.</li>
+                </ul>
+            </dd>
+
+            <dt id="like">like()</dt>
+            <dd>
+                <h2>Compare items with <i>like()</i></h2>
+
+                <script class="code">
+                    # Shallow:
+                    like("apple", qr/ppl/, "string matches pattern");
+
+                    # And deep:
+                    like([1,2,3,4], [1,2],   "first 2 array elements match");
+
+                    # Lets go deeper. We only care a little:
+                    like(
+                        { a => 1, b => [1,2,3,4], c => 'cattle', d => "don't care" },
+                        { b => [1,2], c => qr/cat/ },
+                        "The parts we care about match"
+                    );
+
+                    # Right-side argument specifies the type for comparison:
+                    my $ref = [1,2,3];
+                    like($ref, "$ref", "String comparison is used");
+                </script>
+
+                <ul>
+                    <li>Can compare deep or shallow structures.</li>
+                    <li>Item in second argument determines comparison type.</li>
+                    <li>Does not look at blessed vs non-blessed.</li>
+                    <li>First argument need only match the specified parts of the second.</li>
+                </ul>
+            </dd>
+
+            <dt id="DSL">DSL</dt>
+            <dd>
+                <h2>Better diagnostics with a DSL</h2>
+
+                There is a DSL <small>(Domain Specific Language)</small> provided that allows you to declare structures for comparison.
+
+                <script class="code">
+                    is(
+                        [ 'a', 'b', { foo => 'bar', oops => 'xyz', yikes => 1 } ],
+                        array {
+                            item 'x';
+                            item 'y';
+                            item hash {
+                                field foo => 'bat';
+                                field yikes => DNE();
+                                end; # No more fields!
+                            };
+                        },
+                        "This test will fail badly..."
+                    );
+                </script>
+
+                <script class="output">
+                    # Failed test 'This test will fail badly...'
+                    # at test.pl line 12.
+                    # +------------+------------------+---------+------------------+-------+
+                    # | PATH       | GOT              | OP      | CHECK            | LNs   |
+                    # +------------+------------------+---------+------------------+-------+
+                    # |            | ARRAY(0x10a9ce0) |         | <ARRAY>          | 3, 11 |
+                    # | [0]        | a                | eq      | x                | 4     |
+                    # | [1]        | b                | eq      | y                | 5     |
+                    # | [2]        | HASH(0xb1fb58)   |         | <HASH>           | 10    |
+                    # | [2]{foo}   | bar              | eq      | bat              | 7     |
+                    # | [2]{yikes} | 1                | !exists | <DOES NOT EXIST> | 8     |
+                    # | [2]{oops}  | xyz              | !exists | <DOES NOT EXIST> |       |
+                    # +------------+------------------+---------+------------------+-------+
+                </script>
+
+            </dd>
+        </dl>
+    </dd>
+
+    <dt id="Todo">Todo</dt>
+    <dd>
+        <h2>Todo</h2>
+
+        Sometimes you have tests that you want to pass, but for some reason do not yet.
+
+        <p>
+
+        You can use the todo() function for these:
+
+        <p>
+
+        You can call todo with a reason and a codeblock, the todo will apply
+        only to the codeblock:
+
+        <script class="code">
+            $bool = 0;
+
+            todo "foo" => sub {
+                ok($bool, "Should be true");
+            };
+
+            # End of todo
+        </script>
+
+        If your code is sensitive to stack depth changes you can use a todo
+        variable:
+
+        <script class="code">
+            $bool = 0;
+
+            my $todo = todo "foo";
+
+            ok($bool, "Should be true");
+
+            $todo = undef; # End the todo
+        </script>
+    </dd>
+
+    <dt id="what_next">What&nbsp;Next?</dt>
+    <dd>
+        <h2>What Next?</h2>
+
+        <br /><p>
+
+        Now you know the basics of writing tests.
+        
+        <br /><p>
+        <br /><p>
+
+        This alone should be enough to start writing tests... But you can be much more productive with additional tools and plugins!
+
+        <br /><p>
+        <br /><p>
+
+        Across the top of this page there are several other links like <i>tools</i> and <i>plugins</i>.
+
+    </dd>
+</dl>
