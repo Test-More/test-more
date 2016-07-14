@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix test that segv'd on older perls
+
 1.302043  2016-07-12 09:37:31-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix TODO in mixed T2/TB subtests

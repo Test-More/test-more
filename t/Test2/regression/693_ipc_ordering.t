@@ -2,6 +2,8 @@ BEGIN { require "t/tools.pl" };
 use strict;
 use warnings;
 
+skip_all("Test cannot run on perls below 5.8.8") unless "$]" > 5.008007;
+
 use Test2::Util qw/CAN_THREAD/;
 use Test2::IPC;
 use Test2::API qw/context intercept/;
