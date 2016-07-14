@@ -79,6 +79,20 @@ subtest utf8 => sub {
     }
 };
 
+subtest "rename imports" => sub {
+    package A::Consumer;
+    use Test2::Bundle::Extended ':v1', '!subtest', subtest => {-as => 'a_subtest'};
+    imported_ok('a_subtest');
+    not_imported_ok('subtest');
+};
+
+subtest "no meta" => sub {
+    package B::Consumer;
+    use Test2::Bundle::Extended '!meta';
+    imported_ok('meta_check');
+    not_imported_ok('meta');
+};
+
 done_testing;
 
 1;
