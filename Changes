@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Switch Extended bundle to use Importer
+    - Add meta_check as alias for meta
+
 0.000050  2016-07-09 16:58:59-07:00 America/Los_Angeles
 
     - No Changes since trial
