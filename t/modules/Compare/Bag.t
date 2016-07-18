@@ -71,14 +71,6 @@ subtest deltas => sub {
                 id  => [ARRAY => '*'],
                 got => undef,,
                 chk => {input => 'b'},
-                children => [
-                    {
-                        dne => DNE,
-                        id => [ARRAY => 0],
-                        got => 'a',
-                        chk => {input => 'b'},
-                    },
-                ],
             }
         ],
         "Got the delta for the missing value"
@@ -92,20 +84,6 @@ subtest deltas => sub {
                 id  => [ARRAY => '*'],
                 got => undef,
                 chk => {input => 'b'},
-                children => [
-                    {
-                        dne => DNE,
-                        id => [ARRAY => 0],
-                        got => 'a',
-                        chk => {input => 'b'},
-                    },
-                    {
-                        dne => DNE,
-                        id => [ARRAY => 1],
-                        got => 'a',
-                        chk => {input => 'b'},
-                    },
-                ],
             }
         ],
         "Got the delta for the incorrect value"

@@ -58,38 +58,24 @@ sub deltas {
 
         my $check = $convert->($item);
 
-        my @item_deltas;
         my $match = 0;
         for my $idx (0..$#list) {
             my $val = $list[$idx];
-            my @this_deltas = $check->run(
+            my $deltas = $check->run(
                 id      => [ARRAY => $idx],
                 convert => $convert,
                 seen    => $seen,
                 exists  => 1,
                 got     => $val,
             );
-            if (@this_deltas) {
-                push @item_deltas,@this_deltas;
-            }
-            else {
+
+            unless ($deltas) {
                 $match++;
-                @item_deltas = ();
                 delete $unmatched{$idx};
                 last;
             }
         }
-        if (@item_deltas) {
-            push @deltas, $self->delta_class->new(
-                dne      => 'got',
-                verified => 1,
-                id       => [ARRAY => '*'],
-                got      => undef,
-                check    => $check,
-                children => \@item_deltas,
-            );
-        }
-        elsif(!$match) {
+        unless ($match) {
             push @deltas => $self->delta_class->new(
                 dne      => 'got',
                 verified => undef,
