@@ -2,7 +2,7 @@ package Test2::Util::Table::LineBreak;
 use strict;
 use warnings;
 
-our $VERSION = '0.000052';
+our $VERSION = '0.000053';
 
 use Carp qw/croak/;
 use Scalar::Util qw/blessed/;
