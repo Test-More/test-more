@@ -59,6 +59,7 @@ sub deltas {
         my $check = $convert->($item);
 
         my @item_deltas;
+        my $match = 0;
         for my $idx (0..$#list) {
             my $val = $list[$idx];
             my @this_deltas = $check->run(
@@ -72,6 +73,7 @@ sub deltas {
                 push @item_deltas,@this_deltas;
             }
             else {
+                $match++;
                 @item_deltas = ();
                 delete $unmatched{$idx};
                 last;
@@ -85,6 +87,15 @@ sub deltas {
                 got      => undef,
                 check    => $check,
                 children => \@item_deltas,
+            );
+        }
+        elsif(!$match) {
+            push @deltas => $self->delta_class->new(
+                dne      => 'got',
+                verified => undef,
+                id       => [ARRAY => '*'],
+                got      => undef,
+                check    => $check,
             );
         }
     }
