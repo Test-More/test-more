@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Restore traditional note/diag return values (#694)
+
 1.302045  2016-07-18 09:05:15-07:00 America/Los_Angeles
 
     - No changes from last TRIAL release

@@ -1183,6 +1183,7 @@ sub diag {
     my $ctx = $self->ctx;
     $ctx->diag(join '' => map {defined($_) ? $_ : 'undef'} @_);
     $ctx->release;
+    return 0;
 }
 
 
@@ -1193,6 +1194,7 @@ sub note {
     my $ctx = $self->ctx;
     $ctx->note(join '' => map {defined($_) ? $_ : 'undef'} @_);
     $ctx->release;
+    return 0;
 }
 
 
