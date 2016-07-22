@@ -10,7 +10,7 @@ use Test2::Util qw/get_tid CAN_REALLY_FORK/;
 
 use Scalar::Util qw/blessed/;
 use Time::HiRes qw/sleep/;
-use List::Util qw/shuffle/;
+use List::Util qw/shuffle min/;
 use Carp qw/confess/;
 
 use Test2::Util::HashBase qw{
