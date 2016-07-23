@@ -21,8 +21,11 @@ ok(run_string(<<"EOT"), "Installed cpanm") || exit 1;
 perlbrew exec --with $lib cpan App::cpanminus
 EOT
 
+my $tarball_base = "Test-Simple-$Test::More::VERSION";
+my ($tarball, $bad) = grep { -f $_ } "${tarball_base}.tar.gz", "${tarball_base}-TRIAL.tar.gz";
+ok(!$bad, "Only 1 Test-Simple tarball") || exit 1;
 ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
-perlbrew exec --with $lib cpanm Test-Simple-1.302047.tar.gz
+perlbrew exec --with $lib cpanm $tarball
 EOT
 
 for my $i (qw/Suite AsyncSubtest Workflow/) {
