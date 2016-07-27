@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - Run blocks when done_testing is missing (#3)
     - Add spec_defaults()
 
 0.000014  2016-07-02 22:11:29-07:00 America/Los_Angeles

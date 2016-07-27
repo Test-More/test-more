@@ -95,6 +95,7 @@ sub import {
         my $stack = Test2::API::test2_stack;
         $stack->top; # Insure we have a hub
         my ($hub) = Test2::API::test2_stack->all;
+        $hub->set_active(1);
         $hub->follow_up(
             sub {
                 return unless $root->populated;
