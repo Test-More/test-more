@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Carp qw/croak/;
-use Test2::Workflow qw/parse_args build current_build root_build init_root/;
+use Test2::Workflow qw/parse_args build current_build root_build init_root build_stack/;
 
 use Test2::Workflow::Runner();
 use Test2::Workflow::Task::Action();
@@ -13,7 +13,7 @@ use Importer();
 
 use vars qw/@EXPORT @EXPORT_OK/;
 push @EXPORT => qw{describe cases};
-push @EXPORT_OK => qw{include_workflow include_workflows};
+push @EXPORT_OK => qw{include_workflow include_workflows spec_defaults};
 
 my %HANDLED;
 sub import {
@@ -116,9 +116,12 @@ sub import {
 
 sub describe {
     my @caller = caller(0);
-    my $build = build(args => \@_, caller => \@caller);
 
-    return $build if defined wantarray;
+    my $want = wantarray;
+
+    my $build = build(args => \@_, caller => \@caller, stack_stop => defined $want ? 1 : 0);
+
+    return $build if defined $want;
 
     my $current = current_build() || root_build($caller[0])
         or croak "No current workflow build!";
@@ -139,6 +142,25 @@ sub include_workflow {
         $build->add_primary($task);
     }
 }
+
+sub defaults {
+    my %params = @_;
+
+    my ($package, $tool) = @params{qw/package tool/};
+
+    my @stack = (root_build($package), build_stack());
+    return unless @stack;
+
+    my %out;
+    for my $build (@stack) {
+        %out = () if $build->stack_stop;
+        my $new = $build->defaults->{$tool} or next;
+        %out = (%out, %$new);
+    }
+
+    return \%out;
+}
+
 
 # Generate a bunch of subs that only have minor differences between them.
 BEGIN {
@@ -208,6 +230,20 @@ BEGIN {
         around_each => [scaffold => 1, around => 1],
     );
 
+    sub spec_defaults {
+        my ($tool, %params) = @_;
+        my @caller = caller(0);
+
+        croak "'$tool' is not a spec tool"
+            unless exists $props{$tool} || exists $stages{$tool};
+
+        my $build = current_build() || root_build($caller[0])
+            or croak "No current workflow build!";
+
+        my $old = $build->defaults->{$tool} ||= {};
+        $build->defaults->{$tool} = { %$old, %params };
+    }
+
     my $run = "";
     for my $func (@EXPORT, @EXPORT_OK) {
         $run .= <<"        EOT";
@@ -221,6 +257,14 @@ sub $func {
 
     my \$build = current_build() || root_build(\$caller[0])
         or croak "No current workflow build!";
+
+    if (my \$defaults = defaults(package => \$caller[0], tool => '$func')) {
+        for my \$attr (keys \%\$defaults) {
+            next if defined \$action->\$attr;
+            my \$sub = "set_\$attr";
+            \$action->\$sub(\$defaults->{\$attr});
+        }
+    }
 
     \$build->\$_(\$action) for \@{\$stages{$func}};
 }
@@ -523,6 +567,49 @@ Same as:
     tests NAME => { minit => 1, async => 1 }, sub { ... }
 
 =back
+
+=head2 CUSTOM ATTRIBUTE DEFAULTS
+
+Sometimes you want to apply default attributes to all C<tests()> or C<case()>
+blocks. This can be done, and is lexical to your describe or package root!
+
+    use Test2::Bundle::Extended;
+    use Test2::Tools::Spec ':ALL';
+
+    # All 'tests' blocks after this declaration will have C<<iso => 1>> by default
+    spec_defaults tests => (iso => 1);
+
+    tests foo => sub { ... }; # isolated
+
+    tests foo, {iso => 0}, sub { ... }; # Not isolated
+
+    spec_defaults tests => (iso => 0); # Turn it off again
+
+Defaults are inherited by nested describe blocks. You can also override the
+defaults for the scope of the describe:
+
+    spec_defaults tests => (iso => 1);
+
+    describe foo => sub {
+        spec_defaults tests => (async => 1); # Scoped to this describe and any child describes
+
+        tests bar => sub { ... }; # both iso and async
+    };
+
+    tests baz => sub { ... }; # Just iso, no async.
+
+You can apply defaults to any type of blocks:
+
+    spec_defaults case => (iso => 1); # All cases are 'iso';
+
+Defaults are not inherited when a builder's return is captured.
+
+    spec_defaults tests => (iso => 1);
+
+    # Note we are not calling this in void context, that is the key here.
+    my $d = describe foo => {
+        tests bar => sub { ... }; # Not iso
+    };
 
 =head1 EXECUTION ORDER
 

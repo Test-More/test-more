@@ -17,7 +17,7 @@ BEGIN {
 }
 
 use base 'Test2::Workflow::Task';
-use Test2::Util::HashBase @BUILD_FIELDS, qw/events/;
+use Test2::Util::HashBase @BUILD_FIELDS, qw/events defaults stack_stop/;
 
 sub init {
     my $self = shift;
@@ -28,6 +28,7 @@ sub init {
     }
 
     $self->{$_} ||= [] for @BUILD_FIELDS;
+    $self->{+DEFAULTS} ||= {};
 }
 
 for my $field (@BUILD_FIELDS) {

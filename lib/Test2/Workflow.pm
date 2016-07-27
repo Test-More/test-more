@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = "0.000014";
 
-our @EXPORT_OK = qw/parse_args current_build build root_build init_root/;
+our @EXPORT_OK = qw/parse_args current_build build root_build init_root build_stack/;
 use base 'Exporter';
 
 use Test2::Workflow::Build;
@@ -19,6 +19,7 @@ sub parse_args {
     my %props;
 
     my $caller = $out{frame} = $input{caller} || caller(defined $input{level} ? $input{level} : 1);
+    delete @input{qw/caller level/};
 
     for my $arg (@$args) {
         if (my $r = ref($arg)) {
@@ -54,7 +55,7 @@ sub parse_args {
     die "a codeblock must be provided at $caller->[1] line $caller->[2].\n"
         unless $out{code};
 
-    return { %props, %out };
+    return { %props, %out, %input };
 }
 
 {
@@ -63,6 +64,7 @@ sub parse_args {
 
     sub root_build    { $ROOT_BUILDS{$_[0]} }
     sub current_build { @BUILD_STACK ? $BUILD_STACK[-1] : undef }
+    sub build_stack   { @BUILD_STACK }
 
     sub init_root {
         my ($pkg, %args) = @_;
