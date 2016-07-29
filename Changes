@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Require newer Importer.pm for :ALL tag
+
 0.000015  2016-07-28 07:07:37-07:00 America/Los_Angeles
 
     - Run blocks when done_testing is missing (#3)
