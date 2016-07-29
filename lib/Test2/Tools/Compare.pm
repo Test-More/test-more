@@ -1036,7 +1036,7 @@ B<Note: None of these are exported by default. You need to request them.>
         item 'f';
 
         # Remove any REMAINING items that contain 0-9.
-        filter_items { grep {m/\D/} @_ };
+        filter_items { grep {!m/[0-9]/} @_ };
 
         # Set checks that apply to all items. Can be done multiple times, and
         # each call can define multiple checks, all will be run.
