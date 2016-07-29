@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix \d -> [0-9] in several places (Thanks Mark F.)
+
 0.000054  2016-07-28 07:10:34-07:00 America/Los_Angeles
 
     - No changes from last trial
