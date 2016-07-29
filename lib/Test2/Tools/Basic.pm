@@ -78,7 +78,7 @@ sub plan {
     my $plan = shift;
     my $ctx = context();
 
-    if ($plan && $plan =~ m/\D/) {
+    if ($plan && $plan =~ m/[^0-9]/) {
         if ($plan eq 'tests') {
             $plan = shift;
         }

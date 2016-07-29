@@ -27,7 +27,7 @@ sub summary {
         if $real;
 
     $ctx->diag("Did not follow plan: expected $plan, ran $count.")
-        if $plan && $plan =~ m/^\d+$/ && defined $count && $count != $plan;
+        if $plan && $plan =~ m/^[0-9]+$/ && defined $count && $count != $plan;
 }
 
 1;
