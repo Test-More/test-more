@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Test2::Compare::Base';
 
-our $VERSION = '0.000055';
+our $VERSION = '0.000056';
 
 use Test2::Util::HashBase qw/checks _reduction/;
 
