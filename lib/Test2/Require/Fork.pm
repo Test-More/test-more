@@ -48,7 +48,7 @@ example of how to do it:
     sub CAN_FORK {
         return 1 if $Config{d_fork};
 
-        # Some platforms use ithreads to mimick forking
+        # Some platforms use ithreads to mimic forking
         return 0 unless $^O eq 'MSWin32' || $^O eq 'NetWare';
         return 0 unless $Config{useithreads};
         return 0 unless $Config{ccflags} =~ /-DPERL_IMPLICIT_SYS/;
