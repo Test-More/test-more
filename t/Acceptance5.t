@@ -1,22 +1,30 @@
 use Test2::Bundle::Extended;
 use Test2::Tools::Spec qw/:ALL/;
+use Test2::Util qw/get_tid/;
+
+sub get_ids {
+    return {
+        pid => $$,
+        tid => get_tid(),
+    };
+}
+
+my $orig = get_ids();
 
 spec_defaults case  => (iso => 1, async => 1);
 spec_defaults tests => (iso => 1, async => 1);
 
-my $orig = $$;
-
 tests outside => sub {
-    isnt($$, $orig, "In child (lexial)");
+    isnt(get_ids(), $orig, "In child (lexial)");
 };
 
 describe wrapper => sub {
     case foo => sub {
-        isnt($$, $orig, "In child (inherited)")
+        isnt(get_ids(), $orig, "In child (inherited)")
     };
 
     case 'bar', {iso => 0, async => 0} => sub {
-        is($$, $orig, "In orig (overriden)")
+        is(get_ids(), $orig, "In orig (overriden)")
     };
 
     tests a => sub { ok(1, 'stub') };

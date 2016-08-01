@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix acceptance5.t to not assume fork is used.
+
 0.000016  2016-07-29 12:37:29-07:00 America/Los_Angeles
 
     - Require newer Importer.pm for :ALL tag
