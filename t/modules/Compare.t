@@ -1,3 +1,15 @@
+use Test2::Tools::Defer;
+use strict;
+use warnings;
+
+# Make sure convert loads necessary modules (must do before loading the
+# extended bundle)
+BEGIN {
+    require Test2::Compare;
+    def ok => (Test2::Compare::convert(undef), "convert returned something to us");
+    def ok => ($INC{'Test2/Compare/Undef.pm'}, "loaded the Test2::Compare::Undef module");
+}
+
 use Test2::Bundle::Extended;
 use Test2::API qw/intercept/;
 use Data::Dumper;
@@ -12,6 +24,8 @@ imported_ok qw{
     compare get_build push_build pop_build build
     strict_convert relaxed_convert
 };
+
+do_def;
 
 {
     package Fake::Check;

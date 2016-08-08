@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Make sure Test2::Compare::convert loads deps
+
 0.000055  2016-07-30 13:18:13-07:00 America/Los_Angeles
 
     - Spelling fix from Debian (Thanks gregor herrmann)

@@ -64,8 +64,25 @@ sub build {
 sub strict_convert  { convert($_[0], 1) }
 sub relaxed_convert { convert($_[0], 0) }
 
+my $CONVERT_LOADED = 0;
 sub convert {
     my ($thing, $strict) = @_;
+
+    unless($CONVERT_LOADED) {
+        require Test2::Compare::Array;
+        require Test2::Compare::Base;
+        require Test2::Compare::Custom;
+        require Test2::Compare::DeepRef;
+        require Test2::Compare::Hash;
+        require Test2::Compare::Pattern;
+        require Test2::Compare::Ref;
+        require Test2::Compare::Regex;
+        require Test2::Compare::Scalar;
+        require Test2::Compare::String;
+        require Test2::Compare::Undef;
+        require Test2::Compare::Wildcard;
+        $CONVERT_LOADED = 1;
+    }
 
     return Test2::Compare::Undef->new()
         unless defined $thing;
