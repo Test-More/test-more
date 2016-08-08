@@ -77,7 +77,7 @@ prefer ':encoding(utf-8)' which is more strict about verifying characters.
 There is a debate about weather or not encoding to utf8 from perl internals can
 ever fail, so it may not matter. This was also chosen because the alternative
 causes threads to segfault, see
-L<perlbug 3193|https://rt.perl.org/Public/Bug/Display.html?id=31923>.
+L<perlbug 31923|https://rt.perl.org/Public/Bug/Display.html?id=31923>.
 
 =head1 SOURCE
 
