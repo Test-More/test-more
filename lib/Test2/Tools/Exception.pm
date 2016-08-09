@@ -2,7 +2,7 @@ package Test2::Tools::Exception;
 use strict;
 use warnings;
 
-our $VERSION = '0.000056';
+our $VERSION = '0.000057';
 
 use Test2::API qw/context/;
 
