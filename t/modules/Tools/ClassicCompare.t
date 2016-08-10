@@ -282,4 +282,60 @@ like(
     "Got exception in test"
 );
 
+
+note "cmp_ok() displaying good numbers"; {
+    my $have = 1.23456;
+    my $want = 4.5678;
+    like(
+        intercept {
+            cmp_ok($have, '>', $want);
+        },
+        array {
+            fail_events Ok => sub {
+                call pass => 0;
+            };
+
+            event Diag => sub {
+                call message => table(
+                    header => [qw/GOT OP CHECK/],
+                    rows   => [
+                      [$have, '>', $want],
+                    ],
+                );
+            };
+
+            end;
+        },
+    );
+}
+
+
+note "cmp_ok() displaying bad numbers"; {
+    my $have = "zero";
+    my $want = "3point5";
+    like(
+        intercept {
+            warnings { cmp_ok($have, '>', $want) };
+        },
+        array {
+            fail_events Ok => sub {
+                call pass => 0;
+            };
+
+            event Diag => sub {
+                call message => table(
+                    header => [qw/TYPE GOT OP CHECK/],
+                    rows   => [
+                      ['num',   0,      '>',    '3'],
+                      ['orig',  $have,  '',     $want],
+                    ],
+                );
+            };
+
+            end;
+        },
+    );
+}
+
+
 done_testing;
