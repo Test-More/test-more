@@ -14,3 +14,5 @@ before_install:
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
   - source ~/travis-perl-helpers/init --auto
   - cpan-install Test2
+notifications:
+  slack: perl-test2:kI7LQjG4iRjIqA2JTl770A5F
