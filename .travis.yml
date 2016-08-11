@@ -15,5 +15,8 @@ before_install:
   - source ~/travis-perl-helpers/init --auto
   - cpan-install Test2
 notifications:
-  slack: perl-test2:kI7LQjG4iRjIqA2JTl770A5F
-  on_success: change
+  slack:
+    rooms:
+      - perl-test2:kI7LQjG4iRjIqA2JTl770A5F#general
+    on_success: change
+
