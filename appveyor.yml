@@ -9,7 +9,7 @@ install:
   - cd C:\projects\%APPVEYOR_PROJECT_NAME%
   - cpanm -n Dist::Zilla
   - dzil authordeps --missing | cpanm -n
-  - dzil listdeps --missing | cpanm
+  - dzil listdeps --author --missing | cpanm
 
 build_script:
   - perl -e 2
