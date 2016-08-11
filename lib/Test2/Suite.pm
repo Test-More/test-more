@@ -305,6 +305,14 @@ See L<Test2::Require::Threads> for complete documentation.
 See the L<Test2> documentation for a namespace map. Everything in this
 distribution uses L<Test2>.
 
+=head1 CONTACTING US
+
+Many Test2 developers and users lurk on L<irc://irc.perl.org/#perl>. We also
+have a slack team that can be joined by anyone with an C<@cpan.org> email
+address L<https://perl-test2.slack.com/> If you do not have an C<@cpan.org>
+email you can ask for a slack invite by emailing Chad Granum
+E<lt>exodist@cpan.orgE<gt>.
+
 =head1 SOURCE
 
 The source code repository for Test2-Suite can be found at

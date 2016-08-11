@@ -6,7 +6,7 @@ framework.
 # DESCRIPTION
 
 Rich set of tools, plugins, bundles, etc built upon the [Test2](https://metacpan.org/pod/Test2) testing
-library. If you are interested in writing tests this is the distribution for
+library. If you are interested in writing tests, this is the distribution for
 you.
 
 ## WHAT ARE TOOLS, PLUGINS, AND BUNDLES?
@@ -30,9 +30,9 @@ you.
     any number of plugins.
 
 If you want to write something that both exports new functions, and effects
-behavior, you should write both a Tool distribution, and a Plugin distribution,
+behavior, you should write both a Tools distribution, and a Plugin distribution,
 then a Bundle that loads them both. This is important as it helps avoid the
-[Test::Most](https://metacpan.org/pod/Test::Most) problem, which is where a package exports much-desired tools, but
+problem where a package exports much-desired tools, but
 also produces undesirable side effects.
 
 # INCLUDED BUNDLES
@@ -154,7 +154,7 @@ also produces undesirable side effects.
 
     This provides tools for mocking objects and classes. This is based largely on
     [Mock::Quick](https://metacpan.org/pod/Mock::Quick), but several interface improvements have been added that cannot
-    be added to Mock::Quick itself without breaking backwords compatability.
+    be added to Mock::Quick itself without breaking backwards compatibility.
 
     See [Test2::Tools::Mock](https://metacpan.org/pod/Test2::Tools::Mock) for complete documentation.
 
@@ -182,14 +182,14 @@ also produces undesirable side effects.
 - BailOnFail
 
     The much requested "bail-out on first failure" plugin. When this plugin is
-    loaded, any failure will cause the test to bail out immedietly.
+    loaded, any failure will cause the test to bail out immediately.
 
     See [Test2::Plugin::BailOnFail](https://metacpan.org/pod/Test2::Plugin::BailOnFail) for complete documentation.
 
 - DieOnFail
 
-    The much requestied "die on first failure" plugin. When this plugin is
-    loaded, any failure will cause the test to die immedietly.
+    The much requested "die on first failure" plugin. When this plugin is
+    loaded, any failure will cause the test to die immediately.
 
     See [Test2::Plugin::DieOnFail](https://metacpan.org/pod/Test2::Plugin::DieOnFail) for complete documentation.
 
@@ -270,6 +270,14 @@ also produces undesirable side effects.
 
 See the [Test2](https://metacpan.org/pod/Test2) documentation for a namespace map. Everything in this
 distribution uses [Test2](https://metacpan.org/pod/Test2).
+
+# CONTACTING US
+
+Many Test2 developers and users lurk on [irc://irc.perl.org/#perl](irc://irc.perl.org/#perl). We also
+have a slack team that can be joined by anyone with an `@cpan.org` email
+address [https://perl-test2.slack.com/](https://perl-test2.slack.com/) If you do not have an `@cpan.org`
+email you can ask for a slack invite by emailing Chad Granum
+<exodist@cpan.org>.
 
 # SOURCE
 
