@@ -1,0 +1,21 @@
+language: perl
+perl:
+  - "5.8"
+  - "5.8-thr"
+  - "5.10"
+  - "5.12"
+  - "5.14"
+  - "5.16"
+  - "5.18"
+  - "5.20-thr"
+  - "5.22-thr"
+  - "dev"
+matrix:
+  include:
+    - perl: 5.22
+      env: COVERAGE=1
+sudo: false
+before_install:
+  - eval $(curl https://travis-perl.github.io/init) --auto
+notifications:
+  slack: perl-test2:kI7LQjG4iRjIqA2JTl770A5F
