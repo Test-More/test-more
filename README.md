@@ -10,12 +10,17 @@ completely refactoring it, adding many new features and capabilities.
 # GETTING STARTED
 
 If you are interested in writing tests using new tools then you should look at
-[Test2::Suite](https://metacpan.org/pod/Test2::Suite).
+[Test2::Suite](https://metacpan.org/pod/Test2::Suite). [Test::Suite](https://metacpan.org/pod/Test::Suite) is a separate cpan distribution that contains
+many tools implemented on Test2.
 
 If you are interested in writing new tools you should take a look at
 [Test2::API](https://metacpan.org/pod/Test2::API) first.
 
 # NAMESPACE LAYOUT
+
+This describes the namespace layout for the Test2 ecosystem. Not all the
+namespaces listed here are part of the Test2 distribution, some are implemented
+in [Test2::Suite](https://metacpan.org/pod/Test2::Suite).
 
 ## Test2::Tools::
 
@@ -47,12 +52,12 @@ perls, or when non-essential modules have not been installed.
 ## Test2::Formatter::
 
 Formatters live under this namespace. [Test2::Formatter::TAP](https://metacpan.org/pod/Test2::Formatter::TAP) is the only
-formatter currently. It is acceptible for third party distributions to create
+formatter currently. It is acceptable for third party distributions to create
 new formatters under this namespace.
 
 ## Test2::Event::
 
-Events live under this namespace. It is considered acceptible for third party
+Events live under this namespace. It is considered acceptable for third party
 distributions to add new event types in this namespace.
 
 ## Test2::Hub::
@@ -103,6 +108,14 @@ script it should probably NOT go directly into `Test2::XXX`.
 
 [Test2::Hub](https://metacpan.org/pod/Test2::Hub) - All events eventually funnel through a hub. Custom hubs are how
 `intercept()` and `run_subtest()` are implemented.
+
+# CONTACTING US
+
+Many Test2 developers and users lurk on [irc://irc.perl.org/#perl](irc://irc.perl.org/#perl). We also
+have a slack team that can be joined by anyone with an `@cpan.org` email
+address [https://perl-test2.slack.com/](https://perl-test2.slack.com/) If you do not have an `@cpan.org`
+email you can ask for a slack invite by emailing Chad Granum
+<exodist@cpan.org>.
 
 # SOURCE
 
