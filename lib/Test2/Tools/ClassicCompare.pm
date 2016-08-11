@@ -229,8 +229,8 @@ sub cmp_ok($$$;$@) {
         $display_exp = defined($exp) ? "$exp" : undef;
     }
     elsif($type eq 'num') {
-        $display_got = defined($got) ? sprintf("%D", $got) : undef;
-        $display_exp = defined($exp) ? sprintf("%D", $exp) : undef;
+        $display_got = defined($got) ? $got + 0 : undef;
+        $display_exp = defined($exp) ? $exp + 0 : undef;
     }
     else { # Well, we did what we could.
         $display_got = $got;
