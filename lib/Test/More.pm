@@ -125,6 +125,8 @@ the end.
 
   done_testing( $number_of_tests_run );
 
+B<NOTE> C<done_testing()> should never be called in an C<END { ... }> block.
+
 Sometimes you really don't know how many tests were run, or it's too
 difficult to calculate.  In which case you can leave off
 $number_of_tests_run.
@@ -231,6 +233,10 @@ you ran doesn't matter, just the fact that your tests ran to
 conclusion.
 
 This is safer than and replaces the "no_plan" plan.
+
+B<Note:> You must never put C<done_testing()> inside an C<END { ... }> block.
+The plan is there to insure your test does not exit before testing has
+completed. If you use an END block you completely bypass this protection.
 
 =back
 
