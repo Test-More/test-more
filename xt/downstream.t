@@ -28,7 +28,7 @@ ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
 perlbrew exec --with $lib cpanm $tarball
 EOT
 
-for my $i (qw/Suite AsyncSubtest Workflow/) {
+for my $i (qw/Suite AsyncSubtest Workflow Plugin::SpecDeclare/) {
     ok(run_string(<<"    EOT"), "Installed Test2::$i") || exit 1;
     perlbrew exec --with $lib cpanm --dev Test2::$i
     EOT
