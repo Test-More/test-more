@@ -24,7 +24,15 @@ sub inherit {
 sub terminate {
     my $self = shift;
     my ($code) = @_;
-    die bless(\$code, 'Test2::Hub::Interceptor::Terminator');
+
+    eval {
+        no warnings 'exiting';
+        last T2_SUBTEST_WRAPPER;
+    };
+    my $err = $@;
+
+    # Fallback
+    die bless(\$err, 'Test2::Hub::Interceptor::Terminator');
 }
 
 1;
