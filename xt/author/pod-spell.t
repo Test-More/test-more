@@ -87,6 +87,7 @@ subevents
 testability
 TIEHANDLE
 tie-ing
+unoverload
 VMS
 vmsperl
 YESNO
