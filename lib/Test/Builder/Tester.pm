@@ -436,6 +436,14 @@ sub color {
 
 =head1 BUGS
 
+Test::Builder::Tester does not handle plans well. It has never done anything
+special with plans. This means that plans from outside Test::Builder::Tester
+will effect Test::Builder::Tester, worse plans when using Test::Builder::Tester
+will effect overall testing. At this point there are no plans to fix this bug
+as people have come to depend on it, and Test::Builder::Tester is now
+discouraged in favor of C<Test2::API::intercept()>. See
+L<https://github.com/Test-More/test-more/issues/667>
+
 Calls C<< Test::Builder->no_ending >> turning off the ending tests.
 This is needed as otherwise it will trip out because we've run more
 tests than we strictly should have and it'll register any failures we
