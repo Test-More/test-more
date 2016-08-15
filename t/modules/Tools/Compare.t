@@ -15,7 +15,7 @@ sub table { join "\n" => Test2::Util::Table::table(@_) }
 subtest simple => sub {
     imported_ok qw{
         match mismatch validator
-        hash array bag object meta number string
+        hash array bag object meta number string bool
         in_set not_in_set check_set
         item field call call_list call_hash prop check all_items all_keys all_vals all_values
         end filter_items
@@ -522,6 +522,120 @@ subtest number => sub {
         );
     }
 };
+
+subtest bool => sub {
+    my @true = (1, 'yup', '0 but true', ' ', {});
+    my @false = (0, '0', '', undef);
+
+    for my $true (@true) {
+        for my $true2 (@true) {
+            is($true2, bool($true), "Both true");
+
+            my $line = __LINE__ + 2;
+            is(
+                intercept { is($true2, !bool($true)) },
+                array {
+                    fail_events Ok => {pass => 0};
+                    event Diag => sub {
+                        call message => table(
+                            header => [qw/GOT OP CHECK LNs/],
+                            rows   => [["<TRUE ($true2)>", '!=', "<TRUE ($true)>", $line]],
+                        );
+                    };
+                    end;
+                },
+                "true($true2) + true($true) + negate"
+            );
+        }
+
+        for my $false (@false) {
+            is($false, !bool($true), "true + false + !");
+            is($false, bool($true, negate => 1), "true + false + negate");
+
+            my $render = '<FALSE (' . (defined($false) ? length($false) ? $false : "''" : 'undef') . ')>';
+
+            my $line = __LINE__ + 2;
+            is(
+                intercept { is($false, bool($true)) },
+                array {
+                    fail_events Ok => {pass => 0};
+                    event Diag => sub {
+                        call message => table(
+                            header => [qw/GOT OP CHECK LNs/],
+                            rows   => [[$render, '==', "<TRUE ($true)>", $line]],
+                        );
+                    };
+                    end;
+                },
+                "$render + TRUE ($true) + negate"
+            );
+        }
+    }
+
+    for my $false (@false) {
+        my $render1 = '<FALSE (' . (defined($false) ? length($false) ? $false : "''" : 'undef') . ')>';
+        for my $false2 (@false) {
+            is($false2, bool($false), "false + false");
+
+            my $render2 = '<FALSE (' . (defined($false2) ? length($false2) ? $false2 : "''" : 'undef') . ')>';
+
+            my $line = __LINE__ + 2;
+            is(
+                intercept { is($false2, !bool($false)) },
+                array {
+                    fail_events Ok => {pass => 0};
+                    event Diag => sub {
+                        call message => table(
+                            header => [qw/GOT OP CHECK LNs/],
+                            rows   => [[$render2, '!=', $render1, $line]],
+                        );
+                    };
+                    end;
+                },
+                "$render2 + $render1 + negate"
+            );
+        }
+
+        for my $true (@true) {
+            is($true, !bool($false), "true + false + !");
+            is($true, bool($false, negate => 1), "true + false + negate");
+
+            my $line = __LINE__ + 2;
+            is(
+                intercept { is($true, bool($false)) },
+                array {
+                    fail_events Ok => {pass => 0};
+                    event Diag => sub {
+                        call message => table(
+                            header => [qw/GOT OP CHECK LNs/],
+                            rows   => [["<TRUE ($true)>", '==', $render1, $line]],
+                        );
+                    };
+                    end;
+                },
+                "TRUE ($true) + $render1 + negate"
+            );
+        }
+    }
+
+    my $arr  = [];
+    my $line = __LINE__ + 2;
+    is(
+        intercept { is($arr, [bool(0)]) },
+        array {
+            fail_events Ok => {pass => 0};
+            event Diag => sub {
+                call message => table(
+                    header => [qw/PATH GOT OP CHECK LNs/],
+                    rows   => [['[0]', "<DOES NOT EXIST>", '==', '<FALSE (0)>', $line],],
+                );
+            };
+            end;
+        },
+        "Value must exist"
+    );
+};
+
 
 subtest match => sub {
     my $check = match qr/xyz/; my $line = __LINE__;

@@ -22,7 +22,7 @@ imported_ok qw{
 
     is like isnt unlike
     match mismatch validator
-    hash array object meta number string
+    hash array object meta number string bool
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     end filter_items
