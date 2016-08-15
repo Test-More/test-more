@@ -6,7 +6,10 @@ use base 'Test2::Compare::Base';
 
 our $VERSION = '0.000059';
 
-use Test2::Util::HashBase qw/pattern negate stringify_got/;
+use Test2::Util::HashBase qw/pattern stringify_got/;
+
+# Overloads '!' for us.
+use Test2::Compare::Negatable;
 
 use Carp qw/croak/;
 

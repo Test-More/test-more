@@ -52,3 +52,4 @@ unicode
 validators
 
 ## other jargon, slang
+XNOR

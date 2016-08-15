@@ -410,29 +410,33 @@ subtest string => sub {
         "Got events"
     );
 
-    $check = string "foo", negate => 1; $line = __LINE__;
-    is($check->lines, [$line], "Got line number");
+    my ($check1, $check2) = (string("foo", negate => 1), !string("foo"));
+    $line = __LINE__ - 1;
 
-    $events = intercept {
-        is('bar', $check, "pass");
-        is('foo', $check, "fail");
-    };
+    for $check ($check1, $check2) {
+        is($check->lines, [$line], "Got line number");
 
-    like(
-        $events,
-        array {
-            event Ok => {pass => 1};
-            fail_events Ok => {pass => 0};
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[qw/foo ne foo/, $line]],
-                );
-            };
-            end;
-        },
-        "Got events"
-    );
+        $events = intercept {
+            is('bar', $check1, "pass");
+            is('foo', $check1, "fail");
+        };
+
+        like(
+            $events,
+            array {
+                event Ok => {pass => 1};
+                fail_events Ok => {pass => 0};
+                event Diag => sub {
+                    call message => table(
+                        header => [qw/GOT OP CHECK LNs/],
+                        rows   => [[qw/foo ne foo/, $line]],
+                    );
+                };
+                end;
+            },
+            "Got events"
+        );
+    }
 };
 
 subtest number => sub {
@@ -471,53 +475,110 @@ subtest number => sub {
         "Got events"
     );
 
-    $check = number "22.0", negate => 1; $line = __LINE__;
-    is($check->lines, [$line], "Got line number");
+    my ($check1, $check2) = (number("22.0", negate => 1), !number("22.0"));
+    $line = __LINE__ - 1;
 
-    $events = intercept {
-        is(12, $check, "pass");
-        is(22, $check, "fail");
-        is("22.0", $check, "fail");
-        is('xxx', $check, "fail");
-    };
+    for $check ($check1, $check2) {
+        is($check->lines, [$line], "Got line number");
 
-    like(
-        $events,
-        array {
-            event Ok => {pass => 1};
-            fail_events Ok => { pass => 0 };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[qw/22 != 22.0/, $line]],
-                );
-            };
+        $events = intercept {
+            is(12, $check, "pass");
+            is(22, $check, "fail");
+            is("22.0", $check, "fail");
+            is('xxx', $check, "fail");
+        };
 
-            fail_events Ok => { pass => 0 };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[qw/22.0 != 22.0/, $line]],
-                );
-            };
+        like(
+            $events,
+            array {
+                event Ok => {pass => 1};
+                fail_events Ok => { pass => 0 };
+                event Diag => sub {
+                    call message => table(
+                        header => [qw/GOT OP CHECK LNs/],
+                        rows   => [[qw/22 != 22.0/, $line]],
+                    );
+                };
 
-            fail_events Ok => { pass => 0 };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[qw/xxx != 22.0/, $line]],
-                );
-            };
+                fail_events Ok => { pass => 0 };
+                event Diag => sub {
+                    call message => table(
+                        header => [qw/GOT OP CHECK LNs/],
+                        rows   => [[qw/22.0 != 22.0/, $line]],
+                    );
+                };
 
-            end;
-        },
-        "Got events"
-    );
+                fail_events Ok => { pass => 0 };
+                event Diag => sub {
+                    call message => table(
+                        header => [qw/GOT OP CHECK LNs/],
+                        rows   => [[qw/xxx != 22.0/, $line]],
+                    );
+                };
 
+                end;
+            },
+            "Got events"
+        );
+    }
 };
 
 subtest match => sub {
     my $check = match qr/xyz/; my $line = __LINE__;
+    is($check->lines, [$line], "Got line number");
+
+    my $events = intercept {
+        is('axyzb', $check, "pass");
+        is('abcde', $check, "fail");
+    };
+
+    my $rx = "" . qr/xyz/;
+    like(
+        $events,
+        array {
+            event Ok => {pass => 1};
+            fail_events Ok => {pass => 0};
+            event Diag => sub {
+                call message => table(
+                    header => [qw/GOT OP CHECK LNs/],
+                    rows   => [[qw/abcde =~/, "$rx", $line]],
+                );
+            };
+            end;
+        },
+        "Got events"
+    );
+};
+
+subtest '!match' => sub {
+    my $check = !match qr/xyz/; my $line = __LINE__;
+    is($check->lines, [$line], "Got line number");
+
+    my $events = intercept {
+        is('abcde', $check, "pass");
+        is('axyzb', $check, "fail");
+    };
+
+    my $rx = "" . qr/xyz/;
+    like(
+        $events,
+        array {
+            event Ok => {pass => 1};
+            fail_events Ok => {pass => 0};
+            event Diag => sub {
+                call message => table(
+                    header => [qw/GOT OP CHECK LNs/],
+                    rows   => [[qw/axyzb !~/, "$rx", $line]],
+                );
+            };
+            end;
+        },
+        "Got events"
+    );
+};
+
+subtest '!mismatch' => sub {
+    my $check = !mismatch qr/xyz/; my $line = __LINE__;
     is($check->lines, [$line], "Got line number");
 
     my $events = intercept {

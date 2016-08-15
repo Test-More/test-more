@@ -865,19 +865,36 @@ B<Note: None of these are exported by default. You need to request them.>
 
 Verify that the value matches the given string using the C<eq> operator.
 
+=item $check = !string "..."
+
+Verify that the value does not match the given string using the C<ne> operator.
+
 =item $check = number ...;
 
 Verify that the value matches the given number using the C<==> operator.
 
+=item $check = !number ...;
+
+Verify that the value does not match the given number using the C<!=> operator.
+
 =item $check = match qr/.../
+
+=item $check = !mismatch qr/.../
 
 Verify that the value matches the regex pattern. This form of pattern check
 will B<NOT> stringify references being checked.
+
+B<Note:> C<!mismatch()> is documented for completion, please do not use it.
+
+=item $check = !match qr/.../
 
 =item $check = mismatch qr/.../
 
 Verify that the value does not match the regex pattern. This form of pattern
 check will B<NOT> stringify references being checked.
+
+B<Note:> C<mismatch()> was created before overloading of C<!> for C<match()>
+was a thing.
 
 =item $check = validator(sub{ ... })
 
