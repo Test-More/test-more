@@ -96,6 +96,8 @@ sub deltas {
                 id       => [ARRAY => $idx],
                 got      => $elem,
                 check    => undef,
+
+                $self->{+ENDING} eq 'implicit' ? (note => 'implicit end') : (),
             );
         }
     }

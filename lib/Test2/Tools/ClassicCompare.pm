@@ -145,7 +145,36 @@ sub is_deeply($$;$@) {
     my $delta = compare($got, $exp, \&strict_convert);
 
     if ($delta) {
-        $ctx->ok(0, $name, [$delta->table, @diag]);
+        # Temporary thing.
+        my $count = 0;
+        my $implicit = 0;
+        my @deltas = ($delta);
+        while (my $d = shift @deltas) {
+            my $add = $d->children;
+            push @deltas => @$add if $add && @$add;
+            next if $d->verified;
+            $count++;
+            $implicit++ if $d->note && $d->note eq 'implicit end';
+        }
+
+        if ($implicit == $count) {
+            $ctx->ok(1, $name);
+            my $meth = $ENV{AUTHOR_TESTING} ? 'throw' : 'alert';
+            my $type = $delta->render_check;
+            $ctx->$meth(
+                join "\n",
+                "!!! NOTICE OF BEHAVIOR CHANGE !!!",
+                "This test uses at least 1 $type check without using end() or etc().",
+                "The exising behavior is to default to etc() when inside is_deeply().",
+                "The new behavior is to default to end().",
+                "This test will soon start to fail with the following diagnostics:",
+                $delta->diag,
+                "",
+            );
+        }
+        else {
+            $ctx->ok(0, $name, [$delta->table, @diag]);
+        }
     }
     else {
         $ctx->ok(1, $name);

@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '0.000059';
 
-use Test2::Util::HashBase qw{verified id got chk children dne exception};
+use Test2::Util::HashBase qw{verified id got chk children dne exception note};
 
 use Test2::Util::Table();
 use Test2::API qw/context/;

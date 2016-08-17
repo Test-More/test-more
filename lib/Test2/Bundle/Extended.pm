@@ -31,7 +31,7 @@ use Test2::Tools::Compare qw{
     hash array bag object meta meta_check number string subset
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
-    end filter_items
+    etc end filter_items
     T F D DF E DNE FDNE U
     event fail_events
     exact_ref
@@ -81,7 +81,7 @@ our @EXPORT = qw{
     hash array bag object meta meta_check number string subset
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
-    end filter_items
+    etc end filter_items
     T F D DF E DNE FDNE U
     event fail_events
     exact_ref
@@ -415,8 +415,6 @@ See L<Test2::Tools::Compare>.
 
 =item $check = check($thing)
 
-=item $check = end()
-
 =item $check = T()
 
 =item $check = F()
@@ -430,6 +428,10 @@ See L<Test2::Tools::Compare>.
 =item $check = FDNE()
 
 =item $check = exact_ref($ref)
+
+=item end()
+
+=item etc()
 
 =item filter_items { grep { ... } @_ }
 
