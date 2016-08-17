@@ -49,12 +49,12 @@ is_deeply(
     $events,
     array {
         filter_items { grep { !$_->isa('Test2::Event::Diag') } @_ };
-        event Ok => { pass => 0 };
-        event Ok => { pass => 0 };
-        event Ok => { pass => 0 };
-        event Ok => { pass => 0 };
-        event Ok => { pass => 0 };
-        event Ok => { pass => 0 };
+        event Ok => sub { field pass => 0; etc };
+        event Ok => sub { field pass => 0; etc };
+        event Ok => sub { field pass => 0; etc };
+        event Ok => sub { field pass => 0; etc };
+        event Ok => sub { field pass => 0; etc };
+        event Ok => sub { field pass => 0; etc };
         end;
     },
     "got failure events"

@@ -35,7 +35,7 @@ my $events = intercept {
     ok(0, 'fail');
 };
 
-is(
+like(
     $events,
     array {
         event Ok => { pass => 0, effective_pass => 0, todo => DNE };

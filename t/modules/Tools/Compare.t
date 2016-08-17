@@ -800,11 +800,12 @@ subtest meta => sub {
 };
 
 subtest hash => sub {
-    my $empty = hash { };
+    my $empty = hash { etc };
 
     my $full = hash {
         field a => 1;
         field b => 2;
+        etc;
     };
 
     my $closed = hash {
@@ -842,12 +843,13 @@ subtest hash => sub {
 };
 
 subtest array => sub {
-    my $empty = array { };
+    my $empty = array { etc };
 
     my $simple = array {
         item 'a';
         item 'b';
         item 'c';
+        etc;
     };
 
     my $filtered = array {
@@ -855,11 +857,13 @@ subtest array => sub {
         item 0 => 'a';
         item 1 => 'a';
         item 2 => 'a';
+        etc;
     };
 
     my $shotgun = array {
         item 1 => 'b';
         item 3 => 'd';
+        etc;
     };
 
     my $closed = array {
@@ -904,12 +908,13 @@ subtest array => sub {
 };
 
 subtest bag => sub {
-    my $empty = bag { };
+    my $empty = bag { etc };
 
     my $simple = bag {
         item 'a';
         item 'b';
         item 'c';
+        etc;
     };
 
     my $closed = array {
@@ -966,6 +971,7 @@ subtest object => sub {
         call [args => qw(a b)] => {a=>'b'};
         item 0 => 'x';
         item 1 => 'y';
+        etc;
     };
 
     my $closed_array = object {
@@ -987,6 +993,7 @@ subtest object => sub {
         call [args => qw(a b)] => {a=>'b'};
         field x => 1;
         field y => 2;
+        etc;
     };
 
     my $closed_hash = object {
@@ -1008,6 +1015,7 @@ subtest object => sub {
         call [args => qw(a b)] => {a=>'b'};
         prop blessed => 'ObjectFoo';
         prop reftype => 'HASH';
+        etc;
     };
 
     my $mix = object {
@@ -1020,6 +1028,7 @@ subtest object => sub {
         field y => 2;
         prop blessed => 'ObjectFoo';
         prop reftype => 'HASH';
+        etc;
     };
 
     my $obf = mock 'ObjectFoo' => (add => [
@@ -1114,11 +1123,12 @@ subtest event => sub {
     my $from_sub = event Ok => sub {
         call pass  => 1;
         field name => 'pass';
+        etc;
     };
 
-    my $from_hash = event Ok => {pass => 1, name => 'pass'};
+    my $from_hash = event Ok => sub { field pass => 1; field name => 'pass'; etc};
 
-    my $from_build = array { event Ok => {pass => 1, name => 'pass'} };
+    my $from_build = array { event Ok => sub { field pass => 1; field name => 'pass'; etc } };
 
     my $pass = intercept { ok(1, 'pass') };
     my $fail = intercept { ok(0, 'fail') };
@@ -1285,7 +1295,7 @@ subtest unlike => sub {
 };
 
 subtest all_items => sub {
-    is(
+    like(
         [qw/a aa aaa/],
         array {
             all_items match qr/^a+$/;
@@ -1310,7 +1320,7 @@ subtest all_items => sub {
             "items do not all match, and diag reflects all issues, and in order"
         );
     };
-    is(
+    like(
         $events,
         array {
             fail_events Ok => {pass => 0};
@@ -1362,7 +1372,7 @@ subtest all_keys_and_vals => sub {
             "items do not all match, and diag reflects all issues, and in order"
         );
     };
-    is(
+    like(
         $events,
         array {
             fail_events Ok => {pass => 0};

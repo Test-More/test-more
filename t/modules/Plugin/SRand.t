@@ -39,7 +39,7 @@ sub intercept_2(&) {
 
     my $caller = [__PACKAGE__, __FILE__, __LINE__, 'xxx'];
 
-    is(
+    like(
         intercept_2 { $CLASS->import('5555') },
         array {
             event Note => { message => "Seeded srand with seed '5555' from import arg." };
@@ -52,7 +52,7 @@ sub intercept_2(&) {
     my ($events, $warning);
     $warning = warning { $events = intercept_2 { $CLASS->import() } };
 
-    is(
+    like(
         $events,
         array {
             event Note => { message => "Seeded srand with seed '1234' from environment variable." };

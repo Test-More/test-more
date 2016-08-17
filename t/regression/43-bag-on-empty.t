@@ -10,7 +10,7 @@ my $got = intercept {
     is([], $check, 'All of the elements from bag found!');    # passes but shouldn't
 };
 
-is(
+like(
     $got,
     array {
         fail_events 'Ok' => sub {

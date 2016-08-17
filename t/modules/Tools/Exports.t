@@ -8,7 +8,7 @@ use Test2::Bundle::Extended -target => 'Test2::Tools::Exports';
     not_imported_ok(qw/xyz/);
 }
 
-is(
+like(
     intercept { imported_ok('x') },
     array {
         fail_events Ok => { pass => 0 };
@@ -18,7 +18,7 @@ is(
     "Failed, x is not imported"
 );
 
-is(
+like(
     intercept { not_imported_ok('ok') },
     array {
         fail_events Ok => { pass => 0 };

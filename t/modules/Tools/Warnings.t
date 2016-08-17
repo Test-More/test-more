@@ -50,7 +50,7 @@ like(
     "Got warning about extra warnings"
 );
 
-is(
+like(
     $events,
     array {
         event Note => { message => "a\n" };
