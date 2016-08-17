@@ -833,6 +833,22 @@ These will fail:
     is(undef, DF(), 'foo is defined but false');
     is(1, DF(), 'foo is defined but false');
 
+=item $check = E()
+
+This can be used to check that a value exists. This is useful to check that an
+array has more values, or to check that a key exists in a hash, even if the
+value is undefined.
+
+These pass:
+
+    is(['a', 'b', undef], ['a', 'b', E()], "There is a third item in the array");
+    is({a => 1, b => 2}, {a => 1, b => E()}, "The 'b' key exists in the hash");
+
+These will fail:
+
+    is(['a', 'b'], ['a', 'b', E()], "Third item exists");
+    is({a => 1}, {a => 1, b => E()}, "'b' key exists");
+
 =item $check = DNE()
 
 This can be used to check that no value exists. This is useful to check the end
