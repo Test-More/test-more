@@ -3,6 +3,7 @@
     - Fix skip_all in require in intercept (#696)
     - Documentation of what is better in Test2 (#663)
     - Document Test::Builder::Tester plan limitations
+    - Document limitations in is_deeply (#595)
 
 1.302052  2016-08-13 14:34:07-07:00 America/Los_Angeles
 

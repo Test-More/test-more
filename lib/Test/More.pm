@@ -1064,6 +1064,20 @@ improve in the future.
 L<Test::Differences> and L<Test::Deep> provide more in-depth functionality
 along these lines.
 
+B<NOTE> is_deeply() has limitations when it comes to comparing strings and
+refs:
+
+    my $path = path('.');
+    my $hash = {};
+    is_deeply( $path, "$path" ); # ok
+    is_deeply( $hash, "$hash" ); # fail
+
+This happens because is_deeply will unoverload all arguments unconditionally.
+It is probably best not to use is_deeply with overloading. For legacy reasons
+this is not likely to ever be fixed. If you would like a much better tool for
+this you should see L<Test2::Suite> Specifically L<Test2::Tools::Compare> has
+an C<is()> function that works like C<is_deeply> with many improvements.
+
 =cut
 
 our( @Data_Stack, %Refs_Seen );
