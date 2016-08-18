@@ -201,12 +201,13 @@ sub send_event {
 
     my $pkg = $LOADED{$event} || $self->_parse_event($event);
 
-    $self->{+HUB}->send(
-        $pkg->new(
-            trace => $self->{+TRACE}->snapshot,
-            %args,
-        )
+    my $e = $pkg->new(
+        trace => $self->{+TRACE}->snapshot,
+        %args,
     );
+
+    ${$self->{+_ABORTED}}++ if $self->{+_ABORTED} && defined $e->terminate;
+    $self->{+HUB}->send($e);
 }
 
 sub build_event {
@@ -317,13 +318,11 @@ sub diag {
 
 sub plan {
     my ($self, $max, $directive, $reason) = @_;
-    ${$self->{+_ABORTED}}++ if $self->{+_ABORTED} && $directive && $directive =~ m/^(SKIP|skip_all)$/;
     $self->send_event('Plan', max => $max, directive => $directive, reason => $reason);
 }
 
 sub bail {
     my ($self, $reason) = @_;
-    ${$self->{+_ABORTED}}++ if $self->{+_ABORTED};
     $self->send_event('Bail', reason => $reason);
 }
 
