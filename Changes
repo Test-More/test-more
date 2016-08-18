@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302053  2016-08-17 21:22:55-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix skip_all in require in intercept (#696)
     - Documentation of what is better in Test2 (#663)
     - Document Test::Builder::Tester plan limitations
