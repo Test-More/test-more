@@ -4,7 +4,8 @@ use warnings;
 
 our $VERSION = '0.000059';
 
-use Carp qw/confess/;
+use Carp qw/confess croak/;
+use Scalar::Util qw/blessed/;
 
 use Test2::Util::Sub qw/sub_info/;
 use Test2::Compare::Delta();
@@ -17,6 +18,14 @@ use Test2::Util::HashBase qw{builder _file _lines _info called};
     no warnings 'once';
     *set_lines = \&set__lines;
     *set_file  = \&set__file;
+}
+
+sub clone {
+    my $self = shift;
+    my $class = blessed($self);
+
+    # Shallow copy is good enough for all the current compare types.
+    return bless({%$self}, $class);
 }
 
 sub init {

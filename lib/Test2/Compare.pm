@@ -88,6 +88,12 @@ sub convert {
         unless defined $thing;
 
     if ($thing && blessed($thing) && $thing->isa('Test2::Compare::Base')) {
+        if ($strict && $thing->can('set_ending') && !defined $thing->ending) {
+            my $clone = $thing->clone;
+            $clone->set_ending('implicit');
+            return $clone;
+        }
+
         return $thing unless $thing->isa('Test2::Compare::Wildcard');
         my $newthing = convert($thing->expect, $strict);
         $newthing->set_builder($thing->builder) unless $newthing->builder;

@@ -180,6 +180,8 @@ sub deltas {
                 id       => [ARRAY => $state],
                 got      => $item,
                 check    => undef,
+
+                $self->{+ENDING} eq 'implicit' ? (note => 'implicit end') : (),
             );
         }
 

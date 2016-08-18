@@ -168,6 +168,8 @@ sub deltas {
                     id       => [HASH => $key],
                     got      => $val,
                     check    => undef,
+
+                    $self->{+ENDING} eq 'implicit' ? (note => 'implicit end') : (),
                 );
             }
         }

@@ -64,7 +64,7 @@ our @EXPORT_OK = qw{
     hash array bag object meta meta_check number string subset
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
-    end filter_items
+    etc end filter_items
     T F D DF DNE FDNE E U
     event fail_events
     exact_ref
@@ -78,7 +78,36 @@ sub is($$;$@) {
     my $delta = compare($got, $exp, \&strict_convert);
 
     if ($delta) {
-        $ctx->ok(0, $name, [$delta->diag, @diag]);
+        # Temporary thing.
+        my $count = 0;
+        my $implicit = 0;
+        my @deltas = ($delta);
+        while (my $d = shift @deltas) {
+            my $add = $d->children;
+            push @deltas => @$add if $add && @$add;
+            next if $d->verified;
+            $count++;
+            $implicit++ if $d->note && $d->note eq 'implicit end';
+        }
+
+        if ($implicit == $count) {
+            $ctx->ok(1, $name);
+            my $meth = $ENV{AUTHOR_TESTING} ? 'throw' : 'alert';
+            my $type = $delta->render_check;
+            $ctx->$meth(
+                join "\n",
+                "!!! NOTICE OF BEHAVIOR CHANGE !!!",
+                "This test uses at least 1 $type check without using end() or etc().",
+                "The exising behavior is to default to etc() when inside is().",
+                "The new behavior is to default to end().",
+                "This test will soon start to fail with the following diagnostics:",
+                $delta->diag,
+                "",
+            );
+        }
+        else {
+            $ctx->ok(0, $name, [$delta->diag, @diag]);
+        }
     }
     else {
         $ctx->ok(1, $name);
@@ -346,6 +375,18 @@ sub end() {
     $build->set_ending(1);
 }
 
+sub etc() {
+    my $build = get_build() or croak "No current build!";
+
+    croak "'$build' does not support 'ending'"
+        unless $build->can('ending');
+
+    croak "'etc' should only ever be called in void context"
+        if defined wantarray;
+
+    $build->set_ending(0);
+}
+
 my $_call = sub {
     my ($name, $expect, $context, $func_name) = @_;
     my $build = get_build() or croak "No current build!";
@@ -602,7 +643,7 @@ the field.
         hash array bag object meta number string subset
         in_set not_in_set check_set
         item field call call_list call_hash prop check all_items all_keys all_vals all_values
-        end filter_items
+        etc end filter_items
         T F D DNE FDNE E
         event fail_events
         exact_ref
@@ -1022,6 +1063,12 @@ Enforce that no keys are found in the hash other than those specified. This is
 essentially the C<use strict> of a hash check. This can be used anywhere in the
 hash builder, though typically it is placed at the end.
 
+=item etc()
+
+Ignore any extra keys found in the hash. This is the opposite of C<end()>.
+This can be used anywhere in the hash builder, though typically it is placed at
+the end.
+
 =item DNE()
 
 This is a handy check that can be used with C<field()> to ensure that a field
@@ -1111,6 +1158,12 @@ block, and can call it any number of times with any number of arguments.
 Enforce that there are no indexes after the last one specified. This will not
 force checking of skipped indexes.
 
+=item etc()
+
+Ignore any extra items found in the array. This is the opposite of C<end()>.
+This can be used anywhere in the array builder, though typically it is placed
+at the end.
+
 =item DNE()
 
 This is a handy check that can be used with C<item()> to ensure that an index
@@ -1154,6 +1207,12 @@ builder sub, and must be called in void context.
 =item end()
 
 Enforce that there are no more items after the last one specified.
+
+=item etc()
+
+Ignore any extra items found in the array. This is the opposite of C<end()>.
+This can be used anywhere in the bag builder, though typically it is placed
+at the end.
 
 =back
 
@@ -1392,6 +1451,12 @@ exist.
 
 Turn on strict array/hash checking, ensuring that no extra keys/indexes
 are present.
+
+=item etc()
+
+Ignore any extra items found in the hash/array. This is the opposite of
+C<end()>.  This can be used anywhere in the builder, though typically it is
+placed at the end.
 
 =back
 

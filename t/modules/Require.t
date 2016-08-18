@@ -23,7 +23,7 @@ my $events = intercept {
     ok(1, 'pass');
 };
 
-is(
+like(
     $events,
     array {
         event Ok => {pass => 1, name => 'pass'};
@@ -37,14 +37,14 @@ $events = intercept {
     die "Should not get here";
 };
 
-is(
+like(
     $events,
     array {
         event Plan => {
             max       => 0,
             directive => 'SKIP',
             reason    => 'This should skip',
-            }
+        };
     },
     "Skipped all"
 );
