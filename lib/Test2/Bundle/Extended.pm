@@ -52,7 +52,7 @@ use Test2::Tools::Encoding  qw/set_encoding/;
 use Test2::Tools::Exports   qw/imported_ok not_imported_ok/;
 use Test2::Tools::Ref       qw/ref_ok ref_is ref_is_not/;
 use Test2::Tools::Mock      qw/mock mocked/;
-use Test2::Tools::Exception qw/dies lives/;
+use Test2::Tools::Exception qw/try_ok dies lives/;
 
 our @EXPORT = qw{
     ok pass fail diag note todo skip
@@ -74,7 +74,7 @@ our @EXPORT = qw{
     imported_ok not_imported_ok
     ref_ok ref_is ref_is_not
     mock mocked
-    dies lives
+    dies lives try_ok
 
     is like isnt unlike
     match mismatch validator
@@ -532,6 +532,8 @@ See L<Test2::Tools::Exception>.
 =item $exception = dies { ... }
 
 =item $bool = lives { ... }
+
+=item $bool = try_ok { ... }
 
 =back
 

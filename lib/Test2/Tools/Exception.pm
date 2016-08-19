@@ -6,7 +6,7 @@ our $VERSION = '0.000059';
 
 use Test2::API qw/context/;
 
-our @EXPORT = qw/dies lives/;
+our @EXPORT = qw/dies lives try_ok/;
 use base 'Exporter';
 
 sub dies(&) {
@@ -39,6 +39,24 @@ sub lives(&) {
     # If the eval failed we want to set $@ to the error.
     $@ = $err;
     return 0;
+}
+
+sub try_ok(&;$) {
+    my ($code, $name) = @_;
+
+    my $ok = &lives($code);
+    my $err = $@;
+
+    # Context should be obtained AFTER code is run so that events inside the
+    # codeblock report inside the codeblock itself. This will also preserve $@
+    # as thrown inside the codeblock.
+    my $ctx = context();
+    chomp(my $diag = "Exception: $err");
+    $ctx->ok($ok, $name, [$diag]);
+    $ctx->release;
+
+    $@ = $err unless $ok;
+    return $ok;
 }
 
 1;
@@ -89,6 +107,18 @@ This will trap any exception thrown in the codeblock. It will return true when
 there is no exception, and false when there is. C<$@> is preserved from before
 the sub is called when there is no exception. When an exception is trapped
 C<$@> will have the exception so that you can look at it.
+
+=item $bool = try_ok { ... }
+
+=item $bool = try_ok { ... } "Test Description"
+
+This will run the code block trapping any exception. If there is no exception a
+passing event will be issued. If the test fails a failing event will be issued,
+and the exception will be reported as diagnostics.
+
+B<Note:> This function does not preserve C<$@> on failure, it will be set to
+the exception the codeblock throws, this is by design so that you can obtain
+the exception if desired.
 
 =back
 
