@@ -43,6 +43,16 @@ sub event_plan {
     return $self->SUPER::event_plan(@_);
 }
 
+sub event_ok_multiline {
+    my $self = shift;
+    my ($out, $space, @extra) = @_;
+
+    return(
+        [OUT_STD, "$out\n"],
+        map {[OUT_STD, "# $_\n"]} @extra,
+    );
+}
+
 1;
 
 __END__

@@ -154,12 +154,34 @@ sub event_ok {
     $out .= "not " unless $e->{pass};
     $out .= "ok";
     $out .= " $num" if defined($num);
+
+    # The regex form is ~250ms, the index form is ~50ms
+    my @extra;
+    defined($name) && (
+        (index($name, "\n") != -1 && (($name, @extra) = split(/\n\r?/, $name, -1))),
+        (index($name, "#" ) != -1 && (($name =~ s|\\|\\\\|g), ($name =~ s|#|\\#|g)))
+    );
+
+    my $space = @extra ? ' ' x (length($out) + 2) : '';
+
     $out .= " - $name" if defined $name;
     $out .= " # TODO" if $in_todo;
     $out .= " $todo" if defined($todo) && length($todo);
 
     # The primary line of TAP, if the test passed this is all we need.
-    return([OUT_STD, "$out\n"]);
+    return([OUT_STD, "$out\n"]) unless @extra;
+
+    return $self->event_ok_multiline($out, $space, @extra);
+}
+
+sub event_ok_multiline {
+    my $self = shift;
+    my ($out, $space, @extra) = @_;
+
+    return(
+        [OUT_STD, "$out\n"],
+        map {[OUT_STD, "#${space}$_\n"]} @extra,
+    );
 }
 
 sub event_skip {

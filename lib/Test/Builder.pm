@@ -624,13 +624,6 @@ sub ok {
 
     my $orig_name = $name;
 
-    # The regex form is ~250ms, the index form is ~50ms
-    #$name && $name =~ m/(?:#|\n)/ && ($name =~ s|#|\\#|g, $name =~ s{\n}{\n# }sg);
-    $name && (
-        (index($name, "#" ) >= 0 && $name =~ s|#|\\#|g),
-        (index($name, "\n") >= 0 && $name =~ s{\n}{\n# }sg)
-    );
-
     my @attrs;
     my $subevents  = delete $self->{subevents};
     my $subtest_id = delete $self->{subtest_id};

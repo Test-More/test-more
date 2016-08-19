@@ -16,10 +16,6 @@ sub init {
     # Do not store objects here, only true or false
     $self->{+PASS} = $self->{+PASS} ? 1 : 0;
     $self->{+EFFECTIVE_PASS} = $self->{+PASS} || (defined($self->{+TODO}) ? 1 : 0);
-
-    my $name = $self->{+NAME} or return;
-    return unless index($name, '#') != -1 || index($name, "\n") != -1;
-    $self->trace->throw("'$name' is not a valid name, names must not contain '#' or newlines.")
 }
 
 {
