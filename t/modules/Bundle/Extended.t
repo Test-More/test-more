@@ -20,6 +20,8 @@ imported_ok qw{
     ref_ok ref_is ref_is_not
     mock mocked
 
+    dies lives try_ok
+
     is like isnt unlike
     match mismatch validator
     hash array object meta number string bool

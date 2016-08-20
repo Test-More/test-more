@@ -3,6 +3,7 @@
     - Create Test2::Compare::Negatable
     - Add bool() for deep comparisons
     - Implicit end() for checks inside is()
+    - Add try_ok to Tools/Exception
 
 0.000058  2016-08-13 13:06:10-07:00 America/Los_Angeles
 
