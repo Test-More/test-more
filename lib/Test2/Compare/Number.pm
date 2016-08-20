@@ -8,7 +8,10 @@ use base 'Test2::Compare::Base';
 
 our $VERSION = '0.000059';
 
-use Test2::Util::HashBase qw/input negate/;
+use Test2::Util::HashBase qw/input/;
+
+# Overloads '!' for us.
+use Test2::Compare::Negatable;
 
 sub init {
     my $self = shift;

@@ -18,6 +18,7 @@ use Test2::Compare qw{
 
 use Test2::Compare::Array();
 use Test2::Compare::Bag();
+use Test2::Compare::Bool();
 use Test2::Compare::Custom();
 use Test2::Compare::Event();
 use Test2::Compare::Hash();
@@ -40,6 +41,7 @@ use Test2::Compare::Wildcard();
     'Test2::Tools::Compare'         => 1,
     'Test2::Compare::Array'         => 1,
     'Test2::Compare::Bag'           => 1,
+    'Test2::Compare::Bool'          => 1,
     'Test2::Compare::Custom'        => 1,
     'Test2::Compare::Event'         => 1,
     'Test2::Compare::Hash'          => 1,
@@ -61,7 +63,7 @@ our @EXPORT = qw/is like/;
 our @EXPORT_OK = qw{
     is like isnt unlike
     match mismatch validator
-    hash array bag object meta meta_check number string subset
+    hash array bag object meta meta_check number string subset bool
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     etc end filter_items
@@ -298,6 +300,17 @@ sub number($;@) {
         file  => $caller[1],
         lines => [$caller[2]],
         input => $num,
+        @args,
+    );
+}
+
+sub bool($;@) {
+    my ($bool, @args) = @_;
+    my @caller = caller;
+    return Test2::Compare::Bool->new(
+        file  => $caller[1],
+        lines => [$caller[2]],
+        input => $bool,
         @args,
     );
 }
@@ -640,7 +653,7 @@ the field.
     use Test2::Tools::Compare qw{
         is like isnt unlike
         match mismatch validator
-        hash array bag object meta number string subset
+        hash array bag object meta number string subset bool
         in_set not_in_set check_set
         item field call call_list call_hash prop check all_items all_keys all_vals all_values
         etc end filter_items
@@ -922,19 +935,44 @@ B<Note: None of these are exported by default. You need to request them.>
 
 Verify that the value matches the given string using the C<eq> operator.
 
+=item $check = !string "..."
+
+Verify that the value does not match the given string using the C<ne> operator.
+
 =item $check = number ...;
 
 Verify that the value matches the given number using the C<==> operator.
 
+=item $check = !number ...;
+
+Verify that the value does not match the given number using the C<!=> operator.
+
+=item $check = bool ...;
+
+Verify the value has the same boolean value as the given argument (XNOR).
+
+=item $check = !bool ...;
+
+Verify the value has a different boolean value from the given argument (XOR).
+
 =item $check = match qr/.../
+
+=item $check = !mismatch qr/.../
 
 Verify that the value matches the regex pattern. This form of pattern check
 will B<NOT> stringify references being checked.
+
+B<Note:> C<!mismatch()> is documented for completion, please do not use it.
+
+=item $check = !match qr/.../
 
 =item $check = mismatch qr/.../
 
 Verify that the value does not match the regex pattern. This form of pattern
 check will B<NOT> stringify references being checked.
+
+B<Note:> C<mismatch()> was created before overloading of C<!> for C<match()>
+was a thing.
 
 =item $check = validator(sub{ ... })
 

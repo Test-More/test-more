@@ -1,4 +1,4 @@
-package Test2::Compare::String;
+package Test2::Compare::Bool;
 use strict;
 use warnings;
 
@@ -13,32 +13,16 @@ use Test2::Util::HashBase qw/input/;
 # Overloads '!' for us.
 use Test2::Compare::Negatable;
 
-sub stringify_got { 1 }
-
-sub init {
-    my $self = shift;
-    confess "input must be defined for 'String' check"
-        unless defined $self->{+INPUT};
-
-    $self->SUPER::init(@_);
-}
-
 sub name {
     my $self = shift;
     my $in = $self->{+INPUT};
-    return "$in";
+    return _render_bool($in);
 }
 
 sub operator {
     my $self = shift;
-
-    return '' unless @_;
-    my ($got) = @_;
-
-    return '' unless defined($got);
-
-    return 'ne' if $self->{+NEGATE};
-    return 'eq';
+    return '!=' if $self->{+NEGATE};
+    return '==';
 }
 
 sub verify {
@@ -47,13 +31,35 @@ sub verify {
     my ($got, $exists) = @params{qw/got exists/};
 
     return 0 unless $exists;
-    return 0 unless defined $got;
 
-    my $input  = $self->{+INPUT};
-    my $negate = $self->{+NEGATE};
+    my $want = $self->{+INPUT};
 
-    return "$input" ne "$got" if $negate;
-    return "$input" eq "$got";
+    my $match = ($want xor $got) ? 0 : 1;
+    $match = $match ? 0 : 1 if $self->{+NEGATE};
+
+    return $match;
+}
+
+sub run {
+    my $self = shift;
+    my $delta = $self->SUPER::run(@_) or return;
+
+    my $dne = $delta->dne || "";
+    unless ($dne eq 'got') {
+        my $got = $delta->got;
+        $delta->set_got(_render_bool($got));
+    }
+
+    return $delta;
+}
+
+sub _render_bool {
+    my $bool = shift;
+    my $name = $bool ? 'TRUE' : 'FALSE';
+    my $val = defined $bool ? $bool : 'undef';
+    $val = "''" unless length($val);
+
+    return "<$name ($val)>";
 }
 
 1;
@@ -66,14 +72,11 @@ __END__
 
 =head1 NAME
 
-Test2::Compare::String - Compare two values as strings
+Test2::Compare::Bool - Compare two values as booleans
 
 =head1 DESCRIPTION
 
-This is used to compare two items after they are stringified. You can also check
-that two strings are not equal.
-
-B<Note>: This will fail if the received value is undefined, it must be defined.
+Check if two values have the same boolean result (both true, or both false).
 
 =head1 SOURCE
 
