@@ -565,9 +565,10 @@ sub event($;$) {
     my $event;
     if (!$spec) {
         $event = Test2::Compare::Event->new(
-            etype => $intype,
-            file  => $caller[1],
-            lines => [$caller[2]],
+            etype  => $intype,
+            file   => $caller[1],
+            lines  => [$caller[2]],
+            ending => 0,
         );
     }
     elsif (!ref $spec) {
@@ -577,6 +578,7 @@ sub event($;$) {
         $event = build('Test2::Compare::Event', $spec);
         $event->set_etype($intype);
         $event->set_builder($spec);
+        $event->set_ending(0) unless defined $event->ending;
     }
     else {
         my $refcheck = Test2::Compare::Hash->new(
@@ -588,7 +590,8 @@ sub event($;$) {
             refcheck => $refcheck,
             file     => $caller[1],
             lines    => [$caller[2]],
-            etype => $intype,
+            etype    => $intype,
+            ending   => 0,
         );
     }
 
@@ -1610,6 +1613,11 @@ Thread ID in which the event was generated.
 Process ID in which the event was generated.
 
 =back
+
+B<NOTE>: Event checks have an implicit C<etc()> added. This means you need to
+use C<end()> if you want to fail on unexpected hash keys or array indexes. This
+implicit C<etc()> extends to all forms, including builder, hashref, and no
+argument.
 
 =item @checks = fail_events $TYPE;
 
