@@ -98,14 +98,14 @@ Test2::Tools::Ref - Tools for validating references.
 =head1 DESCRIPTION
 
 This module contains tools that allow you to verify that something is a ref. It
-also has tools to check if two refs are the same exact ref, or different. This
-module does not do any deep comparisons.
+also has tools to check if two refs are the same exact ref, or different. None of
+the functions in this module do deep comparisons.
 
 =head1 SYNOPSIS
 
     use Test2::Tools::Ref;
 
-    # Insure something is a ref.
+    # Ensure something is a ref.
     ref_ok($ref);
 
     # Check that $ref is a HASH reference
