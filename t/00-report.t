@@ -4,8 +4,9 @@ use warnings;
 my $exit = 0;
 END{ $? = $exit }
 
+use File::Spec;
+
 my ($stderr, $stdout);
-my $fake = "";
 BEGIN {
     $exit = 0;
     END{ $? = $exit }
@@ -22,8 +23,8 @@ BEGIN {
         exit $exit;
     }
 
-    open(STDOUT, '>>', \$fake);
-    open(STDERR, '>>', \$fake);
+    open(STDOUT, '>', File::Spec->devnull);
+    open(STDERR, '>', File::Spec->devnull);
 }
 
 use Test2::Util qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
