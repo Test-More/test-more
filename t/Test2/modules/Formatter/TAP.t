@@ -253,6 +253,22 @@ tests special_characters => sub {
         ],
         "Escape # and any slashes already present, and split newlines, do not escape the newlines"
     );
+
+    $ok = Test2::Event::Ok->new(
+        trace => $trace,
+        name  => "Nothing special until the end \\\nfoo \\ bar",
+        pass  => 1,
+    );
+
+    is_deeply(
+        [$fmt->event_tap($ok, 1)],
+        [
+            [OUT_STD, "ok 1 - Nothing special until the end \\\\\n"],
+            [OUT_STD, "#      foo \\ bar\n"],
+        ],
+        "Special case, escape things if last character of the first line is a \\"
+    );
+
 };
 
 for my $pass (1, 0) {

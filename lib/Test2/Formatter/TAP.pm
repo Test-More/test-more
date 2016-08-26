@@ -159,7 +159,7 @@ sub event_ok {
     my @extra;
     defined($name) && (
         (index($name, "\n") != -1 && (($name, @extra) = split(/\n\r?/, $name, -1))),
-        (index($name, "#" ) != -1 && (($name =~ s|\\|\\\\|g), ($name =~ s|#|\\#|g)))
+        ((index($name, "#" ) != -1  || substr($name, -1) eq '\\') && (($name =~ s|\\|\\\\|g), ($name =~ s|#|\\#|g)))
     );
 
     my $space = @extra ? ' ' x (length($out) + 2) : '';
