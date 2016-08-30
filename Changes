@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302055  2016-08-30 12:13:32-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix special case of ok line ending in \
     - Improve a test that captures STDERR/STDOUT (Thanks HAARG)
 
