@@ -73,7 +73,7 @@ expect.
 =head1 GETTING STARTED
 
 If you are interested in writing tests using new tools then you should look at
-L<Test2::Suite>. L<Test::Suite> is a separate cpan distribution that contains
+L<Test2::Suite>. L<Test2::Suite> is a separate cpan distribution that contains
 many tools implemented on Test2.
 
 If you are interested in writing new tools you should take a look at
