@@ -1113,7 +1113,7 @@ the end.
 =item DNE()
 
 This is a handy check that can be used with C<field()> to ensure that a field
-(D)oes (N)not (E)xist.
+(D)oes (N)ot (E)xist.
 
     field foo => DNE();
 
@@ -1208,7 +1208,7 @@ at the end.
 =item DNE()
 
 This is a handy check that can be used with C<item()> to ensure that an index
-(D)oes (N)not (E)xist.
+(D)oes (N)ot (E)xist.
 
     item 5 => DNE();
 
