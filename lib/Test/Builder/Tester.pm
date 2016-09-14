@@ -453,8 +453,8 @@ The color function doesn't work unless L<Term::ANSIColor> is
 compatible with your terminal.
 
 Bugs (and requests for new features) can be reported to the author
-though the CPAN RT system:
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Test-Builder-Tester>
+though GitHub:
+L<https://github.com/Test-More/test-more/issues>
 
 =head1 AUTHOR
 
