@@ -50,7 +50,7 @@ Test2::Bundle::More - ALMOST a drop-in replacement for Test::More.
 =head1 DESCRIPTION
 
 This bundle is intended to be a (mostly) drop-in replacement for
-L<Test::More>. See L<"KEY DIFFERENCES FROM Test::Simple"> for details.
+L<Test::More>. See L<"KEY DIFFERENCES FROM Test::More"> for details.
 
 =head1 SYNOPSIS
 
@@ -134,7 +134,7 @@ that package.
 
 =back
 
-=head1 KEY DIFFERENCES FROM Test::Simple
+=head1 KEY DIFFERENCES FROM Test::More
 
 =over 4
 
@@ -142,11 +142,11 @@ that package.
 
 THIS WILL B<NOT> WORK:
 
-    use Test2::Bundle::Simple tests => 5;
+    use Test2::Bundle::More tests => 5;
 
 Instead you must plan in a separate statement:
 
-    use Test2::Bundle::Simple;
+    use Test2::Bundle::More;
     plan 5;
 
 =item You have three subs imported for use in planning
@@ -180,7 +180,8 @@ See C<todo()>.
 
 =item require_ok()
 
-These are not necessary.
+These are not necessary. Use C<use> and C<require> directly. If there is an
+error loading the module the test will catch the error and fail.
 
 =item todo_skip()
 
