@@ -1976,7 +1976,7 @@ the perl-qa gang.
 
 =head1 BUGS
 
-See F<http://rt.cpan.org> to report and view bugs.
+See F<https://github.com/Test-More/test-more/issues> to report and view bugs.
 
 
 =head1 SOURCE
