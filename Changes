@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000059  2016-09-15 13:00:03-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Create Test2::Compare::Negatable
     - Add bool() for deep comparisons
     - Implicit end() for checks inside is()
