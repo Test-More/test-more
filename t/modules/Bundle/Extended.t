@@ -65,18 +65,12 @@ subtest warnings => sub {
 subtest utf8 => sub {
     ok(utf8::is_utf8("癸"), "utf8 pragma is on");
 
-    my $layers = { map {$_ => 1} PerlIO::get_layers(STDERR) };
-    ok($layers->{utf8}, "utf8 is on for STDERR");
-
-    $layers = { map {$_ => 1} PerlIO::get_layers(STDOUT) };
-    ok($layers->{utf8}, "utf8 is on for STDOUT");
-
     # -2 cause the subtest adds to the stack
     my $format = test2_stack()->[-2]->format;
     my $handles = $format->handles;
     for my $hn (0 .. @$handles) {
         my $h = $handles->[$hn] || next;
-        $layers = { map {$_ => 1} PerlIO::get_layers($h) };
+        my $layers = { map {$_ => 1} PerlIO::get_layers($h) };
         ok($layers->{utf8}, "utf8 is on for formatter handle $hn");
     }
 };
