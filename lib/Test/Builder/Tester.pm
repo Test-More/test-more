@@ -450,7 +450,8 @@ tests than we strictly should have and it'll register any failures we
 had that we were testing for as real failures.
 
 The color function doesn't work unless L<Term::ANSIColor> is
-compatible with your terminal.
+compatible with your terminal. Additionally, L<Win32::Console::ANSI>
+must be installed on windows platforms for color output.
 
 Bugs (and requests for new features) can be reported to the author
 though GitHub:
@@ -560,6 +561,8 @@ sub complaint {
         # get color
         eval { require Term::ANSIColor };
         unless($@) {
+            eval { require Win32::Console::ANSI } if 'MSWin32' eq $^O;  # support color on windows platforms
+
             # colours
 
             my $green = Term::ANSIColor::color("black") . Term::ANSIColor::color("on_green");
