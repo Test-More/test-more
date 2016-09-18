@@ -2,6 +2,8 @@ use strict;
 use warnings;
 use Test2::Tools::Defer;
 
+my $file = __FILE__;
+
 my $START_LINE;
 BEGIN {
     $START_LINE = __LINE__;
@@ -119,15 +121,15 @@ sub oops { die 'oops' }
 my $line2 = __LINE__ + 1;
 def oops => (1);
 like( dies { do_def() }, <<EOT, "Exceptions in the test are propogated");
-Exception: oops at t/modules/Tools/Defer.t line $line1.
+Exception: oops at $file line $line1.
 --eval--
 package main;
-# line $line2 "(eval in Test2::Tools::Defer) t/modules/Tools/Defer.t"
+# line $line2 "(eval in Test2::Tools::Defer) $file"
 &oops(\@\$args);
 1;
 --------
 Tool:   oops
-Caller: main, t/modules/Tools/Defer.t, $line2
+Caller: main, $file, $line2
 \$args:  [
           1
         ];
