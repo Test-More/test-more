@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - A streamed subtest run inside a buffered subtest will be automatically
+      converted to a buffered subtest. Otherwise the output from inside the
+      subtest is lost entirely. (#721)
+
 1.302056  2016-09-12 09:03:49-07:00 America/Los_Angeles
 
     - Minor typo fix

@@ -447,6 +447,14 @@ sub run_subtest {
             $hub->format(undef) if $hide;
         }
     }
+    elsif (! $parent->format) {
+        # If our parent has no format that means we're in a buffered subtest
+        # and now we're trying to run a streaming subtest. There's really no
+        # way for that to work, so we need to force the use of a buffered
+        # subtest here as
+        # well. https://github.com/Test-More/test-more/issues/721
+        $buffered = 1;
+    }
 
     if ($inherit_trace) {
         my $orig = $code;
