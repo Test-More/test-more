@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Doc fixes
+    - Win32 color support in Test::Builder::Tester
+    - Support v-strings in is_deeply
     - A streamed subtest run inside a buffered subtest will be automatically
       converted to a buffered subtest. Otherwise the output from inside the
       subtest is lost entirely. (#721)
