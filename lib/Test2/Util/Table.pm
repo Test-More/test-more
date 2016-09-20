@@ -24,10 +24,12 @@ sub term_size {
     my $total;
     try {
         my @warnings;
-        local $SIG{__WARN__} = sub { push @warnings => @_ };
-        ($total) = Term::ReadKey::GetTerminalSize(*STDOUT);
+        {
+            local $SIG{__WARN__} = sub { push @warnings => @_ };
+            ($total) = Term::ReadKey::GetTerminalSize(*STDOUT);
+        }
         @warnings = grep { $_ !~ m/Unable to get Terminal Size/ } @warnings;
-        warn @warnings;
+        warn @warnings if @warnings;
     };
     return 80 if !$total;
     return 80 if $total < 80;
