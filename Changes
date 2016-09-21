@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Mask warning when comparing $@ in Test2::API::Context
+
 1.302057  2016-09-18 12:12:18-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Doc fixes
