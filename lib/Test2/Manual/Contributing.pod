@@ -1,0 +1,1 @@
+./lib/Test2/Manual/Contributing.pm
