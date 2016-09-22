@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+    - Formatters now have terminate() and finalize() methods. These are called
+      when there is a skip_all or bail event (terminate) or when a test suite
+      is exiting normally (finalize). This allows formatters to finalize their
+      output, which is important for any sort of document-oriented format (as
+      opposed to a stream format like TAP). (#723)g
+
 1.302058  2016-09-21 10:46:13-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Mask warning when comparing $@ in Test2::API::Context
