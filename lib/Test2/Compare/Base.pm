@@ -30,8 +30,8 @@ sub clone {
 
 sub init {
     my $self = shift;
-    $self->{_lines} = delete $self->{lines} if exists $self->{lines};
-    $self->{_file}  = delete $self->{file}  if exists $self->{file};
+    $self->{+_LINES} = delete $self->{lines} if exists $self->{lines};
+    $self->{+_FILE}  = delete $self->{file}  if exists $self->{file};
 }
 
 sub file {
