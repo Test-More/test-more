@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302060  2016-09-25 12:46:46-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Formatters now have terminate() and finalize() methods. These are called
       when there is a skip_all or bail event (terminate) or when a test suite
       is exiting normally (finalize). This allows formatters to finalize their
