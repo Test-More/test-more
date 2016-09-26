@@ -339,7 +339,7 @@ sub subtest {
         $st_ctx->diag('No tests run!');
     }
 
-    $child->finalize($ok);
+    $child->finalize($st_ctx->trace);
 
     $ctx->release;
 
