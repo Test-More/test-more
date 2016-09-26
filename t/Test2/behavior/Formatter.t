@@ -67,4 +67,18 @@ use Test2::Event::Bail;
 	ok(!@{$f->f}, 'finalize method was not called on formatter');
 }
 
+{
+	my $f = Formatter::Subclass->new;
+
+	intercept {
+		my $hub = test2_stack->top;
+		$hub->format($f);
+		$hub->send(Test2::Event::Plan->new(directive => 'skip_all', reason => 'Skipping all the tests'));
+		done_testing;
+	};
+
+	is(scalar @{$f->t}, 1, 'terminate method was called because of plan skip_all event');
+	ok(!@{$f->f}, 'finalize method was not called on formatter');
+}
+
 done_testing;
