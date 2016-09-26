@@ -16,6 +16,8 @@ sub init {
     $self->{+ID} ||= join "-", $$, get_tid, $ID++;
 }
 
+sub is_subtest { 1 }
+
 sub process {
     my $self = shift;
     my ($e) = @_;

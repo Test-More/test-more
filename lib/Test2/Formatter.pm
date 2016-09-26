@@ -90,6 +90,8 @@ except when C<terminate> is called >>. It is passed the following arguments:
 
 =item * A boolean indicating whether or not the test suite passed
 
+=item * A boolean indicating whether or not this call is for a subtest
+
 =back
 
 =head1 SOURCE

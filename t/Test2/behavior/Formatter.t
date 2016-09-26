@@ -46,7 +46,7 @@ use Test2::Event::Bail;
 	is(scalar @{$f->f}, 1, 'finalize method was called on formatter');
 	is_deeply(
 		$f->f->[0],
-		[3, 3, 1, 0],
+		[3, 3, 1, 0, 0],
 		'finalize method received expected arguments'
 	);
 

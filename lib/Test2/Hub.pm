@@ -54,6 +54,8 @@ sub init {
     }
 }
 
+sub is_subtest { 0 }
+
 sub reset_state {
     my $self = shift;
 
@@ -337,7 +339,7 @@ sub finalize {
 
 	# return if NOTHING was done.
 	unless ($active || $do_plan || defined($plan) || $count || $failed) {
-		$self->{+_FORMATTER}->finalize($plan, $count, $failed, 0) if $self->{+_FORMATTER};
+		$self->{+_FORMATTER}->finalize($plan, $count, $failed, 0, $self->is_subtest) if $self->{+_FORMATTER};
 		return;
 	}
 
@@ -377,7 +379,7 @@ Second End: $sfile line $sline
     $self->{+ENDED} = $frame;
     my $pass = $self->is_passing(); # Generate the final boolean.
 
-	$self->{+_FORMATTER}->finalize($plan, $count, $failed, $pass) if $self->{+_FORMATTER};
+	$self->{+_FORMATTER}->finalize($plan, $count, $failed, $pass, $self->is_subtest) if $self->{+_FORMATTER};
 
     return $pass;
 }
