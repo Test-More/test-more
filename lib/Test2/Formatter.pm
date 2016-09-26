@@ -78,7 +78,8 @@ when a L<Test2::Event::Bail> event is sent. The C<terminate> method is passed
 a single argument, the L<Test2::Event> object which triggered the terminate.
 
 The C<finalize> method is always the last thing called on the formatter, I<<
-except when C<terminate> is called >>. It is passed the following arguments:
+except when C<terminate> is called for a Bail event >>. It is passed the
+following arguments:
 
 =over 4
 
