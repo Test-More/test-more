@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - Removed a warning when using a non-TAP formatter with Test::Builder
+      about the formatter not "no_header" and "no_diag". This happened even if
+      the alternative formatter class implemented these attributes.
+
 1.302060  2016-09-25 12:46:46-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Formatters now have terminate() and finalize() methods. These are called
