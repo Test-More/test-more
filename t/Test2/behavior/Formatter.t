@@ -46,7 +46,7 @@ use Test2::Event::Bail;
 	is(scalar @{$f->f}, 1, 'finalize method was called on formatter');
 	is_deeply(
 		$f->f->[0],
-		[3, 3, 1, 0],
+		[3, 3, 1, 0, 0],
 		'finalize method received expected arguments'
 	);
 
@@ -64,6 +64,20 @@ use Test2::Event::Bail;
 	};
 
 	is(scalar @{$f->t}, 1, 'terminate method was called because of bail event');
+	ok(!@{$f->f}, 'finalize method was not called on formatter');
+}
+
+{
+	my $f = Formatter::Subclass->new;
+
+	intercept {
+		my $hub = test2_stack->top;
+		$hub->format($f);
+		$hub->send(Test2::Event::Plan->new(directive => 'skip_all', reason => 'Skipping all the tests'));
+		done_testing;
+	};
+
+	is(scalar @{$f->t}, 1, 'terminate method was called because of plan skip_all event');
 	ok(!@{$f->f}, 'finalize method was not called on formatter');
 }
 
