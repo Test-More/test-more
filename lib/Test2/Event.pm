@@ -2,7 +2,7 @@ package Test2::Event;
 use strict;
 use warnings;
 
-our $VERSION = '1.302060';
+our $VERSION = '1.302061';
 
 
 use Test2::Util::HashBase qw/trace nested in_subtest subtest_id/;
