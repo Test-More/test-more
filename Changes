@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix test that used 'parent'
+
 1.302063  2016-10-23 21:31:20-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix double release when 'throw' is used in context_do()
