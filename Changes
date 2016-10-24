@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - Better handling of info vs diag in ->send_event
     - Fix test that used 'parent'
     - Better handling of non-bumping failures (#728)
 

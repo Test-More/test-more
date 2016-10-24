@@ -6,7 +6,7 @@ our $VERSION = '1.302063';
 
 
 use Carp qw/confess croak longmess/;
-use Scalar::Util qw/weaken/;
+use Scalar::Util qw/weaken blessed/;
 use Test2::Util qw/get_tid try pkg_to_file get_tid/;
 
 use Test2::Util::Trace();
@@ -251,7 +251,7 @@ sub ok {
 
     if ($on_fail && @$on_fail) {
         for my $of (@$on_fail) {
-            if (ref($of)) {
+            if (ref($of) eq 'CODE' || (blessed($of) && $of->can('render'))) {
                 $self->info($of, diagnostics => 1);
             }
             else {
