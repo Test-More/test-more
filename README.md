@@ -7,10 +7,54 @@ Test2 - Framework for writing test tools that all work together.
 Test2 is a new testing framework produced by forking [Test::Builder](https://metacpan.org/pod/Test::Builder),
 completely refactoring it, adding many new features and capabilities.
 
+## WHAT IS NEW?
+
+- Easier to test new testing tools.
+
+    From the beginning Test2 was built with introspection capabilities. With
+    Test::Builder it was difficult at best to capture test tool output for
+    verification. Test2 Makes it easy with `Test2::API::intercept()`.
+
+- Better diagnostics capabilities.
+
+    Test2 uses an [Test2::API::Context](https://metacpan.org/pod/Test2::API::Context) object to track filename, line number, and
+    tool details. This object greatly simplifies tracking for where errors should
+    be reported.
+
+- Event driven.
+
+    Test2 based tools produce events which get passed through a processing system
+    before being output by a formatter. This event system allows for rich plugin
+    and extension support.
+
+- More complete API.
+
+    Test::Builder only provided a handful of methods for generating lines of TAP.
+    Test2 took inventory of everything people were doing with Test::Builder that
+    required hacking it up. Test2 made public API functions for nearly all the
+    desired functionality people didn't previously have.
+
+- Support for output other than TAP.
+
+    Test::Builder assumed everything would end up as TAP. Test2 makes no such
+    assumption. Test2 provides ways for you to specify alternative and custom
+    formatters.
+
+- Subtest implementation is more sane.
+
+    The Test::Builder implementation of subtests was certifiably insane. Test2 uses
+    a stacked event hub system that greatly improves how subtests are implemented.
+
+- Support for threading/forking.
+
+    Test2 support for forking and threading can be turned on using [Test2::IPC](https://metacpan.org/pod/Test2::IPC).
+    Once turned on threading and forking operate sanely and work as one would
+    expect.
+
 # GETTING STARTED
 
 If you are interested in writing tests using new tools then you should look at
-[Test2::Suite](https://metacpan.org/pod/Test2::Suite). [Test::Suite](https://metacpan.org/pod/Test::Suite) is a separate cpan distribution that contains
+[Test2::Suite](https://metacpan.org/pod/Test2::Suite). [Test2::Suite](https://metacpan.org/pod/Test2::Suite) is a separate cpan distribution that contains
 many tools implemented on Test2.
 
 If you are interested in writing new tools you should take a look at
@@ -111,11 +155,11 @@ script it should probably NOT go directly into `Test2::XXX`.
 
 # CONTACTING US
 
-Many Test2 developers and users lurk on [irc://irc.perl.org/#perl](irc://irc.perl.org/#perl). We also
-have a slack team that can be joined by anyone with an `@cpan.org` email
-address [https://perl-test2.slack.com/](https://perl-test2.slack.com/) If you do not have an `@cpan.org`
-email you can ask for a slack invite by emailing Chad Granum
-<exodist@cpan.org>.
+Many Test2 developers and users lurk on [irc://irc.perl.org/#perl-qa](irc://irc.perl.org/#perl-qa) and
+[irc://irc.perl.org/#toolchain](irc://irc.perl.org/#toolchain). We also have a slack team that can be joined
+by anyone with an `@cpan.org` email address [https://perl-test2.slack.com/](https://perl-test2.slack.com/)
+If you do not have an `@cpan.org` email you can ask for a slack invite by
+emailing Chad Granum <exodist@cpan.org>.
 
 # SOURCE
 
