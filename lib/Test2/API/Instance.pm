@@ -488,6 +488,7 @@ This is not a supported configuration, you will have problems.
             $root->finalize($trace) unless $root->ended;
             $_->($ctx, $exit, \$new_exit) for @{$self->{+EXIT_CALLBACKS}};
             $new_exit ||= $root->failed;
+            $new_exit ||= 255 unless $root->is_passing;
         }
     }
 

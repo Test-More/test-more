@@ -1,6 +1,7 @@
 {{$NEXT}}
 
     - Fix test that used 'parent'
+    - Better handling of non-bumping failures (#728)
 
 1.302063  2016-10-23 21:31:20-07:00 America/Los_Angeles (TRIAL RELEASE)
 
