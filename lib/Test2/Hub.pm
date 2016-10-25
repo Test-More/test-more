@@ -6,7 +6,7 @@ our $VERSION = '1.302065';
 
 
 use Carp qw/carp croak confess/;
-use Test2::Util qw/get_tid/;
+use Test2::Util qw/get_tid ipc_separator/;
 
 use Scalar::Util qw/weaken/;
 
@@ -39,7 +39,7 @@ sub init {
 
     $self->{+PID} = $$;
     $self->{+TID} = get_tid();
-    $self->{+HID} = join '-', $self->{+PID}, $self->{+TID}, $ID_POSTFIX++;
+    $self->{+HID} = join ipc_separator, $self->{+PID}, $self->{+TID}, $ID_POSTFIX++;
 
     $self->{+COUNT}    = 0;
     $self->{+FAILED}   = 0;
