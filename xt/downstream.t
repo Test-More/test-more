@@ -21,10 +21,10 @@ ok(run_string(<<"EOT"), "Installed cpanm") || exit 1;
 perlbrew exec --with $lib cpan App::cpanminus
 EOT
 
-my $tarball_base = "Test-Simple-$Test::More::VERSION";
-my ($tarball, $bad) = grep { -f $_ } "${tarball_base}.tar.gz", "${tarball_base}-TRIAL.tar.gz";
+my ($tarball, $bad) = grep { -f $_ } glob("*.tar.gz");
 ok(!$bad, "Only 1 Test-Simple tarball") || exit 1;
-ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
+ok($tarball, "Found the tarball ($tarball)");
+ok(run_string(<<"EOT"), "Installed Test::More ($tarball)") || exit 1;
 perlbrew exec --with $lib cpanm $tarball
 EOT
 
@@ -77,6 +77,7 @@ EOT
 
 sub run_string {
     my $exec = shift;
+    print "Command: $exec\n";
     local %ENV = %ENV;
 
     delete $ENV{$_} for (
