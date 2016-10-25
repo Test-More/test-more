@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302064  2016-10-24 21:03:24-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Repo management improvements
     - Better handling of info vs diag in ->send_event
     - Fix test that used 'parent'
