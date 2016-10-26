@@ -926,7 +926,20 @@ END
             $self->_is_diag( $got, $type, $expect );
         }
         elsif( $type =~ /^(ne|!=)$/ ) {
-            $self->_isnt_diag( $got, $type );
+            no warnings;
+            my $eq = ($got eq $expect || $got == $expect)
+                && (
+                    (defined($got) xor defined($expect))
+                 || (length($got)  !=  length($expect))
+                );
+            use warnings;
+
+            if ($eq) {
+                $self->_cmp_diag( $got, $type, $expect );
+            }
+            else {
+                $self->_isnt_diag( $got, $type );
+            }
         }
         else {
             $self->_cmp_diag( $got, $type, $expect );

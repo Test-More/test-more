@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Fix the oldest bug still in the bug list (#6)
+      This fixes cmp_ok output is some confusing cases
+
 1.302064  2016-10-24 21:03:24-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Repo management improvements
