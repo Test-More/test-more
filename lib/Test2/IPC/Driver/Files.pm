@@ -341,7 +341,6 @@ sub cmp_events {
     return -1 if $a->{global} && !$b->{global};
     return  1 if $b->{global} && !$a->{global};
 
-    no warnings 'numeric';
     return $a->{pid} <=> $b->{pid}
         || $a->{tid} <=> $b->{tid}
         || $a->{eid} <=> $b->{eid};
