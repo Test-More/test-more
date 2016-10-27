@@ -13,8 +13,6 @@ perl:
 before_install:
   - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
   - source ~/travis-perl-helpers/init --auto
-install:
-  - cpan-install Pod::Markdown
 notifications:
   slack:
     rooms:
