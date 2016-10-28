@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Set the TEST_ACTIVE env var to true
+    - Set the TEST2_ACTIVE env var to true
     - Fix the oldest bug still in the bug list (#6)
       This fixes cmp_ok output is some confusing cases
 
