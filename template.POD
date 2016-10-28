@@ -15,7 +15,7 @@ Test2::Manual:: -
 
 =head1 SEE ALSO
 
-L<Test2::Manual> - PRimary index of the manual.
+L<Test2::Manual> - Primary index of the manual.
 
 =head1 SOURCE
 
