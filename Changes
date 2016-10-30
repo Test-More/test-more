@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302065  2016-10-30 11:54:37-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Set the TEST_ACTIVE env var to true
     - Set the TEST2_ACTIVE env var to true
     - Fix the oldest bug still in the bug list (#6)
