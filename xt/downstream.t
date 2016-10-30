@@ -22,8 +22,8 @@ perlbrew exec --with $lib cpan App::cpanminus
 EOT
 
 my ($tarball, $bad) = grep { -f $_ } glob("*.tar.gz");
-ok(!$bad, "Only 1 Test-Simple tarball") || exit 1;
-ok($tarball, "Found the tarball ($tarball)");
+ok(!$bad, "Only 1 Test-Simple tarball")      || exit 1;
+ok($tarball, "Found the tarball ($tarball)") || exit 1;
 ok(run_string(<<"EOT"), "Installed Test::More ($tarball)") || exit 1;
 perlbrew exec --with $lib cpanm $tarball
 EOT
