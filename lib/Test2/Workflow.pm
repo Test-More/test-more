@@ -139,7 +139,7 @@ composable units.
 A test workflow is a way of structuring tests using composable units. A well
 known example of a test workflow is L<RSPEC|http://rspec.info/>. RSPEC is
 implemented using Test2::Workflow in L<Test2::Tools::Spec> along with several
-extentions.
+extensions.
 
 =head1 IMPORTANT CONCEPTS
 
@@ -215,7 +215,7 @@ set from other arguments.
 
 This will initialize (or return the existing) a build for the specified
 package. C<%args> get passed into the L<Test2::Workflow::Build> constructor.
-This uses the following defaults (which can be overriden using C<%args>):
+This uses the following defaults (which can be overridden using C<%args>):
 
     name    => $pkg,
     flat    => 1,
