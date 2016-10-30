@@ -4,6 +4,11 @@
     - Set the TEST2_ACTIVE env var to true
     - Fix the oldest bug still in the bug list (#6)
       This fixes cmp_ok output is some confusing cases
+    - Update travis config
+    - Add missing author deps
+    - Fix handling of negative pid's on windows
+    - Add can() to Test::Tester::Delegate (despite deprecation)
+    - Fix some minor test issues
 
 1.302064  2016-10-24 21:03:24-07:00 America/Los_Angeles (TRIAL RELEASE)
 
