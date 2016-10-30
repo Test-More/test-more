@@ -487,7 +487,7 @@ Test2::AsyncSubtest - Object representing an async subtest.
 
 Regular subtests have a limited scope, they start, events are generated, then
 they close and send an L<Test2::Event::Subtest> event. This is a problem if you
-want the subtest to keep recieving events while other events are also being
+want the subtest to keep receiving events while other events are also being
 generated. This class implements subtests that stay open until you decide to
 close them.
 
@@ -679,7 +679,7 @@ none is directly specified.
 
 This will issue an L<Test2::Event::Skip> instead of a subtest. This will throw
 an exception if any events have been seen, or if state implies events have
-occured.
+occurred.
 
 =back
 
@@ -690,7 +690,7 @@ code in-place just like C<fork()>. It will return a pid in the parent, and an
 L<Scope::Guard> instance in the child. An exception will be thrown if fork
 fails.
 
-It is recomended that you use C<< $ast->run_fork(sub { ... }) >> instead.
+It is recommended that you use C<< $ast->run_fork(sub { ... }) >> instead.
 
 =item $bool = $ast->pending
 

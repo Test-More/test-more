@@ -81,7 +81,7 @@ Test2::Tools::AsyncSubtest - Tools for writing async subtests.
 =head1 DESCRIPTION
 
 These are tools for writing async subtests. Async subtests are subtests which
-can be started and stashed so that they can continue to recieve events while
+can be started and stashed so that they can continue to receive events while
 other events are also being generated.
 
 =head1 SYNOPSYS
