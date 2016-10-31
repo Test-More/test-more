@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Propogate warnings settings to use_ok (#736)
+
 1.302065  2016-10-30 11:54:37-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Set the TEST_ACTIVE env var to true
