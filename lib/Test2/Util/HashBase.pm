@@ -2,7 +2,7 @@ package Test2::Util::HashBase;
 use strict;
 use warnings;
 
-our $VERSION = '1.302066';
+our $VERSION = '1.302067';
 
 
 require Carp;
