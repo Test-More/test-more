@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - Handle cases where SysV IPC can be available but not enabled
     - Import 'context' into Test2::IPC, it is used by 'cull'
 
 1.302065  2016-10-30 11:54:37-07:00 America/Los_Angeles (TRIAL RELEASE)
