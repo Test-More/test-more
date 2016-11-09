@@ -143,8 +143,26 @@ subtest mock_obj => sub {
         add => [ bar => sub { 'bar' }],
     );
 
+    # We need to test the methods returned by ->can before we call the subs by
+    # name. This lets us be sure that this works _before_ the AUTOLOAD
+    # actually creates the named sub for real.
+    my $foo = $obj->can('foo');
+    $obj->$foo('foo2');
+    is($obj->$foo, 'foo2', "->can('foo') returns a method that works as a setter");
+    $obj->$foo('foo');
+
+    my $bar = $obj->can('bar');
+    is($obj->$bar, 'bar', "->can('bar') returns a method");
+    ok(!$obj->can('baz'), "mock object ->can returns false for baz");
+
     is($obj->foo, 'foo', "got value for foo");
     is($obj->bar, 'bar', "got value for bar");
+
+    ok($obj->can('foo'), "mock object ->can returns true for foo");
+    ok($obj->can('bar'), "mock object ->can returns true for bar");
+    ok($obj->can('isa'), "mock object ->can returns true for isa");
+
+    my $foo = $obj->can('foo');
 
     my ($c) = mocked($obj);
     ok($c, "got control");

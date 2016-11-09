@@ -155,13 +155,15 @@ sub autoload {
 
     croak "Class '$class' already has an AUTOLOAD"
         if $stash->{AUTOLOAD} && *{$stash->{AUTOLOAD}}{CODE};
+    croak "Class '$class' already has an can"
+        if $stash->{can} && *{$stash->{can}}{CODE};
 
     # Weaken this reference so that AUTOLOAD does not prevent its own
     # destruction.
     weaken(my $c = $self);
 
     my ($file, $line) = (__FILE__, __LINE__ + 3);
-    my $sub = eval <<EOT || die $@;
+    my $sub = eval <<EOT || die "Failed generating AUTOLOAD sub: $@";
 package $class;
 #line $line "$file (Generated AUTOLOAD)"
 our \$AUTOLOAD;
@@ -183,6 +185,24 @@ our \$AUTOLOAD;
 EOT
 
     $self->add(AUTOLOAD => $sub);
+
+    $line = __LINE__ + 3;
+    $sub = eval <<EOT || die "Failed generating can method: $@";
+package $class;
+#line $line "$file (Generated can)"
+    sub {
+        my (\$self, \$meth) = \@_;
+        if (\$self->SUPER::can(\$meth)) {
+            return \$self->SUPER::can(\$meth);
+        }
+        elsif (exists \$self->{\$meth}) {
+            return sub { shift->\$meth(\@_) };
+        }
+        return undef;
+    }
+EOT
+
+    $self->add(can => $sub);
 }
 
 sub before {
