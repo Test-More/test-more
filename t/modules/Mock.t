@@ -3,19 +3,15 @@ use Test2::API qw/context/;
 
 use Scalar::Util qw/blessed/;
 
-# Make sure the Fake package is empty for each test
-sub test {
-    my $ctx = context();
+# If we reuse the same package name (Fake) over and over we can end up
+# triggering some weird Perl core issues. With Perl 5.14 and 5.16 we were
+# seeing "panic: gp_free failed to free glob pointer - something is repeatedly
+# re-creating entries at ..."
+#
+# So instead we use Fake, Fake2, Fake3, etc. It's not very elegant, but it
+# gets the job done.
 
-    local $Carp::Level = ($Carp::Level || 0) + 1;
-    local *Fake::;
-
-    subtest(@_);
-
-    $ctx->release;
-};
-
-test construction => sub {
+subtest construction => sub {
     my %calls;
     my $c = Test2::Mock->new(
         class => 'Test2::Mock',
@@ -79,8 +75,8 @@ test construction => sub {
     );
 };
 
-test check => sub {
-    my $one = Test2::Mock->new(class => 'Fake');
+subtest check => sub {
+    my $one = Test2::Mock->new(class => 'Fake1');
 
     ok(lives { $one->_check }, "did not die");
 
@@ -93,8 +89,8 @@ test check => sub {
     );
 };
 
-test purge_on_destroy => sub {
-    my $one = Test2::Mock->new(class => 'Fake');
+subtest purge_on_destroy => sub {
+    my $one = Test2::Mock->new(class => 'Fake2');
 
     ok(!$one->purge_on_destroy, "Not set by default");
     $one->purge_on_destroy(1);
@@ -105,23 +101,23 @@ test purge_on_destroy => sub {
     {
         # need to hide the glob assignment from the parser.
         no strict 'refs';
-        *{"Fake::foo"} = sub { 'foo' };
+        *{"Fake2::foo"} = sub { 'foo' };
     }
 
-    can_ok('Fake', 'foo');
+    can_ok('Fake2', 'foo');
     $one = undef;
-    can_ok('Fake', 'foo'); # Not purged
+    can_ok('Fake2', 'foo'); # Not purged
 
-    $one = Test2::Mock->new(class => 'Fake');
+    $one = Test2::Mock->new(class => 'Fake2');
     $one->purge_on_destroy(1);
     $one = undef;
-    my $stash = do { no strict 'refs'; \%{"Fake::"}; };
+    my $stash = do { no strict 'refs'; \%{"Fake2::"}; };
     ok(!keys %$stash, "no keys left in stash");
-    ok(!Fake->can('foo'), 'purged sub');
+    ok(!Fake2->can('foo'), 'purged sub');
 };
 
-test stash => sub {
-    my $one = Test2::Mock->new(class => 'Fake');
+subtest stash => sub {
+    my $one = Test2::Mock->new(class => 'Fake3');
     my $stash = $one->stash;
 
     ok($stash, "got a stash");
@@ -130,91 +126,91 @@ test stash => sub {
     {
         # need to hide the glob assignment from the parser.
         no strict 'refs';
-        *{"Fake::foo"} = sub { 'foo' };
+        *{"Fake3::foo"} = sub { 'foo' };
     }
 
     ok($stash->{foo}, "See the new sub in the stash");
     ok(*{$stash->{foo}}{CODE}, "Code slot is populated");
 };
 
-test file => sub {
-    my $fake = Test2::Mock->new(class => 'Fake');
+subtest file => sub {
+    my $fake = Test2::Mock->new(class => 'Fake4');
     my $complex = Test2::Mock->new(class => "A::Fake'Module::With'Separators");
 
-    is($fake->file, "Fake.pm", "Got simple filename");
+    is($fake->file, "Fake4.pm", "Got simple filename");
 
     is($complex->file, "A/Fake/Module/With/Separators.pm", "got complex filename");
 };
 
-test block_load => sub {
+subtest block_load => sub {
     my $one;
 
     my $construction = sub {
-        $one = Test2::Mock->new(class => 'Fake', block_load => 1);
+        $one = Test2::Mock->new(class => 'Fake5', block_load => 1);
     };
 
     my $post_construction = sub {
-        $one = Test2::Mock->new(class => 'Fake');
+        $one = Test2::Mock->new(class => 'Fake5');
         $one->block_load;
     };
 
     for my $case ($construction, $post_construction) {
         $one = undef;
-        ok(!$INC{'Fake.pm'}, "Does not appear to be loaded yet");
+        ok(!$INC{'Fake5.pm'}, "Does not appear to be loaded yet");
 
         $case->();
 
-        ok($INC{'Fake.pm'}, '%INC is populated');
+        ok($INC{'Fake5.pm'}, '%INC is populated');
 
         $one = undef;
-        ok(!$INC{'Fake.pm'}, "Does not appear to be loaded anymore");
+        ok(!$INC{'Fake5.pm'}, "Does not appear to be loaded anymore");
     }
 };
 
-test block_load_fail => sub {
-    $INC{'Fake.pm'} = 'path/to/Fake.pm';
+subtest block_load_fail => sub {
+    $INC{'Fake6.pm'} = 'path/to/Fake6.pm';
 
-    my $one = Test2::Mock->new(class => 'Fake');
+    my $one = Test2::Mock->new(class => 'Fake6');
 
     like(
         dies { $one->block_load },
-        qr/Cannot block the loading of module 'Fake', already loaded in file/,
+        qr/Cannot block the loading of module 'Fake6', already loaded in file/,
         "Fails if file is already loaded"
     );
 };
 
-test constructors => sub {
+subtest constructors => sub {
     my $one = Test2::Mock->new(
-        class => 'Fake',
+        class => 'Fake7',
         add_constructor => [new => 'hash'],
     );
 
-    can_ok('Fake', 'new');
+    can_ok('Fake7', 'new');
 
-    my $i = Fake->new(foo => 'bar');
-    isa_ok($i, 'Fake');
+    my $i = Fake7->new(foo => 'bar');
+    isa_ok($i, 'Fake7');
     is($i, { foo => 'bar' }, "Has params");
 
     $one->override_constructor(new => 'ref');
 
     my $ref = { 'foo' => 'baz' };
-    $i = Fake->new($ref);
-    isa_ok($i, 'Fake');
+    $i = Fake7->new($ref);
+    isa_ok($i, 'Fake7');
     is($i, { foo => 'baz' }, "Has params");
     is($i, $ref, "same reference");
     ok(blessed($ref), "blessed original ref");
 
     $one->override_constructor(new => 'ref_copy');
     $ref = { 'foo' => 'bat' };
-    $i = Fake->new($ref);
-    isa_ok($i, 'Fake');
+    $i = Fake7->new($ref);
+    isa_ok($i, 'Fake7');
     is($i, { foo => 'bat' }, "Has params");
     ok($i != $ref, "different reference");
     ok(!blessed($ref), "original ref is not blessed");
 
     $ref = [ 'foo', 'bar' ];
-    $i = Fake->new($ref);
-    isa_ok($i, 'Fake');
+    $i = Fake7->new($ref);
+    isa_ok($i, 'Fake7');
     is($i, [ 'foo', 'bar' ], "has the items");
     ok($i != $ref, "different reference");
     ok(!blessed($ref), "original ref is not blessed");
@@ -232,22 +228,22 @@ test constructors => sub {
     );
 
     $one->override_constructor(new => 'array');
-    $one = Fake->new('a', 'b');
+    $one = Fake7->new('a', 'b');
     is($one, ['a', 'b'], "is an array");
-    isa_ok($one, 'Fake');
+    isa_ok($one, 'Fake7');
 };
 
-test autoload => sub {
+subtest autoload => sub {
     my $one = Test2::Mock->new(
-        class => 'Fake',
+        class => 'Fake8',
         add_constructor => [new => 'hash'],
     );
 
-    my $i = Fake->new;
-    isa_ok($i, 'Fake');
+    my $i = Fake8->new;
+    isa_ok($i, 'Fake8');
 
     ok(!$i->can('foo'), "Cannot do 'foo'");
-    like(dies {$i->foo}, qr/Can't locate object method "foo" via package "Fake"/, "Did not autload");
+    like(dies {$i->foo}, qr/Can't locate object method "foo" via package "Fake8"/, "Did not autload");
 
     $one->autoload;
 
@@ -262,7 +258,7 @@ test autoload => sub {
 
     ok(
         dies { $one->autoload },
-        qr/Class 'Fake' already has an AUTOLOAD/,
+        qr/Class 'Fake8' already has an AUTOLOAD/,
         "Cannot add additional autoloads"
     );
 
@@ -283,7 +279,7 @@ test autoload => sub {
     ok(!$i->can('foo'), "AUTOLOADed sub removed (destroy)");
 };
 
-test autoload_failures => sub {
+subtest autoload_failures => sub {
     my $one = Test2::Mock->new(class => 'fake');
 
     $one->add('AUTOLOAD' => sub { 1 });
@@ -304,46 +300,46 @@ test autoload_failures => sub {
     );
 };
 
-test ISA => sub {
+subtest ISA => sub {
     # This is to satisfy perl that My::Parent is loaded
     no warnings 'once';
     local *My::Parent::foo = sub { 'foo' };
 
     my $one = Test2::Mock->new(
-        class => 'Fake',
+        class => 'Fake9',
         add_constructor => [new => 'hash'],
         add => [
             -ISA => ['My::Parent'],
         ],
     );
 
-    isa_ok('Fake', 'My::Parent');
-    is(Fake->foo, 'foo', "Inherited sub from parent");
+    isa_ok('Fake9', 'My::Parent');
+    is(Fake9->foo, 'foo', "Inherited sub from parent");
 };
 
-test before => sub {
+subtest before => sub {
     {
         # need to hide the glob assignment from the parser.
         no strict 'refs';
-        *{"Fake::foo"} = sub { 'foo' };
+        *{"Fake10::foo"} = sub { 'foo' };
     }
 
     my $thing;
 
-    my $one = Test2::Mock->new(class => 'Fake');
+    my $one = Test2::Mock->new(class => 'Fake10');
     $one->before('foo' => sub { $thing = 'ran before foo' });
 
     ok(!$thing, "nothing ran yet");
-    is(Fake->foo, 'foo', "got expected return");
+    is(Fake10->foo, 'foo', "got expected return");
     is($thing, 'ran before foo', "ran the before");
 };
 
-test before => sub {
+subtest before => sub {
     my $want;
     {
         # need to hide the glob assignment from the parser.
         no strict 'refs';
-        *{"Fake::foo"} = sub {
+        *{"Fake11::foo"} = sub {
             $want = wantarray;
             return qw/f o o/ if $want;
             return 'foo' if defined $want;
@@ -353,35 +349,35 @@ test before => sub {
 
     my $ran = 0;
 
-    my $one = Test2::Mock->new(class => 'Fake');
+    my $one = Test2::Mock->new(class => 'Fake11');
     $one->after('foo' => sub { $ran++ });
 
     is($ran, 0, "nothing ran yet");
 
-    is(Fake->foo, 'foo', "got expected return (scalar)");
+    is(Fake11->foo, 'foo', "got expected return (scalar)");
     is($ran, 1, "ran the before");
     ok(defined($want) && !$want, "scalar context");
 
-    is([Fake->foo], [qw/f o o/], "got expected return (list)");
+    is([Fake11->foo], [qw/f o o/], "got expected return (list)");
     is($ran, 2, "ran the before");
     is($want, 1, "list context");
 
-    Fake->foo; # Void return
+    Fake11->foo; # Void return
     is($ran, 3, "ran the before");
     is($want, undef, "void context");
 };
 
-test around => sub {
+subtest around => sub {
     my @things;
     {
         # need to hide the glob assignment from the parser.
         no strict 'refs';
-        *{"Fake::foo"} = sub {
+        *{"Fake12::foo"} = sub {
             push @things => ['foo', \@_];
         };
     }
 
-    my $one = Test2::Mock->new(class => 'Fake');
+    my $one = Test2::Mock->new(class => 'Fake12');
     $one->around(foo => sub {
         my ($orig, @args) = @_;
         push @things => ['pre', \@args];
@@ -389,22 +385,22 @@ test around => sub {
         push @things => ['post', \@args];
     });
 
-    Fake->foo(qw/a b c/);
+    Fake12->foo(qw/a b c/);
 
     is(
         \@things,
         [
-            ['pre'  => [qw/Fake a b c/]],
-            ['foo'  => [qw/injected Fake a b c/]],
-            ['post' => [qw/Fake a b c/]],
+            ['pre'  => [qw/Fake12 a b c/]],
+            ['foo'  => [qw/injected Fake12 a b c/]],
+            ['post' => [qw/Fake12 a b c/]],
         ],
         "Got all the things!"
     );
 };
 
-test 'add and current' => sub {
+subtest 'add and current' => sub {
     my $one = Test2::Mock->new(
-        class => 'Fake',
+        class => 'Fake13',
         add_constructor => [new => 'hash'],
         add => [
             foo => { val => 'foo' },
@@ -429,21 +425,21 @@ test 'add and current' => sub {
         nsub   => sub { my $x = ''; sub { $x . 'nsub' } },
     );
 
-    can_ok('Fake', qw/new foo bar baz DATA reader writer rsub nsub/);
+    can_ok('Fake13', qw/new foo bar baz DATA reader writer rsub nsub/);
 
     like(
         dies { $one->add(foo => sub { 'nope' }) },
-        qr/Cannot add '&Fake::foo', symbol is already defined/,
+        qr/Cannot add '&Fake13::foo', symbol is already defined/,
         "Cannot add a CODE symbol that is already defined"
     );
 
     like(
         dies { $one->add(-UHG => \'nope') },
-        qr/Cannot add '\$Fake::UHG', symbol is already defined/,
+        qr/Cannot add '\$Fake13::UHG', symbol is already defined/,
         "Cannot add a SCALAR symbol that is already defined"
     );
 
-    my $i = Fake->new();
+    my $i = Fake13->new();
     is($i->foo, 'foo', "by value");
 
     is($i->bar, undef, "Accessor not set");
@@ -480,10 +476,10 @@ test 'add and current' => sub {
     is($i->DATA, 'my data', "direct sub assignment");
     # These need to be eval'd so the parser does not shortcut the glob references
     ok(eval <<'    EOT', "Ran glob checks") || diag "Error: $@";
-        is($Fake::UHG, 'UHG', "Set package scalar (UHG)");
-        is($Fake::DATA, 'data', "Set package scalar (DATA)");
-        is(\%Fake::DATA, { my => 'data' }, "Set package hash");
-        is(\@Fake::DATA, [ my => 'data' ], "Set package array");
+        is($Fake13::UHG, 'UHG', "Set package scalar (UHG)");
+        is($Fake13::DATA, 'data', "Set package scalar (DATA)");
+        is(\%Fake13::DATA, { my => 'data' }, "Set package hash");
+        is(\@Fake13::DATA, [ my => 'data' ], "Set package array");
         1;
     EOT
 
@@ -498,9 +494,9 @@ test 'add and current' => sub {
 
     $one = undef;
 
-    ok(!Fake->can($_), "Removed sub $_") for qw/new foo bar baz DATA reader writer rsub nsub/;
+    ok(!Fake13->can($_), "Removed sub $_") for qw/new foo bar baz DATA reader writer rsub nsub/;
 
-    $one = Test2::Mock->new(class => 'Fake');
+    $one = Test2::Mock->new(class => 'Fake13');
 
     # Scalars are tricky, skip em for now.
     is($one->current('&DATA'), undef, 'no current &DATA');
@@ -508,10 +504,10 @@ test 'add and current' => sub {
     is($one->current('%DATA'), undef, 'no current %DATA');
 };
 
-test 'override and orig' => sub {
+subtest 'override and orig' => sub {
     # Define things so we can override them
     eval <<'    EOT' || die $@;
-        package Fake;
+        package Fake14;
 
         sub new { 'old' }
 
@@ -533,12 +529,12 @@ test 'override and orig' => sub {
     EOT
 
     my $check_initial = sub {
-        is(Fake->$_, 'old', "$_ is not overriden") for qw/new foo bar baz DATA reader writer rsub nsub/;
+        is(Fake14->$_, 'old', "$_ is not overriden") for qw/new foo bar baz DATA reader writer rsub nsub/;
         ok(eval <<'        EOT', "Ran glob checks") || diag "Error: $@";
-            is($Fake::UHG,  'old',  'old package scalar (UHG)');
-            is($Fake::DATA, 'old', "Old package scalar (DATA)");
-            is(\%Fake::DATA, {old => 'old'}, "Old package hash");
-            is(\@Fake::DATA, ['old'], "Old package array");
+            is($Fake14::UHG,  'old',  'old package scalar (UHG)');
+            is($Fake14::DATA, 'old', "Old package scalar (DATA)");
+            is(\%Fake14::DATA, {old => 'old'}, "Old package hash");
+            is(\@Fake14::DATA, ['old'], "Old package array");
             1;
         EOT
     };
@@ -546,7 +542,7 @@ test 'override and orig' => sub {
     $check_initial->();
 
     my $one = Test2::Mock->new(
-        class => 'Fake',
+        class => 'Fake14',
         override_constructor => [new => 'hash'],
         override => [
             foo => { val => 'foo' },
@@ -573,17 +569,17 @@ test 'override and orig' => sub {
 
     like(
         dies { $one->override(nuthin => sub { 'nope' }) },
-        qr/Cannot override '&Fake::nuthin', symbol is not already defined/,
+        qr/Cannot override '&Fake14::nuthin', symbol is not already defined/,
         "Cannot override a CODE symbol that is not defined"
     );
 
     like(
         dies { $one->override(-nuthin2 => \'nope') },
-        qr/Cannot override '\$Fake::nuthin2', symbol is not already defined/,
+        qr/Cannot override '\$Fake14::nuthin2', symbol is not already defined/,
         "Cannot override a SCALAR symbol that is not defined"
     );
 
-    my $i = Fake->new();
+    my $i = Fake14->new();
     is($i->foo, 'foo', "by value");
 
     is($i->bar, undef, "Accessor not set");
@@ -620,10 +616,10 @@ test 'override and orig' => sub {
     is($i->DATA, 'my data', "direct sub assignment");
     # These need to be eval'd so the parser does not shortcut the glob references
     ok(eval <<'    EOT', "Ran glob checks") || diag "Error: $@";
-        is($Fake::UHG, 'UHG', "Set package scalar (UHG)");
-        is($Fake::DATA, 'data', "Set package scalar (DATA)");
-        is(\%Fake::DATA, { my => 'data' }, "Set package hash");
-        is(\@Fake::DATA, [ my => 'data' ], "Set package array");
+        is($Fake14::UHG, 'UHG', "Set package scalar (UHG)");
+        is($Fake14::DATA, 'data', "Set package scalar (DATA)");
+        is(\%Fake14::DATA, { my => 'data' }, "Set package hash");
+        is(\@Fake14::DATA, [ my => 'data' ], "Set package array");
         1;
     EOT
 
@@ -650,7 +646,7 @@ test 'override and orig' => sub {
     );
 
     like(
-        dies { Test2::Mock->new(class => 'Fake2')->orig('no_mocks') },
+        dies { Test2::Mock->new(class => 'AnotherFake14')->orig('no_mocks') },
         qr/No symbols have been mocked yet/,
         "Cannot get original when nothing is mocked"
     );
@@ -658,12 +654,10 @@ test 'override and orig' => sub {
     $one = undef;
 
     $check_initial->();
-
-    $one = Test2::Mock->new(class => 'Fake');
 };
 
-test restore_reset => sub {
-    my $one = Test2::Mock->new( class => 'Fake' );
+subtest restore_reset => sub {
+    my $one = Test2::Mock->new( class => 'Fake15' );
 
     $one->add(foo => sub { 'a' });
     $one->add(-foo => \'a');
@@ -674,58 +668,58 @@ test restore_reset => sub {
     $one->override(foo => sub { 'd' });
     $one->override(foo => sub { 'e' });
 
-    is(Fake->foo, 'e', "latest override");
-    is(eval '$Fake::foo', 'a', "scalar override remains");
-    is(eval '\@Fake::foo', ['a'], "array override remains");
+    is(Fake15->foo, 'e', "latest override");
+    is(eval '$Fake15::foo', 'a', "scalar override remains");
+    is(eval '\@Fake15::foo', ['a'], "array override remains");
 
     $one->restore('foo');
-    is(Fake->foo, 'd', "second latest override");
-    is(eval '$Fake::foo', 'a', "scalar override remains");
-    is(eval '\@Fake::foo', ['a'], "array override remains");
+    is(Fake15->foo, 'd', "second latest override");
+    is(eval '$Fake15::foo', 'a', "scalar override remains");
+    is(eval '\@Fake15::foo', ['a'], "array override remains");
 
     $one->restore('foo');
-    is(Fake->foo, 'c', "second latest override");
-    is(eval '$Fake::foo', 'a', "scalar override remains");
-    is(eval '\@Fake::foo', ['a'], "array override remains");
+    is(Fake15->foo, 'c', "second latest override");
+    is(eval '$Fake15::foo', 'a', "scalar override remains");
+    is(eval '\@Fake15::foo', ['a'], "array override remains");
 
     $one->reset('foo');
-    ok(!Fake->can('foo'), "no more override");
-    is(eval '$Fake::foo', 'a', "scalar override remains");
-    is(eval '\@Fake::foo', ['a'], "array override remains");
+    ok(!Fake15->can('foo'), "no more override");
+    is(eval '$Fake15::foo', 'a', "scalar override remains");
+    is(eval '\@Fake15::foo', ['a'], "array override remains");
 
     $one->add(foo => sub { 'a' });
-    is(Fake->foo, 'a', "override");
+    is(Fake15->foo, 'a', "override");
 
     $one->reset_all;
-    ok(!Fake->can('foo'), "no more override");
-    is(eval '$Fake::foo', undef, "scalar override removed");
+    ok(!Fake15->can('foo'), "no more override");
+    is(eval '$Fake15::foo', undef, "scalar override removed");
 
     no strict 'refs';
-    ok(!*{'Fake::foo'}{ARRAY}, "array override removed");
+    ok(!*{'Fake15::foo'}{ARRAY}, "array override removed");
 };
 
-test exceptions => sub {
-    my $one = Test2::Mock->new( class => 'Fake' );
+subtest exceptions => sub {
+    my $one = Test2::Mock->new( class => 'Fake16' );
     like(
-        dies { $one->new(class => 'Fake2') },
+        dies { $one->new(class => 'AnotherFake16') },
         qr/Called new\(\) on a blessed instance, did you mean to call \$control->class->new\(\)\?/,
         "Cannot call new on a blessed instance"
     );
 
     like(
-        dies { Test2::Mock->new(class => 'Fake2', foo => 1) },
+        dies { Test2::Mock->new(class => 'AnotherFake16', foo => 1) },
         qr/'foo' is not a valid constructor argument for Test2::Mock/,
         "Validate constructor args"
     );
 
     like(
-        dies { Test2::Mock->new(class => 'Fake2', override_constructor => ['xxx', 'xxx']) },
+        dies { Test2::Mock->new(class => 'AnotherFake16', override_constructor => ['xxx', 'xxx']) },
         qr/'xxx' is not a known constructor type/,
         "Invalid constructor type"
     );
 
     like(
-        dies { Test2::Mock->new(class => 'Fake2', add_constructor => ['xxx', 'xxx']) },
+        dies { Test2::Mock->new(class => 'AnotherFake16', add_constructor => ['xxx', 'xxx']) },
         qr/'xxx' is not a known constructor type/,
         "Invalid constructor type"
     );
@@ -766,7 +760,7 @@ test exceptions => sub {
     );
 };
 
-test override_inherited_method => sub {
+subtest override_inherited_method => sub {
     package ABC;
     our @ISA = 'DEF';
 
