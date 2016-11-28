@@ -162,7 +162,7 @@ subtest mock_obj => sub {
     ok($obj->can('bar'), "mock object ->can returns true for bar");
     ok($obj->can('isa'), "mock object ->can returns true for isa");
 
-    my $foo = $obj->can('foo');
+    $foo = $obj->can('foo');
 
     my ($c) = mocked($obj);
     ok($c, "got control");

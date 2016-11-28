@@ -4,208 +4,228 @@ use warnings;
 
 our $VERSION = '0.000062';
 
-use Test2::Util::Table::LineBreak();
+use Test2::Util::Table::Cell();
 
+use Test2::Util::Term qw/term_size uni_length USE_GCS/;
+use Scalar::Util qw/blessed/;
 use List::Util qw/max sum/;
-use Test2::Util qw/try/;
+use Carp qw/croak carp/;
 
-our @EXPORT_OK = qw/table term_size/;
-use base 'Exporter';
-
-BEGIN {
-    my ($ok, $err) = try { require Term::ReadKey };
-    $ok &&= Term::ReadKey->can('GetTerminalSize');
-    *USE_TERM_READKEY = $ok ? sub() { 1 } : sub() { 0 };
-}
-
-sub term_size {
-    return $ENV{T2_TERM_SIZE} if $ENV{T2_TERM_SIZE};
-    return 80 unless USE_TERM_READKEY;
-    my $total;
-    try {
-        my @warnings;
-        {
-            local $SIG{__WARN__} = sub { push @warnings => @_ };
-            ($total) = Term::ReadKey::GetTerminalSize(*STDOUT);
-        }
-        @warnings = grep { $_ !~ m/Unable to get Terminal Size/ } @warnings;
-        warn @warnings if @warnings;
-    };
-    return 80 if !$total;
-    return 80 if $total < 80;
-    return $total;
-}
-
-sub BORDER_SIZE() { 4 }    # '| ' and ' |' borders
-sub DIV_SIZE()    { 3 }    # ' | ' column delimiter
-sub PAD_SIZE()    { 4 }    # Extra arbitrary padding
-
-my %CHAR_MAP = (
-    "\a" => '\\a',
-    "\b" => '\\b',
-    "\e" => '\\e',
-    "\f" => '\\f',
-    "\n" => '\\n',
-    "\r" => '\\r',
-    "\t" => '\\t',
-    " "  => ' ',
+use Importer Importer => 'import';
+our @EXPORT_OK  = qw/table/;
+our %EXPORT_GEN = (
+    '&term_size' => sub {
+        require Carp;
+        Carp::cluck "term_size should be imported from Test2::Util::Term, not " . __PACKAGE__;
+        Test2::Util::Term->can('term_size');
+    },
 );
 
-sub char_id {
-    my $char = shift;
-    return "\\N{U+" . sprintf("\%X", ord($char)) . "}";
-}
+use Test2::Util::HashBase qw/rows _columns collapse max_width mark_tail sanitize show_header auto_columns no_collapse header/;
 
-sub show_char {
-    my ($char) = @_;
-    return $CHAR_MAP{$char} || char_id($char);
-}
+sub BORDER_SIZE()   { 4 }    # '| ' and ' |' borders
+sub DIV_SIZE()      { 3 }    # ' | ' column delimiter
+sub PAD_SIZE()      { 4 }    # Extra arbitrary padding
+sub CELL_PAD_SIZE() { 2 }    # space on either side of the |
 
-sub sanitize {
-    for (@_) {
-        next unless defined $_;
-        s/([\s\t\p{Zl}\p{C}\p{Zp}])/show_char($1)/ge; # All whitespace except normal space
+sub init {
+    my $self = shift;
+
+    croak "You cannot have a table with no rows"
+        unless $self->{+ROWS} && @{$self->{+ROWS}};
+
+    $self->{+MAX_WIDTH}   ||= term_size();
+    $self->{+NO_COLLAPSE} ||= {};
+    if (ref($self->{+NO_COLLAPSE}) eq 'ARRAY') {
+        $self->{+NO_COLLAPSE} = {map { ($_ => 1) } @{$self->{+NO_COLLAPSE}}};
     }
-    return @_;
-}
 
-sub mark_tail {
-    for (@_) {
-        next unless defined $_;
-        s/([\s\t\p{Zl}\p{C}\p{Zp}])$/$1 eq ' ' ? char_id($1) : show_char($1)/e;
+    $self->{+COLLAPSE}  = 1 unless defined $self->{+COLLAPSE};
+    $self->{+SANITIZE}  = 1 unless defined $self->{+SANITIZE};
+    $self->{+MARK_TAIL} = 1 unless defined $self->{+MARK_TAIL};
+
+    if($self->{+HEADER}) {
+        $self->{+SHOW_HEADER}  = 1 unless defined $self->{+SHOW_HEADER};
     }
-    return @_;
+    else {
+        $self->{+HEADER}       = [];
+        $self->{+AUTO_COLUMNS} = 1;
+        $self->{+SHOW_HEADER}  = 0;
+    }
 }
 
-sub resize {
-    my ($max, $show, $lengths) = @_;
+sub columns {
+    my $self = shift;
 
-    my $fair = int($max / @$show); # Fair size for all rows
+    $self->regen_columns unless $self->{+_COLUMNS};
 
-    my $used = 0;
-    my @resize;
-    for my $i (@$show) {
-        my $size = $lengths->[$i];
-        if ($size <= $fair) {
-            $used += $size;
+    return $self->{+_COLUMNS};
+}
+
+sub regen_columns {
+    my $self = shift;
+
+    my $has_header = $self->{+SHOW_HEADER} && @{$self->{+HEADER}};
+    my %new_row = (width => 0, count => $has_header ? -1 : 0);
+
+    my $cols = [map { {%new_row} } @{$self->{+HEADER}}];
+    my @rows = @{$self->{+ROWS}};
+
+    for my $row ($has_header ? ($self->{+HEADER}, @rows) : (@rows)) {
+        for my $ci (0 .. (@$row - 1)) {
+            $cols->[$ci] ||= {%new_row} if $self->{+AUTO_COLUMNS};
+            my $c = $cols->[$ci] or next;
+            $c->{idx} ||= $ci;
+            $c->{rows} ||= [];
+
+            my $r = $row->[$ci];
+            $r = Test2::Util::Table::Cell->new(value => $r)
+                unless blessed($r)
+                && $r->isa('Test2::Util::Table::Cell');
+
+            $r->sanitize  if $self->{+SANITIZE};
+            $r->mark_tail if $self->{+MARK_TAIL};
+
+            my $rs = $r->width;
+            $c->{width} = $rs if $rs > $c->{width};
+            $c->{count}++ if $rs;
+
+            push @{$c->{rows}} => $r;
+        }
+    }
+
+    # Remove any empty columns we can
+    @$cols = grep {$_->{count} > 0 || $self->{+NO_COLLAPSE}->{$_->{idx}}} @$cols
+        if $self->{+COLLAPSE};
+
+    my $current = sum(map {$_->{width}} @$cols);
+    my $border = sum(BORDER_SIZE, PAD_SIZE, DIV_SIZE * @$cols);
+    my $total = $current + $border;
+
+    if ($total > $self->{+MAX_WIDTH}) {
+        my $fair = ($self->{+MAX_WIDTH} - $border) / @$cols;
+        my $under = 0;
+        my @fix;
+        for my $c (@$cols) {
+            if ($c->{width} > $fair) {
+                push @fix => $c;
+            }
+            else {
+                $under += $c->{width};
+            }
+        }
+
+        # Recalculate fairness
+        $fair = int(($self->{+MAX_WIDTH} - $border - $under) / @fix);
+
+        # Adjust over-long columns
+        $_->{width} = $fair for @fix;
+    }
+
+    $self->{+_COLUMNS} = $cols;
+}
+
+sub render {
+    my $self = shift;
+
+    my $cols = $self->columns;
+    my $width = sum(BORDER_SIZE, PAD_SIZE, DIV_SIZE * @$cols, map { $_->{width} } @$cols);
+
+    #<<< NO-TIDY
+    my $border   = '+' . join('+', map { '-' x ($_->{width}  + CELL_PAD_SIZE) }      @$cols) . '+';
+    my $template = '|' . join('|', map { my $w = $_->{width} + CELL_PAD_SIZE; '%s' } @$cols) . '|';
+    my $spacer   = '|' . join('|', map { ' ' x ($_->{width}  + CELL_PAD_SIZE) }      @$cols) . '|';
+    #>>>
+
+    my @out = ($border);
+    my ($row, $split, $found) = (0, 0, 0);
+    while(1) {
+        my @row;
+
+        for my $col (@$cols) {
+            my $r = $col->{rows}->[$row];
+            unless($r) {
+                push @row => '';
+                next;
+            }
+
+            my $lw = $r->border_left_width;
+            my $rw = $r->border_right_width;
+            my $vw = $col->{width} - $lw - $rw;
+            my $v = $r->break->next($vw);
+
+            if (defined $v) {
+                $found++;
+                my $bcolor = $r->border_color || '';
+                my $vcolor = $r->value_color  || '';
+                my $reset  = $r->reset_color  || '';
+
+                if (my $need = $vw - uni_length($v)) {
+                    $v .= ' ' x $need;
+                }
+
+                my $rt = "${reset}${bcolor}\%s${reset} ${vcolor}\%s${reset} ${bcolor}\%s${reset}";
+                push @row => sprintf($rt, $r->border_left || '', $v, $r->border_right || '');
+            }
+            else {
+                push @row => ' ' x ($col->{width} + 2);
+            }
+        }
+
+        if (!grep {$_ && m/\S/} @row) {
+            last unless $found;
+
+            push @out => $border if $row == 0 && $self->{+SHOW_HEADER} && @{$self->{+HEADER}};
+            push @out => $spacer if $split > 1;
+
+            $row++;
+            $split = 0;
+            $found = 0;
+
             next;
         }
 
-        push @resize => $i;
+        if ($split == 1 && @out > 1 && $out[-2] ne $border && $out[-2] ne $spacer) {
+            my $last = pop @out;
+            push @out => ($spacer, $last);
+        }
+
+        push @out => sprintf($template, @row);
+        $split++;
     }
 
-    my $new_max = $max - $used;
-    my $new_fair = int($new_max / @resize);
-    $lengths->[$_] = $new_fair for @resize;
+    pop @out while @out && $out[-1] eq $spacer;
+
+    unless (USE_GCS) {
+        for my $row (@out) {
+            next unless $row =~ m/[^\x00-\x7F]/;
+            unshift @out => "Unicode::GCString is not installed, table may not display all unicode characters properly";
+            last;
+        }
+    }
+
+    return (@out, $border);
+}
+
+sub display {
+    my $self = shift;
+    my ($fh) = @_;
+
+    my @parts = map "$_\n", $self->render;
+
+    print $fh @parts if $fh;
+    print @parts;
 }
 
 sub table {
     my %params = @_;
-    my $header      = $params{header};
-    my $rows        = $params{rows};
-    my $collapse    = $params{collapse};
-    my $maxwidth    = $params{max_width} || term_size();
-    my $sanitize    = $params{sanitize};
-    my $mark_tail   = $params{mark_tail};
-    my $no_collapse = $params{no_collapse} || [];
 
-    $no_collapse = { map {($_ => 1)} @$no_collapse };
+    $params{collapse}    ||= 0;
+    $params{sanitize}    ||= 0;
+    $params{mark_tail}   ||= 0;
+    $params{show_header} ||= 0 unless $params{header} && @{$params{header}};
 
-    my $last = ($header ? scalar @$header : max(map { scalar @{$_} } @$rows)) - 1;
-    my @all = 0 .. $last;
-
-    my $uniwarn = 0;
-    my @lengths;
-    for my $row (@$rows) {
-        $uniwarn ||= m/[^\x00-\x7F]/ for grep { defined($_) } @$row;
-        sanitize(@$row)  if $sanitize;
-        mark_tail(@$row) if $mark_tail;
-        @$row = map { Test2::Util::Table::LineBreak->new(string => defined($row->[$_]) ? "$row->[$_]" : '') } @all;
-        $lengths[$_] = max($row->[$_]->columns, $lengths[$_] || 0) for @all;
-    }
-
-    # How many columns are we showing?
-    my @show = $collapse ? (grep { $lengths[$_] || $no_collapse->{$_} } @all) : (@all);
-
-    # Titles should fit
-    if ($header) {
-        @$header = map {Test2::Util::Table::LineBreak->new(string => "$_")} @$header;
-        for my $i (@all) {
-            next if $collapse && !$lengths[$i] && !$no_collapse->{$i};
-            $lengths[$i] = max($header->[$i]->columns, $lengths[$i] || 0);
-        }
-    }
-
-    # Figure out size of screen, and a fair size for each column.
-    my $divs     = @show * DIV_SIZE();    # size of the dividers combined
-    my $max_size = $maxwidth              # initial terminal size
-                 - BORDER_SIZE()          # Subtract the border
-                 - PAD_SIZE()             # subtract the padding
-                 - $divs;                 # Subtract dividers
-
-    # Make sure we do not spill off the screen
-    resize($max_size, \@show, \@lengths) if sum(@lengths) > $max_size;
-
-    # Put together borders and row template
-    my $border   = join '-', '+', map { '-' x $lengths[$_], "+" } @show;
-    my $row_tmpl = join ' ', '|', map { "\%s |" } @show;
-
-    for my $row ($header ? ($header) : (), @$rows) {
-        for my $i (@show) {
-            $row->[$i]->break($lengths[$i]);
-        }
-    }
-
-    my @new_rows;
-    my $span = 0;
-    while (@$rows) {
-        my @new;
-        my $row = $rows->[0];
-        my $found = 0;
-        $span++;
-
-        for my $i (@show) {
-            my $item = $row->[$i];
-            my $part = $item->next;
-
-            if (defined($part)) {
-                $found++;
-                push @new => $part;
-            }
-            else {
-                push @new => ' ' x $lengths[$i];
-            }
-        }
-
-        if ($found || $span > 2) {
-            push @new_rows => \@new;
-        }
-
-        unless ($found) {
-            shift @$rows;
-            $span = 0;
-        }
-    }
-
-    # Remove trailing row padding
-    pop @new_rows if @new_rows && !grep { m/\S/ } @{$new_rows[-1]};
-
-    return (
-        $uniwarn && !$INC{'Unicode/GCString.pm'} ? (
-            "Unicode::GCString is not installed, table may not display all unicode characters properly",
-        ) : (),
-
-        $header ? (
-            $border,
-            sprintf($row_tmpl, map { $_->next } @$header[@show]),
-        ) : (),
-
-        $border,
-
-        (map {sprintf($row_tmpl, @{$_})} @new_rows),
-
-        $border,
-    );
+    __PACKAGE__->new(%params)->render;
 }
 
 1;

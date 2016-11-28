@@ -6,31 +6,23 @@ our $VERSION = '0.000062';
 
 use Carp qw/croak/;
 use Scalar::Util qw/blessed/;
+use Test2::Util::Term qw/uni_length/;
 
-# Optional.
-eval { require Unicode::GCString; 1 };
-
-use Test2::Util::HashBase qw/string gcstring lbreak _parts idx/;
+use Test2::Util::HashBase qw/string gcstring _len _parts idx/;
 
 sub init {
     my $self = shift;
 
     croak "string is a required attribute"
         unless defined $self->{+STRING};
-
-    return unless $INC{'Unicode/GCString.pm'};
-    $self->{+GCSTRING} = Unicode::GCString->new($self->{+STRING});
 }
 
-sub columns {
-    my $self = shift;
-    return $self->{+GCSTRING}->columns if $self->{+GCSTRING};
-    return length($self->{+STRING});
-}
+sub columns { uni_length($_[0]->{+STRING}) }
 
 sub break {
     my $self = shift;
     my ($len) = @_;
+    $self->{+_LEN} = $len;
 
     $self->{+IDX} = 0;
     my $str = $self->{+STRING} . ""; # Force stringification
@@ -38,23 +30,28 @@ sub break {
     binmode(STDOUT, ':utf8');
     my @parts;
     my @chars = split //, $str;
-    my $prev = '';
     while (@chars) {
         my $size = 0;
         my $part = '';
         until ($size == $len) {
             my $char = shift @chars;
             $char = '' unless defined $char;
-            my $l = $INC{'Unicode/GCString.pm'} ? Unicode::GCString->new("$char")->columns : length($char);
+
+            my $l = uni_length("$char");
             last unless $l;
+
+            if ($char eq "\n") {
+                last;
+                next;
+            }
+
             if ($size + $l > $len) {
                 unshift @chars => $char;
                 last;
             }
+
             $size += $l;
             $part .= $char;
-            last if $prev eq '\\' && $char eq 'n';
-            $prev = $char;
         }
         until ($size == $len) {
             $part .= ' ';
@@ -69,8 +66,14 @@ sub break {
 sub next {
     my $self = shift;
 
-    croak "String has not yet been broken"
-        unless $self->{+_PARTS};
+    if (@_) {
+        my ($len) = @_;
+        $self->break($len) if !$self->{+_LEN} || $self->{+_LEN} != $len;
+    }
+    else {
+        croak "String has not yet been broken"
+            unless $self->{+_PARTS};
+    }
 
     my $idx   = $self->{+IDX}++;
     my $parts = $self->{+_PARTS};

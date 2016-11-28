@@ -1,70 +1,8 @@
 use Test2::Bundle::Extended;
-use Test2::Util::Table qw/table term_size/;
+use Test2::Util::Table qw/table/;
+use Test2::Util::Term qw/USE_GCS/;
 
-imported_ok qw/table term_size/;
-
-{
-    local $ENV{T2_TERM_SIZE} = 42;
-    is(term_size, 42, "used env var");
-    local $ENV{T2_TERM_SIZE} = 1000;
-    is(term_size, 1000, "used env var again");
-}
-
-if ($INC{'Term/ReadKey.pm'}) {
-    local $ENV{'T2_TERM_SIZE'};
-    my $size;
-    my $ok = eval {
-        local $SIG{__WARN__} = sub { 1 };
-        ($size) = Term::ReadKey::GetTerminalSize(*STDOUT);
-        1;
-    };
-
-    $size = 80 if $size < 80;
-    is(term_size(), $size, "Got size from Term::ReadKey") if $ok && $size;
-
-    no warnings 'redefine';
-    local *Term::ReadKey::GetTerminalSize = sub { 0 };
-    is(term_size(), 80, "use default of 80 if Term::ReadKey fails");
-}
-else {
-    local %ENV = %ENV;
-    delete $ENV{'T2_TERM_SIZE'};
-    is(term_size(), 80, "Default to 80");
-}
-
-
-my $unsanitary = <<EOT;
-This string
-has vertical space
-including          　‌﻿\N{U+000B}unicode stuff
-and some non-whitespace ones: 婧 ʶ ๖
-EOT
-my $sanitary = 'This string\nhas vertical space\nincluding\N{U+A0}\N{U+1680}\N{U+2000}\N{U+2001}\N{U+2002}\N{U+2003}\N{U+2004}\N{U+2008}\N{U+2028}\N{U+2029}\N{U+3000}\N{U+200C}\N{U+FEFF}\N{U+B}unicode stuff\nand some non-whitespace ones: 婧 ʶ ๖\n';
-
-subtest sanitization => sub {
-    local *show_char = Test2::Util::Table->can('show_char');
-    local *sanitize  = Test2::Util::Table->can('sanitize');
-
-    # Common control characters
-    is(show_char("\a"), '\a', "translated bell");
-    is(show_char("\b"), '\b', "translated backspace");
-    is(show_char("\e"), '\e', "translated escape");
-    is(show_char("\f"), '\f', "translated formfeed");
-    is(show_char("\n"), '\n', "translated newline");
-    is(show_char("\r"), '\r', "translated return");
-    is(show_char("\t"), '\t', "translated tab");
-    is(show_char(" "),  ' ', "plain space is not translated");
-
-    # unicodes
-    is(show_char("婧"), '\N{U+5A67}', "translated unicode 婧 (U+5A67)");
-    is(show_char("ʶ"),  '\N{U+2B6}',  "translated unicode ʶ (U+2B6)");
-    is(show_char("߃"),  '\N{U+7C3}',  "translated unicode ߃ (U+7C3)");
-    is(show_char("๖"),  '\N{U+E56}',  "translated unicode ๖ (U+E56)");
-
-    sanitize(my $sanitized = "$unsanitary");
-
-    is($sanitized, $sanitary, "Sanitized string");
-};
+imported_ok qw/table/;
 
 subtest unicode_display_width => sub {
     my $wide = "foo bar baz 婧";
@@ -72,21 +10,15 @@ subtest unicode_display_width => sub {
     my $have_gcstring = eval { require Unicode::GCString; 1 };
 
     subtest no_unicode_linebreak => sub {
-        my @table;
-        {
-            local %INC = %INC;
-            delete $INC{'Unicode/GCString.pm'};
-            @table = table('header' => [ 'a', 'b'], 'rows'   => [[ '婧', '߃' ]]);
-        }
+        my @table = table('header' => [ 'a', 'b'], 'rows'   => [[ '婧', '߃' ]]);
 
         like(
             \@table,
             ["Unicode::GCString is not installed, table may not display all unicode characters properly"],
             "got unicode note"
         );
-    };
+    } unless USE_GCS;
 
-    return unless $have_gcstring;
     subtest with_unicode_linebreak => sub {
         my @table = table(
             'header' => [ 'a', 'b'],
@@ -104,7 +36,7 @@ subtest unicode_display_width => sub {
             ],
             "Support for unicode characters that use multiple columns"
         );
-    };
+    } if USE_GCS;
 };
 
 subtest width => sub {
@@ -318,13 +250,15 @@ subtest sanitize => sub {
         max_width => 60,
         sanitize => 1,
         header => [ 'data1' ],
-        rows => [["a\t\n\r\b\a          　‌﻿\N{U+000B}b"]],
+        rows => [["a\t\n\r\b\a          　‌﻿\N{U+000B}bф"]],
     );
+
+    my $have_gcstring = eval { require Unicode::GCString; 1 } || 0;
 
     is(
         \@table,
         [
-            ( $INC{'Unicode/GCString.pm'}
+            ( $have_gcstring
                 ? ()
                 : ("Unicode::GCString is not installed, table may not display all unicode characters properly")
             ),
@@ -334,7 +268,7 @@ subtest sanitize => sub {
             '| a\t\n                                             |',
             '| \r\b\a\N{U+A0}\N{U+1680}\N{U+2000}\N{U+2001}\N{U+ |',
             '| 2002}\N{U+2003}\N{U+2004}\N{U+2008}\N{U+2028}\N{U |',
-            '| +2029}\N{U+3000}\N{U+200C}\N{U+FEFF}\N{U+B}b      |',
+            '| +2029}\N{U+3000}\N{U+200C}\N{U+FEFF}\N{U+B}bф     |',
             '+---------------------------------------------------+',
         ],
         "Sanitized data"
