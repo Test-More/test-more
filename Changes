@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - An event without a trace object would an exception when using
+      Test2::Compare::Event and the comparison failed
+
 0.000061  2016-11-26 12:39:14-08:00 America/Los_Angeles
 
     - Fix mocked objects so that they respond properly to ->can when using AUTOLOAD.
