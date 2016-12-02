@@ -18,6 +18,8 @@ if ($INC{'Term/ReadKey.pm'}) {
         ($size) = Term::ReadKey::GetTerminalSize(*STDOUT);
         1;
     };
+
+    $size = 80 if $size < 80;
     is(term_size(), $size, "Got size from Term::ReadKey") if $ok && $size;
 
     no warnings 'redefine';
