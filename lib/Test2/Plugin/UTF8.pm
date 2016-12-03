@@ -16,10 +16,6 @@ sub import {
     require utf8;
     utf8->import;
 
-    # Set STDERR and STDOUT
-    binmode(STDERR, ':utf8');
-    binmode(STDOUT, ':utf8');
-
     # Set the output formatters to use utf8
     test2_add_callback_post_load(sub {
         my $stack = test2_stack;
@@ -49,35 +45,34 @@ __END__
 
 =head1 NAME
 
-Test2::Plugin::UTF8 - Test2 plugin that enables utf8.
+Test2::Plugin::UTF8 - Test2 plugin to test with utf8.
 
 =head1 DESCRIPTION
 
-When used, this plugin will turn on the utf8 pragma, set STDERR and STDOUT to
-use utf8, and update the Test2 output formatter to use utf8.
+When used, this plugin will make tests work with utf8. This includes
+turning on the utf8 pragma and updating the Test2 output formatter to
+use utf8.
 
 =head1 SYNOPSIS
 
     use Test2::Plugin::UTF8;
 
-This is the same as
+This is similar to:
 
     use utf8;
     BEGIN {
         require Test2::Tools::Encoding;
         Test2::Tools::Encoding::set_encoding('utf8');
-        binmode(STDERR, ':utf8');
-        binmode(STDOUT, ':utf8');
     }
 
 =head1 NOTES
 
-This module sets output handles to have the ':utf8' output layer. Some might
-prefer ':encoding(utf-8)' which is more strict about verifying characters.
-There is a debate about weather or not encoding to utf8 from perl internals can
-ever fail, so it may not matter. This was also chosen because the alternative
-causes threads to segfault, see
-L<perlbug 31923|https://rt.perl.org/Public/Bug/Display.html?id=31923>.
+This module currently sets output handles to have the ':utf8' output
+layer. Some might prefer ':encoding(utf-8)' which is more strict about
+verifying characters.  There is a debate about weather or not encoding
+to utf8 from perl internals can ever fail, so it may not matter. This
+was also chosen because the alternative causes threads to segfault,
+see L<perlbug 31923|https://rt.perl.org/Public/Bug/Display.html?id=31923>.
 
 =head1 SOURCE
 
