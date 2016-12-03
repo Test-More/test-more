@@ -1,17 +1,23 @@
---maximum-line-length=100               # we have widescreen now
---indent-columns=4
---continuation-indentation=2
---no-opening-sub-brace-on-new-line
---paren-tightness=1
---square-bracket-tightness=1
---brace-tightness=1
---no-space-for-semicolon
---no-outdent-long-quotes
---output-line-ending=unix
---no-outdent-labels
---no-blanks-before-comments
---blanks-before-subs
---blanks-before-blocks
---maximum-consecutive-blank-lines=2     # Allow two blanks between subroutines
---nospace-after-keyword="my local our and or eq ne if else elsif until unless while for foreach return switch case given when"
---want-break-before="% + - * / x != == >= <= =~ !~ < > | & >= < = **= += *= &= <<= &&= -= /= |= >>= ||= .= %= ^= x="
+--indent-columns=4               # size of indentation
+--nt                             # no tabs
+--entab-leading-whitespace=4     # 4 spaces to a tab when converting to tabs
+--continuation-indentation=4     # indentation of wrapped lines
+--maximum-line-length=0          # max line length before wrapping (turn it off)
+--nooutdent-long-quotes          # do not outdent overly long quotes
+--paren-tightness=2              # no spacing for parentheses
+--square-bracket-tightness=2     # no spacing for square brackets
+--brace-tightness=2              # no spacing for hash curly braces
+--block-brace-tightness=0        # spacing for coderef curly braces
+--comma-arrow-breakpoints=1      # break long key/value pair lists
+--break-at-old-comma-breakpoints # this attempts to retain list break points
+--no-blanks-before-comments      # do not insert blank lines before comments
+--indent-spaced-block-comments   # no blanks before comments
+--nocuddled-else                 # Do not cuddle else
+--nospace-for-semicolon          # no space before semicolons in loops
+--nospace-terminal-semicolon     # no space before termonal semicolons
+--notrim-qw                      # Do not mess with qw{} whitespace
+--opening-token-right            # make "push @array, {" indent nicely
+--stack-opening-tokens           # Stack opening tokens: "{ {" instead of "{\n\t{"
+--stack-closing-tokens           # Stack closing tokens: "} }" instead of "\t}\n}"
+--converge                       # Run until the output stops changing
+--extended-syntax                # For Fennec/Test2 and other Devel::Declare syntax tools
