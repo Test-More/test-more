@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '1.302068';
+our $VERSION = '1.302069';
 
 BEGIN {
     if( $] < 5.008 ) {
