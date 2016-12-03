@@ -2,6 +2,8 @@ package Test2::Util::Table::Cell;
 use strict;
 use warnings;
 
+our $VERSION = '0.000062';
+
 use Test2::Util::Table::LineBreak();
 use Test2::Util::Term qw/uni_length/;
 
