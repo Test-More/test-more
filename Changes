@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302068  2016-12-03 13:50:01-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Add TO_JSON and from_json methods to Test2::Event and Test2::Trace::Util
       to faciliate transferring event data between processes. Implemented by
       Dave Rolsky. (#741).
