@@ -3,6 +3,7 @@
     - An event without a trace object would an exception when using
       Test2::Compare::Event and the comparison failed
     - Fix tests for small terminals (#106)
+    - Enhance the table library
 
 0.000061  2016-11-26 12:39:14-08:00 America/Los_Angeles
 
