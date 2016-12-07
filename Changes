@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - When a subtest is marked as todo, all of its contained Ok and Subtest
+      events are now updated so that they return true for
+      $e->effective_pass. Implemented by Dave Rolsky. (#742)
+
 1.302068  2016-12-03 13:50:01-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Add TO_JSON and from_json methods to Test2::Event and Test2::Trace::Util
