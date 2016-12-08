@@ -24,21 +24,33 @@ BEGIN {
     }
 }
 
+my %STRIP = (
+    '^' => 1,
+    '-' => 1,
+);
+
 sub import {
     my $class = shift;
-    my $into = caller;
+    my $into  = caller;
 
-    my $isa = _isa($into);
+    my $isa       = _isa($into);
     my $attr_subs = $ATTR_SUBS{$into} ||= {};
-    my %subs = (
+    my %subs      = (
         ($into->can('new') ? () : (new => \&_new)),
-        (map %{ $ATTR_SUBS{$_}||{} }, @{$isa}[1 .. $#$isa]),
-        (map {
-            my ($sub, $attr) = (uc $_, $_);
-            $sub => ($attr_subs->{$sub} = sub() { $attr }),
-            $attr => sub { $_[0]->{$attr} },
-            "set_$attr" => sub { $_[0]->{$attr} = $_[1] },
-        } @_),
+        (map %{$ATTR_SUBS{$_} || {}}, @{$isa}[1 .. $#$isa]),
+        (
+            map {
+                my $p = substr($_, 0, 1);
+                my $x = $_;
+                substr($x, 0, 1) = '' if $STRIP{$p};
+                my ($sub, $attr) = (uc $x, $x);
+                $sub => ($attr_subs->{$sub} = sub() { $attr }),
+                $attr => sub { $_[0]->{$attr} },
+                  $p eq '-' ? ("set_$attr" => sub { Carp::croak("'$attr' is read-only") })
+                : $p eq '^' ? ("set_$attr" => sub { Carp::carp("set_$attr() is deprecated"); $_[0]->{$attr} = $_[1] })
+                :             ("set_$attr" => sub { $_[0]->{$attr} = $_[1] }),
+            } @_
+        ),
     );
 
     no strict 'refs';
@@ -74,7 +86,7 @@ A class:
     use warnings;
 
     # Generate 3 accessors
-    use Test2::Util::HashBase qw/foo bar baz/;
+    use Test2::Util::HashBase qw/foo -bar ^baz/;
 
     # Chance to initialize defaults
     sub init {
@@ -103,7 +115,7 @@ Subclass it
 
         # We get the constants from the base class for free.
         $self->{+FOO} ||= 'SubFoo';
-        $self->{+BAT} || = 'bat';
+        $self->{+BAT} ||= 'bat';
 
         $self->SUPER::init();
     }
@@ -124,7 +136,12 @@ use it:
 
     # Setters!
     $one->set_foo('A Foo');
-    $one->set_bar('A Bar');
+
+    #'-bar' means read-only, so the setter will throw an exception (but is defined).
+    $one->set_bar('A bar');
+
+    # '^baz' means deprecated setter, this will warn about the setter being
+    # deprecated.
     $one->set_baz('A Baz');
 
     $one->{+FOO} = 'xxx';
