@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - Generate HashBase from Object::HashBase whcih has been split out
     - When a subtest is marked as todo, all of its contained Ok and Subtest
       events are now updated so that they return true for
       $e->effective_pass. Implemented by Dave Rolsky. (#742)
