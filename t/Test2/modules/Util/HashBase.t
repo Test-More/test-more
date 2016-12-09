@@ -102,4 +102,28 @@ is($o->bar, 1, 'parent attribute sub not overridden');
 
 is(Foo->new, 'foo', "Did not override existing 'new' method");
 
+BEGIN {
+    $INC{'My/HBase2.pm'} = __FILE__;
+
+    package My::HBase2;
+    use Test2::Util::HashBase qw/foo -bar ^baz/;
+
+    main::is(FOO, 'foo', "FOO CONSTANT");
+    main::is(BAR, 'bar', "BAR CONSTANT");
+    main::is(BAZ, 'baz', "BAZ CONSTANT");
+}
+
+my $ro = My::HBase2->new(foo => 'foo', bar => 'bar', baz => 'baz');
+is($ro->foo, 'foo', "got foo");
+is($ro->bar, 'bar', "got bar");
+is($ro->baz, 'baz', "got baz");
+
+is($ro->set_foo('xxx'), 'xxx', "Can set foo");
+is($ro->foo, 'xxx', "got foo");
+
+like(exception { $ro->set_bar('xxx') }, qr/'bar' is read-only/, "Cannot set bar");
+
+my $warnings = warnings { is($ro->set_baz('xxx'), 'xxx', 'set baz') };
+like($warnings->[0], qr/set_baz\(\) is deprecated/, "Deprecation warning");
+
 done_testing;
