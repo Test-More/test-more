@@ -93,6 +93,7 @@ vmsperl
 YESNO
 ansi
 html
+HASHBASE
 
 ## other jargon, slang
 17th
