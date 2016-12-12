@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302069  2016-12-12 15:03:04-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Generate HashBase from Object::HashBase whcih has been split out
     - When a subtest is marked as todo, all of its contained Ok and Subtest
       events are now updated so that they return true for
