@@ -2,7 +2,7 @@ package Test2::Event::Encoding;
 use strict;
 use warnings;
 
-our $VERSION = '0.000012';
+our $VERSION = '1.302070';
 
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw/encoding/;
@@ -12,7 +12,7 @@ sub init {
     defined $self->{+ENCODING} or $self->trace->throw("'encoding' is a required attribute");
 }
 
-sub summary { 'Set parser encoding to ' . $_[0]->{+ENCODING} }
+sub summary { 'Encoding set to ' . $_[0]->{+ENCODING} }
 
 1;
 
@@ -29,7 +29,7 @@ Test2::Event::Encoding - Set the encoding for the output stream
 =head1 DESCRIPTION
 
 The encoding event is generated when a test file wants to specify the encoding
-to be used when formatting its output. This event is intended to be consumed
+to be used when formatting its output. This event is intended to be produced
 by formatter classes and used for interpreting test names, message contents,
 etc.
 

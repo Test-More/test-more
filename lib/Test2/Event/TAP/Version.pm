@@ -2,7 +2,7 @@ package Test2::Event::TAP::Version;
 use strict;
 use warnings;
 
-our $VERSION = '0.000012';
+our $VERSION = '1.302070';
 
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw/version/;
@@ -12,7 +12,7 @@ sub init {
     defined $self->{+VERSION} or $self->trace->throw("'version' is a required attribute");
 }
 
-sub summary { 'Producer is using TAP version ' . $_[0]->{+VERSION} . '.' }
+sub summary { 'TAP version ' . $_[0]->{+VERSION} }
 
 1;
 
@@ -24,11 +24,11 @@ __END__
 
 =head1 NAME
 
-Test2::Event::TAP::Version - Specify the TAP version being parsed
+Test2::Event::TAP::Version - Event for TAP version.
 
 =head1 DESCRIPTION
 
-This event should be generated when parsing TAP output.
+This event is used if a TAP formatter wishes to set a version.
 
 =head1 SYNOPSIS
 
