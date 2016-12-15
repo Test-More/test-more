@@ -3,7 +3,7 @@ use strict;
 use warnings;
 require PerlIO;
 
-our $VERSION = '1.302070';
+our $VERSION = '1.302071';
 
 use Test2::Util::HashBase qw{
     no_numbers handles _encoding
