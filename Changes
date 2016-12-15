@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302070  2016-12-14 21:32:47-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Added two new event classes, Test2::Event::Encoding and
       Test2::Event::TAP::Version. These are primarily being added for the
       benefit of Test2::Harness now, but they could be useful for other Test2
