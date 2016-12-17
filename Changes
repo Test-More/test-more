@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - No notable changes since the last trial release.
+
 0.000062  2016-12-03 14:03:44-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - An event without a trace object throw would an exception when using
