@@ -8,7 +8,7 @@ BEGIN {
     purge_symbol('&isnt');
     purge_symbol('&cmp_ok');
 
-    not_imported_ok(qw/is is_deeply like unline isnt cmp_ok/);
+    not_imported_ok(qw/is is_deeply like unlike isnt cmp_ok/);
 }
 
 use Test2::Tools::ClassicCompare;
