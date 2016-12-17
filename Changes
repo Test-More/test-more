@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - No changes since last trial release
+
 1.302070  2016-12-14 21:32:47-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Added two new event classes, Test2::Event::Encoding and
