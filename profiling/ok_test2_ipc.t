@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 use Test2::IPC;
-BEGIN { require 't/tools.pl' };
+use Test2::Tools::Tiny;
 
 my $count = $ENV{OK_COUNT} || 100000;
 plan($count);
