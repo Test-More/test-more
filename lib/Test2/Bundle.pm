@@ -2,7 +2,7 @@ package Test2::Bundle;
 use strict;
 use warnings;
 
-our $VERSION = '0.000064';
+our $VERSION = '0.000065';
 
 1;
 
