@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - No changes from last trial
+
 1.302072  2016-12-18 01:08:12-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Expose tools.pl as Test2::Tools::Tiny
