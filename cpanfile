@@ -3,6 +3,7 @@ requires "Carp" => "0";
 requires "Importer" => "0.024";
 requires "List::Util" => "0";
 requires "Scalar::Util" => "0";
+requires "Term::Table" => "0.001";
 requires "Test2" => "1.302032";
 requires "overload" => "0";
 requires "perl" => "5.008001";
