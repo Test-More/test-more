@@ -8,7 +8,7 @@ use File::Temp qw/tempfile/;
 # A bug in older perls causes a strange error AFTER the program appears to be
 # done if this test is run.
 # "Size magic not implemented."
-if ($] > 5.020000) {
+if ($] > 5.020000 && $ENV{AUTHOR_TESTING}) {
     like(
         intercept {
             subtest_streamed 'foo' => sub {
