@@ -20,7 +20,7 @@ diag(
 
 {
     my @depends = qw{
-        Test2 B Carp File::Spec File::Temp List::Util PerlIO Scalar::Util
+        Test2 B Carp File::Spec File::Temp PerlIO Scalar::Util
         Storable Test::Harness overload utf8 Term::Table
     };
 
