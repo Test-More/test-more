@@ -22,8 +22,8 @@ my %WriteMakefileArgs = (
     "Importer" => "0.024",
     "List::Util" => 0,
     "Scalar::Util" => 0,
-    "Term::Table" => "0.001",
-    "Test2" => "1.302032",
+    "Term::Table" => "0.002",
+    "Test2" => "1.302073",
     "overload" => 0,
     "utf8" => 0
   },
@@ -40,8 +40,8 @@ my %FallbackPrereqs = (
   "Importer" => "0.024",
   "List::Util" => 0,
   "Scalar::Util" => 0,
-  "Term::Table" => "0.001",
-  "Test2" => "1.302032",
+  "Term::Table" => "0.002",
+  "Test2" => "1.302073",
   "overload" => 0,
   "utf8" => 0
 );
