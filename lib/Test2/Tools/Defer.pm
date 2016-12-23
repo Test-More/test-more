@@ -2,7 +2,7 @@ package Test2::Tools::Defer;
 use strict;
 use warnings;
 
-our $VERSION = '0.000066';
+our $VERSION = '0.000067';
 
 use Carp qw/croak/;
 
