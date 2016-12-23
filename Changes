@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000066  2016-12-23 15:16:18-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Move sub_info to Sub::Info
 
 0.000065  2016-12-19 19:46:47-08:00 America/Los_Angeles
