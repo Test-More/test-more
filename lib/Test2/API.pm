@@ -472,6 +472,7 @@ sub run_subtest {
         };
     }
 
+    my $start_pid = $$;
     my ($ok, $err, $finished);
     T2_SUBTEST_WRAPPER: {
         # Do not use 'try' cause it localizes __DIE__
@@ -487,6 +488,12 @@ sub run_subtest {
             $finished = 1;
         }
     }
+
+    if ($start_pid != $$) {
+      warn $ok ? "Forked inside subtest, but subtest never finished!\n" : $err;
+      exit 255;
+    }
+
     $stack->pop($hub);
 
     my $trace = $ctx->trace;
