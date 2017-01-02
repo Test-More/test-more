@@ -17,6 +17,8 @@ through writing a test file, making assertions, and running your test.
 
 =head1 BOILERPLATE
 
+=head2 THE TEST FILE
+
 Test files typically are placed inside the C<t/> directory, and end with the
 C<.t> file extension.
 
@@ -45,6 +47,41 @@ test did not complete successfully without this, or some other form of test
 "plan".
 
 =back
+
+=head2 DIST CONFIG
+
+You should always list bundles and tools directly. You should not simply list
+L<Test2::Suite> and call it done, bundles and tools may be moved out of
+L<Test2::Suite> to their own dists at any time.
+
+=head3 Dist::Zilla
+
+    [Prereqs / TestRequires]
+    Test2::Bundle::Extended = 0.000060
+
+=head3 ExtUtils::MakeMaker
+
+    my %WriteMakefileArgs = (
+      ...,
+      "TEST_REQUIRES" => {
+        "Test2::Bundle::Extended" => "0.000060"
+      },
+      ...
+    );
+
+=head3 Module::Install
+
+    test_requires 'Test2::Bundle::Extended' => '0.000060';
+
+=head3 Module::Build
+
+    my $build = Module::Build->new(
+        ...,
+        test_requires => {
+            "Test2::Bundle::Extended" => "0.000060",
+        },
+        ...
+    );
 
 =head1 MAKING ASSERTIONS
 

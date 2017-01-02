@@ -49,9 +49,45 @@ perl versions, or require external libraries that may not always be available.
 
 =back
 
+=head1 LISTING DEPENDENCIES
+
+When you use L<Test2>, specifically things included in L<Test2::Suite> you need
+to list them in your modules test dependencies. It is important to note that
+you should list the tools/plugins/bundles you need, you should not simply list
+L<Test2::Suite> as your dependency. L<Test2::Suite> is a living distribution
+intended to represent the "current" best practices. As tools, plugins, and
+bundles evolve, old ones will become discouraged and potentially be moved from
+L<Test2::Suite> into their own distributions.
+
+One goal of L<Test2::Suite> is to avoid breaking backwards compatability.
+Another goal is to always improve by replacing bad designs with better ones.
+When necessary L<Test2::Suite> will break old modules out into separate dists
+and define new ones, typically with a new bundle. In short, if we feel the need
+to break something we will do so by creating a new bundle, and discouraging the
+old one, but we will not break the old one.
+
+So for example, if you use L<Test2::Bundle::Extended>, and L<Dist::Zilla> you
+should have this in your config:
+
+    [Prereqs / TestRequires]
+    Test2::Bundle::Extended = 0.000060
+
+You B<SHOULD NOT> do this:
+
+    [Prereqs / TestRequires]
+    Test2::Suite = 0.000060
+
+Because L<Test2::Bundle::Extended> might not always be part of L<Test2::Suite>.
+
+When writing new tests you should often check L<Test2::Suite> to see what the
+current recommended bundle is.
+
 =head1 TUTORIALS
 
 =head2 SIMPLE/INTRODUCTION TUTORIAL
+
+L<Test2::Manual::Testing::Introduction> is an introduction to writing tests
+using the L<Test2> tools.
 
 =head2 ADVANCED PLANNING
 
