@@ -82,6 +82,35 @@ Because L<Test2::Bundle::Extended> might not always be part of L<Test2::Suite>.
 When writing new tests you should often check L<Test2::Suite> to see what the
 current recommended bundle is.
 
+=head3 Dist::Zilla
+
+    [Prereqs / TestRequires]
+    Test2::Bundle::Extended = 0.000060
+
+=head3 ExtUtils::MakeMaker
+
+    my %WriteMakefileArgs = (
+      ...,
+      "TEST_REQUIRES" => {
+        "Test2::Bundle::Extended" => "0.000060"
+      },
+      ...
+    );
+
+=head3 Module::Install
+
+    test_requires 'Test2::Bundle::Extended' => '0.000060';
+
+=head3 Module::Build
+
+    my $build = Module::Build->new(
+        ...,
+        test_requires => {
+            "Test2::Bundle::Extended" => "0.000060",
+        },
+        ...
+    );
+
 =head1 TUTORIALS
 
 =head2 SIMPLE/INTRODUCTION TUTORIAL
@@ -91,7 +120,12 @@ using the L<Test2> tools.
 
 =head2 ADVANCED PLANNING
 
+L<Test2::Manual::Testing::Planning> is a tutorial on the many ways to set a
+plan.
+
 =head2 TODO TESTS
+
+L<Test2::Manual::Testing::Todo> is a tutorial for markings tests as TODO.
 
 =head2 SUBTESTS
 
