@@ -473,6 +473,7 @@ sub run_subtest {
     }
 
     my $start_pid = $$;
+    my $start_tid = get_tid;
     my ($ok, $err, $finished);
     T2_SUBTEST_WRAPPER: {
         # Do not use 'try' cause it localizes __DIE__
@@ -490,8 +491,13 @@ sub run_subtest {
     }
 
     if ($start_pid != $$) {
-      warn $ok ? "Forked inside subtest, but subtest never finished!\n" : $err;
-      exit 255;
+        warn $ok ? "Forked inside subtest, but subtest never finished!\n" : $err;
+        exit 255;
+    }
+
+    if ($start_tid != get_tid) {
+        warn $ok ? "Started new thread inside subtest, but thread never finished!\n" : $err;
+        exit 255;
     }
 
     $stack->pop($hub);
