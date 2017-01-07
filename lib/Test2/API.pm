@@ -207,6 +207,7 @@ sub no_context(&;$) {
     return;
 };
 
+my $CID = 1;
 sub context {
     # We need to grab these before anything else to ensure they are not
     # changed.
@@ -286,6 +287,7 @@ sub context {
             frame => [$pkg, $file, $line, $sub],
             pid   => $$,
             tid   => get_tid(),
+            cid   => 'C' . $CID++,
         },
         'Test2::Util::Trace'
     );

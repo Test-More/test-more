@@ -9,17 +9,33 @@ use Test2::Util qw/get_tid pkg_to_file/;
 
 use Carp qw/confess/;
 
-use Test2::Util::HashBase qw{frame detail pid tid};
+use Test2::Util::HashBase qw{frame detail pid tid cid};
 
+my $CID = 1;
 sub init {
     confess "The 'frame' attribute is required"
         unless $_[0]->{+FRAME};
 
-    $_[0]->{+PID} = $$        unless defined $_[0]->{+PID};
-    $_[0]->{+TID} = get_tid() unless defined $_[0]->{+TID};
+    $_[0]->{+PID} = $$           unless defined $_[0]->{+PID};
+    $_[0]->{+TID} = get_tid()    unless defined $_[0]->{+TID};
+    $_[0]->{+CID} = 'T' . $CID++ unless defined $_[0]->{+CID};
 }
 
 sub snapshot { bless {%{$_[0]}}, __PACKAGE__ };
+
+sub signature {
+    my $self = shift;
+
+    # Signature is only valid if all of these fields are defined, there is no
+    # signature if any is missing. '0' is ok, but '' is not.
+    return join ':' => map { (defined($_) && length($_)) ? $_ : return undef } (
+        $self->{+CID},
+        $self->{+PID},
+        $self->{+TID},
+        $self->{+FRAME}->[1],
+        $self->{+FRAME}->[2],
+    );
+}
 
 sub debug {
     my $self = shift;
@@ -49,10 +65,10 @@ sub subname { $_[0]->{+FRAME}->[3] }
 
 sub from_json {
     my $class = shift;
-	my %p     = @_;
+    my %p     = @_;
 
     my $trace_pkg = delete $p{__PACKAGE__};
-	require(pkg_to_file($trace_pkg));
+    require(pkg_to_file($trace_pkg));
 
     return $trace_pkg->new(%p);
 }
@@ -138,6 +154,13 @@ Get the debug-info line number.
 =item $subname = $trace->subname
 
 Get the debug-info subroutine name.
+
+=item $sig = trace->signature
+
+Get a signature string that identifies this trace. This is used to check if
+multiple events are related. The Trace includes pid, tid, file, line number,
+and the cid which is C<'C\d+'> for traces created by a context, or C<'T\d+'>
+for traces created by C<new()>.
 
 =item $hashref = $t->TO_JSON
 
