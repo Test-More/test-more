@@ -3,8 +3,9 @@
 # Test what happens when no plan is declared and done_testing() is not seen
 
 use strict;
+
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -18,7 +19,7 @@ use Test::Builder::NoOutput;
 
 my $Test = Test::Builder->new;
 $Test->level(0);
-$Test->plan( tests => 1 );
+$Test->plan(tests => 1);
 
 my $tb = Test::Builder::NoOutput->create;
 

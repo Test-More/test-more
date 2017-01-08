@@ -1,7 +1,7 @@
 #!perl -w
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = '../lib';
     }
@@ -16,7 +16,6 @@ require Test::Builder;
 my $TB = Test::Builder->create;
 $TB->plan(tests => 3);
 
-
 package main;
 
 require Test::Simple;
@@ -24,7 +23,7 @@ require Test::Simple;
 chdir 't';
 push @INC, '../t/lib/';
 require Test::Simple::Catch;
-my($out, $err) = Test::Simple::Catch::caught();
+my ($out, $err) = Test::Simple::Catch::caught();
 local $ENV{HARNESS_ACTIVE} = 0;
 
 Test::Simple->import(tests => 1);

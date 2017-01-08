@@ -11,9 +11,9 @@ my $skip = Test2::Event::Skip->new(
     reason => 'foo',
 );
 
-is($skip->name, 'skip me', "set name");
-is($skip->reason, 'foo', "got skip reason");
-ok(!$skip->pass, "no default for pass");
+is($skip->name,   'skip me', "set name");
+is($skip->reason, 'foo',     "got skip reason");
+ok(!$skip->pass,          "no default for pass");
 ok($skip->effective_pass, "TODO always effectively passes");
 
 is($skip->summary, "skip me (SKIP: foo)", "summary with reason");

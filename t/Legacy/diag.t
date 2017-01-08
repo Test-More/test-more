@@ -13,7 +13,7 @@ BEGIN {
 }
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -32,35 +32,34 @@ my $test = Test::Builder::NoOutput->create;
     $test->todo_start();
 
     $test->diag("a single line");
-    is( $test->read('todo'), <<'DIAG',   'diag() with todo_output set' );
+    is($test->read('todo'), <<'DIAG', 'diag() with todo_output set');
 # a single line
 DIAG
 
     my $ret = $test->diag("multiple\n", "lines");
-    is( $test->read('todo'), <<'DIAG',   '  multi line' );
+    is($test->read('todo'), <<'DIAG', '  multi line');
 # multiple
 # lines
 DIAG
-    ok( !$ret, 'diag returns false' );
+    ok(!$ret, 'diag returns false');
 
     $test->todo_end();
 }
 
-
 # Test diagnostic formatting
 {
     $test->diag("# foo");
-    is( $test->read('err'), "# # foo\n", "diag() adds # even if there's one already" );
+    is($test->read('err'), "# # foo\n", "diag() adds # even if there's one already");
 
     $test->diag("foo\n\nbar");
-    is( $test->read('err'), <<'DIAG', "  blank lines get escaped" );
+    is($test->read('err'), <<'DIAG', "  blank lines get escaped");
 # foo
 # 
 # bar
 DIAG
 
     $test->diag("foo\n\nbar\n\n");
-    is( $test->read('err'), <<'DIAG', "  even at the end" );
+    is($test->read('err'), <<'DIAG', "  even at the end");
 # foo
 # 
 # bar
@@ -68,12 +67,11 @@ DIAG
 DIAG
 }
 
-
 # [rt.cpan.org 8392] diag(@list) emulates print
 {
     $test->diag(qw(one two));
 
-    is( $test->read('err'), <<'DIAG' );
+    is($test->read('err'), <<'DIAG' );
 # onetwo
 DIAG
 }

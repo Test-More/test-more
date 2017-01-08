@@ -7,11 +7,13 @@ use Test2::API qw/context test2_ipc_drivers/;
 use Test2::Util qw/CAN_FORK CAN_THREAD CAN_REALLY_FORK/;
 
 {
+
     package My::Formatter;
 
-    sub new { bless [], shift };
+    sub new { bless [], shift }
 
     my $check = 1;
+
     sub write {
         my $self = shift;
         my ($e, $count) = @_;
@@ -20,6 +22,7 @@ use Test2::Util qw/CAN_FORK CAN_THREAD CAN_REALLY_FORK/;
 }
 
 {
+
     package My::Event;
 
     use base 'Test2::Event';
@@ -60,13 +63,14 @@ tests follow_ups => sub {
     );
 
     my $ran = 0;
-    $hub->follow_up(sub {
-        my ($d, $h) = @_;
-        is_deeply($d, $trace, "Got trace");
-        is_deeply($h, $hub, "Got hub");
-        ok(!$hub->ended, "Hub state has not ended yet");
-        $ran++;
-    });
+    $hub->follow_up(
+        sub {
+            my ($d, $h) = @_;
+            is_deeply($d, $trace, "Got trace");
+            is_deeply($h, $hub,   "Got hub");
+            ok(!$hub->ended, "Hub state has not ended yet");
+            $ran++;
+        });
 
     like(
         exception { $hub->follow_up('xxx') },
@@ -97,7 +101,7 @@ tests IPC => sub {
     my $ipc = $driver->new;
     my $hub = Test2::Hub->new(
         formatter => My::Formatter->new,
-        ipc => $ipc,
+        ipc       => $ipc,
     );
 
     my $build_event = sub {
@@ -162,37 +166,38 @@ tests listen => sub {
 
     my @events;
     my @counts;
-    my $it = $hub->listen(sub {
-        my ($h, $e, $count) = @_;
-        is_deeply($h, $hub, "got hub");
-        push @events => $e;
-        push @counts => $count;
-    });
+    my $it = $hub->listen(
+        sub {
+            my ($h, $e, $count) = @_;
+            is_deeply($h, $hub, "got hub");
+            push @events => $e;
+            push @counts => $count;
+        });
 
     my $second;
     my $it2 = $hub->listen(sub { $second++ });
 
     my $ok1 = Test2::Event::Ok->new(
-        pass => 1,
-        name => 'foo',
+        pass  => 1,
+        name  => 'foo',
         trace => Test2::Util::Trace->new(
-            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+            frame => [__PACKAGE__, __FILE__, __LINE__],
         ),
     );
 
     my $ok2 = Test2::Event::Ok->new(
-        pass => 0,
-        name => 'bar',
+        pass  => 0,
+        name  => 'bar',
         trace => Test2::Util::Trace->new(
-            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+            frame => [__PACKAGE__, __FILE__, __LINE__],
         ),
     );
 
     my $ok3 = Test2::Event::Ok->new(
-        pass => 1,
-        name => 'baz',
+        pass  => 1,
+        name  => 'baz',
         trace => Test2::Util::Trace->new(
-            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+            frame => [__PACKAGE__, __FILE__, __LINE__],
         ),
     );
 
@@ -203,7 +208,7 @@ tests listen => sub {
 
     $hub->send($ok3);
 
-    is_deeply(\@counts, [1, 2], "Got counts");
+    is_deeply(\@counts, [1,    2],    "Got counts");
     is_deeply(\@events, [$ok1, $ok2], "got events");
     is($second, 3, "got all events in listener that was not removed");
 
@@ -217,7 +222,7 @@ tests listen => sub {
 tests metadata => sub {
     my $hub = Test2::Hub->new();
 
-    my $default = { foo => 1 };
+    my $default = {foo => 1};
     my $meta = $hub->meta('Foo', $default);
     is_deeply($meta, $default, "Set Meta");
 
@@ -259,37 +264,38 @@ tests filter => sub {
     my $hub = Test2::Hub->new();
 
     my @events;
-    my $it = $hub->filter(sub {
-        my ($h, $e) = @_;
-        is($h, $hub, "got hub");
-        push @events => $e;
-        return $e;
-    });
+    my $it = $hub->filter(
+        sub {
+            my ($h, $e) = @_;
+            is($h, $hub, "got hub");
+            push @events => $e;
+            return $e;
+        });
 
     my $count;
     my $it2 = $hub->filter(sub { $count++; $_[1] });
 
     my $ok1 = Test2::Event::Ok->new(
-        pass => 1,
-        name => 'foo',
+        pass  => 1,
+        name  => 'foo',
         trace => Test2::Util::Trace->new(
-            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+            frame => [__PACKAGE__, __FILE__, __LINE__],
         ),
     );
 
     my $ok2 = Test2::Event::Ok->new(
-        pass => 0,
-        name => 'bar',
+        pass  => 0,
+        name  => 'bar',
         trace => Test2::Util::Trace->new(
-            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+            frame => [__PACKAGE__, __FILE__, __LINE__],
         ),
     );
 
     my $ok3 = Test2::Event::Ok->new(
-        pass => 1,
-        name => 'baz',
+        pass  => 1,
+        name  => 'baz',
         trace => Test2::Util::Trace->new(
-            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+            frame => [__PACKAGE__, __FILE__, __LINE__],
         ),
     );
 
@@ -303,14 +309,15 @@ tests filter => sub {
     is_deeply(\@events, [$ok1, $ok2], "got events");
     is($count, 3, "got all events, even after other filter was removed");
 
-    $hub = Test2::Hub->new();
+    $hub    = Test2::Hub->new();
     @events = ();
 
     $hub->filter(sub { undef });
-    $hub->listen(sub {
-        my ($hub, $e) = @_;
-        push @events => $e;
-    });
+    $hub->listen(
+        sub {
+            my ($hub, $e) = @_;
+            push @events => $e;
+        });
 
     $hub->send($ok1);
     $hub->send($ok2);
@@ -329,37 +336,38 @@ tests pre_filter => sub {
     my $hub = Test2::Hub->new();
 
     my @events;
-    my $it = $hub->pre_filter(sub {
-        my ($h, $e) = @_;
-        is($h, $hub, "got hub");
-        push @events => $e;
-        return $e;
-    });
+    my $it = $hub->pre_filter(
+        sub {
+            my ($h, $e) = @_;
+            is($h, $hub, "got hub");
+            push @events => $e;
+            return $e;
+        });
 
     my $count;
     my $it2 = $hub->pre_filter(sub { $count++; $_[1] });
 
     my $ok1 = Test2::Event::Ok->new(
-        pass => 1,
-        name => 'foo',
+        pass  => 1,
+        name  => 'foo',
         trace => Test2::Util::Trace->new(
-            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+            frame => [__PACKAGE__, __FILE__, __LINE__],
         ),
     );
 
     my $ok2 = Test2::Event::Ok->new(
-        pass => 0,
-        name => 'bar',
+        pass  => 0,
+        name  => 'bar',
         trace => Test2::Util::Trace->new(
-            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+            frame => [__PACKAGE__, __FILE__, __LINE__],
         ),
     );
 
     my $ok3 = Test2::Event::Ok->new(
-        pass => 1,
-        name => 'baz',
+        pass  => 1,
+        name  => 'baz',
         trace => Test2::Util::Trace->new(
-            frame => [ __PACKAGE__, __FILE__, __LINE__ ],
+            frame => [__PACKAGE__, __FILE__, __LINE__],
         ),
     );
 
@@ -373,14 +381,15 @@ tests pre_filter => sub {
     is_deeply(\@events, [$ok1, $ok2], "got events");
     is($count, 3, "got all events, even after other pre_filter was removed");
 
-    $hub = Test2::Hub->new();
+    $hub    = Test2::Hub->new();
     @events = ();
 
     $hub->pre_filter(sub { undef });
-    $hub->listen(sub {
-        my ($hub, $e) = @_;
-        push @events => $e;
-    });
+    $hub->listen(
+        sub {
+            my ($hub, $e) = @_;
+            push @events => $e;
+        });
 
     $hub->send($ok1);
     $hub->send($ok2);
@@ -474,10 +483,10 @@ Second End: foo.t line 42
     $hub->reset_state;
 
     ok(!$hub->plan, "no plan");
-    is($hub->count, 0, "count reset to 0");
+    is($hub->count,  0, "count reset to 0");
     is($hub->failed, 0, "reset failures");
-    ok(!$hub->ended, "not ended");
-    ok(!$hub->bailed_out, "did not bail out");
+    ok(!$hub->ended,       "not ended");
+    ok(!$hub->bailed_out,  "did not bail out");
     ok(!$hub->skip_reason, "no skip reason");
 };
 

@@ -3,7 +3,7 @@
 use strict;
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -17,8 +17,7 @@ use Test::Builder;
 
 # The real Test::Builder
 my $Test = Test::Builder->new;
-$Test->plan( tests => 6 );
-
+$Test->plan(tests => 6);
 
 # The one we're going to test.
 my $tb = Test::Builder->create();
@@ -29,7 +28,7 @@ END { 1 while unlink($tmpfile) }
 # Test output to a file
 {
     my $out = $tb->output($tmpfile);
-    $Test->ok( defined $out );
+    $Test->ok(defined $out);
 
     print $out "hi!\n";
     close *$out;
@@ -41,7 +40,6 @@ END { 1 while unlink($tmpfile) }
 
     $Test->is_eq($line, 'hi!');
 }
-
 
 # Test output to a filehandle
 {
@@ -59,22 +57,20 @@ END { 1 while unlink($tmpfile) }
     $Test->like($lines[1], qr/Hello!/);
 }
 
-
 # Test output to a scalar ref
 {
     my $scalar = '';
-    my $out = $tb->output(\$scalar);
+    my $out    = $tb->output(\$scalar);
 
     print $out "Hey hey hey!\n";
     $Test->is_eq($scalar, "Hey hey hey!\n");
 }
 
-
 # Test we can output to the same scalar ref
 {
     my $scalar = '';
-    my $out = $tb->output(\$scalar);
-    my $err = $tb->failure_output(\$scalar);
+    my $out    = $tb->output(\$scalar);
+    my $err    = $tb->failure_output(\$scalar);
 
     print $out "To output ";
     print $err "and beyond!";
@@ -82,11 +78,10 @@ END { 1 while unlink($tmpfile) }
     $Test->is_eq($scalar, "To output and beyond!", "One scalar, two filehandles");
 }
 
-
 # Ensure stray newline in name escaping works.
 {
     my $fakeout = '';
-    my $out = $tb->output(\$fakeout);
+    my $out     = $tb->output(\$fakeout);
     $tb->exported_to(__PACKAGE__);
     $tb->no_ending(1);
     $tb->plan(tests => 5);
@@ -97,7 +92,7 @@ END { 1 while unlink($tmpfile) }
     $tb->skip("wibble\nmoof");
     $tb->todo_skip("todo\nskip\n");
 
-    $Test->is_eq( $fakeout, <<OUTPUT ) || print STDERR $fakeout;
+    $Test->is_eq($fakeout, <<OUTPUT ) || print STDERR $fakeout;
 1..5
 ok 1 - ok
 ok 2 - ok

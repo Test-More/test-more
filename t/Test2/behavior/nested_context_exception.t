@@ -7,7 +7,7 @@ use Test2::API qw/context/;
 
 sub outer {
     my $code = shift;
-    my $ctx = context();
+    my $ctx  = context();
 
     $ctx->note("outer");
 
@@ -27,7 +27,7 @@ sub dies {
 sub bad_store {
     my $ctx = context();
     $ctx->note("bad store");
-    return $ctx; # Emulate storing it somewhere
+    return $ctx;    # Emulate storing it somewhere
 }
 
 sub bad_simple {
@@ -45,7 +45,7 @@ ok(!@warnings, "no warnings") || diag @warnings;
 
 @warnings = ();
 my $keep = bad_store();
-eval { my $x = 1 }; # Ensure an eval changing $@ does not meddle.
+eval { my $x = 1 };    # Ensure an eval changing $@ does not meddle.
 {
     local $SIG{__WARN__} = sub { push @warnings => @_ };
     ok(1, "random event");
@@ -78,8 +78,6 @@ outer(\&dies);
 }
 ok(!@warnings, "no warnings") || diag @warnings;
 
-
-
 @warnings = ();
 {
     local $SIG{__WARN__} = sub { push @warnings => @_ };
@@ -92,8 +90,6 @@ like(
     "got expected warning"
 );
 
-
-
 {
     @warnings = ();
     local $SIG{__WARN__} = sub { push @warnings => @_ };
@@ -105,7 +101,5 @@ like(
     qr/A context appears to have been destroyed without first calling release/,
     "got expected warning"
 );
-
-
 
 done_testing;

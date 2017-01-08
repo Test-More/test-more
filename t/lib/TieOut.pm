@@ -4,12 +4,12 @@ use strict;
 
 sub TIEHANDLE {
     my $scalar = '';
-    bless( \$scalar, $_[0] );
+    bless(\$scalar, $_[0]);
 }
 
 sub PRINT {
     my $self = shift;
-    $$self .= join( '', @_ );
+    $$self .= join('', @_);
 }
 
 sub PRINTF {

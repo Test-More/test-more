@@ -12,40 +12,41 @@ BEGIN {
 }
 
 use Test2::API;
-Test2::API::test2_add_callback_context_release(sub {
-    my $ctx = shift;
-    return if $ctx->hub->is_passing;
-    $ctx->throw("(Die On Fail)");
-});
+Test2::API::test2_add_callback_context_release(
+    sub {
+        my $ctx = shift;
+        return if $ctx->hub->is_passing;
+        $ctx->throw("(Die On Fail)");
+    });
 
 ok(my $one = Test2::Formatter::TAP->new, "Created a new instance");
 my $handles = $one->handles;
 is(@$handles, 2, "Got 2 handles");
 ok($handles->[0] != $handles->[1], "First and second handles are not the same");
-my $layers = { map {$_ => 1} PerlIO::get_layers($handles->[0]) };
+my $layers = {map { $_ => 1 } PerlIO::get_layers($handles->[0])};
 
-if (${^UNICODE} & 2) { # 2 means STDIN
-    ok($layers->{utf8}, "'S' is set in PERL_UNICODE, or in -C, honor it, utf8 should be on")
+if (${^UNICODE} & 2) {    # 2 means STDIN
+    ok($layers->{utf8}, "'S' is set in PERL_UNICODE, or in -C, honor it, utf8 should be on");
 }
 else {
-    ok(!$layers->{utf8}, "Not utf8 by default")
+    ok(!$layers->{utf8}, "Not utf8 by default");
 }
 
 $one->encoding('utf8');
 is($one->encoding, 'utf8', "Got encoding");
 $handles = $one->handles;
 is(@$handles, 2, "Got 2 handles");
-$layers = { map {$_ => 1} PerlIO::get_layers($handles->[0]) };
+$layers = {map { $_ => 1 } PerlIO::get_layers($handles->[0])};
 ok($layers->{utf8}, "Now utf8");
 
 my $two = Test2::Formatter::TAP->new(encoding => 'utf8');
 $handles = $two->handles;
 is(@$handles, 2, "Got 2 handles");
-$layers = { map {$_ => 1} PerlIO::get_layers($handles->[0]) };
+$layers = {map { $_ => 1 } PerlIO::get_layers($handles->[0])};
 ok($layers->{utf8}, "Now utf8");
 
-
 {
+
     package My::Event;
 
     use base 'Test2::Event';
@@ -61,13 +62,12 @@ ok($layers->{utf8}, "Now utf8");
                 [main::OUT_ERR, "# " . $e->name . " " . $e->diag . "\n"],
                 [main::OUT_STD, "# " . $e->name . " " . $e->note . "\n"],
             );
-        }
-    );
+        });
 }
 
 my ($std, $err);
-open( my $stdh, '>', \$std ) || die "Ooops";
-open( my $errh, '>', \$err ) || die "Ooops";
+open(my $stdh, '>', \$std) || die "Ooops";
+open(my $errh, '>', \$err) || die "Ooops";
 
 my $it = Test2::Formatter::TAP->new(
     handles => [$stdh, $errh, $stdh],
@@ -75,10 +75,10 @@ my $it = Test2::Formatter::TAP->new(
 
 $it->write(
     My::Event->new(
-        pass => 1,
-        name => 'foo',
-        diag => 'diag',
-        note => 'note',
+        pass  => 1,
+        name  => 'foo',
+        diag  => 'diag',
+        note  => 'note',
         trace => 'fake',
     ),
     55,
@@ -86,11 +86,11 @@ $it->write(
 
 $it->write(
     My::Event->new(
-        pass => 1,
-        name => 'bar',
-        diag => 'diag',
-        note => 'note',
-        trace => 'fake',
+        pass   => 1,
+        name   => 'bar',
+        diag   => 'diag',
+        note   => 'note',
+        trace  => 'fake',
         nested => 1,
     ),
     1,
@@ -115,6 +115,7 @@ close($errh);
 my ($trace, $ok, $diag, $plan, $bail);
 
 my $fmt = Test2::Formatter::TAP->new;
+
 sub before_each {
     # Make sure there is a fresh trace object for each group
     $trace = Test2::Util::Trace->new(
@@ -124,20 +125,20 @@ sub before_each {
 
 tests bail => sub {
     my $bail = Test2::Event::Bail->new(
-        trace => $trace,
+        trace  => $trace,
         reason => 'evil',
     );
 
     is_deeply(
         [$fmt->event_tap($bail, 1)],
-        [[OUT_STD, "Bail out!  evil\n" ]],
+        [[OUT_STD, "Bail out!  evil\n"]],
         "Got tap"
     );
 };
 
 tests diag => sub {
     my $diag = Test2::Event::Diag->new(
-        trace => $trace,
+        trace   => $trace,
         message => 'foo',
     );
 
@@ -170,14 +171,14 @@ tests exception => sub {
 
     is_deeply(
         [$fmt->event_tap($exception, 1)],
-        [[OUT_ERR, "evil at lake_of_fire.t line 6\n" ]],
+        [[OUT_ERR, "evil at lake_of_fire.t line 6\n"]],
         "Got tap"
     );
 };
 
 tests note => sub {
     my $note = Test2::Event::Note->new(
-        trace => $trace,
+        trace   => $trace,
         message => 'foo',
     );
 
@@ -288,7 +289,7 @@ for my $pass (1, 0) {
 
     tests no_number => sub {
         my $ok = Test2::Event::Ok->new(trace => $trace, pass => $pass, name => 'foo');
-        my @tap = $fmt->event_tap($ok, );
+        my @tap = $fmt->event_tap($ok,);
         is_deeply(
             \@tap,
             [
@@ -333,12 +334,12 @@ for my $pass (1, 0) {
             "Got expected output"
         );
     };
-};
+}
 
 tests plan => sub {
     my $plan = Test2::Event::Plan->new(
         trace => $trace,
-        max => 100,
+        max   => 100,
     );
 
     is_deeply(
@@ -357,8 +358,8 @@ tests plan => sub {
     );
 
     $plan = Test2::Event::Plan->new(
-        trace => $trace,
-        max => 0,
+        trace     => $trace,
+        max       => 0,
         directive => 'skip_all',
     );
     is_deeply(
@@ -368,8 +369,8 @@ tests plan => sub {
     );
 
     $plan = Test2::Event::Plan->new(
-        trace => $trace,
-        max => 0,
+        trace     => $trace,
+        max       => 0,
         directive => 'no_plan',
     );
     is_deeply(
@@ -379,10 +380,10 @@ tests plan => sub {
     );
 
     $plan = Test2::Event::Plan->new(
-        trace => $trace,
-        max => 0,
+        trace     => $trace,
+        max       => 0,
         directive => 'skip_all',
-        reason => "Foo\nBar\nBaz",
+        reason    => "Foo\nBar\nBaz",
     );
     is_deeply(
         [$fmt->event_tap($plan)],
@@ -423,12 +424,12 @@ tests subtest => sub {
     );
 
     $one = $st->new(
-        trace     => $trace,
-        pass      => 0,
-        buffered  => 1,
-        name      => 'bar',
+        trace      => $trace,
+        pass       => 0,
+        buffered   => 1,
+        name       => 'bar',
         subtest_id => '1-1-1',
-        subevents => [
+        subevents  => [
             Test2::Event::Ok->new(trace => $trace, name => 'first',  pass => 1),
             Test2::Event::Ok->new(trace => $trace, name => 'second', pass => 0),
             Test2::Event::Ok->new(trace => $trace, name => 'third',  pass => 1),
@@ -535,7 +536,7 @@ tests skip => sub {
 tests version => sub {
     require Test2::Event::TAP::Version;
     my $ver = Test2::Event::TAP::Version->new(
-        trace => $trace,
+        trace   => $trace,
         version => '2',
     );
 
@@ -545,6 +546,5 @@ tests version => sub {
         "Got tap"
     );
 };
-
 
 done_testing;

@@ -31,8 +31,7 @@ my $original_todo_handle;
 my $original_harness_env;
 my $testing_num;
 
-sub start_testing
-{
+sub start_testing {
     # remember what the handles were set to
     $original_output_handle  = $t->output();
     $original_failure_handle = $t->failure_output();
@@ -59,29 +58,28 @@ sub start_testing
 # but makes blood come out of my ears if I don't at least simplify
 # it a little this way
 
-sub my_test_test
-{
-  my $text = shift;
-  local $^W = 0;
+sub my_test_test {
+    my $text = shift;
+    local $^W = 0;
 
-  # reset the outputs 
-  $t->output($original_output_handle);
-  $t->failure_output($original_failure_handle);
-  $t->todo_output($original_todo_handle);
-  $ENV{HARNESS_ACTIVE} = $original_harness_env;
+    # reset the outputs
+    $t->output($original_output_handle);
+    $t->failure_output($original_failure_handle);
+    $t->todo_output($original_todo_handle);
+    $ENV{HARNESS_ACTIVE} = $original_harness_env;
 
-  # reset the number of tests
-  $t->current_test($testing_num);
+    # reset the number of tests
+    $t->current_test($testing_num);
 
-  # check we got the same values
-  my $got;
-  my $wanted;
+    # check we got the same values
+    my $got;
+    my $wanted;
 
-  # stdout
-  $t->ok($out->check, "STDOUT $text");
+    # stdout
+    $t->ok($out->check, "STDOUT $text");
 
-  # stderr
-  $t->ok($err->check, "STDERR $text");
+    # stderr
+    $t->ok($err->check, "STDERR $text");
 }
 
 ####################################################################
@@ -98,7 +96,7 @@ my_test_test("basic meta meta test");
 
 start_testing();
 $out->expect("not ok 1 - foo");
-$err->expect("#     Failed test ($0 at line ".line_num(+1).")");
+$err->expect("#     Failed test ($0 at line " . line_num(+1) . ")");
 fail("foo");
 my_test_test("basic meta meta test 2");
 
@@ -112,7 +110,7 @@ my_test_test("meta meta test with tbt");
 start_testing();
 $out->expect("ok 1 - bar");
 test_out("not ok 1 - foo");
-test_err("#     Failed test ($0 at line ".line_num(+1).")");
+test_err("#     Failed test ($0 at line " . line_num(+1) . ")");
 fail("foo");
 test_test("bar");
 my_test_test("meta meta test with tbt2 ");

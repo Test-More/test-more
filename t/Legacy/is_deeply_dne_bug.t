@@ -6,7 +6,7 @@
 # confused with an overloaded object.
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -19,11 +19,12 @@ use strict;
 use Test::More tests => 2;
 
 {
+
     package Foo;
 
     use overload
-    'eq' => \&overload_equiv,
-    '==' => \&overload_equiv;
+        'eq' => \&overload_equiv,
+        '==' => \&overload_equiv;
 
     sub new {
         return bless {}, shift;
@@ -35,7 +36,7 @@ use Test::More tests => 2;
             die "Invalid object passed to overload_equiv\n";
         }
 
-        return 1; # change to 0 ... makes little difference
+        return 1;    # change to 0 ... makes little difference
     }
 }
 

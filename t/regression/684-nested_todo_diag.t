@@ -17,7 +17,7 @@ intercept {
     };
 };
 
-my ($event) = grep { $_->trace->line == 16 && ref($_) eq 'Test::Builder::TodoDiag'} @events;
+my ($event) = grep { $_->trace->line == 16 && ref($_) eq 'Test::Builder::TodoDiag' } @events;
 ok($event, "nested todo diag on line 16 was changed to TodoDiag (STDOUT instead of STDERR)");
 
 done_testing;

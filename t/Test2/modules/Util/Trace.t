@@ -30,7 +30,7 @@ is(
 
 is_deeply(
     warnings { $one->alert('I cried') },
-    [ "I cried at foo.t line 5.\n" ],
+    ["I cried at foo.t line 5.\n"],
     "alter() warns"
 );
 

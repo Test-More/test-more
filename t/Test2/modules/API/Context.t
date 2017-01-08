@@ -14,10 +14,11 @@ use Test2::API qw{
 
 my $error = exception { context(); 1 };
 my $exception = "context() called, but return value is ignored at " . __FILE__ . ' line ' . (__LINE__ - 1);
-like($error, qr/^\Q$exception\E/, "Got the exception" );
+like($error, qr/^\Q$exception\E/, "Got the exception");
 
 my $ref;
 my $frame;
+
 sub wrap(&) {
     my $ctx = context();
     my ($pkg, $file, $line, $sub) = caller(0);
@@ -40,11 +41,11 @@ wrap {
 wrap {
     my $ctx = shift;
     ok("$ctx" ne "$ref", "Got a new context");
-    my $new = context();
+    my $new    = context();
     my @caller = caller(0);
     is_deeply(
         $new,
-        {%$ctx, _is_canon => undef, _is_spawn => [@caller[0,1,2,3]]},
+        {%$ctx, _is_canon => undef, _is_spawn => [@caller[0, 1, 2, 3]]},
         "Additional call to context gets spawn"
     );
     delete $ctx->trace->frame->[4];
@@ -53,7 +54,7 @@ wrap {
 };
 
 wrap {
-    my $ctx = shift;
+    my $ctx  = shift;
     my $snap = $ctx->snapshot;
 
     is_deeply(
@@ -65,20 +66,21 @@ wrap {
 };
 
 my $end_ctx;
-{ # Simulate an END block...
+{    # Simulate an END block...
     local *END = sub { local *__ANON__ = 'END'; context() };
     my $ctx = END();
-    $frame = [ __PACKAGE__, __FILE__, __LINE__ - 1, 'main::END' ];
+    $frame = [__PACKAGE__, __FILE__, __LINE__ - 1, 'main::END'];
     # "__LINE__ - 1" on the preceding line forces the value to be an IV
     # (even though __LINE__ on its own is a PV), just as (caller)[2] is.
     $end_ctx = $ctx->snapshot;
     $ctx->release;
 }
 delete $end_ctx->trace->frame->[4];
-is_deeply( $end_ctx->trace->frame, $frame, 'context is ok in an end block');
+is_deeply($end_ctx->trace->frame, $frame, 'context is ok in an end block');
 
 # Test event generation
 {
+
     package My::Formatter;
 
     sub write {
@@ -92,7 +94,7 @@ my $hub = Test2::Hub->new(
     formatter => $events,
 );
 my $trace = Test2::Util::Trace->new(
-    frame => [ 'Foo::Bar', 'foo_bar.t', 42, 'Foo::Bar::baz' ],
+    frame => ['Foo::Bar', 'foo_bar.t', 42, 'Foo::Bar::baz'],
 );
 my $ctx = Test2::API::Context->new(
     trace => $trace,
@@ -100,13 +102,13 @@ my $ctx = Test2::API::Context->new(
 );
 
 my $e = $ctx->build_event('Ok', pass => 1, name => 'foo');
-is($e->pass, 1, "Pass");
+is($e->pass, 1,     "Pass");
 is($e->name, 'foo', "got name");
 is_deeply($e->trace, $trace, "Got the trace info");
 ok(!@$events, "No events yet");
 
 $e = $ctx->send_event('Ok', pass => 1, name => 'foo');
-is($e->pass, 1, "Pass");
+is($e->pass, 1,     "Pass");
 is($e->name, 'foo', "got name");
 is_deeply($e->trace, $trace, "Got the trace info");
 is(@$events, 1, "1 event");
@@ -114,7 +116,7 @@ is_deeply($events, [$e], "Hub saw the event");
 pop @$events;
 
 $e = $ctx->ok(1, 'foo');
-is($e->pass, 1, "Pass");
+is($e->pass, 1,     "Pass");
 is($e->name, 'foo', "got name");
 is_deeply($e->trace, $trace, "Got the trace info");
 is(@$events, 1, "1 event");
@@ -143,7 +145,7 @@ is_deeply($events, [$e], "Hub saw the event");
 pop @$events;
 
 $e = $ctx->skip('foo', 'because');
-is($e->name, 'foo', "got name");
+is($e->name,   'foo',     "got name");
 is($e->reason, 'because', "got reason");
 ok($e->pass, "skip events pass by default");
 is_deeply($e->trace, $trace, "Got the trace info");
@@ -158,14 +160,14 @@ pop @$events;
 # Test hooks
 
 my @hooks;
-$hub =  test2_stack()->top;
-my $ref1 = $hub->add_context_init(sub {    die "Bad Arg" unless ref($_[0]) eq 'Test2::API::Context'; push @hooks => 'hub_init'       });
-my $ref2 = $hub->add_context_release(sub { die "Bad Arg" unless ref($_[0]) eq 'Test2::API::Context'; push @hooks => 'hub_release'    });
-test2_add_callback_context_init(sub {      die "Bad Arg" unless ref($_[0]) eq 'Test2::API::Context'; push @hooks => 'global_init'    });
-test2_add_callback_context_release(sub {   die "Bad Arg" unless ref($_[0]) eq 'Test2::API::Context'; push @hooks => 'global_release' });
+$hub = test2_stack()->top;
+my $ref1 = $hub->add_context_init(sub { die "Bad Arg" unless ref($_[0]) eq 'Test2::API::Context'; push @hooks => 'hub_init' });
+my $ref2 = $hub->add_context_release(sub { die "Bad Arg" unless ref($_[0]) eq 'Test2::API::Context'; push @hooks => 'hub_release' });
+test2_add_callback_context_init(sub { die "Bad Arg" unless ref($_[0]) eq 'Test2::API::Context'; push @hooks => 'global_init' });
+test2_add_callback_context_release(sub { die "Bad Arg" unless ref($_[0]) eq 'Test2::API::Context'; push @hooks => 'global_release' });
 
-my $ref3 = $hub->add_context_acquire(sub { die "Bad Arg" unless ref($_[0]) eq 'HASH'; push @hooks => 'hub_acquire'     });
-test2_add_callback_context_acquire(sub {   die "Bad Arg" unless ref($_[0]) eq 'HASH'; push @hooks => 'global_acquire'  });
+my $ref3 = $hub->add_context_acquire(sub { die "Bad Arg" unless ref($_[0]) eq 'HASH'; push @hooks => 'hub_acquire' });
+test2_add_callback_context_acquire(sub { die "Bad Arg" unless ref($_[0]) eq 'HASH'; push @hooks => 'global_acquire' });
 
 sub {
     push @hooks => 'start';
@@ -173,7 +175,8 @@ sub {
     push @hooks => 'deep';
     my $ctx2 = sub {
         context(on_init => sub { push @hooks => 'ctx_init_deep' }, on_release => sub { push @hooks => 'ctx_release_deep' });
-    }->();
+        }
+        ->();
     push @hooks => 'release_deep';
     $ctx2->release;
     push @hooks => 'release_parent';
@@ -185,18 +188,20 @@ sub {
     push @hooks => 'release_new';
     $ctx->release;
     push @hooks => 'done';
-}->();
+    }
+    ->();
 
 $hub->remove_context_init($ref1);
 $hub->remove_context_release($ref2);
 $hub->remove_context_acquire($ref3);
-@{Test2::API::_context_init_callbacks_ref()} = ();
+@{Test2::API::_context_init_callbacks_ref()}    = ();
 @{Test2::API::_context_release_callbacks_ref()} = ();
 @{Test2::API::_context_acquire_callbacks_ref()} = ();
 
 is_deeply(
     \@hooks,
-    [qw{
+    [
+        qw{
         start
         global_acquire
         hub_acquire
@@ -224,7 +229,8 @@ is_deeply(
         hub_release
         global_release
         done
-    }],
+    }
+    ],
     "Got all hook in correct order"
 );
 
@@ -233,11 +239,11 @@ is_deeply(
 
     my $one = Test2::API::Context->new(
         trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
-        hub => test2_stack()->top,
+        hub   => test2_stack()->top,
     );
     is($one->_depth, 0, "default depth");
 
-    my $ran = 0;
+    my $ran  = 0;
     my $doit = sub {
         is_deeply(\@_, [qw/foo bar/], "got args");
         $ran++;
@@ -251,7 +257,12 @@ is_deeply(
     $spawn->release;
     $ctx->release;
 
-    ok(!exception { $one->do_in_context(sub {1}) }, "do_in_context works without an original")
+    ok(
+        !exception {
+            $one->do_in_context(sub { 1 })
+        },
+        "do_in_context works without an original"
+        )
 }
 
 {
@@ -288,11 +299,13 @@ sub {
         },
         "Was able to get context when fudging level"
     );
-}->();
+    }
+    ->();
 
 sub {
     my ($ctx1, $ctx2);
-    sub { $ctx1 = context() }->();
+    sub { $ctx1 = context() }
+        ->();
 
     my @warnings;
     {
@@ -309,7 +322,8 @@ sub {
         qr/^context\(\) was called to retrieve an existing context, however the existing/,
         "Got expected warning"
     );
-}->();
+    }
+    ->();
 
 sub {
     my $ctx = context();
@@ -320,12 +334,13 @@ sub {
     my $warnings = warnings { $ctx->alert('xxx') };
     like($warnings->[0], qr/xxx/, "got warning");
     $ctx->release;
-}->();
+    }
+    ->();
 
 sub {
     my $ctx = context;
 
-    is($ctx->_parse_event('Ok'), 'Test2::Event::Ok', "Got the Ok event class");
+    is($ctx->_parse_event('Ok'),                'Test2::Event::Ok', "Got the Ok event class");
     is($ctx->_parse_event('+Test2::Event::Ok'), 'Test2::Event::Ok', "Got the +Ok event class");
 
     like(
@@ -333,10 +348,12 @@ sub {
         qr/Could not load event module 'DFASGFSDFGSDGSD': Can't locate DFASGFSDFGSDGSD\.pm/,
         "Bad event type"
     );
-}->();
+    }
+    ->();
 
 {
     {
+
         package An::Info::Thingy;
         sub render { 'zzz' }
     }
@@ -403,7 +420,8 @@ sub {
         is(0 + $!, 22,    "restored the nested \$! in tool");
         is($@,     'xyz', "restored the nested \$@ in tool");
         is($?,     33,    "restored the nested \$? in tool");
-    }->();
+        }
+        ->();
 
     sub {
         my $ctx2 = context();
@@ -422,15 +440,16 @@ sub {
         is(0 + $!, 42,    'Destroy does not reset $!');
         is($@,     'app', 'Destroy does not reset $@');
         is($?,     43,    'Destroy does not reset $?');
-    }->();
+        }
+        ->();
 
     $ctx->release;
 
     is($ctx->errno,       100,         "restored errno");
     is($ctx->eval_error,  'foobarbaz', "restored eval error");
     is($ctx->child_error, 123,         "restored child exit");
-}->();
-
+    }
+    ->();
 
 sub {
     local $! = 100;
@@ -457,6 +476,7 @@ sub {
     is(0 + $!, 22,    "Destroy does not restore \$!");
     is($@,     'xyz', "Destroy does not restore \$@");
     is($?,     33,    "Destroy does not restore \$?");
-}->();
+    }
+    ->();
 
 done_testing;

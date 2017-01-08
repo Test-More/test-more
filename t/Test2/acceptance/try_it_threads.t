@@ -26,10 +26,11 @@ require threads;
 threads->import;
 
 for (1 .. 3) {
-    threads->create(sub {
-        ok(1, "test 1 in thread " . threads->tid());
-        ok(1, "test 2 in thread " . threads->tid());
-    });
+    threads->create(
+        sub {
+            ok(1, "test 1 in thread " . threads->tid());
+            ok(1, "test 2 in thread " . threads->tid());
+        });
 }
 
 1;

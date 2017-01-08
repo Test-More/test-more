@@ -21,6 +21,7 @@ is($info->summary('blah'), 'foo', "summary is just rendering (arg)");
 is_deeply(\@got, ['blah'], "got arg");
 
 {
+
     package An::Info::Thingy;
     sub render { shift; @got = @_; 'foo' }
 }
@@ -44,7 +45,10 @@ like(
 );
 
 # For #727
-$info = intercept { ok(0, 'xxx', sub { 'xxx-yyy' }); }->[-1];
+$info = intercept {
+    ok(0, 'xxx', sub { 'xxx-yyy' });
+}
+->[-1];
 ok($info->isa('Test2::Event::Info'), "Got an Info event");
 is($info->render, 'xxx-yyy', "Got rendered info");
 

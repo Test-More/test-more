@@ -6,7 +6,6 @@ use warnings;
 use Symbol qw(gensym);
 use base qw(Test::Builder);
 
-
 =head1 NAME
 
 Test::Builder::NoOutput - A subclass of Test::Builder which prints nothing
@@ -51,7 +50,7 @@ my $Test = __PACKAGE__->new;
 
 sub create {
     my $class = shift;
-    my $self = $class->SUPER::create(@_);
+    my $self  = $class->SUPER::create(@_);
 
     my %outputs = (
         all  => '',
@@ -61,7 +60,7 @@ sub create {
     );
     $self->{_outputs} = \%outputs;
 
-    my($out, $err, $todo) = map { gensym() } 1..3;
+    my ($out, $err, $todo) = map { gensym() } 1 .. 3;
     tie *$out,  "Test::Builder::NoOutput::Tee", \$outputs{all}, \$outputs{out};
     tie *$err,  "Test::Builder::NoOutput::Tee", \$outputs{all}, \$outputs{err};
     tie *$todo, "Test::Builder::NoOutput::Tee", \$outputs{all}, \$outputs{todo};
@@ -73,7 +72,6 @@ sub create {
     return $self;
 }
 
-
 sub read {
     my $self = shift;
     my $stream = @_ ? shift : 'all';
@@ -83,7 +81,7 @@ sub read {
     $self->{_outputs}{$stream} = '';
 
     # Clear all the streams if 'all' is read.
-    if( $stream eq 'all' ) {
+    if ($stream eq 'all') {
         my @keys = keys %{$self->{_outputs}};
         $self->{_outputs}{$_} = '' for @keys;
     }
@@ -91,13 +89,12 @@ sub read {
     return $out;
 }
 
-
 package Test::Builder::NoOutput::Tee;
 
 # A cheap implementation of IO::Tee.
 
 sub TIEHANDLE {
-    my($class, @refs) = @_;
+    my ($class, @refs) = @_;
 
     my @fhs;
     for my $ref (@refs) {

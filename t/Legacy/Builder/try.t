@@ -1,7 +1,7 @@
 #!perl -w
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -17,13 +17,12 @@ use Test::More 'no_plan';
 require Test::Builder;
 my $tb = Test::Builder->new;
 
-
 # Test that _try() has no effect on $@ and $! and is not effected by
 # __DIE__
 {
     local $SIG{__DIE__} = sub { fail("DIE handler called: @_") };
-    local $@ = 42;
-    local $! = 23;
+    local $@            = 42;
+    local $!            = 23;
 
     is $tb->_try(sub { 2 }), 2;
     is $tb->_try(sub { return '' }), '';

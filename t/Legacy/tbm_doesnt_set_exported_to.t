@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = '../lib';
     }
@@ -15,10 +15,11 @@ use Test::Builder;
 use Test::Builder::Module;
 
 my $TB = Test::Builder->create;
-$TB->plan( tests => 1 );
+$TB->plan(tests => 1);
 $TB->level(0);
 
-$TB->is_eq( Test::Builder::Module->builder->exported_to,
-            undef,
-            'using Test::Builder::Module does not set exported_to()'
+$TB->is_eq(
+    Test::Builder::Module->builder->exported_to,
+    undef,
+    'using Test::Builder::Module does not set exported_to()'
 );

@@ -2,7 +2,7 @@
 use Test2::Util qw/CAN_THREAD/;
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -20,17 +20,14 @@ BEGIN {
 
 use Test::More tests => 5;
 
-
 package Overloaded;
 
-use overload
-  q{""} => sub { $_[0]->{string} };
+use overload q{""} => sub { $_[0]->{string} };
 
 sub new {
     my $class = shift;
-    bless { string => shift }, $class;
+    bless {string => shift}, $class;
 }
-
 
 package main;
 
@@ -39,21 +36,19 @@ local $SIG{__WARN__} = sub { $warnings = join '', @_ };
 
 # overloaded object as name
 my $obj = Overloaded->new('foo');
-ok( 1, $obj );
+ok(1, $obj);
 
 # overloaded object which returns undef as name
 my $undef = Overloaded->new(undef);
-pass( $undef );
+pass($undef);
 
-is( $warnings, '' );
-
+is($warnings, '');
 
 TODO: {
     my $obj = Overloaded->new('not really todo, testing overloaded reason');
     local $TODO = $obj;
     fail("Just checking todo as an overloaded value");
 }
-
 
 SKIP: {
     my $obj = Overloaded->new('not really skipped, testing overloaded reason');

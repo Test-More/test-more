@@ -8,7 +8,7 @@ my $waiting = Test2::Event::Waiting->new(
     trace => 'fake',
 );
 
-ok($waiting, "Created event");
+ok($waiting,         "Created event");
 ok($waiting->global, "waiting is global");
 
 is($waiting->summary, "IPC is waiting for children to finish...", "Got summary");

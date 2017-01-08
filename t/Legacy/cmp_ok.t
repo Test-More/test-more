@@ -6,7 +6,7 @@ use warnings;
 use lib 't/lib';
 
 require Test::Simple::Catch;
-my($out, $err) = Test::Simple::Catch::caught();
+my ($out, $err) = Test::Simple::Catch::caught();
 local $ENV{HARNESS_ACTIVE} = 0;
 
 require Test::Builder;
@@ -14,11 +14,11 @@ my $TB = Test::Builder->create;
 $TB->level(0);
 
 sub try_cmp_ok {
-    my($left, $cmp, $right, $error) = @_;
-    
+    my ($left, $cmp, $right, $error) = @_;
+
     my %expect;
-    if( $error ) {
-        $expect{ok} = 0;
+    if ($error) {
+        $expect{ok}    = 0;
         $expect{error} = $error;
     }
     else {
@@ -33,7 +33,7 @@ sub try_cmp_ok {
     eval { $ok = cmp_ok($left, $cmp, $right, "cmp_ok"); };
 
     $TB->is_num(!!$ok, !!$expect{ok}, "  right return");
-    
+
     my $diag = $err->read;
 
     if ($@) {
@@ -41,18 +41,17 @@ sub try_cmp_ok {
         $diag =~ s/ at .*\n?//;
     }
 
-    if( !$ok and $expect{error} ) {
+    if (!$ok and $expect{error}) {
         $diag =~ s/^# //mg;
-        $TB->like( $diag, qr/\Q$expect{error}\E/, "  expected error" );
+        $TB->like($diag, qr/\Q$expect{error}\E/, "  expected error");
     }
-    elsif( $ok ) {
-        $TB->is_eq( $diag, '', "  passed without diagnostic" );
+    elsif ($ok) {
+        $TB->is_eq($diag, '', "  passed without diagnostic");
     }
     else {
         $TB->ok(1, "  failed without diagnostic");
     }
 }
-
 
 use Test::More;
 Test::More->builder->no_ending(1);
@@ -62,19 +61,19 @@ my $cmp = Overloaded::Compare->new("foo", 42);
 my $ify = Overloaded::Ify->new("bar", 23);
 
 my @Tests = (
-    [1, '==', 1],
-    [1, '==', 2],
+    [1,   '==', 1],
+    [1,   '==', 2],
     ["a", "eq", "b"],
     ["a", "eq", "a"],
-    [1, "+", 1],
-    [1, "-", 1],
+    [1,   "+",  1],
+    [1,   "-",  1],
 
     [$cmp, '==', 42],
     [$cmp, 'eq', "foo"],
     [$ify, 'eq', "bar"],
     [$ify, "==", 23],
 
-    [1, "=", 0,  "= is not a valid comparison operator in cmp_ok()"],
+    [1, "=",  0, "= is not a valid comparison operator in cmp_ok()"],
     [1, "+=", 0, "+= is not a valid comparison operator in cmp_ok()"],
 );
 

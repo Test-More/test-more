@@ -1,7 +1,7 @@
 #!perl -w
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = '../lib';
     }
@@ -18,7 +18,7 @@ use Test::Simple;
 
 my $TB   = Test::Builder->new;
 my $test = Test::Builder::NoOutput->create;
-$test->plan( tests => 3 );
+$test->plan(tests => 3);
 
 local $ENV{HARNESS_ACTIVE} = 0;
 

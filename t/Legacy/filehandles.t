@@ -1,7 +1,7 @@
 #!perl -w
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -13,6 +13,6 @@ use Dev::Null;
 
 tie *STDOUT, "Dev::Null" or die $!;
 
-print "not ok 1\n";     # this should not print.
+print "not ok 1\n";    # this should not print.
 pass 'STDOUT can be mucked with';
 

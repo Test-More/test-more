@@ -2,14 +2,15 @@ use strict;
 use warnings;
 
 my $exit = 0;
-END{ $? = $exit }
+END { $? = $exit }
 
 use File::Spec;
 
 my ($stderr, $stdout);
+
 BEGIN {
     $exit = 0;
-    END{ $? = $exit }
+    END { $? = $exit }
     print STDOUT "ok 1\n";
     print STDOUT "1..1\n";
 
@@ -17,7 +18,7 @@ BEGIN {
     open($stderr, '>&', *STDERR) or die "Could not clone STDERR";
 
     close(STDOUT) or die "Could not close STDOUT";
-    unless(close(STDERR)) {
+    unless (close(STDERR)) {
         print $stderr "Could not close STDERR\n";
         $exit = 255;
         exit $exit;
@@ -72,4 +73,4 @@ for my $dep (@depends) {
 
 diag sprintf("%-${len}s  %s", $_, $deps{$_}) for @depends;
 
-END{ $? = $exit }
+END { $? = $exit }

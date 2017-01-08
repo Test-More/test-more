@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         @INC = ('../lib', 'lib');
     }
     else {
@@ -13,6 +13,7 @@ chdir 't';
 use Test::More;
 
 my $Has_Test_Pod;
+
 BEGIN {
     $Has_Test_Pod = eval 'use Test::Pod 0.95; 1';
 }
@@ -20,9 +21,9 @@ BEGIN {
 chdir "..";
 my $manifest = "MANIFEST";
 open(my $manifest_fh, "<", $manifest) or plan(skip_all => "Can't open $manifest: $!");
-my @modules = map  { m{^lib/(\S+)}; $1 } 
-              grep { m{^lib/Test/\S*\.pm} } 
-              grep { !m{/t/} } <$manifest_fh>;
+my @modules = map { m{^lib/(\S+)}; $1 }
+    grep { m{^lib/Test/\S*\.pm} }
+    grep { !m{/t/} } <$manifest_fh>;
 
 chomp @modules;
 close $manifest_fh;
@@ -38,7 +39,7 @@ foreach my $file (@modules) {
     ok eval {
         local $SIG{__WARN__} = sub { push @warnings => @_ };
         require($file);
-        1
+        1;
     } or diag "require $file failed.", "\n", @warnings, "\n", $@;
 
     SKIP: {

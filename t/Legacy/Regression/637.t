@@ -2,15 +2,16 @@ use strict;
 use warnings;
 
 use Test2::Util qw/CAN_THREAD/;
+
 BEGIN {
-    unless(CAN_THREAD) {
+    unless (CAN_THREAD) {
         print "1..0 # Skip threads are not supported.\n";
         exit 0;
     }
 }
 
 BEGIN {
-    unless ( $ENV{AUTHOR_TESTING} ) {
+    unless ($ENV{AUTHOR_TESTING}) {
         print "1..0 # Skip many perls have broken threads.  Enable with AUTHOR_TESTING.\n";
         exit 0;
     }

@@ -1,7 +1,7 @@
 #!perl -w
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -13,9 +13,8 @@ BEGIN {
 use strict;
 
 require Test::Simple::Catch;
-my($out, $err) = Test::Simple::Catch::caught();
+my ($out, $err) = Test::Simple::Catch::caught();
 local $ENV{HARNESS_ACTIVE} = 0;
-
 
 # Can't use Test.pm, that's a 5.005 thing.
 package My::Test;
@@ -35,17 +34,16 @@ sub is ($$;$) {
 }
 
 sub main::out_ok ($$) {
-    $TB->is_eq( $out->read, shift );
-    $TB->is_eq( $err->read, shift );
+    $TB->is_eq($out->read, shift);
+    $TB->is_eq($err->read, shift);
 }
 
 sub main::out_like ($$) {
-    my($output, $failure) = @_;
+    my ($output, $failure) = @_;
 
-    $TB->like( $out->read, qr/$output/ );
-    $TB->like( $err->read, qr/$failure/ );
+    $TB->like($out->read, qr/$output/);
+    $TB->like($err->read, qr/$failure/);
 }
-
 
 package main;
 
@@ -53,20 +51,18 @@ require Test::More;
 our $TODO;
 my $Total = 38;
 Test::More->import(tests => $Total);
-$out->read;  # clear the plan from $out
+$out->read;    # clear the plan from $out
 
 # This should all work in the presence of a __DIE__ handler.
-local $SIG{__DIE__} = sub { $TB->ok(0, "DIE handler called: ".join "", @_); };
-
+local $SIG{__DIE__} = sub { $TB->ok(0, "DIE handler called: " . join "", @_); };
 
 my $tb = Test::More->builder;
 $tb->use_numbers(0);
 
 my $Filename = quotemeta $0;
 
-
 #line 38
-ok( 0, 'failing' );
+ok(0, 'failing');
 out_ok( <<OUT, <<ERR );
 not ok - failing
 OUT
@@ -74,9 +70,8 @@ OUT
 #   at $0 line 38.
 ERR
 
-
 #line 40
-is( "foo", "bar", 'foo is bar?');
+is("foo", "bar", 'foo is bar?');
 out_ok( <<OUT, <<ERR );
 not ok - foo is bar?
 OUT
@@ -87,7 +82,7 @@ OUT
 ERR
 
 #line 89
-is( undef, '',    'undef is empty string?');
+is(undef, '', 'undef is empty string?');
 out_ok( <<OUT, <<ERR );
 not ok - undef is empty string?
 OUT
@@ -98,7 +93,7 @@ OUT
 ERR
 
 #line 99
-is( undef, 0,     'undef is 0?');
+is(undef, 0, 'undef is 0?');
 out_ok( <<OUT, <<ERR );
 not ok - undef is 0?
 OUT
@@ -109,7 +104,7 @@ OUT
 ERR
 
 #line 110
-is( '',    0,     'empty string is 0?' );
+is('', 0, 'empty string is 0?');
 out_ok( <<OUT, <<ERR );
 not ok - empty string is 0?
 OUT
@@ -120,7 +115,7 @@ OUT
 ERR
 
 #line 121
-isnt("foo", "foo", 'foo isnt foo?' );
+isnt("foo", "foo", 'foo isnt foo?');
 out_ok( <<OUT, <<ERR );
 not ok - foo isnt foo?
 OUT
@@ -131,7 +126,7 @@ OUT
 ERR
 
 #line 132
-isn't("foo", "foo",'foo isn\'t foo?' );
+isn't("foo", "foo", 'foo isn\'t foo?');
 out_ok( <<OUT, <<ERR );
 not ok - foo isn't foo?
 OUT
@@ -153,7 +148,7 @@ OUT
 ERR
 
 #line 154
-like( "foo", '/that/',  'is foo like that' );
+like("foo", '/that/', 'is foo like that');
 out_ok( <<OUT, <<ERR );
 not ok - is foo like that
 OUT
@@ -164,7 +159,7 @@ OUT
 ERR
 
 #line 165
-unlike( "foo", '/foo/', 'is foo unlike foo' );
+unlike("foo", '/foo/', 'is foo unlike foo');
 out_ok( <<OUT, <<ERR );
 not ok - is foo unlike foo
 OUT
@@ -176,7 +171,7 @@ ERR
 
 # Nick Clark found this was a bug.  Fixed in 0.40.
 # line 177
-like( "bug", '/(%)/',   'regex with % in it' );
+like("bug", '/(%)/', 'regex with % in it');
 out_ok( <<OUT, <<ERR );
 not ok - regex with % in it
 OUT
@@ -247,7 +242,7 @@ OUT
 ERR
 
 #line 248
-isa_ok(42,    "Wibble", "My Wibble");
+isa_ok(42, "Wibble", "My Wibble");
 out_ok( <<OUT, <<ERR );
 not ok - 'My Wibble' isa 'Wibble'
 OUT
@@ -257,7 +252,7 @@ OUT
 ERR
 
 #line 252
-isa_ok(42,    "Wibble");
+isa_ok(42, "Wibble");
 out_ok( <<OUT, <<ERR );
 not ok - The class (or class-like) '42' isa 'Wibble'
 OUT
@@ -277,7 +272,7 @@ OUT
 ERR
 
 #line 268
-isa_ok([],    "HASH");
+isa_ok([], "HASH");
 out_ok( <<OUT, <<ERR );
 not ok - A reference of type 'ARRAY' isa 'HASH'
 OUT
@@ -297,7 +292,7 @@ OUT
 ERR
 
 #line 288
-new_ok( "Does::Not::Exist" );
+new_ok("Does::Not::Exist");
 out_like( <<OUT, <<ERR );
 not ok - Does::Not::Exist->new\\(\\) died
 OUT
@@ -306,13 +301,24 @@ OUT
 #     Error was:  Can't locate object method "new" via package "Does::Not::Exist" .*
 ERR
 
+{
 
-{ package Foo; sub new { } }
-{ package Bar; sub new { {} } }
-{ package Baz; sub new { bless {}, "Wibble" } }
+    package Foo;
+    sub new { }
+}
+{
+
+    package Bar;
+    sub new { {} }
+}
+{
+
+    package Baz;
+    sub new { bless {}, "Wibble" }
+}
 
 #line 303
-new_ok( "Foo" );
+new_ok("Foo");
 out_ok( <<OUT, <<ERR );
 not ok - undef isa 'Foo'
 OUT
@@ -322,7 +328,7 @@ OUT
 ERR
 
 # line 313
-new_ok( "Bar" );
+new_ok("Bar");
 out_ok( <<OUT, <<ERR );
 not ok - A reference of type 'HASH' isa 'Bar'
 OUT
@@ -332,7 +338,7 @@ OUT
 ERR
 
 #line 323
-new_ok( "Baz" );
+new_ok("Baz");
 out_ok( <<OUT, <<ERR );
 not ok - An object of class 'Wibble' isa 'Baz'
 OUT
@@ -342,7 +348,7 @@ OUT
 ERR
 
 #line 333
-new_ok( "Baz", [], "no args" );
+new_ok("Baz", [], "no args");
 out_ok( <<OUT, <<ERR );
 not ok - 'no args' isa 'Baz'
 OUT
@@ -352,7 +358,7 @@ OUT
 ERR
 
 #line 343
-cmp_ok( 'foo', 'eq', 'bar', 'cmp_ok eq' );
+cmp_ok('foo', 'eq', 'bar', 'cmp_ok eq');
 out_ok( <<OUT, <<ERR );
 not ok - cmp_ok eq
 OUT
@@ -363,7 +369,7 @@ OUT
 ERR
 
 #line 354
-cmp_ok( 42.1,  '==', 23,  , '       ==' );
+cmp_ok(42.1, '==', 23,, '       ==');
 out_ok( <<OUT, <<ERR );
 not ok -        ==
 OUT
@@ -374,7 +380,7 @@ OUT
 ERR
 
 #line 365
-cmp_ok( 42,    '!=', 42   , '       !=' );
+cmp_ok(42, '!=', 42, '       !=');
 out_ok( <<OUT, <<ERR );
 not ok -        !=
 OUT
@@ -385,7 +391,7 @@ OUT
 ERR
 
 #line 376
-cmp_ok( 1,     '&&', 0    , '       &&' );
+cmp_ok(1, '&&', 0, '       &&');
 out_ok( <<OUT, <<ERR );
 not ok -        &&
 OUT
@@ -397,7 +403,7 @@ OUT
 ERR
 
 # line 388
-cmp_ok( 42,    'eq', "foo", '       eq with numbers' );
+cmp_ok(42, 'eq', "foo", '       eq with numbers');
 out_ok( <<OUT, <<ERR );
 not ok -        eq with numbers
 OUT
@@ -412,7 +418,7 @@ ERR
     local $SIG{__WARN__} = sub { $warnings .= join '', @_ };
 
 # line 415
-    cmp_ok( 42,    '==', "foo", '       == with strings' );
+    cmp_ok(42, '==', "foo", '       == with strings');
     out_ok( <<OUT, <<ERR );
 not ok -        == with strings
 OUT
@@ -428,19 +434,18 @@ ERR
     $warnings = '';
 }
 
-
 {
     my $warnings = '';
     local $SIG{__WARN__} = sub { $warnings .= join '', @_ };
 
 #line 437
-    cmp_ok( undef, "ne", "", "undef ne empty string" );
+    cmp_ok(undef, "ne", "", "undef ne empty string");
 
-    $TB->is_eq( $out->read, <<OUT );
+    $TB->is_eq($out->read, <<OUT );
 not ok - undef ne empty string
 OUT
 
-    $TB->is_eq( $err->read, <<ERR );
+    $TB->is_eq($err->read, <<ERR );
 #   Failed test 'undef ne empty string'
 #   at $0 line 437.
 #     undef
@@ -454,13 +459,12 @@ ERR
     );
 }
 
-
 # generate a $!, it changes its value by context.
 -e "wibblehibble";
-my $Errno_Number = $!+0;
-my $Errno_String = $!.'';
+my $Errno_Number = $! + 0;
+my $Errno_String = $! . '';
 #line 425
-cmp_ok( $!,    'eq', '',    '       eq with stringified errno' );
+cmp_ok($!, 'eq', '', '       eq with stringified errno');
 out_ok( <<OUT, <<ERR );
 not ok -        eq with stringified errno
 OUT
@@ -471,7 +475,7 @@ OUT
 ERR
 
 #line 436
-cmp_ok( $!,    '==', -1,    '       eq with numerified errno' );
+cmp_ok($!, '==', -1, '       eq with numerified errno');
 out_ok( <<OUT, <<ERR );
 not ok -        eq with numerified errno
 OUT
@@ -506,7 +510,6 @@ out_like(
     qr/^\Qnot ok - require ALL::YOUR::BASE::ARE::BELONG::TO::US::wibble;\E\n\z/,
     qr/^$more_err_re/
 );
-
 
 END {
     out_like( <<OUT, <<ERR );

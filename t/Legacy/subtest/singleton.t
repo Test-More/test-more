@@ -1,9 +1,9 @@
 #!/usr/bin/perl -w
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
-        @INC = ( '../lib', 'lib' );
+        @INC = ('../lib', 'lib');
     }
     else {
         unshift @INC, 't/lib';
@@ -22,8 +22,8 @@ use Test::More tests => 3;
     my $TB = Test::Builder->new;
 
     sub singleton_ok ($;$) {
-        my( $val, $name ) = @_;
-        $TB->ok( $val, $name );
+        my ($val, $name) = @_;
+        $TB->ok($val, $name);
     }
 }
 

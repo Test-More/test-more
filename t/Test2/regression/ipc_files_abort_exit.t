@@ -42,9 +42,8 @@ else {
     $ctx->release;
     $clone->ok(0, "Should not see this");
     print STDERR "\n\nSomething went wrong!!!!\n\n";
-    exit 100; # Safety exit
-};
-
+    exit 100;    # Safety exit
+}
 
 # The rest of this is to make sure nothing that happens when reading the event
 # messes with $?.
@@ -54,7 +53,7 @@ pipe($read, $write);
 $pid = fork;
 die "Failed to fork" unless defined $pid;
 
-unless($pid) {
+unless ($pid) {
     my $ignore = <$read>;
     ok(1, "Test in forked process");
 }

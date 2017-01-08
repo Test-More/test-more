@@ -13,7 +13,7 @@ require Test::Simple;
 
 my $dist_version = Test::More->VERSION;
 
-like( $dist_version, qr/^ \d+ \. \d+ $/x );
+like($dist_version, qr/^ \d+ \. \d+ $/x);
 
 my @modules = qw(
     Test::Simple
@@ -22,7 +22,7 @@ my @modules = qw(
 );
 
 for my $module (@modules) {
-    is( $dist_version, $module->VERSION, $module );
+    is($dist_version, $module->VERSION, $module);
 }
 
 done_testing(4);

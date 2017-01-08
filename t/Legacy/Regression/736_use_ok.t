@@ -4,6 +4,7 @@ use Test::More;
 
 BEGIN {
     $INC{'MyWarner.pm'} = 1;
+
     package MyWarner;
 
     sub import {

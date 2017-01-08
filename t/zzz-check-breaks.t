@@ -10,24 +10,24 @@ eval {
     require CPAN::Meta::Requirements;
     CPAN::Meta::Requirements->VERSION(2.120920);
     require Module::Metadata;
-    1
+    1;
 } or plan skip_all => 'breakage test requires CPAN::Meta, CPAN::Meta::Requirements and Module::Metadata';
 
-my $metafile = -e 'MYMETA.json' ? 'MYMETA.json'
-             : -e 'META.json'   ? 'META.json'
-             :                    undef;
+my $metafile =
+      -e 'MYMETA.json' ? 'MYMETA.json'
+    : -e 'META.json'   ? 'META.json'
+    :                    undef;
 
 unless ($metafile) {
-  plan skip_all => "can't check breakages without some META file";
+    plan skip_all => "can't check breakages without some META file";
 }
 
 my $breaks = CPAN::Meta->load_file($metafile)->custom('x_breaks');
-my $reqs = CPAN::Meta::Requirements->new;
+my $reqs   = CPAN::Meta::Requirements->new;
 $reqs->add_string_requirement($_, $breaks->{$_}) foreach keys %$breaks;
 
 my $result = check_breaks($reqs);
-if (my @breaks = grep { defined $result->{$_} } keys %$result)
-{
+if (my @breaks = grep { defined $result->{$_} } keys %$result) {
     diag 'You have the following modules installed, which are not compatible with the latest Test::More:';
     diag "$result->{$_}" for sort @breaks;
     diag "\n", 'You should now update these modules!';
