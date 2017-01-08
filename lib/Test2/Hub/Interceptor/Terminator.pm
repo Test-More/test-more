@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302074';
 
-
 1;
 
 __END__

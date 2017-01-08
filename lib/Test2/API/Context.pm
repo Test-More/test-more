@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302074';
 
-
 use Carp qw/confess croak longmess/;
 use Scalar::Util qw/weaken blessed/;
 use Test2::Util qw/get_tid try pkg_to_file get_tid/;
@@ -18,7 +17,7 @@ my %LOADED = (
         my $pkg  = "Test2::Event::$_";
         my $file = "Test2/Event/$_.pm";
         require $file unless $INC{$file};
-        ( $pkg => $pkg, $_ => $pkg )
+        ($pkg => $pkg, $_ => $pkg)
     } qw/Ok Diag Note Info Plan Bail Exception Waiting Skip Subtest/
 );
 
@@ -70,7 +69,7 @@ sub DESTROY {
         # Sometimes $@ is uninitialized, not a problem in this case so do not
         # show the warning about using eq.
         no warnings 'uninitialized';
-        if($self->{+EVAL_ERROR} eq $@ && $hub->is_local) {
+        if ($self->{+EVAL_ERROR} eq $@ && $hub->is_local) {
             my $frame = $self->{+_IS_SPAWN} || $self->{+TRACE}->frame;
             warn <<"            EOT";
 A context appears to have been destroyed without first calling release().
@@ -238,10 +237,11 @@ sub ok {
     my $hub = $self->{+HUB};
 
     my $e = bless {
-        trace => bless( {%{$self->{+TRACE}}}, 'Test2::Util::Trace'),
+        trace => bless({%{$self->{+TRACE}}}, 'Test2::Util::Trace'),
         pass  => $pass,
         name  => $name,
-    }, 'Test2::Event::Ok';
+        },
+        'Test2::Event::Ok';
     $e->init;
 
     $hub->send($e);
@@ -283,7 +283,8 @@ sub failure_diag {
 
     # Create the initial diagnostics. If the test has a name we put the debug
     # info on a second line, this behavior is inherited from Test::Builder.
-    my $msg = defined($name)
+    my $msg =
+        defined($name)
         ? qq[${prefix}Failed test '$name'\n$debug.\n]
         : qq[${prefix}Failed test $debug.\n];
 
@@ -295,9 +296,9 @@ sub skip {
     my ($name, $reason, @extra) = @_;
     $self->send_event(
         'Skip',
-        name => $name,
+        name   => $name,
         reason => $reason,
-        pass => 1,
+        pass   => 1,
         @extra,
     );
 }
@@ -315,9 +316,9 @@ sub note {
 }
 
 sub diag {
-    my $self = shift;
+    my $self      = shift;
     my ($message) = @_;
-    my $hub = $self->{+HUB};
+    my $hub       = $self->{+HUB};
     $self->send_event(
         'Diag',
         message => $message,
@@ -335,7 +336,7 @@ sub bail {
 }
 
 sub _parse_event {
-    my $self = shift;
+    my $self  = shift;
     my $event = shift;
 
     my $pkg;

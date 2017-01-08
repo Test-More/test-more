@@ -9,7 +9,6 @@ BEGIN {
 
 our $VERSION = '1.302074';
 
-
 my $INST;
 my $ENDING = 0;
 sub test2_set_is_end { ($ENDING) = @_ ? @_ : (1) }
@@ -18,7 +17,7 @@ sub test2_get_is_end { $ENDING }
 use Test2::API::Instance(\$INST);
 # Set the exit status
 END {
-    test2_set_is_end(); # See gh #16
+    test2_set_is_end();    # See gh #16
     $INST->set_exit();
 }
 
@@ -30,7 +29,7 @@ END {
 
 BEGIN {
     no warnings 'once';
-    if($] ge '5.014' || $ENV{T2_CHECK_DEPTH} || $Test2::API::DO_DEPTH_CHECK) {
+    if ($] ge '5.014' || $ENV{T2_CHECK_DEPTH} || $Test2::API::DO_DEPTH_CHECK) {
         *DO_DEPTH_CHECK = sub() { 1 };
     }
     else {
@@ -114,9 +113,10 @@ my $ACQUIRE_CBS = $INST->context_acquire_callbacks;
 sub test2_init_done { $INST->finalized }
 sub test2_load_done { $INST->loaded }
 
-sub test2_pid     { $INST->pid }
-sub test2_tid     { $INST->tid }
-sub test2_stack   { $INST->stack }
+sub test2_pid   { $INST->pid }
+sub test2_tid   { $INST->tid }
+sub test2_stack { $INST->stack }
+
 sub test2_no_wait {
     $INST->set_no_wait(@_) if @_;
     $INST->no_wait;
@@ -148,6 +148,7 @@ sub test2_ipc_enable_shm      { $INST->ipc_enable_shm }
 sub test2_formatter     { $INST->formatter }
 sub test2_formatters    { @{$INST->formatters} }
 sub test2_formatter_add { $INST->add_formatter(@_) }
+
 sub test2_formatter_set {
     my ($formatter) = @_;
     croak "No formatter specified" unless $formatter;
@@ -174,9 +175,10 @@ sub context_do(&;@) {
 
     my @out;
     my $ok = eval {
-        $want          ? @out    = $code->($ctx, @args) :
-        defined($want) ? $out[0] = $code->($ctx, @args) :
-                                   $code->($ctx, @args) ;
+        $want ? @out =
+              $code->($ctx, @args)
+            : defined($want) ? $out[0] = $code->($ctx, @args)
+            :                  $code->($ctx, @args);
         1;
     };
     my $err = $@;
@@ -185,7 +187,7 @@ sub context_do(&;@) {
 
     die $err unless $ok;
 
-    return @out    if $want;
+    return @out if $want;
     return $out[0] if defined $want;
     return;
 }
@@ -205,7 +207,7 @@ sub no_context(&;$) {
     die $err unless $ok;
 
     return;
-};
+}
 
 sub context {
     # We need to grab these before anything else to ensure they are not
@@ -221,8 +223,8 @@ sub context {
     croak "context() called, but return value is ignored"
         unless defined wantarray;
 
-    my $stack   = $params{stack} || $STACK;
-    my $hub     = $params{hub}   || (@$stack ? $stack->[-1] : $stack->top);
+    my $stack = $params{stack} || $STACK;
+    my $hub = $params{hub} || (@$stack ? $stack->[-1] : $stack->top);
     my $hid     = $hub->{hid};
     my $current = $CONTEXTS->{$hid};
 
@@ -252,8 +254,7 @@ sub context {
     }
 
     # I know this is ugly....
-    ($!, $@, $?) = ($errno, $eval_error, $child_error) and return bless(
-        {
+    ($!, $@, $?) = ($errno, $eval_error, $child_error) and return bless({
             %$current,
             _is_canon   => undef,
             errno       => $errno,
@@ -281,8 +282,7 @@ sub context {
 
     # Directly bless the object here, calling new is a noticeable performance
     # hit with how often this needs to be called.
-    my $trace = bless(
-        {
+    my $trace = bless({
             frame => [$pkg, $file, $line, $sub],
             pid   => $$,
             tid   => get_tid(),
@@ -293,17 +293,16 @@ sub context {
     # Directly bless the object here, calling new is a noticeable performance
     # hit with how often this needs to be called.
     my $aborted = 0;
-    $current = bless(
-        {
-            _aborted     => \$aborted,
-            stack        => $stack,
-            hub          => $hub,
-            trace        => $trace,
-            _is_canon    => 1,
-            _depth       => $depth,
-            errno        => $errno,
-            eval_error   => $eval_error,
-            child_error  => $child_error,
+    $current = bless({
+            _aborted    => \$aborted,
+            stack       => $stack,
+            hub         => $hub,
+            trace       => $trace,
+            _is_canon   => 1,
+            _depth      => $depth,
+            errno       => $errno,
+            eval_error  => $eval_error,
+            child_error => $child_error,
             $params{on_release} ? (_on_release => [$params{on_release}]) : (),
         },
         'Test2::API::Context'
@@ -384,14 +383,14 @@ sub intercept(&) {
     }
 
     my $hub = Test2::Hub::Interceptor->new(
-        ipc => $ipc,
+        ipc       => $ipc,
         no_ending => 1,
     );
 
     my @events;
     $hub->listen(sub { push @events => $_[1] });
 
-    $ctx->stack->top; # Make sure there is a top hub before we begin.
+    $ctx->stack->top;    # Make sure there is a top hub before we begin.
     $ctx->stack->push($hub);
 
     my ($ok, $err) = (1, undef);
@@ -443,7 +442,7 @@ sub run_subtest {
     );
 
     my @events;
-    $hub->set_nested( $parent->isa('Test2::Hub::Subtest') ? $parent->nested + 1 : 1 );
+    $hub->set_nested($parent->isa('Test2::Hub::Subtest') ? $parent->nested + 1 : 1);
     $hub->listen(sub { push @events => $_[1] });
 
     if ($buffered) {
@@ -452,7 +451,7 @@ sub run_subtest {
             $hub->format(undef) if $hide;
         }
     }
-    elsif (! $parent->format) {
+    elsif (!$parent->format) {
         # If our parent has no format that means we're in a buffered subtest
         # and now we're trying to run a streaming subtest. There's really no
         # way for that to work, so we need to force the use of a buffered
@@ -492,7 +491,7 @@ sub run_subtest {
     my $trace = $ctx->trace;
 
     if (!$finished) {
-        if(my $bailed = $hub->bailed_out) {
+        if (my $bailed = $hub->bailed_out) {
             $ctx->bail($bailed->reason);
         }
         my $code = $hub->exit_code;

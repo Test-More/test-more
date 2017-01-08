@@ -3,7 +3,6 @@ use 5.005;
 
 our $VERSION = '1.302074';
 
-
 __END__
 
 =head1 NAME

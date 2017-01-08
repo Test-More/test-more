@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302074';
 
-
 BEGIN { require Test2::Event::Ok; our @ISA = qw(Test2::Event::Ok) }
 use Test2::Util::HashBase qw{reason};
 
@@ -18,7 +17,7 @@ sub causes_fail { 0 }
 
 sub summary {
     my $self = shift;
-    my $out = $self->SUPER::summary(@_);
+    my $out  = $self->SUPER::summary(@_);
 
     if (my $reason = $self->reason) {
         $out .= " (SKIP: $reason)";

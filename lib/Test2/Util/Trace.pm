@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302074';
 
-
 use Test2::Util qw/get_tid pkg_to_file/;
 
 use Carp qw/confess/;
@@ -19,7 +18,7 @@ sub init {
     $_[0]->{+TID} = get_tid() unless defined $_[0]->{+TID};
 }
 
-sub snapshot { bless {%{$_[0]}}, __PACKAGE__ };
+sub snapshot { bless {%{$_[0]}}, __PACKAGE__ }
 
 sub debug {
     my $self = shift;
@@ -49,10 +48,10 @@ sub subname { $_[0]->{+FRAME}->[3] }
 
 sub from_json {
     my $class = shift;
-	my %p     = @_;
+    my %p     = @_;
 
     my $trace_pkg = delete $p{__PACKAGE__};
-	require(pkg_to_file($trace_pkg));
+    require(pkg_to_file($trace_pkg));
 
     return $trace_pkg->new(%p);
 }

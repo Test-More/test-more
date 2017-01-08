@@ -9,7 +9,6 @@ our @ISA = qw(Exporter);
 
 our $VERSION = '1.302074';
 
-
 =head1 NAME
 
 Test::Builder::Module - Base class for test modules
@@ -73,7 +72,7 @@ C<import_extra()>.
 =cut
 
 sub import {
-    my($class) = shift;
+    my ($class) = shift;
 
     # Don't run all this when loading ourself.
     return 1 if $class eq 'Test::Builder::Module';
@@ -84,8 +83,8 @@ sub import {
 
     $test->exported_to($caller);
 
-    $class->import_extra( \@_ );
-    my(@imports) = $class->_strip_imports( \@_ );
+    $class->import_extra(\@_);
+    my (@imports) = $class->_strip_imports(\@_);
 
     $test->plan(@_);
 
@@ -100,11 +99,11 @@ sub _strip_imports {
     my @imports = ();
     my @other   = ();
     my $idx     = 0;
-    while( $idx <= $#{$list} ) {
+    while ($idx <= $#{$list}) {
         my $item = $list->[$idx];
 
-        if( defined $item and $item eq 'import' ) {
-            push @imports, @{ $list->[ $idx + 1 ] };
+        if (defined $item and $item eq 'import') {
+            push @imports, @{$list->[$idx + 1]};
             $idx++;
         }
         else {

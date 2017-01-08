@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302074';
 
-
 use Test2::Hub();
 
 use Carp qw/confess/;
@@ -15,7 +14,7 @@ sub new {
 }
 
 sub new_hub {
-    my $self = shift;
+    my $self   = shift;
     my %params = @_;
 
     my $class = delete $params{class} || 'Test2::Hub';

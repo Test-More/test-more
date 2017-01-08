@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302074';
 
-
 use Test2::Hub::Interceptor::Terminator();
 
 BEGIN { require Test2::Hub; our @ISA = qw(Test2::Hub) }

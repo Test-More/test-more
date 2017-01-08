@@ -48,7 +48,7 @@ sub init {
     my $self = shift;
 
     $self->{+HANDLES} ||= $self->_open_handles;
-    if(my $enc = delete $self->{encoding}) {
+    if (my $enc = delete $self->{encoding}) {
         $self->encoding($enc);
     }
 }
@@ -79,8 +79,9 @@ sub encoding {
 
 if ($^C) {
     no warnings 'redefine';
-    *write = sub {};
+    *write = sub { };
 }
+
 sub write {
     my ($self, $e, $num) = @_;
 
@@ -91,10 +92,10 @@ sub write {
 
     my $handles = $self->{+HANDLES};
     my $nesting = ($SAFE_TO_ACCESS_HASH{$type} ? $e->{nested} : $e->nested) || 0;
-    my $indent = '    ' x $nesting;
+    my $indent  = '    ' x $nesting;
 
     # Local is expensive! Only do it if we really need to.
-    local($\, $,) = (undef, '') if $\ || $,;
+    local ($\, $,) = (undef, '') if $\ || $,;
     for my $set (@tap) {
         no warnings 'uninitialized';
         my ($hid, $msg) = @$set;
@@ -124,7 +125,7 @@ sub _open_handles {
 }
 
 sub _autoflush {
-    my($fh) = pop;
+    my ($fh) = pop;
     my $old_fh = select $fh;
     $| = 1;
     select $old_fh;
@@ -159,17 +160,16 @@ sub event_ok {
     my @extra;
     defined($name) && (
         (index($name, "\n") != -1 && (($name, @extra) = split(/\n\r?/, $name, -1))),
-        ((index($name, "#" ) != -1  || substr($name, -1) eq '\\') && (($name =~ s|\\|\\\\|g), ($name =~ s|#|\\#|g)))
-    );
+        ((index($name, "#") != -1 || substr($name, -1) eq '\\') && (($name =~ s|\\|\\\\|g), ($name =~ s|#|\\#|g))));
 
     my $space = @extra ? ' ' x (length($out) + 2) : '';
 
     $out .= " - $name" if defined $name;
-    $out .= " # TODO" if $in_todo;
-    $out .= " $todo" if defined($todo) && length($todo);
+    $out .= " # TODO"  if $in_todo;
+    $out .= " $todo"   if defined($todo) && length($todo);
 
     # The primary line of TAP, if the test passed this is all we need.
-    return([OUT_STD, "$out\n"]) unless @extra;
+    return ([OUT_STD, "$out\n"]) unless @extra;
 
     return $self->event_ok_multiline($out, $space, @extra);
 }
@@ -178,9 +178,9 @@ sub event_ok_multiline {
     my $self = shift;
     my ($out, $space, @extra) = @_;
 
-    return(
+    return (
         [OUT_STD, "$out\n"],
-        map {[OUT_STD, "#${space}$_\n"]} @extra,
+        map { [OUT_STD, "#${space}$_\n"] } @extra,
     );
 }
 
@@ -198,14 +198,14 @@ sub event_skip {
     $out .= " $num" if defined $num;
     $out .= " - $name" if $name;
     if (defined($todo)) {
-        $out .= " # TODO & SKIP"
+        $out .= " # TODO & SKIP";
     }
     else {
         $out .= " # skip";
     }
     $out .= " $reason" if defined($reason) && length($reason);
 
-    return([OUT_STD, "$out\n"]);
+    return ([OUT_STD, "$out\n"]);
 }
 
 sub event_note {
@@ -245,7 +245,7 @@ sub event_bail {
 sub event_exception {
     my $self = shift;
     my ($e, $num) = @_;
-    return [ OUT_ERR, $e->error ];
+    return [OUT_ERR, $e->error];
 }
 
 sub event_subtest {
@@ -273,7 +273,7 @@ sub event_subtest {
 
     # Render the sub-events, we use our own counter for these.
     my $count = 0;
-    my @subs = map {
+    my @subs  = map {
         # Bump the count for any event that should bump it.
         $count++ if $_->increments_count;
 
@@ -283,10 +283,10 @@ sub event_subtest {
     } @{$e->subevents};
 
     return (
-        $ok,                # opening ok - name {
-        @diag,              #   diagnostics if the subtest failed
-        @subs,              #   All the inner-event lines
-        [OUT_STD(), "}\n"], # } (closing brace)
+        $ok,      # opening ok - name {
+        @diag,    #   diagnostics if the subtest failed
+        @subs,    #   All the inner-event lines
+        [OUT_STD(), "}\n"],    # } (closing brace)
     );
 }
 
@@ -334,15 +334,15 @@ sub event_other {
 
     if ($e->increments_count) {
         my $ok = "";
-        $ok .= "not " if $e->causes_fail;
+        $ok .= "not "              if $e->causes_fail;
         $ok .= "ok";
-        $ok .= " $num" if defined($num);
+        $ok .= " $num"             if defined($num);
         $ok .= " - " . $e->summary if $e->summary;
 
         push @out => [OUT_STD, "$ok\n"];
     }
-    else { # Comment
-        my $handle =  ($e->causes_fail || $e->diagnostics) ? OUT_ERR : OUT_STD;
+    else {    # Comment
+        my $handle = ($e->causes_fail || $e->diagnostics) ? OUT_ERR : OUT_STD;
         my $summary = $e->summary || ref($e);
         chomp($summary);
         $summary =~ s/^/# /smg;

@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302074';
 
-
 BEGIN { require Test2::IPC::Driver; our @ISA = qw(Test2::IPC::Driver) }
 
 use Test2::Util::HashBase qw{tempdir event_id tid pid globals};
@@ -63,7 +62,7 @@ BEGIN {
     }
 }
 
-sub use_shm { 1 }
+sub use_shm    { 1 }
 sub shm_size() { 64 }
 
 sub is_viable { 1 }
@@ -74,7 +73,7 @@ sub init {
     my $tmpdir = File::Temp::tempdir(
         $ENV{T2_TEMPDIR_TEMPLATE} || "test2" . ipc_separator . $$ . ipc_separator . "XXXXXX",
         CLEANUP => 0,
-        TMPDIR => 1,
+        TMPDIR  => 1,
     );
 
     $self->abort_trace("Could not get a temp dir") unless $tmpdir;
@@ -95,9 +94,9 @@ sub init {
 }
 
 sub hub_file {
-    my $self = shift;
+    my $self  = shift;
     my ($hid) = @_;
-    my $tdir = $self->{+TEMPDIR};
+    my $tdir  = $self->{+TEMPDIR};
     return File::Spec->catfile($tdir, "HUB" . ipc_separator . $hid);
 }
 
@@ -135,7 +134,7 @@ sub drop_hub {
     my $self = shift;
     my ($hid) = @_;
 
-    my $tdir = $self->{+TEMPDIR};
+    my $tdir  = $self->{+TEMPDIR};
     my $hfile = $self->hub_file($hid);
 
     $self->abort_trace("File for hub '$hid' does not exist")
@@ -153,11 +152,11 @@ sub drop_hub {
 
     if ($ENV{T2_KEEP_TEMPDIR}) {
         my ($ok, $err) = do_rename($hfile, File::Spec->canonpath("$hfile.complete"));
-        $self->abort_trace("Could not rename file '$hfile' -> '$hfile.complete': $err") unless $ok
+        $self->abort_trace("Could not rename file '$hfile' -> '$hfile.complete': $err") unless $ok;
     }
     else {
         my ($ok, $err) = do_unlink($hfile);
-        $self->abort_trace("Could not remove file for hub '$hid': $err") unless $ok
+        $self->abort_trace("Could not remove file for hub '$hid': $err") unless $ok;
     }
 
     opendir(my $dh, $tdir) or $self->abort_trace("Could not open temp dir!");
@@ -174,8 +173,8 @@ sub send {
     my ($hid, $e, $global) = @_;
 
     my $tempdir = $self->{+TEMPDIR};
-    my $hfile = $self->hub_file($hid);
-    my $dest = $global ? 'GLOBAL' : $hid;
+    my $hfile   = $self->hub_file($hid);
+    my $dest    = $global ? 'GLOBAL' : $hid;
 
     $self->abort(<<"    EOT") unless $global || -f $hfile;
 hub '$hid' is not available, failed to send event!
@@ -200,7 +199,7 @@ do so if Test::Builder is loaded for legacy reasons.
     }
 
     my ($old, $blocked);
-    unless(IS_WIN32) {
+    unless (IS_WIN32) {
         my $to_block = POSIX::SigSet->new(
             POSIX::SIGINT(),
             POSIX::SIGALRM(),
@@ -221,7 +220,7 @@ do so if Test::Builder is loaded for legacy reasons.
         unless ($ok) {
             POSIX::sigprocmask(POSIX::SIG_SETMASK(), $old, POSIX::SigSet->new()) if defined $blocked;
             $self->abort("Could not rename file '$file' -> '$ready': $err");
-        };
+        }
         test2_ipc_set_pending(substr($file, -(shm_size)));
     };
 
@@ -232,9 +231,9 @@ do so if Test::Builder is loaded for legacy reasons.
         my $src_file = __FILE__;
         $err =~ s{ at \Q$src_file\E.*$}{};
         chomp($err);
-        my $tid = get_tid();
+        my $tid   = get_tid();
         my $trace = $e->trace->debug;
-        my $type = blessed($e);
+        my $type  = blessed($e);
 
         $self->abort(<<"        EOT");
 
@@ -267,7 +266,7 @@ sub cull {
     my @out;
     for my $info (sort cmp_events map { $self->should_read_event($hid, $_) } readdir($dh)) {
         my $full = $info->{full_path};
-        my $obj = $self->read_event_file($full);
+        my $obj  = $self->read_event_file($full);
         push @out => $obj;
 
         # Do not remove global events
@@ -339,9 +338,10 @@ sub should_read_event {
 sub cmp_events {
     # Globals first
     return -1 if $a->{global} && !$b->{global};
-    return  1 if $b->{global} && !$a->{global};
+    return 1  if $b->{global} && !$a->{global};
 
-    return $a->{pid} <=> $b->{pid}
+    return
+           $a->{pid} <=> $b->{pid}
         || $a->{tid} <=> $b->{tid}
         || $a->{eid} <=> $b->{eid};
 }
@@ -355,7 +355,7 @@ sub read_event_file {
         unless blessed($obj);
 
     unless ($obj->isa('Test2::Event')) {
-        my $pkg  = blessed($obj);
+        my $pkg      = blessed($obj);
         my $mod_file = pkg_to_file($pkg);
         my ($ok, $err) = try { require $mod_file };
 
@@ -387,13 +387,13 @@ sub DESTROY {
     return unless defined $self->pid;
     return unless defined $self->tid;
 
-    return unless $$        == $self->pid;
+    return unless $$ == $self->pid;
     return unless get_tid() == $self->tid;
 
     my $tempdir = $self->{+TEMPDIR};
 
     opendir(my $dh, $tempdir) or $self->abort("Could not open temp dir! ($tempdir)");
-    while(my $file = readdir($dh)) {
+    while (my $file = readdir($dh)) {
         next if $file =~ m/^\.+$/;
         next if $file =~ m/\.complete$/;
         my $full = File::Spec->catfile($tempdir, $file);
@@ -401,7 +401,7 @@ sub DESTROY {
         my $sep = ipc_separator;
         if ($file =~ m/^(GLOBAL|HUB$sep)/) {
             $full =~ m/^(.*)$/;
-            $full = $1; # Untaint it
+            $full = $1;    # Untaint it
             next if $ENV{T2_KEEP_TEMPDIR};
             my ($ok, $err) = do_unlink($full);
             $self->abort("Could not unlink IPC file '$full': $err") unless $ok;

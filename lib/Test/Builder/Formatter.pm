@@ -26,7 +26,7 @@ sub init {
 
 sub event_todo_diag {
     my $self = shift;
-    my @out = $self->event_diag(@_);
+    my @out  = $self->event_diag(@_);
     $out[0]->[0] = OUT_TODO();
     return @out;
 }
@@ -47,9 +47,9 @@ sub event_ok_multiline {
     my $self = shift;
     my ($out, $space, @extra) = @_;
 
-    return(
+    return (
         [OUT_STD, "$out\n"],
-        map {[OUT_STD, "# $_\n"]} @extra,
+        map { [OUT_STD, "# $_\n"] } @extra,
     );
 }
 

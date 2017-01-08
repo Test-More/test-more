@@ -1,6 +1,5 @@
 package Test::Builder::IO::Scalar;
 
-
 =head1 NAME
 
 Test::Builder::IO::Scalar - A copy of IO::Scalar for Test::Builder
@@ -64,11 +63,12 @@ If any arguments are given, they're sent to open().
 sub new {
     my $proto = shift;
     my $class = ref($proto) || $proto;
-    my $self = bless \do { local *FH }, $class;
+    my $self  = bless \do { local *FH }, $class;
     tie *$self, $class, $self;
-    $self->open(@_);   ### open on anonymous by default
+    $self->open(@_);    ### open on anonymous by default
     $self;
 }
+
 sub DESTROY {
     shift->close;
 }
@@ -90,12 +90,12 @@ sub open {
     my ($self, $sref) = @_;
 
     ### Sanity:
-    defined($sref) or do {my $s = ''; $sref = \$s};
+    defined($sref) or do { my $s = ''; $sref = \$s };
     (ref($sref) eq "SCALAR") or croak "open() needs a ref to a scalar";
 
     ### Setup:
-    *$self->{Pos} = 0;          ### seek position
-    *$self->{SR}  = $sref;      ### scalar reference
+    *$self->{Pos} = 0;        ### seek position
+    *$self->{SR}  = $sref;    ### scalar reference
     $self;
 }
 
@@ -132,8 +132,6 @@ sub close {
 
 =cut
 
-
-
 #==============================
 
 =head2 Input and output
@@ -141,7 +139,6 @@ sub close {
 =over 4
 
 =cut
-
 
 #------------------------------
 
@@ -190,15 +187,15 @@ sub getline {
 
     ### Get next line:
     my $sr = *$self->{SR};
-    my $i  = *$self->{Pos};	        ### Start matching at this point.
+    my $i  = *$self->{Pos};    ### Start matching at this point.
 
     ### Minimal impact implementation!
     ### We do the fast fast thing (no regexps) if using the
     ### classic input record separator.
 
     ### Case 1: $/ is undef: slurp all...
-    if    (!defined($/)) {
-	*$self->{Pos} = length $$sr;
+    if (!defined($/)) {
+        *$self->{Pos} = length $$sr;
         return substr($$sr, $i);
     }
 
@@ -208,17 +205,17 @@ sub getline {
         ### Seek ahead for "\n"... yes, this really is faster than regexps.
         my $len = length($$sr);
         for (; $i < $len; ++$i) {
-           last if ord (substr ($$sr, $i, 1)) == 10;
+            last if ord(substr($$sr, $i, 1)) == 10;
         }
 
         ### Extract the line:
         my $line;
-        if ($i < $len) {                ### We found a "\n":
-            $line = substr ($$sr, *$self->{Pos}, $i - *$self->{Pos} + 1);
-            *$self->{Pos} = $i+1;            ### Remember where we finished up.
+        if ($i < $len) {    ### We found a "\n":
+            $line = substr($$sr, *$self->{Pos}, $i - *$self->{Pos} + 1);
+            *$self->{Pos} = $i + 1;    ### Remember where we finished up.
         }
-        else {                          ### No "\n"; slurp the remainder:
-            $line = substr ($$sr, *$self->{Pos}, $i - *$self->{Pos});
+        else {                         ### No "\n"; slurp the remainder:
+            $line = substr($$sr, *$self->{Pos}, $i - *$self->{Pos});
             *$self->{Pos} = $len;
         }
         return $line;
@@ -227,12 +224,12 @@ sub getline {
     ### Case 3: $/ is ref to int. Do fixed-size records.
     ###        (Thanks to Dominique Quatravaux.)
     elsif (ref($/)) {
-        my $len = length($$sr);
-		my $i = ${$/} + 0;
-		my $line = substr ($$sr, *$self->{Pos}, $i);
-		*$self->{Pos} += $i;
+        my $len  = length($$sr);
+        my $i    = ${$/} + 0;
+        my $line = substr($$sr, *$self->{Pos}, $i);
+        *$self->{Pos} += $i;
         *$self->{Pos} = $len if (*$self->{Pos} > $len);
-		return $line;
+        return $line;
     }
 
     ### Case 4: $/ is either "" (paragraphs) or something weird...
@@ -242,17 +239,19 @@ sub getline {
     else {
         pos($$sr) = $i;
 
-	### If in paragraph mode, skip leading lines (and update i!):
-        length($/) or
-	    (($$sr =~ m/\G\n*/g) and ($i = pos($$sr)));
+        ### If in paragraph mode, skip leading lines (and update i!):
+        length($/)
+            or (($$sr =~ m/\G\n*/g) and ($i = pos($$sr)));
 
         ### If we see the separator in the buffer ahead...
-        if (length($/)
-	    ?  $$sr =~ m,\Q$/\E,g          ###   (ordinary sep) TBD: precomp!
-            :  $$sr =~ m,\n\n,g            ###   (a paragraph)
-            ) {
+        if (
+            length($/)
+            ? $$sr =~ m,\Q$/\E,g    ###   (ordinary sep) TBD: precomp!
+            : $$sr =~ m,\n\n,g      ###   (a paragraph)
+            )
+        {
             *$self->{Pos} = pos $$sr;
-            return substr($$sr, $i, *$self->{Pos}-$i);
+            return substr($$sr, $i, *$self->{Pos} - $i);
         }
         ### Else if no separator remains, just slurp the rest:
         else {
@@ -298,20 +297,21 @@ sub print {
     *$self->{Pos} = length(${*$self->{SR}} .= join('', @_) . (defined($\) ? $\ : ""));
     1;
 }
+
 sub _unsafe_print {
     my $self = shift;
     my $append = join('', @_) . $\;
     ${*$self->{SR}} .= $append;
-    *$self->{Pos}   += length($append);
+    *$self->{Pos} += length($append);
     1;
 }
+
 sub _old_print {
     my $self = shift;
     ${*$self->{SR}} .= join('', @_) . $\;
     *$self->{Pos} = length(${*$self->{SR}});
     1;
 }
-
 
 #------------------------------
 
@@ -366,8 +366,8 @@ Returns the number of bytes actually read, 0 on end-of-file, undef on error.
 =cut
 
 sub sysread {
-  my $self = shift;
-  $self->read(@_);
+    my $self = shift;
+    $self->read(@_);
 }
 
 #------------------------------
@@ -380,14 +380,13 @@ Write some bytes to the scalar.
 =cut
 
 sub syswrite {
-  my $self = shift;
-  $self->write(@_);
+    my $self = shift;
+    $self->write(@_);
 }
 
 =back
 
 =cut
-
 
 #==============================
 
@@ -396,7 +395,6 @@ sub syswrite {
 =over 4
 
 =cut
-
 
 #------------------------------
 
@@ -407,7 +405,7 @@ No-op, provided for OO compatibility.
 
 =cut
 
-sub autoflush {}
+sub autoflush { }
 
 #------------------------------
 
@@ -418,7 +416,7 @@ No-op, provided for OO compatibility.
 
 =cut
 
-sub binmode {}
+sub binmode { }
 
 #------------------------------
 
@@ -456,9 +454,9 @@ sub seek {
     my $eofpos = length(${*$self->{SR}});
 
     ### Seek:
-    if    ($whence == 0) { *$self->{Pos} = $pos }             ### SEEK_SET
-    elsif ($whence == 1) { *$self->{Pos} += $pos }            ### SEEK_CUR
-    elsif ($whence == 2) { *$self->{Pos} = $eofpos + $pos}    ### SEEK_END
+    if ($whence == 0) { *$self->{Pos} = $pos }    ### SEEK_SET
+    elsif ($whence == 1) { *$self->{Pos} += $pos }    ### SEEK_CUR
+    elsif ($whence == 2) { *$self->{Pos} = $eofpos + $pos }    ### SEEK_END
     else                 { croak "bad seek whence ($whence)" }
 
     ### Fixup:
@@ -477,7 +475,7 @@ I<Instance method.> Identical to C<seek OFFSET, WHENCE>, I<q.v.>
 
 sub sysseek {
     my $self = shift;
-    $self->seek (@_);
+    $self->seek(@_);
 }
 
 #------------------------------
@@ -505,7 +503,7 @@ Default is false in 1.x, but cold-welded true in 2.x and later.
 sub use_RS {
     my ($self, $yesno) = @_;
     carp "use_RS is deprecated and ignored; \$/ is always consulted\n";
- }
+}
 
 #------------------------------
 
@@ -516,7 +514,7 @@ Set the current position, using the opaque value returned by C<getpos()>.
 
 =cut
 
-sub setpos { shift->seek($_[0],0) }
+sub setpos { shift->seek($_[0], 0) }
 
 #------------------------------
 
@@ -529,7 +527,6 @@ Return the current position in the string, as an opaque object.
 
 *getpos = \&tell;
 
-
 #------------------------------
 
 =item sref
@@ -541,27 +538,27 @@ Return a reference to the underlying scalar.
 
 sub sref { *{shift()}->{SR} }
 
-
 #------------------------------
 # Tied handle methods...
 #------------------------------
 
 # Conventional tiehandle interface:
 sub TIEHANDLE {
-    ((defined($_[1]) && UNIVERSAL::isa($_[1], __PACKAGE__))
-     ? $_[1]
-     : shift->new(@_));
+    (
+        (defined($_[1]) && UNIVERSAL::isa($_[1], __PACKAGE__))
+        ? $_[1]
+        : shift->new(@_));
 }
-sub GETC      { shift->getc(@_) }
-sub PRINT     { shift->print(@_) }
-sub PRINTF    { shift->print(sprintf(shift, @_)) }
-sub READ      { shift->read(@_) }
-sub READLINE  { wantarray ? shift->getlines(@_) : shift->getline(@_) }
-sub WRITE     { shift->write(@_); }
-sub CLOSE     { shift->close(@_); }
-sub SEEK      { shift->seek(@_); }
-sub TELL      { shift->tell(@_); }
-sub EOF       { shift->eof(@_); }
+sub GETC     { shift->getc(@_) }
+sub PRINT    { shift->print(@_) }
+sub PRINTF   { shift->print(sprintf(shift, @_)) }
+sub READ     { shift->read(@_) }
+sub READLINE { wantarray ? shift->getlines(@_) : shift->getline(@_) }
+sub WRITE    { shift->write(@_); }
+sub CLOSE    { shift->close(@_); }
+sub SEEK     { shift->seek(@_); }
+sub TELL     { shift->tell(@_); }
+sub EOF      { shift->eof(@_); }
 
 #------------------------------------------------------------
 

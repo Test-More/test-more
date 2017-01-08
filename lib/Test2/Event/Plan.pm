@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302074';
 
-
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw{max directive reason};
 
@@ -30,7 +29,7 @@ sub init {
         confess "No number of tests specified"
             unless defined $_[0]->{+MAX};
 
-        confess "Plan test count '" . $_[0]->{+MAX}  . "' does not appear to be a valid positive integer"
+        confess "Plan test count '" . $_[0]->{+MAX} . "' does not appear to be a valid positive integer"
             unless $_[0]->{+MAX} =~ m/^\d+$/;
 
         $_[0]->{+DIRECTIVE} = '';
@@ -65,10 +64,10 @@ sub terminate {
 }
 
 sub summary {
-    my $self = shift;
-    my $max = $self->{+MAX};
+    my $self      = shift;
+    my $max       = $self->{+MAX};
     my $directive = $self->{+DIRECTIVE};
-    my $reason = $self->{+REASON};
+    my $reason    = $self->{+REASON};
 
     return "Plan is $max assertions"
         if $max || !$directive;

@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302074';
 
-
 use Config qw/%Config/;
 
 our @EXPORT_OK = qw{
@@ -53,9 +52,10 @@ sub _can_fork {
 
 BEGIN {
     no warnings 'once';
-    *CAN_THREAD      = _can_thread()   ? sub() { 1 } : sub() { 0 };
+    *CAN_THREAD = _can_thread() ? sub() { 1 } : sub() { 0 };
 }
 my $can_fork;
+
 sub CAN_FORK () {
     return $can_fork
         if defined $can_fork;
@@ -65,6 +65,7 @@ sub CAN_FORK () {
     $can_fork;
 }
 my $can_really_fork;
+
 sub CAN_REALLY_FORK () {
     return $can_really_fork
         if defined $can_really_fork;
@@ -123,7 +124,7 @@ BEGIN {
         else {
             # :-( Need to check each time to see if they have been loaded.
             *USE_THREADS = sub() { $INC{'threads.pm'} ? 1 : 0 };
-            *get_tid     = sub() { $INC{'threads.pm'} ? threads->tid() : 0 };
+            *get_tid = sub() { $INC{'threads.pm'} ? threads->tid() : 0 };
         }
     }
     else {
@@ -134,7 +135,7 @@ BEGIN {
 }
 
 sub pkg_to_file {
-    my $pkg = shift;
+    my $pkg  = shift;
     my $file = $pkg;
     $file =~ s{(::|')}{/}g;
     $file .= '.pm';

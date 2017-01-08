@@ -24,22 +24,22 @@ sub summary { ref($_[0]) }
 
 sub from_json {
     my $class = shift;
-	my %p     = @_;
+    my %p     = @_;
 
     my $event_pkg = delete $p{__PACKAGE__};
-	require(pkg_to_file($event_pkg));
+    require(pkg_to_file($event_pkg));
 
-	if (exists $p{trace}) {
-		$p{trace} = Test2::Util::Trace->from_json(%{$p{trace}});
-	}
+    if (exists $p{trace}) {
+        $p{trace} = Test2::Util::Trace->from_json(%{$p{trace}});
+    }
 
-	if (exists $p{subevents}) {
-		my @subevents;
-		for my $subevent (@{delete $p{subevents} || []}) {
-			push @subevents, Test2::Event->from_json(%$subevent);
-		}
-		$p{subevents} = \@subevents;
-	}
+    if (exists $p{subevents}) {
+        my @subevents;
+        for my $subevent (@{delete $p{subevents} || []}) {
+            push @subevents, Test2::Event->from_json(%$subevent);
+        }
+        $p{subevents} = \@subevents;
+    }
 
     return $event_pkg->new(%p);
 }

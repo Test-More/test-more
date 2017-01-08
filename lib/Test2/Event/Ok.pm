@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302074';
 
-
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw{
     pass effective_pass name todo
@@ -20,6 +19,7 @@ sub init {
 
 {
     no warnings 'redefine';
+
     sub set_todo {
         my $self = shift;
         my ($todo) = @_;
@@ -28,7 +28,7 @@ sub init {
     }
 }
 
-sub increments_count { 1 };
+sub increments_count { 1 }
 
 sub causes_fail { !$_[0]->{+EFFECTIVE_PASS} }
 
@@ -42,7 +42,7 @@ sub summary {
         $name .= " (TODO: $todo)";
     }
     elsif (defined $todo) {
-        $name .= " (TODO)"
+        $name .= " (TODO)";
     }
 
     return $name;
