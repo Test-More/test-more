@@ -4,6 +4,7 @@
     - Add signatures to trace
     - Add related() to events
     - Now it is possible to check if events are related
+    - Add 'no_fork' option to run_subtest()
 
 1.302073  2016-12-18 23:02:54-08:00 America/Los_Angeles
 
