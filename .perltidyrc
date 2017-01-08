@@ -1,6 +1,5 @@
 --indent-columns=4               # size of indentation
 --nt                             # no tabs
---entab-leading-whitespace=4     # 4 spaces to a tab when converting to tabs
 --continuation-indentation=4     # indentation of wrapped lines
 --maximum-line-length=0          # max line length before wrapping (turn it off)
 --nooutdent-long-quotes          # do not outdent overly long quotes
