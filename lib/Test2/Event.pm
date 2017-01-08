@@ -22,24 +22,38 @@ sub sets_plan { () }
 
 sub summary { ref($_[0]) }
 
+sub related {
+    my $self = shift;
+    my ($event) = @_;
+
+    my $tracea = $self->trace  or return undef;
+    my $traceb = $event->trace or return undef;
+
+    my $siga = $tracea->signature or return undef;
+    my $sigb = $traceb->signature or return undef;
+
+    return 1 if $siga eq $sigb;
+    return 0;
+}
+
 sub from_json {
     my $class = shift;
-	my %p     = @_;
+    my %p     = @_;
 
     my $event_pkg = delete $p{__PACKAGE__};
-	require(pkg_to_file($event_pkg));
+    require(pkg_to_file($event_pkg));
 
-	if (exists $p{trace}) {
-		$p{trace} = Test2::Util::Trace->from_json(%{$p{trace}});
-	}
+    if (exists $p{trace}) {
+        $p{trace} = Test2::Util::Trace->from_json(%{$p{trace}});
+    }
 
-	if (exists $p{subevents}) {
-		my @subevents;
-		for my $subevent (@{delete $p{subevents} || []}) {
-			push @subevents, Test2::Event->from_json(%$subevent);
-		}
-		$p{subevents} = \@subevents;
-	}
+    if (exists $p{subevents}) {
+        my @subevents;
+        for my $subevent (@{delete $p{subevents} || []}) {
+            push @subevents, Test2::Event->from_json(%$subevent);
+        }
+        $p{subevents} = \@subevents;
+    }
 
     return $event_pkg->new(%p);
 }
@@ -201,6 +215,25 @@ If the event is inside a subtest this should have the subtest ID.
 =item $id = $e->subtest_id
 
 If the event is a final subtest event, this should contain the subtest ID.
+
+=item $bool_or_undef = $e->related($e2)
+
+Check if 2 events are related. In this case related means their traces share a
+signature meaning they were created with the same context (or at the very least
+by contexts which share an id, which is the same thing unless someone is doing
+something very bad).
+
+This can be used to reliably link multiple events created by the same tool. For
+instance a failing test like C<ok(0, "fail"> will generate 2 events, one being
+a L<Test2::Event::Ok>, the other being a L<Test2::Event::Diag>, both of these
+events are related having been created under the same context and by the same
+initial tool (though multiple tools may have been nested under the initial
+one).
+
+This will return C<undef> if the relationship cannot be checked, which happens
+if either event has an incomplete or missing trace. This will return C<0> if
+the traces are complete, but do not match. C<1> will be returned if there is a
+match.
 
 =item $hashref = $e->TO_JSON
 
