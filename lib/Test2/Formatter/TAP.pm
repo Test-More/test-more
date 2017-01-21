@@ -300,13 +300,13 @@ sub event_plan {
     my $self = shift;
     my ($e, $num) = @_;
 
-    my $directive = $e->directive;
+    my ($max, $directive, $reason) = $e->sets_plan;
+
     return if $directive && $directive eq 'NO PLAN';
 
-    my $reason = $e->reason;
     $reason =~ s/\n/\n# /g if $reason;
 
-    my $plan = "1.." . $e->max;
+    my $plan = "1..$max";
     if ($directive) {
         $plan .= " # $directive";
         $plan .= " $reason" if defined $reason;
@@ -331,11 +331,8 @@ sub event_other {
 
     my @out;
 
-    if (my ($max, $directive, $reason) = $e->sets_plan) {
-        my $plan = "1..$max";
-        $plan .= " # $directive" if $directive;
-        $plan .= " $reason" if defined $reason;
-        push @out => [OUT_STD, "$plan\n"];
+    if ($e->sets_plan) {
+        push @out => $self->event_plan($e, $num);
     }
 
     if ($e->increments_count) {
