@@ -9,7 +9,11 @@ sub TIEHANDLE {
 
 sub PRINT {
     my $self = shift;
-    $$self .= join( '', @_ );
+
+    # Fully emulate $\ + print().
+    my $ors = defined $\ ? $\ : '';
+    
+    $$self .= join( '', @_, $ors );
 }
 
 sub PRINTF {

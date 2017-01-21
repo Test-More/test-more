@@ -66,9 +66,10 @@ ERR
 
 {
     local $ENV{HARNESS_ACTIVE} = 1;
+    local $\ = "\n";
                    
 #line 71
-    fail( "this fails" );
+    ok( 0, "this fails" );
     err_ok( <<ERR );
 
 #   Failed test 'this fails'

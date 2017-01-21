@@ -668,7 +668,7 @@ sub _ok_debug {
     my $msg = $is_todo ? "Failed (TODO)" : "Failed";
 
     my $dfh = $self->_diag_fh;
-    print $dfh "\n" if $ENV{HARNESS_ACTIVE} && $dfh;
+    $self->_print_to_fh($dfh, "\n") if $ENV{HARNESS_ACTIVE} && $dfh;
 
     my (undef, $file, $line) = $trace->call;
     if (defined $orig_name) {
@@ -1664,6 +1664,15 @@ FAIL
     return;
 }
 
+# Use this instead of `print`.
+sub _print_to_fh {
+    my( $self, $fh, @msgs ) = @_;
+
+    # Protect against print modifying global variables.
+    local( $\, $", $, ) = ( undef, ' ', '' );
+    return print $fh @msgs;
+}
+
 # Some things used this even though it was private... I am looking at you
 # Test::Builder::Prefix...
 sub _print_comment {
@@ -1682,8 +1691,7 @@ sub _print_comment {
     # Escape the beginning, _print will take care of the rest.
     $msg =~ s/^/# /;
 
-    local( $\, $", $, ) = ( undef, ' ', '' );
-    print $fh $msg;
+    $self->_print_to_fh($fh, $msg);
 
     return 0;
 }
