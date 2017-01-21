@@ -85,11 +85,9 @@ if ($^C) {
 sub write {
     my ($self, $e, $num) = @_;
 
+    my @tap = $self->event_tap($e, $num);
+
     my $type = ref($e);
-
-    my $converter = $CONVERTERS{$type} || 'event_other';
-    my @tap = $self->$converter($e, $self->{+NO_NUMBERS} ? undef : $num) or return;
-
     my $handles = $self->{+HANDLES};
     my $nesting = ($SAFE_TO_ACCESS_HASH{$type} ? $e->{nested} : $e->nested) || 0;
     my $indent = '    ' x $nesting;
@@ -135,7 +133,8 @@ sub event_tap {
     my $self = shift;
     my ($e, $num) = @_;
 
-    my $converter = $CONVERTERS{ref($e)} or return;
+    my $type = ref($e);
+    my $converter = $CONVERTERS{$type} || 'event_other';
 
     $num = undef if $self->{+NO_NUMBERS};
 
