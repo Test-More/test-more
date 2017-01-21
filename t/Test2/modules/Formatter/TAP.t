@@ -546,5 +546,34 @@ tests version => sub {
     );
 };
 
+tests _diag_prefix => sub {
+    # Our own formatter because we're going to reconfigure it.
+    my $tap = Test2::Formatter::TAP->new;
+    
+    my $diag = Test2::Event::Diag->new(
+        trace => $trace,
+        message => "foo\nbar",
+    );
+
+    is_deeply(
+        [$tap->event_tap($diag, 1)],
+        [[OUT_ERR, "# foo\n# bar\n"]],
+        "default _diag_prefix"
+    );
+
+    $tap->set__diag_prefix("#   ");
+    is_deeply(
+        [$tap->event_tap($diag, 1)],
+        [[OUT_ERR, "#   foo\n#   bar\n"]],
+        "changed _diag_prefix"
+    );
+    
+    $tap->set__diag_prefix("");
+    is_deeply(
+        [$tap->event_tap($diag, 1)],
+        [[OUT_ERR, "foo\nbar\n"]],
+        "no _diag_prefix"
+    );
+};
 
 done_testing;

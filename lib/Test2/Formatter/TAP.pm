@@ -6,7 +6,7 @@ require PerlIO;
 our $VERSION = '1.302076';
 
 use Test2::Util::HashBase qw{
-    no_numbers handles _encoding
+    no_numbers handles _encoding _diag_prefix
 };
 
 sub OUT_STD() { 0 }
@@ -48,6 +48,7 @@ sub init {
     my $self = shift;
 
     $self->{+HANDLES} ||= $self->_open_handles;
+    $self->{+_DIAG_PREFIX} ||= '# ';
     if(my $enc = delete $self->{encoding}) {
         $self->encoding($enc);
     }
@@ -208,31 +209,37 @@ sub event_skip {
     return([OUT_STD, "$out\n"]);
 }
 
+sub _format_for_diag {
+    my $self = shift;
+    my ($e) = @_;
+    
+    chomp(my $msg = $e->message);
+    my $prefix = $self->{+_DIAG_PREFIX};
+    $msg =~ s/^/$prefix/;
+    $msg =~ s/\n/\n$prefix/g;
+
+    return $msg;
+}
+
 sub event_note {
     my $self = shift;
-    my ($e, $num) = @_;
+    my ($e) = @_;
 
-    chomp(my $msg = $e->message);
-    $msg =~ s/^/# /;
-    $msg =~ s/\n/\n# /g;
-
+    my $msg = $self->_format_for_diag($e);
     return [OUT_STD, "$msg\n"];
 }
 
 sub event_diag {
     my $self = shift;
-    my ($e, $num) = @_;
+    my ($e) = @_;
 
-    chomp(my $msg = $e->message);
-    $msg =~ s/^/# /;
-    $msg =~ s/\n/\n# /g;
-
+    my $msg = $self->_format_for_diag($e);
     return [OUT_ERR, "$msg\n"];
 }
 
 sub event_bail {
     my $self = shift;
-    my ($e, $num) = @_;
+    my ($e) = @_;
 
     return if $e->nested;
 
@@ -244,7 +251,7 @@ sub event_bail {
 
 sub event_exception {
     my $self = shift;
-    my ($e, $num) = @_;
+    my ($e) = @_;
     return [ OUT_ERR, $e->error ];
 }
 
