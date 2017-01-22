@@ -60,7 +60,7 @@ sub from_json {
 
 sub TO_JSON {
     my $self = shift;
-    return {%$self, __PACKAGE__ => ref $self};
+    return {%$self, Test2::Util::ExternalMeta::META_KEY() => undef, __PACKAGE__ => ref $self};
 }
 
 1;
