@@ -113,7 +113,7 @@ sub render_got {
     return '<UNDEF>' unless defined $got;
 
     my $check = $self->{+CHK};
-    my $stringify = $check && $check->stringify_got;
+    my $stringify = defined( $check ) && $check->stringify_got;
 
     return render_ref($got) if ref $got && !$stringify;
 
@@ -176,7 +176,7 @@ sub _join_id {
 sub should_show {
     my $self = shift;
     return 1 unless $self->verified;
-    my $check = $self->check || return 0;
+    defined( my $check = $self->check ) || return 0;
     return 0 unless $check->lines;
     my $file = $check->file || return 0;
 
@@ -218,7 +218,7 @@ sub table_header { [map {$COLUMNS{$_}->{alias} || $_} @COLUMN_ORDER] }
 sub table_op {
     my $self = shift;
 
-    my $check = $self->{+CHK} || return '!exists';
+    defined( my $check = $self->{+CHK} ) || return '!exists';
 
     return $check->operator($self->{+GOT})
         unless $self->{+DNE} && $self->{+DNE} eq 'got';
@@ -229,7 +229,7 @@ sub table_op {
 sub table_check_lines {
     my $self = shift;
 
-    my $check = $self->{+CHK} || return '';
+    defined( my $check = $self->{+CHK} ) || return '';
     my $lines = $check->lines || return '';
 
     return '' unless @$lines;
@@ -240,7 +240,7 @@ sub table_check_lines {
 sub table_got_lines {
     my $self = shift;
 
-    my $check = $self->{+CHK} || return '';
+    defined( my $check = $self->{+CHK} ) || return '';
     return '' if $self->{+DNE} && $self->{+DNE} eq 'got';
 
     my @lines = $check->got_lines($self->{+GOT});

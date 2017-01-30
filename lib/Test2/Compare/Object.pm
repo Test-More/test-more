@@ -32,7 +32,7 @@ sub verify {
     my ($got, $exists) = @params{qw/got exists/};
 
     return 0 unless $exists;
-    return 0 unless $got;
+    return 0 unless defined $got;
     return 0 unless ref($got);
     return 0 unless blessed($got);
     return 0 unless $got->isa($self->object_base);
@@ -41,13 +41,13 @@ sub verify {
 
 sub add_prop {
     my $self = shift;
-    $self->{+META} ||= $self->meta_class->new;
+    $self->{+META} = $self->meta_class->new unless defined $self->{+META};
     $self->{+META}->add_prop(@_);
 }
 
 sub add_field {
     my $self = shift;
-    $self->{+REFCHECK} ||= Test2::Compare::Hash->new;
+    $self->{+REFCHECK} = Test2::Compare::Hash->new unless defined $self->{+REFCHECK};
 
     croak "Underlying reference does not have fields"
         unless $self->{+REFCHECK}->can('add_field');
@@ -57,7 +57,7 @@ sub add_field {
 
 sub add_item {
     my $self = shift;
-    $self->{+REFCHECK} ||= Test2::Compare::Array->new;
+    $self->{+REFCHECK} = Test2::Compare::Array->new unless defined $self->{+REFCHECK};
 
     croak "Underlying reference does not have items"
         unless $self->{+REFCHECK}->can('add_item');
@@ -83,7 +83,7 @@ sub deltas {
     my $meta     = $self->{+META};
     my $refcheck = $self->{+REFCHECK};
 
-    push @deltas => $meta->deltas(%params) if $meta;
+    push @deltas => $meta->deltas(%params) if defined $meta;
 
     for my $call (@{$self->{+CALLS}}) {
         my ($meth, $check, $name, $context)= @$call;
@@ -127,7 +127,7 @@ sub deltas {
         }
     }
 
-    return @deltas unless $refcheck;
+    return @deltas unless defined $refcheck;
 
     $refcheck->set_ending($self->{+ENDING});
 

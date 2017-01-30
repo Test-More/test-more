@@ -12,7 +12,7 @@ subtest simple => sub {
 
     is($one->object_base, 'UNIVERSAL', "Correct object base");
 
-    ok($CLASS->new(calls => []), "Can specify a calls array")
+    ok(defined $CLASS->new(calls => []), "Can specify a calls array")
 };
 
 subtest verify => sub {

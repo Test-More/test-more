@@ -1,5 +1,7 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Hash';
 
+use lib 't/lib';
+
 subtest simple => sub {
     my $one = $CLASS->new();
     isa_ok($one, $CLASS, 'Test2::Compare::Base');
@@ -20,7 +22,7 @@ subtest verify => sub {
 
 subtest init => sub {
     my $one = $CLASS->new();
-    ok($one, "args are not required");
+    ok( defined $one, "args are not required");
     is($one->items, {}, "got the items hash");
     is($one->order, [], "got order array");
 
@@ -177,5 +179,25 @@ subtest deltas => sub {
     );
 
 };
+
+{
+  package Foo::Hash;
+
+  use base 'MyTest::Target';
+
+  sub new {
+      my $class = shift;
+      bless { @_ } , $class;
+  }
+}
+
+subtest objects_with_hashes => sub {
+
+    my $o1 = Foo::Hash->new( b => { foo => 2 } ) ;
+    my $o2 = Foo::Hash->new( b => { foo => 2 } ) ;
+
+    is ( $o1, $o2, "same" );
+};
+
 
 done_testing;
