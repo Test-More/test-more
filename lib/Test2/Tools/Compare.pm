@@ -328,7 +328,7 @@ sub string($;@) {
 }
 
 sub filter_items(&) {
-    my $build = get_build() or croak "No current build!";
+    defined( my $build = get_build() ) or croak "No current build!";
 
     croak "'$build' does not support filters"
         unless $build->can('add_filter');
@@ -340,7 +340,7 @@ sub filter_items(&) {
 }
 
 sub all_items {
-    my $build = get_build() or croak "No current build!";
+    defined( my $build = get_build() ) or croak "No current build!";
 
     croak "'$build' does not support all-items"
         unless $build->can('add_for_each');
@@ -352,7 +352,7 @@ sub all_items {
 }
 
 sub all_keys {
-    my $build = get_build() or croak "No current build!";
+    defined( my $build = get_build() ) or croak "No current build!";
 
     croak "'$build' does not support all-keys"
         unless $build->can('add_for_each_key');
@@ -365,7 +365,7 @@ sub all_keys {
 
 *all_vals = *all_values;
 sub all_values {
-    my $build = get_build() or croak "No current build!";
+    defined( my $build = get_build() ) or croak "No current build!";
 
     croak "'$build' does not support all-values"
         unless $build->can('add_for_each_val');
@@ -378,7 +378,7 @@ sub all_values {
 
 
 sub end() {
-    my $build = get_build() or croak "No current build!";
+    defined( my $build = get_build() ) or croak "No current build!";
 
     croak "'$build' does not support 'ending'"
         unless $build->can('ending');
@@ -390,7 +390,7 @@ sub end() {
 }
 
 sub etc() {
-    my $build = get_build() or croak "No current build!";
+    defined( my $build = get_build() ) or croak "No current build!";
 
     croak "'$build' does not support 'ending'"
         unless $build->can('ending');
@@ -403,7 +403,7 @@ sub etc() {
 
 my $_call = sub {
     my ($name, $expect, $context, $func_name) = @_;
-    my $build = get_build() or croak "No current build!";
+    defined( my $build = get_build() ) or croak "No current build!";
 
     croak "'$build' does not support method calls"
         unless $build->can('add_call');
@@ -430,7 +430,7 @@ sub call_hash($$) { $_call->(@_,'hash','call_hash') }
 
 sub prop($$) {
     my ($name, $expect) = @_;
-    my $build = get_build() or croak "No current build!";
+    defined( my $build = get_build() ) or croak "No current build!";
 
     croak "'$build' does not support meta-checks"
         unless $build->can('add_prop');
@@ -453,7 +453,7 @@ sub item($;$) {
     my @args   = @_;
     my $expect = pop @args;
 
-    my $build = get_build() or croak "No current build!";
+    defined( my $build = get_build() ) or croak "No current build!";
 
     croak "'$build' does not support array item checks"
         unless $build->can('add_item');
@@ -474,7 +474,7 @@ sub item($;$) {
 sub field($$) {
     my ($name, $expect) = @_;
 
-    my $build = get_build() or croak "No current build!";
+    defined( my $build = get_build() ) or croak "No current build!";
 
     croak "'$build' does not support hash field checks"
         unless $build->can('add_field');
@@ -496,7 +496,7 @@ sub field($$) {
 sub check($) {
     my ($check) = @_;
 
-    my $build = get_build() or croak "No current build!";
+    defined( my $build = get_build() ) or croak "No current build!";
 
     croak "'$build' is not a check-set"
         unless $build->can('add_check');
@@ -543,7 +543,7 @@ sub fail_events($;$) {
 
     return ($event, $diag) if defined wantarray;
 
-    my $build = get_build() or croak "No current build!";
+    defined( my $build = get_build() ) or croak "No current build!";
     $build->add_item($event);
     $build->add_item($diag);
 }
@@ -600,7 +600,7 @@ sub event($;$) {
 
     return $event if defined wantarray;
 
-    my $build = get_build() or croak "No current build!";
+    defined( my $build = get_build() ) or croak "No current build!";
     $build->add_item($event);
 }
 
