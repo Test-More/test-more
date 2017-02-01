@@ -10,6 +10,9 @@ use base 'Test2::Compare::Base';
 
 our $VERSION = '0.000068';
 
+use overload bool => sub { 0 };
+use overload bool => sub { $_[0] };
+
 use Test2::Util::HashBase qw/calls meta refcheck ending/;
 
 use Carp qw/croak confess/;
@@ -32,7 +35,7 @@ sub verify {
     my ($got, $exists) = @params{qw/got exists/};
 
     return 0 unless $exists;
-    return 0 unless $got;
+    return 0 unless defined $got;
     return 0 unless ref($got);
     return 0 unless blessed($got);
     return 0 unless $got->isa($self->object_base);

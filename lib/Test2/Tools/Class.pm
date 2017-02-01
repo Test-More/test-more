@@ -38,7 +38,7 @@ BEGIN {
 
             $name ||= @items == 1 ? "$thing_name\->$op('$items[0]')" : "$thing_name\->$op(...)";
 
-            unless ($thing && (blessed($thing) || !ref($thing))) {
+            unless ( defined $thing && (blessed($thing) || ( !ref($thing) && $thing ) ) ) {
                 my $thing = defined($thing)
                     ? ref($thing) || "'$thing'"
                     : '<undef>';
