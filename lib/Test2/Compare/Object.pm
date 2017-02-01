@@ -10,9 +10,6 @@ use base 'Test2::Compare::Base';
 
 our $VERSION = '0.000068';
 
-use overload bool => sub { 0 };
-use overload '""' => sub { $_[0] };
-
 use Test2::Util::HashBase qw/calls meta refcheck ending/;
 
 use Carp qw/croak confess/;

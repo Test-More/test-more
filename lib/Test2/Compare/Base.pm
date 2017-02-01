@@ -10,6 +10,9 @@ use Scalar::Util qw/blessed/;
 use Sub::Info qw/sub_info/;
 use Test2::Compare::Delta();
 
+use overload bool => sub { 0 };
+use overload '""' => sub { $_[0] };
+
 sub MAX_CYCLES() { 75 }
 
 use Test2::Util::HashBase qw{builder _file _lines _info called};
