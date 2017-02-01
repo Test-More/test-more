@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Use Sub::Info to silence a warning
+
 0.000017  2016-07-31 21:24:00-07:00 America/Los_Angeles
 
     - Fix acceptance5.t to not assume fork is used.

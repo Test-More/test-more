@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Test2::Util::HashBase qw/code frame _info _lines/;
-use Test2::Util::Sub qw/sub_info/;
+use Sub::Info qw/sub_info/;
 use List::Util qw/min max/;
 use Carp qw/croak/;
 
