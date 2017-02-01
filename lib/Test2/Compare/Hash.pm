@@ -14,7 +14,7 @@ use Scalar::Util qw/reftype/;
 sub init {
     my $self = shift;
 
-    if(my $ref = $self->{+INREF}) {
+    if( defined( my $ref = $self->{+INREF} ) ) {
         croak "Cannot specify both 'inref' and 'items'" if $self->{+ITEMS};
         croak "Cannot specify both 'inref' and 'order'" if $self->{+ORDER};
         $self->{+ITEMS} = {%$ref};

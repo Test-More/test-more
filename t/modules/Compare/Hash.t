@@ -178,4 +178,24 @@ subtest deltas => sub {
 
 };
 
+{
+  package Foo;
+
+  use overload bool => sub { 0 };
+  use overload '""' => sub { $_[0] };
+  sub new {
+      my $class = shift;
+      bless { @_ } , $class;
+  }
+}
+
+subtest objects_with_hashes => sub {
+
+    my $o1 = Foo->new( b => { foo => 2 } ) ;
+    my $o2 = Foo->new( b => { foo => 2 } ) ;
+
+    is ( $o1, $o2, "same" );
+};
+
+
 done_testing;
