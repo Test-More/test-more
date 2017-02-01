@@ -20,7 +20,7 @@ subtest verify => sub {
 
 subtest init => sub {
     my $one = $CLASS->new();
-    ok($one, "args are not required");
+    ok( defined $one, "args are not required");
     is($one->items, {}, "got the items hash");
     is($one->order, [], "got order array");
 

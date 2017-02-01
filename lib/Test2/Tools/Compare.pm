@@ -200,7 +200,7 @@ sub D() {
 sub DF() {
     my @caller = caller;
     Test2::Compare::Custom->new(
-        code => sub { defined $_ && ! $_ ? 1 : 0 }, name => 'DEFINED BUT FALSE', operator => 'DEFINED() && FALSE()',
+        code => sub { defined $_ && ( ! ref $_ && ! $_ ) ? 1 : 0 }, name => 'DEFINED BUT FALSE', operator => 'DEFINED() && FALSE()',
         file => $caller[1],
         lines => [$caller[2]],
     );
@@ -236,7 +236,7 @@ sub F() {
 sub FDNE() {
     my @caller = caller;
     Test2::Compare::Custom->new(
-        code => sub { $_ ? 0 : 1 }, name => 'FALSE', operator => 'FALSE() || !exists',
+        code => sub { defined $_ && ( ref $_ || $_ ) ? 0 : 1 }, name => 'FALSE', operator => 'FALSE() || !exists',
         file => $caller[1],
         lines => [$caller[2]],
     );
@@ -245,7 +245,7 @@ sub FDNE() {
 sub T() {
     my @caller = caller;
     Test2::Compare::Custom->new(
-        code => sub { $_ ? 1 : 0 }, name => 'TRUE', operator => 'TRUE()',
+        code => sub { defined $_ && ( ref $_ || $_ ) ? 1 : 0 }, name => 'TRUE', operator => 'TRUE()',
         file => $caller[1],
         lines => [$caller[2]],
     );

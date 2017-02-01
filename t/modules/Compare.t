@@ -6,7 +6,7 @@ use warnings;
 # extended bundle)
 BEGIN {
     require Test2::Compare;
-    def ok => (Test2::Compare::convert(undef), "convert returned something to us");
+    def ok => (defined Test2::Compare::convert(undef), "convert returned something to us");
     def ok => ($INC{'Test2/Compare/Undef.pm'}, "loaded the Test2::Compare::Undef module");
 }
 
