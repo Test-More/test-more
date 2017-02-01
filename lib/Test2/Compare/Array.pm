@@ -14,7 +14,7 @@ use Scalar::Util qw/reftype looks_like_number/;
 sub init {
     my $self = shift;
 
-    if(my $ref = $self->{+INREF}) {
+    if( defined( my $ref = $self->{+INREF}) ) {
         croak "Cannot specify both 'inref' and 'items'" if $self->{+ITEMS};
         croak "Cannot specify both 'inref' and 'order'" if $self->{+ORDER};
         croak "'inref' must be an array reference, got '$ref'" unless reftype($ref) eq 'ARRAY';
