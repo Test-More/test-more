@@ -47,7 +47,8 @@ sub verify {
     my %params = @_;
 
     return 0 unless $params{exists};
-    my $got = $params{got} || return 0;
+    my $got = $params{got};
+    return 0 unless defined $got;
     return 0 unless ref($got);
     return 0 unless reftype($got) eq 'ARRAY';
     return 1;

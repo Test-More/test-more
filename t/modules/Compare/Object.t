@@ -12,7 +12,7 @@ subtest simple => sub {
 
     is($one->object_base, 'UNIVERSAL', "Correct object base");
 
-    ok($CLASS->new(calls => []), "Can specify a calls array")
+    ok(defined $CLASS->new(calls => []), "Can specify a calls array")
 };
 
 subtest verify => sub {
@@ -106,6 +106,9 @@ subtest add_call => sub {
 {
     package Foo::Bar;
 
+    use overload bool => sub { 0 };
+    use overload '""' => sub { $_[0] };
+
     sub foo { 'foo' }
     sub baz { 'baz' }
     sub one { 1 }
@@ -113,6 +116,9 @@ subtest add_call => sub {
     sub args { shift; +{@_} }
 
     package Fake::Fake;
+
+    use overload bool => sub { 0 };
+    use overload '""' => sub { $_[0] };
 
     sub foo { 'xxx' }
     sub one { 2 }
