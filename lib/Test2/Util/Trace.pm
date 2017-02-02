@@ -2,7 +2,7 @@ package Test2::Util::Trace;
 use strict;
 use warnings;
 
-our $VERSION = '1.302076';
+our $VERSION = '1.302077';
 
 
 use Test2::Util qw/get_tid pkg_to_file/;

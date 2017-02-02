@@ -3,7 +3,7 @@ use warnings;
 
 package Test::Tester::Delegate;
 
-our $VERSION = '1.302076';
+our $VERSION = '1.302077';
 
 use Scalar::Util();
 
