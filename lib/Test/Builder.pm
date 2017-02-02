@@ -143,7 +143,8 @@ sub parent {
     my $chub = $self->{Hub} || $ctx->hub;
     $ctx->release;
 
-    my $parent = $chub->meta(__PACKAGE__, {})->{parent};
+    my $meta = $chub->meta(__PACKAGE__, {});
+    my $parent = $meta->{parent};
 
     return undef unless $parent;
 
@@ -388,6 +389,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
         Done_Testing => undef,
         Skip_All     => 0,
         Test_Results => [],
+        parent       => $meta->{parent},
     );
 
     $self->{Exported_To} = undef;
