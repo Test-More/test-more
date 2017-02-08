@@ -19,7 +19,7 @@ my %LOADED = (
         my $file = "Test2/Event/$_.pm";
         require $file unless $INC{$file};
         ( $pkg => $pkg, $_ => $pkg )
-    } qw/Ok Diag Note Info Plan Bail Exception Waiting Skip Subtest/
+    } qw/Ok Diag Note Plan Bail Exception Waiting Skip Subtest/
 );
 
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
@@ -300,12 +300,6 @@ sub skip {
     );
 }
 
-sub info {
-    my $self = shift;
-    my ($renderer, %params) = @_;
-    $self->send_event('Info', renderer => $renderer, %params);
-}
-
 sub note {
     my $self = shift;
     my ($message) = @_;
@@ -564,12 +558,7 @@ C<send_event()> method directly.
 
 The third argument C<\@on_fail>) is an optional set of diagnostics to be sent in
 the event of a test failure. Plain strings will be sent as
-L<Test2::Event::Diag> events. References will be used to construct
-L<Test2::Event::Info> events with C<< diagnostics => 1 >>.
-
-=item $event = $ctx->info($renderer, diagnostics => $bool, %other_params)
-
-Send an L<Test2::Event::Info>.
+L<Test2::Event::Diag> events.
 
 =item $event = $ctx->note($message)
 

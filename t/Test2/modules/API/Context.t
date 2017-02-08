@@ -336,15 +336,10 @@ sub {
 }->();
 
 {
-    {
-        package An::Info::Thingy;
-        sub render { 'zzz' }
-    }
-
     my ($e1, $e2);
     my $events = intercept {
         my $ctx = context();
-        $e1 = $ctx->ok(0, 'foo', ['xxx', sub { 'yyy' }, bless({}, 'An::Info::Thingy')]);
+        $e1 = $ctx->ok(0, 'foo', ['xxx']);
         $e2 = $ctx->ok(0, 'foo');
         $ctx->release;
     };
@@ -357,15 +352,7 @@ sub {
     is($events->[2]->message, 'xxx', "event 1 diag 2");
     ok($events->[2]->isa('Test2::Event::Diag'), "event 1 diag 2 is diag");
 
-    is($events->[3]->summary,     'yyy', "event 1 info 1");
-    is($events->[3]->diagnostics, 1,     "event 1 info 1 is diagnostics");
-    ok($events->[3]->isa('Test2::Event::Info'), "event 1 info 1 is an info");
-
-    is($events->[4]->summary,     'zzz', "event 1 info 2");
-    is($events->[4]->diagnostics, 1,     "event 1 info 2 is diagnostics");
-    ok($events->[4]->isa('Test2::Event::Info'), "event 2 info 1 is an info");
-
-    is($events->[5], $e2, "got ok event 2");
+    is($events->[3], $e2, "got ok event 2");
 }
 
 sub {
