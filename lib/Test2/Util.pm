@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '1.302078';
 
-
+use Carp qw/croak carp/;
 use Config qw/%Config/;
 
 our @EXPORT_OK = qw{
@@ -20,6 +20,9 @@ our @EXPORT_OK = qw{
     IS_WIN32
 
     ipc_separator
+
+    deprecate
+    deprecate_quietly
 };
 BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
@@ -142,6 +145,32 @@ sub pkg_to_file {
 }
 
 sub ipc_separator() { "~" }
+
+sub deprecate_quietly {
+    return unless $ENV{TEST2_LOUD_DEPRECATIONS};
+    my $caller = caller;
+    _deprecate($caller, @_);
+}
+
+sub deprecate {
+    my $caller = caller;
+    _deprecate($caller, @_);
+}
+
+sub _deprecate{
+    my $caller = shift;
+
+    for my $name (@_) {
+        my $orig = $caller->can($name) or croak "No '$name' sub to deprecate";
+        my $new = sub {
+            carp "$name() is deprecated";
+            goto &$orig;
+        };
+        no strict 'refs';
+        no warnings 'redefine';
+        *{"$caller\::$name"} = $new;
+    }
+}
 
 1;
 
