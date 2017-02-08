@@ -9,7 +9,7 @@ use Carp qw/confess croak longmess/;
 use Scalar::Util qw/weaken blessed/;
 use Test2::Util qw/get_tid try pkg_to_file get_tid/;
 
-use Test2::Util::Trace();
+use Test2::EventFacet::Trace();
 use Test2::API();
 
 # Preload some key event types
@@ -238,7 +238,7 @@ sub ok {
     my $hub = $self->{+HUB};
 
     my $e = bless {
-        trace => bless( {%{$self->{+TRACE}}}, 'Test2::Util::Trace'),
+        trace => bless( {%{$self->{+TRACE}}}, 'Test2::EventFacet::Trace'),
         pass  => $pass,
         name  => $name,
     }, 'Test2::Event::Ok';
@@ -502,7 +502,7 @@ current one to which all events should be sent.
 
 =item $dbg = $ctx->trace()
 
-This will return the L<Test2::Util::Trace> instance used by the context.
+This will return the L<Test2::EventFacet::Trace> instance used by the context.
 
 =item $ctx->do_in_context(\&code, @args);
 

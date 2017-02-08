@@ -28,7 +28,7 @@ require Test2::Event::Waiting;
 require Test2::Util;
 require Test2::Util::ExternalMeta;
 require Test2::Util::HashBase;
-require Test2::Util::Trace;
+require Test2::EventFacet::Trace;
 
 require Test2::Hub;
 require Test2::Hub::Interceptor;

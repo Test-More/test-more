@@ -38,7 +38,7 @@ BEGIN {
     }
 }
 
-use Test2::Util::Trace();
+use Test2::EventFacet::Trace();
 
 use Test2::Hub::Subtest();
 use Test2::Hub::Interceptor();
@@ -289,7 +289,7 @@ sub context {
             tid   => get_tid(),
             cid   => 'C' . $CID++,
         },
-        'Test2::Util::Trace'
+        'Test2::EventFacet::Trace'
     );
 
     # Directly bless the object here, calling new is a noticeable performance

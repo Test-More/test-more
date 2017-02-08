@@ -21,7 +21,7 @@ is($events->[$_]->trace->signature, $sigfail, "Diags share failed ok's signature
 
 like($sigpass, qr/^C\d+:$$:\Q${ \get_tid() }:${ \__FILE__ }:$line\E$/, "signature is sane");
 
-my $trace = Test2::Util::Trace->new(frame => ['main', 'foo.t', 42, 'xxx']);
+my $trace = Test2::EventFacet::Trace->new(frame => ['main', 'foo.t', 42, 'xxx']);
 like(
     $trace->signature,
     qr/^T\d+:$$:\Q${ \get_tid() }\E:foo\.t:42$/,
@@ -34,10 +34,10 @@ is($events->[1]->related($events->[2]), 1, "event 1 is related to event 2");
 my $e = Test2::Event::Ok->new(pass => 1);
 is($e->related($events->[0]), undef, "Cannot check relation, invalid trace");
 
-$e = Test2::Event::Ok->new(pass => 1, trace => Test2::Util::Trace->new(frame => ['', '', '', '']));
+$e = Test2::Event::Ok->new(pass => 1, trace => Test2::EventFacet::Trace->new(frame => ['', '', '', '']));
 is($e->related($events->[0]), undef, "Cannot check relation, incomplete trace");
 
-$e = Test2::Event::Ok->new(pass => 1, trace => Test2::Util::Trace->new(frame => []));
+$e = Test2::Event::Ok->new(pass => 1, trace => Test2::EventFacet::Trace->new(frame => []));
 is($e->related($events->[0]), undef, "Cannot check relation, incomplete trace");
 
 done_testing;
