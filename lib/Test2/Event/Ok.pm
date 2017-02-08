@@ -4,6 +4,8 @@ use warnings;
 
 our $VERSION = '1.302078';
 
+use Test2::EventFacet::Assert;
+use Test2::EventFacet::Amnesty;
 
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw{
@@ -16,6 +18,10 @@ sub init {
     # Do not store objects here, only true or false
     $self->{+PASS} = $self->{+PASS} ? 1 : 0;
     $self->{+EFFECTIVE_PASS} = $self->{+PASS} || (defined($self->{+TODO}) ? 1 : 0);
+    $self->{+NO_LEGACY_FACETS} = 1;
+    $self->{+NO_DEBUG} = 1;
+
+    $self->SUPER::init();
 }
 
 {
@@ -46,6 +52,38 @@ sub summary {
     }
 
     return $name;
+}
+
+sub add_amnesty {
+    my $self = shift;
+    push @{$self->{+_AMNESTY} ||= []} => @_;
+}
+
+sub facets {
+    my $self = shift;
+
+    my $facets = $self->SUPER::facets();
+
+    $facets->{assert} = Test2::EventFacet::Assert->new(
+        pass    => $self->{+PASS},
+        details => $self->{+NAME},
+    );
+
+    if (defined($self->{+TODO})) {
+        # Put the TODO first
+        unshift @{$facets->{amnesty}} => Test2::EventFacet::Amnesty->new(
+            inherited => 0,
+            action    => 'TODO',
+            details   => $self->{+TODO},
+        );
+    }
+    elsif ($self->{+EFFECTIVE_PASS} && !$self->{+PASS}) {
+        push @{$facets->{amnesty}} => Test2::EventFacet::Amnesty->new(
+            inherited => 1,
+        );
+    }
+
+    return $facets;
 }
 
 1;

@@ -4,17 +4,19 @@ use warnings;
 
 our $VERSION = '1.302078';
 
+use Test2::EventFacet::Amnesty;
 
 BEGIN { require Test2::Event::Ok; our @ISA = qw(Test2::Event::Ok) }
 use Test2::Util::HashBase qw{reason};
+
+sub causes_fail { 0 }
 
 sub init {
     my $self = shift;
     $self->SUPER::init;
     $self->{+EFFECTIVE_PASS} = 1;
+    $self->{+NO_LEGACY_FACETS} = 1;
 }
-
-sub causes_fail { 0 }
 
 sub summary {
     my $self = shift;
@@ -28,6 +30,20 @@ sub summary {
     }
 
     return $out;
+}
+
+sub facets {
+    my $self = shift;
+
+    my $facets = $self->SUPER::facets();
+
+    push @{$facets->{amnesty}} => Test2::EventFacet::Amnesty->new(
+        inherited => 0,
+        action    => 'skip',
+        details   => $self->{+REASON},
+    );
+
+    return $facets;
 }
 
 1;

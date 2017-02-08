@@ -4,6 +4,7 @@ use warnings;
 
 our $VERSION = '1.302078';
 
+use Test2::EventFacet::Plan;
 
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw{max directive reason};
@@ -15,7 +16,11 @@ my %ALLOWED = (
     'NO PLAN' => 1,
 );
 
+sub gravity { 0 }
+
 sub init {
+    $_[0]->{+NO_LEGACY_FACETS} = 1;
+
     if ($_[0]->{+DIRECTIVE}) {
         $_[0]->{+DIRECTIVE} = 'SKIP'    if $_[0]->{+DIRECTIVE} eq 'skip_all';
         $_[0]->{+DIRECTIVE} = 'NO PLAN' if $_[0]->{+DIRECTIVE} eq 'no_plan';
@@ -77,6 +82,24 @@ sub summary {
         if $reason;
 
     return "Plan is '$directive'";
+}
+
+sub facets {
+    my $self = shift;
+
+    my $facets = $self->SUPER::facets();
+
+    my $skip = $self->{+DIRECTIVE} eq 'SKIP';
+    my $none = $self->{+DIRECTIVE} eq 'NO PLAN';
+
+    $facets->{plan} = Test2::EventFacet::Plan->new(
+        count   => $self->{+MAX},
+        details => $self->{+REASON},
+        skip    => $skip,
+        none    => $none,
+    );
+
+    return $facets;
 }
 
 1;

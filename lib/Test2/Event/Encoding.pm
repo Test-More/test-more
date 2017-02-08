@@ -7,12 +7,15 @@ our $VERSION = '1.302078';
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw/encoding/;
 
+sub gravity { 0 }
+sub summary { 'Encoding set to ' . $_[0]->{+ENCODING} }
+
 sub init {
     my $self = shift;
     defined $self->{+ENCODING} or $self->trace->throw("'encoding' is a required attribute");
+    $self->{+NO_LEGACY_FACETS} = 1;
 }
 
-sub summary { 'Encoding set to ' . $_[0]->{+ENCODING} }
 
 1;
 

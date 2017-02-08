@@ -4,11 +4,20 @@ use warnings;
 
 our $VERSION = '1.302078';
 
+use Test2::EventFacet::Info;
 
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw{error};
 
 sub causes_fail { 1 }
+sub diagnostics { 1 }
+sub gravity     { $_[0]->{+_AMNESTY} ? 0 : 100 }
+
+sub init {
+    my $self = shift;
+    $self->SUPER::init();
+    $self->{+NO_LEGACY_FACETS} = 1;
+}
 
 sub summary {
     my $self = shift;
@@ -16,7 +25,18 @@ sub summary {
     return $msg;
 }
 
-sub diagnostics { 1 }
+sub facets {
+    my $self = shift;
+
+    my $facets = $self->SUPER::facets();
+
+    push @{$facets->{diag}} => Test2::EventFacet::Info->new(
+        type    => 'Exception',
+        details => $self->{+ERROR},
+    );
+
+    return $facets;
+}
 
 1;
 

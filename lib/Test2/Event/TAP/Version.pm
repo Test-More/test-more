@@ -7,12 +7,15 @@ our $VERSION = '1.302078';
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw/version/;
 
+sub summary { 'TAP version ' . $_[0]->{+VERSION} }
+sub gravity { 0 }
+
 sub init {
     my $self = shift;
     defined $self->{+VERSION} or $self->trace->throw("'version' is a required attribute");
+    $self->SUPER::init();
+    $self->{+NO_LEGACY_FACETS} = 1;
 }
-
-sub summary { 'TAP version ' . $_[0]->{+VERSION} }
 
 1;
 
