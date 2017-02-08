@@ -22,8 +22,8 @@ sub process {
     my $self = shift;
     my ($e) = @_;
     $e->set_nested($self->nested);
-    $e->set_in_subtest($self->{+ID});
-    $self->set_bailed_out($e) if $e->isa('Test2::Event::Bail');
+    $e->set_in_nest($self->{+ID});
+    $self->set_bailed_out($e) if $e->facets->{stop};
     $self->SUPER::process($e);
 }
 
@@ -34,9 +34,15 @@ sub send {
     my $out = $self->SUPER::send($e);
 
     return $out if $self->{+MANUAL_SKIP_ALL};
-    return $out unless $e->isa('Test2::Event::Plan')
-        && $e->directive eq 'SKIP'
-        && ($e->trace->pid != $self->pid || $e->trace->tid != $self->tid);
+
+    my $plan = $e->facets->{plan} or return $out;
+    return $out unless $plan->skip;
+    return $out unless $e->trace->pid != $self->pid
+                    || $e->trace->tid != $self->tid;
+
+    #return $out unless $e->isa('Test2::Event::Plan')
+    #    && $e->directive eq 'SKIP'
+    #    && ($e->trace->pid != $self->pid || $e->trace->tid != $self->tid);
 
     no warnings 'exiting';
     last T2_SUBTEST_WRAPPER;
@@ -48,9 +54,11 @@ sub terminate {
     $self->set_exit_code($code);
 
     return if $self->{+MANUAL_SKIP_ALL};
-    return if $e->isa('Test2::Event::Plan')
-           && $e->directive eq 'SKIP'
-           && ($e->trace->pid != $$ || $e->trace->tid != get_tid);
+
+    if(my $plan = $e->facets->{plan}) {
+        return if $plan->skip
+               && ($e->trace->pid != $$ || $e->trace->tid != get_tid);
+    }
 
     no warnings 'exiting';
     last T2_SUBTEST_WRAPPER;

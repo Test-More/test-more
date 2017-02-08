@@ -296,19 +296,29 @@ sub process {
         }
     }
 
-    my $type = ref($e);
-    my $is_ok = $type eq 'Test2::Event::Ok';
-    my $no_fail = $type eq 'Test2::Event::Diag' || $type eq 'Test2::Event::Note';
-    my $causes_fail = $is_ok ? !$e->{effective_pass} : $no_fail ? 0 : $e->causes_fail;
-    my $counted = $is_ok || (!$no_fail && $e->increments_count);
+    my $causes_fail = $e->causes_fail;
+    my $facets      = $e->facets;
+    my $code        = $e->terminate;
 
-    $self->{+COUNT}++      if $counted;
-    $self->{+FAILED}++     if $causes_fail && $counted;
+    $self->{+COUNT}++      if $facets->{assert};
+    $self->{+FAILED}++     if $causes_fail && $facets->{assert};
     $self->{+_PASSING} = 0 if $causes_fail;
 
-    my $callback = $e->callback($self) unless $is_ok || $no_fail;
+    my $callback = $e->callback($self);
+    my $count    = $self->{+COUNT};
 
-    my $count = $self->{+COUNT};
+    if (my $plan = $facets->{plan}) {
+        if ($plan->skip) {
+            $self->plan('SKIP');
+            $self->set_skip_reason($plan->details || 1);
+        }
+        elsif ($plan->none) {
+            $self->plan('NO PLAN');
+        }
+        else {
+            $self->plan($plan->count);
+        }
+    }
 
     $self->{+_FORMATTER}->write($e, $count) if $self->{+_FORMATTER};
 
@@ -316,9 +326,11 @@ sub process {
         $_->{code}->($self, $e, $count) for @{$self->{+_LISTENERS}};
     }
 
-    return $e if $is_ok || $no_fail;
+    if ($facets->{stop}) {
+        $self->set_bailed_out($e);
+        $code = 255 unless defined $code;
+    }
 
-    my $code = $e->terminate;
     if (defined $code) {
         $self->{+_FORMATTER}->terminate($e) if $self->{+_FORMATTER};
         $self->terminate($code, $e);
@@ -354,11 +366,11 @@ sub finalize {
     my $failed = $self->{+FAILED};
     my $active = $self->{+ACTIVE};
 
-	# return if NOTHING was done.
-	unless ($active || $do_plan || defined($plan) || $count || $failed) {
-		$self->{+_FORMATTER}->finalize($plan, $count, $failed, 0, $self->is_subtest) if $self->{+_FORMATTER};
-		return;
-	}
+    # return if NOTHING was done.
+    unless ($active || $do_plan || defined($plan) || $count || $failed) {
+        $self->{+_FORMATTER}->finalize($plan, $count, $failed, 0, $self->is_subtest) if $self->{+_FORMATTER};
+        return;
+    }
 
     unless ($self->{+ENDED}) {
         if ($self->{+_FOLLOW_UPS}) {
@@ -396,7 +408,7 @@ Second End: $sfile line $sline
     $self->{+ENDED} = $frame;
     my $pass = $self->is_passing(); # Generate the final boolean.
 
-	$self->{+_FORMATTER}->finalize($plan, $count, $failed, $pass, $self->is_subtest) if $self->{+_FORMATTER};
+    $self->{+_FORMATTER}->finalize($plan, $count, $failed, $pass, $self->is_subtest) if $self->{+_FORMATTER};
 
     return $pass;
 }

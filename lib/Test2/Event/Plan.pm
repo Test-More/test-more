@@ -51,17 +51,6 @@ sub sets_plan {
     );
 }
 
-sub callback {
-    my $self = shift;
-    my ($hub) = @_;
-
-    $hub->plan($self->{+DIRECTIVE} || $self->{+MAX});
-
-    return unless $self->{+DIRECTIVE};
-
-    $hub->set_skip_reason($self->{+REASON} || 1) if $self->{+DIRECTIVE} eq 'SKIP';
-}
-
 sub terminate {
     my $self = shift;
     # On skip_all we want to terminate the hub

@@ -22,13 +22,6 @@ sub init {
     $self->{+NO_LEGACY_FACETS} = 1;
 }
 
-sub callback {
-    my $self = shift;
-    my ($hub) = @_;
-
-    $hub->set_bailed_out($self);
-}
-
 sub summary {
     my $self = shift;
     return "Bail out!  " . $self->{+REASON}
