@@ -16,7 +16,14 @@ my %ALLOWED = (
     'NO PLAN' => 1,
 );
 
-sub gravity { 0 }
+sub no_legacy_facets { 1 }
+sub no_debug         { 1 }
+sub global           { 0 }
+sub gravity          { 0 }
+sub increments_count { 0 }
+sub no_display       { 0 }
+sub diagnostics      { 0 }
+sub causes_fail      { 0 }
 
 sub init {
     $_[0]->{+NO_LEGACY_FACETS} = 1;

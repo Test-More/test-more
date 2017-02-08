@@ -55,6 +55,11 @@ sub related {
 {
     no warnings 'redefine';
 
+    sub no_legacy_facets {
+        $_[0]->{+NO_LEGACY_FACETS} = 1 if ref($_[0]) eq __PACKAGE__;
+        $_[0]->{+NO_LEGACY_FACETS};
+    }
+
     sub causes_fail {
         my $self = shift;
         return $self->{+CAUSES_FAIL} if defined $self->{+CAUSES_FAIL};
@@ -82,13 +87,6 @@ sub related {
         }
 
         return 0;
-    }
-
-    sub terminate {
-        my $self = shift;
-        return $self->{+TERMINATE} if exists $self->{+TERMINATE};
-        return 255 if $self->facets->{stop};
-        return undef;
     }
 
     sub summary {

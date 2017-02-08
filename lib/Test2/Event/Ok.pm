@@ -12,7 +12,15 @@ use Test2::Util::HashBase qw{
     pass effective_pass name todo
 };
 
-sub no_debug { 1 }
+sub terminate        { }
+sub sets_plan        { }
+sub no_debug         { 1 }
+sub increments_count { 1 }
+sub no_legacy_facets { 1 }
+sub no_display       { 0 }
+sub diagnostics      { 0 }
+sub causes_fail      { !$_[0]->{+EFFECTIVE_PASS} }
+sub gravity          { $_[0]->{+EFFECTIVE_PASS} ? 0 : 100 }
 
 sub init {
     my $self = shift;
@@ -35,10 +43,6 @@ sub init {
         $self->{+EFFECTIVE_PASS} = defined($todo) ? 1 : $self->{+PASS};
     }
 }
-
-sub increments_count { 1 };
-
-sub causes_fail { !$_[0]->{+EFFECTIVE_PASS} }
 
 sub summary {
     my $self = shift;
@@ -66,9 +70,17 @@ sub facets {
 
     my $facets = $self->SUPER::facets();
 
-    $facets->{assert} = Test2::EventFacet::Assert->new(
-        pass    => $self->{+PASS},
-        details => $self->{+NAME},
+    #$facets->{assert} = Test2::EventFacet::Assert->new(
+    #    pass    => $self->{+PASS},
+    #    details => $self->{+NAME},
+    #);
+
+    $facets->{assert} = bless(
+        {
+            pass    => $self->{+PASS},
+            details => $self->{+NAME},
+        },
+        'Test2::EventFacet::Assert'
     );
 
     if (defined($self->{+TODO})) {

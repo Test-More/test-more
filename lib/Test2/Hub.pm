@@ -304,7 +304,7 @@ sub process {
     $self->{+FAILED}++     if $causes_fail && $facets->{assert};
     $self->{+_PASSING} = 0 if $causes_fail;
 
-    my $callback = $e->callback($self);
+#    my $callback = $e->callback($self);
     my $count    = $self->{+COUNT};
 
     if (my $plan = $facets->{plan}) {
