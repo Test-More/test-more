@@ -12,6 +12,8 @@ use Test2::Util::HashBase qw{
     pass effective_pass name todo
 };
 
+sub no_debug { 1 }
+
 sub init {
     my $self = shift;
 

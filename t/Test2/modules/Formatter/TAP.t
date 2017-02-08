@@ -6,6 +6,8 @@ use PerlIO;
 
 use Test2::Tools::Tiny;
 
+skip_all "TODO";
+
 BEGIN {
     *OUT_STD = Test2::Formatter::TAP->can('OUT_STD') or die;
     *OUT_ERR = Test2::Formatter::TAP->can('OUT_ERR') or die;

@@ -320,10 +320,10 @@ sub process {
         }
     }
 
-    $self->{+_FORMATTER}->write($e, $count) if $self->{+_FORMATTER};
+    $self->{+_FORMATTER}->write($e, $count, $facets) if $self->{+_FORMATTER};
 
     if ($self->{+_LISTENERS}) {
-        $_->{code}->($self, $e, $count) for @{$self->{+_LISTENERS}};
+        $_->{code}->($self, $e, $count, $facets) for @{$self->{+_LISTENERS}};
     }
 
     if ($facets->{stop}) {

@@ -16,42 +16,41 @@ BEGIN {
     *OUT_TODO = sub() { $todo };
 }
 
-__PACKAGE__->register_event('Test::Builder::TodoDiag', 'event_todo_diag');
-
 sub init {
     my $self = shift;
     $self->SUPER::init(@_);
     $self->{+HANDLES}->[OUT_TODO] = $self->{+HANDLES}->[OUT_STD];
 }
 
-sub event_todo_diag {
-    my $self = shift;
-    my @out = $self->event_diag(@_);
-    $out[0]->[0] = OUT_TODO();
+sub plan_tap {
+    my ($self, $e, $f) = @_;
+
+    return if $self->{+NO_HEADER};
+    return $self->SUPER::plan_tap($e, $f);
+}
+
+sub debug_tap {
+    my ($self, $e, $f, $num) = @_;
+    return if $self->{+NO_DIAG};
+    my @out = $self->SUPER::debug_tap($e, $f, $num);
+    $self->redirect(\@out) if @out && ref($e) eq 'Test::Builder::TodoDiag';
     return @out;
 }
 
-sub event_diag {
-    my $self = shift;
+sub info_tap {
+    my ($self, $e, $f) = @_;
     return if $self->{+NO_DIAG};
-    return $self->SUPER::event_diag(@_);
+    my @out = $self->SUPER::info_tap($e, $f);
+    $self->redirect(\@out) if @out && ref($e) eq 'Test::Builder::TodoDiag';
+    return @out;
 }
 
-sub event_plan {
-    my $self = shift;
-    return if $self->{+NO_HEADER};
-    return $self->SUPER::event_plan(@_);
+sub redirect {
+    my ($self, $out) = @_;
+    $_->[0] = OUT_TODO for @$out;
 }
 
-sub event_ok_multiline {
-    my $self = shift;
-    my ($out, $space, @extra) = @_;
-
-    return(
-        [OUT_STD, "$out\n"],
-        map {[OUT_STD, "# $_\n"]} @extra,
-    );
-}
+sub no_subtest_space { 1 }
 
 1;
 
@@ -72,22 +71,6 @@ This is what takes events and turns them into TAP.
 =head1 SYNOPSIS
 
     use Test::Builder; # Loads Test::Builder::Formatter for you
-
-=head1 METHODS
-
-=over 4
-
-=item $f->event_todo_diag
-
-Additional method used to process L<Test::Builder::TodoDiag> events.
-
-=item $f->event_diag
-
-=item $f->event_plan
-
-These override the parent class methods to do nothing if C<no_header> is set.
-
-=back
 
 =head1 SOURCE
 
