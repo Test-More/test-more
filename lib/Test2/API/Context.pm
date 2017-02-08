@@ -209,10 +209,14 @@ sub send_event {
 
     my $pkg = $LOADED{$event} || $self->_parse_event($event);
 
-    my $e = $pkg->new(
-        trace => $self->{+TRACE}->snapshot,
-        %args,
-    );
+    my $e;
+    {
+        local $Carp::CarpLevel = $Carp::CarpLevel + 1;
+        $e = $pkg->new(
+            trace => $self->{+TRACE}->snapshot,
+            %args,
+        );
+    }
 
     ${$self->{+_ABORTED}}++ if $self->{+_ABORTED} && defined $e->terminate;
     $self->{+HUB}->send($e);
@@ -225,6 +229,7 @@ sub build_event {
 
     my $pkg = $LOADED{$event} || $self->_parse_event($event);
 
+    local $Carp::CarpLevel = $Carp::CarpLevel + 1;
     $pkg->new(
         trace => $self->{+TRACE}->snapshot,
         %args,

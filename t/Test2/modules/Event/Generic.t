@@ -8,7 +8,11 @@ use Test2::API qw/context intercept/;
 
 sub tool {
     my $ctx = context();
-    my $e = $ctx->send_event('Generic', @_);
+    my $e;
+    {
+        local $SIG{__WARN__} = sub {};
+        $e = $ctx->send_event('Generic', @_);
+    }
     $ctx->release;
     return $e;
 }
