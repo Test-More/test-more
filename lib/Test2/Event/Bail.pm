@@ -9,12 +9,12 @@ use Test2::EventFacet::Stop;
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw{reason};
 
-sub no_legacy_facets { 1 }
-sub global           { 1 }
-sub causes_fail      { 1 }
-sub diagnostics      { 1 }
-sub terminate        { 255 }
-sub gravity          { 1000 }
+sub no_legacy_facets () { 1 }
+sub global ()           { 1 }
+sub causes_fail ()      { 1 }
+sub diagnostics ()      { 1 }
+sub terminate ()        { 255 }
+sub gravity ()          { 1000 }
 
 sub init {
     my $self = shift;

@@ -30,7 +30,7 @@ use Test2::Util::HashBase(
     sub GEN_UNIQUE_NEST_ID { join "-" => ('NEST-ID', time(), $$, Test2::Util::get_tid, $ID++) }
 }
 
-sub callback { }
+sub callback() { }
 
 sub init {
     my $self = shift;

@@ -24,7 +24,7 @@ sub _autoflush {
 _autoflush(\*STDOUT);
 _autoflush(\*STDERR);
 
-sub hide_buffered { 1 }
+sub hide_buffered() { 1 }
 
 sub init {
     my $self = shift;
@@ -157,7 +157,7 @@ sub plan_tap {
     return;
 }
 
-sub no_subtest_space { 0 }
+sub no_subtest_space() { 0 }
 sub assert_tap {
     my $self = shift;
     my ($e, $f, $num) = @_;

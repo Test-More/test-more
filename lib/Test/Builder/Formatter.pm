@@ -50,7 +50,7 @@ sub redirect {
     $_->[0] = OUT_TODO for @$out;
 }
 
-sub no_subtest_space { 1 }
+sub no_subtest_space() { 1 }
 
 1;
 

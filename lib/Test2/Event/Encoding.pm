@@ -7,16 +7,16 @@ our $VERSION = '1.302078';
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw/encoding/;
 
-sub terminate        { }
-sub sets_plan        { }
-sub no_debug         { 1 }
-sub no_legacy_facets { 1 }
-sub global           { 0 }
-sub gravity          { 0 }
-sub increments_count { 0 }
-sub no_display       { 0 }
-sub diagnostics      { 0 }
-sub causes_fail      { 0 }
+sub terminate ()        { }
+sub sets_plan ()        { }
+sub no_debug ()         { 1 }
+sub no_legacy_facets () { 1 }
+sub global ()           { 0 }
+sub gravity ()          { 0 }
+sub increments_count () { 0 }
+sub no_display ()       { 0 }
+sub diagnostics ()      { 0 }
+sub causes_fail ()      { 0 }
 
 sub summary { 'Encoding set to ' . $_[0]->{+ENCODING} }
 

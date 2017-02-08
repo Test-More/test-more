@@ -9,15 +9,15 @@ use Test2::EventFacet::Info;
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw/message/;
 
-sub terminate        { }
-sub sets_plan        { }
-sub no_legacy_facets { 1 }
-sub no_debug         { 1 }
-sub diagnostics      { 1 }
-sub global           { 0 }
-sub increments_count { 0 }
-sub no_display       { 0 }
-sub causes_fail      { 0 }
+sub terminate        () { }
+sub sets_plan        () { }
+sub no_legacy_facets () { 1 }
+sub no_debug         () { 1 }
+sub diagnostics      () { 1 }
+sub global           () { 0 }
+sub increments_count () { 0 }
+sub no_display       () { 0 }
+sub causes_fail      () { 0 }
 sub gravity          { $_[0]->{+_AMNESTY} ? 0 : 100 }
 
 sub summary { $_[0]->{+MESSAGE} }

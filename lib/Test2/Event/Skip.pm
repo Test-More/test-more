@@ -9,7 +9,7 @@ use Test2::EventFacet::Amnesty;
 BEGIN { require Test2::Event::Ok; our @ISA = qw(Test2::Event::Ok) }
 use Test2::Util::HashBase qw{reason};
 
-sub causes_fail { 0 }
+sub causes_fail() { 0 }
 
 sub init {
     my $self = shift;

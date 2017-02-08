@@ -12,15 +12,16 @@ use Test2::Util::HashBase qw{
     pass effective_pass name todo
 };
 
-sub terminate        { }
-sub sets_plan        { }
-sub no_debug         { 1 }
-sub increments_count { 1 }
-sub no_legacy_facets { 1 }
-sub no_display       { 0 }
-sub diagnostics      { 0 }
-sub causes_fail      { !$_[0]->{+EFFECTIVE_PASS} }
-sub gravity          { $_[0]->{+EFFECTIVE_PASS} ? 0 : 100 }
+sub terminate ()        { }
+sub sets_plan ()        { }
+sub no_debug ()         { 1 }
+sub increments_count () { 1 }
+sub no_legacy_facets () { 1 }
+sub no_display ()       { 0 }
+sub diagnostics ()      { 0 }
+
+sub causes_fail { !$_[0]->{+EFFECTIVE_PASS} }
+sub gravity { $_[0]->{+EFFECTIVE_PASS} ? 0 : 100 }
 
 sub init {
     my $self = shift;
