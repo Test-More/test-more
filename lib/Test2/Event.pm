@@ -5,6 +5,8 @@ use warnings;
 our $VERSION = '1.302078';
 
 use Carp();
+use Scalar::Util();
+
 use Test2::Util();
 use Test2::EventFacet::Info();
 use Test2::EventFacet::Trace();
@@ -116,7 +118,7 @@ sub facets {
     }
 
     # The events trace always wins.
-    $facets{trace} = $self->{+TRACE};
+    $facets{trace} = $self->{+TRACE} if $self->{+TRACE};
 
     return \%facets;
 }
@@ -124,8 +126,10 @@ sub facets {
 sub add_info {
     my $self = shift;
 
-    while (my $type = shift) {
-        if (blessed($type) && $type->isa('Test2::EventFacet::Info')) {
+    while (@_) {
+        my $type = shift;
+
+        if (Scalar::Util::blessed($type) && $type->isa('Test2::EventFacet::Info')) {
             push @{$self->{+_INFO}} => $type;
             next;
         }
@@ -141,8 +145,10 @@ sub add_info {
 sub add_amnesty {
     my $self = shift;
 
-    for (my $am = shift) {
-        if (blessed($am) && $am->isa('Test2::EventFacet::Amnesty')) {
+    while (@_) {
+        my $am = shift;
+
+        if (Scalar::Util::blessed($am) && $am->isa('Test2::EventFacet::Amnesty')) {
             push @{$self->{+_AMNESTY}} => $am;
         }
 
