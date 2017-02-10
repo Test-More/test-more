@@ -376,11 +376,14 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{Original_Pid} = $$;
 
     my $ctx = $self->ctx;
+    my $hub = $ctx->hub;
+    $ctx->release;
     unless ($params{singleton}) {
-        $ctx->hub->reset_state();
-        $ctx->hub->set_pid($$);
-        $ctx->hub->set_tid(get_tid);
+        $hub->reset_state();
+        $hub->_tb_reset();
     }
+
+    $ctx = $self->ctx;
 
     my $meta = $ctx->hub->meta(__PACKAGE__, {});
     %$meta = (

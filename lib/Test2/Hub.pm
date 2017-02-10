@@ -56,6 +56,21 @@ sub init {
 
 sub is_subtest { 0 }
 
+sub _tb_reset {
+    my $self = shift;
+
+    # Nothing to do
+    return if $self->{+PID} == $$ && $self->{+TID} == get_tid();
+
+    $self->{+PID} = $$;
+    $self->{+TID} = get_tid();
+    $self->{+HID} = join ipc_separator, $self->{+PID}, $self->{+TID}, $ID_POSTFIX++;
+
+    if (my $ipc = $self->{+IPC}) {
+        $ipc->add_hub($self->{+HID});
+    }
+}
+
 sub reset_state {
     my $self = shift;
 
@@ -452,7 +467,6 @@ sub DESTROY {
     my $ipc = $self->{+IPC} || return;
     return unless $$ == $self->{+PID};
     return unless get_tid() == $self->{+TID};
-
     $ipc->drop_hub($self->{+HID});
 }
 
