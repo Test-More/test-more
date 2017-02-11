@@ -296,15 +296,29 @@ sub process {
         }
     }
 
+    my $facets = $e->facets;
+
+    # Optimization for the most common case
+    if (ref($e) eq 'Test2::Event::Pass') {
+        my $count = ++($self->{+COUNT});
+
+        $self->{+_FORMATTER}->write($e, $count, $facets) if $self->{+_FORMATTER};
+
+        if ($self->{+_LISTENERS}) {
+            $_->{code}->($self, $e, $count, $facets) for @{$self->{+_LISTENERS}};
+        }
+
+        return $e;
+    }
+
     my $causes_fail = $e->causes_fail;
-    my $facets      = $e->facets;
     my $code        = $e->terminate;
 
     $self->{+COUNT}++      if $facets->{assert};
     $self->{+FAILED}++     if $causes_fail && $facets->{assert};
     $self->{+_PASSING} = 0 if $causes_fail;
 
-#    my $callback = $e->callback($self);
+    my $callback = $e->callback($self);
     my $count    = $self->{+COUNT};
 
     if (my $plan = $facets->{plan}) {

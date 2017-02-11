@@ -4,6 +4,6 @@ use warnings;
 
 use Carp qw/confess/;
 
-use Test2::Util::HashBase qw{ -count -details -skip -none };
+use Test2::Util::HashBase qw{ -count -skip -details -none };
 
 1;

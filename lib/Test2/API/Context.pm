@@ -19,7 +19,7 @@ my %LOADED = (
         my $file = "Test2/Event/$_.pm";
         require $file unless $INC{$file};
         ( $pkg => $pkg, $_ => $pkg )
-    } qw/Ok Diag Note Plan Bail Exception Waiting Skip Subtest Faceted/
+    } qw/Ok Diag Note Plan Bail Exception Waiting Skip Subtest Faceted Pass/
 );
 
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
@@ -202,6 +202,40 @@ sub alert {
     $self->trace->alert($msg);
 }
 
+sub pass {
+    my $self = shift;
+    my ($name) = @_;
+
+    my $e = bless(
+        {
+            trace => bless({%{$self->{+TRACE}}}, 'Test2::EventFacet::Trace'),
+            assert => bless({pass => 1, details => $name}, 'Test2::EventFacet::Assert'),
+        },
+        'Test2::Event::Pass'
+    );
+
+    $self->{+HUB}->send($e);
+
+    $self->release;
+
+    return 1;
+}
+
+sub emit {
+    my $self = shift;
+    my %args = @_;
+
+    # Optimize away the cruft...
+    $args{trace} = bless({%{$self->{+TRACE}}}, 'Test2::EventFacet::Trace');
+    my $e = bless(\%args, 'Test2::Event::Faceted');
+    $e->init;
+
+    ${$self->{+_ABORTED}}++ if $self->{+_ABORTED} && (defined $e->terminate || $args{stop} || $args{_facets}->{stop});
+    $self->{+HUB}->send($e);
+
+    return $e;
+}
+
 sub send_event {
     my $self  = shift;
     my $event = shift;
@@ -218,7 +252,7 @@ sub send_event {
         );
     }
 
-    ${$self->{+_ABORTED}}++ if $self->{+_ABORTED} && defined $e->terminate;
+    ${$self->{+_ABORTED}}++ if $self->{+_ABORTED} && (defined $e->terminate || $e->facets->{stop});
     $self->{+HUB}->send($e);
 }
 

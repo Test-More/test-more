@@ -81,7 +81,9 @@ if ($^C) {
 sub write {
     my ($self, $e, $num, $f) = @_;
 
-    my $tap = $self->event_tap($e, $f, $num) or return;
+    my $tap = ref($e) eq 'Test2::Event::Pass'
+        ? [$self->assert_tap($e, $f, $num)]
+        : $self->event_tap($e, $f, $num);
 
     my $handles = $self->{+HANDLES};
     my $nesting = defined($e->{nested}) ? $e->{nested} || 0 : $e->nested || 0;
@@ -191,11 +193,13 @@ sub assert_tap {
             $directives{$action} ||= $am->{details};
         }
 
+        # Make sure TODO and skip come first, in that order
         my %seen;
-        my @order = grep { !$seen{$_}++ } sort keys %directives;
+        my @order = grep { exists($directives{$_}) && !$seen{$_}++ } 'TODO', 'skip', sort keys %directives;
 
         $directives = ' # ' . join ' & ' => @order;
 
+        # PRefer skip reason over todo because legacy... bleh
         for my $action ('skip', @order) {
             next unless defined($directives{$action}) && length($directives{$action});
             $reason = $directives{$action};

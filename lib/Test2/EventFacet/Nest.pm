@@ -4,7 +4,7 @@ use warnings;
 
 use Carp qw/confess/;
 
-use Test2::Util::HashBase qw{ -id -events -buffered };
+use Test2::Util::HashBase qw{ -id -buffered -events };
 
 sub init {
     confess "Attribute 'id' must be set"

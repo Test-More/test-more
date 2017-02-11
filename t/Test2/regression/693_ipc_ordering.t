@@ -22,7 +22,7 @@ my $events = intercept {
 };
 
 is_deeply(
-    [map { $_->{name} } @$events],
+    [map { $_->facets->{assert}->{details} } @$events],
     [map "something $_ nonlocal", 1 .. 15],
     "Culled sub-thread events in correct order"
 );

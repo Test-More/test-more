@@ -2,14 +2,19 @@ use strict;
 use warnings;
 
 use Test2::Tools::Tiny;
-use Test2::API qw/intercept/;
+use Test2::API qw/intercept context/;
 use Test2::Util qw/get_tid/;
 
 my $line;
 my $events = intercept {
     $line = __LINE__ + 1;
     ok(1, "pass");
-    is('a', 'b', "Failed test");
+    sub {
+        my $ctx = context;
+        $ctx->send_event('Faceted');
+        $ctx->send_event('Faceted');
+        $ctx->release;
+    }->();
 };
 
 my $sigpass = $events->[0]->trace->signature;

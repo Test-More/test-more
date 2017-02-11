@@ -70,7 +70,7 @@ sub related {
         return 1 if $facets->{stop};
         return 0 if $facets->{amnesty};
         return 0 unless $facets->{assert};
-        return $facets->{assert}->pass;
+        return $facets->{assert}->pass ? 0 : 1;
     }
 
     sub gravity {
@@ -123,41 +123,63 @@ sub facets {
     return \%facets;
 }
 
+# This is an optimization
+my %INFO_BUILD = ('ARRAY' => 1, 'HASH' => 1, 'Test2::EventFacet::Info' => 1);
+my %INFO_ISA   = ('Test2::EventFacet::Amnesty' => 1);
 sub add_info {
     my $self = shift;
 
-    while (@_) {
-        my $type = shift;
-
-        if (Scalar::Util::blessed($type) && $type->isa('Test2::EventFacet::Info')) {
-            push @{$self->{+_INFO}} => $type;
-            next;
+    for my $in (@_) {
+        my $ref = ref($in);
+        if ($INFO_BUILD{$ref}) {
+            push @{$self->{+_INFO}} => Test2::EventFacet::Info->new($in);
         }
-
-        my $details = shift;
-        push @{$self->{+_INFO}} => Test2::EventFacet::Info->new(
-            type    => $type,
-            details => $details,
-        );
+        elsif($INFO_ISA{$ref}) {
+            push @{$self->{+_INFO}} => $in;
+        }
+        elsif(Scalar::Util::blessed($in) && $in->isa('Test2::EventFacet::Info')) {
+            $INFO_ISA{$ref} = 1; # Cache it, isa is expensive
+            push @{$self->{+_INFO}} => $in;
+        }
+        else {
+            Carp::croak("add_info only takes hashrefs, arrayrefs, or Test2::EventFacet::Info instances");
+        }
     }
 }
 
+my %AMNESTY_BUILD = ('ARRAY' => 1, 'HASH' => 1);
+my %AMNESTY_ISA   = ('Test2::EventFacet::Amnesty' => 1);
 sub add_amnesty {
     my $self = shift;
 
-    while (@_) {
-        my $am = shift;
-
-        if (Scalar::Util::blessed($am) && $am->isa('Test2::EventFacet::Amnesty')) {
-            push @{$self->{+_AMNESTY}} => $am;
+    my @list;
+    for my $in (@_) {
+        my $ref = ref($in);
+        if ($AMNESTY_BUILD{$ref}) {
+            push @list => Test2::EventFacet::Amnesty->new($in);
         }
-
-        my $details = shift;
-        push @{$self->{+_AMNESTY}} => Test2::EventFacet::Amnesty->new(
-            action => $am,
-            details => $details,
-        );
+        elsif($AMNESTY_ISA{$ref}) {
+            push @list => $in;
+        }
+        elsif(Scalar::Util::blessed($in) && $in->isa('Test2::EventFacet::Amnesty')) {
+            $AMNESTY_ISA{$ref} = 1; # Cache it, isa is expensive
+            push @list => $in;
+        }
+        else {
+            Carp::croak("add_amnesty only takes hashrefs, arrayrefs, or Test2::EventFacet::Amnesty instances");
+        }
     }
+
+    my $nest = $self->facets->{nest};
+    if ($nest && $nest->events) {
+        for my $am (@list) {
+            # Clone with inherited
+            $am = Test2::EventFacet::Amnesty->new(%$am, inherited => $am);
+            $_->add_amnesty($am) for @{$nest->events};
+        }
+    }
+
+    push @{$self->{+_AMNESTY}} => @list;
 }
 
 sub legacy_facets {

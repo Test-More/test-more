@@ -19,6 +19,8 @@ require Test2::EventFacet::Trace;
 
 sub no_legacy_facets() { 1 }
 
+# Optimization
+my %MAKE_FACET = ( ARRAY => 1, HASH => 1 );
 my %AUTO_FACET = (
     assert => 'Test2::EventFacet::Assert',
     nest   => 'Test2::EventFacet::Nest',
@@ -39,6 +41,23 @@ sub init {
     $self->{+TRACE} ||= $self->{+_FACETS}->{trace}
         if $self->{+_FACETS}->{trace};
 
+    for my $facet (keys %AUTO_FACET) {
+        my $raw = delete $self->{$facet} or next;
+        my $class = $AUTO_FACET{$facet};
+        my $ref = ref($raw);
+        $self->{+_FACETS}->{$facet} = $class->new($raw) and next
+            if $MAKE_FACET{$ref};
+
+        $self->{+_FACETS}->{$facet} = $raw and next
+            if $ref eq $class || Scalar::Util::blessed($raw) && $raw->isa($class);
+
+        Carp::croak("The '$facet' attribute takes an arrayref, a hashref, or an instance of the '$class' class");
+    }
+
+    # Normalize pass/fail to be a boolean.
+    $self->{+_FACETS}->{assert}->{pass} = $self->{+_FACETS}->{assert}->{pass} ? 1 : 0
+        if $self->{+_FACETS}->{assert};
+
     if (my $info = delete $self->{info}) {
         $self->add_info(@$info);
     }
@@ -47,12 +66,25 @@ sub init {
         $self->add_amnesty(@$amnesty);
     }
 
-    for my $facet (sort keys %AUTO_FACET) {
-        my $raw = delete $self->{$facet} or next;
-        my $class = $AUTO_FACET{$facet};
-        my $isa = Scalar::Util::blessed($raw) && $raw->isa($class);
-        $self->{+_FACETS}->{$facet} = $isa ? $raw : $class->new(%$raw);
+    # If diagnostics were provided put them in info, unless this is a passing
+    # assert. If this is not an assert we should also set the gravity to 100 so
+    # the diags can be seen. Do not mess with gravity if there is an assert,
+    # that is handled better in gravity().
+    if(my $diag = delete $self->{diag}) {
+        my $assert = $self->{+_FACETS}->{assert};
+        if (!$assert || !$assert->{pass}) {
+            $self->add_info([diag => $_]) for @$diag;
+        }
+
+        $self->{+GRAVITY} = 100 unless defined $self->{+GRAVITY} || $assert;
     }
+
+    # Stick any notes into info.
+    if(my $note = delete $self->{note}) {
+        $self->add_info([note => $_]) for @$note;
+    }
+
+    1;
 }
 
 sub gravity {
