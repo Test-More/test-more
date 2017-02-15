@@ -22,7 +22,7 @@ my $subs = $res->[1]->subevents;
 is(@$subs, 2, "got all subevents");
 
 isa_ok($subs->[0], 'Test2::Event::Ok');
-is($subs->[0]->pass, 1, "subtest ok passed");
+is($subs->[0]->pass, 1,       "subtest ok passed");
 is($subs->[0]->name, 'check', "subtest ok name");
 
 isa_ok($subs->[1], 'Test2::Event::Plan');

@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -28,6 +28,6 @@ is($@, "You said to run 0 tests at $0 line 24.\n");
 
 #line 31
     ok $tb->plan(no_plan => 1);
-    is( $warning, "no_plan takes no arguments at $0 line 31.\n" );
+    is($warning, "no_plan takes no arguments at $0 line 31.\n");
     is $tb->has_plan, 'no_plan';
 }

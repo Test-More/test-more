@@ -5,6 +5,7 @@ use Test2::Tools::Tiny;
 use Test2::Event();
 
 {
+
     package My::MockEvent;
 
     use base 'Test2::Event';

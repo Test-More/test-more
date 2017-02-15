@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -23,7 +23,7 @@ is $more_tb, Test::Builder->new,  '       does not interfere with ->new';
 {
     my $new_tb = Test::Builder::NoOutput->create;
 
-    isa_ok $new_tb,  'Test::Builder';
+    isa_ok $new_tb, 'Test::Builder';
     isnt $more_tb, $new_tb, 'Test::Builder->create makes a new object';
 
     $new_tb->plan(tests => 1);

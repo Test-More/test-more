@@ -3,8 +3,9 @@
 # What if there's a plan and done_testing but they don't match?
 
 use strict;
+
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -22,7 +23,7 @@ my $tb = Test::Builder::NoOutput->create;
     # Normalize test output
     local $ENV{HARNESS_ACTIVE};
 
-    $tb->plan( tests => 3 );
+    $tb->plan(tests => 3);
     $tb->ok(1);
     $tb->ok(1);
     $tb->ok(1);
@@ -32,7 +33,7 @@ my $tb = Test::Builder::NoOutput->create;
 }
 
 my $Test = Test::Builder->new;
-$Test->plan( tests => 1 );
+$Test->plan(tests => 1);
 $Test->level(0);
 $Test->is_eq($tb->read, <<"END");
 1..3

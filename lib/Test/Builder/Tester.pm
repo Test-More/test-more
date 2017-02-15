@@ -61,7 +61,7 @@ our @EXPORT = qw(test_out test_err test_fail test_diag test_test line_num);
 
 sub import {
     my $class = shift;
-    my(@plan) = @_;
+    my (@plan) = @_;
 
     my $caller = caller;
 
@@ -69,14 +69,14 @@ sub import {
     $t->plan(@plan);
 
     my @imports = ();
-    foreach my $idx ( 0 .. $#plan ) {
-        if( $plan[$idx] eq 'import' ) {
-            @imports = @{ $plan[ $idx + 1 ] };
+    foreach my $idx (0 .. $#plan) {
+        if ($plan[$idx] eq 'import') {
+            @imports = @{$plan[$idx + 1]};
             last;
         }
     }
 
-    __PACKAGE__->export_to_level( 1, __PACKAGE__, @imports );
+    __PACKAGE__->export_to_level(1, __PACKAGE__, @imports);
 }
 
 ###
@@ -142,7 +142,7 @@ sub _start_testing {
     $testing     = 1;
     $testing_num = $t->current_test;
     $t->current_test(0);
-    $original_is_passing  = $t->is_passing;
+    $original_is_passing = $t->is_passing;
     $t->is_passing(1);
 
     # look, we shouldn't do the ending stuff
@@ -228,8 +228,8 @@ sub test_fail {
     _start_testing() unless $testing;
 
     # work out what line we should be on
-    my( $package, $filename, $line ) = caller;
-    $line = $line + ( shift() || 0 );    # prevent warnings
+    my ($package, $filename, $line) = caller;
+    $line = $line + (shift() || 0);    # prevent warnings
 
     # expect that on stderr
     $err->expect("#     Failed test ($filename at line $line)");
@@ -271,7 +271,7 @@ sub test_diag {
 
     # expect the same thing, but prepended with "#     "
     local $_;
-    $err->expect( map { "# $_" } @_ );
+    $err->expect(map { "# $_" } @_);
 }
 
 =item test_test
@@ -319,20 +319,19 @@ sub test_test {
     # decode the arguments as described in the pod
     my $mess;
     my %args;
-    if( @_ == 1 ) {
-        $mess = shift
+    if (@_ == 1) {
+        $mess = shift;
     }
     else {
         %args = @_;
-        $mess = $args{name} if exists( $args{name} );
-        $mess = $args{title} if exists( $args{title} );
-        $mess = $args{label} if exists( $args{label} );
+        $mess = $args{name} if exists($args{name});
+        $mess = $args{title} if exists($args{title});
+        $mess = $args{label} if exists($args{label});
     }
 
     # er, are we testing?
     croak "Not testing.  You must declare output with a test function first."
-      unless $testing;
-
+        unless $testing;
 
     my $hub = $t->{Hub} || Test2::API::test2_stack->top;
     $hub->format($original_formatter);
@@ -351,20 +350,17 @@ sub test_test {
     $ENV{HARNESS_ACTIVE} = $original_harness_env;
 
     # check the output we've stashed
-    unless( $t->ok( ( $args{skip_out} || $out->check ) &&
-                    ( $args{skip_err} || $err->check ), $mess ) 
-    )
-    {
+    unless ($t->ok(($args{skip_out} || $out->check) && ($args{skip_err} || $err->check), $mess)) {
         # print out the diagnostic information about why this
         # test failed
 
         local $_;
 
-        $t->diag( map { "$_\n" } $out->complaint )
-          unless $args{skip_out} || $out->check;
+        $t->diag(map { "$_\n" } $out->complaint)
+            unless $args{skip_out} || $out->check;
 
-        $t->diag( map { "$_\n" } $err->complaint )
-          unless $args{skip_err} || $err->check;
+        $t->diag(map { "$_\n" } $err->complaint)
+            unless $args{skip_err} || $err->check;
     }
 }
 
@@ -381,8 +377,8 @@ C<line_num(+3)> idiom is arguably nicer.
 =cut
 
 sub line_num {
-    my( $package, $filename, $line ) = caller;
-    return $line + ( shift() || 0 );    # prevent warnings
+    my ($package, $filename, $line) = caller;
+    return $line + (shift() || 0);    # prevent warnings
 }
 
 =back
@@ -505,12 +501,12 @@ sub expect {
     foreach my $check (@checks) {
         $check = $self->_account_for_subtest($check);
         $check = $self->_translate_Failed_check($check);
-        push @{ $self->{wanted} }, ref $check ? $check : "$check\n";
+        push @{$self->{wanted}}, ref $check ? $check : "$check\n";
     }
 }
 
 sub _account_for_subtest {
-    my( $self, $check ) = @_;
+    my ($self, $check) = @_;
 
     my $hub = $t->{Stack}->top;
     my $nesting = $hub->isa('Test2::Hub::Subtest') ? $hub->nested : 0;
@@ -518,9 +514,9 @@ sub _account_for_subtest {
 }
 
 sub _translate_Failed_check {
-    my( $self, $check ) = @_;
+    my ($self, $check) = @_;
 
-    if( $check =~ /\A(.*)#     (Failed .*test) \((.*?) at line (\d+)\)\Z(?!\n)/ ) {
+    if ($check =~ /\A(.*)#     (Failed .*test) \((.*?) at line (\d+)\)\Z(?!\n)/) {
         $check = "/\Q$1\E#\\s+\Q$2\E.*?\\n?.*?\Qat $3\E line \Q$4\E.*\\n?/";
     }
 
@@ -536,10 +532,10 @@ sub check {
     # turn off warnings as these might be undef
     local $^W = 0;
 
-    my @checks = @{ $self->{wanted} };
+    my @checks = @{$self->{wanted}};
     my $got    = $self->{got};
     foreach my $check (@checks) {
-        $check = "\Q$check\E" unless( $check =~ s,^/(.*)/$,$1, or ref $check );
+        $check = "\Q$check\E" unless ($check =~ s,^/(.*)/$,$1, or ref $check);
         return 0 unless $got =~ s/^$check//;
     }
 
@@ -554,14 +550,14 @@ sub complaint {
     my $self   = shift;
     my $type   = $self->type;
     my $got    = $self->got;
-    my $wanted = join '', @{ $self->wanted };
+    my $wanted = join '', @{$self->wanted};
 
     # are we running in colour mode?
-    if(Test::Builder::Tester::color) {
+    if (Test::Builder::Tester::color) {
         # get color
         eval { require Term::ANSIColor };
-        unless($@) {
-            eval { require Win32::Console::ANSI } if 'MSWin32' eq $^O;  # support color on windows platforms
+        unless ($@) {
+            eval { require Win32::Console::ANSI } if 'MSWin32' eq $^O;    # support color on windows platforms
 
             # colours
 
@@ -571,18 +567,18 @@ sub complaint {
 
             # work out where the two strings start to differ
             my $char = 0;
-            $char++ while substr( $got, $char, 1 ) eq substr( $wanted, $char, 1 );
+            $char++ while substr($got, $char, 1) eq substr($wanted, $char, 1);
 
             # get the start string and the two end strings
-            my $start = $green . substr( $wanted, 0, $char );
-            my $gotend    = $red . substr( $got,    $char ) . $reset;
-            my $wantedend = $red . substr( $wanted, $char ) . $reset;
+            my $start = $green . substr($wanted, 0, $char);
+            my $gotend    = $red . substr($got,    $char) . $reset;
+            my $wantedend = $red . substr($wanted, $char) . $reset;
 
             # make the start turn green on and off
             $start =~ s/\n/$reset\n$green/g;
 
             # make the ends turn red on and off
-            $gotend    =~ s/\n/$reset\n$red/g;
+            $gotend =~ s/\n/$reset\n$red/g;
             $wantedend =~ s/\n/$reset\n$red/g;
 
             # rebuild the strings
@@ -591,20 +587,20 @@ sub complaint {
         }
     }
 
-    my @got = split "\n", $got;
+    my @got    = split "\n", $got;
     my @wanted = split "\n", $wanted;
 
-    $got = "";
+    $got    = "";
     $wanted = "";
 
     while (@got || @wanted) {
         my $g = shift @got    || "";
         my $w = shift @wanted || "";
         if ($g ne $w) {
-            if($g =~ s/(\s+)$/    |> /g) {
+            if ($g =~ s/(\s+)$/    |> /g) {
                 $g .= ($_ eq ' ' ? '_' : '\t') for split '', $1;
             }
-            if($w =~ s/(\s+)$/    |> /g) {
+            if ($w =~ s/(\s+)$/    |> /g) {
                 $w .= ($_ eq ' ' ? '_' : '\t') for split '', $1;
             }
             $g = "> $g";
@@ -614,7 +610,7 @@ sub complaint {
             $g = "  $g";
             $w = "  $w";
         }
-        $got = $got ? "$got\n$g" : $g;
+        $got    = $got    ? "$got\n$g"    : $g;
         $wanted = $wanted ? "$wanted\n$w" : $w;
     }
 
@@ -658,9 +654,9 @@ sub PRINT {
 }
 
 sub TIEHANDLE {
-    my( $class, $type ) = @_;
+    my ($class, $type) = @_;
 
-    my $self = bless { type => $type }, $class;
+    my $self = bless {type => $type}, $class;
 
     $self->reset;
 

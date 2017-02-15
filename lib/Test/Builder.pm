@@ -7,7 +7,7 @@ use warnings;
 our $VERSION = '1.302077';
 
 BEGIN {
-    if( $] < 5.008 ) {
+    if ($] < 5.008) {
         require Test::Builder::IO::Scalar;
     }
 }
@@ -42,7 +42,7 @@ our $Test = $ENV{TB_NO_EARLY_INIT} ? undef : Test::Builder->new;
 
 sub _add_ts_hooks {
     my $self = shift;
-    my $hub = $self->{Stack}->top;
+    my $hub  = $self->{Stack}->top;
 
     # Take a reference to the hash key, we do this to avoid closing over $self
     # which is the singleton. We use a reference because the value could change
@@ -51,42 +51,45 @@ sub _add_ts_hooks {
 
     #$hub->add_context_aquire(sub {$_[0]->{level} += $Level - 1});
 
-    $hub->pre_filter(sub {
-        my ($active_hub, $e) = @_;
+    $hub->pre_filter(
+        sub {
+            my ($active_hub, $e) = @_;
 
-        my $epkg = $$epkgr;
-        my $cpkg = $e->{trace} ? $e->{trace}->{frame}->[0] : undef;
+            my $epkg = $$epkgr;
+            my $cpkg = $e->{trace} ? $e->{trace}->{frame}->[0] : undef;
 
-        no strict 'refs';
-        no warnings 'once';
-        my $todo;
-        $todo = ${"$cpkg\::TODO"} if $cpkg;
-        $todo = ${"$epkg\::TODO"} if $epkg && !$todo;
+            no strict 'refs';
+            no warnings 'once';
+            my $todo;
+            $todo = ${"$cpkg\::TODO"} if $cpkg;
+            $todo = ${"$epkg\::TODO"} if $epkg && !$todo;
 
-        return $e unless $todo;
+            return $e unless $todo;
 
-        # Turn a diag into a todo diag
-        return Test::Builder::TodoDiag->new(%$e) if ref($e) eq 'Test2::Event::Diag';
+            # Turn a diag into a todo diag
+            return Test::Builder::TodoDiag->new(%$e) if ref($e) eq 'Test2::Event::Diag';
 
-        # Set todo on ok's
-        if ($e->isa('Test2::Event::Ok')) {
-            $e->set_todo($todo);
-            $e->set_effective_pass(1);
+            # Set todo on ok's
+            if ($e->isa('Test2::Event::Ok')) {
+                $e->set_todo($todo);
+                $e->set_effective_pass(1);
 
-            if (my $result = $e->get_meta(__PACKAGE__)) {
-                $result->{reason} ||= $todo;
-                $result->{type}   ||= 'todo';
-                $result->{ok}       = 1;
+                if (my $result = $e->get_meta(__PACKAGE__)) {
+                    $result->{reason} ||= $todo;
+                    $result->{type}   ||= 'todo';
+                    $result->{ok} = 1;
+                }
             }
-        }
 
-        return $e;
-    }, inherit => 1);
+            return $e;
+        },
+        inherit => 1
+    );
 }
 
 sub new {
-    my($class) = shift;
-    unless($Test) {
+    my ($class) = shift;
+    unless ($Test) {
         my $ctx = context();
         $Test = $class->create(singleton => 1);
         $ctx->release;
@@ -104,7 +107,7 @@ sub new {
 }
 
 sub create {
-    my $class = shift;
+    my $class  = shift;
     my %params = @_;
 
     my $self = bless {}, $class;
@@ -139,7 +142,7 @@ sub ctx {
 
 sub parent {
     my $self = shift;
-    my $ctx = $self->ctx;
+    my $ctx  = $self->ctx;
     my $chub = $self->{Hub} || $ctx->hub;
     $ctx->release;
 
@@ -150,13 +153,14 @@ sub parent {
 
     return bless {
         Original_Pid => $$,
-        Stack => $self->{Stack},
-        Hub => $parent,
-    }, blessed($self);
+        Stack        => $self->{Stack},
+        Hub          => $parent,
+        },
+        blessed($self);
 }
 
 sub child {
-    my( $self, $name ) = @_;
+    my ($self, $name) = @_;
 
     $name ||= "Child of " . $self->name;
     my $ctx = $self->ctx;
@@ -177,38 +181,41 @@ sub child {
         class => 'Test2::Hub::Subtest',
     );
 
-    $hub->pre_filter(sub {
-        my ($active_hub, $e) = @_;
+    $hub->pre_filter(
+        sub {
+            my ($active_hub, $e) = @_;
 
-        # Turn a diag into a todo diag
-        return Test::Builder::TodoDiag->new(%$e) if ref($e) eq 'Test2::Event::Diag';
+            # Turn a diag into a todo diag
+            return Test::Builder::TodoDiag->new(%$e) if ref($e) eq 'Test2::Event::Diag';
 
-        return $e;
-    }, inherit => 1) if $orig_TODO;
+            return $e;
+        },
+        inherit => 1
+    ) if $orig_TODO;
 
     $hub->listen(sub { push @$subevents => $_[1] });
 
-    $hub->set_nested( $parent->isa('Test2::Hub::Subtest') ? $parent->nested + 1 : 1 );
+    $hub->set_nested($parent->isa('Test2::Hub::Subtest') ? $parent->nested + 1 : 1);
 
     my $meta = $hub->meta(__PACKAGE__, {});
-    $meta->{Name} = $name;
-    $meta->{TODO} = $orig_TODO;
-    $meta->{TODO_PKG} = $ctx->trace->package;
-    $meta->{parent} = $parent;
-    $meta->{Test_Results} = [];
-    $meta->{subevents} = $subevents;
-    $meta->{subtest_id} = $hub->id;
+    $meta->{Name}             = $name;
+    $meta->{TODO}             = $orig_TODO;
+    $meta->{TODO_PKG}         = $ctx->trace->package;
+    $meta->{parent}           = $parent;
+    $meta->{Test_Results}     = [];
+    $meta->{subevents}        = $subevents;
+    $meta->{subtest_id}       = $hub->id;
     $meta->{subtest_buffered} = $parent->format ? 0 : 1;
 
     $self->_add_ts_hooks;
 
     $ctx->release;
-    return bless { Original_Pid => $$, Stack => $self->{Stack}, Hub => $hub }, blessed($self);
+    return bless {Original_Pid => $$, Stack => $self->{Stack}, Hub => $hub}, blessed($self);
 }
 
 sub finalize {
     my $self = shift;
-    my $ok = 1;
+    my $ok   = 1;
     ($ok) = @_ if @_;
 
     my $st_ctx = $self->ctx;
@@ -219,15 +226,15 @@ sub finalize {
         $self->croak("Can't call finalize() with child ($meta->{child}) active");
     }
 
-    local $? = 0;     # don't fail if $subtests happened to set $? nonzero
+    local $? = 0;    # don't fail if $subtests happened to set $? nonzero
 
     $self->{Stack}->pop($chub);
 
     $self->find_TODO($meta->{TODO_PKG}, 1, $meta->{TODO});
 
     my $parent = $self->parent;
-    my $ctx = $parent->ctx;
-    my $trace = $ctx->trace;
+    my $ctx    = $parent->ctx;
+    my $trace  = $ctx->trace;
     delete $ctx->hub->meta(__PACKAGE__, {})->{child};
 
     $chub->finalize($trace, 1)
@@ -269,17 +276,17 @@ FAIL
 
     unless ($chub->bailed_out) {
         my $plan = $chub->plan;
-        if ( $plan && $plan eq 'SKIP' ) {
+        if ($plan && $plan eq 'SKIP') {
             $parent->skip($chub->skip_reason, $meta->{Name});
         }
-        elsif ( !$chub->count ) {
-            $parent->ok( 0, sprintf q[No tests run for subtest "%s"], $meta->{Name} );
+        elsif (!$chub->count) {
+            $parent->ok(0, sprintf q[No tests run for subtest "%s"], $meta->{Name});
         }
         else {
-            $parent->{subevents}  = $meta->{subevents};
-            $parent->{subtest_id} = $meta->{subtest_id};
+            $parent->{subevents}        = $meta->{subevents};
+            $parent->{subtest_id}       = $meta->{subtest_id};
             $parent->{subtest_buffered} = $meta->{subtest_buffered};
-            $parent->ok( $chub->is_passing, $meta->{Name} );
+            $parent->ok($chub->is_passing, $meta->{Name});
         }
     }
 
@@ -328,7 +335,7 @@ sub subtest {
     my $trace = $ctx->trace;
 
     if (!$finished) {
-        if(my $bailed = $st_ctx->hub->bailed_out) {
+        if (my $bailed = $st_ctx->hub->bailed_out) {
             my $chub = $child->{Hub};
             $self->{Stack}->pop($chub);
             $ctx->bail($bailed->reason);
@@ -338,9 +345,9 @@ sub subtest {
         $err = "Subtest ended with exit code $code" if $code;
     }
 
-    my $st_hub  = $st_ctx->hub;
-    my $plan  = $st_hub->plan;
-    my $count = $st_hub->count;
+    my $st_hub = $st_ctx->hub;
+    my $plan   = $st_hub->plan;
+    my $count  = $st_hub->count;
 
     if (!$count && (!defined($plan) || "$plan" ne 'SKIP')) {
         $st_ctx->plan(0) unless defined $plan;
@@ -360,7 +367,7 @@ sub subtest {
 
 sub name {
     my $self = shift;
-    my $ctx = $self->ctx;
+    my $ctx  = $self->ctx;
     release $ctx, $ctx->hub->meta(__PACKAGE__, {})->{Name};
 }
 
@@ -416,7 +423,6 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     return;
 }
 
-
 my %plan_cmds = (
     no_plan  => \&no_plan,
     skip_all => \&skip_all,
@@ -424,7 +430,7 @@ my %plan_cmds = (
 );
 
 sub plan {
-    my( $self, $cmd, $arg ) = @_;
+    my ($self, $cmd, $arg) = @_;
 
     return unless $cmd;
 
@@ -435,29 +441,28 @@ sub plan {
 
     local $Level = $Level + 1;
 
-    if( my $method = $plan_cmds{$cmd} ) {
+    if (my $method = $plan_cmds{$cmd}) {
         local $Level = $Level + 1;
         $self->$method($arg);
     }
     else {
-        my @args = grep { defined } ( $cmd, $arg );
+        my @args = grep { defined } ($cmd, $arg);
         $ctx->throw("plan() doesn't understand @args");
     }
 
     release $ctx, 1;
 }
 
-
 sub _plan_tests {
-    my($self, $arg) = @_;
+    my ($self, $arg) = @_;
 
     my $ctx = $self->ctx;
 
-    if($arg) {
+    if ($arg) {
         local $Level = $Level + 1;
         $self->expected_tests($arg);
     }
-    elsif( !defined $arg ) {
+    elsif (!defined $arg) {
         $ctx->throw("Got an undefined number of tests");
     }
     else {
@@ -467,16 +472,15 @@ sub _plan_tests {
     $ctx->release;
 }
 
-
 sub expected_tests {
     my $self = shift;
-    my($max) = @_;
+    my ($max) = @_;
 
     my $ctx = $self->ctx;
 
-    if(@_) {
+    if (@_) {
         $self->croak("Number of tests must be a positive integer.  You gave it '$max'")
-          unless $max =~ /^\+?\d+$/;
+            unless $max =~ /^\+?\d+$/;
 
         $ctx->plan($max);
     }
@@ -491,9 +495,8 @@ sub expected_tests {
     return $plan;
 }
 
-
 sub no_plan {
-    my($self, $arg) = @_;
+    my ($self, $arg) = @_;
 
     my $ctx = $self->ctx;
 
@@ -510,28 +513,27 @@ sub no_plan {
     release $ctx, 1;
 }
 
-
 sub done_testing {
-    my($self, $num_tests) = @_;
+    my ($self, $num_tests) = @_;
 
     my $ctx = $self->ctx;
 
     my $meta = $ctx->hub->meta(__PACKAGE__, {});
 
     if ($meta->{Done_Testing}) {
-        my ($file, $line) = @{$meta->{Done_Testing}}[1,2];
-        local $ctx->hub->{ended}; # OMG This is awful.
+        my ($file, $line) = @{$meta->{Done_Testing}}[1, 2];
+        local $ctx->hub->{ended};    # OMG This is awful.
         $self->ok(0, "done_testing() was already called at $file line $line");
         $ctx->release;
         return;
     }
     $meta->{Done_Testing} = [$ctx->trace->call];
 
-    my $plan = $ctx->hub->plan;
+    my $plan  = $ctx->hub->plan;
     my $count = $ctx->hub->count;
 
     # If done_testing() specified the number of tests, shut off no_plan
-    if( defined $num_tests ) {
+    if (defined $num_tests) {
         $ctx->plan($num_tests) if !$plan || $plan eq 'NO PLAN';
     }
     elsif ($count && defined $num_tests && $count != $num_tests) {
@@ -541,9 +543,8 @@ sub done_testing {
         $num_tests = $self->current_test;
     }
 
-    if( $self->expected_tests && $num_tests != $self->expected_tests ) {
-        $self->ok(0, "planned to run @{[ $self->expected_tests ]} ".
-                     "but done_testing() expects $num_tests");
+    if ($self->expected_tests && $num_tests != $self->expected_tests) {
+        $self->ok(0, "planned to run @{[ $self->expected_tests ]} " . "but done_testing() expects $num_tests");
     }
 
     $ctx->plan($num_tests) if $ctx->hub->plan && $ctx->hub->plan eq 'NO PLAN';
@@ -553,22 +554,20 @@ sub done_testing {
     release $ctx, 1;
 }
 
-
 sub has_plan {
     my $self = shift;
 
-    my $ctx = $self->ctx;
+    my $ctx  = $self->ctx;
     my $plan = $ctx->hub->plan;
     $ctx->release;
 
-    return( $plan ) if $plan && $plan !~ m/\D/;
-    return('no_plan') if $plan && $plan eq 'NO PLAN';
-    return(undef);
+    return ($plan) if $plan && $plan !~ m/\D/;
+    return ('no_plan') if $plan && $plan eq 'NO PLAN';
+    return (undef);
 }
 
-
 sub skip_all {
-    my( $self, $reason ) = @_;
+    my ($self, $reason) = @_;
 
     my $ctx = $self->ctx;
 
@@ -591,19 +590,17 @@ sub skip_all {
     $ctx->plan(0, SKIP => $reason);
 }
 
-
 sub exported_to {
-    my( $self, $pack ) = @_;
+    my ($self, $pack) = @_;
 
-    if( defined $pack ) {
+    if (defined $pack) {
         $self->{Exported_To} = $pack;
     }
     return $self->{Exported_To};
 }
 
-
 sub ok {
-    my( $self, $test, $name ) = @_;
+    my ($self, $test, $name) = @_;
 
     my $ctx = $self->ctx;
 
@@ -612,7 +609,7 @@ sub ok {
     $test = $test ? 1 : 0;
 
     # In case $name is a string overloaded object, force it to stringify.
-    no  warnings qw/uninitialized numeric/;
+    no warnings qw/uninitialized numeric/;
     $name = "$name" if defined $name;
 
     # Profiling showed that the regex here was a huge time waster, doing the
@@ -627,38 +624,38 @@ sub ok {
     my $hub   = $ctx->{hub};
 
     my $result = {
-        ok => $test,
+        ok        => $test,
         actual_ok => $test,
-        reason => '',
-        type => '',
+        reason    => '',
+        type      => '',
         (name => defined($name) ? $name : ''),
     };
 
-    $hub->{_meta}->{+__PACKAGE__}->{Test_Results}[ $hub->{count} ] = $result;
+    $hub->{_meta}->{+__PACKAGE__}->{Test_Results}[$hub->{count}] = $result;
 
     my $orig_name = $name;
 
     my @attrs;
-    my $subevents  = delete $self->{subevents};
-    my $subtest_id = delete $self->{subtest_id};
+    my $subevents        = delete $self->{subevents};
+    my $subtest_id       = delete $self->{subtest_id};
     my $subtest_buffered = delete $self->{subtest_buffered};
-    my $epkg = 'Test2::Event::Ok';
+    my $epkg             = 'Test2::Event::Ok';
     if ($subevents) {
         $epkg = 'Test2::Event::Subtest';
         push @attrs => (subevents => $subevents, subtest_id => $subtest_id, buffered => $subtest_buffered);
     }
 
     my $e = bless {
-        trace => bless( {%$trace}, 'Test2::Util::Trace'),
+        trace => bless({%$trace}, 'Test2::Util::Trace'),
         pass  => $test,
         name  => $name,
-        _meta => {'Test::Builder' => $result},
+        _meta          => {'Test::Builder' => $result},
         effective_pass => $test,
         @attrs,
     }, $epkg;
     $hub->send($e);
 
-    $self->_ok_debug($trace, $orig_name) unless($test);
+    $self->_ok_debug($trace, $orig_name) unless ($test);
 
     $ctx->release;
     return $test;
@@ -695,25 +692,25 @@ sub _unoverload {
     my ($self, $type, $thing) = @_;
 
     return unless ref $$thing;
-    return unless blessed($$thing) || scalar $self->_try(sub{ $$thing->isa('UNIVERSAL') });
+    return unless blessed($$thing) || scalar $self->_try(sub { $$thing->isa('UNIVERSAL') });
     {
         local ($!, $@);
         require overload;
     }
-    my $string_meth = overload::Method( $$thing, $type ) || return;
+    my $string_meth = overload::Method($$thing, $type) || return;
     $$thing = $$thing->$string_meth();
 }
 
 sub _unoverload_str {
     my $self = shift;
 
-    $self->_unoverload( q[""], $_ ) for @_;
+    $self->_unoverload(q[""], $_) for @_;
 }
 
 sub _unoverload_num {
     my $self = shift;
 
-    $self->_unoverload( '0+', $_ ) for @_;
+    $self->_unoverload('0+', $_) for @_;
 
     for my $val (@_) {
         next unless $self->_is_dualvar($$val);
@@ -723,7 +720,7 @@ sub _unoverload_num {
 
 # This is a hack to detect a dualvar such as $!
 sub _is_dualvar {
-    my( $self, $val ) = @_;
+    my ($self, $val) = @_;
 
     # Objects are not dualvars.
     return 0 if ref $val;
@@ -733,52 +730,49 @@ sub _is_dualvar {
     return ($numval != 0 and $numval ne $val ? 1 : 0);
 }
 
-
 sub is_eq {
-    my( $self, $got, $expect, $name ) = @_;
+    my ($self, $got, $expect, $name) = @_;
 
     my $ctx = $self->ctx;
 
     local $Level = $Level + 1;
 
-    if( !defined $got || !defined $expect ) {
+    if (!defined $got || !defined $expect) {
         # undef only matches undef and nothing else
         my $test = !defined $got && !defined $expect;
 
-        $self->ok( $test, $name );
-        $self->_is_diag( $got, 'eq', $expect ) unless $test;
+        $self->ok($test, $name);
+        $self->_is_diag($got, 'eq', $expect) unless $test;
         $ctx->release;
         return $test;
     }
 
-    release $ctx, $self->cmp_ok( $got, 'eq', $expect, $name );
+    release $ctx, $self->cmp_ok($got, 'eq', $expect, $name);
 }
-
 
 sub is_num {
-    my( $self, $got, $expect, $name ) = @_;
+    my ($self, $got, $expect, $name) = @_;
     my $ctx = $self->ctx;
     local $Level = $Level + 1;
 
-    if( !defined $got || !defined $expect ) {
+    if (!defined $got || !defined $expect) {
         # undef only matches undef and nothing else
         my $test = !defined $got && !defined $expect;
 
-        $self->ok( $test, $name );
-        $self->_is_diag( $got, '==', $expect ) unless $test;
+        $self->ok($test, $name);
+        $self->_is_diag($got, '==', $expect) unless $test;
         $ctx->release;
         return $test;
     }
 
-    release $ctx, $self->cmp_ok( $got, '==', $expect, $name );
+    release $ctx, $self->cmp_ok($got, '==', $expect, $name);
 }
 
-
 sub _diag_fmt {
-    my( $self, $type, $val ) = @_;
+    my ($self, $type, $val) = @_;
 
-    if( defined $$val ) {
-        if( $type eq 'eq' or $type eq 'ne' ) {
+    if (defined $$val) {
+        if ($type eq 'eq' or $type eq 'ne') {
             # quote and force string context
             $$val = "'$$val'";
         }
@@ -794,11 +788,10 @@ sub _diag_fmt {
     return;
 }
 
-
 sub _is_diag {
-    my( $self, $got, $type, $expect ) = @_;
+    my ($self, $got, $type, $expect) = @_;
 
-    $self->_diag_fmt( $type, $_ ) for \$got, \$expect;
+    $self->_diag_fmt($type, $_) for \$got, \$expect;
 
     local $Level = $Level + 1;
     return $self->diag(<<"DIAGNOSTIC");
@@ -809,9 +802,9 @@ DIAGNOSTIC
 }
 
 sub _isnt_diag {
-    my( $self, $got, $type ) = @_;
+    my ($self, $got, $type) = @_;
 
-    $self->_diag_fmt( $type, \$got );
+    $self->_diag_fmt($type, \$got);
 
     local $Level = $Level + 1;
     return $self->diag(<<"DIAGNOSTIC");
@@ -820,70 +813,67 @@ sub _isnt_diag {
 DIAGNOSTIC
 }
 
-
 sub isnt_eq {
-    my( $self, $got, $dont_expect, $name ) = @_;
+    my ($self, $got, $dont_expect, $name) = @_;
     my $ctx = $self->ctx;
     local $Level = $Level + 1;
 
-    if( !defined $got || !defined $dont_expect ) {
+    if (!defined $got || !defined $dont_expect) {
         # undef only matches undef and nothing else
         my $test = defined $got || defined $dont_expect;
 
-        $self->ok( $test, $name );
-        $self->_isnt_diag( $got, 'ne' ) unless $test;
+        $self->ok($test, $name);
+        $self->_isnt_diag($got, 'ne') unless $test;
         $ctx->release;
         return $test;
     }
 
-    release $ctx, $self->cmp_ok( $got, 'ne', $dont_expect, $name );
+    release $ctx, $self->cmp_ok($got, 'ne', $dont_expect, $name);
 }
 
 sub isnt_num {
-    my( $self, $got, $dont_expect, $name ) = @_;
+    my ($self, $got, $dont_expect, $name) = @_;
     my $ctx = $self->ctx;
     local $Level = $Level + 1;
 
-    if( !defined $got || !defined $dont_expect ) {
+    if (!defined $got || !defined $dont_expect) {
         # undef only matches undef and nothing else
         my $test = defined $got || defined $dont_expect;
 
-        $self->ok( $test, $name );
-        $self->_isnt_diag( $got, '!=' ) unless $test;
+        $self->ok($test, $name);
+        $self->_isnt_diag($got, '!=') unless $test;
         $ctx->release;
         return $test;
     }
 
-    release $ctx, $self->cmp_ok( $got, '!=', $dont_expect, $name );
+    release $ctx, $self->cmp_ok($got, '!=', $dont_expect, $name);
 }
 
-
 sub like {
-    my( $self, $thing, $regex, $name ) = @_;
+    my ($self, $thing, $regex, $name) = @_;
     my $ctx = $self->ctx;
 
     local $Level = $Level + 1;
 
-    release $ctx, $self->_regex_ok( $thing, $regex, '=~', $name );
+    release $ctx, $self->_regex_ok($thing, $regex, '=~', $name);
 }
 
 sub unlike {
-    my( $self, $thing, $regex, $name ) = @_;
+    my ($self, $thing, $regex, $name) = @_;
     my $ctx = $self->ctx;
 
     local $Level = $Level + 1;
 
-    release $ctx, $self->_regex_ok( $thing, $regex, '!~', $name );
+    release $ctx, $self->_regex_ok($thing, $regex, '!~', $name);
 }
 
-
-my %numeric_cmps = map { ( $_, 1 ) } ( "<", "<=", ">", ">=", "==", "!=", "<=>" );
+my %numeric_cmps = map { ($_, 1) } ("<", "<=", ">", ">=", "==", "!=", "<=>");
 
 # Bad, these are not comparison operators. Should we include more?
-my %cmp_ok_bl = map { ( $_, 1 ) } ( "=", "+=", ".=", "x=", "^=", "|=", "||=", "&&=", "...");
+my %cmp_ok_bl = map { ($_, 1) } ("=", "+=", ".=", "x=", "^=", "|=", "||=", "&&=", "...");
 
 sub cmp_ok {
-    my( $self, $got, $type, $expect, $name ) = @_;
+    my ($self, $got, $type, $expect, $name) = @_;
     my $ctx = $self->ctx;
 
     if ($cmp_ok_bl{$type}) {
@@ -895,9 +885,9 @@ sub cmp_ok {
     {
         ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-        local( $@, $!, $SIG{__DIE__} );    # isolate eval
+        local ($@, $!, $SIG{__DIE__});    # isolate eval
 
-        my($pack, $file, $line) = $ctx->trace->call();
+        my ($pack, $file, $line) = $ctx->trace->call();
 
         # This is so that warnings come out at the caller's level
         $succ = eval qq[
@@ -908,14 +898,14 @@ sub cmp_ok {
         $error = $@;
     }
     local $Level = $Level + 1;
-    my $ok = $self->ok( $test, $name );
+    my $ok = $self->ok($test, $name);
 
     # Treat overloaded objects as numbers if we're asked to do a
     # numeric comparison.
-    my $unoverload
-      = $numeric_cmps{$type}
-      ? '_unoverload_num'
-      : '_unoverload_str';
+    my $unoverload =
+        $numeric_cmps{$type}
+        ? '_unoverload_num'
+        : '_unoverload_str';
 
     $self->diag(<<"END") unless $succ;
 An error occurred while using $type:
@@ -924,37 +914,35 @@ $error
 ------------------------------------
 END
 
-    unless($ok) {
-        $self->$unoverload( \$got, \$expect );
+    unless ($ok) {
+        $self->$unoverload(\$got, \$expect);
 
-        if( $type =~ /^(eq|==)$/ ) {
-            $self->_is_diag( $got, $type, $expect );
+        if ($type =~ /^(eq|==)$/) {
+            $self->_is_diag($got, $type, $expect);
         }
-        elsif( $type =~ /^(ne|!=)$/ ) {
+        elsif ($type =~ /^(ne|!=)$/) {
             no warnings;
             my $eq = ($got eq $expect || $got == $expect)
-                && (
-                    (defined($got) xor defined($expect))
-                 || (length($got)  !=  length($expect))
-                );
+                && ((defined($got) xor defined($expect))
+                || (length($got) != length($expect)));
             use warnings;
 
             if ($eq) {
-                $self->_cmp_diag( $got, $type, $expect );
+                $self->_cmp_diag($got, $type, $expect);
             }
             else {
-                $self->_isnt_diag( $got, $type );
+                $self->_isnt_diag($got, $type);
             }
         }
         else {
-            $self->_cmp_diag( $got, $type, $expect );
+            $self->_cmp_diag($got, $type, $expect);
         }
     }
     return release $ctx, $ok;
 }
 
 sub _cmp_diag {
-    my( $self, $got, $type, $expect ) = @_;
+    my ($self, $got, $type, $expect) = @_;
 
     $got    = defined $got    ? "'$got'"    : 'undef';
     $expect = defined $expect ? "'$expect'" : 'undef';
@@ -970,7 +958,7 @@ DIAGNOSTIC
 sub _caller_context {
     my $self = shift;
 
-    my( $pack, $file, $line ) = $self->caller(1);
+    my ($pack, $file, $line) = $self->caller(1);
 
     my $code = '';
     $code .= "#line $line $file\n" if defined $file and defined $line;
@@ -978,9 +966,8 @@ sub _caller_context {
     return $code;
 }
 
-
 sub BAIL_OUT {
-    my( $self, $reason ) = @_;
+    my ($self, $reason) = @_;
 
     my $ctx = $self->ctx;
 
@@ -989,21 +976,20 @@ sub BAIL_OUT {
     $ctx->bail($reason);
 }
 
-
 {
     no warnings 'once';
     *BAILOUT = \&BAIL_OUT;
 }
 
 sub skip {
-    my( $self, $why, $name ) = @_;
+    my ($self, $why, $name) = @_;
     $why ||= '';
     $name = '' unless defined $name;
-    $self->_unoverload_str( \$why );
+    $self->_unoverload_str(\$why);
 
     my $ctx = $self->ctx;
 
-    $ctx->hub->meta(__PACKAGE__, {})->{Test_Results}[ $ctx->hub->count ] = {
+    $ctx->hub->meta(__PACKAGE__, {})->{Test_Results}[$ctx->hub->count] = {
         'ok'      => 1,
         actual_ok => 1,
         name      => $name,
@@ -1021,14 +1007,13 @@ sub skip {
     return release $ctx, 1;
 }
 
-
 sub todo_skip {
-    my( $self, $why ) = @_;
+    my ($self, $why) = @_;
     $why ||= '';
 
     my $ctx = $self->ctx;
 
-    $ctx->hub->meta(__PACKAGE__, {})->{Test_Results}[ $ctx->hub->count ] = {
+    $ctx->hub->meta(__PACKAGE__, {})->{Test_Results}[$ctx->hub->count] = {
         'ok'      => 1,
         actual_ok => 0,
         name      => '',
@@ -1038,28 +1023,26 @@ sub todo_skip {
 
     $why =~ s{\n}{\n# }sg;
     my $tctx = $ctx->snapshot;
-    $tctx->send_event( 'Skip', todo => $why, todo_diag => 1, reason => $why, pass => 0);
+    $tctx->send_event('Skip', todo => $why, todo_diag => 1, reason => $why, pass => 0);
 
     return release $ctx, 1;
 }
 
-
 sub maybe_regex {
-    my( $self, $regex ) = @_;
+    my ($self, $regex) = @_;
     my $usable_regex = undef;
 
     return $usable_regex unless defined $regex;
 
-    my( $re, $opts );
+    my ($re, $opts);
 
     # Check for qr/foo/
-    if( _is_qr($regex) ) {
+    if (_is_qr($regex)) {
         $usable_regex = $regex;
     }
     # Check for '/foo/' or 'm,foo,'
-    elsif(( $re, $opts )        = $regex =~ m{^ /(.*)/ (\w*) $ }sx              or
-          ( undef, $re, $opts ) = $regex =~ m,^ m([^\w\s]) (.+) \1 (\w*) $,sx
-    )
+    elsif (($re, $opts) = $regex =~ m{^ /(.*)/ (\w*) $ }sx
+        or (undef, $re, $opts) = $regex =~ m,^ m([^\w\s]) (.+) \1 (\w*) $,sx)
     {
         $usable_regex = length $opts ? "(?$opts)$re" : $re;
     }
@@ -1077,13 +1060,13 @@ sub _is_qr {
 }
 
 sub _regex_ok {
-    my( $self, $thing, $regex, $cmp, $name ) = @_;
+    my ($self, $thing, $regex, $cmp, $name) = @_;
 
     my $ok           = 0;
     my $usable_regex = $self->maybe_regex($regex);
-    unless( defined $usable_regex ) {
+    unless (defined $usable_regex) {
         local $Level = $Level + 1;
-        $ok = $self->ok( 0, $name );
+        $ok = $self->ok(0, $name);
         $self->diag("    '$regex' doesn't look much like a regex to me.");
         return $ok;
     }
@@ -1095,7 +1078,7 @@ sub _regex_ok {
         {
             ## no critic (BuiltinFunctions::ProhibitStringyEval)
 
-            local( $@, $!, $SIG{__DIE__} );    # isolate eval
+            local ($@, $!, $SIG{__DIE__});    # isolate eval
 
             # No point in issuing an uninit warning, they'll see it in the diagnostics
             no warnings 'uninitialized';
@@ -1106,15 +1089,15 @@ sub _regex_ok {
         $test = !$test if $cmp eq '!~';
 
         local $Level = $Level + 1;
-        $ok = $self->ok( $test, $name );
+        $ok = $self->ok($test, $name);
     }
 
-    unless($ok) {
+    unless ($ok) {
         $thing = defined $thing ? "'$thing'" : 'undef';
         my $match = $cmp eq '=~' ? "doesn't match" : "matches";
 
         local $Level = $Level + 1;
-        $self->diag( sprintf <<'DIAGNOSTIC', $thing, $match, $regex );
+        $self->diag(sprintf <<'DIAGNOSTIC', $thing, $match, $regex);
                   %s
     %13s '%s'
 DIAGNOSTIC
@@ -1124,34 +1107,31 @@ DIAGNOSTIC
     return $ok;
 }
 
-
 sub is_fh {
     my $self     = shift;
     my $maybe_fh = shift;
     return 0 unless defined $maybe_fh;
 
-    return 1 if ref $maybe_fh  eq 'GLOB';    # its a glob ref
+    return 1 if ref $maybe_fh eq 'GLOB';     # its a glob ref
     return 1 if ref \$maybe_fh eq 'GLOB';    # its a glob
 
-    return eval { $maybe_fh->isa("IO::Handle") } ||
-           eval { tied($maybe_fh)->can('TIEHANDLE') };
+    return eval { $maybe_fh->isa("IO::Handle") }
+        || eval { tied($maybe_fh)->can('TIEHANDLE') };
 }
 
-
 sub level {
-    my( $self, $level ) = @_;
+    my ($self, $level) = @_;
 
-    if( defined $level ) {
+    if (defined $level) {
         $Level = $level;
     }
     return $Level;
 }
 
-
 sub use_numbers {
-    my( $self, $use_nums ) = @_;
+    my ($self, $use_nums) = @_;
 
-    my $ctx = $self->ctx;
+    my $ctx    = $self->ctx;
     my $format = $ctx->hub->format;
     unless ($format && $format->can('no_numbers') && $format->can('set_no_numbers')) {
         warn "The current formatter does not support 'use_numbers'" if $format;
@@ -1165,16 +1145,16 @@ sub use_numbers {
 
 BEGIN {
     for my $method (qw(no_header no_diag)) {
-        my $set = "set_$method";
+        my $set  = "set_$method";
         my $code = sub {
-            my( $self, $no ) = @_;
+            my ($self, $no) = @_;
 
-            my $ctx = $self->ctx;
+            my $ctx    = $self->ctx;
             my $format = $ctx->hub->format;
             unless ($format && $format->can($set)) {
                 warn "The current formatter does not support '$method'" if $format;
                 $ctx->release;
-                return
+                return;
             }
 
             $format->$set($no) if defined $no;
@@ -1188,7 +1168,7 @@ BEGIN {
 }
 
 sub no_ending {
-    my( $self, $no ) = @_;
+    my ($self, $no) = @_;
 
     my $ctx = $self->ctx;
 
@@ -1202,22 +1182,20 @@ sub diag {
     return unless @_;
 
     my $ctx = $self->ctx;
-    $ctx->diag(join '' => map {defined($_) ? $_ : 'undef'} @_);
+    $ctx->diag(join '' => map { defined($_) ? $_ : 'undef' } @_);
     $ctx->release;
     return 0;
 }
-
 
 sub note {
     my $self = shift;
     return unless @_;
 
     my $ctx = $self->ctx;
-    $ctx->note(join '' => map {defined($_) ? $_ : 'undef'} @_);
+    $ctx->note(join '' => map { defined($_) ? $_ : 'undef' } @_);
     $ctx->release;
     return 0;
 }
-
 
 sub explain {
     my $self = shift;
@@ -1227,21 +1205,20 @@ sub explain {
 
     return map {
         ref $_
-          ? do {
-            my $dumper = Data::Dumper->new( [$_] );
+            ? do {
+            my $dumper = Data::Dumper->new([$_]);
             $dumper->Indent(1)->Terse(1);
             $dumper->Sortkeys(1) if $dumper->can("Sortkeys");
             $dumper->Dump;
-          }
-          : $_
+            }
+            : $_
     } @_;
 }
 
-
 sub output {
-    my( $self, $fh ) = @_;
+    my ($self, $fh) = @_;
 
-    my $ctx = $self->ctx;
+    my $ctx    = $self->ctx;
     my $format = $ctx->hub->format;
     $ctx->release;
     return unless $format && $format->isa('Test2::Formatter::TAP');
@@ -1253,9 +1230,9 @@ sub output {
 }
 
 sub failure_output {
-    my( $self, $fh ) = @_;
+    my ($self, $fh) = @_;
 
-    my $ctx = $self->ctx;
+    my $ctx    = $self->ctx;
     my $format = $ctx->hub->format;
     $ctx->release;
     return unless $format && $format->isa('Test2::Formatter::TAP');
@@ -1267,9 +1244,9 @@ sub failure_output {
 }
 
 sub todo_output {
-    my( $self, $fh ) = @_;
+    my ($self, $fh) = @_;
 
-    my $ctx = $self->ctx;
+    my $ctx    = $self->ctx;
     my $format = $ctx->hub->format;
     $ctx->release;
     return unless $format && $format->isa('Test::Builder::Formatter');
@@ -1282,27 +1259,27 @@ sub todo_output {
 
 sub _new_fh {
     my $self = shift;
-    my($file_or_fh) = shift;
+    my ($file_or_fh) = shift;
 
     my $fh;
-    if( $self->is_fh($file_or_fh) ) {
+    if ($self->is_fh($file_or_fh)) {
         $fh = $file_or_fh;
     }
-    elsif( ref $file_or_fh eq 'SCALAR' ) {
+    elsif (ref $file_or_fh eq 'SCALAR') {
         # Scalar refs as filehandles was added in 5.8.
-        if( $] >= 5.008 ) {
+        if ($] >= 5.008) {
             open $fh, ">>", $file_or_fh
-              or $self->croak("Can't open scalar ref $file_or_fh: $!");
+                or $self->croak("Can't open scalar ref $file_or_fh: $!");
         }
         # Emulate scalar ref filehandles with a tie.
         else {
             $fh = Test::Builder::IO::Scalar->new($file_or_fh)
-              or $self->croak("Can't tie scalar ref $file_or_fh");
+                or $self->croak("Can't tie scalar ref $file_or_fh");
         }
     }
     else {
         open $fh, ">", $file_or_fh
-          or $self->croak("Can't open test output log $file_or_fh: $!");
+            or $self->croak("Can't open test output log $file_or_fh: $!");
         _autoflush($fh);
     }
 
@@ -1310,7 +1287,7 @@ sub _new_fh {
 }
 
 sub _autoflush {
-    my($fh) = shift;
+    my ($fh) = shift;
     my $old_fh = select $fh;
     $| = 1;
     select $old_fh;
@@ -1318,11 +1295,10 @@ sub _autoflush {
     return;
 }
 
-
 sub reset_outputs {
     my $self = shift;
 
-    my $ctx = $self->ctx;
+    my $ctx    = $self->ctx;
     my $format = $ctx->hub->format;
     $ctx->release;
     return unless $format && $format->isa('Test2::Formatter::TAP');
@@ -1331,36 +1307,34 @@ sub reset_outputs {
     return;
 }
 
-
 sub carp {
     my $self = shift;
-    my $ctx = $self->ctx;
+    my $ctx  = $self->ctx;
     $ctx->alert(join "", @_);
     $ctx->release;
 }
 
 sub croak {
     my $self = shift;
-    my $ctx = $self->ctx;
+    my $ctx  = $self->ctx;
     $ctx->throw(join "", @_);
     $ctx->release;
 }
 
-
 sub current_test {
-    my( $self, $num ) = @_;
+    my ($self, $num) = @_;
 
     my $ctx = $self->ctx;
     my $hub = $ctx->hub;
 
-    if( defined $num ) {
+    if (defined $num) {
         $hub->set_count($num);
 
         # If the test counter is being pushed forward fill in the details.
         my $test_results = $ctx->hub->meta(__PACKAGE__, {})->{Test_Results};
-        if( $num > @$test_results ) {
+        if ($num > @$test_results) {
             my $start = @$test_results ? @$test_results : 0;
-            for( $start .. $num - 1 ) {
+            for ($start .. $num - 1) {
                 $test_results->[$_] = {
                     'ok'      => 1,
                     actual_ok => undef,
@@ -1371,13 +1345,12 @@ sub current_test {
             }
         }
         # If backward, wipe history.  Its their funeral.
-        elsif( $num < @$test_results ) {
+        elsif ($num < @$test_results) {
             $#{$test_results} = $num - 1;
         }
     }
     return release $ctx, $hub->count;
 }
-
 
 sub is_passing {
     my $self = shift;
@@ -1385,7 +1358,7 @@ sub is_passing {
     my $ctx = $self->ctx;
     my $hub = $ctx->hub;
 
-    if( @_ ) {
+    if (@_) {
         my ($bool) = @_;
         $hub->set_failed(0) if $bool;
         $hub->is_passing($bool);
@@ -1394,9 +1367,8 @@ sub is_passing {
     return release $ctx, $hub->is_passing;
 }
 
-
 sub summary {
-    my($self) = shift;
+    my ($self) = shift;
 
     my $ctx = $self->ctx;
     my $data = $ctx->hub->meta(__PACKAGE__, {})->{Test_Results};
@@ -1404,18 +1376,16 @@ sub summary {
     return map { $_->{'ok'} } @$data;
 }
 
-
 sub details {
     my $self = shift;
-    my $ctx = $self->ctx;
+    my $ctx  = $self->ctx;
     my $data = $ctx->hub->meta(__PACKAGE__, {})->{Test_Results};
     $ctx->release;
     return @$data;
 }
 
-
 sub find_TODO {
-    my( $self, $pack, $set, $new_value ) = @_;
+    my ($self, $pack, $set, $new_value) = @_;
 
     my $ctx = $self->ctx;
 
@@ -1426,13 +1396,13 @@ sub find_TODO {
 
     no strict 'refs';    ## no critic
     no warnings 'once';
-    my $old_value = ${ $pack . '::TODO' };
-    $set and ${ $pack . '::TODO' } = $new_value;
+    my $old_value = ${$pack . '::TODO'};
+    $set and ${$pack . '::TODO'} = $new_value;
     return $old_value;
 }
 
 sub todo {
-    my( $self, $pack ) = @_;
+    my ($self, $pack) = @_;
 
     local $Level = $Level + 1;
     my $ctx = $self->ctx;
@@ -1447,7 +1417,7 @@ sub todo {
 
     no strict 'refs';    ## no critic
     no warnings 'once';
-    return ${ $pack . '::TODO' };
+    return ${$pack . '::TODO'};
 }
 
 sub in_todo {
@@ -1464,7 +1434,7 @@ sub in_todo {
 
     no strict 'refs';    ## no critic
     no warnings 'once';
-    my $todo = ${ $pack . '::TODO' };
+    my $todo = ${$pack . '::TODO'};
 
     return 0 unless defined $todo;
     return 0 if "$todo" eq '';
@@ -1477,27 +1447,30 @@ sub todo_start {
 
     my $ctx = $self->ctx;
 
-    my $hub = $ctx->hub;
-    my $filter = $hub->pre_filter(sub {
-        my ($active_hub, $e) = @_;
+    my $hub    = $ctx->hub;
+    my $filter = $hub->pre_filter(
+        sub {
+            my ($active_hub, $e) = @_;
 
-        # Turn a diag into a todo diag
-        return Test::Builder::TodoDiag->new(%$e) if ref($e) eq 'Test2::Event::Diag';
+            # Turn a diag into a todo diag
+            return Test::Builder::TodoDiag->new(%$e) if ref($e) eq 'Test2::Event::Diag';
 
-        # Set todo on ok's
-        if ($hub == $active_hub && $e->isa('Test2::Event::Ok')) {
-            $e->set_todo($message);
-            $e->set_effective_pass(1);
+            # Set todo on ok's
+            if ($hub == $active_hub && $e->isa('Test2::Event::Ok')) {
+                $e->set_todo($message);
+                $e->set_effective_pass(1);
 
-            if (my $result = $e->get_meta(__PACKAGE__)) {
-                $result->{reason} ||= $message;
-                $result->{type}   ||= 'todo';
-                $result->{ok}       = 1;
+                if (my $result = $e->get_meta(__PACKAGE__)) {
+                    $result->{reason} ||= $message;
+                    $result->{type}   ||= 'todo';
+                    $result->{ok} = 1;
+                }
             }
-        }
 
-        return $e;
-    }, inherit => 1);
+            return $e;
+        },
+        inherit => 1
+    );
 
     push @{$ctx->hub->meta(__PACKAGE__, {todo => []})->{todo}} => [$filter, $message];
 
@@ -1522,9 +1495,8 @@ sub todo_end {
     return;
 }
 
-
 sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
-    my( $self ) = @_;
+    my ($self) = @_;
 
     my $ctx = $self->ctx;
 
@@ -1533,9 +1505,8 @@ sub caller {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     return wantarray ? $trace->call : $trace->package;
 }
 
-
 sub _try {
-    my( $self, $code, %opts ) = @_;
+    my ($self, $code, %opts) = @_;
 
     my $error;
     my $return;
@@ -1549,7 +1520,7 @@ sub _try {
 
     die $error if $error and $opts{die_on_fail};
 
-    return wantarray ? ( $return, $error ) : $return;
+    return wantarray ? ($return, $error) : $return;
 }
 
 sub _ending {
@@ -1572,17 +1543,17 @@ sub _ending {
     my $hub = $ctx->hub;
     return if $hub->bailed_out;
 
-    my $plan  = $hub->plan;
-    my $count = $hub->count;
+    my $plan   = $hub->plan;
+    my $count  = $hub->count;
     my $failed = $hub->failed;
     my $passed = $hub->is_passing;
     return unless $plan || $count || $failed;
 
     # Ran tests but never declared a plan or hit done_testing
-    if( !$hub->plan and $hub->count ) {
+    if (!$hub->plan and $hub->count) {
         $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
 
-        if($real_exit_code) {
+        if ($real_exit_code) {
             $self->diag(<<"FAIL");
 Looks like your test exited with $real_exit_code just after $count.
 FAIL
@@ -1591,7 +1562,7 @@ FAIL
         }
 
         # But if the tests ran, handle exit code.
-        if($failed > 0) {
+        if ($failed > 0) {
             my $exit_code = $failed <= 254 ? $failed : 254;
             $$new ||= $exit_code;
             return;
@@ -1624,7 +1595,7 @@ FAIL
     }
 
     if ($plan eq 'NO PLAN') {
-        $ctx->plan( $count );
+        $ctx->plan($count);
         $plan = $hub->plan;
     }
 
@@ -1672,7 +1643,7 @@ FAIL
 # Some things used this even though it was private... I am looking at you
 # Test::Builder::Prefix...
 sub _print_comment {
-    my( $self, $fh, @msgs ) = @_;
+    my ($self, $fh, @msgs) = @_;
 
     return if $self->no_diag;
     return unless @msgs;
@@ -1687,7 +1658,7 @@ sub _print_comment {
     # Escape the beginning, _print will take care of the rest.
     $msg =~ s/^/# /;
 
-    local( $\, $", $, ) = ( undef, ' ', '' );
+    local ($\, $", $,) = (undef, ' ', '');
     print $fh $msg;
 
     return 0;

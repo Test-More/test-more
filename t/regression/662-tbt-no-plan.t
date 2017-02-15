@@ -4,6 +4,7 @@ use strict;
 use warnings;
 
 BEGIN {
+
     package Example::Tester;
 
     use base 'Test::Builder::Module';

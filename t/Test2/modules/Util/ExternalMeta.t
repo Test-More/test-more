@@ -3,6 +3,7 @@ use warnings;
 use Test2::Tools::Tiny;
 
 {
+
     package Foo::Bar;
 
     use Test2::Util::ExternalMeta;
@@ -27,8 +28,8 @@ is($one->meta('baz'), undef, "no meta-data for baz");
 is_deeply($one, {foo => 1, bar => 2}, "Still have not modified instance");
 
 $one->set_meta('foo' => 123);
-is($one->foo, 1, "did not change attribute");
-is($one->meta('foo'), 123, "get meta-data for foo");
+is($one->foo,             1,   "did not change attribute");
+is($one->meta('foo'),     123, "get meta-data for foo");
 is($one->get_meta('foo'), 123, "get meta-data for foo again");
 
 $one->meta('foo', 345);
@@ -42,8 +43,8 @@ is($one->bar, 2, "did not change attribute");
 is_deeply(
     $one,
     {
-        foo => 1,
-        bar => 2,
+        foo                                   => 1,
+        bar                                   => 2,
         Test2::Util::ExternalMeta::META_KEY() => {
             foo => 123,
             bar => 789,
@@ -52,14 +53,14 @@ is_deeply(
     "Stored meta-data"
 );
 
-is($one->delete_meta('foo'), 123, "got old value on delete");
-is($one->meta('foo'), undef, "no more value");
+is($one->delete_meta('foo'), 123,   "got old value on delete");
+is($one->meta('foo'),        undef, "no more value");
 
 is_deeply(
     $one,
     {
-        foo => 1,
-        bar => 2,
+        foo                                   => 1,
+        bar                                   => 2,
         Test2::Util::ExternalMeta::META_KEY() => {
             bar => 789,
         },

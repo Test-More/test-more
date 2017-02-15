@@ -37,7 +37,7 @@ tests abort => sub {
         $one->abort('foo');
     }
 
-    is($err, "IPC Fatal Error: foo\n", "Got error");
+    is($err, "IPC Fatal Error: foo\n",     "Got error");
     is($out, "not ok - IPC Fatal Error\n", "got 'not ok' on stdout");
 
     ($err, $out) = ("", "");

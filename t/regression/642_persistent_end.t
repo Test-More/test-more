@@ -19,7 +19,7 @@ intercept {
 };
 
 ok(!$res{before}, "Not the end");
-ok($res{isset}, "the end");
-ok(!$res{reset}, "Not the end");
+ok($res{isset},   "the end");
+ok(!$res{reset},  "Not the end");
 
 done_testing;

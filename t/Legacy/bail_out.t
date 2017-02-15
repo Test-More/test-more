@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -11,6 +11,7 @@ BEGIN {
 }
 
 my $Exit_Code;
+
 BEGIN {
     *CORE::GLOBAL::exit = sub { $Exit_Code = shift; };
 }
@@ -35,12 +36,11 @@ plan tests => 4;
 
 BAIL_OUT("ROCKS FALL! EVERYONE DIES!");
 
-
-$Test->is_eq( $output, <<'OUT' );
+$Test->is_eq($output, <<'OUT' );
 1..4
 Bail out!  ROCKS FALL! EVERYONE DIES!
 OUT
 
-$Test->is_eq( $Exit_Code, 255 );
+$Test->is_eq($Exit_Code, 255);
 
-$Test->ok( $Test->can("BAILOUT"), "Backwards compat" );
+$Test->ok($Test->can("BAILOUT"), "Backwards compat");

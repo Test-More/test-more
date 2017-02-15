@@ -17,7 +17,6 @@ sub import {
     ($file =~ /^\(eval/) or die "Not enough arguments for 'use ok' at $file line $line\n";
 }
 
-
 __END__
 
 =encoding UTF-8

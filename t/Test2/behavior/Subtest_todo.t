@@ -6,14 +6,14 @@ use Test2::Tools::Tiny;
 use Test2::API qw/run_subtest intercept/;
 
 my $events = intercept {
-	todo 'testing todo', sub {
-		run_subtest(
-			'fails in todo',
-			sub {
-				ok(1, 'first passes');
-				ok(0, 'second fails');
-			});
-	};
+    todo 'testing todo', sub {
+        run_subtest(
+            'fails in todo',
+            sub {
+                ok(1, 'first passes');
+                ok(0, 'second fails');
+            });
+    };
 };
 
 ok($events->[1],                 'Test2::Event::Subtest', 'subtest ran');

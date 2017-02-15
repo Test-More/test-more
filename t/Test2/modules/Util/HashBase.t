@@ -3,7 +3,6 @@ use warnings;
 
 use Test::More;
 
-
 sub warnings(&) {
     my $code = shift;
     my @warnings;
@@ -23,8 +22,7 @@ sub exception(&) {
 BEGIN {
     $INC{'Object/HashBase/Test/HBase.pm'} = __FILE__;
 
-    package
-        main::HBase;
+    package main::HBase;
     use Test2::Util::HashBase qw/foo bar baz/;
 
     main::is(FOO, 'foo', "FOO CONSTANT");
@@ -33,8 +31,8 @@ BEGIN {
 }
 
 BEGIN {
-    package
-        main::HBaseSub;
+
+    package main::HBaseSub;
     use base 'main::HBase';
     use Test2::Util::HashBase qw/apple pear/;
 
@@ -64,15 +62,15 @@ is_deeply(
 );
 
 BEGIN {
-    package
-        main::Const::Test;
+
+    package main::Const::Test;
     use Test2::Util::HashBase qw/foo/;
 
     sub do_it {
         if (FOO()) {
             return 'const';
         }
-        return 'not const'
+        return 'not const';
     }
 }
 
@@ -88,8 +86,7 @@ is($pkg->do_it, 'const', "worked as expected, const was constant");
 BEGIN {
     $INC{'Object/HashBase/Test/HBase/Wrapped.pm'} = __FILE__;
 
-    package
-        main::HBase::Wrapped;
+    package main::HBase::Wrapped;
     use Test2::Util::HashBase qw/foo bar/;
 
     my $foo = __PACKAGE__->can('foo');
@@ -104,8 +101,7 @@ BEGIN {
 BEGIN {
     $INC{'Object/HashBase/Test/HBase/Wrapped/Inherit.pm'} = __FILE__;
 
-    package
-        main::HBase::Wrapped::Inherit;
+    package main::HBase::Wrapped::Inherit;
     use base 'main::HBase::Wrapped';
     use Test2::Util::HashBase;
 }
@@ -115,14 +111,14 @@ my $foo = $o->foo;
 is($o->bar, 1, 'parent attribute sub not overridden');
 
 {
-    package
-        Foo;
+
+    package Foo;
 
     sub new;
 
     use Test2::Util::HashBase qw/foo bar baz/;
 
-    sub new { 'foo' };
+    sub new { 'foo' }
 }
 
 is(Foo->new, 'foo', "Did not override existing 'new' method");
@@ -130,8 +126,7 @@ is(Foo->new, 'foo', "Did not override existing 'new' method");
 BEGIN {
     $INC{'Object/HashBase/Test/HBase2.pm'} = __FILE__;
 
-    package
-        main::HBase2;
+    package main::HBase2;
     use Test2::Util::HashBase qw/foo -bar ^baz/;
 
     main::is(FOO, 'foo', "FOO CONSTANT");
@@ -145,7 +140,7 @@ is($ro->bar, 'bar', "got bar");
 is($ro->baz, 'baz', "got baz");
 
 is($ro->set_foo('xxx'), 'xxx', "Can set foo");
-is($ro->foo, 'xxx', "got foo");
+is($ro->foo,            'xxx', "got foo");
 
 like(exception { $ro->set_bar('xxx') }, qr/'bar' is read-only/, "Cannot set bar");
 

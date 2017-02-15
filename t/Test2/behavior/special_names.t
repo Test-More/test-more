@@ -43,7 +43,7 @@ my $not_ok = capture {
 
 test2_stack->pop($temp_hub);
 
-is($ok->{STDERR}, "", "STDERR for ok is empty");
+is($ok->{STDERR}, "",    "STDERR for ok is empty");
 is($ok->{STDOUT}, <<EOT, "STDOUT looks right for ok");
 ok 1
 ok 2 -_
@@ -81,6 +81,5 @@ not ok 18 - E
 #          _
 #          _
 EOT
-
 
 done_testing;

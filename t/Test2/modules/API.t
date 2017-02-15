@@ -4,10 +4,11 @@ use warnings;
 use Test2::API qw/context/;
 
 my ($LOADED, $INIT);
+
 BEGIN {
     $INIT   = Test2::API::test2_init_done;
     $LOADED = Test2::API::test2_load_done;
-};
+}
 
 use Test2::IPC;
 use Test2::Tools::Tiny;
@@ -49,13 +50,14 @@ ok(Test2::API->can($_), "$_ method is present") for qw{
     test2_formatter_set
 };
 
-ok(!$LOADED, "Was not load_done right away");
-ok(!$INIT, "Init was not done right away");
+ok(!$LOADED,                    "Was not load_done right away");
+ok(!$INIT,                      "Init was not done right away");
 ok(Test2::API::test2_load_done, "We loaded it");
 
 # Note: This is a check that stuff happens in an END block.
 {
     {
+
         package FOLLOW;
 
         sub DESTROY {
@@ -71,8 +73,7 @@ ok(Test2::API::test2_load_done, "We loaded it");
         sub {
             print "# Running END hook\n";
             $kill1->{fixed} = 1;
-        }
-    );
+        });
 
     our $kill2 = bless {fixed => 0, name => "set exit"}, 'FOLLOW';
     my $old = Test2::API::Instance->can('set_exit');
@@ -87,7 +88,7 @@ ok(Test2::API::test2_load_done, "We loaded it");
 ok($CLASS->can('test2_init_done')->(), "init is done.");
 ok($CLASS->can('test2_load_done')->(), "Test2 is finished loading");
 
-is($CLASS->can('test2_pid')->(), $$, "got pid");
+is($CLASS->can('test2_pid')->(), $$,        "got pid");
 is($CLASS->can('test2_tid')->(), get_tid(), "got tid");
 
 ok($CLASS->can('test2_stack')->(), 'got stack');
@@ -99,8 +100,8 @@ is($CLASS->can('test2_ipc')->(), $CLASS->can('test2_ipc')->(), "always get the s
 is_deeply([$CLASS->can('test2_ipc_drivers')->()], [qw/Test2::IPC::Driver::Files/], "Got driver list");
 
 # Verify it reports to the correct file/line, there was some trouble with this...
-my $file = __FILE__;
-my $line = __LINE__ + 1;
+my $file     = __FILE__;
+my $line     = __LINE__ + 1;
 my $warnings = warnings { $CLASS->can('test2_ipc_add_driver')->('fake') };
 like(
     $warnings->[0],
@@ -142,6 +143,7 @@ $CLASS->can('test2_no_wait')->(undef);
 ok(!$CLASS->can('test2_no_wait')->(), "no_wait is not set");
 
 my $pctx;
+
 sub tool_a($;$) {
     Test2::API::context_do {
         my $ctx = shift;
@@ -152,7 +154,8 @@ sub tool_a($;$) {
         return unless defined $pctx;
         return (1, 2) if $pctx;
         return 'a';
-    } @_;
+    }
+    @_;
 }
 
 $pctx = 'x';
@@ -186,10 +189,12 @@ sub {
         };
 
         $middle->release;
-    }->();
+        }
+        ->();
 
     $outer->release;
-}->();
+    }
+    ->();
 
 sub {
     my $outer = context();
@@ -201,13 +206,16 @@ sub {
             my $inner = context();
             ok($inner->trace != $outer->trace, "Got a different context inside of no_context({}, hid)");
             $inner->release;
-        } $outer->hub->hid;
+        }
+        $outer->hub->hid;
 
         $middle->release;
-    }->();
+        }
+        ->();
 
     $outer->release;
-}->();
+    }
+    ->();
 
 sub {
     my @warnings;
@@ -220,10 +228,12 @@ sub {
         Test2::API::no_context {
             my $inner = context();
             ok($inner->trace != $outer->trace, "Got a different context inside of no_context({}, hid)");
-        } $outer->hub->hid;
+        }
+        $outer->hub->hid;
 
         $middle->release;
-    }->();
+        }
+        ->();
 
     $outer->release;
 
@@ -233,16 +243,16 @@ sub {
         qr/A context appears to have been destroyed without first calling release/,
         "Got warning about unreleased context"
     );
-}->();
-
+    }
+    ->();
 
 sub {
     my $hub = Test2::Hub->new();
     my $ctx = context(hub => $hub);
-    is($ctx->hub,$hub, 'got the hub of context() argument');
+    is($ctx->hub, $hub, 'got the hub of context() argument');
     $ctx->release;
-}->();
-
+    }
+    ->();
 
 my $sub = sub { };
 

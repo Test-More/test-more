@@ -39,11 +39,11 @@ for my $field (@FIELDS) {
 
     *$field = sub { exists $_[0]->{$field} ? $_[0]->{$field} : () }
         unless defined $stash->{$field}
-            && defined *{$stash->{$field}}{CODE};
+        && defined *{$stash->{$field}}{CODE};
 
     *{"set_$field"} = sub { $_[0]->{$field} = $_[1] }
         unless defined $stash->{"set_$field"}
-            && defined *{$stash->{"set_$field"}}{CODE};
+        && defined *{$stash->{"set_$field"}}{CODE};
 }
 
 sub summary {
@@ -68,7 +68,7 @@ sub set_global {
     my $self = shift;
     my ($bool) = @_;
 
-    if(!defined $bool) {
+    if (!defined $bool) {
         delete $self->{global};
         return undef;
     }
@@ -80,7 +80,7 @@ sub set_callback {
     my $self = shift;
     my ($cb) = @_;
 
-    if(!defined $cb) {
+    if (!defined $cb) {
         delete $self->{callback};
         return undef;
     }
@@ -95,13 +95,13 @@ sub set_terminate {
     my $self = shift;
     my ($exit) = @_;
 
-    if(!defined $exit) {
+    if (!defined $exit) {
         delete $self->{terminate};
         return undef;
     }
 
     croak "terminate must be a positive integer"
-       unless $exit =~ m/^\d+$/;
+        unless $exit =~ m/^\d+$/;
 
     $self->{terminate} = $exit;
 }
@@ -110,7 +110,7 @@ sub set_sets_plan {
     my $self = shift;
     my ($plan) = @_;
 
-    if(!defined $plan) {
+    if (!defined $plan) {
         delete $self->{sets_plan};
         return undef;
     }

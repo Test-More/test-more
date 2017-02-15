@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302077';
 
-
 use Test2::Util qw/get_tid pkg_to_file/;
 
 use Carp qw/confess/;
@@ -21,7 +20,7 @@ sub init {
     $_[0]->{+CID} = 'T' . $CID++ unless defined $_[0]->{+CID};
 }
 
-sub snapshot { bless {%{$_[0]}}, __PACKAGE__ };
+sub snapshot { bless {%{$_[0]}}, __PACKAGE__ }
 
 sub signature {
     my $self = shift;

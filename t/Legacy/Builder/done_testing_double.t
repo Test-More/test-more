@@ -1,8 +1,9 @@
 #!/usr/bin/perl -w
 
 use strict;
+
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -31,7 +32,7 @@ my $tb = Test::Builder::NoOutput->create;
 }
 
 my $Test = Test::Builder->new;
-$Test->plan( tests => 1 );
+$Test->plan(tests => 1);
 $Test->level(0);
 $Test->is_eq($tb->read, <<"END", "multiple done_testing");
 ok 1

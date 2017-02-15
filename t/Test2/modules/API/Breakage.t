@@ -9,7 +9,7 @@ my $CLASS = 'Test2::API::Breakage';
 for my $meth (qw/upgrade_suggested upgrade_required known_broken/) {
     my @list = $CLASS->$meth;
     ok(!(@list % 2), "Got even list ($meth)");
-    ok(!(grep {!defined($_)} @list), "No undefined items ($meth)");
+    ok(!(grep { !defined($_) } @list), "No undefined items ($meth)");
 }
 
 {
@@ -27,7 +27,7 @@ for my $meth (qw/upgrade_suggested upgrade_required known_broken/) {
     };
     use warnings 'redefine';
 
-    ok(!$CLASS->report, "Nothing to report");
+    ok(!$CLASS->report,    "Nothing to report");
     ok(!$CLASS->report(1), "Still nothing to report");
 
     {
@@ -52,8 +52,7 @@ for my $meth (qw/upgrade_suggested upgrade_required known_broken/) {
         is_deeply(
             [sort @report],
             [
-                sort
-                " * Module 'T2Test::UG1' is outdated, we recommed updating above 1.0.",
+                sort " * Module 'T2Test::UG1' is outdated, we recommed updating above 1.0.",
                 " * Module 'T2Test::UR1' is outdated and known to be broken, please update to 1.0 or higher.",
                 " * Module 'T2Test::KB1' is known to be broken in version 1.0 and below, newer versions have not been tested. You have: 0.9",
                 " * Module 'T2Test::KB2' is known to be broken in version 0.5 and below, newer versions have not been tested. You have: 0.9",

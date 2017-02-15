@@ -4,12 +4,12 @@ use warnings;
 
 our $VERSION = '1.302077';
 
-
 BEGIN { require Test2::Hub; our @ISA = qw(Test2::Hub) }
 use Test2::Util::HashBase qw/nested bailed_out exit_code manual_skip_all id/;
 use Test2::Util qw/get_tid/;
 
 my $ID = 1;
+
 sub init {
     my $self = shift;
     $self->SUPER::init(@_);
@@ -34,7 +34,8 @@ sub send {
     my $out = $self->SUPER::send($e);
 
     return $out if $self->{+MANUAL_SKIP_ALL};
-    return $out unless $e->isa('Test2::Event::Plan')
+    return $out
+        unless $e->isa('Test2::Event::Plan')
         && $e->directive eq 'SKIP'
         && ($e->trace->pid != $self->pid || $e->trace->tid != $self->tid);
 
@@ -48,9 +49,10 @@ sub terminate {
     $self->set_exit_code($code);
 
     return if $self->{+MANUAL_SKIP_ALL};
-    return if $e->isa('Test2::Event::Plan')
-           && $e->directive eq 'SKIP'
-           && ($e->trace->pid != $$ || $e->trace->tid != get_tid);
+    return
+           if $e->isa('Test2::Event::Plan')
+        && $e->directive eq 'SKIP'
+        && ($e->trace->pid != $$ || $e->trace->tid != get_tid);
 
     no warnings 'exiting';
     last T2_SUBTEST_WRAPPER;

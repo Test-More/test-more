@@ -1,7 +1,7 @@
 #!/usr/bin/perl -w
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = ('../lib', 'lib');
     }
@@ -23,7 +23,7 @@ my $Test = Test::Builder->new;
 {
     my $tb = Test::Builder::NoOutput->create;
 
-    $tb->plan( tests => 1 );
+    $tb->plan(tests => 1);
 
 #line 28
     $tb->ok(0);

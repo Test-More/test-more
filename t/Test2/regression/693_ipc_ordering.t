@@ -17,8 +17,7 @@ my $events = intercept {
     threads->create(
         sub {
             ok 1, "something $_ nonlocal" for (1 .. 15);
-        }
-    )->join;
+        })->join;
 };
 
 is_deeply(

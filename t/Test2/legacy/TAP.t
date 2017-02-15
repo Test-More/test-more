@@ -22,11 +22,12 @@ sub tm_ok($;$) {
     my $ctx = context;
 
     my $ok = bless {
-        pass => $bool,
-        name => $name,
+        pass           => $bool,
+        name           => $name,
         effective_pass => 1,
-        trace => $ctx->trace->snapshot,
-    }, 'Test2::Event::Ok';
+        trace          => $ctx->trace->snapshot,
+        },
+        'Test2::Event::Ok';
     # Do not call init
 
     $ctx->hub->send($ok);
@@ -53,7 +54,7 @@ sub tm_note {
 test2_stack->top;
 
 my $temp_hub = test2_stack->new_hub();
-my $diag = capture {
+my $diag     = capture {
     tm_diag(undef);
     tm_diag("");
     tm_diag(" ");
@@ -90,7 +91,7 @@ my $ok = capture {
 };
 test2_stack->pop($temp_hub);
 
-is($diag->{STDOUT}, "", "STDOUT is empty for diag");
+is($diag->{STDOUT}, "",    "STDOUT is empty for diag");
 is($diag->{STDERR}, <<EOT, "STDERR for diag looks right");
 # undef
 #_
@@ -106,8 +107,7 @@ is($diag->{STDERR}, <<EOT, "STDERR for diag looks right");
 #_
 EOT
 
-
-is($note->{STDERR}, "", "STDERR for note is empty");
+is($note->{STDERR}, "",    "STDERR for note is empty");
 is($note->{STDOUT}, <<EOT, "STDOUT looks right for note");
 # undef
 #_
@@ -123,8 +123,7 @@ is($note->{STDOUT}, <<EOT, "STDOUT looks right for note");
 #_
 EOT
 
-
-is($ok->{STDERR}, "", "STDERR for ok is empty");
+is($ok->{STDERR}, "",    "STDERR for ok is empty");
 is($ok->{STDOUT}, <<EOT, "STDOUT looks right for ok");
 ok 1
 ok 2 -_

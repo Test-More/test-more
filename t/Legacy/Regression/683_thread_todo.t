@@ -2,8 +2,9 @@ use strict;
 use warnings;
 
 use Test2::Util qw/CAN_THREAD/;
+
 BEGIN {
-    unless(CAN_THREAD) {
+    unless (CAN_THREAD) {
         require Test::More;
         Test::More->import(skip_all => "threads are not supported");
     }
@@ -19,8 +20,7 @@ my $t = threads->create(
         fail "Crap";
 
         42;
-    }
-);
+    });
 
 is(
     $t->join,

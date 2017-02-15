@@ -32,4 +32,3 @@ like(
     "Formatter does not support no_header",
 );
 
-

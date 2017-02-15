@@ -3,6 +3,7 @@ use warnings;
 use Test2::Tools::Tiny;
 
 BEGIN {
+
     package Foo::Bar;
     use Test2::Util::HashBase qw/foo bar baz/;
     use Carp qw/croak/;

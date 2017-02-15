@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302077';
 
-
 use Carp qw/croak/;
 
 sub META_KEY() { '_meta' }
@@ -51,7 +50,7 @@ sub meta {
     my $meta = $self->{+META_KEY};
     return undef unless $meta || defined($default);
 
-    unless($meta) {
+    unless ($meta) {
         $meta = {};
         $self->{+META_KEY} = $meta;
     }

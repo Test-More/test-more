@@ -4,8 +4,8 @@ use warnings;
 
 our $VERSION = '1.302077';
 
-
 my %ADDED;
+
 sub import {
     my $class = shift;
     return if $class eq __PACKAGE__;

@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = '../lib';
     }
@@ -14,7 +14,7 @@ use Test::More tests => 20;
 my $T = Test::Builder->new;
 $T->no_ending(1);
 
-for my $num (1..10) {
+for my $num (1 .. 10) {
     $tnum = $num * 2;
     pass("I'm ok");
     $T->current_test($tnum);

@@ -13,9 +13,11 @@ my $done = do $file;
 ok(defined($done), 'do succeeded') or do {
     if ($@) {
         diag qq(  \$@ is '$@'\n);
-    } elsif ($!) {
+    }
+    elsif ($!) {
         diag qq(  \$! is '$!'\n);
-    } else {
-        diag qq(  file's last statement returned undef: $file)
+    }
+    else {
+        diag qq(  file's last statement returned undef: $file);
     }
 };

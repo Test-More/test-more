@@ -1,5 +1,5 @@
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = '../lib';
     }
@@ -8,7 +8,7 @@ BEGIN {
 use Test::More;
 
 BEGIN {
-    if( !$ENV{HARNESS_ACTIVE} && $ENV{PERL_CORE} ) {
+    if (!$ENV{HARNESS_ACTIVE} && $ENV{PERL_CORE}) {
         plan skip_all => "Won't work with t/TEST";
     }
 }
@@ -25,8 +25,7 @@ ok(1, 'Testing again');
         skip 'Just testing skip with no_plan';
         fail("So very failed");
     }
-    is( $warning, '', 'skip with no "how_many" ok with no_plan' );
-
+    is($warning, '', 'skip with no "how_many" ok with no_plan');
 
     $warning = '';
     TODO: {
@@ -36,5 +35,5 @@ ok(1, 'Testing again');
         die "todo_skip should prevent this";
         pass("Again");
     }
-    is( $warning, '', 'skip with no "how_many" ok with no_plan' );
+    is($warning, '', 'skip with no "how_many" ok with no_plan');
 }

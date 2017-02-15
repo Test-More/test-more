@@ -98,11 +98,11 @@ like(
 );
 
 $one->reset;
-ok($one->ipc, 'got ipc');
+ok($one->ipc,       'got ipc');
 ok($one->finalized, "calling ipc finalized the object");
 
 $one->reset;
-ok($one->stack, 'got stack');
+ok($one->stack,      'got stack');
 ok(!$one->finalized, "calling stack did not finaliz the object");
 
 $one->reset;
@@ -151,13 +151,13 @@ if (CAN_REALLY_FORK) {
     $one->reset;
     my $pid = fork;
     die "Failed to fork!" unless defined $pid;
-    unless($pid) { exit 0 }
+    unless ($pid) { exit 0 }
 
     is($one->_ipc_wait, 0, "No errors");
 
     $pid = fork;
     die "Failed to fork!" unless defined $pid;
-    unless($pid) { exit 255 }
+    unless ($pid) { exit 255 }
     my @warnings;
     {
         local $SIG{__WARN__} = sub { push @warnings => @_ };
@@ -174,11 +174,12 @@ if (CAN_THREAD && $] ge '5.010') {
     is($one->_ipc_wait, 0, "No errors");
 
     if (threads->can('error')) {
-        threads->new(sub {
-            close(STDERR);
-            close(STDOUT);
-            die "xxx"
-        });
+        threads->new(
+            sub {
+                close(STDERR);
+                close(STDOUT);
+                die "xxx";
+            });
         my @warnings;
         {
             local $SIG{__WARN__} = sub { push @warnings => @_ };
@@ -243,7 +244,7 @@ if (CAN_THREAD && $] ge '5.010') {
     $one->reset();
     $one->load();
     my @events;
-    $one->stack->top->filter(sub { push @events => $_[1]; undef});
+    $one->stack->top->filter(sub { push @events => $_[1]; undef });
     $one->stack->new_hub;
     local $? = 0;
     $one->set_exit;
@@ -305,12 +306,11 @@ foo
     EOT
 }
 
-
 {
     $one->reset();
     $one->load();
     my @events;
-    $one->stack->top->filter(sub { push @events => $_[1]; undef});
+    $one->stack->top->filter(sub { push @events => $_[1]; undef });
     $one->stack->new_hub;
     ok($one->stack->top->ipc, "Have IPC");
     $one->stack->new_hub;
@@ -352,8 +352,9 @@ if (CAN_REALLY_FORK) {
 {
     my $ctx = bless {
         trace => Test2::Util::Trace->new(frame => ['Foo::Bar', 'Foo/Bar.pm', 42, 'xxx']),
-        hub => Test2::Hub->new(),
-    }, 'Test2::API::Context';
+        hub   => Test2::Hub->new(),
+        },
+        'Test2::API::Context';
     $one->contexts->{1234} = $ctx;
 
     local $? = 500;
@@ -362,9 +363,7 @@ if (CAN_REALLY_FORK) {
 
     is_deeply(
         $warnings,
-        [
-            "context object was never released! This means a testing tool is behaving very badly at Foo/Bar.pm line 42.\n"
-        ],
+        ["context object was never released! This means a testing tool is behaving very badly at Foo/Bar.pm line 42.\n"],
         "Warned about unfreed context"
     );
 }
@@ -376,7 +375,7 @@ if (CAN_REALLY_FORK) {
     ok(!USE_THREADS, "Sanity Check");
 
     $one->reset;
-    ok(!$one->ipc, 'IPC not loaded, no IPC object');
+    ok(!$one->ipc,      'IPC not loaded, no IPC object');
     ok($one->finalized, "calling ipc finalized the object");
     is($one->ipc_polling, undef, "no polling defined");
     ok(!@{$one->ipc_drivers}, "no driver");
@@ -384,10 +383,11 @@ if (CAN_REALLY_FORK) {
     if (CAN_THREAD) {
         local $INC{'threads.pm'} = 1;
         no warnings 'once';
-        local *threads::tid = sub { 0 } unless threads->can('tid');
+        local *threads::tid = sub { 0 }
+            unless threads->can('tid');
         $one->reset;
-        ok($one->ipc, 'IPC loaded if threads are');
-        ok($one->finalized, "calling ipc finalized the object");
+        ok($one->ipc,         'IPC loaded if threads are');
+        ok($one->finalized,   "calling ipc finalized the object");
         ok($one->ipc_polling, "polling on by default");
         is($one->ipc_drivers->[0], 'Test2::IPC::Driver::Files', "default driver");
     }
@@ -395,8 +395,8 @@ if (CAN_REALLY_FORK) {
     {
         local $INC{'Test2/IPC.pm'} = 1;
         $one->reset;
-        ok($one->ipc, 'IPC loaded if Test2::IPC is');
-        ok($one->finalized, "calling ipc finalized the object");
+        ok($one->ipc,         'IPC loaded if Test2::IPC is');
+        ok($one->finalized,   "calling ipc finalized the object");
         ok($one->ipc_polling, "polling on by default");
         is($one->ipc_drivers->[0], 'Test2::IPC::Driver::Files', "default driver");
     }
@@ -404,12 +404,12 @@ if (CAN_REALLY_FORK) {
     require Test2::IPC::Driver::Files;
     $one->reset;
     $one->add_ipc_driver('Test2::IPC::Driver::Files');
-    ok($one->ipc, 'IPC loaded if drivers have been added');
-    ok($one->finalized, "calling ipc finalized the object");
+    ok($one->ipc,         'IPC loaded if drivers have been added');
+    ok($one->finalized,   "calling ipc finalized the object");
     ok($one->ipc_polling, "polling on by default");
 
-    my $file = __FILE__;
-    my $line = __LINE__ + 1;
+    my $file     = __FILE__;
+    my $line     = __LINE__ + 1;
     my $warnings = warnings { $one->add_ipc_driver('Test2::IPC::Driver::Files') };
     like(
         $warnings->[0],
@@ -445,7 +445,7 @@ if (CAN_REALLY_FORK) {
     ok(defined($one->{_pid}), "pid is defined");
     ok(defined($one->{_tid}), "tid is defined");
     is(@{$one->context_init_callbacks}, 1, "added the callback");
-    is($one->ipc_polling, 1, "polling on");
+    is($one->ipc_polling,               1, "polling on");
     $one->set_ipc_shm_last('abc1');
     $one->context_init_callbacks->[0]->({'hub' => 'Fake::Hub'});
     is($cull, 1, "called cull once");
@@ -453,7 +453,7 @@ if (CAN_REALLY_FORK) {
 
     $one->disable_ipc_polling;
     is(@{$one->context_init_callbacks}, 1, "kept the callback");
-    is($one->ipc_polling, 0, "no polling, set to 0");
+    is($one->ipc_polling,               0, "no polling, set to 0");
     $one->set_ipc_shm_last('abc3');
     $one->context_init_callbacks->[0]->({'hub' => 'Fake::Hub'});
     is($cull, 0, "did not call cull");
@@ -461,7 +461,7 @@ if (CAN_REALLY_FORK) {
 
     $one->enable_ipc_polling;
     is(@{$one->context_init_callbacks}, 1, "did not add the callback");
-    is($one->ipc_polling, 1, "polling on");
+    is($one->ipc_polling,               1, "polling on");
     $one->set_ipc_shm_last('abc3');
     $one->context_init_callbacks->[0]->({'hub' => 'Fake::Hub'});
     is($cull, 1, "called cull once");

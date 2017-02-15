@@ -4,10 +4,9 @@ use warnings;
 
 our $VERSION = '1.302077';
 
-
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 
-sub global { 1 };
+sub global { 1 }
 
 sub summary { "IPC is waiting for children to finish..." }
 

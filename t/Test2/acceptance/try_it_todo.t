@@ -20,26 +20,27 @@ sub ok($;$) {
 
 sub diag {
     my $ctx = context();
-    $ctx->diag( join '', @_ );
+    $ctx->diag(join '', @_);
     $ctx->release;
 }
 
 ok(1, "First");
 
-my $filter = test2_stack->top->filter(sub {
-    my ($hub, $event) = @_;
+my $filter = test2_stack->top->filter(
+    sub {
+        my ($hub, $event) = @_;
 
-    # Turn a diag into a note
-    return Test2::Event::Note->new(%$event) if ref($event) eq 'Test2::Event::Diag';
+        # Turn a diag into a note
+        return Test2::Event::Note->new(%$event) if ref($event) eq 'Test2::Event::Diag';
 
-    # Set todo on ok's
-    if ($event->isa('Test2::Event::Ok')) {
-        $event->set_todo('here be dragons');
-        $event->set_effective_pass(1);
-    }
+        # Set todo on ok's
+        if ($event->isa('Test2::Event::Ok')) {
+            $event->set_todo('here be dragons');
+            $event->set_effective_pass(1);
+        }
 
-    return $event;
-});
+        return $event;
+    });
 
 ok(0, "Second");
 diag "should be a note";

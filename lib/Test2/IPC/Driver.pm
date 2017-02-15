@@ -4,13 +4,13 @@ use warnings;
 
 our $VERSION = '1.302077';
 
-
 use Carp qw/confess longmess/;
 use Test2::Util::HashBase qw{no_fatal};
 
 use Test2::API qw/test2_ipc_add_driver/;
 
 my %ADDED;
+
 sub import {
     my $class = shift;
     return if $class eq __PACKAGE__;
@@ -24,7 +24,7 @@ for my $meth (qw/send cull add_hub drop_hub waiting is_viable/) {
     no strict 'refs';
     *$meth = sub {
         my $thing = shift;
-        confess "'$thing' did not define the required method '$meth'."
+        confess "'$thing' did not define the required method '$meth'.";
     };
 }
 

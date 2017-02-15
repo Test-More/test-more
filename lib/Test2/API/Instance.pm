@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302077';
 
-
 our @CARP_NOT = qw/Test2::API Test2::API::Instance Test2::IPC::Driver Test2::Formatter/;
 use Carp qw/confess carp/;
 use Scalar::Util qw/reftype/;
@@ -69,7 +68,7 @@ sub reset {
     delete $self->{+_PID};
     delete $self->{+_TID};
 
-    $self->{+CONTEXTS}    = {};
+    $self->{+CONTEXTS} = {};
 
     $self->{+IPC_DRIVERS} = [];
     $self->{+IPC_POLLING} = undef;
@@ -108,7 +107,7 @@ sub _finalize {
             $source = "set by the 'T2_FORMATTER' environment variable";
 
             if ($ENV{T2_FORMATTER} =~ m/^(\+)?(.*)$/) {
-                $formatter = $1 ? $2 : "Test2::Formatter::$2"
+                $formatter = $1 ? $2 : "Test2::Formatter::$2";
             }
             else {
                 $formatter = '';
@@ -176,7 +175,7 @@ sub add_formatter {
 }
 
 sub add_context_acquire_callback {
-    my $self =  shift;
+    my $self = shift;
     my ($code) = @_;
 
     my $rtype = reftype($code) || "";
@@ -188,7 +187,7 @@ sub add_context_acquire_callback {
 }
 
 sub add_context_init_callback {
-    my $self =  shift;
+    my $self = shift;
     my ($code) = @_;
 
     my $rtype = reftype($code) || "";
@@ -200,7 +199,7 @@ sub add_context_init_callback {
 }
 
 sub add_context_release_callback {
-    my $self =  shift;
+    my $self = shift;
     my ($code) = @_;
 
     my $rtype = reftype($code) || "";
@@ -243,9 +242,9 @@ sub load {
 }
 
 sub add_exit_callback {
-    my $self = shift;
+    my $self   = shift;
     my ($code) = @_;
-    my $rtype = reftype($code) || "";
+    my $rtype  = reftype($code) || "";
 
     confess "End callbacks must be coderefs"
         unless $code && $rtype eq 'CODE';
@@ -289,8 +288,7 @@ sub enable_ipc_polling {
             }
 
             $_[0]->{hub}->cull;
-        }
-    ) unless defined $self->ipc_polling;
+        }) unless defined $self->ipc_polling;
 
     $self->set_ipc_polling(1);
 }
@@ -313,9 +311,9 @@ sub ipc_enable_shm {
 
         require IPC::SysV;
 
-        my $ipc_key = IPC::SysV::IPC_PRIVATE();
+        my $ipc_key  = IPC::SysV::IPC_PRIVATE();
         my $shm_size = $self->{+IPC}->can('shm_size') ? $self->{+IPC}->shm_size : 64;
-        my $shm_id = shmget($ipc_key, $shm_size, 0666) or die;
+        my $shm_id   = shmget($ipc_key, $shm_size, 0666) or die;
 
         my $initial = 'a' x $shm_size;
         shmwrite($shm_id, $initial, 0, $shm_size) or die;
@@ -441,7 +439,7 @@ This is not a supported configuration, you will have problems.
         next unless $trace->pid && $trace->pid == $$;
 
         # Do not worry about contexts that have no hub
-        my $hub = $ctx->hub  || next;
+        my $hub = $ctx->hub || next;
 
         # Do not worry if the state came to a sudden end.
         next if $hub->bailed_out;
@@ -475,7 +473,7 @@ This is not a supported configuration, you will have problems.
     }
 
     # None of this is necessary if we never got a root hub
-    if(my $root = shift @hubs) {
+    if (my $root = shift @hubs) {
         my $trace = Test2::Util::Trace->new(
             frame  => [__PACKAGE__, __FILE__, 0, __PACKAGE__ . '::END'],
             detail => __PACKAGE__ . ' END Block finalization',
@@ -487,7 +485,7 @@ This is not a supported configuration, you will have problems.
 
         if (@hubs) {
             $ctx->diag("Test ended with extra hubs on the stack!");
-            $new_exit  = 255;
+            $new_exit = 255;
         }
 
         unless ($root->no_ending) {

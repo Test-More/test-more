@@ -35,14 +35,14 @@ note("Testing Note");
 
 my $str = "abc";
 is_deeply(
-    { a => 1, b => 2, c => { ref => \$str, obj => bless({x => 1}, 'XXX'), array => [1, 2, 3]}},
-    { a => 1, b => 2, c => { ref => \$str, obj =>       {x => 1},         array => [1, 2, 3]}},
+    {a => 1, b => 2, c => {ref => \$str, obj => bless({x => 1}, 'XXX'), array => [1, 2, 3]}},
+    {a => 1, b => 2, c => {ref => \$str, obj => {x => 1}, array => [1, 2, 3]}},
     "'is_deeply' test"
 );
 
 is_deeply(
     warnings { warn "aaa\n"; warn "bbb\n" },
-    [ "aaa\n", "bbb\n" ],
+    ["aaa\n", "bbb\n"],
     "Got warnings"
 );
 
@@ -53,7 +53,7 @@ is_deeply(
 );
 
 is(exception { die "foo\n" }, "foo\n", "got exception");
-is(exception { 1 }, undef, "no exception");
+is(exception { 1 },           undef,   "no exception");
 
 my $main_events = intercept {
     plan 8;
@@ -65,8 +65,8 @@ my $main_events = intercept {
     unlike("foo", qr/o/, "'unlike' test");
 
     is_deeply(
-        { a => 1, b => 2, c => {}},
-        { a => 1, b => 2, c => []},
+        {a => 1, b => 2, c => {}},
+        {a => 1, b => 2, c => []},
         "'is_deeply' test"
     );
 };
@@ -76,7 +76,7 @@ my $other_events = intercept {
     note("Testing Note");
 };
 
-my ($plan, $ok, $is, $isnt, $like, $unlike, $is_deeply) = grep {!$_->isa('Test2::Event::Diag')} @$main_events;
+my ($plan, $ok, $is, $isnt, $like, $unlike, $is_deeply) = grep { !$_->isa('Test2::Event::Diag') } @$main_events;
 my ($diag, $note) = @$other_events;
 
 ok($plan->isa('Test2::Event::Plan'), "got plan");
@@ -114,12 +114,12 @@ my $events = intercept {
 
 is(@$events, 1, "1 event");
 ok($events->[0]->isa('Test2::Event::Plan'), "got plan");
-is($events->[0]->directive, 'SKIP', "plan is skip");
-is($events->[0]->reason, 'because', "skip reason");
+is($events->[0]->directive, 'SKIP',    "plan is skip");
+is($events->[0]->reason,    'because', "skip reason");
 
 $events = intercept {
     is(undef, "");
-    is("", undef);
+    is("",    undef);
 
     isnt(undef, undef);
 
@@ -127,11 +127,11 @@ $events = intercept {
     unlike(undef, qr//);
 };
 
-@$events = grep {!$_->isa('Test2::Event::Diag')} @$events;
+@$events = grep { !$_->isa('Test2::Event::Diag') } @$events;
 is(@$events, 5, "5 events");
 ok(!$_->pass, "undef test - should not pass") for @$events;
 
-sub tool { context() };
+sub tool { context() }
 
 my %params;
 my $ctx = context(level => -1);
@@ -143,18 +143,18 @@ $events = intercept {
     $ictx->ok(1, 'pass');
     $ictx->ok(0, 'fail');
     my $trace = Test2::Util::Trace->new(
-        frame => [ __PACKAGE__, __FILE__, __LINE__],
+        frame => [__PACKAGE__, __FILE__, __LINE__],
     );
     $ictx->hub->finalize($trace, 1);
 };
 
-@$events = grep {!$_->isa('Test2::Event::Diag')} @$events;
+@$events = grep { !$_->isa('Test2::Event::Diag') } @$events;
 
 is_deeply(
     \%params,
     {
-        context => { %$ctx, _is_canon => undef, _is_spawn => undef, _aborted => undef },
-        hub => $ictx->hub,
+        context => {%$ctx, _is_canon => undef, _is_spawn => undef, _aborted => undef},
+        hub     => $ictx->hub,
     },
     "Passed in some useful params"
 );
@@ -183,7 +183,9 @@ $events = intercept {
 $ictx->release;
 
 like(
-    exception { intercept { die 'foo' } },
+    exception {
+        intercept { die 'foo' }
+    },
     qr/foo/,
     "Exception was propogated"
 );
@@ -194,7 +196,7 @@ $events = intercept {
 };
 
 is(@$events, 2, "2 events");
-ok($events->[0]->isa('Test2::Event::Ok'), "got ok");
+ok($events->[0]->isa('Test2::Event::Ok'),   "got ok");
 ok($events->[1]->isa('Test2::Event::Plan'), "finalize was called");
 
 $events = intercept {
@@ -204,7 +206,7 @@ $events = intercept {
 };
 
 is(@$events, 2, "2 events");
-ok($events->[0]->isa('Test2::Event::Ok'), "got ok");
+ok($events->[0]->isa('Test2::Event::Ok'),   "got ok");
 ok($events->[1]->isa('Test2::Event::Plan'), "finalize was called (only 1 plan)");
 
 done_testing;

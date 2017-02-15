@@ -57,7 +57,7 @@ $e->set_sets_plan([0, skip => 'cause']);
 is_deeply([$e->sets_plan], [0, skip => 'cause'], "sets_plan returns a list, not a ref");
 $e->set_sets_plan(undef);
 ok(!exists $e->{sets_plan}, "Removed sets_plan key");
-ok(!$e->sets_plan, "sets_plan is cleared");
+ok(!$e->sets_plan,          "sets_plan is cleared");
 
 $e->set_global(0);
 is($e->global, 0, "global is off");
@@ -76,18 +76,19 @@ like(
 );
 
 my $ran = 0;
-$e->set_callback(sub {
-    $ran++;
-    my $self = shift;
-    is($self, $e, "got self");
-    is_deeply( \@_, ['a', 'b', 'c'], "Got args" );
-    return 'foo';
-});
+$e->set_callback(
+    sub {
+        $ran++;
+        my $self = shift;
+        is($self, $e, "got self");
+        is_deeply(\@_, ['a', 'b', 'c'], "Got args");
+        return 'foo';
+    });
 is($e->callback('a', 'b', 'c'), 'foo', "got callback's return");
 ok($ran, "ran callback");
 
 $e->set_callback(undef);
-ok(!$e->callback, "no callback");
+ok(!$e->callback,          "no callback");
 ok(!exists $e->{callback}, "no callback key");
 
 like(
@@ -109,13 +110,13 @@ like(
 );
 
 $e->set_terminate(0),
-is($e->terminate, 0, "set to 0, 0 is valid");
+    is($e->terminate, 0, "set to 0, 0 is valid");
 $e->set_terminate(1),
-is($e->terminate, 1, "set to 1");
+    is($e->terminate, 1, "set to 1");
 $e->set_terminate(123),
-is($e->terminate, 123, "set to 123");
+    is($e->terminate, 123, "set to 123");
 $e->set_terminate(0),
-is($e->terminate, 0, "set to 0, 0 is valid");
+    is($e->terminate, 0, "set to 0, 0 is valid");
 
 $e->set_terminate(undef);
 is($e->terminate, undef, "terminate is not defined");
@@ -123,7 +124,7 @@ ok(!exists $e->{terminate}, "no terminate key");
 
 # Test constructor args
 intercept { $e = tool(causes_fail => 1, increments_count => 'a') };
-is($e->causes_fail, 1, "attr from constructor");
+is($e->causes_fail,      1,   "attr from constructor");
 is($e->increments_count, 'a', "attr from constructor");
 
 done_testing;

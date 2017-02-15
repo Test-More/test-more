@@ -5,7 +5,6 @@ our $VERSION = '1.302077';
 
 require Test::Builder::Tester;
 
-
 =head1 NAME
 
 Test::Builder::Tester::Color - turn on colour in Test::Builder::Tester

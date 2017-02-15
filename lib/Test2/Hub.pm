@@ -4,7 +4,6 @@ use warnings;
 
 our $VERSION = '1.302077';
 
-
 use Carp qw/carp croak confess/;
 use Test2::Util qw/get_tid ipc_separator/;
 
@@ -34,6 +33,7 @@ use Test2::Util::HashBase qw{
 };
 
 my $ID_POSTFIX = 1;
+
 sub init {
     my $self = shift;
 
@@ -74,8 +74,8 @@ sub _tb_reset {
 sub reset_state {
     my $self = shift;
 
-    $self->{+COUNT} = 0;
-    $self->{+FAILED} = 0;
+    $self->{+COUNT}    = 0;
+    $self->{+FAILED}   = 0;
     $self->{+_PASSING} = 1;
 
     delete $self->{+_PLAN};
@@ -135,9 +135,9 @@ sub listen {
     croak "listen only takes coderefs for arguments, got '$sub'"
         unless ref $sub && ref $sub eq 'CODE';
 
-    push @{$self->{+_LISTENERS}} => { %params, code => $sub };
+    push @{$self->{+_LISTENERS}} => {%params, code => $sub};
 
-    $sub; # Intentional return.
+    $sub;    # Intentional return.
 }
 
 sub unlisten {
@@ -146,7 +146,7 @@ sub unlisten {
     carp "Useless removal of a listener in a child process or thread!"
         if $$ != $self->{+PID} || get_tid() != $self->{+TID};
 
-    my %subs = map {$_ => $_} @_;
+    my %subs = map { $_ => $_ } @_;
 
     @{$self->{+_LISTENERS}} = grep { !$subs{$_->{code}} } @{$self->{+_LISTENERS}};
 }
@@ -161,16 +161,16 @@ sub filter {
     croak "filter only takes coderefs for arguments, got '$sub'"
         unless ref $sub && ref $sub eq 'CODE';
 
-    push @{$self->{+_FILTERS}} => { %params, code => $sub };
+    push @{$self->{+_FILTERS}} => {%params, code => $sub};
 
-    $sub; # Intentional Return
+    $sub;    # Intentional Return
 }
 
 sub unfilter {
     my $self = shift;
     carp "Useless removal of a filter in a child process or thread!"
         if $$ != $self->{+PID} || get_tid() != $self->{+TID};
-    my %subs = map {$_ => $_} @_;
+    my %subs = map { $_ => $_ } @_;
     @{$self->{+_FILTERS}} = grep { !$subs{$_->{code}} } @{$self->{+_FILTERS}};
 }
 
@@ -181,14 +181,14 @@ sub pre_filter {
     croak "pre_filter only takes coderefs for arguments, got '$sub'"
         unless ref $sub && ref $sub eq 'CODE';
 
-    push @{$self->{+_PRE_FILTERS}} => { %params, code => $sub };
+    push @{$self->{+_PRE_FILTERS}} => {%params, code => $sub};
 
-    $sub; # Intentional Return
+    $sub;    # Intentional Return
 }
 
 sub pre_unfilter {
     my $self = shift;
-    my %subs = map {$_ => $_} @_;
+    my %subs = map { $_ => $_ } @_;
     @{$self->{+_PRE_FILTERS}} = grep { !$subs{$_->{code}} } @{$self->{+_PRE_FILTERS}};
 }
 
@@ -206,6 +206,7 @@ sub follow_up {
 }
 
 *add_context_aquire = \&add_context_acquire;
+
 sub add_context_acquire {
     my $self = shift;
     my ($sub) = @_;
@@ -215,13 +216,14 @@ sub add_context_acquire {
 
     push @{$self->{+_CONTEXT_ACQUIRE}} => $sub;
 
-    $sub; # Intentional return.
+    $sub;    # Intentional return.
 }
 
 *remove_context_aquire = \&remove_context_acquire;
+
 sub remove_context_acquire {
     my $self = shift;
-    my %subs = map {$_ => $_} @_;
+    my %subs = map { $_ => $_ } @_;
     @{$self->{+_CONTEXT_ACQUIRE}} = grep { !$subs{$_} == $_ } @{$self->{+_CONTEXT_ACQUIRE}};
 }
 
@@ -234,12 +236,12 @@ sub add_context_init {
 
     push @{$self->{+_CONTEXT_INIT}} => $sub;
 
-    $sub; # Intentional return.
+    $sub;    # Intentional return.
 }
 
 sub remove_context_init {
     my $self = shift;
-    my %subs = map {$_ => $_} @_;
+    my %subs = map { $_ => $_ } @_;
     @{$self->{+_CONTEXT_INIT}} = grep { !$subs{$_} == $_ } @{$self->{+_CONTEXT_INIT}};
 }
 
@@ -252,12 +254,12 @@ sub add_context_release {
 
     push @{$self->{+_CONTEXT_RELEASE}} => $sub;
 
-    $sub; # Intentional return.
+    $sub;    # Intentional return.
 }
 
 sub remove_context_release {
     my $self = shift;
-    my %subs = map {$_ => $_} @_;
+    my %subs = map { $_ => $_ } @_;
     @{$self->{+_CONTEXT_RELEASE}} = grep { !$subs{$_} == $_ } @{$self->{+_CONTEXT_RELEASE}};
 }
 
@@ -274,7 +276,7 @@ sub send {
 
     my $ipc = $self->{+IPC} || return $self->process($e);
 
-    if($e->global) {
+    if ($e->global) {
         $ipc->send($self->{+HID}, $e, 'GLOBAL');
         return $self->process($e);
     }
@@ -296,14 +298,14 @@ sub process {
         }
     }
 
-    my $type = ref($e);
-    my $is_ok = $type eq 'Test2::Event::Ok';
-    my $no_fail = $type eq 'Test2::Event::Diag' || $type eq 'Test2::Event::Note';
+    my $type        = ref($e);
+    my $is_ok       = $type eq 'Test2::Event::Ok';
+    my $no_fail     = $type eq 'Test2::Event::Diag' || $type eq 'Test2::Event::Note';
     my $causes_fail = $is_ok ? !$e->{effective_pass} : $no_fail ? 0 : $e->causes_fail;
-    my $counted = $is_ok || (!$no_fail && $e->increments_count);
+    my $counted     = $is_ok || (!$no_fail && $e->increments_count);
 
-    $self->{+COUNT}++      if $counted;
-    $self->{+FAILED}++     if $causes_fail && $counted;
+    $self->{+COUNT}++ if $counted;
+    $self->{+FAILED}++ if $causes_fail && $counted;
     $self->{+_PASSING} = 0 if $causes_fail;
 
     my $callback = $e->callback($self) unless $is_ok || $no_fail;
@@ -354,11 +356,11 @@ sub finalize {
     my $failed = $self->{+FAILED};
     my $active = $self->{+ACTIVE};
 
-	# return if NOTHING was done.
-	unless ($active || $do_plan || defined($plan) || $count || $failed) {
-		$self->{+_FORMATTER}->finalize($plan, $count, $failed, 0, $self->is_subtest) if $self->{+_FORMATTER};
-		return;
-	}
+    # return if NOTHING was done.
+    unless ($active || $do_plan || defined($plan) || $count || $failed) {
+        $self->{+_FORMATTER}->finalize($plan, $count, $failed, 0, $self->is_subtest) if $self->{+_FORMATTER};
+        return;
+    }
 
     unless ($self->{+ENDED}) {
         if ($self->{+_FOLLOW_UPS}) {
@@ -374,15 +376,14 @@ sub finalize {
             $self->send(
                 Test2::Event::Plan->new(
                     trace => $trace,
-                    max => $count,
-                )
-            );
+                    max   => $count,
+                ));
         }
         $plan = $self->{+_PLAN};
     }
 
     my $frame = $trace->frame;
-    if($self->{+ENDED}) {
+    if ($self->{+ENDED}) {
         my (undef, $ffile, $fline) = @{$self->{+ENDED}};
         my (undef, $sfile, $sline) = @$frame;
 
@@ -394,9 +395,9 @@ Second End: $sfile line $sline
     }
 
     $self->{+ENDED} = $frame;
-    my $pass = $self->is_passing(); # Generate the final boolean.
+    my $pass = $self->is_passing();    # Generate the final boolean.
 
-	$self->{+_FORMATTER}->finalize($plan, $count, $failed, $pass, $self->is_subtest) if $self->{+_FORMATTER};
+    $self->{+_FORMATTER}->finalize($plan, $count, $failed, $pass, $self->is_subtest) if $self->{+_FORMATTER};
 
     return $pass;
 }
@@ -412,7 +413,7 @@ sub is_passing {
 
     my $count = $self->{+COUNT};
     my $ended = $self->{+ENDED};
-    my $plan = $self->{+_PLAN};
+    my $plan  = $self->{+_PLAN};
 
     return $pass if !$count && $plan && $plan =~ m/^SKIP$/;
 

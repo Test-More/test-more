@@ -1,7 +1,7 @@
 #!perl -w
 
 BEGIN {
-    if( $ENV{PERL_CORE} ) {
+    if ($ENV{PERL_CORE}) {
         chdir 't';
         @INC = '../lib';
     }
@@ -14,16 +14,15 @@ use Test::More tests => 17;
 my $Why = "Just testing the skip interface.";
 
 SKIP: {
-    skip $Why, 2 
-      unless Pigs->can('fly');
+    skip $Why, 2
+        unless Pigs->can('fly');
 
     my $pig = Pigs->new;
     $pig->takeoff;
 
-    ok( $pig->altitude > 0,         'Pig is airborne' );
-    ok( $pig->airspeed > 0,         '  and moving'    );
+    ok($pig->altitude > 0, 'Pig is airborne');
+    ok($pig->airspeed > 0, '  and moving');
 }
-
 
 SKIP: {
     skip "We're not skipping", 2 if 0;
@@ -32,16 +31,14 @@ SKIP: {
     pass("Another inside");
 }
 
-
 SKIP: {
     skip "Again, not skipping", 2 if 0;
 
-    my($pack, $file, $line) = caller;
-    is( $pack || '', '',      'calling package not interfered with' );
-    is( $file || '', '',      '  or file' );
-    is( $line || '', '',      '  or line' );
+    my ($pack, $file, $line) = caller;
+    is($pack || '', '', 'calling package not interfered with');
+    is($file || '', '', '  or file');
+    is($line || '', '', '  or line');
 }
-
 
 SKIP: {
     skip $Why, 2 if 1;
@@ -50,7 +47,6 @@ SKIP: {
     fail("Deliberate failure");
     fail("And again");
 }
-
 
 {
     my $warning;
@@ -63,11 +59,12 @@ SKIP: {
         skip $Why;
         fail("So very failed");
     }
-    is( $warning, "skip() needs to know \$how_many tests are in the ".
-                  "block at $0 line 56\n",
-        'skip without $how_many warning' );
+    is(
+        $warning, "skip() needs to know \$how_many tests are in the "
+            . "block at $0 line 56\n",
+        'skip without $how_many warning'
+    );
 }
-
 
 SKIP: {
     skip "Not skipping here.", 4 if 0;
