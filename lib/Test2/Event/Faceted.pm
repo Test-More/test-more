@@ -99,8 +99,8 @@ sub facets {
 
     my %facets = $self->{+_FACETS} ? %{$self->{+_FACETS}} : ();
 
-    push @{$facets{amnesty}} => @{$self->{+_AMNESTY}} if $self->{+_AMNESTY};
-    push @{$facets{info}}    => @{$self->{+_INFO}}    if $self->{+_INFO};
+    $facets{amnesty} = [@{$self->{+_AMNESTY}}] if $self->{+_AMNESTY};
+    $facets{info}    = [@{$self->{+_INFO}}]    if $self->{+_INFO};
 
     # The events trace always wins.
     $facets{trace} = $self->{+TRACE} if $self->{+TRACE};
