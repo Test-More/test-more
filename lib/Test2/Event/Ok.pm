@@ -88,7 +88,7 @@ sub facets {
         # Put the TODO first
         unshift @{$facets->{amnesty}} => Test2::EventFacet::Amnesty->new(
             inherited => 0,
-            action    => 'TODO',
+            tag       => 'TODO',
             details   => $self->{+TODO},
         );
     }

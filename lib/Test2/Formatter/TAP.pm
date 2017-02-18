@@ -187,10 +187,10 @@ sub assert_tap {
 
         for my $am (@{$f->{amnesty}}) {
             next if $am->{inherited};
-            my $action = $am->{action} or next;
-            $is_skip = 1 if $action eq 'skip';
+            my $tag = $am->{tag} or next;
+            $is_skip = 1 if $tag eq 'skip';
 
-            $directives{$action} ||= $am->{details};
+            $directives{$tag} ||= $am->{details};
         }
 
         # Make sure TODO and skip come first, in that order
@@ -200,9 +200,9 @@ sub assert_tap {
         $directives = ' # ' . join ' & ' => @order;
 
         # PRefer skip reason over todo because legacy... bleh
-        for my $action ('skip', @order) {
-            next unless defined($directives{$action}) && length($directives{$action});
-            $reason = $directives{$action};
+        for my $tag ('skip', @order) {
+            next unless defined($directives{$tag}) && length($directives{$tag});
+            $reason = $directives{$tag};
             last;
         }
     }

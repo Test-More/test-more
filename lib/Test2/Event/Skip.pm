@@ -39,7 +39,7 @@ sub facets {
 
     push @{$facets->{amnesty}} => Test2::EventFacet::Amnesty->new(
         inherited => 0,
-        action    => 'skip',
+        tag       => 'skip',
         details   => $self->{+REASON},
     );
 

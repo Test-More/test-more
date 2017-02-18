@@ -120,7 +120,7 @@ sub summary {
 
     my %seen;
     push @parts => 'AMNESTY(' . (
-        join ' ' => reverse sort grep { !$seen{$_}++ } map { defined $_->{action} && length $_->{action} ? $_->{action} : '...' } @{$f->{amnesty}}
+        join ' ' => reverse sort grep { !$seen{$_}++ } map { defined $_->{tag} && length $_->{tag} ? $_->{tag} : '...' } @{$f->{amnesty}}
     ) . ')'  if $f->{amnesty};
 
     push @parts => 'PLAN(' . ( $f->{plan}->{skip} ? 'SKIP' : $f->{plan}->{none} ? 'NONE': $f->{plan}->{count} || 0 ) . ')'

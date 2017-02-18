@@ -32,7 +32,7 @@ sub facets {
     my $facets = $self->SUPER::facets();
 
     push @{$facets->{info}} => Test2::EventFacet::Info->new(
-        type    => 'note',
+        tag     => 'note',
         details => $self->{+MESSAGE},
     );
 
