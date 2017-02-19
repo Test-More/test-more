@@ -267,13 +267,6 @@ sub failure_diag {
     my $self = shift;
     my ($e) = @_;
 
-    # This behavior is inherited from Test::Builder which injected a newline at
-    # the start of the first diagnostics when the harness is active, but not
-    # verbose. This is important to keep the diagnostics from showing up
-    # appended to the existing line, which is hard to read. In a verbose
-    # harness there is no need for this.
-    my $prefix = $ENV{HARNESS_ACTIVE} && !$ENV{HARNESS_IS_VERBOSE} ? "\n" : "";
-
     # Figure out the debug info, this is typically the file name and line
     # number, but can also be a custom message. If no trace object is provided
     # then we have nothing useful to display.
@@ -284,8 +277,8 @@ sub failure_diag {
     # Create the initial diagnostics. If the test has a name we put the debug
     # info on a second line, this behavior is inherited from Test::Builder.
     my $msg = defined($name)
-        ? qq[${prefix}Failed test '$name'\n$debug.\n]
-        : qq[${prefix}Failed test $debug.\n];
+        ? qq[Failed test '$name'\n$debug.\n]
+        : qq[Failed test $debug.\n];
 
     $self->diag($msg);
 }

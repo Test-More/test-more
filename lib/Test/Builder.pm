@@ -672,9 +672,6 @@ sub _ok_debug {
 
     my $msg = $is_todo ? "Failed (TODO)" : "Failed";
 
-    my $dfh = $self->_diag_fh;
-    print $dfh "\n" if $ENV{HARNESS_ACTIVE} && $dfh;
-
     my (undef, $file, $line) = $trace->call;
     if (defined $orig_name) {
         $self->diag(qq[  $msg test '$orig_name'\n]);

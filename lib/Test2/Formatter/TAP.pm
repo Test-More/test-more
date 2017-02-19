@@ -6,7 +6,7 @@ require PerlIO;
 our $VERSION = '1.302077';
 
 use Test2::Util::HashBase qw{
-    no_numbers handles _encoding
+    no_numbers handles _encoding last_fh
 };
 
 sub OUT_STD() { 0 }
@@ -101,8 +101,16 @@ sub write {
         next unless $msg;
         my $io = $handles->[$hid] or next;
 
+        print $io "\n"
+            if $ENV{HARNESS_ACTIVE}
+            && !$ENV{HARNESS_IS_VERBOSE}
+            && $hid == OUT_ERR
+            && $self->{+LAST_FH} != $io
+            && $msg =~ m/^#\s*Failed test /;
+
         $msg =~ s/^/$indent/mg if $nesting;
         print $io $msg;
+        $self->{+LAST_FH} = $io;
     }
 }
 
