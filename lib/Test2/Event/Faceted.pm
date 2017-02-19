@@ -169,13 +169,23 @@ Test2::Event::Faceted
         plan   => {count => 2, details => 'foo', skip => 0},
 
         info => [
-            diag => 'xxx',
-            diag => 'yyy',
+            [diag => 'xxx'],
+            [note => 'yyy'],
+        ],
+
+        note => [
+            "First note",
+            "Second note",
+        ],
+
+        diag => [
+            "First diag",
+            "Second diag",
         ],
 
         amnesty => [
-            TODO => 'The test is a todo',
-            skip => 'The test was skipped',
+            [TODO => 'The test is a todo'],
+            [skip => 'The test was skipped'],
         ],
 
         stop => {detail => 'Bail out!!!!'},
@@ -184,7 +194,7 @@ Test2::Event::Faceted
             id       => 'subtest 42',
             buffered => 1,
             events   => [...],
-        }
+        },
     );
 
 

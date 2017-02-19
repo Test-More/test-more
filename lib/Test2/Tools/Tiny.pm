@@ -22,7 +22,7 @@ sub ok($;$@) {
     my ($bool, $name, @diag) = @_;
     my $ctx = context();
 
-    return $ctx->pass($name) if $bool;
+    return $ctx->pass_and_release($name) if $bool;
 
     $ctx->emit(
         assert => { pass => $bool, details => $name },
@@ -48,7 +48,7 @@ sub is($$;$@) {
         $bool = 1;
     }
 
-    return $ctx->pass($name) if $bool;
+    return $ctx->pass_and_release($name) if $bool;
 
     $got  = '*NOT DEFINED*' unless defined $got;
     $want = '*NOT DEFINED*' unless defined $want;
@@ -81,7 +81,7 @@ sub isnt($$;$@) {
         $bool = 0;
     }
 
-    return $ctx->pass($name) if $bool;
+    return $ctx->pass_and_release($name) if $bool;
 
     unshift @diag => "Strings are the same (they should not be)"
         unless $bool;
@@ -112,7 +112,7 @@ sub like($$;$@) {
         unshift @diag => "Got an undefined value.";
     }
 
-    return $ctx->pass($name) if $bool;
+    return $ctx->pass_and_release($name) if $bool;
 
     $ctx->emit(
         assert => { pass => $bool, details => $name },
@@ -141,7 +141,7 @@ sub unlike($$;$@) {
         unshift @diag => "Got an undefined value.";
     }
 
-    return $ctx->pass($name) if $bool;
+    return $ctx->pass_and_release($name) if $bool;
 
     $ctx->emit(
         assert => { pass => $bool, details => $name },
@@ -176,7 +176,7 @@ sub is_deeply($$;$@) {
 
     my $bool = $g eq $w;
 
-    return $ctx->pass($name) if $bool;
+    return $ctx->pass_and_release($name) if $bool;
 
     $ctx->emit(
         assert => { pass => $bool, details => $name },
