@@ -4,6 +4,7 @@ use warnings;
 
 our $VERSION = '1.302078';
 
+use Test2::EventFacet::Plan;
 
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw{max directive reason};
@@ -15,7 +16,18 @@ my %ALLOWED = (
     'NO PLAN' => 1,
 );
 
+sub no_legacy_facets () { 1 }
+sub no_debug         () { 1 }
+sub global           () { 0 }
+sub gravity          () { 0 }
+sub increments_count () { 0 }
+sub no_display       () { 0 }
+sub diagnostics      () { 0 }
+sub causes_fail      () { 0 }
+
 sub init {
+    $_[0]->{+NO_LEGACY_FACETS} = 1;
+
     if ($_[0]->{+DIRECTIVE}) {
         $_[0]->{+DIRECTIVE} = 'SKIP'    if $_[0]->{+DIRECTIVE} eq 'skip_all';
         $_[0]->{+DIRECTIVE} = 'NO PLAN' if $_[0]->{+DIRECTIVE} eq 'no_plan';
@@ -46,17 +58,6 @@ sub sets_plan {
     );
 }
 
-sub callback {
-    my $self = shift;
-    my ($hub) = @_;
-
-    $hub->plan($self->{+DIRECTIVE} || $self->{+MAX});
-
-    return unless $self->{+DIRECTIVE};
-
-    $hub->set_skip_reason($self->{+REASON} || 1) if $self->{+DIRECTIVE} eq 'SKIP';
-}
-
 sub terminate {
     my $self = shift;
     # On skip_all we want to terminate the hub
@@ -77,6 +78,24 @@ sub summary {
         if $reason;
 
     return "Plan is '$directive'";
+}
+
+sub facets {
+    my $self = shift;
+
+    my $facets = $self->SUPER::facets();
+
+    my $skip = $self->{+DIRECTIVE} eq 'SKIP';
+    my $none = $self->{+DIRECTIVE} eq 'NO PLAN';
+
+    $facets->{plan} = Test2::EventFacet::Plan->new(
+        count   => $self->{+MAX},
+        details => $self->{+REASON},
+        skip    => $skip,
+        none    => $none,
+    );
+
+    return $facets;
 }
 
 1;

@@ -21,7 +21,14 @@ our @EXPORT = qw{
 sub ok($;$@) {
     my ($bool, $name, @diag) = @_;
     my $ctx = context();
-    $ctx->ok($bool, $name, \@diag);
+
+    return $ctx->pass_and_release($name) if $bool;
+
+    $ctx->emit(
+        assert => { pass => $bool, details => $name },
+        diag => \@diag,
+    );
+
     $ctx->release;
     return $bool ? 1 : 0;
 }
@@ -41,16 +48,20 @@ sub is($$;$@) {
         $bool = 1;
     }
 
-    unless ($bool) {
-        $got  = '*NOT DEFINED*' unless defined $got;
-        $want = '*NOT DEFINED*' unless defined $want;
-        unshift @diag => (
-            "GOT:      $got",
-            "EXPECTED: $want",
-        );
-    }
+    return $ctx->pass_and_release($name) if $bool;
 
-    $ctx->ok($bool, $name, \@diag);
+    $got  = '*NOT DEFINED*' unless defined $got;
+    $want = '*NOT DEFINED*' unless defined $want;
+    unshift @diag => (
+        "GOT:      $got",
+        "EXPECTED: $want",
+    );
+
+    $ctx->emit(
+        assert => { pass => $bool, details => $name },
+        diag => \@diag,
+    );
+
     $ctx->release;
     return $bool;
 }
@@ -70,10 +81,16 @@ sub isnt($$;$@) {
         $bool = 0;
     }
 
+    return $ctx->pass_and_release($name) if $bool;
+
     unshift @diag => "Strings are the same (they should not be)"
         unless $bool;
 
-    $ctx->ok($bool, $name, \@diag);
+    $ctx->emit(
+        assert => { pass => $bool, details => $name },
+        diag => \@diag,
+    );
+
     $ctx->release;
     return $bool;
 }
@@ -95,7 +112,13 @@ sub like($$;$@) {
         unshift @diag => "Got an undefined value.";
     }
 
-    $ctx->ok($bool, $name, \@diag);
+    return $ctx->pass_and_release($name) if $bool;
+
+    $ctx->emit(
+        assert => { pass => $bool, details => $name },
+        diag => \@diag,
+    );
+
     $ctx->release;
     return $bool;
 }
@@ -118,7 +141,13 @@ sub unlike($$;$@) {
         unshift @diag => "Got an undefined value.";
     }
 
-    $ctx->ok($bool, $name, \@diag);
+    return $ctx->pass_and_release($name) if $bool;
+
+    $ctx->emit(
+        assert => { pass => $bool, details => $name },
+        diag => \@diag,
+    );
+
     $ctx->release;
     return $bool;
 }
@@ -147,9 +176,13 @@ sub is_deeply($$;$@) {
 
     my $bool = $g eq $w;
 
-    my $diff;
+    return $ctx->pass_and_release($name) if $bool;
 
-    $ctx->ok($bool, $name, [$diff ? $diff : ($g, $w), @diag]);
+    $ctx->emit(
+        assert => { pass => $bool, details => $name },
+        diag => \@diag,
+    );
+
     $ctx->release;
     return $bool;
 }
@@ -183,16 +216,13 @@ sub todo {
     my $filter = $hub->pre_filter(
         sub {
             my ($active_hub, $event) = @_;
-
-            # Turn a diag into a note
-            return Test2::Event::Note->new(%$event) if ref($event) eq 'Test2::Event::Diag';
-
-            # Set todo on ok's
-            if ($hub == $active_hub && $event->isa('Test2::Event::Ok')) {
-                $event->set_todo($reason);
-                $event->set_effective_pass(1);
+            if ($active_hub == $hub) {
+                $event->set_todo($reason) if $event->can('set_todo');
+                $event->add_amnesty([todo => $reason]);
             }
-
+            else {
+                $event->add_amnesty({tag => 'todo', details => $reason, inherited => 1});
+            }
             return $event;
         },
         inherit => 1,
@@ -239,7 +269,7 @@ sub tests {
 
     before_each() if __PACKAGE__->can('before_each');
 
-    my $bool = run_subtest($name, $code, 1);
+    my $bool = run_subtest($name, $code, {buffered => 1, faceted => 1});
 
     $ctx->release;
 

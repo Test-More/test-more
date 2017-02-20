@@ -5,7 +5,7 @@ use Test2::Tools::Tiny;
 use Test2::Event::Subtest;
 my $st = 'Test2::Event::Subtest';
 
-my $trace = Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']);
+my $trace = Test2::EventFacet::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'xxx']);
 my $one = $st->new(
     trace     => $trace,
     pass      => 1,

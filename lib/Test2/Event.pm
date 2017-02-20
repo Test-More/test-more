@@ -4,23 +4,41 @@ use warnings;
 
 our $VERSION = '1.302078';
 
-use Test2::Util::HashBase qw/trace nested in_subtest subtest_id/;
+use Carp();
+use Scalar::Util();
+
+use Test2::Util();
+use Test2::EventFacet::Info();
+use Test2::EventFacet::Trace();
+use Test2::EventFacet::Amnesty();
+
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
-use Test2::Util qw(pkg_to_file);
-use Test2::Util::Trace;
 
-sub causes_fail      { 0 }
-sub increments_count { 0 }
-sub diagnostics      { 0 }
-sub no_display       { 0 }
+use Test2::Util::HashBase(
+    # Identity
+    qw{^trace nested in_nest},
 
-sub callback { }
+    # Hub info
+    qw{-terminate -global -causes_fail},
 
-sub terminate { () }
-sub global    { () }
-sub sets_plan { () }
+    # Formatter info
+    qw{-summary -gravity -no_debug -_gravity_recursion},
 
-sub summary { ref($_[0]) }
+    qw{-_facets -_amnesty -_info -no_legacy_facets},
+);
+
+{
+    my $ID = 1;
+    sub GEN_UNIQUE_NEST_ID { join "-" => ('NEST-ID', time(), $$, Test2::Util::get_tid, $ID++) }
+}
+
+sub callback() { }
+
+sub init {
+    my $self = shift;
+    $self->{+IN_NEST} ||= delete $self->{in_subtest} if defined $self->{in_subtest};
+    $self->{+NO_LEGACY_FACETS} = 1 if ref($self) eq __PACKAGE__;
+}
 
 sub related {
     my $self = shift;
@@ -36,31 +54,232 @@ sub related {
     return 0;
 }
 
+{
+    no warnings 'redefine';
+
+    sub no_legacy_facets {
+        $_[0]->{+NO_LEGACY_FACETS} = 1 if ref($_[0]) eq __PACKAGE__;
+        $_[0]->{+NO_LEGACY_FACETS};
+    }
+
+    sub causes_fail {
+        my $self = shift;
+        return $self->{+CAUSES_FAIL} if defined $self->{+CAUSES_FAIL};
+        my $facets = $self->facets;
+
+        return 1 if $facets->{stop};
+        return 0 if $facets->{amnesty};
+        return 0 unless $facets->{assert};
+        return $facets->{assert}->pass ? 0 : 1;
+    }
+
+    sub gravity {
+        my $self = shift;
+        return $self->{+GRAVITY} if defined $self->{+GRAVITY};
+        return 100 if $self->causes_fail;
+
+        # For legacy reasons gravity is closely tied to the deprecated
+        # 'diagnostics' and 'no_display' methods. The default implementations
+        # of each will try to deduce their values from the other. This can
+        # cause recursion if neither is set.
+        unless($self->{+_GRAVITY_RECURSION} || ref($self) eq __PACKAGE__) {
+            local $self->{+_GRAVITY_RECURSION} = 1;
+            return 100 if $self->diagnostics;
+            return -1  if $self->no_display;
+        }
+
+        return 0;
+    }
+
+    sub summary {
+        my $self = shift;
+        return $self->{+SUMMARY} if defined $self->{+SUMMARY};
+        return ref($self);
+    }
+}
+
+sub facets {
+    my $self = shift;
+
+    my %facets = $self->{+_FACETS} ? %{$self->{+_FACETS}} : ();
+
+    push @{$facets{amnesty}} => @{$self->{+_AMNESTY}} if $self->{+_AMNESTY};
+    push @{$facets{info}}    => @{$self->{+_INFO}} if $self->{+_INFO};
+
+    unless ($self->{+NO_LEGACY_FACETS} || $self->no_legacy_facets) {
+        my $mixin = $self->legacy_facets;
+
+        # These facet types have more than 1 value
+        push @{$facets{amnesty}} => @{delete $mixin->{amnesty}} if $mixin->{amnesty};
+        push @{$facets{info}}    => @{delete $mixin->{info}}    if $mixin->{info};
+
+        # Legacy is not used if the type is already set.
+        $facets{$_} ||= $mixin->{$_} for keys %$mixin;
+    }
+
+    # The events trace always wins.
+    $facets{trace} = $self->{+TRACE} if $self->{+TRACE};
+
+    return \%facets;
+}
+
+# This is an optimization
+my %INFO_BUILD = ('ARRAY' => 1, 'HASH' => 1, 'Test2::EventFacet::Info' => 1);
+my %INFO_ISA   = ('Test2::EventFacet::Amnesty' => 1);
+sub add_info {
+    my $self = shift;
+
+    for my $in (@_) {
+        my $ref = ref($in);
+        if ($INFO_BUILD{$ref}) {
+            push @{$self->{+_INFO}} => Test2::EventFacet::Info->new($in);
+        }
+        elsif($INFO_ISA{$ref}) {
+            push @{$self->{+_INFO}} => $in;
+        }
+        elsif(Scalar::Util::blessed($in) && $in->isa('Test2::EventFacet::Info')) {
+            $INFO_ISA{$ref} = 1; # Cache it, isa is expensive
+            push @{$self->{+_INFO}} => $in;
+        }
+        else {
+            Carp::croak("add_info only takes hashrefs, arrayrefs, or Test2::EventFacet::Info instances");
+        }
+    }
+}
+
+my %AMNESTY_BUILD = ('ARRAY' => 1, 'HASH' => 1);
+my %AMNESTY_ISA   = ('Test2::EventFacet::Amnesty' => 1);
+sub add_amnesty {
+    my $self = shift;
+
+    my @list;
+    for my $in (@_) {
+        my $ref = ref($in);
+        if ($AMNESTY_BUILD{$ref}) {
+            push @list => Test2::EventFacet::Amnesty->new($in);
+        }
+        elsif($AMNESTY_ISA{$ref}) {
+            push @list => $in;
+        }
+        elsif(Scalar::Util::blessed($in) && $in->isa('Test2::EventFacet::Amnesty')) {
+            $AMNESTY_ISA{$ref} = 1; # Cache it, isa is expensive
+            push @list => $in;
+        }
+        else {
+            Carp::croak("add_amnesty only takes hashrefs, arrayrefs, or Test2::EventFacet::Amnesty instances");
+        }
+    }
+
+    my $nest = $self->facets->{nest};
+    if ($nest && $nest->events) {
+        for my $am (@list) {
+            # Clone with inherited
+            $am = Test2::EventFacet::Amnesty->new(%$am, inherited => $am);
+            $_->add_amnesty($am) for @{$nest->events};
+        }
+    }
+
+    push @{$self->{+_AMNESTY}} => @list;
+}
+
+sub legacy_facets {
+    my $self = shift;
+
+    # Prevent recursion that can occur if legacy_facets is requested on events
+    # that do not override increments_count, sets_plan, or causes_fail.
+    return {} if $self->{legacy_facets};
+    local $self->{legacy_facets} = 1;
+
+    # The facet generator only works on subclasses
+    return if ref($self) eq __PACKAGE__;
+
+    my $facets = {};
+
+    if ($self->increments_count) {
+        my $pass = $self->causes_fail ? 0 : 1;
+
+        require Test2::EventFacet::Assert;
+        $facets->{assert} = Test2::EventFacet::Assert->new(pass => $pass);
+    }
+
+    if (my @plan = $self->sets_plan) {
+        require Test2::EventFacet::Plan;
+
+        my %attrs = (count => $plan[0]);
+
+        $attrs{details} = $plan[2] if defined $plan[2];
+
+        if ($plan[1]) {
+            $attrs{skip} = 1 if $plan[1] eq 'SKIP';
+            $attrs{none} = 1 if $plan[1] eq 'NO PLAN';
+        }
+
+        $facets->{plan} = Test2::EventFacet::Plan->new(%attrs);
+    }
+
+    return $facets;
+}
+
+# JSON
+###############
 sub from_json {
     my $class = shift;
     my %p     = @_;
 
-    my $event_pkg = delete $p{__PACKAGE__};
-    require(pkg_to_file($event_pkg));
+    my $event_pkg = delete $p{'__PACKAGE__'};
+    require(Test2::Util::pkg_to_file($event_pkg));
 
     if (exists $p{trace}) {
-        $p{trace} = Test2::Util::Trace->from_json(%{$p{trace}});
+        $p{trace} = Test2::EventFacet::Trace->from_json(%{$p{trace}});
     }
 
-    if (exists $p{subevents}) {
-        my @subevents;
-        for my $subevent (@{delete $p{subevents} || []}) {
-            push @subevents, Test2::Event->from_json(%$subevent);
-        }
-        $p{subevents} = \@subevents;
-    }
+    die "TODO: Unserialize facets";
 
     return $event_pkg->new(%p);
 }
 
+{
+    no warnings 'once';
+    *to_json = \&TO_JSON;
+}
 sub TO_JSON {
     my $self = shift;
-    return {%$self, Test2::Util::ExternalMeta::META_KEY() => undef, __PACKAGE__ => ref $self};
+
+    my %overrides = @_;
+
+    return {
+        %$self,
+        __PACKAGE__ => ref($self),
+
+        Test2::Util::ExternalMeta::META_KEY() => undef,
+
+        %overrides,
+    };
+}
+
+   #############################
+#   ##                       ##   #
+#####  DEPRECATED BELOW HERE  #####
+#   ##                       ##   #
+   #############################
+
+Test2::Util::deprecate_quietly( qw{ in_subtest set_in_subtest });
+
+sub in_subtest     { $_[0]->in_nest }
+sub set_in_subtest { $_[0]->set_in_nest($_[1]) }
+
+sub no_display  { $_[0]->gravity < 0 ? 1 : 0 }
+sub diagnostics { $_[0]->gravity > 0 ? 1 : 0 }
+
+sub increments_count { $_[0]->facets->{assert} ? 1 : 0 }
+
+sub sets_plan {
+    my $self = shift;
+    my $plan = $self->facets->{plan} or return;
+
+    return ($plan->count || 0, 'SKIP',    $plan->details) if $plan->skip;
+    return ($plan->count || 0, 'NO PLAN', $plan->details) if $plan->none;
+    return ($plan->count);
 }
 
 1;
@@ -80,173 +299,9 @@ Test2::Event - Base class for events
 Base class for all event objects that get passed through
 L<Test2>.
 
-=head1 SYNOPSIS
+=head1 EVENT API
 
-    package Test2::Event::MyEvent;
-    use strict;
-    use warnings;
-
-    # This will make our class an event subclass (required)
-    use base 'Test2::Event';
-
-    # Add some accessors (optional)
-    # You are not obligated to use HashBase, you can use any object tool you
-    # want, or roll your own accessors.
-    use Test2::Util::HashBase qw/foo bar baz/;
-
-    # Chance to initialize some defaults
-    sub init {
-        my $self = shift;
-        # no other args in @_
-
-        $self->set_foo('xxx') unless defined $self->foo;
-
-        ...
-    }
-
-    1;
-
-=head1 METHODS
-
-=over 4
-
-=item $trace = $e->trace
-
-Get a snapshot of the L<Test2::Util::Trace> as it was when this event was
-generated
-
-=item $bool = $e->causes_fail
-
-Returns true if this event should result in a test failure. In general this
-should be false.
-
-=item $bool = $e->increments_count
-
-Should be true if this event should result in a test count increment.
-
-=item $e->callback($hub)
-
-If your event needs to have extra effects on the L<Test2::Hub> you can override
-this method.
-
-This is called B<BEFORE> your event is passed to the formatter.
-
-=item $call = $e->created
-
-Get the C<caller()> details from when the event was generated. This is usually
-inside a tools package. This is typically used for debugging.
-
-=item $num = $e->nested
-
-If this event is nested inside of other events, this should be the depth of
-nesting. (This is mainly for subtests)
-
-=item $bool = $e->global
-
-Set this to true if your event is global, that is ALL threads and processes
-should see it no matter when or where it is generated. This is not a common
-thing to want, it is used by bail-out and skip_all to end testing.
-
-=item $code = $e->terminate
-
-This is called B<AFTER> your event has been passed to the formatter. This
-should normally return undef, only change this if your event should cause the
-test to exit immediately.
-
-If you want this event to cause the test to exit you should return the exit
-code here. Exit code of 0 means exit success, any other integer means exit with
-failure.
-
-This is used by L<Test2::Event::Plan> to exit 0 when the plan is
-'skip_all'. This is also used by L<Test2::Event:Bail> to force the test
-to exit with a failure.
-
-This is called after the event has been sent to the formatter in order to
-ensure the event is seen and understood.
-
-=item $todo = $e->todo
-
-=item $e->set_todo($todo)
-
-Get/Set the todo reason on the event. Any value other than C<undef> makes the
-event 'TODO'.
-
-Not all events make use of this field, but they can all have it set/cleared.
-
-=item $bool = $e->diag_todo
-
-=item $e->diag_todo($todo)
-
-True if this event should be considered 'TODO' for diagnostics purposes. This
-essentially means that any message that would go to STDERR will go to STDOUT
-instead so that a harness will hide it outside of verbose mode.
-
-=item $msg = $e->summary
-
-This is intended to be a human readable summary of the event. This should
-ideally only be one line long, but you can use multiple lines if necessary. This
-is intended for human consumption. You do not need to make it easy for machines
-to understand.
-
-The default is to simply return the event package name.
-
-=item ($count, $directive, $reason) = $e->sets_plan()
-
-Check if this event sets the testing plan. It will return an empty list if it
-does not. If it does set the plan it will return a list of 1 to 3 items in
-order: Expected Test Count, Test Directive, Reason for directive.
-
-=item $bool = $e->diagnostics
-
-True if the event contains diagnostics info. This is useful because a
-non-verbose harness may choose to hide events that are not in this category.
-Some formatters may choose to send these to STDERR instead of STDOUT to ensure
-they are seen.
-
-=item $bool = $e->no_display
-
-False by default. This will return true on events that should not be displayed
-by formatters.
-
-=item $id = $e->in_subtest
-
-If the event is inside a subtest this should have the subtest ID.
-
-=item $id = $e->subtest_id
-
-If the event is a final subtest event, this should contain the subtest ID.
-
-=item $bool_or_undef = $e->related($e2)
-
-Check if 2 events are related. In this case related means their traces share a
-signature meaning they were created with the same context (or at the very least
-by contexts which share an id, which is the same thing unless someone is doing
-something very bad).
-
-This can be used to reliably link multiple events created by the same tool. For
-instance a failing test like C<ok(0, "fail"> will generate 2 events, one being
-a L<Test2::Event::Ok>, the other being a L<Test2::Event::Diag>, both of these
-events are related having been created under the same context and by the same
-initial tool (though multiple tools may have been nested under the initial
-one).
-
-This will return C<undef> if the relationship cannot be checked, which happens
-if either event has an incomplete or missing trace. This will return C<0> if
-the traces are complete, but do not match. C<1> will be returned if there is a
-match.
-
-=item $hashref = $e->TO_JSON
-
-This returns a hashref suitable for passing to the C<< Test2::Event->from_json
->> constructor. It is intended for use with the L<JSON> family of modules,
-which will look for a C<TO_JSON> method when C<convert_blessed> is true.
-
-=item $e = Test2::Event->from_json(%$hashref)
-
-Given the hash of data returned by C<< $e->TO_JSON >>, this method returns a
-new event object of the appropriate subclass.
-
-=back
+TODO
 
 =head1 THIRD PARTY META-DATA
 

@@ -9,7 +9,7 @@ use Carp qw/confess croak longmess/;
 use Scalar::Util qw/weaken blessed/;
 use Test2::Util qw/get_tid try pkg_to_file get_tid/;
 
-use Test2::Util::Trace();
+use Test2::EventFacet::Trace();
 use Test2::API();
 
 # Preload some key event types
@@ -19,7 +19,7 @@ my %LOADED = (
         my $file = "Test2/Event/$_.pm";
         require $file unless $INC{$file};
         ( $pkg => $pkg, $_ => $pkg )
-    } qw/Ok Diag Note Info Plan Bail Exception Waiting Skip Subtest/
+    } qw/Ok Diag Note Plan Bail Exception Waiting Skip Subtest Faceted Pass/
 );
 
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
@@ -202,6 +202,70 @@ sub alert {
     $self->trace->alert($msg);
 }
 
+sub send_pass {
+    my $self = shift;
+    my ($name) = @_;
+
+    my $e = bless(
+        {
+            trace => bless({%{$self->{+TRACE}}}, 'Test2::EventFacet::Trace'),
+            assert => bless({pass => 1, details => $name}, 'Test2::EventFacet::Assert'),
+        },
+        'Test2::Event::Pass'
+    );
+
+    $self->{+HUB}->send($e);
+
+    return $e;
+}
+
+sub build_pass {
+    my $self = shift;
+    my ($name) = @_;
+
+    return bless(
+        {
+            trace => bless({%{$self->{+TRACE}}}, 'Test2::EventFacet::Trace'),
+            assert => bless({pass => 1, details => $name}, 'Test2::EventFacet::Assert'),
+        },
+        'Test2::Event::Pass'
+    );
+}
+
+sub pass_and_release {
+    my $self = shift;
+    my ($name) = @_;
+
+    my $e = bless(
+        {
+            trace => bless({%{$self->{+TRACE}}}, 'Test2::EventFacet::Trace'),
+            assert => bless({pass => 1, details => $name}, 'Test2::EventFacet::Assert'),
+        },
+        'Test2::Event::Pass'
+    );
+
+    $self->{+HUB}->send($e);
+
+    $self->release;
+
+    return 1;
+}
+
+sub emit {
+    my $self = shift;
+    my %args = @_;
+
+    # Optimize away the cruft...
+    $args{trace} = bless({%{$self->{+TRACE}}}, 'Test2::EventFacet::Trace');
+    my $e = bless(\%args, 'Test2::Event::Faceted');
+    $e->init;
+
+    ${$self->{+_ABORTED}}++ if $self->{+_ABORTED} && (defined $e->terminate || $args{stop} || $args{_facets}->{stop});
+    $self->{+HUB}->send($e);
+
+    return $e;
+}
+
 sub send_event {
     my $self  = shift;
     my $event = shift;
@@ -209,12 +273,16 @@ sub send_event {
 
     my $pkg = $LOADED{$event} || $self->_parse_event($event);
 
-    my $e = $pkg->new(
-        trace => $self->{+TRACE}->snapshot,
-        %args,
-    );
+    my $e;
+    {
+        local $Carp::CarpLevel = $Carp::CarpLevel + 1;
+        $e = $pkg->new(
+            trace => $self->{+TRACE}->snapshot,
+            %args,
+        );
+    }
 
-    ${$self->{+_ABORTED}}++ if $self->{+_ABORTED} && defined $e->terminate;
+    ${$self->{+_ABORTED}}++ if $self->{+_ABORTED} && (defined $e->terminate || $e->facets->{stop});
     $self->{+HUB}->send($e);
 }
 
@@ -225,6 +293,7 @@ sub build_event {
 
     my $pkg = $LOADED{$event} || $self->_parse_event($event);
 
+    local $Carp::CarpLevel = $Carp::CarpLevel + 1;
     $pkg->new(
         trace => $self->{+TRACE}->snapshot,
         %args,
@@ -238,7 +307,7 @@ sub ok {
     my $hub = $self->{+HUB};
 
     my $e = bless {
-        trace => bless( {%{$self->{+TRACE}}}, 'Test2::Util::Trace'),
+        trace => bless( {%{$self->{+TRACE}}}, 'Test2::EventFacet::Trace'),
         pass  => $pass,
         name  => $name,
     }, 'Test2::Event::Ok';
@@ -293,12 +362,6 @@ sub skip {
         pass => 1,
         @extra,
     );
-}
-
-sub info {
-    my $self = shift;
-    my ($renderer, %params) = @_;
-    $self->send_event('Info', renderer => $renderer, %params);
 }
 
 sub note {
@@ -383,11 +446,20 @@ should always use C<context()> which is exported by the L<Test2::API> module.
 
     use Test2::API qw/context/;
 
-    sub my_ok {
+    sub my_ok($;$) {
         my ($bool, $name) = @_;
         my $ctx = context();
-        $ctx->ok($bool, $name);
-        $ctx->release; # You MUST do this!
+
+        # Use this on success as an optimization, it will send a 'Pass' event,
+        # and release the context, and return true (1) all at once.
+        return $ctx->pass_and_release($name)
+            if $bool;
+
+        # If things did not succeed then we need to emit a more complex event,
+        # and then release the context by hand:
+        $ctx->emit(assert => {pass => $bool, details => $name});
+        $ctx->release;    # You MUST do this!
+
         return $bool;
     }
 
@@ -502,7 +574,7 @@ current one to which all events should be sent.
 
 =item $dbg = $ctx->trace()
 
-This will return the L<Test2::Util::Trace> instance used by the context.
+This will return the L<Test2::EventFacet::Trace> instance used by the context.
 
 =item $ctx->do_in_context(\&code, @args);
 
@@ -548,31 +620,103 @@ The value of C<$@> when the context was created.
 
 =over 4
 
-=item $event = $ctx->ok($bool, $name)
+=item $true = pass_and_release($name)
 
-=item $event = $ctx->ok($bool, $name, \@on_fail)
+This is the most optimal path for producing a single passing assertion event.
+This will generate an L<Test2::Event::Pass>, send it to the hub, and then
+release the context for you. This method always returns true. Use this whenever
+possible for optimal performance.
 
-This will create an L<Test2::Event::Ok> object for you. If C<$bool> is false
-then an L<Test2::Event::Diag> event will be sent as well with details about the
-failure. If you do not want automatic diagnostics you should use the
-C<send_event()> method directly.
+    sub my_ok($;$) {
+        my ($bool, $name) = @_;
+        my $ctx = context();
 
-The third argument C<\@on_fail>) is an optional set of diagnostics to be sent in
-the event of a test failure. Plain strings will be sent as
-L<Test2::Event::Diag> events. References will be used to construct
-L<Test2::Event::Info> events with C<< diagnostics => 1 >>.
+        return $ctx->pass_and_release($name)
+            if $bool;
 
-=item $event = $ctx->info($renderer, diagnostics => $bool, %other_params)
+        ... Handle Failure
+    }
 
-Send an L<Test2::Event::Info>.
+=item $e = $ctx->send_pass($name)
+
+This is the same as C<pass_and_release()> except that the context is not
+released for you. Use this if you still need the context after sending your
+event.
+
+=item $e = $ctx->build_pass($name)
+
+This is the same as C<pass_and_release()> or C<send_pass()> except that the
+event is returned instead of being sent to the hub. The context is not released
+for you.
+
+=item $e = $ctx->emit(...)
+
+This is your 1-stop shop for producing a generic event with any necessary
+facets. The event will be sent to the hub for you.
+
+Note: All fields are optional.
+
+    $e = $ctx->emit(
+        nested  => $depth,    # How deeply nested the event is
+        in_nest => $nest_id,  # Parent nest id (usually empty)
+
+        # Hub info
+        terminate   => undef, # A defined value means exit the test
+        global      => $bool, # You probably do not need this.
+        causes_fail => $bool, # Override, default is to look at assert and amnesty
+
+        # Formatter info
+        summary  => $string,  # Override, default is a list of facets
+        gravity  => $integer, # -1 means no display, 0 is normal >0 is important
+        no_debug => $bool,    # True prevents diagnostics from being automatically added on assert failure.
+
+        # Facets
+
+        assert => {pass  => 1, details => 'xxx'},
+        plan   => {count => 2, details => 'foo', skip => 0},
+
+        info => [
+            [diag => 'xxx'],
+            [note => 'yyy'],
+        ],
+
+        note => [
+            "First note",
+            "Second note",
+        ],
+
+        diag => [
+            "First diag",
+            "Second diag",
+        ],
+
+        amnesty => [
+            [TODO => 'The test is a todo'],
+            [skip => 'The test was skipped'],
+        ],
+
+        stop => {detail => 'Bail out!!!!'},
+
+        nest => {
+            id       => 'subtest 42',
+            buffered => 1,
+            events   => [...],
+        },
+    );
 
 =item $event = $ctx->note($message)
 
-Send an L<Test2::Event::Note>. This event prints a message to STDOUT.
+Send an L<Test2::Event::Note>. This is a message intended for humans, and is
+usually debugging info. A note event has a gravity of 0 which means a
+non-verbose harness will likely hide it. L<Test2::Formatter::TAP> send these to
+STDOUT.
 
 =item $event = $ctx->diag($message)
 
-Send an L<Test2::Event::Diag>. This event prints a message to STDERR.
+Send an L<Test2::Event::Diag>. This is a message intended for humans, and is
+usually debugging info. A diag event has a gravity of 100 which means a
+non-verbose harness will still show it. L<Test2::Formatter::TAP> send these to
+STDERR.
 
 =item $event = $ctx->plan($max)
 
@@ -599,16 +743,43 @@ be the event package name with C<Test2::Event::> left off, or a fully
 qualified package name prefixed with a '+'. The event is returned after it is
 sent.
 
-    my $event = $ctx->send_event('Ok', ...);
+    my $event = $ctx->send_event('Faceted', ...);
 
 or
 
-    my $event = $ctx->send_event('+Test2::Event::Ok', ...);
+    my $event = $ctx->send_event('+Test2::Event::Faceted', ...);
 
 =item $event = $ctx->build_event($Type, %parameters)
 
 This is the same as C<send_event()>, except it builds and returns the event
 without sending it.
+
+=back
+
+=head2 DISCOURAGED
+
+These event production methods are kept around for legacy support, but are
+discouraged for future use. In general these should be replaced by C<pass()>
+and/or C<emit()>.
+
+=over 4
+
+=item $event = $ctx->ok($bool, $name)
+
+=item $event = $ctx->ok($bool, $name, \@on_fail)
+
+B<NOTE:> The L<Test2::Event::Ok> event this produces is discouraged. The OK
+event sends separate L<Test2::Event::Diag> events, it is hard to smash these
+events back together after the fact, so L<Test2::Event::Faceted> is preferred.
+
+This will create an L<Test2::Event::Ok> object for you. If C<$bool> is false
+then an L<Test2::Event::Diag> event will be sent as well with details about the
+failure. If you do not want automatic diagnostics you should use the
+C<send_event()> method directly.
+
+The third argument C<\@on_fail>) is an optional set of diagnostics to be sent in
+the event of a test failure. Plain strings will be sent as
+L<Test2::Event::Diag> events.
 
 =back
 

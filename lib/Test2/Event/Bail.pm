@@ -4,23 +4,23 @@ use warnings;
 
 our $VERSION = '1.302078';
 
+use Test2::EventFacet::Stop;
 
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw{reason};
 
-sub callback {
+sub no_legacy_facets () { 1 }
+sub global ()           { 1 }
+sub causes_fail ()      { 1 }
+sub diagnostics ()      { 1 }
+sub terminate ()        { 255 }
+sub gravity ()          { 1000 }
+
+sub init {
     my $self = shift;
-    my ($hub) = @_;
-
-    $hub->set_bailed_out($self);
+    $self->SUPER::init();
+    $self->{+NO_LEGACY_FACETS} = 1;
 }
-
-# Make sure the tests terminate
-sub terminate { 255 };
-
-sub global { 1 };
-
-sub causes_fail { 1 }
 
 sub summary {
     my $self = shift;
@@ -30,7 +30,17 @@ sub summary {
     return "Bail out!";
 }
 
-sub diagnostics { 1 }
+sub facets {
+    my $self = shift;
+
+    my $facets = $self->SUPER::facets();
+
+    $facets->{stop} = Test2::EventFacet::Stop->new(
+        details => $self->{+REASON},
+    );
+
+    return $facets;
+}
 
 1;
 

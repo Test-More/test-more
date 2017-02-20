@@ -2,7 +2,7 @@ package Test2::Event::Generic;
 use strict;
 use warnings;
 
-use Carp qw/croak/;
+use Carp qw/croak carp/;
 use Scalar::Util qw/reftype/;
 
 our $VERSION = '1.302078';
@@ -23,6 +23,8 @@ my %DEFAULTS = (
 
 sub init {
     my $self = shift;
+
+    carp(__PACKAGE__ . " is deprecated\n");
 
     for my $field (@FIELDS) {
         my $val = defined $self->{$field} ? delete $self->{$field} : $DEFAULTS{$field};

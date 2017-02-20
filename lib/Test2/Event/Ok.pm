@@ -4,11 +4,24 @@ use warnings;
 
 our $VERSION = '1.302078';
 
+use Test2::EventFacet::Assert;
+use Test2::EventFacet::Amnesty;
 
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw{
     pass effective_pass name todo
 };
+
+sub terminate ()        { }
+sub sets_plan ()        { }
+sub no_debug ()         { 1 }
+sub increments_count () { 1 }
+sub no_legacy_facets () { 1 }
+sub no_display ()       { 0 }
+sub diagnostics ()      { 0 }
+
+sub causes_fail { !$_[0]->{+EFFECTIVE_PASS} }
+sub gravity { $_[0]->{+EFFECTIVE_PASS} ? 0 : 100 }
 
 sub init {
     my $self = shift;
@@ -16,6 +29,10 @@ sub init {
     # Do not store objects here, only true or false
     $self->{+PASS} = $self->{+PASS} ? 1 : 0;
     $self->{+EFFECTIVE_PASS} = $self->{+PASS} || (defined($self->{+TODO}) ? 1 : 0);
+    $self->{+NO_LEGACY_FACETS} = 1;
+    $self->{+NO_DEBUG} = 1;
+
+    $self->SUPER::init();
 }
 
 {
@@ -27,10 +44,6 @@ sub init {
         $self->{+EFFECTIVE_PASS} = defined($todo) ? 1 : $self->{+PASS};
     }
 }
-
-sub increments_count { 1 };
-
-sub causes_fail { !$_[0]->{+EFFECTIVE_PASS} }
 
 sub summary {
     my $self = shift;
@@ -46,6 +59,46 @@ sub summary {
     }
 
     return $name;
+}
+
+sub add_amnesty {
+    my $self = shift;
+    push @{$self->{+_AMNESTY} ||= []} => @_;
+}
+
+sub facets {
+    my $self = shift;
+
+    my $facets = $self->SUPER::facets();
+
+    #$facets->{assert} = Test2::EventFacet::Assert->new(
+    #    pass    => $self->{+PASS},
+    #    details => $self->{+NAME},
+    #);
+
+    $facets->{assert} = bless(
+        {
+            pass    => $self->{+PASS},
+            details => $self->{+NAME},
+        },
+        'Test2::EventFacet::Assert'
+    );
+
+    if (defined($self->{+TODO})) {
+        # Put the TODO first
+        unshift @{$facets->{amnesty}} => Test2::EventFacet::Amnesty->new(
+            inherited => 0,
+            tag       => 'TODO',
+            details   => $self->{+TODO},
+        );
+    }
+    elsif ($self->{+EFFECTIVE_PASS} && !$self->{+PASS}) {
+        push @{$facets->{amnesty}} => Test2::EventFacet::Amnesty->new(
+            inherited => 1,
+        );
+    }
+
+    return $facets;
 }
 
 1;

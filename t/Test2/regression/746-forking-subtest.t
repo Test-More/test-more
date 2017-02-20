@@ -26,7 +26,7 @@ my $events = intercept {
 my @subtests = grep {; $_->isa('Test2::Event::Subtest') } @$events;
 
 if (is(@subtests, 1, "only one subtest run, effectively")) {
-    my @subokay = grep {; $_->isa('Test2::Event::Ok') }
+    my @subokay = grep {; $_->facets->{assert} }
                   @{ $subtests[0]->subevents };
     is(@subokay, 1, "we got one test result inside the subtest");
     ok(! $subokay[0]->causes_fail, "...and it passed");

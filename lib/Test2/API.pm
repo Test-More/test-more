@@ -38,7 +38,7 @@ BEGIN {
     }
 }
 
-use Test2::Util::Trace();
+use Test2::EventFacet::Trace();
 
 use Test2::Hub::Subtest();
 use Test2::Hub::Interceptor();
@@ -289,7 +289,7 @@ sub context {
             tid   => get_tid(),
             cid   => 'C' . $CID++,
         },
-        'Test2::Util::Trace'
+        'Test2::EventFacet::Trace'
     );
 
     # Directly bless the object here, calling new is a noticeable performance
@@ -431,6 +431,7 @@ sub run_subtest {
     $params = {buffered => $params} unless ref $params;
     my $buffered      = delete $params->{buffered};
     my $inherit_trace = delete $params->{inherit_trace};
+    my $faceted       = delete $params->{faceted};
 
     my $ctx = context();
 
@@ -525,25 +526,37 @@ sub run_subtest {
         && !$hub->ended;
 
     my $pass = $ok && $hub->is_passing;
-    my $e = $ctx->build_event(
-        'Subtest',
-        pass       => $pass,
-        name       => $name,
-        subtest_id => $hub->id,
-        buffered   => $buffered,
-        subevents  => \@events,
-    );
 
     my $plan_ok = $hub->check_plan;
 
-    $ctx->hub->send($e);
+    if ($faceted) {
+        my $e = Test2::Event::Faceted->new(
+            trace  => $ctx->trace->snapshot,
+            assert => {pass => $pass, details => $name},
+            nest   => {id => $hub->id, buffered => $buffered, events => \@events},
+        );
 
-    $ctx->failure_diag($e) unless $e->pass;
+        $e->add_info([diag => "Caught exception in subtest: $err"]) unless $ok;
+        $e->add_info([diag => "Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count])
+            if defined($plan_ok) && !$plan_ok;
+        $ctx->hub->send($e);
+    }
+    else {
+        my $e = $ctx->build_event(
+            'Subtest',
+            pass       => $pass,
+            name       => $name,
+            subtest_id => $hub->id,
+            buffered   => $buffered,
+            subevents  => \@events,
+        );
 
-    $ctx->diag("Caught exception in subtest: $err") unless $ok;
-
-    $ctx->diag("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
-        if defined($plan_ok) && !$plan_ok;
+        $ctx->hub->send($e);
+        $ctx->failure_diag($e) unless $e->pass;
+        $ctx->diag("Caught exception in subtest: $err") unless $ok;
+        $ctx->diag("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
+            if defined($plan_ok) && !$plan_ok;
+    }
 
     $ctx->release;
     return $pass;

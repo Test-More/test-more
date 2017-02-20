@@ -17,9 +17,6 @@ my $hub = Test2::Hub->new;
 ok($hub->is_passing, "passing");
 ok(!$hub->failed, "no failures");
 
-$bail->callback($hub);
-is($hub->bailed_out, $bail, "set bailed out");
-
 is($bail->summary, "Bail out!  evil", "Summary includes reason");
 $bail->set_reason("");
 is($bail->summary, "Bail out!", "Summary has no reason");

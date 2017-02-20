@@ -4,12 +4,27 @@ use warnings;
 
 our $VERSION = '1.302078';
 
-
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
+use Test2::Util::HashBase;
 
-sub global { 1 };
+sub terminate ()        { }
+sub sets_plan ()        { }
+sub global ()           { 1 }
+sub no_debug ()         { 1 }
+sub no_legacy_facets () { 1 }
+sub gravity ()          { 0 }
+sub increments_count () { 0 }
+sub no_display ()       { 0 }
+sub diagnostics ()      { 0 }
+sub causes_fail ()      { 0 }
 
 sub summary { "IPC is waiting for children to finish..." }
+
+sub init {
+    my $self = shift;
+    $self->SUPER::init();
+    $self->{+NO_LEGACY_FACETS} = 1;
+}
 
 1;
 
