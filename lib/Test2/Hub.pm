@@ -2,7 +2,7 @@ package Test2::Hub;
 use strict;
 use warnings;
 
-our $VERSION = '1.302078';
+our $VERSION = '1.302079';
 
 
 use Carp qw/carp croak confess/;
