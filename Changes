@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - No changes since last trial
+
 1.302077  2017-02-19 14:34:30-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix #762, newlines for todo subtest
