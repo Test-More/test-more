@@ -462,7 +462,6 @@ sub run_subtest {
     );
 
     my @events;
-    $hub->set_nested( $parent->isa('Test2::Hub::Subtest') ? $parent->nested + 1 : 1 );
     $hub->listen(sub { push @events => $_[1] });
 
     if ($buffered) {
@@ -543,7 +542,7 @@ sub run_subtest {
         }
     }
 
-    $hub->finalize($trace, 1)
+    $hub->finalize($trace->snapshot(hid => $hub->hid, nested => $hub->nested), 1)
         if $ok
         && !$hub->no_ending
         && !$hub->ended;

@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '1.302084';
 
-use Test2::Util::HashBase qw/trace nested in_subtest subtest_id/;
+use Test2::Util::HashBase qw/trace/;
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 use Test2::Util qw(pkg_to_file);
 use Test2::EventFacet::Trace;
@@ -13,6 +13,7 @@ sub causes_fail      { 0 }
 sub increments_count { 0 }
 sub diagnostics      { 0 }
 sub no_display       { 0 }
+sub subtest_id       { undef }
 
 sub callback { }
 
@@ -61,6 +62,22 @@ sub from_json {
 sub TO_JSON {
     my $self = shift;
     return {%$self, Test2::Util::ExternalMeta::META_KEY() => undef, __PACKAGE__ => ref $self};
+}
+
+sub nested {
+    Carp::cluck("Use of Test2::Event->nested() is deprecated, use Test2::Event->trace->nested instead")
+        if $ENV{AUTHOR_TESTING};
+
+    $_[0]->{+TRACE}->nested();
+}
+
+sub in_subtest {
+    Carp::cluck("Use of Test2::Event->in_subtest() is deprecated, use Test2::Event->trace->hid instead")
+        if $ENV{AUTHOR_TESTING};
+
+    return undef unless $_[0]->{+TRACE}->nested();
+
+    $_[0]->{+TRACE}->hid();
 }
 
 1;

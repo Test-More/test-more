@@ -91,7 +91,7 @@ sub write {
     my @tap = $self->$converter($e, $self->{+NO_NUMBERS} ? undef : $num) or return;
 
     my $handles = $self->{+HANDLES};
-    my $nesting = ($SAFE_TO_ACCESS_HASH{$type} ? $e->{nested} : $e->nested) || 0;
+    my $nesting = $e->trace->nested || 0;
     my $indent = '    ' x $nesting;
 
     # Local is expensive! Only do it if we really need to.
@@ -239,7 +239,7 @@ sub event_bail {
     my $self = shift;
     my ($e, $num) = @_;
 
-    return if $e->nested && !$e->buffered;
+    return if $e->trace->nested;
 
     return [
         OUT_STD,

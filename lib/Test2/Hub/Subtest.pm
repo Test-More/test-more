@@ -6,28 +6,26 @@ our $VERSION = '1.302084';
 
 
 BEGIN { require Test2::Hub; our @ISA = qw(Test2::Hub) }
-use Test2::Util::HashBase qw/nested bailed_out exit_code manual_skip_all id buffered/;
+use Test2::Util::HashBase qw/nested exit_code manual_skip_all/;
 use Test2::Util qw/get_tid/;
-
-my $ID = 1;
-sub init {
-    my $self = shift;
-    $self->SUPER::init(@_);
-    $self->{+ID} ||= join "-", $$, get_tid, $ID++;
-}
 
 sub is_subtest { 1 }
 
-sub process {
+sub inherit {
     my $self = shift;
-    my ($e) = @_;
-    $e->set_nested($self->nested);
-    $e->set_in_subtest($self->{+ID});
-    if ($e->isa('Test2::Event::Bail')) {
-        $e->set_buffered(1) if $self->{+BUFFERED};
-        $self->set_bailed_out($e);
-    }
-    $self->SUPER::process($e);
+    my ($from) = @_;
+
+    $self->SUPER::inherit($from);
+
+    $self->{+NESTED} = $from->nested + 1;
+}
+
+{
+    # Legacy
+    no warnings 'once';
+    *ID = \&Test2::Hub::HID;
+    *id = \&Test2::Hub::hid;
+    *set_id = \&Test2::Hub::set_hid;
 }
 
 sub send {

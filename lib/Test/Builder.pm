@@ -188,7 +188,7 @@ sub child {
 
     $hub->listen(sub { push @$subevents => $_[1] });
 
-    $hub->set_nested( $parent->isa('Test2::Hub::Subtest') ? $parent->nested + 1 : 1 );
+    $hub->set_nested( $parent->nested + 1 );
 
     my $meta = $hub->meta(__PACKAGE__, {});
     $meta->{Name} = $name;
@@ -230,7 +230,7 @@ sub finalize {
     my $trace = $ctx->trace;
     delete $ctx->hub->meta(__PACKAGE__, {})->{child};
 
-    $chub->finalize($trace, 1)
+    $chub->finalize($trace->snapshot(hid => $chub->hid, nested => $chub->nested), 1)
         if $ok
         && $chub->count
         && !$chub->no_ending
