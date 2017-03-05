@@ -9,10 +9,12 @@ use Carp qw/carp croak confess/;
 use Test2::Util qw/get_tid ipc_separator/;
 
 use Scalar::Util qw/weaken/;
+use List::Util qw/first/;
 
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 use Test2::Util::HashBase qw{
     pid tid hid ipc
+    nested
     no_ending
     _filters
     _pre_filters
@@ -40,6 +42,7 @@ sub init {
     $self->{+PID} = $$;
     $self->{+TID} = get_tid();
     $self->{+HID} = join ipc_separator, $self->{+PID}, $self->{+TID}, $ID_POSTFIX++;
+    $self->{+NESTED} = 0 unless defined $self->{+NESTED};
 
     $self->{+COUNT}    = 0;
     $self->{+FAILED}   = 0;
@@ -87,6 +90,8 @@ sub reset_state {
 sub inherit {
     my $self = shift;
     my ($from, %params) = @_;
+
+    $self->{+NESTED} ||= 0;
 
     $self->{+_FORMATTER} = $from->{+_FORMATTER}
         unless $self->{+_FORMATTER} || exists($params{formatter});
@@ -354,11 +359,11 @@ sub finalize {
     my $failed = $self->{+FAILED};
     my $active = $self->{+ACTIVE};
 
-	# return if NOTHING was done.
-	unless ($active || $do_plan || defined($plan) || $count || $failed) {
-		$self->{+_FORMATTER}->finalize($plan, $count, $failed, 0, $self->is_subtest) if $self->{+_FORMATTER};
-		return;
-	}
+    # return if NOTHING was done.
+    unless ($active || $do_plan || defined($plan) || $count || $failed) {
+        $self->{+_FORMATTER}->finalize($plan, $count, $failed, 0, $self->is_subtest) if $self->{+_FORMATTER};
+        return;
+    }
 
     unless ($self->{+ENDED}) {
         if ($self->{+_FOLLOW_UPS}) {
@@ -396,7 +401,7 @@ Second End: $sfile line $sline
     $self->{+ENDED} = $frame;
     my $pass = $self->is_passing(); # Generate the final boolean.
 
-	$self->{+_FORMATTER}->finalize($plan, $count, $failed, $pass, $self->is_subtest) if $self->{+_FORMATTER};
+    $self->{+_FORMATTER}->finalize($plan, $count, $failed, $pass, $self->is_subtest) if $self->{+_FORMATTER};
 
     return $pass;
 }

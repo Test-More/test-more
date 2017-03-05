@@ -79,7 +79,7 @@ $it->write(
         name => 'foo',
         diag => 'diag',
         note => 'note',
-        trace => 'fake',
+        trace => Test2::EventFacet::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']),
     ),
     55,
 );
@@ -90,8 +90,7 @@ $it->write(
         name => 'bar',
         diag => 'diag',
         note => 'note',
-        trace => 'fake',
-        nested => 1,
+        trace => Test2::EventFacet::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo'], nested => 1),
     ),
     1,
 );

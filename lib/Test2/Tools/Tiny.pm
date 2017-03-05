@@ -237,7 +237,9 @@ sub tests {
     my ($name, $code) = @_;
     my $ctx = context();
 
-    before_each() if __PACKAGE__->can('before_each');
+    my $be = caller->can('before_each');
+
+    $be->($name) if $be;
 
     my $bool = run_subtest($name, $code, 1);
 
