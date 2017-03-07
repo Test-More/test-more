@@ -2084,7 +2084,7 @@ test failed.
 
 Defaults to 1.
 
-Setting L<$Test::Builder::Level> overrides.  This is typically useful
+Setting C<$Test::Builder::Level> overrides.  This is typically useful
 localized:
 
     sub my_ok {
