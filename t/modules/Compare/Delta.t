@@ -1,5 +1,7 @@
 use Test2::Bundle::Extended -target => 'Test2::Compare::Delta';
 
+BEGIN { $ENV{TABLE_TERM_SIZE} = 80 }
+
 can_ok($CLASS, qw/check/);
 is(
     $CLASS->can('chk'),

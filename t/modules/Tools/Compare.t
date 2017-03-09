@@ -2,6 +2,8 @@ use Test2::Bundle::Extended -target => 'Test2::Tools::Compare';
 use Test2::Util::Table();
 sub table { join "\n" => Test2::Util::Table::table(@_) }
 
+BEGIN { $ENV{TABLE_TERM_SIZE} = 80 }
+
 {
     package My::Boolean;
     use overload bool => sub { ${$_[0]} };

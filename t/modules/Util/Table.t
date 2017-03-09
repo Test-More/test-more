@@ -1,4 +1,5 @@
 use Test2::Bundle::Extended;
+BEGIN { $ENV{TABLE_TERM_SIZE} = 80 }
 use Test2::Util::Table qw/table/;
 use Test2::Util::Term qw/USE_GCS/;
 

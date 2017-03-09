@@ -1,6 +1,8 @@
 use Test2::Bundle::Extended;
 use Test2::Util::Table::LineBreak;
 
+BEGIN { $ENV{TABLE_TERM_SIZE} = 80 }
+
 subtest with_unicode_linebreak => sub {
     my $one = Test2::Util::Table::LineBreak->new(string => 'aaaa婧bbbb');
     $one->break(3);

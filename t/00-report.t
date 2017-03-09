@@ -1,6 +1,9 @@
 use Test2::Tools::Basic;
 use Test2::Util::Table qw/table/;
 
+# Nothing in the tables in this file should result in a table wider than 80
+# characters, so this is an optimization.
+BEGIN { $ENV{TABLE_TERM_SIZE} = 80 }
 use Test2::Util qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
 
 diag "\nDIAGNOSTICS INFO IN CASE OF FAILURE:\n";

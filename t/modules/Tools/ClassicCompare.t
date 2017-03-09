@@ -1,5 +1,7 @@
 use Test2::Bundle::Extended -target => 'Test2::Tools::ClassicCompare';
 
+BEGIN { $ENV{TABLE_TERM_SIZE} = 80 }
+
 use Test2::Util::Stash qw/purge_symbol/;
 BEGIN {
     purge_symbol('&is');
