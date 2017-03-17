@@ -43,7 +43,7 @@ diag(
 
 {
     my @options = qw{
-        Term::ReadKey Unicode::GCString Unicode::LineBreak
+        Term::Size::Any Term::ReadKey Unicode::GCString Unicode::LineBreak
     };
 
     my @rows;

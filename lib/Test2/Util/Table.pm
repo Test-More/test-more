@@ -149,8 +149,7 @@ comparing values.
 =head2 my $cols = term_size()
 
 Attempts to find the width in columns (characters) of the current terminal.
-Returns 80 as a safe bet if it cannot find it another way. This is most
-accurate if L<Term::ReadKey> is installed.
+Returns 80 as a safe bet if it cannot find it another way.
 
 =head1 NOTE ON UNICODE/WIDE CHARACTERS
 
