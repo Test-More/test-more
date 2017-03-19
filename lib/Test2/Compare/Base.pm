@@ -94,7 +94,7 @@ sub run {
     my $got = $exists ? $params{got} : undef;
 
     # Prevent infinite cycles
-    if (defined($got) && ref $got) {
+    if ($got && ref $got) {
         die "Cycle detected in comparison, aborting"
             if $seen->{$got} && $seen->{$got} >= MAX_CYCLES;
         $seen->{$got}++;
@@ -103,7 +103,7 @@ sub run {
     my $ok = $self->verify(%params);
     my @deltas = $ok ? $self->deltas(%params) : ();
 
-    $seen->{$got}-- if defined $got && ref $got;
+    $seen->{$got}-- if $got && ref $got;
 
     return if $ok && !@deltas;
 
