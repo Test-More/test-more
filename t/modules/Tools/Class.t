@@ -38,7 +38,7 @@ use Test2::Bundle::Extended -target => 'Test2::Tools::Class';
 {
     package My::String;
     use overload '""' => sub { "xxx\nyyy" };
-    use overload 'bool' => sub { 0 } ;
+
     sub DOES { 0 }
 }
 
