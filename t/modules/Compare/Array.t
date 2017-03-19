@@ -231,24 +231,4 @@ subtest deltas => sub {
     );
 };
 
-{
-  package Foo;
-
-  use overload bool => sub { 0 };
-  use overload '""' => sub { $_[0] };
-  sub new {
-      my $class = shift;
-      bless [ @_ ] , $class;
-  }
-}
-
-subtest objects_as_arrays => sub {
-
-    my $o1 = Foo->new( 'b' ) ;
-    my $o2 = Foo->new( 'b' ) ;
-
-    is ( $o1, $o2, "same" );
-};
-
-
 done_testing;
