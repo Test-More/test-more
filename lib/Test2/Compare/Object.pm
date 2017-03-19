@@ -41,13 +41,13 @@ sub verify {
 
 sub add_prop {
     my $self = shift;
-    $self->{+META} = $self->meta_class->new unless defined $self->{+META};
+    $self->{+META} ||= $self->meta_class->new;
     $self->{+META}->add_prop(@_);
 }
 
 sub add_field {
     my $self = shift;
-    $self->{+REFCHECK} = Test2::Compare::Hash->new unless defined $self->{+REFCHECK};
+    $self->{+REFCHECK} ||= Test2::Compare::Hash->new;
 
     croak "Underlying reference does not have fields"
         unless $self->{+REFCHECK}->can('add_field');
@@ -57,7 +57,7 @@ sub add_field {
 
 sub add_item {
     my $self = shift;
-    $self->{+REFCHECK} = Test2::Compare::Array->new unless defined $self->{+REFCHECK};
+    $self->{+REFCHECK} ||= Test2::Compare::Array->new;
 
     croak "Underlying reference does not have items"
         unless $self->{+REFCHECK}->can('add_item');
@@ -83,7 +83,7 @@ sub deltas {
     my $meta     = $self->{+META};
     my $refcheck = $self->{+REFCHECK};
 
-    push @deltas => $meta->deltas(%params) if defined $meta;
+    push @deltas => $meta->deltas(%params) if $meta;
 
     for my $call (@{$self->{+CALLS}}) {
         my ($meth, $check, $name, $context)= @$call;
@@ -127,7 +127,7 @@ sub deltas {
         }
     }
 
-    return @deltas unless defined $refcheck;
+    return @deltas unless $refcheck;
 
     $refcheck->set_ending($self->{+ENDING});
 

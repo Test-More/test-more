@@ -9,7 +9,7 @@ subtest simple => sub {
     is($one->name, '<META CHECKS>', "sane name");
     is($one->verify(exists => 0), 0, "Does not verify for non-existant values");
     is($one->verify(exists => 1), 1, "always verifies for existing values");
-    ok(defined $CLASS->new(items => []), "Can provide items");
+    ok($CLASS->new(items => []), "Can provide items");
 };
 
 subtest add_prop => sub {
