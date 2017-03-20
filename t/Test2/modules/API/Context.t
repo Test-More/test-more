@@ -351,6 +351,9 @@ sub {
     is($events->[3], $e2, "got ok event 2");
 
     is($events->[2]->message, 'xxx', "event 1 diag 2");
+    ok($events->[2]->isa('Test2::Event::Diag'), "event 1 diag 2 is diag");
+
+    is($events->[3], $e2, "got ok event 2");
 }
 
 sub {
