@@ -33,7 +33,7 @@ tests basic => sub {
 
     my $send_event = sub {
         my ($msg) = @_;
-        my $e = My::Event->new(msg => $msg, trace => 'fake');
+        my $e = My::Event->new(msg => $msg, trace => Test2::EventFacet::Trace->new(frame => ['fake', 'fake.t', 1]));
         $hub->send($e);
     };
 
@@ -102,7 +102,7 @@ tests IPC => sub {
 
     my $build_event = sub {
         my ($msg) = @_;
-        return My::Event->new(msg => $msg, trace => 'fake');
+        return My::Event->new(msg => $msg, trace => Test2::EventFacet::Trace->new(frame => ['fake', 'fake.t', 1]));
     };
 
     my $e1 = $build_event->('foo');

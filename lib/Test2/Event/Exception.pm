@@ -18,6 +18,22 @@ sub summary {
 
 sub diagnostics { 1 }
 
+sub facet_data {
+    my $self = shift;
+    my $out = $self->common_facet_data;
+
+    $out->{errors} = [
+        {
+            tag     => 'ERROR',
+            fail    => 1,
+            details => $self->{+ERROR},
+        }
+    ];
+
+    return $out;
+}
+
+
 1;
 
 __END__

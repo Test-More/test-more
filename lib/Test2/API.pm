@@ -433,19 +433,22 @@ sub run_subtest {
     my ($name, $code, $params, @args) = @_;
 
     $params = {buffered => $params} unless ref $params;
-    my $buffered      = delete $params->{buffered};
     my $inherit_trace = delete $params->{inherit_trace};
 
     my $ctx = context();
 
-    $ctx->note($name) unless $buffered;
-
     my $parent = $ctx->hub;
+
+    # If a parent is buffered then the child must be as well.
+    my $buffered = $params->{buffered} || $parent->{buffered};
+
+    $ctx->note($name) unless $buffered;
 
     my $stack = $ctx->stack || $STACK;
     my $hub = $stack->new_hub(
         class => 'Test2::Hub::Subtest',
         %$params,
+        buffered => $buffered,
     );
 
     my @events;
@@ -456,14 +459,6 @@ sub run_subtest {
             my $hide = $format->can('hide_buffered') ? $format->hide_buffered : 1;
             $hub->format(undef) if $hide;
         }
-    }
-    elsif (! $parent->format) {
-        # If our parent has no format that means we're in a buffered subtest
-        # and now we're trying to run a streaming subtest. There's really no
-        # way for that to work, so we need to force the use of a buffered
-        # subtest here as
-        # well. https://github.com/Test-More/test-more/issues/721
-        $buffered = 1;
     }
 
     if ($inherit_trace) {

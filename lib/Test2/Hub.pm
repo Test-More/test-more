@@ -14,7 +14,7 @@ use List::Util qw/first/;
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 use Test2::Util::HashBase qw{
     pid tid hid ipc
-    nested
+    nested buffered
     no_ending
     _filters
     _pre_filters
@@ -42,7 +42,9 @@ sub init {
     $self->{+PID} = $$;
     $self->{+TID} = get_tid();
     $self->{+HID} = join ipc_separator, $self->{+PID}, $self->{+TID}, $ID_POSTFIX++;
-    $self->{+NESTED} = 0 unless defined $self->{+NESTED};
+
+    $self->{+NESTED}   = 0 unless defined $self->{+NESTED};
+    $self->{+BUFFERED} = 0 unless defined $self->{+BUFFERED};
 
     $self->{+COUNT}    = 0;
     $self->{+FAILED}   = 0;
@@ -301,32 +303,50 @@ sub process {
         }
     }
 
-    my $type = ref($e);
-    my $is_ok = $type eq 'Test2::Event::Ok';
-    my $no_fail = $type eq 'Test2::Event::Diag' || $type eq 'Test2::Event::Note';
-    my $causes_fail = $is_ok ? !$e->{effective_pass} : $no_fail ? 0 : $e->causes_fail;
-    my $counted = $is_ok || (!$no_fail && $e->increments_count);
+    my $f = $e->facet_data;
 
-    $self->{+COUNT}++      if $counted;
-    $self->{+FAILED}++     if $causes_fail && $counted;
-    $self->{+_PASSING} = 0 if $causes_fail;
+    my $fail = 0;
+    $fail = 1 if $f->{assert} && !$f->{assert}->{pass};
+    $fail = 1 if $f->{error}  && $f->{error}->{fail};
+    $fail = 0 if $f->{amnesty};
 
-    my $callback = $e->callback($self) unless $is_ok || $no_fail;
+    $self->{+COUNT}++ if $f->{assert};
+    $self->{+FAILED}++ if $fail && $f->{assert};
+    $self->{+_PASSING} = 0 if $fail;
 
+    my $code = $f->{control}->{terminate};
     my $count = $self->{+COUNT};
 
-    $self->{+_FORMATTER}->write($e, $count) if $self->{+_FORMATTER};
-
-    if ($self->{+_LISTENERS}) {
-        $_->{code}->($self, $e, $count) for @{$self->{+_LISTENERS}};
+    if (my $plan = $f->{plan}) {
+        if ($plan->{skip}) {
+            $self->plan('SKIP');
+            $self->set_skip_reason($plan->{details} || 1);
+            $code ||= 0;
+        }
+        elsif ($plan->{none}) {
+            $self->plan('NO PLAN');
+        }
+        else {
+            $self->plan($plan->{count});
+        }
     }
 
-    return $e if $is_ok || $no_fail;
+    $e->callback($self) if $f->{control}->{has_callback};
 
-    my $code = $e->terminate;
+    $self->{+_FORMATTER}->write($e, $count, $f) if $self->{+_FORMATTER};
+
+    if ($self->{+_LISTENERS}) {
+        $_->{code}->($self, $e, $count, $f) for @{$self->{+_LISTENERS}};
+    }
+
+    if ($f->{control}->{halt}) {
+        $code ||= 255;
+        $self->set_bailed_out($e);
+    }
+
     if (defined $code) {
-        $self->{+_FORMATTER}->terminate($e) if $self->{+_FORMATTER};
-        $self->terminate($code, $e);
+        $self->{+_FORMATTER}->terminate($e, $f) if $self->{+_FORMATTER};
+        $self->terminate($code, $e, $f);
     }
 
     return $e;

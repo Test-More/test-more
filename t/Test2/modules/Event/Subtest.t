@@ -27,4 +27,31 @@ $one->set_todo(undef);
 $one->set_name('');
 is($one->summary, "Nameless Subtest", "unnamed summary");
 
+require Test2::Event::Ok;
+push @{$one->subevents} => Test2::Event::Ok->new(name => 'xxx', pass => 1);
+
+my $facet_data = $one->facet_data;
+ok($facet_data->{about}, "got parent facet data");
+
+is_deeply(
+    $facet_data->{parent},
+    {
+        hid      => "1-1-1",
+        buffered => 1,
+        children => [
+            {
+                about => {
+                    package => 'Test2::Event::Ok'
+                },
+                assert => {
+                    details => 'xxx',
+                    no_debug => 1,
+                    pass    => 1
+                },
+            }
+        ],
+    },
+    "Got facet data"
+);
+
 done_testing;

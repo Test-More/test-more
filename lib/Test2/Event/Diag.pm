@@ -16,6 +16,22 @@ sub summary { $_[0]->{+MESSAGE} }
 
 sub diagnostics { 1 }
 
+sub facet_data {
+    my $self = shift;
+
+    my $out = $self->common_facet_data;
+
+    $out->{info} = [
+        {
+            tag     => 'DIAG',
+            debug   => 1,
+            details => $self->{+MESSAGE},
+        }
+    ];
+
+    return $out;
+}
+
 1;
 
 __END__

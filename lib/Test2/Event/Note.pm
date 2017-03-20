@@ -14,6 +14,22 @@ sub init {
 
 sub summary { $_[0]->{+MESSAGE} }
 
+sub facet_data {
+    my $self = shift;
+
+    my $out = $self->common_facet_data;
+
+    $out->{info} = [
+        {
+            tag     => 'NOTE',
+            debug   => 0,
+            details => $self->{+MESSAGE},
+        }
+    ];
+
+    return $out;
+}
+
 1;
 
 __END__

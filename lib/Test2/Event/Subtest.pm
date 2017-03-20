@@ -63,19 +63,35 @@ sub summary {
     return $name;
 }
 
-sub facets {
+sub facet_data {
     my $self = shift;
 
-    my $out = $self->SUPER::facets();
+    my $out = $self->SUPER::facet_data();
 
-    $out->{parent} = Test2::EventFacet::Parent->new(
+    $out->{parent} = {
         hid      => $self->subtest_id,
-        children => [@{$self->{+SUBEVENTS}}],
+        children => [map {$_->facet_data} @{$self->{+SUBEVENTS}}],
         buffered => $self->{+BUFFERED},
-    );
+    };
 
     return $out;
 }
+
+sub add_amnesty {
+    my $self = shift;
+
+    for my $am (@_) {
+        $am = {%$am} if ref($am) ne 'ARRAY';
+        $am = Test2::EventFacet::Amnesty->new($am);
+
+        push @{$self->{+AMNESTY}} => $am;
+
+        for my $e (@{$self->{+SUBEVENTS}}) {
+            $e->add_amnesty($am->clone(inherited => 1));
+        }
+    }
+}
+
 
 1;
 

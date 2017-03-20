@@ -35,9 +35,15 @@ sub send {
     my $out = $self->SUPER::send($e);
 
     return $out if $self->{+MANUAL_SKIP_ALL};
-    return $out unless $e->isa('Test2::Event::Plan')
-        && $e->directive eq 'SKIP'
-        && ($e->trace->pid != $self->pid || $e->trace->tid != $self->tid);
+
+    my $f = $e->facet_data;
+
+    my $plan = $f->{plan} or return $out;
+    return $out unless $plan->{skip};
+
+    my $trace = $f->{trace} or die "Missing Trace!";
+    return $out unless $trace->{pid} != $self->pid
+                    || $trace->{tid} != $self->tid;
 
     no warnings 'exiting';
     last T2_SUBTEST_WRAPPER;
@@ -45,13 +51,18 @@ sub send {
 
 sub terminate {
     my $self = shift;
-    my ($code, $e) = @_;
+    my ($code, $e, $f) = @_;
     $self->set_exit_code($code);
 
     return if $self->{+MANUAL_SKIP_ALL};
-    return if $e->isa('Test2::Event::Plan')
-           && $e->directive eq 'SKIP'
-           && ($e->trace->pid != $$ || $e->trace->tid != get_tid);
+
+    $f ||= $e->facet_data;
+
+    if(my $plan = $f->{plan}) {
+        my $trace = $f->{trace} or die "Missing Trace!";
+        return if $plan->{skip}
+               && ($trace->{pid} != $$ || $trace->{tid} != get_tid);
+    }
 
     no warnings 'exiting';
     last T2_SUBTEST_WRAPPER;
