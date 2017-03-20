@@ -654,7 +654,7 @@ the reference returned by C<filter()> or C<pre_filter()>.
 =item $hub->follow_op(sub { ... })
 
 Use this to add behaviors that are called just before the hub is finalized. The
-only argument to your codeblock will be a L<Test2::Util::Trace> instance.
+only argument to your codeblock will be a L<Test2::EventFacet::Trace> instance.
 
     $hub->follow_up(sub {
         my ($trace, $hub) = @_;

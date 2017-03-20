@@ -91,7 +91,7 @@ my $events = bless [], 'My::Formatter';
 my $hub = Test2::Hub->new(
     formatter => $events,
 );
-my $trace = Test2::Util::Trace->new(
+my $trace = Test2::EventFacet::Trace->new(
     frame => [ 'Foo::Bar', 'foo_bar.t', 42, 'Foo::Bar::baz' ],
 );
 my $ctx = Test2::API::Context->new(
@@ -232,7 +232,7 @@ is_deeply(
     my $ctx = context(level => -1);
 
     my $one = Test2::API::Context->new(
-        trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
+        trace => Test2::EventFacet::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'blah']),
         hub => test2_stack()->top,
     );
     is($one->_depth, 0, "default depth");
@@ -257,7 +257,7 @@ is_deeply(
 {
     like(exception { Test2::API::Context->new() }, qr/The 'trace' attribute is required/, "need to have trace");
 
-    my $trace = Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
+    my $trace = Test2::EventFacet::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, 'foo']);
     like(exception { Test2::API::Context->new(trace => $trace) }, qr/The 'hub' attribute is required/, "need to have hub");
 
     my $hub = test2_stack()->top;

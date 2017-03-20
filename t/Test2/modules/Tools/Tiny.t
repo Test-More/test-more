@@ -142,7 +142,7 @@ $events = intercept {
     $ictx = tool();
     $ictx->ok(1, 'pass');
     $ictx->ok(0, 'fail');
-    my $trace = Test2::Util::Trace->new(
+    my $trace = Test2::EventFacet::Trace->new(
         frame => [ __PACKAGE__, __FILE__, __LINE__],
     );
     $ictx->hub->finalize($trace, 1);
