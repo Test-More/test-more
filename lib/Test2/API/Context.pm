@@ -9,7 +9,7 @@ use Carp qw/confess croak longmess/;
 use Scalar::Util qw/weaken blessed/;
 use Test2::Util qw/get_tid try pkg_to_file get_tid/;
 
-use Test2::Util::Trace();
+use Test2::EventFacet::Trace();
 use Test2::API();
 
 # Preload some key event types
@@ -155,9 +155,7 @@ sub do_in_context {
     # We need to update the pid/tid and error vars.
     my $clone = $self->snapshot;
     @$clone{+ERRNO, +EVAL_ERROR, +CHILD_ERROR} = ($!, $@, $?);
-    $clone->{+TRACE} = $clone->{+TRACE}->snapshot;
-    $clone->{+TRACE}->set_pid($$);
-    $clone->{+TRACE}->set_tid(get_tid());
+    $clone->{+TRACE} = $clone->{+TRACE}->snapshot(pid => $$, tid => get_tid());
 
     my $hub = $clone->{+HUB};
     my $hid = $hub->hid;
@@ -238,7 +236,7 @@ sub ok {
     my $hub = $self->{+HUB};
 
     my $e = bless {
-        trace => bless( {%{$self->{+TRACE}}}, 'Test2::Util::Trace'),
+        trace => bless( {%{$self->{+TRACE}}}, 'Test2::EventFacet::Trace'),
         pass  => $pass,
         name  => $name,
     }, 'Test2::Event::Ok';
@@ -502,7 +500,7 @@ current one to which all events should be sent.
 
 =item $dbg = $ctx->trace()
 
-This will return the L<Test2::Util::Trace> instance used by the context.
+This will return the L<Test2::EventFacet::Trace> instance used by the context.
 
 =item $ctx->do_in_context(\&code, @args);
 

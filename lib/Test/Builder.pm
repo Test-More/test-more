@@ -649,7 +649,7 @@ sub ok {
     }
 
     my $e = bless {
-        trace => bless( {%$trace}, 'Test2::Util::Trace'),
+        trace => bless( {%$trace}, 'Test2::EventFacet::Trace'),
         pass  => $test,
         name  => $name,
         _meta => {'Test::Builder' => $result},

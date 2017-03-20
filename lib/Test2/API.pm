@@ -38,7 +38,8 @@ BEGIN {
     }
 }
 
-use Test2::Util::Trace();
+use Test2::EventFacet::Trace();
+use Test2::Util::Trace(); # Legacy
 
 use Test2::Hub::Subtest();
 use Test2::Hub::Interceptor();
@@ -284,12 +285,15 @@ sub context {
     # hit with how often this needs to be called.
     my $trace = bless(
         {
-            frame => [$pkg, $file, $line, $sub],
-            pid   => $$,
-            tid   => get_tid(),
-            cid   => 'C' . $CID++,
+            frame    => [$pkg, $file, $line, $sub],
+            pid      => $$,
+            tid      => get_tid(),
+            cid      => 'C' . $CID++,
+            hid      => $hid,
+            nested   => $hub->{nested},
+            buffered => $hub->{buffered},
         },
-        'Test2::Util::Trace'
+        'Test2::EventFacet::Trace'
     );
 
     # Directly bless the object here, calling new is a noticeable performance

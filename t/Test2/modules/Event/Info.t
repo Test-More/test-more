@@ -4,13 +4,13 @@ use warnings;
 use Test2::Tools::Tiny;
 
 use Test2::Event::Info;
-use Test2::Util::Trace;
+use Test2::EventFacet::Trace;
 use Test2::API qw/intercept/;
 
 my @got;
 
 my $info = Test2::Event::Info->new(
-    trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test2::EventFacet::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     renderer => sub { @got = @_; 'foo' },
 );
 
@@ -26,7 +26,7 @@ is_deeply(\@got, ['blah'], "got arg");
 }
 
 $info = Test2::Event::Info->new(
-    trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
+    trace => Test2::EventFacet::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__]),
     renderer => bless({}, 'An::Info::Thingy'),
 );
 
@@ -36,7 +36,7 @@ is_deeply(\@got, ['text'], "got text");
 is($info->summary('blah'), 'foo', "summary is just rendering (arg)");
 is_deeply(\@got, ['blah'], "got arg");
 
-eval { Test2::Event::Info->new(trace => Test2::Util::Trace->new(frame => ['Foo', 'foo.pl', 42])) };
+eval { Test2::Event::Info->new(trace => Test2::EventFacet::Trace->new(frame => ['Foo', 'foo.pl', 42])) };
 like(
     $@,
     qr/'renderer' is a required attribute at foo\.pl line 42/,

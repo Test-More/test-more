@@ -7,7 +7,7 @@ our $VERSION = '1.302079';
 use Test2::Util::HashBase qw/trace nested in_subtest subtest_id/;
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 use Test2::Util qw(pkg_to_file);
-use Test2::Util::Trace;
+use Test2::EventFacet::Trace;
 
 sub causes_fail      { 0 }
 sub increments_count { 0 }
@@ -44,7 +44,7 @@ sub from_json {
     require(pkg_to_file($event_pkg));
 
     if (exists $p{trace}) {
-        $p{trace} = Test2::Util::Trace->from_json(%{$p{trace}});
+        $p{trace} = Test2::EventFacet::Trace->from_json(%{$p{trace}});
     }
 
     if (exists $p{subevents}) {
@@ -112,7 +112,7 @@ L<Test2>.
 
 =item $trace = $e->trace
 
-Get a snapshot of the L<Test2::Util::Trace> as it was when this event was
+Get a snapshot of the L<Test2::EventFacet::Trace> as it was when this event was
 generated
 
 =item $bool = $e->causes_fail

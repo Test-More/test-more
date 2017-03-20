@@ -374,7 +374,7 @@ sub waiting {
     require Test2::Event::Waiting;
     $self->send(
         GLOBAL => Test2::Event::Waiting->new(
-            trace => Test2::Util::Trace->new(frame => [caller()]),
+            trace => Test2::EventFacet::Trace->new(frame => [caller()]),
         ),
         'GLOBAL'
     );
