@@ -4,15 +4,33 @@ use warnings;
 
 our $VERSION = '1.302084';
 
+use Carp qw/croak/;
+
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw/version/;
 
 sub init {
     my $self = shift;
-    defined $self->{+VERSION} or $self->trace->throw("'version' is a required attribute");
+    defined $self->{+VERSION} or croak "'version' is a required attribute";
 }
 
 sub summary { 'TAP version ' . $_[0]->{+VERSION} }
+
+sub facet_data {
+    my $self = shift;
+
+    my $out = $self->common_facet_data;
+
+    $out->{about}->{details} = "TAP version 13";
+
+    push @{$out->{info}} => {
+        tag     => 'INFO',
+        debug   => 0,
+        details => $self->summary,
+    };
+
+    return $out;
+}
 
 1;
 

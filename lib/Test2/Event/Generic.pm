@@ -12,7 +12,7 @@ use Test2::Util::HashBase;
 
 my @FIELDS = qw{
     causes_fail increments_count diagnostics no_display callback terminate
-    global sets_plan summary
+    global sets_plan summary facet_data
 };
 my %DEFAULTS = (
     causes_fail      => 0,
@@ -44,6 +44,18 @@ for my $field (@FIELDS) {
     *{"set_$field"} = sub { $_[0]->{$field} = $_[1] }
         unless defined $stash->{"set_$field"}
             && defined *{$stash->{"set_$field"}}{CODE};
+}
+
+sub can {
+    my $self = shift;
+    my ($name) = @_;
+    return $self->SUPER::can($name) unless $name eq 'callback';
+    return $self->{callback} || \&Test2::Event::callback;
+}
+
+sub facet_data {
+    my $self = shift;
+    return $self->{facet_data} || $self->SUPER::facet_data();
 }
 
 sub summary {

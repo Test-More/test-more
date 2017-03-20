@@ -4,10 +4,39 @@ use warnings;
 
 our $VERSION = '1.302084';
 
-use Test2::Util::HashBase qw/trace/;
+use Test2::Util::HashBase qw/trace -amnesty/;
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 use Test2::Util qw(pkg_to_file);
-use Test2::EventFacet::Trace;
+
+use Test2::EventFacet::About();
+use Test2::EventFacet::Amnesty();
+use Test2::EventFacet::Assert();
+use Test2::EventFacet::Control();
+use Test2::EventFacet::Error();
+use Test2::EventFacet::Info();
+use Test2::EventFacet::Meta();
+use Test2::EventFacet::Parent();
+use Test2::EventFacet::Plan();
+use Test2::EventFacet::Trace();
+
+my @FACET_TYPES = qw{
+    Test2::EventFacet::About
+    Test2::EventFacet::Amnesty
+    Test2::EventFacet::Assert
+    Test2::EventFacet::Control
+    Test2::EventFacet::Error
+    Test2::EventFacet::Info
+    Test2::EventFacet::Meta
+    Test2::EventFacet::Parent
+    Test2::EventFacet::Plan
+    Test2::EventFacet::Trace
+};
+
+sub FACET_TYPES() { @FACET_TYPES }
+
+# Legacy tools will expect this to be loaded now
+require Test2::Util::Trace;
+
 
 sub causes_fail      { 0 }
 sub increments_count { 0 }
@@ -37,47 +66,136 @@ sub related {
     return 0;
 }
 
-sub from_json {
-    my $class = shift;
-    my %p     = @_;
+sub add_amnesty {
+    my $self = shift;
 
-    my $event_pkg = delete $p{__PACKAGE__};
-    require(pkg_to_file($event_pkg));
+    for my $am (@_) {
+        $am = {%$am} if ref($am) ne 'ARRAY';
+        $am = Test2::EventFacet::Amnesty->new($am);
 
-    if (exists $p{trace}) {
-        $p{trace} = Test2::EventFacet::Trace->from_json(%{$p{trace}});
+        push @{$self->{+AMNESTY}} => $am;
     }
-
-    if (exists $p{subevents}) {
-        my @subevents;
-        for my $subevent (@{delete $p{subevents} || []}) {
-            push @subevents, Test2::Event->from_json(%$subevent);
-        }
-        $p{subevents} = \@subevents;
-    }
-
-    return $event_pkg->new(%p);
 }
 
-sub TO_JSON {
+sub common_facet_data {
     my $self = shift;
-    return {%$self, Test2::Util::ExternalMeta::META_KEY() => undef, __PACKAGE__ => ref $self};
+
+    my %out;
+
+    $out{about} = {package => ref($self) || undef};
+
+    if (my $trace = $self->trace) {
+        $out{trace} = { %$trace };
+    }
+
+    $out{amnesty} = [map {{ %{$_} }} @{$self->{+AMNESTY}}]
+        if $self->{+AMNESTY};
+
+    my $key = Test2::Util::ExternalMeta::META_KEY();
+    if (my $hash = $self->{$key}) {
+        $out{meta} = {%$hash};
+    }
+
+    return \%out;
+}
+
+sub facet_data {
+    my $self = shift;
+
+    my $out = $self->common_facet_data;
+
+    $out->{about}->{details}    = $self->summary    || undef;
+    $out->{about}->{no_display} = $self->no_display || undef;
+
+    $out->{control} = {
+        global    => $self->global    || 0,
+        terminate => $self->terminate || undef,
+        has_callback => $self->can('callback') == \&callback ? 0 : 1,
+    };
+
+    $out->{assert} = {
+        no_debug => 1,                     # Legacy behavior
+        pass     => $self->causes_fail ? 0 : 1,
+        details  => $self->summary,
+    } if $self->increments_count;
+
+    $out->{parent} = {hid => $self->subtest_id} if $self->subtest_id;
+
+    if (my @plan = $self->sets_plan) {
+        $out->{plan} = {};
+
+        $out->{plan}->{count}   = $plan[0] if defined $plan[0];
+        $out->{plan}->{details} = $plan[2] if defined $plan[2];
+
+        if ($plan[1]) {
+            $out->{plan}->{skip} = 1 if $plan[1] eq 'SKIP';
+            $out->{plan}->{none} = 1 if $plan[1] eq 'NO PLAN';
+        }
+
+        $out->{control}->{terminate} ||= 0 if $out->{plan}->{skip};
+    }
+
+    if ($self->causes_fail && !$out->{assert}) {
+        $out->{errors} = [
+            {
+                tag     => 'FAIL',
+                fail    => 1,
+                details => $self->summary,
+            }
+        ];
+    }
+
+    my %IGNORE = (trace => 1, about => 1, control => 1);
+    my $do_info = !grep { !$IGNORE{$_} } keys %$out;
+
+    if ($do_info && !$self->no_display && $self->diagnostics) {
+        $out->{info} = [
+            {
+                tag     => 'DIAG',
+                debug   => 1,
+                details => $self->summary,
+            }
+        ];
+    }
+
+    return $out;
+}
+
+sub facets {
+    my $self = shift;
+    my $data = $self->facet_data;
+    my %out;
+
+    for my $type (FACET_TYPES()) {
+        my $key = $type->facet_key;
+        next unless $data->{$key};
+
+        if ($type->is_list) {
+            $out{$key} = [map { $type->new($_) } @{$data->{$key}}];
+        }
+        else {
+            $out{$key} = $type->new($data->{$key});
+        }
+    }
+
+    return \%out;
 }
 
 sub nested {
     Carp::cluck("Use of Test2::Event->nested() is deprecated, use Test2::Event->trace->nested instead")
         if $ENV{AUTHOR_TESTING};
 
-    $_[0]->{+TRACE}->nested();
+    $_[0]->{+TRACE}->{nested};
 }
 
 sub in_subtest {
     Carp::cluck("Use of Test2::Event->in_subtest() is deprecated, use Test2::Event->trace->hid instead")
         if $ENV{AUTHOR_TESTING};
 
-    return undef unless $_[0]->{+TRACE}->nested();
+    # Return undef if we are not nested, Legacy did not return the hid if nestign was 0.
+    return undef unless $_[0]->{+TRACE}->{nested};
 
-    $_[0]->{+TRACE}->hid();
+    $_[0]->{+TRACE}->{hid};
 }
 
 1;

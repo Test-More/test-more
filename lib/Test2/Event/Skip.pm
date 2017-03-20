@@ -30,6 +30,25 @@ sub summary {
     return $out;
 }
 
+sub extra_amnesty {
+    my $self = shift;
+
+    my @out;
+
+    push @out => {
+        tag       => 'TODO',
+        details   => $self->{+TODO},
+    } if defined $self->{+TODO};
+
+    push @out => {
+        tag       => 'skip',
+        details   => $self->{+REASON},
+        inherited => 0,
+    };
+
+    return @out;
+}
+
 1;
 
 __END__

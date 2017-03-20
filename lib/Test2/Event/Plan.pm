@@ -46,17 +46,6 @@ sub sets_plan {
     );
 }
 
-sub callback {
-    my $self = shift;
-    my ($hub) = @_;
-
-    $hub->plan($self->{+DIRECTIVE} || $self->{+MAX});
-
-    return unless $self->{+DIRECTIVE};
-
-    $hub->set_skip_reason($self->{+REASON} || 1) if $self->{+DIRECTIVE} eq 'SKIP';
-}
-
 sub terminate {
     my $self = shift;
     # On skip_all we want to terminate the hub
@@ -78,6 +67,25 @@ sub summary {
 
     return "Plan is '$directive'";
 }
+
+sub facet_data {
+    my $self = shift;
+
+    my $out = $self->common_facet_data;
+
+    $out->{control}->{terminate} ||= $self->{+DIRECTIVE} eq 'SKIP' ? 0 : undef;
+
+    $out->{plan} = {count => $self->{+MAX}};
+    $out->{plan}->{details} = $self->{+REASON} if defined $self->{+REASON};
+
+    if (my $dir = $self->{+DIRECTIVE}) {
+        $out->{plan}->{skip} = 1 if $dir eq 'SKIP';
+        $out->{plan}->{none} = 1 if $dir eq 'NO PLAN';
+    }
+
+    return $out;
+}
+
 
 1;
 

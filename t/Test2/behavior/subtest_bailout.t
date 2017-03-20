@@ -28,12 +28,12 @@ my $events = intercept {
 
 ok($events->[0]->isa('Test2::Event::Subtest'), "Got a subtest event when bail-out issued in a buffered subtest");
 ok($events->[-1]->isa('Test2::Event::Bail'), "Bail-Out propogated");
-ok(!$events->[-1]->buffered, "Final Bail-Out is not buffered");
+ok(!$events->[-1]->facet_data->{trace}->{buffered}, "Final Bail-Out is not buffered");
 
 ok($events->[0]->subevents->[-2]->isa('Test2::Event::Bail'), "Got bail out inside outer subtest");
-ok($events->[0]->subevents->[-2]->buffered, "Bail-Out is buffered");
+ok($events->[0]->subevents->[-2]->facet_data->{trace}->{buffered}, "Bail-Out is buffered");
 
 ok($events->[0]->subevents->[0]->subevents->[-2]->isa('Test2::Event::Bail'), "Got bail out inside inner subtest");
-ok($events->[0]->subevents->[0]->subevents->[-2]->buffered, "Bail-Out is buffered");
+ok($events->[0]->subevents->[0]->subevents->[-2]->facet_data->{trace}->{buffered}, "Bail-Out is buffered");
 
 done_testing;

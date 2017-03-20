@@ -48,6 +48,33 @@ sub summary {
     return $name;
 }
 
+sub extra_amnesty {
+    my $self = shift;
+    return unless defined($self->{+TODO}) || ($self->{+EFFECTIVE_PASS} && !$self->{+PASS});
+    return {
+        tag       => 'TODO',
+        details   => $self->{+TODO},
+    };
+}
+
+sub facet_data {
+    my $self = shift;
+
+    my $out = $self->common_facet_data;
+
+    $out->{assert}  = {
+        no_debug => 1,                # Legacy behavior
+        pass     => $self->{+PASS},
+        details  => $self->{+NAME},
+    };
+
+    if (my @exra_amnesty = $self->extra_amnesty) {
+        unshift @{$out->{amnesty}} => @exra_amnesty;
+    }
+
+    return $out;
+}
+
 1;
 
 __END__

@@ -8,13 +8,6 @@ our $VERSION = '1.302084';
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 use Test2::Util::HashBase qw{reason buffered};
 
-sub callback {
-    my $self = shift;
-    my ($hub) = @_;
-
-    $hub->set_bailed_out($self);
-}
-
 # Make sure the tests terminate
 sub terminate { 255 };
 
@@ -31,6 +24,20 @@ sub summary {
 }
 
 sub diagnostics { 1 }
+
+sub facet_data {
+    my $self = shift;
+    my $out = $self->common_facet_data;
+
+    $out->{control} = {
+        global    => 1,
+        halt      => 1,
+        details   => $self->{+REASON},
+        terminate => 255,
+    };
+
+    return $out;
+}
 
 1;
 
