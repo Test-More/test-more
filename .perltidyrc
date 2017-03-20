@@ -16,8 +16,6 @@
 --nospace-terminal-semicolon     # no space before termonal semicolons
 --notrim-qw                      # Do not mess with qw{} whitespace
 --opening-token-right            # make "push @array, {" indent nicely
---stack-opening-tokens           # Stack opening tokens: "{ {" instead of "{\n\t{"
---stack-closing-tokens           # Stack closing tokens: "} }" instead of "\t}\n}"
 --converge                       # Run until the output stops changing
 --extended-syntax                # For Fennec/Test2 and other Devel::Declare syntax tools
 --no-outdent-labels              # Do not outdent labels
