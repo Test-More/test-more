@@ -13,4 +13,4 @@ Test-Simple-*
 /Test2-*/
 /.build
 TODO
-test.pl
+test*.pl
