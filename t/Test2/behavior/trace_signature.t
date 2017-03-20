@@ -11,8 +11,8 @@ my $events = intercept {
     ok(1, "pass");
     sub {
         my $ctx = context;
-        $ctx->ok(1);
-        $ctx->ok(1);
+        $ctx->pass;
+        $ctx->pass;
         $ctx->release;
     }->();
 };

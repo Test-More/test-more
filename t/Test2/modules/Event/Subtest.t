@@ -27,8 +27,8 @@ $one->set_todo(undef);
 $one->set_name('');
 is($one->summary, "Nameless Subtest", "unnamed summary");
 
-require Test2::Event::Ok;
-push @{$one->subevents} => Test2::Event::Ok->new(name => 'xxx', pass => 1);
+require Test2::Event::Pass;
+push @{$one->subevents} => Test2::Event::Pass->new(name => 'xxx');
 
 my $facet_data = $one->facet_data;
 ok($facet_data->{about}, "got parent facet data");
@@ -41,11 +41,11 @@ is_deeply(
         children => [
             {
                 about => {
-                    package => 'Test2::Event::Ok'
+                    details => 'pass',
+                    package => 'Test2::Event::Pass'
                 },
                 assert => {
                     details => 'xxx',
-                    no_debug => 1,
                     pass    => 1
                 },
             }

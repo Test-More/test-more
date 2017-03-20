@@ -23,7 +23,7 @@ ok($events->[1]->todo,           'testing todo',          'subtest todo is set t
 
 my $subevents = $events->[1]->subevents;
 
-is(scalar @$subevents, 4, 'got subevents in the subtest');
+is(scalar @$subevents, 3, 'got subevents in the subtest');
 
 ok($subevents->[0]->facets->{assert}->pass, 'first event passed');
 
