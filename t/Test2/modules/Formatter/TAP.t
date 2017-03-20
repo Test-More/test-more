@@ -570,7 +570,7 @@ tests debug_tap => sub {
     ok(!$$out, "No std output yet");
     ok(!$$err, "No err output yet");
 
-    my $event = Test2::Event::Ok->new(trace => {frame => ['foo', 'foo.pl', 42]}, pass => 0);
+    my $event = Test2::Event::Fail->new(trace => {frame => ['foo', 'foo.pl', 42]});
 
     {
         local $ENV{HARNESS_ACTIVE} = 0;
@@ -603,6 +603,18 @@ not ok 1 - no harness
 not ok 1 - no harness, but strangely verbose
 not ok 1 - harness, but not verbose
 not ok 1 - harness that is verbose
+    EOT
+
+    is($$err, <<"    EOT", "Got expected diag to STDERR, newline for non-verbose harness");
+# Failed test 'no harness'
+# at foo.pl line 42.
+# Failed test 'no harness, but strangely verbose'
+# at foo.pl line 42.
+
+# Failed test 'harness, but not verbose'
+# at foo.pl line 42.
+# Failed test 'harness that is verbose'
+# at foo.pl line 42.
     EOT
 };
 

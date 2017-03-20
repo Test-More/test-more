@@ -19,7 +19,7 @@ my %LOADED = (
         my $file = "Test2/Event/$_.pm";
         require $file unless $INC{$file};
         ( $pkg => $pkg, $_ => $pkg )
-    } qw/Ok Diag Note Plan Bail Exception Waiting Skip Subtest/
+    } qw/Ok Diag Note Plan Bail Exception Waiting Skip Subtest Pass Fail/
 );
 
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
@@ -200,6 +200,13 @@ sub alert {
     $self->trace->alert($msg);
 }
 
+sub send_event_and_release {
+    my $self = shift;
+    my $out = $self->send_event(@_);
+    $self->release;
+    return $out;
+}
+
 sub send_event {
     my $self  = shift;
     my $event = shift;
@@ -235,6 +242,74 @@ sub build_event {
         trace => $self->{+TRACE}->snapshot,
         %args,
     );
+}
+
+sub pass {
+    my $self = shift;
+    my ($name) = @_;
+
+    my $e = bless(
+        {
+            trace => bless({%{$self->{+TRACE}}}, 'Test2::EventFacet::Trace'),
+            name  => $name,
+        },
+        "Test2::Event::Pass"
+    );
+
+    $self->{+HUB}->send($e);
+    return $e;
+}
+
+sub pass_and_release {
+    my $self = shift;
+    my ($name) = @_;
+
+    my $e = bless(
+        {
+            trace => bless({%{$self->{+TRACE}}}, 'Test2::EventFacet::Trace'),
+            name  => $name,
+        },
+        "Test2::Event::Pass"
+    );
+
+    $self->{+HUB}->send($e);
+    $self->release;
+    return 1;
+}
+
+sub fail {
+    my $self = shift;
+    my ($name, @diag) = @_;
+
+    my $e = bless(
+        {
+            trace => bless({%{$self->{+TRACE}}}, 'Test2::EventFacet::Trace'),
+            name  => $name,
+        },
+        "Test2::Event::Fail"
+    );
+
+    $e->add_info({tag => 'DIAG', debug => 1, details => $_}) for @diag;
+    $self->{+HUB}->send($e);
+    return $e;
+}
+
+sub fail_and_release {
+    my $self = shift;
+    my ($name, @diag) = @_;
+
+    my $e = bless(
+        {
+            trace => bless({%{$self->{+TRACE}}}, 'Test2::EventFacet::Trace'),
+            name  => $name,
+        },
+        "Test2::Event::Fail"
+    );
+
+    $e->add_info({tag => 'DIAG', debug => 1, details => $_}) for @diag;
+    $self->{+HUB}->send($e);
+    $self->release;
+    return 0;
 }
 
 sub ok {
