@@ -94,6 +94,7 @@ YESNO
 ansi
 html
 HASHBASE
+renderer
 
 ## other jargon, slang
 17th
@@ -104,3 +105,6 @@ Hmmm
 cid
 tid
 pid
+
+## Spelled correctly according to google:
+recognises
