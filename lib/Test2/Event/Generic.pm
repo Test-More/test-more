@@ -169,6 +169,14 @@ a published reusable event subclass.
 
 =over 4
 
+=item $e->facet_data($data)
+
+=item $data = $e->facet_data
+
+Get or set the facet data (see L<Test2::Event>). If no facet_data is set then
+C<< Test2::Event->facet_data >> will be called to produce facets from the other
+data.
+
 =item $e->callback($hub)
 
 Call the custom callback if one is set, otherwise this does nothing.

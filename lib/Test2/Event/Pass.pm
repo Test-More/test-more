@@ -55,3 +55,60 @@ sub facet_data {
 }
 
 1;
+
+__END__
+
+=pod
+
+=encoding UTF-8
+
+=head1 NAME
+
+Test2::Event::Pass - Event for a simple passing assertion
+
+=head1 DESCRIPTION
+
+This is an optimal representation of a passing assertion.
+
+=head1 SYNOPSIS
+
+    use Test2::API qw/context/;
+
+    sub pass {
+        my ($name) = @_;
+        my $ctx = context();
+        $ctx->pass($name);
+        $ctx->release;
+    }
+
+=head1 SOURCE
+
+The source code repository for Test2 can be found at
+F<http://github.com/Test-More/test-more/>.
+
+=head1 MAINTAINERS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 AUTHORS
+
+=over 4
+
+=item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=back
+
+=head1 COPYRIGHT
+
+Copyright 2016 Chad Granum E<lt>exodist@cpan.orgE<gt>.
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+See F<http://dev.perl.org/licenses/>
+
+=cut

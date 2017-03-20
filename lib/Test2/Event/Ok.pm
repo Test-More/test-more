@@ -127,11 +127,6 @@ Name of the test.
 This is the true/false value of the test after TODO and similar modifiers are
 taken into account.
 
-=item $b = $e->allow_bad_name
-
-This relaxes the test name checks such that they allow characters that can
-confuse a TAP parser.
-
 =back
 
 =head1 SOURCE

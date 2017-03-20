@@ -99,20 +99,77 @@ represents that information.
         frame => [$package, $file, $line, $subname],
     );
 
+=head1 FACET FIELDS
+
+=over 4
+
+=item $string = $trace->{details}
+
+=item $string = $trace->details()
+
+Used as a custom trace message that will be used INSTEAD of
+C<< at <FILE> line <LINE> >> when calling C<< $trace->debug >>.
+
+=item $frame = $trace->{frame}
+
+=item $frame = $trace->frame()
+
+Get the call frame arrayref.
+
+=item $int = $trace->{pid}
+
+=item $int = $trace->pid()
+
+The process ID in which the event was generated.
+
+=item $int = $trace->{tid}
+
+=item $int = $trace->tid()
+
+The thread ID in which the event was generated.
+
+=item $id = $trace->{cid}
+
+=item $id = $trace->cid()
+
+The ID of the context that was used to create the event.
+
+=item $hid = $trace->{hid}
+
+=item $hid = $trace->hid()
+
+The ID of the hub that was current when the event was created.
+
+=item $int = $trace->{nested}
+
+=item $int = $trace->nested()
+
+How deeply nested the event is.
+
+=item $bool = $trace->{buffered}
+
+=item $bool = $trace->buffered()
+
+True if the event was buffered and not sent to the formatter independent of a
+parent (This should never be set when nested is C<0> or C<undef>).
+
+=back
+
 =head1 METHODS
+
+B<Note:> All facet frames are also methods.
 
 =over 4
 
 =item $trace->set_detail($msg)
-
-=item $msg = $trace->details
 
 =item $msg = $trace->detail
 
 Used to get/set a custom trace message that will be used INSTEAD of
 C<< at <FILE> line <LINE> >> when calling C<< $trace->debug >>.
 
-C<detail()> is an alias for backwards compatibility.
+C<detail()> is an alias to the C<details> facet field for backwards
+compatibility.
 
 =item $str = $trace->debug
 
@@ -128,10 +185,6 @@ errors should be reported).
 
 This throws an exception at the frame (filename and line number where
 errors should be reported).
-
-=item $frame = $trace->frame()
-
-Get the call frame arrayref.
 
 =item ($package, $file, $line, $subname) = $trace->call()
 
@@ -160,18 +213,6 @@ Get a signature string that identifies this trace. This is used to check if
 multiple events are related. The Trace includes pid, tid, file, line number,
 and the cid which is C<'C\d+'> for traces created by a context, or C<'T\d+'>
 for traces created by C<new()>.
-
-=item $hashref = $t->TO_JSON
-
-This returns a hashref suitable for passing to the C<<
-Test2::EventFacet::Trace->from_json >> constructor. It is intended for use with the
-L<JSON> family of modules, which will look for a C<TO_JSON> method when
-C<convert_blessed> is true.
-
-=item $t = Test2::EventFacet::Trace->from_json(%$hashref)
-
-Given the hash of data returned by C<< $t->TO_JSON >>, this method returns a
-new trace object of the appropriate subclass.
 
 =back
 
