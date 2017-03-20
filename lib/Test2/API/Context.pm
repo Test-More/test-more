@@ -616,9 +616,92 @@ The value of C<$@> when the context was created.
 
 =over 4
 
+=item $event = $ctx->pass()
+
+=item $event = $ctx->pass($name)
+
+This will send and return an L<Test2::Event::Pass> event. You may optionally
+provide a C<$name> for the assertion.
+
+The L<Test2::Event::Pass> is a specially crafted and optimized event, using
+this will help the performance of passing tests.
+
+=item $true = $ctx->pass_and_release()
+
+=item $true = $ctx->pass_and_release($name)
+
+This is a combination of C<pass()> and C<release()>. You can use this if you do
+not plan to do anything with the context after sending the event. This helps
+write more clear and compact code.
+
+    sub shorthand {
+        my ($bool, $name) = @_;
+        my $ctx = context();
+        return $ctx->pass_and_release($name) if $bool;
+
+        ... Handle a failure ...
+    }
+
+    sub longform {
+        my ($bool, $name) = @_;
+        my $ctx = context();
+
+        if ($bool) {
+            $ctx->pass($name);
+            $ctx->release;
+            return 1;
+        }
+
+        ... Handle a failure ...
+    }
+
+=item my $event = $ctx->fail()
+
+=item my $event = $ctx->fail($name)
+
+=item my $event = $ctx->fail($name, @diagnostics)
+
+This lets you send an L<Test2::Event::Fail> event. You may optionally provide a
+C<$name> and C<@diagnostics> messages.
+
+=item my $false = $ctx->fail_and_release()
+
+=item my $false = $ctx->fail_and_release($name)
+
+=item my $false = $ctx->fail_and_release($name, @diagnostics)
+
+This is a combination of C<fail()> and C<release()>. This can be used to write
+clearer and shorter code.
+
+    sub shorthand {
+        my ($bool, $name) = @_;
+        my $ctx = context();
+        return $ctx->fail_and_release($name) unless $bool;
+
+        ... Handle a success ...
+    }
+
+    sub longform {
+        my ($bool, $name) = @_;
+        my $ctx = context();
+
+        unless ($bool) {
+            $ctx->pass($name);
+            $ctx->release;
+            return 1;
+        }
+
+        ... Handle a success ...
+    }
+
+
 =item $event = $ctx->ok($bool, $name)
 
 =item $event = $ctx->ok($bool, $name, \@on_fail)
+
+B<NOTE:> Use of this method is discouraged in favor of C<pass()> and C<fail()>
+which produce L<Test2::Event::Pass> and L<Test2::Event::Fail> events. These
+newer event types are faster and less crufty.
 
 This will create an L<Test2::Event::Ok> object for you. If C<$bool> is false
 then an L<Test2::Event::Diag> event will be sent as well with details about the
@@ -671,6 +754,22 @@ or
 
 This is the same as C<send_event()>, except it builds and returns the event
 without sending it.
+
+=item $event = $ctx->send_event_and_release($Type, %parameters)
+
+This is a combination of C<send_event()> and C<release()>.
+
+    sub shorthand {
+        my $ctx = context();
+        return $ctx->send_event_and_release(Pass => { name => 'foo' });
+    }
+
+    sub longform {
+        my $ctx = context();
+        my $event = $ctx->send_event(Pass => { name => 'foo' });
+        $ctx->release;
+        return $event;
+    }
 
 =back
 

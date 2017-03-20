@@ -52,6 +52,8 @@ TODO
 todo
 todos
 untestable
+EventFacet
+renderers
 
 ## computerese
 blackbox
