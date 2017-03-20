@@ -78,6 +78,9 @@ if ($^C) {
 sub write {
     my ($self, $e, $num, $f) = @_;
 
+    # The most common case, a pass event with no amnesty and a normal name.
+    return if $self->print_optimal_pass($e, $num);
+
     $f ||= $e->facet_data;
 
     $self->encoding($f->{control}->{encoding}) if $f->{control}->{encoding};
@@ -107,6 +110,38 @@ sub write {
         print $io $msg;
         $self->{+_LAST_FH} = $io;
     }
+}
+
+sub print_optimal_pass {
+    my ($self, $e, $num) = @_;
+
+    my $type = ref($e);
+
+    # Only optimal if this is a Pass or a passing Ok
+    return unless $type eq 'Test2::Event::Pass' || ($type eq 'Test2::Event::Ok' && $e->{pass});
+
+    # Amnesty requires further processing (todo is a form of amnesty)
+    return if ($e->{amnesty} && @{$e->{amnesty}}) || defined($e->{todo});
+
+    # A name with a newline or hash symbol needs extra processing
+    return if defined($e->{name}) && (-1 != index($e->{name}, "\n") || -1 != index($e->{name}, '#'));
+
+    my $ok = 'ok';
+    $ok .= " $num" unless $self->{+NO_NUMBERS};
+    $ok .= defined($e->{name}) ? " - $e->{name}\n" : "\n";
+
+    if (my $nesting = $e->{trace}->{nested}) {
+        my $indent = '    ' x $nesting;
+        $ok = "$indent$ok";
+    }
+
+    my $io = $self->{+HANDLES}->[OUT_STD];
+
+    local($\, $,) = (undef, '') if $\ || $,;
+    print $io $ok;
+    $self->{+_LAST_FH} = $io;
+
+    return 1;
 }
 
 sub event_tap {

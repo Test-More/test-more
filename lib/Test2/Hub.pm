@@ -303,6 +303,19 @@ sub process {
         }
     }
 
+    # Optimize the most common case
+    my $type = ref($e);
+    if ($type eq 'Test2::Event::Pass' || ($type eq 'Test2::Event::Ok' && $e->{pass})) {
+        my $count = ++($self->{+COUNT});
+        $self->{+_FORMATTER}->write($e, $count) if $self->{+_FORMATTER};
+
+        if ($self->{+_LISTENERS}) {
+            $_->{code}->($self, $e, $count) for @{$self->{+_LISTENERS}};
+        }
+
+        return $e;
+    }
+
     my $f = $e->facet_data;
 
     my $fail = 0;

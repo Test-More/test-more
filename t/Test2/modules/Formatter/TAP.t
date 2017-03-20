@@ -80,6 +80,63 @@ tests "IO handle stuff" => sub {
     ok(!$CLASS->no_subtest_space, "Default formatter does not have subtest space");
 };
 
+tests optimal_pass => sub {
+    my ($it, $out, $err) = grabber();
+
+    my $fail = Test2::Event::Fail->new;
+    ok(!$it->print_optimal_pass($fail, 1), "Not gonna print a non-pass");
+
+    $fail = Test2::Event::Ok->new(pass => 0);
+    ok(!$it->print_optimal_pass($fail, 1), "Not gonna print a non-pass");
+
+    my $pass = Test2::Event::Pass->new();
+    $pass->add_amnesty({tag => 'foo', details => 'foo'});
+    ok(!$it->print_optimal_pass($pass, 1), "Not gonna print amnesty");
+
+    $pass = Test2::Event::Ok->new(pass => 1, todo => '');
+    ok(!$it->print_optimal_pass($pass, 1), "Not gonna print todo (even empty todo)");
+
+    $pass = Test2::Event::Ok->new(pass => 1, name => "foo # bar");
+    ok(!$it->print_optimal_pass($pass, 1), "Not gonna pritn a name with a hash");
+
+    $pass = Test2::Event::Ok->new(pass => 1, name => "foo \n bar");
+    ok(!$it->print_optimal_pass($pass, 1), "Not gonna pritn a name with a newline");
+
+    ok(!$$out, "No std output yet");
+    ok(!$$err, "No err output yet");
+
+    $pass = Test2::Event::Pass->new();
+    ok($it->print_optimal_pass($pass, 1), "Printed a simple pass without a name");
+
+    $pass = Test2::Event::Pass->new(name => 'xxx');
+    ok($it->print_optimal_pass($pass, 1), "Printed a simple pass with a name");
+
+    $pass = Test2::Event::Ok->new(pass => 1, name => 'xxx');
+    ok($it->print_optimal_pass($pass, 1), "Printed an 'Ok' pass with a name");
+
+    $pass = Test2::Event::Pass->new(name => 'xxx', trace => { nested => 1 });
+    ok($it->print_optimal_pass($pass, 1), "Printed a nested pass");
+    $pass = Test2::Event::Pass->new(name => 'xxx', trace => { nested => 3 });
+    ok($it->print_optimal_pass($pass, 1), "Printed a deeply nested pass");
+
+    $pass = Test2::Event::Pass->new(name => 'xxx');
+    $it->{no_numbers} = 1;
+    ok($it->print_optimal_pass($pass, 1), "Printed a simple pass with a name");
+
+    is($$out, <<"    EOT", "Got expected TAP output");
+ok 1
+ok 1 - xxx
+ok 1 - xxx
+    ok 1 - xxx
+            ok 1 - xxx
+ok - xxx
+    EOT
+
+    is($it->{_last_fh}, $it->handles->[OUT_STD], "Set the last filehandle");
+
+    ok(!$$err, "No err output");
+};
+
 tests plan_tap => sub {
     my ($it, $out, $err) = grabber();
 
