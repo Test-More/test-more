@@ -1,5 +1,14 @@
 {{$NEXT}}
 
+    - Introduce 'Facets' for events
+    - Performance enhancements
+    - Upgrade inline HashBase
+    - Move Test2::Util::Trace to Test2::EventFacet::Trace
+    - Track hub id in Trace
+    - Remove Info event
+    - Add Pass and Fail events
+    - Remote Event JSON interface
+
 1.302078  2017-03-01 15:24:12-08:00 America/Los_Angeles
 
     - No changes since last trial
