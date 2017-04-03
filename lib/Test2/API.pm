@@ -97,6 +97,8 @@ our @EXPORT_OK = qw{
     test2_ipc_enable_polling
     test2_ipc_get_pending
     test2_ipc_set_pending
+    test2_ipc_get_timeout
+    test2_ipc_set_timeout
     test2_ipc_enable_shm
 
     test2_formatter
@@ -143,6 +145,8 @@ sub test2_ipc_enable_polling  { $INST->enable_ipc_polling }
 sub test2_ipc_disable_polling { $INST->disable_ipc_polling }
 sub test2_ipc_get_pending     { $INST->get_ipc_pending }
 sub test2_ipc_set_pending     { $INST->set_ipc_pending(@_) }
+sub test2_ipc_set_timeout     { $INST->set_ipc_timeout(@_) }
+sub test2_ipc_get_timeout     { $INST->ipc_timeout() }
 sub test2_ipc_enable_shm      { $INST->ipc_enable_shm }
 
 sub test2_formatter     { $INST->formatter }
@@ -1237,6 +1241,15 @@ This returns 0 if there are (most likely) no pending events.
 
 This returns 1 if there are (likely) pending events. Upon return it will reset,
 nothing else will be able to see that there were pending events.
+
+=item $timeout = test2_ipc_get_timeout()
+
+=item test2_ipc_set_timeout($timeout)
+
+Get/Set the timeout value for the IPC system. This timeout is how long the IPC
+system will wait for child processes and threads to finish before aborting.
+
+The default value is C<30> seconds.
 
 =back
 

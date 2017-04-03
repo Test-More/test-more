@@ -19,6 +19,7 @@ is_deeply(
 
         ipc_polling => undef,
         ipc_drivers => [],
+        ipc_timeout => 30,
 
         formatters => [],
 
@@ -47,6 +48,7 @@ is_deeply(
 
         ipc_polling => undef,
         ipc_drivers => [],
+        ipc_timeout => 30,
 
         formatters => [],
 
