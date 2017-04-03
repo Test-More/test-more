@@ -9,7 +9,7 @@ our @CARP_NOT = qw/Test2::API Test2::API::Instance Test2::IPC::Driver Test2::For
 use Carp qw/confess carp/;
 use Scalar::Util qw/reftype/;
 
-use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try/;
+use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try CAN_SIGSYS/;
 
 use Test2::Util::Trace();
 use Test2::API::Stack();
@@ -314,7 +314,7 @@ sub ipc_enable_shm {
         # In some systems (*BSD) accessing the SysV IPC APIs without
         # them being enabled can cause a SIGSYS.  We suppress the SIGSYS
         # and then get ENOSYS from the calls.
-        local $SIG{SYS} = 'IGNORE';
+        local $SIG{SYS} = 'IGNORE' if CAN_SIGSYS;
 
         require IPC::SysV;
 

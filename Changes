@@ -4,6 +4,7 @@
 
     - Fixes for '. in @INC' changes (#768)
     - Timeout when waiting for child procs and threads (#765)
+    - Fix SIGSYS localization issue (#758)
 
 1.302078  2017-03-01 15:24:12-08:00 America/Los_Angeles
 

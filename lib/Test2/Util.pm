@@ -17,6 +17,8 @@ our @EXPORT_OK = qw{
     CAN_REALLY_FORK
     CAN_FORK
 
+    CAN_SIGSYS
+
     IS_WIN32
 
     ipc_separator
@@ -142,6 +144,20 @@ sub pkg_to_file {
 }
 
 sub ipc_separator() { "~" }
+
+sub _check_for_sig_sys {
+    my $sig_list = shift;
+    return $sig_list =~ m/\bSYS\b/;
+}
+
+BEGIN {
+    if (_check_for_sig_sys($Config{sig_name})) {
+        *CAN_SIGSYS = sub() { 1 };
+    }
+    else {
+        *CAN_SIGSYS = sub() { 0 };
+    }
+}
 
 1;
 
