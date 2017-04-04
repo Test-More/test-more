@@ -13,12 +13,11 @@ is(test2_ipc_get_timeout(), 30, "got default timeout");
 test2_ipc_set_timeout(10);
 is(test2_ipc_get_timeout(), 10, "hanged the timeout");
 
-my ($thread, $tpiper, $tpipew);
-my ($proc,   $ppiper, $ppipew);
-
 if (CAN_REALLY_FORK) {
     note "Testing process waiting";
+    my ($ppiper, $ppipew);
     pipe($ppiper, $ppipew) or die "Could not create pipe for fork";
+
     my $proc = fork();
     die "Could not fork!" unless defined $proc;
 
@@ -36,12 +35,17 @@ if (CAN_REALLY_FORK) {
     is($exit, 255, "Exited 255");
     like($warnings->[0], qr/Timeout waiting on child processes/, "Warned about timeout");
     print $ppipew "end\n";
+
+    close($ppiper);
+    close($ppipew);
 }
 
 if (CAN_THREAD) {
     note "Testing thread waiting";
+    my ($tpiper, $tpipew);
     pipe($tpiper, $tpipew) or die "Could not create pipe for threads";
-    $thread = threads->create(
+
+    my $thread = threads->create(
         sub {
             local $SIG{ALRM} = sub { die "THREAD TIMEOUT" };
             alarm 15;
@@ -56,11 +60,9 @@ if (CAN_THREAD) {
     is($exit, 255, "Exited 255");
     like($warnings->[0], qr/Timeout waiting on child thread/, "Warned about timeout");
     print $tpipew "end\n";
-}
 
-close($ppiper);
-close($ppipew);
-close($tpiper);
-close($tpipew);
+    close($tpiper);
+    close($tpipew);
+}
 
 done_testing;
