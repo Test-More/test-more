@@ -9,7 +9,7 @@ use File::Basename qw(dirname);
 use File::Spec qw();
 
 my $file = File::Spec->join(dirname(__FILE__), 'tbt_09do_script.pl');
-my $done = do $file;
+my $done = do "./$file";
 ok(defined($done), 'do succeeded') or do {
     if ($@) {
         diag qq(  \$@ is '$@'\n);

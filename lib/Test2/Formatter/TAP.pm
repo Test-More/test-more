@@ -3,7 +3,7 @@ use strict;
 use warnings;
 require PerlIO;
 
-our $VERSION = '1.302079';
+our $VERSION = '1.302080';
 
 use Test2::Util::HashBase qw{
     no_numbers handles _encoding _last_fh
@@ -349,7 +349,7 @@ sub debug_tap {
 sub halt_tap {
     my ($self, $f) = @_;
 
-    return if $f->{trace}->{nested};
+    return if $f->{trace}->{nested} && !$f->{trace}->{buffered};
     my $details = $f->{control}->{details};
 
     return [OUT_STD, "Bail out!\n"] unless defined($details) && length($details);
@@ -475,7 +475,7 @@ F<http://github.com/Test-More/test-more/>.
 
 =head1 COPYRIGHT
 
-Copyright 2016 Chad Granum E<lt>exodist@cpan.orgE<gt>.
+Copyright 2017 Chad Granum E<lt>exodist@cpan.orgE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

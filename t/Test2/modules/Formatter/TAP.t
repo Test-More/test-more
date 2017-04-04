@@ -679,9 +679,15 @@ tests halt_tap => sub {
     my ($it, $out, $err) = grabber();
 
     is_deeply(
-        [$it->halt_tap({trace => {nested => 1},})],
+        [$it->halt_tap({trace => {nested => 1}})],
         [],
         "No output when nested"
+    );
+
+    is_deeply(
+        [$it->halt_tap({trace => {nested => 1, buffered => 1}})],
+        [[OUT_STD, "Bail out!\n"]],
+        "Got output when nested and buffered"
     );
 
     is_deeply(

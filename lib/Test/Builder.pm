@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '1.302079';
+our $VERSION = '1.302080';
 
 BEGIN {
     if( $] < 5.008 ) {
@@ -2084,7 +2084,7 @@ test failed.
 
 Defaults to 1.
 
-Setting L<$Test::Builder::Level> overrides.  This is typically useful
+Setting C<$Test::Builder::Level> overrides.  This is typically useful
 localized:
 
     sub my_ok {

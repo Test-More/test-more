@@ -7,7 +7,7 @@ BEGIN {
     $ENV{TEST2_ACTIVE} = 1;
 }
 
-our $VERSION = '1.302079';
+our $VERSION = '1.302080';
 
 
 my $INST;
@@ -98,6 +98,8 @@ our @EXPORT_OK = qw{
     test2_ipc_enable_polling
     test2_ipc_get_pending
     test2_ipc_set_pending
+    test2_ipc_get_timeout
+    test2_ipc_set_timeout
     test2_ipc_enable_shm
 
     test2_formatter
@@ -144,6 +146,8 @@ sub test2_ipc_enable_polling  { $INST->enable_ipc_polling }
 sub test2_ipc_disable_polling { $INST->disable_ipc_polling }
 sub test2_ipc_get_pending     { $INST->get_ipc_pending }
 sub test2_ipc_set_pending     { $INST->set_ipc_pending(@_) }
+sub test2_ipc_set_timeout     { $INST->set_ipc_timeout(@_) }
+sub test2_ipc_get_timeout     { $INST->ipc_timeout() }
 sub test2_ipc_enable_shm      { $INST->ipc_enable_shm }
 
 sub test2_formatter     { $INST->formatter }
@@ -508,13 +512,20 @@ sub run_subtest {
 
     my $trace = $ctx->trace;
 
+    my $bailed = $hub->bailed_out;
+
     if (!$finished) {
-        if(my $bailed = $hub->bailed_out) {
+        if ($bailed && !$buffered) {
             $ctx->bail($bailed->reason);
         }
-        my $code = $hub->exit_code;
-        $ok = !$code;
-        $err = "Subtest ended with exit code $code" if $code;
+        elsif ($bailed && $buffered) {
+            $ok = 1;
+        }
+        else {
+            my $code = $hub->exit_code;
+            $ok = !$code;
+            $err = "Subtest ended with exit code $code" if $code;
+        }
     }
 
     $hub->finalize($trace->snapshot(hid => $hub->hid, nested => $hub->nested), 1)
@@ -542,6 +553,8 @@ sub run_subtest {
 
     $ctx->diag("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
         if defined($plan_ok) && !$plan_ok;
+
+    $ctx->bail($bailed->reason) if $bailed && $buffered;
 
     $ctx->release;
     return $pass;
@@ -1236,6 +1249,15 @@ This returns 0 if there are (most likely) no pending events.
 This returns 1 if there are (likely) pending events. Upon return it will reset,
 nothing else will be able to see that there were pending events.
 
+=item $timeout = test2_ipc_get_timeout()
+
+=item test2_ipc_set_timeout($timeout)
+
+Get/Set the timeout value for the IPC system. This timeout is how long the IPC
+system will wait for child processes and threads to finish before aborting.
+
+The default value is C<30> seconds.
+
 =back
 
 =head2 MANAGING FORMATTERS
@@ -1323,7 +1345,7 @@ F<http://github.com/Test-More/test-more/>.
 
 =head1 COPYRIGHT
 
-Copyright 2016 Chad Granum E<lt>exodist@cpan.orgE<gt>.
+Copyright 2017 Chad Granum E<lt>exodist@cpan.orgE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.

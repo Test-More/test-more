@@ -2,14 +2,14 @@ package Test2::API::Instance;
 use strict;
 use warnings;
 
-our $VERSION = '1.302079';
+our $VERSION = '1.302080';
 
 
 our @CARP_NOT = qw/Test2::API Test2::API::Instance Test2::IPC::Driver Test2::Formatter/;
 use Carp qw/confess carp/;
 use Scalar::Util qw/reftype/;
 
-use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try/;
+use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try CAN_SIGSYS/;
 
 use Test2::EventFacet::Trace();
 use Test2::API::Stack();
@@ -26,6 +26,7 @@ use Test2::Util::HashBase qw{
     ipc_shm_id
     ipc_polling
     ipc_drivers
+    ipc_timeout
     formatters
 
     exit_callbacks
@@ -34,6 +35,8 @@ use Test2::Util::HashBase qw{
     context_init_callbacks
     context_release_callbacks
 };
+
+sub DEFAULT_IPC_TIMEOUT() { 30 }
 
 sub pid { $_[0]->{+_PID} ||= $$ }
 sub tid { $_[0]->{+_TID} ||= get_tid() }
@@ -79,6 +82,8 @@ sub reset {
 
     $self->{+FINALIZED} = undef;
     $self->{+IPC}       = undef;
+
+    $self->{+IPC_TIMEOUT} = DEFAULT_IPC_TIMEOUT() unless defined $self->{+IPC_TIMEOUT};
 
     $self->{+NO_WAIT} = 0;
     $self->{+LOADED}  = 0;
@@ -309,7 +314,7 @@ sub ipc_enable_shm {
         # In some systems (*BSD) accessing the SysV IPC APIs without
         # them being enabled can cause a SIGSYS.  We suppress the SIGSYS
         # and then get ENOSYS from the calls.
-        local $SIG{SYS} = 'IGNORE';
+        local $SIG{SYS} = 'IGNORE' if CAN_SIGSYS;
 
         require IPC::SysV;
 
@@ -367,35 +372,56 @@ sub disable_ipc_polling {
 }
 
 sub _ipc_wait {
+    my ($timeout) = @_;
     my $fail = 0;
 
-    if (CAN_FORK) {
-        while (1) {
-            my $pid = CORE::wait();
-            my $err = $?;
-            last if $pid == -1;
-            next unless $err;
-            $fail++;
-            $err = $err >> 8;
-            warn "Process $pid did not exit cleanly (status: $err)\n";
-        }
-    }
+    $timeout = DEFAULT_IPC_TIMEOUT() unless defined $timeout;
 
-    if (USE_THREADS) {
-        for my $t (threads->list()) {
-            $t->join;
-            # In older threads we cannot check if a thread had an error unless
-            # we control it and its return.
-            my $err = $t->can('error') ? $t->error : undef;
-            next unless $err;
-            my $tid = $t->tid();
-            $fail++;
-            chomp($err);
-            warn "Thread $tid did not end cleanly: $err\n";
-        }
-    }
+    my $ok = eval {
+        if (CAN_FORK) {
+            local $SIG{ALRM} = sub { die "Timeout waiting on child processes" };
+            alarm $timeout;
 
-    return 0 unless $fail;
+            while (1) {
+                my $pid = CORE::wait();
+                my $err = $?;
+                last if $pid == -1;
+                next unless $err;
+                $fail++;
+                $err = $err >> 8;
+                warn "Process $pid did not exit cleanly (status: $err)\n";
+            }
+
+            alarm 0;
+        }
+
+        if (USE_THREADS) {
+            my $start = time;
+
+            while (threads::running()) {
+                last unless threads->list();
+                die "Timeout waiting on child thread" if time - $start >= $timeout;
+                sleep 1;
+                for my $t (threads->list(threads::joinable())) {
+                    $t->join;
+                    # In older threads we cannot check if a thread had an error unless
+                    # we control it and its return.
+                    my $err = $t->can('error') ? $t->error : undef;
+                    next unless $err;
+                    my $tid = $t->tid();
+                    $fail++;
+                    chomp($err);
+                    warn "Thread $tid did not end cleanly: $err\n";
+                }
+            }
+        }
+
+        1;
+    };
+    my $error = $@;
+
+    return 0 if $ok && !$fail;
+    warn $error unless $ok;
     return 255;
 }
 
@@ -470,7 +496,7 @@ This is not a supported configuration, you will have problems.
             $ipc->waiting();
         }
 
-        my $ipc_exit = _ipc_wait();
+        my $ipc_exit = _ipc_wait($self->{+IPC_TIMEOUT});
         $new_exit ||= $ipc_exit;
     }
 
@@ -645,6 +671,12 @@ pending events.
 
 When 1 is returned this will set C<< $obj->ipc_shm_last() >>.
 
+=item $timeout = $obj->ipc_timeout;
+
+=item $obj->set_ipc_timeout($timeout);
+
+How long to wait for child processes and threads before aborting.
+
 =item $drivers = $obj->ipc_drivers
 
 Get the list of IPC drivers.
@@ -744,7 +776,7 @@ F<http://github.com/Test-More/test-more/>.
 
 =head1 COPYRIGHT
 
-Copyright 2016 Chad Granum E<lt>exodist@cpan.orgE<gt>.
+Copyright 2017 Chad Granum E<lt>exodist@cpan.orgE<gt>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
