@@ -242,7 +242,7 @@ sub event_bail {
     my $self = shift;
     my ($e, $num) = @_;
 
-    return if $e->nested;
+    return if $e->nested && !$e->buffered;
 
     return [
         OUT_STD,

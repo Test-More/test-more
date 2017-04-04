@@ -3,6 +3,7 @@
     - Timeout when waiting for child procs and threads (#765)
     - Fix SIGSYS localization issue (#758)
     - Fix outdated docs (#759, #754)
+    - Fix bail-out in buffered subtest (#747)
 
 1.302079  2017-04-03 12:12:02-07:00 America/Los_Angeles (TRIAL RELEASE)
 

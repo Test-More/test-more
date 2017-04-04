@@ -133,6 +133,20 @@ tests bail => sub {
         [[OUT_STD, "Bail out!  evil\n" ]],
         "Got tap"
     );
+
+    $bail->set_nested(1);
+    is_deeply(
+        [$fmt->event_tap($bail, 1)],
+        [],
+        "no TAP for unbuffered nested bail"
+    );
+
+    $bail->set_buffered(1);
+    is_deeply(
+        [$fmt->event_tap($bail, 1)],
+        [[OUT_STD, "Bail out!  evil\n" ]],
+        "Got tap for nested buffered bail"
+    );
 };
 
 tests diag => sub {

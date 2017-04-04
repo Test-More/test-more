@@ -445,6 +445,7 @@ sub run_subtest {
     my $stack = $ctx->stack || $STACK;
     my $hub = $stack->new_hub(
         class => 'Test2::Hub::Subtest',
+        buffered => $buffered,
         %$params,
     );
 
@@ -514,13 +515,20 @@ sub run_subtest {
 
     my $trace = $ctx->trace;
 
+    my $bailed = $hub->bailed_out;
+
     if (!$finished) {
-        if(my $bailed = $hub->bailed_out) {
+        if ($bailed && !$buffered) {
             $ctx->bail($bailed->reason);
         }
-        my $code = $hub->exit_code;
-        $ok = !$code;
-        $err = "Subtest ended with exit code $code" if $code;
+        elsif ($bailed && $buffered) {
+            $ok = 1;
+        }
+        else {
+            my $code = $hub->exit_code;
+            $ok = !$code;
+            $err = "Subtest ended with exit code $code" if $code;
+        }
     }
 
     $hub->finalize($trace, 1)
@@ -548,6 +556,8 @@ sub run_subtest {
 
     $ctx->diag("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
         if defined($plan_ok) && !$plan_ok;
+
+    $ctx->bail($bailed->reason) if $bailed && $buffered;
 
     $ctx->release;
     return $pass;

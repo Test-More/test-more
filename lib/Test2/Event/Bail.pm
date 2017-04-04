@@ -6,7 +6,7 @@ our $VERSION = '1.302080';
 
 
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
-use Test2::Util::HashBase qw{reason};
+use Test2::Util::HashBase qw{reason buffered};
 
 sub callback {
     my $self = shift;
