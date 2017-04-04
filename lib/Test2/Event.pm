@@ -131,11 +131,6 @@ this method.
 
 This is called B<BEFORE> your event is passed to the formatter.
 
-=item $call = $e->created
-
-Get the C<caller()> details from when the event was generated. This is usually
-inside a tools package. This is typically used for debugging.
-
 =item $num = $e->nested
 
 If this event is nested inside of other events, this should be the depth of
@@ -163,23 +158,6 @@ to exit with a failure.
 
 This is called after the event has been sent to the formatter in order to
 ensure the event is seen and understood.
-
-=item $todo = $e->todo
-
-=item $e->set_todo($todo)
-
-Get/Set the todo reason on the event. Any value other than C<undef> makes the
-event 'TODO'.
-
-Not all events make use of this field, but they can all have it set/cleared.
-
-=item $bool = $e->diag_todo
-
-=item $e->diag_todo($todo)
-
-True if this event should be considered 'TODO' for diagnostics purposes. This
-essentially means that any message that would go to STDERR will go to STDOUT
-instead so that a harness will hide it outside of verbose mode.
 
 =item $msg = $e->summary
 
