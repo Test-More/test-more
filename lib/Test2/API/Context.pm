@@ -225,7 +225,7 @@ sub send_event {
 
     if ($self->{+_ABORTED}) {
         my $f = $e->facet_data;
-        ${$self->{+_ABORTED}}++ if $f->{control}->{halt} || $f->{control}->{terminate} || defined $e->terminate;
+        ${$self->{+_ABORTED}}++ if $f->{control}->{halt} || defined($f->{control}->{terminate}) || defined($e->terminate);
     }
     $self->{+HUB}->send($e);
 }
