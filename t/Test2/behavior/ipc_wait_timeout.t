@@ -53,12 +53,17 @@ if (CAN_THREAD) {
         }
     );
 
-    my $exit;
-    my $warnings = warnings {
-        $exit = Test2::API::Instance::_ipc_wait(1);
-    };
-    is($exit, 255, "Exited 255");
-    like($warnings->[0], qr/Timeout waiting on child thread/, "Warned about timeout");
+    if ($thread->can('is_joinable')) {
+        my $exit;
+        my $warnings = warnings {
+            $exit = Test2::API::Instance::_ipc_wait(1);
+        };
+        is($exit, 255, "Exited 255");
+        like($warnings->[0], qr/Timeout waiting on child thread/, "Warned about timeout");
+    }
+    else {
+        note "threads.pm is too old for a thread joining timeout :-(";
+    }
     print $tpipew "end\n";
 
     close($tpiper);

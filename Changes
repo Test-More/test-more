@@ -8,6 +8,10 @@
     - Remove Info event
     - Add Pass and Fail events
     - Remote Event JSON interface
+    - Fix threads timeout for older perls (as best we can)
+
+1.302080  2017-04-04 20:24:55-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Timeout when waiting for child procs and threads (#765)
     - Fix SIGSYS localization issue (#758)
     - Fix outdated docs (#759, #754)
