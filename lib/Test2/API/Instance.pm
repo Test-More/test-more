@@ -398,11 +398,13 @@ sub _ipc_wait {
         if (USE_THREADS) {
             my $start = time;
 
-            while (threads::running()) {
+            while (1) {
                 last unless threads->list();
                 die "Timeout waiting on child thread" if time - $start >= $timeout;
                 sleep 1;
-                for my $t (threads->list(threads::joinable())) {
+                for my $t (threads->list) {
+                    # threads older than 1.34 do not have this :-(
+                    next if $t->can('is_joinable') && !$t->is_joinable;
                     $t->join;
                     # In older threads we cannot check if a thread had an error unless
                     # we control it and its return.
