@@ -107,9 +107,11 @@ sub facet_data {
     $out->{about}->{details}    = $self->summary    || undef;
     $out->{about}->{no_display} = $self->no_display || undef;
 
+    # Might be undef, we want to preserve that
+    my $terminate = $self->terminate;
     $out->{control} = {
         global    => $self->global    || 0,
-        terminate => $self->terminate || undef,
+        terminate => $terminate,
         has_callback => $self->can('callback') == \&callback ? 0 : 1,
     };
 
