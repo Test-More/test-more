@@ -73,7 +73,8 @@ sub facet_data {
 
     my $out = $self->common_facet_data;
 
-    $out->{control}->{terminate} ||= $self->{+DIRECTIVE} eq 'SKIP' ? 0 : undef;
+    $out->{control}->{terminate} = $self->{+DIRECTIVE} eq 'SKIP' ? 0 : undef
+        unless defined $out->{control}->{terminate};
 
     $out->{plan} = {count => $self->{+MAX}};
     $out->{plan}->{details} = $self->{+REASON} if defined $self->{+REASON};
