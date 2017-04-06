@@ -20,6 +20,11 @@ sub can {
     my $existing = $self->SUPER::can($name);
     return $existing if $existing;
 
+    # Only vivify when called on an instance, do not vivify for a class. There
+    # are a lot of magic class methods used in things like serialization (or
+    # the forks.pm module) which cause problems when vivified.
+    return undef unless ref($self);
+
     my $sub = sub { $_[0]->{$name} };
     {
         no strict 'refs';
