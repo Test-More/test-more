@@ -790,6 +790,13 @@ tests info_tap => sub {
 tests error_tap => sub {
     my ($it, $out, $err) = grabber();
 
+    # Data::Dumper behavior can change from version to version, specifically
+    # the Data::Dumper in 5.8.9 produces different whitespace from other
+    # versions.
+    require Data::Dumper;
+    my $dumper = Data::Dumper->new([{structure => 'yes'}])->Indent(2)->Terse(1)->Pad('# ')->Useqq(1)->Sortkeys(1);
+    chomp(my $struct = $dumper->Dump);
+
     is_deeply(
         [
             $it->error_tap(
@@ -805,7 +812,7 @@ tests error_tap => sub {
         [
             [OUT_ERR, "# foo\n"],
             [OUT_ERR, "# foo\n# bar\n# baz\n"],
-            [OUT_ERR, qq|# {\n#   "structure" => "yes"\n# }\n|],
+            [OUT_ERR, "$struct\n"],
         ],
         "Got all errors"
     );
