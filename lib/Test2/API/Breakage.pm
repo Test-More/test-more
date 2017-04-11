@@ -31,7 +31,9 @@ sub upgrade_required {
         'Test::SharedFork'        => '0.34',
         'Test::Alien'             => '0.04',
         'Test::UseAllModules'     => '0.14',
+        'Test::More::Prefix'      => '0.005',
 
+        'Test::DBIx::Class::Schema'    => '1.0.9',
         'Test::Clustericious::Cluster' => '0.30',
     );
 }
@@ -43,12 +45,10 @@ sub known_broken {
         'Test::Aggregate'       => '0.373',
         'Test::Flatten'         => '0.11',
         'Test::Group'           => '0.20',
-        'Test::More::Prefix'    => '0.005',
         'Test::ParallelSubtest' => '0.05',
         'Test::Pretty'          => '0.32',
         'Test::Wrapper'         => '0.3.0',
 
-        'Test::DBIx::Class::Schema'      => '1.0.9',
         'Log::Dispatch::Config::TestLog' => '0.02',
     );
 }
