@@ -155,7 +155,7 @@ if (CAN_REALLY_FORK) {
     die "Failed to fork!" unless defined $pid;
     unless($pid) { exit 0 }
 
-    is($one->_ipc_wait, 0, "No errors");
+    is(Test2::API::Instance::_ipc_wait, 0, "No errors");
 
     $pid = fork;
     die "Failed to fork!" unless defined $pid;
@@ -163,7 +163,7 @@ if (CAN_REALLY_FORK) {
     my @warnings;
     {
         local $SIG{__WARN__} = sub { push @warnings => @_ };
-        is($one->_ipc_wait, 255, "Process exited badly");
+        is(Test2::API::Instance::_ipc_wait, 255, "Process exited badly");
     }
     like($warnings[0], qr/Process .* did not exit cleanly \(status: 255\)/, "Warn about exit");
 }
@@ -173,7 +173,7 @@ if (CAN_THREAD && $] ge '5.010') {
     $one->reset;
 
     threads->new(sub { 1 });
-    is($one->_ipc_wait, 0, "No errors");
+    is(Test2::API::Instance::_ipc_wait, 0, "No errors");
 
     if (threads->can('error')) {
         threads->new(sub {
@@ -184,7 +184,7 @@ if (CAN_THREAD && $] ge '5.010') {
         my @warnings;
         {
             local $SIG{__WARN__} = sub { push @warnings => @_ };
-            is($one->_ipc_wait, 255, "Thread exited badly");
+            is(Test2::API::Instance::_ipc_wait, 255, "Thread exited badly");
         }
         like($warnings[0], qr/Thread .* did not end cleanly: xxx/, "Warn about exit");
     }
