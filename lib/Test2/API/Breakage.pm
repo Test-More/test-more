@@ -33,6 +33,9 @@ sub upgrade_required {
         'Test::UseAllModules'     => '0.14',
         'Test::More::Prefix'      => '0.005',
 
+        'Test2::Tools::EventDumper' => 0.000007,
+        'Test2::Harness'            => 0.000013,
+
         'Test::DBIx::Class::Schema'    => '1.0.9',
         'Test::Clustericious::Cluster' => '0.30',
     );
