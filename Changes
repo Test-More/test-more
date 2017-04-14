@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302083  2017-04-14 10:55:26-07:00 America/Los_Angeles
+
     - Update some breakage info for Test::More::Prefix and Test::DBIx::Class::Schema
 
 1.302082  2017-04-11 12:56:24-07:00 America/Los_Angeles (TRIAL RELEASE)
