@@ -38,7 +38,9 @@ BEGIN {
 
             $name ||= @items == 1 ? "$thing_name\->$op('$items[0]')" : "$thing_name\->$op(...)";
 
-            unless ($thing && (blessed($thing) || !ref($thing))) {
+            my $non_empty_string = !ref($thing) && length($thing);
+
+            unless (defined($thing) && (blessed($thing) || $non_empty_string)) {
                 my $thing = defined($thing)
                     ? ref($thing) || "'$thing'"
                     : '<undef>';
