@@ -107,6 +107,12 @@ Hmmm
 cid
 tid
 pid
+SIGINT
+SIGALRM
+SIGHUP
+SIGTERM
+SIGUSR1
+SIGUSR2
 
 ## Spelled correctly according to google:
 recognises
