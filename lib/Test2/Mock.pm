@@ -303,9 +303,13 @@ sub _parse_inject {
 
     my ($is, $field, $val);
 
-    if (!ref($arg)) {
-        $is    = $arg if $arg =~ m/^(rw|ro|wo)$/;
+    if(defined($arg) && !ref($arg) && $arg =~ m/^(rw|ro|wo)$/) {
+        $is    = $arg;
         $field = $param;
+    }
+    elsif (!ref($arg)) {
+        $val = $arg;
+        $is  = 'val';
     }
     elsif (reftype($arg) eq 'HASH') {
         $field = delete $arg->{field} || $param;
@@ -320,9 +324,9 @@ sub _parse_inject {
         croak "The following keys are not valid when defining a mocked sub with a hashref: " . join(", " => keys %$arg)
             if keys %$arg;
     }
-
-    confess "'$arg' is not a valid argument when defining a mocked sub"
-        unless $is;
+    else {
+        confess "'$arg' is not a valid argument when defining a mocked sub";
+    }
 
     my $sub;
     if ($is eq 'rw') {
