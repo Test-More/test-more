@@ -428,9 +428,9 @@ had that we were testing for as real failures.
 The color function doesn't work unless L<Term::ANSIColor> is
 compatible with your terminal.
 
-Bugs (and requests for new features) can be reported to the author
-though the CPAN RT system:
-L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Test-Builder-Tester>
+=head1 MAINTENANCE CATEGORY: BACKCOMPAT LOCK
+
+See L<Test::Simple::MaintenancePolicy> for details.
 
 =head1 AUTHOR
 

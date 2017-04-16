@@ -222,6 +222,10 @@ other Test::Builder based modules.
 Most of the code here was lifted straight from Test::Builder and then had
 chunks removed by Fergal Daly <fergal@esatclear.ie>.
 
+=head1 MAINTENANCE CATEGORY: ACTIVE DEVELOPMENT
+
+See L<Test::Simple::MaintenancePolicy> for details.
+
 =head1 LICENSE
 
 Under the same license as Perl itself

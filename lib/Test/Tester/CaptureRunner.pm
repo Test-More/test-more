@@ -63,6 +63,10 @@ Test::Tester::CaptureRunner - Help testing test modules built with Test::Builder
 This stuff if needed to allow me to play with other ways of monitoring the
 test results.
 
+=head1 MAINTENANCE CATEGORY: ACTIVE DEVELOPMENT
+
+See L<Test::Simple::MaintenancePolicy> for details.
+
 =head1 AUTHOR
 
 Copyright 2003 by Fergal Daly <fergal@esatclear.ie>.

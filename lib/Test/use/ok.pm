@@ -40,6 +40,10 @@ makes it clear that this is a single compile-time action.
 
 L<Test::More>
 
+=head1 MAINTENANCE CATEGORY: ACTIVE DEVELOPMENT
+
+See L<Test::Simple::MaintenancePolicy> for details.
+
 =head1 MAINTAINER
 
 =over 4

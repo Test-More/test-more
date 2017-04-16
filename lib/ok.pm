@@ -39,6 +39,10 @@ and they will be executed at C<BEGIN> time.
 
 Please see L<Test::use::ok> for the full description.
 
+=head1 MAINTENANCE CATEGORY: ACTIVE DEVELOPMENT
+
+See L<Test::Simple::MaintenancePolicy> for details.
+
 =head1 CC0 1.0 Universal
 
 To the extent possible under law, 唐鳳 has waived all copyright and related

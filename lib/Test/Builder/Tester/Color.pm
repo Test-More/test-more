@@ -31,6 +31,10 @@ sub import {
     Test::Builder::Tester::color(1);
 }
 
+=head1 MAINTENANCE CATEGORY: BACKCOMPAT LOCK
+
+See L<Test::Simple::MaintenancePolicy> for details.
+
 =head1 AUTHOR
 
 Copyright Mark Fowler E<lt>mark@twoshortplanks.comE<gt> 2002.

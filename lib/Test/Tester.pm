@@ -631,6 +631,10 @@ captures the strings output by Test::Builder. This means you cannot get
 separate access to the individual pieces of information and you must predict
 B<exactly> what your test will output.
 
+=head1 MAINTENANCE CATEGORY: ACTIVE DEVELOPMENT
+
+See L<Test::Simple::MaintenancePolicy> for details.
+
 =head1 AUTHOR
 
 This module is copyright 2005 Fergal Daly <fergal@esatclear.ie>, some parts
