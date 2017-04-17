@@ -1,5 +1,6 @@
 package Test::use::ok;
 use 5.005;
+use strict; use warnings;
 $Test::use::ok::VERSION = '0.16';
 
 __END__
