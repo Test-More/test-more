@@ -1021,8 +1021,19 @@ sub _diag_fmt {
 
     if( defined $$val ) {
         if( $type eq 'eq' or $type eq 'ne' ) {
-            # quote and force string context
-            $$val = "'$$val'";
+            # qq() quote and force string context
+            if( $$val =~ m/[^\x20-\x7E]/ ) {
+               # Not representable as plain ASCII
+               $$val =~ s/([^\x20-\x7E])/$1 eq "\n" ? "\\n" :
+                                         $1 eq "\r" ? "\\r" :
+                                         sprintf "\\x%02X", ord $1/eg;
+               $$val =~ s/(["\$\@])/\\$1/g;
+               $$val = qq("$$val");
+            }
+            else {
+               $$val =~ s/'/\\'/g;
+               $$val = "'$$val'";
+            }
         }
         else {
             # force numeric context
