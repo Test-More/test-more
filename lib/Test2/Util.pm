@@ -29,6 +29,8 @@ our @EXPORT_OK = qw{
     do_rename do_unlink
 
     try_sig_mask
+
+    clone_io
 };
 BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
