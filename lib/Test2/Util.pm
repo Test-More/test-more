@@ -6,6 +6,8 @@ our $VERSION = '1.302084';
 
 
 use Config qw/%Config/;
+use Carp qw/croak/;
+use PerlIO();
 
 our @EXPORT_OK = qw{
     try
@@ -22,6 +24,8 @@ our @EXPORT_OK = qw{
     IS_WIN32
 
     ipc_separator
+
+    clone_io
 };
 BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
@@ -157,6 +161,28 @@ BEGIN {
     else {
         *CAN_SIGSYS = sub() { 0 };
     }
+}
+
+my %PERLIO_SKIP = (
+    unix => 1,
+    via  => 1,
+);
+
+sub clone_io {
+    my ($fh) = @_;
+    my $fileno = fileno($fh) or croak "Could not get fileno for handle";
+
+    my %seen;
+    open(my $out, '>&', $fileno) or die "Can't dup fileno $fileno: $!";
+    binmode($out, join(":", "", "raw", grep { !$PERLIO_SKIP{$_} and !$seen{$_}++ } PerlIO::get_layers(STDOUT)));
+
+    my $old = select $fh;
+    my $af = $|;
+    select $out;
+    $| = $af;
+    select $old;
+
+    return $out;
 }
 
 1;

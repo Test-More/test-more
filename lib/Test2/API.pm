@@ -56,7 +56,7 @@ use Test2::Event::Subtest();
 
 use Carp qw/carp croak confess longmess/;
 use Scalar::Util qw/blessed weaken/;
-use Test2::Util qw/get_tid/;
+use Test2::Util qw/get_tid clone_io/;
 
 our @EXPORT_OK = qw{
     context release
@@ -105,6 +105,9 @@ our @EXPORT_OK = qw{
     test2_formatters
     test2_formatter_add
     test2_formatter_set
+
+    test2_stdout
+    test2_stderr
 };
 BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
@@ -112,6 +115,11 @@ my $STACK       = $INST->stack;
 my $CONTEXTS    = $INST->contexts;
 my $INIT_CBS    = $INST->context_init_callbacks;
 my $ACQUIRE_CBS = $INST->context_acquire_callbacks;
+
+my $STDOUT = clone_io(\*STDOUT);
+my $STDERR = clone_io(\*STDERR);
+sub test2_stdout() { $STDOUT }
+sub test2_stderr() { $STDERR }
 
 sub test2_init_done { $INST->finalized }
 sub test2_load_done { $INST->loaded }
