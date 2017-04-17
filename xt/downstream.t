@@ -4,40 +4,67 @@ use warnings;
 
 BEGIN {
     unless ( $ENV{DOWNSTREAM_TESTS} ) {
-        print "1..0 # Skip many perls have broken threads.  Enable with DOWNSTREAM_TESTS.\n";
+        print "1..0 # Enable with DOWNSTREAM_TESTS.\n";
         exit 0;
     }
 }
 
 use Test::More;
 
-ok(run_string(<<"EOT"), "Installed a fresh perlbrew") || exit 1;
-perlbrew uninstall TestMore$$ 1>/dev/null 2>/dev/null || true
-perlbrew install --thread --notest -j9 --as TestMore$$ perl-5.20.1
-EOT
+my $lib = "5.20.3_thr\@TestMore$$";
 
-ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
-perlbrew exec --with TestMore$$ cpan .
+ok(run_string(<<"EOT"), "Installed a fresh perlbrew") || exit 1;
+perlbrew lib create $lib
 EOT
 
 ok(run_string(<<"EOT"), "Installed cpanm") || exit 1;
-perlbrew exec --with TestMore$$ cpan App::cpanminus
+perlbrew exec --with $lib cpan App::cpanminus
 EOT
 
-ok(run_string(<<"EOT"), "Installed downstream modules with no issues") || exit 1;
-perlbrew exec --with TestMore$$ cpanm `cat xt/downstream_dists.list`
+ok(run_string(<<"EOT"), "Installed Test2") || exit 1;
+cd ../Test2
+perlbrew exec --with $lib cpanm Test2-0.000013.tar.gz
 EOT
 
+ok(run_string(<<"EOT"), "Installed Test::More") || exit 1;
+perlbrew exec --with $lib cpanm Test-Simple-1.302013_006.tar.gz
+EOT
 
-if (-e 'xt/downstream_dists.list.known_broken') {
-    local $TODO = "These are known to be broken";
-    ok(run_string(<<"    EOT"), "Known broken dists");
-    perlbrew exec --with TestMore$$ cpanm `cat xt/downstream_dists.list.known_broken`
-    EOT
+my @BAD;
+open(my $list, '<', 'xt/downstream_dists.list') || die "Could not open downstream list";
+while(my $name = <$list>) {
+    chomp($name);
+    my $ok = 0;
+    for (1 .. 2) {
+        $ok = run_string("perlbrew exec --with $lib -- cpanm $name");
+        last if $ok;
+        diag "'$name' did not install properly, trying 1 more time.";
+    }
+
+    ok($ok, "Installed downstream module '$name'") || push @BAD => $name;
+}
+close($list);
+
+TODO: {
+    local $TODO = "known to be broken";
+
+    open($list, '<', 'xt/downstream_dists.list.known_broken') || die "Could not open downstream list";
+    while(my $name = <$list>) {
+        chomp($name);
+        my $ok = 0;
+        for (1 .. 2) {
+            $ok = run_string("perlbrew exec --with $lib cpanm $name");
+            last if $ok;
+            diag "'$name' did not install properly, trying 1 more time.";
+        }
+
+        ok($ok, "Installed downstream module '$name'");
+    }
+    close($list);
 }
 
 ok(run_string(<<"EOT"), "Cleanup up the perlbrew");
-perlbrew uninstall TestMore$$
+perlbrew lib delete $lib
 EOT
 
 sub run_string {
@@ -55,7 +82,20 @@ sub run_string {
         'TEST_VERBOSE',
     );
 
-    return !system($exec);
+    my $pid = fork;
+    die "Failed to fork!" unless defined $pid;
+    exec $exec unless $pid;
+
+    die "Something went wrong!" unless $pid;
+
+    my $got = waitpid($pid, 0);
+    my $out = !$?;
+    die "waitpid oddity, got $got, expected $pid" unless $got == $pid;
+    return $out;
 }
 
 done_testing;
+
+if (@BAD) {
+    print "Bad:\n",join( "\n", @BAD ), "\n";
+}

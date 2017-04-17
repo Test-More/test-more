@@ -41,5 +41,5 @@ ERR
 
     $TB->is_eq($?, 250, "exit code");
 
-    exit grep { !$_ } $TB->summary;
+    $? = grep { !$_ } $TB->summary;
 }

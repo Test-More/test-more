@@ -16,9 +16,10 @@ use Test::Tester::Delegate;
 
 require Exporter;
 
-use vars qw( @ISA @EXPORT $VERSION );
+use vars qw( @ISA @EXPORT );
 
-$VERSION = "0.114";
+our $VERSION = '1.302013_005';
+$VERSION = eval $VERSION;    ## no critic (BuiltinFunctions::ProhibitStringyEval)
 @EXPORT = qw( run_tests check_tests check_test cmp_results show_space );
 @ISA = qw( Exporter );
 

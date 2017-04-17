@@ -12,7 +12,7 @@ BEGIN {
 
 my $Exit_Code;
 BEGIN {
-    *CORE::GLOBAL::exit = sub { $Exit_Code = shift; };
+    *CORE::GLOBAL::exit = sub { $Exit_Code = shift; goto XXX};
 }
 
 use Test::Builder;
@@ -43,13 +43,15 @@ subtest 'bar' => sub {
     ok 'sub_baz';
 };
 
+XXX:
+
 $Test->is_eq( $output, <<'OUT' );
 1..4
 ok 1
-    # Subtest: bar
+# Subtest: bar
     1..3
     ok 1
-        # Subtest: sub_bar
+    # Subtest: sub_bar
         1..3
         ok 1
         ok 2
@@ -57,3 +59,5 @@ Bail out!  ROCKS FALL! EVERYONE DIES!
 OUT
 
 $Test->is_eq( $Exit_Code, 255 );
+
+Test2::API::test2_stack()->top->set_no_ending(1);
