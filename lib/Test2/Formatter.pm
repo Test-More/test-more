@@ -44,6 +44,10 @@ A formatter is any package or object with a C<write($event, $num)> method.
     use strict;
     use warnings;
 
+    # A formatter should write to these handles instead of directly touching
+    # STDERR or STDOUT.
+    use Test2::API qw/test2_stdout test2_stderr/;
+
     sub write {
         my $self_or_class = shift;
         my ($event, $assert_num) = @_;
@@ -94,6 +98,15 @@ following arguments:
 =item * A boolean indicating whether or not this call is for a subtest
 
 =back
+
+=head1 NOTE ON STDERR AND STDOUT
+
+It is always possible that some code may call C<select> or even hijack STDERR
+and STDOUT. When writing a formatter you should not use the global C<*STDERR>
+and C<*STDOUT>, instead you should print to the handles returned by
+C<Test2::API::test2_stdout()> and C<Test2::API::test2_stderr()> which are
+clones of the filehandles made early during initialization. Using these handles
+prevents your formatter from printing to the wrong place.
 
 =head1 SOURCE
 

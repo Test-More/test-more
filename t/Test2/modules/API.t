@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 use Test2::API qw/context/;
+use File::Temp qw/tempfile/;
 
 my ($LOADED, $INIT);
 BEGIN {
@@ -18,6 +19,8 @@ my $CLASS = 'Test2::API';
 ok(Test2::API->can($_), "$_ method is present") for qw{
     context_do
     no_context
+
+    event_stream
 
     test2_init_done
     test2_load_done
@@ -270,5 +273,35 @@ is((grep { $_ == $sub } Test2::API::test2_list_context_release_callbacks()), 2, 
 is((grep { $_ == $sub } Test2::API::test2_list_exit_callbacks()),            2, "got the two instances of the hook");
 is((grep { $_ == $sub } Test2::API::test2_list_post_load_callbacks()),       2, "got the two instances of the hook");
 
-done_testing;
 
+
+my ($wh, $filename) = tempfile();
+$wh->autoflush(1);
+
+$CLASS->can('event_stream')->('stream a' => $wh, diagnostics => 1);
+
+my @lines;
+my $events = $CLASS->can('intercept')->(
+    sub {
+        push @lines => __LINE__ + 1;
+        print $wh "Foo\nBar\nBaz";
+        close($wh);
+    }
+);
+
+ok($events->[0]->isa('Test2::Event::Output'), "Got first event");
+is($events->[0]->message, "Foo\nBar\nBaz", "Got message, no added newline");
+is($events->[0]->stream_name, 'stream a', "Stream name");
+is($events->[0]->diagnostics, 1, "Set to be diagnostics");
+is($events->[0]->trace->file, __FILE__, "Report to correct file");
+is($events->[0]->trace->line, $lines[0], "Report to correct line");
+
+open(my $rh, '<', $filename) or die "Could not open file '$filename': $!";
+my $data = join '' => <$rh>;
+close($rh);
+
+is($data, "", "No actual output");
+
+unlink($filename);
+
+done_testing;

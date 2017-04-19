@@ -4,8 +4,6 @@ use warnings;
 
 our $VERSION = '1.302084';
 
-use Test2::Util qw/clone_io/;
-
 use Test2::Util::HashBase qw{
     no_numbers handles _encoding last_fh
 };
@@ -119,8 +117,8 @@ sub _open_handles {
     my $self = shift;
 
     require Test2::API;
-    my $out = clone_io(Test2::API::test2_stdout());
-    my $err = clone_io(Test2::API::test2_stderr());
+    my $out = Test2::API::test2_stdout();
+    my $err = Test2::API::test2_stderr();
 
     _autoflush($out);
     _autoflush($err);
