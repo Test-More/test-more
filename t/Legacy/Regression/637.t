@@ -20,6 +20,9 @@ use Test2::IPC;
 use threads;
 use Test::More;
 
+plan 'skip_all' => "This test cannot be run with the current formatter"
+    unless Test::Builder->new->{Stack}->top->format->isa('Test::Builder::Formatter');
+
 ok 1 for (1 .. 2);
 
 # used to reset the counter after thread finishes

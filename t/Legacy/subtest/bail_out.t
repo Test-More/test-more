@@ -10,14 +10,19 @@ BEGIN {
     }
 }
 
+my $goto = 0;
 my $Exit_Code;
 BEGIN {
-    *CORE::GLOBAL::exit = sub { $Exit_Code = shift; goto XXX};
+    *CORE::GLOBAL::exit = sub { $Exit_Code = shift; goto XXX if $goto; CORE::exit($Exit_Code)};
 }
 
 use Test::Builder;
 use Test::More;
 
+plan skip_all => "This test cannot be run with the current formatter"
+    unless Test::Builder->new->{Stack}->top->format->isa('Test::Builder::Formatter');
+
+$goto = 1;
 my $output;
 my $TB = Test::More->builder;
 $TB->output(\$output);

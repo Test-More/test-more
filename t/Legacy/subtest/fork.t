@@ -14,6 +14,9 @@ use IO::Pipe;
 use Test::Builder;
 use Test::More;
 
+plan 'skip_all' => "This test cannot be run with the current formatter"
+    unless Test::Builder->new->{Stack}->top->format->isa('Test::Builder::Formatter');
+
 plan 'tests' => 1;
 
 subtest 'fork within subtest' => sub {

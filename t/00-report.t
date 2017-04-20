@@ -13,8 +13,8 @@ BEGIN {
     print STDOUT "ok 1\n";
     print STDOUT "1..1\n";
 
-    open($stdout, '>&', *STDOUT) or die "Could not clone STDOUT";
-    open($stderr, '>&', *STDERR) or die "Could not clone STDERR";
+    open($stdout, '>&', *STDOUT) or die "Could not clone STDOUT: $!";
+    open($stderr, '>&', *STDERR) or die "Could not clone STDERR: $!";
 
     close(STDOUT) or die "Could not close STDOUT";
     unless(close(STDERR)) {
