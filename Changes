@@ -7,7 +7,7 @@
     - Track hub id in Trace
     - Remove Info event
     - Add Pass and Fail events
-    - Remote Event JSON interface
+    - Remove Event JSON interface
 
 1.302083  2017-04-14 10:55:26-07:00 America/Los_Angeles
 
