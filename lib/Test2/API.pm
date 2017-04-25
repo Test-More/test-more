@@ -57,7 +57,7 @@ use Test2::Event::Subtest();
 
 use Carp qw/carp croak confess longmess/;
 use Scalar::Util qw/blessed weaken/;
-use Test2::Util qw/get_tid clone_io/;
+use Test2::Util qw/get_tid clone_io pkg_to_file/;
 
 our @EXPORT_OK = qw{
     context release
@@ -158,7 +158,17 @@ sub test2_ipc_set_timeout     { $INST->set_ipc_timeout(@_) }
 sub test2_ipc_get_timeout     { $INST->ipc_timeout() }
 sub test2_ipc_enable_shm      { $INST->ipc_enable_shm }
 
-sub test2_formatter     { $INST->formatter }
+sub test2_formatter     {
+    if ($ENV{T2_FORMATTER} && $ENV{T2_FORMATTER} =~ m/^(\+)?(.*)$/) {
+        my $formatter = $1 ? $2 : "Test2::Formatter::$2";
+        my $file = pkg_to_file($formatter);
+        require $file;
+        return $formatter;
+    }
+
+    return $INST->formatter;
+}
+
 sub test2_formatters    { @{$INST->formatters} }
 sub test2_formatter_add { $INST->add_formatter(@_) }
 sub test2_formatter_set {
