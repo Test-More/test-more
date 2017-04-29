@@ -119,8 +119,13 @@ my $ACQUIRE_CBS = $INST->context_acquire_callbacks;
 
 my $STDOUT = clone_io(\*STDOUT);
 my $STDERR = clone_io(\*STDERR);
-sub test2_stdout() { $STDOUT }
-sub test2_stderr() { $STDERR }
+sub test2_stdout { $STDOUT ||= clone_io(\*STDOUT) }
+sub test2_stderr { $STDERR ||= clone_io(\*STDERR) }
+
+sub test2_reset_io {
+    $STDOUT = clone_io(\*STDOUT);
+    $STDERR = clone_io(\*STDERR);
+}
 
 sub test2_init_done { $INST->finalized }
 sub test2_load_done { $INST->loaded }
