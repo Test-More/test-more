@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302084  2017-04-29 20:42:48-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Better IO management
     - Allow access to the STDERR/STDOUT Test2::API uses
     - Formatters should use the Test2::API handles
