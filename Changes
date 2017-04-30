@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - Better IO management
+    - Allow access to the STDERR/STDOUT Test2::API uses
+    - Formatters should use the Test2::API handles
+
 1.302083  2017-04-14 10:55:26-07:00 America/Los_Angeles
 
     - Update some breakage info for Test::More::Prefix and Test::DBIx::Class::Schema
