@@ -26,6 +26,7 @@ our @EXPORT_OK = qw{
     ipc_separator
 
     clone_io
+    perlio_info
 };
 BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
@@ -168,13 +169,20 @@ my %PERLIO_SKIP = (
     via  => 1,
 );
 
+sub perlio_info {
+    my ($fh) = @_;
+
+    my %seen;
+    join(":", "", "raw", grep { !$PERLIO_SKIP{$_} and !$seen{$_}++ } PerlIO::get_layers($fh));
+}
+
 sub clone_io {
     my ($fh) = @_;
     my $fileno = fileno($fh) or croak "Could not get fileno for handle";
 
     my %seen;
     open(my $out, '>&', $fileno) or die "Can't dup fileno $fileno: $!";
-    binmode($out, join(":", "", "raw", grep { !$PERLIO_SKIP{$_} and !$seen{$_}++ } PerlIO::get_layers(STDOUT)));
+    binmode($out, perlio_info($fh));
 
     my $old = select $fh;
     my $af = $|;
@@ -245,6 +253,16 @@ otherwise it returns 0.
 =item my $file = pkg_to_file($package)
 
 Convert a package name to a filename.
+
+=item $new_handle = clone_io($old_handle);
+
+Clone a filehandle, applies PerlIO layers from the original to the clone, with
+exception of 'unix' and 'via' layers.
+
+=item $binmode_string = perlio_info($handle)
+
+Get the binmode settings (PerlIO layers) of the specified handle. 'unix' and
+'via' are omitted.
 
 =back
 
