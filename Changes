@@ -9,6 +9,16 @@
     - Add Pass and Fail events
     - Remove Event JSON interface
 
+1.302085  2017-05-01 19:24:37-07:00 America/Los_Angeles
+
+    - No Changes since last TRIAL
+
+1.302084  2017-04-29 20:42:48-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Better IO management
+    - Allow access to the STDERR/STDOUT Test2::API uses
+    - Formatters should use the Test2::API handles
+
 1.302083  2017-04-14 10:55:26-07:00 America/Los_Angeles
 
     - Update some breakage info for Test::More::Prefix and Test::DBIx::Class::Schema

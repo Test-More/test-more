@@ -7,7 +7,7 @@ BEGIN {
     $ENV{TEST2_ACTIVE} = 1;
 }
 
-our $VERSION = '1.302084';
+our $VERSION = '1.302086';
 
 
 my $INST;
@@ -109,6 +109,7 @@ our @EXPORT_OK = qw{
 
     test2_stdout
     test2_stderr
+    test2_reset_io
 };
 BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
