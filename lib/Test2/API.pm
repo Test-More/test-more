@@ -1131,11 +1131,18 @@ to turn this off.
 
 =item $fh = test2_stderr()
 
-These functions returns the filehandles that test output should be written to.
+These functions return the filehandles that test output should be written to.
 They are primarily useful when writing a custom formatter and code that turns
 events into actual output (TAP, etc.)  They will return a dupe of the original
 filehandles that formatted output can be sent to regardless of whatever state
 the currently running test may have left STDOUT and STDERR in.
+
+=item test2_reset_io()
+
+Re-dupe the internal filehandles returned by C<test2_stdout()> and
+C<test2_stderr()> from the current STDOUT and STDERR.  You shouldn't need to do
+this except in very peculiar situations (for example, you're testing a new
+formatter and you need control over where the formatter is sending its output.)
 
 =back
 
