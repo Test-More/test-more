@@ -40,7 +40,7 @@ diagnostics they may need.
 
 =head1 SYNOPSIS
 
-    use Test2::Bundle::Extended;
+    use Test2::V0;
     use Test2::Plugin::BailOnFail;
 
     ok(1, "pass");

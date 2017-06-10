@@ -38,7 +38,7 @@ This gives the tools the ability to output any extra diagnostics they may need.
 
 =head1 SYNOPSIS
 
-    use Test2::Bundle::Extended;
+    use Test2::V0;
     use Test2::Plugin::DieOnFail;
 
     ok(1, "pass");

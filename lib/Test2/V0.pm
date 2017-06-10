@@ -1,20 +1,131 @@
-package Test2::Bundle::Extended;
+package Test2::V0;
 use strict;
 use warnings;
 
-use Test2::V0;
+use Importer;
 
 our $VERSION = '0.000071';
 
-BEGIN {
-    push @Test2::Bundle::Extended::ISA => 'Test2::V0';
-    no warnings 'once';
-    *EXPORT = \@Test2::V0::EXPORT;
-}
+use Carp qw/croak/;
 
-our %EXPORT_TAGS = (
-    'v1' => \@Test2::Bundle::Extended::EXPORT,
+use Test2::Plugin::SRand();
+use Test2::Plugin::UTF8();
+use Test2::Tools::Target();
+
+use Test2::Plugin::ExitSummary;
+
+use Test2::API qw/intercept context/;
+
+use Test2::Tools::Event qw/gen_event/;
+
+use Test2::Tools::Defer qw/def do_def/;
+
+use Test2::Tools::Basic qw{
+    ok pass fail diag note todo skip
+    plan skip_all done_testing bail_out
+};
+
+use Test2::Tools::Compare qw{
+    is like isnt unlike
+    match mismatch validator
+    hash array bag object meta meta_check number string subset bool
+    in_set not_in_set check_set
+    item field call call_list call_hash prop check all_items all_keys all_vals all_values
+    etc end filter_items
+    T F D DF E DNE FDNE U
+    event fail_events
+    exact_ref
+};
+
+use Test2::Tools::Warnings qw{
+    warns warning warnings no_warnings
+};
+
+use Test2::Tools::ClassicCompare qw/cmp_ok/;
+
+use Importer 'Test2::Tools::Subtest' => (
+    subtest_buffered => { -as => 'subtest' },
 );
+
+use Test2::Tools::Class     qw/can_ok isa_ok DOES_ok/;
+use Test2::Tools::Encoding  qw/set_encoding/;
+use Test2::Tools::Exports   qw/imported_ok not_imported_ok/;
+use Test2::Tools::Ref       qw/ref_ok ref_is ref_is_not/;
+use Test2::Tools::Mock      qw/mock mocked/;
+use Test2::Tools::Exception qw/try_ok dies lives/;
+
+our @EXPORT = qw{
+    ok pass fail diag note todo skip
+    plan skip_all done_testing bail_out
+
+    intercept context
+
+    gen_event
+
+    def do_def
+
+    cmp_ok
+
+    warns warning warnings no_warnings
+
+    subtest
+    can_ok isa_ok DOES_ok
+    set_encoding
+    imported_ok not_imported_ok
+    ref_ok ref_is ref_is_not
+    mock mocked
+    dies lives try_ok
+
+    is like isnt unlike
+    match mismatch validator
+    hash array bag object meta meta_check number string subset bool
+    in_set not_in_set check_set
+    item field call call_list call_hash prop check all_items all_keys all_vals all_values
+    etc end filter_items
+    T F D DF E DNE FDNE U
+    event fail_events
+    exact_ref
+};
+
+my $SRAND;
+sub import {
+    my $class = shift;
+
+    my $caller = caller;
+    my (@exports, %options);
+    while (my $arg = shift @_) {
+        push @exports => $arg and next unless substr($arg, 0, 1) eq '-';
+        $options{$arg} = shift @_;
+    }
+
+    # SRand handling
+    my $srand    = delete $options{'-srand'};
+    my $no_srand = delete $options{'-no_srand'};
+
+    croak "Cannot combine '-srand' and '-no_srand' options"
+        if $no_srand && defined($srand);
+
+    Test2::Plugin::SRand->import($srand ? $srand : ())
+        if $srand || !($no_srand || $SRAND++);
+
+    # Pragmas
+    my $no_pragmas  = delete $options{'-no_pragmas'};
+    my $no_strict   = delete $options{'-no_strict'} || $no_pragmas;
+    my $no_warnings = delete $options{'-no_warnings'} || $no_pragmas;
+    my $no_utf8     = delete $options{'-no_utf8'} || $no_pragmas;
+
+    strict->import()              unless $no_strict;
+    'warnings'->import()          unless $no_warnings;
+    Test2::Plugin::UTF8->import() unless $no_utf8;
+
+    my $target = delete $options{'-target'};
+    Test2::Tools::Target->import_into($caller, $target)
+        if $target;
+
+    croak "Unknown option(s): " . join(', ', keys %options) if keys %options;
+
+    Importer->import_into($class, $caller, @exports);
+}
 
 1;
 
@@ -26,12 +137,7 @@ __END__
 
 =head1 NAME
 
-Test2::Bundle::Extended - Old name for Test2::V0
-
-=head1 *** DEPRECATED ***
-
-This bundle has been renamed to L<Test2::V0>, in which the C<':v1'> tag has
-been removed as unnecessary.
+Test2::V0 - 0Th edition of the Test2 recommended bundle.
 
 =head1 DESCRIPTION
 
@@ -39,9 +145,21 @@ This is the big-daddy bundle. This bundle includes nearly every tool, and
 several plugins, that the Test2 author uses. This bundle is used
 extensively to test L<Test2::Suite> itself.
 
+=head1 NAMING, USING, DEPENDING
+
+This bundle should not change in a I<severely> incompatible way. Some minor
+breaking changes, specially bugfixes, may be allowed. If breaking changes are
+needed then a new C<Test2::V#> module should be released instead.
+
+As new C<V#> modules are released old ones I<may> be moved to different cpan
+distributions. You should always use a specific bundle version and list that
+version in your distributions testing requirements. You should never simply
+list L<Test2::Suite> as your modules dep, instead list the specific bundle, or
+tools and plugins you use directly in your metadata.
+
 =head1 SYNOPSIS
 
-    use Test2::Bundle::Extended ':v1';
+    use Test2::V0
 
     ok(1, "pass");
 
@@ -51,9 +169,9 @@ extensively to test L<Test2::Suite> itself.
 
 =head1 RESOLVING CONFLICTS WITH MOOSE
 
-    use Test2::Bundle::Extended '!meta';
+    use Test2::V0 '!meta';
 
-L<Moose> and L<Test2::Bundle::Extended> both export very different C<meta()>
+L<Moose> and L<Test2::V0> both export very different C<meta()>
 subs. Adding C<'!meta'> to the import args will prevent the sub from being
 imported. This bundle also exports the sub under the name C<meta_check()> so
 you can use that spelling as an alternative.
@@ -62,23 +180,19 @@ you can use that spelling as an alternative.
 
 =over 4
 
-=item :v1
-
 =item :DEFAULT
 
-The following are all identical:
+The following are both identical:
 
-    use Test2::Bundle::Extended;
+    use Test2::V0;
 
-    use Test2::Bundle::Extended ':v1';
-
-    use Test2::Bundle::Extended ':DEFAULT';
+    use Test2::V0 ':DEFAULT';
 
 =back
 
 =head2 RENAMING ON IMPORT
 
-    use Test2::Bundle::Extended ':v1', '!ok', ok => {-as => 'my_ok'};
+    use Test2::V0 ':DEFAULT', '!ok', ok => {-as => 'my_ok'};
 
 This bundle uses L<Importer> for exporting, as such you can use any arguments
 it accepts.
@@ -86,10 +200,6 @@ it accepts.
 Explanation:
 
 =over 4
-
-=item ':v1'
-
-Use the default tag, all default exports.
 
 =item '!ok'
 
@@ -109,21 +219,21 @@ C<my_ok()>
 All of these can be disabled via individual import arguments, or by the
 C<-no_pragmas> argument.
 
-    use Test2::Bundle::Extended -no_pragmas => 1;
+    use Test2::V0 -no_pragmas => 1;
 
 =head2 STRICT
 
 L<strict> is turned on for you. You can disable this with the C<-no_strict> or
 C<-no_pragmas> import arguments:
 
-    use Test2::Bundle::Extended -no_strict => 1;
+    use Test2::V0 -no_strict => 1;
 
 =head2 WARNINGS
 
 L<warnings> are turned on for you. You can disable this with the
 C<-no_warnings> or C<-no_pragmas> import arguments:
 
-    use Test2::Bundle::Extended -no_warnings => 1;
+    use Test2::V0 -no_warnings => 1;
 
 =head2 UTF8
 
@@ -141,7 +251,7 @@ See L<Test2::Plugin::SRand>.
 This will set the random seed to today's date. You can provide an alternate seed
 with the C<-srand> import option:
 
-    use Test2::Bundle::Extended -srand => 1234;
+    use Test2::V0 -srand => 1234;
 
 =head2 UTF8
 
@@ -153,7 +263,7 @@ utf8. This will turn on the utf8 pragma for the current scope.
 This can be disabled using the C<< -no_utf8 => 1 >> or C<< -no_pragmas => 1 >>
 import arguments.
 
-    use Test2::Bundle::Extended -no_utf8 => 1;
+    use Test2::V0 -no_utf8 => 1;
 
 =head2 EXIT SUMMARY
 
@@ -182,7 +292,7 @@ See L<Test2::Tools::Target>.
 You can specify a target class with the C<-target> import argument. If you do
 not provide a target then C<$CLASS> and C<CLASS()> will not be imported.
 
-    use Test2::Bundle::Extended -target => 'My::Class';
+    use Test2::V0 -target => 'My::Class';
 
     print $CLASS;  # My::Class
     print CLASS(); # My::Class

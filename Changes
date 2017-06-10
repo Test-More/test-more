@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+    - Introduce Test2::V# bundles
+    - Deprecate Test2::Bundle::Extended
+    - Test2::V0 added
+    - Fix Test2::Mock doesn't accept non-ref values (Mike Raynham)
+    - Fix isa_ok overload issue (Mike Raynham)
+
 0.000070  2017-03-19 13:34:25-07:00 America/Los_Angeles
 
     - Revert Boolean overload fixes from djerius until they can be fixed
