@@ -2,7 +2,7 @@ package Test2::Plugin::SRand;
 use strict;
 use warnings;
 
-our $VERSION = '0.000071';
+our $VERSION = '0.000072';
 
 use Carp qw/carp/;
 
