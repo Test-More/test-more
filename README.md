@@ -37,7 +37,35 @@ also produces undesirable side effects.
 
 # INCLUDED BUNDLES
 
+- Test2::V#
+
+    These does not live in the bundle namespace as they are the primary ways to use
+    Test2::Suite.
+
+    The current latest is [Test2::V0](https://metacpan.org/pod/Test2::V0).
+
+        use Test2::V0;
+        # strict and warnings are on for you now.
+
+        ok(...);
+
+        # Note: is does deep checking, unlike the 'is' from Test::More.
+        is(...);
+
+        ...
+
+        done_testing;
+
+    This bundle includes every tool listed in the ["INCLUDED TOOLS"](#included-tools) section below,
+    except for [Test2::Tools::ClassicCompare](https://metacpan.org/pod/Test2::Tools::ClassicCompare). This bundle provides most of what
+    anyone writing tests could need. This is also the preferred bundle/toolset of
+    the [Test2](https://metacpan.org/pod/Test2) author.
+
+    See [Test2::V0](https://metacpan.org/pod/Test2::V0) for complete documentation.
+
 - Extended
+
+    **\*\* Deprecated \*\*** See [Test2::V0](https://metacpan.org/pod/Test2::V0)
 
         use Test2::Bundle::Extended;
         # strict and warnings are on for you now.
