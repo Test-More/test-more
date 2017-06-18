@@ -2,7 +2,7 @@ package Test2::Compare::Negatable;
 use strict;
 use warnings;
 
-our $VERSION = '0.000072';
+our $VERSION = '0.000073';
 
 require overload;
 require Test2::Util::HashBase;
