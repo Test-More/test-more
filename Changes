@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302086  2017-06-20 10:43:13-07:00 America/Los_Angeles
+
     - Make it possible to turn off result logging in Test::Builder
 
 1.302085  2017-05-01 19:24:37-07:00 America/Los_Angeles
