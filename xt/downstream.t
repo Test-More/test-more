@@ -35,7 +35,7 @@ for my $i (qw/Suite AsyncSubtest Workflow Plugin::SpecDeclare/) {
 }
 
 ok(run_string(<<"EOT"), "Installed Archive::Zip") || exit 1;
-perlbrew exec --with $lib cpanm https://cpan.metacpan.org/authors/id/P/PH/PHRED/Archive-Zip-1.56.tar.gz
+perlbrew exec --with $lib cpanm --force Archive::Zip
 EOT
 
 my @BAD;
