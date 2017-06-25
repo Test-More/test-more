@@ -675,8 +675,7 @@ sub _ok_debug {
 
     my (undef, $file, $line) = $trace->call;
     if (defined $orig_name) {
-        $self->diag(qq[  $msg test '$orig_name'\n]);
-        $self->diag(qq[  at $file line $line.\n]);
+        $self->diag(qq[  $msg test '$orig_name'\n  at $file line $line.\n]);
     }
     else {
         $self->diag(qq[  $msg test at $file line $line.\n]);
