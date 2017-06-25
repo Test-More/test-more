@@ -4,7 +4,7 @@ use 5.006;
 use strict;
 use warnings;
 
-our $VERSION = '1.302086';
+our $VERSION = '1.302087';
 
 BEGIN {
     if( $] < 5.008 ) {
@@ -203,7 +203,7 @@ sub child {
     $self->_add_ts_hooks;
 
     $ctx->release;
-    return bless { Original_Pid => $$, Stack => $self->{Stack}, Hub => $hub }, blessed($self);
+    return bless { Original_Pid => $$, Stack => $self->{Stack}, Hub => $hub, no_log_results => $self->{no_log_results} }, blessed($self);
 }
 
 sub finalize {
@@ -373,6 +373,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     # hash keys is just asking for pain.  Also, it was documented.
     $Level = 1;
 
+    $self->{no_log_results} = $ENV{TEST_NO_LOG_RESULTS} ? 1 : 0;
     $self->{Original_Pid} = $$;
 
     my $ctx = $self->ctx;
@@ -634,7 +635,7 @@ sub ok {
         (name => defined($name) ? $name : ''),
     };
 
-    $hub->{_meta}->{+__PACKAGE__}->{Test_Results}[ $hub->{count} ] = $result;
+    $hub->{_meta}->{+__PACKAGE__}->{Test_Results}[ $hub->{count} ] = $result unless $self->{no_log_results};
 
     my $orig_name = $name;
 
@@ -1006,7 +1007,7 @@ sub skip {
         name      => $name,
         type      => 'skip',
         reason    => $why,
-    };
+    } unless $self->{no_log_results};
 
     $name =~ s|#|\\#|g;    # # in a name can confuse Test::Harness.
     $name =~ s{\n}{\n# }sg;
@@ -1031,7 +1032,7 @@ sub todo_skip {
         name      => '',
         type      => 'todo_skip',
         reason    => $why,
-    };
+    } unless $self->{no_log_results};
 
     $why =~ s{\n}{\n# }sg;
     my $tctx = $ctx->snapshot;
@@ -1353,23 +1354,25 @@ sub current_test {
     if( defined $num ) {
         $hub->set_count($num);
 
-        # If the test counter is being pushed forward fill in the details.
-        my $test_results = $ctx->hub->meta(__PACKAGE__, {})->{Test_Results};
-        if( $num > @$test_results ) {
-            my $start = @$test_results ? @$test_results : 0;
-            for( $start .. $num - 1 ) {
-                $test_results->[$_] = {
-                    'ok'      => 1,
-                    actual_ok => undef,
-                    reason    => 'incrementing test number',
-                    type      => 'unknown',
-                    name      => undef
-                };
+        unless ($self->{no_log_results}) {
+            # If the test counter is being pushed forward fill in the details.
+            my $test_results = $ctx->hub->meta(__PACKAGE__, {})->{Test_Results};
+            if ($num > @$test_results) {
+                my $start = @$test_results ? @$test_results : 0;
+                for ($start .. $num - 1) {
+                    $test_results->[$_] = {
+                        'ok'      => 1,
+                        actual_ok => undef,
+                        reason    => 'incrementing test number',
+                        type      => 'unknown',
+                        name      => undef
+                    };
+                }
             }
-        }
-        # If backward, wipe history.  Its their funeral.
-        elsif( $num < @$test_results ) {
-            $#{$test_results} = $num - 1;
+            # If backward, wipe history.  Its their funeral.
+            elsif ($num < @$test_results) {
+                $#{$test_results} = $num - 1;
+            }
         }
     }
     return release $ctx, $hub->count;
@@ -1395,6 +1398,8 @@ sub is_passing {
 sub summary {
     my($self) = shift;
 
+    return if $self->{no_log_results};
+
     my $ctx = $self->ctx;
     my $data = $ctx->hub->meta(__PACKAGE__, {})->{Test_Results};
     $ctx->release;
@@ -1404,6 +1409,9 @@ sub summary {
 
 sub details {
     my $self = shift;
+
+    return if $self->{no_log_results};
+
     my $ctx = $self->ctx;
     my $data = $ctx->hub->meta(__PACKAGE__, {})->{Test_Results};
     $ctx->release;
@@ -1709,6 +1717,8 @@ sub coordinate_forks {
     Test2::API::test2_no_wait(1);
     Test2::API::test2_ipc_enable_shm();
 }
+
+sub no_log_results { $_[0]->{no_log_results} = 1 }
 
 1;
 
@@ -2252,6 +2262,16 @@ point where the original test function was called (C<< $tb->caller >>).
 =head2 Test Status and Info
 
 =over 4
+
+=item B<no_log_results>
+
+This will turn off result long-term storage. Calling this method will make
+C<details> and C<summary> useless. You may want to use this if you are running
+enough tests to fill up all available memory.
+
+    Test::Builder->new->no_log_results();
+
+There is no way to turn it back on.
 
 =item B<current_test>
 
