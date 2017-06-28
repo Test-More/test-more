@@ -115,6 +115,38 @@ subtest deltas => sub {
         },
         "Got 2 deltas for extra items"
     );
+
+    subtest 'duplicate items' => sub {
+        my $items = ['a', 'a'];
+        my $one = $CLASS->new(items => $items);
+
+        like(
+            [$one->deltas(%params, got => ['a', 'a'])],
+            [],
+            "No delta, no diff"
+        );
+
+        like(
+            [$one->deltas(%params, got => ['a', 'a', 'a'])],
+            [],
+            "No delta, not checking ending"
+        );
+
+        $one->set_ending(1);
+        like(
+            [$one->deltas(%params, got => ['a', 'a', 'a'])],
+            array {
+                item 0 => {
+                    dne   => 'check',
+                    id    => [ARRAY => 2],
+                    got   => 'a',
+                    check => DNE,
+                };
+                end(),
+            },
+            "Got the delta for extra item"
+        );
+    };
 };
 
 done_testing;
