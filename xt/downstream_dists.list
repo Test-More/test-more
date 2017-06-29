@@ -33,7 +33,6 @@ Test::More::Prefix
 Test2::Suite
 Test2::AsyncSubtest
 Test2::Tools::EventDumper
-Test2::Harness
 Test2::Workflow
 Test2::Plugin::SpecDeclare
 T

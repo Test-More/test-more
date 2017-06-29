@@ -5,4 +5,5 @@ Test::Pretty
 Test::Kit
 Test::Group
 Test::Flatten
+Test2::Harness
 Net::BitTorrent
