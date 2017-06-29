@@ -125,6 +125,10 @@ sub is_deeply($$;$@) {
 
     no warnings 'once';
     require Data::Dumper;
+
+    # Otherwise numbers might be unquoted
+    local $Data::Dumper::Useperl  = 1;
+
     local $Data::Dumper::Sortkeys = 1;
     local $Data::Dumper::Deparse  = 1;
     local $Data::Dumper::Freezer  = 'XXX';
