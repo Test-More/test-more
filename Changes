@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302088  2017-06-28 21:55:21-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix tests on perl 5.25+ with newer Data::Dumper
 
 1.302087  2017-06-26 20:32:21-07:00 America/Los_Angeles (TRIAL RELEASE)
