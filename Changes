@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302090  2017-07-09 21:10:08-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix test that unintentionally required Test2::Suite
 
 1.302089  2017-07-09 20:51:19-07:00 America/Los_Angeles (TRIAL RELEASE)
