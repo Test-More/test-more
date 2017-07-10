@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302089  2017-07-09 20:51:19-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix plan in buffered subtest so that the facts say it is buffered
 
 1.302088  2017-06-28 21:55:21-07:00 America/Los_Angeles (TRIAL RELEASE)
