@@ -1,4 +1,4 @@
-use Test2::V0;
+use Test2::Tools::Tiny;
 use strict;
 use warnings;
 
@@ -21,7 +21,7 @@ intercept {
     my $hub = test2_stack()->top;
     my $formatter = bless({}, __PACKAGE__);
     $hub->format($formatter);
-    subtest xxx => sub {
+    tests xxx => sub {
         ok(1, "pass");
     };
 
@@ -32,7 +32,7 @@ pop @$events;
 
 
 for my $e (@$events) {
-    ok($e->trace->buffered, "Buffered events are all listed as bufferd") || diag(Dumper($e));
+    ok($e->trace->buffered, "Buffered events are all listed as buffered") || diag(Dumper($e));
 }
 
 done_testing;
