@@ -553,7 +553,7 @@ sub run_subtest {
         }
     }
 
-    $hub->finalize($trace->snapshot(hid => $hub->hid, nested => $hub->nested), 1)
+    $hub->finalize($trace->snapshot(hid => $hub->hid, nested => $hub->nested, buffered => $buffered), 1)
         if $ok
         && !$hub->no_ending
         && !$hub->ended;
