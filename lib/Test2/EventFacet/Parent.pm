@@ -2,7 +2,7 @@ package Test2::EventFacet::Parent;
 use strict;
 use warnings;
 
-our $VERSION = '1.302090';
+our $VERSION = '1.302091';
 
 use Carp qw/confess/;
 
