@@ -2,7 +2,7 @@ package Test2::API::Instance;
 use strict;
 use warnings;
 
-our $VERSION = '1.302089';
+our $VERSION = '1.302090';
 
 
 our @CARP_NOT = qw/Test2::API Test2::API::Instance Test2::IPC::Driver Test2::Formatter/;
