@@ -2,6 +2,7 @@
 
     - Add 'new_root' constructor for formatters
     - Add intercept_deep() to the API
+    - Fix bug in Version event
 
 1.302090  2017-07-09 21:10:08-07:00 America/Los_Angeles (TRIAL RELEASE)
 

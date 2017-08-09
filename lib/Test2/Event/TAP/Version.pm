@@ -21,7 +21,7 @@ sub facet_data {
 
     my $out = $self->common_facet_data;
 
-    $out->{about}->{details} = "TAP version 13";
+    $out->{about}->{details} = $self->summary;
 
     push @{$out->{info}} => {
         tag     => 'INFO',
