@@ -27,7 +27,7 @@ sub new_hub {
     }
     else {
         require Test2::API;
-        $hub->format(Test2::API::test2_formatter()->new)
+        $hub->format(Test2::API::test2_formatter()->new_root)
             unless $hub->format || exists($params{formatter});
 
         my $ipc = Test2::API::test2_ipc();

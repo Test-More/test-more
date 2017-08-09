@@ -14,6 +14,11 @@ sub import {
     Test2::API::test2_formatter_add($class);
 }
 
+sub new_root {
+    my $class = shift;
+    return $class->new(@_);
+}
+
 sub hide_buffered { 1 }
 
 sub terminate { }
@@ -56,6 +61,12 @@ A formatter is any package or object with a C<write($event, $num)> method.
 
     sub finalize { }
 
+    sub new_root {
+        my $class = shift;
+        ...
+        $class->new(@_);
+    }
+
     1;
 
 The C<write> method is a method, so it either gets a class or instance. The two
@@ -80,6 +91,12 @@ a single argument, the L<Test2::Event> object which triggered the terminate.
 The C<finalize> method is always the last thing called on the formatter, I<<
 except when C<terminate> is called for a Bail event >>. It is passed the
 following arguments:
+
+The C<new_root> method is called when C<Test2::API::Stack> Initializes the root
+hub for the first time. Most formatters will simply have this call C<<
+$class->new >>, which is the default behavior. Some formatters however may want
+to take extra action during construction of the root formatter, this is where
+they can do that.
 
 =over 4
 
