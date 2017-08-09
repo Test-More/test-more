@@ -5,7 +5,7 @@ use warnings;
 our $VERSION = '1.302091';
 
 BEGIN { require Test2::EventFacet; our @ISA = qw(Test2::EventFacet) }
-use Test2::Util::HashBase qw{ -pass -no_debug };
+use Test2::Util::HashBase qw{ -pass -no_debug -number };
 
 1;
 
@@ -46,6 +46,17 @@ True if the assertion passed.
 
 Set this to true if you have provided custom diagnostics and do not want the
 defaults to be displayed.
+
+=item $int = $assert->{number}
+
+=item $int = $assert->number()
+
+(Optional) assertion number. This may be omitted or ignored. This is usually
+only useful when parsing/processing TAP.
+
+B<Note>: This is not set by the Test2 system, assertion number is not known
+until AFTER the assertion has been processed. This attribute is part of the
+spec only for harnesses.
 
 =back
 
