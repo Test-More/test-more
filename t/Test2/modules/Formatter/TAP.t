@@ -834,6 +834,8 @@ tests event_tap => sub {
         "Plan then assertion for first assertion"
     );
 
+    $it->{made_assertion} = 1;
+
     is_deeply(
         [$it->event_tap({plan => {count => 5}, assert => {pass => 1}}, 2)],
         [
@@ -843,6 +845,7 @@ tests event_tap => sub {
         "Assertion then plan for additional assertions"
     );
 
+    $it->{made_assertion} = 0;
     is_deeply(
         [
             $it->event_tap(

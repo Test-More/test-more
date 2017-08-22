@@ -8,6 +8,7 @@ use Test2::Util qw/clone_io/;
 
 use Test2::Util::HashBase qw{
     no_numbers handles _encoding _last_fh
+    -made_assertion
 };
 
 sub OUT_STD() { 0 }
@@ -87,6 +88,8 @@ sub write {
 
     my @tap = $self->event_tap($f, $num) or return;
 
+    $self->{+MADE_ASSERTION} = 1 if $f->{assert};
+
     my $nesting = $f->{trace}->{nested} || 0;
     my $handles = $self->{+HANDLES};
     my $indent = '    ' x $nesting;
@@ -127,7 +130,7 @@ sub print_optimal_pass {
     return if defined($e->{name}) && (-1 != index($e->{name}, "\n") || -1 != index($e->{name}, '#'));
 
     my $ok = 'ok';
-    $ok .= " $num" unless $self->{+NO_NUMBERS};
+    $ok .= " $num" if $num && !$self->{+NO_NUMBERS};
     $ok .= defined($e->{name}) ? " - $e->{name}\n" : "\n";
 
     if (my $nesting = $e->{trace}->{nested}) {
@@ -151,7 +154,7 @@ sub event_tap {
 
     # If this IS the first event the plan should come first
     # (plan must be before or after assertions, not in the middle)
-    push @tap => $self->plan_tap($f) if $num == 1 && $f->{plan};
+    push @tap => $self->plan_tap($f) if $f->{plan} && !$self->{+MADE_ASSERTION};
 
     # The assertion is most important, if present.
     if ($f->{assert}) {
@@ -167,7 +170,7 @@ sub event_tap {
 
     # If this IS NOT the first event the plan should come last
     # (plan must be before or after assertions, not in the middle)
-    push @tap => $self->plan_tap($f) if $num != 1 && $f->{plan};
+    push @tap => $self->plan_tap($f) if $self->{+MADE_ASSERTION} && $f->{plan};
 
     # Bail out
     push @tap => $self->halt_tap($f) if $f->{control}->{halt};
@@ -229,7 +232,7 @@ sub assert_tap {
     my $name = $assert->{details};
 
     my $ok = $pass ? 'ok' : 'not ok';
-    $ok .= " $num" unless $self->{+NO_NUMBERS};
+    $ok .= " $num" if $num && !$self->{+NO_NUMBERS};
 
     # The regex form is ~250ms, the index form is ~50ms
     my @extra;
