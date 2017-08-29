@@ -7,7 +7,7 @@ our $VERSION = '1.302092';
 sub is_list { 1 }
 
 BEGIN { require Test2::EventFacet; our @ISA = qw(Test2::EventFacet) }
-use Test2::Util::HashBase qw{-tag -debug};
+use Test2::Util::HashBase qw{-tag -debug -important};
 
 1;
 
@@ -58,6 +58,14 @@ info that should be displayed by formatters even in less-verbose modes.
 
 When false the information is not considered critical and may not be rendered
 in less-verbose modes.
+
+=item $bool = $info->{important}
+
+=item $bool = $info->important
+
+This should be set for non debug messages that are still important enough to
+show when a formatter is in quiet mode. A formatter should send these to STDOUT
+not STDERR, but should show them even in non-verbose mode.
 
 =back
 
