@@ -19,8 +19,9 @@ BEGIN {
 use Test::Builder;
 use Test::More;
 
+my $skip = ref(Test::Builder->new->{Stack}->top->format) ne 'Test::Builder::Formatter';
 plan skip_all => "This test cannot be run with the current formatter"
-    unless Test::Builder->new->{Stack}->top->format->isa('Test::Builder::Formatter');
+    unless $skip;
 
 $goto = 1;
 my $output;

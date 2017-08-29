@@ -45,6 +45,6 @@ my @loaded = grep { $INC{$_} } qw{
 require Test2::Tools::Tiny;
 
 Test2::Tools::Tiny::ok(!@loaded, "Test2::API was not loaded")
-    || diag("Loaded: " . Dumper(\@loaded));
+    || Test2::Tools::Tiny::diag("Loaded: " . Dumper(\@loaded));
 
 Test2::Tools::Tiny::done_testing();
