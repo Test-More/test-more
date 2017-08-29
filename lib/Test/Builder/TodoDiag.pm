@@ -8,6 +8,13 @@ BEGIN { require Test2::Event::Diag; our @ISA = qw(Test2::Event::Diag) }
 
 sub diagnostics { 0 }
 
+sub facet_data {
+    my $self = shift;
+    my $out = $self->SUPER::facet_data();
+    $out->{info}->[0]->{debug} = 0;
+    return $out;
+}
+
 1;
 
 __END__
