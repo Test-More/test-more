@@ -1,6 +1,7 @@
 {{$NEXT}}
 
     - Fix bug in Facets for TodoDiag
+    - Add API command to reset after a fork
 
 1.302091  2017-08-08 19:50:55-07:00 America/Los_Angeles (TRIAL RELEASE)
 

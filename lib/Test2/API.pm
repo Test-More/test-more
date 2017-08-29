@@ -123,6 +123,11 @@ my $STDERR = clone_io(\*STDERR);
 sub test2_stdout { $STDOUT ||= clone_io(\*STDOUT) }
 sub test2_stderr { $STDERR ||= clone_io(\*STDERR) }
 
+sub test2_post_prefork_reset {
+    test2_reset_io();
+    $INST->reset;
+}
+
 sub test2_reset_io {
     $STDOUT = clone_io(\*STDOUT);
     $STDERR = clone_io(\*STDERR);
