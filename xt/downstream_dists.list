@@ -1,3 +1,4 @@
+List::MoreUtils::XS
 Test::Exception
 Test::SharedFork
 Test::Most

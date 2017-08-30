@@ -66,6 +66,26 @@ sub import {
 
 sub init { $_[0]->reset }
 
+sub post_preload_reset {
+    my $self = shift;
+
+    delete $self->{+_PID};
+    delete $self->{+_TID};
+
+    $self->{+CONTEXTS} = {};
+
+    $self->{+FORMATTERS} = [];
+
+    $self->{+FINALIZED} = undef;
+    $self->{+IPC}       = undef;
+
+    $self->{+IPC_TIMEOUT} = DEFAULT_IPC_TIMEOUT() unless defined $self->{+IPC_TIMEOUT};
+
+    $self->{+LOADED} = 0;
+
+    $self->{+STACK} = Test2::API::Stack->new;
+}
+
 sub reset {
     my $self = shift;
 

@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Make sure Test::Builder does not initialize Test2 too soon.
+
 1.302092  2017-08-28 21:30:06-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix bug in Facets for TodoDiag

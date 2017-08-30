@@ -2,6 +2,8 @@ package Test2::API;
 use strict;
 use warnings;
 
+use Test2::Util qw/USE_THREADS/;
+
 BEGIN {
     $ENV{TEST_ACTIVE} ||= 1;
     $ENV{TEST2_ACTIVE} = 1;
@@ -16,10 +18,21 @@ sub test2_set_is_end { ($ENDING) = @_ ? @_ : (1) }
 sub test2_get_is_end { $ENDING }
 
 use Test2::API::Instance(\$INST);
+
 # Set the exit status
 END {
     test2_set_is_end(); # See gh #16
     $INST->set_exit();
+}
+
+sub CLONE {
+    my $init = test2_init_done();
+    my $load = test2_load_done();
+
+    return if $init && $load;
+
+    require Carp;
+    Carp::croak "Test2 must be fully loaded before you start a new thread!\n";
 }
 
 # See gh #16
@@ -68,6 +81,7 @@ our @EXPORT_OK = qw{
 
     test2_init_done
     test2_load_done
+    test2_load
 
     test2_set_is_end
     test2_get_is_end
@@ -123,9 +137,9 @@ my $STDERR = clone_io(\*STDERR);
 sub test2_stdout { $STDOUT ||= clone_io(\*STDOUT) }
 sub test2_stderr { $STDERR ||= clone_io(\*STDERR) }
 
-sub test2_post_prefork_reset {
+sub test2_post_preload_reset {
     test2_reset_io();
-    $INST->reset;
+    $INST->post_preload_reset;
 }
 
 sub test2_reset_io {
@@ -135,6 +149,8 @@ sub test2_reset_io {
 
 sub test2_init_done { $INST->finalized }
 sub test2_load_done { $INST->loaded }
+
+sub test2_load { $INST->load }
 
 sub test2_pid     { $INST->pid }
 sub test2_tid     { $INST->tid }

@@ -11,7 +11,7 @@ BEGIN {
 
 use Test::More;
 
-my $lib = "5.20.3_thr\@TestMore$$";
+my $lib = "5.22.4_thr\@TestMore$$";
 
 ok(run_string(<<"EOT"), "Installed a fresh perlbrew") || exit 1;
 perlbrew lib create $lib
@@ -29,9 +29,20 @@ perlbrew exec --with $lib cpanm $tarball
 EOT
 
 for my $i (qw/Suite AsyncSubtest Workflow Plugin::SpecDeclare Tools::EventDumper/) {
-    ok(run_string(<<"    EOT"), "Installed Test2::$i") || exit 1;
-    perlbrew exec --with $lib cpanm --dev Test2::$i
-    EOT
+    my $ok = 0;
+    for (1 .. 2) {
+        $ok = run_string(<<"        EOT");
+        perlbrew exec --with $lib cpanm --installdeps Test2::$i
+        EOT
+
+        $ok &&= run_string(<<"        EOT");
+        perlbrew exec --with $lib cpanm --dev Test2::$i
+        EOT
+
+        last if $ok;
+        diag "'Test2::$i' did not install properly, trying 1 more time.";
+    }
+    ok($ok, "Installed Test2::$i") || exit 1;
 }
 
 ok(run_string(<<"EOT"), "Installed Archive::Zip") || exit 1;

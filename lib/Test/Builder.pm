@@ -42,6 +42,7 @@ our $Test = $ENV{TB_NO_EARLY_INIT} ? undef : Test::Builder->new;
 
 sub _add_ts_hooks {
     my $self = shift;
+
     my $hub = $self->{Stack}->top;
 
     # Take a reference to the hash key, we do this to avoid closing over $self
@@ -84,12 +85,25 @@ sub _add_ts_hooks {
     }, inherit => 1);
 }
 
+{
+    no warnings;
+    INIT {
+        use warnings;
+        Test2::API::test2_load();
+    }
+}
+
 sub new {
     my($class) = shift;
     unless($Test) {
-        my $ctx = context();
         $Test = $class->create(singleton => 1);
-        $ctx->release;
+
+        Test2::API::test2_add_callback_post_load(
+            sub {
+                $Test->reset(singleton => 1);
+                $Test->_add_ts_hooks;
+            }
+        );
 
         # Non-TB tools normally expect 0 added to the level. $Level is normally 1. So
         # we only want the level to change if $Level != 1.
@@ -117,9 +131,10 @@ sub create {
             formatter => Test::Builder::Formatter->new,
             ipc       => Test2::API::test2_ipc(),
         );
+
+        $self->reset(%params);
+        $self->_add_ts_hooks;
     }
-    $self->reset(%params);
-    $self->_add_ts_hooks;
 
     return $self;
 }
@@ -373,7 +388,9 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     # hash keys is just asking for pain.  Also, it was documented.
     $Level = 1;
 
-    $self->{no_log_results} = $ENV{TEST_NO_LOG_RESULTS} ? 1 : 0;
+    $self->{no_log_results} = $ENV{TEST_NO_LOG_RESULTS} ? 1 : 0
+        unless $params{singleton};
+
     $self->{Original_Pid} = $$;
 
     my $ctx = $self->ctx;
@@ -396,7 +413,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
         parent       => $meta->{parent},
     );
 
-    $self->{Exported_To} = undef;
+    $self->{Exported_To} = undef unless $params{singleton};
 
     $self->{Orig_Handles} ||= do {
         my $format = $ctx->hub->format;
@@ -1712,6 +1729,7 @@ sub coordinate_forks {
     }
     Test2::IPC->import;
     Test2::API::test2_ipc_enable_polling();
+    Test2::API::test2_load();
     my $ipc = Test2::IPC::apply_ipc($self->{Stack});
     $ipc->set_no_fatal(1);
     Test2::API::test2_no_wait(1);
