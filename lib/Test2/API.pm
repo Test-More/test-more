@@ -82,6 +82,9 @@ our @EXPORT_OK = qw{
     test2_init_done
     test2_load_done
     test2_load
+    test2_start_preload
+    test2_stop_preload
+    test2_in_preload
 
     test2_set_is_end
     test2_get_is_end
@@ -150,7 +153,10 @@ sub test2_reset_io {
 sub test2_init_done { $INST->finalized }
 sub test2_load_done { $INST->loaded }
 
-sub test2_load { $INST->load }
+sub test2_load          { $INST->load }
+sub test2_start_preload { $ENV{T2_IN_PRELOAD} = 1; $INST->start_preload }
+sub test2_stop_preload  { $ENV{T2_IN_PRELOAD} = 0; $INST->stop_preload }
+sub test2_in_preload    { $INST->preload }
 
 sub test2_pid     { $INST->pid }
 sub test2_tid     { $INST->tid }

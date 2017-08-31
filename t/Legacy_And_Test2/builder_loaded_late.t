@@ -4,7 +4,7 @@ use warnings;
 use Test2::Tools::Tiny;
 use Test2::API qw/intercept test2_stack/;
 
-plan 4;
+plan 3;
 
 my @warnings;
 {
@@ -12,10 +12,7 @@ my @warnings;
     require Test::Builder;
 };
 
-my $count = 2;
-$count += 1 if ref(test2_stack->top->format) eq 'Test2::Formatter::TAP';
-
-is(@warnings, $count, "got warnings");
+is(@warnings, 2, "got warnings");
 
 like(
     $warnings[0],
@@ -28,14 +25,3 @@ like(
     qr/Formatter Test::Builder::Formatter loaded too late to be used as the global formatter/,
     "Got the formatter warning"
 );
-
-if ($count == 3) {
-    like(
-        $warnings[2],
-        qr/The current formatter does not support 'no_header'/,
-        "Formatter does not support no_header",
-    );
-}
-else {
-    ok(1, "filler");
-}

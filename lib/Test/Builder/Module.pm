@@ -75,7 +75,7 @@ C<import_extra()>.
 sub import {
     my($class) = shift;
 
-    Test2::API::test2_load();
+    Test2::API::test2_load() unless Test2::API::test2_in_preload();
 
     # Don't run all this when loading ourself.
     return 1 if $class eq 'Test::Builder::Module';

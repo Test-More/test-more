@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix Test::Builder in a preload scenario
+
 1.302093  2017-08-29 21:05:20-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Make sure Test::Builder does not initialize Test2 too soon.

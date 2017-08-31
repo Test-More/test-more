@@ -89,7 +89,7 @@ sub _add_ts_hooks {
     no warnings;
     INIT {
         use warnings;
-        Test2::API::test2_load();
+        Test2::API::test2_load() unless Test2::API::test2_in_preload();
     }
 }
 
@@ -100,6 +100,7 @@ sub new {
 
         Test2::API::test2_add_callback_post_load(
             sub {
+                $Test->{Original_Pid} = $$ if !$Test->{Original_Pid} || $Test->{Original_Pid} == 0;
                 $Test->reset(singleton => 1);
                 $Test->_add_ts_hooks;
             }
@@ -391,7 +392,7 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     $self->{no_log_results} = $ENV{TEST_NO_LOG_RESULTS} ? 1 : 0
         unless $params{singleton};
 
-    $self->{Original_Pid} = $$;
+    $self->{Original_Pid} = Test2::API::test2_in_preload() ? -1 : $$;
 
     my $ctx = $self->ctx;
     my $hub = $ctx->hub;
@@ -425,8 +426,8 @@ sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     };
 
     $self->use_numbers(1);
-    $self->no_header(0);
-    $self->no_ending(0);
+    $self->no_header(0) unless $params{singleton};
+    $self->no_ending(0) unless $params{singleton};
     $self->reset_outputs;
 
     $ctx->release;
@@ -1216,8 +1217,17 @@ sub diag {
     my $self = shift;
     return unless @_;
 
+    my $text = join '' => map {defined($_) ? $_ : 'undef'} @_;
+
+    if (Test2::API::test2_in_preload()) {
+        chomp($text);
+        $text =~ s/^/# /msg;
+        print STDERR $text, "\n";
+        return 0;
+    }
+
     my $ctx = $self->ctx;
-    $ctx->diag(join '' => map {defined($_) ? $_ : 'undef'} @_);
+    $ctx->diag($text);
     $ctx->release;
     return 0;
 }
@@ -1227,8 +1237,17 @@ sub note {
     my $self = shift;
     return unless @_;
 
+    my $text = join '' => map {defined($_) ? $_ : 'undef'} @_;
+
+    if (Test2::API::test2_in_preload()) {
+        chomp($text);
+        $text =~ s/^/# /msg;
+        print STDOUT $text, "\n";
+        return 0;
+    }
+
     my $ctx = $self->ctx;
-    $ctx->note(join '' => map {defined($_) ? $_ : 'undef'} @_);
+    $ctx->note($text);
     $ctx->release;
     return 0;
 }
