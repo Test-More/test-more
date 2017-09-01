@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Add Test2::Event::Times
+    - Fix some tests that were failing in yath
+
 0.000073  2017-08-30 23:11:28-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Add Test2::Plugin::Times

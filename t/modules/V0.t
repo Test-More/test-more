@@ -67,7 +67,7 @@ subtest utf8 => sub {
 
     # -2 cause the subtest adds to the stack
     my $format = test2_stack()->[-2]->format;
-    my $handles = $format->handles;
+    my $handles = $format->handles or return;
     for my $hn (0 .. @$handles) {
         my $h = $handles->[$hn] || next;
         my $layers = { map {$_ => 1} PerlIO::get_layers($h) };

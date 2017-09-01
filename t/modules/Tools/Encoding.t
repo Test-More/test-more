@@ -1,5 +1,7 @@
 use Test2::Bundle::Extended -target => 'Test2::Tools::Encoding';
 
+require Test2::Formatter::TAP;
+
 use File::Temp qw/tempfile/;
 
 {

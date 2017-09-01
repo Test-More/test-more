@@ -1,5 +1,7 @@
 use strict;
 use warnings;
+# HARNESS-NO-PRELOAD
+
 use Test2::API;
 
 my $initial_count;

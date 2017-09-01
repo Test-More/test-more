@@ -32,7 +32,7 @@ my $events = intercept {
 };
 
 like(
-    $events->[0]->message,
+    $events->[0]->summary,
     qr/^\S+ on wallclock \([\d\.]+ usr [\d\.]+ sys \+ [\d\.]+ cusr [\d\.]+ csys = [\d\.]+ CPU\)$/,
     "Got the time info"
 );

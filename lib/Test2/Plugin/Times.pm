@@ -18,11 +18,18 @@ sub import {
     test2_add_callback_exit(
         sub {
             my ($ctx, $real, $new) = @_;
-            my $end = time;
+            my $stop  = time;
+            my @times = times();
 
-            my $bench = render_bench($start, $end, times);
-
-            $ctx->diag($bench);
+            $ctx->send_event(
+                'Times',
+                start => $start,
+                stop  => $stop,
+                user  => $times[0],
+                sys   => $times[1],
+                cuser => $times[2],
+                csys  => $times[3],
+            );
         }
     );
 }

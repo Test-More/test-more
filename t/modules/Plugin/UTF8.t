@@ -33,7 +33,7 @@ note "io_layers"; {
 
 note "format_handles"; {
     my $format = test2_stack()->top->format;
-    my $handles = $format->handles;
+    my $handles = $format->handles or last;
     for my $hn (0 .. @$handles) {
         my $h = $handles->[$hn] || next;
         my $layers = get_layers($h);
