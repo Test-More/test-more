@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000074  2017-08-31 20:37:47-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Add Test2::Event::Times
     - Fix some tests that were failing in yath
 
