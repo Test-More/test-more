@@ -1,7 +1,8 @@
-# HARNESS-NO-PRELOAD
 use strict;
 use warnings;
 use Data::Dumper;
+# HARNESS-NO-STREAM
+# HARNESS-NO-PRELOAD
 
 ###############################################################################
 #                                                                             #

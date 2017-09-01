@@ -1,6 +1,8 @@
 #!/usr/bin/perl -w
 use strict;
 use warnings;
+# HARNESS-NO-STREAM
+# HARNESS-NO-PRELOAD
 
 use Test2::Util qw/CAN_FORK/;
 BEGIN {

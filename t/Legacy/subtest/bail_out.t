@@ -1,4 +1,6 @@
 #!/usr/bin/perl -w
+# HARNESS-NO-STREAM
+# HARNESS-NO-PRELOAD
 
 BEGIN {
     if( $ENV{PERL_CORE} ) {
@@ -21,7 +23,7 @@ use Test::More;
 
 my $skip = ref(Test::Builder->new->{Stack}->top->format) ne 'Test::Builder::Formatter';
 plan skip_all => "This test cannot be run with the current formatter"
-    unless $skip;
+    if $skip;
 
 $goto = 1;
 my $output;

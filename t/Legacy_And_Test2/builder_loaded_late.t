@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+# HARNESS-NO-PRELOAD
 
 use Test2::Tools::Tiny;
 use Test2::API qw/intercept test2_stack/;

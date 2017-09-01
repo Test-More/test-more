@@ -1,5 +1,7 @@
 use strict;
 use warnings;
+# HARNESS-NO-PRELOAD
+
 my $CLASS;
 my %BEFORE_LOAD;
 

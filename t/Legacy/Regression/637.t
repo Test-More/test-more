@@ -1,5 +1,6 @@
 use strict;
 use warnings;
+# HARNESS-NO-STREAM
 
 use Test2::Util qw/CAN_THREAD/;
 BEGIN {
@@ -49,7 +50,7 @@ my $subtest_out = async {
 }
 ->join;
 
-$subtest_out =~ s/^/   /gm;
+$subtest_out =~ s/^/    /gm;
 print $subtest_out;
 
 # reset as if the thread never "said" anything
