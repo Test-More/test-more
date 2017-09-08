@@ -53,7 +53,6 @@ sub init {
         unless $self->{+NAME};
 
     $self->{+SEND_TO} ||= Test2::API::test2_stack()->top;
-    $self->{+TRACE}   ||= Test2::Util::Trace->new(frame => [caller(1)]);
 
     $self->{+STACK} = [@STACK];
     $_->{+_IN_USE}++ for reverse @STACK;
@@ -78,6 +77,10 @@ sub init {
         );
         $self->{+HUB} = $hub;
     }
+
+    $self->{+TRACE} ||= Test2::Util::Trace->new(
+        frame => [caller(1)],
+    );
 
     my $hub = $self->{+HUB};
     $hub->set_ast_ids({}) unless $hub->ast_ids;
