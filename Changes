@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000019  2017-09-08 12:21:34-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix support for formatters that show buffered events
 
 0.000018  2016-06-24 06:00:04-07:00 America/Los_Angeles
