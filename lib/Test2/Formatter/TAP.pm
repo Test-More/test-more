@@ -53,7 +53,7 @@ sub _open_handles {
 sub encoding {
     my $self = shift;
 
-    if (@_) {
+    if ($] ge "5.007003" and @_) {
         my ($enc) = @_;
         my $handles = $self->{+HANDLES};
 
