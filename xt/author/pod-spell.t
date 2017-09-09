@@ -1,7 +1,15 @@
 use strict;
 use warnings;
 
-use Test::Spelling;
+BEGIN {
+    eval {
+        require Test::Spelling;
+    } or do {
+        print "1..0 # SKIP Don't have Test::Spelling\n";
+        exit 0;
+    };
+    Test::Spelling->import;
+}
 
 my @stopwords;
 for (<DATA>) {
