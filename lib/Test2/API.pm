@@ -68,7 +68,7 @@ use Test2::Event::Waiting();
 use Test2::Event::Skip();
 use Test2::Event::Subtest();
 
-use Carp qw/carp croak confess longmess/;
+use Carp qw/carp croak confess/;
 use Scalar::Util qw/blessed weaken/;
 use Test2::Util qw/get_tid clone_io pkg_to_file/;
 
@@ -406,7 +406,8 @@ sub _existing_error {
     my $oldframe = $ctx->{trace}->frame;
     my $olddepth = $ctx->{_depth};
 
-    my $mess = longmess();
+    # Older versions of Carp do not export longmess() function, so it needs to be called with package name
+    my $mess = Carp::longmess();
 
     warn <<"    EOT";
 $msg
