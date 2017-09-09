@@ -67,7 +67,7 @@ my $len = 0;
 for my $dep (@depends) {
     my $l = length($dep);
     $len = $l if $l > $len;
-    $deps{$dep} = eval "require $dep; $dep->VERSION" || "N/A";
+    $deps{$dep} = eval "require $dep" ? ($dep->VERSION || '0') : 'N/A';
 }
 
 diag sprintf("%-${len}s  %s", $_, $deps{$_}) for @depends;
