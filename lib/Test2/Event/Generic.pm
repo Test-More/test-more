@@ -35,15 +35,12 @@ sub init {
 
 for my $field (@FIELDS) {
     no strict 'refs';
-    my $stash = \%{__PACKAGE__ . "::"};
 
     *$field = sub { exists $_[0]->{$field} ? $_[0]->{$field} : () }
-        unless defined $stash->{$field}
-            && defined *{$stash->{$field}}{CODE};
+        unless exists &{$field};
 
     *{"set_$field"} = sub { $_[0]->{$field} = $_[1] }
-        unless defined $stash->{"set_$field"}
-            && defined *{$stash->{"set_$field"}}{CODE};
+        unless exists &{"set_$field"};
 }
 
 sub can {
