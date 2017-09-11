@@ -7,6 +7,8 @@ use Test2::Util::HashBase qw/-start -stop -user -sys -cuser -csys/;
 
 use Test2::Util::Times qw/render_bench/;
 
+our $VERSION = '0.000075';
+
 sub summary {
     my $self = shift;
     return render_bench(@{$self}{(START, STOP, USER, SYS, CUSER, CSYS)});

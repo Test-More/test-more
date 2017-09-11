@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Add version to Test2::Event::Times
+
 0.000074  2017-08-31 20:37:47-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Add Test2::Event::Times
