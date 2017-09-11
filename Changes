@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    -Fix to work with subref-in-stash optimisation (Father C.)
+
 1.302095  2017-08-31 20:35:22-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Make several tests work with preload
