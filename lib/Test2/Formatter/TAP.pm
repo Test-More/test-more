@@ -117,7 +117,20 @@ sub write {
 
 sub print_optimal_pass {
     my ($self, $e, $num) = @_;
+    my $ok = $self->optimal_pass_tap($e,$num);
+    return unless $ok;
 
+    my $io = $self->{+HANDLES}->[OUT_STD];
+
+    local($\, $,) = (undef, '') if $\ || $,;
+    print $io $ok;
+    $self->{+_LAST_FH} = $io;
+
+    return 1;
+}
+
+sub optimal_pass_tap {
+    my ($self, $e, $num) = @_;
     my $type = ref($e);
 
     # Only optimal if this is a Pass or a passing Ok
@@ -138,13 +151,7 @@ sub print_optimal_pass {
         $ok = "$indent$ok";
     }
 
-    my $io = $self->{+HANDLES}->[OUT_STD];
-
-    local($\, $,) = (undef, '') if $\ || $,;
-    print $io $ok;
-    $self->{+_LAST_FH} = $io;
-
-    return 1;
+    return $ok;
 }
 
 sub event_tap {
