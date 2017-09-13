@@ -25,7 +25,6 @@ our @EXPORT_OK = qw{
 
     ipc_separator
 
-    clone_io
     do_rename do_unlink
 
     try_sig_mask
