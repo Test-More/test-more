@@ -524,7 +524,6 @@ sub run_subtest {
     my $stack = $ctx->stack || $STACK;
     my $hub = $stack->new_hub(
         class => 'Test2::Hub::Subtest',
-        buffered => $buffered,
         %$params,
         buffered => $buffered,
     );
