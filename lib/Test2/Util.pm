@@ -7,7 +7,11 @@ our $VERSION = '1.302097';
 use POSIX();
 use Config qw/%Config/;
 use Carp qw/croak/;
-use PerlIO();
+
+BEGIN {
+    local ($@, $!, $SIG{__DIE__});
+    *HAVE_PERLIO = eval { require PerlIO; PerlIO->VERSION(1.02); } ? sub() { 1 } : sub() { 0 };
+}
 
 our @EXPORT_OK = qw{
     try
@@ -177,8 +181,9 @@ sub clone_io {
     my $fileno = fileno($fh) or croak "Could not get fileno for handle";
 
     my %seen;
-    open(my $out, '>&', $fileno) or die "Can't dup fileno $fileno: $!";
-    binmode($out, join(":", "", "raw", grep { !$PERLIO_SKIP{$_} and !$seen{$_}++ } PerlIO::get_layers(STDOUT)));
+    open(my $out, '>&' . $fileno) or die "Can't dup fileno $fileno: $!";
+    my @layers = HAVE_PERLIO ? grep { !$PERLIO_SKIP{$_} and !$seen{$_}++ } PerlIO::get_layers(*STDOUT) : ();
+    binmode($out, join(":", "", "raw", @layers));
 
     my $old = select $fh;
     my $af = $|;

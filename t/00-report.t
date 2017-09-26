@@ -13,8 +13,8 @@ BEGIN {
     print STDOUT "ok 1\n";
     print STDOUT "1..1\n";
 
-    open($stdout, '>&', *STDOUT) or die "Could not clone STDOUT: $!";
-    open($stderr, '>&', *STDERR) or die "Could not clone STDERR: $!";
+    open($stdout, '>&STDOUT') or die "Could not clone STDOUT: $!";
+    open($stderr, '>&STDERR') or die "Could not clone STDERR: $!";
 
     close(STDOUT) or die "Could not close STDOUT";
     unless(close(STDERR)) {
@@ -67,7 +67,7 @@ my $len = 0;
 for my $dep (@depends) {
     my $l = length($dep);
     $len = $l if $l > $len;
-    $deps{$dep} = eval "require $dep; $dep->VERSION" || "N/A";
+    $deps{$dep} = eval "require $dep" ? ($dep->VERSION || '0') : 'N/A';
 }
 
 diag sprintf("%-${len}s  %s", $_, $deps{$_}) for @depends;
