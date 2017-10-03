@@ -4,6 +4,7 @@
     - Fix #789 (Modification of read only value)
     - Fix typo in Test::Builder when looking for IPC (#777)
     - Fix #791, clone_io broke on scalar io layer
+    - Fix #790 and #756, Exception event stingify exception
 
 1.302096  2017-09-10 21:16:18-07:00 America/Los_Angeles
 
