@@ -1,8 +1,10 @@
 {{$NEXT}}
 
+    - Fix hub->process bug that could let an error pass
+
 1.302096  2017-09-10 21:16:18-07:00 America/Los_Angeles
 
-    -Fix to work with subref-in-stash optimisation (Father C.)
+    - Fix to work with subref-in-stash optimisation (Father C.)
 
 1.302095  2017-08-31 20:35:22-07:00 America/Los_Angeles (TRIAL RELEASE)
 
