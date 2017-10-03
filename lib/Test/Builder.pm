@@ -336,7 +336,7 @@ sub subtest {
         }
     }
 
-    if ($start_pid != $$ && !$INC{'Test/Sync/IPC.pm'}) {
+    if ($start_pid != $$ && !$INC{'Test2/IPC.pm'}) {
         warn $ok ? "Forked inside subtest, but subtest never finished!\n" : $err;
         exit 255;
     }
