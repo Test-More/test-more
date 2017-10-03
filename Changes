@@ -6,6 +6,7 @@
     - Fix #791, clone_io broke on scalar io layer
     - Fix #790 and #756, Exception event stingify exception
     - Localize $^E in context (#780)
+    - Fix test that failed in verbose mode (#770)
 
 1.302096  2017-09-10 21:16:18-07:00 America/Los_Angeles
 
