@@ -1439,7 +1439,7 @@ sub summary {
     my $ctx = $self->ctx;
     my $data = $ctx->hub->meta(__PACKAGE__, {})->{Test_Results};
     $ctx->release;
-    return map { $_->{'ok'} } @$data;
+    return map { $_ ? $_->{'ok'} : () } @$data;
 }
 
 
