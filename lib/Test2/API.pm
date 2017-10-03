@@ -267,7 +267,7 @@ my $CID = 1;
 sub context {
     # We need to grab these before anything else to ensure they are not
     # changed.
-    my ($errno, $eval_error, $child_error) = (0 + $!, $@, $?);
+    my ($errno, $eval_error, $child_error, $extended_error) = (0 + $!, $@, $?, $^E);
 
     my %params = (level => 0, wrapped => 0, @_);
 
@@ -309,7 +309,7 @@ sub context {
     }
 
     # I know this is ugly....
-    ($!, $@, $?) = ($errno, $eval_error, $child_error) and return bless(
+    ($!, $@, $?, $^E) = ($errno, $eval_error, $child_error, $extended_error) and return bless(
         {
             %$current,
             _is_canon   => undef,
@@ -378,7 +378,7 @@ sub context {
 
     $params{on_init}->($current) if $params{on_init};
 
-    ($!, $@, $?) = ($errno, $eval_error, $child_error);
+    ($!, $@, $?, $^E) = ($errno, $eval_error, $child_error, $extended_error);
 
     return $current;
 }
