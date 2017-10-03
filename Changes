@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302097  2017-10-02 19:35:08-07:00 America/Los_Angeles
+
     - Fix hub->process bug that could let an error pass
     - Fix #789 (Modification of read only value)
     - Fix typo in Test::Builder when looking for IPC (#777)
