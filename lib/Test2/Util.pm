@@ -178,15 +178,18 @@ my %PERLIO_SKIP = (
 
 sub clone_io {
     my ($fh) = @_;
-    my $fileno = fileno($fh) or croak "Could not get fileno for handle";
+    my $fileno = fileno($fh);
+
+    return $fh if !defined($fileno) || !length($fileno) || $fileno < 0;
+
+    open(my $out, '>&' . $fileno) or die "Can't dup fileno $fileno: $!";
 
     my %seen;
-    open(my $out, '>&' . $fileno) or die "Can't dup fileno $fileno: $!";
-    my @layers = HAVE_PERLIO ? grep { !$PERLIO_SKIP{$_} and !$seen{$_}++ } PerlIO::get_layers(*STDOUT) : ();
+    my @layers = HAVE_PERLIO ? grep { !$PERLIO_SKIP{$_} and !$seen{$_}++ } PerlIO::get_layers($fh) : ();
     binmode($out, join(":", "", "raw", @layers));
 
     my $old = select $fh;
-    my $af = $|;
+    my $af  = $|;
     select $out;
     $| = $af;
     select $old;

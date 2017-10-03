@@ -3,6 +3,7 @@
     - Fix hub->process bug that could let an error pass
     - Fix #789 (Modification of read only value)
     - Fix typo in Test::Builder when looking for IPC (#777)
+    - Fix #791, clone_io broke on scalar io layer
 
 1.302096  2017-09-10 21:16:18-07:00 America/Los_Angeles
 
