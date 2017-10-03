@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+1.302098  2017-10-03 06:13:49-07:00 America/Los_Angeles
+
+    - Add docs for test2_stdout and test2_stderr
+    - Fix 5.6 support
+
 1.302097  2017-10-02 19:35:08-07:00 America/Los_Angeles
 
     - Fix hub->process bug that could let an error pass
