@@ -58,6 +58,7 @@ sub _parse_symbol {
         return $symbol;
     }
 
+    utf8::downgrade($symbol); # prevent crash on 5.10.0
     my ($sig, $pkg, $name) = ($symbol =~ m/^(\W?)(.*::)?([^:]+)$/)
         or croak "Invalid symbol: '$symbol'";
 
