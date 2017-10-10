@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix run_subtest inherit_trace option
+
 1.302098  2017-10-03 06:13:49-07:00 America/Los_Angeles
 
     - Add docs for test2_stdout and test2_stderr
