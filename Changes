@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302099  2017-10-10 09:29:40-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix run_subtest inherit_trace option
 
 1.302098  2017-10-03 06:13:49-07:00 America/Los_Angeles
