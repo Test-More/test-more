@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Bump Test::Builder::IO::Scalar version for core
+
 1.302100  2017-10-10 14:30:18-07:00 America/Los_Angeles
 
     - No changes since last TRIAL
