@@ -26,10 +26,13 @@ sub init {
             # Turn a diag into a note
             return Test2::Event::Note->new(%$event) if ref($event) eq 'Test2::Event::Diag';
 
-            # Set todo on ok's
-            if ($hub == $active_hub && $event->isa('Test2::Event::Ok')) {
-                $event->set_todo($reason);
-                $event->set_effective_pass(1);
+            if ($active_hub == $hub) {
+                $event->set_todo($reason) if $event->can('set_todo');
+                $event->add_amnesty({tag => 'TODO', details => $reason});
+                $event->set_effective_pass(1) if $event->isa('Test2::Event::Ok');
+            }
+            else {
+                $event->add_amnesty({tag => 'TODO', details => $reason, inherited => 1});
             }
 
             return $event;
