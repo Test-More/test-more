@@ -23,7 +23,7 @@ my %WriteMakefileArgs = (
     "Scalar::Util" => 0,
     "Sub::Info" => "0.001",
     "Term::Table" => "0.002",
-    "Test2" => "1.302096",
+    "Test2" => "1.302102",
     "overload" => 0,
     "utf8" => 0
   },
@@ -41,7 +41,7 @@ my %FallbackPrereqs = (
   "Scalar::Util" => 0,
   "Sub::Info" => "0.001",
   "Term::Table" => "0.002",
-  "Test2" => "1.302096",
+  "Test2" => "1.302102",
   "overload" => 0,
   "utf8" => 0
 );
