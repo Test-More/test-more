@@ -4,8 +4,6 @@ use warnings;
 
 1;
 
-__END__
-
 =head1 NAME
 
 Test2::Manual::Testing::Migrating - How to migrate existing tests from
@@ -14,7 +12,7 @@ Test::More to Test2.
 =head1 DESCRIPTION
 
 This tutorial covers the conversion of an existing test. This tutorial assumes
-you have atest written using L<Test::More>.
+you have a test written using L<Test::More>.
 
 =head1 LEGACY TEST
 
@@ -99,7 +97,7 @@ BEFORE:
 
 AFTER:
 
-    use Test2::Bundle::Extended;
+    use Test2::V0;
     plan(11);
 
     use Scalar::Util;
@@ -107,10 +105,14 @@ AFTER:
 
 =over 4
 
-=item Replace Test::More with Test2::Bundle::Extended
+=item Replace Test::More with Test2::V0
 
-L<Test2::Bundle::Extended> is the recommended bundle. In a full migration you
-will want to replace L<Test::More> with the extended bundle.
+L<Test2::V0> is the recommended bundle. In a full migration you
+will want to replace L<Test::More> with the L<Test2::V0> bundle.
+
+B<Note:> You should always double check the latest L<Test2> to see if there is
+a new recommended bundle. When writing a new test you should always use the
+newest Test::V# module. Higher numbers are newer version.
 
 =item Stop using use_ok()
 
@@ -131,7 +133,7 @@ equivelent here. Just use C<require>.
 
 =item Remove strict/warnings (optional)
 
-The extended bundle turns strict and warnings on for you.
+The L<Test2::V0> bundle turns strict and warnings on for you.
 
 =item Change where the plan is set
 
@@ -172,7 +174,7 @@ The vast majority of assertions will not need any changes:
 
 The C<$TODO> package variable is gone. You now have a C<todo()> function.
 
-There are 2 ways this can be changed:
+There are 2 ways this can be used:
 
 =over 4
 
@@ -318,7 +320,7 @@ argument, then a test name as the third argument.
     #####################
     # Boilerplate
 
-    use Test2::Bundle::Extended;
+    use Test2::V0;
     plan(11);
 
     use Scalar::Util;

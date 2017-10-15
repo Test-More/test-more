@@ -2,6 +2,8 @@ package Test2::Manual::EndToEnd;
 use strict;
 use warnings;
 
+1;
+
 __END__
 
 =head1 NAME
@@ -168,6 +170,13 @@ You have a shiney new context object, or a clone of the existing context.
 =item The Test2::Event::Ok module is loaded.
 
 The C<send_event()> method will automatically load any Event package necessary.
+Normally C<send_event()> will assume the first argument is an event class
+without the C<Test2::Event::> prefix, which it will add for you. If you want to
+use an event class that is in a different namespace you can prefix the class
+name with a C<+> to tell the tool that you are giving a fully qualified class
+name:
+
+    my $event = $ctx->send_event('+Fully::Qualified::Event', pass => $bool, name => $name);
 
 =item A new instance of Test2::Event::Ok is created.
 
@@ -175,7 +184,7 @@ The event object is instantiated using the provided parameters.
 
 =item The event object is sent to the hub.
 
-The hub taks over from here.
+The hub takes over from here.
 
 =item The hub runs the event through any filters.
 
@@ -253,7 +262,7 @@ If IPC is turned on, a final culling will take place.
 The follow-up hooks are a way to run actions when a hub is complete. This is
 useful for adding cleanup tasks, or final tests to the end of a test.
 
-=item The final plan even is generated and processed.
+=item The final plan event is generated and processed.
 
 The final plan event will be produced using the current test count as the
 number of tests planned.

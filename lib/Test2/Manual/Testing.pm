@@ -37,9 +37,10 @@ lexically scoped, or they may be global.
 =item Test2::Bundle::*
 
 Bundles combine toolsets and plugins together to reduce your boilerplate. First
-time test writers are encouraged to start with the L<Test2::Bundle::Extended>
-bundle. If you find yourself loading several plugins and toolsets over and over
-again you could benefit from writing your own bundle.
+time test writers are encouraged to start with the L<Test2::V0> bundle (which
+is an exception to the namespace rule as it does not live under
+C<Test2::Bundle::>). If you find yourself loading several plugins and toolsets
+over and over again you could benefit from writing your own bundle.
 
 =item Test2::Require::*
 
@@ -66,18 +67,18 @@ and define new ones, typically with a new bundle. In short, if we feel the need
 to break something we will do so by creating a new bundle, and discouraging the
 old one, but we will not break the old one.
 
-So for example, if you use L<Test2::Bundle::Extended>, and L<Dist::Zilla> you
+So for example, if you use L<Test2::V0>, and L<Dist::Zilla> you
 should have this in your config:
 
     [Prereqs / TestRequires]
-    Test2::Bundle::Extended = 0.000060
+    Test2::V0 = 0.000060
 
 You B<SHOULD NOT> do this:
 
     [Prereqs / TestRequires]
     Test2::Suite = 0.000060
 
-Because L<Test2::Bundle::Extended> might not always be part of L<Test2::Suite>.
+Because L<Test2::V0> might not always be part of L<Test2::Suite>.
 
 When writing new tests you should often check L<Test2::Suite> to see what the
 current recommended bundle is.
@@ -85,28 +86,28 @@ current recommended bundle is.
 =head3 Dist::Zilla
 
     [Prereqs / TestRequires]
-    Test2::Bundle::Extended = 0.000060
+    Test2::V0 = 0.000060
 
 =head3 ExtUtils::MakeMaker
 
     my %WriteMakefileArgs = (
       ...,
       "TEST_REQUIRES" => {
-        "Test2::Bundle::Extended" => "0.000060"
+        "Test2::V0" => "0.000060"
       },
       ...
     );
 
 =head3 Module::Install
 
-    test_requires 'Test2::Bundle::Extended' => '0.000060';
+    test_requires 'Test2::V0' => '0.000060';
 
 =head3 Module::Build
 
     my $build = Module::Build->new(
         ...,
         test_requires => {
-            "Test2::Bundle::Extended" => "0.000060",
+            "Test2::V0" => "0.000060",
         },
         ...
     );
@@ -117,6 +118,12 @@ current recommended bundle is.
 
 L<Test2::Manual::Testing::Introduction> is an introduction to writing tests
 using the L<Test2> tools.
+
+=head2 MIGRATING FROM TEST::BUILDER and TEST::MORE
+
+L<Test2::Manual::Testing::Migrating> Is a tutorial for converting old tests
+that use L<Test2::Builder> or L<Test::More> to the newer L<Test2> way of doing
+things.
 
 =head2 ADVANCED PLANNING
 
@@ -133,11 +140,7 @@ L<Test2::Manual::Testing::Todo> is a tutorial for markings tests as TODO.
 
 =head3 SIMPLE COMPARISONS
 
-* Include refs
-
 =head3 ADVANCED COMPARISONS
-
-* Deep strucutres, DSL
 
 =head2 TESTING EXPORTERS
 
@@ -158,10 +161,6 @@ L<Test2::Manual::Testing::Todo> is a tutorial for markings tests as TODO.
 =head2 CONTROLLING RANDOM BEHAVIOR
 
 =head2 WRITING YOUR OWN BUNDLE
-
-=head2 TESTING YOUR TEST TOOLS
-
-* Also covered in the Tooling section.
 
 =head1 TOOLSET DOCUMENTATION
 

@@ -25,7 +25,6 @@ testing, or at the end. This cannot be done partway through testing.
 
     ...
 
-
 =head1 DONE TESTING
 
 The C<done_testing()> function is provided by L<Test2::Tools::Basic>. This

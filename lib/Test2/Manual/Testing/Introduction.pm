@@ -24,7 +24,7 @@ C<.t> file extension.
 
 C<t/example.t>:
 
-    use Test2::Bundle::Extended;
+    use Test2::V0;
 
     # Assertions will go here
 
@@ -34,7 +34,7 @@ This is all the boilerplate you need.
 
 =over 4
 
-=item use Test2::Bundle::Extended;
+=item use Test2::V0;
 
 This loads a collection of testing tools that will be described later in the
 tutorial. This will also turn on C<strict> and C<warnings> for you.
@@ -57,28 +57,28 @@ L<Test2::Suite> to their own dists at any time.
 =head3 Dist::Zilla
 
     [Prereqs / TestRequires]
-    Test2::Bundle::Extended = 0.000060
+    Test2::V0 = 0.000060
 
 =head3 ExtUtils::MakeMaker
 
     my %WriteMakefileArgs = (
       ...,
       "TEST_REQUIRES" => {
-        "Test2::Bundle::Extended" => "0.000060"
+        "Test2::V0" => "0.000060"
       },
       ...
     );
 
 =head3 Module::Install
 
-    test_requires 'Test2::Bundle::Extended' => '0.000060';
+    test_requires 'Test2::V0' => '0.000060';
 
 =head3 Module::Build
 
     my $build = Module::Build->new(
         ...,
         test_requires => {
-            "Test2::Bundle::Extended" => "0.000060",
+            "Test2::V0" => "0.000060",
         },
         ...
     );
@@ -92,7 +92,7 @@ that a condition is true.
 
 Here is a complete C<t/example.t>:
 
-    use Test2::Bundle::Extended;
+    use Test2::V0;
 
     ok(1, "1 is true, so this will pass");
 
@@ -134,9 +134,13 @@ for L<Test2>.
 
 This will produce output similar to this:
 
-    [PASSED]  =  example.t
+    ( PASSED )  job  1    t/example.t
 
-    === ALL TESTS SUCCEEDED ===
+    ================================================================================
+
+    Run ID: 1508027909
+
+    All tests were successful!
 
 You can also request verbose output with the C<-v> flag:
 
@@ -144,15 +148,17 @@ You can also request verbose output with the C<-v> flag:
 
 Which produces:
 
-    [LAUNCH]  _  example.t
-    [PARSER]  +  Test2::Harness::Parser::EventStream
-    [ NOTE ]  +  Seeded srand with seed '20161028' from local date.
-    [ENCODE]  +  utf8
-    [  OK  ]  +  1 is true, so this will pass
-    [ PLAN ]  +  Plan is 1 assertions
-    [PASSED]  =  example.t
+    ( LAUNCH )  job  1    example.t
+    (  NOTE  )  job  1    Seeded srand with seed '20171014' from local date.
+    [  PASS  ]  job  1  + 1 is true, so this will pass
+    [  PLAN  ]  job  1    Expected asserions: 1
+    ( PASSED )  job  1    example.t
 
-    === ALL TESTS SUCCEEDED ===
+    ================================================================================
+
+    Run ID: 1508028002
+
+    All tests were successful!
 
 =head2 USING PROVE
 
@@ -216,7 +222,7 @@ cannot be done in the middle of making assertions.
 
 =head1 ADDITONAL ASSERTION TOOLS
 
-The L<Test2::Bundle::Extended> bundle provides a lot more than C<ok()>,
+The L<Test2::V0> bundle provides a lot more than C<ok()>,
 C<plan()>, and C<done_testing()>. The biggest tools to note are:
 
 =over 4
