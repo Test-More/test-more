@@ -1,6 +1,6 @@
 package Test2::Tools::GenTemp;
 
-our $VERSION = '0.000079';
+our $VERSION = '0.000080';
 
 use File::Temp qw/tempdir/;
 use File::Spec;
