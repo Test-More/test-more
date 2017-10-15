@@ -69,9 +69,16 @@ sub _add_ts_hooks {
         # Turn a diag into a todo diag
         return Test::Builder::TodoDiag->new(%$e) if ref($e) eq 'Test2::Event::Diag';
 
+        if ($active_hub == $hub) {
+            $e->set_todo($todo) if $e->can('set_todo');
+            $e->add_amnesty({tag => 'TODO', details => $todo});
+        }
+        else {
+            $e->add_amnesty({tag => 'TODO', details => $todo, inherited => 1});
+        }
+
         # Set todo on ok's
         if ($e->isa('Test2::Event::Ok')) {
-            $e->set_todo($todo);
             $e->set_effective_pass(1);
 
             if (my $result = $e->get_meta(__PACKAGE__)) {

@@ -188,10 +188,10 @@ sub todo {
             my ($active_hub, $event) = @_;
             if ($active_hub == $hub) {
                 $event->set_todo($reason) if $event->can('set_todo');
-                $event->add_amnesty([todo => $reason]);
+                $event->add_amnesty({tag => 'TODO', details => $reason});
             }
             else {
-                $event->add_amnesty({tag => 'todo', details => $reason, inherited => 1});
+                $event->add_amnesty({tag => 'TODO', details => $reason, inherited => 1});
             }
             return $event;
         },

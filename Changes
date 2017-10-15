@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix some TODO edge cases that were not previously accounted for
+
 1.302101  2017-10-12 07:43:16-07:00 America/Los_Angeles
 
     - Bump Test::Builder::IO::Scalar version for core
