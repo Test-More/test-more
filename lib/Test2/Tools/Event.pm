@@ -2,7 +2,7 @@ package Test2::Tools::Event;
 use strict;
 use warnings;
 
-our $VERSION = '0.000078';
+our $VERSION = '0.000079';
 
 use Test2::Util qw/pkg_to_file/;
 

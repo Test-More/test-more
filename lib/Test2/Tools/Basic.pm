@@ -2,7 +2,7 @@ package Test2::Tools::Basic;
 use strict;
 use warnings;
 
-our $VERSION = '0.000078';
+our $VERSION = '0.000079';
 
 use Carp qw/croak/;
 use Test2::API qw/context/;
