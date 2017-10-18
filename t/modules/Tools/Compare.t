@@ -45,6 +45,11 @@ subtest is => sub {
         def ok => (is($true,  $true,  "true scalar ref is itself"),  "true scalar ref is itself");
         def ok => (is($false, $false, "false scalar ref is itself"), "false scalar ref is itself");
 
+        def ok => (is(v1.2.3, v1.2.3, 'vstring pass'), 'vstring pass');
+        def ok => (is(\v1.2.3, \v1.2.3, 'vstring refs pass'), 'vstring refs pass');
+        def ok => (!is(v1.2.3, v1.2.4, 'vstring fail'), 'vstring fail');
+        def ok => (!is(\v1.2.3, \v1.2.4, 'vstring refs fail'), 'vstring refs fail');
+
         my $x = \\"123";
         def ok => (is($x, \\"123", "Ref-Ref check 1"), "Ref-Ref check 1");
 
@@ -123,6 +128,38 @@ subtest is => sub {
             event Ok => sub {
                 call pass => T();
                 call name => "false scalar ref is itself";
+            };
+
+            event Ok => sub {
+                call pass => T();
+                call name => 'vstring pass';
+            };
+
+            event Ok => sub {
+                call pass => T();
+                call name => 'vstring refs pass';
+            };
+
+            fail_events Ok => sub {
+                call pass => F();
+                call name => 'vstring fail';
+            };
+            event Diag => sub {
+                call message => table(
+                    header => [qw/GOT OP CHECK/],
+                    rows   => [['\N{U+1}\N{U+2}\N{U+3}', 'eq', '\N{U+1}\N{U+2}\N{U+4}']],
+                );
+            };
+
+            fail_events Ok => sub {
+                call pass => F();
+                call name => 'vstring refs fail';
+            };
+            event Diag => sub {
+                call message => table(
+                    header => [qw/PATH GOT OP CHECK/],
+                    rows   => [['$*', '\N{U+1}\N{U+2}\N{U+3}', 'eq', '\N{U+1}\N{U+2}\N{U+4}']],
+                );
             };
 
             event Ok => sub {
