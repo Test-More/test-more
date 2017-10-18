@@ -323,6 +323,14 @@ plugins in ways L<Mock::Quick> would be unable to.
 
     $mock = undef; # Undoes all the mocking, restoring all original methods.
 
+    my $simple_mock = mock {} => (
+        add => [
+            is_active => sub { ... }
+        ]
+    );
+
+    $simple_mock->is_active();        # Calls our newly mocked method.
+
 =head1 EXPORTS
 
 =head2 DEFAULT
