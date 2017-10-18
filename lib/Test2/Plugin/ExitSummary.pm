@@ -14,6 +14,9 @@ sub active { $ADDED_HOOK }
 sub summary {
     my ($ctx, $real, $new) = @_;
 
+    # Avoid double-printing diagnostics if Test::Builder already loaded.
+    return if $INC{'Test/Builder.pm'};
+
     my $hub    = $ctx->hub;
     my $plan   = $hub->plan;
     my $count  = $hub->count;
