@@ -93,7 +93,7 @@ Your custom sub will be passed 4 arguments in a hash:
         return ref($args{got}) ? 1 : 0;
     },
 
-C<$_> is also localized to C<$got> to make it easier for those who need to use
+C<$_> is also localized to C<got> to make it easier for those who need to use
 regexes.
 
 =over 4
@@ -106,8 +106,8 @@ The value to be checked.
 
 =item exists
 
-This will be a boolean. This will be true if C<$got> exists at all. If
-C<$exists> is false then it means C<$got> is not simply undef, but doesn't
+This will be a boolean. This will be true if C<got> exists at all. If
+C<exists> is false then it means C<got> is not simply undef, but doesn't
 exist at all (think checking the value of a hash key that does not exist).
 
 =item operator
