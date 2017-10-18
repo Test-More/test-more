@@ -219,7 +219,8 @@ sub run {
         }
 
         if (!$state->{stage} || $state->{stage} eq 'BEFORE') {
-            $state->{before} //= 0;
+            $state->{before}  = (defined $state->{before}) ? $state->{before} : 0;
+
             if (my $add = $task->before->[$state->{before}++]) {
                 if ($add->around) {
                     $state->{PID} = $$;
@@ -268,7 +269,7 @@ sub run {
             }
         }
         elsif ($state->{stage} eq 'AFTER') {
-            $state->{after} //= 0;
+            $state->{after}  = (defined $state->{after}) ? $state->{after} : 0;
             if (my $add = $task->after->[$state->{after}++]) {
                 return if $add->around;
                 $self->push_task($add);
