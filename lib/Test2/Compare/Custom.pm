@@ -64,8 +64,8 @@ provides a way for you to write custom checks for fields in deep comparisons.
         name => 'IsRef',
         operator => 'ref(...)',
         code => sub {
-            my ($got, $exists, $operator, $name) = @_;
-            return ref($got) ? 1 : 0;
+            my %args = @_;
+            return $args{got} ? 1 : 0;
         },
     );
 
@@ -85,11 +85,12 @@ provides a way for you to write custom checks for fields in deep comparisons.
 
 =head1 ARGUMENTS
 
-Your custom sub will be passed 4 arguments:
+Your custom sub will be passed 4 arguments in a hash:
 
     code => sub {
-        my ($got, $exists, $operator, $name) = @_;
-        return ref($got) ? 1 : 0;
+        my %args = @_;
+        # provides got, exists, operator, name
+        return ref($args{got}) ? 1 : 0;
     },
 
 C<$_> is also localized to C<$got> to make it easier for those who need to use
@@ -97,23 +98,23 @@ regexes.
 
 =over 4
 
-=item $got
+=item got
 
 =item $_
 
 The value to be checked.
 
-=item $exists
+=item exists
 
 This will be a boolean. This will be true if C<$got> exists at all. If
 C<$exists> is false then it means C<$got> is not simply undef, but doesn't
 exist at all (think checking the value of a hash key that does not exist).
 
-=item $operator
+=item operator
 
 The operator specified at construction.
 
-=item $name
+=item name
 
 The name provided at construction.
 
