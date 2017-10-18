@@ -21,6 +21,7 @@ use Test2::Compare::Bag();
 use Test2::Compare::Bool();
 use Test2::Compare::Custom();
 use Test2::Compare::Event();
+use Test2::Compare::Float();
 use Test2::Compare::Hash();
 use Test2::Compare::Meta();
 use Test2::Compare::Number();
@@ -44,6 +45,7 @@ use Test2::Compare::Wildcard();
     'Test2::Compare::Bool'          => 1,
     'Test2::Compare::Custom'        => 1,
     'Test2::Compare::Event'         => 1,
+    'Test2::Compare::Float'         => 1,
     'Test2::Compare::Hash'          => 1,
     'Test2::Compare::Meta'          => 1,
     'Test2::Compare::Number'        => 1,
@@ -63,7 +65,7 @@ our @EXPORT = qw/is like/;
 our @EXPORT_OK = qw{
     is like isnt unlike
     match mismatch validator
-    hash array bag object meta meta_check number string subset bool
+    hash array bag object meta meta_check number float string subset bool
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     etc end filter_items
@@ -298,6 +300,17 @@ sub number($;@) {
     my ($num, @args) = @_;
     my @caller = caller;
     return Test2::Compare::Number->new(
+        file  => $caller[1],
+        lines => [$caller[2]],
+        input => $num,
+        @args,
+    );
+}
+
+sub float($;@) {
+    my ($num, @args) = @_;
+    my @caller = caller;
+    return Test2::Compare::Float->new(
         file  => $caller[1],
         lines => [$caller[2]],
         input => $num,
@@ -657,7 +670,7 @@ the field.
     use Test2::Tools::Compare qw{
         is like isnt unlike
         match mismatch validator
-        hash array bag object meta number string subset bool
+        hash array bag object meta number float string subset bool
         in_set not_in_set check_set
         item field call call_list call_hash prop check all_items all_keys all_vals all_values
         etc end filter_items
@@ -950,6 +963,18 @@ Verify that the value matches the given number using the C<==> operator.
 =item $check = !number ...;
 
 Verify that the value does not match the given number using the C<!=> operator.
+
+=item $check = float ...;
+
+Verify that the value matches the given float within a +/- tolerance using the C<==> operator.
+
+Default tolerance is 1e-08 and can be overridden with 'tolerance' parameter.
+
+=item $check = !float ...;
+
+Verify that the value does not match the given float within a +/- tolerance, using the C<!=> operator.
+
+Default tolerance is 1e-08 and can be overridden with 'tolerance' parameter.
 
 =item $check = bool ...;
 
