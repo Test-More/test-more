@@ -42,6 +42,16 @@ subtest verify => sub {
     ok($untrue->verify(exists => 1, got => '-0.0'), '-0.0 == 0');
 };
 
+subtest rounding => sub {
+    my $round    = $CLASS->new(input => '60.48');
+    ok($round->verify(exists => 1, got => 60.48),       '60.48 == 60.48');
+
+    {
+        my $todo = todo "floating point comparison representation error";
+        ok($round->verify(exists => 1, got => 125 - 64.52), '60.48 == 125 - 64.52');
+    }
+};
+
 like(
     dies { $CLASS->new() },
     qr/input must be defined for 'Number' check/,

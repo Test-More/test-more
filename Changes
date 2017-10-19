@@ -1,5 +1,11 @@
 {{$NEXT}}
 
+    - Add a failing TODO floating point comparison test for Number
+    - Add Test2::Compare::Float to handle floating point comparison issues with
+      representation error.
+    - Add float() to Test2::Utils::Compare and import Test2::Compare::Float
+    - Import and Export Test2::Utils::Compare::float in Test2::V0
+
 0.000080  2017-10-15 10:13:30-07:00 America/Los_Angeles
 
     - No changes since last trial
