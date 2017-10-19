@@ -116,6 +116,7 @@ subtest convert => sub {
         [sub { 1 }, 'Ref', 'Custom'],
         [\*STDERR, 'Ref',    'Ref'],
         [\'foo',   'Scalar', 'Scalar'],
+        [\v1.2.3,  'Scalar', 'Scalar'],
         [$true,    'Scalar', 'Scalar'],
         [$false,   'Scalar', 'Scalar'],
 

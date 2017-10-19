@@ -30,7 +30,7 @@ sub verify {
     return 0 unless $exists;
     return 0 unless defined $got;
     return 0 unless ref($got);
-    return 0 unless reftype($got) eq 'SCALAR';
+    return 0 unless reftype($got) eq 'SCALAR' || reftype($got) eq 'VSTRING';
     return 1;
 }
 
