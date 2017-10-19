@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000081  2017-10-19 09:09:14-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Add Test2::Compare::Float to handle floating point comparison issues with
       representation error.
     - Add float() to Test2::Utils::Compare and import Test2::Compare::Float
