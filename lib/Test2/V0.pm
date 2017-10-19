@@ -4,7 +4,7 @@ use warnings;
 
 use Importer;
 
-our $VERSION = '0.000081';
+our $VERSION = '0.000082';
 
 use Carp qw/croak/;
 
