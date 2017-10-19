@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Combine multiple diags into one event
+
 1.302103  2017-10-15 10:11:29-07:00 America/Los_Angeles
 
     - No changes since last TRIAL
