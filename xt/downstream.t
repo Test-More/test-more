@@ -32,7 +32,7 @@ for my $i (qw/Suite AsyncSubtest Workflow Plugin::SpecDeclare Tools::EventDumper
     my $ok = 0;
     for (1 .. 2) {
         $ok = run_string(<<"        EOT");
-        perlbrew exec --with $lib cpanm --installdeps Test2::$i
+        perlbrew exec --with $lib cpanm --installdeps --dev Test2::$i
         EOT
 
         $ok &&= run_string(<<"        EOT");
