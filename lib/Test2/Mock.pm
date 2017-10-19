@@ -510,7 +510,7 @@ the instance is destroyed it will restore the package to its original state.
 
 =over 4
 
-=item $mock = $class->new(class => $CLASS, ...)
+=item $mock = Test2::Mock->new(class => $CLASS, ...)
 
 This will create a new instance of L<Test2::Mock> that manages mocking
 for the specified C<$CLASS>.
