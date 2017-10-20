@@ -27,7 +27,7 @@ my %WriteMakefileArgs = (
     "overload" => 0,
     "utf8" => 0
   },
-  "VERSION" => "0.000082",
+  "VERSION" => "0.000083",
   "test" => {
     "TESTS" => "t/*.t t/modules/*.t t/modules/Bundle/*.t t/modules/Compare/*.t t/modules/Plugin/*.t t/modules/Require/*.t t/modules/Tools/*.t t/modules/Util/*.t t/modules/Util/Table/*.t t/regression/*.t"
   }
