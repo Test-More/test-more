@@ -2,7 +2,7 @@ package Test2::Util::Facets2Legacy;
 use strict;
 use warnings;
 
-our $VERSION = '1.302105';
+our $VERSION = '1.302106';
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/blessed/;
