@@ -20,6 +20,7 @@ __DATA__
 Ceccarelli
 Gianni
 Granum
+Grangaard
 
 ## proper names
 

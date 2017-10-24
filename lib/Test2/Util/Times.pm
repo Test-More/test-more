@@ -90,7 +90,7 @@ made up). I<Which string is used depends on the time elapsed.>
     04d:18h:22m:54.45s on wallclock (0.05 usr 0.00 sys + 0.00 cusr 0.00 csys = 0.05 CPU)
 
 The first 2 arguments are the C<$start> and C<$end> times in seconds (as
-retured by C<time()> or C<Time::HiRes::time()>).
+returned by C<time()> or C<Time::HiRes::time()>).
 
 The last 4 arguments are timing information as returned by the C<times()>
 function.

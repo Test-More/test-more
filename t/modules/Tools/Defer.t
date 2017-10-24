@@ -1,6 +1,7 @@
 use strict;
 use warnings;
 use Test2::Tools::Defer;
+# HARNESS-NO-FORK
 
 my $file = __FILE__;
 
