@@ -6,7 +6,7 @@ BEGIN
 {
 	if (*Test::Builder::new{CODE})
 	{
-		warn "You should load Test::Tester before Test::Builder (or anything that loads Test::Builder)" 
+		warn "You should load Test::Tester before Test::Builder (or anything that loads Test::Builder)"
 	}
 }
 
@@ -173,15 +173,28 @@ sub cmp_result
 
 	if (defined(my $exp = $expect->{diag}))
 	{
-		# if there actually is some diag then put a \n on the end if it's not
-		# there already
 
-		$exp .= "\n" if (length($exp) and $exp !~ /\n$/);
-		if (not $Test->ok($result->{diag} eq $exp,
-			"subtest '$sub_name' of '$name' compare diag")
-		)
-		{
-			my $got = $result->{diag};
+        my $got = '';
+        if (ref $exp eq 'Regexp') {
+
+            if (not $Test->like($result->{diag}, $exp,
+                "subtest '$sub_name' of '$name' compare diag"))
+            {
+                $got = $result->{diag};
+            }
+
+        } else {
+
+            # if there actually is some diag then put a \n on the end if it's not
+            # there already
+            $exp .= "\n" if (length($exp) and $exp !~ /\n$/);
+
+            if (not $Test->ok($result->{diag} eq $exp,
+    			"subtest '$sub_name' of '$name' compare diag"))
+            {
+                $got = $result->{diag};
+            }
+
 			my $glen = length($got);
 			my $elen = length($exp);
 			for ($got, $exp)
@@ -199,14 +212,14 @@ sub cmp_result
 				} @lines);
 			}
 
-			$Test->diag(<<EOM);
+    		$Test->diag(<<EOM);
 Got diag ($glen bytes):
 $got
 Expected diag ($elen bytes):
 $exp
 EOM
 
-		}
+        }
 	}
 }
 
@@ -315,6 +328,23 @@ Test::Tester - Ease testing test modules built with Test::Builder
 
 or
 
+  use Test::Tester tests => 6;
+
+  use Test::MyStyle;
+
+  check_test(
+    sub {
+      is_mystyle_qr("this", "that", "not mathing");
+    },
+    {
+      ok => 0, # expect this to fail
+      name => "not mathing",
+      diag => qr/Expected: 'this'\s+Got: 'that'/,
+    }
+  );
+
+or
+
   use Test::Tester;
 
   use Test::More tests => 3;
@@ -378,6 +408,16 @@ you can get direct access to the test results:
 
   like($result[0]->{diag}, "/^Database ping took \\d+ seconds$"/, "diag");
 
+or
+
+  check_test(
+    sub { is_mystyle_qr("this", "that", "not mathing") },
+    {
+      ok => 0, # we expect the test to fail
+      name => "not matching",
+      diag => qr/Expected: 'this'\s+Got: 'that'/,
+    }
+  );
 
 We cannot predict how long the database ping will take so we use
 Test::More's like() test to check that the diagnostic string is of the right
