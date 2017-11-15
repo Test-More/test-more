@@ -334,11 +334,11 @@ or
 
   check_test(
     sub {
-      is_mystyle_qr("this", "that", "not mathing");
+      is_mystyle_qr("this", "that", "not matching");
     },
     {
       ok => 0, # expect this to fail
-      name => "not mathing",
+      name => "not matching",
       diag => qr/Expected: 'this'\s+Got: 'that'/,
     }
   );
@@ -411,7 +411,7 @@ you can get direct access to the test results:
 or
 
   check_test(
-    sub { is_mystyle_qr("this", "that", "not mathing") },
+    sub { is_mystyle_qr("this", "that", "not matching") },
     {
       ok => 0, # we expect the test to fail
       name => "not matching",
