@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302107  2017-11-16 07:44:59-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Allow regexp in Test::Tester
 
 1.302106  2017-10-20 20:42:43-07:00 America/Los_Angeles
