@@ -194,31 +194,32 @@ sub cmp_result
             {
                 $got = $result->{diag};
             }
+        }
 
-			my $glen = length($got);
-			my $elen = length($exp);
-			for ($got, $exp)
-			{
-				my @lines = split("\n", $_);
-	 			$_ = join("\n", map {
-					if ($want_space)
-					{
-						$_ = $colour.escape($_).$reset;
-					}
-					else
-					{
-						"'$colour$_$reset'"
-					}
-				} @lines);
-			}
+        if ($got) {
+    		my $glen = length($got);
+    		my $elen = length($exp);
+    		for ($got, $exp)
+    		{
+    			my @lines = split("\n", $_);
+     			$_ = join("\n", map {
+    				if ($want_space)
+    				{
+    					$_ = $colour.escape($_).$reset;
+    				}
+    				else
+    				{
+    					"'$colour$_$reset'"
+    				}
+    			} @lines);
+    		}
 
-    		$Test->diag(<<EOM);
+        	$Test->diag(<<EOM);
 Got diag ($glen bytes):
 $got
 Expected diag ($elen bytes):
 $exp
 EOM
-
         }
 	}
 }
