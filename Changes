@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+1.302108  2017-11-16 14:19:24-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Apply p5p test patch from Craig A. Berry <craigberry@mac.com>
+
 1.302107  2017-11-16 07:44:59-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Allow regexp in Test::Tester
