@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Fix some fragile tests
+    - Add debugging to API/Instance.t for a cpan-testers failure
+
 1.302108  2017-11-16 14:19:24-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Apply p5p test patch from Craig A. Berry <craigberry@mac.com>
