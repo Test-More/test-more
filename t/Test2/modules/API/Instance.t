@@ -132,11 +132,11 @@ ok($one->finalized, "calling format finalized the object");
     is($one->formatter, 'Test2::Formatter::TAP', "got specified formatter");
     ok($one->finalized, "calling format finalized the object");
 
-    local $ENV{T2_FORMATTER} = '+Fake';
+    local $ENV{T2_FORMATTER} = '+0Fake::Module::0';
     $one->reset;
     like(
         exception { $one->formatter },
-        qr/COULD NOT LOAD FORMATTER 'Fake' \(set by the 'T2_FORMATTER' environment variable\)/,
+        qr/COULD NOT LOAD FORMATTER '0Fake::Module::0' \(set by the 'T2_FORMATTER' environment variable\)/,
         "Bad formatter"
     );
 }
