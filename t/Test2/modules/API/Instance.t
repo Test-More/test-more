@@ -450,43 +450,29 @@ if (CAN_REALLY_FORK) {
     local *Fake::Hub::cull = sub { $cull++ };
     use warnings;
 
-    local $main::DEBUG;
-
-    $main::DEBUG = 1;
     $one->enable_ipc_polling;
-    $main::DEBUG = 0;
     ok(defined($one->{_pid}), "pid is defined");
     ok(defined($one->{_tid}), "tid is defined");
     is(@{$one->context_init_callbacks}, 1, "added the callback");
     is($one->ipc_polling, 1, "polling on");
     $one->set_ipc_shm_last('abc1');
-    $main::DEBUG = 1;
     $one->context_init_callbacks->[0]->({'hub' => 'Fake::Hub'});
-    $main::DEBUG = 0;
     is($cull, 1, "called cull once");
     $cull = 0;
 
-    $main::DEBUG = 1;
     $one->disable_ipc_polling;
-    $main::DEBUG = 0;
     is(@{$one->context_init_callbacks}, 1, "kept the callback");
     is($one->ipc_polling, 0, "no polling, set to 0");
     $one->set_ipc_shm_last('abc3');
-    $main::DEBUG = 1;
     $one->context_init_callbacks->[0]->({'hub' => 'Fake::Hub'});
-    $main::DEBUG = 0;
     is($cull, 0, "did not call cull");
     $cull = 0;
 
-    $main::DEBUG = 1;
     $one->enable_ipc_polling;
-    $main::DEBUG = 0;
     is(@{$one->context_init_callbacks}, 1, "did not add the callback");
     is($one->ipc_polling, 1, "polling on");
     $one->set_ipc_shm_last('abc3');
-    $main::DEBUG = 1;
     $one->context_init_callbacks->[0]->({'hub' => 'Fake::Hub'});
-    $main::DEBUG = 0;
     is($cull, 1, "called cull once");
 }
 

@@ -335,7 +335,6 @@ sub enable_ipc_polling {
 
             my $val;
             if(shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE})) {
-                warn "Debug: SHM Val: '$val', SHM Last: '$self->{+IPC_SHM_LAST}'\n" if $main::DEBUG;
                 return if $val eq $self->{+IPC_SHM_LAST};
                 $self->{+IPC_SHM_LAST} = $val;
             }
@@ -383,8 +382,6 @@ sub ipc_enable_shm {
         $self->{+IPC_SHM_ID}   = $shm_id;
         $self->{+IPC_SHM_LAST} = $initial;
     };
-
-    warn "SHM Error: $err" if $main::DEBUG && !$ok;
 
     return $ok;
 }
