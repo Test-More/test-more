@@ -17,11 +17,12 @@ my $Test = Test::Builder->new;
 
     $Test->ok( !eval {
         $tb->subtest("death" => sub {
-            die "Death in the subtest";
+            my $name = (caller(0))[3];
+            die "Death in the subtest ($name)";
         });
         1;
     });
-    $Test->like( $@, qr/^Death in the subtest at \Q$0\E line /);
+    $Test->like( $@, qr/^Death in the subtest \(main::death\) at \Q$0\E line /);
 
     $Test->ok( !$tb->parent, "the parent object is restored after a die" );
 }

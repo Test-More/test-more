@@ -13,6 +13,7 @@ BEGIN {
 }
 
 use Scalar::Util qw/blessed reftype weaken/;
+use Sub::Util qw/subname set_subname/;
 
 use Test2::Util qw/USE_THREADS try get_tid/;
 use Test2::API qw/context release/;
@@ -318,6 +319,10 @@ sub subtest {
         unless $code && reftype($code) eq 'CODE';
 
     $name ||= "Child of " . $self->name;
+
+    my $sub_name = subname($code);
+    $sub_name =~ s/(?<=:)__ANON__.*$/$name/
+        and set_subname($sub_name,$code);
 
     $ctx->note("Subtest: $name");
 
