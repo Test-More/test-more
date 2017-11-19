@@ -1,6 +1,7 @@
 requires "B" => "0";
 requires "Carp" => "0";
 requires "Importer" => "0.024";
+requires "Module::Pluggable" => "2.7";
 requires "Scalar::Util" => "0";
 requires "Sub::Info" => "0.001";
 requires "Term::Table" => "0.002";
