@@ -1,4 +1,4 @@
-package Test2::Manual::EndToEnd;
+package Test2::Manual::Anatomy::EndToEnd;
 use strict;
 use warnings;
 

@@ -24,9 +24,10 @@ writing tests.
 The L<Test2::Manual::Tooling> POD is the hub for documentation related to
 writing new tools.
 
-=head1 END TO END
+=head1 GUTS AND INNER WORKINGS
 
-The L<Test2::Manual::EndToEnd> is an overview of Test2 from load to finish.
+The L<Test2::Manual::Anatomy> POD is the hub for documentation of the inner
+workings of Test2 components.
 
 =head1 CONTRIBUTING
 

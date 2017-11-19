@@ -16,7 +16,7 @@ This section covers writing new tools, plugins, and other Test2 components.
 
 =head1 TOOL TUTORIALS
 
-=head2 FIRST SIMPLE TOOL
+=head2 FIRST TOOL
 
 L<Test2::Manual::Tooling::FirstTool> - Introduction to writing tools by cloning
 L<ok()>.
@@ -24,11 +24,6 @@ L<ok()>.
 =head2 NESTING TOOLS
 
 L<Test2::Manual::Tooling::Nesting> - How to call other tools from your tool.
-
-=head2 A COMPLEX TOOL
-
-L<Test2::Manual::Tooling::Complex> - Making a slightly more complex tool that
-includes extra diagnostics.
 
 =head2 TOOLS WITH SUBTESTS
 
