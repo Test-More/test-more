@@ -21,29 +21,52 @@ This section covers writing new tools, plugins, and other Test2 components.
 L<Test2::Manual::Tooling::FirstTool> - Introduction to writing tools by cloning
 L<ok()>.
 
-=head2 TESTING YOUR TEST TOOLS
-
 =head2 NESTING TOOLS
+
+L<Test2::Manual::Tooling::Nesting> - How to call other tools from your tool.
 
 =head2 A COMPLEX TOOL
 
+L<Test2::Manual::Tooling::Complex> - Making a slightly more complex tool that
+includes extra diagnostics.
+
 =head2 TOOLS WITH SUBTESTS
+
+L<Test2::Manual::Tooling::Subtest> - How write tools that make use of subtests.
+
+=head2 TESTING YOUR TEST TOOLS
+
+L<Test2::Manual::Tooling::Testing> - How to write tests for your test tools.
 
 =head1 PLUGIN TUTORIALS
 
 =head2 IMPLEMENTING SRAND
 
+COMMING SOON.
+
 =head2 IMPLEMENTING DIE-ON-FAIL
+
+COMMING SOON.
 
 =head2 TAKING ACTION AT THE END OF TESTING
 
+COMMING SOON.
+
 =head2 TAKING ACTION JUST BEFORE EXIT
+
+COMMING SOON.
 
 =head1 FORMATTER TUTORIALS
 
+COMMING SOON.
+
 =head2 WRITING A SIMPLE JSON FORMATTER
 
+COMMING SOON.
+
 =head1 CUSTOM EVENT TUTORIAL
+
+COMMING SOON.
 
 =head1 WHERE TO FIND HOOKS AND APIS
 

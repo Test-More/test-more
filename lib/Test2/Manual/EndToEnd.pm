@@ -101,9 +101,9 @@ help the reader understand the flow.
 
 =over 4
 
-=item $!, $@, and $? are captured and preserved.
+=item $!, $@, $? and $^E are captured and preserved.
 
-Test2 makes a point to preserve the values of $!, $@, and $? such that the test
+Test2 makes a point to preserve the values of $!, $@, $? and $^E such that the test
 tools do not modify these variables unexpectedly. They are captured first thing
 so that they can be restored later.
 
@@ -150,10 +150,11 @@ collected so far.
 
 If a new context was created, context-creation hooks will fire.
 
-=item $!, $@, and $? are restored.
+=item $!, $@, $?, and $^E are restored.
 
-We make sure $!, $@, and $? are restored so that changes we made will not
-effect anything else.
+We make sure $!, $@, $?, and $^E are unchanged at this point so that changes we
+made will not effect anything else. This is done in case something inside the
+context construction accidentally changed these vars.
 
 =item The context is returned.
 
@@ -240,9 +241,9 @@ destructor is useless.
 The main context data is cleared allowing the next tool to create a new
 context. This is important as the next tool very likely has a new line number.
 
-=item $!, $@, and $? are restored
+=item $!, $@, $?, and $^E are restored
 
-When a Test2 tool is complete it will restore $@, $!, and $? to avoid action at
+When a Test2 tool is complete it will restore $@, $!, $? and $^E to avoid action at
 a distance.
 
 =back
@@ -305,7 +306,7 @@ If IPC is active, a waiting event is sent to all child processes.
 This happens only when IPC is loaded, but Test::Builder is not. This behavior
 is useful, but would break compatability for legacy tests.
 
-=item The hub stack is cleaned u.p
+=item The hub stack is cleaned up.
 
 All hubs are finalized starting from the top. Leftover hubs are usually a bad
 thing, so a warning is produced if any are found.
