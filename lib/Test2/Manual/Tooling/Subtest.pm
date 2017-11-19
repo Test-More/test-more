@@ -89,6 +89,8 @@ unlikely to need/want this parameter.
 
 =back
 
+=back
+
 =head2 SUBTEST WITH TOOL-SIDE CODEREF
 
 This is particularly useful if you want to turn a tool that wraps other tools
