@@ -16,4 +16,5 @@ t2_lib
 test.pl
 POD_TEMPLATE.POD
 template.POD
+template.pod
 *.html
