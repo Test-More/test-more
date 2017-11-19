@@ -2,6 +2,8 @@ package Test2::Manual::Testing::Migrating;
 use strict;
 use warnings;
 
+our $VERSION = '0.000001';
+
 1;
 
 =head1 NAME

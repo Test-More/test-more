@@ -2,6 +2,8 @@ package Test2::Manual::Testing::Introduction;
 use strict;
 use warnings;
 
+our $VERSION = '0.000001';
+
 1;
 
 __END__
