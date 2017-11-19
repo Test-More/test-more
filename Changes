@@ -1,8 +1,10 @@
 {{$NEXT}}
 
+    - Add Test2::Tools::Tester
+
 0.000083  2017-10-25 08:12:18-07:00 America/Los_Angeles
 
-    - Mark a float ests TODO until the PR author can fix it
+    - Mark a float tests TODO until the PR author can fix it
 
 0.000082  2017-10-20 07:11:08-07:00 America/Los_Angeles
 
