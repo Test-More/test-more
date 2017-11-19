@@ -28,7 +28,7 @@ So which type do you need? The answer to that is simple, if you are going to
 let the user define the subtest with their own codeblock, you have the first
 type, otherwise you have the second.
 
-In either case, you will still need use the same api function:
+In either case, you will still need use the same API function:
 C<Test2::API::run_subtest>.
 
 =head2 SUBTEST WITH USER SUPPLIED CODEREF
@@ -40,7 +40,7 @@ This example will emulate the C<subtest> function.
     sub my_subtest {
         my ($name, $code) = @_;
 
-        # Like any other tool, you need to aquire a context, if you do not then
+        # Like any other tool, you need to acquire a context, if you do not then
         # things will not report the correct file and line number.
         my $ctx = context();
 
@@ -54,7 +54,7 @@ This example will emulate the C<subtest> function.
 This looks incredibly simple... and it is. C<run_subtest()> does all the hard
 work for you. This will issue an L<Test2::Event::Subtest> event with the
 results of the subtest. The subtest event itself will report to the proper file
-and line number due to the context you aquired (even though it does not I<look>
+and line number due to the context you acquired (even though it does not I<look>
 like you used the context.
 
 C<run_subtest()> can take additional arguments:
@@ -91,7 +91,7 @@ unlikely to need/want this parameter.
 
 =head2 SUBTEST WITH TOOL-SIDE CODEREF
 
-This is particularily useful if you want to turn a tool that wraps other tools
+This is particularly useful if you want to turn a tool that wraps other tools
 into a subtest. For this we will be using the tool we created in
 L<Test2::Manual::Tooling::Nesting>.
 
@@ -120,7 +120,7 @@ to do is give the function a name, a coderef to run, and the
 C<< inherit_trace => 1 >> parameter. The C<< buffered => 1 >> parameter is
 optional, but recommended.
 
-The C<inherit_trace> parmater tells the subtest tool that the contexts aquired
+The C<inherit_trace> parameter tells the subtest tool that the contexts acquired
 inside the nested tools should use the same trace as the subtest itself. For
 user-supplied codeblocks you do not use inherit_trace because you want errors
 to report to the user-supplied file+line.

@@ -54,14 +54,14 @@ I<so long as the tests are passing.>
 =head2 WHATS WRONG WITH IT?
 
 The problems with the naive approach become obvious if things start to fail.
-The diagnostics that tell you what file and line the failure occured on will be
+The diagnostics that tell you what file and line the failure occurred on will be
 wrong. The failure will be reported to the line I<inside> C<check_class>, not
 to the line where C<check_class()> was called. This is problem because it
 leaves you with no idea which class is failing.
 
 =head2 HOW TO FIX IT
 
-Luckily this is extemely easy to fix. You need to aquire a context object at
+Luckily this is extremely easy to fix. You need to acquire a context object at
 the start of your function, and release it at the end... yes it is that simple.
 
     use Test2::API qw/context/;
@@ -79,7 +79,7 @@ the start of your function, and release it at the end... yes it is that simple.
     }
 
 See, that was easy. With these 2 additional lines we know have proper file+line
-reporting. The nested tools will find the context we aquired here, and know to
+reporting. The nested tools will find the context we acquired here, and know to
 use it's file and line numbers.
 
 =head3 THE OLD WAY (DO NOT DO THIS ANYMORE)
@@ -98,7 +98,7 @@ C<$Test::Builder::Level> which helped solve this problem:
     }
 
 This variable worked well enough (and will still work) but was not very
-discoverable. Another problem with this variable is that it becomes combersome
+discoverable. Another problem with this variable is that it becomes cumbersome
 if you have a more deeply nested code structure called the nested tools, you
 might need to count stack frames, and hope they never change due to a third
 party module. The context solution has no such caveats.

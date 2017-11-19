@@ -30,7 +30,7 @@ testing, or at the end. This cannot be done partway through testing.
 =head1 DONE TESTING
 
 The C<done_testing()> function is provided by L<Test2::Tools::Basic>. This
-function will automatically set the plan to the nuber of tests that were run.
+function will automatically set the plan to the number of tests that were run.
 This must be used at the very end of testing.
 
     use Test2::Tools::Basic;
@@ -42,7 +42,7 @@ This must be used at the very end of testing.
 =head1 SKIP ALL
 
 The C<skip_all()> function is provided by L<Test2::Tools::Basic>. This function
-will set the plan to C<0>, and exit the test immedietly. You may provide a skip
+will set the plan to C<0>, and exit the test immediately. You may provide a skip
 reason that explains why the test should be skipped.
 
     use Test2::Tools::Basic;

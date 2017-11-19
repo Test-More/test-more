@@ -75,7 +75,7 @@ CPAN.
 
 The C<Test::*> namespace has been around for a long time, and has a LOT of
 tools. The C<Test2::Tools::*> namespace is fairly young, and has less tools.
-Finding a useful old tool with no modern equivelent, and writing a port is a
+Finding a useful old tool with no modern equivalent, and writing a port is a
 very good use of your time.
 
 =head1 SEE ALSO

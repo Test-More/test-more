@@ -130,8 +130,8 @@ The main difference here is that there is a space instead of an underscore.
 
 =item Stop using require_ok()
 
-C<require_ok> has been rmeoved just like C<use_ok>. There is no L<ok> module
-equivelent here. Just use C<require>.
+C<require_ok> has been removed just like C<use_ok>. There is no L<ok> module
+equivalent here. Just use C<require>.
 
 =item Remove strict/warnings (optional)
 
@@ -220,7 +220,7 @@ Deep comparisons are easy, simply replace C<is_deeply()> with C<is()>.
 The C<is()> function provided by L<Test::More> forces both arguments into
 strings, which makes this a comparison of the reference addresses. L<Test2>'s
 C<is()> function is a deep comparison, so this will still pass, but fails to
-actually test what we want (that both refernences are the same exact ref, not
+actually test what we want (that both references are the same exact ref, not
 just identical structures.)
 
 We now have the C<ref_is()> function that does what we really want, it ensures

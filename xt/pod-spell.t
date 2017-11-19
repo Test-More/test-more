@@ -121,6 +121,17 @@ SIGHUP
 SIGTERM
 SIGUSR1
 SIGUSR2
+yath
+YATH
+TOOLSET
+Toolsets
+codeblocks
+shiney
+toolbuilder
+toolset
+dists
+toolsets
 
 ## Spelled correctly according to google:
 recognises
+discoverable

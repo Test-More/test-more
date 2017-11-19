@@ -20,23 +20,23 @@ harness, or the human running the tests.
 =head1 HISTORY
 
 Before proceeding it is important that you know some history of events.
-Initially there was an event API, and an event would implement the api to
+Initially there was an event API, and an event would implement the API to
 produce an effect. This API proved to be lossy and inflexible. Recently the
 'facet' system was introduced, and makes up for the shortcoming and
-infelxiblity of the old api.
+inflexibility of the old API.
 
 All events must still implement the old API, but that can be largely automated
 if you use the facet system effectively. Likewise essential facets can often be
-deduced from events that only implement the old api, though their information
+deduced from events that only implement the old API, though their information
 maybe less complete.
 
 =head1 THE EVENT OBJECT
 
 All event objects must subclass L<Test2::Event>. If you inherit from this base
 class, and implement the old API properly, facets will be generated for you for
-free. On the other hand you can inhert from this, and also import
+free. On the other hand you can inherit from this, and also import
 L<Test2::Util::Facets2Legacy> which will instead rely on your facet data, and
-deduce the old api from them.
+deduce the old API from them.
 
 All new events C<MUST> implement both APIs one way or the other. A common way
 to do this is to simply implement both APIs directly in your event.
@@ -66,7 +66,7 @@ Here is a good template for a new event:
 
 =head1 THE FACET API
 
-The new api is a single method: C<facet_data()>. This method must return a
+The new API is a single method: C<facet_data()>. This method must return a
 hashref where each key is specific to a facet type, and the value is either a
 facet hashref, or an array of hashrefs. Some facets C<MUST> be lone hashrefs,
 others C<MUST> be hashrefs inside an arrayref.
@@ -84,7 +84,7 @@ The 'details' key is the name of the assertion.
 The 'pass' key denotes a passing or failing assertion.
 
 The 'no_debug' key tells any harness or formatter that diagnostics should not
-be added automatically to a fialing assertion (used when there are custom
+be added automatically to a failing assertion (used when there are custom
 diagnostics instead).
 
 The 'number' key is for harness use, never set it yourself.
@@ -160,7 +160,7 @@ This is how diag and note are implemented.
 'debug' is true if the message is diagnostics in nature, this is the main
 difference between a note and a diag.
 
-'important' is ture if the message is not diagnostics, but is important to have
+'important' is true if the message is not diagnostics, but is important to have
 it shown anyway. This is primarily used to communicate with a harness.
 
 =item parent => {details => $string, hid => $hid, children => [...], buffered => 1}
@@ -218,7 +218,7 @@ C<[$package, $file, $line, $subname]>.
 
 Note that ALL facet types have a 'details' key that may have a string. This
 string should always be human readable, and should be an explanation for the
-facet. For an assertion this is the test name. For a plan this is the reaosn
+facet. For an assertion this is the test name. For a plan this is the reason
 for the plan (such as skip reason). For info it is the human readable
 diagnostics message.
 
@@ -290,7 +290,7 @@ This means the package name is '::Error', but the key is 'errors'.
 
 B<Note> Do not worry too much about getting the key/pluralization wrong. Most
 tools will use L<Module::Pluggable> to load all facet types and build a hash
-linking keys to packages and so on, working backwords. This means, in general,
+linking keys to packages and so on, working backwards. This means, in general,
 that even if you get it wrong any tool that NEEDS the package for the facet
 will find it.
 

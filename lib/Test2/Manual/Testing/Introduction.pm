@@ -14,7 +14,7 @@ Test2::Manual::Testing::Introduction - Introduction to testing with Test2.
 
 =head1 DESCRIPTION
 
-This tutorial is a begginners introduction to testing. This will take you
+This tutorial is a beginners introduction to testing. This will take you
 through writing a test file, making assertions, and running your test.
 
 =head1 BOILERPLATE
@@ -222,7 +222,7 @@ cannot be done in the middle of making assertions.
 
 =back
 
-=head1 ADDITONAL ASSERTION TOOLS
+=head1 ADDITIONAL ASSERTION TOOLS
 
 The L<Test2::V0> bundle provides a lot more than C<ok()>,
 C<plan()>, and C<done_testing()>. The biggest tools to note are:

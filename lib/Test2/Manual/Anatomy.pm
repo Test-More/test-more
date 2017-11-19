@@ -29,23 +29,23 @@ The L<Test2::Manual::Anatomy::Event> document explains the internals of events.
 
 =head1 THE CONTEXT
 
-COMMING SOON.
+COMING SOON.
 
 =head1 THE API AND THE API INSTANCE
 
-COMMING SOON.
+COMING SOON.
 
 =head1 THE HUB STACK
 
-COMMING SOON.
+COMING SOON.
 
 =head1 HUBS
 
-COMMING SOON.
+COMING SOON.
 
 =head1 THE IPC SYSTEM
 
-COMMING SOON.
+COMING SOON.
 
 =head1 SEE ALSO
 

@@ -306,7 +306,7 @@ If IPC is active, a waiting event is sent to all child processes.
 =item The script will wait for all child processes and/or threads to complete.
 
 This happens only when IPC is loaded, but Test::Builder is not. This behavior
-is useful, but would break compatability for legacy tests.
+is useful, but would break compatibility for legacy tests.
 
 =item The hub stack is cleaned up.
 
@@ -328,7 +328,7 @@ If the test encountered any failures this will be set to a non-zero value. If
 possible this will be set to the number of failures, or 255 if the number is
 larger than 255 (the max value allowed).
 
-=item Broken moule diagnostics
+=item Broken module diagnostics
 
 Test2 is aware of many modules which were broken by Test2's release. At this
 point the script will check if any known-broken modules were loaded, and warn

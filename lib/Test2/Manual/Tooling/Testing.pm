@@ -59,7 +59,7 @@ The L<Test2::Tools::Tester> documentation is a good place for further reading.
 =head2 Test2::Tools::HarnessTester
 
 The L<Test2::Tools::HarnessTester> can export the C<summarize_events()> tool.
-This tool lets you run your event arraref through L<Test2::Harness> so that you
+This tool lets you run your event arrayref through L<Test2::Harness> so that you
 can get a pass/fail summary.
 
     my $summary = summarize_events($events);
@@ -94,7 +94,7 @@ with the properties you specify.
 =item fail_events $TYPE => ...
 
 Use when you expect a failing assertion of $TYPE. This will automatically check
-that the next event following it is a diagnostcs messgae with the default
+that the next event following it is a diagnostics message with the default
 failure text.
 
 B<Note:> This is outdated as a single event may now possess both the failing

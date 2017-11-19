@@ -47,7 +47,7 @@ over and over again you could benefit from writing your own bundle.
 =item Test2::Require::*
 
 This namespace contains modules that will cause a test to skip if specific
-conditions are not met. Use this if you have tests that oly run on specific
+conditions are not met. Use this if you have tests that only run on specific
 perl versions, or require external libraries that may not always be available.
 
 =back
@@ -62,7 +62,7 @@ intended to represent the "current" best practices. As tools, plugins, and
 bundles evolve, old ones will become discouraged and potentially be moved from
 L<Test2::Suite> into their own distributions.
 
-One goal of L<Test2::Suite> is to avoid breaking backwards compatability.
+One goal of L<Test2::Suite> is to avoid breaking backwards compatibility.
 Another goal is to always improve by replacing bad designs with better ones.
 When necessary L<Test2::Suite> will break old modules out into separate dists
 and define new ones, typically with a new bundle. In short, if we feel the need
@@ -138,75 +138,75 @@ L<Test2::Manual::Testing::Todo> is a tutorial for markings tests as TODO.
 
 =head2 SUBTESTS
 
-COMMING SOON.
+COMING SOON.
 
 =head2 COMPARISONS
 
-COMMING SOON.
+COMING SOON.
 
 =head3 SIMPLE COMPARISONS
 
-COMMING SOON.
+COMING SOON.
 
 =head3 ADVANCED COMPARISONS
 
-COMMING SOON.
+COMING SOON.
 
 =head2 TESTING EXPORTERS
 
-COMMING SOON.
+COMING SOON.
 
 =head2 TESTING CLASSES
 
-COMMING SOON.
+COMING SOON.
 
 =head2 TRAPPING
 
-COMMING SOON.
+COMING SOON.
 
 =head3 TRAPPING EXCEPTIONS
 
-COMMING SOON.
+COMING SOON.
 
 =head3 TRAPPING WARNINGS
 
-COMMING SOON.
+COMING SOON.
 
 =head2 DEFERRED TESTING
 
-COMMING SOON.
+COMING SOON.
 
 =head2 MANAGING ENCODINGS
 
-COMMING SOON.
+COMING SOON.
 
 =head2 AUTO-ABORT ON FAILURE
 
-COMMING SOON.
+COMING SOON.
 
 =head2 CONTROLLING RANDOM BEHAVIOR
 
-COMMING SOON.
+COMING SOON.
 
 =head2 WRITING YOUR OWN BUNDLE
 
-COMMING SOON.
+COMING SOON.
 
 =head1 TOOLSET DOCUMENTATION
 
-COMMING SOON.
+COMING SOON.
 
 =head1 PLUGIN DOCUMENTATION
 
-COMMING SOON.
+COMING SOON.
 
 =head1 BUNDLE DOCUMENTATION
 
-COMMING SOON.
+COMING SOON.
 
-=head1 REQUIRE DOCUMENTAION
+=head1 REQUIRE DOCUMENTATION
 
-COMMING SOON.
+COMING SOON.
 
 =head1 SEE ALSO
 
