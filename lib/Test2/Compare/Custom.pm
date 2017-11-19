@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Test2::Compare::Base';
 
-our $VERSION = '0.000084';
+our $VERSION = '0.000085';
 
 use Test2::Util::HashBase qw/code name operator/;
 
