@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix SIGPIPE in IPC test
+
 1.302112  2017-11-20 06:43:16-08:00 America/Los_Angeles
 
     - Fix test on threaded 5.8
