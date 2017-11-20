@@ -15,7 +15,7 @@ use Test2::API qw/test2_ipc_set_timeout test2_ipc_get_timeout/;
 
 my $plan = 2;
 $plan += 2 if CAN_REALLY_FORK;
-$plan += 2 if CAN_THREAD;
+$plan += 2 if CAN_THREAD && threads->can('is_joinable');
 plan $plan;
 
 is(test2_ipc_get_timeout(), 30, "got default timeout");

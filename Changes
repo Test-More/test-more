@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix test on threaded 5.8
+
 1.302111  2017-11-18 09:54:33-08:00 America/Los_Angeles
 
     - Remove debugging from previous trial
