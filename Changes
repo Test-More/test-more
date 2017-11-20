@@ -1,6 +1,7 @@
 {{$NEXT}}
 
     - Fix SIGPIPE in IPC test
+    - Mark a test as usually AUTHOR_TESTING only
 
 1.302112  2017-11-20 06:43:16-08:00 America/Los_Angeles
 
