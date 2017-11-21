@@ -319,6 +319,10 @@ sub subtest {
 
     $name ||= "Child of " . $self->name;
 
+
+    $_->($name,$code,@args)
+        for Test2::API::test2_list_pre_subtest_callbacks();
+
     $ctx->note("Subtest: $name");
 
     my $child = $self->child($name);

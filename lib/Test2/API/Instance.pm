@@ -36,6 +36,7 @@ use Test2::Util::HashBase qw{
     context_acquire_callbacks
     context_init_callbacks
     context_release_callbacks
+    pre_subtest_callbacks
 };
 
 sub DEFAULT_IPC_TIMEOUT() { 30 }
@@ -135,6 +136,7 @@ sub reset {
     $self->{+CONTEXT_ACQUIRE_CALLBACKS} = [];
     $self->{+CONTEXT_INIT_CALLBACKS}    = [];
     $self->{+CONTEXT_RELEASE_CALLBACKS} = [];
+    $self->{+PRE_SUBTEST_CALLBACKS}     = [];
 
     $self->{+STACK} = Test2::API::Stack->new;
 }
@@ -272,6 +274,18 @@ sub add_post_load_callback {
 
     push @{$self->{+POST_LOAD_CALLBACKS}} => $code;
     $code->() if $self->{+LOADED};
+}
+
+sub add_pre_subtest_callback {
+    my $self =  shift;
+    my ($code) = @_;
+
+    my $rtype = reftype($code) || "";
+
+    confess "Pre-subtest callbacks must be coderefs"
+        unless $code && $rtype eq 'CODE';
+
+    push @{$self->{+PRE_SUBTEST_CALLBACKS}} => $code;
 }
 
 sub load {
@@ -676,6 +690,10 @@ Get all context init callbacks.
 
 Get all context release callbacks.
 
+=item $arrayref = $obj->pre_subtest_callbacks
+
+Get all pre-subtest callbacks.
+
 =item $obj->add_context_init_callback(sub { ... })
 
 Add a context init callback. Subs are called every time a context is created. Subs
@@ -686,6 +704,12 @@ get the newly created context as their only argument.
 Add a context release callback. Subs are called every time a context is released. Subs
 get the released context as their only argument. These callbacks should not
 call release on the context.
+
+=item $obj->add_pre_subtest_callback(sub { ... })
+
+Add a pre-subtest callback. Subs are called every time a subtest is
+going to be run. Subs get the subtest name, coderef, and any
+arguments.
 
 =item $obj->set_exit()
 
