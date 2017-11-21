@@ -100,12 +100,14 @@ our @EXPORT_OK = qw{
     test2_add_callback_context_release
     test2_add_callback_exit
     test2_add_callback_post_load
+    test2_add_callback_pre_subtest
     test2_list_context_aquire_callbacks
     test2_list_context_acquire_callbacks
     test2_list_context_init_callbacks
     test2_list_context_release_callbacks
     test2_list_exit_callbacks
     test2_list_post_load_callbacks
+    test2_list_pre_subtest_callbacks
 
     test2_ipc
     test2_ipc_drivers
@@ -172,12 +174,14 @@ sub test2_add_callback_context_init      { $INST->add_context_init_callback(@_) 
 sub test2_add_callback_context_release   { $INST->add_context_release_callback(@_) }
 sub test2_add_callback_exit              { $INST->add_exit_callback(@_) }
 sub test2_add_callback_post_load         { $INST->add_post_load_callback(@_) }
+sub test2_add_callback_pre_subtest       { $INST->add_pre_subtest_callback(@_) }
 sub test2_list_context_aquire_callbacks  { @{$INST->context_acquire_callbacks} }
 sub test2_list_context_acquire_callbacks { @{$INST->context_acquire_callbacks} }
 sub test2_list_context_init_callbacks    { @{$INST->context_init_callbacks} }
 sub test2_list_context_release_callbacks { @{$INST->context_release_callbacks} }
 sub test2_list_exit_callbacks            { @{$INST->exit_callbacks} }
 sub test2_list_post_load_callbacks       { @{$INST->post_load_callbacks} }
+sub test2_list_pre_subtest_callbacks     { @{$INST->pre_subtest_callbacks} }
 
 sub test2_ipc                 { $INST->ipc }
 sub test2_ipc_add_driver      { $INST->add_ipc_driver(@_) }
@@ -509,6 +513,9 @@ sub _intercept {
 
 sub run_subtest {
     my ($name, $code, $params, @args) = @_;
+
+    $_->($name,$code,@args)
+        for Test2::API::test2_list_pre_subtest_callbacks();
 
     $params = {buffered => $params} unless ref $params;
     my $inherit_trace = delete $params->{inherit_trace};
@@ -1294,6 +1301,12 @@ callback will receive the newly created context as its only argument.
 Add a callback that will be called every time a context is released. The
 callback will receive the released context as its only argument.
 
+=item test2_add_callback_pre_subtest(sub { ... })
+
+Add a callback that will be called every time a subtest is going to be
+run. The callback will receive the subtest name, coderef, and any
+arguments.
+
 =item @list = test2_list_context_acquire_callbacks()
 
 Return all the context acquire callback references.
@@ -1313,6 +1326,10 @@ Returns all the exit callback references.
 =item @list = test2_list_post_load_callbacks()
 
 Returns all the post load callback references.
+
+=item @list = test2_list_pre_subtest_callbacks()
+
+Returns all the pre-subtest callback references.
 
 =back
 

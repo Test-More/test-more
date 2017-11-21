@@ -36,6 +36,7 @@ is_deeply(
         context_acquire_callbacks => [],
         context_init_callbacks    => [],
         context_release_callbacks => [],
+        pre_subtest_callbacks     => [],
 
         stack => [],
     },
@@ -69,6 +70,7 @@ is_deeply(
         context_acquire_callbacks => [],
         context_init_callbacks    => [],
         context_release_callbacks => [],
+        pre_subtest_callbacks     => [],
 
         stack => [],
     },
@@ -152,6 +154,18 @@ like(
     exception { $one->add_exit_callback({}) },
     qr/End callbacks must be coderefs/,
     "Exit callbacks must be coderefs"
+);
+
+$one->reset;
+$one->add_pre_subtest_callback($callback);
+is(@{$one->pre_subtest_callbacks}, 1, "added a pre-subtest callback");
+$one->add_pre_subtest_callback($callback);
+is(@{$one->pre_subtest_callbacks}, 2, "added another pre-subtest callback");
+
+like(
+    exception { $one->add_pre_subtest_callback({}) },
+    qr/Pre-subtest callbacks must be coderefs/,
+    "Pre-subtest callbacks must be coderefs"
 );
 
 if (CAN_REALLY_FORK) {
