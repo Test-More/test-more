@@ -2,7 +2,7 @@ package Test2::API::Context;
 use strict;
 use warnings;
 
-our $VERSION = '1.302114';
+our $VERSION = '1.302115';
 
 
 use Carp qw/confess croak/;
