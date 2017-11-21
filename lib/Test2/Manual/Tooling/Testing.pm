@@ -45,6 +45,18 @@ The C<intercept> function will return an arrayref containing all the events
 that were generated within the codeblock. You can now make any assertions you
 want about the events you expected your tools to generate.
 
+    [
+        bless({...}, 'Test2::Event::Ok'),   # pass
+        bless({...}, 'Test2::Event::Ok'),   # fail
+        bless({...}, 'Test2::Event::Diag'), # Failure diagnostics (not always a second event)
+        bless({...}, 'Test2::Event::Diag'), # custom 'A diag' message
+    ]
+
+Most test tools eventually produce one or more events. To effectively verify
+the events you get from intercept you really should read up on how events work
+L<Test2::Manual::Anatomy::Event>. Once you know about events you can move on to
+the next section which points you at some helpers.
+
 =head1 ADDITIONAL HELPERS
 
 =head2 Test2::Tools::Tester
