@@ -150,7 +150,7 @@ like(
     check_set(
         qr/^Exception in build 'dies' with 2 unseen event\(s\)\.$/m,
         qr{^xxx at .*Acceptance\.t line \d+\.$}m,
-        qr/^Overview of unseen events:$/m,
+        qr/^Overview of unseen events:/m,
         qr/^    Test2::Event::Ok at .*Acceptance\.t line \d+$/m,
         qr/^    Test2::Event::Ok at .*Acceptance\.t line \d+/m,
     ),
