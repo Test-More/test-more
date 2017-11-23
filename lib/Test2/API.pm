@@ -93,6 +93,9 @@ our @EXPORT_OK = qw{
     test2_tid
     test2_stack
     test2_no_wait
+    test2_ipc_wait_enable
+    test2_ipc_wait_disable
+    test2_ipc_wait_enabled
 
     test2_add_callback_context_aquire
     test2_add_callback_context_acquire
@@ -160,9 +163,13 @@ sub test2_start_preload { $ENV{T2_IN_PRELOAD} = 1; $INST->start_preload }
 sub test2_stop_preload  { $ENV{T2_IN_PRELOAD} = 0; $INST->stop_preload }
 sub test2_in_preload    { $INST->preload }
 
-sub test2_pid     { $INST->pid }
-sub test2_tid     { $INST->tid }
-sub test2_stack   { $INST->stack }
+sub test2_pid              { $INST->pid }
+sub test2_tid              { $INST->tid }
+sub test2_stack            { $INST->stack }
+sub test2_ipc_wait_enable  { $INST->set_no_wait(0) }
+sub test2_ipc_wait_disable { $INST->set_no_wait(1) }
+sub test2_ipc_wait_enabled { !$INST->no_wait }
+
 sub test2_no_wait {
     $INST->set_no_wait(@_) if @_;
     $INST->no_wait;
@@ -1213,9 +1220,26 @@ Check if Test2 believes it is the END phase.
 This will return the global L<Test2::API::Stack> instance. If this has not
 yet been initialized it will be initialized now.
 
+=item test2_ipc_wait_enable()
+
+=item test2_ipc_wait_disable()
+
+=item $bool = test2_ipc_wait_enabled()
+
+These can be used to turn ipc waiting on and off, or check the current value of
+the flag.
+
+Waiting is turned on by default. Waiting will cause the parent process/thread
+to wait until all child processes and threads are finished before exiting. You
+will almost never want to turn this off.
+
 =item $bool = test2_no_wait()
 
 =item test2_no_wait($bool)
+
+B<DISCOURAGED>: This is a confusing interface, it is better to use
+C<test2_ipc_wait_enable()>, C<test2_ipc_wait_disable()> and
+C<test2_ipc_wait_enabled()>.
 
 This can be used to get/set the no_wait status. Waiting is turned on by
 default. Waiting will cause the parent process/thread to wait until all child
