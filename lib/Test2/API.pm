@@ -1226,7 +1226,7 @@ yet been initialized it will be initialized now.
 
 =item $bool = test2_ipc_wait_enabled()
 
-These can be used to turn ipc waiting on and off, or check the current value of
+These can be used to turn IPC waiting on and off, or check the current value of
 the flag.
 
 Waiting is turned on by default. Waiting will cause the parent process/thread
