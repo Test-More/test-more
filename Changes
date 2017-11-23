@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Make an AUTHOR_TEST require 5.20
+
 0.000085  2017-11-22 22:05:11-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Ensure that objects are not used in Boolean contexts, second
