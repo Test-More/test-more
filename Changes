@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - ipc_wait now reports exit and signal values
+
 1.302114  2017-11-21 15:28:39-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Added pre-subtest hook to Test2::API (#801 from dakkar)

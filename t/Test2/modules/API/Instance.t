@@ -184,7 +184,18 @@ if (CAN_REALLY_FORK) {
         local $SIG{__WARN__} = sub { push @warnings => @_ };
         is(Test2::API::Instance::_ipc_wait, 255, "Process exited badly");
     }
-    like($warnings[0], qr/Process .* did not exit cleanly \(status: 255\)/, "Warn about exit");
+    like($warnings[0], qr/Process .* did not exit cleanly \(wstat: \S+, exit: 255, sig: 0\)/, "Warn about exit");
+
+    $pid = fork;
+    die "Failed to fork!" unless defined $pid;
+    unless($pid) { sleep 20; exit 0 }
+    kill('TERM', $pid) or die "Failed to send signal";
+    @warnings = ();
+    {
+        local $SIG{__WARN__} = sub { push @warnings => @_ };
+        is(Test2::API::Instance::_ipc_wait, 255, "Process exited badly");
+    }
+    like($warnings[0], qr/Process .* did not exit cleanly \(wstat: \S+, exit: 0, sig: 15\)/, "Warn about exit");
 }
 
 if (CAN_THREAD && $] ge '5.010') {

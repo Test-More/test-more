@@ -455,8 +455,10 @@ sub _ipc_wait {
                 last if $pid == -1;
                 next unless $err;
                 $fail++;
-                $err = $err >> 8;
-                warn "Process $pid did not exit cleanly (status: $err)\n";
+
+                my $sig = $err & 127;
+                my $exit = $err >> 8;
+                warn "Process $pid did not exit cleanly (wstat: $err, exit: $exit, sig: $sig)\n";
             }
 
             alarm 0;
