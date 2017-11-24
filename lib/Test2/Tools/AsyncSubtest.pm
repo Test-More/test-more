@@ -84,7 +84,7 @@ These are tools for writing async subtests. Async subtests are subtests which
 can be started and stashed so that they can continue to receive events while
 other events are also being generated.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test2::Bundle::Extended;
     use Test2::Tools::AsyncSubtest;

@@ -55,7 +55,7 @@ Test2::AsyncSubtest::Event::Detach - Event to detach a subtest from the parent.
 
 =head1 DESCRIPTION
 
-Used internally by L<Test2::AsyncSubtest>. No user servicable parts inside.
+Used internally by L<Test2::AsyncSubtest>. No user serviceable parts inside.
 
 =head1 SOURCE
 

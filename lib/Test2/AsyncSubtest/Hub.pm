@@ -58,7 +58,7 @@ Test2::AsyncSubtest::Hub - Hub used by async subtests.
 
 This is a subclass of L<Test2::Hub::Subtest> used for async subtests.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
 You should not use this directly.
 

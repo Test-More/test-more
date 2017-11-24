@@ -615,7 +615,7 @@ Defaults are not inherited when a builder's return is captured.
 =head1 EXECUTION ORDER
 
 As each function is encountered it executes, just like any other function. The
-C<describe()> function will immedietly execute the codeblock it is given. All
+C<describe()> function will immediately execute the codeblock it is given. All
 other functions will stash their codeblocks to be run later. When
 C<done_testing()> is run the workflow will be compiled, at which point all
 other blocks will run.

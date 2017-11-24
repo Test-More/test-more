@@ -185,7 +185,7 @@ All exports are optional, you must request the ones you want.
 
 =item $parsed = parse_args(args => \@args, caller => [caller($L)])
 
-This will parse a "typical" task builers arguments. The C<@args> array MUST
+This will parse a "typical" task builders arguments. The C<@args> array MUST
 contain a name (plain scalar containing text) and also a single CODE reference.
 The C<@args> array MAY also contain any quantity of line numbers or hashrefs.
 The resulting data structure will be a single hashref with all the provided
@@ -232,7 +232,7 @@ This will return the root build for the specified package.
 
 =item $build = current_build()
 
-This will return the build cuurently at the top of the build stack (or undef).
+This will return the build currently at the top of the build stack (or undef).
 
 =item $build = build($name, \%params, sub { ... })
 

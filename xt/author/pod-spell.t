@@ -54,3 +54,13 @@ validators
 
 ## other jargon, slang
 XNOR
+
+PARAMS
+codeblocks
+masync
+miso
+Async
+iso
+AsyncSubtest
+RSPEC
+async

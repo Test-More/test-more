@@ -15,7 +15,7 @@ __END__
 
 =head1 NAME
 
-Test2::Workflow::Task::Action - Ancapsulation of an action.
+Test2::Workflow::Task::Action - Encapsulation of an action.
 
 =head1 SOURCE
 

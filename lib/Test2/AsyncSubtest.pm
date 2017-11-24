@@ -498,7 +498,7 @@ This is mainly useful for tools that start a subtest in one process or thread
 and then spawn children. In many cases it is nice to let the parent process
 continue instead of waiting on the children.
 
-=head1 SYNOPSYS
+=head1 SYNOPSIS
 
     use Test2::AsyncSubtest;
 
@@ -634,7 +634,7 @@ This must only be called in the original process/thread.
 =item $ctx = $ast->context
 
 Get an L<Test2::API::Context> instance that can be used to send events to the
-context in which the hub was created. This is not a cononical context, you
+context in which the hub was created. This is not a canonical context, you
 should not call C<< $ctx->release >> on it.
 
 =item $ast->detach
