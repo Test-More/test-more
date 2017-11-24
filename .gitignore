@@ -13,5 +13,6 @@ MYMETA.*
 /.build
 TODO
 t2_lib
+t2s_lib
 test.pl
 POD_TEMPLATE.POD

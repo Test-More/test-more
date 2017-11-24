@@ -97,5 +97,6 @@ POD_TEMPLATE.pod
 
 test.pl
 t2_lib
+t2s_lib
 
 POD_TEMPLATE.POD
