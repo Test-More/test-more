@@ -23,8 +23,8 @@ diag(
 
 {
     my @depends = qw{
-        Test2 B Carp File::Spec File::Temp PerlIO Scalar::Util
-        Storable Test::Harness overload utf8 Term::Table
+        Test2 Importer Term::Table Sub::Info B Carp Exporter Scalar::Util
+        Scope::Guard Time::HiRes overload utf8 Module::Pluggable
     };
 
     my @rows;
@@ -43,7 +43,8 @@ diag(
 
 {
     my @options = qw{
-        Term::Size::Any Term::ReadKey Unicode::GCString Unicode::LineBreak
+        Sub::Name Term::ReadKey Term::Size::Any Unicode::GCString
+        Unicode::LineBreak
     };
 
     my @rows;
