@@ -197,6 +197,12 @@ INCLUDED TOOLS
 
       See Test2::Tools::Ref for complete documentation.
 
+    Spec
+
+      This is an RSPEC implementation with concurrency support.
+
+      See Test2::Tools::Spec for more details.
+
     Subtest
 
       This exports tools for running subtests.
@@ -305,6 +311,8 @@ SEE ALSO
 
     See the Test2 documentation for a namespace map. Everything in this
     distribution uses Test2.
+
+    Test2::Manual is the Test2 Manual.
 
 CONTACTING US
 

@@ -192,6 +192,12 @@ also produces undesirable side effects.
 
     See [Test2::Tools::Ref](https://metacpan.org/pod/Test2::Tools::Ref) for complete documentation.
 
+- Spec
+
+    This is an RSPEC implementation with concurrency support.
+
+    See [Test2::Tools::Spec](https://metacpan.org/pod/Test2::Tools::Spec) for more details.
+
 - Subtest
 
     This exports tools for running subtests.
@@ -298,6 +304,8 @@ also produces undesirable side effects.
 
 See the [Test2](https://metacpan.org/pod/Test2) documentation for a namespace map. Everything in this
 distribution uses [Test2](https://metacpan.org/pod/Test2).
+
+[Test2::Manual](https://metacpan.org/pod/Test2::Manual) is the Test2 Manual.
 
 # CONTACTING US
 
