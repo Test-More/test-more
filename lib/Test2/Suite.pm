@@ -216,6 +216,12 @@ This exports tools for validating and comparing references.
 
 See L<Test2::Tools::Ref> for complete documentation.
 
+=item Spec
+
+This is an RSPEC implementation with concurrency support.
+
+See L<Test2::Tools::Spec> for more details.
+
 =item Subtest
 
 This exports tools for running subtests.
@@ -332,6 +338,8 @@ See L<Test2::Require::Threads> for complete documentation.
 
 See the L<Test2> documentation for a namespace map. Everything in this
 distribution uses L<Test2>.
+
+L<Test2::Manual> is the Test2 Manual.
 
 =head1 CONTACTING US
 
