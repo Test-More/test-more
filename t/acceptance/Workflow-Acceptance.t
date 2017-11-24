@@ -452,7 +452,6 @@ is(
                             call reason         => 'will break things';
 
                             prop file => match qr{\QRunner.pm\E$};
-                            prop line => 143;
                         };
 
                         event Skip => sub {
@@ -753,7 +752,6 @@ is(
                             call reason         => 'will break things';
 
                             prop file => match qr{\QRunner.pm\E$};
-                            prop line => 143;
                         };
 
                         event Skip => sub {
