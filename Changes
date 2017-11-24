@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Merge in Test2::Workflow
+    - Merge in Test2::AsyncSubtest
+
 Test2-Suite 0.000086  2017-11-22 22:15:41-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Make an AUTHOR_TEST require 5.20
