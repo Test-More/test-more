@@ -2,6 +2,8 @@ package Test2::Workflow::Runner;
 use strict;
 use warnings;
 
+our $VERSION = '0.000087';
+
 use Test2::API();
 use Test2::Todo();
 use Test2::AsyncSubtest();

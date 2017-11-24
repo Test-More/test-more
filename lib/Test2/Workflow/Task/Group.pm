@@ -2,6 +2,8 @@ package Test2::Workflow::Task::Group;
 use strict;
 use warnings;
 
+our $VERSION = '0.000087';
+
 use Carp qw/croak/;
 
 use Test2::Workflow::Task::Action;
