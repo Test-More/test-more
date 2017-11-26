@@ -10,7 +10,7 @@ use Test2::API qw{
 
 use Time::HiRes qw/time/;
 
-our $VERSION = '0.000088';
+our $VERSION = '0.000089';
 
 sub import {
     my $start = time;

@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Test2::Require';
 
-our $VERSION = '0.000088';
+our $VERSION = '0.000089';
 
 use Test2::Util qw/CAN_THREAD/;
 
