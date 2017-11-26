@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Add some debugging and an alternate IPC driver
+    - Temporary, this will be reverted
+
 0.000087  2017-11-24 12:28:27-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Merge in Test2::Workflow

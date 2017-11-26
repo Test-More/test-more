@@ -1,3 +1,4 @@
+use Test2::IPC::Driver::Files2;
 use Test2::Bundle::Extended -target => 'Test2::Tools::AsyncSubtest';
 use Test2::Tools::AsyncSubtest;
 use Test2::Util qw/get_tid CAN_THREAD CAN_REALLY_FORK/;
