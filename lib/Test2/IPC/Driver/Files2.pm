@@ -4,7 +4,7 @@ use warnings;
 
 BEGIN { require Test2::IPC::Driver; our @ISA = qw(Test2::IPC::Driver) }
 
-use Test2::Util::HashBase qw{tempdir event_ids read_ids tid pid globals};
+use Test2::Util::HashBase qw{tempdir event_ids read_ids timeouts tid pid globals};
 
 use Scalar::Util qw/blessed/;
 use File::Temp();
@@ -38,6 +38,7 @@ sub init {
 
     $self->{+EVENT_IDS} = {};
     $self->{+READ_IDS} = {};
+    $self->{+TIMEOUTS} = {};
 
     $self->{+TID} = get_tid();
     $self->{+PID} = $$;
@@ -196,6 +197,14 @@ Error: $err
     return 1;
 }
 
+sub abort {
+    my $self = shift;
+    my ($msg) = @_;
+    chomp($msg);
+    print "Bail out! $msg\n";
+    $self->SUPER::abort($msg);
+}
+
 sub cull {
     my $self = shift;
     my ($hid) = @_;
@@ -205,13 +214,22 @@ sub cull {
     opendir(my $dh, $tempdir) or $self->abort("could not open IPC temp dir ($tempdir)!");
 
     my $read = $self->{+READ_IDS};
+    my $timeouts = $self->{+TIMEOUTS};
 
     my @out;
     for my $info (sort cmp_events map { $self->should_read_event($hid, $_) } readdir($dh)) {
         unless ($info->{global}) {
             my $next = $self->{+READ_IDS}->{$info->{hid}}->{$info->{pid}}->{$info->{tid}} ||= 1;
-            next unless $next == $info->{eid};
-            $self->{+READ_IDS}->{$info->{hid}}->{$info->{pid}}->{$info->{tid}} += 1;
+
+            $timeouts->{$info->{file}} ||= time;
+
+            if ($next != $info->{eid}) {
+                # Wait up to N seconds for missing events
+                next unless 1 < time - $timeouts->{$info->{file}};
+                $self->abort("Missing event HID: $info->{hid}, PID: $info->{pid}, TID: $info->{tid}, EID: $info->{eid}.");
+            }
+
+            $self->{+READ_IDS}->{$info->{hid}}->{$info->{pid}}->{$info->{tid}} = $info->{eid} + 1;
         }
 
         print STDERR " Read: $info->{file}\n";
