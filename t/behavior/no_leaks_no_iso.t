@@ -1,4 +1,3 @@
-use Test2::IPC::Driver::Files2;
 use Test2::Bundle::Extended;
 use Test2::Tools::Spec -no_threads => 1, -no_fork => 1;
 use Test2::Util qw/get_tid/;

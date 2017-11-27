@@ -1,7 +1,6 @@
 use strict;
 use warnings;
 
-use Test2::IPC::Driver::Files2;
 use Test2::Bundle::Extended;
 use Test2::Tools::AsyncSubtest;
 
