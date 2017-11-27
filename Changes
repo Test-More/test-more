@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Fix event Out of Order bug
+    - Add driver_abort() hook for IPC Drivers
+
 1.302116  2017-11-23 15:14:26-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - add better interface for ipc_wait
