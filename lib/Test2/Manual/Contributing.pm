@@ -1,6 +1,6 @@
 package Test2::Manual::Contributing;
 
-our $VERSION = '0.000091';
+our $VERSION = '0.000092';
 
 1;
 

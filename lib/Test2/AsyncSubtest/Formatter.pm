@@ -2,7 +2,7 @@ package Test2::AsyncSubtest::Formatter;
 use strict;
 use warnings;
 
-our $VERSION = '0.000091';
+our $VERSION = '0.000092';
 
 use Test2::Util::HashBase qw/-wrap/;
 use vars qw/$AUTOLOAD/;
