@@ -113,6 +113,7 @@ our @EXPORT_OK = qw{
     test2_list_pre_subtest_callbacks
 
     test2_ipc
+    test2_has_ipc
     test2_ipc_drivers
     test2_ipc_add_driver
     test2_ipc_polling
@@ -191,6 +192,7 @@ sub test2_list_post_load_callbacks       { @{$INST->post_load_callbacks} }
 sub test2_list_pre_subtest_callbacks     { @{$INST->pre_subtest_callbacks} }
 
 sub test2_ipc                 { $INST->ipc }
+sub test2_has_ipc             { $INST->has_ipc }
 sub test2_ipc_add_driver      { $INST->add_ipc_driver(@_) }
 sub test2_ipc_drivers         { @{$INST->ipc_drivers} }
 sub test2_ipc_polling         { $INST->ipc_polling }
@@ -1362,6 +1364,10 @@ Returns all the pre-subtest callback references.
 These let you access, or specify, the IPC system internals.
 
 =over 4
+
+=item $bool = test2_has_ipc()
+
+Check if IPC is enabled.
 
 =item $ipc = test2_ipc()
 
