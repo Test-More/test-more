@@ -60,6 +60,8 @@ BEGIN {
     }
 }
 
+sub has_ipc { !!$_[0]->{+IPC} }
+
 sub import {
     my $class = shift;
     return unless @_;
