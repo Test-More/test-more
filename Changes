@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302119  2017-11-28 15:35:42-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix IPC reload bug
 
 1.302118  2017-11-28 10:14:12-08:00 America/Los_Angeles
