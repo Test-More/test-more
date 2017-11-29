@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test2::Util qw/get_tid CAN_THREAD CAN_REALLY_FORK/;
+use Test2::Util qw/get_tid CAN_REALLY_FORK/;
 use Test2::Bundle::Extended;
 use Test2::Tools::AsyncSubtest;
 
