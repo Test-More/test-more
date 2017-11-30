@@ -2,7 +2,7 @@ package Test2::IPC::Driver::Files;
 use strict;
 use warnings;
 
-our $VERSION = '1.302120';
+our $VERSION = '1.302121';
 
 
 BEGIN { require Test2::IPC::Driver; our @ISA = qw(Test2::IPC::Driver) }
