@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000095  2017-12-08 14:14:16-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Discoruage use of fragile thread features (rarely used)
     - Skip fragile/discrouaged tests outside author testing.
     - Document the above, and an env var to activate tests when desired
