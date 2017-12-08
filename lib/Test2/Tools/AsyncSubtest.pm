@@ -97,10 +97,6 @@ other events are also being generated.
         ok(1, "Inside subtest in another process");
     };
 
-    my $ast3 = thread_subtest thread => sub {
-        ok(1, "Inside subtest in a thread");
-    };
-
     # You must call finish on the subtests you create. Finish will wait/join on
     # any child processes and threads.
     $ast1->finish;
@@ -132,6 +128,9 @@ Create an async subtest. Run the codeblock in a forked process.
 =item $ast = thread_subtest $name => sub { ... }
 
 =item $ast = thread_subtest $name => \%hub_params, sub { ... }
+
+B<** DISCOURAGED **> Threads are fragile. Thread tests are not even run unless
+the AUTHOR_TESTING or T2_DO_THREAD_TESTS env vars are enabled.
 
 Create an async subtest. Run the codeblock in a thread.
 

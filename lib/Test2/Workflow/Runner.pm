@@ -40,8 +40,11 @@ sub init {
     $self->{+PID} = $$;
     $self->{+TID} = get_tid();
 
-    $self->{+NO_FORK}    ||= $ENV{T2_WORKFLOW_NO_FORK}    || !CAN_REALLY_FORK();
-    $self->{+NO_THREADS} ||= $ENV{T2_WORKFLOW_NO_THREADS} || !Test2::AsyncSubtest->CAN_REALLY_THREAD();
+    $self->{+NO_FORK} ||= $ENV{T2_WORKFLOW_NO_FORK} || !CAN_REALLY_FORK();
+
+    my $can_thread = Test2::AsyncSubtest->CAN_REALLY_THREAD();
+    my $should_thread = ($ENV{T2_WORKFLOW_USE_THREADS} || $ENV{T2_DO_THREAD_TESTS}) && !$ENV{T2_WORKFLOW_NO_THREADS};
+    $self->{+NO_THREADS} ||= !($can_thread && $should_thread);
 
     $self->{+RAND} = 1 unless defined $self->{+RAND};
 

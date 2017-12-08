@@ -362,7 +362,13 @@ that it can be.
 =item iso => $bool
 
 Set this to true if the block MUST be run in isolation. If this is true then
-the block will run in its own thread or fork.
+the block will run in its own forked process.
+
+These tests will be skipped on any platform that does not have true forking, or
+working/enabled threads.
+
+Threads will ONLY be used if the T2_WORKFLOW_USE_THREADS env var is set. Thread
+tests are only run if the T2_DO_THREAD_TESTS env var is set.
 
 =item todo => $reason
 

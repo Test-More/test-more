@@ -4,6 +4,11 @@ use Test2::Tools::Compare qw{ array event field };
 use Test2::IPC;
 use Test2::Util qw/CAN_REALLY_FORK CAN_THREAD get_tid/;
 
+sub DO_THREADS {
+    return 0 unless $ENV{AUTHOR_TESTING} || $ENV{T2_DO_THREAD_TESTS};
+    return Test2::AsyncSubtest->CAN_REALLY_THREAD;
+}
+
 my $wrap = Test2::AsyncSubtest->new(name => 'wrap');
 $wrap->start;
 
@@ -49,7 +54,7 @@ if (CAN_REALLY_FORK) {
 
 ok(1, "Something else");
 
-if (CAN_THREAD && eval { require threads; threads->VERSION('1.34'); 1 }) {
+if (DO_THREADS()) {
     require threads;
     my @threads;
 

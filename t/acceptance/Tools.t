@@ -7,6 +7,11 @@ use Test2::Tools::AsyncSubtest;
 
 imported_ok qw/async_subtest fork_subtest thread_subtest/;
 
+sub DO_THREADS {
+    return 0 unless $ENV{AUTHOR_TESTING} || $ENV{T2_DO_THREAD_TESTS};
+    return Test2::AsyncSubtest->CAN_REALLY_THREAD;
+}
+
 my $ast = async_subtest foo => sub {
     ok(1, "Simple");
 };
@@ -26,7 +31,7 @@ if (CAN_REALLY_FORK) {
     $f_ast->finish;
 }
 
-if (Test2::AsyncSubtest->CAN_REALLY_THREAD) {
+if (DO_THREADS()) {
     my $t_ast = thread_subtest foo => sub {
         ok(1, "threaded " . get_tid);
 

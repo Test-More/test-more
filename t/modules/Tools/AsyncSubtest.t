@@ -3,6 +3,11 @@ use Test2::Tools::AsyncSubtest;
 use Test2::Util qw/get_tid CAN_REALLY_FORK/;
 use Test2::API qw/intercept/;
 
+sub DO_THREADS {
+    return 0 unless $ENV{AUTHOR_TESTING} || $ENV{T2_DO_THREAD_TESTS};
+    return Test2::AsyncSubtest->CAN_REALLY_THREAD;
+}
+
 ok($INC{'Test2/IPC.pm'}, "Loaded Test2::IPC");
 
 imported_ok(qw/async_subtest fork_subtest thread_subtest/);
@@ -20,7 +25,7 @@ sub run {
         $ast->finish;
     }
 
-    if (Test2::AsyncSubtest->CAN_REALLY_THREAD) {
+    if (DO_THREADS()) {
         $ast = thread_subtest foo => sub { ok(1, "threaded subtest: " . get_tid) };
         $ast->finish;
     }
@@ -49,7 +54,7 @@ is(
                 event '+Test2::AsyncSubtest::Event::Detach' => {};
                 event Plan => { max => 1 };
             };
-        } for grep { $_ } CAN_REALLY_FORK, Test2::AsyncSubtest->CAN_REALLY_THREAD;
+        } for grep { $_ } CAN_REALLY_FORK, DO_THREADS();
     },
     "Got expected events"
 );
