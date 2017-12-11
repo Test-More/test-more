@@ -82,7 +82,7 @@ Skip the test file if the system does not support threads.
 =head1 SOURCE
 
 The source code repository for Test2-Suite can be found at
-F<http://github.com/Test-More/Test2-Suite/>.
+F<https://github.com/Test-More/Test2-Suite/>.
 
 =head1 MAINTAINERS
 

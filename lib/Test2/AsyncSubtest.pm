@@ -746,7 +746,7 @@ C<< $ast->run_fork >>, or C<< $ast->run_thread >>.
 =head1 SOURCE
 
 The source code repository for Test2-AsyncSubtest can be found at
-F<http://github.com/Test-More/Test2-AsyncSubtest/>.
+F<https://github.com/Test-More/Test2-Suite/>.
 
 =head1 MAINTAINERS
 

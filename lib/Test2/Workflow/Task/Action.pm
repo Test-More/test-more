@@ -22,7 +22,7 @@ Test2::Workflow::Task::Action - Encapsulation of an action.
 =head1 SOURCE
 
 The source code repository for Test2-Workflow can be found at
-F<http://github.com/Test-More/Test2-Workflow/>.
+F<https://github.com/Test-More/Test2-Suite/>.
 
 =head1 MAINTAINERS
 

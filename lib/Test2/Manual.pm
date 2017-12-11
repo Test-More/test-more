@@ -31,6 +31,11 @@ writing new tools.
 The L<Test2::Manual::Anatomy> POD is the hub for documentation of the inner
 workings of Test2 components.
 
+=head1 A NOTE ON CONCURRENCY (SUPPORT FOR FORKING AND THREADING)
+
+The L<Test2::Manual::Concurrency> POD documents the concurrency support policy
+for L<Test2>.
+
 =head1 CONTRIBUTING
 
 The L<Test2::Manual::Contributing> POD is for people who want to contribute to
@@ -45,7 +50,7 @@ L<Test2::Suite> - Initial tools built using L<Test2>.
 =head1 SOURCE
 
 The source code repository for Test2-Manual can be found at
-F<http://github.com/Test-More/Test2-Manual/>.
+F<https://github.com/Test-More/Test2-Suite/>.
 
 =head1 MAINTAINERS
 
