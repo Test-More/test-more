@@ -318,7 +318,7 @@ email you can ask for a slack invite by emailing Chad Granum
 # SOURCE
 
 The source code repository for Test2-Suite can be found at
-`http://github.com/Test-More/Test2-Suite/`.
+`https://github.com/Test-More/Test2-Suite/`.
 
 # MAINTAINERS
 
