@@ -10,7 +10,7 @@ our $VERSION = '0.000098';
 
 our $DEFAULT_TOLERANCE = 1e-08;
 
-use Test2::Util::HashBase qw/input tolerance/;
+use Test2::Util::HashBase qw/input tolerance precision/;
 
 # Overloads '!' for us.
 use Test2::Compare::Negatable;
@@ -19,8 +19,11 @@ sub init {
     my $self      = shift;
     my $input     = $self->{+INPUT};
 
-    $self->{+TOLERANCE} = $DEFAULT_TOLERANCE
-      unless defined $self->{+TOLERANCE};
+    if ( exists $self->{+TOLERANCE} and exists $self->{+PRECISION} ) {
+      confess "can't set both tolerance and precision";
+    } elsif (!exists $self->{+PRECISION} and !exists $self->{+TOLERANCE}) {
+      $self->{+TOLERANCE} = $DEFAULT_TOLERANCE
+    }
 
     confess "input must be defined for 'Float' check"
         unless defined $input;
@@ -29,12 +32,19 @@ sub init {
     confess "input must be a number for 'Float' check"
         unless length($input) && $input =~ m/\S/;
 
+    confess "precision must be an integer for 'Float' check"
+        if exists $self->{+PRECISION} && $self->{+PRECISION} !~ m/^\d+$/;
+
     $self->SUPER::init(@_);
 }
 
 sub name {
     my $self      = shift;
     my $in        = $self->{+INPUT};
+    my $precision  = $self->{+PRECISION};
+    if ( defined $precision) {
+      return sprintf "%.*f", $precision, $in;
+    }
     my $tolerance = $self->{+TOLERANCE};
     return "$in +/- $tolerance";
 }
@@ -64,6 +74,7 @@ sub verify {
     my $input     = $self->{+INPUT};
     my $negate    = $self->{+NEGATE};
     my $tolerance = $self->{+TOLERANCE};
+    my $precision  = $self->{+PRECISION};
 
     my @warnings;
     my $out;
@@ -71,10 +82,17 @@ sub verify {
         local $SIG{__WARN__} = sub { push @warnings => @_ };
 
         my $equal = ($input == $got);
-        $equal = 1 if
-          !$equal
-          && $got > $input - $tolerance
-          && $got < $input + $tolerance;
+        if (!$equal) {
+          if (defined $tolerance) {
+            $equal = 1 if
+              $got > $input - $tolerance &&
+              $got < $input + $tolerance;
+          } else {
+            $equal =
+              sprintf("%.*f", $precision, $got) eq
+              sprintf("%.*f", $precision, $input);
+          }
+        }
 
         $out = $negate ? !$equal : $equal;
     }

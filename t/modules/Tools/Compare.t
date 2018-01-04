@@ -652,6 +652,10 @@ subtest float => sub {
 
         is($check->tolerance,   1e-08, "default tolerance");
         is($check_3->tolerance, 0.001, "custom tolerance");
+
+        my $check_p3 = float("22.0", precision => 3);
+        is($check_p3->precision,        3, "custom precision");
+        is($check_p3->name,      "22.000", "custom precision name");
     };
 };
 
