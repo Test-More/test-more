@@ -57,6 +57,12 @@ sub operator {
     return '' unless defined($got);
     return '' unless length($got) && $got =~ m/\S/;
 
+    if ( $self->{+PRECISION} )
+    {
+      return 'ne' if $self->{+NEGATE};
+      return 'eq';
+    }
+
     return '!=' if $self->{+NEGATE};
     return '==';
 }

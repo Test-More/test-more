@@ -38,6 +38,10 @@ subtest operator => sub {
     is($untrue->operator(),      '',   "no operator for 0 + nothing");
     is($untrue->operator(undef), '',   "no operator for 0 + undef");
     is($untrue->operator(1),     '==', "== operator for 0 + number");
+
+    is($pre_num->operator(),      '',   "no operator for precision number + nothing");
+    is($pre_num->operator(undef), '',   "no operator for precision number + undef");
+    is($pre_num->operator(1),     'eq', "eq operator for precision number + number");
 };
 
 subtest verify => sub {
