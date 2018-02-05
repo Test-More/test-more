@@ -7,7 +7,7 @@ our $VERSION = '1.302122';
 sub is_list { 1 }
 
 BEGIN { require Test2::EventFacet; our @ISA = qw(Test2::EventFacet) }
-use Test2::Util::HashBase qw{ -tag -facet };
+use Test2::Util::HashBase qw{ -tag -facet -mode };
 
 1;
 
@@ -52,6 +52,24 @@ Tag that should prefix/identify the main text.
 
 Optional, if the display text was generated from another facet this should
 state what facet it was.
+
+=item $mode = $render->[#]->mode{}
+
+=item $mode = $render->[#]->mode()
+
+=over 4
+
+=item calculated
+
+Calculated means the facet was generated from another facet. Calculated facets
+may be cleared and regenerated whenever the event state changes.
+
+=item replace
+
+Replace means the facet is intended to replace the normal rendering of the
+event.
+
+=back
 
 =back
 
