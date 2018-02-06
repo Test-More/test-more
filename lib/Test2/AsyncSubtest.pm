@@ -129,11 +129,18 @@ sub context {
 
 sub _gen_event {
     my $self = shift;
-    my ($type, $id) = @_;
+    my ($type, $id, $hub) = @_;
 
     my $class = "Test2::AsyncSubtest::Event::$type";
 
-    return $class->new(id => $id, trace => Test2::Util::Trace->new(frame => [caller(1)]));
+    return $class->new(
+        id    => $id,
+        trace => Test2::Util::Trace->new(
+            frame    => [caller(1)],
+            buffered => $hub->buffered,
+            nested   => $hub->nested,
+        ),
+    );
 }
 
 sub cleave {
@@ -159,7 +166,7 @@ sub attach {
         if $self->{+HUB}->is_local;
 
     $self->{+_ATTACHED} = [ $$, get_tid, $id ];
-    $self->{+HUB}->send($self->_gen_event('Attach', $id));
+    $self->{+HUB}->send($self->_gen_event('Attach', $id, $self->{+HUB}));
 }
 
 sub detach {
@@ -178,7 +185,7 @@ sub detach {
 
     my $id = $att->[2];
 
-    $self->{+HUB}->send($self->_gen_event('Detach', $id));
+    $self->{+HUB}->send($self->_gen_event('Detach', $id, $self->{+HUB}));
 
     delete $self->{+_ATTACHED};
 }
@@ -236,7 +243,11 @@ sub run {
     unless ($ok) {
         my $e = Test2::Event::Exception->new(
             error => $err,
-            trace => Test2::Util::Trace->new(frame => [caller(0)]),
+            trace => Test2::Util::Trace->new(
+                frame    => [caller(0)],
+                buffered => $hub->buffered,
+                nested   => $hub->nested,
+            ),
         );
         $hub->send($e);
     }
@@ -301,7 +312,13 @@ sub finish {
     my $collapse   = $params{collapse};
     my $no_plan    = $params{no_plan} || ($collapse && $no_asserts) || $skip;
 
-    $hub->finalize($self->trace, !$no_plan)
+    my $trace = Test2::Util::Trace->new(
+        frame    => $self->{+TRACE}->{frame},
+        buffered => $hub->buffered,
+        nested   => $hub->nested,
+    );
+
+    $hub->finalize($trace, !$no_plan)
         unless $hub->no_ending || $hub->ended;
 
     if ($hub->ipc) {

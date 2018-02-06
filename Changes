@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix AsyncSubtest plan to be at the right nesting, and buffered
+
 0.000098  2018-02-06 12:05:28-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix AsyncSubtest main event buffered/nesting values
