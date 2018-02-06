@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - Fix AsyncSubtest main event buffered/nesting values
+    - Fix bug where AsyncSub test vanishes with no error when finished after
+      its parent ends.
+
 0.000097  2017-12-10 20:23:21-08:00 America/Los_Angeles
 
     - Documentation fixes

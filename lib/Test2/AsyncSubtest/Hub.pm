@@ -14,14 +14,7 @@ sub init {
 
     if (my $format = $self->format) {
         my $hide = $format->can('hide_buffered') ? $format->hide_buffered : 1;
-
-        if ($hide) {
-            $self->format(undef);
-        }
-        else {
-            require Test2::AsyncSubtest::Formatter;
-            $self->format(Test2::AsyncSubtest::Formatter->new(wrap => $format));
-        }
+        $self->format(undef) if $hide;
     }
 }
 
