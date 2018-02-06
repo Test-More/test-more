@@ -29,7 +29,8 @@ The L<Test2::Manual::Anatomy::Event> document explains the internals of events.
 
 =head1 THE CONTEXT
 
-COMING SOON.
+The L<Test2::Manual::Anatomy::Context> document explains how the
+L<Test2::API::Context> object works.
 
 =head1 THE API AND THE API INSTANCE
 
