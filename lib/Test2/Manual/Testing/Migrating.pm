@@ -2,7 +2,7 @@ package Test2::Manual::Testing::Migrating;
 use strict;
 use warnings;
 
-our $VERSION = '0.000099';
+our $VERSION = '0.000100';
 
 1;
 
