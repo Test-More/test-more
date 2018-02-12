@@ -21,7 +21,7 @@ BEGIN {
     warn "Test::Builder was loaded after Test2 initialization, this is not recommended."
         if Test2::API::test2_init_done() || Test2::API::test2_load_done();
 
-    if (USE_THREADS) {
+    if (USE_THREADS && ! Test2::API::test2_ipc_disabled()) {
         require Test2::IPC;
         require Test2::IPC::Driver::Files;
         Test2::IPC::Driver::Files->import;
@@ -120,7 +120,7 @@ sub new {
 
         Test2::API::test2_add_callback_exit(sub { $Test->_ending(@_) });
 
-        Test2::API::test2_ipc()->set_no_fatal(1) if USE_THREADS;
+        Test2::API::test2_ipc()->set_no_fatal(1) if Test2::API::test2_has_ipc();
     }
     return $Test;
 }
@@ -2540,6 +2540,18 @@ bugs to support.
 
 Test::Builder is only thread-aware if threads.pm is loaded I<before>
 Test::Builder.
+
+You can directly disable thread support with one of the following:
+
+    $ENV{T2_NO_IPC} = 1
+
+or
+
+    no Test2::IPC;
+
+or
+
+    Test2::API::test2_ipc_disable()
 
 =head1 MEMORY
 

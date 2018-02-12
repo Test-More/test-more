@@ -114,6 +114,8 @@ our @EXPORT_OK = qw{
 
     test2_ipc
     test2_has_ipc
+    test2_ipc_disable
+    test2_ipc_disabled
     test2_ipc_drivers
     test2_ipc_add_driver
     test2_ipc_polling
@@ -193,6 +195,8 @@ sub test2_list_pre_subtest_callbacks     { @{$INST->pre_subtest_callbacks} }
 
 sub test2_ipc                 { $INST->ipc }
 sub test2_has_ipc             { $INST->has_ipc }
+sub test2_ipc_disable         { $INST->ipc_disable }
+sub test2_ipc_disabled        { $INST->ipc_disabled }
 sub test2_ipc_add_driver      { $INST->add_ipc_driver(@_) }
 sub test2_ipc_drivers         { @{$INST->ipc_drivers} }
 sub test2_ipc_polling         { $INST->ipc_polling }
@@ -1221,6 +1225,14 @@ Check if Test2 believes it is the END phase.
 
 This will return the global L<Test2::API::Stack> instance. If this has not
 yet been initialized it will be initialized now.
+
+=item test2_ipc_disable
+
+Disable IPC.
+
+=item $bool = test2_ipc_diabled
+
+Check if IPC is disabled.
 
 =item test2_ipc_wait_enable()
 

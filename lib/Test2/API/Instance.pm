@@ -23,6 +23,7 @@ use Test2::Util::HashBase qw{
 
     -preload
 
+    ipc_disabled
     ipc_shm_size
     ipc_shm_last
     ipc_shm_id
@@ -103,6 +104,7 @@ sub post_preload_reset {
 
     $self->{+FINALIZED} = undef;
     $self->{+IPC}       = undef;
+    $self->{+IPC_DISABLED} = $ENV{T2_NO_IPC} ? 1 : 0;
 
     $self->{+IPC_TIMEOUT} = DEFAULT_IPC_TIMEOUT() unless defined $self->{+IPC_TIMEOUT};
 
@@ -127,6 +129,7 @@ sub reset {
 
     $self->{+FINALIZED} = undef;
     $self->{+IPC}       = undef;
+    $self->{+IPC_DISABLED} = $ENV{T2_NO_IPC} ? 1 : 0;
 
     $self->{+IPC_TIMEOUT} = DEFAULT_IPC_TIMEOUT() unless defined $self->{+IPC_TIMEOUT};
 
@@ -192,6 +195,7 @@ sub _finalize {
 
     # Turn on IPC if threads are on, drivers are registered, or the Test2::IPC
     # module is loaded.
+    return if $self->{+IPC_DISABLED};
     return unless USE_THREADS || $INC{'Test2/IPC.pm'} || @{$self->{+IPC_DRIVERS}};
 
     # Turn on polling by default, people expect it.
@@ -320,6 +324,15 @@ sub add_exit_callback {
         unless $code && $rtype eq 'CODE';
 
     push @{$self->{+EXIT_CALLBACKS}} => $code;
+}
+
+sub ipc_disable {
+    my $self = shift;
+
+    confess "Attempt to disable IPC after it has been initialized"
+        if $self->{+IPC};
+
+    $self->{+IPC_DISABLED} = 1;
 }
 
 sub add_ipc_driver {
@@ -813,6 +826,14 @@ L<Test2>).
 =item $ipc = $obj->ipc
 
 Get the one true IPC instance.
+
+=item $obj->ipc_disable
+
+Turn IPC off
+
+=item $bool = $obj->ipc_disabled
+
+Check if IPC is disabled
 
 =item $stack = $obj->stack
 
