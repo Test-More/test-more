@@ -2,7 +2,7 @@ package Test2::Event::Pass;
 use strict;
 use warnings;
 
-our $VERSION = '1.302123';
+our $VERSION = '1.302124';
 
 use Test2::EventFacet::Info;
 
