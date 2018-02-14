@@ -121,6 +121,7 @@ SIGHUP
 SIGTERM
 SIGUSR1
 SIGUSR2
+env
 
 ## Spelled correctly according to google:
 recognises
