@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix a test to skip without threads
+
 1.302123  2018-02-13 21:39:31-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Make it possible to disable IPC

@@ -2,10 +2,19 @@ use strict;
 use warnings;
 
 use Test2::Util qw/CAN_THREAD/;
-use Test2::Tools::Tiny qw/plan/;
+use Test2::API qw/context/;
 
 BEGIN {
-    plan(0, skip_all => 'System does not have threads') unless CAN_THREAD();
+    sub plan {
+        my $ctx = context();
+        $ctx->plan(@_);
+        $ctx->release;
+    }
+
+    unless (CAN_THREAD()) {
+        plan(0, skip_all => 'System does not have threads');
+        exit 0;
+    }
 }
 
 use threads;
