@@ -757,11 +757,11 @@ means '2.0' and '2' will match.
 Opposite of C<is()>. Does all the same checks, but passes when there is a
 mismatch.
 
-=item like($got, $expect)
+=item $bool = like($got, $expect)
 
-=item like($got, $expect, $name)
+=item $bool = like($got, $expect, $name)
 
-=item like($got, $expect, $name, @diag)
+=item $bool = like($got, $expect, $name, @diag)
 
 C<$got> is the data structure you want to check. C<$expect> is what you want
 C<$got> to look like. C<$name> is an optional name for the test. C<@diag> is
@@ -788,11 +788,11 @@ to compare two strings:
 
     like('foo bar', qr/^foo/, "string matches the pattern");
 
-=item unlike($got, $expect)
+=item $bool = unlike($got, $expect)
 
-=item unlike($got, $expect, $name)
+=item $bool = unlike($got, $expect, $name)
 
-=item unlike($got, $expect, $name, @diag)
+=item $bool = unlike($got, $expect, $name, @diag)
 
 Opposite of C<like()>. Does all the same checks, but passes when there is a
 mismatch.
