@@ -186,5 +186,28 @@ is(
     "Can skip"
 );
 
+my $error;
+intercept {
+    my $control = mock 'Test2::Hub' => (
+        override => [ is_local => sub { 0 } ],
+    );
+
+    my $st = Test2::AsyncSubtest->new(name => 'early');
+    $error = dies { $st->run(sub { diag("We want to see this message or people die!") }) };
+    $control = undef;
+    $st->finish();
+};
+
+like(
+    $error,
+    qr/We want to see this message or people die!/,
+    "When an event is seen to early we get to see it in our exception"
+);
+
+like(
+    $error,
+    qr/You must attach to an AsyncSubtest before you can send events to it from another process or thread/,
+    "We see the main exception"
+);
 
 done_testing;
