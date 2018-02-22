@@ -1,6 +1,9 @@
 {{$NEXT}}
 
+0.000101  2018-02-21 16:27:18-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Add much needed verbosity to 'You must attach to an AsyncSubtest ...' errors
+    - Documentation updates
 
 0.000100  2018-02-13 21:41:30-08:00 America/Los_Angeles
 
