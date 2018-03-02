@@ -42,7 +42,6 @@ my $ID_POSTFIX = 1;
 sub init {
     my $self = shift;
 
-
     $self->{+PID} = $$;
     $self->{+TID} = get_tid();
     $self->{+HID} = join ipc_separator, $self->{+PID}, $self->{+TID}, $ID_POSTFIX++;

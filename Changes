@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix missing UUID in Test::Builder subtests
+
 1.302126  2018-03-01 23:15:52-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Add optional UUID tagging
