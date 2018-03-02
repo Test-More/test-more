@@ -4,7 +4,7 @@ use warnings;
 
 use List::Util qw/sum/;
 
-our $VERSION = '0.000103';
+our $VERSION = '0.000104';
 
 our @EXPORT_OK = qw/render_bench/;
 use base 'Exporter';
