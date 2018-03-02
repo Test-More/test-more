@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - AsyncSubtest now works with UUIDs and adds other proper meta-data
+
 0.000102  2018-03-02 09:45:27-08:00 America/Los_Angeles
 
     - No Changes since last trial

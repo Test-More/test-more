@@ -30,7 +30,7 @@ use Test2::Util::HashBase qw{
     finished
     active
     stack
-    id
+    id cid uuid
     children
     _in_use
     _attached pid tid
@@ -42,6 +42,9 @@ sub CAN_REALLY_THREAD {
     return 1;
 }
 
+
+my $UUID_VIA = Test2::API::_add_uuid_via_ref();
+my $CID = 1;
 my @STACK;
 
 sub TOP { @STACK ? $STACK[-1] : undef }
@@ -59,11 +62,13 @@ sub init {
 
     $self->{+TID}       = get_tid;
     $self->{+PID}       = $$;
+    $self->{+CID}       = 'AsyncSubtest-' . $CID++;
     $self->{+ID}        = 1;
     $self->{+FINISHED}  = 0;
     $self->{+ACTIVE}    = 0;
     $self->{+_IN_USE}   = 0;
     $self->{+CHILDREN}  = [];
+    $self->{+UUID} = ${$UUID_VIA}->() if defined $$UUID_VIA;
 
     unless($self->{+HUB}) {
         my $ipc = Test2::API::test2_ipc();
@@ -83,6 +88,10 @@ sub init {
         frame    => [caller(1)],
         buffered => $to->buffered,
         nested   => $to->nested,
+        cid      => $self->{+CID},
+        uuid     => $self->{+UUID},
+        hid      => $to->hid,
+        huuid    => $to->uuid,
     );
 
     my $hub = $self->{+HUB};
@@ -145,6 +154,10 @@ sub _gen_event {
             frame    => [caller(1)],
             buffered => $hub->buffered,
             nested   => $hub->nested,
+            cid      => $self->{+CID},
+            uuid     => $self->{+UUID},
+            hid      => $hub->hid,
+            huuid    => $hub->uuid,
         ),
     );
 }
@@ -253,6 +266,10 @@ sub run {
                 frame    => [caller(0)],
                 buffered => $hub->buffered,
                 nested   => $hub->nested,
+                cid      => $self->{+CID},
+                uuid     => $self->{+UUID},
+                hid      => $hub->hid,
+                huuid    => $hub->uuid,
             ),
         );
         $hub->send($e);
@@ -322,6 +339,10 @@ sub finish {
         frame    => $self->{+TRACE}->{frame},
         buffered => $hub->buffered,
         nested   => $hub->nested,
+        cid      => $self->{+CID},
+        uuid     => $self->{+UUID},
+        hid      => $hub->hid,
+        huuid    => $hub->uuid,
     );
 
     $hub->finalize($trace, !$no_plan)
@@ -348,11 +369,12 @@ sub finish {
 
         my $e = $ctx->build_event(
             'Subtest',
-            pass       => $hub->is_passing,
-            subtest_id => $hub->id,
-            name       => $self->{+NAME},
-            buffered   => 1,
-            subevents  => $self->{+EVENTS},
+            pass         => $hub->is_passing,
+            subtest_id   => $hub->id,
+            subtest_uuid => $hub->uuid,
+            name         => $self->{+NAME},
+            buffered     => 1,
+            subevents    => $self->{+EVENTS},
             $todo ? (
                 todo => $todo,
                 effective_pass => 1,
