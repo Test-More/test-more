@@ -9,7 +9,7 @@ BEGIN { require Test2::EventFacet; our @ISA = qw(Test2::EventFacet) }
 use Test2::Util qw/get_tid pkg_to_file/;
 use Carp qw/confess/;
 
-use Test2::Util::HashBase qw{^frame ^pid ^tid ^cid -hid -nested details -buffered};
+use Test2::Util::HashBase qw{^frame ^pid ^tid ^cid -hid -nested details -buffered -uuid -huuid};
 
 {
     no warnings 'once';
@@ -35,6 +35,8 @@ sub snapshot {
 
 sub signature {
     my $self = shift;
+
+    return $self->{+UUID} if $self->{+UUID};
 
     # Signature is only valid if all of these fields are defined, there is no
     # signature if any is missing. '0' is ok, but '' is not.
@@ -134,11 +136,25 @@ The thread ID in which the event was generated.
 
 The ID of the context that was used to create the event.
 
+=item $uuid = $trace->{uuid}
+
+=item $uuid = $trace->uuid()
+
+The UUID of the context that was used to create the event. (If uuid tagging was
+enabled)
+
 =item $hid = $trace->{hid}
 
 =item $hid = $trace->hid()
 
 The ID of the hub that was current when the event was created.
+
+=item $huuid = $trace->{huuid}
+
+=item $huuid = $trace->huuid()
+
+The UUID of the hub that was current when the event was created. (If uuid
+tagging was enabled).
 
 =item $int = $trace->{nested}
 
@@ -210,9 +226,11 @@ Get the debug-info subroutine name.
 =item $sig = trace->signature
 
 Get a signature string that identifies this trace. This is used to check if
-multiple events are related. The Trace includes pid, tid, file, line number,
-and the cid which is C<'C\d+'> for traces created by a context, or C<'T\d+'>
-for traces created by C<new()>.
+multiple events are related.
+
+If UUID's are enabled then a uuid is returned. Otherwise the signature includes
+pid, tid, file, line number, and the cid which is C<'C\d+'> for traces created
+by a context, or C<'T\d+'> for traces created by C<new()>.
 
 =back
 

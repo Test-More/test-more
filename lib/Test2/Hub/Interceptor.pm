@@ -12,7 +12,7 @@ use Test2::Util::HashBase;
 
 sub init {
     my $self = shift;
-    $self->SUPER::init;
+    $self->SUPER::init();
     $self->{+NESTED} = 0;
 }
 

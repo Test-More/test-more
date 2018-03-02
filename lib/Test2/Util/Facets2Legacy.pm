@@ -111,4 +111,20 @@ sub terminate {
     return $facet_data->{control}->{terminate};
 }
 
+sub uuid {
+    my $in = shift;
+
+    my $facet_data = _get_facet_data($in);
+    return $facet_data->{about}->{uuid} if $facet_data->{about} && $facet_data->{about}->{uuid};
+
+    if (blessed($in) && $in->isa('Test2::Event')) {
+        my $meth = $in->can('uuid');
+        $meth = $in->can('SUPER::uuid') if $meth == \&uuid;
+        my $uuid = $in->$meth if $meth && $meth != \&uuid;
+        return $uuid if $uuid;
+    }
+
+    return undef;
+}
+
 1;

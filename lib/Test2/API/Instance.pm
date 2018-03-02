@@ -21,6 +21,8 @@ use Test2::Util::HashBase qw{
     ipc stack formatter
     contexts
 
+    add_uuid_via
+
     -preload
 
     ipc_disabled
@@ -98,6 +100,8 @@ sub post_preload_reset {
     delete $self->{+_PID};
     delete $self->{+_TID};
 
+    $self->{+ADD_UUID_VIA} = undef unless exists $self->{+ADD_UUID_VIA};
+
     $self->{+CONTEXTS} = {};
 
     $self->{+FORMATTERS} = [];
@@ -119,7 +123,9 @@ sub reset {
     delete $self->{+_PID};
     delete $self->{+_TID};
 
-    $self->{+CONTEXTS}    = {};
+    $self->{+ADD_UUID_VIA} = undef;
+
+    $self->{+CONTEXTS} = {};
 
     $self->{+IPC_DRIVERS} = [];
     $self->{+IPC_POLLING} = undef;
@@ -127,8 +133,8 @@ sub reset {
     $self->{+FORMATTERS} = [];
     $self->{+FORMATTER}  = undef;
 
-    $self->{+FINALIZED} = undef;
-    $self->{+IPC}       = undef;
+    $self->{+FINALIZED}    = undef;
+    $self->{+IPC}          = undef;
     $self->{+IPC_DISABLED} = $ENV{T2_NO_IPC} ? 1 : 0;
 
     $self->{+IPC_TIMEOUT} = DEFAULT_IPC_TIMEOUT() unless defined $self->{+IPC_TIMEOUT};
@@ -858,6 +864,22 @@ during initialization. If a formatter is added after initialization has occurred
 a warning will be generated:
 
     "Formatter $formatter loaded too late to be used as the global formatter"
+
+=item $obj->set_add_uuid_via(sub { ... })
+
+=item $sub = $obj->add_uuid_via()
+
+This allows you to provide a UUID generator. If provided UUIDs will be attached
+to all events, hubs, and contexts. This is useful for storing, tracking, and
+linking these objects.
+
+The sub you provide should always return a unique identifier. Most things will
+expect a proper UUID string, however nothing in Test2::API enforces this.
+
+The sub will receive exactly 1 argument, the type of thing being tagged
+'context', 'hub', or 'event'. In the future additional things may be tagged, in
+which case new strings will be passed in. These are purely informative, you can
+(and usually should) ignore them.
 
 =back
 

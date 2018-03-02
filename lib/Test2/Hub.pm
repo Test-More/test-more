@@ -25,6 +25,7 @@ use Test2::Util::HashBase qw{
     _context_init
     _context_release
 
+    uuid
     active
     count
     failed
@@ -35,13 +36,19 @@ use Test2::Util::HashBase qw{
     skip_reason
 };
 
+my $UUID_VIA;
+
 my $ID_POSTFIX = 1;
 sub init {
     my $self = shift;
 
+
     $self->{+PID} = $$;
     $self->{+TID} = get_tid();
     $self->{+HID} = join ipc_separator, $self->{+PID}, $self->{+TID}, $ID_POSTFIX++;
+
+    $UUID_VIA ||= Test2::API::_add_uuid_via_ref();
+    $self->{+UUID} = ${$UUID_VIA}->('hub') if $$UUID_VIA;
 
     $self->{+NESTED}   = 0 unless defined $self->{+NESTED};
     $self->{+BUFFERED} = 0 unless defined $self->{+BUFFERED};
@@ -302,6 +309,8 @@ sub process {
             return unless $e;
         }
     }
+
+    $e->set_uuid(${$UUID_VIA}->('event')) if $$UUID_VIA;
 
     # Optimize the most common case
     my $type = ref($e);
@@ -774,6 +783,10 @@ Get the thread id under which the hub was created.
 =item $hud = $hub->hid()
 
 Get the identifier string of the hub.
+
+=item $uuid = $hub->uuid()
+
+If UUID tagging is enabled (see L<Test2::API>) then the hub will have a UUID.
 
 =item $ipc = $hub->ipc()
 

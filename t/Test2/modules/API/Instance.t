@@ -24,6 +24,8 @@ is_deeply(
         ipc       => undef,
         formatter => undef,
 
+        add_uuid_via => undef,
+
         ipc_polling    => undef,
         ipc_drivers    => [],
         ipc_timeout    => 30,
@@ -59,6 +61,8 @@ is_deeply(
         ipc_drivers  => [],
         ipc_timeout  => 30,
         ipc_disabled => 0,
+
+        add_uuid_via => undef,
 
         formatters => [],
 

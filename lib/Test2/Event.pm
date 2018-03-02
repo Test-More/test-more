@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '1.302126';
 
-use Test2::Util::HashBase qw/trace -amnesty/;
+use Test2::Util::HashBase qw/trace -amnesty uuid/;
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 use Test2::Util qw(pkg_to_file);
 
@@ -106,6 +106,10 @@ sub facet_data {
 
     $out->{about}->{details}    = $self->summary    || undef;
     $out->{about}->{no_display} = $self->no_display || undef;
+
+    if (my $uuid = $self->uuid) {
+        $out->{about}->{uuid} = $uuid;
+    }
 
     # Might be undef, we want to preserve that
     my $terminate = $self->terminate;
@@ -302,6 +306,12 @@ In other words it marks a failure as expected and allowed.
 
 B<Note:> This is how 'TODO' is implemented under the hood. TODO is essentially
 amnesty with the 'TODO' tag. The details are the reason for the TODO.
+
+=item my $uuid = $e->uuid
+
+If UUID tagging is enabled (See L<Test::API>) then any event that has made its
+way through a hub will be tagged with a UUID. A newly created event will not
+yet be tagged in most cases.
 
 =back
 
