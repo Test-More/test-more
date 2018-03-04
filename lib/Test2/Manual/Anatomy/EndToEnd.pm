@@ -40,7 +40,7 @@ still change the formatter, load L<Test2::IPC>, or have other global effects
 that need to be done before the first L<Test2::API::Context> is created. Once
 the first L<Test2::API::Context> is created the API will finish initialization.
 
-See L</"WHAT HAPPENS WHEN I AQUIRE A CONTEXT?"> for more information.
+See L</"WHAT HAPPENS WHEN I ACQUIRE A CONTEXT?"> for more information.
 
 =back
 
@@ -73,11 +73,11 @@ This section covers the basic workflow all tools such as C<ok()> must follow.
 
     my $ctx = context();
 
-See L</"WHAT HAPPENS WHEN I AQUIRE A CONTEXT?"> for more information.
+See L</"WHAT HAPPENS WHEN I ACQUIRE A CONTEXT?"> for more information.
 
 =item The tool uses the context object to create, send, and return events.
 
-See L</"WHAT HAPPEND WHEN I SEND AN EVENT?"> for more information.
+See L</"WHAT HAPPENS WHEN I SEND AN EVENT?"> for more information.
 
     my $event = $ctx->send_event('Ok', pass => $bool, name => $name);
 
