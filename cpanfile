@@ -1,5 +1,6 @@
 requires "B" => "0";
 requires "Carp" => "0";
+requires "Data::Dumper" => "0";
 requires "Exporter" => "0";
 requires "Importer" => "0.024";
 requires "Module::Pluggable" => "2.7";
