@@ -3,7 +3,7 @@ package Test2::Tools::GenTemp;
 use strict;
 use warnings;
 
-our $VERSION = '0.000104';
+our $VERSION = '0.000105';
 
 use File::Temp qw/tempdir/;
 use File::Spec;

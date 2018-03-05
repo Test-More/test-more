@@ -2,7 +2,7 @@ package Test2::Util::Ref;
 use strict;
 use warnings;
 
-our $VERSION = '0.000104';
+our $VERSION = '0.000105';
 
 use Scalar::Util qw/reftype blessed refaddr/;
 
