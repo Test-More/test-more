@@ -2,7 +2,7 @@ package Test2::EventFacet::Trace;
 use strict;
 use warnings;
 
-our $VERSION = '1.302128';
+our $VERSION = '1.302129';
 
 BEGIN { require Test2::EventFacet; our @ISA = qw(Test2::EventFacet) }
 
