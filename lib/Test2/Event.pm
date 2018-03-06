@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '1.302129';
 
-use Test2::Util::HashBase qw/trace -amnesty uuid/;
+use Test2::Util::HashBase qw/trace -amnesty uuid -hubs/;
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 use Test2::Util qw(pkg_to_file);
 
@@ -18,6 +18,7 @@ use Test2::EventFacet::Meta();
 use Test2::EventFacet::Parent();
 use Test2::EventFacet::Plan();
 use Test2::EventFacet::Trace();
+use Test2::EventFacet::Hub();
 
 my @FACET_TYPES = qw{
     Test2::EventFacet::About
@@ -30,6 +31,7 @@ my @FACET_TYPES = qw{
     Test2::EventFacet::Parent
     Test2::EventFacet::Plan
     Test2::EventFacet::Trace
+    Test2::EventFacet::Hub
 };
 
 sub FACET_TYPES() { @FACET_TYPES }
@@ -66,6 +68,11 @@ sub related {
     return 0;
 }
 
+sub add_hub {
+    my $self = shift;
+    unshift @{$self->{+HUBS}} => @_;
+}
+
 sub add_amnesty {
     my $self = shift;
 
@@ -86,6 +93,10 @@ sub common_facet_data {
 
     if (my $trace = $self->trace) {
         $out{trace} = { %$trace };
+    }
+
+    if (my $hubs = $self->hubs) {
+        $out{hubs} = $hubs;
     }
 
     $out{amnesty} = [map {{ %{$_} }} @{$self->{+AMNESTY}}]

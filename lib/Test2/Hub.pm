@@ -278,6 +278,21 @@ sub send {
     my $self = shift;
     my ($e) = @_;
 
+    $e->add_hub(
+        {
+            details => ref($self),
+
+            buffered => $self->{+BUFFERED},
+            hid      => $self->{+HID},
+            nested   => $self->{+NESTED},
+            pid      => $self->{+PID},
+            tid      => $self->{+TID},
+            uuid     => $self->{+UUID},
+
+            ipc => $self->{+IPC} ? 1 : 0,
+        }
+    );
+
     if ($self->{+_PRE_FILTERS}) {
         for (@{$self->{+_PRE_FILTERS}}) {
             $e = $_->{code}->($self, $e);

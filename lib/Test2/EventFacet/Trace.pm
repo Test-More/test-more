@@ -143,6 +143,21 @@ The ID of the context that was used to create the event.
 The UUID of the context that was used to create the event. (If uuid tagging was
 enabled)
 
+=back
+
+=head2 DISCOURAGED HUB RELATED FIELDS
+
+These fields were not always set properly by tools. These are B<MOSTLY>
+deprecated by the L<Test2::EventFacet::Hub> facets. These fields are not
+required, and may only reflect the hub that was current when the event was
+created, which is not necessarily the same as the hub the event was sent
+through.
+
+Some tools did do a good job setting these to the correct hub, but you cannot
+always rely on that. Use the 'hubs' facet list instead.
+
+=over 4
+
 =item $hid = $trace->{hid}
 
 =item $hid = $trace->hid()
