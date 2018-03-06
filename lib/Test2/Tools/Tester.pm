@@ -2,7 +2,7 @@ package Test2::Tools::Tester;
 use strict;
 use warnings;
 
-our $VERSION = '0.000105';
+our $VERSION = '0.000106';
 
 use Carp qw/croak/;
 use Module::Pluggable search_path => ['Test2::EventFacet'], require => 1;

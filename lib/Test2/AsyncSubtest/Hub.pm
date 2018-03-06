@@ -2,7 +2,7 @@ package Test2::AsyncSubtest::Hub;
 use strict;
 use warnings;
 
-our $VERSION = '0.000105';
+our $VERSION = '0.000106';
 
 use base 'Test2::Hub::Subtest';
 use Test2::Util::HashBase qw/ast_ids/;
