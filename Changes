@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000105  2018-03-06 09:13:36-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix nesting bug in Test2::Workflow
 
 0.000104  2018-03-05 09:27:44-08:00 America/Los_Angeles
