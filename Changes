@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix nesting bug in Test2::Workflow
+
 0.000104  2018-03-05 09:27:44-08:00 America/Los_Angeles
 
     - Add Data::Dumper to dep list (#154)

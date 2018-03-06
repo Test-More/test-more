@@ -25,7 +25,7 @@ use Test2::AsyncSubtest::Event::Detach();
 
 use Test2::Util::HashBase qw{
     name hub
-    trace send_to
+    trace frame send_to
     events
     finished
     active
@@ -85,7 +85,7 @@ sub init {
     }
 
     $self->{+TRACE} ||= Test2::Util::Trace->new(
-        frame    => [caller(1)],
+        frame    => $self->{+FRAME} || [caller(1)],
         buffered => $to->buffered,
         nested   => $to->nested,
         cid      => $self->{+CID},
@@ -365,6 +365,10 @@ sub finish {
         if ($collapse && $empty) {
             $ctx->ok($hub->is_passing, $self->{+NAME});
             return $hub->is_passing;
+        }
+
+        if ($collapse && $no_asserts) {
+            push @{$self->{+EVENTS}} => Test2::Event::Plan->new(trace => $trace, max => 0, directive => 'SKIP', reason => "No assertions");
         }
 
         my $e = $ctx->build_event(

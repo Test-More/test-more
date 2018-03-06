@@ -98,12 +98,23 @@ sub send_event {
         $class = "Test2::Event::$type";
     }
 
+    my $hub = Test2::API::test2_stack()->top();
+
     my $e = $class->new(
-        trace => Test2::Util::Trace->new(frame => [caller(0)]),
+        trace => Test2::Util::Trace->new(
+            frame => [caller(0)],
+            buffered => $hub->buffered,
+            nested   => $hub->nested,
+            hid      => $hub->hid,
+            huuid    => $hub->uuid,
+            #cid      => $self->{+CID},
+            #uuid     => $self->{+UUID},
+        ),
+
         %params,
     );
 
-    Test2::API::test2_stack()->top()->send($e);
+    $hub->send($e);
 }
 
 sub current_subtest {
@@ -168,14 +179,23 @@ sub run {
             else {
                 my $st = Test2::AsyncSubtest->new(
                     name  => $task->name,
-                    trace => Test2::Util::Trace->new(frame => $task->frame),
+                    frame => $task->frame,
                 );
                 $state->{subtest} = $st;
 
                 $state->{todo} = Test2::Todo->new(reason => $task->todo, hub => $st->hub)
                     if $task->todo;
 
-                $st->hub->send($_) for @{$task->events};
+                for my $e (@{$task->events}) {
+                    my $hub = $st->hub;
+
+                    $e->trace->{buffered} = $hub->buffered;
+                    $e->trace->{nested}   = $hub->nested;
+                    $e->trace->{hid}      = $hub->hid;
+                    $e->trace->{huuid}    = $hub->uuid;
+
+                    $hub->send($e);
+                }
 
                 my $slot = $self->isolate($state);
 

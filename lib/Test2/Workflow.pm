@@ -108,7 +108,7 @@ sub parse_args {
             my $hub = Test2::API::test2_stack->top;
             my $count = @$events;
             my $list = $count
-                ? "Overview of unseen events:\n" . join "" => map "    " . blessed($_) . " " . $_->trace->debug . "\n", @$events
+                ? "Overview of unseen events:\n" . join "" => map "    " . blessed($_) . " " . $_->trace($hub)->debug . "\n", @$events
                 : "";
             die <<"            EOT";
 Exception in build '$args->{name}' with $count unseen event(s).

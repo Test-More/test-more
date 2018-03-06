@@ -128,12 +128,13 @@ is(
             call name => 'collapse: note only';
             call subevents => array {
                 event Note => { message => "inside" };
+                event Plan => { max => 0, directive => 'SKIP' };
                 end;
             };
         };
         end;
     },
-    "Got subtest event containing only the note"
+    "Got subtest event containing only the note and a 0 plan"
 );
 
 is(

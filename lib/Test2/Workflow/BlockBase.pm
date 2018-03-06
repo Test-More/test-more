@@ -79,9 +79,22 @@ sub info {
 
 sub trace {
     my $self = shift;
+
+    my ($hub, %params) = @_;
+
+    croak "'hub' is required"
+        unless $hub;
+
     return Test2::Util::Trace->new(
         frame  => $self->frame,
         detail => $self->debug,
+
+        buffered => $hub->buffered,
+        nested   => $hub->nested,
+        hid      => $hub->hid,
+        huuid    => $hub->uuid,
+
+        %params,
     );
 }
 
