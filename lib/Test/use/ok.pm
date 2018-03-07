@@ -1,7 +1,7 @@
 package Test::use::ok;
 use 5.005;
 
-our $VERSION = '1.302131';
+our $VERSION = '1.302132';
 
 
 __END__
