@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302131  2018-03-07 09:36:16-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Make sure event puts the uuid into the about facet
 
 1.302130  2018-03-07 08:07:54-08:00 America/Los_Angeles
