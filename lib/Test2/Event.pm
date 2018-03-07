@@ -90,6 +90,9 @@ sub common_facet_data {
     my %out;
 
     $out{about} = {package => ref($self) || undef};
+    if (my $uuid = $self->uuid) {
+        $out{about}->{uuid} = $uuid;
+    }
 
     if (my $trace = $self->trace) {
         $out{trace} = { %$trace };
@@ -117,10 +120,6 @@ sub facet_data {
 
     $out->{about}->{details}    = $self->summary    || undef;
     $out->{about}->{no_display} = $self->no_display || undef;
-
-    if (my $uuid = $self->uuid) {
-        $out->{about}->{uuid} = $uuid;
-    }
 
     # Might be undef, we want to preserve that
     my $terminate = $self->terminate;

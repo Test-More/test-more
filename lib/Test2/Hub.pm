@@ -293,6 +293,8 @@ sub send {
         }
     );
 
+    $e->set_uuid(${$UUID_VIA}->('event')) if $$UUID_VIA;
+
     if ($self->{+_PRE_FILTERS}) {
         for (@{$self->{+_PRE_FILTERS}}) {
             $e = $_->{code}->($self, $e);
@@ -323,8 +325,6 @@ sub process {
             return unless $e;
         }
     }
-
-    $e->set_uuid(${$UUID_VIA}->('event')) if $$UUID_VIA;
 
     # Optimize the most common case
     my $type = ref($e);

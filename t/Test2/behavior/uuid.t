@@ -39,6 +39,8 @@ is($events->[0]->uuid, 'event-1', "First event gets first uuid");
 is($events->[0]->trace->uuid, 'context-2', "First event has correct context");
 is($events->[0]->trace->huuid, 'hub-2', "First event has correct hub");
 
+is($events->[0]->facet_data->{about}->{uuid}, "event-1", "The UUID makes it to facet data");
+
 is($events->[1]->uuid, 'event-2', "Second event gets correct uuid");
 is($events->[1]->trace->uuid, 'context-3', "Second event has correct context");
 is($events->[1]->trace->huuid, 'hub-2', "Second event has correct hub");
