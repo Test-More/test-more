@@ -65,7 +65,7 @@ our @EXPORT = qw/is like/;
 our @EXPORT_OK = qw{
     is like isnt unlike
     match mismatch validator
-    hash array bag object meta meta_check number float string subset bool
+    hash array bag object meta meta_check number float rounded within string subset bool
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     etc end filter_items
@@ -315,6 +315,28 @@ sub float($;@) {
         lines => [$caller[2]],
         input => $num,
         @args,
+    );
+}
+
+sub rounded($$) {
+    my ($num, $precision) = @_;
+    my @caller = caller;
+    return Test2::Compare::Float->new(
+        file      => $caller[1],
+        lines     => [$caller[2]],
+        input     => $num,
+        precision => $precision,
+    );
+}
+
+sub within($;$) {
+    my ($num, $tolerance) = @_;
+    my @caller = caller;
+    return Test2::Compare::Float->new(
+        file      => $caller[1],
+        lines     => [$caller[2]],
+        input     => $num,
+        defined $tolerance ? ( tolerance => $tolerance ) : (),
     );
 }
 
@@ -670,7 +692,7 @@ the field.
     use Test2::Tools::Compare qw{
         is like isnt unlike
         match mismatch validator
-        hash array bag object meta number float string subset bool
+        hash array bag object meta number float rounded within string subset bool
         in_set not_in_set check_set
         item field call call_list call_hash prop check all_items all_keys all_vals all_values
         etc end filter_items
@@ -966,15 +988,50 @@ Verify that the value does not match the given number using the C<!=> operator.
 
 =item $check = float ...;
 
-Verify that the value matches the given float within a +/- tolerance using the C<==> operator.
+Verify that the value is approximately equal to the given number.
 
-Default tolerance is 1e-08 and can be overridden with 'tolerance' parameter.
+If a 'precision' parameter is specified, both operands will be
+rounded to 'precision' number of fractional decimal digits and
+compared with C<eq>.
+
+Otherwise, the check will be made within a range of +/- 'tolerance',
+with a default 'tolerance' of 1e-08.
+
+See also C<within> and C<rounded>.
 
 =item $check = !float ...;
 
-Verify that the value does not match the given float within a +/- tolerance, using the C<!=> operator.
+Verify that the value is not approximately equal to the given number.
 
-Default tolerance is 1e-08 and can be overridden with 'tolerance' parameter.
+If a 'precision' parameter is specified, both operands will be
+rounded to 'precision' number of fractional decimal digits and
+compared with C<eq>.
+
+Otherwise, the check will be made within a range of +/- 'tolerance',
+with a default 'tolerance' of 1e-08.
+
+See also C<!within> and C<!rounded>.
+
+=item $check = within($num, $tolerance);
+
+Verify that the value approximately matches the given number,
+within a range of +/- C<$tolerance>.  Compared using the C<==> operator.
+
+C<$tolerance> is optional and defaults to 1e-08.
+
+=item $check = !within($num, $tolerance);
+
+Verify that the value does not approximately match the given number within a range of +/- C<$tolerance>.  Compared using the C<!=> operator.
+
+C<$tolerance> is optional and defaults to 1e-08.
+
+=item $check = rounded($num, $precision);
+
+Verify that the value approximately matches the given number, when both are rounded to C<$precision> number of fractional digits. Compared using the C<eq> operator.
+
+=item $check = !rounded($num, $precision);
+
+Verify that the value does not approximately match the given number, when both are rounded to C<$precision> number of fractional digits. Compared using the C<ne> operator.
 
 =item $check = bool ...;
 
