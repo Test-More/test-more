@@ -112,12 +112,20 @@ sub common_facet_data {
     $out{amnesty} = [map {{ %{$_} }} @{$self->{+AMNESTY}}]
         if $self->{+AMNESTY};
 
-    my $key = Test2::Util::ExternalMeta::META_KEY();
-    if (my $hash = $self->{$key}) {
-        $out{meta} = {%$hash};
+    if (my $meta = $self->meta_facet_data) {
+        $out{meta} = $meta;
     }
 
     return \%out;
+}
+
+sub meta_facet_data {
+    my $self = shift;
+
+    my $key = Test2::Util::ExternalMeta::META_KEY();
+
+    my $hash = $self->{$key} or return undef;
+    return {%$hash};
 }
 
 sub facet_data {
