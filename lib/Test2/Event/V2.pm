@@ -87,7 +87,7 @@ Test2::Event::V2 - Second generation event.
 =head1 DESCRIPTION
 
 This is the event type that should be used instead of L<Test2::Event> or its
-legecy subclasses.
+legacy subclasses.
 
 =head1 SYNOPSIS
 
@@ -160,7 +160,7 @@ B<NOTE:> Items B<ARE NOT> blessed when added.
 
 =item $e->set_uuid($UUID)
 
-Inherited from L<Test2::Event>, overriden to also vivify/mutate the 'about'
+Inherited from L<Test2::Event>, overridden to also vivify/mutate the 'about'
 facet.
 
 =item $e->set_trace($trace)

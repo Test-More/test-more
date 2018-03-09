@@ -215,7 +215,7 @@ Check if the event or facets contain any diagnostics information.
 
 =item $bool = global($f)
 
-Check if the event or facets need tobe globally processed.
+Check if the event or facets need to be globally processed.
 
 =item $bool = $e->increments_count()
 

@@ -653,8 +653,8 @@ The value of C<$@> when the context was created.
 B<Which one do I use?>
 
 The C<pass*> and C<fail*> are optimal if they meet your situation, using one of
-them will always be the most performant. That said they are optimal by
-eliminating many features.
+them will always be the most optimal. That said they are optimal by eliminating
+many features.
 
 Method such as C<ok>, and C<note> are shortcuts for generating common 1-task
 events based on the old API, however they are forward compatible, and easy to
@@ -662,7 +662,7 @@ use. If these meet your needs then go ahead and use them, but please check back
 often for alternatives that may be added.
 
 If you want to generate new style events, events that do many things at once,
-then you want the C<*ev2*> methods. These let you directyl specify which facets
+then you want the C<*ev2*> methods. These let you directly specify which facets
 you wish to use.
 
 =over 4
