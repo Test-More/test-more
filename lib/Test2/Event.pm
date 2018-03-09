@@ -4,6 +4,9 @@ use warnings;
 
 our $VERSION = '1.302132';
 
+use Scalar::Util qw/blessed reftype/;
+use Carp qw/croak/;
+
 use Test2::Util::HashBase qw/trace -amnesty uuid -hubs/;
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
 use Test2::Util qw(pkg_to_file);
@@ -220,8 +223,11 @@ sub facet_data {
 
 sub facets {
     my $self = shift;
-    my $data = $self->facet_data;
     my %out;
+
+    my $data = $self->facet_data;
+    my @errors = $self->validate_facet_data($data);
+    die join "\n" => @errors if @errors;
 
     for my $facet (keys %$data) {
         my $class = $self->load_facet($facet);
@@ -232,11 +238,7 @@ sub facets {
             next;
         }
 
-        my $is_list = $class->is_list;
-        my $got_list = ref($val) eq 'ARRAY' ? 1 : 0;
-        die "Facet '$facet' list/not-list mismatch between data($val) and list-status($is_list)"
-            if $is_list xor $got_list;
-
+        my $is_list = reftype($val) eq 'ARRAY' ? 1 : 0;
         if ($is_list) {
             $out{$facet} = [map { $class->new($_) } @$val];
         }
@@ -246,6 +248,42 @@ sub facets {
     }
 
     return \%out;
+}
+
+sub validate_facet_data {
+    my $class_or_self = shift;
+    my ($f, %params);
+
+    $f = shift if @_ && (reftype($_[0]) || '') eq 'HASH';
+    %params = @_;
+
+    $f ||= $class_or_self->facet_data if blessed($class_or_self);
+    croak "No facet data" unless $f;
+
+    my @errors;
+
+    for my $k (sort keys %$f) {
+        my $fclass = $class_or_self->load_facet($k);
+
+        push @errors => "Could not find a facet class for facet '$k'"
+            if $params{require_facet_class} && !$fclass;
+
+        next unless $fclass;
+
+        my $v = $f->{$k};
+        next unless defined($v); # undef is always fine
+
+        my $is_list = $fclass->is_list();
+        my $got_list = reftype($v) eq 'ARRAY' ? 1 : 0;
+
+        push @errors => "Facet '$k' should be a list, but got a single item ($v)"
+            if $is_list && !$got_list;
+
+        push @errors => "Facet '$k' should not be a list, but got a a list ($v)"
+            if $got_list && !$is_list;
+    }
+
+    return @errors;
 }
 
 sub nested {
@@ -437,6 +475,40 @@ write out explicit facet data.
 This takes the hashref from C<facet_data()> and blesses each facet into the
 proper C<Test2::EventFacet::*> subclass. If no class can be found for any given
 facet it will be passed along unchanged.
+
+=item @errors = $e->validate_facet_data();
+
+=item @errors = $e->validate_facet_data(%params);
+
+=item @errors = $e->validate_facet_data(\%facets, %params);
+
+=item @errors = Test2::Event->validate_facet_data(%params);
+
+=item @errors = Test2::Event->validate_facet_data(\%facets, %params);
+
+This method will validate facet data and return a list of errors. If no errors
+are found this will return an empty list.
+
+This can be called as an object method with no arguments, in which case the
+C<facet_data()> method will be called to get the facet data to be validated.
+
+When used as an object method the C<\%facet_data> argument may be omitted.
+
+When used as a class method the C<\%facet_data> argument is required.
+
+Remaining arguments will be slurped into a C<%params> hash.
+
+Currently only 1 parameter is defined:
+
+=over 4
+
+=item require_facet_class => $BOOL
+
+When set to true (default is false) this will reject any facets where a facet
+class cannot be found. Normally facets without classes are assumed to be custom
+and are ignored.
+
+=back
 
 =back
 
