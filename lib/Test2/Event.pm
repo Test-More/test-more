@@ -20,25 +20,51 @@ use Test2::EventFacet::Plan();
 use Test2::EventFacet::Trace();
 use Test2::EventFacet::Hub();
 
-my @FACET_TYPES = qw{
-    Test2::EventFacet::About
-    Test2::EventFacet::Amnesty
-    Test2::EventFacet::Assert
-    Test2::EventFacet::Control
-    Test2::EventFacet::Error
-    Test2::EventFacet::Info
-    Test2::EventFacet::Meta
-    Test2::EventFacet::Parent
-    Test2::EventFacet::Plan
-    Test2::EventFacet::Trace
-    Test2::EventFacet::Hub
-};
-
-sub FACET_TYPES() { @FACET_TYPES }
-
 # Legacy tools will expect this to be loaded now
 require Test2::Util::Trace;
 
+my %LOADED_FACETS = (
+    'about'   => 'Test2::EventFacet::About',
+    'amnesty' => 'Test2::EventFacet::Amnesty',
+    'assert'  => 'Test2::EventFacet::Assert',
+    'control' => 'Test2::EventFacet::Control',
+    'errors'  => 'Test2::EventFacet::Error',
+    'info'    => 'Test2::EventFacet::Info',
+    'meta'    => 'Test2::EventFacet::Meta',
+    'parent'  => 'Test2::EventFacet::Parent',
+    'plan'    => 'Test2::EventFacet::Plan',
+    'trace'   => 'Test2::EventFacet::Trace',
+    'hubs'    => 'Test2::EventFacet::Hub',
+);
+
+sub FACET_TYPES { sort values %LOADED_FACETS }
+
+sub load_facet {
+    my $class = shift;
+    my ($facet) = @_;
+
+    return $LOADED_FACETS{$facet} if exists $LOADED_FACETS{$facet};
+
+    my @check = ($facet);
+    if ('s' eq substr($facet, -1, 1)) {
+        push @check => substr($facet, 0, -1);
+    }
+    else {
+        push @check => $facet . 's';
+    }
+
+    my $found;
+    for my $check (@check) {
+        my $mod  = "Test2::EventFacet::" . ucfirst($facet);
+        my $file = pkg_to_file($mod);
+        next unless eval { require $file; 1 };
+        $found = $mod;
+        last;
+    }
+
+    return undef unless $found;
+    $LOADED_FACETS{$facet} = $found;
+}
 
 sub causes_fail      { 0 }
 sub increments_count { 0 }
@@ -197,15 +223,25 @@ sub facets {
     my $data = $self->facet_data;
     my %out;
 
-    for my $type (FACET_TYPES()) {
-        my $key = $type->facet_key;
-        next unless $data->{$key};
+    for my $facet (keys %$data) {
+        my $class = $self->load_facet($facet);
+        my $val = $data->{$facet};
 
-        if ($type->is_list) {
-            $out{$key} = [map { $type->new($_) } @{$data->{$key}}];
+        unless($class) {
+            $out{$facet} = $val;
+            next;
+        }
+
+        my $is_list = $class->is_list;
+        my $got_list = ref($val) eq 'ARRAY' ? 1 : 0;
+        die "Facet '$facet' list/not-list mismatch between data($val) and list-status($is_list)"
+            if $is_list xor $got_list;
+
+        if ($is_list) {
+            $out{$facet} = [map { $class->new($_) } @$val];
         }
         else {
-            $out{$key} = $type->new($data->{$key});
+            $out{$facet} = $class->new($val);
         }
     }
 
@@ -346,11 +382,36 @@ In other words it marks a failure as expected and allowed.
 B<Note:> This is how 'TODO' is implemented under the hood. TODO is essentially
 amnesty with the 'TODO' tag. The details are the reason for the TODO.
 
-=item my $uuid = $e->uuid
+=item $uuid = $e->uuid
 
 If UUID tagging is enabled (See L<Test::API>) then any event that has made its
 way through a hub will be tagged with a UUID. A newly created event will not
 yet be tagged in most cases.
+
+=item $class = $e->load_facet($name)
+
+This method is used to load a facet by name (or key). It will attempt to load
+the facet class, if it succeeds it will return the class it loaded. If it fails
+it will return C<undef>. This caches the result at the class level so that
+future calls will be faster.
+
+The C<$name> variable should be the key used to access the facet in a facets
+hashref. For instance the assertion facet has the key 'assert', the information
+facet has the 'info' key, and the error facet has the key 'errors'. You may
+include or omit the 's' at the end of the name, the method is smart enough to
+try both the 's' and no-'s' forms, it will check what you provided first, and
+if that is not found it will add or strip the 's and try again.
+
+=item @classes = $e->FACET_TYPES()
+
+=item @classes = Test2::Event->FACET_TYPES()
+
+This returns a list of all facets that have been loaded using the
+C<load_facet()> method. This will not return any classes that have not been
+loaded, or have been loaded directly without a call to C<load_facet()>.
+
+B<Note:> The core facet types are automatically loaded and populated in this
+list.
 
 =back
 
@@ -374,7 +435,8 @@ write out explicit facet data.
 =item $hashref = $e->facets()
 
 This takes the hashref from C<facet_data()> and blesses each facet into the
-proper C<Test2::EventFacet::*> subclass.
+proper C<Test2::EventFacet::*> subclass. If no class can be found for any given
+facet it will be passed along unchanged.
 
 =back
 
