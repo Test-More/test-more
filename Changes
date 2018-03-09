@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302132  2018-03-09 15:43:51-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Add method to validate facet data
     - Add Test2::Event::V2 event class, and context helpers
     - Improve how events handle facets
