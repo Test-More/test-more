@@ -36,8 +36,6 @@ sub snapshot {
 sub signature {
     my $self = shift;
 
-    return $self->{+UUID} if $self->{+UUID};
-
     # Signature is only valid if all of these fields are defined, there is no
     # signature if any is missing. '0' is ok, but '' is not.
     return join ':' => map { (defined($_) && length($_)) ? $_ : return undef } (

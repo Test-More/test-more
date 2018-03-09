@@ -5,6 +5,8 @@ use Test2::Tools::Tiny;
 use Test2::Event();
 use Test2::EventFacet::Trace();
 use Test2::Event::Generic;
+
+use Test2::API qw/context/;
 use Scalar::Util qw/reftype/;
 
 tests old_api => sub {
@@ -634,6 +636,31 @@ tests common_facet_data => sub {
         },
         "Amnesty added"
     );
+};
+
+tests related => sub {
+    my $ctx = context();
+    my $ev_a = $ctx->build_ev2(about => {});
+    my $ev_b = $ctx->build_ev2(about => {});
+    $ctx->release;
+
+    $ctx = context();
+    my $ev_c = $ctx->build_ev2(about => {});
+    $ctx->release;
+
+    delete $ev_a->{trace}->{uuid};
+    delete $ev_b->{trace}->{uuid};
+    delete $ev_c->{trace}->{uuid};
+
+    ok($ev_a->related($ev_b), "Related as they were created with the same context (no uuid)");
+    ok(!$ev_a->related($ev_c), "Not related as they were created with a different context (no uuid)");
+
+    $ev_a->{trace}->{uuid} = 'xxx'; # Yes I know it is not valid.
+    $ev_b->{trace}->{uuid} = 'yyy'; # Yes I know it is not valid.
+    $ev_c->{trace}->{uuid} = 'xxx'; # Yes I know it is not valid.
+
+    ok(!$ev_a->related($ev_b), "Not related, traces have different UUID's");
+    ok($ev_a->related($ev_c), "Related, traces have the same UUID's");
 };
 
 done_testing;

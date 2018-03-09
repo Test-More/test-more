@@ -61,6 +61,13 @@ sub related {
     my $tracea = $self->trace  or return undef;
     my $traceb = $event->trace or return undef;
 
+    my $uuida = $tracea->uuid;
+    my $uuidb = $traceb->uuid;
+    if ($uuida && $uuidb) {
+        return 1 if $uuida eq $uuidb;
+        return 0;
+    }
+
     my $siga = $tracea->signature or return undef;
     my $sigb = $traceb->signature or return undef;
 
