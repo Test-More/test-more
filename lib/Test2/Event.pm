@@ -205,20 +205,34 @@ sub facets {
 }
 
 sub nested {
+    my $self = shift;
+
     Carp::cluck("Use of Test2::Event->nested() is deprecated, use Test2::Event->trace->nested instead")
         if $ENV{AUTHOR_TESTING};
 
-    $_[0]->{+TRACE}->{nested};
+    if (my $hubs = $self->{+HUBS}) {
+        return $hubs->[0]->{nested} if @$hubs;
+    }
+
+    my $trace = $self->{+TRACE} or return undef;
+    return $trace->{nested};
 }
 
 sub in_subtest {
+    my $self = shift;
+
     Carp::cluck("Use of Test2::Event->in_subtest() is deprecated, use Test2::Event->trace->hid instead")
         if $ENV{AUTHOR_TESTING};
 
-    # Return undef if we are not nested, Legacy did not return the hid if nestign was 0.
-    return undef unless $_[0]->{+TRACE}->{nested};
+    my $hubs = $self->{+HUBS};
+    if ($hubs && @$hubs) {
+        return undef unless $hubs->[0]->{nested};
+        return $hubs->[0]->{hid}
+    }
 
-    $_[0]->{+TRACE}->{hid};
+    my $trace = $self->{+TRACE} or return undef;
+    return undef unless $trace->{nested};
+    return $trace->{hid};
 }
 
 1;
