@@ -20,7 +20,7 @@ __END__
 
 =head1 NAME
 
-Test2::EventFacet::Hub
+Test2::EventFacet::Hub - Facet for the hubs an event passes through.
 
 =head1 DESCRIPTION
 
