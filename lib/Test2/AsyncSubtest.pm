@@ -10,7 +10,7 @@ our @CARP_NOT = qw/Test2::Util::HashBase/;
 
 use Carp qw/croak cluck confess/;
 use Test2::Util qw/get_tid CAN_THREAD CAN_FORK/;
-use Scalar::Util qw/blessed/;
+use Scalar::Util qw/blessed weaken/;
 use List::Util qw/first/;
 
 use Scope::Guard();
@@ -81,6 +81,7 @@ sub init {
             buffered  => 1,
             formatter => $formatter,
         );
+        weaken($hub->{ast} = $self);
         $self->{+HUB} = $hub;
     }
 
@@ -774,7 +775,7 @@ C<< $ast->wait >>, or C<< $ast->finish >> are called.
 =item my $thr = $ast->run_thread(sub { ... });
 
 B<** DISCOURAGED **> Threads cause problems. This method remains for anyone who
-REALYL wants it, but it is no longer supported. Tests for this functionality do
+REALY wants it, but it is no longer supported. Tests for this functionality do
 not even run unless the AUTHOR_TESTING or T2_DO_THREAD_TESTS env vars are
 enabled.
 

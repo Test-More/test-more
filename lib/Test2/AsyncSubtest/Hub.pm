@@ -5,7 +5,7 @@ use warnings;
 our $VERSION = '0.000109';
 
 use base 'Test2::Hub::Subtest';
-use Test2::Util::HashBase qw/ast_ids/;
+use Test2::Util::HashBase qw/ast_ids ast/;
 
 sub init {
     my $self = shift;
@@ -54,6 +54,16 @@ This is a subclass of L<Test2::Hub::Subtest> used for async subtests.
 =head1 SYNOPSIS
 
 You should not use this directly.
+
+=head1 METHODS
+
+=over 4
+
+=item $ast = $hub->ast
+
+Get the L<Test2::AsyncSubtest> object to which this hub is bound.
+
+=back
 
 =head1 SOURCE
 
