@@ -98,7 +98,6 @@ sub init {
     my $hub = $self->{+HUB};
     $hub->set_ast_ids({}) unless $hub->ast_ids;
     $hub->listen($self->_listener);
-    $hub->pre_filter($self->_pre_filter);
 }
 
 sub _listener {
@@ -107,26 +106,6 @@ sub _listener {
     my $events = $self->{+EVENTS} ||= [];
 
     sub { push @$events => $_[1] };
-}
-
-sub _pre_filter {
-    my $self = shift;
-
-    sub {
-        my ($hub, $e) = @_;
-        return $e if $hub->is_local;
-
-        my $attached = $self->{+_ATTACHED};
-        return $e if $attached && @$attached && $attached->[0] == $$ && $attached->[1] == get_tid;
-        require Data::Dumper;
-        my $dump = Data::Dumper::Dumper($e);
-        $e->trace->throw(<<"        EOT");
-You must attach to an AsyncSubtest before you can send events to it from another process or thread.
-Here is a dump of the commit which triggered this exception:
-$dump
-        EOT
-        return;
-    };
 }
 
 sub context {
@@ -775,7 +754,7 @@ C<< $ast->wait >>, or C<< $ast->finish >> are called.
 =item my $thr = $ast->run_thread(sub { ... });
 
 B<** DISCOURAGED **> Threads cause problems. This method remains for anyone who
-REALY wants it, but it is no longer supported. Tests for this functionality do
+REALLY wants it, but it is no longer supported. Tests for this functionality do
 not even run unless the AUTHOR_TESTING or T2_DO_THREAD_TESTS env vars are
 enabled.
 

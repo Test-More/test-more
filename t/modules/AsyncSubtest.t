@@ -189,28 +189,49 @@ is(
     "Can skip"
 );
 
-my $error;
-intercept {
+my $events = intercept {
     my $control = mock 'Test2::Hub' => (
         override => [ is_local => sub { 0 } ],
     );
 
     my $st = Test2::AsyncSubtest->new(name => 'early');
-    $error = dies { $st->run(sub { diag("We want to see this message or people die!") }) };
+    $st->run(sub { diag("We want to see this message or people die!") });
     $control = undef;
     $st->finish();
 };
 
-like(
-    $error,
-    qr/We want to see this message or people die!/,
-    "When an event is seen to early we get to see it in our exception"
+is(
+    $events->[0]->{subevents}->[0]->{message},
+    "We want to see this message or people die!",
+    "Can send non-local non-attached events"
 );
 
-like(
-    $error,
-    qr/You must attach to an AsyncSubtest before you can send events to it from another process or thread/,
-    "We see the main exception"
-);
+# TODO Make this into an actual test, we want it to cause an explosion, but
+# intercept is not string enough to contain that explosion...
+#$events = intercept {
+#    my $control = mock 'Test2::Hub' => (
+#        override => [ is_local => sub { 0 } ],
+#    );
+#
+#    my $st = Test2::AsyncSubtest->new(name => 'early');
+#
+#    local $SIG{PIPE} = 'IGNORE';
+#    pipe(my $rh, my $wh) or die "Could not pipe";
+#    my $pid = fork();
+#    if ($pid) {
+#        $st->run(sub{ ok(1) });
+#        $control = undef;
+#        $st->finish();
+#        print $wh "ready\n";
+#        $wh->flush;
+#        close($wh);
+#        waitpid($pid, 0);
+#    }
+#    else {
+#        my $ready = <$rh>;
+#        $st->run(sub{ diag "Too Late" });
+#        exit 0;
+#    }
+#};
 
 done_testing;
