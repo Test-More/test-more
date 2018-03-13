@@ -20,7 +20,7 @@ This document explains how the L<Test2::API::Context> object works.
 =head1 WHAT IS THE CONTEXT OBJECT?
 
 The context object is one of the key components of Test2, and makes many
-features possible that would otherwise be impossible. Evey test tool starts by
+features possible that would otherwise be impossible. Every test tool starts by
 getting a context, and ends by releasing the context. A test tool does all its
 work between getting and releasing the context. The context instance is the
 primary interface for sending events to the Test2 stack. Finally the context

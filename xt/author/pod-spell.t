@@ -16,6 +16,9 @@ set_spell_cmd('aspell list -l en');
 all_pod_files_spelling_ok;
 
 __DATA__
+ithreads
+segv
+env
 17th
 AHHHHHHH
 Async
