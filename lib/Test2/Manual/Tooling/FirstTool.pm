@@ -1,6 +1,6 @@
 package Test2::Manual::Tooling::FirstTool;
 
-our $VERSION = '0.000110';
+our $VERSION = '0.000111';
 
 1;
 
