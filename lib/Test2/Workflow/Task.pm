@@ -2,7 +2,7 @@ package Test2::Workflow::Task;
 use strict;
 use warnings;
 
-our $VERSION = '0.000111';
+our $VERSION = '0.000112';
 
 use Test2::API();
 use Test2::Event::Exception();
