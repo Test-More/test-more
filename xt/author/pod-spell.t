@@ -64,6 +64,7 @@ EventFacet
 renderers
 
 ## computerese
+incrementing
 blackbox
 BUF
 codeblock

@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Make sure all hubs, events, and contexts get a unique (per run) id.
+    - Use a common generator for unique(enough) id's (not UUIDs)
+
 1.302133  2018-03-11 12:48:37-07:00 America/Los_Angeles
 
     - No changes since last trial

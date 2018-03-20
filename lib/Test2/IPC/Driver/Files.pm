@@ -270,7 +270,7 @@ sub parse_event_filename {
     my $ready    = substr($file, -6, 6) eq '.ready'    || 0 and substr($file, -6, 6, "");
 
     my @parts = split ipc_separator, $file;
-    my ($global, $hid) = $parts[0] eq 'GLOBAL' ? (1, shift @parts) : (0, join ipc_separator, splice(@parts, 0, 3));
+    my ($global, $hid) = $parts[0] eq 'GLOBAL' ? (1, shift @parts) : (0, join ipc_separator, splice(@parts, 0, 4));
     my ($pid, $tid, $eid) = splice(@parts, 0, 3);
     my $type = join '::' => @parts;
 

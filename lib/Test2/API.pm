@@ -70,7 +70,7 @@ use Test2::Event::Subtest();
 
 use Carp qw/carp croak confess/;
 use Scalar::Util qw/blessed weaken/;
-use Test2::Util qw/get_tid clone_io pkg_to_file/;
+use Test2::Util qw/get_tid clone_io pkg_to_file gen_uid/;
 
 our @EXPORT_OK = qw{
     context release
@@ -289,7 +289,6 @@ sub no_context(&;$) {
 };
 
 my $UUID_VIA = _add_uuid_via_ref();
-my $CID = 1;
 sub context {
     # We need to grab these before anything else to ensure they are not
     # changed.
@@ -369,7 +368,7 @@ sub context {
             frame  => [$pkg, $file, $line, $sub],
             pid    => $$,
             tid    => get_tid(),
-            cid    => 'C' . $CID++,
+            cid    => gen_uid(),
             hid    => $hid,
             nested => $hub->{nested},
             buffered => $hub->{buffered},
