@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302134  2018-03-19 21:20:08-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Make sure all hubs, events, and contexts get a unique (per run) id.
     - Use a common generator for unique(enough) id's (not UUIDs)
 
