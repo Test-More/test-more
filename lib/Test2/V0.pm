@@ -451,7 +451,7 @@ See L<Test2::Tools::Subtest>.
 
 =over 4
 
-=item subtest $name => sub { ... }
+=item subtest $name => sub { ... };
 
 (Note: This is called C<subtest_buffered()> in the Tools module.)
 
