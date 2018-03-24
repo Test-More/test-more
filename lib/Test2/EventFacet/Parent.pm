@@ -26,7 +26,7 @@ __END__
 
 =head1 NAME
 
-Test2::EventFacet::Parent - Base class for all event facets.
+Test2::EventFacet::Parent - Facet for events contains other events
 
 =head1 DESCRIPTION
 
