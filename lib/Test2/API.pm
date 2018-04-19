@@ -99,6 +99,8 @@ our @EXPORT_OK = qw{
 
     test2_add_uuid_via
 
+    test2_add_callback_testing_done
+
     test2_add_callback_context_aquire
     test2_add_callback_context_acquire
     test2_add_callback_context_init
@@ -178,6 +180,22 @@ sub test2_ipc_wait_enabled { !$INST->no_wait }
 sub test2_no_wait {
     $INST->set_no_wait(@_) if @_;
     $INST->no_wait;
+}
+
+sub test2_add_callback_testing_done {
+    my $cb = shift;
+
+    test2_add_callback_post_load(sub {
+        my $stack = test2_stack();
+        $stack->top; # Insure we have a hub
+        my ($hub) = Test2::API::test2_stack->all;
+
+        $hub->set_active(1);
+
+        $hub->follow_up($cb);
+    });
+
+    return;
 }
 
 sub test2_add_callback_context_acquire   { $INST->add_context_acquire_callback(@_) }
@@ -1324,6 +1342,22 @@ from C<$exit>
 Add a callback that will be called when Test2 is finished loading. This
 means the callback will be run once, the first time a context is obtained.
 If Test2 has already finished loading then the callback will be run immediately.
+
+=item test2_add_callback_testing_done(sub { ... })
+
+This adds your coderef as a follow-up to the root hub after Test2 is finished loading.
+
+This is essentially a helper to do the following:
+
+    test2_add_callback_post_load(sub {
+        my $stack = test2_stack();
+        $stack->top; # Insure we have a hub
+        my ($hub) = Test2::API::test2_stack->all;
+
+        $hub->set_active(1);
+
+        $hub->follow_up(sub { ... }); # <-- Your coderef here
+    });
 
 =item test2_add_callback_context_acquire(sub { ... })
 
