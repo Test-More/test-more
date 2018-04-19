@@ -27,18 +27,18 @@ global state is stored.
 This module itself does not store any state (with a few minor exceptions) but
 instead relies on L<Test2::API::Instance> to store state. This module is really
 intended to be the layer between the consumer and the implementation details.
-Ideally the implementation detaisl can change any way they like, and this
+Ideally the implementation details can change any way they like, and this
 module can be updated to use the new details without breaking anything.
 
 =head2 Test2::API::Instance
 
-L<Test2::API::Instance> is where thr global state is actually managed. This is
-an implementation detail, and should not bre relied upon. It is entirly
+L<Test2::API::Instance> is where the global state is actually managed. This is
+an implementation detail, and should not be relied upon. It is entirely
 possible that L<Test2::API::Instance> could be removed completely, or changed
 in incompatible ways. Really these details are free to change so long as
 L<Test2::API> is not broken.
 
-L<Test2::API::Instance> is fairly well documented, so no additionaly
+L<Test2::API::Instance> is fairly well documented, so no additionally
 documentation is needed for this manual page.
 
 =head1 SEE ALSO

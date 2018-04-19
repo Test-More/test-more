@@ -15,7 +15,7 @@ when a tool starts work.
 
 This tutorial will help you write plugins that have behavior when a tool
 starts. All tools should start by acquiring a context object. This tutorial
-shows you the hooks you can use to take advantage of the context aquazition.
+shows you the hooks you can use to take advantage of the context acquisition.
 
 =head1 COMPLETE CODE UP FRONT
 
@@ -59,7 +59,7 @@ C<test2_add_callback_context_acquire()> callbacks.
 
 =item test2_add_callback_context_acquire(sub { ... })
 
-This is where we add our callback for context acquasition. Every time
+This is where we add our callback for context acquisition. Every time
 C<Test2::API::context()> is called the callback will be run.
 
 =item my $params_ref = shift
@@ -80,7 +80,7 @@ found. In short this only fires off for the top level tool, not nested tools.
 
 =item my $ctx_ref = shift
 
-The coderefs for test2_add_callback_context_init() will recieve exactly 1
+The coderefs for test2_add_callback_context_init() will receive exactly 1
 argument, the newly created context.
 
 =item print "A new context was created\n"

@@ -21,12 +21,12 @@ This is a brief overview of the utilities provided by Test2.
 L<Test2::Util> provides functions to help you find out about the current
 system, or to run generic tasks that tend to be Test2 specific.
 
-This utility provides things like an internal C<try {...}> implementaion, and
+This utility provides things like an internal C<try {...}> implementation, and
 constants for things like threading and forking support.
 
 =head1 Test2::Util::ExternalMeta
 
-L<Test2::Util::ExternalMeta> allows you to quickly and easily attachmeta-data
+L<Test2::Util::ExternalMeta> allows you to quickly and easily attach meta-data
 to an object class.
 
 =head1 Test2::Util::Facets2Legacy

@@ -40,7 +40,7 @@ Test2 API.
 =head1 HUBS
 
 The L<Test2::Manual::Anatomy::Hubs> document explains the inner working of
-the Test2 hub stack, and the hubs therin.
+the Test2 hub stack, and the hubs therein.
 
 =head1 THE IPC SYSTEM
 

@@ -52,7 +52,7 @@ This adds our callback to be called when testing is done.
 =item ok(!$some_global, '$some_global was not set')
 
 It is safe to make assertions in this type of callback. This code simply
-asserts that some global was never set over the cource of the test.
+asserts that some global was never set over the course of the test.
 
 =item print "The test file is done, or done_testing was just called\n"
 

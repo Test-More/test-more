@@ -39,7 +39,7 @@ test tool needs to do should be done through the context object.
 
 When you call C<Test2::API::Context> a new context object will be returned. If
 there is already a context object in effect (from a different point in the
-stack) you will get a clone fo the existing one. If there is not already a
+stack) you will get a clone of the existing one. If there is not already a
 current context then a completely new one will be generated. When a new context
 is generated Test2 will determine the file name and line number for your test
 code, these will be used when reporting any failures.
@@ -64,7 +64,7 @@ protects the variables from any side effects caused by testing tools.
 L<Test2::API> works via a hidden singleton instance of L<Test2::API::Instance>.
 The singleton has some state that is not set in stone until the last possible
 minute. The last possible minute happens to be the first time a context is
-aquired. State includes IPC instance, Formatter class, Root PID, etc.
+acquired. State includes IPC instance, Formatter class, Root PID, etc.
 
 =head2 FIND/CREATE THE CURRENT/ROOT HUB
 

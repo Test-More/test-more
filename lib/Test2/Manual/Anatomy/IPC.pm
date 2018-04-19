@@ -43,13 +43,13 @@ a process/thread/hub to read in any pending events that have been sent to it.
 The default IPC driver is L<Test2::API::Driver::Files>. This default driver,
 when initialized, starts by creating a temporary directory. Any time an event
 needs to be sent to another process/thread/hub, the event will be written to a
-file using L<Storable>. The file is written with the destinastion process,
+file using L<Storable>. The file is written with the destination process,
 thread, and hub as part of the filename. All hubs will regularly check for
 pending IPC events and will process them.
 
 This driver is further optimized using a small chunk of SHM. Any time a new
 event is sent via IPC the shm is updated to have a new value. Hubs will not
-bother checking for new IPC eventsunless the shm value has changed since their
+bother checking for new IPC events unless the shm value has changed since their
 last poll. A result of this is that the IPC system is surprisingly fast, and
 does not waste time polling the hard drive when there are no pending events.
 

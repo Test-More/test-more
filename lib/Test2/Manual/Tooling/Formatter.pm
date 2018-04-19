@@ -56,7 +56,7 @@ Formatters need to be instantiable objects, this is a minimal C<new()> method.
 
 For this example we leave this sub empty. In general you should implement this
 sub to make sure you honor situations where the encoding is set. L<Test2::V0>
-itself will try to set the necoding to UTF8.
+itself will try to set the encoding to UTF8.
 
 =item sub write { ... }
 
@@ -64,7 +64,7 @@ The C<write()> method is the most important, each event is sent here.
 
 =item my ($self, $e, $num, $f) = @_;
 
-The C<write()> method recieves 3 or 4 arguments, the fourth is optional.
+The C<write()> method receives 3 or 4 arguments, the fourth is optional.
 
 =over 4
 
@@ -97,7 +97,7 @@ unless we already have the facet data.
 
 =item print encode_json($f), "\n";
 
-Thid line prints the JSON encoded facet data, and a newline.
+This line prints the JSON encoded facet data, and a newline.
 
 =back
 

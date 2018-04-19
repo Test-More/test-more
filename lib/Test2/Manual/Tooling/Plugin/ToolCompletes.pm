@@ -48,7 +48,7 @@ This imports the C<test2_add_callback_context_release()> callback.
 
 =item my $ctx_ref = shift
 
-The coderefs for test2_add_callback_context_release() will recieve exactly 1
+The coderefs for test2_add_callback_context_release() will receive exactly 1
 argument, the context being released.
 
 =item print "Context was released\n"

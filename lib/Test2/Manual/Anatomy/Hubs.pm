@@ -15,14 +15,14 @@ hubs.
 
 =head1 DESCRIPTION
 
-This docoument describes the hub stack, and the hubs it contains. It explains
+This document describes the hub stack, and the hubs it contains. It explains
 why we have a stack, and when to add/remove hubs from it.
 
 =head1 WHAT IS A HUB?
 
 Test2 is an event system, tools generate events, those events are then
-processed to modify the testing state (numnber of tests, number of failuires,
-etc). The hub is responsible for recieving and processing events to record the
+processed to modify the testing state (number of tests, number of failures,
+etc). The hub is responsible for receiving and processing events to record the
 change in state. All events should eventually reach a destination hub.
 
 The base hub is L<Test2::Hub>. All hub classes should inherit from the base hub
