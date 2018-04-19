@@ -48,7 +48,7 @@ The L<Test2::Manual::Anatomy::IPC> document describes the IPC system.
 
 =head1 INTERNAL UTILITIES
 
-The L<Test2::Manual::Anatomy::Utilies> document describes various utilities
+The L<Test2::Manual::Anatomy::Utilities> document describes various utilities
 provided by the Test2 system.
 
 =head1 SEE ALSO
