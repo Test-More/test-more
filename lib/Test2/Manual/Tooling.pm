@@ -37,33 +37,30 @@ L<Test2::Manual::Tooling::Testing> - How to write tests for your test tools.
 
 =head1 PLUGIN TUTORIALS
 
-=head2 IMPLEMENTING SRAND
+=head2 TAKING ACTION WHEN A NEW TOOL STARTS
 
-COMING SOON.
+L<Test2::Manual::Tooling::Plugin::ToolStarts> - How to add behaviors that occur
+when a tool starts work.
 
-=head2 IMPLEMENTING DIE-ON-FAIL
+=head2 TAKING ACTION AFTER A TOOL IS DONE
 
-COMING SOON.
+L<Test2::Manual::Tooling::Plugin::ToolCompletes> - How to add behaviors that
+occur when a tool completes work.
 
 =head2 TAKING ACTION AT THE END OF TESTING
 
-COMING SOON.
+L<Test2::Manual::Tooling::Plugin::TestingDone> - How to add behaviors that
+occur when testing is complete (IE done_testing, or end of test).
 
 =head2 TAKING ACTION JUST BEFORE EXIT
 
-COMING SOON.
+L<Test2::Manual::Tooling::Plugin::TestExit> - How to safely add pre-exit
+behaviors.
 
-=head1 FORMATTER TUTORIALS
+=head1 WRITING A SIMPLE JSONL FORMATTER
 
-COMING SOON.
-
-=head2 WRITING A SIMPLE JSON FORMATTER
-
-COMING SOON.
-
-=head1 CUSTOM EVENT TUTORIAL
-
-COMING SOON.
+L<Test2::Manual::Tooling::Formatter> - How to write a custom formatter, in our
+case a JSONL formatter.
 
 =head1 WHERE TO FIND HOOKS AND APIS
 
