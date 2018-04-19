@@ -34,19 +34,22 @@ L<Test2::API::Context> object works.
 
 =head1 THE API AND THE API INSTANCE
 
-COMING SOON.
-
-=head1 THE HUB STACK
-
-COMING SOON.
+The L<Test2::Manual::Anatomy::API> document explains the inner workings of the
+Test2 API.
 
 =head1 HUBS
 
-COMING SOON.
+The L<Test2::Manual::Anatomy::Hubs> document explains the inner working of
+the Test2 hub stack, and the hubs therin.
 
 =head1 THE IPC SYSTEM
 
-COMING SOON.
+The L<Test2::Manual::Anatomy::IPC> document describes the IPC system.
+
+=head1 INTERNAL UTILITIES
+
+The L<Test2::Manual::Anatomy::Utilies> document describes various utilities
+provided by the Test2 system.
 
 =head1 SEE ALSO
 
