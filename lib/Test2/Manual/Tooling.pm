@@ -23,6 +23,11 @@ This section covers writing new tools, plugins, and other Test2 components.
 L<Test2::Manual::Tooling::FirstTool> - Introduction to writing tools by cloning
 L<ok()>.
 
+=head2 MOVING FROM Test::Builder
+
+L<Test2::Manual::Tooling::TestBuilder> - This section maps Test::Builder
+methods to Test2 concepts.
+
 =head2 NESTING TOOLS
 
 L<Test2::Manual::Tooling::Nesting> - How to call other tools from your tool.
