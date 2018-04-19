@@ -7,6 +7,8 @@ our $VERSION = '0.000112';
 use Carp qw/croak/;
 use Test2::Workflow qw/parse_args build current_build root_build init_root build_stack/;
 
+use Test2::API qw/test2_add_callback_testing_done/;
+
 use Test2::Workflow::Runner();
 use Test2::Workflow::Task::Action();
 use Test2::Workflow::Task::Group();
@@ -94,11 +96,7 @@ sub import {
             }
         );
 
-        my $stack = Test2::API::test2_stack;
-        $stack->top; # Insure we have a hub
-        my ($hub) = Test2::API::test2_stack->all;
-        $hub->set_active(1);
-        $hub->follow_up(
+        test2_add_callback_testing_done(
             sub {
                 return unless $root->populated;
                 my $g = $root->compile;
