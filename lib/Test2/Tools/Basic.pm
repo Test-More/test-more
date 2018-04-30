@@ -39,13 +39,13 @@ sub fail {
 
 sub diag {
     my $ctx = context();
-    $ctx->diag( join '', @_ );
+    $ctx->diag( join '', grep { defined $_ } @_ );
     $ctx->release;
 }
 
 sub note {
     my $ctx = context();
-    $ctx->note( join '', @_ );
+    $ctx->note( join '', grep { defined $_ } @_ );
     $ctx->release;
 }
 
