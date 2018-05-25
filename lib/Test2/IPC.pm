@@ -18,6 +18,9 @@ use Test2::API qw{
     context
 };
 
+# Make sure stuff is finalized before anyone tried to fork or start a new thread.
+INIT { context()->release() }
+
 use Carp qw/confess/;
 
 our @EXPORT_OK = qw/cull/;
