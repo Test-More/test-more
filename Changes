@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302137  2018-05-25 08:45:13-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Make it safe to fork before events in IPC
 
 1.302136  2018-04-19 05:40:11-07:00 America/Los_Angeles
