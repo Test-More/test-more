@@ -804,6 +804,8 @@ Extra arguments given to C<subtest> are passed to the callback. For example:
 
 sub subtest {
     my $tb = Test::More->builder;
+    # If a SUBTEST env var is specified, only run that subtest
+    return if exists $ENV{SUBTEST} && $ENV{SUBTEST} ne $_[0];
     return $tb->subtest(@_);
 }
 
