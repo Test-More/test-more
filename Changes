@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - No changes since trial
+
 1.302137  2018-05-25 08:45:13-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Make it safe to fork before events in IPC
