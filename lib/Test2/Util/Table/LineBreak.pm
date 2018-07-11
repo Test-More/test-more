@@ -2,7 +2,7 @@ package Test2::Util::Table::LineBreak;
 use strict;
 use warnings;
 
-our $VERSION = '0.000115';
+our $VERSION = '0.000116';
 
 use base 'Term::Table::LineBreak';
 
