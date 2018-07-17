@@ -19,7 +19,14 @@ use Test2::API qw{
 };
 
 # Make sure stuff is finalized before anyone tried to fork or start a new thread.
-INIT { context()->release() }
+{
+    # Avoid warnings if things are loaded at run-time
+    no warnings 'void';
+    INIT {
+        use warnings 'void';
+        context()->release();
+    }
+}
 
 use Carp qw/confess/;
 
