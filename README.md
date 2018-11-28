@@ -39,7 +39,7 @@ also produces undesirable side effects.
 
 - Test2::V#
 
-    These does not live in the bundle namespace as they are the primary ways to use
+    These do not live in the bundle namespace as they are the primary ways to use
     Test2::Suite.
 
     The current latest is [Test2::V0](https://metacpan.org/pod/Test2::V0).

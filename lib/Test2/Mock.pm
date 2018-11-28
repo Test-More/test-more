@@ -210,7 +210,7 @@ sub before {
     my ($name, $sub) = @_;
     $self->_check();
     my $orig = $self->current($name);
-    $self->_inject(0, $name => sub { $sub->(@_); $orig->(@_) });
+    $self->_inject({}, $name => sub { $sub->(@_); $orig->(@_) });
 }
 
 sub after {
@@ -218,7 +218,7 @@ sub after {
     my ($name, $sub) = @_;
     $self->_check();
     my $orig = $self->current($name);
-    $self->_inject(0, $name => sub {
+    $self->_inject({}, $name => sub {
         my @out;
 
         my $want = wantarray;
@@ -246,19 +246,25 @@ sub around {
     my ($name, $sub) = @_;
     $self->_check();
     my $orig = $self->current($name);
-    $self->_inject(0, $name => sub { $sub->($orig, @_) });
+    $self->_inject({}, $name => sub { $sub->($orig, @_) });
 }
 
 sub add {
     my $self = shift;
     $self->_check();
-    $self->_inject(1, @_);
+    $self->_inject({add => 1}, @_);
 }
 
 sub override {
     my $self = shift;
     $self->_check();
-    $self->_inject(0, @_);
+    $self->_inject({}, @_);
+}
+
+sub set {
+    my $self = shift;
+    $self->_check();
+    $self->_inject({set => 1}, @_);
 }
 
 sub current {
@@ -347,7 +353,10 @@ sub _parse_inject {
 
 sub _inject {
     my $self = shift;
-    my ($add, @pairs) = @_;
+    my ($params, @pairs) = @_;
+
+    my $add = $params->{add};
+    my $set = $params->{set};
 
     my $class = $self->{+CLASS};
 
@@ -360,7 +369,7 @@ sub _inject {
         my $orig = $self->current("$sig$sym");
 
         croak "Cannot override '$sig$class\::$sym', symbol is not already defined"
-            unless $orig || $add || ($sig eq '&' && $class->can($sym));
+            unless $orig || $add || $set || ($sig eq '&' && $class->can($sym));
 
         # Cannot be too sure about scalars in globs
         croak "Cannot add '$sig$class\::$sym', symbol is already defined"
@@ -535,10 +544,16 @@ is identical to this:
 
 =item $mock->override('symbol1' => ..., 'symbol2' => ...)
 
+=item $mock->set('symbol1' => ..., 'symbol2' => ...)
+
 C<add()> and C<override()> are the primary ways to add/modify methods for a
 class. Both accept the exact same type of arguments. The difference is that
 C<override> will fail unless the symbol you are overriding already exists,
 C<add> on the other hand will fail if the symbol does already exist.
+
+C<set()> was more recently added for cases where you may not know if the sub
+already exists. These cases are rare, and set should be avoided (think of it
+like 'no strict'). However there are valid use cases, so it was added.
 
 B<Note:> Think of override as a push operation. If you call override on the
 same symbol multiple times it will track that. You can use C<restore()> as a

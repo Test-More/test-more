@@ -780,4 +780,18 @@ subtest override_inherited_method => sub {
     is(ABC->foo, 'baz', "Added method");
 };
 
+subtest set => sub {
+    package My::Set;
+    sub foo { 'foo' }
+
+    package main;
+
+    my $mock = Test2::Mock->new(class => 'My::Set');
+    $mock->set(foo => sub { 'FOO' });
+    $mock->set(bar => sub { 'BAR' });
+
+    is(My::Set->foo, 'FOO', "overrode 'foo'");
+    is(My::Set->bar, 'BAR', "injected 'bar'");
+};
+
 done_testing;

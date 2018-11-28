@@ -1,5 +1,9 @@
 {{$NEXT}}
 
+    - Add 'set' to mock tools
+    - Fix 'overload' issue in deep check cycle detection.
+    - Minor updates
+
 0.000115  2018-07-11 09:39:37-07:00 America/Los_Angeles
 
     - Fix warning on undefined note/diag

@@ -314,6 +314,9 @@ plugins in ways L<Mock::Quick> would be unable to.
         override => [
             replace_method => sub { ... },
         ],
+        set => [
+            replace_or_inject => sub { ... },
+        ]
     );
 
     Some::Class->new_method();        # Calls the newly injected method

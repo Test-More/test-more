@@ -264,4 +264,21 @@ subtest handlers => sub {
     );
 };
 
+subtest set => sub {
+    package My::Set;
+    sub foo { 'foo' }
+
+    package main;
+
+    my $mock = mock 'My::Set' => (
+        set => [
+            foo => sub { 'FOO' },
+            bar => sub { 'BAR' },
+        ],
+    );
+
+    is(My::Set->foo, 'FOO', "overrode 'foo'");
+    is(My::Set->bar, 'BAR', "injected 'bar'");
+};
+
 done_testing;

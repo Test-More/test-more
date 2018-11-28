@@ -39,7 +39,7 @@ INCLUDED BUNDLES
 
     Test2::V#
 
-      These does not live in the bundle namespace as they are the primary
+      These do not live in the bundle namespace as they are the primary
       ways to use Test2::Suite.
 
       The current latest is Test2::V0.
