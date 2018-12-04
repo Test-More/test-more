@@ -246,36 +246,6 @@ subtest no_header => sub {
     );
 };
 
-subtest sanitize => sub {
-    my @table = table(
-        max_width => 60,
-        sanitize => 1,
-        header => [ 'data1' ],
-        rows => [["a\t\n\r\b\a          　‌﻿\N{U+000B}bф"]],
-    );
-
-    my $have_gcstring = eval { require Unicode::GCString; 1 } || 0;
-
-    is(
-        \@table,
-        [
-            ( $have_gcstring
-                ? ()
-                : ("Unicode::GCString is not installed, table may not display all unicode characters properly")
-            ),
-            '+---------------------------------------------------+',
-            '| data1                                             |',
-            '+---------------------------------------------------+',
-            '| a\t\n                                             |',
-            '| \r\b\a\N{U+A0}\N{U+1680}\N{U+2000}\N{U+2001}\N{U+ |',
-            '| 2002}\N{U+2003}\N{U+2004}\N{U+2008}\N{U+2028}\N{U |',
-            '| +2029}\N{U+3000}\N{U+200C}\N{U+FEFF}\N{U+B}bф     |',
-            '+---------------------------------------------------+',
-        ],
-        "Sanitized data"
-    );
-};
-
 subtest mark_tail => sub {
     my @table = table(
         max_width => 60,
