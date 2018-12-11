@@ -681,6 +681,7 @@ not ok 1 - harness that is verbose
 
 # Failed test 'harness, but not verbose'
 # at foo.pl line 42.
+
 # Failed test 'harness that is verbose'
 # at foo.pl line 42.
     EOT

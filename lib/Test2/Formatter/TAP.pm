@@ -104,10 +104,9 @@ sub write {
 
         print $io "\n"
             if $ENV{HARNESS_ACTIVE}
-            && !$ENV{HARNESS_IS_VERBOSE}
             && $hid == OUT_ERR
             && $self->{+_LAST_FH} != $io
-            && $msg =~ m/^#\s*Failed test /;
+            && $msg =~ m/^#\s*Failed( \(TODO\))? test /;
 
         $msg =~ s/^/$indent/mg if $nesting;
         print $io $msg;

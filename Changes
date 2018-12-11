@@ -1,8 +1,9 @@
 {{$NEXT}}
 
-    - Fix #817 (local $TODO bug)
-    - Fix #812 (Another local $TODO bug)
-    - Fix #815 (shm read warning)
+    - Fix #810 Verbose TAP newline regression
+    - Fix #817 local $TODO bug
+    - Fix #812 Another local $TODO bug
+    - Fix #815 shm read warning
 
 1.302141  2018-11-30 14:27:19-08:00 America/Los_Angeles
 
