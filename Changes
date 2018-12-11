@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - Fix #819 Documentation updates
     - Fix #810 Verbose TAP newline regression
     - Fix #817 local $TODO bug
     - Fix #812 Another local $TODO bug

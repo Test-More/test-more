@@ -2573,7 +2573,17 @@ L<Test::Exception> and L<Test::Differences> all use Test::Builder.
 
 =head1 SEE ALSO
 
-L<Test::Simple>, L<Test::More>, L<Test::Harness>
+=head2 INTERNALS
+
+L<Test2>, L<Test2::API>
+
+=head2 LEGACY
+
+L<Test::Simple>, L<Test::More>
+
+=head2 EXTERNAL
+
+L<Test::Harness>
 
 =head1 AUTHORS
 
