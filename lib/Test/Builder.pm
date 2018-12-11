@@ -64,7 +64,7 @@ sub _add_ts_hooks {
         $todo = ${"$cpkg\::TODO"} if $cpkg;
         $todo = ${"$epkg\::TODO"} if $epkg && !$todo;
 
-        return $e unless $todo;
+        return $e unless defined $todo;
 
         # Turn a diag into a todo diag
         return Test::Builder::TodoDiag->new(%$e) if ref($e) eq 'Test2::Event::Diag';
