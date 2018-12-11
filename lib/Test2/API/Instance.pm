@@ -368,13 +368,16 @@ sub enable_ipc_polling {
             return unless $self->{+IPC_POLLING};
             return $_[0]->{hub}->cull unless $self->{+IPC_SHM_ID};
 
+            # You may notice that we are not handling the error case of shmread
+            # returning false. In the case where SHM returns false it falls
+            # through to the call to 'cull'. shmread is used as an optimization
+            # to avoid needing to call cull() too often. In the case of failure
+            # the optimization fails and we call 'cull' more often than needed,
+            # this is slower, but completely safe.
             my $val;
             if(shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE})) {
                 return if $val eq $self->{+IPC_SHM_LAST};
                 $self->{+IPC_SHM_LAST} = $val;
-            }
-            else {
-                warn "SHM Read error: $!\n";
             }
 
             $_[0]->{hub}->cull;

@@ -183,7 +183,7 @@ my %PERLIO_SKIP = (
 
 sub clone_io {
     my ($fh) = @_;
-    my $fileno = fileno($fh);
+    my $fileno = eval { fileno($fh) };
 
     return $fh if !defined($fileno) || !length($fileno) || $fileno < 0;
 
