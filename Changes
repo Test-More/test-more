@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302145  2018-12-12 11:26:32-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix localization error in new test (#820)
 
 1.302144  2018-12-12 09:51:25-08:00 America/Los_Angeles (TRIAL RELEASE)
