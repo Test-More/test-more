@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix failure to check error code on shmwrite (#815)
+
 1.302142  2018-12-11 11:55:22-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix #814 Windows fork+test failure

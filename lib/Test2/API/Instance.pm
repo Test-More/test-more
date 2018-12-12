@@ -453,8 +453,20 @@ sub set_ipc_pending {
     confess "value is required for set_ipc_pending"
         unless $val;
 
-    shmwrite($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE});
+    return shmwrite($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE})
+        || $self->_fatal_error("IPC shmwrite() failed ($!) this is a fatal error");
 }
+
+sub _fatal_error {
+    my $self = shift;
+    my ($msg) = @_;
+
+    my @caller = caller();
+
+    print STDERR "$msg at $caller[1] line $caller[2].\n";
+    CORE::exit(255);
+}
+
 
 sub disable_ipc_polling {
     my $self = shift;
