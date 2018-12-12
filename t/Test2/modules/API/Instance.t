@@ -552,7 +552,7 @@ if (CAN_REALLY_FORK) {
 
     $ok = eval { $two->set_ipc_pending('message'); 1 };
     ok(!$ok, "Exception");
-    like($@, qr/IPC shmwrite\(\) failed \(Invalid argument\) this is a fatal error/, "Got exception when shm write fails");
+    like($@, qr/IPC shmwrite\(\) failed \([^\)]+\) this is a fatal error/, "Got exception when shm write fails");
 }
 
 if (CAN_REALLY_FORK) {
