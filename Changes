@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302144  2018-12-12 09:51:25-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Add tests for shmwrite fix (#815)
 
 1.302143  2018-12-11 19:10:37-08:00 America/Los_Angeles (TRIAL RELEASE)
