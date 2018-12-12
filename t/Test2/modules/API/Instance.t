@@ -534,4 +534,52 @@ if (CAN_REALLY_FORK) {
     ok($one->ipc_disabled, "IPC is disabled directly");
 }
 
+{
+    no warnings 'redefine';
+    my $error;
+    local *Test2::API::Instance::_fatal_error = sub { die $_[1] };
+
+    my $two = $CLASS->new;
+    $two->{ipc_shm_id} = undef;
+    is($two->set_ipc_pending, undef, "No shm");
+
+    $two->{ipc_shm_id} = -1;
+    $two->{ipc_shm_size} = 32;
+
+    my $ok = eval { $two->set_ipc_pending(); 1 };
+    ok(!$ok, "Exception");
+    like($@, qr/value is required for set_ipc_pending/, "Got expected exception");
+
+    $ok = eval { $two->set_ipc_pending('message'); 1 };
+    ok(!$ok, "Exception");
+    like($@, qr/IPC shmwrite\(\) failed \(Invalid argument\) this is a fatal error/, "Got exception when shm write fails");
+}
+
+if (CAN_REALLY_FORK) {
+    my ($rh, $wh);
+    pipe($rh, $wh) or die "no pipe: $!";
+
+    my $pid = fork;
+    die "Could not fork" unless defined $pid;
+    if ($pid) {
+        close($wh);
+        my $check = waitpid($pid, 0);
+        my $exit = $?;
+        is($check, $pid, "Waited on process");
+        my $err = ($exit >> 8);
+        my $sig = ($exit & 127);
+        ok(!$sig, "did not exit via a signal");
+        is($err, 255, "exit code 255");
+
+        my $msg = <$rh>;
+        like($msg, qr/blah, I died at \Q${ \__FILE__ }\E line \d+\./, "Saw error message");
+    }
+    else {
+        close($rh);
+        open(STDERR, '>&', $wh) or print "Could not open: $!";
+        $CLASS->_fatal_error('blah, I died');
+        exit 1;
+    }
+}
+
 done_testing;
