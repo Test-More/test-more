@@ -2,7 +2,7 @@ package Test2::EventFacet::Error;
 use strict;
 use warnings;
 
-our $VERSION = '1.302146';
+our $VERSION = '1.302147';
 
 sub facet_key { 'errors' }
 sub is_list { 1 }
