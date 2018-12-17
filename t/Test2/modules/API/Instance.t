@@ -553,7 +553,7 @@ if (CAN_REALLY_FORK) {
     $ok = eval { $two->set_ipc_pending('message'); 1 };
     my $err = $@;
     ok(!$ok, "Exception");
-    like($err, qr/IPC shmwrite\(\) failed \([^\)]+\) this is a fatal error/, "Got exception when shm write fails")
+    like($err, qr/IPC shmwrite\(-1, 'message', 0, 32\) failed \([^\)]+\) this is a fatal error/, "Got exception when shm write fails")
         unless $err =~ m/System V IPC is not implemented/;
 }
 

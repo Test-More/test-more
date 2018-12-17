@@ -454,14 +454,15 @@ sub set_ipc_pending {
         unless $val;
 
     return shmwrite($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE})
-        || $self->_fatal_error("IPC shmwrite() failed ($!) this is a fatal error");
+        || $self->_fatal_error("IPC shmwrite($self->{+IPC_SHM_ID}, '$val', 0, $self->{+IPC_SHM_SIZE}) failed ($!) this is a fatal error");
 }
 
 sub _fatal_error {
     my $self = shift;
     my ($msg) = @_;
 
-    my @caller = caller();
+    my @caller = caller(1);
+    @caller = caller() unless @caller;
 
     print STDERR "$msg at $caller[1] line $caller[2].\n";
     CORE::exit(255);
