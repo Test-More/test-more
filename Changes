@@ -1,6 +1,10 @@
 {{$NEXT}}
 
+    - Further Improve SHM error message
+
 1.302147  2018-12-17 12:59:14-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Improve SHM error message
 
 1.302146  2018-12-17 09:06:44-08:00 America/Los_Angeles (TRIAL RELEASE)
 

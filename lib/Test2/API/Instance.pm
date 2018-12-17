@@ -6,7 +6,7 @@ our $VERSION = '1.302148';
 
 
 our @CARP_NOT = qw/Test2::API Test2::API::Instance Test2::IPC::Driver Test2::Formatter/;
-use Carp qw/confess carp/;
+use Carp qw/confess carp longmess/;
 use Scalar::Util qw/reftype/;
 
 use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try CAN_SIGSYS/;
@@ -461,13 +461,9 @@ sub _fatal_error {
     my $self = shift;
     my ($msg) = @_;
 
-    my @caller = caller(1);
-    @caller = caller() unless @caller;
-
-    print STDERR "$msg at $caller[1] line $caller[2].\n";
+    print STDERR longmess($msg);
     CORE::exit(255);
 }
-
 
 sub disable_ipc_polling {
     my $self = shift;
