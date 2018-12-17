@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302146  2018-12-17 09:06:44-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix SHM test to work on machines without SHM
 
 1.302145  2018-12-12 11:26:32-08:00 America/Los_Angeles (TRIAL RELEASE)
