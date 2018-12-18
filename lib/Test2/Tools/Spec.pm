@@ -296,7 +296,7 @@ Test2::Tools::Spec - RSPEC implementation on top of Test2::Workflow
 
 =head1 DESCRIPTION
 
-This uses L<Test::Workflow> to implement an RSPEC variant. This variant
+This uses L<Test2::Workflow> to implement an RSPEC variant. This variant
 supports isolation and/or concurrency via forking or threads.
 
 =head1 SYNOPSIS

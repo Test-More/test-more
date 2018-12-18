@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix typo Test::Workflow -> Test2::Workflow #170
+
 0.000117  2018-12-04 11:37:15-08:00 America/Los_Angeles
 
     - Remove test that belongs in another dist
