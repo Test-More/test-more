@@ -550,12 +550,42 @@ if (CAN_REALLY_FORK) {
     ok(!$ok, "Exception");
     like($@, qr/value is required for set_ipc_pending/, "Got expected exception");
 
+    my $ctid = get_tid();
+
     $ok = eval { $two->set_ipc_pending('message'); 1 };
     my $err = $@;
     ok(!$ok, "Exception");
-    like($err, qr/IPC shmwrite\(-1, 'message', 0, 32\) failed \([^\)]+\) this is a fatal error/, "Got exception when shm write fails")
-        unless $err =~ m/System V IPC is not implemented/;
+    is($err, <<"    EOT", "Got exception when shm write fails (no tid/pid)") unless $err =~ m/System V IPC is not implemented/;
+IPC shmwrite(-1, 'message', 0, 32) failed, this is a fatal error.
+  Error: (22) Invalid argument
+  Parent  PID: ?
+  Current PID: $$
+  Parent  TID: ?
+  Current TID: $ctid
+  IPC errors like this usually indicate a race condition in a test where the
+  parent thread/process is allowed to exit before all child processes/threads
+  are complete.
+    EOT
+
+    $two->{_pid} = $$;
+    $two->{_tid} = $ctid;
+
+    $ok = eval { $two->set_ipc_pending('message'); 1 };
+    $err = $@;
+    ok(!$ok, "Exception");
+    is($err, <<"    EOT", "Got exception when shm write fails (with tid/pid)") unless $err =~ m/System V IPC is not implemented/;
+IPC shmwrite(-1, 'message', 0, 32) failed, this is a fatal error.
+  Error: (22) Invalid argument
+  Parent  PID: $$
+  Current PID: $$
+  Parent  TID: $ctid
+  Current TID: $ctid
+  IPC errors like this usually indicate a race condition in a test where the
+  parent thread/process is allowed to exit before all child processes/threads
+  are complete.
+    EOT
 }
+
 
 if (CAN_REALLY_FORK) {
     my ($rh, $wh);

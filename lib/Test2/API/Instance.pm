@@ -453,8 +453,26 @@ sub set_ipc_pending {
     confess "value is required for set_ipc_pending"
         unless $val;
 
-    return shmwrite($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE})
-        || $self->_fatal_error("IPC shmwrite($self->{+IPC_SHM_ID}, '$val', 0, $self->{+IPC_SHM_SIZE}) failed ($!) this is a fatal error");
+    return if shmwrite($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE});
+    my $errno = 0 + $!;
+    my $err = "$!";
+
+    my $ppid = defined $self->{+_PID} ? $self->{+_PID} : '?';
+    my $ptid = defined $self->{+_TID} ? $self->{+_TID} : '?';
+    my $cpid = $$;
+    my $ctid = get_tid();
+
+    $self->_fatal_error(<<"    EOT");
+IPC shmwrite($self->{+IPC_SHM_ID}, '$val', 0, $self->{+IPC_SHM_SIZE}) failed, this is a fatal error.
+  Error: ($errno) $err
+  Parent  PID: $ppid
+  Current PID: $cpid
+  Parent  TID: $ptid
+  Current TID: $ctid
+  IPC errors like this usually indicate a race condition in a test where the
+  parent thread/process is allowed to exit before all child processes/threads
+  are complete.
+    EOT
 }
 
 sub _fatal_error {
