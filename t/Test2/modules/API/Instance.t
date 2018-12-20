@@ -553,12 +553,18 @@ SKIP: {
 
     my $ctid = get_tid();
 
+    my $ec;
+    {
+        local $! = 22;
+        $ec = "$!";
+    }
+
     $ok = eval { $two->set_ipc_pending('message'); 1 };
     my $err = $@;
     ok(!$ok, "Exception");
     is($err, <<"    EOT", "Got exception when shm write fails (no tid/pid)") unless $err =~ m/System V IPC is not implemented/;
 IPC shmwrite(-1, 'message', 0, 32) failed, this is a fatal error.
-  Error: (22) Invalid argument
+  Error: (22) $ec
   Parent  PID: ?
   Current PID: $$
   Parent  TID: ?
@@ -570,12 +576,6 @@ IPC shmwrite(-1, 'message', 0, 32) failed, this is a fatal error.
 
     $two->{_pid} = $$;
     $two->{_tid} = $ctid;
-
-    my $ec;
-    {
-        local $! = 22;
-        $ec = "$!";
-    }
 
     $ok = eval { $two->set_ipc_pending('message'); 1 };
     $err = $@;
