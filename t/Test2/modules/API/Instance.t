@@ -534,7 +534,8 @@ if (CAN_REALLY_FORK) {
     ok($one->ipc_disabled, "IPC is disabled directly");
 }
 
-{
+SKIP: {
+    last SKIP if $] lt "5.008";
     no warnings 'redefine';
     my $error;
     local *Test2::API::Instance::_fatal_error = sub { die $_[1] };
@@ -587,7 +588,7 @@ IPC shmwrite(-1, 'message', 0, 32) failed, this is a fatal error.
 }
 
 
-if (CAN_REALLY_FORK) {
+if (CAN_REALLY_FORK && $] ge "5.008") {
     my ($rh, $wh);
     pipe($rh, $wh) or die "no pipe: $!";
 

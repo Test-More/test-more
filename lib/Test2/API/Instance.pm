@@ -6,7 +6,7 @@ our $VERSION = '1.302150';
 
 
 our @CARP_NOT = qw/Test2::API Test2::API::Instance Test2::IPC::Driver Test2::Formatter/;
-use Carp qw/confess carp longmess/;
+use Carp qw/confess carp/;
 use Scalar::Util qw/reftype/;
 
 use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try CAN_SIGSYS/;
@@ -479,7 +479,7 @@ sub _fatal_error {
     my $self = shift;
     my ($msg) = @_;
 
-    print STDERR longmess($msg);
+    print STDERR $msg;
     CORE::exit(255);
 }
 
@@ -556,7 +556,7 @@ sub DESTROY {
     return unless defined($self->{+_TID}) && $self->{+_TID} == get_tid();
 
     shmctl($self->{+IPC_SHM_ID}, IPC::SysV::IPC_RMID(), 0)
-        if defined $self->{+IPC_SHM_ID};
+        if defined $self->{+IPC_SHM_ID} && IPC::SysV->can('IPC_RMID');
 }
 
 sub set_exit {
