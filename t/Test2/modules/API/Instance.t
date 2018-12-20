@@ -605,7 +605,7 @@ if (CAN_REALLY_FORK && $] ge "5.008") {
         is($err, 255, "exit code 255");
 
         my $msg = <$rh>;
-        like($msg, qr/blah, I died at \Q${ \__FILE__ }\E line \d+\./, "Saw error message");
+        like($msg, qr/blah, I died/, "Saw error message");
     }
     else {
         close($rh);
