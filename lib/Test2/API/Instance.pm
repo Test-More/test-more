@@ -462,7 +462,7 @@ sub set_ipc_pending {
     my $cpid = $$;
     my $ctid = get_tid();
 
-    $self->_fatal_error(<<"    EOT");
+    chomp(my $msg = <<"    EOT");
 IPC shmwrite($self->{+IPC_SHM_ID}, '$val', 0, $self->{+IPC_SHM_SIZE}) failed, this is a fatal error.
   Error: ($errno) $err
   Parent  PID: $ppid
@@ -472,12 +472,16 @@ IPC shmwrite($self->{+IPC_SHM_ID}, '$val', 0, $self->{+IPC_SHM_SIZE}) failed, th
   IPC errors like this usually indicate a race condition in a test where the
   parent thread/process is allowed to exit before all child processes/threads
   are complete.
+  Trace:
     EOT
+    $self->_fatal_error($msg);
 }
 
 sub _fatal_error {
     my $self = shift;
     my ($msg) = @_;
+
+    $msg = Carp::longmess($msg) if Carp->can('longmess');
 
     print STDERR $msg;
     CORE::exit(255);

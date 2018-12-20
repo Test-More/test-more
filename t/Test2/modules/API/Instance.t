@@ -538,7 +538,7 @@ SKIP: {
     last SKIP if $] lt "5.008";
     no warnings 'redefine';
     my $error;
-    local *Test2::API::Instance::_fatal_error = sub { die $_[1] };
+    local *Test2::API::Instance::_fatal_error = sub { die "$_[1]\n" };
 
     my $two = $CLASS->new;
     $two->{ipc_shm_id} = undef;
@@ -562,6 +562,7 @@ SKIP: {
     $ok = eval { $two->set_ipc_pending('message'); 1 };
     my $err = $@;
     ok(!$ok, "Exception");
+
     is($err, <<"    EOT", "Got exception when shm write fails (no tid/pid)") unless $err =~ m/System V IPC is not implemented/;
 IPC shmwrite(-1, 'message', 0, 32) failed, this is a fatal error.
   Error: (22) $ec
@@ -572,6 +573,7 @@ IPC shmwrite(-1, 'message', 0, 32) failed, this is a fatal error.
   IPC errors like this usually indicate a race condition in a test where the
   parent thread/process is allowed to exit before all child processes/threads
   are complete.
+  Trace:
     EOT
 
     $two->{_pid} = $$;
@@ -580,6 +582,7 @@ IPC shmwrite(-1, 'message', 0, 32) failed, this is a fatal error.
     $ok = eval { $two->set_ipc_pending('message'); 1 };
     $err = $@;
     ok(!$ok, "Exception");
+
     is($err, <<"    EOT", "Got exception when shm write fails (with tid/pid)") unless $err =~ m/System V IPC is not implemented/;
 IPC shmwrite(-1, 'message', 0, 32) failed, this is a fatal error.
   Error: (22) $ec
@@ -590,6 +593,7 @@ IPC shmwrite(-1, 'message', 0, 32) failed, this is a fatal error.
   IPC errors like this usually indicate a race condition in a test where the
   parent thread/process is allowed to exit before all child processes/threads
   are complete.
+  Trace:
     EOT
 }
 
@@ -610,13 +614,13 @@ if (CAN_REALLY_FORK && $] ge "5.008") {
         ok(!$sig, "did not exit via a signal");
         is($err, 255, "exit code 255");
 
-        my $msg = <$rh>;
-        like($msg, qr/blah, I died/, "Saw error message");
+        my $msg = join "" => <$rh>;
+        like($msg, qr/^blah, I died\nfoo bar at \Q${ \__FILE__ }\E line \d+/, "Saw error message");
     }
     else {
         close($rh);
         open(STDERR, '>&', $wh) or print "Could not open: $!";
-        $CLASS->_fatal_error('blah, I died');
+        $CLASS->_fatal_error("blah, I died\nfoo bar");
         exit 1;
     }
 }
