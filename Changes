@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302150  2018-12-20 10:57:09-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix locale error in Instance.t
     - Windows test fixes
     - perl 5.6 test fixes
