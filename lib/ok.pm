@@ -1,5 +1,5 @@
 package ok;
-our $VERSION = '1.302151';
+our $VERSION = '1.302152';
 
 use strict;
 use Test::More ();
