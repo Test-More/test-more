@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - More Instance.t improvements
     - Add trace to SHM error when possible
 
 1.302151  2018-12-20 11:05:47-08:00 America/Los_Angeles (TRIAL RELEASE)
