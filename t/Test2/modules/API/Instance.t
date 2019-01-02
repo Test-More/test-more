@@ -613,14 +613,15 @@ IPC shmwrite(-1, 'message', 0, 32) failed, the parent process appears to have ex
         1;
     };
     $err = $@;
-    return if $err =~ m/System V IPC is not implemented/;
-    ok($ok, "No Exception");
+    unless ($err =~ m/System V IPC is not implemented/) {
+        ok($ok, "No Exception");
 
-    like(
-        $warn,
-        qr/^\($$\) It looks like SHM has gone away unexpectedly\. The parent process is still active\. This is not fatal, but may slow things down slightly/,
-        "Got warning when shm write fails but parent is open"
-    );
+        like(
+            $warn,
+            qr/^\($$\) It looks like SHM has gone away unexpectedly\. The parent process is still active\. This is not fatal, but may slow things down slightly/,
+            "Got warning when shm write fails but parent is open"
+        );
+    }
 }
 
 
