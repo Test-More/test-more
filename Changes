@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Improve SHM verification and state awareness
+
 1.302152  2018-12-26 12:21:32-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - More Instance.t improvements

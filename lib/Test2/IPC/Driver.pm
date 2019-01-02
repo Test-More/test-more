@@ -267,6 +267,14 @@ True if you want to make use of the L<Test2::API>/L<Test2::API::Instance> SHM.
 Use this to customize the size of the SHM space. There are no guarantees about
 what the size will be if you do not implement this.
 
+=item $ipc->stop_shm()
+
+The Test2 API will call this when it is about to free the SHM memory.
+
+=item $bool = $ipc->shm_stopped()
+
+Returns true if C<< $ipc->stop_shm >> has been called.
+
 =back
 
 =head1 SOURCE

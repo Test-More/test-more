@@ -33,6 +33,7 @@ use Test2::Util::HashBase qw{
     ipc_drivers
     ipc_timeout
     formatters
+    _shm_warned
 
     exit_callbacks
     post_load_callbacks
@@ -378,9 +379,12 @@ sub enable_ipc_polling {
             if(shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE})) {
                 return if $val eq $self->{+IPC_SHM_LAST};
                 $self->{+IPC_SHM_LAST} = $val;
+                return $_[0]->{hub}->cull;
             }
 
-            $_[0]->{hub}->cull;
+            # Do not come back if shm is gone.
+            delete $self->{+IPC_SHM_ID};
+            return;
         }
     ) unless defined $self->ipc_polling;
 
@@ -430,6 +434,7 @@ sub ipc_free_shm {
     my $id = delete $self->{+IPC_SHM_ID};
     return unless defined $id;
 
+    $self->{+IPC}->stop_shm() if $self->{+IPC} && $self->{+IPC}->can('stop_shm');
     shmctl($id, IPC::SysV::IPC_RMID(), 0);
 }
 
@@ -437,10 +442,16 @@ sub get_ipc_pending {
     my $self = shift;
     return -1 unless defined $self->{+IPC_SHM_ID};
     my $val;
-    shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE}) or return -1;
-    return 0 if $val eq $self->{+IPC_SHM_LAST};
-    $self->{+IPC_SHM_LAST} = $val;
-    return 1;
+
+    if (shmread($self->{+IPC_SHM_ID}, $val, 0, $self->{+IPC_SHM_SIZE})) {
+        return 0 if $val eq $self->{+IPC_SHM_LAST};
+        $self->{+IPC_SHM_LAST} = $val;
+        return 1;
+    }
+
+    $self->{+IPC}->stop_shm() if $self->{+IPC} && $self->{+IPC}->can('stop_shm');
+    delete $self->{+IPC_SHM_ID};
+    return -1;
 }
 
 sub set_ipc_pending {
@@ -457,18 +468,33 @@ sub set_ipc_pending {
     my $errno = 0 + $!;
     my $err = "$!";
 
+    # Do not come back if shm is gone.
+    my $id = delete $self->{+IPC_SHM_ID};
+
     my $ppid = defined $self->{+_PID} ? $self->{+_PID} : '?';
     my $ptid = defined $self->{+_TID} ? $self->{+_TID} : '?';
     my $cpid = $$;
     my $ctid = get_tid();
 
+    my $shm_stopped = $self->{+IPC} && $self->{+IPC}->can('shm_stopped') && $self->{+IPC}->shm_stopped || 0;
+
+    if (defined($self->{+_PID}) && ($ppid == $$ || kill(0, $ppid)) && !$shm_stopped) {
+        return if $self->{+_SHM_WARNED}++;
+
+        my $warn = "($$) It looks like SHM has gone away unexpectedly. The parent process is still active. This is not fatal, but may slow things down slightly.";
+        $warn = Carp::longmess($warn) if Carp->can('longmess');
+        warn $warn;
+        return;
+    }
+
     chomp(my $msg = <<"    EOT");
-IPC shmwrite($self->{+IPC_SHM_ID}, '$val', 0, $self->{+IPC_SHM_SIZE}) failed, this is a fatal error.
+IPC shmwrite($id, '$val', 0, $self->{+IPC_SHM_SIZE}) failed, the parent process appears to have exited. This is a fatal error.
   Error: ($errno) $err
   Parent  PID: $ppid
   Current PID: $cpid
   Parent  TID: $ptid
   Current TID: $ctid
+  SHM Stopped Intentionally: $shm_stopped
   IPC errors like this usually indicate a race condition in a test where the
   parent thread/process is allowed to exit before all child processes/threads
   are complete.
@@ -559,6 +585,7 @@ sub DESTROY {
     return unless defined($self->{+_PID}) && $self->{+_PID} == $$;
     return unless defined($self->{+_TID}) && $self->{+_TID} == get_tid();
 
+    $self->{+IPC}->stop_shm() if $self->{+IPC} && $self->{+IPC}->can('stop_shm');
     shmctl($self->{+IPC_SHM_ID}, IPC::SysV::IPC_RMID(), 0)
         if defined $self->{+IPC_SHM_ID} && IPC::SysV->can('IPC_RMID');
 }

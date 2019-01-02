@@ -566,37 +566,61 @@ SKIP: {
     ok(!$ok, "Exception");
 
     is($err, <<"    EOT", "Got exception when shm write fails (no tid/pid)") unless $err =~ m/System V IPC is not implemented/;
-IPC shmwrite(-1, 'message', 0, 32) failed, this is a fatal error.
+IPC shmwrite(-1, 'message', 0, 32) failed, the parent process appears to have exited. This is a fatal error.
   Error: (22) $ec
   Parent  PID: ?
   Current PID: $$
   Parent  TID: ?
   Current TID: $ctid
+  SHM Stopped Intentionally: 0
   IPC errors like this usually indicate a race condition in a test where the
   parent thread/process is allowed to exit before all child processes/threads
   are complete.
   Trace:
     EOT
 
-    $two->{_pid} = $$;
+    # Need a fake PID that cannot actually be signaled, but is a real number....
+    $two->{_pid} = 10000000000000000;
     $two->{_tid} = $ctid;
 
+    $two->{ipc_shm_id} = -1; # Reset this
     $ok = eval { $two->set_ipc_pending('message'); 1 };
     $err = $@;
     ok(!$ok, "Exception");
 
     is($err, <<"    EOT", "Got exception when shm write fails (with tid/pid)") unless $err =~ m/System V IPC is not implemented/;
-IPC shmwrite(-1, 'message', 0, 32) failed, this is a fatal error.
+IPC shmwrite(-1, 'message', 0, 32) failed, the parent process appears to have exited. This is a fatal error.
   Error: (22) $ec
-  Parent  PID: $$
+  Parent  PID: $two->{_pid}
   Current PID: $$
   Parent  TID: $ctid
   Current TID: $ctid
+  SHM Stopped Intentionally: 0
   IPC errors like this usually indicate a race condition in a test where the
   parent thread/process is allowed to exit before all child processes/threads
   are complete.
   Trace:
     EOT
+
+    $two->{_pid} = $$; # Parent that has not exited
+    $two->{_tid} = $ctid;
+
+    $two->{ipc_shm_id} = -1; # Reset this
+    my $warn;
+    $ok = eval {
+        local $SIG{__WARN__} = sub { $warn = $_[0] };
+        $two->set_ipc_pending('message');
+        1;
+    };
+    $err = $@;
+    return if $err =~ m/System V IPC is not implemented/;
+    ok($ok, "No Exception");
+
+    like(
+        $warn,
+        qr/^\($$\) It looks like SHM has gone away unexpectedly\. The parent process is still active\. This is not fatal, but may slow things down slightly/,
+        "Got warning when shm write fails but parent is open"
+    );
 }
 
 
