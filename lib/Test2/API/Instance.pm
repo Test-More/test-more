@@ -494,7 +494,7 @@ IPC shmwrite($id, '$val', 0, $self->{+IPC_SHM_SIZE}) failed, the parent process 
   Current PID: $cpid
   Parent  TID: $ptid
   Current TID: $ctid
-  SHM Stopped Intentionally: $shm_stopped
+  SHM State:   $shm_stopped
   IPC errors like this usually indicate a race condition in a test where the
   parent thread/process is allowed to exit before all child processes/threads
   are complete.

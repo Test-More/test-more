@@ -572,7 +572,7 @@ IPC shmwrite(-1, 'message', 0, 32) failed, the parent process appears to have ex
   Current PID: $$
   Parent  TID: ?
   Current TID: $ctid
-  SHM Stopped Intentionally: 0
+  SHM State:   0
   IPC errors like this usually indicate a race condition in a test where the
   parent thread/process is allowed to exit before all child processes/threads
   are complete.
@@ -595,7 +595,7 @@ IPC shmwrite(-1, 'message', 0, 32) failed, the parent process appears to have ex
   Current PID: $$
   Parent  TID: $ctid
   Current TID: $ctid
-  SHM Stopped Intentionally: 0
+  SHM State:   0
   IPC errors like this usually indicate a race condition in a test where the
   parent thread/process is allowed to exit before all child processes/threads
   are complete.
