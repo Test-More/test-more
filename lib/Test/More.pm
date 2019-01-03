@@ -17,7 +17,7 @@ sub _carp {
     return warn @_, " at $file line $line\n";
 }
 
-our $VERSION = '1.302153';
+our $VERSION = '1.302154';
 
 use Test::Builder::Module;
 our @ISA    = qw(Test::Builder::Module);

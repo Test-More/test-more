@@ -2,7 +2,7 @@ package Test2::API::Breakage;
 use strict;
 use warnings;
 
-our $VERSION = '1.302153';
+our $VERSION = '1.302154';
 
 
 use Test2::Util qw/pkg_to_file/;
