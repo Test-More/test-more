@@ -11,7 +11,7 @@ BEGIN {
 
 use Test::More;
 
-my $lib = "5.26.3_thr\@TestMore$$";
+my $lib = "downstream\@TestMore$$";
 
 ok(run_string(<<"EOT"), "Installed a fresh perlbrew") || exit 1;
 perlbrew lib create $lib
@@ -36,7 +36,7 @@ for my $i (qw/Suite AsyncSubtest Workflow Plugin::SpecDeclare/) {
         EOT
 
         $ok &&= run_string(<<"        EOT");
-        perlbrew exec --with $lib cpanm --dev Test2::$i
+        perlbrew exec --with $lib cpanm --dev --reinstall Test2::$i
         EOT
 
         last if $ok;
@@ -45,17 +45,13 @@ for my $i (qw/Suite AsyncSubtest Workflow Plugin::SpecDeclare/) {
     ok($ok, "Installed Test2::$i") || exit 1;
 }
 
-ok(run_string(<<"EOT"), "Installed Archive::Zip") || exit 1;
-perlbrew exec --with $lib cpanm --force Archive::Zip
-EOT
-
 my @BAD;
 open(my $list, '<', 'xt/downstream_dists.list') || die "Could not open downstream list";
 while(my $name = <$list>) {
     chomp($name);
     my $ok = 0;
     for (1 .. 2) {
-        $ok = run_string("perlbrew exec --with $lib -- cpanm $name");
+        $ok = run_string("perlbrew exec --with $lib -- cpanm --reinstall $name");
         last if $ok;
         diag "'$name' did not install properly, trying 1 more time.";
     }
@@ -72,7 +68,7 @@ TODO: {
         chomp($name);
         my $ok = 0;
         for (1 .. 2) {
-            $ok = run_string("perlbrew exec --with $lib cpanm $name");
+            $ok = run_string("perlbrew exec --with $lib cpanm --reinstall $name");
             last if $ok;
             diag "'$name' did not install properly, trying 1 more time.";
         }
