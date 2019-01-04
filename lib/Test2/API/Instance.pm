@@ -454,6 +454,12 @@ sub get_ipc_pending {
     return -1;
 }
 
+sub _check_pid {
+    my $self = shift;
+    my ($pid) = @_;
+    return kill(0, $pid);
+}
+
 sub set_ipc_pending {
     my $self = shift;
 
@@ -478,10 +484,10 @@ sub set_ipc_pending {
 
     my $shm_stopped = $self->{+IPC} && $self->{+IPC}->can('shm_stopped') && $self->{+IPC}->shm_stopped || 0;
 
-    if (defined($self->{+_PID}) && ($ppid == $$ || kill(0, $ppid)) && !$shm_stopped) {
+    if (defined($self->{+_PID}) && ($ppid == $$ || $self->_check_pid($ppid)) && !$shm_stopped) {
         return if $self->{+_SHM_WARNED}++;
 
-        my $warn = "($$) It looks like SHM has gone away unexpectedly. The parent process is still active. This is not fatal, but may slow things down slightly.";
+        my $warn = "($$) It looks like SHM has gone away unexpectedly ($errno: $err). The parent process is still active. This is not fatal, but may slow things down slightly.";
         $warn = Carp::longmess($warn) if Carp->can('longmess');
         warn $warn;
         return;

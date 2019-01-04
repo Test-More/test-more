@@ -584,7 +584,13 @@ IPC shmwrite(-1, 'message', 0, 32) failed, the parent process appears to have ex
     $two->{_tid} = $ctid;
 
     $two->{ipc_shm_id} = -1; # Reset this
-    $ok = eval { $two->set_ipc_pending('message'); 1 };
+    $ok = eval {
+        # override check_pid, some platforms will return true with our absurd PID above.
+        no warnings 'redefine';
+        local *Test2::API::Instance::_check_pid = sub { () };
+        $two->set_ipc_pending('message');
+        1;
+    };
     $err = $@;
     ok(!$ok, "Exception");
 
@@ -605,8 +611,8 @@ IPC shmwrite(-1, 'message', 0, 32) failed, the parent process appears to have ex
     $two->{_pid} = $$; # Parent that has not exited
     $two->{_tid} = $ctid;
 
+    my $warn = undef;
     $two->{ipc_shm_id} = -1; # Reset this
-    my $warn;
     $ok = eval {
         local $SIG{__WARN__} = sub { $warn = $_[0] };
         $two->set_ipc_pending('message');
@@ -618,7 +624,7 @@ IPC shmwrite(-1, 'message', 0, 32) failed, the parent process appears to have ex
 
         like(
             $warn,
-            qr/^\($$\) It looks like SHM has gone away unexpectedly\. The parent process is still active\. This is not fatal, but may slow things down slightly/,
+            qr/^\($$\) It looks like SHM has gone away unexpectedly \(22: Invalid argument\)\. The parent process is still active\. This is not fatal, but may slow things down slightly/,
             "Got warning when shm write fails but parent is open"
         );
     }

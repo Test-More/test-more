@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Fix SHM pid checking for some platforms in Instance.t
+    - Add SHM errno/msg to warning about SHM going away
+
 1.302153  2019-01-03 08:39:42-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Improve SHM verification and state awareness
