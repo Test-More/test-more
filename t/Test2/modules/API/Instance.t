@@ -624,7 +624,7 @@ IPC shmwrite(-1, 'message', 0, 32) failed, the parent process appears to have ex
 
         like(
             $warn,
-            qr/^\($$\) It looks like SHM has gone away unexpectedly \(22: Invalid argument\)\. The parent process is still active\. This is not fatal, but may slow things down slightly/,
+            qr/^\($$\) It looks like SHM has gone away unexpectedly \(22: $ec\)\. The parent process is still active\. This is not fatal, but may slow things down slightly/,
             "Got warning when shm write fails but parent is open"
         );
     }
