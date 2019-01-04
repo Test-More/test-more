@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302154  2019-01-04 10:20:54-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix SHM pid checking for some platforms in Instance.t
     - Add SHM errno/msg to warning about SHM going away
 
