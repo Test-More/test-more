@@ -2,7 +2,7 @@ package Test2::Event::Bail;
 use strict;
 use warnings;
 
-our $VERSION = '1.302156';
+our $VERSION = '1.302157';
 
 
 BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }

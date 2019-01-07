@@ -23,7 +23,7 @@ my %WriteMakefileArgs = (
     "Storable" => 0,
     "utf8" => 0
   },
-  "VERSION" => "1.302156",
+  "VERSION" => "1.302157",
   "test" => {
     "TESTS" => "t/*.t t/Legacy/*.t t/Legacy/Bugs/*.t t/Legacy/Builder/*.t t/Legacy/Regression/*.t t/Legacy/Simple/*.t t/Legacy/Test2/*.t t/Legacy/Tester/*.t t/Legacy/subtest/*.t t/Legacy_And_Test2/*.t t/Test2/acceptance/*.t t/Test2/behavior/*.t t/Test2/legacy/*.t t/Test2/modules/*.t t/Test2/modules/API/*.t t/Test2/modules/Event/*.t t/Test2/modules/Event/TAP/*.t t/Test2/modules/EventFacet/*.t t/Test2/modules/Formatter/*.t t/Test2/modules/Hub/*.t t/Test2/modules/Hub/Interceptor/*.t t/Test2/modules/IPC/*.t t/Test2/modules/IPC/Driver/*.t t/Test2/modules/Tools/*.t t/Test2/modules/Util/*.t t/Test2/regression/*.t t/regression/*.t"
   }
