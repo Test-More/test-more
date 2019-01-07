@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - No changes from last trial
+
 1.302155  2019-01-04 11:25:17-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix test not to fail in non-english locales
