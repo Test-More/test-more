@@ -42,7 +42,7 @@ Human readable string or data structure, this is the information to display.
 Formatters are free to render the structures however they please. This may
 contain a blessed object.
 
-If the C<table> attribute (see below) is set thena renderer may choose to
+If the C<table> attribute (see below) is set then a renderer may choose to
 display the table instead of the details.
 
 =item $structure = $info->{table}
@@ -52,7 +52,7 @@ display the table instead of the details.
 If the data the C<info> facet needs to convey can be represented as a table
 then the data may be placed in this attribute in a more raw form for better
 display. The data must also be represented in the C<details> attribute for
-renderers which do not support outputing tables directly.
+renderers which do not support rendering tables directly.
 
 The table structure:
 
