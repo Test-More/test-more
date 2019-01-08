@@ -422,7 +422,7 @@ sub calc_table_size {
     my ($f) = @_;
 
     my $term = Term::Table::Util::term_size();
-    my $nesting = 2 + ($f->{trace}->{nested} || 0) * 4; # 4 spaces per level, also '# ' prefix
+    my $nesting = 2 + (($f->{trace}->{nested} || 0) * 4); # 4 spaces per level, also '# ' prefix
     my $total = $term - $nesting;
 
     # Sane minimum width, any smaller and we are asking for pain

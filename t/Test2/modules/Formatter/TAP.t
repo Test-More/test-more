@@ -1028,6 +1028,15 @@ elsif ($can_table) {
         no warnings 'redefine';
         local *Term::Table::Util::term_size = sub { 70 };
 
+        my %table_data = (
+            header => ['H1', 'H2'],
+            rows   => [
+                ["R1C1\n", 'R1C2'],
+                ['R2C1', 'R2C2'],
+                [('x' x 30), ('y' x 30)],
+            ],
+        );
+
         {
             local *Test2::Formatter::TAP::supports_tables = sub { 0 };
             $it->write(
@@ -1037,26 +1046,12 @@ elsif ($can_table) {
                             tag     => 'DIAG',
                             details => 'should see only this',
                             debug   => 1,
-                            table   => {
-                                header => ['H1', 'H2'],
-                                rows   => [
-                                    ['R1C1', 'R1C2'],
-                                    ['R2C1', 'R2C2'],
-                                    [('x' x 30), ('y' x 30)],
-                                ],
-                            }
+                            table   => \%table_data,
                         },
                         {
                             tag     => 'NOTE',
                             details => 'should see only this',
-                            table   => {
-                                header => ['H1', 'H2'],
-                                rows   => [
-                                    ['R1C1', 'R1C2'],
-                                    ['R2C1', 'R2C2'],
-                                    [('x' x 30), ('y' x 30)],
-                                ],
-                            }
+                            table   => \%table_data,
                         },
                     ]
                 },
@@ -1070,26 +1065,12 @@ elsif ($can_table) {
                         tag     => 'DIAG',
                         details => 'should not see',
                         debug   => 1,
-                        table   => {
-                            header => ['H1', 'H2'],
-                            rows   => [
-                                ["R1C1\n", 'R1C2'],
-                                ['R2C1', 'R2C2'],
-                                [('x' x 30), ('y' x 30)],
-                            ],
-                        }
+                        table   => \%table_data,
                     },
                     {
                         tag     => 'NOTE',
                         details => 'should not see',
-                        table   => {
-                            header => ['H1', 'H2'],
-                            rows   => [
-                                ["R1C1\n", 'R1C2'],
-                                ['R2C1', 'R2C2'],
-                                [('x' x 30), ('y' x 30)],
-                            ],
-                        }
+                        table   => \%table_data,
                     },
                 ]
             },
@@ -1103,73 +1084,43 @@ elsif ($can_table) {
                         tag     => 'DIAG',
                         details => 'should not see',
                         debug   => 1,
-                        table   => {
-                            header => ['H1', 'H2'],
-                            rows   => [
-                                ["R1C1\n", 'R1C2'],
-                                ['R2C1', 'R2C2'],
-                                [('x' x 30), ('y' x 30)],
-                            ],
-                        }
+                        table   => \%table_data,
                     },
                     {
                         tag     => 'NOTE',
                         details => 'should not see',
-                        table   => {
-                            header => ['H1', 'H2'],
-                            rows   => [
-                                ["R1C1\n", 'R1C2'],
-                                ['R2C1', 'R2C2'],
-                                [('x' x 30), ('y' x 30)],
-                            ],
-                        }
+                        table   => \%table_data,
                     },
                 ]
             },
         );
 
-        is($$out, <<'        EOT', "Showed detail OR tables, properly sized and indented in STDOUT");
+        my $table1 = join "\n" => map { "# $_" } Term::Table->new(
+            %table_data,
+            max_width => Term::Table::Util::term_size() - 2,    # 2 for '# '
+            collapse  => 1,
+            sanitize  => 1,
+            mark_tail => 1,
+        )->render;
+
+        my $table2 = join "\n" => map { "        # $_" } Term::Table->new(
+            %table_data,
+            max_width => Term::Table::Util::term_size() - 10,    # 2 for '# ', 8 for indentation
+            collapse  => 1,
+            sanitize  => 1,
+            mark_tail => 1,
+        )->render;
+
+        is($$out, <<"        EOT", "Showed detail OR tables, properly sized and indented in STDOUT");
 # should see only this
-# +------------------------------+------------------------------+
-# | H1                           | H2                           |
-# +------------------------------+------------------------------+
-# | R1C1\n                       | R1C2                         |
-# | R2C1                         | R2C2                         |
-# |                              |                              |
-# | xxxxxxxxxxxxxxxxxxxxxxxxxxxx | yyyyyyyyyyyyyyyyyyyyyyyyyyyy |
-# | xx                           | yy                           |
-# +------------------------------+------------------------------+
-        # +--------------------------+--------------------------+
-        # | H1                       | H2                       |
-        # +--------------------------+--------------------------+
-        # | R1C1\n                   | R1C2                     |
-        # | R2C1                     | R2C2                     |
-        # |                          |                          |
-        # | xxxxxxxxxxxxxxxxxxxxxxxx | yyyyyyyyyyyyyyyyyyyyyyyy |
-        # | xxxxxx                   | yyyyyy                   |
-        # +--------------------------+--------------------------+
+$table1
+$table2
         EOT
 
-        is($$err, <<'        EOT', "Showed detail OR tables, properly sized and indented in STDERR");
+        is($$err, <<"        EOT", "Showed detail OR tables, properly sized and indented in STDERR");
 # should see only this
-# +------------------------------+------------------------------+
-# | H1                           | H2                           |
-# +------------------------------+------------------------------+
-# | R1C1\n                       | R1C2                         |
-# | R2C1                         | R2C2                         |
-# |                              |                              |
-# | xxxxxxxxxxxxxxxxxxxxxxxxxxxx | yyyyyyyyyyyyyyyyyyyyyyyyyyyy |
-# | xx                           | yy                           |
-# +------------------------------+------------------------------+
-        # +--------------------------+--------------------------+
-        # | H1                       | H2                       |
-        # +--------------------------+--------------------------+
-        # | R1C1\n                   | R1C2                     |
-        # | R2C1                     | R2C2                     |
-        # |                          |                          |
-        # | xxxxxxxxxxxxxxxxxxxxxxxx | yyyyyyyyyyyyyyyyyyyyyyyy |
-        # | xxxxxx                   | yyyyyy                   |
-        # +--------------------------+--------------------------+
+$table1
+$table2
         EOT
     };
 }
