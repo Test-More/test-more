@@ -53,7 +53,7 @@ Tag that should prefix/identify the main text.
 Optional, if the display text was generated from another facet this should
 state what facet it was.
 
-=item $mode = $render->[#]->mode{}
+=item $mode = $render->[#]->{mode}
 
 =item $mode = $render->[#]->mode()
 
