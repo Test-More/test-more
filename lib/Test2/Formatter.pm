@@ -92,6 +92,10 @@ The C<finalize> method is always the last thing called on the formatter, I<<
 except when C<terminate> is called for a Bail event >>. It is passed the
 following arguments:
 
+The C<new_root> method is used when constructing a root formatter. The default
+is to just delegate to the regular C<new()> method, most formatters can ignore
+this.
+
 =over 4
 
 =item * The number of tests that were planned
