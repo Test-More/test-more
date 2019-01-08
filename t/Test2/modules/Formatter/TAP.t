@@ -1017,4 +1017,163 @@ Bail out!  blah
     EOT
 };
 
+my $can_table      = $CLASS->supports_tables;
+my $author_testing = $ENV{AUTHOR_TESTING};
+
+if ($author_testing && !$can_table) {
+    die "This test requires Term::Table to be installed, and must be run in AUTHOR_TESTING mode";
+}
+elsif ($can_table) {
+    tests tables => sub {
+        my ($it, $out, $err) = grabber();
+
+        no warnings 'redefine';
+        local *Term::Table::Util::term_size = sub { 70 };
+
+        {
+            local *Test2::Formatter::TAP::supports_tables = sub { 0 };
+            $it->write(
+                undef, 1, {
+                    info => [
+                        {
+                            tag     => 'DIAG',
+                            details => 'should see only this',
+                            debug   => 1,
+                            table   => {
+                                header => ['H1', 'H2'],
+                                rows   => [
+                                    ['R1C1', 'R1C2'],
+                                    ['R2C1', 'R2C2'],
+                                    [('x' x 30), ('y' x 30)],
+                                ],
+                            }
+                        },
+                        {
+                            tag     => 'NOTE',
+                            details => 'should see only this',
+                            table   => {
+                                header => ['H1', 'H2'],
+                                rows   => [
+                                    ['R1C1', 'R1C2'],
+                                    ['R2C1', 'R2C2'],
+                                    [('x' x 30), ('y' x 30)],
+                                ],
+                            }
+                        },
+                    ]
+                },
+            );
+        }
+
+        $it->write(
+            undef, 1, {
+                info => [
+                    {
+                        tag     => 'DIAG',
+                        details => 'should not see',
+                        debug   => 1,
+                        table   => {
+                            header => ['H1', 'H2'],
+                            rows   => [
+                                ["R1C1\n", 'R1C2'],
+                                ['R2C1', 'R2C2'],
+                                [('x' x 30), ('y' x 30)],
+                            ],
+                        }
+                    },
+                    {
+                        tag     => 'NOTE',
+                        details => 'should not see',
+                        table   => {
+                            header => ['H1', 'H2'],
+                            rows   => [
+                                ["R1C1\n", 'R1C2'],
+                                ['R2C1', 'R2C2'],
+                                [('x' x 30), ('y' x 30)],
+                            ],
+                        }
+                    },
+                ]
+            },
+        );
+
+        $it->write(
+            undef, 1, {
+                trace => {nested => 2},
+                info  => [
+                    {
+                        tag     => 'DIAG',
+                        details => 'should not see',
+                        debug   => 1,
+                        table   => {
+                            header => ['H1', 'H2'],
+                            rows   => [
+                                ["R1C1\n", 'R1C2'],
+                                ['R2C1', 'R2C2'],
+                                [('x' x 30), ('y' x 30)],
+                            ],
+                        }
+                    },
+                    {
+                        tag     => 'NOTE',
+                        details => 'should not see',
+                        table   => {
+                            header => ['H1', 'H2'],
+                            rows   => [
+                                ["R1C1\n", 'R1C2'],
+                                ['R2C1', 'R2C2'],
+                                [('x' x 30), ('y' x 30)],
+                            ],
+                        }
+                    },
+                ]
+            },
+        );
+
+        is($$out, <<'        EOT', "Showed detail OR tables, properly sized and indented in STDOUT");
+# should see only this
+# +------------------------------+------------------------------+
+# | H1                           | H2                           |
+# +------------------------------+------------------------------+
+# | R1C1\n                       | R1C2                         |
+# | R2C1                         | R2C2                         |
+# |                              |                              |
+# | xxxxxxxxxxxxxxxxxxxxxxxxxxxx | yyyyyyyyyyyyyyyyyyyyyyyyyyyy |
+# | xx                           | yy                           |
+# +------------------------------+------------------------------+
+        # +--------------------------+--------------------------+
+        # | H1                       | H2                       |
+        # +--------------------------+--------------------------+
+        # | R1C1\n                   | R1C2                     |
+        # | R2C1                     | R2C2                     |
+        # |                          |                          |
+        # | xxxxxxxxxxxxxxxxxxxxxxxx | yyyyyyyyyyyyyyyyyyyyyyyy |
+        # | xxxxxx                   | yyyyyy                   |
+        # +--------------------------+--------------------------+
+        EOT
+
+        is($$err, <<'        EOT', "Showed detail OR tables, properly sized and indented in STDERR");
+# should see only this
+# +------------------------------+------------------------------+
+# | H1                           | H2                           |
+# +------------------------------+------------------------------+
+# | R1C1\n                       | R1C2                         |
+# | R2C1                         | R2C2                         |
+# |                              |                              |
+# | xxxxxxxxxxxxxxxxxxxxxxxxxxxx | yyyyyyyyyyyyyyyyyyyyyyyyyyyy |
+# | xx                           | yy                           |
+# +------------------------------+------------------------------+
+        # +--------------------------+--------------------------+
+        # | H1                       | H2                       |
+        # +--------------------------+--------------------------+
+        # | R1C1\n                   | R1C2                     |
+        # | R2C1                     | R2C2                     |
+        # |                          |                          |
+        # | xxxxxxxxxxxxxxxxxxxxxxxx | yyyyyyyyyyyyyyyyyyyyyyyy |
+        # | xxxxxx                   | yyyyyy                   |
+        # +--------------------------+--------------------------+
+        EOT
+    };
+}
+
 done_testing;

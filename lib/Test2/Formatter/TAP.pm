@@ -16,6 +16,18 @@ sub OUT_ERR() { 1 }
 
 BEGIN { require Test2::Formatter; our @ISA = qw(Test2::Formatter) }
 
+# Not constants because this is a method, and can be overriden
+BEGIN {
+    local $SIG{__DIE__} = 'DEFAULT';
+    local $@;
+    if (($INC{'Term/Table.pm'} && $INC{'Term/Table/Util.pm'}) || eval { require Term::Table; require Term::Table::Util; 1 }) {
+        *supports_tables = sub { 1 };
+    }
+    else {
+        *supports_tables = sub { 0 };
+    }
+}
+
 sub _autoflush {
     my($fh) = pop;
     my $old_fh = select $fh;
@@ -362,11 +374,23 @@ sub info_tap {
 
     return map {
         my $details = $_->{details};
+        my $table   = $_->{table};
 
         my $IO = $_->{debug} && !($f->{amnesty} && @{$f->{amnesty}}) ? OUT_ERR : OUT_STD;
 
         my $msg;
-        if (ref($details)) {
+        if ($table && $self->supports_tables) {
+            $msg = join "\n" => map { "# $_" } Term::Table->new(
+                header      => $table->{header},
+                rows        => $table->{rows},
+                collapse    => $table->{collapse},
+                no_collapse => $table->{no_collapse},
+                sanitize    => 1,
+                mark_tail   => 1,
+                max_width   => $self->calc_table_size($f),
+            )->render();
+        }
+        elsif (ref($details)) {
             require Data::Dumper;
             my $dumper = Data::Dumper->new([$details])->Indent(2)->Terse(1)->Pad('# ')->Useqq(1)->Sortkeys(1);
             chomp($msg = $dumper->Dump);
@@ -391,6 +415,20 @@ sub summary_tap {
     $summary =~ s/^/# /smg;
 
     return [OUT_STD, "$summary\n"];
+}
+
+sub calc_table_size {
+    my $self = shift;
+    my ($f) = @_;
+
+    my $term = Term::Table::Util::term_size();
+    my $nesting = 2 + ($f->{trace}->{nested} || 0) * 4; # 4 spaces per level, also '# ' prefix
+    my $total = $term - $nesting;
+
+    # Sane minimum width, any smaller and we are asking for pain
+    return 50 if $total < 50;
+
+    return $total;
 }
 
 1;
