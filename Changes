@@ -2,6 +2,7 @@
 
     - Fix TAP test on windows
     - Fix math errors in table indentation
+    - Devel requires Term::Table
 
 1.302157  2019-01-08 14:10:29-08:00 America/Los_Angeles (TRIAL RELEASE)
 
