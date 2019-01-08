@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302157  2019-01-08 14:10:29-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix minor typos and missing doc sections
     - Add table support in info facet and TAP formatter
 
