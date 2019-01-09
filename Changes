@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302159  2019-01-09 13:21:37-08:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Add table support to ctx->fail and ctx->fail_and_return
     - Fix Instance.t on haiku-os
 
