@@ -565,7 +565,7 @@ SKIP: {
     my $err = $@;
     ok(!$ok, "Exception");
 
-    is($err, <<"    EOT", "Got exception when shm write fails (no tid/pid)") unless $err =~ m/System V IPC is not implemented/;
+    is($err, <<"    EOT", "Got exception when shm write fails (no tid/pid)") unless $err =~ m/not implemented/;
 IPC shmwrite(-1, 'message', 0, 32) failed, the parent process appears to have exited. This is a fatal error.
   Error: (22) $ec
   Parent  PID: ?
@@ -594,7 +594,7 @@ IPC shmwrite(-1, 'message', 0, 32) failed, the parent process appears to have ex
     $err = $@;
     ok(!$ok, "Exception");
 
-    is($err, <<"    EOT", "Got exception when shm write fails (with tid/pid)") unless $err =~ m/System V IPC is not implemented/;
+    is($err, <<"    EOT", "Got exception when shm write fails (with tid/pid)") unless $err =~ m/not implemented/;
 IPC shmwrite(-1, 'message', 0, 32) failed, the parent process appears to have exited. This is a fatal error.
   Error: (22) $ec
   Parent  PID: $two->{_pid}
@@ -619,7 +619,7 @@ IPC shmwrite(-1, 'message', 0, 32) failed, the parent process appears to have ex
         1;
     };
     $err = $@;
-    unless ($err =~ m/System V IPC is not implemented/) {
+    unless ($err =~ m/not implemented/) {
         ok($ok, "No Exception");
 
         like(
