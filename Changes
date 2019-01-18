@@ -1,6 +1,7 @@
 {{$NEXT}}
 
     - Fix typo Test::Workflow -> Test2::Workflow #170
+    - Fix test broken by new Test-Simple #175
 
 0.000117  2018-12-04 11:37:15-08:00 America/Los_Angeles
 

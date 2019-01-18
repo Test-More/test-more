@@ -19,9 +19,12 @@ our @EXPORT_OK = qw{
 my %TYPES;
 for my $class (__PACKAGE__->plugins) {
     my $type = $class;
-    $type =~ s/^.*::EventFacet:://g;
+    $type =~ s/^Test2::EventFacet:://g;
 
-    my $key = $class->facet_key || lc($type);
+    next unless $class->isa('Test2::EventFacet');
+    my $key;
+    $key = $class->facet_key if $class->can('facet_key');
+    $key = lc($type) unless defined $key;
 
     $TYPES{$type}     = $class;
     $TYPES{lc($type)} = $class;
