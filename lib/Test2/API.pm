@@ -1297,7 +1297,7 @@ to turn this off.
 
 These functions return the filehandles that test output should be written to.
 They are primarily useful when writing a custom formatter and code that turns
-events into actual output (TAP, etc.)  They will return a dupe of the original
+events into actual output (TAP, etc.).  They will return a dupe of the original
 filehandles that formatted output can be sent to regardless of whatever state
 the currently running test may have left STDOUT and STDERR in.
 
