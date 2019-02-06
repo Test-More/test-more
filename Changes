@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Typo fixes in documentation
+
 1.302161  2019-01-29 09:34:27-08:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Remove SHM Optimization
