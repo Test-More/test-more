@@ -172,4 +172,11 @@ sub builder {
     return Test::Builder->new;
 }
 
+=head1 SEE ALSO
+
+L<< Test2::Manual::Tooling::TestBuilder >> describes the improved
+options for writing testing modules provided by L<< Test2 >>.
+
+=cut
+
 1;
