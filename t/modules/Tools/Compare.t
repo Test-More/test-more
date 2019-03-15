@@ -962,10 +962,37 @@ subtest prop => sub {
         "restricted context"
     );
 
-    like(
-        dies { [array { prop x => 1 }] },
-        qr/'Test2::Compare::Array.*' does not support meta-checks/,
-        "not everything supports properties"
+    is(
+        [1],
+        array { prop size => 1; etc; },
+        "Array builder supports 'prop'"
+    );
+
+    is(
+        [1],
+        bag { prop size => 1; etc; },
+        "Bag builder supports 'prop'"
+    );
+
+    is(
+        { foo => 1, },
+        hash { prop size => 1; etc; },
+        "Hash builder supports 'prop'"
+    );
+
+    my $events = intercept {
+        is( [1],           array { prop size => 2; etc; } );
+        is( [1],           bag   { prop size => 2; etc; } );
+        is( { foo => 1, }, hash  { prop size => 2; etc; } );
+    };
+
+    is(
+        $events,
+        array {
+            filter_items { grep { ref =~ /::Ok/ } @_ };
+            all_items object { call pass => F };
+            etc;
+        }
     );
 };
 

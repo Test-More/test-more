@@ -251,5 +251,16 @@ subtest objects_as_arrays => sub {
     is ( $o1, $o2, "same" );
 };
 
+subtest add_prop => sub {
+    my $one = $CLASS->new();
+
+    ok(!$one->meta, "no meta yet");
+    $one->add_prop('size' => 1);
+    isa_ok($one->meta, 'Test2::Compare::Meta');
+    is(@{$one->meta->items}, 1, "1 item");
+
+    $one->add_prop('reftype' => 'ARRAY');
+    is(@{$one->meta->items}, 2, "2 items");
+};
 
 done_testing;
