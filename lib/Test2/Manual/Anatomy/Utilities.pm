@@ -2,7 +2,7 @@ package Test2::Manual::Anatomy::Utilities;
 use strict;
 use warnings;
 
-our $VERSION = '0.000119';
+our $VERSION = '0.000120';
 
 1;
 

@@ -7,7 +7,7 @@ use Test2::Util::HashBase qw/-start -stop -user -sys -cuser -csys/;
 
 use Test2::Util::Times qw/render_bench/;
 
-our $VERSION = '0.000119';
+our $VERSION = '0.000120';
 
 sub summary {
     my $self = shift;
