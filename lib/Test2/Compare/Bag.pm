@@ -6,7 +6,7 @@ use base 'Test2::Compare::Base';
 
 our $VERSION = '0.000119';
 
-use Test2::Util::HashBase qw/ending items/;
+use Test2::Util::HashBase qw/ending meta items/;
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/reftype looks_like_number/;
@@ -21,6 +21,8 @@ sub init {
 
 sub name { '<BAG>' }
 
+sub meta_class  { 'Test2::Compare::Meta' }
+
 sub verify {
     my $self = shift;
     my %params = @_;
@@ -30,6 +32,12 @@ sub verify {
     return 0 unless ref($got);
     return 0 unless reftype($got) eq 'ARRAY';
     return 1;
+}
+
+sub add_prop {
+    my $self = shift;
+    $self->{+META} = $self->meta_class->new unless defined $self->{+META};
+    $self->{+META}->add_prop(@_);
 }
 
 sub add_item {
@@ -52,6 +60,9 @@ sub deltas {
     # Make a copy that we can munge as needed.
     my @list = @$got;
     my %unmatched = map { $_ => $list[$_] } 0..$#list;
+
+    my $meta     = $self->{+META};
+    push @deltas => $meta->deltas(%params) if defined $meta;
 
     while (@items) {
         my $item = shift @items;

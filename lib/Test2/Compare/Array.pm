@@ -6,7 +6,7 @@ use base 'Test2::Compare::Base';
 
 our $VERSION = '0.000119';
 
-use Test2::Util::HashBase qw/inref ending items order for_each/;
+use Test2::Util::HashBase qw/inref meta ending items order for_each/;
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/reftype looks_like_number/;
@@ -42,6 +42,8 @@ sub init {
 
 sub name { '<ARRAY>' }
 
+sub meta_class  { 'Test2::Compare::Meta' }
+
 sub verify {
     my $self = shift;
     my %params = @_;
@@ -52,6 +54,12 @@ sub verify {
     return 0 unless ref($got);
     return 0 unless reftype($got) eq 'ARRAY';
     return 1;
+}
+
+sub add_prop {
+    my $self = shift;
+    $self->{+META} = $self->meta_class->new unless defined $self->{+META};
+    $self->{+META}->add_prop(@_);
 }
 
 sub top_index {
@@ -108,6 +116,9 @@ sub deltas {
     my @order = @{$self->{+ORDER}};
     my $items = $self->{+ITEMS};
     my $for_each = $self->{+FOR_EACH};
+
+    my $meta     = $self->{+META};
+    push @deltas => $meta->deltas(%params) if defined $meta;
 
     # Make a copy that we can munge as needed.
     my @list = @$got;
