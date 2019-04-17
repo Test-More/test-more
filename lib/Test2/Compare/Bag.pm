@@ -147,7 +147,7 @@ more items than the check. That is, if you check for 4 items but the array has
 unexpected. If set to false then it is assumed you do not care about extra
 items.
 
-=item $hashref = $arr->items()
+=item $arrayref = $arr->items()
 
 Returns the arrayref of values to be checked in the array.
 
