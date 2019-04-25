@@ -45,6 +45,14 @@ for my $i (qw/Suite AsyncSubtest Workflow Plugin::SpecDeclare/) {
     ok($ok, "Installed Test2::$i") || exit 1;
 }
 
+ok(run_string(<<"EOT"), "Installed Archive::Zip") || exit 1;
+perlbrew exec --with $lib cpanm -n -f Archive::Zip
+EOT
+
+ok(run_string(<<"EOT"), "Installed Net::SSLeay") || exit 1;
+perlbrew exec --with $lib cpanm -n -f IO::Socket::SSL Net::SSLeay
+EOT
+
 my @BAD;
 open(my $list, '<', 'xt/downstream_dists.list') || die "Could not open downstream list";
 while(my $name = <$list>) {
