@@ -526,6 +526,7 @@ This is not a supported configuration, you will have problems.
 
     # None of this is necessary if we never got a root hub
     if(my $root = shift @hubs) {
+
         my $trace = Test2::EventFacet::Trace->new(
             frame  => [__PACKAGE__, __FILE__, 0, __PACKAGE__ . '::END'],
             detail => __PACKAGE__ . ' END Block finalization',
@@ -544,8 +545,13 @@ This is not a supported configuration, you will have problems.
             local $?;
             $root->finalize($trace) unless $root->ended;
             $_->($ctx, $exit, \$new_exit) for @{$self->{+EXIT_CALLBACKS}};
-            $new_exit ||= $root->failed;
-            $new_exit ||= 255 unless $root->is_passing;
+            if ($root->is_skip) {
+                $new_exit = 0;
+            }
+            else {
+                $new_exit ||= $root->failed;
+                $new_exit ||= 255 unless $root->is_passing;
+            }
         }
     }
 

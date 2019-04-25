@@ -512,6 +512,13 @@ sub plan {
     $self->{+_PLAN} = $plan;
 }
 
+sub is_skip {
+    my $self = shift;
+    my $plan = $self->{+_PLAN} or return undef;
+    return 1 if $plan eq 'SKIP';
+    return 0;
+}
+
 sub check_plan {
     my $self = shift;
 
