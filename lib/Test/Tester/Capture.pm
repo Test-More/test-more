@@ -13,14 +13,8 @@ use vars qw( @ISA );
 # Make Test::Tester::Capture thread-safe for ithreads.
 BEGIN {
 	use Config;
-	if( $] >= 5.008 && $Config{useithreads} ) {
-		require threads::shared;
-		threads::shared->import;
-	}
-	else {
-		*share = sub { 0 };
-		*lock  = sub { 0 };
-	}
+	*share = sub { 0 };
+	*lock  = sub { 0 };
 }
 
 my $Curr_Test = 0;      share($Curr_Test);

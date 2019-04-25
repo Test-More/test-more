@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - Do not use threads::Shared in Test::Tester::Capture (#826)
     - Add missing version info to Info/Table
     - Fix event in global destruction bug (#827)
     - Proper fix for todo = '' (#812, #829)
