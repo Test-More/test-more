@@ -6,7 +6,7 @@ use base 'Test2::Compare::Base';
 
 our $VERSION = '0.000120';
 
-use Test2::Util::HashBase qw/ending meta items/;
+use Test2::Util::HashBase qw/ending meta items for_each/;
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/reftype looks_like_number/;
@@ -14,7 +14,8 @@ use Scalar::Util qw/reftype looks_like_number/;
 sub init {
     my $self = shift;
 
-    $self->{+ITEMS} ||= [];
+    $self->{+ITEMS}    ||= [];
+    $self->{+FOR_EACH} ||= [];
 
     $self->SUPER::init();
 }
@@ -48,6 +49,11 @@ sub add_item {
     push @{$self->{+ITEMS}}, $check;
 }
 
+sub add_for_each {
+    my $self = shift;
+    push @{$self->{+FOR_EACH}} => @_;
+}
+
 sub deltas {
     my $self = shift;
     my %params = @_;
@@ -56,6 +62,7 @@ sub deltas {
     my @deltas;
     my $state = 0;
     my @items = @{$self->{+ITEMS}};
+    my @for_each = @{$self->{+FOR_EACH}};
 
     # Make a copy that we can munge as needed.
     my @list = @$got;
@@ -95,6 +102,27 @@ sub deltas {
                 got      => undef,
                 check    => $check,
             );
+        }
+    }
+
+    if (@for_each) {
+        my @checks = map { $convert->($_) } @for_each;
+
+        for my $idx (0..$#list) {
+            # All items are matched if we have conditions for all items
+            delete $unmatched{$idx};
+
+            my $val = $list[$idx];
+
+            for my $check (@checks) {
+                push @deltas => $check->run(
+                    id      => [ARRAY => $idx],
+                    convert => $convert,
+                    seen    => $seen,
+                    exists  => 1,
+                    got     => $val,
+                );
+            }
         }
     }
 
