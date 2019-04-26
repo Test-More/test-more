@@ -2,7 +2,7 @@ package Test2::Plugin::ExitSummary;
 use strict;
 use warnings;
 
-our $VERSION = '0.000120';
+our $VERSION = '0.000121';
 
 use Test2::API qw/test2_add_callback_exit/;
 

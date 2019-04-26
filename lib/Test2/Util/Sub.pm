@@ -2,7 +2,7 @@ package Test2::Util::Sub;
 use strict;
 use warnings;
 
-our $VERSION = '0.000120';
+our $VERSION = '0.000121';
 
 use Carp qw/croak carp/;
 use B();
