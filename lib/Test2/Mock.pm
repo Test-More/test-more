@@ -307,7 +307,7 @@ sub clear_tracking {
     my $self = shift;
 
     unless (@_) {
-        $self->{+TRACKING} = {};
+        %{$self->{+TRACKING}} = ();
         return;
     }
 

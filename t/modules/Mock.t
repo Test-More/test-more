@@ -845,6 +845,15 @@ subtest tracking => sub {
     $mock->clear_tracking();
     is($mock->tracking, {}, "Cleared all tracking");
 
+    My::Track->foo(9,10);
+    is(
+        $mock->tracking,
+        {
+            foo => [{ sub => exact_ref($FOO), args => ['My::Track', 9,10]}],
+        },
+        "Tracked new call"
+    );
+
     $mock = undef;
 
     is(My::Track->foo, 'foo', "Original restored");
