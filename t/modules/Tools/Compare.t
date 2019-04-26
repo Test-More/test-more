@@ -1644,7 +1644,7 @@ subtest unlike => sub {
     ok(!$_->{pass}, "Event was a failure") for @$events
 };
 
-subtest all_items => sub {
+subtest all_items_on_array => sub {
     like(
         [qw/a aa aaa/],
         array {
@@ -1684,6 +1684,55 @@ subtest all_items => sub {
                         ['[1]', 'aa',  '=~',      $regx,              $lines[0]],
                         ['[2]', 'aaa', '=~',      $regx,              $lines[0]],
                         ['[2]', 'aaa', '!exists', '<DOES NOT EXIST>', ''],
+                    ],
+                ),
+            };
+
+        },
+        "items do not all match, and diag reflects all issues, and in order"
+    );
+};
+
+subtest all_items_on_bag => sub {
+    like(
+        [qw/a aa aaa/],
+        bag {
+            all_items match qr/^a+$/;
+            item 'a';
+            item 'aa';
+        },
+        "All items match regex"
+    );
+
+    my @lines;
+    my $array = [qw/a aa aaa/];
+    my $regx = qr/^b+$/;
+    my $events = intercept {
+        is(
+            $array,
+            bag {
+                all_items match $regx;  push @lines => __LINE__;
+                item 'b';               push @lines => __LINE__;
+                item 'aa';              push @lines => __LINE__;
+                end;
+            },
+            "items do not all match, and diag reflects all issues, and in order"
+        );
+    };
+
+    like(
+        $events,
+        array {
+            fail_events Ok => {pass => 0};
+            event Diag => {
+                message => table(
+                    header => [qw/PATH GOT OP CHECK LNs/],
+                    rows   => [
+                        ['', "$array", '', "<BAG>", ($lines[0] - 1) . ", " . ($lines[-1] + 2)],
+                        ['[*]', '<DOES NOT EXIST>', '',   'b',   $lines[1]],
+                        ['[0]', 'a',                '=~', $regx, $lines[0]],
+                        ['[1]', 'aa',               '=~', $regx, $lines[0]],
+                        ['[2]', 'aaa',              '=~', $regx, $lines[0]],
                     ],
                 ),
             };

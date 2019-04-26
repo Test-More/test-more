@@ -1332,6 +1332,11 @@ check object.
 B<Note:> This function can only be used inside an array, bag or subset
 builder sub, and must be called in void context.
 
+=item all_items($CHECK1, $CHECK2, ...)
+
+Add checks that apply to all items. You can put this anywhere in the bag
+block, and can call it any number of times with any number of arguments.
+
 =item end()
 
 Enforce that there are no more items after the last one specified.
