@@ -13,7 +13,7 @@ use Test2::Util::Stash qw/parse_symbol slot_to_sig get_symbol get_stash purge_sy
 use Test2::Util::Sub qw/gen_accessor gen_reader gen_writer/;
 
 sub new; # Prevent hashbase from giving us 'new';
-use Test2::Util::HashBase qw/class parent child _purge_on_destroy _blocked_load _symbols/;
+use Test2::Util::HashBase qw/class parent child _purge_on_destroy _blocked_load _symbols _track tracking/;
 
 sub new {
     my $class = shift;
@@ -22,6 +22,8 @@ sub new {
         if blessed($class);
 
     my $self = bless({}, $class);
+
+    $self->{+TRACKING} ||= {};
 
     my @sets;
     while (my $arg = shift @_) {
@@ -293,6 +295,29 @@ sub orig {
     return $orig;
 }
 
+sub track {
+    my $self = shift;
+
+    ($self->{+_TRACK}) = @_ if @_;
+
+    return $self->{+_TRACK};
+}
+
+sub clear_tracking {
+    my $self = shift;
+
+    unless (@_) {
+        $self->{+TRACKING} = {};
+        return;
+    }
+
+    for my $item (@_) {
+        delete $self->{+TRACKING}->{$item};
+    }
+
+    return;
+}
+
 sub _parse_inject {
     my $self = shift;
     my ($param, $arg) = @_;
@@ -378,6 +403,16 @@ sub _inject {
 
         $syms->{"$sig$sym"} ||= [];
         push @{$syms->{"$sig$sym"}} => $orig; # Might be undef, thats expected
+
+        if ($self->{+_TRACK}) {
+            my $tracker = $self->{+TRACKING};
+            my $sub = $ref;
+            $ref = sub {
+                my $call = {sub => $sub, args => [@_]};
+                push @{$tracker->{$param}} => $call;
+                goto &$sub;
+            };
+        }
 
         no strict 'refs';
         no warnings 'redefine';
@@ -494,6 +529,7 @@ the instance is destroyed it will restore the package to its original state.
     use MyClass;
 
     my $mock = Test2::Mock->new(
+        track => $BOOl, # enable call tracking if desired
         class => 'MyClass',
         override => [
             name => sub { 'fred' },
@@ -539,6 +575,32 @@ is identical to this:
         class => 'AClass',
     );
     $mock->add(foo => sub { 'foo' });
+
+=item $mock->track($bool)
+
+Turn tracking on or off. Any sub added/overriden/set when tracking is on will
+log every call in a hash retrievable via C<< $mock->tracking >>. Changing the
+tracking toggle will not effect subs already altered, but will effect any
+additional alterations.
+
+=item $hashref = $mock->tracking
+
+The tracking data looks like this:
+
+    {
+        subname => [
+            {sub => $mock_subref, args => [... copy of @_ from the call ... ]},
+            ...,
+            ...,
+        ],
+    }
+
+=item $mock->clear_tracking()
+
+=item $mock->clear_tracking(\@subnames)
+
+Clear tracking data. With no arguments ALL tracking data is cleared. When
+arguments are provided then only those specific keys will be cleared.
 
 =item $mock->add('symbol' => ..., 'symbol2' => ...)
 

@@ -794,4 +794,60 @@ subtest set => sub {
     is(My::Set->bar, 'BAR', "injected 'bar'");
 };
 
+subtest tracking => sub {
+    package My::Track;
+    sub foo { 'foo' }
+
+    package main;
+
+    my $mock = Test2::Mock->new(class => 'My::Track', track => 1);
+    my $FOO = sub { 'FOO' };
+    my $BAR = sub { 'BAR' };
+    $mock->set(foo => $FOO);
+    $mock->set(bar => $BAR);
+
+    is(My::Track->foo(1,2), 'FOO', "overrode 'foo'");
+    is(My::Track->bar(3,4), 'BAR', "injected 'bar'");
+
+    is(
+        $mock->tracking,
+        {
+            foo => [{ sub => exact_ref($FOO), args => ['My::Track', 1,2]}],
+            bar => [{ sub => exact_ref($BAR), args => ['My::Track', 3,4]}],
+        },
+        "Tracked both initial calls"
+    );
+
+    My::Track->foo(5,6);
+    is(
+        $mock->tracking,
+        {
+            foo => [
+                { sub => exact_ref($FOO), args => ['My::Track', 1,2]},
+                { sub => exact_ref($FOO), args => ['My::Track', 5,6]},
+            ],
+            bar => [{ sub => exact_ref($BAR), args => ['My::Track', 3,4]}],
+        },
+        "Tracked new call"
+    );
+
+    $mock->clear_tracking('xxx', 'foo');
+    My::Track->foo(7,8);
+    is(
+        $mock->tracking,
+        {
+            foo => [{ sub => exact_ref($FOO), args => ['My::Track', 7,8]}],
+            bar => [{ sub => exact_ref($BAR), args => ['My::Track', 3,4]}],
+        },
+        "Cleared specific sub, Tracked new call"
+    );
+
+    $mock->clear_tracking();
+    is($mock->tracking, {}, "Cleared all tracking");
+
+    $mock = undef;
+
+    is(My::Track->foo, 'foo', "Original restored");
+};
+
 done_testing;
