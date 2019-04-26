@@ -165,7 +165,7 @@ sub autoload {
     weaken(my $c = $self);
 
     my ($file, $line) = (__FILE__, __LINE__ + 3);
-    my $sub = eval <<EOT || die "Failed generating AUTOLOAD sub: $@";
+    my $autoload = eval <<EOT || die "Failed generating AUTOLOAD sub: $@";
 package $class;
 #line $line "$file (Generated AUTOLOAD)"
 our \$AUTOLOAD;
@@ -182,14 +182,16 @@ our \$AUTOLOAD;
         };
 
         \$c->add(\$name => \$sub);
+
+        push \@{\$c->{tracking}->{\$name}} => {sub => \$sub, args => [\@_]}
+            if \$c->{_track};
+
         goto &\$sub;
     }
 EOT
 
-    $self->add(AUTOLOAD => $sub);
-
     $line = __LINE__ + 3;
-    $sub = eval <<EOT || die "Failed generating can method: $@";
+    my $can = eval <<EOT || die "Failed generating can method: $@";
 package $class;
 #line $line "$file (Generated can)"
     sub {
@@ -204,7 +206,11 @@ package $class;
     }
 EOT
 
-    $self->add(can => $sub);
+    {
+        local $self->{+_TRACK} = 0;
+        $self->add(AUTOLOAD => $autoload);
+        $self->add(can => $can);
+    }
 }
 
 sub before {

@@ -277,6 +277,23 @@ subtest autoload => sub {
 
     ok(!$i->can('AUTOLOAD'), "AUTOLOAD removed (destroy)");
     ok(!$i->can('foo'), "AUTOLOADed sub removed (destroy)");
+
+    my $two = Test2::Mock->new(
+        class => 'Fake88',
+        add_constructor => [new => 'hash'],
+        track => 1,
+        autoload => 1,
+    );
+
+    my $j = Fake88->new;
+    ok(lives { $j->foo }, "Created foo") || return;
+    can_ok($j, 'foo'); # Added the sub to the package
+
+    is(
+        $two->tracking,
+        {foo => [{sub => T, args => [exact_ref($j)]}]},
+        "Tracked autoloaded sub"
+    );
 };
 
 subtest autoload_failures => sub {
