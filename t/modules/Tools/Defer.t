@@ -48,7 +48,7 @@ sub capture(&) {
 is(
     intercept { do_def },
     array {
-        filter_items { grep { $_->isa('Test2::Event::Ok') } @_ };
+        filter_items { grep { $_->isa('Test2::Event::Ok') || $_->isa('Test2::Event::Fail') } @_ };
 
         event Ok => sub {
             call pass => 1;
@@ -82,16 +82,14 @@ is(
             prop package => __PACKAGE__;
         };
 
-        event Ok => sub {
-            call pass => 0;
+        event Fail => sub {
             call name => '1 is not 0';
             prop file => "(eval in Test2::Tools::Defer) " . __FILE__;
             prop line => $START_LINE + 6;
             prop package => __PACKAGE__;
         };
 
-        event Ok => sub {
-            call pass => 0;
+        event Fail => sub {
             call name => 'a hash is not an array';
             prop file => "(eval in Test2::Tools::Defer) " . __FILE__;
             prop line => $START_LINE + 7;

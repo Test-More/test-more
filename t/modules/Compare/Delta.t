@@ -295,7 +295,7 @@ subtest table => sub {
     ];
 
     def is => (
-        [$one->table],
+        [split /\n/, $one->table->as_string],
         [
             '+-------+------------+------+-----+--------+--------------+',
             '| PATH  | LNs        | GOT  | OP  | CHECK  | LNs          |',
@@ -318,7 +318,7 @@ subtest table => sub {
 
     $ENV{TS_MAX_DELTA} = 2;
     def is => (
-        [$one->table],
+        [split /\n/, $one->table->as_string],
         [
             '+-------+------------+------+-----+--------+--------------+',
             '| PATH  | LNs        | GOT  | OP  | CHECK  | LNs          |',
@@ -344,7 +344,7 @@ subtest table => sub {
     ];
 
     def is => (
-        [$one->table],
+        [split /\n/, $one->table->as_string],
         [
             '+-------+-----+-------+',
             '| PATH  | GOT | CHECK |',
@@ -371,9 +371,9 @@ subtest custom_columns => sub {
     my $cmp = sub {
         my $ctx = context();
         my $delta = $comp->(@_, $conv);
-        my $table = [$delta->table];
+        my $table = $delta->table;
         $ctx->release;
-        return $table;
+        return [split /\n/, $table->as_string];
     };
 
     $CLASS->add_column('V' => sub {
@@ -567,9 +567,9 @@ subtest overload => sub {
     my $cmp = sub {
         my $ctx = context();
         my $delta = $comp->(@_, $conv);
-        my @table = $delta->table;
+        my $table = $delta->table;
         $ctx->release;
-        return \@table;
+        return [split /\n/, $table->as_string];
     };
 
     my $table = $cmp->($foo, $bar);

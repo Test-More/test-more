@@ -13,9 +13,7 @@ my $got = intercept {
 like(
     $got,
     array {
-        fail_events 'Ok' => sub {
-            call pass => 0;
-        };
+        event Fail => sub {};
     },
     "Bag check on empty array"
 );

@@ -6,6 +6,8 @@ our $VERSION = '0.000121';
 
 use Test2::Util::HashBase qw{verified id got chk children dne exception note};
 
+use Test2::EventFacet::Info::Table;
+
 use Test2::Util::Table();
 use Test2::API qw/context/;
 
@@ -279,9 +281,12 @@ sub table {
     my $header = $self->table_header;
     my $rows   = $self->table_rows;
 
+    my $xxx = Dumper($rows);
+
+    my $render_rows = [@$rows];
     my $max = exists $ENV{TS_MAX_DELTA} ? $ENV{TS_MAX_DELTA} : 25;
-    if ($max && @$rows > $max) {
-        @$rows = @{$rows}[0 .. ($max - 1)];
+    if ($max && @$render_rows > $max) {
+        @$render_rows = map { [@$_] } @{$render_rows}[0 .. ($max - 1)];
         @diag = (
             "************************************************************",
             sprintf("* Stopped after %-42.42s *", "$max differences."),
@@ -291,23 +296,32 @@ sub table {
         );
     }
 
-    return (
-        Test2::Util::Table::table(
-            header      => $header,
-            rows        => $rows,
-            collapse    => 1,
-            sanitize    => 1,
-            mark_tail   => 1,
-            no_collapse => [grep { $COLUMNS{$COLUMN_ORDER[$_]}->{no_collapse} } 0 .. $#COLUMN_ORDER],
-        ),
-        @diag,
+    my $table_args = {
+        header      => $header,
+        collapse    => 1,
+        sanitize    => 1,
+        mark_tail   => 1,
+        no_collapse => [grep { $COLUMNS{$COLUMN_ORDER[$_]}->{no_collapse} } 0 .. $#COLUMN_ORDER],
+    };
+
+    my $render = join "\n" => (
+        Test2::Util::Table::table(%$table_args, rows => $render_rows),
+        @diag
     );
+
+    use Data::Dumper;
+
+    my $table = Test2::EventFacet::Info::Table->new(
+        %$table_args,
+        rows => $rows,
+        as_string => $render,
+        xxx => $xxx,
+    );
+
+    return $table;
 }
 
-sub diag {
-    my $self = shift;
-    return join("\n" => $self->table);
-}
+sub diag { shift->table }
 
 1;
 

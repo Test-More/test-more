@@ -1,6 +1,5 @@
 use Test2::Bundle::Extended -target => 'Test2::Tools::Compare';
 use Test2::Util::Table();
-sub table { join "\n" => Test2::Util::Table::table(@_) }
 
 BEGIN { $ENV{TABLE_TERM_SIZE} = 80 }
 
@@ -12,6 +11,34 @@ BEGIN { $ENV{TABLE_TERM_SIZE} = 80 }
 {
     package My::String;
     use overload '""' => sub { "xxx" };
+}
+
+sub fail_table {
+    my %args = @_;
+
+    my $string = join "\n" => Test2::Util::Table::table(%args, sanitize => 1, mark_tail => 1);
+
+    event Fail => sub {
+        call facet_data => hash {
+            field assert => hash { field pass => 0; etc };
+            field info => array {
+                item hash {
+                    field details => $string;
+                    field table   => hash {
+                        field header => bag { item $_ for @{$args{header}}; etc };
+                        field rows   => bag {
+                            item bag { item $_ for @{$_}; etc } for @{$args{rows}};
+                            etc;
+                        };
+                        etc;
+                    };
+                    etc;
+                };
+                etc;
+            };
+            etc;
+        };
+    };
 }
 
 subtest simple => sub {
@@ -74,51 +101,32 @@ subtest is => sub {
                 call name => 'simple pass';
             };
 
-            fail_events Ok => sub {
-                call pass => F();
-                call name => 'simple fail';
-            };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK/],
-                    rows   => [[qw/a eq b/]],
-                );
-            };
-            event Diag => { message => 'diag' };
+            fail_table(
+                header => [qw/GOT OP CHECK/],
+                rows   => [[qw/a eq b/]],
+            );
 
             event Ok => sub {
                 call pass => T();
                 call name => 'complex pass';
             };
 
-            fail_events Ok => sub {
-                call pass => F();
-                call name => 'complex fail';
-            };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/PATH GOT OP CHECK/],
-                    rows   => [
-                        [qw/[0]{a} 2 eq 1/],
-                        [qw/[0]{b} 3 !exists/, '<DOES NOT EXIST>'],
-                    ],
-                );
-            };
-            event Diag => { message => 'diag' };
+            fail_table(
+                header => [qw/PATH GOT OP CHECK/],
+                rows   => [
+                    [qw/[0]{a} 2 eq 1/],
+                    [qw/[0]{b} 3 !exists/, '<DOES NOT EXIST>'],
+                ],
+            );
 
             event Ok => sub {
                 call pass => T();
             };
 
-            fail_events Ok => sub {
-                call pass => F();
-            };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK/],
-                    rows   => [[qw/0 IS <UNDEF>/]],
-                );
-            };
+            fail_table(
+                header => [qw/GOT OP CHECK/],
+                rows   => [[qw/0 IS <UNDEF>/]],
+            );
 
             event Ok => sub {
                 call pass => T();
@@ -140,27 +148,15 @@ subtest is => sub {
                 call name => 'vstring refs pass';
             };
 
-            fail_events Ok => sub {
-                call pass => F();
-                call name => 'vstring fail';
-            };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK/],
-                    rows   => [['\N{U+1}\N{U+2}\N{U+3}', 'eq', '\N{U+1}\N{U+2}\N{U+4}']],
-                );
-            };
+            fail_table(
+                header => [qw/GOT OP CHECK/],
+                rows   => [["\N{U+1}\N{U+2}\N{U+3}", 'eq', "\N{U+1}\N{U+2}\N{U+4}"]],
+            );
 
-            fail_events Ok => sub {
-                call pass => F();
-                call name => 'vstring refs fail';
-            };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/PATH GOT OP CHECK/],
-                    rows   => [['$*', '\N{U+1}\N{U+2}\N{U+3}', 'eq', '\N{U+1}\N{U+2}\N{U+4}']],
-                );
-            };
+            fail_table(
+                header => [qw/PATH GOT OP CHECK/],
+                rows   => [['$*', "\N{U+1}\N{U+2}\N{U+3}", 'eq', "\N{U+1}\N{U+2}\N{U+4}"]],
+            );
 
             event Ok => sub {
                 call pass => T();
@@ -172,12 +168,9 @@ subtest is => sub {
                 call name => "Ref-Ref check 2";
             };
 
-            fail_events Ok => sub {
-                call pass => F();
+            event Fail => sub {
                 call name => 'Ref-Ref check 3';
             };
-
-            event Diag => { message => match qr/\$\*->\$\*->\[0\] \| 123 \| eq \| 124/ };
 
             end;
         },
@@ -218,34 +211,20 @@ subtest like => sub {
                 call name => 'simple pass';
             };
 
-            fail_events Ok => sub {
-                call pass => F();
-                call name => 'simple fail';
-            };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK/],
-                    rows   => [[qw/b =~/, "$rx"]],
-                );
-            };
-            event Diag => { message => 'diag' };
+            fail_table(
+                header => [qw/GOT OP CHECK/],
+                rows   => [[qw/b =~/, "$rx"]],
+            );
 
             event Ok => sub {
                 call pass => T();
                 call name => 'complex pass';
             };
 
-            fail_events Ok => sub {
-                call pass => F();
-                call name => 'complex fail';
-            };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/PATH GOT OP CHECK/],
-                    rows   => [[qw/[0]{a} 2 eq 1/]],
-                );
-            };
-            event Diag => { message => 'diag' };
+            fail_table(
+                header => [qw/PATH GOT OP CHECK/],
+                rows   => [[qw/[0]{a} 2 eq 1/]],
+            );
 
             event Ok => sub {
                 call pass => T();
@@ -253,16 +232,10 @@ subtest like => sub {
             };
 
             $rx = qr/yyy/;
-            fail_events Ok => sub {
-                call pass => F();
-                call name => 'overload fail';
-            };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK/],
-                    rows   => [[qw/xxx =~/, "$rx"]],
-                );
-            };
+            fail_table(
+                header => [qw/GOT OP CHECK/],
+                rows   => [[qw/xxx =~/, "$rx"]],
+            );
 
             end;
         },
@@ -286,9 +259,9 @@ subtest shortcuts => sub {
         $events,
         array {
             filter_items { grep { !$_->isa('Test2::Event::Diag') } @_ };
-            event Ok => sub { call pass => 0; prop line => $lines[0]; prop file => __FILE__; };
-            event Ok => sub { call pass => 0; prop line => $lines[1]; prop file => __FILE__; };
-            event Ok => sub { call pass => 0; prop line => $lines[2]; prop file => __FILE__; };
+            event Fail => sub { prop line => $lines[0]; prop file => __FILE__; };
+            event Fail => sub { prop line => $lines[1]; prop file => __FILE__; };
+            event Fail => sub { prop line => $lines[2]; prop file => __FILE__; };
             end()
         },
         "T() fails for untrue",
@@ -307,9 +280,9 @@ subtest shortcuts => sub {
         $events,
         array {
             filter_items { grep { !$_->isa('Test2::Event::Diag') } @_ };
-            event Ok => {pass => 0};
-            event Ok => {pass => 0};
-            event Ok => {pass => 0};
+            event Fail => {};
+            event Fail => {};
+            event Fail => {};
             end()
         },
         "F() fails for true",
@@ -319,7 +292,7 @@ subtest shortcuts => sub {
 
     like(
         intercept { is(0, U(), "not defined") },
-        array { event Ok => { pass => 0 } },
+        array { event Fail => {} },
         "0 is defined"
     );
 
@@ -331,7 +304,7 @@ subtest shortcuts => sub {
 
     like(
         intercept { is(undef, D(), "not defined") },
-        array { event Ok => { pass => 0 } },
+        array { event Fail => { } },
         "undef is not defined"
     );
 
@@ -347,10 +320,10 @@ subtest shortcuts => sub {
         },
         array {
           filter_items { grep { !$_->isa('Test2::Event::Diag') } @_ };
-          event Ok => { pass => 0 };
-          event Ok => { pass => 0 };
-          event Ok => { pass => 0 };
-          event Ok => { pass => 0 };
+          event Fail => {};
+          event Fail => {};
+          event Fail => {};
+          event Fail => {};
         },
         "got fail for DF"
     );
@@ -367,9 +340,9 @@ subtest shortcuts => sub {
         $events,
         array {
             filter_items { grep { !$_->isa('Test2::Event::Diag') } @_ };
-            event Ok => { pass => 0 };
-            event Ok => { pass => 0 };
-            event Ok => { pass => 0 };
+            event Fail => {};
+            event Fail => {};
+            event Fail => {};
         },
         "got failed event"
     );
@@ -387,8 +360,8 @@ subtest shortcuts => sub {
         $events,
         array {
             filter_items { grep { !$_->isa('Test2::Event::Diag') } @_ };
-            event Ok => { pass => 0 };
-            event Ok => { pass => 0 };
+            event Fail => {};
+            event Fail => {};
         },
         "got failed event"
     );
@@ -410,13 +383,11 @@ subtest exact_ref => sub {
         $events,
         array {
             event Ok => {pass => 1};
-            fail_events Ok => {pass => 0};
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [["$hash", '==', "$ref", $line]],
-                );
-            };
+
+            fail_table(
+                header => [qw/GOT OP CHECK LNs/],
+                rows   => [["$hash", '==', "$ref", $line]],
+            );
 
             end;
         },
@@ -437,13 +408,11 @@ subtest string => sub {
         $events,
         array {
             event Ok => {pass => 1};
-            fail_events Ok => { pass => 0 };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[qw/bar eq foo/, $line]],
-                );
-            };
+
+            fail_table(
+                header => [qw/GOT OP CHECK LNs/],
+                rows   => [[qw/bar eq foo/, $line]],
+            );
             end;
         },
         "Got events"
@@ -464,13 +433,11 @@ subtest string => sub {
             $events,
             array {
                 event Ok => {pass => 1};
-                fail_events Ok => {pass => 0};
-                event Diag => sub {
-                    call message => table(
-                        header => [qw/GOT OP CHECK LNs/],
-                        rows   => [[qw/foo ne foo/, $line]],
-                    );
-                };
+
+                fail_table(
+                    header => [qw/GOT OP CHECK LNs/],
+                    rows   => [[qw/foo ne foo/, $line]],
+                );
                 end;
             },
             "Got events"
@@ -494,21 +461,16 @@ subtest number => sub {
         array {
             event Ok => {pass => 1};
             event Ok => {pass => 1};
-            fail_events Ok => {pass => 0};
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[qw/12 == 22.0/, $line]],
-                );
-            };
 
-            fail_events Ok => { pass => 0 };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[qw/xxx == 22.0/, $line]],
-                );
-            };
+            fail_table(
+                header => [qw/GOT OP CHECK LNs/],
+                rows   => [[qw/12 == 22.0/, $line]],
+            );
+
+            fail_table(
+                header => [qw/GOT OP CHECK LNs/],
+                rows   => [[qw/xxx == 22.0/, $line]],
+            );
             end;
         },
         "Got events"
@@ -531,29 +493,21 @@ subtest number => sub {
             $events,
             array {
                 event Ok => {pass => 1};
-                fail_events Ok => { pass => 0 };
-                event Diag => sub {
-                    call message => table(
-                        header => [qw/GOT OP CHECK LNs/],
-                        rows   => [[qw/22 != 22.0/, $line]],
-                    );
-                };
 
-                fail_events Ok => { pass => 0 };
-                event Diag => sub {
-                    call message => table(
-                        header => [qw/GOT OP CHECK LNs/],
-                        rows   => [[qw/22.0 != 22.0/, $line]],
-                    );
-                };
+                fail_table(
+                    header => [qw/GOT OP CHECK LNs/],
+                    rows   => [[qw/22 != 22.0/, $line]],
+                );
 
-                fail_events Ok => { pass => 0 };
-                event Diag => sub {
-                    call message => table(
-                        header => [qw/GOT OP CHECK LNs/],
-                        rows   => [[qw/xxx != 22.0/, $line]],
-                    );
-                };
+                fail_table(
+                    header => [qw/GOT OP CHECK LNs/],
+                    rows   => [[qw/22.0 != 22.0/, $line]],
+                );
+
+                fail_table(
+                    header => [qw/GOT OP CHECK LNs/],
+                    rows   => [[qw/xxx != 22.0/, $line]],
+                );
 
                 end;
             },
@@ -580,21 +534,17 @@ subtest float => sub {
             array {
                 event Ok => {pass => 1};
                 event Ok => {pass => 1};
-                fail_events Ok => {pass => 0};
-                event Diag => sub {
-                    call message => table(
-                        header => [qw/GOT OP CHECK LNs/],
-                        rows   => [['12', '==', $check->name, $line]],
-                    );
-                };
 
-                fail_events Ok => { pass => 0 };
-                event Diag => sub {
-                    call message => table(
-                        header => [qw/GOT OP CHECK LNs/],
-                        rows   => [['xxx', '==', $check->name, $line]],
-                    );
-                };
+                fail_table(
+                    header => [qw/GOT OP CHECK LNs/],
+                    rows   => [['12', '==', $check->name, $line]],
+                );
+
+                fail_table(
+                    header => [qw/GOT OP CHECK LNs/],
+                    rows   => [['xxx', '==', $check->name, $line]],
+                );
+
                 end;
             },
             "Got events"
@@ -617,29 +567,22 @@ subtest float => sub {
                 $events,
                 array {
                     event Ok => {pass => 1};
-                    fail_events Ok => { pass => 0 };
-                    event Diag => sub {
-                        call message => table(
-                            header => [qw/GOT OP CHECK LNs/],
-                            rows   => [['22', '!=', $check->name, $line]],
-                        );
-                    };
 
-                    fail_events Ok => { pass => 0 };
-                    event Diag => sub {
-                        call message => table(
-                            header => [qw/GOT OP CHECK LNs/],
-                            rows   => [['22.0', '!=', $check->name, $line]],
-                        );
-                    };
+                    fail_table(
+                        header => [qw/GOT OP CHECK LNs/],
+                        rows   => [['22', '!=', $check->name, $line]],
+                    );
 
-                    fail_events Ok => { pass => 0 };
-                    event Diag => sub {
-                        call message => table(
-                            header => [qw/GOT OP CHECK LNs/],
-                            rows   => [['xxx', '!=', $check->name, $line]],
-                        );
-                    };
+                    fail_table(
+                        header => [qw/GOT OP CHECK LNs/],
+                        rows   => [['22.0', '!=', $check->name, $line]],
+                    );
+
+                    fail_table(
+                        header => [qw/GOT OP CHECK LNs/],
+                        rows   => [['xxx', '!=', $check->name, $line]],
+                    );
+
                     end;
                 },
                 "Got float events"
@@ -683,13 +626,10 @@ subtest bool => sub {
             is(
                 intercept { is($true2, !bool($true)) },
                 array {
-                    fail_events Ok => {pass => 0};
-                    event Diag => sub {
-                        call message => table(
-                            header => [qw/GOT OP CHECK LNs/],
-                            rows   => [["<TRUE ($true2)>", '!=', "<TRUE ($true)>", $line]],
-                        );
-                    };
+                    fail_table(
+                        header => [qw/GOT OP CHECK LNs/],
+                        rows   => [["<TRUE ($true2)>", '!=', "<TRUE ($true)>", $line]],
+                    );
                     end;
                 },
                 "true($true2) + true($true) + negate"
@@ -706,13 +646,10 @@ subtest bool => sub {
             is(
                 intercept { is($false, bool($true)) },
                 array {
-                    fail_events Ok => {pass => 0};
-                    event Diag => sub {
-                        call message => table(
-                            header => [qw/GOT OP CHECK LNs/],
-                            rows   => [[$render, '==', "<TRUE ($true)>", $line]],
-                        );
-                    };
+                    fail_table(
+                        header => [qw/GOT OP CHECK LNs/],
+                        rows   => [[$render, '==', "<TRUE ($true)>", $line]],
+                    );
                     end;
                 },
                 "$render + TRUE ($true) + negate"
@@ -731,13 +668,10 @@ subtest bool => sub {
             is(
                 intercept { is($false2, !bool($false)) },
                 array {
-                    fail_events Ok => {pass => 0};
-                    event Diag => sub {
-                        call message => table(
-                            header => [qw/GOT OP CHECK LNs/],
-                            rows   => [[$render2, '!=', $render1, $line]],
-                        );
-                    };
+                    fail_table(
+                        header => [qw/GOT OP CHECK LNs/],
+                        rows   => [[$render2, '!=', $render1, $line]],
+                    );
                     end;
                 },
                 "$render2 + $render1 + negate"
@@ -752,13 +686,10 @@ subtest bool => sub {
             is(
                 intercept { is($true, bool($false)) },
                 array {
-                    fail_events Ok => {pass => 0};
-                    event Diag => sub {
-                        call message => table(
-                            header => [qw/GOT OP CHECK LNs/],
-                            rows   => [["<TRUE ($true)>", '==', $render1, $line]],
-                        );
-                    };
+                    fail_table(
+                        header => [qw/GOT OP CHECK LNs/],
+                        rows   => [["<TRUE ($true)>", '==', $render1, $line]],
+                    );
                     end;
                 },
                 "TRUE ($true) + $render1 + negate"
@@ -771,13 +702,10 @@ subtest bool => sub {
     is(
         intercept { is($arr, [bool(0)]) },
         array {
-            fail_events Ok => {pass => 0};
-            event Diag => sub {
-                call message => table(
-                    header => [qw/PATH GOT OP CHECK LNs/],
-                    rows   => [['[0]', "<DOES NOT EXIST>", '==', '<FALSE (0)>', $line],],
-                );
-            };
+            fail_table(
+                header => [qw/PATH GOT OP CHECK LNs/],
+                rows   => [['[0]', "<DOES NOT EXIST>", '==', '<FALSE (0)>', $line],],
+            );
             end;
         },
         "Value must exist"
@@ -799,13 +727,12 @@ subtest match => sub {
         $events,
         array {
             event Ok => {pass => 1};
-            fail_events Ok => {pass => 0};
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[qw/abcde =~/, "$rx", $line]],
-                );
-            };
+
+            fail_table(
+                header => [qw/GOT OP CHECK LNs/],
+                rows   => [[qw/abcde =~/, "$rx", $line]],
+            );
+
             end;
         },
         "Got events"
@@ -826,13 +753,12 @@ subtest '!match' => sub {
         $events,
         array {
             event Ok => {pass => 1};
-            fail_events Ok => {pass => 0};
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[qw/axyzb !~/, "$rx", $line]],
-                );
-            };
+
+            fail_table(
+                header => [qw/GOT OP CHECK LNs/],
+                rows   => [[qw/axyzb !~/, "$rx", $line]],
+            );
+
             end;
         },
         "Got events"
@@ -853,13 +779,12 @@ subtest '!mismatch' => sub {
         $events,
         array {
             event Ok => {pass => 1};
-            fail_events Ok => {pass => 0};
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[qw/abcde =~/, "$rx", $line]],
-                );
-            };
+
+            fail_table(
+                header => [qw/GOT OP CHECK LNs/],
+                rows   => [[qw/abcde =~/, "$rx", $line]],
+            );
+
             end;
         },
         "Got events"
@@ -880,13 +805,12 @@ subtest mismatch => sub {
         $events,
         array {
             event Ok => {pass => 1};
-            fail_events Ok => {pass => 0};
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[qw/axyzb !~/, "$rx", $line]],
-                );
-            };
+
+            fail_table(
+                header => [qw/GOT OP CHECK LNs/],
+                rows   => [[qw/axyzb !~/, "$rx", $line]],
+            );
+
             end;
         },
         "Got events"
@@ -920,29 +844,21 @@ subtest check => sub {
             event Ok => {pass => 1};
             event Ok => {pass => 1};
 
-            fail_events Ok => {pass => 0};
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[0, 'CODE(...)', '<Custom Code>', $lines[0]]],
-                );
-            };
+            fail_table(
+                header => [qw/GOT OP CHECK LNs/],
+                rows   => [[0, 'CODE(...)', '<Custom Code>', $lines[0]]],
+            );
 
-            fail_events Ok => {pass => 0};
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[0, 'CODE(...)', 'two', $lines[1]]],
-                );
-            };
+            fail_table(
+                header => [qw/GOT OP CHECK LNs/],
+                rows   => [[0, 'CODE(...)', 'two', $lines[1]]],
+            );
 
-            fail_events Ok => {pass => 0};
-            event Diag => sub {
-                call message => table(
-                    header => [qw/GOT OP CHECK LNs/],
-                    rows   => [[0, 't', 'thr', $lines[2]]],
-                );
-            };
+            fail_table(
+                header => [qw/GOT OP CHECK LNs/],
+                rows   => [[0, 't', 'thr', $lines[2]]],
+            );
+
             end;
         },
         "Got events"
@@ -1132,18 +1048,15 @@ subtest meta => sub {
     like(
         $events,
         array {
-            fail_events Ok => sub { call pass => 0 };
-            event Diag => sub {
-                call message => table(
-                    header => [qw/PATH GOT OP CHECK LNs/],
-                    rows   => [
-                        ["", $array, '', '<META CHECKS>', "$lines[0], $lines[4]"],
-                        ['<blessed>', '<UNDEF>', '',   'Foo',  $lines[1]],
-                        ['<reftype>', 'ARRAY',   'eq', 'HASH', $lines[2]],
-                        ['<this>', $array, '', '<HASH>', $lines[3]],
-                    ],
-                );
-            };
+            fail_table(
+                header => [qw/PATH GOT OP CHECK LNs/],
+                rows   => [
+                    ["",          "$array",    '',   '<META CHECKS>', "$lines[0], $lines[4]"],
+                    ['<blessed>', '<UNDEF>', '',   'Foo',           $lines[1]],
+                    ['<reftype>', 'ARRAY',   'eq', 'HASH',          $lines[2]],
+                    ['<this>',    "$array",    '',   '<HASH>',        $lines[3]],
+                ],
+            );
         },
         "got failure"
     );
@@ -1186,10 +1099,9 @@ subtest hash => sub {
         is({a => 1, b => 2, c => 3}, $closed);
     };
 
-    @$events = grep {$_->isa('Test2::Event::Ok')} @$events;
+    @$events = grep {$_->isa('Test2::Event::Fail')} @$events;
 
-    is(@$events, 7, '7 events');
-    is($_->pass, 0, "event failed") for @$events;
+    is(@$events, 7, '7 fail events');
 };
 
 subtest array => sub {
@@ -1252,9 +1164,8 @@ subtest array => sub {
         is([qw/a b c d/], $closed);
     };
 
-    @$events = grep {$_->isa('Test2::Event::Ok')} @$events;
-    is(@$events, 10, "10 events");
-    is($_->pass, 0, "event failed") for @$events;
+    @$events = grep {$_->isa('Test2::Event::Fail')} @$events;
+    is(@$events, 10, "10 fail events");
 };
 
 subtest bag => sub {
@@ -1297,9 +1208,8 @@ subtest bag => sub {
         is([qw/a b c d/], $closed);
     };
 
-    @$events = grep {$_->isa('Test2::Event::Ok')} @$events;
-    is(@$events, 8, "8 events");
-    is($_->pass, 0, "event failed") for @$events;
+    @$events = grep {$_->isa('Test2::Event::Fail')} @$events;
+    is(@$events, 8, "8 fail events");
 };
 
 subtest object => sub {
@@ -1442,9 +1352,8 @@ subtest object => sub {
         is(bless({x => 1, y => 2, z => 3}, 'ObjectBar'), $mix, "mix");
     };
 
-    @$events = grep {$_->isa('Test2::Event::Ok')} @$events;
-    is(@$events, 17, "17 events");
-    is($_->pass, 0, "event failed") for @$events;
+    @$events = grep {$_->isa('Test2::Event::Fail')} @$events;
+    is(@$events, 17, "17 fail events");
 
 };
 
@@ -1498,9 +1407,8 @@ subtest event => sub {
         is($fail,      $from_build, "worked in build");
     };
 
-    @$events = grep {$_->isa('Test2::Event::Ok')} @$events;
-    is(@$events, 4, "4 events");
-    is($_->pass, 0, "event failed") for @$events;
+    @$events = grep {$_->isa('Test2::Event::Fail')} @$events;
+    is(@$events, 4, "4 fail events");
 
     like(
         dies { event Ok => {}; 1 },
@@ -1530,8 +1438,8 @@ subtest sets => sub {
             },
             array {
                 filter_items { grep { !$_->isa('Test2::Event::Diag') } @_ };
-                event Ok => { pass => 0 };
-                event Ok => { pass => 0 };
+                event Fail => {};
+                event Fail => {};
                 end;
             },
             "Failed cause not all checks passed"
@@ -1557,8 +1465,8 @@ subtest sets => sub {
             },
             array {
                 filter_items { grep { !$_->isa('Test2::Event::Diag') } @_ };
-                event Ok => { pass => 0 };
-                event Ok => { pass => 0 };
+                event Fail => {};
+                event Fail => {};
                 end;
             },
             "Failed cause not all checks passed"
@@ -1584,8 +1492,8 @@ subtest sets => sub {
             },
             array {
                 filter_items { grep { !$_->isa('Test2::Event::Diag') } @_ };
-                event Ok => { pass => 0 };
-                event Ok => { pass => 0 };
+                event Fail => {};
+                event Fail => {};
                 end;
             },
             "Failed cause not all checks passed"
@@ -1603,9 +1511,8 @@ subtest regex => sub {
         is(qr/abc/, exact_ref(qr/abc/), "not an exact match");
     };
 
-    @$events = grep {$_->isa('Test2::Event::Ok')} @$events;
-    is(@$events, 3, "3 events");
-    ok(!$_->{pass}, "Event was a failure") for @$events
+    @$events = grep {$_->isa('Test2::Event::Fail')} @$events;
+    is(@$events, 3, "3 fail events");
 };
 
 subtest isnt => sub {
@@ -1673,21 +1580,17 @@ subtest all_items_on_array => sub {
     like(
         $events,
         array {
-            fail_events Ok => {pass => 0};
-            event Diag => {
-                message => table(
-                    header => [qw/PATH GOT OP CHECK LNs/],
-                    rows   => [
-                        ['', "$array", '', "<ARRAY>", ($lines[0] - 1) . ", " . ($lines[-1] + 2)],
-                        ['[0]', 'a',   '=~',      $regx,              $lines[0]],
-                        ['[0]', 'a',   'eq',      'b',                $lines[1]],
-                        ['[1]', 'aa',  '=~',      $regx,              $lines[0]],
-                        ['[2]', 'aaa', '=~',      $regx,              $lines[0]],
-                        ['[2]', 'aaa', '!exists', '<DOES NOT EXIST>', ''],
-                    ],
-                ),
-            };
-
+            fail_table(
+                header => [qw/PATH GOT OP CHECK LNs/],
+                rows   => [
+                    ['', "$array", '', "<ARRAY>", ($lines[0] - 1) . ", " . ($lines[-1] + 2)],
+                    ['[0]', 'a',   '=~',      "$regx",              $lines[0]],
+                    ['[0]', 'a',   'eq',      'b',                $lines[1]],
+                    ['[1]', 'aa',  '=~',      "$regx",              $lines[0]],
+                    ['[2]', 'aaa', '=~',      "$regx",              $lines[0]],
+                    ['[2]', 'aaa', '!exists', '<DOES NOT EXIST>', ''],
+                ],
+            );
         },
         "items do not all match, and diag reflects all issues, and in order"
     );
@@ -1723,20 +1626,16 @@ subtest all_items_on_bag => sub {
     like(
         $events,
         array {
-            fail_events Ok => {pass => 0};
-            event Diag => {
-                message => table(
-                    header => [qw/PATH GOT OP CHECK LNs/],
-                    rows   => [
-                        ['', "$array", '', "<BAG>", ($lines[0] - 1) . ", " . ($lines[-1] + 2)],
-                        ['[*]', '<DOES NOT EXIST>', '',   'b',   $lines[1]],
-                        ['[0]', 'a',                '=~', $regx, $lines[0]],
-                        ['[1]', 'aa',               '=~', $regx, $lines[0]],
-                        ['[2]', 'aaa',              '=~', $regx, $lines[0]],
-                    ],
-                ),
-            };
-
+            fail_table(
+                header => [qw/PATH GOT OP CHECK LNs/],
+                rows   => [
+                    ['', "$array", '', "<BAG>", ($lines[0] - 1) . ", " . ($lines[-1] + 2)],
+                    ['[*]', '<DOES NOT EXIST>', '',   'b',   $lines[1]],
+                    ['[0]', 'a',                '=~', "$regx", $lines[0]],
+                    ['[1]', 'aa',               '=~', "$regx", $lines[0]],
+                    ['[2]', 'aaa',              '=~', "$regx", $lines[0]],
+                ],
+            );
         },
         "items do not all match, and diag reflects all issues, and in order"
     );
@@ -1774,24 +1673,21 @@ subtest all_keys_and_vals => sub {
     like(
         $events,
         array {
-            fail_events Ok => {pass => 0};
-            event Diag => {
-                message => table(
-                    header => [qw/PATH GOT OP CHECK LNs/],
-                    rows   => [
-                        ['',            $hash,              '',        '<HASH>',           join(', ', $lines[0] - 1, $lines[-1] + 2)],
-                        ['{aa} <KEY>',  'aa',               '=~',      $regx,              $lines[0]],
-                        ['{aa}',        'aa',               '=~',      $regx,              $lines[1]],
-                        ['{b}',         '<DOES NOT EXIST>', '',        'b',                $lines[3]],
-                        ['{a} <KEY>',   'a',                '=~',      $regx,              $lines[0]],
-                        ['{a}',         'a',                '=~',      $regx,              $lines[1]],
-                        ['{a}',         'a',                '!exists', '<DOES NOT EXIST>', '',],
-                        ['{aaa} <KEY>', 'aaa',              '=~',      $regx,              $lines[0]],
-                        ['{aaa}',       'aaa',              '=~',      $regx,              $lines[1]],
-                        ['{aaa}',       'aaa',              '!exists', '<DOES NOT EXIST>', ''],
-                    ],
-                ),
-            };
+            fail_table(
+                header => [qw/PATH GOT OP CHECK LNs/],
+                rows   => [
+                    ['',            "$hash",            '',        '<HASH>',           join(', ', $lines[0] - 1, $lines[-1] + 2)],
+                    ['{aa} <KEY>',  'aa',               '=~',      "$regx",            $lines[0]],
+                    ['{aa}',        'aa',               '=~',      "$regx",            $lines[1]],
+                    ['{b}',         '<DOES NOT EXIST>', '',        'b',                $lines[3]],
+                    ['{a} <KEY>',   'a',                '=~',      "$regx",            $lines[0]],
+                    ['{a}',         'a',                '=~',      "$regx",            $lines[1]],
+                    ['{a}',         'a',                '!exists', '<DOES NOT EXIST>', '',],
+                    ['{aaa} <KEY>', 'aaa',              '=~',      "$regx",            $lines[0]],
+                    ['{aaa}',       'aaa',              '=~',      "$regx",            $lines[1]],
+                    ['{aaa}',       'aaa',              '!exists', '<DOES NOT EXIST>', ''],
+                ],
+            );
         },
         "items do not all match, and diag reflects all issues, and in order"
     );

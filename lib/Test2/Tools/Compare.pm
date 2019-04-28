@@ -111,7 +111,7 @@ sub is($$;$@) {
             );
         }
         else {
-            $ctx->ok(0, $name, [$delta->diag, @diag]);
+            $ctx->fail($name, $delta->diag, @diag);
         }
     }
     else {
@@ -146,7 +146,7 @@ sub like($$;$@) {
     my $delta = compare($got, $exp, \&relaxed_convert);
 
     if ($delta) {
-        $ctx->ok(0, $name, [$delta->diag, @diag]);
+        $ctx->fail($name, $delta->diag, @diag);
     }
     else {
         $ctx->ok(1, $name);
