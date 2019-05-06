@@ -290,10 +290,17 @@ subtest autoload => sub {
     can_ok($j, 'foo'); # Added the sub to the package
 
     is(
-        $two->tracking,
-        {foo => [{sub => T, args => [exact_ref($j)]}]},
-        "Tracked autoloaded sub"
+        $two->sub_tracking,
+        {foo => [{sub_name => 'foo', sub_ref => T, args => [exact_ref($j)]}]},
+        "Tracked autoloaded sub (sub tracking)"
     );
+
+    is(
+        $two->call_tracking,
+        [{sub_name => 'foo', sub_ref => T, args => [exact_ref($j)]}],
+        "Tracked autoloaded sub (call tracking)"
+    );
+
 };
 
 subtest autoload_failures => sub {
@@ -827,48 +834,86 @@ subtest tracking => sub {
     is(My::Track->bar(3,4), 'BAR', "injected 'bar'");
 
     is(
-        $mock->tracking,
+        $mock->sub_tracking,
         {
-            foo => [{ sub => exact_ref($FOO), args => ['My::Track', 1,2]}],
-            bar => [{ sub => exact_ref($BAR), args => ['My::Track', 3,4]}],
+            foo => [{sub_name => 'foo', sub_ref => exact_ref($FOO), args => ['My::Track', 1, 2]}],
+            bar => [{sub_name => 'bar', sub_ref => exact_ref($BAR), args => ['My::Track', 3, 4]}],
         },
-        "Tracked both initial calls"
+        "Tracked both initial calls (sub)"
+    );
+    is(
+        $mock->call_tracking,
+        [
+            {sub_name => 'foo', sub_ref => exact_ref($FOO), args => ['My::Track', 1, 2]},
+            {sub_name => 'bar', sub_ref => exact_ref($BAR), args => ['My::Track', 3, 4]}
+        ],
+        "Tracked both initial calls (call)"
     );
 
-    My::Track->foo(5,6);
+    My::Track->foo(5, 6);
     is(
-        $mock->tracking,
+        $mock->sub_tracking,
         {
             foo => [
-                { sub => exact_ref($FOO), args => ['My::Track', 1,2]},
-                { sub => exact_ref($FOO), args => ['My::Track', 5,6]},
+                {sub_name => 'foo', sub_ref => exact_ref($FOO), args => ['My::Track', 1, 2]},
+                {sub_name => 'foo', sub_ref => exact_ref($FOO), args => ['My::Track', 5, 6]},
             ],
-            bar => [{ sub => exact_ref($BAR), args => ['My::Track', 3,4]}],
+            bar => [{sub_name => 'bar', sub_ref => exact_ref($BAR), args => ['My::Track', 3, 4]}],
         },
-        "Tracked new call"
+        "Tracked new call (sub)"
+    );
+    is(
+        $mock->call_tracking,
+        [
+            {sub_name => 'foo', sub_ref => exact_ref($FOO), args => ['My::Track', 1, 2]},
+            {sub_name => 'bar', sub_ref => exact_ref($BAR), args => ['My::Track', 3, 4]},
+            {sub_name => 'foo', sub_ref => exact_ref($FOO), args => ['My::Track', 5, 6]},
+        ],
+        "Tracked new call (call)"
     );
 
-    $mock->clear_tracking('xxx', 'foo');
-    My::Track->foo(7,8);
+
+    $mock->clear_sub_tracking('xxx', 'foo');
+    My::Track->foo(7, 8);
     is(
-        $mock->tracking,
+        $mock->sub_tracking,
         {
-            foo => [{ sub => exact_ref($FOO), args => ['My::Track', 7,8]}],
-            bar => [{ sub => exact_ref($BAR), args => ['My::Track', 3,4]}],
+            foo => [{sub_name => 'foo', sub_ref => exact_ref($FOO), args => ['My::Track', 7, 8]}],
+            bar => [{sub_name => 'bar', sub_ref => exact_ref($BAR), args => ['My::Track', 3, 4]}],
         },
-        "Cleared specific sub, Tracked new call"
+        "Cleared specific sub, Tracked new call (sub)"
+    );
+    is(
+        $mock->call_tracking,
+        [
+            {sub_name => 'foo', sub_ref => exact_ref($FOO), args => ['My::Track', 1, 2]},
+            {sub_name => 'bar', sub_ref => exact_ref($BAR), args => ['My::Track', 3, 4]},
+            {sub_name => 'foo', sub_ref => exact_ref($FOO), args => ['My::Track', 5, 6]},
+            {sub_name => 'foo', sub_ref => exact_ref($FOO), args => ['My::Track', 7, 8]},
+        ],
+        "did not clear call tracking"
     );
 
-    $mock->clear_tracking();
-    is($mock->tracking, {}, "Cleared all tracking");
+    $mock->clear_sub_tracking();
+    is($mock->sub_tracking, {}, "Cleared all sub tracking");
 
-    My::Track->foo(9,10);
+    $mock->clear_call_tracking();
+    is($mock->call_tracking, [], "Cleared call tracking");
+
+    My::Track->foo(9, 10);
     is(
-        $mock->tracking,
+        $mock->sub_tracking,
         {
-            foo => [{ sub => exact_ref($FOO), args => ['My::Track', 9,10]}],
+            foo => [{sub_name => 'foo', sub_ref => exact_ref($FOO), args => ['My::Track', 9, 10]}],
         },
-        "Tracked new call"
+        "Tracked new call (sub)"
+    );
+    is(
+        $mock->call_tracking,
+        [
+            {sub_name => 'foo', sub_ref => exact_ref($FOO), args => ['My::Track', 9, 10]},
+        ],
+        "Tracked new call (call)"
     );
 
     $mock = undef;

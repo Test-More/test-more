@@ -13,7 +13,7 @@ use Test2::Util::Stash qw/parse_symbol slot_to_sig get_symbol get_stash purge_sy
 use Test2::Util::Sub qw/gen_accessor gen_reader gen_writer/;
 
 sub new; # Prevent hashbase from giving us 'new';
-use Test2::Util::HashBase qw/class parent child _purge_on_destroy _blocked_load _symbols _track tracking/;
+use Test2::Util::HashBase qw/class parent child _purge_on_destroy _blocked_load _symbols _track sub_tracking call_tracking/;
 
 sub new {
     my $class = shift;
@@ -23,7 +23,8 @@ sub new {
 
     my $self = bless({}, $class);
 
-    $self->{+TRACKING} ||= {};
+    $self->{+SUB_TRACKING}  ||= {};
+    $self->{+CALL_TRACKING} ||= [];
 
     my @sets;
     while (my $arg = shift @_) {
@@ -183,8 +184,11 @@ our \$AUTOLOAD;
 
         \$c->add(\$name => \$sub);
 
-        push \@{\$c->{tracking}->{\$name}} => {sub => \$sub, args => [\@_]}
-            if \$c->{_track};
+        if (\$c->{_track}) {
+            my \$call = {sub_name => \$name, sub_ref => \$sub, args => [\@_]};
+            push \@{\$c->{sub_tracking}->{\$name}} => \$call;
+            push \@{\$c->{call_tracking}} => \$call;
+        }
 
         goto &\$sub;
     }
@@ -309,16 +313,18 @@ sub track {
     return $self->{+_TRACK};
 }
 
-sub clear_tracking {
+sub clear_call_tracking { @{shift->{+CALL_TRACKING}} = () }
+
+sub clear_sub_tracking {
     my $self = shift;
 
     unless (@_) {
-        %{$self->{+TRACKING}} = ();
+        %{$self->{+SUB_TRACKING}} = ();
         return;
     }
 
     for my $item (@_) {
-        delete $self->{+TRACKING}->{$item};
+        delete $self->{+SUB_TRACKING}->{$item};
     }
 
     return;
@@ -410,12 +416,14 @@ sub _inject {
         $syms->{"$sig$sym"} ||= [];
         push @{$syms->{"$sig$sym"}} => $orig; # Might be undef, thats expected
 
-        if ($self->{+_TRACK}) {
-            my $tracker = $self->{+TRACKING};
+        if ($self->{+_TRACK} && $sig eq '&') {
+            my $sub_tracker  = $self->{+SUB_TRACKING};
+            my $call_tracker = $self->{+CALL_TRACKING};
             my $sub = $ref;
             $ref = sub {
-                my $call = {sub => $sub, args => [@_]};
-                push @{$tracker->{$param}} => $call;
+                my $call = {sub_name => $sym, sub_ref => $sub, args => [@_]};
+                push @{$sub_tracker->{$param}} => $call;
+                push @$call_tracker => $call;
                 goto &$sub;
             };
         }
@@ -589,24 +597,50 @@ log every call in a hash retrievable via C<< $mock->tracking >>. Changing the
 tracking toggle will not effect subs already altered, but will effect any
 additional alterations.
 
-=item $hashref = $mock->tracking
+=item $hashref = $mock->sub_tracking
 
 The tracking data looks like this:
 
     {
-        subname => [
-            {sub => $mock_subref, args => [... copy of @_ from the call ... ]},
+        sub_name => [
+            {sub_name => $sub_name, sub_ref => $mock_subref, args => [... copy of @_ from the call ... ]},
             ...,
             ...,
         ],
     }
 
-=item $mock->clear_tracking()
+Unlike call_tracking, this lists all calls by sub, so you can choose to only
+look at the sub specific calls.
 
-=item $mock->clear_tracking(\@subnames)
+B<Please note:> The hashref items with the subname and args are shared with
+call_tracking, modifying one modifies the other, so copy first!
+
+=item $arrayref = $mock->call_tracking
+
+The tracking data looks like this:
+
+    [
+        {sub_name => $sub_name, sub_ref => $mock_subref, args => [... copy of @_ from the call ... ]},
+        ...,
+        ...,
+    ]
+
+unlike sub_tracking this lists all calls to any mocked sub, in the other they
+were called. To filter by sub use sub_tracking.
+
+B<Please note:> The hashref items with the subname and args are shared with
+sub_tracking, modifying one modifies the other, so copy first!
+
+=item $mock->clear_sub_tracking()
+
+=item $mock->clear_sub_tracking(\@subnames)
 
 Clear tracking data. With no arguments ALL tracking data is cleared. When
 arguments are provided then only those specific keys will be cleared.
+
+=item $mock->clear_call_tracking()
+
+Clear all items from call_tracking.
 
 =item $mock->add('symbol' => ..., 'symbol2' => ...)
 
