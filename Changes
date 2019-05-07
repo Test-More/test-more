@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000121  2019-05-07 12:00:27-07:00 America/Los_Angeles
+
     - Tracking for mocked methods
     - Include raw table in facet data when compare fails
 
