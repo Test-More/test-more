@@ -1,6 +1,10 @@
 {{$NEXT}}
 
+    - Better diagnostics when a context is destroyed unexpectedly
+
 1.302164  2019-04-27 01:43:44-07:00 America/Los_Angeles
+
+    - No changes since trial
 
 1.302163  2019-04-25 05:45:47-07:00 America/Los_Angeles (TRIAL RELEASE)
 
