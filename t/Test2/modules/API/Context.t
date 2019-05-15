@@ -482,12 +482,7 @@ sub ctx_destroy_test {
     my (@warn, $line2);
     local $SIG{__WARN__} = sub { push @warn => $_[0] };
 
-    {
-        my $ctx = context();
-
-        $line2 = __LINE__ + 1;
-        $ctx   = undef;
-    }
+    { my $ctx = context(); $ctx = undef } $line2 = __LINE__;
 
     like($warn[0], qr/context appears to have been destroyed without first calling release/, "Is normal context warning");
     like($warn[0], qr{\QContext destroyed at ${ \__FILE__ } line $line2.\E}, "Reported context destruction trace");
