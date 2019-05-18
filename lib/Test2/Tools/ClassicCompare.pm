@@ -42,7 +42,7 @@ sub is($$;$@) {
     my $delta = compare($got, $exp, \&is_convert);
 
     if ($delta) {
-        $ctx->ok(0, $name, [$delta->table, @diag]);
+        $ctx->fail($name, $delta->diag, @diag);
     }
     else {
         $ctx->ok(1, $name);
@@ -61,7 +61,7 @@ sub isnt($$;$@) {
     my $delta = compare($got, $exp, \&isnt_convert);
 
     if ($delta) {
-        $ctx->ok(0, $name, [$delta->table, @diag]);
+        $ctx->fail($name, $delta->diag, @diag);
     }
     else {
         $ctx->ok(1, $name);
@@ -92,7 +92,7 @@ sub like($$;$@) {
     my $delta = compare($got, $exp, \&like_convert);
 
     if ($delta) {
-        $ctx->ok(0, $name, [$delta->table, @diag]);
+        $ctx->fail($name, $delta->diag, @diag);
     }
     else {
         $ctx->ok(1, $name);
@@ -109,7 +109,7 @@ sub unlike($$;$@) {
     my $delta = compare($got, $exp, \&unlike_convert);
 
     if ($delta) {
-        $ctx->ok(0, $name, [$delta->table, @diag]);
+        $ctx->fail($name, $delta->diag, @diag);
     }
     else {
         $ctx->ok(1, $name);
@@ -173,7 +173,7 @@ sub is_deeply($$;$@) {
             );
         }
         else {
-            $ctx->ok(0, $name, [$delta->table, @diag]);
+            $ctx->fail($name, $delta->diag, @diag);
         }
     }
     else {

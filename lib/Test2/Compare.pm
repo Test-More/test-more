@@ -199,7 +199,7 @@ C<Test2::Tools::ClassicCompare::is_deeply()>.
         my $delta = compare($got, $exp, \&convert);
 
         if ($delta) {
-            $ctx->ok(0, $name, [$delta->table, @diag]);
+            $ctx->fail($name, $delta->diag, @diag);
         }
         else {
             $ctx->ok(1, $name);
@@ -364,7 +364,7 @@ Values will be checked against any regexes provided.
         my $delta = compare($got, $exp, $convert);
 
         if ($delta) {
-            $ctx->ok(0, $name, [$delta->diag, @diag]);
+            $ctx->fail($name, $delta->diag, @diag);
         }
         else {
             $ctx->ok(1, $name);
