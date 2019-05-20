@@ -807,7 +807,7 @@ This gives you the chance to wrap the original sub:
         my (@args) = @_;
 
         ...
-        $orig->(@args);
+        $self->$orig(@args);
         ...
 
         return ...;
