@@ -391,7 +391,7 @@ sub name {
 sub reset {    ## no critic (Subroutines::ProhibitBuiltinHomonyms)
     my ($self, %params) = @_;
 
-    Test2::API::test2_set_is_end(0);
+    Test2::API::test2_unset_is_end();
 
     # We leave this a global because it has to be localized and localizing
     # hash keys is just asking for pain.  Also, it was documented.

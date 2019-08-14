@@ -63,6 +63,12 @@ sub all {
     return @$self;
 }
 
+sub root {
+    my $self = shift;
+    return unless @$self;
+    return $self->[0];
+}
+
 sub clear {
     my $self = shift;
     @$self = ();

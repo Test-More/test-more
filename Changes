@@ -1,6 +1,7 @@
 {{$NEXT}}
 
     - Better diagnostics when a context is destroyed unexpectedly
+    - Add an event to notify when END phase starts
 
 1.302164  2019-04-27 01:43:44-07:00 America/Los_Angeles
 
