@@ -69,7 +69,7 @@ This can be used to change the encoding from this event onward.
 
 =item $phase = $control->phase()
 
-Used to signal that a phase change has occured. Currently only the perl END
+Used to signal that a phase change has occurred. Currently only the perl END
 phase is signaled.
 
 =back
