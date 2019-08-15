@@ -29,6 +29,9 @@ sub test2_set_is_end {
     my $stack = $INST->stack or return;
     my $root = $stack->root or return;
 
+    return unless $$ == $INST->pid;
+    return unless get_tid() == $INST->tid;
+
     my $trace = Test2::EventFacet::Trace->new(
         frame  => [__PACKAGE__, __FILE__, __LINE__, __PACKAGE__ . '::test2_set_is_end'],
     );
