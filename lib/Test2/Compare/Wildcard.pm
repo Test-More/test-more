@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Test2::Compare::Base';
 
-our $VERSION = '0.000124';
+our $VERSION = '0.000125';
 
 use Test2::Util::HashBase qw/expect/;
 
