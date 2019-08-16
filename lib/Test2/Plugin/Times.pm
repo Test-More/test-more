@@ -12,28 +12,33 @@ use Time::HiRes qw/time/;
 
 our $VERSION = '0.000124';
 
-my $ADDED;
+my $ADDED_HOOK = 0;
+my $START;
 sub import {
-    my $start = time;
+    return if $ADDED_HOOK++;
 
-    return if $ADDED++;
+    $START = time;
+    test2_add_callback_exit(\&send_time_event);
+}
 
-    test2_add_callback_exit(
-        sub {
-            my ($ctx, $real, $new) = @_;
-            my $stop  = time;
-            my @times = times();
+sub send_time_event {
+    my ($ctx, $real, $new) = @_;
+    my $stop  = time;
+    my @times = times();
 
-            $ctx->send_event(
-                'Times',
-                start => $start,
-                stop  => $stop,
-                user  => $times[0],
-                sys   => $times[1],
-                cuser => $times[2],
-                csys  => $times[3],
-            );
-        }
+    my $summary = render_bench($START, $stop, @times);
+
+    $ctx->send_ev2(
+        about => {package => __PACKAGE__, details => $summary},
+        info  => [{tag => 'TIME', details => $summary}],
+        times => {
+            start => $START,
+            stop  => $stop,
+            user  => $times[0],
+            sys   => $times[1],
+            cuser => $times[2],
+            csys  => $times[3],
+        },
     );
 }
 
