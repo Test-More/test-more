@@ -12,8 +12,11 @@ use Time::HiRes qw/time/;
 
 our $VERSION = '0.000123';
 
+my $ADDED;
 sub import {
     my $start = time;
+
+    return if $ADDED++;
 
     test2_add_callback_exit(
         sub {
