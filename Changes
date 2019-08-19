@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Add harness_job_fields to Times plugin
+
 0.000124  2019-08-16 14:54:25-07:00 America/Los_Angeles
 
     - Make Times plugin use INFO facets for display

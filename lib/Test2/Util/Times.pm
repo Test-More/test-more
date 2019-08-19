@@ -6,41 +6,44 @@ use List::Util qw/sum/;
 
 our $VERSION = '0.000125';
 
-our @EXPORT_OK = qw/render_bench/;
+our @EXPORT_OK = qw/render_bench render_duration/;
 use base 'Exporter';
+
+sub render_duration {
+    my ($start, $end) = @_;
+
+    my $time = $end - $start;
+
+    return sprintf('%1.5fs', $time) if $time < 10;
+    return sprintf('%2.4fs', $time) if $time < 60;
+
+
+    my $msec  = substr(sprintf('%0.2f', $time - int($time)), -2, 2);
+    my $secs  = $time % 60;
+    my $mins  = int($time / 60) % 60;
+    my $hours = int($time / 60 / 60) % 24;
+    my $days  = int($time / 60 / 60 / 24);
+
+    my @units = (qw/d h m/, '');
+
+    my $duration = '';
+    for my $t ($days, $hours, $mins, $secs) {
+        my $u = shift @units;
+        next unless $t || $duration;
+        $duration = join ':' => grep { length($_) } $duration, sprintf('%02u%s', $t, $u);
+    }
+
+    $duration ||= '0';
+    $duration .= ".$msec" if int($msec);
+    $duration .= 's';
+
+    return $duration;
+}
 
 sub render_bench {
     my ($start, $end, $user, $system, $cuser, $csystem) = @_;
 
-    my $time = $end - $start;
-
-    my $duration;
-    if ($time < 10) {
-        $duration = sprintf('%1.5fs', $time);
-    }
-    elsif ($time < 60) {
-        $duration = sprintf('%2.4fs', $time);
-    }
-    else {
-        my $msec  = substr(sprintf('%0.2f', $time - int($time)), -2, 2);
-        my $secs  = $time % 60;
-        my $mins  = int($time / 60) % 60;
-        my $hours = int($time / 60 / 60) % 24;
-        my $days  = int($time / 60 / 60 / 24);
-
-        my @units = (qw/d h m/, '');
-
-        $duration = '';
-        for my $t ($days, $hours, $mins, $secs) {
-            my $u = shift @units;
-            next unless $t || $duration;
-            $duration = join ':' => grep { length($_) } $duration, sprintf('%02u%s', $t, $u);
-        }
-
-        $duration ||= '0';
-        $duration .= ".$msec" if int($msec);
-        $duration .= 's';
-    }
+    my $duration = render_duration($start, $end);
 
     my $bench = sprintf(
         "%s on wallclock (%5.2f usr %5.2f sys + %5.2f cusr %5.2f csys = %5.2f CPU)",

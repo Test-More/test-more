@@ -37,4 +37,7 @@ like(
     "Got the time info"
 );
 
+ok($events->[0]->{times}, "Got times");
+ok($events->[0]->{harness_job_fields}, "Got harness job fields");
+
 done_testing();

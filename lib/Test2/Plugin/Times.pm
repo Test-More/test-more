@@ -2,7 +2,7 @@ package Test2::Plugin::Times;
 use strict;
 use warnings;
 
-use Test2::Util::Times qw/render_bench/;
+use Test2::Util::Times qw/render_bench render_duration/;
 
 use Test2::API qw{
     test2_add_callback_exit
@@ -26,19 +26,28 @@ sub send_time_event {
     my $stop  = time;
     my @times = times();
 
-    my $summary = render_bench($START, $stop, @times);
+    my $summary  = render_bench($START, $stop, @times);
+    my $duration = render_duration($START, $stop);
 
-    $ctx->send_ev2(
+    my $e = $ctx->send_ev2(
         about => {package => __PACKAGE__, details => $summary},
         info  => [{tag => 'TIME', details => $summary}],
         times => {
-            start => $START,
-            stop  => $stop,
-            user  => $times[0],
-            sys   => $times[1],
-            cuser => $times[2],
-            csys  => $times[3],
+            details => $summary,
+            start  => $START,
+            stop   => $stop,
+            user   => $times[0],
+            sys    => $times[1],
+            cuser  => $times[2],
+            csys   => $times[3],
         },
+        harness_job_fields => [
+            {name => "time_duration", details => $duration},
+            {name => "time_user",     details => $times[0]},
+            {name => "time_sys",      details => $times[1]},
+            {name => "time_cuser",    details => $times[2]},
+            {name => "time_csys",     details => $times[3]},
+        ],
     );
 }
 
