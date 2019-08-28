@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Mention HUGE caveat in Test2::Plugin::Times
+    - Make Test2::Util::Times::render_duration support 1 arg form
+
 0.000125  2019-08-19 10:40:20-07:00 America/Los_Angeles
 
     - Add harness_job_fields to Times plugin

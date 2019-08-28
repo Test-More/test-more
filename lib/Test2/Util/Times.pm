@@ -10,13 +10,17 @@ our @EXPORT_OK = qw/render_bench render_duration/;
 use base 'Exporter';
 
 sub render_duration {
-    my ($start, $end) = @_;
-
-    my $time = $end - $start;
+    my $time;
+    if (@_ == 1) {
+        ($time) = @_;
+    }
+    else {
+        my ($start, $end) = @_;
+        $time = $end - $start;
+    }
 
     return sprintf('%1.5fs', $time) if $time < 10;
     return sprintf('%2.4fs', $time) if $time < 60;
-
 
     my $msec  = substr(sprintf('%0.2f', $time - int($time)), -2, 2);
     my $secs  = $time % 60;
