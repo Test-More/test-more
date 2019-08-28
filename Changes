@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000126  2019-08-28 12:44:59-07:00 America/Los_Angeles
+
     - Mention HUGE caveat in Test2::Plugin::Times
     - Make Test2::Util::Times::render_duration support 1 arg form
 
