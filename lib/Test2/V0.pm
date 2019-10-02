@@ -159,7 +159,7 @@ tools and plugins you use directly in your metadata.
 
 =head1 SYNOPSIS
 
-    use Test2::V0
+    use Test2::V0;
 
     ok(1, "pass");
 
