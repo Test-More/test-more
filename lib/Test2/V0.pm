@@ -108,7 +108,7 @@ sub import {
         if $no_srand && defined($srand);
 
     if ( !$no_srand ) {
-        Test2::Plugin::SRand->import($srand ? $srand : ()) if defined($srand) || $SRAND++;
+        Test2::Plugin::SRand->import($srand ? $srand : ()) if defined($srand) || !$SRAND++;
     }
 
     # Pragmas
