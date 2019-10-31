@@ -191,8 +191,8 @@ Or you can specify names:
 
     use Test2::Bundle::Extended -target => { pkg => 'Some::Package' };
 
-    PKG()->xxx; # Call 'xxx' on Some::Package
-    $PKG->xxx;  # Same
+    pkg()->xxx; # Call 'xxx' on Some::Package
+    $pkg->xxx;  # Same
 
 =over 4
 

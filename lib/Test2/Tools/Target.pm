@@ -82,8 +82,8 @@ Or you can specify names:
 
     use Test2::Tools::Target pkg => 'Some::Package';
 
-    PKG()->xxx; # Call 'xxx' on Some::Package
-    $PKG->xxx;  # Same
+    pkg()->xxx; # Call 'xxx' on Some::Package
+    $pkg->xxx;  # Same
 
 =head1 SOURCE
 
