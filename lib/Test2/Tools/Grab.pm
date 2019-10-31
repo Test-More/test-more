@@ -2,7 +2,7 @@ package Test2::Tools::Grab;
 use strict;
 use warnings;
 
-our $VERSION = '0.000127';
+our $VERSION = '0.000128';
 
 use Test2::Util::Grabber;
 
