@@ -187,6 +187,13 @@ not provide a target then C<$CLASS> and C<CLASS()> will not be imported.
     print $CLASS;  # My::Class
     print CLASS(); # My::Class
 
+Or you can specify names:
+
+    use Test2::Bundle::Extended -target => { pkg => 'Some::Package' };
+
+    PKG()->xxx; # Call 'xxx' on Some::Package
+    $PKG->xxx;  # Same
+
 =over 4
 
 =item $CLASS
