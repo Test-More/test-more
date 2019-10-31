@@ -23,7 +23,12 @@ sub import_into {
 
     my %targets;
     if (@_ == 1) {
-        ($targets{CLASS}) = @_;
+        if (ref $_[0] eq 'HASH') {
+            %targets = %{ $_[0] };
+        }
+        else {
+            ($targets{CLASS}) = @_;
+        }
     }
     else {
         %targets = @_;
