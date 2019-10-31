@@ -23,7 +23,12 @@ sub import_into {
 
     my %targets;
     if (@_ == 1) {
-        ($targets{CLASS}) = @_;
+        if (ref $_[0] eq 'HASH') {
+            %targets = %{ $_[0] };
+        }
+        else {
+            ($targets{CLASS}) = @_;
+        }
     }
     else {
         %targets = @_;
@@ -77,8 +82,8 @@ Or you can specify names:
 
     use Test2::Tools::Target pkg => 'Some::Package';
 
-    PKG()->xxx; # Call 'xxx' on Some::Package
-    $PKG->xxx;  # Same
+    pkg()->xxx; # Call 'xxx' on Some::Package
+    $pkg->xxx;  # Same
 
 =head1 SOURCE
 
