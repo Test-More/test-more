@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix srand toggling
+
 0.000126  2019-08-28 12:44:59-07:00 America/Los_Angeles
 
     - Mention HUGE caveat in Test2::Plugin::Times
