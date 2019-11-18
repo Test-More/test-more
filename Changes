@@ -1,5 +1,6 @@
 {{$NEXT}}
 
+    - Update inline Object::HashBase
     - Avoid 'used only once' warnings in BEGIN and END blocks (James E Keenan <jkeenan@cpan.org>)
 
 1.302168  2019-09-06 07:40:18-07:00 America/Los_Angeles
