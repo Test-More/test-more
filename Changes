@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix unwanted END phase event (#840)
+
 1.302169  2019-11-18 15:49:38-08:00 America/Los_Angeles
 
     - Update inline Object::HashBase
