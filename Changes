@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Clarify error message in test (#841)
+
 1.302170  2019-12-02 13:25:48-08:00 America/Los_Angeles
 
     - Fix unwanted END phase event (#840)
