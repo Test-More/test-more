@@ -1360,7 +1360,7 @@ Test-Simple 0.77 2008-Feb-27 01:55-08:00 PST
 
     Doc improvements
     - Improve the Test::Builder SYNOPSIS to use Test::Builder::Module
-      rather than write it's own import().
+      rather than write its own import().
 
 
 Test-Simple 0.76_02 2008-Feb-24 13:12-08:00 PST

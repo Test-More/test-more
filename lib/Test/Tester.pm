@@ -393,7 +393,7 @@ The easiest way to test is to do something like
     }
   );
 
-this will execute the is_mystyle_eq test, capturing it's results and
+this will execute the is_mystyle_eq test, capturing its results and
 checking that they are what was expected.
 
 You may need to examine the test results in a more flexible way, for
