@@ -271,7 +271,10 @@ sub assert_tap {
         }
 
         my %seen;
-        my @order = grep { !$seen{$_}++ } sort keys %directives;
+
+        # Sort so that TODO comes before skip even on systems where lc sorts
+        # before uc, as other code depends on that ordering.
+        my @order = grep { !$seen{$_}++ } sort { lc $b cmp lc $a } keys %directives;
 
         $directives = ' # ' . join ' & ' => @order;
 
