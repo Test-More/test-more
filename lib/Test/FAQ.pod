@@ -245,7 +245,7 @@ you.  Its C<ok()> function is backwards compatible with the above.
 
 There's some issues with using L<Test::Simple> to test really basic Perl
 functionality, you have to choose on a per test basis.  Since
-L<Test::Simple> doesn't use C<pack()> it's safe for F<t/op/pack.t> to use
+L<Test::Simple> doesn't use C<pack()>, it's safe for F<t/op/pack.t> to use
 L<Test::Simple>.  I just didn't want to make the perlhack patching
 example too complicated.
 
