@@ -1,0 +1,54 @@
+name: linux
+
+on:
+  push:
+    branches:
+      - '*'
+    tags-ignore:
+      - '*'
+  pull_request:
+
+jobs:
+  perl:
+
+    runs-on: ubuntu-latest
+
+    env:
+       PERL_USE_UNSAFE_INC: 0
+       AUTHOR_TESTING: 1
+       AUTOMATED_TESTING: 1
+       RELEASE_TESTING: 1
+       PERL_CARTON_PATH: $GITHUB_WORKSPACE/local
+
+    strategy:
+      matrix:
+        perl-version:
+          - 'latest'
+          - '5.30'
+          - '5.28'
+          - '5.26'
+          - '5.24'
+          - '5.22'
+          - '5.20'
+          - '5.18'
+          - '5.16'
+          - '5.14'
+          - '5.12'
+          - '5.10'
+ #         - '5.8'
+
+    container:
+      image: perl:${{ matrix.perl-version }}
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: perl -V
+        run: perl -V
+      - name: Install Dependencies
+        run: curl -sL https://git.io/cpm | perl - install -g --show-build-log-on-failure
+      - name: perl Makefile.PL
+        run: perl Makefile.PL
+      - name: make
+        run: make
+      - name: Run Tests
+        run: make test
