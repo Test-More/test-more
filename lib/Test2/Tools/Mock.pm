@@ -320,7 +320,7 @@ plugins in ways L<Mock::Quick> would be unable to.
             replace_or_inject => sub { ... },
         ],
 
-        track => $bool, # enable/disable tracking again to effect mocks made after this point
+        track => $bool, # enable/disable tracking again to affect mocks made after this point
         ..., # Argument keys may be repeated
     );
 
@@ -511,7 +511,7 @@ Mock objects are instances of L<Test2::Mock>. See it for their methods.
 =head1 SOURCE
 
 The source code repository for Test2-Suite can be found at
-F<https://github.com/Test-More/Test2-Suite/>.
+L<https://github.com/Test-More/Test2-Suite/>.
 
 =head1 MAINTAINERS
 
@@ -536,6 +536,6 @@ Copyright 2018 Chad Granum E<lt>exodist@cpan.orgE<gt>.
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See F<http://dev.perl.org/licenses/>
+See L<https://dev.perl.org/licenses/>
 
 =cut
