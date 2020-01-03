@@ -352,11 +352,11 @@ depending on how it is used. If you are not comfortable with a function that
 has a lot of potential behaviors, you can use one of the other functions
 directly.
 
-=item $mock = mocked($object)
+=item @mocks = mocked($object)
 
-=item $mock = mocked($class)
+=item @mocks = mocked($class)
 
-Check if an object or class is mocked. If it is mocked the C<$mock> object
+Check if an object or class is mocked. If it is mocked the C<$mock> object(s)
 (L<Test2::Mock>) will be returned.
 
 =item $mock = mock $class => ( ... );
