@@ -543,7 +543,7 @@ the instance is destroyed it will restore the package to its original state.
     use MyClass;
 
     my $mock = Test2::Mock->new(
-        track => $BOOl, # enable call tracking if desired
+        track => $BOOL, # enable call tracking if desired
         class => 'MyClass',
         override => [
             name => sub { 'fred' },
@@ -592,9 +592,9 @@ is identical to this:
 
 =item $mock->track($bool)
 
-Turn tracking on or off. Any sub added/overriden/set when tracking is on will
+Turn tracking on or off. Any sub added/overridden/set when tracking is on will
 log every call in a hash retrievable via C<< $mock->tracking >>. Changing the
-tracking toggle will not effect subs already altered, but will effect any
+tracking toggle will not affect subs already altered, but will affect any
 additional alterations.
 
 =item $hashref = $mock->sub_tracking
@@ -625,7 +625,7 @@ The tracking data looks like this:
         ...,
     ]
 
-unlike sub_tracking this lists all calls to any mocked sub, in the other they
+Unlike sub_tracking this lists all calls to any mocked sub, in the order they
 were called. To filter by sub use sub_tracking.
 
 B<Please note:> The hashref items with the subname and args are shared with
@@ -782,7 +782,7 @@ The C<ref_copy> type will copy your reference and bless the copy:
         return bless [@$params], $class
             if $type eq 'ARRAY';
 
-        croak "Not sure how to construct an '$class' from '$params'";
+        croak "Not sure how to construct a '$class' from '$params'";
     };
 
 =item $mock->before($NAME, sub { ... })
@@ -866,7 +866,7 @@ Returns the child mock, if any.
 =head1 SOURCE
 
 The source code repository for Test2-Suite can be found at
-F<https://github.com/Test-More/Test2-Suite/>.
+L<https://github.com/Test-More/Test2-Suite/>.
 
 =head1 MAINTAINERS
 
@@ -891,6 +891,6 @@ Copyright 2018 Chad Granum E<lt>exodist@cpan.orgE<gt>.
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See F<http://dev.perl.org/licenses/>
+See L<https://dev.perl.org/licenses/>
 
 =cut
