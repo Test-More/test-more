@@ -11,8 +11,7 @@ perl:
   - "5.28"
   - "5.30"
 before_install:
-  - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
-  - source ~/travis-perl-helpers/init --auto
+  - eval $(curl https://travis-perl.github.io/init) --auto
 notifications:
   slack:
     rooms:
