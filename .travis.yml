@@ -1,5 +1,6 @@
 language: perl
 perl:
+  - "5.6.2"
   - "5.8"
   - "5.10"
   - "5.12"
@@ -11,6 +12,7 @@ perl:
   - "5.28"
   - "5.30"
 before_install:
+  - if [ "$TRAVIS_PERL_VERSION" = "5.6.2" ]; then rm -f dist.ini; fi # Force Building with Makefile.PL on Perl 5.6.2 as dzil would not work
   - eval $(curl https://travis-perl.github.io/init) --auto
 notifications:
   slack:
