@@ -16,7 +16,7 @@ our $VERSION = '1.302171';
 
 {
     no warnings 'once';
-    $Test2::Util::HashBase::HB_VERSION = '0.008';
+    $Test2::Util::HashBase::HB_VERSION = '0.009';
     *Test2::Util::HashBase::ATTR_SUBS = \%Object::HashBase::ATTR_SUBS;
     *Test2::Util::HashBase::ATTR_LIST = \%Object::HashBase::ATTR_LIST;
     *Test2::Util::HashBase::VERSION   = \%Object::HashBase::VERSION;
