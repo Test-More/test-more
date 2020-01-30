@@ -1,5 +1,13 @@
 {{$NEXT}}
 
+    - Nicolas R Import option to skip utf8 import
+    - Victoria Mihell-Hale Correct POD for Test2/Tools/Mock.pm's mocked() method
+    - Victoria Mihell-Hale Fix miscellaneous typos in Test2(/Tools)/Mock.pm POD
+    - Nicolas R Add GitHub actions
+    - Daniel Mita Fix PKG case for Test2::Tools::Target docs
+    - Daniel Mita Document target change in V0 and Bundle::Extended
+    - Daniel Mita Allow hashref to be used for Test2::Tools::Target
+
 0.000127  2019-10-30 21:25:29-07:00 America/Los_Angeles
 
     - Fix srand toggling
