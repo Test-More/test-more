@@ -2,7 +2,7 @@ package Test2::Tools::Warnings;
 use strict;
 use warnings;
 
-our $VERSION = '0.000128';
+our $VERSION = '0.000129';
 
 use Test2::API qw/context/;
 
