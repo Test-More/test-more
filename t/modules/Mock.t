@@ -782,6 +782,17 @@ subtest exceptions => sub {
         qr/Symbol '&foo' is not mocked/,
         "did not mock foo"
     );
+
+    my $bare = Test2::Mock->new(
+        class => 'Fake17',
+        autoload => 1,
+    );
+
+    like(
+        dies { $bare->override( missing => 1 ) },
+        qr/Cannot override '&Fake17::missing', symbol is not already defined/,
+        "Cannot override a method that is not defined in an AUTOLOAD mock"
+    );
 };
 
 subtest override_inherited_method => sub {

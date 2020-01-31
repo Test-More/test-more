@@ -197,13 +197,14 @@ EOT
     $line = __LINE__ + 3;
     my $can = eval <<EOT || die "Failed generating can method: $@";
 package $class;
+use Scalar::Util 'reftype';
 #line $line "$file (Generated can)"
     sub {
         my (\$self, \$meth) = \@_;
         if (\$self->SUPER::can(\$meth)) {
             return \$self->SUPER::can(\$meth);
         }
-        elsif (exists \$self->{\$meth}) {
+        elsif (ref \$self && reftype \$self eq 'HASH' && exists \$self->{\$meth}) {
             return sub { shift->\$meth(\@_) };
         }
         return undef;
