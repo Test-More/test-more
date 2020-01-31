@@ -197,8 +197,8 @@ EOT
     $line = __LINE__ + 3;
     my $can = eval <<EOT || die "Failed generating can method: $@";
 package $class;
-use Scalar::Util 'reftype';
 #line $line "$file (Generated can)"
+use Scalar::Util 'reftype';
     sub {
         my (\$self, \$meth) = \@_;
         if (\$self->SUPER::can(\$meth)) {

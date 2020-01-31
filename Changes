@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - José Joaquín Atria Improve error handling of mock->override with AUTOLOADed methods
+
 0.000128  2020-01-30 08:45:43-08:00 America/Los_Angeles
 
     - Nicolas R Import option to skip utf8 import
