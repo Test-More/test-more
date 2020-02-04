@@ -101,7 +101,6 @@ other events are also being generated.
     # any child processes and threads.
     $ast1->finish;
     $ast2->finish;
-    $ast3->finish;
 
     done_testing;
 
