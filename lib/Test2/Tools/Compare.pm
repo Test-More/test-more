@@ -994,12 +994,12 @@ If a 'precision' parameter is specified, both operands will be
 rounded to 'precision' number of fractional decimal digits and
 compared with C<eq>.
 
-  is($near_val, float($val, precision = 4), "Near 4 decimal digits");
+  is($near_val, float($val, precision => 4), "Near 4 decimal digits");
 
 Otherwise, the check will be made within a range of +/- 'tolerance',
 with a default 'tolerance' of 1e-08.
 
-  is( $near_val, float($val, tolerance = 0.01), "Almost there...");
+  is( $near_val, float($val, tolerance => 0.01), "Almost there...");
 
 See also C<within> and C<rounded>.
 
