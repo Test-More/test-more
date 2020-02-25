@@ -33,7 +33,8 @@ sub debug_tap {
     my ($self, $f, $num) = @_;
     return if $self->{+NO_DIAG};
     my @out = $self->SUPER::debug_tap($f, $num);
-    $self->redirect(\@out) if @out && $f->{about}->{package} eq 'Test::Builder::TodoDiag';
+    $self->redirect(\@out) if @out && ref $f->{about} && defined $f->{about}->{package}
+        && $f->{about}->{package} eq 'Test::Builder::TodoDiag';
     return @out;
 }
 
@@ -41,7 +42,8 @@ sub info_tap {
     my ($self, $f) = @_;
     return if $self->{+NO_DIAG};
     my @out = $self->SUPER::info_tap($f);
-    $self->redirect(\@out) if @out && $f->{about}->{package} eq 'Test::Builder::TodoDiag';
+    $self->redirect(\@out) if @out && ref $f->{about} && defined $f->{about}->{package}
+        && $f->{about}->{package} eq 'Test::Builder::TodoDiag';
     return @out;
 }
 
