@@ -123,6 +123,7 @@ SIGTERM
 SIGUSR1
 SIGUSR2
 env
+preloading
 
 ## Spelled correctly according to google:
 recognises

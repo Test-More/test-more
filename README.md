@@ -4,7 +4,7 @@ Test2 - Framework for writing test tools that all work together.
 
 # DESCRIPTION
 
-Test2 is a new testing framework produced by forking [Test::Builder](https://metacpan.org/pod/Test::Builder),
+Test2 is a new testing framework produced by forking [Test::Builder](https://metacpan.org/pod/Test%3A%3ABuilder),
 completely refactoring it, adding many new features and capabilities.
 
 ## WHAT IS NEW?
@@ -17,7 +17,7 @@ completely refactoring it, adding many new features and capabilities.
 
 - Better diagnostics capabilities.
 
-    Test2 uses an [Test2::API::Context](https://metacpan.org/pod/Test2::API::Context) object to track filename, line number, and
+    Test2 uses an [Test2::API::Context](https://metacpan.org/pod/Test2%3A%3AAPI%3A%3AContext) object to track filename, line number, and
     tool details. This object greatly simplifies tracking for where errors should
     be reported.
 
@@ -47,24 +47,24 @@ completely refactoring it, adding many new features and capabilities.
 
 - Support for threading/forking.
 
-    Test2 support for forking and threading can be turned on using [Test2::IPC](https://metacpan.org/pod/Test2::IPC).
+    Test2 support for forking and threading can be turned on using [Test2::IPC](https://metacpan.org/pod/Test2%3A%3AIPC).
     Once turned on threading and forking operate sanely and work as one would
     expect.
 
 # GETTING STARTED
 
 If you are interested in writing tests using new tools then you should look at
-[Test2::Suite](https://metacpan.org/pod/Test2::Suite). [Test2::Suite](https://metacpan.org/pod/Test2::Suite) is a separate cpan distribution that contains
+[Test2::Suite](https://metacpan.org/pod/Test2%3A%3ASuite). [Test2::Suite](https://metacpan.org/pod/Test2%3A%3ASuite) is a separate cpan distribution that contains
 many tools implemented on Test2.
 
 If you are interested in writing new tools you should take a look at
-[Test2::API](https://metacpan.org/pod/Test2::API) first.
+[Test2::API](https://metacpan.org/pod/Test2%3A%3AAPI) first.
 
 # NAMESPACE LAYOUT
 
 This describes the namespace layout for the Test2 ecosystem. Not all the
 namespaces listed here are part of the Test2 distribution, some are implemented
-in [Test2::Suite](https://metacpan.org/pod/Test2::Suite).
+in [Test2::Suite](https://metacpan.org/pod/Test2%3A%3ASuite).
 
 ## Test2::Tools::
 
@@ -95,7 +95,7 @@ perls, or when non-essential modules have not been installed.
 
 ## Test2::Formatter::
 
-Formatters live under this namespace. [Test2::Formatter::TAP](https://metacpan.org/pod/Test2::Formatter::TAP) is the only
+Formatters live under this namespace. [Test2::Formatter::TAP](https://metacpan.org/pod/Test2%3A%3AFormatter%3A%3ATAP) is the only
 formatter currently. It is acceptable for third party distributions to create
 new formatters under this namespace.
 
@@ -140,17 +140,17 @@ script it should probably NOT go directly into `Test2::XXX`.
 
 # SEE ALSO
 
-[Test2::API](https://metacpan.org/pod/Test2::API) - Primary API functions.
+[Test2::API](https://metacpan.org/pod/Test2%3A%3AAPI) - Primary API functions.
 
-[Test2::API::Context](https://metacpan.org/pod/Test2::API::Context) - Detailed documentation of the context object.
+[Test2::API::Context](https://metacpan.org/pod/Test2%3A%3AAPI%3A%3AContext) - Detailed documentation of the context object.
 
-[Test2::IPC](https://metacpan.org/pod/Test2::IPC) - The IPC system used for threading/fork support.
+[Test2::IPC](https://metacpan.org/pod/Test2%3A%3AIPC) - The IPC system used for threading/fork support.
 
-[Test2::Formatter](https://metacpan.org/pod/Test2::Formatter) - Formatters such as TAP live here.
+[Test2::Formatter](https://metacpan.org/pod/Test2%3A%3AFormatter) - Formatters such as TAP live here.
 
-[Test2::Event](https://metacpan.org/pod/Test2::Event) - Events live in this namespace.
+[Test2::Event](https://metacpan.org/pod/Test2%3A%3AEvent) - Events live in this namespace.
 
-[Test2::Hub](https://metacpan.org/pod/Test2::Hub) - All events eventually funnel through a hub. Custom hubs are how
+[Test2::Hub](https://metacpan.org/pod/Test2%3A%3AHub) - All events eventually funnel through a hub. Custom hubs are how
 `intercept()` and `run_subtest()` are implemented.
 
 # CONTACTING US
