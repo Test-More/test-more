@@ -88,13 +88,13 @@ utf8 encoding on the output format.
 
 =head2 encoding_only
 
-Does not import utf8 in your test and only enable the encoding mode on the output.
+Does not import utf8 in your test and only enables the encoding mode on the output.
 
 =head1 NOTES
 
 This module currently sets output handles to have the ':utf8' output
 layer. Some might prefer ':encoding(utf-8)' which is more strict about
-verifying characters.  There is a debate about weather or not encoding
+verifying characters.  There is a debate about whether or not encoding
 to utf8 from perl internals can ever fail, so it may not matter. This
 was also chosen because the alternative causes threads to segfault,
 see L<perlbug 31923|https://rt.perl.org/Public/Bug/Display.html?id=31923>.
