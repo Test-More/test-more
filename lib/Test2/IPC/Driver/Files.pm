@@ -129,10 +129,22 @@ sub drop_hub {
 
     return unless keys %bad;
 
-    require JSON::PP;
-    local *UNIVERSAL::TO_JSON = sub { +{ %{$_[0]} } };
-    my $json = JSON::PP->new->ascii->pretty->canonical->allow_unknown->allow_blessed->convert_blessed;
-    my $data = $json->encode(\%bad);
+    my $data;
+    my $ok = eval {
+        require JSON::PP;
+        local *UNIVERSAL::TO_JSON = sub { +{ %{$_[0]} } };
+        my $json = JSON::PP->new->ascii->pretty->canonical->allow_unknown->allow_blessed->convert_blessed;
+        $data = $json->encode(\%bad);
+        1;
+    };
+    $ok ||= eval {
+        require Data::Dumper;
+        local $Data::Dumper::Sortkeys = 1;
+        $data = Data::Dumper::Dumper(\%bad);
+        1;
+    };
+
+    $data = "Could not dump data... sorry." unless defined $data;
 
     $self->abort_trace("Not all files from hub '$hid' have been collected!\nHere is the leftover data:\n========================\n$data\n===================\n");
 }
