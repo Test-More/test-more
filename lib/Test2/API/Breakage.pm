@@ -73,7 +73,9 @@ sub report {
         next unless $INC{$file} || ($require && eval { require $file; 1 });
         my $want = $suggest{$mod};
         next if eval { $mod->VERSION($want); 1 };
-        push @warn => " * Module '$mod' is outdated, we recommend updating above $want.";
+        my $error = $@;
+        chomp $error;
+        push @warn => " * Module '$mod' is outdated, we recommed updating above $want. error was: '$error'; INC is $INC{$file}";
     }
 
     for my $mod (keys %required) {
