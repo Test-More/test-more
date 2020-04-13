@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302175  2020-04-13 11:37:36-07:00 America/Los_Angeles
+
     - Fix typos in POD
     - Fix incorrect Test2::Hub documentation
     - Fix test that needed . in @INC on windows
