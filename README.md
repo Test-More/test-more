@@ -42,7 +42,7 @@ also produces undesirable side effects.
     These do not live in the bundle namespace as they are the primary ways to use
     Test2::Suite.
 
-    The current latest is [Test2::V0](https://metacpan.org/pod/Test2::V0).
+    The current latest is [Test2::V0](https://metacpan.org/pod/Test2%3A%3AV0).
 
         use Test2::V0;
         # strict and warnings are on for you now.
@@ -57,15 +57,15 @@ also produces undesirable side effects.
         done_testing;
 
     This bundle includes every tool listed in the ["INCLUDED TOOLS"](#included-tools) section below,
-    except for [Test2::Tools::ClassicCompare](https://metacpan.org/pod/Test2::Tools::ClassicCompare). This bundle provides most of what
+    except for [Test2::Tools::ClassicCompare](https://metacpan.org/pod/Test2%3A%3ATools%3A%3AClassicCompare). This bundle provides most of what
     anyone writing tests could need. This is also the preferred bundle/toolset of
     the [Test2](https://metacpan.org/pod/Test2) author.
 
-    See [Test2::V0](https://metacpan.org/pod/Test2::V0) for complete documentation.
+    See [Test2::V0](https://metacpan.org/pod/Test2%3A%3AV0) for complete documentation.
 
 - Extended
 
-    **\*\* Deprecated \*\*** See [Test2::V0](https://metacpan.org/pod/Test2::V0)
+    **\*\* Deprecated \*\*** See [Test2::V0](https://metacpan.org/pod/Test2%3A%3AV0)
 
         use Test2::Bundle::Extended;
         # strict and warnings are on for you now.
@@ -80,11 +80,11 @@ also produces undesirable side effects.
         done_testing;
 
     This bundle includes every tool listed in the ["INCLUDED TOOLS"](#included-tools) section below,
-    except for [Test2::Tools::ClassicCompare](https://metacpan.org/pod/Test2::Tools::ClassicCompare). This bundle provides most of what
+    except for [Test2::Tools::ClassicCompare](https://metacpan.org/pod/Test2%3A%3ATools%3A%3AClassicCompare). This bundle provides most of what
     anyone writing tests could need. This is also the preferred bundle/toolset of
     the [Test2](https://metacpan.org/pod/Test2) author.
 
-    See [Test2::Bundle::Extended](https://metacpan.org/pod/Test2::Bundle::Extended) for complete documentation.
+    See [Test2::Bundle::Extended](https://metacpan.org/pod/Test2%3A%3ABundle%3A%3AExtended) for complete documentation.
 
 - More
 
@@ -104,14 +104,14 @@ also produces undesirable side effects.
 
         done_testing; # Use instead of plan
 
-    This bundle is meant to be a _mostly_ drop-in replacement for [Test::More](https://metacpan.org/pod/Test::More).
+    This bundle is meant to be a _mostly_ drop-in replacement for [Test::More](https://metacpan.org/pod/Test%3A%3AMore).
     There are some notable differences to be aware of however. Some exports are
     missing: `eq_array`, `eq_hash`, `eq_set`, `$TODO`, `explain`, `use_ok`,
     `require_ok`. As well it is no longer possible to set the plan at import:
     `use .. tests => 5`. `$TODO` has been replaced by the `todo()`
     function. Planning is done using `plan`, `skip_all`, or `done_testing`.
 
-    See [Test2::Bundle::More](https://metacpan.org/pod/Test2::Bundle::More) for complete documentation.
+    See [Test2::Bundle::More](https://metacpan.org/pod/Test2%3A%3ABundle%3A%3AMore) for complete documentation.
 
 - Simple
 
@@ -123,93 +123,93 @@ also produces undesirable side effects.
 
         ok(...);
 
-    This bundle is meant to be a _mostly_ drop-in replacement for [Test::Simple](https://metacpan.org/pod/Test::Simple).
-    See [Test2::Bundle::Simple](https://metacpan.org/pod/Test2::Bundle::Simple) for complete documentation.
+    This bundle is meant to be a _mostly_ drop-in replacement for [Test::Simple](https://metacpan.org/pod/Test%3A%3ASimple).
+    See [Test2::Bundle::Simple](https://metacpan.org/pod/Test2%3A%3ABundle%3A%3ASimple) for complete documentation.
 
 # INCLUDED TOOLS
 
 - Basic
 
-    Basic provides most of the essential tools previously found in [Test::More](https://metacpan.org/pod/Test::More).
+    Basic provides most of the essential tools previously found in [Test::More](https://metacpan.org/pod/Test%3A%3AMore).
     However it does not export any tools used for comparison. The basic `pass`,
     `fail`, `ok` functions are present, as are functions for planning.
 
-    See [Test2::Tools::Basic](https://metacpan.org/pod/Test2::Tools::Basic) for complete documentation.
+    See [Test2::Tools::Basic](https://metacpan.org/pod/Test2%3A%3ATools%3A%3ABasic) for complete documentation.
 
 - Compare
 
     This provides `is`, `like`, `isnt`, `unlike`, and several additional
     helpers. **Note:** These are all _deep_ comparison tools and work like a
-    combination of [Test::More](https://metacpan.org/pod/Test::More)'s `is` and `is_deeply`.
+    combination of [Test::More](https://metacpan.org/pod/Test%3A%3AMore)'s `is` and `is_deeply`.
 
-    See [Test2::Tools::Compare](https://metacpan.org/pod/Test2::Tools::Compare) for complete documentation.
+    See [Test2::Tools::Compare](https://metacpan.org/pod/Test2%3A%3ATools%3A%3ACompare) for complete documentation.
 
 - ClassicCompare
 
-    This provides [Test::More](https://metacpan.org/pod/Test::More) flavored `is`, `like`, `isnt`, `unlike`, and
+    This provides [Test::More](https://metacpan.org/pod/Test%3A%3AMore) flavored `is`, `like`, `isnt`, `unlike`, and
     `is_deeply`. It also provides `cmp_ok`.
 
-    See [Test2::Tools::ClassicCompare](https://metacpan.org/pod/Test2::Tools::ClassicCompare) for complete documentation.
+    See [Test2::Tools::ClassicCompare](https://metacpan.org/pod/Test2%3A%3ATools%3A%3AClassicCompare) for complete documentation.
 
 - Class
 
     This provides functions for testing objects and classes, things like `isa_ok`.
 
-    See [Test2::Tools::Class](https://metacpan.org/pod/Test2::Tools::Class) for complete documentation.
+    See [Test2::Tools::Class](https://metacpan.org/pod/Test2%3A%3ATools%3A%3AClass) for complete documentation.
 
 - Defer
 
     This provides functions for writing test functions in one place, but running
     them later. This is useful for testing things that run in an altered state.
 
-    See [Test2::Tools::Defer](https://metacpan.org/pod/Test2::Tools::Defer) for complete documentation.
+    See [Test2::Tools::Defer](https://metacpan.org/pod/Test2%3A%3ATools%3A%3ADefer) for complete documentation.
 
 - Encoding
 
     This exports a single function that can be used to change the encoding of all
     your test output.
 
-    See [Test2::Tools::Encoding](https://metacpan.org/pod/Test2::Tools::Encoding) for complete documentation.
+    See [Test2::Tools::Encoding](https://metacpan.org/pod/Test2%3A%3ATools%3A%3AEncoding) for complete documentation.
 
 - Exports
 
     This provides tools for verifying exports. You can verify that functions have
     been imported, or that they have not been imported.
 
-    See [Test2::Tools::Exports](https://metacpan.org/pod/Test2::Tools::Exports) for complete documentation.
+    See [Test2::Tools::Exports](https://metacpan.org/pod/Test2%3A%3ATools%3A%3AExports) for complete documentation.
 
 - Mock
 
     This provides tools for mocking objects and classes. This is based largely on
-    [Mock::Quick](https://metacpan.org/pod/Mock::Quick), but several interface improvements have been added that cannot
+    [Mock::Quick](https://metacpan.org/pod/Mock%3A%3AQuick), but several interface improvements have been added that cannot
     be added to Mock::Quick itself without breaking backwards compatibility.
 
-    See [Test2::Tools::Mock](https://metacpan.org/pod/Test2::Tools::Mock) for complete documentation.
+    See [Test2::Tools::Mock](https://metacpan.org/pod/Test2%3A%3ATools%3A%3AMock) for complete documentation.
 
 - Ref
 
     This exports tools for validating and comparing references.
 
-    See [Test2::Tools::Ref](https://metacpan.org/pod/Test2::Tools::Ref) for complete documentation.
+    See [Test2::Tools::Ref](https://metacpan.org/pod/Test2%3A%3ATools%3A%3ARef) for complete documentation.
 
 - Spec
 
     This is an RSPEC implementation with concurrency support.
 
-    See [Test2::Tools::Spec](https://metacpan.org/pod/Test2::Tools::Spec) for more details.
+    See [Test2::Tools::Spec](https://metacpan.org/pod/Test2%3A%3ATools%3A%3ASpec) for more details.
 
 - Subtest
 
     This exports tools for running subtests.
 
-    See [Test2::Tools::Subtest](https://metacpan.org/pod/Test2::Tools::Subtest) for complete documentation.
+    See [Test2::Tools::Subtest](https://metacpan.org/pod/Test2%3A%3ATools%3A%3ASubtest) for complete documentation.
 
 - Target
 
     This lets you load the package(s) you intend to test, and alias them into
     constants/package variables.
 
-    See [Test2::Tools::Target](https://metacpan.org/pod/Test2::Tools::Target) for complete documentation.
+    See [Test2::Tools::Target](https://metacpan.org/pod/Test2%3A%3ATools%3A%3ATarget) for complete documentation.
 
 # INCLUDED PLUGINS
 
@@ -218,34 +218,34 @@ also produces undesirable side effects.
     The much requested "bail-out on first failure" plugin. When this plugin is
     loaded, any failure will cause the test to bail out immediately.
 
-    See [Test2::Plugin::BailOnFail](https://metacpan.org/pod/Test2::Plugin::BailOnFail) for complete documentation.
+    See [Test2::Plugin::BailOnFail](https://metacpan.org/pod/Test2%3A%3APlugin%3A%3ABailOnFail) for complete documentation.
 
 - DieOnFail
 
     The much requested "die on first failure" plugin. When this plugin is
     loaded, any failure will cause the test to die immediately.
 
-    See [Test2::Plugin::DieOnFail](https://metacpan.org/pod/Test2::Plugin::DieOnFail) for complete documentation.
+    See [Test2::Plugin::DieOnFail](https://metacpan.org/pod/Test2%3A%3APlugin%3A%3ADieOnFail) for complete documentation.
 
 - ExitSummary
 
     This plugin gives you statistics and diagnostics at the end of your test in the
     event of a failure.
 
-    See [Test2::Plugin::ExitSummary](https://metacpan.org/pod/Test2::Plugin::ExitSummary) for complete documentation.
+    See [Test2::Plugin::ExitSummary](https://metacpan.org/pod/Test2%3A%3APlugin%3A%3AExitSummary) for complete documentation.
 
 - SRand
 
     Use this to set the random seed to a specific seed, or to the current date.
 
-    See [Test2::Plugin::SRand](https://metacpan.org/pod/Test2::Plugin::SRand) for complete documentation.
+    See [Test2::Plugin::SRand](https://metacpan.org/pod/Test2%3A%3APlugin%3A%3ASRand) for complete documentation.
 
 - UTF8
 
     Turn on utf8 for your testing. This sets the current file to be utf8, it also
     sets STDERR, STDOUT, and your formatter to all output utf8.
 
-    See [Test2::Plugin::UTF8](https://metacpan.org/pod/Test2::Plugin::UTF8) for complete documentation.
+    See [Test2::Plugin::UTF8](https://metacpan.org/pod/Test2%3A%3APlugin%3A%3AUTF8) for complete documentation.
 
 # INCLUDED REQUIREMENT CHECKERS
 
@@ -254,42 +254,42 @@ also produces undesirable side effects.
     Using this package will cause the test file to be skipped unless the
     AUTHOR\_TESTING environment variable is set.
 
-    See [Test2::Require::AuthorTesting](https://metacpan.org/pod/Test2::Require::AuthorTesting) for complete documentation.
+    See [Test2::Require::AuthorTesting](https://metacpan.org/pod/Test2%3A%3ARequire%3A%3AAuthorTesting) for complete documentation.
 
 - EnvVar
 
     Using this package will cause the test file to be skipped unless a custom
     environment variable is set.
 
-    See [Test2::Require::EnvVar](https://metacpan.org/pod/Test2::Require::EnvVar) for complete documentation.
+    See [Test2::Require::EnvVar](https://metacpan.org/pod/Test2%3A%3ARequire%3A%3AEnvVar) for complete documentation.
 
 - Fork
 
     Using this package will cause the test file to be skipped unless the system is
     capable of forking (including emulated forking).
 
-    See [Test2::Require::Fork](https://metacpan.org/pod/Test2::Require::Fork) for complete documentation.
+    See [Test2::Require::Fork](https://metacpan.org/pod/Test2%3A%3ARequire%3A%3AFork) for complete documentation.
 
 - RealFork
 
     Using this package will cause the test file to be skipped unless the system is
     capable of true forking.
 
-    See [Test2::Require::RealFork](https://metacpan.org/pod/Test2::Require::RealFork) for complete documentation.
+    See [Test2::Require::RealFork](https://metacpan.org/pod/Test2%3A%3ARequire%3A%3ARealFork) for complete documentation.
 
 - Module
 
     Using this package will cause the test file to be skipped unless the specified
     module is installed (and optionally at a minimum version).
 
-    See [Test2::Require::Module](https://metacpan.org/pod/Test2::Require::Module) for complete documentation.
+    See [Test2::Require::Module](https://metacpan.org/pod/Test2%3A%3ARequire%3A%3AModule) for complete documentation.
 
 - Perl
 
     Using this package will cause the test file to be skipped unless the specified
     minimum perl version is met.
 
-    See [Test2::Require::Perl](https://metacpan.org/pod/Test2::Require::Perl) for complete documentation.
+    See [Test2::Require::Perl](https://metacpan.org/pod/Test2%3A%3ARequire%3A%3APerl) for complete documentation.
 
 - Threads
 
@@ -298,14 +298,14 @@ also produces undesirable side effects.
 
     **Note:** This will not turn threading on for you.
 
-    See [Test2::Require::Threads](https://metacpan.org/pod/Test2::Require::Threads) for complete documentation.
+    See [Test2::Require::Threads](https://metacpan.org/pod/Test2%3A%3ARequire%3A%3AThreads) for complete documentation.
 
 # SEE ALSO
 
 See the [Test2](https://metacpan.org/pod/Test2) documentation for a namespace map. Everything in this
 distribution uses [Test2](https://metacpan.org/pod/Test2).
 
-[Test2::Manual](https://metacpan.org/pod/Test2::Manual) is the Test2 Manual.
+[Test2::Manual](https://metacpan.org/pod/Test2%3A%3AManual) is the Test2 Manual.
 
 # CONTACTING US
 
