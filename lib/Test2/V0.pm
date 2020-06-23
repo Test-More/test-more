@@ -337,11 +337,11 @@ See L<Test2::Tools::Basic>.
 
 =over 4
 
-=item ok($bool, $name)
+=item ok($bool, $name, @diag)
 
-=item pass($name)
+=item pass($name, @diag)
 
-=item fail($name)
+=item fail($name, @diag)
 
 =item diag($message)
 
