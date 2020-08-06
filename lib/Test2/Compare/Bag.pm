@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Test2::Compare::Base';
 
-our $VERSION = '0.000131';
+our $VERSION = '0.000132';
 
 use Test2::Util::HashBase qw/ending meta items for_each/;
 
