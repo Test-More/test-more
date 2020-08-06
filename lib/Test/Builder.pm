@@ -106,8 +106,8 @@ sub _add_ts_hooks {
                 $state->{+__PACKAGE__}->{"$cpkg\::TODO"} = ${"$cpkg\::TODO"} if $cpkg;
                 $state->{+__PACKAGE__}->{"$epkg\::TODO"} = ${"$epkg\::TODO"} if $epkg;
 
-                ${"$cpkg\::TODO"} = undef;
-                ${"$epkg\::TODO"} = undef;
+                ${"$cpkg\::TODO"} = undef if $cpkg;
+                ${"$epkg\::TODO"} = undef if $epkg;
             },
             restore => sub {
                 my %params = @_;
