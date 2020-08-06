@@ -5,11 +5,11 @@ use warnings;
 our $VERSION = '0.000131';
 
 use Test2::Hub::Interceptor();
-use Test2::Util::Trace();
+use Test2::EventFacet::Trace();
 
 use Test2::API qw/test2_stack test2_ipc/;
 
-use Test2::Util::HashBase qw/hub finished _events term_size/;
+use Test2::Util::HashBase qw/hub finished _events term_size <state <trace/;
 
 sub init {
     my $self = shift;
@@ -32,6 +32,12 @@ sub init {
 
     $self->{+TERM_SIZE} = $ENV{TS_TERM_SIZE};
     $ENV{TS_TERM_SIZE} = 80;
+
+    my $trace = $self->{+TRACE} ||= Test2::EventFacet::Trace->new(frame => [caller(1)]);
+    my $state = $self->{+STATE} ||= {};
+    $hub->clean_inherited(trace => $trace, state => $state);
+
+    return;
 }
 
 sub flush {
@@ -63,7 +69,11 @@ sub finish {
     $self->{+FINISHED} = 1;
     test2_stack()->pop($hub);
 
-    my $dbg = Test2::Util::Trace->new(
+    my $trace = $self->{+TRACE} ||= Test2::EventFacet::Trace->new(frame => [caller(1)]);
+    my $state = $self->{+STATE} ||= {};
+    $hub->clean_inherited(trace => $trace, state => $state);
+
+    my $dbg = Test2::EventFacet::Trace->new(
         frame => [caller(0)],
     );
     $hub->finalize($dbg, 1)
