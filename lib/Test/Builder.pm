@@ -51,40 +51,80 @@ sub _add_ts_hooks {
 
     #$hub->add_context_aquire(sub {$_[0]->{level} += $Level - 1});
 
-    $hub->pre_filter(sub {
-        my ($active_hub, $e) = @_;
+    $hub->pre_filter(
+        sub {
+            my ($active_hub, $e) = @_;
 
-        my $epkg = $$epkgr;
-        my $cpkg = $e->{trace} ? $e->{trace}->{frame}->[0] : undef;
+            my $epkg = $$epkgr;
+            my $cpkg = $e->{trace} ? $e->{trace}->{frame}->[0] : undef;
 
-        no strict 'refs';
-        no warnings 'once';
-        my $todo;
-        $todo = ${"$cpkg\::TODO"} if $cpkg;
-        $todo = ${"$epkg\::TODO"} if $epkg && !$todo;
+            no strict 'refs';
+            no warnings 'once';
+            my $todo;
+            $todo = ${"$cpkg\::TODO"} if $cpkg;
+            $todo = ${"$epkg\::TODO"} if $epkg && !$todo;
 
-        return $e unless defined($todo);
-        return $e unless length($todo);
+            return $e unless defined($todo);
+            return $e unless length($todo);
 
-        # Turn a diag into a todo diag
-        return Test::Builder::TodoDiag->new(%$e) if ref($e) eq 'Test2::Event::Diag';
+            # Turn a diag into a todo diag
+            return Test::Builder::TodoDiag->new(%$e) if ref($e) eq 'Test2::Event::Diag';
 
-        $e->set_todo($todo) if $e->can('set_todo');
-        $e->add_amnesty({tag => 'TODO', details => $todo});
+            $e->set_todo($todo) if $e->can('set_todo');
+            $e->add_amnesty({tag => 'TODO', details => $todo});
 
-        # Set todo on ok's
-        if ($e->isa('Test2::Event::Ok')) {
-            $e->set_effective_pass(1);
+            # Set todo on ok's
+            if ($e->isa('Test2::Event::Ok')) {
+                $e->set_effective_pass(1);
 
-            if (my $result = $e->get_meta(__PACKAGE__)) {
-                $result->{reason} ||= $todo;
-                $result->{type}   ||= 'todo';
-                $result->{ok}       = 1;
+                if (my $result = $e->get_meta(__PACKAGE__)) {
+                    $result->{reason} ||= $todo;
+                    $result->{type}   ||= 'todo';
+                    $result->{ok} = 1;
+                }
             }
-        }
 
-        return $e;
-    }, inherit => 1);
+            return $e;
+        },
+
+        inherit => 1,
+
+        intercept_inherit => {
+            clean => sub {
+                my %params = @_;
+
+                my $state = $params{state};
+                my $trace = $params{trace};
+
+                my $epkg = $$epkgr;
+                my $cpkg = $trace->{frame}->[0];
+
+                no strict 'refs';
+                no warnings 'once';
+
+                $state->{+__PACKAGE__} = {};
+                $state->{+__PACKAGE__}->{"$cpkg\::TODO"} = ${"$cpkg\::TODO"} if $cpkg;
+                $state->{+__PACKAGE__}->{"$epkg\::TODO"} = ${"$epkg\::TODO"} if $epkg;
+
+                ${"$cpkg\::TODO"} = undef;
+                ${"$epkg\::TODO"} = undef;
+            },
+            restore => sub {
+                my %params = @_;
+                my $state = $params{state};
+
+                no strict 'refs';
+                no warnings 'once';
+
+                for my $item (keys %{$state->{+__PACKAGE__}}) {
+                    no strict 'refs';
+                    no warnings 'once';
+
+                    ${"$item"} = $state->{+__PACKAGE__}->{$item};
+                }
+            },
+        },
+    );
 }
 
 {

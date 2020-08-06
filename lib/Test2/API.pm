@@ -595,6 +595,10 @@ sub _intercept {
     $ctx->stack->top; # Make sure there is a top hub before we begin.
     $ctx->stack->push($hub);
 
+    my $trace = $ctx->trace;
+    my $state = {};
+    $hub->clean_inherited(trace => $trace, state => $state);
+
     my ($ok, $err) = (1, undef);
     T2_SUBTEST_WRAPPER: {
         # Do not use 'try' cause it localizes __DIE__
@@ -611,7 +615,8 @@ sub _intercept {
     $hub->cull;
     $ctx->stack->pop($hub);
 
-    my $trace = $ctx->trace;
+    $hub->restore_inherited(trace => $trace, state => $state);
+
     $ctx->release;
 
     die $err unless $ok;

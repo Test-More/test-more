@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix Test::More's $TODO inside intercept (#862)
+
 1.302175  2020-04-13 11:37:36-07:00 America/Los_Angeles
 
     - Fix typos in POD
