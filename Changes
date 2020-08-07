@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+1.302177  2020-08-06 21:46:06-07:00 America/Los_Angeles
+
+    - Minor fix to author downstream test
+    - No significant changes since the last trial
+
 1.302176  2020-08-05 21:45:19-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Fix Test::More's $TODO inside intercept (#862)
