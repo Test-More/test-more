@@ -35,7 +35,6 @@ Test2::Suite
 Test2::AsyncSubtest
 Test2::Tools::EventDumper
 Test2::Workflow
-Test2::Plugin::SpecDeclare
 T
 App::Ack
 App::Dest
@@ -72,7 +71,6 @@ ExtUtils::MakeMaker
 ExtUtils::Manifest
 ExtUtils::ParseXS
 Fennec
-Fennec::Declare
 File::Map
 File::Spec
 Filter::CommaEquals

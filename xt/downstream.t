@@ -36,7 +36,7 @@ ok(run_string(<<"EOT"), "Installed Devel::Declare") || exit 1;
 perlbrew exec --with $lib cpanm Devel::Declare
 EOT
 
-for my $i (qw/Suite AsyncSubtest Workflow Plugin::SpecDeclare/) {
+for my $i (qw/Suite/) {
     my $ok = 0;
     for (1 .. 2) {
         $ok = run_string(<<"        EOT");
@@ -67,7 +67,7 @@ while(my $name = <$list>) {
     chomp($name);
     my $ok = 0;
     for (1 .. 2) {
-        $ok = run_string("perlbrew exec --with $lib -- cpanm --reinstall $name");
+        $ok = run_string("perlbrew exec --with $lib cpanm --reinstall $name");
         last if $ok;
         diag "'$name' did not install properly, trying 1 more time.";
     }
