@@ -351,7 +351,7 @@ sub process {
     $self->{+FAILED}++ if $fail && $f->{assert};
     $self->{+_PASSING} = 0 if $fail;
 
-    my $code = $f->{control}->{terminate};
+    my $code = $f->{control} ? $f->{control}->{terminate} : undef;
     my $count = $self->{+COUNT};
 
     if (my $plan = $f->{plan}) {
@@ -368,7 +368,7 @@ sub process {
         }
     }
 
-    $e->callback($self) if $f->{control}->{has_callback};
+    $e->callback($self) if $f->{control} && $f->{control}->{has_callback};
 
     $self->{+_FORMATTER}->write($e, $count, $f) if $self->{+_FORMATTER};
 
@@ -376,7 +376,7 @@ sub process {
         $_->{code}->($self, $e, $count, $f) for @{$self->{+_LISTENERS}};
     }
 
-    if ($f->{control}->{halt}) {
+    if ($f->{control} && $f->{control}->{halt}) {
         $code ||= 255;
         $self->set_bailed_out($e);
     }

@@ -33,7 +33,8 @@ sub init {
 
         $self->{+ABOUT}->{uuid} = $uuid;
     }
-    elsif ($uuid = $self->{+ABOUT}->{uuid}) {
+    elsif ($self->{+ABOUT} && $self->{+ABOUT}->{uuid}) {
+        $uuid = $self->{+ABOUT}->{uuid};
         $self->SUPER::set_uuid($uuid);
     }
 
