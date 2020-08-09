@@ -106,7 +106,7 @@ our @EXPORT_OK = qw{
     context release
     context_do
     no_context
-    intercept intercept_deep
+    intercept intercept_deep intercept2
     run_subtest
 
     test2_init_done
@@ -551,6 +551,17 @@ sub release($;$) {
     return $_[1];
 }
 
+sub intercept2(&) {
+    my $code = shift;
+    my $ctx = context();
+
+    my $result = _intercept($code, deep => 0, api => 2);
+
+    $ctx->release;
+
+    return $result;
+}
+
 sub intercept(&) {
     my $code = shift;
     my $ctx = context();
@@ -599,10 +610,11 @@ sub _intercept {
     my $state = {};
     $hub->clean_inherited(trace => $trace, state => $state);
 
+    my $snap = $ctx->snapshot;
     my ($ok, $err) = (1, undef);
     T2_SUBTEST_WRAPPER: {
         # Do not use 'try' cause it localizes __DIE__
-        $ok = eval { $code->(hub => $hub, context => $ctx->snapshot); 1 };
+        $ok = eval { $code->(hub => $hub, context => $snap); 1 };
         $err = $@;
 
         # They might have done 'BEGIN { skip_all => "whatever" }'
@@ -614,7 +626,6 @@ sub _intercept {
 
     $hub->cull;
     $ctx->stack->pop($hub);
-
     $hub->restore_inherited(trace => $trace, state => $state);
 
     $ctx->release;
@@ -626,7 +637,15 @@ sub _intercept {
         && !$hub->no_ending
         && !$hub->ended;
 
-    return \@events;
+    return \@events unless $params{api} && $params{api} == 2;
+
+    require Test2::API::InterceptResult unless $INC{'Test2/API/InterceptResult.pm'};
+
+    return Test2::API::InterceptResult->new(
+        hub        => $hub,
+        raw_events => \@events,
+        context    => $snap,
+    );
 }
 
 sub run_subtest {
@@ -743,6 +762,7 @@ sub run_subtest {
         subtest_uuid => $hub->uuid,
         buffered     => $buffered,
         subevents    => \@events,
+        state        => $hub->state,
     );
 
     my $plan_ok = $hub->check_plan;

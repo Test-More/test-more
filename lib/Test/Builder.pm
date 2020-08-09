@@ -339,6 +339,7 @@ FAIL
             $parent->{subtest_id} = $meta->{subtest_id};
             $parent->{subtest_uuid} = $meta->{subtest_uuid};
             $parent->{subtest_buffered} = $meta->{subtest_buffered};
+            $parent->{subtest_state} = $chub->state;
             $parent->ok( $chub->is_passing, $meta->{Name} );
         }
     }
@@ -710,10 +711,11 @@ sub ok {
     my $subtest_id = delete $self->{subtest_id};
     my $subtest_uuid = delete $self->{subtest_uuid};
     my $subtest_buffered = delete $self->{subtest_buffered};
+    my $subtest_state = delete $self->{subtest_state};
     my $epkg = 'Test2::Event::Ok';
     if ($subevents) {
         $epkg = 'Test2::Event::Subtest';
-        push @attrs => (subevents => $subevents, subtest_id => $subtest_id, subtest_uuid => $subtest_uuid, buffered => $subtest_buffered);
+        push @attrs => (subevents => $subevents, subtest_id => $subtest_id, subtest_uuid => $subtest_uuid, buffered => $subtest_buffered, state => $subtest_state);
     }
 
     my $e = bless {

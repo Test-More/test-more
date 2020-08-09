@@ -81,6 +81,18 @@ sub _tb_reset {
     }
 }
 
+sub state {
+    my $self = shift;
+
+    my $out = {
+        map {($_ => scalar $self->$_)} qw/count failed is_passing plan bailed_out skip_reason nested/
+    };
+
+    $out->{follows_plan} = $self->check_plan;
+
+    return $out;
+}
+
 sub reset_state {
     my $self = shift;
 
@@ -340,12 +352,18 @@ sub process {
         return $e;
     }
 
+    # Hacky, but do not remove these comments, they are used to extract just
+    # these lines for use in another package.  Not extracted them into a
+    # reusable sub because it actually does effect performance too much.
+
+    # FAIL_CHECK_START
     my $f = $e->facet_data;
 
     my $fail = 0;
     $fail = 1 if $f->{assert} && !$f->{assert}->{pass};
     $fail = 1 if $f->{errors} && grep { $_->{fail} } @{$f->{errors}};
     $fail = 0 if $f->{amnesty};
+    # FAIL_CHECK_END
 
     $self->{+COUNT}++ if $f->{assert};
     $self->{+FAILED}++ if $fail && $f->{assert};

@@ -7,7 +7,7 @@ our $VERSION = '1.302178';
 use Carp qw/confess/;
 
 BEGIN { require Test2::EventFacet; our @ISA = qw(Test2::EventFacet) }
-use Test2::Util::HashBase qw{ -hid -children -buffered };
+use Test2::Util::HashBase qw{ -hid -children -buffered -state};
 
 sub init {
     confess "Attribute 'hid' must be set"
@@ -26,7 +26,7 @@ __END__
 
 =head1 NAME
 
-Test2::EventFacet::Parent - Facet for events contains other events
+Test2::EventFacet::Parent - Facet for events that contain other events
 
 =head1 DESCRIPTION
 
