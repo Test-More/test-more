@@ -11,24 +11,31 @@ tests facet_map => sub {
 
     my $fm = $CLASS->facet_map;
 
-    is_deeply($fm->{about},   {class => 'Test2::EventFacet::About',   list => 0}, "Found 'about' facet");
-    is_deeply($fm->{amnesty}, {class => 'Test2::EventFacet::Amnesty', list => 1}, "Found 'amnesty' facet");
-    is_deeply($fm->{assert},  {class => 'Test2::EventFacet::Assert',  list => 0}, "Found 'assert' facet");
-    is_deeply($fm->{control}, {class => 'Test2::EventFacet::Control', list => 0}, "Found 'control' facet");
-    is_deeply($fm->{errors},  {class => 'Test2::EventFacet::Error',   list => 1}, "Found 'errors' facet");
-    is_deeply($fm->{hubs},    {class => 'Test2::EventFacet::Hub',     list => 1}, "Found 'hubs' facet");
-    is_deeply($fm->{info},    {class => 'Test2::EventFacet::Info',    list => 1}, "Found 'info' facet");
-    is_deeply($fm->{meta},    {class => 'Test2::EventFacet::Meta',    list => 0}, "Found 'meta' facet");
-    is_deeply($fm->{parent},  {class => 'Test2::EventFacet::Parent',  list => 0}, "Found 'parent' facet");
-    is_deeply($fm->{plan},    {class => 'Test2::EventFacet::Plan',    list => 0}, "Found 'plan' facet");
-    is_deeply($fm->{render},  {class => 'Test2::EventFacet::Render',  list => 1}, "Found 'render' facet");
-    is_deeply($fm->{trace},   {class => 'Test2::EventFacet::Trace',   list => 0}, "Found 'trace' facet");
+    is_deeply($fm->{__GENERIC__}, {class => 'Test2::API::InterceptResult::Facet', loaded => 1}, "Generic '__GENERIC__'");
+
+    is_deeply($fm->{about},   {class => 'Test2::EventFacet::About',   list => 0, loaded => 1}, "Found 'about' facet");
+    is_deeply($fm->{amnesty}, {class => 'Test2::EventFacet::Amnesty', list => 1, loaded => 1}, "Found 'amnesty' facet");
+    is_deeply($fm->{assert},  {class => 'Test2::EventFacet::Assert',  list => 0, loaded => 1}, "Found 'assert' facet");
+    is_deeply($fm->{control}, {class => 'Test2::EventFacet::Control', list => 0, loaded => 1}, "Found 'control' facet");
+    is_deeply($fm->{errors},  {class => 'Test2::EventFacet::Error',   list => 1, loaded => 1}, "Found 'errors' facet");
+    is_deeply($fm->{hubs},    {class => 'Test2::EventFacet::Hub',     list => 1, loaded => 1}, "Found 'hubs' facet");
+    is_deeply($fm->{info},    {class => 'Test2::EventFacet::Info',    list => 1, loaded => 1}, "Found 'info' facet");
+    is_deeply($fm->{meta},    {class => 'Test2::EventFacet::Meta',    list => 0, loaded => 1}, "Found 'meta' facet");
+    is_deeply($fm->{parent},  {class => 'Test2::EventFacet::Parent',  list => 0, loaded => 1}, "Found 'parent' facet");
+    is_deeply($fm->{plan},    {class => 'Test2::EventFacet::Plan',    list => 0, loaded => 1}, "Found 'plan' facet");
+    is_deeply($fm->{render},  {class => 'Test2::EventFacet::Render',  list => 1, loaded => 1}, "Found 'render' facet");
+    is_deeply($fm->{trace},   {class => 'Test2::EventFacet::Trace',   list => 0, loaded => 1}, "Found 'trace' facet");
 };
 
 tests init => sub {
+    # This is just here to make sure the later test is meaningful. If this
+    # starts to fail it probably means this test needs to be changed.
+    ok(!$INC{'Test2/API/InterceptResult.pm'}, "Did not load result class yes");
     my $one = $CLASS->new();
     ok($one->isa($CLASS), "Got an instance");
     is_deeply($one->facet_data, {}, "Got empty data");
+    is($one->result_class, 'Test2::API::InterceptResult', "Got default result class");
+    ok($INC{'Test2/API/InterceptResult.pm'}, "Loaded result class");
 
     like(
         exception { $CLASS->new(facet_data => {assert => [{}]}) },
@@ -54,12 +61,22 @@ tests init => sub {
 
 tests facet => sub {
     my $one = $CLASS->new(facet_data => {
+        other_single => {},
+        other_list   => [{}],
         assert => {pass => 1, details => 'xxx'},
         info => [
             {tag => 'DIAG', details => 'xxx'},
             {tag => 'NOTE', details => 'xxx'},
         ],
     });
+
+    ok(($one->facet('assert'))[0]->isa('Test2::EventFacet::Assert'),                "Bless the assert facet");
+    ok(($one->facet('other_list'))[0]->isa('Test2::EventFacet'),                    "Bless the other_list as generic");
+    ok(($one->facet('other_single'))[0]->isa('Test2::EventFacet'),                  "Bless the other_single as generic");
+    ok(($one->facet('other_list'))[0]->isa('Test2::API::InterceptResult::Facet'),   "Bless the other_list as generic");
+    ok(($one->facet('other_single'))[0]->isa('Test2::API::InterceptResult::Facet'), "Bless the other_single as generic");
+
+    is(($one->facet('other_list'))[0]->foo, undef, "Generic gives us autoload for field access");
 
     is_deeply(
         [$one->facet('xxx')],
@@ -188,14 +205,7 @@ tests summary => sub {
             trace_tool    => undef,
             trace_details => undef,
 
-            is_assert  => 0,
-            is_subtest => 0,
-            is_plan    => 0,
-            is_bailout => 0,
-
-            diag       => '',
-            note       => '',
-            other_info => '',
+            facets => {},
         },
         "Got summary for empty event"
     );
@@ -228,45 +238,29 @@ tests summary => sub {
             trace_tool    => 'ok',
             trace_details => 'a trace',
 
-            is_assert  => 1,
-            is_subtest => 1,
-            is_plan    => 1,
-            is_bailout => 1,
-
-            diag       => "diag 1\ndiag 2",
-            note       => "note 1\nnote 2",
-            other_info => "other 1\nother 2",
+            facets => {
+                assert   => 1,
+                control  => 1,
+                info     => 1,
+                parent   => 1,
+                plan     => 1,
+                trace    => 1,
+            },
         },
-        "Got summary for everything"
+        "Got summary for lots"
     );
 };
 
 tests assert => sub {
     my $one = $CLASS->new();
-    ok(!$one->is_assert, "Not an assert");
+    ok(!$one->has_assert, "Not an assert");
     is_deeply([$one->assert],         [], "empty list for assert()");
     is_deeply([$one->assert_brief],   [], "empty list for assert_brief()");
-    is_deeply([$one->assert_summary], [], "empty list for assert_summary()");
 
     my $two = $CLASS->new(facet_data => {assert => {pass => 1, details => 'foo'}});
-    ok($two->is_assert, "Is an assert");
+    ok($two->has_assert, "Is an assert");
     is_deeply([$two->assert], [{pass => 1, details => 'foo'}], "got assert item");
     is($two->assert_brief, "PASS", "got PASS for assert_brief()");
-    is_deeply(
-        $two->assert_summary, {
-            %{$two->summary},
-
-            pass  => 1,
-            debug => 1,
-            name  => 'foo',
-
-            amnesty       => 0,
-            todo          => undef,
-            skip          => undef,
-            other_amnesty => undef,
-        },
-        "Got summary"
-    );
 
     my $three = $CLASS->new(facet_data => {
         assert => {pass => 0, details => 'foo'},
@@ -279,24 +273,9 @@ tests assert => sub {
             {tag => 'OOPS', details => 'oops 2'},
         ],
     });
-    ok($three->is_assert, "Is an assert");
+    ok($three->has_assert, "Is an assert");
     is_deeply([$three->assert], [{pass => 0, details => 'foo'}], "got assert item");
     is($three->assert_brief, "FAIL with amnesty", "Fail with amnesty");
-    is_deeply(
-        $three->assert_summary, {
-            %{$three->summary},
-
-            pass  => 0,
-            debug => 1,
-            name  => 'foo',
-
-            amnesty       => 1,
-            todo          => "todo 1\ntodo 2",
-            skip          => "skip 1\nskip 2",
-            other_amnesty => "oops 1\noops 2",
-        },
-        "Got summary"
-    );
 
     my $four = $CLASS->new(facet_data => {
         assert => {pass => 0, details => 'foo'},
@@ -306,155 +285,591 @@ tests assert => sub {
             {tag => 'OOPS'},
         ],
     });
-    ok($four->is_assert, "Is an assert");
+    ok($four->has_assert, "Is an assert");
     is_deeply([$four->assert], [{pass => 0, details => 'foo'}], "got assert item");
     is($four->assert_brief, "FAIL with amnesty", "Fail with amnesty");
+};
+
+tests subtest => sub {
+    my $one = $CLASS->new();
+    ok(!$one->has_subtest, "Not a subtest");
+    is_deeply([$one->subtest],         [], "subtest() returns empty list");
+    is_deeply([$one->subtest_result],  [], "subtest_result returns an empty list");
+
+    my $two = $CLASS->new(
+        facet_data => {
+            parent => {
+                hid      => '1234',
+                children => [],
+                state    => {
+                    bailed_out   => undef,
+                    count        => 5,
+                    failed       => 1,
+                    follows_plan => 1,
+                    is_passing   => 0,
+                    nested       => 1,
+                    skip_reason  => undef,
+                },
+            },
+        }
+    );
+
+    ok($two->has_subtest, "has a subtest");
+    is_deeply([$two->subtest], [$two->facet_data->{parent}], "subtest() returns 1 item list");
+
+    my $res = $two->subtest_result;
+    ok($res->isa('Test2::API::InterceptResult'), "Got a result instance");
+};
+
+tests flatten => sub {
+    my $one = $CLASS->new();
     is_deeply(
-        $four->assert_summary, {
-            %{$four->summary},
-
-            pass  => 0,
-            debug => 1,
-            name  => 'foo',
-
-            amnesty       => 1,
-            todo          => "TODO",
-            skip          => "SKIP",
-            other_amnesty => "OOPS",
+        $one->flatten,
+        {
+            causes_failure => 0,
+            trace_file     => undef,
+            trace_line     => undef
         },
-        "Got summary"
+        "Empty event flattens to almost nothing"
+    );
+
+    my $two = $CLASS->new(
+        facet_data => {
+            hubs    => [{details => "DO NOT SHOW"}],
+            meta    => {details => "DO NOT SHOW"},
+            control => {details => "A control"},
+            assert  => {pass => 1, details => "Test Name"},
+
+            trace => {
+                frame   => ['Foo::Bar', 'Foo/Bar.pm', 42, 'Test2::Tools::Tiny::ok'],
+                details => "Trace Details",
+            },
+
+            parent => {
+                details => "A Subtest",
+                state   => {
+                    bailed_out   => undef,
+                    count        => 1,
+                    failed       => 1,
+                    follows_plan => 1,
+                    is_passing   => 0,
+                    nested       => 1,
+                    skip_reason  => undef,
+                },
+                children => [
+                    $CLASS->new(facet_data => {assert => {pass  => 1, details => 'nested assertion'}}),
+                    $CLASS->new(facet_data => {plan   => {count => 1}}),
+                ],
+            },
+
+            errors => [
+                {tag => 'error', fail => 0, details => "not a fatal error"},
+                {tag => 'error', fail => 1, details => "a fatal error"},
+            ],
+
+            info => [
+                {tag => 'DIAG', details => 'diag 1'},
+                {tag => 'DIAG', details => 'diag 2'},
+                {tag => 'NOTE', details => 'note 1'},
+                {tag => 'NOTE', details => 'note 2'},
+                {tag => 'INFO', details => 'info 1'},
+                {tag => 'INFO', details => 'info 2'},
+            ],
+            amnesty => [
+                {tag => 'TODO', details => 'todo 1'},
+                {tag => 'TODO', details => 'todo 2'},
+                {tag => 'SKIP', details => 'skip 1'},
+                {tag => 'SKIP', details => 'skip 2'},
+                {tag => 'OKOK', details => 'okok 1'},
+                {tag => 'OKOK', details => 'okok 2'},
+            ],
+
+            other_single => {details => 'other single'},
+            other_multi  => [{details => 'other multi'}],
+        },
+    );
+
+    is_deeply(
+        $two->flatten(include_subevents => 1),
+        {
+            # Summaries
+            causes_failure => 0,
+            trace_details  => 'Trace Details',
+            trace_file     => 'Foo/Bar.pm',
+            trace_line     => 42,
+
+            # Info
+            DIAG => ['diag 1', 'diag 2'],
+            INFO => ['info 1', 'info 2'],
+            NOTE => ['note 1', 'note 2'],
+
+            # Amnesty
+            OKOK => ['okok 1', 'okok 2'],
+            SKIP => ['skip 1', 'skip 2'],
+            TODO => ['todo 1', 'todo 2'],
+
+            # Errors
+            error => ['not a fatal error', 'FATAL: a fatal error'],
+
+            # Assert
+            name => 'Test Name',
+            pass => 1,
+
+            # Control
+            control => 'A control',
+
+            # Other
+            other_multi  => ['other multi'],
+            other_single => 'other single',
+
+            # Subtest related
+            subtest => {
+                follows_plan => 1,
+                is_passing   => 0,
+                count        => 1,
+                failed       => 1,
+                nested       => 1
+            },
+
+            subevents => [
+                {
+                    name           => 'nested assertion',
+                    trace_line     => undef,
+                    causes_failure => 0,
+                    pass           => 1,
+                    trace_file     => undef,
+                },
+                {
+                    trace_file     => undef,
+                    plan           => '1',
+                    trace_line     => undef,
+                    causes_failure => 0,
+                }
+            ],
+        },
+        "Very full flattening, with subevents"
+    );
+
+    is_deeply(
+        $two->flatten(),
+        {
+            # Summaries
+            causes_failure => 0,
+            trace_details  => 'Trace Details',
+            trace_file     => 'Foo/Bar.pm',
+            trace_line     => 42,
+
+            # Info
+            DIAG => ['diag 1', 'diag 2'],
+            INFO => ['info 1', 'info 2'],
+            NOTE => ['note 1', 'note 2'],
+
+            # Amnesty
+            OKOK => ['okok 1', 'okok 2'],
+            SKIP => ['skip 1', 'skip 2'],
+            TODO => ['todo 1', 'todo 2'],
+
+            # Errors
+            error => ['not a fatal error', 'FATAL: a fatal error'],
+
+            # Assert
+            name => 'Test Name',
+            pass => 1,
+
+            # Control
+            control => 'A control',
+
+            # Other
+            other_multi  => ['other multi'],
+            other_single => 'other single',
+
+            # Subtest related
+            subtest => {
+                follows_plan => 1,
+                is_passing   => 0,
+                count        => 1,
+                failed       => 1,
+                nested       => 1
+            },
+        },
+        "Very full flattening, no subevents"
+    );
+
+    my $three = $CLASS->new(
+        facet_data => {
+            trace => {
+                frame => ['Foo::Bar', 'Foo/Bar.pm', 42, 'Test2::Tools::Tiny::ok'],
+            },
+
+            control => {halt => 1, details => "need to bail dude!"},
+
+            amnesty => [{tag => 'TODO', details => 'todo 1'}],
+        },
+    );
+
+    is_deeply(
+        $three->flatten(include_subevents => 1),
+        {
+            # Summaries
+            causes_failure => 0,
+
+            trace_file => 'Foo/Bar.pm',
+            trace_line => 42,
+
+            bailed_out => "need to bail dude!",
+
+            # Amnesty does not show without an assert or parent
+        },
+        "Bail-out test"
+    );
+
+    my $four = $CLASS->new(
+        facet_data => {
+            trace   => {frame => ['Foo::Bar', 'Foo/Bar.pm', 42, 'Test2::Tools::Tiny::ok']},
+            errors  => [{tag => 'ERROR', details => 'an error', fail => 1}],
+            amnesty => [{tag => 'TODO', details => 'todo 1'}],
+        },
+    );
+
+    is_deeply(
+        $four->flatten(),
+        {
+            # Summaries
+            causes_failure => 0,
+
+            trace_file => 'Foo/Bar.pm',
+            trace_line => 42,
+
+            TODO  => ['todo 1'],
+            ERROR => ['FATAL: an error'],
+        },
+        "Include amnesty when there is a fatal error"
+    );
+};
+
+tests bailout => sub {
+    my $one = $CLASS->new();
+    ok(!$one->has_bailout, "No bailout");
+    is_deeply([$one->bailout],        [], "no bailout");
+    is_deeply([$one->bailout_brief],  [], "no bailout");
+    is_deeply([$one->bailout_reason], [], "no bailout");
+
+    my $two = $CLASS->new(
+        facet_data => {
+            trace => {
+                frame => ['Foo::Bar', 'Foo/Bar.pm', 42, 'Test2::Tools::Tiny::ok'],
+            },
+
+            control => {halt => 1, details => "need to bail dude!"},
+        },
+    );
+
+    ok($two->has_bailout, "did bail out");
+    is_deeply([$two->bailout],        [{halt => 1, details => "need to bail dude!"}], "Got the bailout");
+    is_deeply([$two->bailout_brief],  ["BAILED OUT: need to bail dude!"],             "Got the bailout brief");
+    is_deeply([$two->bailout_reason], ["need to bail dude!"],                         "Got the bailout reason");
+};
+
+tests plan => sub {
+    my $one = $CLASS->new;
+    ok(!$one->has_plan, "No plan");
+    is_deeply([$one->plan], [], "No plan");
+    is_deeply([$one->plan_brief], [], "No plan");
+
+    my $two = $CLASS->new(facet_data => {plan => { count => 42 }});
+    ok($two->has_plan, "Got a plan");
+    is_deeply([$two->plan], [{ count => 42 }], "Got the plan facet");
+    is_deeply([$two->plan_brief], ["PLAN 42"], "Got the brief");
+
+    $two->{facet_data}->{plan}->{details} = "foo bar baz";
+    is_deeply([$two->plan_brief], ["PLAN 42: foo bar baz"], "Got the brief with details");
+
+    $two->{facet_data}->{plan}->{count} = 0;
+    is_deeply([$two->plan_brief], ["SKIP ALL: foo bar baz"], "Got the skip form no count with details");
+
+    $two->{facet_data}->{plan}->{count} = 1;
+    $two->{facet_data}->{plan}->{skip} = 1;
+    is_deeply([$two->plan_brief], ["SKIP ALL: foo bar baz"], "Got the skip with details");
+
+    $two->{facet_data}->{plan}->{skip} = 0;
+    $two->{facet_data}->{plan}->{none} = 1;
+    is_deeply([$two->plan_brief], ["NO PLAN: foo bar baz"], "Got the 'NO PLAN' with details");
+};
+
+tests amnesty => sub {
+    my $one = $CLASS->new();
+
+    ok(!$one->has_amnesty,       "No amnesty");
+    ok(!$one->has_todos,         "No todos");
+    ok(!$one->has_skips,         "No skips");
+    ok(!$one->has_other_amnesty, "No other amnesty");
+
+    is_deeply([$one->amnesty],       [], "amnesty list is empty");
+    is_deeply([$one->todos],         [], "todos list is empty");
+    is_deeply([$one->skips],         [], "skips list is empty");
+    is_deeply([$one->other_amnesty], [], "other_amnesty list is empty");
+
+    is_deeply([$one->amnesty_reasons],       [], "amnesty_reasons list is empty");
+    is_deeply([$one->todo_reasons],          [], "todo_reasons list is empty");
+    is_deeply([$one->skip_reasons],          [], "skip_reasons list is empty");
+    is_deeply([$one->other_amnesty_reasons], [], "other_amnesty_reasons list is empty");
+
+    my $two = $CLASS->new(
+        facet_data => {
+            amnesty => [
+                {tag => 'TODO', details => 'todo 1'},
+                {tag => 'TODO', details => 'todo 2'},
+                {tag => 'SKIP', details => 'skip 1'},
+                {tag => 'SKIP', details => 'skip 2'},
+                {tag => 'OKOK', details => 'okok 1'},
+                {tag => 'OKOK', details => 'okok 2'},
+            ],
+        },
+    );
+
+    ok($two->has_amnesty,       "amnesty");
+    ok($two->has_todos,         "todos");
+    ok($two->has_skips,         "skips");
+    ok($two->has_other_amnesty, "other amnesty");
+
+    is_deeply(
+        [$two->amnesty],
+        [
+            {tag => 'TODO', details => 'todo 1'},
+            {tag => 'TODO', details => 'todo 2'},
+            {tag => 'SKIP', details => 'skip 1'},
+            {tag => 'SKIP', details => 'skip 2'},
+            {tag => 'OKOK', details => 'okok 1'},
+            {tag => 'OKOK', details => 'okok 2'},
+        ],
+        "amnesty list",
+    );
+    is_deeply(
+        [$two->todos],
+        [
+            {tag => 'TODO', details => 'todo 1'},
+            {tag => 'TODO', details => 'todo 2'},
+        ],
+        "todos list",
+    );
+    is_deeply(
+        [$two->skips],
+        [
+            {tag => 'SKIP', details => 'skip 1'},
+            {tag => 'SKIP', details => 'skip 2'},
+        ],
+        "skips list",
+    );
+    is_deeply(
+        [$two->other_amnesty],
+        [
+            {tag => 'OKOK', details => 'okok 1'},
+            {tag => 'OKOK', details => 'okok 2'},
+        ],
+        "other_amnesty list",
+    );
+
+    is_deeply(
+        [$two->amnesty_reasons],
+        [
+            'todo 1',
+            'todo 2',
+            'skip 1',
+            'skip 2',
+            'okok 1',
+            'okok 2',
+        ],
+        "amnesty_reasons list is empty"
+    );
+    is_deeply(
+        [$two->todo_reasons],
+        [
+            'todo 1',
+            'todo 2',
+        ],
+        "todo_reasons list is empty"
+    );
+    is_deeply(
+        [$two->skip_reasons],
+        [
+            'skip 1',
+            'skip 2',
+        ],
+        "skip_reasons list is empty"
+    );
+    is_deeply(
+        [$two->other_amnesty_reasons],
+        [
+            'okok 1',
+            'okok 2',
+        ],
+        "other_amnesty_reasons list is empty"
+    );
+};
+
+tests errors => sub {
+    my $one = $CLASS->new();
+    ok(!$one->has_errors, "No errors");
+    is_deeply([$one->errors], [], "No errors");
+    is_deeply([$one->error_messages], [], "No errors");
+    is_deeply([$one->error_brief], [], "No errors");
+
+    my $two = $CLASS->new(facet_data => {
+        errors => [{tag => 'error', details => 'a non fatal error'}],
+    });
+    ok($two->has_errors, "Got errors");
+    is_deeply([$two->errors], [{tag => 'error', details => 'a non fatal error'}], "Got the error");
+    is_deeply([$two->error_messages], ['a non fatal error'], "Got the message");
+    is_deeply([$two->error_brief], ['ERROR: a non fatal error'], "Got the brief");
+
+    my $three = $CLASS->new(facet_data => {
+        errors => [{tag => 'error', details => "a non fatal\nerror"}],
+    });
+    ok($three->has_errors, "Got errors");
+    is_deeply([$three->errors], [{tag => 'error', details => "a non fatal\nerror"}], "Got the error");
+    is_deeply([$three->error_messages], ["a non fatal\nerror"], "Got the message");
+    is_deeply([$three->error_brief], ["ERROR: a non fatal [...]"], "Got the brief");
+
+    my $four = $CLASS->new(facet_data => {
+        errors => [
+            {tag => 'error', details => "a fatal error", fail => 1},
+            {tag => 'error', details => "a non fatal error", fail => 0},
+        ],
+    });
+
+    ok($four->has_errors, "Got errors");
+
+    is_deeply(
+        [$four->errors],
+        [
+            {tag => 'error', details => "a fatal error", fail => 1},
+            {tag => 'error', details => "a non fatal error", fail => 0},
+        ],
+        "Got the error"
+    );
+
+    is_deeply(
+        [$four->error_messages],
+        [
+            "a fatal error",
+            "a non fatal error",
+        ],
+        "Got the message"
+    );
+
+    is_deeply([$four->error_brief], ['ERRORS: a fatal error [...]'], "Got the brief");
+
+};
+
+tests info => sub {
+    my $one = $CLASS->new();
+
+    ok(!$one->has_info,       "No info");
+    ok(!$one->has_diags,         "No diags");
+    ok(!$one->has_notes,         "No notes");
+    ok(!$one->has_other_info, "No other info");
+
+    is_deeply([$one->info],       [], "info list is empty");
+    is_deeply([$one->diags],         [], "diags list is empty");
+    is_deeply([$one->notes],         [], "notes list is empty");
+    is_deeply([$one->other_info], [], "other_info list is empty");
+
+    is_deeply([$one->info_messages],       [], "info_messages list is empty");
+    is_deeply([$one->diag_messages],          [], "diag_messages list is empty");
+    is_deeply([$one->note_messages],          [], "note_messages list is empty");
+    is_deeply([$one->other_info_messages], [], "other_info_messages list is empty");
+
+    my $two = $CLASS->new(
+        facet_data => {
+            info => [
+                {tag => 'DIAG', details => 'diag 1'},
+                {tag => 'DIAG', details => 'diag 2'},
+                {tag => 'NOTE', details => 'note 1'},
+                {tag => 'NOTE', details => 'note 2'},
+                {tag => 'INFO', details => 'info 1'},
+                {tag => 'INFO', details => 'info 2'},
+            ],
+        },
+    );
+
+    ok($two->has_info,       "info");
+    ok($two->has_diags,         "diags");
+    ok($two->has_notes,         "notes");
+    ok($two->has_other_info, "other info");
+
+    is_deeply(
+        [$two->info],
+        [
+            {tag => 'DIAG', details => 'diag 1'},
+            {tag => 'DIAG', details => 'diag 2'},
+            {tag => 'NOTE', details => 'note 1'},
+            {tag => 'NOTE', details => 'note 2'},
+            {tag => 'INFO', details => 'info 1'},
+            {tag => 'INFO', details => 'info 2'},
+        ],
+        "info list",
+    );
+    is_deeply(
+        [$two->diags],
+        [
+            {tag => 'DIAG', details => 'diag 1'},
+            {tag => 'DIAG', details => 'diag 2'},
+        ],
+        "diags list",
+    );
+    is_deeply(
+        [$two->notes],
+        [
+            {tag => 'NOTE', details => 'note 1'},
+            {tag => 'NOTE', details => 'note 2'},
+        ],
+        "notes list",
+    );
+    is_deeply(
+        [$two->other_info],
+        [
+            {tag => 'INFO', details => 'info 1'},
+            {tag => 'INFO', details => 'info 2'},
+        ],
+        "other_info list",
+    );
+
+    is_deeply(
+        [$two->info_messages],
+        [
+            'diag 1',
+            'diag 2',
+            'note 1',
+            'note 2',
+            'info 1',
+            'info 2',
+        ],
+        "info_messages list is empty"
+    );
+    is_deeply(
+        [$two->diag_messages],
+        [
+            'diag 1',
+            'diag 2',
+        ],
+        "diag_messages list is empty"
+    );
+    is_deeply(
+        [$two->note_messages],
+        [
+            'note 1',
+            'note 2',
+        ],
+        "note_messages list is empty"
+    );
+    is_deeply(
+        [$two->other_info_messages],
+        [
+            'info 1',
+            'info 2',
+        ],
+        "other_info_messages list is empty"
     );
 };
 
 done_testing;
-
-__END__
-
-sub is_subtest { $_[0]->{+FACET_DATA}->{parent} ? 1 : 0 }
-sub subtest    { $_[0]->facet('parent') }
-
-sub subtest_summary {
-    my $self = shift;
-
-    my $pt = $self->{+FACET_DATA}->{parent} or return;
-
-    return {
-        %{ $self->assert_summary || $self->summary },
-        %{$pt->{state}},
-    };
-}
-
-sub subtest_result {
-    my $self = shift;
-
-    my $subtest = $_[0]->{+FACET_DATA}->{parent} or return;
-
-    require Test2::API::InterceptResult;
-    return Test2::API::InterceptResult->new(subtest_event => $self);
-}
-
-sub is_bailout { $_[0]->bail_out ? 1 : 0 }
-
-sub bail_out {
-    my $self = shift;
-    my $control = $self->{+FACET_DATA}->{control} or return;
-    return $control if $control->{halt};
-    return;
-}
-
-sub bailout_brief {
-    my $self = shift;
-    my $bo = $self->bail_out or return;
-
-    my $reason = $bo->{details} or return "BAILED OUT";
-    return "BAILED OUT: $reason";
-}
-
-sub bail_out_reason {
-    my $self = shift;
-    my $bo = $self->bail_out or return undef;
-    return $bo->{details} || '';
-}
-
-sub is_plan { $_[0]->{+FACET_DATA}->{plan} ? 1 : 0 }
-sub plan { $_[0]->facet('plan') }
-
-sub plan_brief {
-    my $self = shift;
-
-    my $plan = $self->{+FACET_DATA}->{plan} or return;
-
-    my $base = $self->_plan_brief($plan);
-
-    my $reason = $plan->{details} or return $base;
-    return "$base: $reason";
-}
-
-sub _plan_brief {
-    my $self = shift;
-    my ($plan) = @_;
-
-    return 'NO PLAN' if $plan->{none};
-    return "SKIP ALL" if $plan->{skip} || !$plan->{count};
-    return "PLAN $plan->{count}";
-}
-
-sub has_amnesty     { $_[0]->{+FACET_DATA}->{amnesty} ? 1 : 0 }
-sub amnesties       { $_[0]->facet('amnesty') }
-sub amnesty_reasons { map { $_->{details} } $_[0]->amnesties }
-
-sub has_todos    { goto &is_todo }
-sub is_todo      { &first(sub { uc($_->{tag}) eq 'TODO' }, $_[0]->amnesties) ? 1 : 0 }
-sub todos        {       grep { uc($_->{tag}) eq 'TODO' }  $_[0]->amnesties          }
-sub todo_reasons {       map  { $_->{details} || 'TODO' }  $_[0]->todos              }
-
-sub has_skips    { goto &is_skip }
-sub is_skip      { &first(sub { uc($_->{tag}) eq 'SKIP' }, $_[0]->amnesties) ? 1 : 0 }
-sub skips        {       grep { uc($_->{tag}) eq 'SKIP' }  $_[0]->amnesties          }
-sub skip_reasons {       map  { $_->{details} || 'SKIP' }  $_[0]->skips              }
-
-my %TODO_OR_SKIP = (SKIP => 1, TODO => 1);
-sub has_other_amnesties   { &first( sub { !$TODO_OR_SKIP{uc($_->{tag})}            }, $_[0]->amnesties) ? 1 : 0 }
-sub other_amnesties       {        grep { !$TODO_OR_SKIP{uc($_->{tag})}            }  $_[0]->amnesties          }
-sub other_amnesty_reasons {        map  { $_->{details} ||  $_->{tag} || 'AMNESTY' }  $_[0]->other_amnesties    }
-
-sub has_errors     { $_[0]->{+FACET_DATA}->{errors} ? 1 : 0 }
-sub errors         { $_[0]->facet('errors') }
-sub error_messages { map { $_->{details} || $_->{tag} || 'ERROR' } $_[0]->errors }
-
-sub error_brief {
-    my $self = shift;
-
-    my $errors = $self->{+FACET_DATA}->{errors} or return;
-
-    my $base = @$errors > 1 ? "ERRORS" : "ERROR";
-
-    return $base unless @$errors;
-
-    my ($msg, @extra) = split /[\n\r]+/, $errors->[0]->{details};
-
-    my $out = "$base: $msg";
-
-    $out .= " [...]" if @extra || @$errors > 1;
-
-    return $out;
-}
-
-sub has_info      { $_[0]->{+FACET_DATA}->{info} ? 1 : 0 }
-sub info          { $_[0]->facet('info') }
-sub info_messages { map { $_->{details} } $_[0]->info }
-
-sub has_diags { &first(sub { uc($_->{tag}) eq 'DIAG' }, $_[0]->info) ? 1 : 0 }
-sub diags         {   grep { uc($_->{tag}) eq 'DIAG' }  $_[0]->info          }
-sub diag_messages {   map  { $_->{details} || 'DIAG' }  $_[0]->diags         }
-
-sub has_notes { &first(sub { uc($_->{tag}) eq 'NOTE' }, $_[0]->info) ? 1 : 0 }
-sub notes         {   grep { uc($_->{tag}) eq 'NOTE' }  $_[0]->info          }
-sub note_messages {   map  { $_->{details} || 'NOTE' }  $_[0]->notes         }
-
-my %NOTE_OR_DIAG = (NOTE => 1, DIAG => 1);
-sub has_other_info { &first(sub { !$NOTE_OR_DIAG{uc($_->{tag})}         }, $_[0]->info) ? 1 : 0 }
-sub other_info          {  grep { !$NOTE_OR_DIAG{uc($_->{tag})}         }  $_[0]->info          }
-sub other_info_messages {  map  { $_->{details} ||  $_->{tag} || 'INFO' }  $_[0]->other_info    }
-
-1;

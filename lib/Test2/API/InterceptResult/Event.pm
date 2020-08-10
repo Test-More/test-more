@@ -2,12 +2,18 @@ package Test2::API::InterceptResult::Event;
 use strict;
 use warnings;
 
-use List::Util qw/first/;
-use Scalar::Util qw/reftype/;
-use Carp qw/confess/;
+use List::Util   qw/first uniq/;
+use Test2::Util  qw/pkg_to_file/;
+use Scalar::Util qw/reftype blessed/;
+
+use Storable qw/dclone/;
+use Carp     qw/confess/;
+
+use Test2::API::InterceptResult::Facet;
 
 use Test2::Util::HashBase qw{
     <facet_data
+    <result_class
 };
 
 my %FACETS;
@@ -32,14 +38,20 @@ BEGIN {
         };
         next unless $key && defined($list);
 
-        $FACETS{$key} = {list => $list, class => $facet_type};
+        $FACETS{$key} = {list => $list, class => $facet_type, loaded => 1};
     }
+
+    $FACETS{__GENERIC__} = {class => 'Test2::API::InterceptResult::Facet', loaded => 1};
 }
 
 sub facet_map { \%FACETS }
 
 sub init {
     my $self = shift;
+
+    my $rc = $self->{+RESULT_CLASS} ||= 'Test2::API::InterceptResult';
+    my $rc_file = pkg_to_file($rc);
+    require($rc_file) unless $INC{$rc_file};
 
     my $fd = $self->{+FACET_DATA} ||= {};
 
@@ -75,10 +87,20 @@ sub facet {
     my $data = $self->{+FACET_DATA}->{$name};
 
     my $type = reftype($data) or confess "Facet '$name' has a value that is not a reference, this should not happen";
-    return ($data)  if $type eq 'HASH';
-    return (@$data) if $type eq 'ARRAY';
 
-    confess "Facet '$name' has a value that is not an arrayref or hashref: '$type', this should not happen";
+    my @out;
+    @out = ($data)  if $type eq 'HASH';
+    @out = (@$data) if $type eq 'ARRAY';
+
+    my $spec  = $FACETS{$name} || $FACETS{__GENERIC__};
+    my $class = $spec->{class};
+    unless ($spec->{loaded}) {
+        my $file = pkg_to_file($class);
+        require $file unless $INC{$file};
+        $spec->{loaded} = 1;
+    }
+
+    return map { $class->new(%{dclone($_)}) } @out;
 }
 
 {
@@ -128,6 +150,8 @@ sub trace_file    { my $f = $_[0]->frame or return undef; $f->[1]       || undef
 sub trace_line    { my $f = $_[0]->frame or return undef; $f->[2]       || undef }
 sub trace_subname { my $f = $_[0]->frame or return undef; $f->[3]       || undef }
 
+sub trace_signature { my $t = $_[0]->trace or return undef; Test2::EventFacet::Trace::signature($t) || undef }
+
 sub brief {
     my $self = shift;
 
@@ -146,6 +170,82 @@ sub brief {
     return;
 }
 
+sub flatten {
+    my $self = shift;
+    my %params = @_;
+
+    my $todo = {%{$self->{+FACET_DATA}}};
+    delete $todo->{hubs};
+    delete $todo->{meta};
+    delete $todo->{trace};
+
+    my $out = $self->summary;
+    delete $out->{brief};
+    delete $out->{facets};
+    delete $out->{trace_tool};
+    delete $out->{trace_details} unless defined($out->{trace_details});
+
+    for my $tagged (grep { $FACETS{$_}->{list} && $FACETS{$_}->{class}->can('tag') } keys %FACETS) {
+        my $set = delete $todo->{$tagged} or next;
+
+        my $fd = $self->{+FACET_DATA};
+        my $has_assert = $self->has_assert;
+        my $has_parent = $self->has_subtest;
+        my $has_fatal_error = $self->has_errors && grep { $_->{fail} } $self->errors;
+
+        next if $tagged eq 'amnesty' && !($has_assert || $has_parent || $has_fatal_error);
+
+        for my $item (@$set) {
+            push @{$out->{$item->{tag}}} => $item->{fail} ? "FATAL: $item->{details}" : $item->{details};
+        }
+    }
+
+    if (my $assert = delete $todo->{assert}) {
+        $out->{pass} = $assert->{pass};
+        $out->{name} = $assert->{details};
+    }
+
+    if (my $parent = delete $todo->{parent}) {
+        $out->{subtest} = {%{$parent->{state}}};
+        delete $out->{subtest}->{bailed_out}  unless defined $out->{subtest}->{bailed_out};
+        delete $out->{subtest}->{skip_reason} unless defined $out->{subtest}->{skip_reason};
+
+        $out->{subevents} = [ map { $_->flatten(%params) } @{$parent->{children} || []} ]
+            if $params{include_subevents};
+    }
+
+    if (my $control = delete $todo->{control}) {
+        if ($control->{halt}) {
+            $out->{bailed_out} = $control->{details} || 1;
+        }
+        elsif(defined $control->{details}) {
+            $out->{control} = $control->{details};
+        }
+    }
+
+    if (my $plan = delete $todo->{plan}) {
+        $out->{plan} = $self->plan_brief;
+        $out->{plan} =~ s/^PLAN\s*//;
+    }
+
+    for my $other (keys %$todo) {
+        my $data = $todo->{$other} or next;
+
+        if (reftype($data) eq 'ARRAY') {
+            if (!$out->{$other} || reftype($out->{$other}) eq 'ARRAY') {
+                for my $item (@$data) {
+                    push @{$out->{$other}} => $item->{details} if defined $item->{details};
+                }
+            }
+        }
+        else {
+            $out->{$other} = $data->{details} if defined($data->{details}) && !defined($out->{$other});
+        }
+    }
+
+    return $out;
+}
+
 sub summary {
     my $self = shift;
 
@@ -159,19 +259,12 @@ sub summary {
         trace_tool    => $self->trace_subname,
         trace_details => $self->trace_details,
 
-        is_assert  => $self->is_assert,
-        is_subtest => $self->is_subtest,
-        is_plan    => $self->is_plan,
-        is_bailout => $self->is_bailout,
-
-        diag       => join("\n" => $self->diag_messages),
-        note       => join("\n" => $self->note_messages),
-        other_info => join("\n" => $self->other_info_messages),
+        facets => { map {($_ => 1)} keys(%{$self->{+FACET_DATA}})}
     };
 }
 
-sub is_assert { $_[0]->{+FACET_DATA}->{assert} ? 1 : 0 }
-sub assert    { $_[0]->facet('assert') }
+sub has_assert { $_[0]->{+FACET_DATA}->{assert} ? 1 : 0 }
+sub assert     { $_[0]->facet('assert') }
 
 sub assert_brief {
     my $self = shift;
@@ -185,53 +278,20 @@ sub assert_brief {
     return $out;
 }
 
-sub assert_summary {
-    my $self = shift;
-
-    my $as = $self->{+FACET_DATA}->{assert} or return;
-
-    return {
-        %{$self->summary},
-
-        pass  => $as->{pass}     ? 1 : 0,
-        debug => $as->{no_debug} ? 0 : 1,
-
-        name => defined($as->{details}) ? $as->{details} : '',
-
-        amnesty => $self->is_todo || $self->is_skip || $self->has_amnesty || 0,
-
-        todo          => $self->is_todo     ? join("\n" => $self->todo_reasons)          || "[yes, but no reasons given]" : undef,
-        skip          => $self->is_skip     ? join("\n" => $self->skip_reasons)          || "[yes, but no reasons given]" : undef,
-        other_amnesty => $self->has_amnesty ? join("\n" => $self->other_amnesty_reasons) || "[yes, but no reasons given]" : undef,
-    };
-}
-
-sub is_subtest { $_[0]->{+FACET_DATA}->{parent} ? 1 : 0 }
-sub subtest    { $_[0]->facet('parent') }
-
-sub subtest_summary {
-    my $self = shift;
-
-    my $pt = $self->{+FACET_DATA}->{parent} or return;
-
-    return {
-        %{ $self->assert_summary || $self->summary },
-        %{$pt->{state}},
-    };
-}
+sub has_subtest { $_[0]->{+FACET_DATA}->{parent} ? 1 : 0 }
+sub subtest     { $_[0]->facet('parent') }
 
 sub subtest_result {
     my $self = shift;
 
-    my $subtest = $_[0]->{+FACET_DATA}->{parent} or return;
+    return unless $self->{+FACET_DATA}->{parent};
 
-    require Test2::API::InterceptResult;
-    return Test2::API::InterceptResult->new(subtest_event => $self);
+    return $self->{+RESULT_CLASS}->new(subtest_event => $self);
 }
 
-sub is_bailout { $_[0]->bail_out ? 1 : 0 }
+sub has_bailout { $_[0]->bailout ? 1 : 0 }
 
-sub bail_out {
+sub bailout {
     my $self = shift;
     my $control = $self->{+FACET_DATA}->{control} or return;
     return $control if $control->{halt};
@@ -240,20 +300,20 @@ sub bail_out {
 
 sub bailout_brief {
     my $self = shift;
-    my $bo = $self->bail_out or return;
+    my $bo = $self->bailout or return;
 
     my $reason = $bo->{details} or return "BAILED OUT";
     return "BAILED OUT: $reason";
 }
 
-sub bail_out_reason {
+sub bailout_reason {
     my $self = shift;
-    my $bo = $self->bail_out or return undef;
+    my $bo = $self->bailout or return;
     return $bo->{details} || '';
 }
 
-sub is_plan { $_[0]->{+FACET_DATA}->{plan} ? 1 : 0 }
-sub plan { $_[0]->facet('plan') }
+sub has_plan { $_[0]->{+FACET_DATA}->{plan} ? 1 : 0 }
+sub plan     { $_[0]->facet('plan') }
 
 sub plan_brief {
     my $self = shift;
@@ -276,23 +336,21 @@ sub _plan_brief {
 }
 
 sub has_amnesty     { $_[0]->{+FACET_DATA}->{amnesty} ? 1 : 0 }
-sub amnesties       { $_[0]->facet('amnesty') }
-sub amnesty_reasons { map { $_->{details} } $_[0]->amnesties }
+sub amnesty         { $_[0]->facet('amnesty') }
+sub amnesty_reasons { map { $_->{details} } $_[0]->amnesty }
 
-sub has_todos    { goto &is_todo }
-sub is_todo      { &first(sub { uc($_->{tag}) eq 'TODO' }, $_[0]->amnesties) ? 1 : 0 }
-sub todos        {       grep { uc($_->{tag}) eq 'TODO' }  $_[0]->amnesties          }
-sub todo_reasons {       map  { $_->{details} || 'TODO' }  $_[0]->todos              }
+sub has_todos    { &first(sub { uc($_->{tag}) eq 'TODO' }, $_[0]->amnesty) ? 1 : 0 }
+sub todos        {       grep { uc($_->{tag}) eq 'TODO' }  $_[0]->amnesty          }
+sub todo_reasons {       map  { $_->{details} || 'TODO' }  $_[0]->todos            }
 
-sub has_skips    { goto &is_skip }
-sub is_skip      { &first(sub { uc($_->{tag}) eq 'SKIP' }, $_[0]->amnesties) ? 1 : 0 }
-sub skips        {       grep { uc($_->{tag}) eq 'SKIP' }  $_[0]->amnesties          }
-sub skip_reasons {       map  { $_->{details} || 'SKIP' }  $_[0]->skips              }
+sub has_skips    { &first(sub { uc($_->{tag}) eq 'SKIP' }, $_[0]->amnesty) ? 1 : 0 }
+sub skips        {       grep { uc($_->{tag}) eq 'SKIP' }  $_[0]->amnesty          }
+sub skip_reasons {       map  { $_->{details} || 'SKIP' }  $_[0]->skips            }
 
 my %TODO_OR_SKIP = (SKIP => 1, TODO => 1);
-sub has_other_amnesties   { &first( sub { !$TODO_OR_SKIP{uc($_->{tag})}            }, $_[0]->amnesties) ? 1 : 0 }
-sub other_amnesties       {        grep { !$TODO_OR_SKIP{uc($_->{tag})}            }  $_[0]->amnesties          }
-sub other_amnesty_reasons {        map  { $_->{details} ||  $_->{tag} || 'AMNESTY' }  $_[0]->other_amnesties    }
+sub has_other_amnesty     { &first( sub { !$TODO_OR_SKIP{uc($_->{tag})}            }, $_[0]->amnesty) ? 1 : 0 }
+sub other_amnesty         {        grep { !$TODO_OR_SKIP{uc($_->{tag})}            }  $_[0]->amnesty          }
+sub other_amnesty_reasons {        map  { $_->{details} ||  $_->{tag} || 'AMNESTY' }  $_[0]->other_amnesty    }
 
 sub has_errors     { $_[0]->{+FACET_DATA}->{errors} ? 1 : 0 }
 sub errors         { $_[0]->facet('errors') }

@@ -1,67 +1,74 @@
-package Test2::API::InterceptResult;
 use strict;
 use warnings;
 
-use Scalar::Util qw/blessed/;
-use Storable qw/dclone/;
-use Carp qw/croak/;
+use Test2::Tools::Tiny;
+use Test2::API::InterceptResult;
 
-use Test2::API::InterceptResult::Event;
-use Test2::API::InterceptResult::Squasher;
+my $CLASS = 'Test2::API::InterceptResult';
 
-use Test2::Util::HashBase qw{
-    +hub +subtest_event
+ok($CLASS->can($_), "have sub '$_'") for qw/raw_events context state/;
 
-    <raw_events <context
+tests init => sub {
+    my $one = $CLASS->new();
+    ok($one->isa($CLASS), "Got an instance");
+    ok($one->squash_info, "squash_info is on by default");
+    is_deeply($one->state, {}, "Got a sane default state (empty hashref)");
+    is_deeply($one->raw_events, [], "Got a sane default raw_events (empty arrayref)");
 
-    <state
+    no warnings 'once';
+    local *HUB::state = sub { {state => 'yes'} };
 
-    +squash_info
+    my $two = $CLASS->new(hub => bless({}, 'HUB'));
+    is_deeply($two->state, {state => 'yes'}, "Got state from hub");
 
-    +subtest_results
+    my $se = Test2::API::InterceptResult::Event->new(facet_data => {
+        parent => {
+            children => ['not a valid event'],
+            state => { subtest => 'state' },
+            hid => 'uhg',
+        },
+    });
 
-    +events
-    +asserts
-    +subtests
-    +diags
-    +notes
-    +errors
-    +plans
+    my $three = $CLASS->new(subtest_event => $se);
+    is_deeply($three->state, { subtest => 'state' }, "Got state from subtest event");
+    is_deeply($three->raw_events, ['not a valid event'], "Got raw events from subtest event");
+
+    like(
+        exception { $CLASS->new(subtest_event => Test2::API::InterceptResult::Event->new()) },
+        qr/not a subtest event/,
+        "subtest_event must be valid"
+    );
 };
 
-sub init {
-    my $self = shift;
+tests squash_info => sub {
+    my $one = $CLASS->new();
+    is($one->squash_info, 1, "Defaults to 1");
 
-    if (my $hub = $self->{+HUB}) {
-        $self->{+STATE} ||= $hub->state;
-    }
-    elsif (my $se = $self->{+SUBTEST_EVENT}) {
-        my ($sf) = $se->subtest or croak "not a subtest event";
-        $self->{+STATE}      ||= $sf->{state};
-        $self->{+RAW_EVENTS} ||= $sf->{children};
-    }
+    my $two = $CLASS->new(squash_info => 0);
+    is($two->squash_info, 0, "Can set at construction");
 
-    $self->{+STATE}      ||= {};
-    $self->{+RAW_EVENTS} ||= [];
+    my @clear = qw{ events asserts subtests diags notes errors plans subtest_results };
 
-    $self->squash_info(1) unless defined $self->{+SQUASH_INFO};
-}
+    $two->{$_} = 1 for @clear;
+    is($two->squash_info(1), 1, "Can change to on");
+    ok(!$two->{$_}, "Cleared $_") for @clear;
 
-sub squash_info {
-    my $self = shift;
-    return $self->{+SQUASH_INFO} unless @_;
+    $two->{$_} = 1 for @clear;
+    is($two->squash_info(1), 1, "no change");
+    ok($two->{$_}, "Did not clear $_ without change") for @clear;
 
-    my $old = $self->{+SQUASH_INFO};
-    my ($new) = @_;
+    $two->{$_} = 1 for @clear;
+    is($two->squash_info(0), 0, "Can change to off");
+    ok(!$two->{$_}, "Cleared $_") for @clear;
 
-    # No change if it was true and is true again or false and false again
-    return $old if $old && $new;
-    return $old if !$old && !$new;
+    $two->{$_} = 1 for @clear;
+    is($two->squash_info(0), 0, "no change");
+    ok($two->{$_}, "Did not clear $_ without change") for @clear;
+};
 
-    delete $self->{$_} for EVENTS, ASSERTS, SUBTESTS, DIAGS, NOTES, ERRORS, PLANS, SUBTEST_RESULTS;
+done_testing;
 
-    return $self->{+SQUASH_INFO} = $new;
-}
+__END__
 
 sub upgrade_events {
     my $self = shift;
