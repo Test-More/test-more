@@ -81,18 +81,6 @@ sub _tb_reset {
     }
 }
 
-sub state {
-    my $self = shift;
-
-    my $out = {
-        map {($_ => scalar $self->$_)} qw/count failed is_passing plan bailed_out skip_reason nested/
-    };
-
-    $out->{follows_plan} = $self->check_plan;
-
-    return $out;
-}
-
 sub reset_state {
     my $self = shift;
 

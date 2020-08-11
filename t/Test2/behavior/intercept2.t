@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test2::API qw/intercept2/;
+use Test2::API qw/intercept/;
 
 {
     package t2;
@@ -10,7 +10,7 @@ use Test2::API qw/intercept2/;
     use Test::More;
 }
 
-my $res = intercept2 {
+my $res = intercept {
 #    t2::ok(1, "pass");
 #    t2::diag("xxx");
 #    t2::ok(0, "fail");
@@ -29,7 +29,7 @@ my $res = intercept2 {
 #        tm::ok(0, "fail");
 #    }
     tm::subtest(t2_subtest => sub {
-#        t2::ok(1, "pass");
+        t2::ok(1, "pass");
         t2::ok(0, "fail");
     });
     tm::note("xxx");
@@ -39,7 +39,8 @@ my $res = intercept2 {
 };
 
 use Data::Dumper;
-print Dumper($res->flatten);
+print Dumper($res->state);
+print Dumper($res->flatten(include_subevents => 1));
 
 t2::ok(1);
 

@@ -26,12 +26,8 @@ sub can_squash {
     # No info, no squash
     return unless $event->has_info;
 
-    # If the event we would like to merge causes failure on its own then
-    # yikes, no merge.
-    return if $event->causes_fail;
-
-    # Do not merge up if one of these facets is present.
-    return if first { $event->$_ } qw/has_assert has_bailout has_errors has_plan has_subtest/;
+    # Do not merge up if one of these is true
+    return if first { $event->$_ } qw/causes_fail has_assert has_bailout has_errors has_plan has_subtest/;
 
     # Signature if we can squash
     return $event->trace_signature;
@@ -58,14 +54,8 @@ sub squash_down {
     my $sig = $self->can_squash($event)
         or return;
 
-    unless ($sig) {
-        $self->flush_down();
-        return;
-    }
-
-    if ($self->{+DOWN_SIG} && $self->{+DOWN_SIG} ne $sig) {
-        $self->flush_down();
-    }
+    $self->flush_down()
+        if $self->{+DOWN_SIG} && $self->{+DOWN_SIG} ne $sig;
 
     $self->{+DOWN_SIG} ||= $sig;
     push @{$self->{+DOWN_BUFFER}} => $event;
@@ -140,6 +130,14 @@ sub squash {
     my $self = shift;
     my ($into, @from) = @_;
     push @{$into->facet_data->{info}} => $_->info for @from;
+}
+
+sub DESTROY {
+    my $self = shift;
+
+    return unless $self->{+EVENTS};
+    $self->flush_down();
+    return;
 }
 
 1;

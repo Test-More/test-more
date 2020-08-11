@@ -5,7 +5,7 @@ use warnings;
 our $VERSION = '1.302178';
 
 BEGIN { require Test2::Event::Ok; our @ISA = qw(Test2::Event::Ok) }
-use Test2::Util::HashBase qw{subevents buffered subtest_id subtest_uuid state};
+use Test2::Util::HashBase qw{subevents buffered subtest_id subtest_uuid};
 
 sub init {
     my $self = shift;
@@ -72,7 +72,6 @@ sub facet_data {
         hid      => $self->subtest_id,
         children => [map {$_->facet_data} @{$self->{+SUBEVENTS}}],
         buffered => $self->{+BUFFERED},
-        state    => $self->state,
     };
 
     return $out;

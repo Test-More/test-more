@@ -206,12 +206,16 @@ sub flatten {
     }
 
     if (my $parent = delete $todo->{parent}) {
-        $out->{subtest} = {%{$parent->{state}}};
         delete $out->{subtest}->{bailed_out}  unless defined $out->{subtest}->{bailed_out};
         delete $out->{subtest}->{skip_reason} unless defined $out->{subtest}->{skip_reason};
 
-        $out->{subevents} = [ map { $_->flatten(%params) } @{$parent->{children} || []} ]
-            if $params{include_subevents};
+        if (my $res = $self->subtest_result) {
+            my $state = $res->state;
+            delete $state->{$_} for grep { !defined($state->{$_}) } keys %$state;
+            $out->{subtest} = $state;
+            $out->{subevents} = $res->flatten(%params)
+                if $params{include_subevents};
+        }
     }
 
     if (my $control = delete $todo->{control}) {
@@ -284,9 +288,13 @@ sub subtest     { $_[0]->facet('parent') }
 sub subtest_result {
     my $self = shift;
 
-    return unless $self->{+FACET_DATA}->{parent};
+    my $parent = $self->{+FACET_DATA}->{parent} or return;
+    my $children = $parent->{children} || [];
 
-    return $self->{+RESULT_CLASS}->new(subtest_event => $self);
+    $children = $self->{+RESULT_CLASS}->new(@$children)->upgrade
+        unless blessed($children) && $children->isa($self->{+RESULT_CLASS});
+
+    return $children;
 }
 
 sub has_bailout { $_[0]->bailout ? 1 : 0 }

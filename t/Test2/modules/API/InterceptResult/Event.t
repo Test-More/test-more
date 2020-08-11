@@ -347,15 +347,6 @@ tests flatten => sub {
 
             parent => {
                 details => "A Subtest",
-                state   => {
-                    bailed_out   => undef,
-                    count        => 1,
-                    failed       => 1,
-                    follows_plan => 1,
-                    is_passing   => 0,
-                    nested       => 1,
-                    skip_reason  => undef,
-                },
                 children => [
                     $CLASS->new(facet_data => {assert => {pass  => 1, details => 'nested assertion'}}),
                     $CLASS->new(facet_data => {plan   => {count => 1}}),
@@ -425,10 +416,10 @@ tests flatten => sub {
             # Subtest related
             subtest => {
                 follows_plan => 1,
-                is_passing   => 0,
+                is_passing   => 1,
                 count        => 1,
-                failed       => 1,
-                nested       => 1
+                failed       => 0,
+                plan         => 1,
             },
 
             subevents => [
@@ -486,10 +477,10 @@ tests flatten => sub {
             # Subtest related
             subtest => {
                 follows_plan => 1,
-                is_passing   => 0,
+                is_passing   => 1,
                 count        => 1,
-                failed       => 1,
-                nested       => 1
+                failed       => 0,
+                plan         => 1,
             },
         },
         "Very full flattening, no subevents"
