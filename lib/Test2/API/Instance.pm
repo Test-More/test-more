@@ -36,6 +36,8 @@ use Test2::Util::HashBase qw{
     context_init_callbacks
     context_release_callbacks
     pre_subtest_callbacks
+
+    upgrade_events
 };
 
 sub DEFAULT_IPC_TIMEOUT() { 30 }
@@ -146,6 +148,8 @@ sub reset {
     $self->{+PRE_SUBTEST_CALLBACKS}     = [];
 
     $self->{+STACK} = Test2::API::Stack->new;
+
+    $self->{+UPGRADE_EVENTS} = uc($ENV{T2_UPGRADE_EVENTS} || '');
 }
 
 sub _finalize {

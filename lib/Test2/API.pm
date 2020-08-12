@@ -11,6 +11,15 @@ BEGIN {
 
 our $VERSION = '1.302178';
 
+BEGIN {
+    local $@;
+    if (eval { require Sub::Name; 1 }) {
+        *subname = \&Sub::Name::subname;
+    }
+    else {
+        *subname = sub { $_[1] };
+    }
+}
 
 my $INST;
 my $ENDING = 0;
@@ -109,6 +118,14 @@ our @EXPORT_OK = qw{
     intercept intercept_deep
     run_subtest
 
+    test2_upgrade_events
+    UPGRADE_EVENTS_NO
+    UPGRADE_EVENTS_YES
+    UPGRADE_EVENTS_WARN_AUTHOR
+    UPGRADE_EVENTS_WARN
+    UPGRADE_EVENTS_FATAL_AUTHOR
+    UPGRADE_EVENTS_FATAL
+
     test2_init_done
     test2_load_done
     test2_load
@@ -171,7 +188,75 @@ our @EXPORT_OK = qw{
     test2_stderr
     test2_reset_io
 };
-BEGIN { require Exporter; our @ISA = qw(Exporter) }
+
+my %EXPORT_OK = (map {$_ => $_} @EXPORT_OK);
+my %EXPORT_GEN = (
+    context        => \&_gen_context,
+    context_do     => \&_gen_context_do,
+    intercept      => \&_gen_intercept,
+    intercept_deep => \&_gen_intercept,
+    run_subtest    => \&_gen_run_subtest,
+);
+
+my %VALID_UPGRADE_EVENTS_VALS = (
+    ''           => 1,
+    YES          => 1,
+    WARN_AUTHOR  => 1,
+    WARN         => 1,
+    FATAL_AUTHOR => 1,
+    FATAL        => 1,
+);
+
+my %VALID_GEN_ARGS = (
+    upgrade_events => \%VALID_UPGRADE_EVENTS_VALS,
+);
+
+{
+    no warnings 'once';
+    *context        = _gen_context(upgrade_events => '');
+    *context_do     = _gen_context_do(use_context => \&context);
+    *intercept      = _gen_intercept(use_context => \&context);
+    *intercept_deep = _gen_intercept(use_context => \&context, subname => 'intercept_deep');
+    *run_subtest    = _gen_run_subtest(use_context => \&context);
+}
+
+sub import {
+    my $self = shift;
+
+    my $caller = caller;
+
+    my %gen_args;
+
+    while (my $in = shift @_) {
+        if (substr($in, 0, 1) eq '-') {
+            my $name = substr($in, 1);
+            my $allowed_values = $VALID_GEN_ARGS{$name}
+                or croak "Invalid import option $in";
+
+            my $val = shift(@_);
+            if(ref $allowed_values) {
+                croak "'$val' is not a valid argument for import option $in"
+                    unless $allowed_values->{$val};
+            }
+
+            $gen_args{use_context} = undef;
+            $gen_args{$name} = $val;
+        }
+
+        my $ref;
+        if (my $gen = $EXPORT_GEN{$in}) {
+            $gen_args{use_context} ||= _gen_context(%gen_args, subname => 'context');
+            $ref = $gen->(%gen_args, subname => $in);
+        }
+        else {
+            no strict 'refs';
+            $ref = \&{$in};
+        }
+
+        no strict 'refs';
+        *{"$caller\::$in"} = $ref;
+    }
+}
 
 my $STACK       = $INST->stack;
 my $CONTEXTS    = $INST->contexts;
@@ -191,6 +276,19 @@ sub test2_post_preload_reset {
 sub test2_reset_io {
     $STDOUT = clone_io(\*STDOUT);
     $STDERR = clone_io(\*STDERR);
+}
+
+sub test2_upgrade_events {
+    return $INST->upgrade_events unless @_;
+    my ($val) = @_;
+    my $uc = uc($val);
+
+    $uc = '' if !defined($uc) || $uc eq 'NO';
+
+    croak "'$val' is not a valid value for test2_upgrade_events()"
+        unless $VALID_UPGRADE_EVENTS_VALS{$uc};
+
+    return $INST->set_upgrade_events($uc);
 }
 
 sub test2_init_done { $INST->finalized }
@@ -315,30 +413,38 @@ sub _add_uuid_via_ref              { \($INST->{Test2::API::Instance::ADD_UUID_VI
 # Private, for use in Test2::IPC
 sub _set_ipc { $INST->set_ipc(@_) }
 
-sub context_do(&;@) {
-    my $code = shift;
-    my @args = @_;
+sub _gen_context_do {
+    my %params = @_;
+    $params{subname} ||= 'context_do';
 
-    my $ctx = context(level => 1);
+    my $context = $params{use_context} || _gen_context(%params, subname => 'context');
 
-    my $want = wantarray;
+    return subname $params{subname} => sub(&;@) {
+        my $code = shift;
+        my @args = @_;
 
-    my @out;
-    my $ok = eval {
-        $want          ? @out    = $code->($ctx, @args) :
-        defined($want) ? $out[0] = $code->($ctx, @args) :
-                                   $code->($ctx, @args) ;
-        1;
+        my $ctx = $context->(level => 1);
+
+        my $want = wantarray;
+
+        my @out;
+        my $ok = eval {
+            $want ? @out =
+                  $code->($ctx, @args)
+                : defined($want) ? $out[0] = $code->($ctx, @args)
+                :                  $code->($ctx, @args);
+            1;
+        };
+        my $err = $@;
+
+        $ctx->release;
+
+        die $err unless $ok;
+
+        return @out    if $want;
+        return $out[0] if defined $want;
+        return;
     };
-    my $err = $@;
-
-    $ctx->release;
-
-    die $err unless $ok;
-
-    return @out    if $want;
-    return $out[0] if defined $want;
-    return;
 }
 
 sub no_context(&;$) {
@@ -359,145 +465,168 @@ sub no_context(&;$) {
 };
 
 my $UUID_VIA = _add_uuid_via_ref();
-sub context {
-    # We need to grab these before anything else to ensure they are not
-    # changed.
-    my ($errno, $eval_error, $child_error, $extended_error) = (0 + $!, $@, $?, $^E);
 
-    my %params = (level => 0, wrapped => 0, @_);
+sub _gen_context {
+    my %gen_params = @_;
 
-    # If something is getting a context then the sync system needs to be
-    # considered loaded...
-    $INST->load unless $INST->{loaded};
+    return $gen_params{use_context} if $gen_params{use_context};
 
-    croak "context() called, but return value is ignored"
-        unless defined wantarray;
+    $gen_params{subname} ||= 'context';
 
-    my $stack   = $params{stack} || $STACK;
-    my $hub     = $params{hub}   || (@$stack ? $stack->[-1] : $stack->top);
+    my %default_params;
+    $default_params{upgrade_events} = $gen_params{upgrade_events} if defined $gen_params{upgrade_events};
 
-    # Catch an edge case where we try to get context after the root hub has
-    # been garbage collected resulting in a stack that has a single undef
-    # hub
-    if (!$hub && !exists($params{hub}) && @$stack) {
-        my $msg = Carp::longmess("Attempt to get Test2 context after testing has completed (did you attempt a testing event after done_testing?)");
+    return subname $gen_params{subname} => sub {
+        # We need to grab these before anything else to ensure they are not
+        # changed.
+        my ($errno, $eval_error, $child_error, $extended_error) = (0 + $!, $@, $?, $^E);
 
-        # The error message is usually masked by the global destruction, so we have to print to STDER
-        print STDERR $msg;
+        my %params = (
+            level   => 0,
+            wrapped => 0,
+            %default_params,
+            @_,
+        );
 
-        # Make sure this is a failure, we are probably already in END, so set $? to change the exit code
-        $? = 1;
+        # If something is getting a context then the sync system needs to be
+        # considered loaded...
+        $INST->load unless $INST->{loaded};
 
-        # Now we actually die to interrupt the program flow and avoid undefined his warnings
-        die $msg;
-    }
+        croak "context() called, but return value is ignored"
+            unless defined wantarray;
 
-    my $hid     = $hub->{hid};
-    my $current = $CONTEXTS->{$hid};
+        my $stack = $params{stack} || $STACK;
+        my $hub   = $params{hub}   || (@$stack ? $stack->[-1] : $stack->top);
 
-    $_->(\%params) for @$ACQUIRE_CBS;
-    map $_->(\%params), @{$hub->{_context_acquire}} if $hub->{_context_acquire};
+        # Catch an edge case where we try to get context after the root hub has
+        # been garbage collected resulting in a stack that has a single undef
+        # hub
+        if (!$hub && !exists($params{hub}) && @$stack) {
+            my $msg = Carp::longmess("Attempt to get Test2 context after testing has completed (did you attempt a testing event after done_testing?)");
 
-    # This is for https://github.com/Test-More/test-more/issues/16
-    # and https://rt.perl.org/Public/Bug/Display.html?id=127774
-    my $phase = ${^GLOBAL_PHASE} || 'NA';
-    my $end_phase = $ENDING || $phase eq 'END' || $phase eq 'DESTRUCT';
+            # The error message is usually masked by the global destruction, so we have to print to STDER
+            print STDERR $msg;
 
-    my $level = 1 + $params{level};
-    my ($pkg, $file, $line, $sub) = $end_phase ? caller(0) : caller($level);
-    unless ($pkg || $end_phase) {
-        confess "Could not find context at depth $level" unless $params{fudge};
-        ($pkg, $file, $line, $sub) = caller(--$level) while ($level >= 0 && !$pkg);
-    }
+            # Make sure this is a failure, we are probably already in END, so set $? to change the exit code
+            $? = 1;
 
-    my $depth = $level;
-    $depth++ while DO_DEPTH_CHECK && !$end_phase && (!$current || $depth <= $current->{_depth} + $params{wrapped}) && caller($depth + 1);
-    $depth -= $params{wrapped};
-    my $depth_ok = !DO_DEPTH_CHECK || $end_phase || !$current || $current->{_depth} < $depth;
-
-    if ($current && $params{on_release} && $depth_ok) {
-        $current->{_on_release} ||= [];
-        push @{$current->{_on_release}} => $params{on_release};
-    }
-
-    # I know this is ugly....
-    ($!, $@, $?, $^E) = ($errno, $eval_error, $child_error, $extended_error) and return bless(
-        {
-            %$current,
-            _is_canon   => undef,
-            errno       => $errno,
-            eval_error  => $eval_error,
-            child_error => $child_error,
-            _is_spawn   => [$pkg, $file, $line, $sub],
-        },
-        'Test2::API::Context'
-    ) if $current && $depth_ok;
-
-    # Handle error condition of bad level
-    if ($current) {
-        unless (${$current->{_aborted}}) {
-            _canon_error($current, [$pkg, $file, $line, $sub, $depth])
-                unless $current->{_is_canon};
-
-            _depth_error($current, [$pkg, $file, $line, $sub, $depth])
-                unless $depth_ok;
+            # Now we actually die to interrupt the program flow and avoid undefined his warnings
+            die $msg;
         }
 
-        $current->release if $current->{_is_canon};
+        my $hid     = $hub->{hid};
+        my $current = $CONTEXTS->{$hid};
 
-        delete $CONTEXTS->{$hid};
-    }
+        $_->(\%params) for @$ACQUIRE_CBS;
+        map $_->(\%params), @{$hub->{_context_acquire}} if $hub->{_context_acquire};
 
-    # Directly bless the object here, calling new is a noticeable performance
-    # hit with how often this needs to be called.
-    my $trace = bless(
-        {
-            frame  => [$pkg, $file, $line, $sub],
-            pid    => $$,
-            tid    => get_tid(),
-            cid    => gen_uid(),
-            hid    => $hid,
-            nested => $hub->{nested},
-            buffered => $hub->{buffered},
+        # This is for https://github.com/Test-More/test-more/issues/16
+        # and https://rt.perl.org/Public/Bug/Display.html?id=127774
+        my $phase = ${^GLOBAL_PHASE} || 'NA';
+        my $end_phase = $ENDING || $phase eq 'END' || $phase eq 'DESTRUCT';
 
-            $$UUID_VIA ? (
-                huuid => $hub->{uuid},
-                uuid  => ${$UUID_VIA}->('context'),
-            ) : (),
-        },
-        'Test2::EventFacet::Trace'
-    );
+        my $level = 1 + $params{level};
+        my ($pkg, $file, $line, $sub) = $end_phase ? caller(0) : caller($level);
+        unless ($pkg || $end_phase) {
+            confess "Could not find context at depth $level" unless $params{fudge};
+            ($pkg, $file, $line, $sub) = caller(--$level) while ($level >= 0 && !$pkg);
+        }
 
-    # Directly bless the object here, calling new is a noticeable performance
-    # hit with how often this needs to be called.
-    my $aborted = 0;
-    $current = bless(
-        {
-            _aborted     => \$aborted,
-            stack        => $stack,
-            hub          => $hub,
-            trace        => $trace,
-            _is_canon    => 1,
-            _depth       => $depth,
-            errno        => $errno,
-            eval_error   => $eval_error,
-            child_error  => $child_error,
-            $params{on_release} ? (_on_release => [$params{on_release}]) : (),
-        },
-        'Test2::API::Context'
-    );
+        my $depth = $level;
+        $depth++ while DO_DEPTH_CHECK && !$end_phase && (!$current || $depth <= $current->{_depth} + $params{wrapped}) && caller($depth + 1);
+        $depth -= $params{wrapped};
+        my $depth_ok = !DO_DEPTH_CHECK || $end_phase || !$current || $current->{_depth} < $depth;
 
-    $CONTEXTS->{$hid} = $current;
-    weaken($CONTEXTS->{$hid});
+        if ($current && $params{on_release} && $depth_ok) {
+            $current->{_on_release} ||= [];
+            push @{$current->{_on_release}} => $params{on_release};
+        }
 
-    $_->($current) for @$INIT_CBS;
-    map $_->($current), @{$hub->{_context_init}} if $hub->{_context_init};
+        $params{upgrade_events} = $INST->{upgrade_events}
+            unless defined $params{upgrade_events};
 
-    $params{on_init}->($current) if $params{on_init};
+        # I know this is ugly....
+        ($!, $@, $?, $^E) = ($errno, $eval_error, $child_error, $extended_error) and return bless(
+            {
+                %$current,
+                _is_canon      => undef,
+                errno          => $errno,
+                eval_error     => $eval_error,
+                child_error    => $child_error,
+                _is_spawn      => [$pkg, $file, $line, $sub],
+                upgrade_events => $params{upgrade_events},
+            },
+            'Test2::API::Context'
+        ) if $current && $depth_ok;
 
-    ($!, $@, $?, $^E) = ($errno, $eval_error, $child_error, $extended_error);
+        # Handle error condition of bad level
+        if ($current) {
+            unless (${$current->{_aborted}}) {
+                _canon_error($current, [$pkg, $file, $line, $sub, $depth])
+                    unless $current->{_is_canon};
 
-    return $current;
+                _depth_error($current, [$pkg, $file, $line, $sub, $depth])
+                    unless $depth_ok;
+            }
+
+            $current->release if $current->{_is_canon};
+
+            delete $CONTEXTS->{$hid};
+        }
+
+        # Directly bless the object here, calling new is a noticeable performance
+        # hit with how often this needs to be called.
+        my $trace = bless(
+            {
+                frame    => [$pkg, $file, $line, $sub],
+                pid      => $$,
+                tid      => get_tid(),
+                cid      => gen_uid(),
+                hid      => $hid,
+                nested   => $hub->{nested},
+                buffered => $hub->{buffered},
+
+                $$UUID_VIA
+                ? (
+                    huuid => $hub->{uuid},
+                    uuid  => ${$UUID_VIA}->('context'),
+                    )
+                : (),
+            },
+            'Test2::EventFacet::Trace'
+        );
+
+        # Directly bless the object here, calling new is a noticeable performance
+        # hit with how often this needs to be called.
+        my $aborted = 0;
+        $current = bless(
+            {
+                _aborted    => \$aborted,
+                stack       => $stack,
+                hub         => $hub,
+                trace       => $trace,
+                _is_canon   => 1,
+                _depth      => $depth,
+                errno       => $errno,
+                eval_error  => $eval_error,
+                child_error => $child_error,
+                $params{on_release} ? (_on_release => [$params{on_release}]) : (),
+            },
+            'Test2::API::Context'
+        );
+
+        $CONTEXTS->{$hid} = $current;
+        weaken($CONTEXTS->{$hid});
+
+        $_->($current) for @$INIT_CBS;
+        map $_->($current), @{$hub->{_context_init}} if $hub->{_context_init};
+
+        $params{on_init}->($current) if $params{on_init};
+
+        ($!, $@, $?, $^E) = ($errno, $eval_error, $child_error, $extended_error);
+
+        return $current;
+    };
 }
 
 sub _depth_error {
@@ -551,32 +680,30 @@ sub release($;$) {
     return $_[1];
 }
 
-sub intercept(&) {
-    my $code = shift;
-    my $ctx = context();
+sub _gen_intercept {
+    my %gen_params = @_;
+    $gen_params{subname} ||= 'intercept';
 
-    my $events = _intercept($code, deep => 0);
+    my $context = $gen_params{use_context} || _gen_context(%gen_params, subname => 'context');
 
-    $ctx->release;
+    my $deep = ($gen_params{subname} eq 'intercept_deep');
 
-    return $events;
-}
+    return subname $gen_params{subname} => sub(&) {
+        my $code = shift;
+        my $ctx  = $context->();
 
-sub intercept_deep(&) {
-    my $code = shift;
-    my $ctx = context();
+        my $events = _intercept($code, deep => $deep, use_context => $context);
 
-    my $events = _intercept($code, deep => 1);
+        $ctx->release;
 
-    $ctx->release;
-
-    return $events;
+        return $events;
+    };
 }
 
 sub _intercept {
     my $code = shift;
     my %params = @_;
-    my $ctx = context();
+    my $ctx = $params->{use_context}->();
 
     my $ipc;
     if (my $global_ipc = test2_ipc()) {
@@ -630,137 +757,143 @@ sub _intercept {
     return Test2::API::InterceptResult->new_from_ref(\@events);
 }
 
-sub run_subtest {
-    my ($name, $code, $params, @args) = @_;
+sub _gen_run_subtest {
+    my %gen_params = @_;
+    $gen_params{subname} ||= 'run_subtest';
 
-    $_->($name,$code,@args)
-        for Test2::API::test2_list_pre_subtest_callbacks();
+    my $context = $gen_params{use_context} || _gen_context(%gen_params, subname => 'context');
 
-    $params = {buffered => $params} unless ref $params;
-    my $inherit_trace = delete $params->{inherit_trace};
+    return subname $gen_params{subname} => sub {
+        my ($name, $code, $params, @args) = @_;
 
-    my $ctx = context();
+        $_->($name, $code, @args) for Test2::API::test2_list_pre_subtest_callbacks();
 
-    my $parent = $ctx->hub;
+        $params = {buffered => $params} unless ref $params;
+        my $inherit_trace = delete $params->{inherit_trace};
 
-    # If a parent is buffered then the child must be as well.
-    my $buffered = $params->{buffered} || $parent->{buffered};
+        my $ctx = context();
 
-    $ctx->note($name) unless $buffered;
+        my $parent = $ctx->hub;
 
-    my $stack = $ctx->stack || $STACK;
-    my $hub = $stack->new_hub(
-        class => 'Test2::Hub::Subtest',
-        %$params,
-        buffered => $buffered,
-    );
+        # If a parent is buffered then the child must be as well.
+        my $buffered = $params->{buffered} || $parent->{buffered};
 
-    my @events;
-    $hub->listen(sub { push @events => $_[1] });
+        $ctx->note($name) unless $buffered;
 
-    if ($buffered) {
-        if (my $format = $hub->format) {
-            my $hide = $format->can('hide_buffered') ? $format->hide_buffered : 1;
-            $hub->format(undef) if $hide;
+        my $stack = $ctx->stack || $STACK;
+        my $hub   = $stack->new_hub(
+            class => 'Test2::Hub::Subtest',
+            %$params,
+            buffered => $buffered,
+        );
+
+        my @events;
+        $hub->listen(sub { push @events => $_[1] });
+
+        if ($buffered) {
+            if (my $format = $hub->format) {
+                my $hide = $format->can('hide_buffered') ? $format->hide_buffered : 1;
+                $hub->format(undef) if $hide;
+            }
         }
-    }
 
-    if ($inherit_trace) {
-        my $orig = $code;
-        $code = sub {
-            my $base_trace = $ctx->trace;
-            my $trace = $base_trace->snapshot(nested => 1 + $base_trace->nested);
-            my $st_ctx = Test2::API::Context->new(
-                trace  => $trace,
-                hub    => $hub,
-            );
-            $st_ctx->do_in_context($orig, @args);
-        };
-    }
-
-    my ($ok, $err, $finished);
-    T2_SUBTEST_WRAPPER: {
-        # Do not use 'try' cause it localizes __DIE__
-        $ok = eval { $code->(@args); 1 };
-        $err = $@;
-
-        # They might have done 'BEGIN { skip_all => "whatever" }'
-        if (!$ok && $err =~ m/Label not found for "last T2_SUBTEST_WRAPPER"/ || (blessed($err) && blessed($err) eq 'Test::Builder::Exception')) {
-            $ok  = undef;
-            $err = undef;
+        if ($inherit_trace) {
+            my $orig = $code;
+            $code = sub {
+                my $base_trace = $ctx->trace;
+                my $trace      = $base_trace->snapshot(nested => 1 + $base_trace->nested);
+                my $st_ctx     = Test2::API::Context->new(
+                    trace => $trace,
+                    hub   => $hub,
+                );
+                $st_ctx->do_in_context($orig, @args);
+            };
         }
-        else {
-            $finished = 1;
-        }
-    }
 
-    if ($params->{no_fork}) {
-        if ($$ != $ctx->trace->pid) {
-            warn $ok ? "Forked inside subtest, but subtest never finished!\n" : $err;
+        my ($ok, $err, $finished);
+        T2_SUBTEST_WRAPPER: {
+            # Do not use 'try' cause it localizes __DIE__
+            $ok  = eval { $code->(@args); 1 };
+            $err = $@;
+
+            # They might have done 'BEGIN { skip_all => "whatever" }'
+            if (!$ok && $err =~ m/Label not found for "last T2_SUBTEST_WRAPPER"/ || (blessed($err) && blessed($err) eq 'Test::Builder::Exception')) {
+                $ok  = undef;
+                $err = undef;
+            }
+            else {
+                $finished = 1;
+            }
+        }
+
+        if ($params->{no_fork}) {
+            if ($$ != $ctx->trace->pid) {
+                warn $ok ? "Forked inside subtest, but subtest never finished!\n" : $err;
+                exit 255;
+            }
+
+            if (get_tid() != $ctx->trace->tid) {
+                warn $ok ? "Started new thread inside subtest, but thread never finished!\n" : $err;
+                exit 255;
+            }
+        }
+        elsif (!$parent->is_local && !$parent->ipc) {
+            warn $ok ? "A new process or thread was started inside subtest, but IPC is not enabled!\n" : $err;
             exit 255;
         }
 
-        if (get_tid() != $ctx->trace->tid) {
-            warn $ok ? "Started new thread inside subtest, but thread never finished!\n" : $err;
-            exit 255;
+        $stack->pop($hub);
+
+        my $trace = $ctx->trace;
+
+        my $bailed = $hub->bailed_out;
+
+        if (!$finished) {
+            if ($bailed && !$buffered) {
+                $ctx->bail($bailed->reason);
+            }
+            elsif ($bailed && $buffered) {
+                $ok = 1;
+            }
+            else {
+                my $code = $hub->exit_code;
+                $ok  = !$code;
+                $err = "Subtest ended with exit code $code" if $code;
+            }
         }
-    }
-    elsif (!$parent->is_local && !$parent->ipc) {
-        warn $ok ? "A new process or thread was started inside subtest, but IPC is not enabled!\n" : $err;
-        exit 255;
-    }
 
-    $stack->pop($hub);
+        $hub->finalize($trace->snapshot(huuid => $hub->uuid, hid => $hub->hid, nested => $hub->nested, buffered => $buffered), 1)
+            if $ok
+            && !$hub->no_ending
+            && !$hub->ended;
 
-    my $trace = $ctx->trace;
+        my $pass = $ok && $hub->is_passing;
+        my $e    = $ctx->build_event(
+            'Subtest',
+            pass         => $pass,
+            name         => $name,
+            subtest_id   => $hub->id,
+            subtest_uuid => $hub->uuid,
+            buffered     => $buffered,
+            subevents    => \@events,
+        );
 
-    my $bailed = $hub->bailed_out;
+        my $plan_ok = $hub->check_plan;
 
-    if (!$finished) {
-        if ($bailed && !$buffered) {
-            $ctx->bail($bailed->reason);
-        }
-        elsif ($bailed && $buffered) {
-            $ok = 1;
-        }
-        else {
-            my $code = $hub->exit_code;
-            $ok = !$code;
-            $err = "Subtest ended with exit code $code" if $code;
-        }
-    }
+        $ctx->hub->send($e);
 
-    $hub->finalize($trace->snapshot(huuid => $hub->uuid, hid => $hub->hid, nested => $hub->nested, buffered => $buffered), 1)
-        if $ok
-        && !$hub->no_ending
-        && !$hub->ended;
+        $ctx->failure_diag($e) unless $e->pass;
 
-    my $pass = $ok && $hub->is_passing;
-    my $e = $ctx->build_event(
-        'Subtest',
-        pass         => $pass,
-        name         => $name,
-        subtest_id   => $hub->id,
-        subtest_uuid => $hub->uuid,
-        buffered     => $buffered,
-        subevents    => \@events,
-    );
+        $ctx->diag("Caught exception in subtest: $err") unless $ok;
 
-    my $plan_ok = $hub->check_plan;
+        $ctx->diag("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
+            if defined($plan_ok) && !$plan_ok;
 
-    $ctx->hub->send($e);
+        $ctx->bail($bailed->reason) if $bailed && $buffered;
 
-    $ctx->failure_diag($e) unless $e->pass;
-
-    $ctx->diag("Caught exception in subtest: $err") unless $ok;
-
-    $ctx->diag("Bad subtest plan, expected " . $hub->plan . " but ran " . $hub->count)
-        if defined($plan_ok) && !$plan_ok;
-
-    $ctx->bail($bailed->reason) if $bailed && $buffered;
-
-    $ctx->release;
-    return $pass;
+        $ctx->release;
+        return $pass;
+    };
 }
 
 # There is a use-cycle between API and API/Context. Context needs to use some
