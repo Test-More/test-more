@@ -340,24 +340,18 @@ sub process {
         return $e;
     }
 
-    # Hacky, but do not remove these comments, they are used to extract just
-    # these lines for use in another package.  Not extracted them into a
-    # reusable sub because it actually does effect performance too much.
-
-    # FAIL_CHECK_START
     my $f = $e->facet_data;
 
     my $fail = 0;
     $fail = 1 if $f->{assert} && !$f->{assert}->{pass};
     $fail = 1 if $f->{errors} && grep { $_->{fail} } @{$f->{errors}};
     $fail = 0 if $f->{amnesty};
-    # FAIL_CHECK_END
 
     $self->{+COUNT}++ if $f->{assert};
     $self->{+FAILED}++ if $fail && $f->{assert};
     $self->{+_PASSING} = 0 if $fail;
 
-    my $code = $f->{control}->{terminate};
+    my $code = $f->{control} ? $f->{control}->{terminate} : undef;
     my $count = $self->{+COUNT};
 
     if (my $plan = $f->{plan}) {
@@ -374,7 +368,7 @@ sub process {
         }
     }
 
-    $e->callback($self) if $f->{control}->{has_callback};
+    $e->callback($self) if $f->{control} && $f->{control}->{has_callback};
 
     $self->{+_FORMATTER}->write($e, $count, $f) if $self->{+_FORMATTER};
 
@@ -382,7 +376,7 @@ sub process {
         $_->{code}->($self, $e, $count, $f) for @{$self->{+_LISTENERS}};
     }
 
-    if ($f->{control}->{halt}) {
+    if ($f->{control} && $f->{control}->{halt}) {
         $code ||= 255;
         $self->set_bailed_out($e);
     }

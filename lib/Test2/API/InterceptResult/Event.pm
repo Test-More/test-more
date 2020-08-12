@@ -7,11 +7,13 @@ use Test2::Util  qw/pkg_to_file/;
 use Scalar::Util qw/reftype blessed/;
 
 use Storable qw/dclone/;
-use Carp     qw/confess/;
+use Carp     qw/confess croak/;
 
 use Test2::API::InterceptResult::Facet;
+use Test2::API::InterceptResult::Hub;
 
 use Test2::Util::HashBase qw{
+    +causes_failure
     <facet_data
     <result_class
 };
@@ -78,6 +80,54 @@ sub init {
     }
 }
 
+sub clone {
+    my $self = shift;
+    my $class = blessed($self);
+
+    my %data = %$self;
+
+    $data{+FACET_DATA} = dclone($data{+FACET_DATA});
+
+    return bless(\%data, $class);
+}
+
+sub _facet_class {
+    my $self = shift;
+    my ($name) = @_;
+
+    my $spec  = $FACETS{$name} || $FACETS{__GENERIC__};
+    my $class = $spec->{class};
+    unless ($spec->{loaded}) {
+        my $file = pkg_to_file($class);
+        require $file unless $INC{$file};
+        $spec->{loaded} = 1;
+    }
+
+    return $class;
+}
+
+sub the_facet {
+    my $self = shift;
+    my ($name) = @_;
+
+    return undef unless exists $self->{+FACET_DATA}->{$name};
+
+    my $data = $self->{+FACET_DATA}->{$name};
+
+    my $type = reftype($data) or confess "Facet '$name' has a value that is not a reference, this should not happen";
+
+    return $self->_facet_class($name)->new(%{dclone($data)})
+        if $type eq 'HASH';
+
+    if ($type eq 'ARRAY') {
+        return undef unless @$data;
+        croak "'the_facet' called for facet '$name', but '$name' has '" . @$data . "' items" if @$data != 1;
+        return $self->_facet_class($name)->new(%{dclone($data->[0])});
+    }
+
+    die "Invalid facet data type: $type";
+}
+
 sub facet {
     my $self = shift;
     my ($name) = @_;
@@ -92,63 +142,34 @@ sub facet {
     @out = ($data)  if $type eq 'HASH';
     @out = (@$data) if $type eq 'ARRAY';
 
-    my $spec  = $FACETS{$name} || $FACETS{__GENERIC__};
-    my $class = $spec->{class};
-    unless ($spec->{loaded}) {
-        my $file = pkg_to_file($class);
-        require $file unless $INC{$file};
-        $spec->{loaded} = 1;
-    }
+    my $class = $self->_facet_class($name);
 
     return map { $class->new(%{dclone($_)}) } @out;
 }
 
-{
-    require Test2::Hub;
-    my $file = $INC{'Test2/Hub.pm'} or die "Could not find file for Test2::Hub";
-    open(my $fh, '<', $file) or die "Could not open '$file': $!";
-    my $found;
-    my $code = "";
-    my $ln = 0;
-    while (my $line = <$fh>) {
-        $ln++;
-
-        $found ||= $ln if $line =~ m/# FAIL_CHECK_START/;
-        next unless $found;
-
-        last if $line =~ m/# FAIL_CHECK_END/;
-
-        $code .= $line;
-    }
-
-    die "Could not find FAIL_CHECK_START marker in $file" unless $found;
-
-    eval <<"    EOT" or die $@;
 sub causes_failure {
-    my \$e = shift;
+    my $self = shift;
 
-package Test2::Hub;
-#line $found $file
-$code
+    return $self->{+CAUSES_FAILURE}
+        if exists $self->{+CAUSES_FAILURE};
 
-package ${ \__PACKAGE__ };
-#line ${ \__LINE__ } ${ \__FILE__ }
-    return \$fail ? 1 : 0;
+    my $hub = Test2::API::InterceptResult::Hub->new();
+    $hub->process($self);
+
+    return $self->{+CAUSES_FAILURE} = ($hub->is_passing ? 0 : 1);
 }
 
-1;
-    EOT
-}
+sub causes_fail { shift->causes_failure }
 
-sub causes_fail { goto &causes_failure }
-
-sub trace         { $_[0]->{+FACET_DATA}->{trace}                       || undef }
-sub frame         { my $t = $_[0]->trace or return undef; $t->{frame}   || undef }
-sub trace_details { my $t = $_[0]->trace or return undef; $t->{details} || undef }
-sub trace_package { my $f = $_[0]->frame or return undef; $f->[0]       || undef }
-sub trace_file    { my $f = $_[0]->frame or return undef; $f->[1]       || undef }
-sub trace_line    { my $f = $_[0]->frame or return undef; $f->[2]       || undef }
-sub trace_subname { my $f = $_[0]->frame or return undef; $f->[3]       || undef }
+sub trace         { $_[0]->facet('trace') }
+sub the_trace     { $_[0]->the_facet('trace') }
+sub frame         { my $t = $_[0]->the_trace or return undef; $t->{frame} || undef }
+sub trace_details { my $t = $_[0]->the_trace or return undef; $t->{details} || undef }
+sub trace_package { my $f = $_[0]->frame or return undef; $f->[0] || undef }
+sub trace_file    { my $f = $_[0]->frame or return undef; $f->[1] || undef }
+sub trace_line    { my $f = $_[0]->frame or return undef; $f->[2] || undef }
+sub trace_subname { my $f = $_[0]->frame or return undef; $f->[3] || undef }
+sub trace_tool    { my $f = $_[0]->frame or return undef; $f->[3] || undef }
 
 sub trace_signature { my $t = $_[0]->trace or return undef; Test2::EventFacet::Trace::signature($t) || undef }
 
@@ -196,7 +217,7 @@ sub flatten {
         next if $tagged eq 'amnesty' && !($has_assert || $has_parent || $has_fatal_error);
 
         for my $item (@$set) {
-            push @{$out->{$item->{tag}}} => $item->{fail} ? "FATAL: $item->{details}" : $item->{details};
+            push @{$out->{lc($item->{tag})}} => $item->{fail} ? "FATAL: $item->{details}" : $item->{details};
         }
     }
 
@@ -247,13 +268,22 @@ sub flatten {
         }
     }
 
+    if (my $fields = $params{fields}) {
+        $out = { map {exists($out->{$_}) ? ($_ => $out->{$_}) : ()} @$fields };
+    }
+
+    if (my $remove = $params{remove}) {
+        delete $out->{$_} for @$remove;
+    }
+
     return $out;
 }
 
 sub summary {
     my $self = shift;
+    my %params = @_;
 
-    return {
+    my $out = {
         brief => $self->brief || '',
 
         causes_failure => $self->causes_failure,
@@ -263,11 +293,22 @@ sub summary {
         trace_tool    => $self->trace_subname,
         trace_details => $self->trace_details,
 
-        facets => { map {($_ => 1)} keys(%{$self->{+FACET_DATA}})}
+        facets => [ sort keys(%{$self->{+FACET_DATA}}) ],
     };
+
+    if (my $fields = $params{fields}) {
+        $out = { map {exists($out->{$_}) ? ($_ => $out->{$_}) : ()} @$fields };
+    }
+
+    if (my $remove = $params{remove}) {
+        delete $out->{$_} for @$remove;
+    }
+
+    return $out;
 }
 
 sub has_assert { $_[0]->{+FACET_DATA}->{assert} ? 1 : 0 }
+sub the_assert { $_[0]->the_facet('assert') }
 sub assert     { $_[0]->facet('assert') }
 
 sub assert_brief {
@@ -283,6 +324,7 @@ sub assert_brief {
 }
 
 sub has_subtest { $_[0]->{+FACET_DATA}->{parent} ? 1 : 0 }
+sub the_subtest { $_[0]->the_facet('parent') }
 sub subtest     { $_[0]->facet('parent') }
 
 sub subtest_result {
@@ -298,6 +340,7 @@ sub subtest_result {
 }
 
 sub has_bailout { $_[0]->bailout ? 1 : 0 }
+sub the_bailout { my ($b) = $_[0]->bailout; $b }
 
 sub bailout {
     my $self = shift;
@@ -321,6 +364,7 @@ sub bailout_reason {
 }
 
 sub has_plan { $_[0]->{+FACET_DATA}->{plan} ? 1 : 0 }
+sub the_plan { $_[0]->the_facet('plan') }
 sub plan     { $_[0]->facet('plan') }
 
 sub plan_brief {
@@ -344,6 +388,7 @@ sub _plan_brief {
 }
 
 sub has_amnesty     { $_[0]->{+FACET_DATA}->{amnesty} ? 1 : 0 }
+sub the_amnesty     { $_[0]->the_facet('amnesty') }
 sub amnesty         { $_[0]->facet('amnesty') }
 sub amnesty_reasons { map { $_->{details} } $_[0]->amnesty }
 
@@ -361,6 +406,7 @@ sub other_amnesty         {        grep { !$TODO_OR_SKIP{uc($_->{tag})}         
 sub other_amnesty_reasons {        map  { $_->{details} ||  $_->{tag} || 'AMNESTY' }  $_[0]->other_amnesty    }
 
 sub has_errors     { $_[0]->{+FACET_DATA}->{errors} ? 1 : 0 }
+sub the_errors     { $_[0]->the_facet('errors') }
 sub errors         { $_[0]->facet('errors') }
 sub error_messages { map { $_->{details} || $_->{tag} || 'ERROR' } $_[0]->errors }
 
@@ -383,6 +429,7 @@ sub error_brief {
 }
 
 sub has_info      { $_[0]->{+FACET_DATA}->{info} ? 1 : 0 }
+sub the_info      { $_[0]->the_facet('info') }
 sub info          { $_[0]->facet('info') }
 sub info_messages { map { $_->{details} } $_[0]->info }
 

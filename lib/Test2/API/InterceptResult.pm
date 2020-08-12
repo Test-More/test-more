@@ -3,8 +3,8 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/blessed/;
-use Storable qw/dclone/;
-use Carp qw/croak/;
+use Storable     qw/dclone/;
+use Carp         qw/croak/;
 
 use Test2::API::InterceptResult::Squasher;
 use Test2::API::InterceptResult::Event;
@@ -67,31 +67,37 @@ sub state {
 
 sub upgrade {
     my $self = shift;
+    my %params = @_;
 
     my @out = map { $self->_upgrade($_) } @$self;
 
-    return blessed($self)->new_from_ref(\@out) if defined wantarray;
+    return blessed($self)->new_from_ref(\@out)
+        unless $params{in_place};
 
     @$self = @out;
+    return $self;
 }
 
-sub squash_diag {
+sub squash_info {
     my $self = shift;
+    my %params = @_;
 
-    my @output;
+    my @out;
 
-    my $squasher = Test2::API::InterceptResult::Squasher->new(events => \@output);
-    $squasher->process($self->_upgrade($_)) for @$self;
-    $squasher->flush_down();
-    $squasher = undef;
+    {
+        my $squasher = Test2::API::InterceptResult::Squasher->new(events => \@out);
+        # Clone to make sure we do not indirectly modify an existing one if it
+        # is already upgraded
+        $squasher->process($self->_upgrade($_)->clone) for @$self;
+        $squasher->flush_down();
+    }
 
-    return blessed($self)->new_from_ref(\@output);
+    return blessed($self)->new_from_ref(\@out)
+        unless $params{in_place};
+
+    @$self = @out;
+    return $self;
 }
-
-sub flatten         { shift->map(flatten        => @_) }
-sub briefs          { shift->map(brief          => @_) }
-sub summaries       { shift->map(summary        => @_) }
-sub subtest_results { shift->map(subtest_result => @_) }
 
 sub asserts  { shift->grep(assert  => @_) }
 sub subtests { shift->grep(subtest => @_) }
@@ -99,6 +105,11 @@ sub diags    { shift->grep(diags   => @_) }
 sub notes    { shift->grep(notes   => @_) }
 sub errors   { shift->grep(errors  => @_) }
 sub plans    { shift->grep(plan    => @_) }
+
+sub flatten         { shift->map(flatten        => @_) }
+sub briefs          { shift->map(brief          => @_) }
+sub summaries       { shift->map(summary        => @_) }
+sub subtest_results { shift->map(subtest_result => @_) }
 
 sub diag_messages { shift->diags(@_)->map(sub { $_->{details} }, @_) }
 sub note_messages { shift->notes(@_)->map(sub { $_->{details} }, @_) }
@@ -114,8 +125,16 @@ no warnings 'once';
 
 *grep = sub {
     my $self = shift;
-    my ($call, @args) = @_;
-    blessed($self)->new_from_ref([grep { $self->_upgrade($_)->$call(@args) } @$self]);
+    my ($call, %params) = @_;
+
+    my $args = $params{args} || [];
+    my @out = grep { $self->_upgrade($_)->$call(@$args) } @$self;
+
+    blessed($self)->new_from_ref(\@out)
+        unless $params{in_place};
+
+    @$self = @out;
+    return $self;
 };
 
 1;

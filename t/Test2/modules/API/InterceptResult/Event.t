@@ -100,23 +100,61 @@ tests facet => sub {
     );
 };
 
+tests the_facet => sub {
+    my $one = $CLASS->new(facet_data => {
+        other_single => {},
+        other_list   => [{}],
+        assert => {pass => 1, details => 'xxx'},
+        info => [
+            {tag => 'DIAG', details => 'xxx'},
+            {tag => 'NOTE', details => 'xxx'},
+        ],
+    });
+
+    ok($one->the_facet('assert')->isa('Test2::EventFacet::Assert'),                "Bless the assert facet");
+    ok($one->the_facet('other_list')->isa('Test2::EventFacet'),                    "Bless the other_list as generic");
+    ok($one->the_facet('other_single')->isa('Test2::EventFacet'),                  "Bless the other_single as generic");
+    ok($one->the_facet('other_list')->isa('Test2::API::InterceptResult::Facet'),   "Bless the other_list as generic");
+    ok($one->the_facet('other_single')->isa('Test2::API::InterceptResult::Facet'), "Bless the other_single as generic");
+
+    is($one->the_facet('other_list')->foo, undef, "Generic gives us autoload for field access");
+
+    is_deeply(
+        $one->the_facet('xxx'),
+        undef,
+        "Got an undef when facet is not present",
+    );
+
+    is_deeply(
+        $one->the_facet('assert'),
+        {pass => 1, details => 'xxx'},
+        "One item",
+    );
+
+    like(
+        exception { $one->the_facet('info') },
+        qr/'the_facet' called for facet 'info', but 'info' has '2' items/,
+        "the_facet dies if there are more than one"
+    );
+};
+
 tests causes_failure => sub {
     my $one = $CLASS->new(facet_data => { assert => {pass => 1, details => 'xxx'}});
     ok(!$one->causes_fail, "No failure for passing test");
     ok(!$one->causes_failure, "No failure for passing test (alt name)");
 
-    $one->{facet_data}->{assert}->{pass} = 0;
-    ok($one->causes_fail, "Failure for failing test");
-    ok($one->causes_failure, "Failure for failing test (alt name)");
+    my $two = $CLASS->new(facet_data => { assert => {pass => 0, details => 'xxx'}});
+    ok($two->causes_fail, "Failure for failing test");
+    ok($two->causes_failure, "Failure for failing test (alt name)");
 
-    # We rip the logic out of the hub sourcecode, so make sure that souce is
-    # what gets reported
-    $one->{facet_data}->{assert} = 'xxx';
-    like(
-        exception { $one->causes_fail },
-        qr/Can't use string .* as a HASH ref while "strict refs" in use at .*Hub\.pm line \d+/,
-        "Exception in the logic points at the hub"
+    my $three = $CLASS->new(
+        facet_data => {
+            assert  => {pass => 0, details => 'xxx'},
+            amnesty => [{tag => 'TODO', details => 'a todo'}],
+        }
     );
+    ok(!$three->causes_fail,    "No failure for failing test (with amnesty)");
+    ok(!$three->causes_failure, "No failure for failing test (with amnesty) (alt name)");
 };
 
 tests trace => sub {
@@ -128,37 +166,46 @@ tests trace => sub {
     is($one->trace_line,    undef, "No trace to get trace_line from");
     is($one->trace_package, undef, "No trace to get trace_package from");
     is($one->trace_subname, undef, "No trace to get trace_subname from");
+    is($one->trace_tool,    undef, "No trace to get trace_tool from");
 
     my $two = $CLASS->new(
         facet_data => {
             trace => {
+                frame => [],
                 details => 'xxx',
+                pid => 1,
+                tid => 1,
             },
         }
     );
-    is_deeply($two->trace, {details => 'xxx'}, "Got trace");
+    is_deeply($two->the_trace, {details => 'xxx', frame => [], pid => 1, tid => 1}, "Got trace");
+    is_deeply([$two->trace], [{details => 'xxx', frame => [], pid => 1, tid => 1}], "Got trace");
     is($two->trace_details, 'xxx', "get trace_details");
-    is($two->frame,         undef, "No frame to get");
+    is_deeply($two->frame,         [], "No frame to get");
     is($two->trace_file,    undef, "No frame to get trace_file from");
     is($two->trace_line,    undef, "No frame to get trace_line from");
     is($two->trace_package, undef, "No frame to get trace_package from");
     is($two->trace_subname, undef, "No frame to get trace_subname from");
+    is($two->trace_tool,    undef, "No frame to get trace_tool from");
 
     my $three = $CLASS->new(
         facet_data => {
             trace => {
                 details => 'xxx',
                 frame   => ['Foo::Bar', 'Foo/Bar.pm', 42, 'ok'],
+                pid => 1,
+                tid => 1,
             },
         }
     );
-    is_deeply($three->trace, {details => 'xxx', frame => ['Foo::Bar', 'Foo/Bar.pm', 42, 'ok']}, "Got trace");
+    is_deeply($three->the_trace, {details => 'xxx', frame => ['Foo::Bar', 'Foo/Bar.pm', 42, 'ok'], pid => 1, tid => 1}, "Got trace");
     is($three->trace_details, 'xxx', "get trace_details");
     is_deeply($three->frame, ['Foo::Bar', 'Foo/Bar.pm', 42, 'ok'], "Got frame");
     is($three->trace_file,    'Foo/Bar.pm', "Got trace_file");
     is($three->trace_line,    42,           "Got trace_line");
     is($three->trace_package, 'Foo::Bar',   "Got trace_package");
     is($three->trace_subname, 'ok',         "Got trace_subname");
+    is($three->trace_tool,    'ok',         "Got trace_tool");
 };
 
 tests brief => sub {
@@ -205,7 +252,7 @@ tests summary => sub {
             trace_tool    => undef,
             trace_details => undef,
 
-            facets => {},
+            facets => [],
         },
         "Got summary for empty event"
     );
@@ -214,7 +261,7 @@ tests summary => sub {
         assert => {pass => 0},
         trace => {frame => ['Foo::Bar', 'Foo/Bar.pm', 42, 'ok'], details => 'a trace'},
         parent => {},
-        plan => {},
+        plan => {count => 1},
         control => {halt => 1, details => "bailout wins"},
         info => [
             {tag => 'DIAG', details => 'diag 1'},
@@ -238,16 +285,31 @@ tests summary => sub {
             trace_tool    => 'ok',
             trace_details => 'a trace',
 
-            facets => {
-                assert   => 1,
-                control  => 1,
-                info     => 1,
-                parent   => 1,
-                plan     => 1,
-                trace    => 1,
-            },
+            facets => [qw{ assert control info parent plan trace }],
         },
         "Got summary for lots"
+    );
+
+    is_deeply(
+        $two->summary(fields => [qw/trace_line trace_file/]),
+        {
+            trace_line    => 42,
+            trace_file    => 'Foo/Bar.pm',
+        },
+        "Got summary, specific fields"
+    );
+
+    is_deeply(
+        $two->summary(remove => [qw/brief facets/]),
+        {
+            causes_failure => 1,
+
+            trace_line    => 42,
+            trace_file    => 'Foo/Bar.pm',
+            trace_tool    => 'ok',
+            trace_details => 'a trace',
+        },
+        "Got summary, removed some fields"
     );
 };
 
@@ -390,14 +452,14 @@ tests flatten => sub {
             trace_line     => 42,
 
             # Info
-            DIAG => ['diag 1', 'diag 2'],
-            INFO => ['info 1', 'info 2'],
-            NOTE => ['note 1', 'note 2'],
+            diag => ['diag 1', 'diag 2'],
+            info => ['info 1', 'info 2'],
+            note => ['note 1', 'note 2'],
 
             # Amnesty
-            OKOK => ['okok 1', 'okok 2'],
-            SKIP => ['skip 1', 'skip 2'],
-            TODO => ['todo 1', 'todo 2'],
+            okok => ['okok 1', 'okok 2'],
+            skip => ['skip 1', 'skip 2'],
+            todo => ['todo 1', 'todo 2'],
 
             # Errors
             error => ['not a fatal error', 'FATAL: a fatal error'],
@@ -451,14 +513,14 @@ tests flatten => sub {
             trace_line     => 42,
 
             # Info
-            DIAG => ['diag 1', 'diag 2'],
-            INFO => ['info 1', 'info 2'],
-            NOTE => ['note 1', 'note 2'],
+            diag => ['diag 1', 'diag 2'],
+            info => ['info 1', 'info 2'],
+            note => ['note 1', 'note 2'],
 
             # Amnesty
-            OKOK => ['okok 1', 'okok 2'],
-            SKIP => ['skip 1', 'skip 2'],
-            TODO => ['todo 1', 'todo 2'],
+            okok => ['okok 1', 'okok 2'],
+            skip => ['skip 1', 'skip 2'],
+            todo => ['todo 1', 'todo 2'],
 
             # Errors
             error => ['not a fatal error', 'FATAL: a fatal error'],
@@ -531,11 +593,33 @@ tests flatten => sub {
             trace_file => 'Foo/Bar.pm',
             trace_line => 42,
 
-            TODO  => ['todo 1'],
-            ERROR => ['FATAL: an error'],
+            todo  => ['todo 1'],
+            error => ['FATAL: an error'],
         },
         "Include amnesty when there is a fatal error"
     );
+
+    is_deeply(
+        $four->flatten(fields => [qw/trace_file trace_line/]),
+        {
+            trace_file => 'Foo/Bar.pm',
+            trace_line => 42,
+        },
+        "Filtered to only specific fields"
+    );
+
+    is_deeply(
+        $four->flatten(remove => [qw/todo error/]),
+        {
+            # Summaries
+            causes_failure => 0,
+
+            trace_file => 'Foo/Bar.pm',
+            trace_line => 42,
+        },
+        "Remove specific fields"
+    );
+
 };
 
 tests bailout => sub {

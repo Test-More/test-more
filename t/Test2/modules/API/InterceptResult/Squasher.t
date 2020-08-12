@@ -73,43 +73,43 @@ $squasher->process($_) for @raw;
 $squasher = undef;
 
 is_deeply(
-    \@events,
+    [map { $_->facet_data } @events],
     [
-        Test2::API::InterceptResult::Event->new(facet_data => {
-            trace => $trace1,
-            assert => { pass => 0, details => 'fail' },
-            info => [
+        {
+            trace  => $trace1,
+            assert => {pass => 0, details => 'fail'},
+            info   => [
                 {tag => 'DIAG', details => 'about to fail'},
                 {tag => 'DIAG', details => 'it failed'},
                 {tag => 'DIAG', details => 'it failed part 2'},
             ],
-        }),
+        },
 
-        Test2::API::InterceptResult::Event->new(facet_data => {
-            trace => $trace1,
-            assert => { pass => 0, details => 'fail again' },
-            info => [{tag => 'DIAG', details => 'it failed again'}],
-        }),
+        {
+            trace  => $trace1,
+            assert => {pass => 0, details => 'fail again'},
+            info   => [{tag => 'DIAG', details => 'it failed again'}],
+        },
 
-        Test2::API::InterceptResult::Event->new(facet_data => {
+        {
             trace => $trace2,
-            info => [{tag => 'NOTE', details => 'Take Note!'}],
-        }),
+            info  => [{tag => 'NOTE', details => 'Take Note!'}],
+        },
 
-        Test2::API::InterceptResult::Event->new(facet_data => {
-            trace => $trace3,
-            assert => { pass => 0, details => 'failed subtest' },
-            parent => { details => 'foo', state => {}, children => [] },
-            info => [
+        {
+            trace  => $trace3,
+            assert => {pass => 0, details => 'failed subtest'},
+            parent => {details => 'foo', state => {}, children => []},
+            info   => [
                 {tag => 'NOTE', details => 'About to start subtest'},
                 {tag => 'DIAG', details => 'Subtest failed'},
             ],
-        }),
+        },
 
-        Test2::API::InterceptResult::Event->new(facet_data => {
+        {
             trace => $trace4,
-            info => [{tag => 'DIAG', details => 'Diagnosis: Murder'}],
-        }),
+            info  => [{tag => 'DIAG', details => 'Diagnosis: Murder'}],
+        },
     ],
     "Squashed events as expected"
 );

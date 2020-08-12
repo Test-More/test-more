@@ -34,13 +34,13 @@ my $res = intercept {
     });
     tm::note("xxx");
 #
-#    t2::plan(6);
+    t2::plan(6);
 #    tm::BAIL_OUT("foo");
 };
 
 use Data::Dumper;
 print Dumper($res->state);
-print Dumper($res->flatten(include_subevents => 1));
+print Dumper($res->squash_info->flatten(include_subevents => 1));
 
 t2::ok(1);
 
