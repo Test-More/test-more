@@ -171,7 +171,7 @@ sub trace_line    { my $f = $_[0]->frame or return undef; $f->[2] || undef }
 sub trace_subname { my $f = $_[0]->frame or return undef; $f->[3] || undef }
 sub trace_tool    { my $f = $_[0]->frame or return undef; $f->[3] || undef }
 
-sub trace_signature { my $t = $_[0]->trace or return undef; Test2::EventFacet::Trace::signature($t) || undef }
+sub trace_signature { my $t = $_[0]->the_trace or return undef; Test2::EventFacet::Trace::signature($t) || undef }
 
 sub brief {
     my $self = shift;

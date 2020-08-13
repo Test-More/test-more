@@ -3,41 +3,51 @@ use strict;
 use warnings;
 
 use Scalar::Util qw/blessed/;
+use Test2::Util  qw/pkg_to_file/;
 use Storable     qw/dclone/;
-use Carp         qw/croak/;
+use Carp         qw/croak confess/;
 
 use Test2::API::InterceptResult::Squasher;
 use Test2::API::InterceptResult::Event;
 use Test2::API::InterceptResult::Hub;
 
+
 sub new {
+    confess "Called a method that creates a new instance in void context" unless defined wantarray;
     my $class = shift;
     bless([@_], $class);
 }
 
-sub new_from_ref { bless($_[1], $_[0]) }
+sub new_from_ref {
+    confess "Called a method that creates a new instance in void context" unless defined wantarray;
+    bless($_[1], $_[0]);
+}
 
-sub clone { blessed($_[0])->new(@{$_[0]}) }
+sub clone { blessed($_[0])->new(@{dclone($_[0])}) }
 
 sub event_list { @{$_[0]} }
 
 sub _upgrade {
     my $self = shift;
-    my ($event) = @_;
+    my ($event, %params) = @_;
 
     my $blessed = blessed($event);
 
-    return $event if $blessed && $event->isa('Test2::API::InterceptResult::Event');
+    my $upgrade_class = $params{upgrade_class} ||= 'Test2::API::InterceptResult::Event';
+
+    return $event if $blessed && $event->isa($upgrade_class);
 
     my $fd = dclone($blessed ? $event->facet_data : $event);
 
-    my $class = blessed($self);
+    my $class = $params{result_class} ||= blessed($self);
 
     if (my $parent = $fd->{parent}) {
-        $parent->{children} = $class->new_from_ref($parent->{children} || [])->upgrade;
+        $parent->{children} = $class->new_from_ref($parent->{children} || [])->upgrade(%params);
     }
 
-    return Test2::API::InterceptResult::Event->new(facet_data => $fd, result_class => $class);
+    my $uc_file = pkg_to_file($upgrade_class);
+    require($uc_file) unless $INC{$uc_file};
+    return $upgrade_class->new(facet_data => $fd, result_class => $class);
 }
 
 sub hub {
@@ -46,19 +56,22 @@ sub hub {
     my $hub = Test2::API::InterceptResult::Hub->new();
     $hub->process($_) for @$self;
     $hub->set_ended(1);
-    $hub->set__plan('NO PLAN') unless $hub->_plan;
 
     return $hub;
 }
 
 sub state {
     my $self = shift;
+    my %params = @_;
 
     my $hub = $self->hub;
 
     my $out = {
         map {($_ => scalar $hub->$_)} qw/count failed is_passing plan bailed_out skip_reason/
     };
+
+    $out->{bailed_out} = $self->_upgrade($out->{bailed_out}, %params)->bailout_reason || 1
+        if $out->{bailed_out};
 
     $out->{follows_plan} = $hub->check_plan;
 
@@ -69,7 +82,7 @@ sub upgrade {
     my $self = shift;
     my %params = @_;
 
-    my @out = map { $self->_upgrade($_) } @$self;
+    my @out = map { $self->_upgrade($_, %params) } @$self;
 
     return blessed($self)->new_from_ref(\@out)
         unless $params{in_place};
@@ -88,7 +101,7 @@ sub squash_info {
         my $squasher = Test2::API::InterceptResult::Squasher->new(events => \@out);
         # Clone to make sure we do not indirectly modify an existing one if it
         # is already upgraded
-        $squasher->process($self->_upgrade($_)->clone) for @$self;
+        $squasher->process($self->_upgrade($_, %params)->clone) for @$self;
         $squasher->flush_down();
     }
 
@@ -111,26 +124,30 @@ sub briefs          { shift->map(brief          => @_) }
 sub summaries       { shift->map(summary        => @_) }
 sub subtest_results { shift->map(subtest_result => @_) }
 
-sub diag_messages { shift->diags(@_)->map(sub { $_->{details} }, @_) }
-sub note_messages { shift->notes(@_)->map(sub { $_->{details} }, @_) }
-sub error_messages { shift->errors(@_)->map(sub { $_->{details} }, @_) }
+sub diag_messages  {   shift->diags(@_)->map(sub { $_->diag_messages  }, @_) }
+sub note_messages  {   shift->notes(@_)->map(sub { $_->note_messages  }, @_) }
+sub error_messages {  shift->errors(@_)->map(sub { $_->error_messages }, @_) }
 
 no warnings 'once';
 
 *map = sub {
     my $self = shift;
-    my ($call, @args) = @_;
-    return [map { $self->_upgrade($_)->$call(@args) } @$self];
+    my ($call, %params) = @_;
+
+    my $args = $params{args} ||= [];
+
+    return [map { local $_ = $self->_upgrade($_, %params); $_->$call(@$args) } @$self];
 };
 
 *grep = sub {
     my $self = shift;
     my ($call, %params) = @_;
 
-    my $args = $params{args} || [];
-    my @out = grep { $self->_upgrade($_)->$call(@$args) } @$self;
+    my $args = $params{args} ||= [];
 
-    blessed($self)->new_from_ref(\@out)
+    my @out = grep { local $_ = $self->_upgrade($_, %params); $_->$call(@$args) } @$self;
+
+    return blessed($self)->new_from_ref(\@out)
         unless $params{in_place};
 
     @$self = @out;

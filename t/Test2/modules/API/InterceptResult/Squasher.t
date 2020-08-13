@@ -4,6 +4,7 @@ use warnings;
 use Test2::Tools::Tiny;
 use Test2::API::InterceptResult::Squasher;
 use Test2::API::InterceptResult::Event;
+use Carp::Always;
 
 my $CLASS = 'Test2::API::InterceptResult::Squasher';
 
