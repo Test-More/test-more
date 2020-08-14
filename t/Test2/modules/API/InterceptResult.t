@@ -2,13 +2,10 @@ use strict;
 use warnings;
 
 use Test::Builder;
-use Test2::Tools::Tiny qw/tests exception/;
-use Test2::V0;
+use Test2::Tools::Tiny;
 use Test2::API::InterceptResult;
 use Scalar::Util qw/reftype/;
 use Test2::API qw/intercept context/;
-
-*is_deeply = \&is;
 
 my $CLASS = 'Test2::API::InterceptResult';
 
@@ -242,7 +239,7 @@ tests grep => sub {
         ok(1),                          # 0
         note "A Note";                  # 1
         diag "A Diag";                  # 2
-        subtest foo => sub { ok(1) };   # 3
+        tests foo => sub { ok(1) };   # 3
 
         sub {                           # 4
             my $ctx = context();
@@ -267,7 +264,7 @@ tests grep => sub {
     ok($_->has_assert, "Is an assert") for @$one;
 };
 
-subtest map => sub {
+tests map => sub {
     my $one = intercept { ok(1); ok(2) };
     $one->upgrade(in_place => 1);
 
@@ -290,9 +287,9 @@ subtest map => sub {
     );
 
     my $two = intercept {
-        subtest foo => sub { ok(1) };
+        tests foo => sub { ok(1) };
         ok(1);
-        subtest bar => sub { ok(1) };
+        tests bar => sub { ok(1) };
     }->upgrade;
 
     is_deeply(
