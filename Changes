@@ -1,6 +1,7 @@
 {{$NEXT}}
 
     - Move try_sig_mask to the only module that uses it.
+    - Update copyright date
 
 1.302177  2020-08-06 21:46:06-07:00 America/Los_Angeles
 
