@@ -2,6 +2,8 @@ package Test2::API::InterceptResult::Squasher;
 use strict;
 use warnings;
 
+our $VERSION = '1.302178';
+
 use Carp qw/croak/;
 use List::Util qw/first/;
 
@@ -99,17 +101,21 @@ sub squash_up {
 
     $self->clear_up;
 
-    my $into = $self->{+UP_INTO};
-    unless ($into) {
-        return unless $event->has_assert;
-        my $sig = $event->trace_signature or return;
-
-        $self->{+UP_INTO}  = $event;
-        $self->{+UP_SIG}   = $sig;
-        $self->{+UP_CLEAR} = 0;
+    if ($event->has_assert) {
+        if(my $sig = $event->trace_signature) {
+            $self->{+UP_INTO}  = $event;
+            $self->{+UP_SIG}   = $sig;
+            $self->{+UP_CLEAR} = 0;
+        }
+        else {
+            $self->{+UP_CLEAR} = 1;
+            $self->clear_up;
+        }
 
         return;
     }
+
+    my $into = $self->{+UP_INTO} or return;
 
     # Next iteration should clear unless something below changes that
     $self->{+UP_CLEAR} = 1;

@@ -2,6 +2,8 @@ package Test2::API::InterceptResult::Event;
 use strict;
 use warnings;
 
+our $VERSION = '1.302178';
+
 use List::Util   qw/first uniq/;
 use Test2::Util  qw/pkg_to_file/;
 use Scalar::Util qw/reftype blessed/;

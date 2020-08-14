@@ -1167,8 +1167,13 @@ It will execute the codeblock, intercepting any generated events in the
 process. It will return an array reference with all the generated event
 objects. All events should be subclasses of L<Test2::Event>.
 
-This is a very low-level subtest tool. This is useful for writing tools which
-produce subtests. This is not intended for people simply writing tests.
+As of version 1.302178 the events array that is returned is blssed as an
+L<Test2::API::InterceptResult> instance. L<Test2::API::InterceptResult>
+Provides a helpful interface for filtering and/or inspecting the events list
+overall, or individual events within the list.
+
+This is intended to help you test your test code. This is not intended for
+people simply writing tests.
 
 =head2 run_subtest(...)
 

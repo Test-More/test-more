@@ -126,6 +126,9 @@ tests upgrade => sub {
     ok($two->[0]->isa('Test2::API::InterceptResult::Event'), "Upgraded copy 0");
     ok($two->[1]->isa('Test2::API::InterceptResult::Event'), "Upgraded copy 1");
 
+    my $three = $two->upgrade;
+    ok("$two->[0]" ne "$three->[0]", "Upgrade on an already upgraded instance returns copies of the events, not originals");
+
     like(
         exception { $one->upgrade() },
         qr/Called a method that creates a new instance in void context/,
@@ -179,6 +182,10 @@ tests squash_info => sub {
     );
     ok($one->[2]->has_assert, "Assertion is still an assertion");
 
+
+    my $two = intercept {
+
+    };
 };
 
 tests messages => sub {
