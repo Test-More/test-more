@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix 5.8 support
+
 0.000133  2020-08-14 21:59:19-07:00 America/Los_Angeles (TRIAL RELEASE)
 
     - Add summary of missing/extra elements in compare diagnostics

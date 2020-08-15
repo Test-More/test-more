@@ -300,8 +300,8 @@ sub table {
 
     my @dne;
     for my $row (@$render_rows) {
-        my $got = $row->[$COLUMNS{GOT}->{id}]   // '';
-        my $chk = $row->[$COLUMNS{CHECK}->{id}] // '';
+        my $got = $row->[$COLUMNS{GOT}->{id}]   || '';
+        my $chk = $row->[$COLUMNS{CHECK}->{id}] || '';
         if ($got eq '<DOES NOT EXIST>') {
             push @dne => "$row->[$COLUMNS{PATH}->{id}]:   DOES NOT EXIST";
         }
