@@ -32,6 +32,10 @@ my %COLUMNS = (
     'GLNs' => {name => 'GLNs', alias => 'LNs', value => sub { $_[0]->table_got_lines }  },
     'CLNs' => {name => 'CLNs', alias => 'LNs', value => sub { $_[0]->table_check_lines }},
 );
+{
+    my $i = 0;
+    $COLUMNS{$_}->{id} = $i++ for @COLUMN_ORDER;
+}
 
 sub remove_column {
     my $class = shift;
@@ -281,8 +285,6 @@ sub table {
     my $header = $self->table_header;
     my $rows   = $self->table_rows;
 
-    my $xxx = Dumper($rows);
-
     my $render_rows = [@$rows];
     my $max = exists $ENV{TS_MAX_DELTA} ? $ENV{TS_MAX_DELTA} : 25;
     if ($max && @$render_rows > $max) {
@@ -296,6 +298,23 @@ sub table {
         );
     }
 
+    my @dne;
+    for my $row (@$render_rows) {
+        my $got = $row->[$COLUMNS{GOT}->{id}]   // '';
+        my $chk = $row->[$COLUMNS{CHECK}->{id}] // '';
+        if ($got eq '<DOES NOT EXIST>') {
+            push @dne => "$row->[$COLUMNS{PATH}->{id}]:   DOES NOT EXIST";
+        }
+        elsif ($chk eq '<DOES NOT EXIST>') {
+            push @dne => "$row->[$COLUMNS{PATH}->{id}]: SHOULD NOT EXIST";
+        }
+    }
+
+    if (@dne) {
+        unshift @dne => '==== Summary of missing/extra items ====';
+        push    @dne => '== end summary of missing/extra items ==';
+    }
+
     my $table_args = {
         header      => $header,
         collapse    => 1,
@@ -306,16 +325,14 @@ sub table {
 
     my $render = join "\n" => (
         Test2::Util::Table::table(%$table_args, rows => $render_rows),
-        @diag
+        @dne,
+        @diag,
     );
-
-    use Data::Dumper;
 
     my $table = Test2::EventFacet::Info::Table->new(
         %$table_args,
-        rows => $rows,
+        rows      => $rows,
         as_string => $render,
-        xxx => $xxx,
     );
 
     return $table;

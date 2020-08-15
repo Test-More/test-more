@@ -23,7 +23,7 @@ sub fail_table {
             field assert => hash { field pass => 0; etc };
             field info => array {
                 item hash {
-                    field details => $string;
+                    field details => match(qr/^\Q$string\E/);
                     field table   => hash {
                         field header => bag { item $_ for @{$args{header}}; etc };
                         field rows   => bag {
@@ -175,6 +175,27 @@ subtest is => sub {
             end;
         },
         "Got expected events"
+    );
+
+    $events = intercept { is({foo => {bar => 'a'}, a => 1}, {foo => {baz => 'a'}, a => 2}, "Typo") };
+    chomp(my $want = <<"    EOT");
++------------+------------------+---------+------------------+
+| PATH       | GOT              | OP      | CHECK            |
++------------+------------------+---------+------------------+
+| {a}        | 1                | eq      | 2                |
+| {foo}{baz} | <DOES NOT EXIST> |         | a                |
+| {foo}{bar} | a                | !exists | <DOES NOT EXIST> |
++------------+------------------+---------+------------------+
+==== Summary of missing/extra items ====
+{foo}{baz}:   DOES NOT EXIST
+{foo}{bar}: SHOULD NOT EXIST
+== end summary of missing/extra items ==
+    EOT
+
+    like(
+        $events->[0]->facet_data->{info}->[0]->{details},
+        $want,
+        "Got summary of missing/extra"
     );
 };
 
