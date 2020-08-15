@@ -1,6 +1,6 @@
 package Test2::Manual::Tooling::Plugin::ToolStarts;
 
-our $VERSION = '0.000133';
+our $VERSION = '0.000134';
 
 1;
 
