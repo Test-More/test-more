@@ -13,18 +13,18 @@ tests facet_map => sub {
 
     is_deeply($fm->{__GENERIC__}, {class => 'Test2::API::InterceptResult::Facet', loaded => 1}, "Generic '__GENERIC__'");
 
-    is_deeply($fm->{about},   {class => 'Test2::EventFacet::About',   list => 0, loaded => 1}, "Found 'about' facet");
-    is_deeply($fm->{amnesty}, {class => 'Test2::EventFacet::Amnesty', list => 1, loaded => 1}, "Found 'amnesty' facet");
-    is_deeply($fm->{assert},  {class => 'Test2::EventFacet::Assert',  list => 0, loaded => 1}, "Found 'assert' facet");
-    is_deeply($fm->{control}, {class => 'Test2::EventFacet::Control', list => 0, loaded => 1}, "Found 'control' facet");
-    is_deeply($fm->{errors},  {class => 'Test2::EventFacet::Error',   list => 1, loaded => 1}, "Found 'errors' facet");
-    is_deeply($fm->{hubs},    {class => 'Test2::EventFacet::Hub',     list => 1, loaded => 1}, "Found 'hubs' facet");
-    is_deeply($fm->{info},    {class => 'Test2::EventFacet::Info',    list => 1, loaded => 1}, "Found 'info' facet");
-    is_deeply($fm->{meta},    {class => 'Test2::EventFacet::Meta',    list => 0, loaded => 1}, "Found 'meta' facet");
-    is_deeply($fm->{parent},  {class => 'Test2::EventFacet::Parent',  list => 0, loaded => 1}, "Found 'parent' facet");
-    is_deeply($fm->{plan},    {class => 'Test2::EventFacet::Plan',    list => 0, loaded => 1}, "Found 'plan' facet");
-    is_deeply($fm->{render},  {class => 'Test2::EventFacet::Render',  list => 1, loaded => 1}, "Found 'render' facet");
-    is_deeply($fm->{trace},   {class => 'Test2::EventFacet::Trace',   list => 0, loaded => 1}, "Found 'trace' facet");
+    is_deeply($CLASS->facet_info('about'),   {class => 'Test2::EventFacet::About',   list => 0, loaded => 1}, "Found 'about' facet");
+    is_deeply($CLASS->facet_info('amnesty'), {class => 'Test2::EventFacet::Amnesty', list => 1, loaded => 1}, "Found 'amnesty' facet");
+    is_deeply($CLASS->facet_info('assert'),  {class => 'Test2::EventFacet::Assert',  list => 0, loaded => 1}, "Found 'assert' facet");
+    is_deeply($CLASS->facet_info('control'), {class => 'Test2::EventFacet::Control', list => 0, loaded => 1}, "Found 'control' facet");
+    is_deeply($CLASS->facet_info('errors'),  {class => 'Test2::EventFacet::Error',   list => 1, loaded => 1}, "Found 'errors' facet");
+    is_deeply($CLASS->facet_info('hubs'),    {class => 'Test2::EventFacet::Hub',     list => 1, loaded => 1}, "Found 'hubs' facet");
+    is_deeply($CLASS->facet_info('info'),    {class => 'Test2::EventFacet::Info',    list => 1, loaded => 1}, "Found 'info' facet");
+    is_deeply($CLASS->facet_info('meta'),    {class => 'Test2::EventFacet::Meta',    list => 0, loaded => 1}, "Found 'meta' facet");
+    is_deeply($CLASS->facet_info('parent'),  {class => 'Test2::EventFacet::Parent',  list => 0, loaded => 1}, "Found 'parent' facet");
+    is_deeply($CLASS->facet_info('plan'),    {class => 'Test2::EventFacet::Plan',    list => 0, loaded => 1}, "Found 'plan' facet");
+    is_deeply($CLASS->facet_info('render'),  {class => 'Test2::EventFacet::Render',  list => 1, loaded => 1}, "Found 'render' facet");
+    is_deeply($CLASS->facet_info('trace'),   {class => 'Test2::EventFacet::Trace',   list => 0, loaded => 1}, "Found 'trace' facet");
 };
 
 tests init => sub {

@@ -22,33 +22,65 @@ use Test2::Util::HashBase qw{
 
 my %FACETS;
 BEGIN {
+    local $@;
     local *plugins;
-    require Module::Pluggable;
-    Module::Pluggable->import(
-        # We will replace the sub later
-        require => 1,
-        on_require_error => sub { 1 },
-        search_path =>  ['Test2::EventFacet'],
-        max_depth => 3,
-        min_depth => 3,
-    );
+    if (eval { require Module::Pluggable; 1 }) {
+        Module::Pluggable->import(
+            # We will replace the sub later
+            require          => 1,
+            on_require_error => sub { 1 },
+            search_path      => ['Test2::EventFacet'],
+            max_depth        => 3,
+            min_depth        => 3,
+        );
 
-    for my $facet_type (__PACKAGE__->plugins) {
-        local $@;
-        my ($key, $list);
-        eval {
-            $key = $facet_type->facet_key;
-            $list = $facet_type->is_list;
-        };
-        next unless $key && defined($list);
+        for my $facet_type (__PACKAGE__->plugins) {
+            my ($key, $list);
+            eval {
+                $key  = $facet_type->facet_key;
+                $list = $facet_type->is_list;
+            };
+            next unless $key && defined($list);
 
-        $FACETS{$key} = {list => $list, class => $facet_type, loaded => 1};
+            $FACETS{$key} = {list => $list, class => $facet_type, loaded => 1};
+        }
     }
 
     $FACETS{__GENERIC__} = {class => 'Test2::API::InterceptResult::Facet', loaded => 1};
 }
 
 sub facet_map { \%FACETS }
+
+sub facet_info {
+    my $facet = pop;
+
+    return $FACETS{$facet} if exists $FACETS{$facet};
+
+    my $mname = ucfirst(lc($facet));
+    $mname =~ s/s$//;
+
+    for my $name ($mname, "${mname}s") {
+        my $file  = "Test2/EventFacet/$name.pm";
+        my $class = "Test2::EventFacet::$name";
+
+        local $@;
+        my $ok = eval {
+            require $file;
+
+            my $key = $class->facet_key;
+            my $list = $class->is_list;
+
+            $FACETS{$key} = {list => $list, class => $class, loaded => 1};
+            $FACETS{$facet} = $FACETS{$key} if $facet ne $key;
+
+            1;
+        };
+
+        return $FACETS{$facet} if $ok && $FACETS{$facet};
+    }
+
+    return $FACETS{$facet} = $FACETS{__GENERIC__};
+}
 
 sub init {
     my $self = shift;
@@ -60,10 +92,12 @@ sub init {
     my $fd = $self->{+FACET_DATA} ||= {};
 
     for my $facet (keys %$fd) {
-        next unless $FACETS{$facet};
+        my $finfo = $self->facet_info($facet);
+        my $is_list = $finfo->{list};
+        next unless defined $is_list;
+
         my $type = reftype($fd->{$facet});
 
-        my $is_list = $FACETS{$facet}->{list};
         if ($is_list) {
             confess "Facet '$facet' is a list facet, but got '$type' instead of an arrayref"
                 unless $type eq 'ARRAY';
@@ -97,7 +131,7 @@ sub _facet_class {
     my $self = shift;
     my ($name) = @_;
 
-    my $spec  = $FACETS{$name} || $FACETS{__GENERIC__};
+    my $spec  = $self->facet_info($name);
     my $class = $spec->{class};
     unless ($spec->{loaded}) {
         my $file = pkg_to_file($class);
@@ -208,7 +242,7 @@ sub flatten {
     delete $out->{trace_tool};
     delete $out->{trace_details} unless defined($out->{trace_details});
 
-    for my $tagged (grep { $FACETS{$_}->{list} && $FACETS{$_}->{class}->can('tag') } keys %FACETS) {
+    for my $tagged (grep { my $finfo = $self->facet_info($_); $finfo->{list} && $finfo->{class}->can('tag') } keys %FACETS, keys %$todo) {
         my $set = delete $todo->{$tagged} or next;
 
         my $fd = $self->{+FACET_DATA};
