@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+1.302178  2020-09-07 14:11:52-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Move try_sig_mask to the only module that uses it.
     - Inherit warnings bitmask in cmp_ok string eval
     - Update copyright date
