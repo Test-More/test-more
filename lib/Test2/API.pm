@@ -404,10 +404,10 @@ sub context {
     my $end_phase = $ENDING || $phase eq 'END' || $phase eq 'DESTRUCT';
 
     my $level = 1 + $params{level};
-    my ($pkg, $file, $line, $sub) = $end_phase ? caller(0) : caller($level);
+    my ($pkg, $file, $line, $sub, @other) = $end_phase ? caller(0) : caller($level);
     unless ($pkg || $end_phase) {
         confess "Could not find context at depth $level" unless $params{fudge};
-        ($pkg, $file, $line, $sub) = caller(--$level) while ($level >= 0 && !$pkg);
+        ($pkg, $file, $line, $sub, @other) = caller(--$level) while ($level >= 0 && !$pkg);
     }
 
     my $depth = $level;
@@ -459,6 +459,8 @@ sub context {
             hid    => $hid,
             nested => $hub->{nested},
             buffered => $hub->{buffered},
+
+            full_caller => [$pkg, $file, $line, $sub, @other],
 
             $$UUID_VIA ? (
                 huuid => $hub->{uuid},

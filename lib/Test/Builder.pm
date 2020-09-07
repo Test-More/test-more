@@ -962,9 +962,11 @@ sub cmp_ok {
         local( $@, $!, $SIG{__DIE__} );    # isolate eval
 
         my($pack, $file, $line) = $ctx->trace->call();
+        my $warning_bits = $ctx->trace->warning_bits;
 
         # This is so that warnings come out at the caller's level
         $succ = eval qq[
+BEGIN {\${^WARNING_BITS} = \$warning_bits};
 #line $line "(eval in cmp_ok) $file"
 \$test = (\$got $type \$expect);
 1;
