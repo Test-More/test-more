@@ -452,13 +452,15 @@ sub context {
     # hit with how often this needs to be called.
     my $trace = bless(
         {
-            frame  => [$pkg, $file, $line, $sub, @other],
+            frame  => [$pkg, $file, $line, $sub],
             pid    => $$,
             tid    => get_tid(),
             cid    => gen_uid(),
             hid    => $hid,
             nested => $hub->{nested},
             buffered => $hub->{buffered},
+
+            full_caller => [$pkg, $file, $line, $sub, @other],
 
             $$UUID_VIA ? (
                 huuid => $hub->{uuid},
