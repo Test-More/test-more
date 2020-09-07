@@ -2,7 +2,7 @@ use strict;
 use warnings;
 use Test2::Tools::Tiny;
 
-skip_all "Only testing on 5.18+" if $] < 5.018;
+BEGIN { skip_all "Only testing on 5.18+" if $] < 5.018 }
 
 require Test::More;
 *cmp_ok = \&Test::More::cmp_ok;
