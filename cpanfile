@@ -3,6 +3,7 @@
 
 requires "File::Spec" => "0";
 requires "File::Temp" => "0";
+requires "List::Util" => "1.45";
 requires "Scalar::Util" => "1.13";
 requires "Storable" => "0";
 requires "perl" => "5.006002";
