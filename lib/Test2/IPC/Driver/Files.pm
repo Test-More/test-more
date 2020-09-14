@@ -14,7 +14,7 @@ use Storable();
 use File::Spec();
 use POSIX();
 
-use Test2::Util qw/try get_tid pkg_to_file IS_WIN32 ipc_separator do_rename do_unlink/;
+use Test2::Util qw/try get_tid pkg_to_file IS_WIN32 ipc_separator do_rename do_unlink try_sig_mask/;
 use Test2::API qw/test2_ipc_set_pending/;
 
 sub is_viable { 1 }
@@ -147,33 +147,6 @@ sub drop_hub {
     $data = "Could not dump data... sorry." unless defined $data;
 
     $self->abort_trace("Not all files from hub '$hid' have been collected!\nHere is the leftover data:\n========================\n$data\n===================\n");
-}
-
-sub try_sig_mask {
-    my $self = shift;
-    my ($code) = @_;
-
-    my ($old, $blocked);
-    unless(IS_WIN32) {
-        my $to_block = POSIX::SigSet->new(
-            POSIX::SIGINT(),
-            POSIX::SIGALRM(),
-            POSIX::SIGHUP(),
-            POSIX::SIGTERM(),
-            POSIX::SIGUSR1(),
-            POSIX::SIGUSR2(),
-        );
-        $old = POSIX::SigSet->new;
-        $blocked = POSIX::sigprocmask(POSIX::SIG_BLOCK(), $to_block, $old);
-        # Silently go on if we failed to log signals, not much we can do.
-    }
-
-    my ($ok, $err) = &try($code);
-
-    # If our block was successful we want to restore the old mask.
-    POSIX::sigprocmask(POSIX::SIG_SETMASK(), $old, POSIX::SigSet->new()) if defined $blocked;
-
-    return ($ok, $err);
 }
 
 sub send {
@@ -493,40 +466,9 @@ follow template specifications from L<File::Temp>.
 
 =back
 
-=head1 METHODS
+=head1 SEE ALSO
 
-See L<Test2::IPC::Driver> for methods that are inherited or overriden. Only
-methods unique to this driver are listed below.
-
-=over 4
-
-=item ($ok, $err) = $inst->try_sig_mask(sub { ... })
-
-Complete an action with several signals masked, they will be unmasked at the
-end allowing any signals that were intercepted to get handled.
-
-This is primarily used when you need to make several actions atomic (against
-some signals anyway).
-
-Signals that are intercepted:
-
-=over 4
-
-=item SIGINT
-
-=item SIGALRM
-
-=item SIGHUP
-
-=item SIGTERM
-
-=item SIGUSR1
-
-=item SIGUSR2
-
-=back
-
-=back
+See L<Test2::IPC::Driver> for methods.
 
 =head1 SOURCE
 

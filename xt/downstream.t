@@ -36,7 +36,7 @@ ok(run_string(<<"EOT"), "Installed Devel::Declare") || exit 1;
 perlbrew exec --with $lib cpanm Devel::Declare
 EOT
 
-for my $i (qw/Suite/) {
+for my $i (qw/Suite Harness/) {
     my $ok = 0;
     for (1 .. 2) {
         $ok = run_string(<<"        EOT");
