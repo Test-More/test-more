@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '1.302181';
 
-use List::Util   qw/first uniq/;
+use List::Util   qw/first/;
 use Test2::Util  qw/pkg_to_file/;
 use Scalar::Util qw/reftype blessed/;
 
