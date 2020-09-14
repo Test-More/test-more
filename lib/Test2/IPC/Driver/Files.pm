@@ -181,7 +181,7 @@ do so if Test::Builder is loaded for legacy reasons.
 
     # Write and rename the file.
     my ($ren_ok, $ren_err);
-    my ($ok, $err) = $self->try_sig_mask(sub {
+    my ($ok, $err) = try_sig_mask(sub {
         Storable::store($e, $file);
         ($ren_ok, $ren_err) = do_rename("$file", $ready);
     });
