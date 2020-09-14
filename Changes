@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - put try_sig_mask back where it goes (And add test to prevent this in the future)
+    - Drop new List::Util requirement back down
+
 1.302180  2020-09-13 23:11:18-07:00 America/Los_Angeles
 
     - No changes since last trial
