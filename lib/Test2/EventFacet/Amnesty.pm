@@ -2,7 +2,7 @@ package Test2::EventFacet::Amnesty;
 use strict;
 use warnings;
 
-our $VERSION = '1.302180';
+our $VERSION = '1.302181';
 
 sub is_list { 1 }
 
