@@ -1148,7 +1148,7 @@ B<Note: None of these are exported by default. You need to request them.>
 
         # Set checks that apply to all keys or values. Can be done multiple
         # times, and each call can define multiple checks, all will be run.
-        all_vals match qr/a/, match qr/b/;    # All keys must have an 'a' and a 'b'
+        all_vals match qr/a/, match qr/b/;    # All values must have an 'a' and a 'b'
         all_keys match qr/x/;                 # All keys must have an 'x'
 
         ...
