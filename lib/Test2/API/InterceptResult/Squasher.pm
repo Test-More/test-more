@@ -29,7 +29,7 @@ sub can_squash {
     return unless $event->has_info;
 
     # Do not merge up if one of these is true
-    return if first { $event->$_ } qw/causes_fail has_assert has_bailout has_errors has_plan has_subtest/;
+    return if first { $event->$_ } 'causes_fail', 'has_assert', 'has_bailout', 'has_errors', 'has_plan', 'has_subtest';
 
     # Signature if we can squash
     return $event->trace_signature;
