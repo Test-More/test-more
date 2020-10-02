@@ -26,8 +26,12 @@ sub import {
     carp "SRand loaded multiple times, re-seeding rand"
         if defined $SEED;
 
-    if (@_) {
+    if (@_ == 1) {
         ($SEED) = @_;
+        $FROM = 'import arg';
+    }
+    elsif (@_ == 2 and $_[0] eq 'seed') {
+        $SEED = $_[1];
         $FROM = 'import arg';
     }
     elsif(exists $ENV{T2_RAND_SEED}) {
@@ -115,7 +119,7 @@ Loading the plugin is easy, and the defaults are sane:
 
 Custom seed:
 
-    use Test2::Plugin::SRand 42;
+    use Test2::Plugin::SRand seed => 42;
 
 =head1 NOTE ON LOAD ORDER
 
