@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Fix 5.6 support
+    - Fix fragile %INC handling in a test
+
 1.302181  2020-09-14 09:46:04-07:00 America/Los_Angeles
 
     - put try_sig_mask back where it goes (And add test to prevent this in the future)
