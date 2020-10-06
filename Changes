@@ -1,6 +1,8 @@
 {{$NEXT}}
 
-    - Fix typoe Test2::Builder -> Test::Builder
+    - Fix typo Test2::Builder -> Test::Builder
+    - Improve import logic for SRand
+    - Other misc typo fixes
 
 0.000135  2020-08-16 21:44:24-07:00 America/Los_Angeles
 
