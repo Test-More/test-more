@@ -37,7 +37,9 @@ sub intercept_2(&) {
     $ENV{HARNESS_IS_VERBOSE} = 1;
     $ENV{T2_RAND_SEED} = 1234;
 
-    my $caller = [__PACKAGE__, __FILE__, __LINE__, 'xxx'];
+    my ($events, $warning);
+    my $reseed_qr = qr/SRand loaded multiple times, re-seeding rand/;
+    my $reseed_name = "Warned about resetting srand";
 
     like(
         intercept_2 { $CLASS->import('5555') },
@@ -49,9 +51,19 @@ sub intercept_2(&) {
     is($CLASS->seed, 5555, "set seed");
     is($CLASS->from, 'import arg', "set from");
 
-    my ($events, $warning);
-    $warning = warning { $events = intercept_2 { $CLASS->import() } };
+    $warning = warning { $events = intercept_2 { $CLASS->import(seed => 56789) } };
+    like(
+        $events,
+        array {
+            event Note => { message => "Seeded srand with seed '56789' from import arg." };
+        },
+        "got the event"
+    );
+    is($CLASS->seed, 56789, "set seed");
+    is($CLASS->from, 'import arg', "set from");
+    like($warning, $reseed_qr, $reseed_name);
 
+    $warning = warning { $events = intercept_2 { $CLASS->import() } };
     like(
         $events,
         array {
@@ -61,16 +73,10 @@ sub intercept_2(&) {
     );
     is($CLASS->seed, 1234, "set seed");
     is($CLASS->from, 'environment variable', "set from");
-
-    like(
-        $warning,
-        qr/SRand loaded multiple times, re-seeding rand/,
-        "Warned about resetting srand"
-    );
+    like($warning, $reseed_qr, $reseed_name);
 
     delete $ENV{T2_RAND_SEED};
     $warning = warning { $events = intercept_2 { $CLASS->import() } };
-
     like(
         $events,
         array {
@@ -80,12 +86,7 @@ sub intercept_2(&) {
     );
     ok($CLASS->seed && $CLASS->seed != 1234, "set seed");
     is($CLASS->from, 'local date', "set from");
-
-    like(
-        $warning,
-        qr/SRand loaded multiple times, re-seeding rand/,
-        "Warned about resetting srand"
-    );
+    like($warning, $reseed_qr, $reseed_name);
 
     my $hooks = Test2::API::test2_list_exit_callbacks();
     delete $ENV{HARNESS_IS_VERBOSE};
