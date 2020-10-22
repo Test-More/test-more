@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+0.000137  2020-10-21 18:22:07-07:00 America/Los_Angeles
+
     - Test new syntax `use Test2::Plugin::SRand seed => $seed;`
     - Update GitHub workflow with deprecated add-path
 
