@@ -2,7 +2,7 @@ package Test2::Plugin::UTF8;
 use strict;
 use warnings;
 
-our $VERSION = '0.000137';
+our $VERSION = '0.000138';
 
 use Carp qw/croak/;
 
