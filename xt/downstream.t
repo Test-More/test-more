@@ -11,7 +11,7 @@ BEGIN {
 
 use Test::More;
 
-my $lib = "downstream\@TestMore$$";
+my $lib = "5.20.3_no_thr\@TestMore$$";
 
 ok(run_string(<<"EOT"), "Installed a fresh perlbrew") || exit 1;
 perlbrew lib create $lib

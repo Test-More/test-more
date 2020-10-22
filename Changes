@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - avoid closing over scalar in BEGIN block in cmp_ok eval
+
 1.302182  2020-10-05 22:02:28-07:00 America/Los_Angeles
 
     - Fix 5.6 support
