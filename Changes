@@ -1,5 +1,8 @@
 {{$NEXT}}
 
+    - Merge doc fix from PR
+    - Merge strict fix for test
+
 0.000137  2020-10-21 18:22:07-07:00 America/Los_Angeles
 
     - Test new syntax `use Test2::Plugin::SRand seed => $seed;`
