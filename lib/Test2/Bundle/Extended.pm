@@ -284,6 +284,8 @@ See L<Test2::Tools::Compare>.
 
 =item $check = string($str)
 
+=item $check = it_isa($class_name)
+
 =item $check = in_set(@things)
 
 =item $check = not_in_set(@things)
