@@ -46,7 +46,7 @@ subtest simple => sub {
         match mismatch validator
         hash array bag object meta number float rounded within string bool
         in_set not_in_set check_set
-        item field call call_list call_hash prop check all_items all_keys all_vals all_values
+        item field call call_list call_hash this_isa prop check all_items all_keys all_vals all_values
         etc end filter_items
         T F D DF E DNE FDNE U
         event
@@ -1033,6 +1033,26 @@ subtest call => sub {
     );
 };
 
+subtest this_isa => sub {
+    like(
+        dies { this_isa 'Foo' },
+        qr/No current build/,
+        "Need a build"
+    );
+
+    like(
+        dies { [hash { this_isa 'Foo' }] },
+        qr/'Test2::Compare::Hash.*' does not support inheritance checks/,
+        "Build must support checks"
+    );
+
+    like(
+        dies { [object { [ this_isa 'Foo' ] }] },
+        qr/'this_isa' should only ever be called in void context/,
+        "call context"
+    );
+};
+
 subtest check => sub {
     like(
         dies { check 'a' },
@@ -1294,6 +1314,7 @@ subtest object => sub {
         call_list many => [1,2,3,4];
         call_hash many => {1=>2,3=>4};
         call [args => qw(a b)] => {a=>'b'};
+        this_isa 'ObjectFoo';
         prop blessed => 'ObjectFoo';
         prop reftype => 'HASH';
         etc;
