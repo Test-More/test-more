@@ -78,7 +78,13 @@ sub add_call {
 sub add_this_isa {
     my $self = shift;
     my ($class_name) = @_;
-    push @{$self->{+ISACHECKS}} => Test2::Compare::Isa->new(input => $class_name);
+
+    my @caller = caller(1);
+    push @{$self->{+ISACHECKS}} => Test2::Compare::Isa->new(
+        input => $class_name,
+        file  => $caller[1],
+        lines => [$caller[2]],
+    );
 }
 
 sub deltas {
