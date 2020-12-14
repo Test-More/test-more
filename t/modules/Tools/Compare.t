@@ -446,8 +446,8 @@ subtest string => sub {
         is($check->lines, [$line], "Got line number");
 
         $events = intercept {
-            is('bar', $check1, "pass");
-            is('foo', $check1, "fail");
+            is('bar', $check, "pass");
+            is('foo', $check, "fail");
         };
 
         like(
