@@ -28,7 +28,7 @@ use Test2::Tools::Basic qw{
 use Test2::Tools::Compare qw{
     is like isnt unlike
     match mismatch validator
-    hash array bag object meta meta_check number float rounded within string subset bool it_isa
+    hash array bag object meta meta_check number float rounded within string subset bool check_isa
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     etc end filter_items
@@ -78,7 +78,7 @@ our @EXPORT = qw{
 
     is like isnt unlike
     match mismatch validator
-    hash array bag object meta meta_check number float rounded within string subset bool it_isa
+    hash array bag object meta meta_check number float rounded within string subset bool check_isa
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     etc end filter_items
@@ -403,7 +403,7 @@ See L<Test2::Tools::Compare>.
 
 =item $check = string($str)
 
-=item $check = it_isa($class_name)
+=item $check = check_isa($class_name)
 
 =item $check = in_set(@things)
 

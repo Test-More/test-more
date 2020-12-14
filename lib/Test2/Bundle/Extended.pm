@@ -284,7 +284,7 @@ See L<Test2::Tools::Compare>.
 
 =item $check = string($str)
 
-=item $check = it_isa($class_name)
+=item $check = check_isa($class_name)
 
 =item $check = in_set(@things)
 

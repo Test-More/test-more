@@ -742,8 +742,8 @@ subtest bool => sub {
     package Baz;
 }
 
-subtest it_isa => sub {
-    my $check = it_isa "Foo"; my $line = __LINE__;
+subtest check_isa => sub {
+    my $check = check_isa "Foo"; my $line = __LINE__;
     is($check->lines, [$line], "Got line number");
 
     my $foo_bar = bless {}, 'Foo::Bar';
@@ -768,7 +768,7 @@ subtest it_isa => sub {
         "Got events"
     );
 
-    my ($check1, $check2) = (it_isa("Foo", negate => 1), !it_isa("Foo"));
+    my ($check1, $check2) = (check_isa("Foo", negate => 1), !check_isa("Foo"));
     $line = __LINE__ - 1;
 
     for $check ($check1, $check2) {

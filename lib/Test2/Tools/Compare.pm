@@ -67,7 +67,7 @@ our @EXPORT = qw/is like/;
 our @EXPORT_OK = qw{
     is like isnt unlike
     match mismatch validator
-    hash array bag object meta meta_check number float rounded within string subset bool it_isa
+    hash array bag object meta meta_check number float rounded within string subset bool check_isa
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     etc end filter_items
@@ -364,7 +364,7 @@ sub string($;@) {
     );
 }
 
-sub it_isa($;@) {
+sub check_isa($;@) {
     my ($class_name, @args) = @_;
     my @caller = caller;
     return Test2::Compare::Isa->new(
@@ -1058,11 +1058,11 @@ Verify the value has the same boolean value as the given argument (XNOR).
 
 Verify the value has a different boolean value from the given argument (XOR).
 
-=item $check = it_isa ...;
+=item $check = check_isa ...;
 
 Verify the value is an instance of the given class name.
 
-=item $check = !it_isa ...;
+=item $check = !check_isa ...;
 
 Verify the value is not an instance of the given class name.
 
