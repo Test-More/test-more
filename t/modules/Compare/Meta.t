@@ -36,6 +36,13 @@ subtest add_prop => sub {
     ok($one->add_prop('blessed' => convert('xxx')), "normal");
 };
 
+{
+    package FooBase;
+
+    package Foo;
+    our @ISA = 'FooBase';
+}
+
 subtest deltas => sub {
     my $one = $CLASS->new();
 
@@ -43,6 +50,7 @@ subtest deltas => sub {
 
     $one->add_prop('blessed' => 'Foo');
     $one->add_prop('reftype' => 'HASH');
+    $one->add_prop('isa' => 'FooBase');
     $one->add_prop('this' => exact_ref($it));
     $one->add_prop('size' => 3);
 
@@ -60,6 +68,7 @@ subtest deltas => sub {
             { verified => F(), got => 'Bar' },
             { verified => F(), got => 'ARRAY' },
             { verified => F(), got => $not_it },
+            { verified => F(), got => $not_it },
             { verified => F(), got => 1 },
         ],
         "Nothing matches"
@@ -70,6 +79,7 @@ subtest deltas => sub {
         [
             { verified => F(), got => undef },
             { verified => F(), got => undef },
+            { verified => F(), got => 'a' },
             { verified => F(), got => 'a' },
             { verified => F(), got => undef },
         ],
