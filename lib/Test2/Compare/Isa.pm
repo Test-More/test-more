@@ -84,6 +84,8 @@ F<https://github.com/Test-More/Test2-Suite/>.
 
 =item Chad Granum E<lt>exodist@cpan.orgE<gt>
 
+=item TOYAMA Nao E<lt>nanto@moon.email.ne.jpE<gt>
+
 =back
 
 =head1 COPYRIGHT
