@@ -304,8 +304,6 @@ See L<Test2::Tools::Compare>.
 
 =item $check = call_hash($method => $expect)
 
-=item $check = this_isa($class_name)
-
 =item $check = prop($name => $expect)
 
 =item $check = check($thing)

@@ -23,7 +23,6 @@ use Test2::Compare::Custom();
 use Test2::Compare::Event();
 use Test2::Compare::Float();
 use Test2::Compare::Hash();
-use Test2::Compare::Isa();
 use Test2::Compare::Meta();
 use Test2::Compare::Number();
 use Test2::Compare::Object();
@@ -48,7 +47,6 @@ use Test2::Compare::Wildcard();
     'Test2::Compare::Event'         => 1,
     'Test2::Compare::Float'         => 1,
     'Test2::Compare::Hash'          => 1,
-    'Test2::Compare::Isa'           => 1,
     'Test2::Compare::Meta'          => 1,
     'Test2::Compare::Number'        => 1,
     'Test2::Compare::Object'        => 1,
@@ -69,7 +67,7 @@ our @EXPORT_OK = qw{
     match mismatch validator
     hash array bag object meta meta_check number float rounded within string subset bool it_isa
     in_set not_in_set check_set
-    item field call call_list call_hash this_isa prop check all_items all_keys all_vals all_values
+    item field call call_list call_hash prop check all_items all_keys all_vals all_values
     etc end filter_items
     T F D DF DNE FDNE E U
     event fail_events
@@ -476,19 +474,6 @@ sub call($$)      { $_call->(@_,'scalar','call') }
 sub call_list($$) { $_call->(@_,'list','call_list') }
 sub call_hash($$) { $_call->(@_,'hash','call_hash') }
 
-sub this_isa($) {
-    my ($class_name) = @_;
-    defined( my $build = get_build() ) or croak "No current build!";
-
-    croak "'$build' does not support inheritance checks"
-        unless $build->can('add_this_isa');
-
-    croak "'this_isa' should only ever be called in void context"
-        if defined wantarray;
-
-    $build->add_this_isa($class_name);
-}
-
 sub prop($$) {
     my ($name, $expect) = @_;
     defined( my $build = get_build() ) or croak "No current build!";
@@ -720,7 +705,7 @@ the field.
         match mismatch validator
         hash array bag object meta number float rounded within string subset bool
         in_set not_in_set check_set
-        item field call call_list call_hash this_isa prop check all_items all_keys all_vals all_values
+        item field call call_list call_hash prop check all_items all_keys all_vals all_values
         etc end filter_items
         T F D DNE FDNE E
         event fail_events
@@ -1568,10 +1553,6 @@ result is always a hashref. This will warn if the method returns an
 odd number of values.
 
     call_hash get_items => { ... };
-
-=item this_isa $CLASS_NAME
-
-Add what class the thing is an instance of.
 
 =item field $NAME => $VAL
 

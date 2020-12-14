@@ -26,7 +26,7 @@ imported_ok qw{
     match mismatch validator
     hash array object meta number string bool it_isa
     in_set not_in_set check_set
-    item field call call_list call_hash this_isa prop check all_items all_keys all_vals all_values
+    item field call call_list call_hash prop check all_items all_keys all_vals all_values
     etc end filter_items
     T F D DF E DNE FDNE U
     event fail_events
