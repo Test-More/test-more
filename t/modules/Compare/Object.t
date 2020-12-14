@@ -103,24 +103,8 @@ subtest add_call => sub {
     );
 };
 
-subtest add_this_isa => sub {
-    my $one = $CLASS->new;
-
-    $one->add_this_isa('Foo');
-    $one->add_this_isa('Foo::Bar');
-
-    is(@{$one->isachecks}, 2, "2 checks");
-    isa_ok($one->isachecks->[0], 'Test2::Compare::Isa');
-    is($one->isachecks->[0]->name, 'Foo', "isa Foo");
-    isa_ok($one->isachecks->[1], 'Test2::Compare::Isa');
-    is($one->isachecks->[1]->name, 'Foo::Bar', "isa Foo::Bar");
-};
-
 {
-    package Foo;
-
     package Foo::Bar;
-    our @ISA = 'Foo';
 
     sub foo { 'foo' }
     sub baz { 'baz' }
@@ -158,8 +142,6 @@ subtest deltas => sub {
     $one->add_call('many' => {1=>2,3=>4},undef,'hash');
     $one->add_call([args => 1,2] => {1=>2});
 
-    $one->add_this_isa('Foo');
-
     is(
         [$one->deltas(exists => 1, got => $good, convert => $convert, seen => {})],
         [],
@@ -173,11 +155,6 @@ subtest deltas => sub {
                 chk => T(),
                 got => 'Fake::Fake',
                 id  => ['META' => 'blessed'],
-            },
-            {
-                chk => T(),
-                got => T(),
-                id  => ['META' => 'isa'],
             },
             {
                 chk       => T(),
@@ -239,11 +216,6 @@ subtest deltas => sub {
                         chk => T(),
                         got => 'Fake::Fake',
                         id  => ['META' => 'blessed'],
-                    },
-                    {
-                        chk => T(),
-                        got => T(),
-                        id  => ['META' => 'isa'],
                     },
                     {
                         chk       => T(),

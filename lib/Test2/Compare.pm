@@ -75,7 +75,6 @@ sub convert {
         require Test2::Compare::Custom;
         require Test2::Compare::DeepRef;
         require Test2::Compare::Hash;
-        require Test2::Compare::Isa;
         require Test2::Compare::Pattern;
         require Test2::Compare::Ref;
         require Test2::Compare::Regex;

@@ -10,15 +10,14 @@ use base 'Test2::Compare::Base';
 
 our $VERSION = '0.000139';
 
-use Test2::Util::HashBase qw/calls isachecks meta refcheck ending/;
+use Test2::Util::HashBase qw/calls meta refcheck ending/;
 
 use Carp qw/croak confess/;
 use Scalar::Util qw/reftype blessed/;
 
 sub init {
     my $self = shift;
-    $self->{+CALLS}     ||= [];
-    $self->{+ISACHECKS} ||= [];
+    $self->{+CALLS} ||= [];
     $self->SUPER::init();
 }
 
@@ -75,12 +74,6 @@ sub add_call {
     push @{$self->{+CALLS}} => [$meth, $check, $name, $context || 'scalar'];
 }
 
-sub add_this_isa {
-    my $self = shift;
-    my ($class_name) = @_;
-    push @{$self->{+ISACHECKS}} => Test2::Compare::Isa->new(input => $class_name);
-}
-
 sub deltas {
     my $self = shift;
     my %params = @_;
@@ -91,16 +84,6 @@ sub deltas {
     my $refcheck = $self->{+REFCHECK};
 
     push @deltas => $meta->deltas(%params) if defined $meta;
-
-    for my $check (@{$self->{+ISACHECKS}}) {
-        push @deltas => $check->run(
-            id      => [META => 'isa'],
-            convert => $convert,
-            seen    => $seen,
-            exists  => 1,
-            got     => $got,
-        );
-    }
 
     for my $call (@{$self->{+CALLS}}) {
         my ($meth, $check, $name, $context)= @$call;
@@ -237,10 +220,6 @@ context, and the result will be an arrayref.
 If C<$context> is C<'hash'>, the method will be invoked in list
 context, and the result will be a hashref (this will warn if the
 method returns an odd number of values).
-
-=item $obj->add_this_isa($class_name)
-
-Add an inheritance check. This will check if your object is an instance of C<$class_name>.
 
 =back
 
