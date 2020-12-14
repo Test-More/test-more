@@ -23,6 +23,7 @@ use Test2::Compare::Custom();
 use Test2::Compare::Event();
 use Test2::Compare::Float();
 use Test2::Compare::Hash();
+use Test2::Compare::Isa();
 use Test2::Compare::Meta();
 use Test2::Compare::Number();
 use Test2::Compare::Object();
@@ -47,6 +48,7 @@ use Test2::Compare::Wildcard();
     'Test2::Compare::Event'         => 1,
     'Test2::Compare::Float'         => 1,
     'Test2::Compare::Hash'          => 1,
+    'Test2::Compare::Isa'           => 1,
     'Test2::Compare::Meta'          => 1,
     'Test2::Compare::Number'        => 1,
     'Test2::Compare::Object'        => 1,
