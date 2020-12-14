@@ -43,7 +43,16 @@ sub add_prop {
         unless $self->can($meth);
 
     if ($name eq 'isa') {
-        $check = Test2::Compare::Isa->new(input => $check);
+        if (blessed($check) && $check->isa('Test2::Compare::Wildcard')) {
+            # Carry forward file and lines that are set in Test2::Tools::Compare::prop.
+            $check = Test2::Compare::Isa->new(
+                input => $check->expect,
+                file  => $check->file,
+                lines => $check->lines,
+            );
+        } else {
+            $check = Test2::Compare::Isa->new(input => $check);
+        }
     }
 
     push @{$self->{+ITEMS}} => [$meth, $check, $name];

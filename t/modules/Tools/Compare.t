@@ -1358,6 +1358,7 @@ subtest object => sub {
         call [args => qw(a b)] => {a=>'b'};
         prop blessed => 'ObjectFoo';
         prop reftype => 'HASH';
+        prop isa => 'ObjectFoo';
         etc;
     };
 

@@ -104,7 +104,10 @@ subtest add_call => sub {
 };
 
 {
+    package Foo;
+
     package Foo::Bar;
+    our @ISA = 'Foo';
 
     sub foo { 'foo' }
     sub baz { 'baz' }
@@ -128,6 +131,7 @@ subtest deltas => sub {
     my $one = $CLASS->new;
     $one->add_field(a => 1);
     $one->add_prop(blessed => 'Foo::Bar');
+    $one->add_prop(isa => 'Foo');
 
     $one->add_call(sub {
         my $self = shift;
@@ -155,6 +159,11 @@ subtest deltas => sub {
                 chk => T(),
                 got => 'Fake::Fake',
                 id  => ['META' => 'blessed'],
+            },
+            {
+                chk => T(),
+                got => T(),
+                id  => ['META' => 'isa'],
             },
             {
                 chk       => T(),
@@ -216,6 +225,11 @@ subtest deltas => sub {
                         chk => T(),
                         got => 'Fake::Fake',
                         id  => ['META' => 'blessed'],
+                    },
+                    {
+                        chk => T(),
+                        got => T(),
+                        id  => ['META' => 'isa'],
                     },
                     {
                         chk       => T(),
