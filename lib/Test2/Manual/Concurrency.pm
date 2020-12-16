@@ -1,3 +1,13 @@
+package Test2::Manual::Concurrency;
+use strict;
+use warnings;
+
+our $VERSION = '0.000139';
+
+1;
+
+__END__
+
 =head1 NAME
 
 Test2::Manual::Concurrency - Documentation for Concurrency support.
