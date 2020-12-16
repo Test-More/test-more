@@ -733,6 +733,68 @@ subtest bool => sub {
     );
 };
 
+{
+    package Foo;
+
+    package Foo::Bar;
+    our @ISA = 'Foo';
+
+    package Baz;
+}
+
+subtest check_isa => sub {
+    my $check = check_isa "Foo"; my $line = __LINE__;
+    is($check->lines, [$line], "Got line number");
+
+    my $foo_bar = bless {}, 'Foo::Bar';
+    my $baz     = bless {}, 'Baz';
+
+    my $events = intercept {
+        is($foo_bar, $check, "pass");
+        is($baz,     $check, "fail");
+    };
+
+    like(
+        $events,
+        array {
+            event Ok => {pass => 1};
+
+            fail_table(
+                header => [qw/GOT OP CHECK LNs/],
+                rows   => [["$baz", qw/isa Foo/, $line]],
+            );
+            end;
+        },
+        "Got events"
+    );
+
+    my ($check1, $check2) = (check_isa("Foo", negate => 1), !check_isa("Foo"));
+    $line = __LINE__ - 1;
+
+    for $check ($check1, $check2) {
+        is($check->lines, [$line], "Got line number");
+
+        $events = intercept {
+            is($baz,     $check, "pass");
+            is($foo_bar, $check, "fail");
+        };
+
+        like(
+            $events,
+            array {
+                event Ok => {pass => 1};
+
+                fail_table(
+                    header => [qw/GOT OP CHECK LNs/],
+                    rows   => [["$foo_bar", qw/!isa Foo/, $line]],
+                );
+                end;
+            },
+            "Got events"
+        );
+    }
+};
+
 
 subtest match => sub {
     my $check = match qr/xyz/; my $line = __LINE__;
@@ -1296,6 +1358,7 @@ subtest object => sub {
         call [args => qw(a b)] => {a=>'b'};
         prop blessed => 'ObjectFoo';
         prop reftype => 'HASH';
+        prop isa => 'ObjectFoo';
         etc;
     };
 

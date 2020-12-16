@@ -23,6 +23,7 @@ use Test2::Compare::Custom();
 use Test2::Compare::Event();
 use Test2::Compare::Float();
 use Test2::Compare::Hash();
+use Test2::Compare::Isa();
 use Test2::Compare::Meta();
 use Test2::Compare::Number();
 use Test2::Compare::Object();
@@ -47,6 +48,7 @@ use Test2::Compare::Wildcard();
     'Test2::Compare::Event'         => 1,
     'Test2::Compare::Float'         => 1,
     'Test2::Compare::Hash'          => 1,
+    'Test2::Compare::Isa'           => 1,
     'Test2::Compare::Meta'          => 1,
     'Test2::Compare::Number'        => 1,
     'Test2::Compare::Object'        => 1,
@@ -65,7 +67,7 @@ our @EXPORT = qw/is like/;
 our @EXPORT_OK = qw{
     is like isnt unlike
     match mismatch validator
-    hash array bag object meta meta_check number float rounded within string subset bool
+    hash array bag object meta meta_check number float rounded within string subset bool check_isa
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     etc end filter_items
@@ -358,6 +360,17 @@ sub string($;@) {
         file  => $caller[1],
         lines => [$caller[2]],
         input => $str,
+        @args,
+    );
+}
+
+sub check_isa($;@) {
+    my ($class_name, @args) = @_;
+    my @caller = caller;
+    return Test2::Compare::Isa->new(
+        file  => $caller[1],
+        lines => [$caller[2]],
+        input => $class_name,
         @args,
     );
 }
@@ -1045,6 +1058,14 @@ Verify the value has the same boolean value as the given argument (XNOR).
 
 Verify the value has a different boolean value from the given argument (XOR).
 
+=item $check = check_isa ...;
+
+Verify the value is an instance of the given class name.
+
+=item $check = !check_isa ...;
+
+Verify the value is not an instance of the given class name.
+
 =item $check = match qr/.../
 
 =item $check = !mismatch qr/.../
@@ -1392,6 +1413,7 @@ B<Note: None of these are exported by default. You need to request them.>
     my $check = meta {
         prop blessed => 'My::Module'; # Ensure value is blessed as our package
         prop reftype => 'HASH';       # Ensure value is a blessed hash
+        prop isa     => 'My::Base';   # Ensure value is an instance of our class
         prop size    => 4;            # Check the number of hash keys
         prop this    => ...;          # Check the item itself
     };
@@ -1423,6 +1445,10 @@ What package (if any) the thing is blessed as.
 =item 'reftype'
 
 Reference type (if any) the thing is.
+
+=item 'isa'
+
+What class the thing is an instance of.
 
 =item 'this'
 
@@ -1462,6 +1488,9 @@ B<Note: None of these are exported by default. You need to request them.>
 
         # Check the meta-property 'blessed' of the object.
         prop blessed => 'My::Module';
+
+        # Check if the object is an instance of the specified class.
+        prop isa => 'My::Base';
 
         # Ensure only the specified hash keys or array indexes are present in
         # the underlying hash. Has no effect on meta-property checks or method
@@ -1562,6 +1591,10 @@ What package (if any) the thing is blessed as.
 =item 'reftype'
 
 Reference type (if any) the thing is.
+
+=item 'isa'
+
+What class the thing is an instance of.
 
 =item 'this'
 
