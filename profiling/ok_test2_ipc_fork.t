@@ -1,6 +1,7 @@
 use strict;
 use warnings;
-use Test2::IPC;
+use Test2::IPC qw/cull/;
+use if $ENV{PIPE}, 'Test2::IPC::Driver::AtomicPipe';
 use Test2::Tools::Tiny;
 
 my $count = $ENV{OK_COUNT} || 100000;
@@ -23,6 +24,13 @@ for (1 .. $procs) {
     }
 }
 
-waitpid($_, 0) for @PIDS;
+use POSIX ":sys_wait_h";
+while (@PIDS) {
+    cull();
+    for my $pid (@PIDS) {
+        my $got = waitpid($pid, WNOHANG) or next;
+        @PIDS = grep { $_ != $got } @PIDS;
+    }
+}
 
 1;
