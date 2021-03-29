@@ -1409,6 +1409,15 @@ and you'll know immediately when they're fixed.
 Once a todo test starts succeeding, simply move it outside the block.
 When the block is empty, delete it.
 
+Note that, if you leave $TODO unset or undef, Test::More reports failures
+as normal. This can be useful to mark the tests as expected to fail only
+in certain conditions, e.g.:
+
+    TODO: {
+        local $TODO = "$^O doesn't work yet. :(" if !_os_is_supported($^O);
+
+        ...
+    }
 
 =item B<todo_skip>
 
