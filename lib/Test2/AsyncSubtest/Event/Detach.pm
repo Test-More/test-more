@@ -2,7 +2,7 @@ package Test2::AsyncSubtest::Event::Detach;
 use strict;
 use warnings;
 
-our $VERSION = '0.000140';
+our $VERSION = '0.000141';
 
 use base 'Test2::Event';
 use Test2::Util::HashBase qw/id/;
