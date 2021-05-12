@@ -71,7 +71,7 @@ our @EXPORT_OK = qw{
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     etc end filter_items
-    T F D DF DNE FDNE E U
+    T F D DF E DNE FDNE U L
     event fail_events
     exact_ref
 };
@@ -250,6 +250,15 @@ sub T() {
     my @caller = caller;
     Test2::Compare::Custom->new(
         code => sub { defined $_ && ( ref $_ || $_ ) ? 1 : 0 }, name => 'TRUE', operator => 'TRUE()',
+        file => $caller[1],
+        lines => [$caller[2]],
+    );
+}
+
+sub L() {
+    my @caller = caller;
+    Test2::Compare::Custom->new(
+        code => sub { defined $_ && length $_ ? 1 : 0 }, name => 'LENGTH', operator => 'DEFINED() && LENGTH()',
         file => $caller[1],
         lines => [$caller[2]],
     );
@@ -709,7 +718,7 @@ the field.
         in_set not_in_set check_set
         item field call call_list call_hash prop check all_items all_keys all_vals all_values
         etc end filter_items
-        T F D DNE FDNE E
+        T F D DF E DNE FDNE U L
         event fail_events
         exact_ref
     };
@@ -974,6 +983,22 @@ These will fail:
 
 This is a combination of C<F()> and C<DNE()>. This will pass for a false value,
 or a nonexistent value.
+
+=item $check = L()
+
+This is to verify that the value in the C<$got> structure is defined and
+has length.  Any value other than C<undef> or the empty string will pass
+(including references).
+
+These will pass:
+
+    is('foo', L(), 'value is defined and has length');
+    is([],    L(), 'value is defined and has length');
+
+These will fail:
+
+    is(undef, L(), 'value is defined and has length');
+    is('',    L(), 'value is defined and has length');
 
 =back
 

@@ -316,9 +316,15 @@ See L<Test2::Tools::Compare>.
 
 =item $check = DF()
 
+=item $check = E()
+
 =item $check = DNE()
 
 =item $check = FDNE()
+
+=item $check = U()
+
+=item $check = L()
 
 =item $check = exact_ref($ref)
 
