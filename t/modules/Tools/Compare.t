@@ -48,7 +48,7 @@ subtest simple => sub {
         in_set not_in_set check_set
         item field call call_list call_hash prop check all_items all_keys all_vals all_values
         etc end filter_items
-        T F D DF E DNE FDNE U
+        T F D DF E DNE FDNE U L
         event
         exact_ref
     };
@@ -385,6 +385,23 @@ subtest shortcuts => sub {
             event Fail => {};
         },
         "got failed event"
+    );
+
+    is('foo', L(), "defined and has length");
+    is(0,     L(), "defined and has length");
+    is([],    L(), "defined and has length");
+
+    like(
+        intercept {
+          is(undef, L());
+          is('',    L());
+        },
+        array {
+          filter_items { grep { !$_->isa('Test2::Event::Diag') } @_ };
+          event Fail => {};
+          event Fail => {};
+        },
+        "got fail for L"
     );
 };
 
