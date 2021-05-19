@@ -10,7 +10,9 @@ skip_all 'No IPC' unless CAN_REALLY_FORK;
 
 ok(1, "pre-test");
 
-my $pid = fork // die "Could not fork: $!";
+my $pid = fork;
+die "Could not fork: $!" unless defined $pid;
+
 if ($pid) {
    my $ret = waitpid($pid, 0);
    is($ret, $pid, "Got correct pid");
