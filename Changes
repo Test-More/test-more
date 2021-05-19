@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix Test::Builder->skip to stringify arguments
+
 1.302183  2020-10-21 20:10:36-07:00 America/Los_Angeles
 
     - avoid closing over scalar in BEGIN block in cmp_ok eval
