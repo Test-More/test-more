@@ -2,7 +2,7 @@ package Test2::Formatter::TAP;
 use strict;
 use warnings;
 
-our $VERSION = '1.302186';
+our $VERSION = '1.302187';
 
 use Test2::Util qw/clone_io/;
 
