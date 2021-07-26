@@ -34,6 +34,7 @@ use Test2::Util::HashBase qw{
     children
     _in_use
     _attached pid tid
+    start_stamp stop_stamp
 };
 
 sub CAN_REALLY_THREAD {
@@ -264,6 +265,8 @@ sub start {
     croak "Subtest is already complete"
         if $self->{+FINISHED};
 
+    $self->{+START_STAMP} //= time;
+
     $self->{+ACTIVE}++;
 
     push @STACK => $self;
@@ -282,6 +285,8 @@ sub stop {
 
     croak "AsyncSubtest stack mismatch"
         unless @STACK && $self == $STACK[-1];
+
+    $self->{+STOP_STAMP} = time;
 
     pop @STACK;
 
@@ -307,6 +312,7 @@ sub finish {
         if $self->{+ACTIVE};
 
     $self->wait;
+    my $stop_stamp = $self->{+STOP_STAMP} //= time;
 
     my $todo       = $params{todo};
     my $skip       = $params{skip};
@@ -359,6 +365,8 @@ sub finish {
             name         => $self->{+NAME},
             buffered     => 1,
             subevents    => $self->{+EVENTS},
+            start_stamp  => $self->{+START_STAMP},
+            stop_stamp   => $self->{+STOP_STAMP},
             $todo ? (
                 todo => $todo,
                 effective_pass => 1,

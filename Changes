@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Add start and stop stamps to async subtest
+
 0.000140  2021-05-12 08:08:17-07:00 America/Los_Angeles
 
     - Add L() "length" quick check for comparisons
