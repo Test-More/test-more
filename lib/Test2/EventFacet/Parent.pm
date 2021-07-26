@@ -7,7 +7,7 @@ our $VERSION = '1.302186';
 use Carp qw/confess/;
 
 BEGIN { require Test2::EventFacet; our @ISA = qw(Test2::EventFacet) }
-use Test2::Util::HashBase qw{ -hid -children -buffered };
+use Test2::Util::HashBase qw{-hid -children -buffered -start_stamp -stop_stamp};
 
 sub init {
     confess "Attribute 'hid' must be set"
