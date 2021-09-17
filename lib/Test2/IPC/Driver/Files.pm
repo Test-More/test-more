@@ -296,8 +296,8 @@ sub parse_event_filename {
 
     return {
         file     => $file,
-        ready    => $ready,
-        complete => $complete,
+        ready    => !!$ready,
+        complete => !!$complete,
         global   => $global,
         type     => $type,
         hid      => $hid,
