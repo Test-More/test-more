@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix tests for core boolean support
+
 1.302186  2021-07-26 10:37:46-07:00 America/Los_Angeles
 
     - Add start/stop timestamps to subtests
