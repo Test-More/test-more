@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix for non-gcc compilers on 5.10.0
+
 1.302187  2021-09-17 06:59:05-07:00 America/Los_Angeles
 
     - Fix tests for core boolean support
