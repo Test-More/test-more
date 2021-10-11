@@ -411,8 +411,8 @@ sub isnt ($$;$) {
     return $tb->isnt_eq(@_);
 }
 
-*isn't = \&isnt;
-# ' to unconfuse syntax higlighters
+# make this available as isn't()
+*isn::t = \&isnt;
 
 =item B<like>
 
