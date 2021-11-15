@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+0.000142  2021-11-15 14:06:34-08:00 America/Los_Angeles
+
+    - Fix deprecation diagnostics
+    - Fix older perls by removing //=
+
 0.000141  2021-07-26 12:15:34-07:00 America/Los_Angeles
 
     - Add start and stop stamps to async subtest
