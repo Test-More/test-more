@@ -108,7 +108,7 @@ sub is($$;$@) {
                 "The old behavior was a bug.",
                 "The new behavior is to default to end().",
                 "This test will soon start to fail with the following diagnostics:",
-                $delta->diag,
+                $delta->diag->as_string,
                 "",
             );
         }

@@ -168,7 +168,7 @@ sub is_deeply($$;$@) {
                 "The exising behavior is to default to etc() when inside is_deeply().",
                 "The new behavior is to default to end().",
                 "This test will soon start to fail with the following diagnostics:",
-                $delta->diag,
+                $delta->diag->as_string,
                 "",
             );
         }
