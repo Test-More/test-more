@@ -6,7 +6,7 @@ use base 'Test2::Compare::Base';
 
 our $VERSION = '0.000143';
 
-use Test2::Util::HashBase qw/code name operator/;
+use Test2::Util::HashBase qw/code name operator stringify_got/;
 
 use Carp qw/croak/;
 
@@ -17,6 +17,8 @@ sub init {
 
     $self->{+OPERATOR} ||= 'CODE(...)';
     $self->{+NAME}     ||= '<Custom Code>';
+    $self->{+STRINGIFY_GOT} = $self->SUPER::stringify_got()
+      unless defined $self->{+STRINGIFY_GOT};
 
     $self->SUPER::init();
 }
@@ -63,6 +65,7 @@ provides a way for you to write custom checks for fields in deep comparisons.
     my $cus = Test2::Compare::Custom->new(
         name => 'IsRef',
         operator => 'ref(...)',
+        stringify_got => 1,
         code => sub {
             my %args = @_;
             return $args{got} ? 1 : 0;
@@ -136,6 +139,10 @@ Returns the name provided at construction.
 
 Returns the operator provided at construction.
 
+=item $stringify = $cus->stringify_got
+
+Returns the stringify_got flag provided at construction.
+
 =item $bool = $cus->verify(got => $got, exists => $bool)
 
 =back
@@ -158,6 +165,8 @@ F<https://github.com/Test-More/Test2-Suite/>.
 =over 4
 
 =item Chad Granum E<lt>exodist@cpan.orgE<gt>
+
+=item Daniel Böhmer E<lt>dboehmer@cpan.orgE<gt>
 
 =back
 
