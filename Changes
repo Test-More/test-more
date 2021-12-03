@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Add void context warning for dies and lives
+
 0.000143  2021-12-01 11:20:03-08:00 America/Los_Angeles
 
     - Add stringification option for custom compare checks
