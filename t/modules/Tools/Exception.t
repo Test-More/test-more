@@ -42,4 +42,16 @@ is(
 
 like($err, qr/abc/, '$@ has the exception');
 
+like(
+    warning { dies { 1 } },
+    qr/Useless use of dies\(\) in void context/,
+    "warns in void context"
+);
+
+like(
+    warning { lives { 1 } },
+    qr/Useless use of lives\(\) in void context/,
+    "warns in void context"
+);
+
 done_testing;
