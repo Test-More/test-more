@@ -767,7 +767,7 @@ sub _unoverload {
         require overload;
     }
     my $string_meth = overload::Method( $$thing, $type ) || return;
-    $$thing = $$thing->$string_meth();
+    $$thing = $$thing->$string_meth(undef, 0);
 }
 
 sub _unoverload_str {
