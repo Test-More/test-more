@@ -2,6 +2,7 @@ package Test2::API;
 use strict;
 use warnings;
 
+use Time::HiRes qw/time/;
 use Test2::Util qw/USE_THREADS/;
 
 BEGIN {
