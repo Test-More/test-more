@@ -4,7 +4,7 @@ use warnings;
 
 use Term::Table::Util qw/term_size USE_GCS USE_TERM_READKEY uni_length/;
 
-our $VERSION = '0.000145';
+our $VERSION = '0.000146';
 
 use Importer Importer => 'import';
 our @EXPORT_OK = qw/term_size USE_GCS USE_TERM_READKEY uni_length/;
