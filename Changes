@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix subtest times to be hi-res
+
 0.000144  2021-12-03 13:17:19-08:00 America/Los_Angeles
 
     - Add void context warning for dies and lives
