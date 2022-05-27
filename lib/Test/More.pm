@@ -1771,7 +1771,7 @@ Sometimes the Test::More interface isn't quite enough.  Fortunately,
 Test::More is built on top of L<Test::Builder> which provides a single,
 unified backend for any test library to use.  This means two test
 libraries which both use L<Test::Builder> B<can> be used together in the
-same program>.
+same program.
 
 If you simply want to do a little tweaking of how the tests behave,
 you can access the underlying L<Test::Builder> object like so:
