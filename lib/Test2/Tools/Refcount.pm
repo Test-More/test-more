@@ -3,11 +3,12 @@
 #
 #  (C) Paul Evans, 2008-2019 -- leonerd@leonerd.org.uk
 
-package Test::Refcount;
+package Test2::Tools::Refcount;
 
 use strict;
 use warnings;
-use base qw( Test::Builder::Module );
+
+use Test2::API qw(context release);
 
 use Scalar::Util qw( weaken refaddr );
 use B qw( svref_2object );
@@ -23,6 +24,8 @@ our @EXPORT_OK = qw(
    refcount
 );
 
+use base qw(Exporter);
+
 use constant HAVE_DEVEL_FINDREF    => defined eval { require Devel::FindRef };
 use constant HAVE_DEVEL_MAT_DUMPER => defined eval { require Devel::MAT::Dumper };
 
@@ -30,12 +33,12 @@ use constant HAVE_DEVEL_MAT_DUMPER => defined eval { require Devel::MAT::Dumper 
 
 =head1 NAME
 
-C<Test::Refcount> - assert reference counts on objects
+C<Test2::Tools::Refcount> - assert reference counts on objects
 
 =head1 SYNOPSIS
 
    use Test::More tests => 2;
-   use Test::Refcount;
+   use Test2::Tools::Refcount;
 
    use Some::Class;
 
@@ -101,11 +104,12 @@ sub is_refcount($$;$)
    my ( $object, $count, $name ) = @_;
    @_ = ();
 
-   my $tb = __PACKAGE__->builder;
+   my $ctx = context();
 
    if( !ref $object ) {
-      my $ok = $tb->ok( 0, $name );
-      $tb->diag( "  expected a reference, was not given one" );
+      my $ok = $ctx->ok( 0, $name );
+      $ctx->diag( "  expected a reference, was not given one" );
+      $ctx->release;
       return $ok;
    }
 
@@ -113,28 +117,29 @@ sub is_refcount($$;$)
 
    my $REFCNT = refcount( $object );
 
-   my $ok = $tb->ok( $REFCNT == $count, $name );
+   my $ok = $ctx->ok( $REFCNT == $count, $name );
 
-   unless( $ok ) {
-      $tb->diag( "  expected $count references, found $REFCNT" );
+   unless( $ok->pass ) {
+      $ctx->diag( "  expected $count references, found $REFCNT" );
 
       if( HAVE_DEVEL_MAT_DUMPER ) {
          my $file = $0;
-         my $num = $tb->current_test;
+         my $hub = $ctx->hub;
+         my $num = $hub->count;
 
          # Trim the .t off first then append -$num.pmat, in case $0 wasn't a .t file
          $file =~ s/\.(?:t|pm|pl)$//;
          $file .= "-$num\.pmat";
-
-         $tb->diag( sprintf "SV address is 0x%x", refaddr $object );
-         $tb->diag( "Writing heap dump to $file" );
+         $ctx->diag( sprintf "SV address is 0x%x", refaddr $object );
+         $ctx->diag( "Writing heap dump to $file" );
          Devel::MAT::Dumper::dump( $file );
       }
       if( HAVE_DEVEL_FINDREF ) {
-         $tb->diag( Devel::FindRef::track( $object ) );
+         $ctx->diag( Devel::FindRef::track( $object ) );
       }
    }
 
+   $ctx->release;
    return $ok;
 }
 
@@ -162,7 +167,7 @@ Returns the reference count of the given object as used by the test functions.
 This is useful for making tests that don't care what the count is before they
 start, but simply assert that the count hasn't changed by the end.
 
-   use Test::Refcount import => [qw( is_refcount refcount )];
+   use Test2::Tools::Refcount import => [qw( is_refcount refcount )];
    {
       my $count = refcount( $object );
 
@@ -185,7 +190,7 @@ constructor and methods are well-behaved, and don't leak references. Consider
 the following test script:
 
    use Test::More tests => 2;
-   use Test::Refcount;
+   use Test2::Tools::Refcount;
 
    use MyBall;
 

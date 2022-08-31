@@ -3,76 +3,127 @@
 use strict;
 use warnings;
 
-use Test::More;
-use Test::Builder::Tester;
+use Test2::API;
+use Test2::Tools::Basic;
+use Test2::API qw(intercept context);
+use Test2::Tools::Compare qw/match subset array event like/;
 
-use Test::Refcount;
+use Test2::Tools::Refcount;
 
 my $anon = [];
 
-test_out( "ok 1 - anon ARRAY ref" );
-is_refcount( $anon, 1, 'anon ARRAY ref' );
-test_test( "anon ARRAY ref succeeds" );
+like(
+    intercept {
+        is_refcount($anon, 1, 'anon ARRAY ref');
+    },
+    array {
+        event Ok => { name => 'anon ARRAY ref', pass => 1 };
+    },
+    'anon ARRAY ref succeeds'
+);
 
-test_out( "not ok 1 - not ref" );
-test_fail( +2 );
-test_err( "#   expected a reference, was not given one" );
-is_refcount( "hello", 1, 'not ref' );
-test_test( "not ref fails" );
+like(
+    intercept {
+        is_refcount("hello", 1, 'not ref');
+    },
+    array {
+        event Ok => { name => 'not ref', pass => 0 };
+        event Diag => { message => match qr/Failed test 'not ref'/ };
+        event Diag => { message => "  expected a reference, was not given one" };
+    },
+    'not ref fails',
+);
 
 my $object = bless {}, "Some::Class";
 
-test_out( "ok 1 - object" );
-is_refcount( $object, 1, 'object' );
-test_test( "normal object succeeds" );
+like(
+    intercept {
+        is_refcount($object, 1, 'object');
+    },
+    array {
+        event Ok => { name => 'object', pass => 1 };
+    },
+    'normal object succeeds',
+);
 
 my $newref = $object;
 
-test_out( "ok 1 - two refs" );
-is_refcount( $object, 2, 'two refs' );
-test_test( "two refs to object succeeds" );
+like(
+    intercept {
+        is_refcount($object, 2, 'two refs');
+    },
+    array {
+        event Ok => { name => 'two refs', pass => 1 };
+    },
+    'two refs to object succeeds',
+);
 
-test_out( "not ok 1 - one ref" );
-test_fail( +10 );
-test_err( "#   expected 1 references, found 2" );
-if( Test::Refcount::HAVE_DEVEL_MAT_DUMPER ) {
-   test_err( qr/^# SV address is 0x[0-9a-f]+\n/ );
-   test_err( qr/^# Writing heap dump to \S+\n/ );
-}
-if( Test::Refcount::HAVE_DEVEL_FINDREF ) {
-   test_err( qr/^# Some::Class=HASH\(0x[0-9a-f]+\) (?:\[refcount 2\] )?is\n/ );
-   test_err( qr/(?:^#.*\n){1,}/m ); # Don't be sensitive on what Devel::FindRef actually prints
-}
-is_refcount( $object, 1, 'one ref' );
-test_test( "two refs to object fails to be 1" );
+like(
+    intercept {
+        is_refcount($object, 1, 'one ref');
+    },
+    subset {
+        event Ok => { name => 'one ref', pass => 0 };
+        event Diag => { message => match qr/Failed test 'one ref'/ };
+        event Diag => { message => match qr/expected 1 references, found 2/ };
+
+        if (Test2::Tools::Refcount::HAVE_DEVEL_MAT_DUMPER) {
+            event Diag => { message => match qr/SV address is 0x[0-9a-f]+/ };
+            event Diag => { message => match qr/Writing heap dump to \S+/ };
+        }
+
+        if (Test2::Tools::Refcount::HAVE_DEVEL_FINDREF) {
+            event Diag => { message => match qr/Some::Class=HASH\(0x[0-9a-f]+\) (?:\[refcount 2\] )?is\n/ };
+        }
+    },
+    "two refs to object fails to be 1"
+);
 
 undef $newref;
 
 $object->{self} = $object;
 
-test_out( "ok 1 - circular" );
-is_refcount( $object, 2, 'circular' );
-test_test( "circular object succeeds" );
+like(
+    intercept {
+        is_refcount($object, 2, 'circular');
+    },
+    array {
+        event Ok => { name => 'circular', pass => 1 };
+    },
+    'circular object succeeds',
+);
 
 undef $object->{self};
 
 my $otherobject = bless { firstobject => $object }, "Other::Class";
 
-test_out( "ok 1 - other ref to object" );
-is_refcount( $object, 2, 'other ref to object' );
-test_test( "object with another reference succeeds" );
+like(
+    intercept {
+        is_refcount($object, 2, 'other ref to object');
+    },
+    array {
+        event Ok => { name => 'other ref to object', pass => 1 };
+    },
+    'object with another reference succeeds',
+);
 
 undef $otherobject;
 
-test_out( "ok 1 - undefed other ref to object" );
-is_refcount( $object, 1, 'undefed other ref to object' );
-test_test( "object with another reference undefed succeeds" );
+like(
+    intercept {
+        is_refcount($object, 1, 'undefed other ref to object' );
+    },
+    array {
+        event Ok => { name => 'undefed other ref to object', pass => 1 };
+    },
+    'object with another reference undefed succeeds',
+);
 
 END {
-   # Clean up Devel::MAT dumpfile
-   my $pmat = $0;
-   $pmat =~ s/\.t$/-1.pmat/;
-   unlink $pmat if -f $pmat;
+    # Clean up Devel::MAT dumpfile
+    my $pmat = $0;
+    $pmat =~ s/\.t$/-1.pmat/;
+    unlink $pmat if -f $pmat;
 }
 
 done_testing;
