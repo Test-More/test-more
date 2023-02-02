@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Silence deprecation warning when testing smartmatch
+
 1.302191  2022-07-09 10:48:09-07:00 America/Los_Angeles
 
     - CI Fixes
