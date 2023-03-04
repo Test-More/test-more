@@ -9,6 +9,7 @@ use Scalar::Util qw/reftype/;
 
 use Test2::API qw/context/;
 use Test2::Util::Ref qw/rtype/;
+use Test2::Util qw/pkg_to_file/;
 
 use Test2::Compare qw{
     compare
@@ -77,6 +78,27 @@ our @EXPORT_OK = qw{
 };
 use base 'Exporter';
 
+my $_autodump = sub {
+    my ($ctx, $got) = @_;
+
+    my $module = $ENV{'T2_AUTO_DUMP'} or return;
+    $module = 'Data::Dumper' if $module eq '1';
+
+    my $file = pkg_to_file($module);
+    eval { require $file };
+
+    if (not $module->can('Dump')) {
+        require Data::Dumper;
+        $module = 'Data::Dumper';
+    }
+
+    my $deparse = $Data::Dumper::Deparse;
+    $deparse = !!$ENV{'T2_AUTO_DEPARSE'} if exists $ENV{'T2_AUTO_DEPARSE'};
+    local $Data::Dumper::Deparse = $deparse;
+
+    $ctx->diag($module->Dump([$got], ['GOT']));
+};
+
 sub is($$;$@) {
     my ($got, $exp, $name, @diag) = @_;
     my $ctx = context();
@@ -114,6 +136,7 @@ sub is($$;$@) {
         }
         else {
             $ctx->fail($name, $delta->diag, @diag);
+            $ctx->$_autodump($got);
         }
     }
     else {
@@ -135,6 +158,7 @@ sub isnt($$;$@) {
     }
     else {
         $ctx->ok(0, $name, ["Comparison matched (it should not).", @diag]);
+        $ctx->$_autodump($got);
     }
 
     $ctx->release;
@@ -149,6 +173,7 @@ sub like($$;$@) {
 
     if ($delta) {
         $ctx->fail($name, $delta->diag, @diag);
+        $ctx->$_autodump($got);
     }
     else {
         $ctx->ok(1, $name);
@@ -169,6 +194,7 @@ sub unlike($$;$@) {
     }
     else {
         $ctx->ok(0, $name, ["Comparison matched (it should not).", @diag]);
+        $ctx->$_autodump($got);
     }
 
     $ctx->release;
@@ -842,6 +868,13 @@ Opposite of C<like()>. Does all the same checks, but passes when there is a
 mismatch.
 
 =back
+
+The C<is()>, C<isnt()>, C<like()>, and C<unlike()> functions can be made
+to dump C<$got> using L<Data::Dumper> when tests fail by setting the
+C<T2_AUTO_DUMP> environment variable to "1". (Alternatively, C<T2_AUTO_DUMP>
+can be set to the name of a Perl module providing a compatible C<Dump()>
+method.) The C<T2_AUTO_DEPARSE> environment variable can be used to
+enable Data::Dumper's deparsing of coderefs.
 
 =head2 QUICK CHECKS
 
