@@ -53,6 +53,7 @@ use Test2::Tools::Exports   qw/imported_ok not_imported_ok/;
 use Test2::Tools::Ref       qw/ref_ok ref_is ref_is_not/;
 use Test2::Tools::Mock      qw/mock mocked/;
 use Test2::Tools::Exception qw/try_ok dies lives/;
+use Test2::Tools::Refcount  qw/is_refcount is_oneref refcount/;
 
 our @EXPORT = qw{
     ok pass fail diag note todo skip
@@ -85,6 +86,8 @@ our @EXPORT = qw{
     T F D DF E DNE FDNE U L
     event fail_events
     exact_ref
+
+    is_refcount is_oneref refcount
 };
 
 my $SRAND;
@@ -528,6 +531,18 @@ See L<Test2::Tools::Ref>.
 =item ref_is($got, $want)
 
 =item ref_is_not($got, $do_not_want)
+
+=back
+
+See L<Test2::Tools::Refcount>.
+
+=over 4
+
+=item is_refcount($ref, $count, $description)
+
+=item is_oneref($ref, $description)
+
+=item $count = refcount($ref)
 
 =back
 

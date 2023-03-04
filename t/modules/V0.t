@@ -31,6 +31,8 @@ imported_ok qw{
     T F D DF E DNE FDNE U L
     event fail_events
     exact_ref
+
+    is_refcount is_oneref refcount
 };
 
 ok(Test2::Plugin::ExitSummary->active, "Exit Summary is loaded");
