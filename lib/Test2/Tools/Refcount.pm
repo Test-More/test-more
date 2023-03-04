@@ -150,8 +150,6 @@ sub is_oneref($;$)
 
    $count = refcount( $object )
 
-I<Since version 0.09.>
-
 Returns the reference count of the given object as used by the test functions.
 This is useful for making tests that don't care what the count is before they
 start, but simply assert that the count hasn't changed by the end.
