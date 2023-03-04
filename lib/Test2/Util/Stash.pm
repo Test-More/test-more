@@ -2,7 +2,7 @@ package Test2::Util::Stash;
 use strict;
 use warnings;
 
-our $VERSION = '0.000147';
+our $VERSION = '0.000148';
 
 use Carp qw/croak/;
 use B;
