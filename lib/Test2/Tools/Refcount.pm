@@ -1,7 +1,7 @@
 #  You may distribute under the terms of either the GNU General Public License
 #  or the Artistic License (the same terms as Perl itself)
 #
-#  (C) Paul Evans, 2008-2019 -- leonerd@leonerd.org.uk
+#  (C) Paul Evans, 2008-2023 -- leonerd@leonerd.org.uk
 
 package Test2::Tools::Refcount;
 
@@ -26,7 +26,6 @@ our @EXPORT_OK = qw(
 
 use base qw(Exporter);
 
-use constant HAVE_DEVEL_FINDREF    => defined eval { require Devel::FindRef };
 use constant HAVE_DEVEL_MAT_DUMPER => defined eval { require Devel::MAT::Dumper };
 
 =encoding UTF-8
@@ -73,11 +72,6 @@ of the memory after a failure. It will create a F<.pmat> file named the same
 as the unit test, but with the trailing F<.t> suffix replaced with
 F<-TEST.pmat> where C<TEST> is the number of the test that failed (in case
 there was more than one).
-
-=item *
-
-If L<Devel::FindRef> module is installed, a reverse-references trace is
-printed to the test output.
 
 =back
 
@@ -131,9 +125,6 @@ sub is_refcount($$;$)
          $ctx->diag( sprintf "SV address is 0x%x", refaddr $object );
          $ctx->diag( "Writing heap dump to $file" );
          Devel::MAT::Dumper::dump( $file );
-      }
-      if( HAVE_DEVEL_FINDREF ) {
-         $ctx->diag( Devel::FindRef::track( $object ) );
       }
    }
 
@@ -237,25 +228,6 @@ use the C<identify> command on the given address to find where it went:
 (This document isn't intended to be a full tutorial on L<Devel::MAT> and the
 C<pmat> shell; for that see L<Devel::MAT::UserGuide>).
 
-Alternatively, this produces the following output when using L<Devel::FindRef>
-instead:
-
-   1..2
-   ok 1 - One reference after construct
-   not ok 2 - One reference just before EOF
-   #   Failed test 'One reference just before EOF'
-   #   at demo.pl line 16.
-   #   expected 1 references, found 2
-   # MyBall=ARRAY(0x817f880) is
-   # +- referenced by REF(0x82c1fd8), which is
-   # |     in the member 'self' of HASH(0x82c1f68), which is
-   # |        referenced by REF(0x81989d0), which is
-   # |           in the member 'cycle' of HASH(0x82c1f68), which was seen before.
-   # +- referenced by REF(0x82811d0), which is
-   #       in the lexical '$ball' in CODE(0x817fa00), which is
-   #          the main body of the program.
-   # Looks like you failed 1 test of 2.
-
 From this output, we can see that the constructor was well-behaved, but that a
 reference was leaked by the end of the script - the reference count was 2,
 when we expected just 1. Reading the trace output, we can see that there were
@@ -283,9 +255,9 @@ purposely created a cycle, to demonstrate the point. While a real program
 probably wouldn't do anything quite this obvious, the trace would still be
 useful in finding the likely cause of the leak.
 
-If neither C<Devel::MAT::Dumper> nor C<Devel::FindRef> are available, then
-these detailed traces will not be produced. The basic reference count testing
-will still take place, but a smaller message will be produced:
+If C<Devel::MAT::Dumper> is not available, then these detailed traces will not
+be produced. The basic reference count testing will still take place, but a
+smaller message will be produced:
 
    1..2
    ok 1 - One reference after construct
