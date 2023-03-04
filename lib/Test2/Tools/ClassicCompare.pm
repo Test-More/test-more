@@ -2,7 +2,7 @@ package Test2::Tools::ClassicCompare;
 use strict;
 use warnings;
 
-our $VERSION = '0.000146';
+our $VERSION = '0.000147';
 
 our @EXPORT = qw/is is_deeply isnt like unlike cmp_ok/;
 use base 'Exporter';
