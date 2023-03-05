@@ -7,7 +7,7 @@ use Scalar::Util qw/blessed/;
 
 use base 'Test2::Compare::Base';
 
-our $VERSION = '0.000148';
+our $VERSION = '0.000149';
 
 use Test2::Util::HashBase qw/input/;
 
