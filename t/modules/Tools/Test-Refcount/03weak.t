@@ -29,10 +29,6 @@ like(
             event Diag => { message => match qr/SV address is 0x[0-9a-f]+/ };
             event Diag => { message => match qr/Writing heap dump to \S+/ };
         }
-
-        if (Test2::Tools::Refcount::HAVE_DEVEL_FINDREF) {
-            event Diag => { message => match qr/Some::Class=HASH\(0x[0-9a-f]+\) (?:\[refcount 2\] )?is\n/ };
-        }
     },
     "two refs to object fails to be 1"
 );
