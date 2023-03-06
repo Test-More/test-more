@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Deprecate inst't()
+
 1.302192  2023-02-02 07:34:08-08:00 America/Los_Angeles
 
     - Silence deprecation warning when testing smartmatch
