@@ -163,10 +163,10 @@ sub _finalize {
 
     unless ($self->{+FORMATTER}) {
         my ($formatter, $source);
-        if ($ENV{T2_FORMATTER}) {
+        if (my $env_val = _env_get('T2_FORMATTER')) {
             $source = "set by the 'T2_FORMATTER' environment variable";
 
-            if ($ENV{T2_FORMATTER} =~ m/^(\+)?(.*)$/) {
+            if ($env_val =~ m/^(\+)?(.+)$/) {
                 $formatter = $1 ? $2 : "Test2::Formatter::$2"
             }
             else {
@@ -177,7 +177,8 @@ sub _finalize {
             ($formatter) = @{$self->{+FORMATTERS}};
             $source = "Most recently added";
         }
-        else {
+
+        if (!$formatter) {
             $formatter = 'Test2::Formatter::TAP';
             $source    = 'default formatter';
         }

@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Time::HiRes qw/time/;
-use Test2::Util qw/USE_THREADS/;
+use Test2::Util qw/USE_THREADS _env_get/;
 
 BEGIN {
     $ENV{TEST_ACTIVE} ||= 1;
@@ -287,7 +287,8 @@ sub test2_ipc_get_timeout     { $INST->ipc_timeout() }
 sub test2_ipc_enable_shm      { 0 }
 
 sub test2_formatter     {
-    if ($ENV{T2_FORMATTER} && $ENV{T2_FORMATTER} =~ m/^(\+)?(.*)$/) {
+    my $env_var = _env_get('T2_FORMATTER', '');
+    if ($env_var =~ m/^(\+)?(.+)$/) {
         my $formatter = $1 ? $2 : "Test2::Formatter::$2";
         my $file = pkg_to_file($formatter);
         require $file;
