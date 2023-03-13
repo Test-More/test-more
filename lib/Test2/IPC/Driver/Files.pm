@@ -14,7 +14,7 @@ use Storable();
 use File::Spec();
 use POSIX();
 
-use Test2::Util qw/try get_tid pkg_to_file IS_WIN32 ipc_separator do_rename do_unlink try_sig_mask/;
+use Test2::Util qw/try get_tid pkg_to_file IS_WIN32 ipc_separator do_rename do_unlink try_sig_mask _env_get/;
 use Test2::API qw/test2_ipc_set_pending/;
 
 sub is_viable { 1 }
@@ -23,7 +23,7 @@ sub init {
     my $self = shift;
 
     my $tmpdir = File::Temp::tempdir(
-        $ENV{T2_TEMPDIR_TEMPLATE} || "test2" . ipc_separator . $$ . ipc_separator . "XXXXXX",
+        _env_get('T2_TEMPDIR_TEMPLATE') || "test2" . ipc_separator . $$ . ipc_separator . "XXXXXX",
         CLEANUP => 0,
         TMPDIR => 1,
     );
@@ -33,7 +33,7 @@ sub init {
     $self->{+TEMPDIR} = File::Spec->canonpath($tmpdir);
 
     print STDERR "\nIPC Temp Dir: $tmpdir\n\n"
-        if $ENV{T2_KEEP_TEMPDIR};
+        if _env_get('T2_KEEP_TEMPDIR');
 
     $self->{+EVENT_IDS} = {};
     $self->{+READ_IDS} = {};
@@ -107,7 +107,7 @@ sub drop_hub {
     $self->abort_trace("A hub file can only be closed by the thread that started it\nExpected $tid, got " . get_tid())
         unless get_tid() == $tid;
 
-    if ($ENV{T2_KEEP_TEMPDIR}) {
+    if (_env_get('T2_KEEP_TEMPDIR')) {
         my ($ok, $err) = do_rename($hfile, File::Spec->canonpath("$hfile.complete"));
         $self->abort_trace("Could not rename file '$hfile' -> '$hfile.complete': $err") unless $ok
     }
@@ -266,7 +266,7 @@ sub cull {
         # Do not remove global events
         next if $info->{global};
 
-        if ($ENV{T2_KEEP_TEMPDIR}) {
+        if (_env_get('T2_KEEP_TEMPDIR')) {
             my $complete = File::Spec->canonpath("$full.complete");
             my ($ok, $err) = do_rename($full, $complete);
             $self->abort("Could not rename IPC file '$full', '$complete': $err") unless $ok;
@@ -406,7 +406,7 @@ sub DESTROY {
         if ($aborted || $file =~ m/^(GLOBAL|HUB$sep)/) {
             $full =~ m/^(.*)$/;
             $full = $1; # Untaint it
-            next if $ENV{T2_KEEP_TEMPDIR};
+            next if _env_get('T2_KEEP_TEMPDIR');
             my ($ok, $err) = do_unlink($full);
             $self->abort("Could not unlink IPC file '$full': $err") unless $ok;
             next;
@@ -416,7 +416,7 @@ sub DESTROY {
     }
     closedir($dh);
 
-    if ($ENV{T2_KEEP_TEMPDIR}) {
+    if (_env_get('T2_KEEP_TEMPDIR')) {
         print STDERR "# Not removing temp dir: $tempdir\n";
         return;
     }

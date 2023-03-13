@@ -9,7 +9,7 @@ use Carp qw/croak/;
 
 use Test2::Util::HashBase qw/trace -amnesty uuid -_eid -hubs/;
 use Test2::Util::ExternalMeta qw/meta get_meta set_meta delete_meta/;
-use Test2::Util qw/pkg_to_file gen_uid/;
+use Test2::Util qw/pkg_to_file gen_uid _env_get/;
 
 use Test2::EventFacet::About();
 use Test2::EventFacet::Amnesty();
@@ -294,7 +294,7 @@ sub nested {
     my $self = shift;
 
     Carp::cluck("Use of Test2::Event->nested() is deprecated, use Test2::Event->trace->nested instead")
-        if $ENV{AUTHOR_TESTING};
+        if _env_get('AUTHOR_TESTING');
 
     if (my $hubs = $self->{+HUBS}) {
         return $hubs->[0]->{nested} if @$hubs;
@@ -308,7 +308,7 @@ sub in_subtest {
     my $self = shift;
 
     Carp::cluck("Use of Test2::Event->in_subtest() is deprecated, use Test2::Event->trace->hid instead")
-        if $ENV{AUTHOR_TESTING};
+        if _env_get('AUTHOR_TESTING');
 
     my $hubs = $self->{+HUBS};
     if ($hubs && @$hubs) {

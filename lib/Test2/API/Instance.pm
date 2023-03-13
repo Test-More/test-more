@@ -8,7 +8,7 @@ our @CARP_NOT = qw/Test2::API Test2::API::Instance Test2::IPC::Driver Test2::For
 use Carp qw/confess carp/;
 use Scalar::Util qw/reftype/;
 
-use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try CAN_SIGSYS/;
+use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try CAN_SIGSYS _env_get/;
 
 use Test2::EventFacet::Trace();
 use Test2::API::Stack();
@@ -104,7 +104,7 @@ sub post_preload_reset {
 
     $self->{+FINALIZED} = undef;
     $self->{+IPC}       = undef;
-    $self->{+IPC_DISABLED} = $ENV{T2_NO_IPC} ? 1 : 0;
+    $self->{+IPC_DISABLED} = _env_get('T2_NO_IPC') ? 1 : 0;
 
     $self->{+IPC_TIMEOUT} = DEFAULT_IPC_TIMEOUT() unless defined $self->{+IPC_TIMEOUT};
 
@@ -131,7 +131,7 @@ sub reset {
 
     $self->{+FINALIZED}    = undef;
     $self->{+IPC}          = undef;
-    $self->{+IPC_DISABLED} = $ENV{T2_NO_IPC} ? 1 : 0;
+    $self->{+IPC_DISABLED} = _env_get('T2_NO_IPC') ? 1 : 0;
 
     $self->{+IPC_TIMEOUT} = DEFAULT_IPC_TIMEOUT() unless defined $self->{+IPC_TIMEOUT};
 

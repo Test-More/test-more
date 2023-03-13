@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '1.302195';
 
-use Test2::Util qw/clone_io/;
+use Test2::Util qw/clone_io _env_get/;
 
 use Test2::Util::HashBase qw{
     no_numbers handles _encoding _last_fh
@@ -116,7 +116,7 @@ sub write {
         my $io = $handles->[$hid] or next;
 
         print $io "\n"
-            if $ENV{HARNESS_ACTIVE}
+            if _env_get('HARNESS_ACTIVE')
             && $hid == OUT_ERR
             && $self->{+_LAST_FH} != $io
             && $msg =~ m/^#\s*Failed( \(TODO\))? test /;
@@ -294,7 +294,7 @@ sub assert_tap {
         # In a verbose harness we indent the extra since they will appear
         # inside the subtest braces. This helps readability. In a non-verbose
         # harness we do not do this because it is less readable.
-        if ($ENV{HARNESS_IS_VERBOSE} || !$ENV{HARNESS_ACTIVE}) {
+        if (_env_get("HARNESS_IS_VERBOSE") || !_env_get("HARNESS_ACTIVE")) {
             $extra_indent = "    ";
             $extra_space = ' ';
         }

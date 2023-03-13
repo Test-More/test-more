@@ -13,6 +13,7 @@ BEGIN
 use Test::Builder;
 use Test::Tester::CaptureRunner;
 use Test::Tester::Delegate;
+use Test2::Util qw(_env_get);
 
 require Exporter;
 
@@ -30,7 +31,7 @@ $Delegator->{Object} = $Test;
 
 my $runner = Test::Tester::CaptureRunner->new;
 
-my $want_space = $ENV{TESTTESTERSPACE};
+my $want_space = _env_get('TESTTESTERSPACE');
 
 sub show_space
 {
@@ -40,7 +41,7 @@ sub show_space
 my $colour = '';
 my $reset = '';
 
-if (my $want_colour = $ENV{TESTTESTERCOLOUR} || $ENV{TESTTESTERCOLOR})
+if (my $want_colour = _env_get('TESTTESTERCOLOUR') || _env_get('TESTTESTERCOLOR'))
 {
 	if (eval { require Term::ANSIColor; 1 })
 	{
