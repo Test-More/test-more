@@ -36,11 +36,24 @@ our @EXPORT_OK = qw{
     try_sig_mask
 
     clone_io
+
+    _env_get
 };
 BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 BEGIN {
     *IS_WIN32 = ($^O eq 'MSWin32') ? sub() { 1 } : sub() { 0 };
+}
+
+# check for key existence before fetching from %ENV to avoid
+# locked hash issues. If it does not exist, or it does and the
+# value is undefined return $_[1] instead, thus allowing
+# a default value to be supplied if required.
+sub _env_get {
+    my ($key,$default) = @_;
+    my $got = exists($ENV{$key}) ? $ENV{$key} : undef;
+    $got = $default unless defined $got;
+    return $got;
 }
 
 sub _can_thread {
