@@ -426,6 +426,7 @@ sub isnt ($$;$) {
 # warnings are enabled, so the user can silence the warning if they
 # wish.
 sub isn::t {
+    local ($@, $!, $?);
     if (warnings::enabled("deprecated")) {
         _carp
         "Use of apostrophe as package separator was deprecated in Perl 5.37.9,\n",

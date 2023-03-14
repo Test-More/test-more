@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix failing test on 5.10
+
 1.302193  2023-03-06 09:38:00-08:00 America/Los_Angeles
 
     - Deprecate isn't()
