@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Do not index Devel::MAT::Dumper
+
 0.000149  2023-03-21 06:44:50-07:00 America/Los_Angeles
 
     - Fix warning when Devel::MAT::Dumper is installed and -w is used

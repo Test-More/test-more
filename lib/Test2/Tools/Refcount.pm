@@ -27,7 +27,8 @@ our @EXPORT_OK = qw(
 use base qw(Exporter);
 
 use constant HAVE_DEVEL_MAT_DUMPER => defined eval {
-    package Devel::MAT::Dumper;
+    package # No Index
+        Devel::MAT::Dumper;
     our $HELPER_PER_PACKAGE;
     our $HELPER_PER_MAGIC;
     require Devel::MAT::Dumper;
