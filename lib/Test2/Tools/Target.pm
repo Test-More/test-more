@@ -2,7 +2,7 @@ package Test2::Tools::Target;
 use strict;
 use warnings;
 
-our $VERSION = '0.000149';
+our $VERSION = '0.000150';
 
 use Carp qw/croak/;
 
