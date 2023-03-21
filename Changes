@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix warning when Devel::MAT::Dumper is installed and -w is used
+
 0.000148  2023-03-05 14:59:45-08:00 America/Los_Angeles
 
     - Fixes for refcount stuff
