@@ -8,7 +8,7 @@ use Test2::Compare::EventMeta();
 
 use base 'Test2::Compare::Object';
 
-our $VERSION = '0.000150';
+our $VERSION = '0.000151';
 
 use Test2::Util::HashBase qw/etype/;
 
