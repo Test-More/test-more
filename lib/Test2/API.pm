@@ -380,8 +380,15 @@ sub context {
     # Catch an edge case where we try to get context after the root hub has
     # been garbage collected resulting in a stack that has a single undef
     # hub
-    if (!$hub && !exists($params{hub}) && @$stack) {
-        my $msg = Carp::longmess("Attempt to get Test2 context after testing has completed (did you attempt a testing event after done_testing?)");
+    if (!($hub && $hub->{hid}) && !exists($params{hub}) && @$stack) {
+        my $msg;
+
+        if ($hub && !$hub->{hid}) {
+            $msg = Carp::longmess("$hub has no hid! (did you attempt a testing event after done_testing?). You may be relying on a tool or plugin that was based off an old Test2 that did not require hids.");
+        }
+        else {
+            $msg = Carp::longmess("Attempt to get Test2 context after testing has completed (did you attempt a testing event after done_testing?)");
+        }
 
         # The error message is usually masked by the global destruction, so we have to print to STDER
         print STDERR $msg;
