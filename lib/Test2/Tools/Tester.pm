@@ -11,6 +11,39 @@ BEGIN {
     if (eval { require Module::Pluggable; 1 }) {
         Module::Pluggable->import(search_path => ['Test2::EventFacet'], require => 1);
     }
+    else {
+        require Test2::EventFacet::About;
+        require Test2::EventFacet::Amnesty;
+        require Test2::EventFacet::Assert;
+        require Test2::EventFacet::Control;
+        require Test2::EventFacet::Error;
+        require Test2::EventFacet::Hub;
+        require Test2::EventFacet::Info;
+        require Test2::EventFacet::Info::Table;
+        require Test2::EventFacet::Meta;
+        require Test2::EventFacet::Parent;
+        require Test2::EventFacet::Plan;
+        require Test2::EventFacet::Render;
+        require Test2::EventFacet::Trace;
+
+        *plugins = sub {
+            return (
+                'Test2::EventFacet::About',
+                'Test2::EventFacet::Amnesty',
+                'Test2::EventFacet::Assert',
+                'Test2::EventFacet::Control',
+                'Test2::EventFacet::Error',
+                'Test2::EventFacet::Hub',
+                'Test2::EventFacet::Info',
+                'Test2::EventFacet::Info::Table',
+                'Test2::EventFacet::Meta',
+                'Test2::EventFacet::Parent',
+                'Test2::EventFacet::Plan',
+                'Test2::EventFacet::Render',
+                'Test2::EventFacet::Trace',
+            );
+        };
+    }
 }
 
 use Test2::Util::Importer 'Test2::Util::Importer' => 'import';
