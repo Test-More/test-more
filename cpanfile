@@ -5,7 +5,6 @@ requires "B" => "0";
 requires "Carp" => "0";
 requires "Data::Dumper" => "0";
 requires "Exporter" => "0";
-requires "Importer" => "0.024";
 requires "Scalar::Util" => "0";
 requires "Term::Table" => "0.013";
 requires "Test2::API" => "1.302176";
