@@ -6,7 +6,6 @@ our $VERSION = '0.000151';
 
 use Carp qw/croak carp/;
 use B();
-use Sub::Info;
 
 our @EXPORT_OK = qw{
     sub_info
@@ -47,8 +46,49 @@ sub sub_name {
 }
 
 sub sub_info {
-    carp "Test2::Util::Sub::sub_info() is deprecated, use Sub::Info::sub_info() instead";
-    Sub::Info::sub_info(@_);
+    my ($sub, @all_lines) = @_;
+    my %in = map {$_ => 1} @all_lines;
+
+    croak "sub_info requires a coderef as its first argument"
+        unless ref($sub) eq 'CODE';
+
+    my $cobj    = B::svref_2object($sub);
+    my $name    = $cobj->GV->NAME;
+    my $file    = $cobj->FILE;
+    my $package = $cobj->GV->STASH->NAME;
+
+    my $op = $cobj->START;
+    while ($op) {
+        push @all_lines => $op->line if $op->can('line');
+        last unless $op->can('next');
+        $op = $op->next;
+    }
+
+    my ($start, $end, @lines);
+    if (@all_lines) {
+        @all_lines = sort { $a <=> $b } @all_lines;
+        ($start, $end) = ($all_lines[0], $all_lines[-1]);
+
+        # Adjust start and end for the most common case of a multi-line block with
+        # parens on the lines before and after.
+        if ($start < $end) {
+            $start-- unless $start <= 1 || $in{$start};
+            $end++   unless $in{$end};
+        }
+        @lines = ($start, $end);
+    }
+
+    return {
+        ref        => $sub,
+        cobj       => $cobj,
+        name       => $name,
+        file       => $file,
+        package    => $package,
+        start_line => $start,
+        end_line   => $end,
+        all_lines  => \@all_lines,
+        lines      => \@lines,
+    };
 }
 
 1;

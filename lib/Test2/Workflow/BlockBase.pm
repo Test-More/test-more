@@ -5,7 +5,7 @@ use warnings;
 our $VERSION = '0.000151';
 
 use Test2::Util::HashBase qw/code frame _info _lines/;
-use Sub::Info qw/sub_info/;
+use Test2::Util::Sub qw/sub_info/;
 use List::Util qw/min max/;
 use Carp qw/croak/;
 
