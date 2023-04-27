@@ -2,7 +2,7 @@ package Test2::V0;
 use strict;
 use warnings;
 
-use Importer;
+use Test2::Util::Importer;
 
 our $VERSION = '0.000152';
 
@@ -43,7 +43,7 @@ use Test2::Tools::Warnings qw{
 
 use Test2::Tools::ClassicCompare qw/cmp_ok/;
 
-use Importer 'Test2::Tools::Subtest' => (
+use Test2::Util::Importer 'Test2::Tools::Subtest' => (
     subtest_buffered => { -as => 'subtest' },
 );
 
@@ -130,7 +130,7 @@ sub import {
 
     croak "Unknown option(s): " . join(', ', sort keys %options) if keys %options;
 
-    Importer->import_into($class, $caller, @exports);
+    Test2::Util::Importer->import_into($class, $caller, @exports);
 }
 
 1;
@@ -200,7 +200,7 @@ The following are both identical:
 
     use Test2::V0 ':DEFAULT', '!ok', ok => {-as => 'my_ok'};
 
-This bundle uses L<Importer> for exporting, as such you can use any arguments
+This bundle uses L<Test2::Util::Importer> for exporting, as such you can use any arguments
 it accepts.
 
 Explanation:

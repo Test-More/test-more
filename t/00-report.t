@@ -23,8 +23,8 @@ diag(
 
 {
     my @depends = qw{
-        Test2 Importer Term::Table Sub::Info B Carp Exporter Scalar::Util
-        Time::HiRes overload utf8 Module::Pluggable
+        Test2 Term::Table Sub::Info B Carp Exporter Scalar::Util Time::HiRes
+        overload utf8 Module::Pluggable
     };
 
     my @rows;

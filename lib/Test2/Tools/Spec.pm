@@ -13,7 +13,7 @@ use Test2::Workflow::Runner();
 use Test2::Workflow::Task::Action();
 use Test2::Workflow::Task::Group();
 use Test2::Tools::Mock();
-use Importer();
+use Test2::Util::Importer();
 
 use vars qw/@EXPORT @EXPORT_OK/;
 push @EXPORT => qw{describe cases};
@@ -106,7 +106,7 @@ sub import {
         );
     }
 
-    Importer->import_into($class, $caller[0], @import);
+    Test2::Util::Importer->import_into($class, $caller[0], @import);
 }
 
 {
