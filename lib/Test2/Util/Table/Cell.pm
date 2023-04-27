@@ -2,7 +2,7 @@ package Test2::Util::Table::Cell;
 use strict;
 use warnings;
 
-our $VERSION = '0.000153';
+our $VERSION = '0.000154';
 
 use base 'Term::Table::Cell';
 

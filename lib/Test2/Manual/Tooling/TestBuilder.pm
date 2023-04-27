@@ -1,6 +1,6 @@
 package Test2::Manual::Tooling::TestBuilder;
 
-our $VERSION = '0.000153';
+our $VERSION = '0.000154';
 
 1;
 
