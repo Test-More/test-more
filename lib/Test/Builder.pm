@@ -1670,7 +1670,7 @@ sub _ending {
     return unless $plan || $count || $failed;
 
     # Ran tests but never declared a plan or hit done_testing
-    if( !$hub->plan and $hub->count ) {
+    if( !defined($hub->plan) and $hub->count ) {
         $self->diag("Tests were run but no plan was declared and done_testing() was not seen.");
 
         if($real_exit_code) {

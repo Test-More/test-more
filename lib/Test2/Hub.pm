@@ -432,7 +432,7 @@ sub finalize {
         $count  = $self->{+COUNT};
         $failed = $self->{+FAILED};
 
-        if (($plan && $plan eq 'NO PLAN') || ($do_plan && !$plan)) {
+        if ((defined($plan) && $plan eq 'NO PLAN') || ($do_plan && !defined($plan))) {
             $self->send(
                 Test2::Event::Plan->new(
                     trace => $trace,
