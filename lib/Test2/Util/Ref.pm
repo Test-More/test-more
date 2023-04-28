@@ -32,11 +32,18 @@ sub render_ref {
 
     # Look past overloading
     my $class = blessed($in) || '';
+
     my $it = sprintf('0x%x', refaddr($in));
     my $ref = "$type($it)";
 
     return $ref unless $class;
-    return "$class=$ref";
+
+    my $out = "$class=$ref";
+    if ($class =~ m/bool/i) {
+        my $bool = $in ? 'TRUE' : 'FALSE';
+        return "<$bool: $out>";
+    }
+    return $out;
 }
 
 1;

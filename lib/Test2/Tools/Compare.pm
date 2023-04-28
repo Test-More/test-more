@@ -266,7 +266,12 @@ sub F() {
 sub FDNE() {
     my @caller = caller;
     Test2::Compare::Custom->new(
-        code => sub { defined $_ && ( ref $_ || $_ ) ? 0 : 1 }, name => 'FALSE', operator => 'FALSE() || !exists',
+        code => sub {
+            my %p = @_;
+            return 1 unless $p{exists};
+            return $p{got} ? 0 : 1;
+        },
+        name => 'FALSE', operator => 'FALSE() || !exists',
         file => $caller[1],
         lines => [$caller[2]],
     );
@@ -275,7 +280,12 @@ sub FDNE() {
 sub T() {
     my @caller = caller;
     Test2::Compare::Custom->new(
-        code => sub { defined $_ && ( ref $_ || $_ ) ? 1 : 0 }, name => 'TRUE', operator => 'TRUE()',
+        code => sub {
+            my %p = @_;
+            return 0 unless $p{exists};
+            return $p{got} ? 1 : 0;
+        },
+        name => 'TRUE', operator => 'TRUE()',
         file => $caller[1],
         lines => [$caller[2]],
     );
