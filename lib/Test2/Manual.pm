@@ -2,7 +2,7 @@ package Test2::Manual;
 use strict;
 use warnings;
 
-our $VERSION = '0.000154';
+our $VERSION = '0.000155';
 
 1;
 

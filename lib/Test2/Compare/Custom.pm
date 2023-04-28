@@ -4,7 +4,7 @@ use warnings;
 
 use base 'Test2::Compare::Base';
 
-our $VERSION = '0.000154';
+our $VERSION = '0.000155';
 
 use Test2::Util::HashBase qw/code name operator stringify_got/;
 
