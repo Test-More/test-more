@@ -23,8 +23,8 @@ diag(
 
 {
     my @depends = qw{
-        Test2 Term::Table Sub::Info B Carp Exporter Scalar::Util Time::HiRes
-        overload utf8 Module::Pluggable
+        Test2 Term::Table B Carp Exporter Scalar::Util Time::HiRes
+        overload utf8
     };
 
     my @rows;
@@ -43,7 +43,7 @@ diag(
 
 {
     my @options = qw{
-        Sub::Name Term::ReadKey Term::Size::Any Unicode::GCString
+        Module::Pluggable Sub::Name Term::ReadKey Term::Size::Any Unicode::GCString
         Unicode::LineBreak
     };
 
