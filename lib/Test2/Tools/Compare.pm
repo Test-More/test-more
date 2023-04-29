@@ -69,6 +69,7 @@ our @EXPORT_OK = qw{
     is like isnt unlike
     match mismatch validator
     hash array bag object meta meta_check number float rounded within string subset bool check_isa
+    number_lt number_le number_ge number_gt
     in_set not_in_set check_set
     item field call call_list call_hash prop check all_items all_keys all_vals all_values
     etc end filter_items
@@ -350,6 +351,54 @@ sub number($;@) {
         file  => $caller[1],
         lines => [$caller[2]],
         input => $num,
+        @args,
+    );
+}
+
+sub number_lt($;@) {
+    my ($num, @args) = @_;
+    my @caller = caller;
+    return Test2::Compare::Number->new(
+        file  => $caller[1],
+        lines => [$caller[2]],
+        input => $num,
+        mode  => '<',
+        @args,
+    );
+}
+
+sub number_le($;@) {
+    my ($num, @args) = @_;
+    my @caller = caller;
+    return Test2::Compare::Number->new(
+        file  => $caller[1],
+        lines => [$caller[2]],
+        input => $num,
+        mode  => '<=',
+        @args,
+    );
+}
+
+sub number_ge($;@) {
+    my ($num, @args) = @_;
+    my @caller = caller;
+    return Test2::Compare::Number->new(
+        file  => $caller[1],
+        lines => [$caller[2]],
+        input => $num,
+        mode  => '>=',
+        @args,
+    );
+}
+
+sub number_gt($;@) {
+    my ($num, @args) = @_;
+    my @caller = caller;
+    return Test2::Compare::Number->new(
+        file  => $caller[1],
+        lines => [$caller[2]],
+        input => $num,
+        mode  => '>',
         @args,
     );
 }
@@ -1066,6 +1115,17 @@ Verify that the value matches the given number using the C<==> operator.
 =item $check = !number ...;
 
 Verify that the value does not match the given number using the C<!=> operator.
+
+=item $check = number_lt ...;
+
+=item $check = number_le ...;
+
+=item $check = number_ge ...;
+
+=item $check = number_gt ...;
+
+Verify that the value is less than, less than or equal to, greater than or
+equal to, or greater than the given number.
 
 =item $check = float ...;
 
