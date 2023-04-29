@@ -8,7 +8,7 @@ use base 'Test2::Compare::Base';
 
 our $VERSION = '0.000156';
 
-use Test2::Util::HashBase qw/input/;
+use Test2::Util::HashBase qw/input mode/;
 
 # Overloads '!' for us.
 use Test2::Compare::Negatable;
@@ -24,6 +24,8 @@ sub init {
     confess "input must be a number for 'Number' check"
         unless length($input) && $input =~ m/\S/;
 
+    defined $self->{+MODE} or $self->{+MODE} = '==';
+
     $self->SUPER::init(@_);
 }
 
@@ -33,6 +35,15 @@ sub name {
     return $in;
 }
 
+my %NEGATED = (
+    '==' => '!=',
+    '!=' => '==',
+    '<'  => '>=',
+    '<=' => '>',
+    '>=' => '<',
+    '>'  => '<=',
+);
+
 sub operator {
     my $self = shift;
     return '' unless @_;
@@ -41,8 +52,8 @@ sub operator {
     return '' unless defined($got);
     return '' unless length($got) && $got =~ m/\S/;
 
-    return '!=' if $self->{+NEGATE};
-    return '==';
+    return $NEGATED{ $self->{+MODE} } if $self->{+NEGATE};
+    return $self->{+MODE};
 }
 
 sub verify {
@@ -55,14 +66,22 @@ sub verify {
     return 0 if ref $got;
     return 0 unless length($got) && $got =~ m/\S/;
 
-    my $input  = $self->{+INPUT};
+    my $want   = $self->{+INPUT};
+    my $mode   = $self->{+MODE};
     my $negate = $self->{+NEGATE};
 
     my @warnings;
     my $out;
     {
         local $SIG{__WARN__} = sub { push @warnings => @_ };
-        $out = $negate ? ($input != $got) : ($input == $got);
+        $out = $mode eq '==' ? ($got == $want) :
+               $mode eq '!=' ? ($got != $want) :
+               $mode eq '<'  ? ($got <  $want) :
+               $mode eq '<=' ? ($got <= $want) :
+               $mode eq '>=' ? ($got >= $want) :
+               $mode eq '>'  ? ($got >  $want) :
+                               die "Unrecognised MODE";
+        $out ^= 1 if $negate;
     }
 
     for my $warn (@warnings) {

@@ -556,6 +556,46 @@ subtest number => sub {
             "Got events"
         );
     }
+
+    $line = __LINE__+1;
+    my @tests = (
+        {check => number_lt(25), failval => 30, op => '<',  failop => '>=', checkval => 25},
+        {check => number_le(25), failval => 30, op => '<=', failop => '>',  checkval => 25},
+        {check => number_ge(15), failval => 10, op => '>=', failop => '<',  checkval => 15},
+        {check => number_gt(15), failval => 10, op => '>',  failop => '<=', checkval => 15},
+    );
+
+    for my $test (@tests) {
+        my $check= $test->{check};
+
+        is($check->lines, [$line], "Got line number");
+
+        $events = intercept {
+            is(20,                $check, "pass");
+            is($test->{failval},  $check, "fail");
+            is(20,               !$check, "fail");
+        };
+
+        like(
+            $events,
+            array {
+                event Ok => {pass => 1};
+
+                fail_table(
+                    header => [qw/GOT OP CHECK LNs/],
+                    rows   => [[@{$test}{qw/ failval op checkval /}, $line]],
+                );
+
+                fail_table(
+                    header => [qw/GOT OP CHECK LNs/],
+                    rows   => [[20, @{$test}{qw/ failop checkval /}, $line]],
+                );
+
+                end;
+            },
+            "Got events"
+        );
+    }
 };
 
 subtest float => sub {
