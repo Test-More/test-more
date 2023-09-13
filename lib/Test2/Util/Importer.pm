@@ -778,7 +778,7 @@ __END__
 
 =head1 NAME
 
-Test2::Util Importer - Inline copy of L<Importer>.
+Test2::Util::Importer - Inline copy of L<Importer>.
 
 =head1 DESCRIPTION
 
