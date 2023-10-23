@@ -1,5 +1,10 @@
 {{$NEXT}}
 
+    - Fix #280: Document --no_srand option in Test2::V0
+    - Fix #276: Document bool() import in Test2::V0
+    - Fix #279: Merged fix for VMS test issues
+    - Fix #277: Merged POD tweaks
+
 0.000156  2023-09-13 15:11:52-07:00 America/Los_Angeles
 
     - Fix typo in POD for Test2::Util::Importer
