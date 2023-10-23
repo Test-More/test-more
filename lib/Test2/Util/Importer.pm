@@ -2,7 +2,7 @@ package Test2::Util::Importer;
 use strict; no strict 'refs';
 use warnings; no warnings 'once';
 
-our $VERSION = '0.000157';
+our $VERSION = '0.000158';
 
 my %SIG_TO_SLOT = (
     '&' => 'CODE',

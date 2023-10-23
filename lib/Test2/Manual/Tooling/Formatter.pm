@@ -1,6 +1,6 @@
 package Test2::Manual::Tooling::Formatter;
 
-our $VERSION = '0.000157';
+our $VERSION = '0.000158';
 
 1;
 
