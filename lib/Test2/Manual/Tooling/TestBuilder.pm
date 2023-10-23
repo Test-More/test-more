@@ -126,7 +126,7 @@ nested under the first will find and use the original context instead of
 generating a new one. This means the level problem is solved for free, no
 variables to mess with.
 
-L<Test2> is also smart enough to honor c<$Test::Builder::Level> if it is set.
+L<Test2> is also smart enough to honor C<$Test::Builder::Level> if it is set.
 
 =head1 TODO
 
