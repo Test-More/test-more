@@ -1,8 +1,8 @@
 use strict;
 use warnings;
+use Test2::Require::AuthorTesting;
 use Test2::Bundle::Extended;
 use Test2::Tools::Spec qw/:DEFAULT include_workflow/;
-
 use Test2::Workflow::Runner;
 
 use Test2::API qw/intercept/;
