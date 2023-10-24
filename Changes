@@ -1,7 +1,10 @@
 {{$NEXT}}
 
+1.302196  2023-10-24 10:27:33-07:00 America/Los_Angeles
+
     - Fix #882
     - Fix handling of VSTRING and LVALUE refs in is_deeply() #918
+    - Merge several doc fixes from mauke
 
 1.302195  2023-04-28 05:55:54-07:00 America/Los_Angeles
 
