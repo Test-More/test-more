@@ -240,7 +240,7 @@ sub test2_add_callback_testing_done {
 
     test2_add_callback_post_load(sub {
         my $stack = test2_stack();
-        $stack->top; # Insure we have a hub
+        $stack->top; # Ensure we have a hub
         my ($hub) = Test2::API::test2_stack->all;
 
         $hub->set_active(1);
@@ -927,7 +927,7 @@ what you can and cannot do with a context once it is obtained.
 B<Note> This function will throw an exception if you ignore the context object
 it returns.
 
-B<Note> On perls 5.14+ a depth check is used to insure there are no context
+B<Note> On perls 5.14+ a depth check is used to ensure there are no context
 leaks. This cannot be safely done on older perls due to
 L<https://rt.perl.org/Public/Bug/Display.html?id=127774>
 You can forcefully enable it either by setting C<$ENV{T2_CHECK_DEPTH} = 1> or
@@ -1095,8 +1095,8 @@ Usage:
 
 Using this inside your test tool takes care of a lot of boilerplate for you. It
 will ensure a context is acquired. It will capture and rethrow any exception. It
-will insure the context is released when you are done. It preserves the
-subroutine call context (array, scalar, void).
+will ensure the context is released when you are done. It preserves the
+subroutine call context (list, scalar, void).
 
 This is the safest way to write a test tool. The only two downsides to this are a
 slight performance decrease, and some extra indentation in your source. If the
@@ -1236,7 +1236,7 @@ formatter being used.
 
 =over 4
 
-=item Things not effected by this flag
+=item Things not affected by this flag
 
 In both cases events are generated and stored in an array. This array is
 eventually used to populate the C<subevents> attribute on the
@@ -1246,13 +1246,13 @@ This flag has no effect on this part, it always happens.
 At the end of the subtest, the final L<Test2::Event::Subtest> event is sent to
 the formatter.
 
-=item Things that are effected by this flag
+=item Things that are affected by this flag
 
 The C<buffered> attribute of the L<Test2::Event::Subtest> event will be set to
 the value of this flag. This means any formatter, listener, etc which looks at
 the event will know if it was buffered.
 
-=item Things that are formatter dependant
+=item Things that are formatter dependent
 
 Events within a buffered subtest may or may not be sent to the formatter as
 they happen. If a formatter fails to specify then the default is to B<NOT SEND>
@@ -1439,7 +1439,7 @@ This is essentially a helper to do the following:
 
     test2_add_callback_post_load(sub {
         my $stack = test2_stack();
-        $stack->top; # Insure we have a hub
+        $stack->top; # Ensure we have a hub
         my ($hub) = Test2::API::test2_stack->all;
 
         $hub->set_active(1);
