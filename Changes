@@ -2,6 +2,10 @@
 
     - Fix #882
 
+1.302195  2023-04-28 05:55:54-07:00 America/Los_Angeles
+
+    - Fix done_testing(0) producing 2 plans and an incorrect message
+
 1.302194  2023-03-13 20:06:57-07:00 America/Los_Angeles
 
     - Fix failing test on 5.10
