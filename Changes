@@ -1,6 +1,7 @@
 {{$NEXT}}
 
     - Fix #882
+    - Fix handling of VSTRING and LVALUE refs in is_deeply() #918
 
 1.302195  2023-04-28 05:55:54-07:00 America/Los_Angeles
 
