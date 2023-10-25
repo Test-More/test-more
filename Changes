@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Document that diag() intentionally returns false, and add a `return 0`
+
 0.000158  2023-10-22 22:05:42-07:00 America/Los_Angeles
 
     - Mark Workflow-Acceptance.t as AUTHOR_TESTING
