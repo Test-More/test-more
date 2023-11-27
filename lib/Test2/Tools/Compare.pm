@@ -875,7 +875,8 @@ refers back to itself at some point. If this happens, an exception will be
 thrown to break an otherwise infinite recursion.
 
 B<Note>: Non-reference values will be compared as strings using C<eq>, so that
-means '2.0' and '2' will match.
+means strings '2.0' and '2' will not match, but numeric 2.0 and 2 will, since
+they are both stringified to '2'.
 
 =item $bool = isnt($got, $expect)
 
