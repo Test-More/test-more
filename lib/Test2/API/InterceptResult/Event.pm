@@ -199,13 +199,14 @@ sub causes_fail { shift->causes_failure }
 
 sub trace         { $_[0]->facet('trace') }
 sub the_trace     { $_[0]->the_facet('trace') }
-sub frame         { my $t = $_[0]->the_trace or return undef; $t->{frame} || undef }
+sub frame         { my $t = $_[0]->the_trace or return undef; $t->{frame}   || undef }
 sub trace_details { my $t = $_[0]->the_trace or return undef; $t->{details} || undef }
-sub trace_package { my $f = $_[0]->frame or return undef; $f->[0] || undef }
-sub trace_file    { my $f = $_[0]->frame or return undef; $f->[1] || undef }
-sub trace_line    { my $f = $_[0]->frame or return undef; $f->[2] || undef }
-sub trace_subname { my $f = $_[0]->frame or return undef; $f->[3] || undef }
-sub trace_tool    { my $f = $_[0]->frame or return undef; $f->[3] || undef }
+sub trace_stamp   { my $f = $_[0]->the_trace or return undef; $f->{stamp}   || undef }
+sub trace_package { my $f = $_[0]->frame     or return undef; $f->[0]       || undef }
+sub trace_file    { my $f = $_[0]->frame     or return undef; $f->[1]       || undef }
+sub trace_line    { my $f = $_[0]->frame     or return undef; $f->[2]       || undef }
+sub trace_subname { my $f = $_[0]->frame     or return undef; $f->[3]       || undef }
+sub trace_tool    { my $f = $_[0]->frame     or return undef; $f->[3]       || undef }
 
 sub trace_signature { my $t = $_[0]->the_trace or return undef; Test2::EventFacet::Trace::signature($t) || undef }
 

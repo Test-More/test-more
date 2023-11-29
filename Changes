@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Add ability to attach timestamps to trace objects via api or env var
+
 1.302196  2023-10-24 10:27:33-07:00 America/Los_Angeles
 
     - Fix #882

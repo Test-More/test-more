@@ -171,6 +171,10 @@ our @EXPORT_OK = qw{
     test2_stdout
     test2_stderr
     test2_reset_io
+
+    test2_enable_trace_stamps
+    test2_disable_trace_stamps
+    test2_trace_stamps_enabled
 };
 BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
@@ -208,6 +212,10 @@ sub test2_stack            { $INST->stack }
 sub test2_ipc_wait_enable  { $INST->set_no_wait(0) }
 sub test2_ipc_wait_disable { $INST->set_no_wait(1) }
 sub test2_ipc_wait_enabled { !$INST->no_wait }
+
+sub test2_enable_trace_stamps  { $INST->test2_enable_trace_stamps }
+sub test2_disable_trace_stamps { $INST->test2_disable_trace_stamps }
+sub test2_trace_stamps_enabled { $INST->test2_trace_stamps_enabled }
 
 sub test2_is_testing_done {
     # No instance? VERY DONE!
@@ -469,6 +477,8 @@ sub context {
             buffered => $hub->{buffered},
 
             full_caller => [$pkg, $file, $line, $sub, @other],
+
+            $INST->{trace_stamps} ? (stamp => time()) : (),
 
             $$UUID_VIA ? (
                 huuid => $hub->{uuid},
@@ -1628,6 +1638,27 @@ Get a list of all loaded formatters.
 
 Add a formatter to the list. Last formatter added is used at initialization. If
 this is called after initialization a warning will be issued.
+
+=back
+
+=head2 TIME STAMPS
+
+You can enable or disable timestamps in trace facets. They are disabled by
+default for compatibility and performance reasons.
+
+=over 4
+
+=item test2_enable_trace_stamps()
+
+Enable stamps in traces.
+
+=item test2_disable_trace_stamps()
+
+Disable stamps in traces.
+
+=item $bool = test2_trace_stamps_enabled()
+
+Check status of trace stamps.
 
 =back
 
