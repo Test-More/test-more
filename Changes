@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Remove use of defined-or operator
+
 1.302197  2023-11-28 17:30:37-08:00 America/Los_Angeles
 
     - Add ability to attach timestamps to trace objects via api or env var
