@@ -125,7 +125,7 @@ sub reset {
     delete $self->{+_PID};
     delete $self->{+_TID};
 
-    $self->{+TRACE_STAMPS} = $ENV{T2_TRACE_STAMPS} // 0;
+    $self->{+TRACE_STAMPS} = $ENV{T2_TRACE_STAMPS} || 0;
 
     $self->{+ADD_UUID_VIA} = undef;
 
