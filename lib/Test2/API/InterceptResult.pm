@@ -370,7 +370,7 @@ L<Test2::API::InterceptResult::Event> instances. There is no way to avoid this,
 the squash operation requires the upgraded event class.
 
 L<Test::More> and many other legacy tools would send notes, diags, and
-assertions as seperate events. A subtest in L<Test::More> would send a note
+assertions as separate events. A subtest in L<Test::More> would send a note
 with the subtest name, the subtest assertion, and finally a diagnostics event
 if the subtest failed. This method will normalize things by squashing the note
 and diag into the same event as the subtest (This is different from putting

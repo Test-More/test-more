@@ -1360,7 +1360,7 @@ when testing is done.
 
 Disable IPC.
 
-=item $bool = test2_ipc_diabled
+=item $bool = test2_ipc_disabled
 
 Check if IPC is disabled.
 
