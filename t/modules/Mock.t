@@ -553,7 +553,7 @@ subtest 'override and orig' => sub {
     EOT
 
     my $check_initial = sub {
-        is(Fake14->$_, 'old', "$_ is not overriden") for qw/new foo bar baz DATA reader writer rsub nsub/;
+        is(Fake14->$_, 'old', "$_ is not overridden") for qw/new foo bar baz DATA reader writer rsub nsub/;
         ok(eval <<'        EOT', "Ran glob checks") || diag "Error: $@";
             is($Fake14::UHG,  'old',  'old package scalar (UHG)');
             is($Fake14::DATA, 'old', "Old package scalar (DATA)");
