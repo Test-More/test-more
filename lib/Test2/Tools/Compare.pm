@@ -1778,7 +1778,7 @@ Check for details about the event:
         # Check the file the event reports to
         prop file => 'foo.t';
 
-        # Check the line number the event reports o
+        # Check the line number the event reports to
         prop line => '42';
 
         # You can check the todo/skip values as well:
