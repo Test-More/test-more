@@ -75,7 +75,7 @@ sub report {
         next if eval { $mod->VERSION($want); 1 };
         my $error = $@;
         chomp $error;
-        push @warn => " * Module '$mod' is outdated, we recommed updating above $want. error was: '$error'; INC is $INC{$file}";
+        push @warn => " * Module '$mod' is outdated, we recommend updating above $want. error was: '$error'; INC is $INC{$file}";
     }
 
     for my $mod (keys %required) {

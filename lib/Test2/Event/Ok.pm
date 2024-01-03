@@ -68,13 +68,13 @@ sub facet_data {
         details  => $self->{+NAME},
     };
 
-    if (my @exra_amnesty = $self->extra_amnesty) {
+    if (my @extra_amnesty = $self->extra_amnesty) {
         my %seen;
 
         # It is possible the extra amnesty can be a duplicate, so filter it.
         $out->{amnesty} = [
             grep { !$seen{defined($_->{tag}) ? $_->{tag} : ''}->{defined($_->{details}) ? $_->{details} : ''}++ }
-                @exra_amnesty,
+                @extra_amnesty,
                 @{$out->{amnesty}},
         ];
     }

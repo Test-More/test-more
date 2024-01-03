@@ -181,7 +181,7 @@ $ictx->release;
 like(
     exception { intercept { die 'foo' } },
     qr/foo/,
-    "Exception was propogated"
+    "Exception was propagated"
 );
 
 $events = intercept {

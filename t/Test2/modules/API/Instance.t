@@ -530,7 +530,7 @@ if (CAN_REALLY_FORK) {
     like(
         exception { $one->ipc_disable },
         qr/Attempt to disable IPC after it has been initialized/,
-        "Cannot diable IPC once it is initialized"
+        "Cannot disable IPC once it is initialized"
     );
 
     $one->reset;
