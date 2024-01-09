@@ -35,7 +35,7 @@ sub add_handler {
     croak "Must specify a package for the mock handler"
         unless $for;
 
-    croak "Handlers must be code referneces (got: $code)"
+    croak "Handlers must be code references (got: $code)"
         unless $code && ref($code) eq 'CODE';
 
     push @{$HANDLERS{$for}} => $code;
