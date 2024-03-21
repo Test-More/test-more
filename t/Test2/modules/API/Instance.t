@@ -251,7 +251,7 @@ if (CAN_THREAD && $] ge '5.010') {
 {
     my $one = $CLASS->new;
     $one->stack->top;
-    $one->no_wait(1);
+    $one->set_no_wait(1);
     local $? = 0;
     $one->set_exit;
     is($?, 0, "no errors on exit");
