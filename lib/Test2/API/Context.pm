@@ -436,7 +436,6 @@ sub note {
 sub diag {
     my $self = shift;
     my ($message) = @_;
-    my $hub = $self->{+HUB};
     $self->send_event(
         'Diag',
         message => $message,
