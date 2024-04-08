@@ -15,9 +15,9 @@ L<Test::Tutorial>
 
 =head2 Are there any modules for testing?
 
-A whole bunch.  Start with L<Test::Simple> then move onto Test::More.
+A whole bunch.  Start with L<Test::Simple>, then move on to L<Test::More>.
 
-Then go onto L<http://search.cpan.org> and search for "Test".
+Then go on to L<https://metacpan.org/> and search for "Test".
 
 =head2 Are there any modules for testing web pages/CGI programs?
 

@@ -74,6 +74,6 @@ Copyright 2003 by Fergal Daly <fergal@esatclear.ie>.
 
 Under the same license as Perl itself
 
-See http://www.perl.com/perl/misc/Artistic.html
+See L<https://dev.perl.org/licenses/>
 
 =cut
