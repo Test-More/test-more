@@ -143,6 +143,7 @@ sub deltas {
 
             # check-all goes here so we hit each item, even unspecified ones.
             for my $check (@$for_each) {
+                last if $overflow; # avoid doing 'for each' checks beyond array bounds
                 $check = $convert->($check);
                 push @deltas => $check->run(
                     id      => [ARRAY => $state],
