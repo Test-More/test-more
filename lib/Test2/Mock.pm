@@ -7,7 +7,7 @@ our $VERSION = '0.000160';
 use Carp qw/croak confess/;
 our @CARP_NOT = (__PACKAGE__);
 
-use Scalar::Util qw/weaken reftype blessed/;
+use Scalar::Util qw/weaken reftype blessed set_prototype/;
 use Test2::Util qw/pkg_to_file/;
 use Test2::Util::Stash qw/parse_symbol slot_to_sig get_symbol get_stash purge_symbol/;
 use Test2::Util::Sub qw/gen_accessor gen_reader gen_writer/;
@@ -223,7 +223,8 @@ sub before {
     my ($name, $sub) = @_;
     $self->_check();
     my $orig = $self->current($name);
-    $self->_inject({}, $name => sub { $sub->(@_); $orig->(@_) });
+    $self->_inject({}, $name => set_prototype(
+	sub { $sub->(@_); $orig->(@_) }, prototype $sub));
 }
 
 sub after {
@@ -231,7 +232,7 @@ sub after {
     my ($name, $sub) = @_;
     $self->_check();
     my $orig = $self->current($name);
-    $self->_inject({}, $name => sub {
+    $self->_inject({}, $name => set_prototype( sub {
         my @out;
 
         my $want = wantarray;
@@ -251,7 +252,7 @@ sub after {
         return @out    if $want;
         return $out[0] if defined $want;
         return;
-    });
+    }, prototype $sub));
 }
 
 sub around {
@@ -259,7 +260,8 @@ sub around {
     my ($name, $sub) = @_;
     $self->_check();
     my $orig = $self->current($name);
-    $self->_inject({}, $name => sub { $sub->($orig, @_) });
+    $self->_inject({}, $name => set_prototype(
+	sub { $sub->($orig, @_) }, prototype $sub));
 }
 
 sub add {
