@@ -11,7 +11,7 @@ use Test2::Mock();
 
 use base 'Exporter';
 
-our $VERSION = '0.000160';
+our $VERSION = '0.000161';
 
 our @CARP_NOT = (__PACKAGE__, 'Test2::Mock');
 our @EXPORT = qw/mock mocked/;

@@ -5,7 +5,7 @@ use warnings;
 
 use Carp qw(confess);
 
-our $VERSION = '0.000160';
+our $VERSION = '0.000161';
 
 sub new {
     confess "Can't create a Test2::Util::Guard in void context" unless (defined wantarray);
