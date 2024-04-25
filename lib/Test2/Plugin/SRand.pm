@@ -128,6 +128,12 @@ plugin. C<srand> is not called until the plugin is loaded, so other plugins
 loaded first may already be making use of random numbers before your seed
 takes effect.
 
+=head1 CAVEATS
+
+When srand is on (default) it can cause problems with things like L<File::Temp>
+which will end up attempting the same "random" filenames for every test process
+started on a given day (or sharing the same seed).
+
 =head1 SOURCE
 
 The source code repository for Test2-Suite can be found at

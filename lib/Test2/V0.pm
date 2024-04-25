@@ -265,6 +265,10 @@ You can also disable this behavior:
 
     use Test2::V0 -no_srand => 1;
 
+B<Note> When srand is on (default) it can cause problems with things like
+L<File::Temp> which will end up attempting the same "random" filenames for
+every test process started on a given day (or sharing the same seed).
+
 =head2 UTF8
 
 See L<Test2::Plugin::UTF8>.
