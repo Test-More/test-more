@@ -1,5 +1,7 @@
 {{$NEXT}}
 
+    - Fix #291: done_testing under AsyncSubtest does not make sense
+
 0.000159  2023-10-25 14:09:23-07:00 America/Los_Angeles
 
     - Document that diag() intentionally returns false, and add a `return 0`

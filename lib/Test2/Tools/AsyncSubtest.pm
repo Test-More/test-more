@@ -141,6 +141,13 @@ Create an async subtest. Run the codeblock in a thread.
 
 =item Async Subtests are always buffered.
 
+Always buffered.
+
+=item Do not use done_testing() yourself.
+
+using done_testing() inside an async subtest will not work properly, the async
+subtest must be finalized by calling C<< $st->finish >>.
+
 =back
 
 =head1 SOURCE
