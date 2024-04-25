@@ -55,10 +55,10 @@ L<Test::More>
 =head1 CC0 1.0 Universal
 
 To the extent possible under law, 唐鳳 has waived all copyright and related
-or neighboring rights to L<Test-use-ok>.
+or neighboring rights to L<Test::use::ok>.
 
 This work is published from Taiwan.
 
-L<http://creativecommons.org/publicdomain/zero/1.0>
+L<https://creativecommons.org/publicdomain/zero/1.0/>
 
 =cut
