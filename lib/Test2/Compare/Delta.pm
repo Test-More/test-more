@@ -2,7 +2,7 @@ package Test2::Compare::Delta;
 use strict;
 use warnings;
 
-our $VERSION = '0.000161';
+our $VERSION = '0.000162';
 
 use Test2::Util::HashBase qw{verified id got chk children dne exception note};
 

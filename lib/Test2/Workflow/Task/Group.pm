@@ -2,7 +2,7 @@ package Test2::Workflow::Task::Group;
 use strict;
 use warnings;
 
-our $VERSION = '0.000161';
+our $VERSION = '0.000162';
 
 use Carp qw/croak/;
 
