@@ -1082,7 +1082,7 @@ sub skip {
     } unless $self->{no_log_results};
 
     my $tctx = $ctx->snapshot;
-    $tctx->skip('', $why);
+    $tctx->skip($name, $why);
 
     return release $ctx, 1;
 }
