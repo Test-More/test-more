@@ -783,7 +783,7 @@ your data. There are both 'strict' and 'relaxed' versions of the tools.
     # regex to approximate a field.
     like(
         $some_hash,
-        {a => 1, b => qr/[0-9]+/},
+        {a => 1, b => qr/\A[0-9]+\z/},
         "'a' is 1, 'b' is an integer, we don't care about 'c'."
     );
 
@@ -856,7 +856,7 @@ provided and converted to a specification for you.
         $some_hash,
         hash {    # Note: the hash function is not exported by default
             field a => 1;
-            field b => match(qr/[0-9]+/);    # Note: The match function is not exported by default
+            field b => match(qr/\A[0-9]+\z/);    # Note: The match function is not exported by default
             # Don't care about other fields.
         },
         "The hash comparison is not strict"
@@ -909,7 +909,7 @@ In this tool regexes will stringify the thing they are checking.
 
     like(
         $some_hash,
-        {a => 1, b => qr/[0-9]+/},
+        {a => 1, b => qr/\A[0-9]+\z/},
         "'a' is 1, 'b' is an integer, we don't care about other fields"
     );
 
