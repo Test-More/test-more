@@ -222,7 +222,7 @@ sub before {
     my $self = shift;
     my ($name, $sub) = @_;
     $self->_check();
-    my $orig = $self->current($name);
+    my $orig = $self->current($name, required => 1);
     $self->_inject({}, $name => set_prototype(sub { $sub->(@_); $orig->(@_) }, prototype $sub));
 }
 
@@ -230,7 +230,7 @@ sub after {
     my $self = shift;
     my ($name, $sub) = @_;
     $self->_check();
-    my $orig = $self->current($name);
+    my $orig = $self->current($name, required => 1);
     $self->_inject(
         {},
         $name => set_prototype(
@@ -264,7 +264,7 @@ sub around {
     my $self = shift;
     my ($name, $sub) = @_;
     $self->_check();
-    my $orig = $self->current($name);
+    my $orig = $self->current($name, required => 1);
     $self->_inject({}, $name => set_prototype(sub { $sub->($orig, @_) }, prototype $sub));
 }
 
@@ -288,9 +288,13 @@ sub set {
 
 sub current {
     my $self = shift;
-    my ($sym) = @_;
+    my ($sym, %params) = @_;
 
-    return get_symbol($sym, $self->{+CLASS});
+    my $out = get_symbol($sym, $self->{+CLASS});
+    return $out unless $params{required};
+    confess "Attempt to modify a sub that does not exist '$self->{+CLASS}\::$sym' (Mock operates on packages, not classes, are you looking for a symbol in a parent class?)"
+        unless $out;
+    return $out;
 }
 
 sub orig {
