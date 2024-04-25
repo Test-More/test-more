@@ -164,7 +164,7 @@ emailing Chad Granum <exodist@cpan.org>.
 # SOURCE
 
 The source code repository for Test2 can be found at
-`http://github.com/Test-More/test-more/`.
+[https://github.com/Test-More/test-more/](https://github.com/Test-More/test-more/).
 
 # MAINTAINERS
 
@@ -181,4 +181,4 @@ Copyright 2020 Chad Granum <exodist@cpan.org>.
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See `http://dev.perl.org/licenses/`
+See [https://dev.perl.org/licenses/](https://dev.perl.org/licenses/)
