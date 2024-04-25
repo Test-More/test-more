@@ -223,8 +223,7 @@ sub before {
     my ($name, $sub) = @_;
     $self->_check();
     my $orig = $self->current($name);
-    $self->_inject({}, $name => set_prototype(
-	sub { $sub->(@_); $orig->(@_) }, prototype $sub));
+    $self->_inject({}, $name => set_prototype(sub { $sub->(@_); $orig->(@_) }, prototype $sub));
 }
 
 sub after {
@@ -232,27 +231,33 @@ sub after {
     my ($name, $sub) = @_;
     $self->_check();
     my $orig = $self->current($name);
-    $self->_inject({}, $name => set_prototype( sub {
-        my @out;
+    $self->_inject(
+        {},
+        $name => set_prototype(
+            sub {
+                my @out;
 
-        my $want = wantarray;
+                my $want = wantarray;
 
-        if ($want) {
-            @out = $orig->(@_);
-        }
-        elsif(defined $want) {
-            $out[0] = $orig->(@_);
-        }
-        else {
-            $orig->(@_);
-        }
+                if ($want) {
+                    @out = $orig->(@_);
+                }
+                elsif (defined $want) {
+                    $out[0] = $orig->(@_);
+                }
+                else {
+                    $orig->(@_);
+                }
 
-        $sub->(@_);
+                $sub->(@_);
 
-        return @out    if $want;
-        return $out[0] if defined $want;
-        return;
-    }, prototype $sub));
+                return @out    if $want;
+                return $out[0] if defined $want;
+                return;
+            },
+            prototype $sub,
+        )
+    );
 }
 
 sub around {
@@ -260,8 +265,7 @@ sub around {
     my ($name, $sub) = @_;
     $self->_check();
     my $orig = $self->current($name);
-    $self->_inject({}, $name => set_prototype(
-	sub { $sub->($orig, @_) }, prototype $sub));
+    $self->_inject({}, $name => set_prototype(sub { $sub->($orig, @_) }, prototype $sub));
 }
 
 sub add {
