@@ -1382,7 +1382,7 @@ use TODO.  Read on.
 
 ## no critic (Subroutines::RequireFinalReturn)
 sub skip {
-    my( $why, $how_many ) = @_;
+    my( $why, $how_many, $name ) = @_;
     my $tb = Test::More->builder;
 
     # If the plan is set, and is static, then skip needs a count. If the plan
@@ -1402,7 +1402,7 @@ sub skip {
     }
 
     for( 1 .. $how_many ) {
-        $tb->skip($why);
+        $tb->skip($why, $name);
     }
 
     no warnings 'exiting';
