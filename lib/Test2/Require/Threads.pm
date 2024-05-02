@@ -63,7 +63,7 @@ also need to tell the harness that no tests should run and why.
 
 =over 4
 
-=item L<Test2::Require::CanFork>
+=item L<Test2::Require::Fork>
 
 Skip the test file if the system does not support forking.
 
