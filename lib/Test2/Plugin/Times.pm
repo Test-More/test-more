@@ -10,7 +10,7 @@ use Test2::API qw{
 
 use Time::HiRes qw/time/;
 
-our $VERSION = '0.000164';
+our $VERSION = '1.302200';
 
 my $ADDED_HOOK = 0;
 my $START;

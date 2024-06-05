@@ -2,7 +2,7 @@ package Test2::Util::Grabber;
 use strict;
 use warnings;
 
-our $VERSION = '0.000164';
+our $VERSION = '1.302200';
 
 use Test2::Hub::Interceptor();
 use Test2::EventFacet::Trace();
