@@ -877,7 +877,7 @@ Returns the child mock, if any.
 =head1 SOURCE
 
 The source code repository for Test2-Suite can be found at
-L<https://github.com/Test-More/Test2-Suite/>.
+L<https://github.com/Test-More/test-more/>.
 
 =head1 MAINTAINERS
 

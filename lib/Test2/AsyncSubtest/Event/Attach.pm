@@ -60,7 +60,7 @@ Used internally by L<Test2::AsyncSubtest>. No user serviceable parts inside.
 =head1 SOURCE
 
 The source code repository for Test2-AsyncSubtest can be found at
-F<https://github.com/Test-More/Test2-Suite/>.
+F<https://github.com/Test-More/test-more/>.
 
 =head1 MAINTAINERS
 

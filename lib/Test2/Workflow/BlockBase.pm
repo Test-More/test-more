@@ -128,7 +128,7 @@ Test2::Workflow::BlockBase - Base class for all workflow blocks.
 =head1 SOURCE
 
 The source code repository for Test2-Workflow can be found at
-F<https://github.com/Test-More/Test2-Suite/>.
+F<https://github.com/Test-More/test-more/>.
 
 =head1 MAINTAINERS
 

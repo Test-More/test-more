@@ -102,7 +102,7 @@ see L<perlbug 31923|https://rt.perl.org/Public/Bug/Display.html?id=31923>.
 =head1 SOURCE
 
 The source code repository for Test2-Suite can be found at
-F<https://github.com/Test-More/Test2-Suite/>.
+F<https://github.com/Test-More/test-more/>.
 
 =head1 MAINTAINERS
 

@@ -511,7 +511,7 @@ Mock objects are instances of L<Test2::Mock>. See it for their methods.
 =head1 SOURCE
 
 The source code repository for Test2-Suite can be found at
-L<https://github.com/Test-More/Test2-Suite/>.
+L<https://github.com/Test-More/test-more/>.
 
 =head1 MAINTAINERS
 
