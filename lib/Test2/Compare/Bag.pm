@@ -232,7 +232,7 @@ F<https://github.com/Test-More/Test2-Suite/>.
 
 =head1 COPYRIGHT
 
-Copyright 2018 Chad Granum E<lt>exodist@cpan.orgE<gt>.
+Copyright Chad Granum E<lt>exodist@cpan.orgE<gt>.
 
 Copyright 2018 Gianni Ceccarelli E<lt>dakkar@thenautilus.netE<gt>
 

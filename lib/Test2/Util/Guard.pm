@@ -68,7 +68,7 @@ See L<Scope::Guard>
 
 Copyright (c) 2005-2015, chocolateboy.
 
-Modified copy is Copyright 2023 Chad Granum E<lt>exodist7@gmail.comE<gt>.
+Modified copy is Copyright Chad Granum E<lt>exodist7@gmail.comE<gt>.
 
 This module is free software. It may be used, redistributed and/or modified under the same terms
 as Perl itself.
