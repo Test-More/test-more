@@ -50,7 +50,8 @@
 # Avoid Devel::Cover and Devel::CoverX::Covered files.
 \bcover_db\b
 \bcovered\b
- 
+^cover_db/
+
 # Avoid MYMETA files
 ^MYMETA\.
 #!end included /Users/schwern/perl5/perlbrew/perls/perl-v5.12.2/lib/5.12.2/ExtUtils/MANIFEST.SKIP
@@ -63,9 +64,6 @@
 
 # Test::FAQ is not complete.
 ^lib/Test/FAQ
-
-# Avoid Devel::Cover stuff
-^cover_db/
 
 # Don't include our dist director
 ^Test-Simple-
@@ -87,3 +85,27 @@
 ^test\.pl$
 
 ^POD_TEMPLATE\.pod$
+
+# The extra tests are for dist author testing only
+\bxt
+
+# For github testing
+.travis.yml
+
+dist.ini
+
+MANIFEST.SKIP
+
+# I never want this to go out.
+test.pl
+
+POD_TEMPLATE.pod
+
+^Test2-*
+
+^profiling/
+
+t2_lib
+t2s_lib
+
+POD_TEMPLATE.POD

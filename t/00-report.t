@@ -1,75 +1,88 @@
 use strict;
 use warnings;
 
+# Nothing in the tables in this file should result in a table wider than 80
+# characters, so this is an optimization.
+BEGIN { $ENV{TABLE_TERM_SIZE} = 80 }
+
+use File::Spec;
+use Test2::Tools::Basic;
+use Test2::Util::Table qw/table/;
+use Test2::Util qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
+
 my $exit = 0;
 END{ $? = $exit }
 
-use File::Spec;
+diag "\nDIAGNOSTICS INFO IN CASE OF FAILURE:\n";
+diag(join "\n", table(rows => [[ 'perl', $] ]]));
 
-my ($stderr, $stdout);
-BEGIN {
-    $exit = 0;
-    END{ $? = $exit }
-    print STDOUT "ok 1\n";
-    print STDOUT "1..1\n";
+diag(
+    join "\n",
+    table(
+        header => [qw/CAPABILITY SUPPORTED/],
+        rows   => [
+            ['CAN_FORK',        CAN_FORK        ? 'Yes' : 'No'],
+            ['CAN_REALLY_FORK', CAN_REALLY_FORK ? 'Yes' : 'No'],
+            ['CAN_THREAD',      CAN_THREAD      ? 'Yes' : 'No'],
+        ],
+    )
+);
 
-    open($stdout, '>&STDOUT') or die "Could not clone STDOUT: $!";
-    open($stderr, '>&STDERR') or die "Could not clone STDERR: $!";
+{
+    my @depends = qw{
+        B
+        Carp
+        Exporter
+        File::Spec
+        File::Temp
+        PerlIO
+        Scalar::Util
+        Storable
+        Term::Table
+        Test2
+        Time::HiRes
+        overload
+        threads
+        utf8
+    };
 
-    close(STDOUT) or die "Could not close STDOUT";
-    unless(close(STDERR)) {
-        print $stderr "Could not close STDERR\n";
-        $exit = 255;
-        exit $exit;
+    my @rows;
+    for my $mod (sort @depends) {
+        my $installed = eval "require $mod; $mod->VERSION";
+        push @rows => [ $mod, $installed || "N/A" ];
     }
 
-    open(STDOUT, '>', File::Spec->devnull);
-    open(STDERR, '>', File::Spec->devnull);
+    my @table = table(
+        header => [ 'DEPENDENCY', 'VERSION' ],
+        rows => \@rows,
+    );
+
+    diag(join "\n", @table);
 }
 
-use Test2::Util qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
-use Test2::API;
+{
+    my @options = qw{
+        Module::Pluggable
+        Sub::Name
+        Term::ReadKey
+        Term::Size::Any
+        Unicode::GCString
+        Unicode::LineBreak
+    };
 
-sub diag {
-    print $stderr "\n" unless @_;
-    print $stderr "# $_\n" for @_;
+    my @rows;
+    for my $mod (sort @options) {
+        my $installed = eval "require $mod; $mod->VERSION";
+        push @rows => [ $mod, $installed || "N/A" ];
+    }
+
+    my @table = table(
+        header => [ 'OPTIONAL', 'VERSION' ],
+        rows => \@rows,
+    );
+
+    diag(join "\n", @table);
 }
 
-diag;
-diag "DIAGNOSTICS INFO IN CASE OF FAILURE:";
-diag;
-diag "Perl: $]";
-
-diag;
-diag "CAPABILITIES:";
-diag 'CAN_FORK         ' . (CAN_FORK        ? 'Yes' : 'No');
-diag 'CAN_REALLY_FORK  ' . (CAN_REALLY_FORK ? 'Yes' : 'No');
-diag 'CAN_THREAD       ' . (CAN_THREAD      ? 'Yes' : 'No');
-
-diag;
-diag "DEPENDENCIES:";
-
-my @depends = sort qw{
-    Carp
-    File::Spec
-    File::Temp
-    PerlIO
-    Scalar::Util
-    Storable
-    Test2
-    overload
-    threads
-    utf8
-};
-
-my %deps;
-my $len = 0;
-for my $dep (@depends) {
-    my $l = length($dep);
-    $len = $l if $l > $len;
-    $deps{$dep} = eval "require $dep" ? ($dep->VERSION || '0') : 'N/A';
-}
-
-diag sprintf("%-${len}s  %s", $_, $deps{$_}) for @depends;
-
-END{ $? = $exit }
+pass;
+done_testing;

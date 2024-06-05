@@ -1,4 +1,12 @@
+*******************************************************************************
+* Please note, over time several distributions have been merged into this one *
+* over time. Changes file history has also been merged, so entries for these  *
+* merged distributions can be found further down in the file.                 *
+*******************************************************************************
+
 {{$NEXT}}
+
+    - Merge Test2-Suite into Test-Simple
 
 1.302199  2024-04-25 15:05:00+01:00 Europe/Lisbon
 
@@ -2483,3 +2491,867 @@ Test-Stream 1.302002  2015-06-06 14:06:57-07:00 America/Los_Angeles
 Test-Stream 1.302001  2015-06-05 22:40:57-07:00 America/Los_Angeles
 
     - Initial Version
+
+Test2-Suite 0.000163  2024-06-05 08:11:27-07:00 America/Los_Angeles
+
+    - Documentation fixes
+
+Test2-Suite 0.000162  2024-04-25 14:57:23+01:00 Europe/Lisbon
+
+    - Fix #292 and #270
+
+Test2-Suite 0.000161  2024-04-25 12:05:32+01:00 Europe/Lisbon
+
+    - Fix #289: some checks could leak across array bounds
+    - Fix #285: Mocking around missing symbols
+
+Test2-Suite 0.000160  2024-04-25 11:18:36+01:00 Europe/Lisbon
+
+    - Fix #291: done_testing under AsyncSubtest does not make sense
+    - Fix #275: prototypes for around/after/before
+    - Fix #288: Merge PR for #275
+    - Fix #290: Extra docs for srand
+
+Test2-Suite 0.000159  2023-10-25 14:09:23-07:00 America/Los_Angeles
+
+    - Document that diag() intentionally returns false, and add a `return 0`
+
+Test2-Suite 0.000158  2023-10-22 22:05:42-07:00 America/Los_Angeles
+
+    - Mark Workflow-Acceptance.t as AUTHOR_TESTING
+
+Test2-Suite 0.000157  2023-10-22 21:26:49-07:00 America/Los_Angeles
+
+    - Fix #280: Document --no_srand option in Test2::V0
+    - Fix #276: Document bool() import in Test2::V0
+    - Fix #279: Merged fix for VMS test issues
+    - Fix #277: Merged POD tweaks
+
+Test2-Suite 0.000156  2023-09-13 15:11:52-07:00 America/Los_Angeles
+
+    - Fix typo in POD for Test2::Util::Importer
+
+Test2-Suite 0.000155  2023-04-28 08:28:42-07:00 America/Los_Angeles
+
+    - Fix #247
+    - Fix changes file
+
+Test2-Suite 0.000154  2023-04-28 05:57:58-07:00 America/Los_Angeles
+
+    - Fix 00-report.t
+
+Test2-Suite 0.000153  2023-04-27 15:27:32-07:00 America/Los_Angeles
+
+    - Fix broken call to plugins
+
+Test2-Suite 0.000152  2023-04-27 02:52:44-07:00 America/Los_Angeles
+
+    - Inline Importer.pm for core support
+
+Test2-Suite 0.000151  2023-04-27 02:35:37-07:00 America/Los_Angeles
+
+    - The following are all in hopes of getting Test2:Suite into core.
+    - Make Module::Pluggable optional
+    - Inline Scope::Guard
+    - Inline Sub::Info
+    - Do not recommend Sub::Name
+
+Test2-Suite 0.000150  2023-03-21 08:25:21-07:00 America/Los_Angeles
+
+    - Do not index Devel::MAT::Dumper
+
+Test2-Suite 0.000149  2023-03-21 06:44:50-07:00 America/Los_Angeles
+
+    - Fix warning when Devel::MAT::Dumper is installed and -w is used
+
+Test2-Suite 0.000148  2023-03-05 14:59:45-08:00 America/Los_Angeles
+
+    - Fixes for refcount stuff
+
+Test2-Suite 0.000147  2023-03-04 11:42:59-08:00 America/Los_Angeles
+
+    - Add refcount tools, and include in ::V0
+
+Test2-Suite 0.000146  2023-03-04 11:08:10-08:00 America/Los_Angeles
+
+    - Add T2_AUTO_DUMP and T2_AUTO_DEPARSE env vars
+
+Test2-Suite 0.000145  2022-03-04 15:10:09-08:00 America/Los_Angeles
+
+    - Fix subtest times to be hi-res
+
+Test2-Suite 0.000144  2021-12-03 13:17:19-08:00 America/Los_Angeles
+
+    - Add void context warning for dies and lives
+
+Test2-Suite 0.000143  2021-12-01 11:20:03-08:00 America/Los_Angeles
+
+    - Add stringification option for custom compare checks
+
+Test2-Suite 0.000142  2021-11-15 14:06:34-08:00 America/Los_Angeles
+
+    - Fix deprecation diagnostics
+    - Fix older perls by removing //=
+
+Test2-Suite 0.000141  2021-07-26 12:15:34-07:00 America/Los_Angeles
+
+    - Add start and stop stamps to async subtest
+
+Test2-Suite 0.000140  2021-05-12 08:08:17-07:00 America/Los_Angeles
+
+    - Add L() "length" quick check for comparisons
+
+Test2-Suite 0.000139  2020-12-15 19:48:07-08:00 America/Los_Angeles
+
+    - Merge PR to add ISA checks
+    - Fix Manual module that was missing package/return true
+
+Test2-Suite 0.000138  2020-10-21 19:46:07-07:00 America/Los_Angeles
+
+    - Merge doc fix from PR
+    - Merge strict fix for test
+
+Test2-Suite 0.000137  2020-10-21 18:22:07-07:00 America/Los_Angeles
+
+    - Test new syntax `use Test2::Plugin::SRand seed => $seed;`
+    - Update GitHub workflow with deprecated add-path
+
+Test2-Suite 0.000136  2020-10-05 22:05:24-07:00 America/Los_Angeles
+
+    - Fix typo Test2::Builder -> Test::Builder
+    - Improve import logic for SRand
+    - Other misc typo fixes
+
+Test2-Suite 0.000135  2020-08-16 21:44:24-07:00 America/Los_Angeles
+
+    - No changes since last trial
+
+Test2-Suite 0.000134  2020-08-15 13:11:30-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Fix 5.8 support
+
+Test2-Suite 0.000133  2020-08-14 21:59:19-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Add summary of missing/extra elements in compare diagnostics
+
+Test2-Suite 0.000132  2020-08-06 18:10:48-07:00 America/Los_Angeles
+
+    - Fix min Test2 version
+
+Test2-Suite 0.000131  2020-08-05 21:45:59-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Fix the grabber tool to inherit Test::Builder $TODO functionality
+
+Test2-Suite 0.000130  2020-05-30 11:11:54-07:00 America/Los_Angeles
+
+    - Many documentation fixes
+
+Test2-Suite 0.000129  2020-01-31 08:33:46-08:00 America/Los_Angeles
+
+    - José Joaquín Atria Improve error handling of mock->override with AUTOLOADed methods
+
+Test2-Suite 0.000128  2020-01-30 08:45:43-08:00 America/Los_Angeles
+
+    - Nicolas R Import option to skip utf8 import
+    - Victoria Mihell-Hale Correct POD for Test2/Tools/Mock.pm's mocked() method
+    - Victoria Mihell-Hale Fix miscellaneous typos in Test2(/Tools)/Mock.pm POD
+    - Nicolas R Add GitHub actions
+    - Daniel Mita Fix PKG case for Test2::Tools::Target docs
+    - Daniel Mita Document target change in V0 and Bundle::Extended
+    - Daniel Mita Allow hashref to be used for Test2::Tools::Target
+
+Test2-Suite 0.000127  2019-10-30 21:25:29-07:00 America/Los_Angeles
+
+    - Fix srand toggling
+
+Test2-Suite 0.000126  2019-08-28 12:44:59-07:00 America/Los_Angeles
+
+    - Mention HUGE caveat in Test2::Plugin::Times
+    - Make Test2::Util::Times::render_duration support 1 arg form
+
+Test2-Suite 0.000125  2019-08-19 10:40:20-07:00 America/Los_Angeles
+
+    - Add harness_job_fields to Times plugin
+
+Test2-Suite 0.000124  2019-08-16 14:54:25-07:00 America/Los_Angeles
+
+    - Make Times plugin use INFO facets for display
+
+Test2-Suite 0.000123  2019-08-16 13:21:29-07:00 America/Los_Angeles
+
+    - Fix double-load bug on Plugin::Times
+
+Test2-Suite 0.000122  2019-05-18 08:21:20-07:00 America/Los_Angeles
+
+    - Fix diag issues with ClassicCompare
+
+Test2-Suite 0.000121  2019-05-07 12:00:27-07:00 America/Los_Angeles
+
+    - Tracking for mocked methods
+    - Include raw table in facet data when compare fails
+
+Test2-Suite 0.000120  2019-04-26 05:19:18-07:00 America/Los_Angeles
+
+    - Allow all_items inside bag
+
+Test2-Suite 0.000119  2019-03-16 15:17:33-07:00 America/Los_Angeles
+
+    - Allow meta-checks in bag/array/hash (Thanks jjatria)
+
+Test2-Suite 0.000118  2019-01-18 13:44:06-08:00 America/Los_Angeles
+
+    - Fix typo Test::Workflow -> Test2::Workflow #170
+    - Fix test broken by new Test-Simple #175
+
+Test2-Suite 0.000117  2018-12-04 11:37:15-08:00 America/Los_Angeles
+
+    - Remove test that belongs in another dist
+
+Test2-Suite 0.000116  2018-11-28 15:47:12-08:00 America/Los_Angeles
+
+    - Add 'set' to mock tools
+    - Fix 'overload' issue in deep check cycle detection.
+    - Minor updates
+
+Test2-Suite 0.000115  2018-07-11 09:39:37-07:00 America/Los_Angeles
+
+    - Fix warning on undefined note/diag
+    - Improve an error message.
+
+Test2-Suite 0.000114  2018-04-19 08:39:56-07:00 America/Los_Angeles
+
+    - Fix missing manual section
+
+Test2-Suite 0.000113  2018-04-19 08:03:42-07:00 America/Los_Angeles
+
+    - Fix typo
+
+Test2-Suite 0.000112  2018-04-19 07:15:40-07:00 America/Los_Angeles
+
+    - Switch spec to use the testing_done callback
+    - Update copyright dates
+    - Finish the Anatomy manual section
+    - Finish the Tooling manual section
+
+Test2-Suite 0.000111  2018-03-14 12:37:45-07:00 America/Los_Angeles
+
+    - No Changes since last trial
+
+Test2-Suite 0.000110  2018-03-13 13:36:37-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Allow events from unattached processes in AsyncSubtest
+
+Test2-Suite 0.000109  2018-03-12 13:20:18-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Add AsyncSubtest retrieval to hubs
+
+Test2-Suite 0.000108  2018-03-11 12:51:56-07:00 America/Los_Angeles
+
+    - No changes since last release
+
+Test2-Suite 0.000107  2018-03-09 15:43:30-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Add rounded() and within() wrappers for approximate comparisons
+
+Test2-Suite 0.000106  2018-03-06 13:10:55-08:00 America/Los_Angeles
+
+    - No changes since trial
+
+Test2-Suite 0.000105  2018-03-06 09:13:36-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Fix nesting bug in Test2::Workflow
+
+Test2-Suite 0.000104  2018-03-05 09:27:44-08:00 America/Los_Angeles
+
+    - Add Data::Dumper to dep list (#154)
+
+Test2-Suite 0.000103  2018-03-02 13:00:54-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - AsyncSubtest now works with UUIDs and adds other proper meta-data
+
+Test2-Suite 0.000102  2018-03-02 09:45:27-08:00 America/Los_Angeles
+
+    - No Changes since last trial
+
+Test2-Suite 0.000101  2018-02-21 16:27:18-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Add much needed verbosity to 'You must attach to an AsyncSubtest ...' errors
+    - Documentation updates
+
+Test2-Suite 0.000100  2018-02-13 21:41:30-08:00 America/Los_Angeles
+
+    - No changes from last TRIAL
+
+Test2-Suite 0.000099  2018-02-06 12:53:16-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Fix AsyncSubtest plan to be at the right nesting, and buffered
+
+Test2-Suite 0.000098  2018-02-06 12:05:28-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Fix AsyncSubtest main event buffered/nesting values
+    - Fix bug where AsyncSub test vanishes with no error when finished after
+      its parent ends.
+
+Test2-Suite 0.000097  2017-12-10 20:23:21-08:00 America/Los_Angeles
+
+    - Documentation fixes
+
+Test2-Suite 0.000096  2017-12-09 10:13:21-08:00 America/Los_Angeles
+
+    - No changes since last trial
+
+Test2-Suite 0.000095  2017-12-08 14:14:16-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Discoruage use of fragile thread features (rarely used)
+    - Skip fragile/discrouaged tests outside author testing.
+    - Document the above, and an env var to activate tests when desired
+
+Test2-Suite 0.000094  2017-11-29 18:51:54-08:00 America/Los_Angeles
+
+    - No Changes since last trial
+
+Test2-Suite 0.000093  2017-11-28 20:21:09-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Minor test changes for thread safety
+
+Test2-Suite 0.000092  2017-11-28 10:17:37-08:00 America/Los_Angeles
+
+    - No changes since last trial
+
+Test2-Suite 0.000091  2017-11-27 14:17:00-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Remove experiments from last several trials
+
+Test2-Suite 0.000090  2017-11-26 18:52:06-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Fix potential infinite hang in temp debugging
+
+Test2-Suite 0.000089  2017-11-26 11:16:15-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - More debugging
+
+Test2-Suite 0.000088  2017-11-26 10:18:46-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Add some debugging and an alternate IPC driver
+    - Temporary, this will be reverted
+
+Test2-Suite 0.000087  2017-11-24 12:28:27-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Merge in Test2::Workflow
+    - Merge in Test2::AsyncSubtest
+    - Merge in Test2::Manual
+
+Test2-Suite 0.000086  2017-11-22 22:15:41-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Make an AUTHOR_TEST require 5.20
+
+Test2-Suite 0.000085  2017-11-22 22:05:11-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Ensure that objects are not used in Boolean contexts, second
+      attempt. (djerius)
+
+Test2-Suite 0.000084  2017-11-18 16:17:29-08:00 America/Los_Angeles
+
+    - Add Test2::Tools::Tester
+
+Test2-Suite 0.000083  2017-10-25 08:12:18-07:00 America/Los_Angeles
+
+    - Mark a float tests TODO until the PR author can fix it
+
+Test2-Suite 0.000082  2017-10-20 07:11:08-07:00 America/Los_Angeles
+
+    - No Changes since last trial
+
+Test2-Suite 0.000081  2017-10-19 09:09:14-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Add Test2::Compare::Float to handle floating point comparison issues with
+      representation error.
+    - Add float() to Test2::Utils::Compare and import Test2::Compare::Float
+    - Import and Export Test2::Utils::Compare::float in Test2::V0
+    - Documentation fixes
+    - Better 5.10.0/utf8 fix
+    - VSTRING comparisons
+    - Bag compare now handles duplicates better
+
+Test2-Suite 0.000080  2017-10-15 10:13:30-07:00 America/Los_Angeles
+
+    - No changes since last trial
+
+Test2-Suite 0.000079  2017-10-14 20:18:51-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - (Colin Newell) Fix UTF8 issue with perl 5.10.0
+
+Test2-Suite 0.000078  2017-10-14 20:15:21-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Fix for TODO + new ok style
+
+Test2-Suite 0.000077  2017-09-12 07:49:16-07:00 America/Los_Angeles
+
+    - No changes since last TRIAL release
+
+Test2-Suite 0.000076  2017-09-11 15:21:07-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Add Test2::Tools::GenTemp
+
+Test2-Suite 0.000075  2017-09-10 21:22:17-07:00 America/Los_Angeles
+
+    - Add version to Test2::Event::Times
+
+Test2-Suite 0.000074  2017-08-31 20:37:47-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Add Test2::Event::Times
+    - Fix some tests that were failing in yath
+
+Test2-Suite 0.000073  2017-08-30 23:11:28-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Add Test2::Plugin::Times
+
+Test2-Suite 0.000072  2017-06-17 21:48:14-07:00 America/Los_Angeles
+
+    - No change since last trial
+
+Test2-Suite 0.000071  2017-06-10 13:40:27-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Introduce Test2::V# bundles
+    - Deprecate Test2::Bundle::Extended
+    - Test2::V0 added
+    - Fix Test2::Mock doesn't accept non-ref values (Mike Raynham)
+    - Fix isa_ok overload issue (Mike Raynham)
+
+Test2-Suite 0.000070  2017-03-19 13:34:25-07:00 America/Los_Angeles
+
+    - Revert Boolean overload fixes from djerius until they can be fixed
+    - Do not mention Term::ReadKey in docs
+    - Add Term::Size::Any to test report
+
+Test2-Suite 0.000069  2017-03-16 20:57:43-07:00 America/Los_Angeles
+
+    - No changes from trial
+
+Test2-Suite 0.000068  2017-03-08 20:22:23-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Set the term size for all tests that use tables
+    - Boolean overload fixes from djerius
+
+Test2-Suite 0.000067  2017-01-03 19:41:52-08:00 America/Los_Angeles
+
+    - No changes
+
+Test2-Suite 0.000066  2016-12-23 15:16:18-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Move sub_info to Sub::Info
+
+Test2-Suite 0.000065  2016-12-19 19:46:47-08:00 America/Los_Angeles
+
+    - AUTHOR_TESTING a fragile test
+
+Test2-Suite 0.000064  2016-12-19 11:56:28-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Move Test2::Util::Table to Term::Table
+
+Test2-Suite 0.000063  2016-12-17 12:11:39-08:00 America/Los_Angeles
+
+    - No notable changes since the last trial release.
+
+Test2-Suite 0.000062  2016-12-03 14:03:44-08:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - An event without a trace object throw would an exception when using
+      Test2::Compare::Event and the comparison failed
+    - Fix tests for small terminals (#106)
+    - Enhance the table library
+    - UTF8 plugin does not set STDERR/STDOUT
+
+Test2-Suite 0.000061  2016-11-26 12:39:14-08:00 America/Los_Angeles
+
+    - Fix mocked objects so that they respond properly to ->can when using AUTOLOAD.
+    - Fix some meta-files
+    - Small build improvements
+    - Minor fixes
+
+Test2-Suite 0.000060  2016-09-25 12:38:43-07:00 America/Los_Angeles
+
+    - Fix some docs
+    - Fix defer.t to work in windows
+    - Fix stack stomping bug triggered by certain Term::Readkey conditions
+
+Test2-Suite 0.000059  2016-09-15 13:00:03-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Create Test2::Compare::Negatable
+    - Add bool() for deep comparisons
+    - Implicit end() for checks inside is()
+    - Add try_ok to Tools/Exception
+    - Export convert() in Test2::Compare
+    - Make convert more flexible
+    - Document how to write a compare tool with custom behavior
+
+Test2-Suite 0.000058  2016-08-13 13:06:10-07:00 America/Los_Angeles
+
+    - No changes from last trial
+
+Test2-Suite 0.000057  2016-08-10 22:13:39-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Add contact info to docs
+
+Test2-Suite 0.000056  2016-08-09 14:09:17-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Make sure Test2::Compare::convert loads deps
+
+Test2-Suite 0.000055  2016-07-30 13:18:13-07:00 America/Los_Angeles
+
+    - Spelling fix from Debian (Thanks gregor herrmann)
+    - Fix \d -> [0-9] in several places (Thanks Mark F.)
+
+Test2-Suite 0.000054  2016-07-28 07:10:34-07:00 America/Los_Angeles
+
+    - No changes from last trial
+
+Test2-Suite 0.000053  2016-07-22 22:51:37-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Make bag check fail when given an empty array
+    - Clean up bag diagnostics
+
+Test2-Suite 0.000052  2016-07-18 09:07:25-07:00 America/Los_Angeles
+
+    - No changes from last TRIAL
+
+Test2-Suite 0.000051  2016-07-13 18:00:17-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Switch Extended bundle to use Importer
+    - Add meta_check as alias for meta
+
+Test2-Suite 0.000050  2016-07-09 16:58:59-07:00 America/Los_Angeles
+
+    - No Changes since trial
+
+Test2-Suite 0.000049  2016-07-07 22:02:24-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Doc fixes
+    - Add U() quick check to Test2::Tools::Compare
+
+Test2-Suite 0.000048  2016-07-02 22:08:10-07:00 America/Los_Angeles
+
+    - No changes from last trial
+
+Test2-Suite 0.000047  2016-07-01 18:09:26-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Fix global destruction warning
+    - Minor test fix to keep 5.8 working
+
+Test2-Suite 0.000046  2016-07-01 17:31:23-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - ref-ref's can be used in deep comparisons
+    - Fix mocking to override a base class's method
+
+Test2-Suite 0.000045  2016-07-01 09:30:09-07:00 America/Los_Angeles
+
+    - Spelling and POD fixes
+
+Test2-Suite 0.000044  2016-06-29 15:48:33-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Add DF() shortcut (JBerger)
+
+Test2-Suite 0.000043  2016-06-28 06:23:46-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Restructure Delta.pm to try and solve read-only problem
+
+Test2-Suite 0.000042  2016-06-27 21:37:22-07:00 America/Los_Angeles
+
+    - Change Encoding.t to spit out debug message without failing
+
+Test2-Suite 0.000041  2016-06-27 09:00:46-07:00 America/Los_Angeles
+
+    - Add perltidy rc to dist
+    - Documentation fixes (Thanks petdance)
+    - revert "Attempt a fix to Delta #29"
+
+Test2-Suite 0.000039  2016-06-25 13:44:03-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Stop leaking temp files
+    - clean up STDERR
+    - Fix #28
+
+Test2-Suite 0.000038  2016-06-25 13:20:07-07:00 America/Los_Angeles
+
+    - No Changes from last TRIAL release
+
+Test2-Suite 0.000037  2016-06-24 14:03:52-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Add all_keys() to Compare tools
+    - add all_vals() to Compare tools
+    - add all_items() to Compare tools
+    - Fix in_set(DNE) (#10)
+    - Add E()
+    - Proper line reporting for shortcuts.
+
+Test2-Suite 0.000036  2016-06-24 05:58:51-07:00 America/Los_Angeles
+
+    - Better comments in SRAND (#7)
+
+Test2-Suite 0.000035  2016-06-23 14:48:54-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Make it possible to provide a name to isa_ok, can_ok, and DOES_ok
+    - Add some regression tests for previous fixes
+    - Allow 'tests' and 'skip_all' prefixes support to plan() #25
+
+Test2-Suite 0.000034  2016-06-22 11:30:00-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Bump minimum Test2 version
+
+Test2-Suite 0.000033  2016-06-22 08:41:22-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Fix ClassicCompare to load deps (#23)
+
+Test2-Suite 0.000032  2016-06-17 06:58:17-07:00 America/Los_Angeles
+
+    - Add 'bag' comparison (dakkar)
+    - Add 'call_list()' for DSL (dakkar)
+    - Add 'call_hash()' for DSL (dakkar)
+
+Test2-Suite 0.000031  2016-06-15 21:32:05-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Fix TODO to use pre-filters
+
+Test2-Suite 0.000030  2016-05-09 07:55:17-07:00 America/Los_Angeles
+
+    - Doc Changes
+
+Test2-Suite 0.000029  2016-04-30 15:17:01-07:00 America/Los_Angeles
+
+    - Doc updates from jkeroes
+    - Doc updates from stevieb9
+    - SRand now works without harness
+    - Fix emails
+
+Test2-Suite 0.000028  2016-04-15 14:32:30-07:00 America/Los_Angeles
+
+    - Add Tools/Event gen_event()
+    - Add Tools/Event to Extended bundle
+
+Test2-Suite 0.000027  2016-04-13 20:22:17-07:00 America/Los_Angeles
+
+    - Make some tests ignore custom formatters
+
+Test2-Suite 0.000026  2016-04-05 11:11:35-07:00 America/Los_Angeles
+
+    - Add OrderedSubset compare tools
+    - Use OrderedSubset compare tool in subtest tests.
+    - Bump minimumTest2 version
+
+Test2-Suite 0.000025  2016-04-03 15:39:59-07:00 America/Los_Angeles
+
+    - Allow column aliasing in Deltas (jkeroes)
+    - Bump required Test2 version
+
+Test2-Suite 0.000024  2016-03-20 13:40:06-07:00 America/Los_Angeles
+
+    - Add back missing README and README.md files
+    - Documentation fixes
+    - No logic/code changes
+
+Test2-Suite 0.000023  2016-03-17 23:02:50-07:00 America/Los_Angeles
+
+    - Fix Changes file
+    - Fix bug where SRand plugin comment could appear in subtest
+
+Test2-Suite 0.000022  2016-03-07 12:18:25-08:00 America/Los_Angeles
+
+    - Ability to disable subtest skip_all flow control
+
+Test2-Suite 0.000021  2016-03-06 20:24:46-08:00 America/Los_Angeles
+
+    - Bump minimum Test2 version
+    - Add version to all modules
+    - Minor doc fixes
+    - No logic changes
+
+Test2-Suite 0.000020  2016-02-05 09:32:52-08:00 America/Los_Angeles
+
+    - Fix typo that made mock tool look in the wrong place for handlers
+
+Test2-Suite 0.000019  2016-01-28 21:28:37-08:00 America/Los_Angeles
+
+    - Formally add the warning and exception tools
+    - warning and exception tools added to the extended bundle
+
+Test2-Suite 0.000018  2016-01-12 16:09:44-08:00 America/Los_Angeles
+
+    - Add grab tool
+    - Fix documentation
+
+Test2-Suite 0.000017  2016-01-12 05:54:43-08:00 America/Los_Angeles
+
+    - Fix poorly written test
+
+Test2-Suite 0.000016  2016-01-11 15:18:04-08:00 America/Los_Angeles
+
+    - Add diagnostics test report
+    - Fix tests on older perls
+
+Test2-Suite 0.000015  2016-01-10 22:50:54-08:00 America/Los_Angeles
+
+    - Fix documentation problem
+
+Test2-Suite 0.000014  2016-01-10 22:42:56-08:00 America/Los_Angeles
+
+    - Initial conversion from Test::Stream
+
+Test2-Harness 0.000018  2017-01-31 21:33:34-08:00 America/Los_Angeles
+
+    - Use Sub::Info to silence a warning
+
+Test2-Harness 0.000017  2016-07-31 21:24:00-07:00 America/Los_Angeles
+
+    - Fix acceptance5.t to not assume fork is used.
+
+Test2-Harness 0.000016  2016-07-29 12:37:29-07:00 America/Los_Angeles
+
+    - Require newer Importer.pm for :ALL tag
+
+Test2-Harness 0.000015  2016-07-28 07:07:37-07:00 America/Los_Angeles
+
+    - Run blocks when done_testing is missing (#3)
+    - Add spec_defaults()
+
+Test2-Harness 0.000014  2016-07-02 22:11:29-07:00 America/Los_Angeles
+
+    - No Changes from last trial
+
+Test2-Harness 0.000013  2016-07-01 17:33:24-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Do not apply mock defined on root action.
+
+Test2-Harness 0.000012  2016-06-24 06:01:16-07:00 America/Los_Angeles
+
+    - No changes since last trial
+
+Test2-Harness 0.000011  2016-06-22 11:32:58-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Require newer Test2::AsyncSubtest for bugfixes
+
+Test2-Harness 0.000010  2016-06-22 09:16:07-07:00 America/Los_Angeles
+
+    - Fix for (and require) Test2-Suite 0.000032 (#2)
+    - Better TODO handling
+
+Test2-Harness 0.000009  2016-05-31 07:18:50-07:00 America/Los_Angeles
+
+    - Require perl 5.10
+
+Test2-Harness 0.000008  2016-05-30 07:38:55-07:00 America/Los_Angeles
+
+    - Require newer Test2::AsyncSubtest
+
+Test2-Harness 0.000007  2016-05-30 06:58:17-07:00 America/Los_Angeles
+
+    - Complete rewrite
+
+Test2-Harness 0.000006  2016-02-05 15:45:57-08:00 America/Los_Angeles
+
+    - Prep for a new Trace::Mask version
+
+Test2-Harness 0.000005  2016-02-05 11:56:11-08:00 America/Los_Angeles
+
+    - Bump minimum Test2::Suite version (fixes issue found in windows tests)
+
+Test2-Harness 0.000004  2016-02-04 21:48:07-08:00 America/Los_Angeles
+
+    - Add Spec bundle
+
+Test2-Harness 0.000003  2016-02-04 10:46:41-08:00 America/Los_Angeles
+
+    - Fix test that needs to be conditional
+    - Fix constant in NoIso
+
+Test2-Harness 0.000002  2016-02-03 08:12:34-08:00 America/Los_Angeles
+
+    - Major overhaul
+    - Add isolation runners
+    - Lots of fixes
+    - Masking traces properly
+    - Better filtering
+
+Test2-Harness 0.000001  2016-01-18 10:54:17-08:00 America/Los_Angeles
+
+    - Initial conversion from Test::Stream
+
+Test2-AsyncSubtest 0.000020  2017-09-10 21:23:49-07:00 America/Los_Angeles
+
+    - No Changes from last release
+
+Test2-AsyncSubtest 0.000019  2017-09-08 12:21:34-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Fix support for formatters that show buffered events
+
+Test2-AsyncSubtest 0.000018  2016-06-24 06:00:04-07:00 America/Los_Angeles
+
+    - No changes since last trial
+
+Test2-AsyncSubtest 0.000017  2016-06-22 11:32:15-07:00 America/Los_Angeles (TRIAL RELEASE)
+
+    - Make our hub inherit pre_filters properly
+
+Test2-AsyncSubtest 0.000016  2016-05-30 07:36:39-07:00 America/Los_Angeles
+
+    - Fix bug where subtest results were repeated
+
+Test2-AsyncSubtest 0.000015  2016-05-09 08:03:51-07:00 America/Los_Angeles
+
+Test2-AsyncSubtest 0.000014  2016-04-14 09:40:01-07:00 America/Los_Angeles
+
+    - Support custom formatters
+    - Add subtest info to events
+
+Test2-AsyncSubtest 0.000013  2016-03-20 13:47:39-07:00 America/Los_Angeles
+
+    - Add subtest name to pending warning
+
+Test2-AsyncSubtest 0.000012  2016-03-18 17:52:46-07:00 America/Los_Angeles
+
+    - Fix trigger conditions for pending warning
+
+Test2-AsyncSubtest 0.000011  2016-03-18 08:12:05-07:00 America/Los_Angeles
+
+    - Inherit listeners and filters (make TODO work)
+    - Add 'todo' option to finish()
+
+Test2-AsyncSubtest 0.000010  2016-03-17 23:21:58-07:00 America/Los_Angeles
+
+    - Fix bug in 'skip' option when nesting
+
+Test2-AsyncSubtest 0.000009  2016-03-17 11:51:08-07:00 America/Los_Angeles
+
+    - Add 'skip' option for finish()
+
+Test2-AsyncSubtest 0.000008  2016-03-10 16:53:55-08:00 America/Los_Angeles
+
+    - Add 'silent', 'no_plan' and 'collapse' options for finish()
+
+Test2-AsyncSubtest 0.000007  2016-03-09 10:07:53-08:00 America/Los_Angeles
+
+    - Fix tests for some perl+thread combos
+
+Test2-AsyncSubtest 0.000006  2016-03-08 08:47:22-08:00 America/Los_Angeles
+
+    - Fix #6, make tools more argument aware
+
+Test2-AsyncSubtest 0.000005  2016-03-07 12:21:28-08:00 America/Los_Angeles
+
+    - Add ability to bypass subtest skip_all flow control
+
+Test2-AsyncSubtest 0.000004  2016-03-06 20:19:02-08:00 America/Los_Angeles
+
+    - Require newer Test2
+    - Add extended skip_all tests
+    - Add version to all modules (autarch)
+
+Test2-AsyncSubtest 0.000003  2016-03-05 17:33:15-08:00 America/Los_Angeles
+
+    - Update for min threads version
+
+Test2-AsyncSubtest 0.000002  2016-03-02 13:49:22-08:00 America/Los_Angeles
+
+    - Complete Rewrite
+
+Test2-AsyncSubtest 0.000001  2016-02-23 15:35:07-08:00 America/Los_Angeles
+
+    - Initial Release

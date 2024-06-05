@@ -29,6 +29,9 @@ jobs:
         run: perl -V
       - name: Install Dependencies
         run: curl -sL https://raw.githubusercontent.com/skaji/cpm/master/cpm | perl - install -g --show-build-log-on-failure
+          echo "C:\strawberry\c\bin;C:\strawberry\perl\site\bin;C:\strawberry\perl\bin" >> $GITHUB_PATH
+      - name: perl -V
+        run: perl -V
       - name: perl Makefile.PL
         run: perl Makefile.PL
       - name: make

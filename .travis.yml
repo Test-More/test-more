@@ -11,9 +11,21 @@ perl:
   - "5.26"
   - "5.28"
   - "5.30"
+  - "5.32"
+  - "5.34"
+  - "5.36"
+  - "5.38"
 before_install:
   - if [ "$TRAVIS_PERL_VERSION" = "5.6.2" ]; then rm -f dist.ini; fi # Force Building with Makefile.PL on Perl 5.6.2 as dzil would not work
   - eval $(curl https://travis-perl.github.io/init) --auto
+  - "5.18-shrplib"
+  - "5.20-shrplib"
+  - "5.22-shrplib"
+  - "5.24-shrplib"
+before_install:
+  - git clone git://github.com/travis-perl/helpers ~/travis-perl-helpers
+  - source ~/travis-perl-helpers/init --auto
+  - cpan-install Test2
 notifications:
   slack:
     rooms:
