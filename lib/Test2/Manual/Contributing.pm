@@ -31,7 +31,7 @@ Here are the big 3 for the main Test2 project:
 
 =over 4
 
-=item Test2/Test-Builder/Test-More/Test2-Suite
+=item Test2/Test-Builder/Test-More/test-more
 
 L<https://github.com/Test-More/test-more/issues>
 
