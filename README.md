@@ -176,7 +176,7 @@ The source code repository for Test2 can be found at
 
 # COPYRIGHT
 
-Copyright 2020 Chad Granum <exodist@cpan.org>.
+Copyright Chad Granum <exodist@cpan.org>.
 
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
