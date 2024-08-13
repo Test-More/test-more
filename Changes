@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+1.302201  2024-08-13 08:19:01-07:00 America/Los_Angeles
+
     - Fix bug found by new warnings in blead (Thanks Mauke)
 
 1.302200  2024-08-04 11:22:17-07:00 America/Los_Angeles
