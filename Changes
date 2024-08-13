@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+    - Fix bug found by new warnings in blead (Thanks Mauke)
+
 1.302200  2024-08-04 11:22:17-07:00 America/Los_Angeles
 
     - Merge Test2-Suite into Test-Simple
