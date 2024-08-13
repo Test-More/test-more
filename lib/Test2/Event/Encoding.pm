@@ -2,7 +2,7 @@ package Test2::Event::Encoding;
 use strict;
 use warnings;
 
-our $VERSION = '1.302201';
+our $VERSION = '1.302202';
 
 use Carp qw/croak/;
 
