@@ -501,7 +501,7 @@ B<Important Notes about Events>:
 L<Test2::API::InterceptResult::Event> was tailor-made to be used in
 event-lists. Most methods that are not applicable to a given event will return
 an empty list, so you normally do not need to worry about unwanted C<undef>
-values or exceptions being thrown. Mapping over event methods is an entended
+values or exceptions being thrown. Mapping over event methods is an intended
 use, so it works well to produce lists.
 
 B<Exceptions to the rule:>
