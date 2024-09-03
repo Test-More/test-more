@@ -8,7 +8,6 @@ Test::BDD::Cucumber
 Test::Base
 Test::Bomb
 Test::Builder::Clutch
-Test::Class::Moose
 Test::Classy
 Test::Differences
 Test::Effects
@@ -19,7 +18,6 @@ Test::FixtureBuilder
 Test::Harness
 Test::Kwalitee
 Test::LWP::UserAgent
-Test::Mocha
 Test::Modern
 Test::Module::Used
 Test::Moose
@@ -73,14 +71,12 @@ ExtUtils::ParseXS
 Fennec
 File::Map
 File::Spec
-Filter::CommaEquals
 HTML::Selector::XPath
 Import::Box
 Importer
 JE
 JSON
 JSON::PP
-Lexical::Types
 Lingua::ManagementSpeak
 Math::Business::BlackScholes::Binaries
 Math::GSL
