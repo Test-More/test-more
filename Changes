@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+    - Fix some tests when run on windows
+
 1.302202  2024-09-02 16:27:17-07:00 America/Los_Angeles
 
     - Add comment on how to make tables bigger, #931
