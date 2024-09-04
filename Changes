@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+1.302203  2024-09-04 16:15:07-07:00 America/Los_Angeles
+
     - Fix some tests when run on windows
 
 1.302202  2024-09-02 16:27:17-07:00 America/Los_Angeles
