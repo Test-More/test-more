@@ -2,7 +2,7 @@ package Test2::API::InterceptResult::Facet;
 use strict;
 use warnings;
 
-our $VERSION = '1.302204';
+our $VERSION = '1.302205';
 
 BEGIN {
     require Test2::EventFacet;

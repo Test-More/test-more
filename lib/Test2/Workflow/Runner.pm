@@ -2,7 +2,7 @@ package Test2::Workflow::Runner;
 use strict;
 use warnings;
 
-our $VERSION = '1.302204';
+our $VERSION = '1.302205';
 
 use Test2::API();
 use Test2::Todo();
