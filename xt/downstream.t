@@ -32,26 +32,9 @@ ok(run_string(<<"EOT"), "Installed LWP") || exit 1;
 perlbrew exec --with $lib cpanm LWP
 EOT
 
-ok(run_string(<<"EOT"), "Installed Devel::Declare") || exit 1;
-perlbrew exec --with $lib cpanm Devel::Declare
+ok(run_string(<<"EOT"), "Installed Test2::Harness") || exit 1;
+perlbrew exec --with $lib cpanm Test2::Harness
 EOT
-
-for my $i (qw/Suite Harness/) {
-    my $ok = 0;
-    for (1 .. 2) {
-        $ok = run_string(<<"        EOT");
-        perlbrew exec --with $lib cpanm --installdeps --dev Test2::$i
-        EOT
-
-        $ok &&= run_string(<<"        EOT");
-        perlbrew exec --with $lib cpanm --dev --reinstall Test2::$i
-        EOT
-
-        last if $ok;
-        diag "'Test2::$i' did not install properly, trying 1 more time.";
-    }
-    ok($ok, "Installed Test2::$i") || exit 1;
-}
 
 ok(run_string(<<"EOT"), "Installed Archive::Zip") || exit 1;
 perlbrew exec --with $lib cpanm -n -f Archive::Zip
