@@ -1543,6 +1543,24 @@ The sub will receive exactly 1 argument, the type of thing being tagged
 which case new strings will be passed in. These are purely informative, you can
 (and usually should) ignore them.
 
+=item test2_add_pending_diag($diag)
+
+=item test2_add_pending_diag($diag1, $diag2)
+
+Add a diagnostics message that will be issued the next time a context in which
+a failure occured is released.
+
+This can also be thought of like this: "If the next bit causes a failed
+assertion, add this diagnostics message".
+
+=item @diags = test2_get_pending_diags()
+
+Get all the current pending diagnostics messages.
+
+=item @diags = test2_clear_pending_diags()
+
+Clear any pending diagnostics, returning them.
+
 =back
 
 =head2 IPC AND CONCURRENCY

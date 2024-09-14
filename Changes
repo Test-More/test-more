@@ -6,6 +6,9 @@
 
 {{$NEXT}}
 
+    - Add pending diagnostics functionality
+    - Show warnings/exceptions for no_warnings() and lives()
+
 1.302203  2024-09-04 16:15:07-07:00 America/Los_Angeles
 
     - Fix some tests when run on windows
