@@ -13,8 +13,6 @@ BEGIN {
     *bas_ok  = \&Test2::Tools::Basic::ok;
 }
 
-use vars qw/$TODO/;
-
 sub leg_ok($;$@) {
     my ($bool, $name, @diag);
     my $ctx = context();
@@ -33,7 +31,7 @@ sub new_ok($;$@) {
 }
 
 {
-    local $TODO = "Testing TODO";
+    local our $TODO = "Testing TODO";
 
     tm_ok(0, "tm_ok fail");
     tm_fail('tm_fail');
