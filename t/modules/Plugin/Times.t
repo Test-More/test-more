@@ -4,7 +4,7 @@ use Test2::API qw/intercept context/;
 
 use Test2::Tools::Defer qw/def do_def/;
 
-use vars qw/@CALLBACKS/;
+our @CALLBACKS;
 
 BEGIN {
     no warnings 'redefine';

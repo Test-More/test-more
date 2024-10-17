@@ -16,12 +16,10 @@ use Test::Tester::Delegate;
 
 require Exporter;
 
-use vars qw( @ISA @EXPORT );
-
 our $VERSION = '1.302205';
 
-@EXPORT = qw( run_tests check_tests check_test cmp_results show_space );
-@ISA = qw( Exporter );
+our @EXPORT = qw( run_tests check_tests check_test cmp_results show_space );
+our @ISA = qw( Exporter );
 
 my $Test = Test::Builder->new;
 my $Capture = Test::Tester::Capture->new;

@@ -7,8 +7,7 @@ our $VERSION = '1.302205';
 
 use Test::Builder;
 
-use vars qw( @ISA );
-@ISA = qw( Test::Builder );
+our @ISA = qw( Test::Builder );
 
 # Make Test::Tester::Capture thread-safe for ithreads.
 BEGIN {

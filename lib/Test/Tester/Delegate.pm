@@ -7,8 +7,6 @@ our $VERSION = '1.302205';
 
 use Scalar::Util();
 
-use vars '$AUTOLOAD';
-
 sub new
 {
 	my $pkg = shift;
@@ -21,7 +19,7 @@ sub new
 
 sub AUTOLOAD
 {
-	my ($sub) = $AUTOLOAD =~ /.*::(.*?)$/;
+	my ($sub) = our $AUTOLOAD =~ /.*::(.*?)$/;
 
 	return if $sub eq "DESTROY";
 
