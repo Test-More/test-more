@@ -40,7 +40,7 @@ a process/thread/hub to read in any pending events that have been sent to it.
 
 =head1 HOW DOES THE DEFAULT IPC DRIVER WORK?
 
-The default IPC driver is L<Test2::API::Driver::Files>. This default driver,
+The default IPC driver is L<Test2::IPC::Driver::Files>. This default driver,
 when initialized, starts by creating a temporary directory. Any time an event
 needs to be sent to another process/thread/hub, the event will be written to a
 file using L<Storable>. The file is written with the destination process,
