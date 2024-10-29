@@ -39,6 +39,28 @@ use Test::Builder::TodoDiag;
 our $Level = 1;
 our $Test = $ENV{TB_NO_EARLY_INIT} ? undef : Test::Builder->new;
 
+my $use_ryu = 0;
+
+unless($ENV{NO_USE_RYU}) { # Set NO_USE_RYU env var to disable
+                           # use of Math::Ryu.
+# Use Math::Ryu (to stringify NVs) if version 1.05 or later is
+# available. Unfortuntately, we can't "eval{require Math::Ryu}"
+# to determine whether it's available because that will cause 
+# t/Legacy/dont_overwrite_die_handler.t to fail if Math::Ryu is
+# not available. So instead we search @INC for Math/Ryu.pm:
+
+    for my $location(@INC) {
+        if(-e $location . '/Math/Ryu.pm') {
+            require Math::Ryu;
+            if($Math::Ryu::VERSION >= 1.05) {
+                $use_ryu = 1;
+                Math::Ryu->import('is_NV', 'nv2s');
+                last;
+            }
+        }
+    }
+}
+
 sub _add_ts_hooks {
     my $self = shift;
 
@@ -824,6 +846,11 @@ sub is_eq {
 sub is_num {
     my( $self, $got, $expect, $name ) = @_;
     my $ctx = $self->ctx;
+
+    if($use_ryu) {
+        $got    = nv2s($got)    if is_NV($got);
+        $expect = nv2s($expect) if is_NV($expect);
+    }
     local $Level = $Level + 1;
 
     if( !defined $got || !defined $expect ) {
@@ -867,6 +894,10 @@ sub _is_diag {
     $self->_diag_fmt( $type, $_ ) for \$got, \$expect;
 
     local $Level = $Level + 1;
+    if($use_ryu) {
+        $got    = nv2s($got)    if is_NV($got);
+        $expect = nv2s($expect) if is_NV($expect);
+    }
     return $self->diag(<<"DIAGNOSTIC");
          got: $got
     expected: $expect
@@ -880,6 +911,9 @@ sub _isnt_diag {
     $self->_diag_fmt( $type, \$got );
 
     local $Level = $Level + 1;
+    if($use_ryu) {
+        $got = nv2s($got) if is_NV($got) ;
+    }
     return $self->diag(<<"DIAGNOSTIC");
          got: $got
     expected: anything else
@@ -908,6 +942,11 @@ sub isnt_eq {
 sub isnt_num {
     my( $self, $got, $dont_expect, $name ) = @_;
     my $ctx = $self->ctx;
+ 
+    if($use_ryu) {
+        $got         = nv2s($got)         if is_NV($got);
+        $dont_expect = nv2s($dont_expect) if is_NV($dont_expect);
+    }
     local $Level = $Level + 1;
 
     if( !defined $got || !defined $dont_expect ) {
@@ -1018,6 +1057,11 @@ END
 
 sub _cmp_diag {
     my( $self, $got, $type, $expect ) = @_;
+
+    if($use_ryu) {
+        $got    = nv2s($got)    if is_NV($got);
+        $expect = nv2s($expect) if is_NV($expect);
+    }
 
     $got    = defined $got    ? "'$got'"    : 'undef';
     $expect = defined $expect ? "'$expect'" : 'undef';
