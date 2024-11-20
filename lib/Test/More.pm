@@ -1887,9 +1887,9 @@ There is a full version history in the Changes file, and the Test::More versions
 
 =over 4
 
-=item utf8 / "Wide character in print"
+=item UTF-8 / "Wide character in print"
 
-If you use utf8 or other non-ASCII characters with Test::More you
+If you use UTF-8 or other non-ASCII characters with Test::More you
 might get a "Wide character in print" warning.  Using
 C<< binmode STDOUT, ":utf8" >> will not fix it.
 L<Test::Builder> (which powers
@@ -1900,16 +1900,16 @@ Test::More.
 One work around is to apply encodings to STDOUT and STDERR as early
 as possible and before Test::More (or any other Test module) loads.
 
-    use open ':std', ':encoding(utf8)';
+    use open ':std', ':encoding(UTF-8)';
     use Test::More;
 
 A more direct work around is to change the filehandles used by
 L<Test::Builder>.
 
     my $builder = Test::More->builder;
-    binmode $builder->output,         ":encoding(utf8)";
-    binmode $builder->failure_output, ":encoding(utf8)";
-    binmode $builder->todo_output,    ":encoding(utf8)";
+    binmode $builder->output,         ":encoding(UTF-8)";
+    binmode $builder->failure_output, ":encoding(UTF-8)";
+    binmode $builder->todo_output,    ":encoding(UTF-8)";
 
 
 =item Overloaded objects
