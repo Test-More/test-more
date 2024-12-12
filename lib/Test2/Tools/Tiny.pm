@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 BEGIN {
-    if ($] lt "5.008") {
+    if ("$]" < 5.008) {
         require Test::Builder::IO::Scalar;
     }
 }
@@ -260,7 +260,7 @@ sub capture(&) {
 
         ($ok, $e) = try {
           # Scalar refs as filehandles were added in 5.8.
-          if ($] ge "5.008") {
+          if ("$]" >= 5.008) {
             open($out_fh, '>', \$out) or die "Failed to open a temporary STDOUT: $!";
             open($err_fh, '>', \$err) or die "Failed to open a temporary STDERR: $!";
           }

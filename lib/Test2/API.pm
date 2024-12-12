@@ -74,7 +74,7 @@ sub CLONE {
 
 BEGIN {
     no warnings 'once';
-    if($] ge '5.014' || $ENV{T2_CHECK_DEPTH} || $Test2::API::DO_DEPTH_CHECK) {
+    if("$]" >= 5.014 || $ENV{T2_CHECK_DEPTH} || $Test2::API::DO_DEPTH_CHECK) {
         *DO_DEPTH_CHECK = sub() { 1 };
     }
     else {
