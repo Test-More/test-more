@@ -66,7 +66,7 @@ sub _open_handles {
 sub encoding {
     my $self = shift;
 
-    if ($] ge "5.007003" and @_) {
+    if ("$]" >= 5.007003 and @_) {
         my ($enc) = @_;
         my $handles = $self->{+HANDLES};
 

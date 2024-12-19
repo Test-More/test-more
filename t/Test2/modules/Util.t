@@ -34,7 +34,7 @@ use Test2::Util qw/
 /;
 
 BEGIN {
-    if ($] lt "5.008") {
+    if ("$]" < 5.008) {
         require Test::Builder::IO::Scalar;
     }
 }
@@ -83,7 +83,7 @@ close($io);
 
 my $fh;
 my $out = '';
-if ($] ge "5.008") {
+if ("$]" >= 5.008) {
     open($fh, '>', \$out) or die "Could not open filehandle";
 } else {
     $fh = Test::Builder::IO::Scalar->new(\$out) or die "Could not open filehandle";
