@@ -15,7 +15,7 @@ use Test2::Workflow::Task::Group();
 use Test2::Tools::Mock();
 use Test2::Util::Importer();
 
-use vars qw/@EXPORT @EXPORT_OK/;
+our (@EXPORT, @EXPORT_OK);
 push @EXPORT => qw{describe cases};
 push @EXPORT_OK => qw{include_workflow include_workflows spec_defaults};
 
