@@ -37,7 +37,7 @@ use IO::Handle;
 use 5.005;
 
 ### The package version, both in 1.23 style *and* usable by MakeMaker:
-our $VERSION = "2.114";
+our $VERSION = '1.302206';
 
 ### Inheritance:
 our @ISA = qw(IO::Handle);
