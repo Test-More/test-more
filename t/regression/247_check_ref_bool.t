@@ -1,7 +1,7 @@
 use Test2::V0;
 
 BEGIN {
-    skip_all "Need JSON::MaybeXS: $@" unless eval {
+    skip_all "Test needs JSON::MaybeXS" unless eval {
         require JSON::MaybeXS;
         JSON::MaybeXS->import(qw/decode_json/);
         1;
