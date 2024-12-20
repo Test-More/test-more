@@ -6,6 +6,9 @@
 
 {{$NEXT}}
 
+    - Remove Test::Builder::IO::Scalar
+    - Fix #1016
+
 1.302205  2024-12-19 09:28:05-08:00 America/Los_Angeles
 
     - Use our instead of 'use vars'
