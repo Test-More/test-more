@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+1.302206  2024-12-19 17:51:07-08:00 America/Los_Angeles
+
     - Remove Test::Builder::IO::Scalar
     - Fix #1016
 
