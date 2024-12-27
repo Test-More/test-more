@@ -395,7 +395,7 @@ different from some other value:
   isnt $obj, $clone, "clone() produces a different object";
 
 Historically we supported an C<isn't()> function as an alias of
-C<isnt()>, however in Perl 5.37.9 support for the use of aprostrophe as
+C<isnt()>, however in Perl 5.37.9 support for the use of apostrophe as
 a package separator was deprecated and by Perl 5.42.0 support for it
 will have been removed completely. Accordingly use of C<isn't()> is also
 deprecated, and will produce warnings when used unless 'deprecated'
