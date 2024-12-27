@@ -6,6 +6,9 @@
 
 {{$NEXT}}
 
+    - Fix debugging info when JSON::MaybeXS is missing (Thanks James E Keenan)
+    - Fix typos (Thanks sobrado8086)
+
 1.302206  2024-12-19 17:51:07-08:00 America/Los_Angeles
 
     - Remove Test::Builder::IO::Scalar
