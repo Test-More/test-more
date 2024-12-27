@@ -808,6 +808,39 @@ sub run_subtest {
 # called.
 require Test2::API::Context;
 
+# If the env var was set to load plugins, load them now, this is the earliest
+# safe point to do so.
+if (my $plugins = $ENV{TEST2_ENABLE_PLUGINS}) {
+    for my $p (split /\s*,\s*/, $plugins) {
+        $p = "Test2::Plugin::$p" unless $p =~ s/^\+//;
+        my $mod = "$p.pm";
+        $mod =~ s{::}{/}g;
+
+        if ($ENV{HARNESS_IS_VERBOSE} || !$ENV{HARNESS_ACTIVE}) {
+            # If the harness is verbose then just display the message for all to
+            # see. It is nice info and they already asked for noisy output.
+
+            test2_add_callback_post_load(sub {
+                test2_stack()->top; # Ensure we have at least 1 hub.
+                my ($hub) = test2_stack()->all;
+                $hub->send(
+                    Test2::Event::Note->new(
+                        trace => Test2::Util::Trace->new(frame => [__PACKAGE__, __FILE__, __LINE__, $p]),
+                        message => "Loaded plugin '$p' as specified in the TEST2_ENABLE_PLUGINS env var.",
+                    ),
+                );
+            });
+        }
+
+        eval {
+            package main;
+            require $mod;
+            $p->import;
+            1
+        } or die "Could not load plugin '$p', which was specified in the TEST2_ENABLE_PLUGINS env var ($plugins): $@";
+    }
+}
+
 1;
 
 __END__
@@ -910,6 +943,10 @@ documentation for details on how to best use it.
     my $formatter = test2_formatter();
 
     ... And others ...
+
+=head1 ENVIRONMENT VARIABLES
+
+See L<Test2::Env> for a list of meaningul environment variables.
 
 =head1 MAIN API EXPORTS
 

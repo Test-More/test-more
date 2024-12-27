@@ -287,6 +287,10 @@ See L<Test2::Plugin::ExitSummary>.
 
 This plugin has no configuration.
 
+=head1 ENVIRONMENT VARIABLES
+
+See L<Test2::Env> for a list of meaningul environment variables.
+
 =head1 API FUNCTIONS
 
 See L<Test2::API> for these

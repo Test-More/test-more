@@ -2002,6 +2002,10 @@ comes from.
 
 L<Test::Most> Most commonly needed test functions and features.
 
+=head1 ENVIRONMENT VARIABLES
+
+See L<Test2::Env> for a list of meaningul environment variables.
+
 =head1 AUTHORS
 
 Michael G Schwern E<lt>schwern@pobox.comE<gt> with much inspiration
