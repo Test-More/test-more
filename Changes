@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+1.302207  2024-12-27 18:13:18-08:00 America/Los_Angeles
+
     - Fix debugging info when JSON::MaybeXS is missing (Thanks James E Keenan)
     - Fix typos (Thanks sobrado8086)
     - Add TEST2_ENABLE_PLUGINS env var
