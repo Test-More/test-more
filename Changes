@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+    - avoid closing over values in string eval when comparing values #1018 (Thanks Haarg)
+
 1.302207  2024-12-27 18:13:18-08:00 America/Los_Angeles
 
     - Fix debugging info when JSON::MaybeXS is missing (Thanks James E Keenan)
