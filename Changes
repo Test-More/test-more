@@ -6,6 +6,10 @@
 
 {{$NEXT}}
 
+    - #1021 don't use base (Thanks Haarg)
+    - #1022 use PerlIO::get_layers without loading PerlIO.pm (Thanks Haarg)
+    - #1023 move try_sig_mask to separate file to avoid always loading POSIX (Thanks Haarg)
+
 1.302208  2025-01-21 10:19:33-08:00 America/Los_Angeles
 
     - avoid closing over values in string eval when comparing values #1018 (Thanks Haarg)
