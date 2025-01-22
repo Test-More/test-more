@@ -7,7 +7,7 @@ our $VERSION = '1.302209';
 use Carp qw/croak confess/;
 use Scalar::Util qw/blessed/;
 
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 our @EXPORT_OK = qw{
     causes_fail
     diagnostics

@@ -2,7 +2,7 @@ package Test2::Require::Threads;
 use strict;
 use warnings;
 
-use base 'Test2::Require';
+BEGIN { require Test2::Require; our @ISA = qw(Test2::Require) }
 
 our $VERSION = '1.302209';
 
