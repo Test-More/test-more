@@ -9,8 +9,7 @@ use Config qw/%Config/;
 use Carp qw/croak/;
 
 BEGIN {
-    local ($@, $!, $SIG{__DIE__});
-    *HAVE_PERLIO = eval { require PerlIO; PerlIO->VERSION(1.02); } ? sub() { 1 } : sub() { 0 };
+    *HAVE_PERLIO = defined &PerlIO::get_layers ? sub() { 1 } : sub() { 0 };
 }
 
 our @EXPORT_OK = qw{
