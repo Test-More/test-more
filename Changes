@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+1.302209  2025-01-22 08:17:20-08:00 America/Los_Angeles
+
     - #1021 don't use base (Thanks Haarg)
     - #1022 use PerlIO::get_layers without loading PerlIO.pm (Thanks Haarg)
     - #1023 move try_sig_mask to separate file to avoid always loading POSIX (Thanks Haarg)
