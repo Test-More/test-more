@@ -21,7 +21,7 @@ sub dies(&) {
 
     return undef if $ok;
 
-    unless ($err) {
+    unless (ref($err) or $err) {
         my $ctx = context();
         $ctx->alert("Got exception as expected, but exception is falsy (undef, '', or 0)...");
         $ctx->release;
