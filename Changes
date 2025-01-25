@@ -1038,7 +1038,7 @@ Test-Simple 1.302013_013 2016-03-08 09:19:39-08:00 America/Los_Angeles (TRIAL RE
 
 Test-Simple 1.302013_012 2016-01-28 20:38:16-08:00 America/Los_Angeles (TRIAL RELEASE)
 
-    - $Level effects all contexts once Test::Builder is loaded
+    - $Level affects all contexts once Test::Builder is loaded
     - Requires Test2 0.000023
 
 Test-Simple 1.302013_011 2016-01-14 21:55:28-08:00 America/Los_Angeles (TRIAL RELEASE)
@@ -1395,7 +1395,7 @@ Test-Simple 0.89_01 2009-Jun-23 15:13-08:00 EDT
     Test Fixes
     * Small fixes for integration with the Perl core
       [bleadperl eaa0815147e13cd4ab5b3d6ca8f26544a9f0c3b4]
-    * exit code tests could be effected by errno when PERLIO=stdio
+    * exit code tests could be affected by errno when PERLIO=stdio
       [bleadperl c76230386fc5e6fba9fdbeab473abbf4f4adcbe3]
 
 
