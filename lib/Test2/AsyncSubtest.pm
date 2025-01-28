@@ -713,7 +713,7 @@ L<Test2::Event::Ok> event.
 =item silent => 1
 
 This will prevent finish from generating a final L<Test2::Event::Subtest>
-event. This effectively ends the subtest without it effecting the parent
+event. This effectively ends the subtest without it affecting the parent
 subtest (or top level test).
 
 =item no_plan => 1

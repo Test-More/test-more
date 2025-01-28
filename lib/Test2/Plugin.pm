@@ -18,7 +18,7 @@ Test2::Plugin - Documentation for plugins
 
 =head1 DESCRIPTION
 
-Plugins are packages that cause behavior changes, or other side effects for the
+Plugins are packages that cause behavior changes, or other side-effects for the
 test file that loads them. They should not export any functions, or provide any
 tools. Plugins should be distinct units of functionality.
 

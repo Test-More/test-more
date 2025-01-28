@@ -80,7 +80,7 @@ the start of your function, and release it at the end... yes it is that simple.
 
 See, that was easy. With these 2 additional lines we know have proper file+line
 reporting. The nested tools will find the context we acquired here, and know to
-use it's file and line numbers.
+use its file and line numbers.
 
 =head3 THE OLD WAY (DO NOT DO THIS ANYMORE)
 

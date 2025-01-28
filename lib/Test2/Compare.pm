@@ -277,7 +277,7 @@ listed first:
 =item implicit_end => 1
 
 This option toggles array/hash boundaries. If this is true then no extra hash
-keys or array indexes will be allowed. This setting effects generated compare
+keys or array indexes will be allowed. This setting affects generated compare
 objects as well as any passed in.
 
 =item use_regex => 1

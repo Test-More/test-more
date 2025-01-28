@@ -22,7 +22,7 @@ The IPC system is activated by loading L<Test2::IPC>. This makes hubs
 process/thread aware, and makes them forward events along to the parent
 process/thread as necessary.
 
-=head1 HOW DOES THE IPC SYSTEM EFFECT EVERYTHING?
+=head1 HOW DOES THE IPC SYSTEM AFFECT EVERYTHING?
 
 L<Test2::API> and L<Test2::API::Instance> have some behaviors that trigger if
 L<Test2::IPC> is loaded before the global state is initialized. Mainly an IPC

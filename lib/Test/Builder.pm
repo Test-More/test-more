@@ -2568,7 +2568,7 @@ If you fail more than 254 tests, it will be reported as 254.
 
 In perl 5.8.1 and later, Test::Builder is thread-safe.  The test number is
 shared by all threads.  This means if one thread sets the test number using
-C<current_test()> they will all be effected.
+C<current_test()> they will all be affected.
 
 While versions earlier than 5.8.1 had threads they contain too many
 bugs to support.
