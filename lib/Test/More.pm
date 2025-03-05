@@ -997,7 +997,7 @@ import anything, use C<require_ok>.
 
 sub use_ok ($;@) {
     my( $module, @imports ) = @_;
-    @imports = () unless @imports;
+
     my $tb = Test::More->builder;
 
     my %caller;
