@@ -177,7 +177,7 @@ sub import_extra {
     my $class = shift;
     my $list  = shift;
 
-    my @other = ();
+    my @other;
     my $idx   = 0;
     my $import;
     while( $idx <= $#{$list} ) {
@@ -579,7 +579,7 @@ sub can_ok ($@) {
         return $ok;
     }
 
-    my @nok = ();
+    my @nok;
     foreach my $method (@methods) {
         $tb->_try( sub { $proto->can($method) } ) or push @nok, $method;
     }
@@ -1185,7 +1185,7 @@ sub _format_stack {
     }
 
     my @vals = @{ $Stack[-1]{vals} }[ 0, 1 ];
-    my @vars = ();
+    my @vars;
     ( $vars[0] = $var ) =~ s/\$FOO/     \$got/;
     ( $vars[1] = $var ) =~ s/\$FOO/\$expected/;
 
