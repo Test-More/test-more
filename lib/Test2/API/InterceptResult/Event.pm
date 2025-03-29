@@ -591,7 +591,7 @@ that subtest results can be turned into instances of it on demand.
 
 =item $copy = $event->clone
 
-Create a deep copy of the event. Modifying either event will not effect the
+Create a deep copy of the event. Modifying either event will not affect the
 other.
 
 =back

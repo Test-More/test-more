@@ -234,7 +234,6 @@ reftype
 renderer
 renderers
 setpos
-shiney
 sref
 str
 subevent
