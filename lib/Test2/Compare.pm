@@ -2,7 +2,7 @@ package Test2::Compare;
 use strict;
 use warnings;
 
-our $VERSION = '1.302210';
+our $VERSION = '1.302211';
 
 use Scalar::Util qw/blessed/;
 use Test2::Util qw/try/;
