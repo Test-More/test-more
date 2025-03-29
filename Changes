@@ -6,6 +6,12 @@
 
 {{$NEXT}}
 
+    - Alexander Hartmaier   - fix typo in Test2::Util::Trace docs
+    - Karen Etheridge       - documentation fixes throughout for affect vs effect
+    - Yasuharu Iida feat    - Test2::Tools::Warnings warns called in void context
+    - bernhard Eliminate    - Remove unnecessary empty list assignments
+    - Graham Knop calculate - CAN_SIGSYS when called rather than as a constant
+
 1.302209  2025-01-22 08:17:20-08:00 America/Los_Angeles
 
     - #1021 don't use base (Thanks Haarg)
