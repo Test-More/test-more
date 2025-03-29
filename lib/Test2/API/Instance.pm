@@ -8,7 +8,7 @@ our @CARP_NOT = qw/Test2::API Test2::API::Instance Test2::IPC::Driver Test2::For
 use Carp qw/confess carp/;
 use Scalar::Util qw/reftype/;
 
-use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try CAN_SIGSYS/;
+use Test2::Util qw/get_tid USE_THREADS CAN_FORK pkg_to_file try/;
 
 use Test2::EventFacet::Trace();
 use Test2::API::Stack();
