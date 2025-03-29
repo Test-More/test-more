@@ -166,13 +166,12 @@ sub _check_for_sig_sys {
     return $sig_list =~ m/\bSYS\b/;
 }
 
-BEGIN {
-    if (_check_for_sig_sys($Config{sig_name})) {
-        *CAN_SIGSYS = sub() { 1 };
+my $CAN_SIGSYS;
+sub CAN_SIGSYS () {
+    if (!defined $CAN_SIGSYS) {
+        $CAN_SIGSYS = _check_for_sig_sys($Config{sig_name});
     }
-    else {
-        *CAN_SIGSYS = sub() { 0 };
-    }
+    $CAN_SIGSYS;
 }
 
 my %PERLIO_SKIP = (
