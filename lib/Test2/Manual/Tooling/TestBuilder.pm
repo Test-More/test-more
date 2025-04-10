@@ -102,7 +102,7 @@ use the C<Test2::API::run_subtest()> function instead. See L<Test2::API> for doc
 
 =item $tb->todo_end
 
-See L<Test2::Tools::Todo> instead.
+See L<Test2::Todo> instead.
 
 =item $tb->output, $tb->failure_output, and $tb->todo_output
 
@@ -131,7 +131,7 @@ L<Test2> is also smart enough to honor C<$Test::Builder::Level> if it is set.
 =head1 TODO
 
 L<Test::Builder> used the C<$TODO> package variable to set the TODO state. This
-was confusing, and easy to get wrong. See L<Test2::Tools::Todo> for the modern
+was confusing, and easy to get wrong. See L<Test2::Todo> for the modern
 way to accomplish a TODO state.
 
 =head1 SEE ALSO
