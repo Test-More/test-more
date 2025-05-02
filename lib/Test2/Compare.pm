@@ -296,8 +296,8 @@ the value being checked.
 
 =item $check = strict_convert($thing)
 
-Convert C<$thing> to an L<Test2::Compare::*> object. This will behave strictly
-which means it uses these settings:
+Convert C<$thing> to an L<Test2::Compare::*|Test2::Compare::Base> object. This
+will behave strictly which means it uses these settings:
 
 =over 4
 
@@ -318,8 +318,8 @@ Regexes will be compared directly (IE are the regexes the same?)
 
 =item $compare = relaxed_convert($thing)
 
-Convert C<$thing> to an L<Test2::Compare::*> object. This will be relaxed which
-means it uses these settings:
+Convert C<$thing> to an L<Test2::Compare::*|Test2::Compare::Base> object. This
+will be relaxed which means it uses these settings:
 
 =over 4
 
