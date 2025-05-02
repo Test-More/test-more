@@ -25,6 +25,8 @@ use Test2::Util::HashBase qw{
     _context_init
     _context_release
 
+    surpress_release_error
+
     uuid
     active
     count
@@ -448,8 +450,10 @@ sub finalize {
         my (undef, $ffile, $fline) = @{$self->{+ENDED}};
         my (undef, $sfile, $sline) = @$frame;
 
+        $self->{+SURPRESS_RELEASE_ERROR} = 1;
+
         die <<"        EOT"
-Test already ended!
+Test already ended! (Did you call done_testing twice?)
 First End:  $ffile line $fline
 Second End: $sfile line $sline
         EOT
