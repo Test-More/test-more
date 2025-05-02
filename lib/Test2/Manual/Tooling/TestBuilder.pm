@@ -102,7 +102,7 @@ use the C<Test2::API::run_subtest()> function instead. See L<Test2::API> for doc
 
 =item $tb->todo_end
 
-See L<Test2::Tools::Todo> instead.
+See L<Test2::Tools::Basic/"skip($why)">, and L<Test2::Todo> instead.
 
 =item $tb->output, $tb->failure_output, and $tb->todo_output
 
