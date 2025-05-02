@@ -566,10 +566,9 @@ is the description of the assertion.
 
 L<Test2::EventFacet::Control>
 
-This facet is used to tell the L<Test2::Event::Hub> about special actions the
-event causes. Things like halting all testing, terminating the current test,
-etc. In this facet the C<details> field explains why any special action was
-taken.
+This facet is used to tell the L<Test2::Hub> about special actions the event
+causes. Things like halting all testing, terminating the current test, etc. In
+this facet the C<details> field explains why any special action was taken.
 
 B<Note:> This is how bail-out is implemented.
 
