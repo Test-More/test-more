@@ -6,6 +6,15 @@
 
 {{$NEXT}}
 
+    - Chad Granum    - Fix #1035
+    - Chad Granum    - Fix #1033, todo docs
+    - Chad Granum    - Better error message if you use done_testing twice
+    - Dan            - Test2::Compare: link to base class for Test2::Compare::*
+    - Dan            - Test2::Manual::Anatomy::Event: small typo in link
+    - Dan            - Test2::EventFacet::Info::Table: fix link to Test2::API::Context
+    - Dan            - Test2::Manual::Anatomy::Context: fix link to test2_stack function
+    - James E Keenan - Spelling correction
+
 1.302210  2025-03-29 12:06:57-07:00 America/Los_Angeles
 
     - Alexander Hartmaier   - fix typo in Test2::Util::Trace docs
