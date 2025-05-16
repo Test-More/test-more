@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+    - Add a workaround for Test::Class::Moose
+
 1.302211  2025-05-02 00:47:29-07:00 America/Los_Angeles
 
     - Chad Granum    - Fix #1035
