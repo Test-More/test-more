@@ -2,7 +2,7 @@ package Test2::Tools::Class;
 use strict;
 use warnings;
 
-our $VERSION = '1.302212';
+our $VERSION = '1.302213';
 
 use Test2::API qw/context/;
 use Test2::Util::Ref qw/render_ref/;

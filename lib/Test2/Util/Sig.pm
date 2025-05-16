@@ -2,7 +2,7 @@ package Test2::Util::Sig;
 use strict;
 use warnings;
 
-our $VERSION = '1.302212';
+our $VERSION = '1.302213';
 
 use POSIX();
 use Test2::Util qw/try IS_WIN32/;

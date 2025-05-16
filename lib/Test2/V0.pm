@@ -4,7 +4,7 @@ use warnings;
 
 use Test2::Util::Importer;
 
-our $VERSION = '1.302212';
+our $VERSION = '1.302213';
 
 use Carp qw/croak/;
 

@@ -2,7 +2,7 @@ package Test2::Workflow::BlockBase;
 use strict;
 use warnings;
 
-our $VERSION = '1.302212';
+our $VERSION = '1.302213';
 
 use Test2::Util::HashBase qw/code frame _info _lines/;
 use Test2::Util::Sub qw/sub_info/;
