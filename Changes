@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+1.302213  2025-05-18 10:42:43-07:00 America/Los_Angeles
+
     - #1044 Fix duplicate words in Changes file (Thanks Daniel Böhmer)
     - #1043 Fix spelling issue
 
