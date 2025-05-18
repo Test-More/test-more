@@ -6,6 +6,9 @@
 
 {{$NEXT}}
 
+    - #1044 Fix duplicate words in Changes file (Thanks Daniel Böhmer)
+    - #1043 Fix spelling issue
+
 1.302212  2025-05-16 10:52:35-07:00 America/Los_Angeles
 
     - Add a workaround for Test::Class::Moose
