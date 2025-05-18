@@ -25,7 +25,7 @@ use Test2::Util::HashBase qw{
     _context_init
     _context_release
 
-    surpress_release_error
+    suppress_release_error
 
     uuid
     active
@@ -37,6 +37,14 @@ use Test2::Util::HashBase qw{
     _plan
     skip_reason
 };
+
+{
+    no warnings 'once';
+    # Support an originally mispelled method name, at least 1 downstream
+    # release already uses it. It will be fixed, but we do not want to break
+    # things before it is fixed.
+    *surpress_release_error = \&suppress_release_error;
+}
 
 my $UUID_VIA;
 
@@ -450,7 +458,7 @@ sub finalize {
         my (undef, $ffile, $fline) = @{$self->{+ENDED}};
         my (undef, $sfile, $sline) = @$frame;
 
-        $self->{+SURPRESS_RELEASE_ERROR} = 1;
+        $self->{+SUPPRESS_RELEASE_ERROR} = 1;
 
         die <<"        EOT"
 Test already ended! (Did you call done_testing twice?)
