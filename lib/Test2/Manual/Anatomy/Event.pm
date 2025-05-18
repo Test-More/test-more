@@ -2,7 +2,7 @@ package Test2::Manual::Anatomy::Event;
 use strict;
 use warnings;
 
-our $VERSION = '1.302213';
+our $VERSION = '1.302214';
 
 1;
 
