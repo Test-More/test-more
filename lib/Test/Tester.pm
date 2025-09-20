@@ -137,7 +137,8 @@ sub cmp_result
 	my ($result, $expect, $name) = @_;
 
 	my $sub_name = $result->{name};
-	$sub_name = "" unless defined($name);
+	$name = "" unless defined($name);
+	$sub_name = "" unless defined $sub_name;
 
 	my $desc = "subtest '$sub_name' of '$name'";
 
