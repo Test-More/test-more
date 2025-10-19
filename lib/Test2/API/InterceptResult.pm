@@ -483,7 +483,7 @@ These are essentially:
     $events->grep(causes_failure => @{$PARAMS{args}})
 
 B<Note:> C<causes_fail()> and C<causes_failure()> are both aliases for
-eachother in events, so these methods are effectively aliases here as well.
+each other in events, so these methods are effectively aliases here as well.
 
 It returns a new instance containing only the events that cause failure.
 

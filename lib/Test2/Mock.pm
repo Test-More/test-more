@@ -425,7 +425,7 @@ sub _inject {
             && (reftype($orig) ne 'SCALAR' || defined($$orig));
 
         $syms->{"$sig$sym"} ||= [];
-        push @{$syms->{"$sig$sym"}} => $orig; # Might be undef, thats expected
+        push @{$syms->{"$sig$sym"}} => $orig; # Might be undef, that's expected
 
         if ($self->{+_TRACK} && $sig eq '&') {
             my $sub_tracker  = $self->{+SUB_TRACKING};

@@ -40,7 +40,7 @@ use Test2::Util::HashBase qw{
 
 {
     no warnings 'once';
-    # Support an originally mispelled method name, at least 1 downstream
+    # Support an originally misspelled method name, at least 1 downstream
     # release already uses it. It will be fixed, but we do not want to break
     # things before it is fixed.
     *surpress_release_error = \&suppress_release_error;

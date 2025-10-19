@@ -153,7 +153,7 @@ Which produces:
     ( LAUNCH )  job  1    example.t
     (  NOTE  )  job  1    Seeded srand with seed '20171014' from local date.
     [  PASS  ]  job  1  + 1 is true, so this will pass
-    [  PLAN  ]  job  1    Expected asserions: 1
+    [  PLAN  ]  job  1    Expected assertions: 1
     ( PASSED )  job  1    example.t
 
     ================================================================================
