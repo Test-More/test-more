@@ -6,7 +6,13 @@
 
 {{$NEXT}}
 
+    - Fix Changelog, no other changes
+    - Add dzil tool to prevent this next time
+
 1.302215  2025-11-13 16:41:55-08:00 America/Los_Angeles
+
+    - Fix Typos (Thanks Masahiro Iuchi)
+    - Fix undef string bug in Test::Tester (Thanks Branislav Zahradník)
 
 1.302214  2025-05-24 15:02:44-07:00 America/Los_Angeles
 
