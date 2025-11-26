@@ -11,7 +11,7 @@ use Test2::Util::Table qw/table/;
 use Test2::Util qw/CAN_FORK CAN_REALLY_FORK CAN_THREAD/;
 
 my $exit = 0;
-END{ $? = $exit }
+END { $? = $exit }
 
 diag "\nDIAGNOSTICS INFO IN CASE OF FAILURE:\n";
 diag(join "\n", table(rows => [[ 'perl', $] ]]));
