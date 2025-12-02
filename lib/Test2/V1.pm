@@ -358,11 +358,6 @@ Actually, go ahead and import C<ok()> but under the name C<my_ok()>.
 If you did not add the C<'!ok'> argument then you would have both C<ok()> and
 C<my_ok()>
 
-=head1 MAKING THE T2 HANDLE GLOBAL
-
-If you want a global C<T2> that can be called from anywhere, without needing to
-import L<Test2::V1> in every package, you can do that with the L<T2> module.
-
 =head1 PRAGMAS AND PLUGINS
 
 B<NO PRAGMAS ARE ENABLED BY DEFAULT>
