@@ -147,6 +147,10 @@ __END__
 
 Test2::V0 - 0Th edition of the Test2 recommended bundle.
 
+=head1 V1 IS OUT NOW!
+
+See L<Test2::V1> for the most recent "Recommended" bundle.
+
 =head1 DESCRIPTION
 
 This is the big-daddy bundle. This bundle includes nearly every tool, and
