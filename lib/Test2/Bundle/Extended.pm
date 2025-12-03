@@ -33,6 +33,8 @@ Test2::Bundle::Extended - Old name for Test2::V0
 This bundle has been renamed to L<Test2::V0>, in which the C<':v1'> tag has
 been removed as unnecessary.
 
+B<Note:> L<Test2::V1> is the latest bundle, you probably want to look at that.
+
 =head1 DESCRIPTION
 
 This is the big-daddy bundle. This bundle includes nearly every tool, and

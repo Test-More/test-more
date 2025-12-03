@@ -507,7 +507,7 @@ you to use when testing your test tools.
 
 =head1 SYNOPSIS
 
-    use Test2::V0;
+    use Test2::V1 '-iPp';
     use Test2::API qw/intercept/;
 
     my $events = intercept {

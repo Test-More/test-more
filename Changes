@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+    - Add Test2::V1 bundle
+
 1.302216  2025-11-15 21:18:57-08:00 America/Los_Angeles
 
     - Fix Changelog, no other changes

@@ -186,7 +186,7 @@ needing a deep understanding of the event/facet model.
 Usually you get an instance of this class when you use C<intercept()> from
 L<Test2::API>.
 
-    use Test2::V0;
+    use Test2::V1 '-iPp';
     use Test2::API qw/intercept/;
 
     my $events = intercept {
