@@ -2,7 +2,7 @@ package Test2::V1::Handle;
 use strict;
 use warnings;
 
-our $VERSION = '1.302217';
+our $VERSION = '1.302218';
 
 sub DEFAULT_HANDLE_BASE { 'Test2::V1::Base' }
 
