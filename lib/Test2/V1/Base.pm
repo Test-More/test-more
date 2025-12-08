@@ -2,7 +2,7 @@ package Test2::V1::Base;
 use strict;
 use warnings;
 
-our $VERSION = '1.302218';
+our $VERSION = '1.302219';
 
 use Test2::API qw/intercept context/;
 
