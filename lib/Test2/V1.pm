@@ -501,7 +501,7 @@ This also effects exports:
     use Test2::V1 T2 => {
         include   => $ARRAYREF_OR_HASHREF,
         namespace => $NAMESPACE,
-        base      => $BASE_PACKAGE // 'T2',
+        base      => $BASE_PACKAGE // 'Test2::V1::Base',
         stomp     => $BOOL,
     };
 
@@ -518,7 +518,7 @@ package name being anything specific unless you provide your own.
 
 The namespace here will be where any tools you 'include' will be imported into.
 It will also have its base class set to the base class you specify, or the
-L<T2> module if you do not provide any.
+L<Test2::V1::Base> module if you do not provide any.
 
 If this namespace already has any symbols defined in it an exception will be
 thrown unless the C<stomp> argument is set to true (not recommended).
@@ -530,7 +530,7 @@ Used to allow the handle to stomp on an existing namespace (NOT RECOMMENDED).
 =item base => $BASE
 
 Set the base class from which functions should be inherited. Normally this is
-set to L<T2>.
+set to L<Test2::V1::Base>.
 
 Another interesting use case is to have multiple handles that use eachothers
 namespaces as base classes:
@@ -1063,9 +1063,9 @@ a point not to break/remove exports, but there is no such commitment about
 adding new ones.
 
 Now the only default export is C<T2()> which gives you a handle where all the
-tools we expose are provided as methods. We also provide the L<T2> namespace
-for use with an identical number of keystrokes, which allow you to leverage the
-prototypes on the original tool subroutines.
+tools we expose are provided as methods. You can also use the L<T2> module (Not
+bundled with Test-Simple) for use with an identical number of keystrokes, which
+allow you to leverage the prototypes on the original tool subroutines.
 
 =back
 
