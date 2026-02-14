@@ -43,7 +43,6 @@ sub upgrade_required {
 
 sub known_broken {
     return (
-        'Net::BitTorrent'       => '0.052',
         'Test::Able'            => '0.11',
         'Test::Aggregate'       => '0.373',
         'Test::Flatten'         => '0.11',

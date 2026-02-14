@@ -6,7 +6,6 @@ Test::Kit
 Test::Group
 Test::Flatten
 Test2::Harness
-Net::BitTorrent
 Lexical::Types
 Test::Class::Moose
 Test::Mocha
