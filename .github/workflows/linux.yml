@@ -9,51 +9,64 @@ on:
   pull_request:
 
 jobs:
-  perl:
+
+  ubuntu:
+    name: "quick test"
+    env:
+      PERL_USE_UNSAFE_INC: 0
+      AUTHOR_TESTING: 1
+      AUTOMATED_TESTING: 1
+      RELEASE_TESTING: 1
+      PERL_CARTON_PATH: $GITHUB_WORKSPACE/local
 
     runs-on: ubuntu-latest
 
+    steps:
+      - uses: actions/checkout@v6
+      - run: perl -V
+      - name: Install Dependencies
+        run: cpm install -g --show-build-log-on-failure --cpanfile cpanfile
+      - run: perl Makefile.PL
+      - run: make
+      - run: make test
+
+  perl-versions:
+    runs-on: ubuntu-latest
+    name: List Perl versions
+    outputs:
+      perl-versions: ${{ steps.action.outputs.perl-versions }}
+    steps:
+      - id: action
+        uses: perl-actions/perl-versions@v2
+        with:
+          since-perl: v5.8
+          with-devel: true
+
+  perl:
+    name: "Perl v${{ matrix.perl-version }}"
+    needs: [ubuntu, perl-versions]
+    runs-on: ubuntu-latest
+
     env:
-       PERL_USE_UNSAFE_INC: 0
-       AUTHOR_TESTING: 1
-       AUTOMATED_TESTING: 1
-       RELEASE_TESTING: 1
-       PERL_CARTON_PATH: $GITHUB_WORKSPACE/local
+      PERL_USE_UNSAFE_INC: 0
+      AUTHOR_TESTING: 1
+      AUTOMATED_TESTING: 1
+      RELEASE_TESTING: 1
+      PERL_CARTON_PATH: $GITHUB_WORKSPACE/local
 
     strategy:
       fail-fast: false
       matrix:
-        perl-version:
-          - 'latest'
-          - '5.38'
-          - '5.36'
-          - '5.34'
-          - '5.32'
-          - '5.30'
-          - '5.28'
-          - '5.26'
-          - '5.24'
-          - '5.22'
-          - '5.20'
-          - '5.18'
-          - '5.16'
-          - '5.14'
-          - '5.12'
-          - '5.10'
-          - '5.8'
+        perl-version: ${{ fromJson(needs.perl-versions.outputs.perl-versions) }}
 
     container:
       image: perldocker/perl-tester:${{ matrix.perl-version }}
 
     steps:
-      - uses: actions/checkout@v1
-      - name: perl -V
-        run: perl -V
-      - name: Install Dependencies CI
+      - uses: actions/checkout@v6
+      - run: perl -V
+      - name: Install Dependencies
         run: cpm install -g --show-build-log-on-failure --cpanfile cpanfile
-      - name: perl Makefile.PL
-        run: perl Makefile.PL
-      - name: make
-        run: make
-      - name: Run Tests
-        run: make test
+      - run: perl Makefile.PL
+      - run: make
+      - run: make test
