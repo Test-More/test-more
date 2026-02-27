@@ -42,6 +42,19 @@ is(
 
 like($err, qr/abc/, '$@ has the exception');
 
+# Test that blessed objects overloading to false do not trigger the falsy warning
+{
+    package FalseException;
+    use overload bool => sub { 0 }, '""' => sub { "false exception object" }, fallback => 1;
+    sub new { bless {}, shift }
+}
+
+my $false_obj = FalseException->new();
+
+my $got;
+is(warning { $got = dies { die $false_obj } }, undef, "no warning for blessed false exception");
+isa_ok($got, ['FalseException'], "dies() returns the blessed false exception object");
+
 like(
     warning { dies { 1 } },
     qr/Useless use of dies\(\) in void context/,
