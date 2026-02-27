@@ -21,7 +21,7 @@ sub dies(&) {
 
     return undef if $ok;
 
-    unless ($err) {
+    unless (ref($err) or $err) {
         my $ctx = context();
         $ctx->alert("Got exception as expected, but exception is falsy (undef, '', or 0)...");
         $ctx->release;
@@ -138,6 +138,12 @@ exception block will report to the line where C<exception()> is called. I
 disagree with this, and think the actual line of the failing test is
 more important. Ultimately, though L<Test::Fatal> cannot be changed, people
 probably already depend on that behavior.
+
+L<Test::Fatal> will die if the exception is a false value (C<undef>, C<''>, or
+C<0>). C<dies()> will instead warn and return the false exception. Additionally,
+C<dies()> will B<not> warn when the exception is a blessed object that evaluates
+to false (e.g. via overloaded boolification), since this is a legitimate use
+case for objects that use boolean overloading to indicate success or failure.
 
 =head1 SOURCE
 
