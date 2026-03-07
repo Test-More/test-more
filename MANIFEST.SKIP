@@ -76,8 +76,6 @@
 ^profile
 ^profiling/
 
-# For github testing
-^\.travis\.yml$
 
 ^MANIFEST\.SKIP$
 
@@ -89,8 +87,6 @@
 # The extra tests are for dist author testing only
 \bxt
 
-# For github testing
-.travis.yml
 
 dist.ini
 
