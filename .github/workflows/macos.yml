@@ -27,7 +27,7 @@ jobs:
       - name: perl -V
         run: perl -V
       - name: Install Dependencies
-        run: curl -sL https://raw.githubusercontent.com/skaji/cpm/master/cpm | perl - install -g --show-build-log-on-failure
+        run: curl -fsSL -o cpm https://raw.githubusercontent.com/skaji/cpm/0.998003/cpm && perl cpm install -g --show-build-log-on-failure
       - name: perl Makefile.PL
         run: perl Makefile.PL
       - name: make
