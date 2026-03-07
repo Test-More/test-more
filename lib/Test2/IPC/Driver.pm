@@ -69,7 +69,7 @@ Test2::IPC::Driver - Base class for Test2 IPC drivers.
 
     package Test2::IPC::Driver::MyDriver;
 
-    use base 'Test2::IPC::Driver';
+    BEGIN { require Test2::IPC::Driver; our @ISA = qw(Test2::IPC::Driver) }
 
     ...
 
@@ -110,7 +110,7 @@ load it too late for it to be effective.
     use strict;
     use warnings;
 
-    use base 'Test2::IPC::Driver';
+    BEGIN { require Test2::IPC::Driver; our @ISA = qw(Test2::IPC::Driver) }
 
     sub is_viable {
         return 0 if $^O eq 'win32'; # Will not work on windows.

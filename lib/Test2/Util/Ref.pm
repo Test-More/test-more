@@ -7,7 +7,7 @@ our $VERSION = '1.302220';
 use Scalar::Util qw/reftype blessed refaddr/;
 
 our @EXPORT_OK = qw/rtype render_ref/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub rtype {
     my ($thing) = @_;

@@ -24,7 +24,7 @@ our @EXPORT_OK = qw(
    refcount
 );
 
-use base qw(Exporter);
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 use constant HAVE_DEVEL_MAT_DUMPER => defined eval {
     package # No Index

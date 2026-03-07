@@ -9,7 +9,7 @@ use Test2::API qw/context/;
 use Test2::Util::Ref qw/render_ref/;
 
 our @EXPORT = qw/ref_ok ref_is ref_is_not/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub ref_ok($;$$) {
     my ($thing, $wanttype, $name) = @_;

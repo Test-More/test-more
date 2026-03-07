@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '1.302220';
 
-use base 'Term::Table';
+BEGIN { require Term::Table; our @ISA = qw(Term::Table) }
 
 use Test2::Util::Importer 'Test2::Util::Importer' => 'import';
 our @EXPORT_OK  = qw/table/;

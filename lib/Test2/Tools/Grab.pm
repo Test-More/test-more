@@ -8,7 +8,7 @@ use Test2::Util::Grabber;
 use Test2::EventFacet::Trace();
 
 our @EXPORT = qw/grab/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub grab { Test2::Util::Grabber->new(trace => Test2::EventFacet::Trace->new(frame => [caller(0)]) ) }
 

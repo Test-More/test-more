@@ -8,7 +8,7 @@ use Carp qw/carp/;
 use Test2::API qw/context test2_add_pending_diag test2_clear_pending_diags/;
 
 our @EXPORT = qw/dies lives try_ok/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub dies(&) {
     my $code = shift;

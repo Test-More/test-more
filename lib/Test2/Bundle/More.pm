@@ -33,7 +33,7 @@ our @EXPORT = qw{
 
     subtest
 };
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 1;
 

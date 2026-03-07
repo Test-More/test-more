@@ -18,7 +18,7 @@ BEGIN {
     };
 }
 
-use base 'Test2::Workflow::Task';
+BEGIN { require Test2::Workflow::Task; our @ISA = qw(Test2::Workflow::Task) }
 use Test2::Util::HashBase @BUILD_FIELDS, qw/events defaults stack_stop/;
 
 sub init {

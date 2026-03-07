@@ -6,7 +6,7 @@ use Test2::Util qw/try/;
 
 use Test2::Compare::Meta();
 
-use base 'Test2::Compare::Base';
+BEGIN { require Test2::Compare::Base; our @ISA = qw(Test2::Compare::Base) }
 
 our $VERSION = '1.302220';
 

@@ -9,7 +9,7 @@ use Test2::Util::Sub qw/gen_accessor gen_reader gen_writer/;
 
 use Test2::Mock();
 
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 our $VERSION = '1.302220';
 

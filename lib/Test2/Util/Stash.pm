@@ -15,7 +15,7 @@ our @EXPORT_OK = qw{
     purge_symbol
     slot_to_sig sig_to_slot
 };
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 my %SIGMAP = (
     '&' => 'CODE',
