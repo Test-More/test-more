@@ -56,7 +56,7 @@ It is very easy to write tools:
     use Test2::API qw/context/;
 
     our @EXPORTS = qw/ok plan/;
-    use base 'Exporter';
+    BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
     sub ok($;$) {
         my ($bool, $name) = @_;

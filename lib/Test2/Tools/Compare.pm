@@ -77,7 +77,7 @@ our @EXPORT_OK = qw{
     event fail_events
     exact_ref
 };
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 my $_autodump = sub {
     my ($ctx, $got) = @_;
@@ -87,6 +87,10 @@ my $_autodump = sub {
 
     my $file = pkg_to_file($module);
     eval { require $file };
+
+    if ($@) {
+        warn "T2_AUTO_DUMP: Failed to load '$module': $@";
+    }
 
     if (not $module->can('Dump')) {
         require Data::Dumper;

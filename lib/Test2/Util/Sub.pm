@@ -13,7 +13,7 @@ our @EXPORT_OK = qw{
 
     gen_reader gen_writer gen_accessor
 };
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub gen_reader {
     my $field = shift;

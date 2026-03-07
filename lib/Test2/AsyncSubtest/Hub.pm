@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '1.302220';
 
-use base 'Test2::Hub::Subtest';
+BEGIN { require Test2::Hub::Subtest; our @ISA = qw(Test2::Hub::Subtest) }
 use Test2::Util::HashBase qw/ast_ids ast/;
 use Test2::Util qw/get_tid/;
 

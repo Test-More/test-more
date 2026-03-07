@@ -890,7 +890,7 @@ The C<context()> method is your primary interface into the Test2 framework.
     use Test2::API qw/context/;
 
     our @EXPORT = qw/my_ok/;
-    use base 'Exporter';
+    BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
     # Just like ok() from Test::More
     sub my_ok($;$) {

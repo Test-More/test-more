@@ -11,7 +11,7 @@ our @EXPORT = qw{
     ok pass fail diag note todo skip
     plan skip_all done_testing bail_out
 };
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub ok($;$@) {
     my ($bool, $name, @diag) = @_;

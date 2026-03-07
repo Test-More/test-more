@@ -2,7 +2,7 @@ package Test2::Compare::EventMeta;
 use strict;
 use warnings;
 
-use base 'Test2::Compare::Meta';
+BEGIN { require Test2::Compare::Meta; our @ISA = qw(Test2::Compare::Meta) }
 
 our $VERSION = '1.302220';
 

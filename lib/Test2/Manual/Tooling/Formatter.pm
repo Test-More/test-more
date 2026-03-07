@@ -25,7 +25,7 @@ complicated, but this will give you the basics needed to get started.
 
     use JSON::MaybeXS qw/encode_json/;
 
-    use base qw/Test2::Formatter/;
+    BEGIN { require Test2::Formatter; our @ISA = qw(Test2::Formatter) }
 
     sub new { bless {}, shift }
 
@@ -44,7 +44,7 @@ complicated, but this will give you the basics needed to get started.
 
 =over 4
 
-=item use base qw/Test2::Formatter/;
+=item BEGIN { require Test2::Formatter; our @ISA = qw(Test2::Formatter) }
 
 All formatters should inherit from L<Test2::Formatter>.
 

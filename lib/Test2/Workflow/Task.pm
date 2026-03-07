@@ -12,7 +12,7 @@ use Scalar::Util qw/blessed/;
 use Carp qw/croak/;
 our @CARP_NOT = qw/Test2::Util::HashBase/;
 
-use base 'Test2::Workflow::BlockBase';
+BEGIN { require Test2::Workflow::BlockBase; our @ISA = qw(Test2::Workflow::BlockBase) }
 use Test2::Util::HashBase qw/name flat async iso todo skip scaffold events is_root/;
 
 for my $attr (FLAT, ISO, ASYNC, TODO, SKIP, SCAFFOLD) {

@@ -5,7 +5,7 @@ use warnings;
 our $VERSION = '1.302220';
 
 our @EXPORT = qw/is is_deeply isnt like unlike cmp_ok/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 use Carp qw/carp/;
 use Scalar::Util qw/reftype/;

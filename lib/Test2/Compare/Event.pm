@@ -6,7 +6,7 @@ use Scalar::Util qw/blessed/;
 
 use Test2::Compare::EventMeta();
 
-use base 'Test2::Compare::Object';
+BEGIN { require Test2::Compare::Object; our @ISA = qw(Test2::Compare::Object) }
 
 our $VERSION = '1.302220';
 

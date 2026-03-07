@@ -8,7 +8,7 @@ use Test2::API qw/context run_subtest/;
 use Test2::Util qw/try/;
 
 our @EXPORT = qw/subtest_streamed subtest_buffered/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub subtest_streamed {
     my $name = shift;

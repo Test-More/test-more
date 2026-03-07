@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '1.302220';
 
-use base 'Test2::Workflow::Task';
+BEGIN { require Test2::Workflow::Task; our @ISA = qw(Test2::Workflow::Task) }
 use Test2::Util::HashBase qw/around/;
 
 1;

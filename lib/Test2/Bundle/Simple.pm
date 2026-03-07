@@ -9,7 +9,7 @@ use Test2::Plugin::ExitSummary;
 use Test2::Tools::Basic qw/ok plan done_testing skip_all/;
 
 our @EXPORT = qw/ok plan done_testing skip_all/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 1;
 

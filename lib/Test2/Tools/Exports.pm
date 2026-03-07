@@ -9,7 +9,7 @@ use Test2::API qw/context/;
 use Test2::Util::Stash qw/get_symbol/;
 
 our @EXPORT = qw/imported_ok not_imported_ok/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub imported_ok {
     my $ctx     = context();

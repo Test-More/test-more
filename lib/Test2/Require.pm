@@ -52,7 +52,7 @@ so.
     use strict;
     use warnings;
 
-    use base 'Test2::Require';
+    BEGIN { require Test2::Require; our @ISA = qw(Test2::Require) }
 
     sub HAVE_WIDGETS { ... };
 

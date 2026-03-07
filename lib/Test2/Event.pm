@@ -345,7 +345,7 @@ L<Test2>.
     use warnings;
 
     # This will make our class an event subclass (required)
-    use base 'Test2::Event';
+    BEGIN { require Test2::Event; our @ISA = qw(Test2::Event) }
 
     # Add some accessors (optional)
     # You are not obligated to use HashBase, you can use any object tool you

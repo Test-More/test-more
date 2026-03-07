@@ -7,7 +7,7 @@ our $VERSION = '1.302220';
 use Test2::Util qw/pkg_to_file/;
 
 our @EXPORT = qw/gen_event/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub gen_event {
     my ($type, %fields) = @_;

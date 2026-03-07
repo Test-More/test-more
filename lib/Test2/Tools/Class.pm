@@ -10,7 +10,7 @@ use Test2::Util::Ref qw/render_ref/;
 use Scalar::Util qw/blessed/;
 
 our @EXPORT = qw/can_ok isa_ok DOES_ok/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 # For easier grepping
 # sub isa_ok  is defined here

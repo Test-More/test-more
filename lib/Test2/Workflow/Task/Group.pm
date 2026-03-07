@@ -8,7 +8,7 @@ use Carp qw/croak/;
 
 use Test2::Workflow::Task::Action;
 
-use base 'Test2::Workflow::Task';
+BEGIN { require Test2::Workflow::Task; our @ISA = qw(Test2::Workflow::Task) }
 use Test2::Util::HashBase qw/before after primary rand variant/;
 
 sub init {
