@@ -1956,6 +1956,18 @@ subtest 'T2_AUTO_DUMP and T2_AUTO_DEPARSE' => sub {
             '$Deparse was true'
         );
     };
+
+    subtest 'Warning emitted when T2_AUTO_DUMP module fails to load' => sub {
+        my @warnings;
+        my $events = intercept {
+            local $SIG{__WARN__} = sub { push @warnings, @_ };
+            local $ENV{T2_AUTO_DUMP} = 'No::Such::Module::For::T2::Test';
+            local $ENV{T2_AUTO_DEPARSE} = 0;
+            is( {}, [], 'ok' );
+        };
+        is(scalar @warnings, 1, 'Got exactly one warning');
+        like($warnings[0], qr/T2_AUTO_DUMP: Failed to load 'No::Such::Module::For::T2::Test'/, 'Warning mentions the module name');
+    };
 };
 
 done_testing;
