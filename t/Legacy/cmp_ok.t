@@ -67,9 +67,6 @@ my @Tests = (
     [1, '==', 2],
     ["a", "eq", "b"],
     ["a", "eq", "a"],
-    [1, "+", 1],
-    [1, "-", 1],
-
     [$cmp, '==', 42],
     [$cmp, 'eq', "foo"],
     [$ify, 'eq', "bar"],
@@ -77,8 +74,12 @@ my @Tests = (
 
     [$part, '!=', 0, 'expected: anything else'],
 
-    [1, "=", 0,  "= is not a valid comparison operator in cmp_ok()"],
+    # Operators rejected by allowlist
+    [1, "=",  0, "= is not a valid comparison operator in cmp_ok()"],
     [1, "+=", 0, "+= is not a valid comparison operator in cmp_ok()"],
+    [1, "+",  1, "+ is not a valid comparison operator in cmp_ok()"],
+    [1, "-",  1, "- is not a valid comparison operator in cmp_ok()"],
+    [1, "*",  1, "* is not a valid comparison operator in cmp_ok()"],
 );
 
 plan tests => scalar @Tests;

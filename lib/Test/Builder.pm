@@ -939,14 +939,26 @@ sub unlike {
 
 my %numeric_cmps = map { ( $_, 1 ) } ( "<", "<=", ">", ">=", "==", "!=", "<=>" );
 
-# Bad, these are not comparison operators. Should we include more?
-my %cmp_ok_bl = map { ( $_, 1 ) } ( "=", "+=", ".=", "x=", "^=", "|=", "||=", "&&=", "...");
+# Allowlist of valid Perl comparison operators.
+# Matches Test2::Tools::ClassicCompare::%OPS for consistency.
+my %cmp_ok_al = map { ( $_, 1 ) } (
+    # numeric
+    "<", "<=", ">", ">=", "==", "!=", "<=>",
+    # string
+    "eq", "ne", "gt", "lt", "ge", "le", "cmp", "=~", "!~",
+    # logic
+    "&&", "||", "xor", "or", "and", "//",
+    # bitwise
+    "&", "|",
+    # match
+    "~~",
+);
 
 sub cmp_ok {
     my( $self, $got, $type, $expect, $name ) = @_;
     my $ctx = $self->ctx;
 
-    if ($cmp_ok_bl{$type}) {
+    if (!$cmp_ok_al{$type}) {
         $ctx->throw("$type is not a valid comparison operator in cmp_ok()");
     }
 
