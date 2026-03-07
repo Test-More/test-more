@@ -142,7 +142,7 @@ All comparison classes for Test2::Compare should inherit from this base class.
     use strict;
     use warnings;
 
-    use base 'Test2::Compare::Base';
+    BEGIN { require Test2::Compare::Base; our @ISA = qw(Test2::Compare::Base) }
     use Test2::Util::HashBase qw/stuff/;
 
     sub name { 'STUFF' }

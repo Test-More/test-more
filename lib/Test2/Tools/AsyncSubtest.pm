@@ -10,7 +10,7 @@ use Test2::API qw/context/;
 use Carp qw/croak/;
 
 our @EXPORT = qw/async_subtest fork_subtest thread_subtest/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub async_subtest {
     my $name = shift;

@@ -7,7 +7,7 @@ use List::Util qw/sum/;
 our $VERSION = '1.302220';
 
 our @EXPORT_OK = qw/render_bench render_duration/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub render_duration {
     my $time;

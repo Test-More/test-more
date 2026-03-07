@@ -9,7 +9,7 @@ use File::Temp qw/tempdir/;
 use File::Spec;
 
 our @EXPORT = qw{gen_temp};
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub gen_temp {
     my %args = @_;

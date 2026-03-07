@@ -77,7 +77,7 @@ our @EXPORT_OK = qw{
     event fail_events
     exact_ref
 };
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 my $_autodump = sub {
     my ($ctx, $got) = @_;

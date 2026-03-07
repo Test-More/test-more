@@ -1813,7 +1813,7 @@ Test::Builder - Backend for building test libraries
 =head1 SYNOPSIS
 
   package My::Test::Module;
-  use base 'Test::Builder::Module';
+  BEGIN { require Test::Builder::Module; our @ISA = qw(Test::Builder::Module) }
 
   my $CLASS = __PACKAGE__;
 

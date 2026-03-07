@@ -5,7 +5,7 @@ use warnings;
 use Test2::Compare::Delta();
 use Test2::Compare::Isa();
 
-use base 'Test2::Compare::Base';
+BEGIN { require Test2::Compare::Base; our @ISA = qw(Test2::Compare::Base) }
 
 our $VERSION = '1.302220';
 

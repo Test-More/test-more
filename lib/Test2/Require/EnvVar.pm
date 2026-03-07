@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Carp qw/confess/;
-use base 'Test2::Require';
+BEGIN { require Test2::Require; our @ISA = qw(Test2::Require) }
 
 our $VERSION = '1.302220';
 

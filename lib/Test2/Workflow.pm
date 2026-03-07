@@ -5,7 +5,7 @@ use warnings;
 our $VERSION = '1.302220';
 
 our @EXPORT_OK = qw/parse_args current_build build root_build init_root build_stack/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 use Test2::Workflow::Build;
 use Test2::Workflow::Task::Group;

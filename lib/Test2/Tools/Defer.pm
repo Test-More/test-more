@@ -13,7 +13,7 @@ use Test2::API qw{
 };
 
 our @EXPORT = qw/def do_def/;
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 my %TODO;
 

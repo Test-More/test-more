@@ -47,7 +47,7 @@ Writing a bundle can be very simple:
 
     # Re-export the tools
     our @EXPORTS = qw/ok plan done_testing/;
-    use base 'Exporter';
+    BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
     1;
 

@@ -23,7 +23,7 @@ tool.
 
     use Test2::API qw/context/;
 
-    use base 'Exporter';
+    BEGIN { require Exporter; our @ISA = qw(Exporter) }
     our @EXPORT = qw/ok/;
 
     sub ok($;$@) {

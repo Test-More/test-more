@@ -4,7 +4,7 @@ use warnings;
 
 our $VERSION = '1.302220';
 
-use base 'Term::Table::LineBreak';
+BEGIN { require Term::Table::LineBreak; our @ISA = qw(Term::Table::LineBreak) }
 
 1;
 

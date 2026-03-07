@@ -202,7 +202,7 @@ Subclass it
     use warnings;
 
     # Note, you should subclass before loading HashBase.
-    use base 'My::Class';
+    BEGIN { require My::Class; our @ISA = qw(My::Class) }
     use Test2::Util::HashBase qw/bub/;
 
     sub init {
@@ -413,7 +413,7 @@ This does not create any methods for you, it just adds the C<FOO> constant.
 
 You can subclass an existing HashBase class.
 
-    use base 'Another::HashBase::Class';
+    BEGIN { require Another::HashBase::Class; our @ISA = qw(Another::HashBase::Class) }
     use Test2::Util::HashBase qw/foo bar baz/;
 
 The base class is added to C<@ISA> for you, and all constants from base classes

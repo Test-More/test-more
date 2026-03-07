@@ -6,7 +6,7 @@ use Carp qw/croak/;
 
 use Test2::API qw/test2_stack/;
 
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 our $VERSION = '1.302220';
 

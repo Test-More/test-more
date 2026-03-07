@@ -2,7 +2,7 @@ package Test2::Compare::Ref;
 use strict;
 use warnings;
 
-use base 'Test2::Compare::Base';
+BEGIN { require Test2::Compare::Base; our @ISA = qw(Test2::Compare::Base) }
 
 our $VERSION = '1.302220';
 

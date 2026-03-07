@@ -15,7 +15,7 @@ our @EXPORT_OK = qw{
     get_build push_build pop_build build
     strict_convert relaxed_convert convert
 };
-use base 'Exporter';
+BEGIN { require Exporter; our @ISA = qw(Exporter) }
 
 sub compare {
     my ($got, $check, $convert) = @_;
