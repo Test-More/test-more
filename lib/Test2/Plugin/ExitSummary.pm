@@ -31,6 +31,11 @@ sub summary {
 
     $ctx->diag("Did not follow plan: expected $plan, ran $count.")
         if $plan && $plan =~ m/^[0-9]+$/ && defined $count && $count != $plan;
+
+    if ($failed) {
+        my $s = $failed == 1 ? '' : 's';
+        $ctx->diag("Looks like you failed $failed test$s of $count.");
+    }
 }
 
 1;
