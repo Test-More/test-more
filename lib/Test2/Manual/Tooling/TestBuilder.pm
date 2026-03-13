@@ -120,13 +120,64 @@ also frustrating and prone to errors. Some people never even discovered the
 level variable and always had incorrect line numbers when their tools would
 fail.
 
+B<Note:> C<$Test::Builder::Level> is only defined when L<Test::Builder> is
+loaded. If you are writing pure Test2 code, do not use it - use the context
+system described below instead.
+
+=head2 The Test2 way: context
+
 L<Test2> uses the context system, which solves the problem a better way. The
-top-most tool get a context, and holds on to it until it is done. Any tool
+top-most tool gets a context, and holds on to it until it is done. Any tool
 nested under the first will find and use the original context instead of
 generating a new one. This means the level problem is solved for free, no
 variables to mess with.
 
-L<Test2> is also smart enough to honor C<$Test::Builder::Level> if it is set.
+Here is a complete example. Suppose you write a helper that wraps an existing
+test tool:
+
+    use Test2::API qw/context/;
+    use Test2::Tools::Compare qw/is/;
+
+    sub is_json {
+        my ($got_json, $expected, $name) = @_;
+        my $ctx = context();      # captures caller's file and line
+        my $got = decode_json($got_json);
+        is($got, $expected, $name);  # finds $ctx, reports caller's location
+        $ctx->release;
+    }
+
+When C<is()> is called inside C<is_json()>, it calls C<context()> internally.
+Because a context already exists (the one created in C<is_json()>), it reuses
+it. This means any failure is reported at the line that called C<is_json()>,
+not the line inside it. No level adjustment needed.
+
+You can nest this as deep as you like - only the outermost C<context()> call
+determines the reported file and line.
+
+=head2 Edge case: level parameter
+
+If you call C<context()> from inside a callback or wrapper where the context
+must point to a frame higher than the direct caller, use the C<level>
+parameter:
+
+    sub third_party_wrapper {
+        my $sub = shift;
+        $sub->();
+    }
+
+    third_party_wrapper(sub {
+        my $ctx = context(level => 1);  # skip this anonymous sub
+        $ctx->ok(1, "reported at third_party_wrapper's caller");
+        $ctx->release;
+    });
+
+See L<Test2::API/context> for the full list of parameters.
+
+=head2 Legacy compatibility
+
+L<Test2> is also smart enough to honor C<$Test::Builder::Level> if it is set,
+but this requires L<Test::Builder> to be loaded. For new code, use
+C<context()> instead.
 
 =head1 TODO
 
