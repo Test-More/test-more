@@ -38,7 +38,6 @@
 \b\.#
 \.bak$
 \.tmp$
-\.#
 \.rej$
 
 # Avoid OS-specific files/dirs
@@ -54,7 +53,6 @@
 
 # Avoid MYMETA files
 ^MYMETA\.
-#!end included /Users/schwern/perl5/perlbrew/perls/perl-v5.12.2/lib/5.12.2/ExtUtils/MANIFEST.SKIP
 
 # Avoid this one test that doesn't work yet
 ^t/strays.t
@@ -65,7 +63,7 @@
 # Test::FAQ is not complete.
 ^lib/Test/FAQ
 
-# Don't include our dist director
+# Don't include our dist directories
 ^Test-Simple-
 ^Test2-*
 
@@ -76,36 +74,21 @@
 ^profile
 ^profiling/
 
-# For github testing
-^\.travis\.yml$
+# CI config (project uses GitHub Actions)
+\.travis\.yml
+appveyor\.yml
 
 ^MANIFEST\.SKIP$
 
-# I never want this to go out.
-^test\.pl$
-
-^POD_TEMPLATE\.pod$
+# I never want these to go out.
+test\.pl
+POD_TEMPLATE\.pod
+POD_TEMPLATE\.POD
 
 # The extra tests are for dist author testing only
 \bxt
 
-# For github testing
-.travis.yml
-
 dist.ini
-
-MANIFEST.SKIP
-
-# I never want this to go out.
-test.pl
-
-POD_TEMPLATE.pod
-
-^Test2-*
-
-^profiling/
 
 t2_lib
 t2s_lib
-
-POD_TEMPLATE.POD
