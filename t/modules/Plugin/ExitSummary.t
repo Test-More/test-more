@@ -85,4 +85,49 @@ like(
     "Bad exit code"
 );
 
+$exit = 0;
+$new = 0;
+like(
+    intercept {
+        plan 2;
+        ok(1);
+        ok(0);
+        my $ctx = context(level => -1);
+        $summary->($ctx, $exit, \$new);
+        $ctx->release;
+    },
+    array {
+        event Plan => { max => 2 };
+        event Ok => { pass => 1 };
+        event Ok => { pass => 0 };
+        event Diag => {};  # "Failed test" diagnostic from ok(0)
+        event Diag => {message => 'Looks like you failed 1 test of 2.'};
+        end
+    },
+    "Failed test count reported"
+);
+
+like(
+    intercept {
+        plan 3;
+        ok(0);
+        ok(0);
+        ok(1);
+        my $ctx = context(level => -1);
+        $summary->($ctx, $exit, \$new);
+        $ctx->release;
+    },
+    array {
+        event Plan => { max => 3 };
+        event Ok => { pass => 0 };
+        event Diag => {};  # "Failed test" diagnostic from first ok(0)
+        event Ok => { pass => 0 };
+        event Diag => {};  # "Failed test" diagnostic from second ok(0)
+        event Ok => { pass => 1 };
+        event Diag => {message => 'Looks like you failed 2 tests of 3.'};
+        end
+    },
+    "Failed test count reported (plural)"
+);
+
 done_testing();
