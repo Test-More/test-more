@@ -1545,6 +1545,7 @@ B<Note: None of these are exported by default. You need to request them.>
         prop isa     => 'My::Base';   # Ensure value is an instance of our class
         prop size    => 4;            # Check the number of hash keys
         prop this    => ...;          # Check the item itself
+        prop role    => 'My::Role';   # Ensure value does the role (if using Role::Tiny)
     };
 
 =over 4
@@ -1587,6 +1588,11 @@ The thing itself.
 
 For array references this returns the number of elements. For hashes this
 returns the number of keys. For everything else this returns undef.
+
+=item 'role'
+
+Check if the item has the expected role composed. It uses
+L<Role::Tiny/"does_role"> to achieve this.
 
 =back
 
@@ -1733,6 +1739,11 @@ The thing itself.
 
 For array references this returns the number of elements. For hashes this
 returns the number of keys. For everything else this returns undef.
+
+=item 'role'
+
+Check if the item has the expected role composed. It uses
+L<Role::Tiny/"does_role"> to achieve this.
 
 =back
 
