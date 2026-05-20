@@ -188,7 +188,8 @@ sub _generate_class {
     my $prefix = __PACKAGE__;
 
     for (1 .. 100) {
-        my $postfix = join '', map { chr(rand(26) + 65) } 1 .. 32;
+        my $postfix = join '', map { chr(utf8::unicode_to_native(rand(26) + 65))
+                                   } 1 .. 32;
         my $class = $prefix . '::__TEMP__::' . $postfix;
         my $file = $class;
         $file =~ s{::}{/}g;
