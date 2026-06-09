@@ -6,7 +6,9 @@
 
 {{$NEXT}}
 
+    - Add [PruneCruft] to dist.ini so build artifacts (blib/, pm_to_blib, MYMETA.*) no longer leak into release tarballs.
     - Remove Net::BitTorrent from broken list
+    - Amend tests to adapt to more accurate line number reporting in core (#1080)
 
 1.302219  2025-12-08 16:09:01-08:00 America/Los_Angeles
 
