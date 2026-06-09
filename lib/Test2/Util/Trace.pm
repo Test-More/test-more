@@ -6,7 +6,7 @@ use strict;
 
 our @ISA = ('Test2::EventFacet::Trace');
 
-our $VERSION = '1.302220';
+our $VERSION = '1.302221';
 
 1;
 
