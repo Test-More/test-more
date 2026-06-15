@@ -8,6 +8,8 @@
 
 1.302221  2026-06-13 22:12:23-07:00 America/Los_Angeles
 
+    - EBDIC fixes
+
 1.302220  2026-06-09 15:49:19-07:00 America/Los_Angeles
 
     - Add [PruneCruft] to dist.ini so build artifacts (blib/, pm_to_blib, MYMETA.*) no longer leak into release tarballs.
