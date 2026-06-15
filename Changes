@@ -6,6 +6,9 @@
 
 {{$NEXT}}
 
+    - Add missing Changes entry
+    - Fix test that fails on some windows versions due to path seperators
+
 1.302221  2026-06-13 22:12:23-07:00 America/Los_Angeles
 
     - EBDIC fixes
