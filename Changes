@@ -9,7 +9,7 @@
 1.302222  2026-06-15 10:18:50-07:00 America/Los_Angeles
 
     - Add missing Changes entry
-    - Fix test that fails on some windows versions due to path seperators
+    - Fix test that fails on some windows versions due to path separators
 
 1.302221  2026-06-13 22:12:23-07:00 America/Los_Angeles
 
