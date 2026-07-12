@@ -15,7 +15,7 @@ use Test::More;
 use Test::Builder;
 my $Test = Test::Builder->new;
 
-$Test->plan( tests => 9 );
+$Test->plan( tests => 10 );
 $Test->level(0);
 
 my @Expected_Details;
@@ -45,6 +45,7 @@ push @Expected_Details, { 'ok'      => 1,
                           type      => 'skip',
                           reason    => 'just testing skip',
                         };
+
 
 TODO: {
     local $TODO = 'i need a todo';
@@ -93,6 +94,19 @@ $Test->is_num( scalar @details, 6,
 $Test->level(1);
 is_deeply( \@details, \@Expected_Details );
 
+{
+	SKIP: {
+		$Test->skip( 'testing skip with message', 'test message' );
+	}
+
+	push @Expected_Details, {
+		ok        => 1,
+		actual_ok => 1,
+		name      => 'test message',
+		type      => 'skip',
+		reason    => 'testing skip with message',
+	};
+}
 
 # This test has to come last because it thrashes the test details.
 {
@@ -103,3 +117,4 @@ is_deeply( \@details, \@Expected_Details );
     $Test->current_test($curr_test);
     $Test->is_num( scalar @details, 4 );
 }
+
