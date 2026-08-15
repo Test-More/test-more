@@ -7,6 +7,8 @@
 {{$NEXT}}
 
     - Typo Fix
+    - Ship AI_AND_LLM_POLICY.txt, the contributor policy for AI and LLM generated code.
+    - Stop shipping perltidyrc and repository-only markdown files.
 
 1.302222  2026-06-15 10:18:50-07:00 America/Los_Angeles
 

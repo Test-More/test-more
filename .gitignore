@@ -21,4 +21,5 @@ template.POD
 template.pod
 test*.pl
 test.pl
-CLAUDE.md
+/.claude/
+/worktrees/
