@@ -107,3 +107,18 @@ YAML
 YAML::Syck
 forks
 version
+
+# Known-broken entries, merged from the old xt/downstream_dists.list.known_broken.
+# That file recorded no reasons; where dist.ini [Breaks] names a version bound,
+# it is repeated here. Entries are removed automatically once they install again.
+Test::Aggregate      # known-broken since before 2026-08-15: dist.ini [Breaks] declares <= 0.373
+Test::Wrapper        # known-broken since before 2026-08-15: dist.ini [Breaks] declares <= 0.3.0
+Test::ParallelSubtest # known-broken since before 2026-08-15: dist.ini [Breaks] declares <= 0.05
+Test::Pretty         # known-broken since before 2026-08-15: dist.ini [Breaks] declares <= 0.32
+Test::Kit            # known-broken since before 2026-08-15: reason not recorded
+Test::Group          # known-broken since before 2026-08-15: dist.ini [Breaks] declares <= 0.20
+Test::Flatten        # known-broken since before 2026-08-15: dist.ini [Breaks] declares <= 0.11
+Test2::Harness       # known-broken since before 2026-08-15: dist.ini [Breaks] declares <= 0.000013
+Lexical::Types       # known-broken since before 2026-08-15: reason not recorded
+Test::Class::Moose   # known-broken since before 2026-08-15: reason not recorded
+Test::Mocha          # known-broken since before 2026-08-15: reason not recorded

@@ -1,0 +1,717 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use Cwd qw/abs_path/;
+use File::Basename qw/basename dirname/;
+use File::Path qw/make_path remove_tree/;
+use File::Spec;
+use Getopt::Long qw/GetOptionsFromArray/;
+use JSON::PP;
+use POSIX qw/strftime/;
+
+my $ROOT      = dirname(dirname(abs_path(__FILE__)));
+my $DATA      = File::Spec->catdir($ROOT, 'agent_scripts', 'downstream');
+my $LIST      = File::Spec->catfile($DATA, 'dists.list');
+my $RUNS      = File::Spec->catdir($DATA, 'runs');
+my $LIB_TAG   = 'TestMore';
+my $MAJORS    = 5;                  # stable majors offered, newest first
+my $DEFAULT_J = 8;                  # downstream test concurrency
+my $BUILD_J   = 16;                 # perl build concurrency
+my $PERLBREW;
+
+my %COMMANDS = (
+    perls    => \&cmd_perls,
+    build    => \&cmd_build,
+    setup    => \&cmd_setup,
+    run      => \&cmd_run,
+    baseline => \&cmd_baseline,
+    report   => \&cmd_report,
+    clean    => \&cmd_clean,
+);
+
+main(@ARGV) unless caller();
+
+sub main {
+    my @argv = @_;
+
+    my $command = shift(@argv) || '';
+    usage("Unknown command '$command'") unless $COMMANDS{$command};
+    $COMMANDS{$command}->(\@argv);
+    exit(0);
+}
+
+sub usage {
+    my ($msg) = @_;
+    print STDERR "$msg\n\n" if $msg;
+    print STDERR "usage: verify-downstream <perls|build|setup|run|baseline|report|clean> [options]\n";
+    print STDERR "See 'perldoc $0' for the full procedure.\n";
+    exit($msg ? 1 : 0);
+}
+
+#
+# Commands
+#
+
+sub cmd_perls {
+    my ($argv) = @_;
+    my $all = 0;
+    GetOptionsFromArray($argv, 'all' => \$all) or usage('bad options for perls');
+
+    my @perls = available_perls();
+    @perls = @perls[0 .. $MAJORS - 1] if !$all && @perls > $MAJORS;
+
+    print "Perls available to install (newest stable of each major):\n";
+    print "  $_\n" for @perls;
+    print "\nAny older perl may be named explicitly; it is simply not offered here.\n";
+    return;
+}
+
+sub cmd_build {
+    my ($argv) = @_;
+    my %before = map { $_ => 1 } glob('*.tar.gz');
+
+    run_or_die(['dzil', 'build'], "dzil build failed");
+
+    my ($tarball) = grep { !$before{$_} } glob('*.tar.gz');
+    die "dzil build produced no new tarball\n" unless $tarball;
+
+    print "Built $tarball\n";
+    return;
+}
+
+sub cmd_setup {
+    my ($argv) = @_;
+    my ($version, $tarball, $jobs, $threads) = (undef, undef, $DEFAULT_J, 0);
+    GetOptionsFromArray(
+        $argv,
+        'perl=s'    => \$version,
+        'tarball=s' => \$tarball,
+        'jobs=i'    => \$jobs,
+        'threads'   => \$threads,
+    ) or usage('bad options for setup');
+
+    die "--perl is required; run 'verify-downstream perls' and ask the owner which to use\n"
+        unless $version;
+
+    $tarball ||= sole_tarball();
+
+    install_perl($version);
+    my $perl = $threads ? "${version}_thr" : "${version}_no_thr";
+
+    my $run_id = strftime('%Y%m%d-%H%M%S', localtime());
+    my $dir    = File::Spec->catdir($RUNS, $run_id);
+    make_path(File::Spec->catdir($dir, 'logs'));
+
+    my $lib = "$perl\@$LIB_TAG-$run_id";
+    run_or_die([perlbrew(), 'lib', 'create', $lib], "could not create perlbrew lib '$lib'");
+
+    my $state = {
+        run_id  => $run_id,
+        created => strftime('%Y-%m-%d %H:%M:%S', localtime()),
+        perl    => $perl,
+        lib     => $lib,
+        tarball => abs_path($tarball),
+        jobs    => $jobs,
+        dists   => {},
+    };
+    write_state($dir, $state);
+
+    print "Run $run_id: $perl, lib $lib, tarball " . basename($tarball) . "\n";
+
+    step($dir, $state, 'cpanm',    [perlbrew(), 'exec', '--with', $lib, 'cpan', 'App::cpanminus']);
+    step($dir, $state, 'prereqs',  [cpanm_cmd($lib), 'LWP', 'Test2::Harness']);
+    step($dir, $state, 'prereqs2', [cpanm_cmd($lib), '-n', '-f', 'Archive::Zip', 'IO::Socket::SSL', 'Net::SSLeay']);
+    step($dir, $state, 'tarball',  [cpanm_cmd($lib), $state->{tarball}]);
+
+    print "Setup complete. Next: verify-downstream run\n";
+    return;
+}
+
+sub cmd_run {
+    my ($argv) = @_;
+    my ($run_id, $jobs, $retry, $list) = (undef, undef, 1, $LIST);
+    GetOptionsFromArray(
+        $argv,
+        'run-id=s' => \$run_id,
+        'jobs=i'   => \$jobs,
+        'retry!'   => \$retry,
+        'list=s'   => \$list,
+    ) or usage('bad options for run');
+
+    my $dir   = run_dir($run_id);
+    my $state = read_state($dir);
+    $state->{jobs} = $jobs if $jobs;
+
+    my $entries = read_list($list);
+    my @recovered;
+
+    for my $entry (@$entries) {
+        my $name = $entry->{name};
+        my $rec  = {expected => $entry->{known_broken} ? 'broken' : 'pass', attempts => []};
+
+        my $ok = install_dist($dir, $state, $name, 'parallel', $rec);
+
+        if (!$ok && $retry) {
+            print "  retrying '$name' without test concurrency\n";
+            $ok = install_dist($dir, $state, $name, 'serial', $rec);
+            $rec->{serial_only} = 1 if $ok;
+        }
+
+        $rec->{status}         = classify($rec, $ok);
+        $state->{dists}{$name} = $rec;
+        push @recovered => $name if $rec->{status} eq 'recovered';
+
+        printf("%-40s %s\n", $name, $rec->{status});
+        write_state($dir, $state);
+    }
+
+    retire_known_broken(\@recovered, $list) if @recovered;
+
+    print "\n";
+    cmd_report(['--run-id', $state->{run_id}]);
+    return;
+}
+
+sub cmd_baseline {
+    my ($argv) = @_;
+    my ($run_id, $version) = (undef, undef);
+    GetOptionsFromArray(
+        $argv,
+        'run-id=s'  => \$run_id,
+        'version=s' => \$version,
+    ) or usage('bad options for baseline');
+
+    my $dir   = run_dir($run_id);
+    my $state = read_state($dir);
+
+    my @failed = sort grep { $state->{dists}{$_}{status} eq 'fail' } keys(%{$state->{dists}});
+    unless (@failed) {
+        print "No failures to baseline.\n";
+        return;
+    }
+
+    my $lib = "$state->{perl}\@$LIB_TAG-$state->{run_id}-baseline";
+    unless ($state->{baseline_lib}) {
+        run_or_die([perlbrew(), 'lib', 'create', $lib], "could not create baseline lib '$lib'");
+        $state->{baseline_lib} = $lib;
+        write_state($dir, $state);
+
+        my $release = $version ? "Test::Simple\@$version" : 'Test::Simple';
+        step($dir, $state, 'baseline-cpanm',   [perlbrew(), 'exec', '--with', $lib, 'cpan', 'App::cpanminus']);
+        step($dir, $state, 'baseline-prereqs', [cpanm_cmd($lib), 'LWP', 'Test2::Harness']);
+        step($dir, $state, 'baseline-prereqs2',[cpanm_cmd($lib), '-n', '-f', 'Archive::Zip', 'IO::Socket::SSL', 'Net::SSLeay']);
+        step($dir, $state, 'baseline-release', [cpanm_cmd($lib), $release]);
+    }
+
+    print "Baselining " . scalar(@failed) . " failure(s) against the released Test-Simple\n";
+
+    for my $name (@failed) {
+        my $log = log_path($dir, "baseline-$name");
+        my $ok  = run_logged([cpanm_cmd($state->{baseline_lib}), '--reinstall', $name], $log, {});
+
+        $state->{dists}{$name}{baseline} = {
+            ok     => $ok ? JSON::PP::true : JSON::PP::false,
+            log    => $log,
+            status => $ok ? 'new-failure' : 'already-broken',
+        };
+        printf("%-40s %s\n", $name, $state->{dists}{$name}{baseline}{status});
+        write_state($dir, $state);
+    }
+
+    print "\n";
+    cmd_report(['--run-id', $state->{run_id}]);
+    return;
+}
+
+sub cmd_report {
+    my ($argv) = @_;
+    my ($run_id, $json) = (undef, 0);
+    GetOptionsFromArray($argv, 'run-id=s' => \$run_id, 'json' => \$json)
+        or usage('bad options for report');
+
+    my $dir   = run_dir($run_id);
+    my $state = read_state($dir);
+
+    if ($json) {
+        print JSON::PP->new->canonical->pretty->encode($state);
+        return;
+    }
+
+    my %by_status;
+    push @{$by_status{$state->{dists}{$_}{status}}} => $_ for keys(%{$state->{dists}});
+
+    print "Run $state->{run_id}\n";
+    print "  perl:    $state->{perl}\n";
+    print "  lib:     $state->{lib}\n";
+    print "  tarball: " . basename($state->{tarball}) . "\n";
+    print "  logs:    " . File::Spec->catdir($dir, 'logs') . "\n\n";
+
+    for my $status (qw/fail serial-only recovered known-broken pass/) {
+        my $names = $by_status{$status} or next;
+        printf("%-14s %d\n", $status, scalar(@$names));
+        next if $status eq 'pass';
+
+        for my $name (sort @$names) {
+            my $rec  = $state->{dists}{$name};
+            my $note = $rec->{baseline} ? " [$rec->{baseline}{status}]" : '';
+            print "    $name$note\n";
+        }
+    }
+
+    my @unbaselined = grep { !$state->{dists}{$_}{baseline} } @{$by_status{fail} || []};
+    print "\nNext: verify-downstream baseline (" . scalar(@unbaselined) . " failure(s) unexplained)\n"
+        if @unbaselined;
+
+    return;
+}
+
+sub cmd_clean {
+    my ($argv) = @_;
+    my ($run_id, $orphans) = (undef, 0);
+    GetOptionsFromArray($argv, 'run-id=s' => \$run_id, 'orphans' => \$orphans)
+        or usage('bad options for clean');
+
+    if ($orphans) {
+        my @live = map { basename($_) } grep { -d $_ } glob(File::Spec->catdir($RUNS, '*'));
+        my %live = map { $_ => 1 } @live;
+
+        for my $lib (perlbrew_libs()) {
+            next unless $lib =~ m{\@$LIB_TAG-(.+)$};
+            my $id = $1;
+            $id =~ s{-baseline$}{};
+            next if $live{$id};
+
+            print "Deleting orphaned lib $lib\n";
+            run_or_warn([perlbrew(), 'lib', 'delete', $lib]);
+        }
+        return;
+    }
+
+    my $dir   = run_dir($run_id);
+    my $state = read_state($dir);
+
+    for my $lib (grep { $_ } $state->{lib}, $state->{baseline_lib}) {
+        print "Deleting lib $lib\n";
+        run_or_warn([perlbrew(), 'lib', 'delete', $lib]);
+    }
+
+    print "Removing $dir\n";
+    remove_tree($dir);
+    return;
+}
+
+#
+# Dist list
+#
+
+sub read_list {
+    my ($file) = @_;
+    $file ||= $LIST;
+
+    open(my $fh, '<', $file) or die "Could not open '$file': $!\n";
+
+    my @entries;
+    while (my $line = <$fh>) {
+        chomp($line);
+        next if $line =~ m{^\s*(#|$)};
+
+        my ($name, $comment) = split(m{\s+#\s*}, $line, 2);
+        $name =~ s{\s+$}{};
+        die "Refusing to shell out with suspicious dist name '$name'\n"
+            unless $name =~ m{^[\w:.+-]+$};
+
+        push @entries => {
+            name         => $name,
+            known_broken => (defined($comment) && $comment =~ m{^known-broken}) ? 1 : 0,
+            comment      => $comment,
+        };
+    }
+
+    return \@entries;
+}
+
+sub retire_known_broken {
+    my ($names, $file) = @_;
+    $file ||= $LIST;
+    my %retire = map { $_ => 1 } @$names;
+
+    open(my $in, '<', $file) or die "Could not open '$file': $!\n";
+    my @lines = <$in>;
+
+    for my $line (@lines) {
+        next unless $line =~ m{^(\S+)\s+#\s*known-broken};
+        next unless $retire{$1};
+        $line = "$1\n";
+    }
+
+    open(my $out, '>', "$file.tmp") or die "Could not write '$file.tmp': $!\n";
+    print $out @lines;
+    close($out) or die "Could not write '$file.tmp': $!\n";
+    rename("$file.tmp", $file) or die "Could not replace '$file': $!\n";
+
+    print "Retired known-broken marker for: " . join(', ', @$names) . "\n";
+    print "That edit is mechanical. Adding a new known-broken entry is not -- the owner decides.\n";
+    return;
+}
+
+#
+# Running things
+#
+
+sub install_dist {
+    my ($dir, $state, $name, $mode, $rec) = @_;
+
+    my $log = log_path($dir, "$name-$mode");
+    my $env = $mode eq 'parallel' ? {HARNESS_OPTIONS => "j$state->{jobs}"} : {HARNESS_OPTIONS => undef};
+    my $ok  = run_logged([cpanm_cmd($state->{lib}), '--reinstall', $name], $log, $env);
+
+    push @{$rec->{attempts}} => {mode => $mode, ok => $ok ? JSON::PP::true : JSON::PP::false, log => $log};
+    return $ok;
+}
+
+sub classify {
+    my ($rec, $ok) = @_;
+
+    return 'recovered'    if $ok  && $rec->{expected} eq 'broken';
+    return 'pass'         if $ok  && !$rec->{serial_only};
+    return 'serial-only'  if $ok;
+    return 'known-broken' if $rec->{expected} eq 'broken';
+    return 'fail';
+}
+
+sub step {
+    my ($dir, $state, $name, $cmd) = @_;
+
+    my $log = log_path($dir, "setup-$name");
+    print "  $name\n";
+    run_logged($cmd, $log, {}) or die "Setup step '$name' failed, see $log\n";
+    return;
+}
+
+sub run_logged {
+    my ($cmd, $log, $env) = @_;
+
+    my $pid = fork() // die "Failed to fork: $!";
+
+    unless ($pid) {
+        open(STDOUT, '>', $log)  or die "Could not open '$log': $!";
+        open(STDERR, '>&', \*STDOUT) or die "Could not dup STDOUT: $!";
+
+        for my $key (keys(%$env)) {
+            if (defined $env->{$key}) { $ENV{$key} = $env->{$key} }
+            else                      { delete $ENV{$key} }
+        }
+        delete $ENV{$_} for qw/HARNESS_ACTIVE HARNESS_IS_VERBOSE HARNESS_VERSION PERL5LIB TAP_VERSION TEST_VERBOSE/;
+
+        exec(@$cmd);
+        die "Could not exec '$cmd->[0]': $!";
+    }
+
+    waitpid($pid, 0);
+    return $? == 0;
+}
+
+sub run_or_die {
+    my ($cmd, $msg) = @_;
+    return if system(@$cmd) == 0;
+    die "$msg\n";
+}
+
+sub run_or_warn {
+    my ($cmd) = @_;
+    warn "Command failed: @$cmd\n" unless system(@$cmd) == 0;
+    return;
+}
+
+sub capture {
+    my ($cmd) = @_;
+    open(my $fh, '-|', @$cmd) or die "Could not run '$cmd->[0]': $!\n";
+    my @out = <$fh>;
+    return \@out;
+}
+
+#
+# perlbrew
+#
+
+sub perlbrew {
+    return $PERLBREW if $PERLBREW;
+
+    my $root = $ENV{PERLBREW_ROOT} || File::Spec->catdir($ENV{HOME}, 'perl5', 'perlbrew');
+    my @candidates = File::Spec->catfile($root, 'bin', 'perlbrew');
+    push @candidates => map { File::Spec->catfile($_, 'perlbrew') } File::Spec->path();
+
+    for my $path (@candidates) {
+        next unless -x $path;
+        $PERLBREW = $path;
+        return $PERLBREW;
+    }
+
+    die "Could not find the perlbrew executable\n";
+}
+
+sub cpanm_cmd {
+    my ($lib) = @_;
+    return (perlbrew(), 'exec', '--with', $lib, 'cpanm');
+}
+
+sub perlbrew_libs {
+    my @libs = map { m{^\s*(\S+)} ? $1 : () } @{capture([perlbrew(), 'list'])};
+    return grep { m{\@} } @libs;
+}
+
+sub installed_perls {
+    return map { m{^\s*(\S+)} ? $1 : () } grep { !m{\@} } @{capture([perlbrew(), 'list'])};
+}
+
+sub available_perls {
+    my %newest;
+
+    for my $line (@{capture([perlbrew(), 'available'])}) {
+        next unless $line =~ m{perl-(5\.(\d+)\.(\d+))};
+        my ($version, $major, $patch) = ($1, $2, $3);
+        next if $major % 2;    # odd majors are development releases
+
+        $newest{$major} = $version if !$newest{$major} || $patch > version_patch($newest{$major});
+    }
+
+    return map { $newest{$_} } sort { $b <=> $a } keys(%newest);
+}
+
+sub version_patch {
+    my ($version) = @_;
+    return $version =~ m{^5\.\d+\.(\d+)} ? $1 : 0;
+}
+
+# Perls are installed in pairs, threaded and unthreaded, named <version>_thr
+# and <version>_no_thr. Both are built even though a run only uses one, so the
+# box always has the pair this account expects.
+sub install_perl {
+    my ($version) = @_;
+
+    my %have = map { $_ => 1 } installed_perls();
+    return if $have{"${version}_no_thr"} && $have{"${version}_thr"};
+
+    print "perl $version is not fully installed; building it now. This takes a while.\n";
+    run_or_die([perlbrew(), 'install-patchperl'], "could not update patchperl");
+    run_or_die([perlbrew(), 'install-cpanm'],     "could not update cpanm");
+
+    my @common = ('--noman', '-n', '-j', $BUILD_J);
+
+    run_or_die([perlbrew(), 'install', '--as', "${version}_no_thr", @common, $version],
+        "could not install ${version}_no_thr")
+        unless $have{"${version}_no_thr"};
+
+    run_or_die([perlbrew(), 'install', '--as', "${version}_thr", @common, '--thread', $version],
+        "could not install ${version}_thr")
+        unless $have{"${version}_thr"};
+
+    return;
+}
+
+#
+# Run state
+#
+
+sub run_dir {
+    my ($run_id) = @_;
+
+    unless ($run_id) {
+        my @dirs = sort grep { -d $_ } glob(File::Spec->catdir($RUNS, '*'));
+        die "No runs found; start with 'verify-downstream setup --perl ...'\n" unless @dirs;
+        return $dirs[-1];
+    }
+
+    my $dir = File::Spec->catdir($RUNS, $run_id);
+    die "No such run '$run_id'\n" unless -d $dir;
+    return $dir;
+}
+
+sub log_path {
+    my ($dir, $name) = @_;
+    $name =~ s{[^\w.-]+}{_}g;
+    return File::Spec->catfile($dir, 'logs', "$name.log");
+}
+
+sub state_file {
+    my ($dir) = @_;
+    return File::Spec->catfile($dir, 'state.json');
+}
+
+sub read_state {
+    my ($dir) = @_;
+
+    my $file = state_file($dir);
+    open(my $fh, '<', $file) or die "Could not open '$file': $!\n";
+    local $/;
+    return JSON::PP->new->decode(<$fh>);
+}
+
+sub write_state {
+    my ($dir, $state) = @_;
+
+    my $file = state_file($dir);
+    open(my $fh, '>', "$file.tmp") or die "Could not write '$file.tmp': $!\n";
+    print $fh JSON::PP->new->canonical->pretty->encode($state);
+    close($fh) or die "Could not write '$file.tmp': $!\n";
+    rename("$file.tmp", $file) or die "Could not replace '$file': $!\n";
+    return;
+}
+
+sub sole_tarball {
+    my @tarballs = glob('*.tar.gz');
+    die "No tarball found; run 'verify-downstream build' first\n" unless @tarballs;
+    die "More than one tarball present, pass --tarball: @tarballs\n" if @tarballs > 1;
+    return $tarballs[0];
+}
+
+__END__
+
+=head1 NAME
+
+verify-downstream - install downstream distributions against a candidate
+Test-Simple tarball and classify what breaks
+
+=head1 SYNOPSIS
+
+    # from the repository root
+    agent_scripts/verify-downstream perls
+    agent_scripts/verify-downstream build
+    agent_scripts/verify-downstream setup --perl 5.42.0
+    agent_scripts/verify-downstream run
+    agent_scripts/verify-downstream baseline
+    agent_scripts/verify-downstream report
+    agent_scripts/verify-downstream clean --run-id 20260815-161200
+
+=head1 DESCRIPTION
+
+Test-Simple sits underneath most of CPAN, so a release is verified by
+installing a list of downstream distributions against the candidate tarball and
+finding out what stops working. This tool does the mechanical half of that job.
+Deciding what a failure I<means>, and what to do about it, is the owner's call.
+
+It replaces the old C<xt/downstream.t>, which did the same installs but
+reported them as TAP, kept no logs, and deleted its evidence whenever the run
+succeeded.
+
+=head2 Commands
+
+=over 4
+
+=item perls
+
+List the perls to offer the owner: the newest stable release of each of the
+last five majors that C<perlbrew available> can install. Perl ships roughly one
+stable major a year, so this is the five-year window. An older perl may always
+be named explicitly with C<setup --perl>; it is simply not offered.
+
+=item build
+
+Run C<dzil build> and report the tarball it produced.
+
+=item setup --perl VERSION [--threads] [--tarball FILE] [--jobs N]
+
+Install the perl if it is missing, create a perlbrew library for this run,
+install C<cpanm>, seed the awkward prerequisites, and install the candidate
+tarball. Creates the run directory and C<state.json>.
+
+C<--perl> takes a plain version such as C<5.42.0>. Perls are installed in
+pairs under this account, C<< <version>_no_thr >> and C<< <version>_thr >>,
+built with C<--noman -n -j16>, with C<patchperl> and C<cpanm> updated first.
+Both are built even though a run uses one. Runs use the unthreaded perl unless
+C<--threads> is given.
+
+=item run [--run-id ID] [--jobs N] [--no-retry]
+
+Install every distribution in F<agent_scripts/downstream/dists.list>, serially,
+capturing each install's output to its own log.
+
+The first attempt runs with C<HARNESS_OPTIONS=jN> so each downstream suite
+tests in parallel. A failure is retried once with C<HARNESS_OPTIONS> cleared,
+because some suites cannot pass under concurrency. That split is the
+classification:
+
+    pass          installed on the first attempt
+    serial-only   failed in parallel, passed serially -- downstream concurrency
+                  problem, not a Test-Simple regression
+    fail          failed both ways -- needs baselining
+    known-broken  failed, and the list says it was already broken
+    recovered     the list says it is broken, but it installed
+
+=item baseline [--run-id ID] [--version V]
+
+Create a second perlbrew library, install the released Test-Simple from CPAN
+into it, and retry only the C<fail> distributions there. A distribution that
+fails against the release too is C<already-broken>; one that passes is a
+C<new-failure> and is this candidate's problem.
+
+=item report [--run-id ID] [--json]
+
+Summarise the run: counts per status, the distributions in each, and where the
+logs are.
+
+=item clean [--run-id ID] | clean --orphans
+
+Delete a run's perlbrew libraries and its run directory, or reap leftover
+C<@TestMore-*> libraries with no run directory. Nothing is deleted
+automatically -- a failed run's library is the evidence.
+
+=back
+
+=head2 The distribution list
+
+F<agent_scripts/downstream/dists.list> is one distribution per line. A
+known-broken entry carries its reason inline:
+
+    Test::Aggregate  # known-broken since 1.302150: relies on Test::Builder
+                     internals removed in the Test2 overhaul
+
+C<run> B<removes> that marker automatically when the distribution installs
+again -- the list drifts stale otherwise. It never B<adds> one. Marking a
+breakage acceptable is an owner decision, so a new C<known-broken> line is
+written only after the owner rules on it.
+
+=head1 PROCEDURE FOR AGENTS
+
+=over 4
+
+=item 1. Ask which perl.
+
+Run C<verify-downstream perls> and ask the owner to choose. Do not pick one.
+Report the choice in the final summary -- a result means nothing without the
+perl it was produced on.
+
+=item 2. Build and set up.
+
+C<build>, then C<setup --perl ...>. Setup may need to install a perl first,
+which takes a while.
+
+=item 3. Run the list.
+
+C<run>. It is slow. Nothing needs watching; the state file and logs are on
+disk as it goes, and the run can be resumed by re-running the command.
+
+=item 4. Explain every failure.
+
+C<baseline> separates C<already-broken> from C<new-failure> mechanically. For
+anything still unexplained, read the captured log, and cross-check CPAN
+Testers for that distribution -- see C<~/projects/Agents/CPAN_TESTERS.md>. A
+distribution already failing on CPAN Testers against the released Test-Simple
+is corroboration, not proof; the baseline run is the stronger signal.
+
+=item 5. Report to the owner.
+
+Give the perl, the tarball, and each failure with its classification, the
+evidence behind it, and what you believe the cause is. The owner decides what
+to fix, what to accept, and what goes on the known-broken list. Do not add a
+known-broken entry yourself.
+
+=back
+
+=head1 SEE ALSO
+
+L<RULINGS.md> under "Downstream verification is a tool, not a test" for why
+this exists in this shape.
+
+=cut

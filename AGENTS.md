@@ -96,10 +96,11 @@ thing to a design document.
 
 - 370 test files. `-Ilib` is required — several tests load modules that also
   exist in the installed perl.
-- `xt/author/pod-spell.t` runs under `AUTHOR_TESTING`, which the wrapper sets.
-- `xt/downstream.t` builds real downstream distributions against this
-  checkout. It is excluded from the distribution and only worth running when a
-  change could affect downstream behavior; it is slow and needs network.
+- `xt/author/pod-spell.t` is not reached by either the command above or a
+  release. `MANIFEST.SKIP` matches `\bxt`, so `[ManifestSkip]` prunes the whole
+  directory out of the build and `[RunExtraTests]` finds nothing. Run it by
+  hand — `prove -Ilib xt/author/pod-spell.t` — when POD changes.
+- Downstream verification is **not** part of the suite. See below.
 - CI covers perl 5.8 through the current release on Linux, macOS, and Windows.
 
 ### Test layout
@@ -109,6 +110,20 @@ The existing layout is kept as it is: `t/{acceptance,behavior,modules,regression
 New tests written by an agent go under `t/AI/`, mirroring that layout. Editing
 an existing test in place is fine and does not move it. Full rule:
 `AGENTS_OVERRIDE.md` under "Test layout and provenance".
+
+### Downstream verification
+
+`agent_scripts/verify-downstream` installs a list of downstream distributions
+against a candidate tarball in a throwaway perlbrew library, then classifies
+what broke. It takes hours, needs network, and is run when asked — never as
+part of ordinary test runs, and never on your own initiative.
+
+```
+perldoc agent_scripts/verify-downstream
+```
+
+Read that first: it carries the procedure, including the rule that the owner
+chooses the perl and the owner decides what a failure means.
 
 ---
 

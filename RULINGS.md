@@ -18,6 +18,70 @@ see `~/projects/Agents/AGENTS.md` under "What earns a place in `RULINGS.md`".
 
 ---
 
+## 2026-08-15 — Downstream verification is a tool, not a test
+
+**Ruling: `xt/downstream.t` is replaced by `agent_scripts/verify-downstream`.**
+
+The `.t` asserted nothing about this library — every `ok()` only checked that
+`cpanm` exited zero. It never ran in CI or at install time (gated behind
+`DOWNSTREAM_TESTS`, excluded from the distribution), hardcoded one perlbrew
+perl, discovered its tarball by globbing the working directory, and cleaned up
+its perlbrew library only when everything passed — four orphaned libraries
+were sitting on the development box from past failures. It produced no
+structured result and captured no logs, and it had no support for the triage
+that actually follows a failure.
+
+Decided so far:
+
+- The tool and its data live in `agent_scripts/`, excluded from the
+  distribution.
+- `xt/downstream.t` is deleted. The two lists move to
+  `agent_scripts/downstream/dists.list` and
+  `agent_scripts/downstream/known-broken.list` with `git mv`, keeping their
+  history. `dist.ini` swaps the `^xt/downstream` exclusion for
+  `^agent_scripts/`.
+
+- Failures are classified mechanically. `verify-downstream baseline` installs
+  the previous CPAN release of `Test-Simple` into a second perlbrew library and
+  retries only the recorded failures, separating `already-broken` from
+  `new-failure`.
+- CPAN Testers is not queried by the tool. The agent checks it during triage,
+  so a network failure never blocks a verification run.
+- Installs stay serial, one attempt, with `HARNESS_OPTIONS=j8` so each
+  downstream suite runs its own tests in parallel. A retry drops
+  `HARNESS_OPTIONS` entirely — some suites do not pass under concurrency — so
+  a dist that fails in parallel and passes serially is classified
+  `serial-only` rather than counted as a regression.
+
+- One annotated list, not two. A known-broken entry carries when it broke and
+  why: `Test::Aggregate  # known-broken since 1.302150: relies on
+  Test::Builder internals removed in the Test2 overhaul`. The existing
+  known-broken file has no reasons at all, which is why nobody can retire an
+  entry from it.
+- The tool **removes** a known-broken annotation automatically when that dist
+  starts passing, on every run — the current list is stale and several entries
+  are believed fixed. It **never adds** one: a new breakage is only marked
+  acceptable by the owner, and that is not a decision an agent can make.
+
+- Each run keeps a directory under `agent_scripts/downstream/runs/<timestamp>/`
+  (gitignored): `state.json` plus the captured `cpanm` log for every dist. The
+  state file is what makes the failure → baseline → report chain resumable,
+  and the logs are the difference between triage and guesswork.
+- Documentation lives in the tool's POD. `AGENTS.md` points at it rather than
+  repeating it.
+- **The perl is the owner's choice, asked before every run.** The agent offers
+  the last five stable majors that `perlbrew available` can install — latest
+  `.Y` of each `5.X`, newest first, one line each — and the owner may name any
+  older perl instead. Perl ships roughly one stable major a year, so five
+  majors is the five-year window without a release-date lookup. The perl used
+  is recorded in `state.json` and named in every report.
+- The perlbrew library is kept after a run. `verify-downstream clean <run-id>`
+  removes one; `clean --orphans` reaps stale `@TestMore*` libraries.
+
+Revisit if: downstream verification ever needs to run unattended in CI, where
+a test-shaped entry point would matter again; or a measured full-run time
+justifies sharding the list across several perlbrew libraries.
+
 ## 2026-08-15 — Author address is `exodist7@gmail.com`
 
 **Ruling: `dist.ini` uses `Chad Granum <exodist7@gmail.com>`.**
@@ -28,10 +92,15 @@ the adoption branch rather than deferred, so it ships with the next release.
 
 Revisit if: never, unless the address itself changes.
 
-## 2026-08-15 — No local `agent_scripts/`, no `TEMPLATE.pod`
+## 2026-08-15 — No local *copies of shared auditors*, no `TEMPLATE.pod`
 
-**Ruling: run the auditors from `~/projects/Agents/agent_scripts/` by absolute
-path. Do not copy them into this repository, and do not add `TEMPLATE.pod`.**
+**Ruling: run the shared auditors from `~/projects/Agents/agent_scripts/` by
+absolute path. Do not copy them into this repository, and do not add
+`TEMPLATE.pod`.**
+
+This covers the five cross-project auditors only. Project-specific tooling —
+`agent_scripts/verify-downstream` and its data files — belongs in
+`agent_scripts/` as usual, excluded from the distribution.
 
 Local copies exist so contributors without the shared checkout can run the
 gates; this project has none, so five copies would be maintenance with no
