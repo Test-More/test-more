@@ -7,6 +7,7 @@
 {{$NEXT}}
 
     - Typo Fix
+    - Update the author address to exodist7@gmail.com; mail to the old cpan.org address is no longer delivered.
     - Ship AI_AND_LLM_POLICY.txt, the contributor policy for AI and LLM generated code.
     - Stop shipping perltidyrc and repository-only markdown files.
 
