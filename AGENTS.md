@@ -39,9 +39,40 @@ packaging and compatibility rules are tighter than usual. See
 `AGENTS_OVERRIDE.md` and `~/projects/Agents/DZIL_GUIDE.md` under "Distribution
 shapes".
 
-Because it sits under everything else, a mistake here breaks the test suite of
-every downstream distribution at once. Prefer the smallest change that solves
-the problem.
+---
+
+## Mission-critical: the bar here is higher than elsewhere
+
+This distribution ships in the Perl core and sits underneath nearly every test
+suite on CPAN. A mistake here breaks thousands of distributions at once, and
+the fix cannot be shipped on our schedule alone. Quality control is stricter
+and churn is a cost in its own right.
+
+- **Every change proves its value.** Fixes and features are targeted at a real,
+  demonstrated problem. "Cleanup", "modernisation", and refactors that do not
+  change behavior are not reasons to touch this code.
+- **Smallest change that solves the problem**, with correctness ranking above
+  smallness. A larger change that is actually correct beats a minimal one that
+  is not.
+- **Dependencies.** Weigh any new prerequisite carefully. A **non-core**
+  dependency is not a decision this project can make on its own — it requires
+  discussion with the external Perl core teams. Do not propose one as if it
+  were an internal call.
+- **Preserving a bug can be the right answer.** Where a fix would break many
+  or important CPAN modules, documenting and preserving the behavior is a
+  legitimate outcome. Raise it as a decision; do not fix quietly.
+
+### Where change belongs
+
+| Layer | Status | What may change |
+|---|---|---|
+| `Test2::V*`, and the Test2 internals they expose | Active | New features and functionality live here. Ordinary care applies. |
+| `Test::Builder` | Middle ground | Overhauled into a compatibility wrapper around `Test2::API`, so it *can* be changed — but `Test::More`, `Test::Simple`, and a long tail of `Test::*` tools sit on it, **including modules that monkeypatch it**. Back-compat requirements are severe. Changes are rare and deliberate. |
+| `Test::More`, `Test::Simple` | Legacy | Documentation may be updated freely. Functionality and code change only when absolutely needed, with justification. Bugs here may be documented and preserved rather than fixed. |
+
+New functionality goes in the Test2 layer. If a change appears to require
+editing `Test::More` or `Test::Simple`, that is a signal to stop and check
+whether it belongs in Test2 instead.
 
 ---
 
@@ -115,7 +146,5 @@ Foundational rules to internalise before writing code here:
   `starting_version` in `dist.ini`.
 - **Nothing later than 5.8 in shipped code.** No signatures, no `say`, no
   postfix deref, no `//` in modules that must load on the packaged floor.
-- `Test::Builder` is a compatibility layer over the Test2 stack, not a parallel
-  implementation. Behavior changes belong in Test2; `Test::Builder` follows.
 - Events flow from tools to a `Test2::Hub` to a `Test2::Formatter`. Reaching
   around that path is how output ordering bugs get created.
