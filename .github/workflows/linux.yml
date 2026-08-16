@@ -15,7 +15,8 @@ jobs:
     outputs:
       perl-versions:  ${{ steps.action.outputs.perl-versions }}
     steps:
-      - uses:         perl-actions/perl-versions@v2
+      - id:           action
+        uses:         perl-actions/perl-versions@v2
         with:
           since-perl: v5.8
           target:     perl-tester
