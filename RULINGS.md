@@ -82,16 +82,6 @@ Revisit if: downstream verification ever needs to run unattended in CI, where
 a test-shaped entry point would matter again; or a measured full-run time
 justifies sharding the list across several perlbrew libraries.
 
-## 2026-08-15 — Author address is `exodist7@gmail.com`
-
-**Ruling: `dist.ini` uses `Chad Granum <exodist7@gmail.com>`.**
-
-The cpan.org mail system is gone, so anything sent to `exodist@cpan.org` — the
-address this distribution has published for its whole life — is lost. Fixed in
-the adoption branch rather than deferred, so it ships with the next release.
-
-Revisit if: never, unless the address itself changes.
-
 ## 2026-08-15 — No local *copies of shared auditors*, no `TEMPLATE.pod`
 
 **Ruling: run the shared auditors from `~/projects/Agents/agent_scripts/` by
@@ -178,19 +168,6 @@ comment beside the floor in `dist.ini`.
 Revisit if: the last 5.6 users stop patching, or a core feature the project
 needs cannot be expressed without breaking 5.6.
 
-## 2026-08-15 — `AI_AND_LLM_POLICY.md` ships with the distribution
-
-**Ruling: carry the canonical policy at the repository root and let it ship.**
-
-Byte-for-byte copy of `~/projects/Agents/AI_AND_LLM_POLICY.md`, the shared
-default. The blanket `.md` exclusion drops it, so `[GatherFile]` gathers it
-back by name — the policy is contributor-facing text worth carrying wherever
-the distribution goes.
-
-Revisit if: the project adopts a different AI/LLM policy, in which case the
-replacement text goes in this same file and the departure is declared in
-`AGENTS_OVERRIDE.md`.
-
 ## 2026-08-15 — No `.md` file ships except `README.md`
 
 **Ruling: `[GatherDir]` excludes every `.md` file.**
@@ -204,6 +181,12 @@ the tree while `[GatherDir]` had no `.md` exclusion.
 This is a deliberate departure from `~/projects/Agents/DZIL_GUIDE.md`, which
 says a dual-life distribution does not exclude internal `.md` files; recorded
 in `AGENTS_OVERRIDE.md`.
+
+`AI_AND_LLM_POLICY.md` is deliberately not treated the same way: it is
+contributor-facing text worth carrying wherever the distribution goes, so
+`[GatherFile]` gathers it back by name after the blanket exclusion drops it.
+Replacing it with a project-specific policy would be declared in
+`AGENTS_OVERRIDE.md`.
 
 Revisit if: a `.md` file ever becomes user-facing documentation the
 distribution must carry.
