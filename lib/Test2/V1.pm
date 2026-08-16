@@ -490,7 +490,7 @@ importing different copies this way. The first time you do this there should be
 no warnings or errors. If you pull in multiple tools of the same name, a
 redefine warning is likely.
 
-This also effects exports:
+This also affects exports:
 
     use Test2::V1 -import, -include => ['Data::Dumper'];
 
@@ -550,7 +550,7 @@ namespaces as base classes:
 
 =head1 EXAMPLE USE CASES
 
-=head2 OVERRIDING INCLUDED TOOLS WITH ALTERNATIVES
+=head2 OVERRIDING INCLUDED TOOLS WITH ALTERNATES
 
 Let's say you want to use the L<Test2::Warnings> version of C<warning()>,
 C<warnings()> instead of the L<Test2::Tools::Warnings> versions, and also
