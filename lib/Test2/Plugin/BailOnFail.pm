@@ -47,6 +47,21 @@ diagnostics they may need.
     T2->ok(0, "fail");
     T2->ok(1, "Will not run");
 
+=head1 FORKED AND ASYNC SUBTESTS
+
+This plugin acts on the pass/fail state of the hub in the process that is
+running, and a process that does not own its hub never sees that state. A
+forked subtest sends its events to the process that owns the hub instead of
+recording them locally, so inside one the hub reports no tests and no
+failures no matter what happened.
+
+A failure inside a forked subtest therefore does not bail there. It bails in
+the owning process once that subtest is finished and its events have been
+merged, by which point sibling subtests have run whatever they were going to
+run. Their output is not suppressed, and there is no way to suppress it from
+here: a process cannot receive events for a hub it does not own, so it cannot
+be told that a sibling failed.
+
 =head1 SOURCE
 
 The source code repository for Test2-Suite can be found at
