@@ -86,7 +86,7 @@ other events are also being generated.
 
 =head1 SYNOPSIS
 
-    use Test2::Bundle::Extended;
+    use Test2::V0;
     use Test2::Tools::AsyncSubtest;
 
     my $ast1 = async_subtest local => sub {

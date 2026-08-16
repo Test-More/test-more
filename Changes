@@ -19,6 +19,7 @@
     - Reject end() in an array, bag, or hash builder that uses all_items, all_keys, or all_values but specifies no items or fields; such a check can only match an empty structure [github #1086]
     - Enforce end() in a bag that also uses all_items; extra items were ignored. This includes the implicit end() inside is(), so such bags now warn or fail where they silently passed. [github #1086]
     - Document that Test2::Plugin::BailOnFail and Test2::Plugin::DieOnFail cannot act on a failure inside a forked subtest until the owning process merges it [github #1081]
+    - Use Test2::V0 instead of the deprecated Test2::Bundle::Extended in the Test2::Tools::AsyncSubtest and Test2::Tools::Spec examples [github #1079]
 
 1.302222  2026-06-15 10:18:50-07:00 America/Los_Angeles
 
