@@ -76,9 +76,6 @@
 ^profile
 ^profiling/
 
-# The extra tests are for dist author testing only
-\bxt
-
 # For github testing
 ^\.travis\.yml$
 

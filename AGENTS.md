@@ -96,10 +96,12 @@ thing to a design document.
 
 - 370 test files. `-Ilib` is required — several tests load modules that also
   exist in the installed perl.
-- `xt/author/pod-spell.t` is not reached by either the command above or a
-  release. `MANIFEST.SKIP` matches `\bxt`, so `[ManifestSkip]` prunes the whole
-  directory out of the build and `[RunExtraTests]` finds nothing. Run it by
-  hand — `prove -Ilib xt/author/pod-spell.t` — when POD changes.
+- `xt/` ships and `[RunExtraTests]` runs it, so `dzil test` and every release
+  run the author tests — POD spelling and POD syntax. The command above covers
+  `t/` only; run `dzil test` before a release, or
+  `prove -Ilib xt/author/pod-spell.t` after touching POD.
+- A new word that the spelling test rejects but that is correct goes in the
+  stopword list at the bottom of `xt/author/pod-spell.t`.
 - Downstream verification is **not** part of the suite. See below.
 - CI covers perl 5.8 through the current release on Linux, macOS, and Windows.
 
