@@ -32,7 +32,6 @@ Test::More::Prefix
 Test2::AsyncSubtest
 Test2::Tools::EventDumper
 Test2::Workflow
-T
 App::Ack
 App::Dest
 Bible::OBML
@@ -115,10 +114,10 @@ Test::Aggregate      # known-broken since before 2026-08-15: dist.ini [Breaks] d
 Test::Wrapper        # known-broken since before 2026-08-15: dist.ini [Breaks] declares <= 0.3.0
 Test::ParallelSubtest # known-broken since before 2026-08-15: dist.ini [Breaks] declares <= 0.05
 Test::Pretty         # known-broken since before 2026-08-15: dist.ini [Breaks] declares <= 0.32
-Test::Kit            # known-broken since before 2026-08-15: reason not recorded
+Test::Kit
 Test::Group          # known-broken since before 2026-08-15: dist.ini [Breaks] declares <= 0.20
 Test::Flatten        # known-broken since before 2026-08-15: dist.ini [Breaks] declares <= 0.11
 Test2::Harness       # known-broken since before 2026-08-15: dist.ini [Breaks] declares <= 0.000013
 Lexical::Types       # known-broken since before 2026-08-15: reason not recorded
-Test::Class::Moose   # known-broken since before 2026-08-15: reason not recorded
+Test::Class::Moose
 Test::Mocha          # known-broken since before 2026-08-15: reason not recorded
