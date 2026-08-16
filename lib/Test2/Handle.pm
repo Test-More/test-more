@@ -251,11 +251,11 @@ namespace.
 
 =item $inst = $class->import()
 
-Used to create a C<T2()> sub in your namsepace at import.
+Used to create a C<T2()> sub in your namespace at import.
 
 =item $inst->init()
 
-Internally used to intialize and validate the handle object.
+Internally used to initialize and validate the handle object.
 
 =item AUTOLOAD
 

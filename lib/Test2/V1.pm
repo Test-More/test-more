@@ -320,7 +320,7 @@ thrown.
 =item C<!EXPORT_NAME>
 
 You can prefix an export name with C<!> to exclude it at import time. This is
-really only usedul when combined with C<-import> or C<-i>.
+really only useful when combined with C<-import> or C<-i>.
 
 =item C<< EXPORT_NAME => { -as => "ALT_NAME" } >>
 
@@ -369,7 +369,7 @@ You can enable all of these with the C<-pP> argument, which is short for
 C<-plugins, -pragmas>. C<P> is short for plugins, and C<p> is short for
 pragmas. When using the single-letter form they may both be together following
 a single dash, and can be in any order. They may also be combined with C<i> to
-bring in all imports. C<-p> or C<-P> ont heir own are also perfectly valid.
+bring in all imports. C<-p> or C<-P> on their own are also perfectly valid.
 
 =over 4
 
@@ -532,7 +532,7 @@ Used to allow the handle to stomp on an existing namespace (NOT RECOMMENDED).
 Set the base class from which functions should be inherited. Normally this is
 set to L<Test2::V1::Base>.
 
-Another interesting use case is to have multiple handles that use eachothers
+Another interesting use case is to have multiple handles that use each other's
 namespaces as base classes:
 
     use Test2::V1;
@@ -1051,7 +1051,7 @@ tests, only to have them wiped out when they use L<Test2::V0>.
 
 Occasionally you do not want this assumption. The way it impacts all your
 regular and test handles, as well as how your source is read, can be a problem
-if you are not working with UTF8, or have other plans entirly.
+if you are not working with UTF8, or have other plans entirely.
 
 =item Huge default set of exports, which can grow
 

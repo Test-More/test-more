@@ -10,6 +10,7 @@
     - Update the author address to exodist7@gmail.com; mail to the old cpan.org address is no longer delivered.
     - Ship AI_AND_LLM_POLICY.txt, the contributor policy for AI and LLM generated code.
     - Stop shipping perltidyrc and repository-only markdown files.
+    - Fix POD typos in Test2::API, Test2::Handle, Test2::V1, Test2::API::InterceptResult::Event, and Test2::Manual::Testing::Introduction.
 
 1.302222  2026-06-15 10:18:50-07:00 America/Los_Angeles
 

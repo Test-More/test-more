@@ -907,7 +907,7 @@ Returns an empty list if no assertion is present.
 
 =item $bool = $event->has_subtest
 
-True if a subetest is present in this event.
+True if a subtest is present in this event.
 
 =item $undef_or_hashref = $event->the_subtest
 
