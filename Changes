@@ -6,13 +6,16 @@
 
 {{$NEXT}}
 
-    - Typo Fix
+    - Fix a typo in an earlier Changes entry (James E Keenan) [github #1083]
     - Update the author address to exodist7@gmail.com; mail to the old cpan.org address is no longer delivered.
     - Ship AI_AND_LLM_POLICY.md, the contributor policy for AI and LLM generated code, covering human review, bot accounts in tickets and pull requests, and noting AI use.
     - Stop shipping perltidyrc and repository-only markdown files.
     - Ship the xt/ author and release tests so they run during release testing.
     - Ship three test files that an unanchored MANIFEST.SKIP pattern had silently excluded from the distribution.
     - Fix POD typos in Test2::API, Test2::Handle, Test2::V1, Test2::API::InterceptResult::Event, and Test2::Manual::Testing::Introduction.
+    - Quote the file name in the #line directive Test2::Handle generates, so tests pass when the build directory path contains spaces (Lukas Mai) [github #1088]
+    - Fix further POD typos in Test2::V1 (Lukas Mai) [github #1054]
+    - Derive the tested perl versions from the perl-versions action so CI keeps up to date (Branislav Zahradník) [github #1085]
 
 1.302222  2026-06-15 10:18:50-07:00 America/Los_Angeles
 
