@@ -208,7 +208,9 @@ sub plan {
 sub done_testing {
     my $ctx = context();
     $ctx->done_testing;
+    my $count = $ctx->hub->count;
     $ctx->release;
+    return $count;
 }
 
 sub warnings(&) {
@@ -363,6 +365,8 @@ Set the plan.
 =item done_testing()
 
 Set the plan to the current test count.
+
+Returns the number of assertions that were made, which is 0 when none were.
 
 =item $warnings = warnings { ... }
 

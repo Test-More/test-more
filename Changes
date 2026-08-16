@@ -21,6 +21,7 @@
     - Document that Test2::Plugin::BailOnFail and Test2::Plugin::DieOnFail cannot act on a failure inside a forked subtest until the owning process merges it [github #1081]
     - Use Test2::V0 instead of the deprecated Test2::Bundle::Extended in the Test2::Tools::AsyncSubtest and Test2::Tools::Spec examples [github #1079]
     - Fail a Test::More subtest whose code dies, reporting the exception inside it, instead of reporting the subtest as passing. The exception still propagates. [github #1075]
+    - Return the number of assertions made from done_testing() in Test2::Tools::Basic and Test2::Tools::Tiny, so a test file ending in it is true to do() [github #1073]
 
 1.302222  2026-06-15 10:18:50-07:00 America/Los_Angeles
 
