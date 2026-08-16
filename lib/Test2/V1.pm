@@ -360,8 +360,8 @@ C<my_ok()>
 
 =head1 PRAGMAS AND PLUGINS
 
-B<NO PRAGMAS ARE ENABLED BY DEFAULT>
-B<ONLY THE EXIT SUMMARY PLUGIN IS STILL ENABLED BY DEFAULT>
+B<NO PRAGMAS ARE ENABLED BY DEFAULT.>
+B<ONLY THE EXIT SUMMARY PLUGIN IS STILL ENABLED BY DEFAULT.>
 
 This is a significant departure from L<Test2::V0>.
 
@@ -434,7 +434,7 @@ See L<Test2::Env> for a list of meaningful environment variables.
 
 =head1 API FUNCTIONS
 
-See L<Test2::API> for these
+See L<Test2::API> for these.
 
 =over 4
 
@@ -487,10 +487,10 @@ can have additional tools added to it.
 
 Note that you MAY override original tools such as ok(), note(), etc. by
 importing different copies this way. The first time you do this there should be
-no warnings or errors. If you pull in multiple tools of the same name an
+no warnings or errors. If you pull in multiple tools of the same name, a
 redefine warning is likely.
 
-This also effects exports:
+This also affects exports:
 
     use Test2::V1 -import, -include => ['Data::Dumper'];
 
@@ -552,7 +552,7 @@ namespaces as base classes:
 
 =head2 OVERRIDING INCLUDED TOOLS WITH ALTERNATES
 
-Lets say you want to use the L<Test2::Warnings> version of C<warning()>,
+Let's say you want to use the L<Test2::Warnings> version of C<warning()>,
 C<warnings()> instead of the L<Test2::Tools::Warnings> versions, and also
 wanted to import everything else L<Test2::Warnings> provides.
 
@@ -1047,11 +1047,11 @@ scripts, but they can get in the way in many cases.
 Many people would put custom strict/warnings settings at the top of their
 tests, only to have them wiped out when they use L<Test2::V0>.
 
-=item Assumptions of UTF8
+=item Assumptions of UTF-8
 
 Occasionally you do not want this assumption. The way it impacts all your
 regular and test handles, as well as how your source is read, can be a problem
-if you are not working with UTF8, or have other plans entirely.
+if you are not working with UTF-8, or have other plans entirely.
 
 =item Huge default set of exports, which can grow
 
@@ -1063,16 +1063,16 @@ a point not to break/remove exports, but there is no such commitment about
 adding new ones.
 
 Now the only default export is C<T2()> which gives you a handle where all the
-tools we expose are provided as methods. You can also use the L<T2> module (Not
+tools we expose are provided as methods. You can also use the L<T2> module (not
 bundled with Test-Simple) for use with an identical number of keystrokes, which
-allow you to leverage the prototypes on the original tool subroutines.
+allows you to leverage the prototypes on the original tool subroutines.
 
 =back
 
 =head1 SOURCE
 
 The source code repository for Test2-Suite can be found at
-F<https://github.com/Test-More/test-more/>.
+L<https://github.com/Test-More/test-more/>.
 
 =head1 MAINTAINERS
 
@@ -1097,6 +1097,6 @@ Copyright Chad Granum E<lt>exodist@cpan.orgE<gt>.
 This program is free software; you can redistribute it and/or
 modify it under the same terms as Perl itself.
 
-See F<http://dev.perl.org/licenses/>
+See L<https://dev.perl.org/licenses/>.
 
 =cut
