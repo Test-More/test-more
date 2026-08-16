@@ -9,7 +9,20 @@ on:
   pull_request:
 
 jobs:
+  perl-versions:
+    runs-on: ubuntu-latest
+    name: List perl versions
+    outputs:
+      perl-versions:  ${{ steps.action.outputs.perl-versions }}
+    steps:
+      - uses:         perl-actions/perl-versions@v2
+        with:
+          since-perl: v5.8
+          target:     perl-tester
+
   perl:
+    needs:
+      - perl-versions
 
     runs-on: ubuntu-latest
 
@@ -23,24 +36,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        perl-version:
-          - 'latest'
-          - '5.38'
-          - '5.36'
-          - '5.34'
-          - '5.32'
-          - '5.30'
-          - '5.28'
-          - '5.26'
-          - '5.24'
-          - '5.22'
-          - '5.20'
-          - '5.18'
-          - '5.16'
-          - '5.14'
-          - '5.12'
-          - '5.10'
-          - '5.8'
+        perl-version: ${{ fromJson (needs.perl-versions.outputs.perl-versions) }}
 
     container:
       image: perldocker/perl-tester:${{ matrix.perl-version }}
