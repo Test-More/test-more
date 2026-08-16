@@ -6,13 +6,28 @@ This project opts into shared agent guidance while keeping its own documents
 authoritative for project-specific rules and design.
 
 - Repository: `git@github.com:exodist/Agents.git`
-- Expected location: `~/projects/Agents`
+- Default location: `~/projects/Agents`
+- This project's location: as declared in `AGENTS_OVERRIDE.md` under "Agents
+  repository location", when that section is present.
+- Last synced: edb87e0afda37c10e4bf8c8dab10a3858a419836 (2026-08-15)
 
-If `~/projects/Agents` does not exist, clone it before doing anything else:
+Use the declared location when there is one, otherwise the default. If no
+checkout is there, **stop and ask the user** whether to clone it and where.
+Never clone it for them, and never guess a location.
 
-    git clone git@github.com:exodist/Agents.git ~/projects/Agents
+Shared documents spell their paths against the default location. When this
+project declares another, read every such path against the declared one.
 
-Then read `~/projects/Agents/AGENTS.md` and follow the shared guidance this
+Check for pending syncs once, at the start of the session:
+
+    git -C <location> log --oneline <last-synced-sha>..HEAD -- \
+        AI_AND_LLM_POLICY.md templates/ agent_scripts/ SYNC.md
+
+No output means nothing to apply. Otherwise follow "Staying in sync" in the
+shared `AGENTS.md`: show the user what is pending and let them sync now or
+skip it and carry on with what they came here to do. Never sync unasked.
+
+Then read `AGENTS.md` in that checkout and follow the shared guidance this
 project has adopted. It points at task-specific guides and procedures.
 
 All documents in THIS repository take priority over the shared repository.

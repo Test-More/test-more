@@ -131,7 +131,8 @@ Shared guidance: a dual-life distribution does not exclude internal `.md`
 files, because the core tarball comparison expects the tree as-is.
 
 Here: `[GatherDir]` excludes every `.md` file. `README.md` still ships because
-`[ReadmeFromPod / Markdown]` generates it in the build tree.
+`[ReadmeFromPod / Markdown]` generates it in the build tree, and
+`AI_AND_LLM_POLICY.md` is gathered back by name with `[GatherFile]`.
 
 Reason: agent instructions and internal notes are repository tooling, not
 something the perl core tarball should carry. See `RULINGS.md`.

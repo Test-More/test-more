@@ -178,14 +178,14 @@ comment beside the floor in `dist.ini`.
 Revisit if: the last 5.6 users stop patching, or a core feature the project
 needs cannot be expressed without breaking 5.6.
 
-## 2026-08-15 — `AI_AND_LLM_POLICY.txt` ships with the distribution
+## 2026-08-15 — `AI_AND_LLM_POLICY.md` ships with the distribution
 
 **Ruling: carry the canonical policy at the repository root and let it ship.**
 
-Byte-for-byte copy of `~/projects/Agents/AI_AND_LLM_POLICY.txt`, the shared
-default. It is not excluded from `[GatherDir]` even though the `.md` files are
-— the policy is contributor-facing text worth carrying wherever the
-distribution goes.
+Byte-for-byte copy of `~/projects/Agents/AI_AND_LLM_POLICY.md`, the shared
+default. The blanket `.md` exclusion drops it, so `[GatherFile]` gathers it
+back by name — the policy is contributor-facing text worth carrying wherever
+the distribution goes.
 
 Revisit if: the project adopts a different AI/LLM policy, in which case the
 replacement text goes in this same file and the departure is declared in
