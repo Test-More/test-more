@@ -18,6 +18,43 @@ see `~/projects/Agents/AGENTS.md` under "What earns a place in `RULINGS.md`".
 
 ---
 
+## 2026-08-15 — The `all_*` + `end()` exception covers the explicit spelling only
+
+**Ruling: `verify_build` stays a build-time check. It does not chase the
+implicit `end` that `is()` applies at comparison time.**
+
+A builder that uses `all_items`, `all_keys`, or `all_values` together with
+`end()` while specifying no items or fields can only match an empty structure,
+which discards the `all_*` checks. `Test2::Compare::Array`, `Bag`, and `Hash`
+throw on that combination from `verify_build`, called by `Test2::Compare::build`
+once the builder block finishes.
+
+The same dead construct reaches `is($got, array { all_items ... })` with no
+`end()` written at all: `Test2::Compare::_convert` clones the check and sets
+`ending => 'implicit'` long after the build hook has run, so `verify_build`
+cannot see it. Those users are not left without guidance — `Test2::Tools::Compare::is`
+already passes the assertion and emits the "NOTICE OF BEHAVIOR CHANGE" alert
+naming `end()` and `etc()`, and a user who then writes `end()` gets the
+exception, which names `etc()`. That alert is a plain warning on an ordinary
+run, but the same branch throws when `AUTHOR_TESTING` is set, so for a
+distribution author the current impact is already a dead test file.
+
+Rejected: moving or duplicating the check into convert or compare time. That
+crosses a layer, runs on every comparison instead of once per build, and makes
+a comparison throw mid-assertion — a new error policy for the module. Rejected
+also: letting `all_*` suppress implicit end, which would contradict the rule
+that `all_*` never affects bounds and would silently exempt these checks from
+the announced implicit-`end()` transition.
+
+**Revisit when** the implicit-`end()` default actually lands. At that point
+`all_*` without `etc()` starts failing with a bare "SHOULD NOT EXIST" table and
+no pointer to `etc()`, and the guidance may need to move somewhere the compare
+path can reach.
+
+Evidence: https://github.com/Test-More/test-more/issues/1086
+
+---
+
 ## 2026-08-15 — Downstream verification is a tool, not a test
 
 **Ruling: `xt/downstream.t` is replaced by `agent_scripts/verify-downstream`.**

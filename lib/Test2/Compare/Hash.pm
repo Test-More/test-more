@@ -87,6 +87,16 @@ sub add_for_each_val {
     push @{$self->{+FOR_EACH_VAL}} => @_;
 }
 
+sub verify_build {
+    my $self = shift;
+
+    return unless @{$self->{+FOR_EACH_KEY}} || @{$self->{+FOR_EACH_VAL}};
+    return unless $self->{+ENDING};
+    return if keys %{$self->{+ITEMS}};
+
+    $self->throw_build_error("'end' with no fields specified requires an empty hash, which discards the 'all_keys' and 'all_values' checks; use 'etc' instead of 'end' to check every key and value without bounding the hash");
+}
+
 sub deltas {
     my $self = shift;
     my %params = @_;

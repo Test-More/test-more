@@ -69,6 +69,19 @@ sub delta_class { 'Test2::Compare::Delta' }
 sub deltas { () }
 sub got_lines { () }
 
+sub verify_build { }
+
+sub throw_build_error {
+    my $self = shift;
+    my ($msg) = @_;
+
+    my $file  = $self->file || 'unknown file';
+    my $lines = $self->lines;
+    my $line  = $lines && @$lines ? $lines->[0] : 0;
+
+    die "$msg at $file line $line.\n";
+}
+
 sub stringify_got { 0 }
 
 sub operator { '' }
@@ -206,6 +219,18 @@ checks are done in C<< $check->deltas() >>.
 =item $name = $check->name
 
 Get the name of the check.
+
+=item $check->verify_build()
+
+Called on every check built by a builder block once the block has run. This
+base class does nothing; a subclass may override it to reject a combination of
+build directives that cannot do anything useful, and should use
+C<< $check->throw_build_error($msg) >> to report the problem.
+
+=item $check->throw_build_error($msg)
+
+Throw an exception reporting C<$msg> against the file and line of the builder
+block the check came from.
 
 =item $display = $check->render
 

@@ -54,6 +54,16 @@ sub add_for_each {
     push @{$self->{+FOR_EACH}} => @_;
 }
 
+sub verify_build {
+    my $self = shift;
+
+    return unless @{$self->{+FOR_EACH}};
+    return unless $self->{+ENDING};
+    return if @{$self->{+ITEMS}};
+
+    $self->throw_build_error("'end' with no items specified requires an empty bag, which discards the 'all_items' checks; use 'etc' instead of 'end' to check every item without bounding the bag");
+}
+
 sub deltas {
     my $self = shift;
     my %params = @_;
@@ -109,9 +119,6 @@ sub deltas {
         my @checks = map { $convert->($_) } @for_each;
 
         for my $idx (0..$#list) {
-            # All items are matched if we have conditions for all items
-            delete $unmatched{$idx};
-
             my $val = $list[$idx];
 
             for my $check (@checks) {

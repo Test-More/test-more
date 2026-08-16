@@ -106,6 +106,16 @@ sub add_for_each {
     push @{$self->{+FOR_EACH}} => @_;
 }
 
+sub verify_build {
+    my $self = shift;
+
+    return unless @{$self->{+FOR_EACH}};
+    return unless $self->{+ENDING};
+    return if keys %{$self->{+ITEMS}};
+
+    $self->throw_build_error("'end' with no items specified requires an empty array, which discards the 'all_items' checks; use 'etc' instead of 'end' to check every item without bounding the array");
+}
+
 sub deltas {
     my $self = shift;
     my %params = @_;
