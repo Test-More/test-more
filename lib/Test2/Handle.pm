@@ -45,7 +45,7 @@ sub _HANDLE_INCLUDE {
 
     my $line = __LINE__ + 3;
     $self->{+IMPORT} = eval <<"    EOT" or die $@;
-#line $line ${ \__FILE__ }
+#line $line "${ \__FILE__ }"
         package $ns;
         sub {
             my (\$module, \$caller, \@imports) = \@_;
