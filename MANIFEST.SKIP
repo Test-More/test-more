@@ -81,25 +81,12 @@
 
 ^MANIFEST\.SKIP$
 
+^dist\.ini$
+
 # I never want this to go out.
 ^test\.pl$
 
 ^POD_TEMPLATE\.pod$
-
-# The extra tests are for dist author testing only
-\bxt
-
-# For github testing
-.travis.yml
-
-dist.ini
-
-MANIFEST.SKIP
-
-# I never want this to go out.
-test.pl
-
-POD_TEMPLATE.pod
 
 ^Test2-*
 

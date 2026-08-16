@@ -21,8 +21,11 @@ for (<DATA>) {
 print "### adding stopwords @stopwords\n";
 
 add_stopwords(@stopwords);
-local $ENV{LC_ALL} = 'C';
-set_spell_cmd('aspell list -l en');
+# C.UTF-8 rather than C: POD here is UTF-8, and under a non-UTF-8 locale a
+# name like "Böhmer" reaches aspell as two broken fragments no stopword can
+# match.
+local $ENV{LC_ALL} = 'C.UTF-8';
+set_spell_cmd('aspell list -l en --encoding=utf-8');
 all_pod_files_spelling_ok;
 
 __DATA__
@@ -261,3 +264,19 @@ yath
 JSONL
 shm
 instantiable
+
+## contributor names
+Böhmer
+Rabbitson
+TOYAMA
+Nao
+chocolateboy
+
+## more jargon
+diags
+deparsing
+preload
+refcounts
+unweakened
+DESTROYed
+InterceptResult

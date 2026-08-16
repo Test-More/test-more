@@ -8,7 +8,7 @@ use ExtUtils::MakeMaker;
 
 my %WriteMakefileArgs = (
   "ABSTRACT" => "Basic utilities for writing tests.",
-  "AUTHOR" => "Chad Granum <exodist\@cpan.org>",
+  "AUTHOR" => "Chad Granum <exodist7\@gmail.com>",
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0
   },
