@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+1.302223  2026-08-16 01:55:48-07:00 America/Los_Angeles (TRIAL RELEASE)
+
     - Fix a typo in an earlier Changes entry (James E Keenan) [github #1083]
     - Update the author address to exodist7@gmail.com; mail to the old cpan.org address is no longer delivered.
     - Ship AI_AND_LLM_POLICY.md, the contributor policy for AI and LLM generated code, covering human review, bot accounts in tickets and pull requests, and noting AI use.
