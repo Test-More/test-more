@@ -2,7 +2,7 @@ package Test2::Util;
 use strict;
 use warnings;
 
-our $VERSION = '1.302223';
+our $VERSION = '1.302224';
 
 use Config qw/%Config/;
 use Carp qw/croak/;

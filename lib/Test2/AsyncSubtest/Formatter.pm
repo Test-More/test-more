@@ -2,7 +2,7 @@ package Test2::AsyncSubtest::Formatter;
 use strict;
 use warnings;
 
-our $VERSION = '1.302223';
+our $VERSION = '1.302224';
 
 die "Should not load this anymore";
 
