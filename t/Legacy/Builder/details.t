@@ -15,7 +15,7 @@ use Test::More;
 use Test::Builder;
 my $Test = Test::Builder->new;
 
-$Test->plan( tests => 9 );
+$Test->plan( tests => 11 );
 $Test->level(0);
 
 my @Expected_Details;
@@ -93,6 +93,35 @@ $Test->is_num( scalar @details, 6,
 $Test->level(1);
 is_deeply( \@details, \@Expected_Details );
 
+{
+	SKIP: {
+		$Test->skip( 'by default skip ignores reason', 'test message' );
+	}
+
+	push @Expected_Details, {
+		ok        => 1,
+		actual_ok => 1,
+		name      => 'test message',
+		type      => 'skip',
+		reason    => '',
+	};
+}
+
+{
+	SKIP: {
+		no warnings q (redefine);
+		local *Test::Builder::_tctx_skip = \ &Test::Builder::_tctx_skip_with_name;
+		$Test->skip( 'monkeypatching skip to use provided reason', 'test message' );
+	}
+
+	push @Expected_Details, {
+		ok        => 1,
+		actual_ok => 1,
+		name      => 'test message',
+		type      => 'skip',
+		reason    => 'monkeypatching skip to use provided reason',
+	};
+}
 
 # This test has to come last because it thrashes the test details.
 {
@@ -103,3 +132,4 @@ is_deeply( \@details, \@Expected_Details );
     $Test->current_test($curr_test);
     $Test->is_num( scalar @details, 4 );
 }
+
