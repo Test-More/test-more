@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+    - Distribute ok and Test::use::ok under the same terms as Perl, with permission from original author Audrey Tang; the original CC0 notice is kept. [github #1092]
+
 1.302225  2026-09-03 10:23:35-07:00 America/Los_Angeles
 
     - Name the failing check when an IPC abort escapes a capture block in t/Test2/modules/IPC/Driver/Files.t. The bare "die 255" reported only its own line, and the message went to a captured STDERR that was then discarded, so smoke failures carried no diagnostic at all. [github #1091]
