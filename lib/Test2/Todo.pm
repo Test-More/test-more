@@ -9,7 +9,7 @@ use Test2::API qw/test2_stack/;
 
 use overload '""' => \&reason, fallback => 1;
 
-our $VERSION = '1.302226';
+our $VERSION = '1.302227';
 
 sub init {
     my $self = shift;

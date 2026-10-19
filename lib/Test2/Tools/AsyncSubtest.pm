@@ -2,7 +2,7 @@ package Test2::Tools::AsyncSubtest;
 use strict;
 use warnings;
 
-our $VERSION = '1.302226';
+our $VERSION = '1.302227';
 
 use Test2::IPC;
 use Test2::AsyncSubtest;
