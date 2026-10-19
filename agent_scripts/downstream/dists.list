@@ -72,7 +72,7 @@ File::Spec
 HTML::Selector::XPath
 Import::Box
 Importer
-JE
+JE                   # known-broken since 2026-10-19: JE-0.066 uses goto into a construct, fatal on perl 5.44
 JSON
 JSON::PP
 Lingua::ManagementSpeak
