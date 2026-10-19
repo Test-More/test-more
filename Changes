@@ -6,6 +6,8 @@
 
 {{$NEXT}}
 
+1.302226  2026-10-19 16:20:11-07:00 America/Los_Angeles
+
     - Distribute ok and Test::use::ok under the same terms as Perl, with permission from original author Audrey Tang; the original CC0 notice is kept. [github #1092]
     - Test2::IPC::Driver::Files now aborts with the OS error when a hub file cannot be written, and names an empty or truncated hub file instead of reporting it as closed by the wrong process.
 
