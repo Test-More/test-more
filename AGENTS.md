@@ -9,7 +9,7 @@ authoritative for project-specific rules and design.
 - Default location: `~/projects/Agents`
 - This project's location: as declared in `AGENTS_OVERRIDE.md` under "Agents
   repository location", when that section is present.
-- Last synced: edb87e0afda37c10e4bf8c8dab10a3858a419836 (2026-08-15)
+- Last synced: c8cd5dcd5a390c85717226e51ad79fbb8052e100 (2026-10-19)
 
 Use the declared location when there is one, otherwise the default. If no
 checkout is there, **stop and ask the user** whether to clone it and where.
