@@ -7,21 +7,36 @@ use warnings;
 
 use Errno qw/ENOSPC/;
 
-our $FAIL_CLOSE = 0;
-BEGIN {
-    *CORE::GLOBAL::close = sub (;*) {
-        if ($FAIL_CLOSE) {
-            CORE::close($_[0]);
-            $! = ENOSPC;
-            return 0;
-        }
-        return @_ ? CORE::close($_[0]) : CORE::close();
-    };
-}
-
 use Test2::Tools::Tiny;
 use Test2::Util qw/ipc_separator/;
-use Test2::IPC::Driver::Files;
+
+# Make close() fail on demand inside Test2::IPC::Driver::Files only. The
+# override is in place only while that file compiles, so nothing else (such as
+# Storable's bareword handles) is affected. Its dependencies load first for the
+# same reason, and it is required rather than used so that loading it does not
+# turn on IPC for this test.
+our $FAIL_CLOSE = 0;
+BEGIN {
+    require Storable;
+    require File::Temp;
+    require File::Spec;
+    require POSIX;
+    require Scalar::Util;
+    require Test2::IPC::Driver;
+    require Test2::Util::Sig;
+
+    no warnings 'once';
+    *CORE::GLOBAL::close = sub (*) {
+        my $ok = CORE::close($_[0]);
+        return $ok unless $FAIL_CLOSE;
+        $! = ENOSPC;
+        return 0;
+    };
+    require Test2::IPC::Driver::Files;
+
+    # The calls compiled above keep their reference to the override.
+    delete $CORE::GLOBAL::{close};
+}
 
 {
     no warnings 'redefine';
