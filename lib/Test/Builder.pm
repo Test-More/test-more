@@ -675,14 +675,13 @@ sub ok {
     my( $self, $test, $name ) = @_;
 
     my $ctx = $self->ctx;
-	
+    
+    # Call CODE, if needed	
 	$test = $test->() if ref $test eq 'CODE';
 
     # $test might contain an object which we don't want to accidentally
     # store, so we turn it into a boolean.
     $test = $test ? 1 : 0;
-    
-    
 
     # In case $name is a string overloaded object, force it to stringify.
     no  warnings qw/uninitialized numeric/;
