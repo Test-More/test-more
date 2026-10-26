@@ -1068,6 +1068,18 @@ sub BAIL_OUT {
     *BAILOUT = \&BAIL_OUT;
 }
 
+sub _tctx_skip {
+	my ($self, $tctx, $name, $why) = @_;
+
+    $tctx->skip ('', $why);
+}
+
+sub _tctx_skip_with_name {
+	my ($self, $tctx, $name, $why) = @_;
+
+    $tctx->skip ($name, $why);
+}
+
 sub skip {
     my( $self, $why, $name ) = @_;
     $why ||= '';
@@ -1092,7 +1104,8 @@ sub skip {
     } unless $self->{no_log_results};
 
     my $tctx = $ctx->snapshot;
-    $tctx->skip('', $why);
+
+    $self->_tctx_skip ($tctx, $name, $why);
 
     return release $ctx, 1;
 }
