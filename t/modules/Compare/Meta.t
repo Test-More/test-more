@@ -87,4 +87,38 @@ subtest deltas => sub {
     );
 };
 
+{
+
+    package Foo::Role {
+        use Role::Tiny;
+    };
+
+    package Foo::Quux {
+        use Role::Tiny::With;
+        with 'Foo::Role';
+    };
+}
+
+subtest role => sub {
+    my $one = $CLASS->new();
+    $one->add_prop('reftype' => 'HASH');
+    $one->add_prop('role'    => 'Foo::Role');
+    my $foo_quux = bless {}, 'Foo::Quux';
+    my $foo      = bless {}, 'Foo';
+    is([$one->deltas(got => $foo_quux, convert => \&convert, seen => {})], [], 'does have the role');
+    like(
+        [
+            $one->deltas(
+                got     => $foo,
+                convert => \&convert,
+                seen    => {}
+            )
+        ],
+        [
+            {verified => F(), got => $foo, children => [], id => ['META' => 'role']},
+        ],
+        "does not have the role"
+    );
+};
+
 done_testing;

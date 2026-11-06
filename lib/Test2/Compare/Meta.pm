@@ -4,6 +4,7 @@ use warnings;
 
 use Test2::Compare::Delta();
 use Test2::Compare::Isa();
+use Test2::Compare::Role();
 
 use base 'Test2::Compare::Base';
 
@@ -52,6 +53,19 @@ sub add_prop {
             );
         } else {
             $check = Test2::Compare::Isa->new(input => $check);
+        }
+    }
+    if ($name eq 'role') {    #
+        if (blessed($check) && $check->isa('Test2::Compare::Wildcard')) {
+            # Carry forward file and lines that are set in Test2::Tools::Compare::prop.
+            $check = Test2::Compare::Role->new(
+                input => $check->expect,
+                file  => $check->file,
+                lines => $check->lines,
+            );
+        }
+        else {
+            $check = Test2::Compare::Role->new(input => $check);
         }
     }
 
@@ -103,6 +117,8 @@ sub get_prop_size {
     return undef;
 }
 
+sub get_prop_role { $_[1] }
+
 1;
 
 __END__
@@ -147,6 +163,11 @@ Lets you check the item itself.
 Lets you check the size of the item. For an arrayref this is the number of
 elements. For a hashref this is the number of keys. For everything else this is
 undef.
+
+=item role
+
+Lets you check if the item has the expected role composed. It uses
+L<Role::Tiny/"does_role"> to achieve this.
 
 =back
 
